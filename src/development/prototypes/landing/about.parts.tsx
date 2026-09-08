@@ -192,121 +192,114 @@ export function BandHead({ title, lead }: { readonly title: ReactNode; readonly 
  *
  * A separate drawing from `PendingPortrait` rather than that one cropped: the
  * 4:5 silhouette puts the head high in its box, and a circle taken out of it
- * lands on a forehead. The shoulders are a second circle, clipped by the
- * wrapper, which is why the wrapper and not the `svg` carries `rounded-full`.
+ * lands on a forehead. The shoulders are a second circle that runs past the
+ * viewBox and is clipped by the round target it sits in — which is why the
+ * clipping lives out there and not on the `svg`.
  */
 function PendingAvatar() {
   return (
-    <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted/50">
-      <svg viewBox="0 0 80 80" className="size-full text-muted-foreground" role="img" aria-hidden="true" focusable="false">
-        <circle cx="40" cy="31" r="13" className="fill-current" fillOpacity={0.3} />
-        <circle cx="40" cy="73" r="23" className="fill-current" fillOpacity={0.3} />
-      </svg>
-    </span>
+    <svg
+      viewBox="0 0 80 80"
+      className="size-full text-muted-foreground"
+      role="img"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="40" cy="31" r="13" className="fill-current" fillOpacity={0.3} />
+      <circle cx="40" cy="73" r="23" className="fill-current" fillOpacity={0.3} />
+    </svg>
   )
 }
 
-const CONTRIBUTOR_CELL_CLASS = 'group flex flex-col items-start gap-2.5 rounded-sm'
+const AVATAR_CLASS =
+  'block size-14 shrink-0 overflow-hidden rounded-full bg-muted/50 transition-transform'
+
+const AVATAR_LINK_CLASS = cn(
+  AVATAR_CLASS,
+  'hover:scale-[1.06] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none motion-reduce:hover:scale-100',
+)
 
 /**
  * The third tier: everyone who put something in, as a wall of faces.
  *
- * Portraits rather than the login-and-commit-count rows this was first, because
- * the tier stopped being a mirror of the GitHub API — most of what kept the
- * project going was never a commit, and a row that can only say "6,128
- * commit-uri" has nothing to say about the person who checked the figures.
+ * Pictures only. Names under each one turned the tier into a third list to read
+ * on a page that already has two, and the wall says the thing that matters —
+ * that there are more of them than the two tiers above — without asking anyone
+ * to read it. The name is still there for anyone who wants it: on the link, as
+ * its accessible name and as the browser's own tooltip.
  *
- * A cell with a profile is a link and opens it; a cell without one is a plain
- * block. Same box either way — someone whose social account we do not have is
- * not a lesser contributor, so nothing about the cell is dimmed for it.
+ * That is also why the picture is the target rather than a row containing it.
+ * `title` is not an accessibility feature — it does not survive touch or the
+ * keyboard — so `aria-label` carries the name and `title` is the sighted
+ * mouse-user's copy of it.
  *
- * Condensed to a 56px avatar on an eight-track row: this is the lightest of the
- * three tiers and the only one that is meant to grow, so it has to still read
- * as a list at thirty names rather than only at nine.
+ * A face with a profile is a link and opens it; a face without one is a plain
+ * image with its name as `alt`. Nothing is dimmed for the difference — someone
+ * whose social account we do not have is not a lesser contributor.
+ *
+ * Condensed to a 56px avatar at a 6px gap: this is the lightest of the three
+ * tiers and the only one meant to grow, so it has to still read as one object
+ * at thirty faces rather than only at eight.
  */
 export function ContributorGrid({ className }: { readonly className?: string }) {
   return (
-    <ul
-      className={cn(
-        'grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8',
-        className,
-      )}
-    >
+    <ul className={cn('flex flex-wrap gap-1.5', className)}>
       {CONTRIBUTORS.map((contributor) => {
-        const body = (
-          <>
-            {contributor.avatar === undefined ? (
-              <PendingAvatar />
-            ) : (
-              <img
-                src={contributor.avatar}
-                alt=""
-                width={160}
-                height={160}
-                loading="lazy"
-                decoding="async"
-                className="size-14 shrink-0 rounded-full bg-muted object-cover"
-              />
-            )}
-            <span className="min-w-0">
-              <span className="block text-[0.8125rem] font-medium leading-tight text-foreground group-hover:text-primary">
-                {contributor.name}
-              </span>
-              <MonoLabel className="mt-1.5 block leading-relaxed text-muted-foreground">
-                {contributor.role}
-              </MonoLabel>
-            </span>
-          </>
-        )
+        const label = `${contributor.name} — ${contributor.role}`
+        const picture =
+          contributor.avatar === undefined ? (
+            <PendingAvatar />
+          ) : (
+            <img
+              src={contributor.avatar}
+              alt=""
+              width={160}
+              height={160}
+              loading="lazy"
+              decoding="async"
+              className="size-full object-cover"
+            />
+          )
 
         return (
           <li key={contributor.id}>
             {contributor.url === undefined || contributor.url === '#' ? (
-              <div className={CONTRIBUTOR_CELL_CLASS}>{body}</div>
+              <span className={AVATAR_CLASS} title={label}>
+                {picture}
+                <span className="sr-only">{label}</span>
+              </span>
             ) : (
               <a
                 href={contributor.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                aria-label={`${contributor.name} — profil`}
-                className={cn(
-                  CONTRIBUTOR_CELL_CLASS,
-                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring',
-                )}
+                title={label}
+                aria-label={label}
+                className={AVATAR_LINK_CLASS}
               >
-                {body}
+                {picture}
               </a>
             )}
           </li>
         )
       })}
 
-      {/* The open seat. Same cell, same box; the difference is that this one is
-          not a person yet. */}
+      {/* The open seat, on the same 56px circle so the wall stays one row of one
+          shape. It is the only cell that says what it is in words, because it is
+          the only one that is not a person. */}
       <li>
         <a
           href={REPO_URL}
           target="_blank"
           rel="noreferrer noopener"
+          title="Contribuie pe GitHub"
+          aria-label="Contribuie pe GitHub"
           className={cn(
-            CONTRIBUTOR_CELL_CLASS,
-            'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring',
+            AVATAR_LINK_CLASS,
+            'flex items-center justify-center border border-dashed bg-transparent text-muted-foreground hover:border-primary hover:text-primary',
           )}
         >
-          <span
-            aria-hidden="true"
-            className="flex size-14 shrink-0 items-center justify-center rounded-full border border-dashed text-muted-foreground transition-colors group-hover:border-primary group-hover:text-primary"
-          >
-            <Plus className="size-4" />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[0.8125rem] font-medium leading-tight text-foreground group-hover:text-primary">
-              Locul tău aici
-            </span>
-            <MonoLabel className="mt-1.5 block leading-relaxed text-muted-foreground">
-              Contribuie pe GitHub
-            </MonoLabel>
-          </span>
+          <Plus aria-hidden="true" className="size-4" />
         </a>
       </li>
     </ul>

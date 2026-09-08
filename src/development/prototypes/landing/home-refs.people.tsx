@@ -133,20 +133,19 @@ export function PeopleBand() {
 
           They were `04 /` for a while. But the page numbers *subjects*, and
           this is not a second subject — it is the same one at a third weight,
-          after the founder and the angels. A rule and a caption say that; a
-          number said the band above had finished. */}
-      <div className="mt-14 border-t pt-10">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
-          <MonoLabel data-reveal className="text-primary">
-            Contribuitori
-          </MonoLabel>
-          <p data-reveal className="max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
-            Cod, traduceri, cifre verificate, erori raportate, o ușă deschisă la
-            momentul potrivit — lista nu se oprește la commit-uri.
-          </p>
-        </div>
+          after the founder and the angels. The caption alone says that: a
+          number said the band above had finished, and a rule said the same
+          thing more quietly. Space is enough.
+
+          The caption that used to sit opposite the label is gone too: it
+          explained what counts as contributing, and the faces do not need the
+          explanation to be understood as people who helped. */}
+      <div className="mt-14">
+        <MonoLabel data-reveal className="block text-primary">
+          Contribuitori
+        </MonoLabel>
         <div data-reveal>
-          <ContributorGrid className="mt-8" />
+          <ContributorGrid className="mt-6" />
         </div>
       </div>
     </>
