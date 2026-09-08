@@ -79,7 +79,7 @@ export function InflationToggle({
                             className="w-full justify-start gap-2"
                         >
                             <span className="text-md">R</span>
-                            {!collapsed && <span className="flex-1 text-left"><Trans>Real (2024)</Trans></span>}
+                            {!collapsed && <span className="flex-1 text-left"><Trans>Real</Trans></span>}
                         </Button>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

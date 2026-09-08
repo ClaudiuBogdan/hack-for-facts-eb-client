@@ -147,6 +147,19 @@ describe("standalone advanced map route", () => {
       inflation_adjusted: false,
     });
   });
+  it("applies changed global URL controls over stored filters without remounting the page", async () => {
+    search = { filters: { account_category: "ch", currency: "RON", inflation_adjusted: false } };
+    const view = await renderMap();
+    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({currency: "RON", inflation_adjusted: false});
+    search = { ...search, currency: "EUR", inflation_adjusted: "true" };
+    const { Route } = await import("./map.lazy");
+    const Component = Route.options.component as ComponentType;
+    view.rerender(<Component />);
+    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({currency: "EUR", inflation_adjusted: true});
+    search = { ...search, currency: "USD", inflation_adjusted: "false" };
+    view.rerender(<Component />);
+    expect(latestWorkspace().mapState.series[0].filter).toMatchObject({currency: "USD", inflation_adjusted: false});
+  });
   it("writes table, legacy chart and viewport state without dropping scope or preset", async () => {
     search = {
       preset: "income",

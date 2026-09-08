@@ -255,6 +255,12 @@ describe('MapFilter', () => {
     expect(screen.getByTestId('filter-range-Amount Range')).toHaveTextContent('EUR')
   })
 
+  it('labels amount bounds using the route-resolved currency over a saved filter', () => {
+    mockMapState.filters.currency = 'RON'
+    render(<MapFilter currencyOverride="EUR" />)
+    expect(screen.getByTestId('filter-range-Amount Range')).toHaveTextContent('EUR')
+  })
+
   describe('rendering', () => {
     it('renders the filter card', () => {
       render(<MapFilter />)

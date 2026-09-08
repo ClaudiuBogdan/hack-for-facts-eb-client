@@ -18,6 +18,7 @@ import type { AdvancedMapAnalyticsUrlState } from "@/schemas/advanced-map-analyt
 import type { AnalyticsFilterType } from "@/schemas/charts";
 import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
+import { parseCurrencyParam, parseBooleanParam } from "@/lib/globalSettings/params";
 import { normalizeNormalizationOptions } from "@/lib/normalization";
 import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 import { getSiteUrl } from "@/config/env";
@@ -35,9 +36,9 @@ function MapPage() {
     ...mapState.filters,
     ...normalizeNormalizationOptions({
       ...mapState.filters,
-      currency: mapState.filters.currency ?? currency,
+      currency: parseCurrencyParam((search as Record<string, unknown>).currency) ?? mapState.filters.currency ?? currency,
       inflation_adjusted:
-        mapState.filters.inflation_adjusted ?? inflationAdjusted,
+        parseBooleanParam((search as Record<string, unknown>).inflation_adjusted) ?? mapState.filters.inflation_adjusted ?? inflationAdjusted,
     }),
   };
   // Query changes reset the preset. View and viewport changes keep interaction state.
@@ -82,7 +83,7 @@ function MapPage() {
             <DialogHeader>
               <DialogTitle>{t`Map Filters`}</DialogTitle>
             </DialogHeader>
-            <MapFilter presetMode={mapState.preset !== undefined} />
+            <MapFilter presetMode={mapState.preset !== undefined} currencyOverride={filter.currency} />
           </DialogContent>
         </Dialog>
       </div>

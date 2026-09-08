@@ -34,9 +34,10 @@ import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { getEconomicPrefixLabel, getFunctionalPrefixLabel } from "@/lib/chart-filter-utils";
 import { normalizeNormalizationOptions } from "@/lib/normalization";
 import { getNormalizationUnit } from "@/lib/utils";
+import type { Currency } from "@/schemas/charts";
 import { NormalizationModeSelect } from "@/components/normalization/normalization-mode-select";
 
-export function MapFilter({ presetMode = false }: Readonly<{ presetMode?: boolean }>) {
+export function MapFilter({ presetMode = false, currencyOverride }: Readonly<{ presetMode?: boolean; currencyOverride?: Currency }>) {
     const {
         mapState,
         clearAllFilters,
@@ -176,8 +177,8 @@ export function MapFilter({ presetMode = false }: Readonly<{ presetMode?: boolea
 
     const selectedAccountCategoryOption = useMemo(() => mapState.filters.account_category, [mapState.filters.account_category]);
     const amountUnit = useMemo(
-        () => getNormalizationUnit(normalizeNormalizationOptions({ normalization: mapState.filters.normalization, currency: mapState.filters.currency ?? userCurrency })),
-        [mapState.filters.normalization, mapState.filters.currency, userCurrency]
+        () => getNormalizationUnit(normalizeNormalizationOptions({ normalization: mapState.filters.normalization, currency: currencyOverride ?? mapState.filters.currency ?? userCurrency })),
+        [mapState.filters.normalization, mapState.filters.currency, userCurrency, currencyOverride]
     );
     const reportTypeLabel = useMemo(() => {
         if (!mapState.filters.report_type) {
