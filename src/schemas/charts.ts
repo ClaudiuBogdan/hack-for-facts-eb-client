@@ -474,6 +474,7 @@ export const AnalyticsSeriesPointSchema = z.object({
 export type AnalyticsSeriesPoint = z.infer<typeof AnalyticsSeriesPointSchema>;
 
 export const AnalyticsSeriesSchema = z.object({
+  missingPeriods: z.array(z.string()).nullish().describe("Native reference coverage gaps; values for these periods are unavailable."),
   seriesId: z.string().describe('ID of the series this data belongs to. Matches the series.id from the chart configuration. Used to associate fetched data with its series definition. Required for multi-series charts to map data correctly.'),
   xAxis: AxisSchema.describe('Metadata about the x-axis (typically time). Defines the data type, name, and unit for x values. Usually type=STRING/DATE, name="Period"/"Year", unit="" or "Year". Consistent across all points in this series.'),
   yAxis: AxisSchema.describe('Metadata about the y-axis (measured values). Defines the data type, name, and unit for y values. Usually type=FLOAT/INTEGER, name="Amount", unit="RON" or "RON/capita". Reflects normalization applied to data.'),

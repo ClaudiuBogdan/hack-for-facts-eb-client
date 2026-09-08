@@ -916,3 +916,37 @@ describe('strict INS calculation dependencies', () => {
   })
 
 })
+
+describe('native coverage in calculations', () => {
+  it('propagates an interior gap through nested expressions and calculated descendants', () => {
+    const series = [createDataSeries('a'),
+      createCalculationSeries('b', { op: 'sum', args: ['a', { op: 'multiply', args: ['a', 2] }] }),
+      createCalculationSeries('c', { op: 'subtract', args: ['b', 1] })]
+    const a = { ...createAnalyticsSeries('a', [{ x: '2022', y: 0 }, { x: '2024', y: -2 }]), missingPeriods: ['2023'] }
+    const result = calculateAllSeriesData(series, new Map([['a', a]])).dataSeriesMap
+    expect(result.get('b')?.data).toEqual([{ x: '2022', y: 0 }, { x: '2024', y: -6 }])
+    expect(result.get('c')?.data).toEqual([{ x: '2022', y: -1 }, { x: '2024', y: -7 }])
+    expect(result.get('c')?.missingPeriods).toEqual(['2023'])
+  })
+  it('preserves all-gap calculated descendants rather than recreating zero', () => {
+    const series = [createDataSeries('a'), createCalculationSeries('b', { op: 'sum', args: ['a', 1] }), createCalculationSeries('c', { op: 'sum', args: ['b', 2] })]
+    const result = calculateAllSeriesData(series, new Map([['a', { ...createAnalyticsSeries('a', []), missingPeriods: ['2023'] }]])).dataSeriesMap
+    expect(result.get('c')?.data).toEqual([])
+    expect(result.get('c')?.missingPeriods).toEqual(['2023'])
+  })
+  it('marks native division by zero unavailable to downstream arithmetic', () => {
+    const series = [createDataSeries('a'), createCalculationSeries('b', { op: 'divide', args: [1, 'a'] }), createCalculationSeries('c', { op: 'sum', args: ['b', 2] })]
+    const result = calculateAllSeriesData(series, new Map([['a', { ...createAnalyticsSeries('a', [{ x: '2023', y: 0 }]), missingPeriods: [] }]])).dataSeriesMap
+    expect(result.get('c')?.data).toEqual([])
+    expect(result.get('c')?.missingPeriods).toEqual(['2023'])
+  })
+})
+
+it('does not fill native gaps when INS and a calculated descendant share the expression', () => {
+  const ins = { ...createDataSeries('ins'), type: 'ins-series', datasetCode: 'TEST', aggregation: 'sum' } as Series
+  const series = [createDataSeries('a'), ins, createCalculationSeries('b', { op: 'sum', args: ['a', 'ins'] }), createCalculationSeries('c', { op: 'sum', args: ['b', 1] })]
+  const map = new Map([['a', { ...createAnalyticsSeries('a', [{ x: '2024', y: 3 }]), missingPeriods: ['2023'] }], ['ins', createAnalyticsSeries('ins', [{ x: '2023', y: 10 }, { x: '2024', y: 20 }])]])
+  const result = calculateAllSeriesData(series, map).dataSeriesMap
+  expect(result.get('c')?.data).toEqual([{ x: '2024', y: 24 }])
+  expect(result.get('c')?.missingPeriods).toEqual(['2023'])
+})

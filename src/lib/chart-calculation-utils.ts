@@ -6,12 +6,14 @@ import { parseMonth, parseQuarter } from '@/lib/chart-data-utils';
 type CalculationXAxisUnit = 'year' | 'quarter' | 'month';
 
 interface EvaluatedOperand {
+  missingPeriods?: readonly string[];
   points: { x: string; y: number }[];
   isConstant: boolean;
   constantValue?: number;
 }
 
 interface CalculationResult {
+  missingPeriods?: string[];
   constantValue?: number;
   points: { x: string; y: number }[];
   warnings: DataValidationError[];
@@ -172,6 +174,7 @@ export function evaluateCalculation(
       if (data) {
         operandResults.push({
           points: data.data,
+          ...(data.missingPeriods == null ? {} : { missingPeriods: data.missingPeriods }),
           isConstant: false,
         });
       } else {
@@ -183,6 +186,7 @@ export function evaluateCalculation(
           const result = evaluateCalculation(series.calculation, seriesData, allSeries, series.id, xAxisUnit);
           operandResults.push({
             points: result.points,
+            ...(result.missingPeriods === undefined ? {} : { missingPeriods: result.missingPeriods }),
             isConstant: false,
           });
           warnings.push(...result.warnings);
@@ -200,7 +204,7 @@ export function evaluateCalculation(
       if (result.unavailable) return result;
       operandResults.push(result.constantValue !== undefined
         ? { points: [], isConstant: true, constantValue: result.constantValue }
-        : { points: result.points, isConstant: false });
+        : { points: result.points, isConstant: false, ...(result.missingPeriods === undefined ? {} : { missingPeriods: result.missingPeriods }) });
 
       warnings.push(...result.warnings);
     }
@@ -226,8 +230,10 @@ function performOperation(
     return { points: [], warnings: [] };
   }
 
+  const hasNativeCoverage = operands.some(operand => operand.missingPeriods !== undefined);
+  const missing = new Set(operands.flatMap(operand => operand.missingPeriods ?? []));
   // Get all unique x labels across non-constant operands.
-  const allXLabels = new Set<string>();
+  const allXLabels = new Set<string>(missing);
   for (const operand of operands) {
     if (operand.isConstant) continue;
     for (const point of operand.points) {
@@ -273,6 +279,7 @@ function performOperation(
   const warnings: DataValidationError[] = [];
 
   for (const label of sortedLabels) {
+    if (missing.has(label)) continue;
     if (requireCompleteOperands && operands.some((_, index) => !Number.isFinite(getOperandValue(index, label)))) return unavailableInsCalculation(seriesIdForWarnings);
     let value: number | null = null;
 
@@ -358,13 +365,17 @@ function performOperation(
     }
 
     if (requireCompleteOperands && (value === null || !Number.isFinite(value))) return unavailableInsCalculation(seriesIdForWarnings);
+    if (hasNativeCoverage && (value === null || !Number.isFinite(value))) {
+      missing.add(label);
+      continue;
+    }
     if (value !== null) {
       result.push({ x: label, y: value });
     }
   }
 
   if (requireCompleteOperands && hasOnlyConstantOperands) return { points: [], warnings, constantValue: result[0]?.y };
-  return { points: result, warnings };
+  return { points: result, warnings, ...(hasNativeCoverage ? { missingPeriods: [...missing] } : {}) };
 }
 
 // ============================================================================
@@ -487,7 +498,7 @@ export function calculateAllSeriesData(
         continue;
       }
 
-      const { points, warnings: calcWarnings, unavailable } = evaluateCalculation(
+      const { points, warnings: calcWarnings, unavailable, missingPeriods } = evaluateCalculation(
         s.calculation,
         dataSeriesMap,
         series,
@@ -505,6 +516,7 @@ export function calculateAllSeriesData(
         xAxis: { name: 'Period', type: 'STRING', unit: xAxisResolution.xAxisUnit },
         yAxis: { name: 'Amount', type: 'FLOAT', unit: s.unit || '' },
         data: points,
+        ...(missingPeriods === undefined ? {} : { missingPeriods }),
       });
     }
   }

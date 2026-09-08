@@ -372,6 +372,13 @@ describe('ChallengeEntityCategoryEvolution', () => {
     })
   })
 
+  it('explains missing reference periods even when category evolution has no points', () => {
+    useChartDataMock.mockReturnValue({ dataSeriesMap: new Map([['series-1', { data: [], missingPeriods: ['2023'] }]]), isLoadingData: false, dataError: null })
+    convertToTimeSeriesDataMock.mockReturnValue({ data: [], unitMap: new Map() })
+    renderCategoryEvolution()
+    expect(screen.getByRole('status')).toHaveTextContent('Some periods are unavailable')
+  })
+
   it('builds a clean top-5 expense functional chart and chart-page link by default', () => {
     renderCategoryEvolution()
 

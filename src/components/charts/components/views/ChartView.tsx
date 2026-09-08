@@ -1,3 +1,4 @@
+import { ChartCoverageNotice } from '@/components/charts/components/chart-coverage-notice';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useChartStore } from "@/components/charts/hooks/useChartStore";
@@ -75,6 +76,7 @@ export function ChartView() {
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 space-y-6">
       <ChartViewHeader chart={chart} onConfigure={goToConfig} />
+      {!isLoadingData && <ChartCoverageNotice dataSeriesMap={dataSeriesMap} />}
 
       {!isLoadingData && combinedValidation && (!combinedValidation.isValid || combinedValidation.warnings.length > 0) && (
         <ChartDataError validationResult={combinedValidation} />

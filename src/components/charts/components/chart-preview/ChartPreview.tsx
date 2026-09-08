@@ -1,3 +1,4 @@
+import { ChartCoverageNotice } from '@/components/charts/components/chart-coverage-notice';
 import { useMemo } from "react";
 import { useInView } from "react-intersection-observer";
 import { produce } from "immer";
@@ -58,6 +59,7 @@ export function ChartPreview({ chart, className, height, onClick, customizeChart
 
     return (
         <div ref={ref} className={cn("w-full", className)} onClick={onClick}>
+            {!isLoadingData && <ChartCoverageNotice dataSeriesMap={dataSeriesMap} />}
             {!inView ? (
                 <div style={height ? { height } : undefined} />
             ) : isLoadingData || !data.dataMap ? (

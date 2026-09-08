@@ -29,6 +29,7 @@ it('sends the complete execution input to the native endpoint, preserving explic
   const init = fetchMock.mock.calls[0]?.[1] as RequestInit
   expect(JSON.parse(String(init.body)).variables).toEqual({ inputs: [{ ...input, filter: prepareFilterForServer(input.filter) }] })
   expect(JSON.parse(String(init.body)).variables.inputs[0].filter.is_territorial_executive).toBe(false)
+  expect(JSON.parse(String(init.body)).query).toContain('missingPeriods')
   expect(getAuthToken).not.toHaveBeenCalled()
 })
 
@@ -38,4 +39,5 @@ it('keeps the not-yet-migrated static root on its separate transport', async () 
   vi.stubGlobal('fetch', fetchMock)
   await getStaticChartAnalytics(['population'])
   expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/graphql', expect.anything())
+  expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)).query).not.toContain('missingPeriods')
 })

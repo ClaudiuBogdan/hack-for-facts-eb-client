@@ -1694,7 +1694,7 @@ msgstr "După:"
 msgid "Aggregate an existing UAT-level series into the selected group workspace."
 msgstr "Agregă o serie existentă la nivel de UAT în spațiul de lucru de grup selectat."
 
-#: src/components/filters/MapFilter.tsx:187
+#: src/components/filters/MapFilter.tsx:188
 #: src/components/filters/report-type-filter/index.tsx:13
 msgid "Aggregated Budget Execution at Main Ordering Level"
 msgstr "Executie bugetara agregata la nivel de ordonator principal"
@@ -2001,7 +2001,7 @@ msgstr "Sumă pe cap de locuitor"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:972
 #: src/components/filters/EntityAnalyticsFilter.tsx:646
-#: src/components/filters/MapFilter.tsx:417
+#: src/components/filters/MapFilter.tsx:418
 msgid "Amount Range"
 msgstr "Interval sumă"
 
@@ -3014,8 +3014,8 @@ msgstr "Sector bugetar"
 #: src/components/entities/EntityReportCard.tsx:139
 #: src/components/filters/EntityAnalyticsFilter.tsx:594
 #: src/components/filters/EntityAnalyticsFilter.tsx:791
-#: src/components/filters/MapFilter.tsx:379
-#: src/components/filters/MapFilter.tsx:571
+#: src/components/filters/MapFilter.tsx:380
+#: src/components/filters/MapFilter.tsx:572
 msgid "Budget Sector"
 msgstr "Sector bugetar"
 
@@ -3887,7 +3887,7 @@ msgstr "Modificările se aplică tuturor hărților și instantaneelor care îl 
 msgid "Chapter"
 msgstr "Capitol"
 
-#: src/components/filters/MapFilter.tsx:221
+#: src/components/filters/MapFilter.tsx:222
 msgid "Chart"
 msgstr "Grafic"
 
@@ -4226,7 +4226,7 @@ msgstr "Șterge {label}"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:703
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1034
 #: src/components/filters/EntityAnalyticsFilter.tsx:697
-#: src/components/filters/MapFilter.tsx:467
+#: src/components/filters/MapFilter.tsx:468
 #: src/components/ui/multi-select.tsx:118
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:282
 #: src/features/private-companies/components/search/company-active-filters.tsx:76
@@ -4267,7 +4267,7 @@ msgid "Clear filters"
 msgstr "Șterge filtrele"
 
 #. placeholder {0}: totalOptionalFilters + totalExcludeFilters
-#: src/components/filters/MapFilter.tsx:203
+#: src/components/filters/MapFilter.tsx:204
 msgid "Clear filters ({0})"
 msgstr "Șterge filtrele ({0})"
 
@@ -5343,8 +5343,8 @@ msgstr "Nu s-a putut sincroniza cu serverul. Progresul tău este salvat local."
 msgid "Count"
 msgstr "Numără"
 
-#: src/components/filters/MapFilter.tsx:318
-#: src/components/filters/MapFilter.tsx:509
+#: src/components/filters/MapFilter.tsx:319
+#: src/components/filters/MapFilter.tsx:510
 msgid "Counties"
 msgstr "Județe"
 
@@ -5370,7 +5370,7 @@ msgstr "Numărătorile descriu înregistrările care corespund acestor filtre, n
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:83
 #: src/components/filters/EntityAnalyticsFilter.tsx:540
 #: src/components/filters/EntityAnalyticsFilter.tsx:739
-#: src/components/filters/MapFilter.tsx:237
+#: src/components/filters/MapFilter.tsx:238
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1088
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:94
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:119
@@ -5981,7 +5981,7 @@ msgstr "Surse de date"
 msgid "Data ultimei etape"
 msgstr ""
 
-#: src/components/filters/MapFilter.tsx:212
+#: src/components/filters/MapFilter.tsx:213
 msgid "Data View"
 msgstr "Vizualizare date"
 
@@ -6636,7 +6636,7 @@ msgstr "Nivel de detaliu"
 msgid "Detailed"
 msgstr "Detaliat"
 
-#: src/components/filters/MapFilter.tsx:190
+#: src/components/filters/MapFilter.tsx:191
 #: src/components/filters/report-type-filter/index.tsx:14
 msgid "Detailed Budget Execution"
 msgstr "Executie bugetara detaliata"
@@ -7276,13 +7276,13 @@ msgstr "Clasificație economică"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1128
 #: src/components/filters/EntityAnalyticsFilter.tsx:577
 #: src/components/filters/EntityAnalyticsFilter.tsx:774
-#: src/components/filters/MapFilter.tsx:342
-#: src/components/filters/MapFilter.tsx:535
+#: src/components/filters/MapFilter.tsx:343
+#: src/components/filters/MapFilter.tsx:536
 msgid "Economic Classification"
 msgstr "Clasificație economică"
 
-#: src/components/filters/MapFilter.tsx:349
-#: src/components/filters/MapFilter.tsx:543
+#: src/components/filters/MapFilter.tsx:350
+#: src/components/filters/MapFilter.tsx:544
 msgid "Economic Classification Prefix"
 msgstr "Prefix clasificație economică"
 
@@ -7636,8 +7636,8 @@ msgstr "Introdu numărul sub care ONG-ul este înregistrat în Registrul Asocia�
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1047
 #: src/components/filters/EntityAnalyticsFilter.tsx:510
 #: src/components/filters/EntityAnalyticsFilter.tsx:709
-#: src/components/filters/MapFilter.tsx:288
-#: src/components/filters/MapFilter.tsx:479
+#: src/components/filters/MapFilter.tsx:289
+#: src/components/filters/MapFilter.tsx:480
 #: src/routes/index.tsx:88
 msgid "Entities"
 msgstr "Entități"
@@ -7687,8 +7687,8 @@ msgstr "Tip entitate"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1090
 #: src/components/filters/EntityAnalyticsFilter.tsx:551
 #: src/components/filters/EntityAnalyticsFilter.tsx:748
-#: src/components/filters/MapFilter.tsx:363
-#: src/components/filters/MapFilter.tsx:555
+#: src/components/filters/MapFilter.tsx:364
+#: src/components/filters/MapFilter.tsx:556
 msgid "Entity Type"
 msgstr "Tip entitate"
 
@@ -7946,24 +7946,24 @@ msgstr "Excelent"
 #: src/components/filters/EntityAnalyticsFilter.tsx:791
 #: src/components/filters/EntityAnalyticsFilter.tsx:799
 #: src/components/filters/EntityAnalyticsFilter.tsx:807
-#: src/components/filters/MapFilter.tsx:479
-#: src/components/filters/MapFilter.tsx:487
-#: src/components/filters/MapFilter.tsx:501
-#: src/components/filters/MapFilter.tsx:509
-#: src/components/filters/MapFilter.tsx:518
-#: src/components/filters/MapFilter.tsx:526
-#: src/components/filters/MapFilter.tsx:535
-#: src/components/filters/MapFilter.tsx:543
-#: src/components/filters/MapFilter.tsx:555
-#: src/components/filters/MapFilter.tsx:563
-#: src/components/filters/MapFilter.tsx:571
-#: src/components/filters/MapFilter.tsx:579
+#: src/components/filters/MapFilter.tsx:480
+#: src/components/filters/MapFilter.tsx:488
+#: src/components/filters/MapFilter.tsx:502
+#: src/components/filters/MapFilter.tsx:510
+#: src/components/filters/MapFilter.tsx:519
+#: src/components/filters/MapFilter.tsx:527
+#: src/components/filters/MapFilter.tsx:536
+#: src/components/filters/MapFilter.tsx:544
+#: src/components/filters/MapFilter.tsx:556
+#: src/components/filters/MapFilter.tsx:564
+#: src/components/filters/MapFilter.tsx:572
+#: src/components/filters/MapFilter.tsx:580
 msgid "Exclude"
 msgstr "Exclude"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1014
 #: src/components/filters/EntityAnalyticsFilter.tsx:677
-#: src/components/filters/MapFilter.tsx:447
+#: src/components/filters/MapFilter.tsx:448
 msgid "Exclude Filters"
 msgstr "Filtre de excludere"
 
@@ -8081,7 +8081,7 @@ msgstr "Expandează panoul filtrelor de valori"
 #: src/components/entities/EntityFinancialTrends.tsx:411
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:12
 #: src/components/filters/EntityAnalyticsFilter.tsx:479
-#: src/components/filters/MapFilter.tsx:253
+#: src/components/filters/MapFilter.tsx:254
 #: src/components/maps/utils.ts:38
 #: src/features/advanced-map-analytics/standalone-map-state.ts:67
 #: src/hooks/filters/useFilterLabels.tsx:279
@@ -8774,7 +8774,7 @@ msgstr "Informații filtre"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1040
 #: src/components/filters/EntityAnalyticsFilter.tsx:703
-#: src/components/filters/MapFilter.tsx:473
+#: src/components/filters/MapFilter.tsx:474
 msgid "Filters marked as exclude will remove data matching these criteria from the results."
 msgstr "Filtrele marcate ca excludere vor elimina din rezultate datele care corespund acestor criterii."
 
@@ -9247,13 +9247,13 @@ msgstr "Clasificație funcțională"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1109
 #: src/components/filters/EntityAnalyticsFilter.tsx:560
 #: src/components/filters/EntityAnalyticsFilter.tsx:757
-#: src/components/filters/MapFilter.tsx:327
-#: src/components/filters/MapFilter.tsx:518
+#: src/components/filters/MapFilter.tsx:328
+#: src/components/filters/MapFilter.tsx:519
 msgid "Functional Classification"
 msgstr "Clasificație funcțională"
 
-#: src/components/filters/MapFilter.tsx:334
-#: src/components/filters/MapFilter.tsx:526
+#: src/components/filters/MapFilter.tsx:335
+#: src/components/filters/MapFilter.tsx:527
 msgid "Functional Classification Prefix"
 msgstr "Prefix clasificație funcțională"
 
@@ -9280,8 +9280,8 @@ msgstr "Sursă de finanțare"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1156
 #: src/components/filters/EntityAnalyticsFilter.tsx:602
 #: src/components/filters/EntityAnalyticsFilter.tsx:799
-#: src/components/filters/MapFilter.tsx:387
-#: src/components/filters/MapFilter.tsx:579
+#: src/components/filters/MapFilter.tsx:388
+#: src/components/filters/MapFilter.tsx:580
 msgid "Funding Source"
 msgstr "Sursă de Finanțare"
 
@@ -10344,7 +10344,7 @@ msgstr "Include banii UE (PNRR) și profiturile companiilor de stat. Esențial, 
 #: src/components/entities/EntityFinancialTrends.tsx:397
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:13
 #: src/components/filters/EntityAnalyticsFilter.tsx:480
-#: src/components/filters/MapFilter.tsx:254
+#: src/components/filters/MapFilter.tsx:255
 #: src/components/maps/utils.ts:38
 #: src/features/advanced-map-analytics/standalone-map-state.ts:68
 #: src/hooks/filters/useFilterLabels.tsx:280
@@ -10365,7 +10365,7 @@ msgstr "Impozit pe venit"
 msgid "Income vs Expenses"
 msgstr "Venituri vs. Cheltuieli"
 
-#: src/components/filters/MapFilter.tsx:246
+#: src/components/filters/MapFilter.tsx:247
 msgid "Income/Expenses"
 msgstr "Venituri/Cheltuieli"
 
@@ -10532,7 +10532,7 @@ msgstr "Infrastructură"
 msgid "inhabitant"
 msgstr "locuitor"
 
-#: src/components/filters/MapFilter.tsx:428
+#: src/components/filters/MapFilter.tsx:429
 msgid "inhabitants"
 msgstr "locuitori"
 
@@ -10969,7 +10969,7 @@ msgstr "Este definit"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:954
 #: src/components/filters/EntityAnalyticsFilter.tsx:627
-#: src/components/filters/MapFilter.tsx:407
+#: src/components/filters/MapFilter.tsx:408
 #: src/lib/chart-filter-utils.ts:46
 msgid "Is UAT"
 msgstr "Este UAT"
@@ -11737,7 +11737,7 @@ msgstr "Se încarcă datele analitice..."
 msgid "Loading budget sectors…"
 msgstr "Se încarcă sectoarele bugetare…"
 
-#: src/components/charts/components/views/ChartView.tsx:66
+#: src/components/charts/components/views/ChartView.tsx:67
 msgid "Loading chart configuration..."
 msgstr "Se încarcă configurația graficului..."
 
@@ -11746,7 +11746,7 @@ msgstr "Se încarcă configurația graficului..."
 msgid "Loading chart data..."
 msgstr "Se încarcă datele graficului..."
 
-#: src/features/challenges/components/analysis/budget-item-analytics.tsx:775
+#: src/features/challenges/components/analysis/budget-item-analytics.tsx:777
 msgid "Loading chart data…"
 msgstr "Se încarcă datele graficului…"
 
@@ -12175,8 +12175,8 @@ msgstr "Creditor principal"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1056
 #: src/components/filters/EntityAnalyticsFilter.tsx:518
 #: src/components/filters/EntityAnalyticsFilter.tsx:717
-#: src/components/filters/MapFilter.tsx:296
-#: src/components/filters/MapFilter.tsx:487
+#: src/components/filters/MapFilter.tsx:297
+#: src/components/filters/MapFilter.tsx:488
 msgid "Main Creditor"
 msgstr "Creditor Principal"
 
@@ -12271,7 +12271,7 @@ msgstr "manual"
 msgid "Manual"
 msgstr "Manual"
 
-#: src/components/filters/MapFilter.tsx:219
+#: src/components/filters/MapFilter.tsx:220
 #: src/components/sidebar/nav-main.tsx:45
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1240
@@ -12337,7 +12337,7 @@ msgstr "Editor markdown pentru descrierea hărții"
 msgid "Map detail"
 msgstr "Detalii hartă"
 
-#: src/components/filters/MapFilter.tsx:199
+#: src/components/filters/MapFilter.tsx:200
 #: src/routes/map.lazy.tsx:84
 msgid "Map Filters"
 msgstr "Filtre hartă"
@@ -12406,7 +12406,7 @@ msgstr "Titlul hărții"
 msgid "Map values"
 msgstr "Valori hartă"
 
-#: src/components/filters/MapFilter.tsx:229
+#: src/components/filters/MapFilter.tsx:230
 msgid "Map View"
 msgstr "Vizualizare hartă"
 
@@ -14131,7 +14131,7 @@ msgstr ""
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:110
 #: src/components/charts/components/series-config/SeriesFilter.tsx:743
 #: src/components/filters/EntityAnalyticsFilter.tsx:488
-#: src/components/filters/MapFilter.tsx:265
+#: src/components/filters/MapFilter.tsx:266
 #: src/lib/chart-filter-utils.ts:52
 msgid "Normalization"
 msgstr "Normalizare"
@@ -15956,7 +15956,7 @@ msgstr "Perioade incompatibile"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1207
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1535
 #: src/components/filters/EntityAnalyticsFilter.tsx:500
-#: src/components/filters/MapFilter.tsx:279
+#: src/components/filters/MapFilter.tsx:280
 #: src/components/maps/utils.ts:31
 #: src/components/maps/utils.ts:33
 #: src/features/procurement/components/procurement-filter-sheet.tsx:260
@@ -16208,7 +16208,7 @@ msgstr "Grilă populație: Pornit"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:994
 #: src/components/filters/EntityAnalyticsFilter.tsx:657
-#: src/components/filters/MapFilter.tsx:427
+#: src/components/filters/MapFilter.tsx:428
 msgid "Population Range"
 msgstr "Interval populație"
 
@@ -17669,7 +17669,7 @@ msgstr "Tip Raportare"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:932
 #: src/components/entities/EntityReportCard.tsx:124
 #: src/components/filters/EntityAnalyticsFilter.tsx:618
-#: src/components/filters/MapFilter.tsx:395
+#: src/components/filters/MapFilter.tsx:396
 msgid "Report Type"
 msgstr "Tip Raportare"
 
@@ -17858,7 +17858,7 @@ msgstr ""
 msgid "Retry"
 msgstr "Reîncearcă"
 
-#: src/components/charts/components/views/ChartView.tsx:85
+#: src/components/charts/components/views/ChartView.tsx:87
 msgid "Retry INS data"
 msgstr "Reîncearcă încărcarea datelor INS"
 
@@ -19466,7 +19466,7 @@ msgstr "Afișează valori relative (%)"
 msgid "Show results"
 msgstr "Afișează rezultatele"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:192
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:193
 msgid "Show revenue"
 msgstr "Arată venituri"
 
@@ -19474,7 +19474,7 @@ msgstr "Arată venituri"
 msgid "Show roads"
 msgstr "Afișează drumurile"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:192
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:193
 msgid "Show spending"
 msgstr "Arată cheltuieli"
 
@@ -19482,11 +19482,11 @@ msgstr "Arată cheltuieli"
 msgid "Show Tooltip"
 msgstr "Afișează indiciu"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:147
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:148
 msgid "Show top economic categories"
 msgstr "Arată top categorii economice"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:146
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:147
 msgid "Show top functional categories"
 msgstr "Arată top categorii funcționale"
 
@@ -19713,6 +19713,12 @@ msgstr "Unii indicatori folosesc cea mai recentă perioadă disponibilă deoarec
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:608
 msgid "Some local values are invalid. Closing now will discard unsaved local changes."
 msgstr "Unele valori locale sunt invalide. Închiderea acum va elimina modificările locale nesalvate."
+
+#: src/components/charts/components/chart-coverage-notice.tsx:10
+#: src/components/charts/hooks/useChartData.ts:718
+#: src/lib/chart-data-validation.ts:40
+msgid "Some periods are unavailable. Totals and calculations requiring them are not shown."
+msgstr "Unele perioade nu au date disponibile. Totalurile și calculele care depind de ele nu sunt afișate."
 
 #: src/lib/storage/read-json-from-local-storage.ts:63
 msgid "Some saved local data was corrupted and has been reset."
@@ -20673,7 +20679,7 @@ msgid "Tabelul seriei ({0})"
 msgstr "Tabelul seriei ({0})"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:466
-#: src/components/filters/MapFilter.tsx:220
+#: src/components/filters/MapFilter.tsx:221
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:1241
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3760
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1436
@@ -20695,8 +20701,8 @@ msgstr "Vizualizare tabel"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1099
 #: src/components/filters/EntityAnalyticsFilter.tsx:610
 #: src/components/filters/EntityAnalyticsFilter.tsx:807
-#: src/components/filters/MapFilter.tsx:371
-#: src/components/filters/MapFilter.tsx:563
+#: src/components/filters/MapFilter.tsx:372
+#: src/components/filters/MapFilter.tsx:564
 #: src/lib/chart-filter-utils.ts:51
 msgid "Tags"
 msgstr "Etichete"
@@ -20945,7 +20951,7 @@ msgstr "Adresa de email a asociatiei nu este valida."
 msgid "The budget line, category, or allocation you are contesting…"
 msgstr "Linia bugetară, categoria sau alocarea pe care o contești…"
 
-#: src/lib/chart-calculation-utils.ts:23
+#: src/lib/chart-calculation-utils.ts:25
 msgid "The calculation depends on INS data with missing coverage or an undefined result. Inspect its source series."
 msgstr "Calculul depinde de date INS incomplete sau de un rezultat nedefinit. Verifică seriile sursă."
 
@@ -21055,7 +21061,7 @@ msgstr "Contestația generată necesită identitatea expeditorului."
 msgid "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 msgstr "Guvernul a planificat să cheltuie <0>{0}</0> pe Infrastructură în {selectedYear}."
 
-#: src/components/charts/hooks/useChartData.ts:702
+#: src/components/charts/hooks/useChartData.ts:726
 msgid "The INS aggregate cannot be represented as a finite value."
 msgstr "Valoarea agregată INS nu poate fi reprezentată ca număr finit."
 
@@ -21134,7 +21140,7 @@ msgstr "Pagina pe care o căutați nu există sau a fost mutată."
 msgid "The Pattern"
 msgstr "Tiparul"
 
-#: src/components/filters/MapFilter.tsx:242
+#: src/components/filters/MapFilter.tsx:243
 msgid "The preset defines income, expenses and classifications. Select custom filters to edit them. Amount bounds apply to the final preset result."
 msgstr "Presetul stabilește veniturile, cheltuielile și clasificările. Selectează filtrele personalizate pentru a le modifica. Limitele sumelor se aplică rezultatului final al presetului."
 
@@ -21154,16 +21160,27 @@ msgstr "Realitatea"
 msgid "The reform simplified the tax code but increased the burden on consumption. The \"Essentials\" category now consolidates food, books, and tourism under a single 11% rate."
 msgstr "Reforma a simplificat codul fiscal, dar a crescut povara asupra consumului. Categoria „Esențiale” consolidează acum alimentele, cărțile și turismul sub o singură cotă de 11%."
 
+#: src/components/charts/hooks/useChartData.ts:537
+#: src/components/charts/hooks/useChartData.ts:764
+msgid "The relative comparison cannot be represented as a finite value."
+msgstr "Comparația relativă nu poate fi reprezentată ca o valoare finită."
+
+#: src/components/charts/hooks/useChartData.ts:519
+#: src/components/charts/hooks/useChartData.ts:673
+#: src/components/charts/hooks/useChartData.ts:750
+msgid "The relative comparison has no usable baseline for this period."
+msgstr "Comparația relativă nu are o valoare de referință utilizabilă pentru această perioadă."
+
 #: src/components/charts/hooks/useChartData.ts:523
 #: src/components/charts/hooks/useChartData.ts:740
-msgid "The relative INS comparison cannot be represented as a finite value."
-msgstr "Comparația relativă INS nu poate fi reprezentată ca număr finit."
+#~ msgid "The relative INS comparison cannot be represented as a finite value."
+#~ msgstr "Comparația relativă INS nu poate fi reprezentată ca număr finit."
 
 #: src/components/charts/hooks/useChartData.ts:505
 #: src/components/charts/hooks/useChartData.ts:658
 #: src/components/charts/hooks/useChartData.ts:726
-msgid "The relative INS comparison has no usable baseline for this period."
-msgstr "Comparația relativă INS nu are o valoare de referință utilizabilă pentru această perioadă."
+#~ msgid "The relative INS comparison has no usable baseline for this period."
+#~ msgstr "Comparația relativă INS nu are o valoare de referință utilizabilă pentru această perioadă."
 
 #: src/lib/ins-chart-series-utils.ts:162
 msgid "The saved INS selection is invalid. Edit its period, source coordinates or unit."
@@ -22085,7 +22102,7 @@ msgstr "Introduceți răspunsul..."
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1071
 #: src/components/filters/EntityAnalyticsFilter.tsx:532
 #: src/components/filters/EntityAnalyticsFilter.tsx:731
-#: src/components/filters/MapFilter.tsx:236
+#: src/components/filters/MapFilter.tsx:237
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1087
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:93
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:111
@@ -22131,18 +22148,18 @@ msgstr "Anomalii UAT"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:459
 #: src/components/filters/EntityAnalyticsFilter.tsx:629
-#: src/components/filters/MapFilter.tsx:409
+#: src/components/filters/MapFilter.tsx:410
 msgid "UAT: No"
 msgstr "UAT: Nu"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:458
 #: src/components/filters/EntityAnalyticsFilter.tsx:629
-#: src/components/filters/MapFilter.tsx:409
+#: src/components/filters/MapFilter.tsx:410
 msgid "UAT: Yes"
 msgstr "UAT: Da"
 
-#: src/components/filters/MapFilter.tsx:310
-#: src/components/filters/MapFilter.tsx:501
+#: src/components/filters/MapFilter.tsx:311
+#: src/components/filters/MapFilter.tsx:502
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:1083
 msgid "UATs"
 msgstr "UAT-uri"

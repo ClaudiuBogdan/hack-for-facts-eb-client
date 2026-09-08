@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro';
 import { AnalyticsSeries } from "@/schemas/charts";
 import { createLogger } from "./logger";
 import { getXAxisUnit } from "./chart-data-utils";
@@ -34,6 +35,11 @@ export function validateAnalyticsSeries(seriesMap: Map<string, AnalyticsSeries>)
   const xUnit = getXAxisUnit(seriesMap);
 
   for (const [seriesId, series] of seriesMap.entries()) {
+    if (series.missingPeriods?.length) warnings.push({
+      type: 'missing_data', seriesId,
+      message: t`Some periods are unavailable. Totals and calculations requiring them are not shown.`,
+      value: series.missingPeriods,
+    });
     // Check if series has data
     if (!series.data || series.data.length === 0) {
       warnings.push({

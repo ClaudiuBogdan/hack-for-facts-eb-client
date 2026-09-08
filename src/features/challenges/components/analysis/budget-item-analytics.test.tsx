@@ -755,6 +755,13 @@ describe('BudgetItemAnalytics', () => {
     expect(defaultAnalyticsProps.onPeriodChange).toHaveBeenCalledWith('03')
   })
 
+  it('explains missing reference periods even when the budget item chart has no points', () => {
+    useChartDataMock.mockReturnValue({ dataSeriesMap: new Map([['series-1', { data: [], missingPeriods: ['2023'] }]]), isLoadingData: false, dataError: null })
+    convertToTimeSeriesDataMock.mockReturnValue({ data: [], unitMap: new Map() })
+    render(<BudgetItemAnalytics {...defaultAnalyticsProps} />)
+    expect(screen.getByRole('status')).toHaveTextContent('Some periods are unavailable')
+  })
+
   it('shows the chart loading state without blocking the map section', () => {
     useChartDataMock.mockReturnValue({
       dataSeriesMap: null,

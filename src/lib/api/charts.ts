@@ -14,6 +14,7 @@ export async function getChartAnalytics(inputs: AnalyticsInput[], signal?: Abort
     query GetExecutionLineItemsAnalytics($inputs: [AnalyticsInput!]!) {
       executionAnalytics(inputs: $inputs) {
         seriesId
+        missingPeriods
         xAxis { name type unit }
         yAxis { name type unit }
         data { x y }

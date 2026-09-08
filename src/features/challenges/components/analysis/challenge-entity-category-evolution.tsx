@@ -1,3 +1,4 @@
+import { ChartCoverageNotice } from '@/components/charts/components/chart-coverage-notice';
 import { t } from '@lingui/core/macro'
 import { ChartRenderer } from '@/components/charts/components/chart-renderer/components/ChartRenderer'
 import {
@@ -413,6 +414,7 @@ export function ChallengeEntityCategoryEvolution({
             </p>
           </div>
         </CardHeader>
+        {!isLoadingData && <div className="px-6"><ChartCoverageNotice dataSeriesMap={dataSeriesMap} /></div>}
 
         <CardContent>
           {showsIncomeEconomicMessage ? (

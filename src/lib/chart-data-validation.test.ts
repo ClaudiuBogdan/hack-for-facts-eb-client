@@ -758,3 +758,11 @@ describe('validateSeriesCompleteness', () => {
     expect(result.warnings).toHaveLength(0)
   })
 })
+
+it('preserves and explains all-gap native series before the empty-data check', () => {
+  const series = { ...createValidSeries('native', []), missingPeriods: ['2023'] }
+  const map = createSeriesMap([series])
+  const validation = validateAnalyticsSeries(map)
+  expect(validation.warnings.some(w => w.type === 'missing_data')).toBe(true)
+  expect(sanitizeAnalyticsSeries(map, validation).get('native')?.missingPeriods).toEqual(['2023'])
+})

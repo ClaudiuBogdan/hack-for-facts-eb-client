@@ -1,3 +1,4 @@
+import { ChartCoverageNotice } from '@/components/charts/components/chart-coverage-notice';
 import { isCountyCouncilEntity } from '@/lib/entity-territory'
 import type { EntityDetailsData } from '@/lib/api/entities'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
@@ -770,6 +771,7 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
         </Button>
       </CardHeader>
       <CardContent className="flex-1 px-4 py-4 sm:px-5">
+        {!isLoadingData && <ChartCoverageNotice dataSeriesMap={dataSeriesMap} />}
         {isLoadingData ? (
           <div className="flex min-h-[500px] items-center justify-center rounded-[20px] border border-border/50 bg-muted/[0.12]">
             <LoadingSpinner text={t`Loading chart data…`} />
