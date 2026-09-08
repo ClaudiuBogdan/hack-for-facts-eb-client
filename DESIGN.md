@@ -357,6 +357,14 @@ where every number below was measured rather than chosen.
   about again until it moves. Bound every wait, and where two waits chain — an
   offset clock handing over to a decode wait, say — document the *sum*, because
   the constant nobody reads is the one that lies.
+- **The first rule is about content, and about state JavaScript has to arrive to
+  *undo*.** A decorative `aria-hidden` canvas is not an exception to it but a
+  case it never covered: the element ships in the HTML, nothing is hidden, and
+  there is no state to undo — there are simply no pixels yet. A reader without
+  JavaScript loses atmosphere and not one word. `home-refs.pixel-canvas.tsx` is
+  the precedent. The distinction matters because it is narrow: the moment a
+  canvas carries information, it is content, and content that only exists after
+  hydration is the thing the first rule forbids.
 - **Reduced motion keeps the content and drops the flourish.** Not "animate
   faster". Under `prefers-reduced-motion: reduce` the hook must not arm at all,
   so nothing is ever hidden even for an instant, and the CSS must independently
@@ -434,6 +442,49 @@ the reader has already seen.
   identical layer counts. It *does* become load-bearing under reduced motion,
   where the animation is `none` but JS still writes transforms; removing it there
   dropped 16 composited layers to 11.
+
+### When the population is the cost
+
+Per-element CSS animation is the right default and stops being right somewhere
+around a few hundred elements. Past that the expense is not drawing — it is
+asking the engine to recalculate style and composite that many elements sixty
+times a second, and no amount of staying on compositor properties avoids it.
+
+Measured on the landing's margin field, the same artwork drawn three ways over
+the 2.2s its intro occupies, at 1920×1080:
+
+| Renderer | Elements per side | Intro frames | Over 33ms | SSR HTML |
+| --- | ---: | ---: | ---: | ---: |
+| SVG, 24px module | 494 | 196 | 5 | 281 KB |
+| SVG, 12px module | 1,943 | 66 | 27 | 692 KB |
+| **Canvas, 12px module** | **1** | **230** | **1** | **137 KB** |
+
+An 8px module was built and dropped on the way: 4,309 elements a side managed
+four frames in 2.2 seconds. Note the shape of it — the canvas at 12px beats the
+*24px* SVG it replaced while drawing four times the cells, and the SSR payload
+falls because thousands of elements with per-cell inline custom properties were
+most of the document.
+
+The move costs two things, and both are worth naming before making it. The field
+is no longer painted server-side, which is only acceptable for decoration (see
+the fourth rule above). And a cell stops being an element, so it cannot be
+inspected or targeted by a stylesheet — anything to be verified about it has to
+be verified in pixels.
+
+Three disciplines make the swap safe:
+
+- **Transcribe, do not reinvent.** Keyframe stops, easing curves, per-cell delays
+  and durations move across unchanged; every constant the two could disagree
+  about is *imported from one module*, not copied. Remember that CSS applies its
+  timing function between each pair of keyframes, not once across the run — an
+  eased-over-the-whole-run port looks close and is wrong.
+- **Prove it by diff, not by eye.** Screenshot the same crop from both renderers
+  at rest and difference them. Ours came out at one level on one pixel in
+  239,400; anything more is a wrong fill, wrong alpha compositing or a half-pixel
+  offset, none of which the eye catches and all of which a diff does.
+- **Stop the loop.** A rAF loop that runs while nothing moves is the idleness
+  cost below, with a main-thread bill on top. End it when the last cell settles
+  and verify by CPU profile that the draw function records zero samples at rest.
 
 ### Ambient motion must be able to stop
 
@@ -805,6 +856,22 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 ## Decision Log
 
 Append-only. Newest first. Each entry: date · decision · why.
+
+- **2026-09-08 — A dense decorative field is drawn on a canvas, not as elements.**
+  Past a few hundred animated elements the cost is style recalculation and
+  compositing, not drawing, and it cannot be optimised away while each cell is an
+  element. The landing's margin field went from 1,943 SVG rectangles a side to
+  one canvas: 66 intro frames became 230, and the page's SSR HTML fell from 692KB
+  to 137KB. Contract under [When the population is the cost](#when-the-population-is-the-cost).
+  *Why:* the finer 12px module was the design everyone wanted and was
+  unshippable as elements — an 8px version managed four frames in 2.2 seconds —
+  so the choice was to abandon the look or change the renderer. Recorded with the
+  three disciplines that make the swap safe, because the failure mode is a port
+  that looks right: CSS eases *between* keyframe pairs rather than across the
+  run, so a plausible transcription is subtly wrong, and only a pixel diff of the
+  two renderers at rest catches it. Also recorded: this is the one case where
+  content is legitimately absent from the server HTML, and it holds only because
+  the field is `aria-hidden` atmosphere.
 
 - **2026-09-07 — Illustration ships as a cut-out through `<picture>`, AVIF ahead
   of WebP, encoded from the original art.** Same crop and identical pixel
