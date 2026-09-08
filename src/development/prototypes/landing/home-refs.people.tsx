@@ -1,10 +1,11 @@
-import { ANGELS, FOUNDER } from './about.people'
+import { ANGELS, FOUNDER, type Person } from './about.people'
 import {
   ContributorGrid,
   PendingPortrait,
   ReadMoreLink,
   SocialRow,
 } from './about.parts'
+import { cn } from '@/lib/utils'
 import { GroupPicture, PICTURE_ATTR } from './home-refs.image-reveal'
 import { MonoLabel } from './home-refs.mono-label'
 
@@ -27,6 +28,40 @@ import { MonoLabel } from './home-refs.mono-label'
  * than the one with commits on it. All three share the band; the third is under
  * a rule rather than under a number of its own.
  */
+/**
+ * A portrait that arrives the way the page's other illustrations do.
+ *
+ * `home-refs.image-reveal.tsx`, round six — rather than the plain block reveal,
+ * because it is the same kind of object: a cut-out on transparency at 4:5, the
+ * crop the art was made at, so `contain` letterboxes nothing. `.tpz-pic` is
+ * absolute, so the cell has to hold the box itself.
+ *
+ * Anyone without art falls back to the drawn silhouette, which has no arrival
+ * of its own — there is nothing to wait for.
+ */
+function RevealPortrait({
+  person,
+  className,
+}: {
+  readonly person: Person
+  readonly className?: string
+}) {
+  if (person.portrait === undefined) return <PendingPortrait className={className} />
+
+  return (
+    <div {...{ [PICTURE_ATTR]: '' }} className={cn('relative aspect-4/5 w-full', className)}>
+      <GroupPicture
+        src={person.portrait.webp}
+        avif={person.portrait.avif ?? person.portrait.webp}
+        fit="contain"
+        position="50% 50%"
+        width={person.portrait.width}
+        height={person.portrait.height}
+      />
+    </div>
+  )
+}
+
 export function PeopleBand() {
   return (
     <>
@@ -52,27 +87,9 @@ export function PeopleBand() {
         </h2>
 
         <div data-reveal className="mt-8">
-          {FOUNDER.portrait === undefined ? null : (
-            /* The art arrives the way the page's other three illustrations do —
-               `home-refs.image-reveal.tsx`, round six — rather than on the plain
-               block reveal. It is the same kind of object: a cut-out on
-               transparency, at 4:5, which is the crop the art was made at, so
-               `contain` letterboxes nothing. `.tpz-pic` is absolute, so the cell
-               has to hold the box itself.
-
-               Capped at 380 rather than left to fill the 5/12 column: the
-               band got tighter by losing dead space, not by growing the art. */
-            <div {...{ [PICTURE_ATTR]: '' }} className="relative aspect-4/5 w-full max-w-[380px]">
-              <GroupPicture
-                src={FOUNDER.portrait.webp}
-                avif={FOUNDER.portrait.avif ?? FOUNDER.portrait.webp}
-                fit="contain"
-                position="50% 50%"
-                width={FOUNDER.portrait.width}
-                height={FOUNDER.portrait.height}
-              />
-            </div>
-          )}
+          {/* Capped at 380 rather than left to fill the 5/12 column: the band
+              got tighter by losing dead space, not by growing the art. */}
+          <RevealPortrait person={FOUNDER} className="max-w-[380px]" />
           <h3 className="mt-5 text-lg font-semibold tracking-tight text-foreground">
             {FOUNDER.name}
           </h3>
@@ -115,7 +132,7 @@ export function PeopleBand() {
             /* `flex-col` + `mt-auto` on the links: a role that wraps to two
                lines must not push one cell's icons below its neighbours'. */
             <li key={angel.id} className="flex h-full flex-col">
-              <PendingPortrait className="max-w-[140px]" />
+              <RevealPortrait person={angel} className="max-w-[140px]" />
               <p className="mt-3 text-sm font-medium leading-tight text-foreground">
                 {angel.name}
               </p>

@@ -3,7 +3,7 @@ import {
   ContributorGrid,
   Frame,
   PROTOTYPE_MARKER,
-  PendingPortrait,
+  PersonPortrait,
   PortraitPicture,
   ReadMoreLink,
   SocialRow,
@@ -71,7 +71,7 @@ export function AboutStage() {
           <ul className="mt-8 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
             {ANGELS.map((angel) => (
               <li key={angel.id} className="flex items-start gap-4 border-t pt-5">
-                <PendingPortrait className="w-16 shrink-0" />
+                <PersonPortrait person={angel} className="w-16 shrink-0" />
                 <div className="min-w-0">
                   <p className="text-sm font-medium leading-tight text-foreground">{angel.name}</p>
                   <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">

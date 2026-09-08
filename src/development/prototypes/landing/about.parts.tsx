@@ -188,6 +188,27 @@ export function BandHead({ title, lead }: { readonly title: ReactNode; readonly 
 }
 
 /**
+ * Whichever picture a person has.
+ *
+ * Art if there is any — which today is the founder's collage standing in for
+ * every angel too, so the band can be judged at the weight the real pictures
+ * will carry — and the drawn silhouette if there is not.
+ */
+export function PersonPortrait({
+  person,
+  className,
+}: {
+  readonly person: Person
+  readonly className?: string
+}) {
+  return person.portrait === undefined ? (
+    <PendingPortrait className={className} />
+  ) : (
+    <PortraitPicture portrait={person.portrait} className={className} />
+  )
+}
+
+/**
  * The round pending avatar.
  *
  * A separate drawing from `PendingPortrait` rather than that one cropped: the

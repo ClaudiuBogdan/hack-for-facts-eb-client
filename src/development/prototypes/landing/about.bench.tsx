@@ -4,7 +4,7 @@ import {
   ContributorGrid,
   Frame,
   PROTOTYPE_MARKER,
-  PendingPortrait,
+  PersonPortrait,
   PortraitPicture,
   ReadMoreLink,
   SocialRow,
@@ -59,7 +59,7 @@ export function AboutBench() {
             <li key={angel.id} className="flex h-full flex-col">
               {/* The angels' slots are narrower, so their art is smaller by the
                   grid rather than by a second size being specified anywhere. */}
-              <PendingPortrait />
+              <PersonPortrait person={angel} />
               <h3 className="mt-4 text-base font-semibold leading-tight tracking-tight text-foreground">
                 {angel.name}
               </h3>

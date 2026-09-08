@@ -3,7 +3,7 @@ import {
   ContributorGrid,
   Frame,
   PROTOTYPE_MARKER,
-  PendingPortrait,
+  PersonPortrait,
   PortraitPicture,
   SocialRow,
 } from './about.parts'
@@ -82,7 +82,7 @@ export function AboutPage() {
           <ul className="mt-10 grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {ANGELS.map((angel) => (
               <li key={angel.id}>
-                <PendingPortrait className="max-w-[160px]" />
+                <PersonPortrait person={angel} className="max-w-[160px]" />
                 <h3 className="mt-4 text-base font-semibold tracking-tight text-foreground">
                   {angel.name}
                 </h3>

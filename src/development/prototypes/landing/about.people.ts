@@ -53,18 +53,29 @@ export type Person = {
  */
 export const PORTRAIT_RATIO = '4 / 5'
 
+/**
+ * The one piece of finished art there is.
+ *
+ * It is the founder's, and until each angel has their own collage it stands in
+ * for theirs as well — the same face four times over, which is obviously wrong
+ * and is the point: it shows the band at the weight the real pictures will
+ * carry, which the drawn silhouette never could. `PendingPortrait` is still
+ * there for anyone without even a stand-in.
+ */
+const PLACEHOLDER_PORTRAIT: Portrait = {
+  webp: claudiuWebp,
+  avif: claudiuAvif,
+  width: 760,
+  height: 950,
+}
+
 export const FOUNDER: Person = {
   id: 'claudiu',
   name: 'Claudiu Constantin Bogdan',
   role: 'Fondator · scrie platforma',
   blurb:
     'Datele despre banii publici există deja — dar în zeci de portaluri care nu vorbesc între ele. Transparenta le pune la un loc și spune, de fiecare dată, de unde vine cifra.',
-  portrait: {
-    webp: claudiuWebp,
-    avif: claudiuAvif,
-    width: 760,
-    height: 950,
-  },
+  portrait: PLACEHOLDER_PORTRAIT,
   links: {
     linkedin: 'https://www.linkedin.com/in/claudiuconstantinbogdan/',
     /* Asked for, not supplied yet — `SocialRow` renders the glyph in the
@@ -84,6 +95,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Nume Prenume',
     role: 'A deschis ușile',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    portrait: PLACEHOLDER_PORTRAIT,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
@@ -92,6 +104,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Prenume Nume',
     role: 'A citit fiecare cifră',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    portrait: PLACEHOLDER_PORTRAIT,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
@@ -100,6 +113,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Nume de Familie',
     role: 'A ținut proiectul în viață',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    portrait: PLACEHOLDER_PORTRAIT,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
@@ -108,6 +122,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Al Patrulea Nume',
     role: 'A dus proiectul mai departe',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    portrait: PLACEHOLDER_PORTRAIT,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
