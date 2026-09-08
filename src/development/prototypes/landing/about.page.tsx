@@ -5,7 +5,6 @@ import {
   PROTOTYPE_MARKER,
   PendingPortrait,
   PortraitPicture,
-  ProvisionalNotice,
   SocialRow,
 } from './about.parts'
 import { MonoLabel } from './home-refs.mono-label'
@@ -26,7 +25,6 @@ export function AboutPage() {
     <div data-dev-marker={PROTOTYPE_MARKER} className="bg-background">
       <section className="border-b">
         <Frame className="py-14 sm:py-20">
-          <ProvisionalNotice />
           <MonoLabel className="block text-primary">Despre</MonoLabel>
           <h1 className="mt-3 max-w-[20ch] text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
             Banii publici sunt publici

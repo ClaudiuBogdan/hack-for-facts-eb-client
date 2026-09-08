@@ -31,25 +31,6 @@ export function Frame({
   )
 }
 
-/**
- * `DESIGN.md` §Mock-First Contract: stand-in content is never presented as
- * served truth. Everything below the founder is placeholder, so every variant
- * says so once, at the top, in the reader's line of sight rather than in a
- * tooltip.
- */
-export function ProvisionalNotice() {
-  return (
-    <p className="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 border border-dashed px-3 py-2">
-      <MonoLabel className="text-primary">Conținut provizoriu</MonoLabel>
-      <span className="text-xs leading-relaxed text-muted-foreground">
-        Reale: portretul, numele, LinkedIn-ul și GitHub-ul. Textele sunt schițe
-        de rescris; numele, rolurile, portretele și linkurile îngerilor sunt de
-        umplutură.
-      </span>
-    </p>
-  )
-}
-
 const SOCIAL = {
   linkedin: {
     label: 'LinkedIn',

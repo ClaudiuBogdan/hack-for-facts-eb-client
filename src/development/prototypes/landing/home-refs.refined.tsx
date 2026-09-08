@@ -1262,9 +1262,9 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
       </section>
 
       {/* People — open band. The page's only faces, and the one place it speaks
-          in the first person. Everything below the founder is stand-in and says
-          so on screen; `home-refs.people.tsx` carries the shape and the two
-          alternatives it beat. */}
+          in the first person. `home-refs.people.tsx` carries the shape and the
+          two alternatives it beat; everything in it below the founder is still
+          stand-in, and no longer labelled as such on screen. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
           <PeopleBand />

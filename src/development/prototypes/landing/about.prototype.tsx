@@ -43,7 +43,9 @@ import { AboutPage } from './about.page'
  *
  * **Not settled here:** the angels' real names, photographs and links, and
  * their consent to be named and pictured on a public site. Everything in
- * `about.people.ts` below the founder is stand-in and says so on screen.
+ * `about.people.ts` below the founder is stand-in, and since the provisional
+ * notice was removed nothing on screen distinguishes it from the real founder
+ * beside it — `DESIGN.md` §Mock-First has to be answered before promotion.
  */
 export const prototype = {
   title: 'Landing — people band',

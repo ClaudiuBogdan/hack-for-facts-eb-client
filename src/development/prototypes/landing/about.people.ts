@@ -11,8 +11,11 @@ import ghClaudiu from '@/assets/images/people/gh-claudiubogdan.webp'
  * the same claim, and the second tier is the one that carries the gratitude.
  *
  * **Provisional content.** Real: the portrait, the name, the LinkedIn and the
- * GitHub. Everything else is stand-in or draft — the copy included — and says
- * so where it renders, per `DESIGN.md` §Mock-First Contract.
+ * GitHub. Everything else — the angels, the counts, and the copy — is stand-in
+ * or draft, and nothing on screen says so any more: the notice that carried
+ * that label was removed on request. `DESIGN.md` §Mock-First Contract is a
+ * promotion gate, so this has to be either real or labelled again before the
+ * band ships; until then the record is here.
  */
 
 export type SocialLinks = {

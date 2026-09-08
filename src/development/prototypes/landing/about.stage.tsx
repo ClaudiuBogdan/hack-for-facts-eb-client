@@ -5,7 +5,6 @@ import {
   PROTOTYPE_MARKER,
   PendingPortrait,
   PortraitPicture,
-  ProvisionalNotice,
   ReadMoreLink,
   SocialRow,
 } from './about.parts'
@@ -32,8 +31,6 @@ export function AboutStage() {
   return (
     <section data-dev-marker={PROTOTYPE_MARKER} className="overflow-hidden border-y bg-background">
       <Frame className="pt-14 pb-14 sm:pt-16">
-        <ProvisionalNotice />
-
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-6">
             <MonoLabel className="block text-primary">03 / Oameni</MonoLabel>

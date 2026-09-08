@@ -2,7 +2,6 @@ import { ANGELS, FOUNDER } from './about.people'
 import {
   ContributorStrip,
   PendingPortrait,
-  ProvisionalNotice,
   ReadMoreLink,
   SocialRow,
 } from './about.parts'
@@ -29,10 +28,6 @@ import { MonoLabel } from './home-refs.mono-label'
 export function PeopleBand() {
   return (
     <>
-      <div data-reveal>
-        <ProvisionalNotice />
-      </div>
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <MonoLabel className="block text-primary" data-reveal>

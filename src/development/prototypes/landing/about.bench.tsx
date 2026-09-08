@@ -6,7 +6,6 @@ import {
   PROTOTYPE_MARKER,
   PendingPortrait,
   PortraitPicture,
-  ProvisionalNotice,
   ReadMoreLink,
   SocialRow,
 } from './about.parts'
@@ -31,8 +30,6 @@ export function AboutBench() {
   return (
     <section data-dev-marker={PROTOTYPE_MARKER} className="border-y bg-background">
       <Frame className="py-14 sm:py-16">
-        <ProvisionalNotice />
-
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <BandHead title={<>Oamenii proiectului</>} />
