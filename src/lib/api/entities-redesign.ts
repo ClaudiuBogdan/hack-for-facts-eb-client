@@ -877,6 +877,13 @@ export async function fetchRedesignReportsConnection(
 }
 
 const BudgetLineItemSchema = z.object({
+  normalizedAmounts: z
+    .object({
+      ytdAmount: MoneySchema,
+      monthlyAmount: MoneySchema,
+      quarterlyAmount: MoneySchema.nullable(),
+    })
+    .nullish(),
   executionLineItemId: z.string(),
   accountCategory: z.enum(["INCOME", "EXPENSE"]),
   fundingSource: z.string().nullable(),
@@ -904,11 +911,13 @@ const BudgetLineItemsResponseSchema = z.object({
 
 const BUDGET_LINE_ITEMS_QUERY = /* GraphQL */ `
   query GetEntityLineItems(
+    $normalization: BudgetNormalization!
     $filter: BudgetFactFilter!
     $first: Int!
     $after: String
   ) {
     budgetExecutionLineItems(
+      normalization: $normalization
       filter: $filter
       sort: AMOUNT_DESC
       first: $first
@@ -929,79 +938,17 @@ const BUDGET_LINE_ITEMS_QUERY = /* GraphQL */ `
           ytdAmount
           quarterlyAmount
           monthlyAmount
+          normalizedAmounts {
+            ytdAmount
+            monthlyAmount
+            quarterlyAmount
+          }
         }
       }
       pageInfo {
         hasNextPage
         endCursor
       }
-    }
-  }
-`;
-
-const LineItemNormalizationResponseSchema = z.object({
-  totalExpense: z.array(BudgetSeriesPointSchema),
-  normalizedExpense: z.array(BudgetSeriesPointSchema),
-  totalIncome: z.array(BudgetSeriesPointSchema),
-  normalizedIncome: z.array(BudgetSeriesPointSchema),
-});
-
-const LINE_ITEM_NORMALIZATION_QUERY = /* GraphQL */ `
-  query GetEntityLineItemNormalization(
-    $cui: CUI!
-    $reportType: BudgetReportType!
-    $frequency: BudgetFrequency!
-    $yearFrom: Int
-    $yearTo: Int
-    $normalization: BudgetNormalization!
-  ) {
-    totalExpense: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: EXPENSE
-      frequency: $frequency
-      yearFrom: $yearFrom
-      yearTo: $yearTo
-      normalization: TOTAL
-    ) {
-      periodLabel
-      amount
-    }
-    normalizedExpense: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: EXPENSE
-      frequency: $frequency
-      yearFrom: $yearFrom
-      yearTo: $yearTo
-      normalization: $normalization
-    ) {
-      periodLabel
-      amount
-    }
-    totalIncome: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: INCOME
-      frequency: $frequency
-      yearFrom: $yearFrom
-      yearTo: $yearTo
-      normalization: TOTAL
-    ) {
-      periodLabel
-      amount
-    }
-    normalizedIncome: budgetTimeseries(
-      cui: $cui
-      reportType: $reportType
-      metric: INCOME
-      frequency: $frequency
-      yearFrom: $yearFrom
-      yearTo: $yearTo
-      normalization: $normalization
-    ) {
-      periodLabel
-      amount
     }
   }
 `;
@@ -1045,12 +992,13 @@ function toLineItemFilter(params: {
 }
 
 async function fetchLineItemCategory(params: {
+  readonly normalization: BudgetNormalization;
   readonly cui: string;
   readonly reportPeriod: ReportPeriodInput;
   readonly reportType: BudgetReportType;
   readonly accountCategory: "INCOME" | "EXPENSE";
   readonly mainCreditorCui?: string;
-}): Promise<Array<z.infer<typeof BudgetLineItemSchema>>> {
+}): Promise<Array<z.infer<typeof BudgetLineItemSchema>> | null> {
   const filter = toLineItemFilter(params);
   const items: Array<z.infer<typeof BudgetLineItemSchema>> = [];
   let after: string | null = null;
@@ -1060,6 +1008,7 @@ async function fetchLineItemCategory(params: {
       BUDGET_LINE_ITEMS_QUERY,
       {
         filter,
+        normalization: params.normalization,
         first: LINE_ITEM_PAGE_SIZE,
         after,
       },
@@ -1073,7 +1022,14 @@ async function fetchLineItemCategory(params: {
     const page: z.infer<
       typeof BudgetLineItemsResponseSchema
     >["budgetExecutionLineItems"] = parsed.budgetExecutionLineItems;
-    items.push(...page.edges.map((edge) => edge.node));
+    for (const { node } of page.edges) {
+      if (params.normalization === "TOTAL") items.push(node);
+      else {
+        // All rows share one entity/year. A gap invalidates this requested dataset.
+        if (node.normalizedAmounts == null) return null;
+        items.push({ ...node, ...node.normalizedAmounts });
+      }
+    }
     if (!page.pageInfo.hasNextPage) return items;
     if (page.pageInfo.endCursor === null) {
       throw new Error(
@@ -1091,7 +1047,6 @@ async function fetchLineItemCategory(params: {
 function toExecutionLineItem(
   item: z.infer<typeof BudgetLineItemSchema>,
   periodType: ReportPeriodInput["type"],
-  multiplier: number,
 ): ExecutionLineItem {
   const anomaly =
     item.anomaly === "YTD_ANOMALY" || item.anomaly === "MISSING_LINE_ITEM"
@@ -1101,9 +1056,9 @@ function toExecutionLineItem(
     item.expenseType === "dezvoltare" || item.expenseType === "functionare"
       ? item.expenseType
       : undefined;
-  const ytdAmount = item.ytdAmount * multiplier;
-  const quarterlyAmount = (item.quarterlyAmount ?? 0) * multiplier;
-  const monthlyAmount = item.monthlyAmount * multiplier;
+  const ytdAmount = item.ytdAmount;
+  const quarterlyAmount = item.quarterlyAmount ?? 0;
+  const monthlyAmount = item.monthlyAmount;
   const amount =
     periodType === "YEAR"
       ? ytdAmount
@@ -1135,58 +1090,6 @@ function toExecutionLineItem(
   };
 }
 
-async function fetchLineItemNormalizationMultiplier(params: {
-  readonly cui: string;
-  readonly reportPeriod: ReportPeriodInput;
-  readonly reportType: BudgetReportType;
-  readonly normalization: BudgetNormalization;
-}): Promise<number | null> {
-  if (params.normalization === "TOTAL") return 1;
-
-  const bounds = periodYearBounds(params.reportPeriod);
-  const raw = await graphqlQuery<unknown>(
-    LINE_ITEM_NORMALIZATION_QUERY,
-    {
-      cui: params.cui,
-      reportType: params.reportType,
-      frequency: params.reportPeriod.type,
-      yearFrom: bounds.yearFrom,
-      yearTo: bounds.yearTo,
-      normalization: params.normalization,
-    },
-    { operationName: "entity-line-item-normalization", auth: "none" },
-  );
-  const response = LineItemNormalizationResponseSchema.parse(raw);
-  const expenseTotal = latestAmount(
-    groupSeriesPoints(response.totalExpense),
-    params.reportPeriod,
-  );
-  const expenseNormalized = latestAmount(
-    groupSeriesPoints(response.normalizedExpense),
-    params.reportPeriod,
-  );
-  if (
-    expenseTotal !== null &&
-    expenseTotal !== 0 &&
-    expenseNormalized !== null
-  ) {
-    return expenseNormalized / expenseTotal;
-  }
-
-  const incomeTotal = latestAmount(
-    groupSeriesPoints(response.totalIncome),
-    params.reportPeriod,
-  );
-  const incomeNormalized = latestAmount(
-    groupSeriesPoints(response.normalizedIncome),
-    params.reportPeriod,
-  );
-  if (incomeTotal !== null && incomeTotal !== 0 && incomeNormalized !== null) {
-    return incomeNormalized / incomeTotal;
-  }
-  return null;
-}
-
 export async function fetchRedesignEntityExecutionLineItems(
   params: {
     readonly cui: string;
@@ -1200,8 +1103,9 @@ export async function fetchRedesignEntityExecutionLineItems(
 }> {
   const normalization = toBudgetNormalization(params);
   const reportType = toBudgetReportType(params.reportType);
-  const [expenses, income, multiplier] = await Promise.all([
+  const [expenses, income] = await Promise.all([
     fetchLineItemCategory({
+      normalization,
       cui: params.cui,
       reportPeriod: params.reportPeriod,
       reportType,
@@ -1211,6 +1115,7 @@ export async function fetchRedesignEntityExecutionLineItems(
         : {}),
     }),
     fetchLineItemCategory({
+      normalization,
       cui: params.cui,
       reportPeriod: params.reportPeriod,
       reportType,
@@ -1219,15 +1124,10 @@ export async function fetchRedesignEntityExecutionLineItems(
         ? { mainCreditorCui: params.mainCreditorCui }
         : {}),
     }),
-    fetchLineItemNormalizationMultiplier({
-      cui: params.cui,
-      reportPeriod: params.reportPeriod,
-      reportType,
-      normalization,
-    }),
   ]);
   // Unsupported normalization is an empty requested dataset, not a page error.
-  if (multiplier === null) return { nodes: [], fundingSources: [] };
+  if (expenses === null || income === null)
+    return { nodes: [], fundingSources: [] };
   const rawItems = [...expenses, ...income];
   const fundingSourceMap = new Map<number, string>();
   for (const item of rawItems) {
@@ -1245,7 +1145,7 @@ export async function fetchRedesignEntityExecutionLineItems(
 
   return {
     nodes: rawItems.map((item) =>
-      toExecutionLineItem(item, params.reportPeriod.type, multiplier),
+      toExecutionLineItem(item, params.reportPeriod.type),
     ),
     fundingSources,
   };

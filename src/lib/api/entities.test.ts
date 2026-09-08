@@ -77,7 +77,12 @@ describe("entities api", () => {
             countyName: "Test County",
             sirutaCode: "123",
             population: 1000,
-            id: 10, level: "uat", kind: "municipality", territoryKey: "siruta:123", parentId: 1, nutsCode: null,
+            id: 10,
+            level: "uat",
+            kind: "municipality",
+            territoryKey: "siruta:123",
+            parentId: 1,
+            nutsCode: null,
           },
           reference: {
             name: "Test Entity",
@@ -144,8 +149,17 @@ describe("entities api", () => {
         budgetBalance: 200.25,
       });
       expect(result?.is_territorial_executive).toBe(true);
-      expect(result?.uat).toMatchObject({ id: 10, level: 'uat', kind: 'municipality', territory_key: 'siruta:123', parent_id: 1, nuts_code: null });
-      expect(vi.mocked(graphqlQuery).mock.calls[0]?.[0]).toContain('isTerritorialExecutive');
+      expect(result?.uat).toMatchObject({
+        id: 10,
+        level: "uat",
+        kind: "municipality",
+        territory_key: "siruta:123",
+        parent_id: 1,
+        nuts_code: null,
+      });
+      expect(vi.mocked(graphqlQuery).mock.calls[0]?.[0]).toContain(
+        "isTerritorialExecutive",
+      );
       expect(result?.incomeTrend?.data).toEqual([{ x: "2024", y: 1000.5 }]);
     });
 
@@ -267,14 +281,27 @@ describe("entities api", () => {
   });
 
   describe("getEntityRoutingSummary", () => {
-    it.each([true, false])('preserves executive=%s independently of the UAT flag', async (executive) => {
-      vi.mocked(graphqlQuery).mockResolvedValue({ referencePublicEntity: {
-        cui: '444', entityType: 'admin_county_council', isUat: !executive, isTerritorialExecutive: executive,
-      } });
-      const result = await getEntityRoutingSummary('444');
-      expect(result).toMatchObject({ is_territorial_executive: executive, is_uat: !executive });
-      expect(vi.mocked(graphqlQuery).mock.calls[0]?.[0]).toContain('isTerritorialExecutive');
-    });
+    it.each([true, false])(
+      "preserves executive=%s independently of the UAT flag",
+      async (executive) => {
+        vi.mocked(graphqlQuery).mockResolvedValue({
+          referencePublicEntity: {
+            cui: "444",
+            entityType: "admin_county_council",
+            isUat: !executive,
+            isTerritorialExecutive: executive,
+          },
+        });
+        const result = await getEntityRoutingSummary("444");
+        expect(result).toMatchObject({
+          is_territorial_executive: executive,
+          is_uat: !executive,
+        });
+        expect(vi.mocked(graphqlQuery).mock.calls[0]?.[0]).toContain(
+          "isTerritorialExecutive",
+        );
+      },
+    );
 
     it("should return routing summary", async () => {
       const mockResponse = {
@@ -539,7 +566,7 @@ describe("entities api", () => {
       expect(result.nodes[0].amount).toBe(10);
     });
 
-    it("applies the redesign normalization factor to line-item amounts", async () => {
+    it("uses server-normalized line items when both categories cancel to zero", async () => {
       const expenseResponse = {
         budgetExecutionLineItems: {
           edges: [
@@ -558,34 +585,85 @@ describe("entities api", () => {
                 ytdAmount: "100",
                 quarterlyAmount: "25",
                 monthlyAmount: "10",
+                normalizedAmounts: {
+                  ytdAmount: "0.1",
+                  quarterlyAmount: "0.025",
+                  monthlyAmount: "0.01",
+                },
               },
             },
           ],
           pageInfo: { hasNextPage: false, endCursor: null },
         },
       };
-      const emptyResponse = {
-        budgetExecutionLineItems: {
-          edges: [],
-          pageInfo: { hasNextPage: false, endCursor: null },
+      const original = expenseResponse.budgetExecutionLineItems.edges[0].node;
+      expenseResponse.budgetExecutionLineItems.edges.push(
+        {
+          node: {
+            ...original,
+            executionLineItemId: "2",
+            ytdAmount: "-100",
+            quarterlyAmount: "-25",
+            monthlyAmount: "-10",
+            normalizedAmounts: {
+              ytdAmount: "-0.1",
+              quarterlyAmount: "-0.025",
+              monthlyAmount: "-0.01",
+            },
+          },
         },
-      };
-      const normalizationResponse = {
-        totalExpense: [{ periodLabel: "2024", amount: "1000" }],
-        normalizedExpense: [{ periodLabel: "2024", amount: "1" }],
-        totalIncome: [{ periodLabel: "2024", amount: "2000" }],
-        normalizedIncome: [{ periodLabel: "2024", amount: "2" }],
+        {
+          node: {
+            ...original,
+            executionLineItemId: "3",
+            ytdAmount: "0",
+            quarterlyAmount: "0",
+            monthlyAmount: "0",
+            normalizedAmounts: {
+              ytdAmount: "0",
+              quarterlyAmount: "0",
+              monthlyAmount: "0",
+            },
+          },
+        },
+      );
+      const incomeResponse = {
+        budgetExecutionLineItems: {
+          ...expenseResponse.budgetExecutionLineItems,
+          edges: expenseResponse.budgetExecutionLineItems.edges.map(
+            ({ node }) => ({
+              node: {
+                ...node,
+                executionLineItemId: "income-" + node.executionLineItemId,
+                accountCategory: "INCOME",
+              },
+            }),
+          ),
+        },
       };
       vi.mocked(graphqlQuery)
         .mockResolvedValueOnce(expenseResponse)
-        .mockResolvedValueOnce(emptyResponse)
-        .mockResolvedValueOnce(normalizationResponse);
+        .mockResolvedValueOnce(incomeResponse);
 
       const result = await getEntityExecutionLineItems({
         ...mockParams,
         normalization: "per_capita",
       });
 
+      expect(result.nodes).toHaveLength(6);
+      expect(result.nodes.map((row) => row.amount)).toEqual([
+        0.1, -0.1, 0, 0.1, -0.1, 0,
+      ]);
+      expect(graphqlQuery).toHaveBeenCalledTimes(2);
+      expect(
+        vi
+          .mocked(graphqlQuery)
+          .mock.calls.every(
+            ([query, variables]) =>
+              !query.includes("GetEntityLineItemNormalization") &&
+              variables?.normalization === "PER_CAPITA",
+          ),
+      ).toBe(true);
       expect(result.nodes[0]).toMatchObject({
         ytd_amount: 0.1,
         quarterly_amount: 0.025,

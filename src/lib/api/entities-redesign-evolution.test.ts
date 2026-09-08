@@ -257,47 +257,40 @@ describe("native entity evolution", () => {
     expect(result?.incomeTrend?.data).toEqual([{ x: "2025", y: 50 }]);
   });
 
-  it("does not fabricate a normalization factor when normalized line-item totals are unavailable", async () => {
-    vi.mocked(graphqlQuery).mockImplementation(
-      async (_query, _variables, options) => {
-        if (options?.operationName === "entity-line-item-normalization")
-          return {
-            totalExpense: [{ periodLabel: "2025", amount: "100" }],
-            normalizedExpense: [],
-            totalIncome: [],
-            normalizedIncome: [],
-          };
-        return {
-          budgetExecutionLineItems: {
-            edges: [
-              {
-                node: {
-                  executionLineItemId: "1",
-                  accountCategory: "EXPENSE",
-                  fundingSource: "A",
-                  fundingSourceId: 1,
-                  expenseType: null,
-                  anomaly: null,
-                  functionalCode: "10",
-                  functionalName: "Expense",
-                  economicCode: "10.01",
-                  economicName: "Item",
-                  ytdAmount: "100",
-                  quarterlyAmount: "25",
-                  monthlyAmount: "10",
-                },
+  it("stops paging and discards the requested dataset when line-item normalization is unavailable", async () => {
+    vi.mocked(graphqlQuery).mockImplementation(async () => {
+      return {
+        budgetExecutionLineItems: {
+          edges: [
+            {
+              node: {
+                executionLineItemId: "1",
+                accountCategory: "EXPENSE",
+                fundingSource: "A",
+                fundingSourceId: 1,
+                expenseType: null,
+                anomaly: null,
+                functionalCode: "10",
+                functionalName: "Expense",
+                economicCode: "10.01",
+                economicName: "Item",
+                ytdAmount: "100",
+                quarterlyAmount: "25",
+                monthlyAmount: "10",
+                normalizedAmounts: null,
               },
-            ],
-            pageInfo: { hasNextPage: false, endCursor: null },
-          },
-        };
-      },
-    );
+            },
+          ],
+          pageInfo: { hasNextPage: true, endCursor: "unused-next-page" },
+        },
+      };
+    });
     await expect(
       fetchRedesignEntityExecutionLineItems({
         ...params,
         reportPeriod: { type: "YEAR", selection: { dates: ["2025"] } },
       }),
     ).resolves.toEqual({ nodes: [], fundingSources: [] });
+    expect(graphqlQuery).toHaveBeenCalledTimes(2);
   });
 });
