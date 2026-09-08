@@ -188,73 +188,118 @@ export function BandHead({ title, lead }: { readonly title: ReactNode; readonly 
 }
 
 /**
- * The third tier, as a grid.
+ * The round pending avatar.
  *
- * One cell per person and one more for the seat that is open — which today is
- * most of the grid, because there is exactly one human contributor across the
- * three repositories. An empty wall would be the alternative, and a wall of one
- * face reads as a claim that nobody else is welcome rather than as a fact about
- * a young project.
+ * A separate drawing from `PendingPortrait` rather than that one cropped: the
+ * 4:5 silhouette puts the head high in its box, and a circle taken out of it
+ * lands on a forehead. The shoulders are a second circle, clipped by the
+ * wrapper, which is why the wrapper and not the `svg` carries `rounded-full`.
+ */
+function PendingAvatar() {
+  return (
+    <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted/50">
+      <svg viewBox="0 0 80 80" className="size-full text-muted-foreground" role="img" aria-hidden="true" focusable="false">
+        <circle cx="40" cy="31" r="13" className="fill-current" fillOpacity={0.3} />
+        <circle cx="40" cy="73" r="23" className="fill-current" fillOpacity={0.3} />
+      </svg>
+    </span>
+  )
+}
+
+const CONTRIBUTOR_CELL_CLASS = 'group flex flex-col items-start gap-3 rounded-sm'
+
+/**
+ * The third tier: everyone who put something in, as a wall of faces.
  *
- * Each cell carries its own border and pulls back a pixel, so neighbours share
- * one hairline instead of stacking two — and a half-empty row is half a row of
- * boxes rather than a box with nothing in half of it, which is what a border on
- * the grid itself drew while there is only one contributor.
+ * Portraits rather than the login-and-commit-count rows this was first, because
+ * the tier stopped being a mirror of the GitHub API — most of what kept the
+ * project going was never a commit, and a row that can only say "6,128
+ * commit-uri" has nothing to say about the person who checked the figures.
+ *
+ * A cell with a profile is a link and opens it; a cell without one is a plain
+ * block. Same box either way — someone whose social account we do not have is
+ * not a lesser contributor, so nothing about the cell is dimmed for it.
  */
 export function ContributorGrid({ className }: { readonly className?: string }) {
   return (
     <ul
-      className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', className)}
+      className={cn(
+        'grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6',
+        className,
+      )}
     >
-      {CONTRIBUTORS.map((contributor) => (
-        <li key={contributor.login} className="-ml-px -mt-px border">
-          <a
-            href={contributor.url}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="group flex h-full items-center gap-3 p-4 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:-outline-offset-2"
-          >
-            <img
-              src={contributor.avatar}
-              alt=""
-              width={160}
-              height={160}
-              loading="lazy"
-              decoding="async"
-              className="size-11 shrink-0 rounded-full bg-muted"
-            />
+      {CONTRIBUTORS.map((contributor) => {
+        const body = (
+          <>
+            {contributor.avatar === undefined ? (
+              <PendingAvatar />
+            ) : (
+              <img
+                src={contributor.avatar}
+                alt=""
+                width={160}
+                height={160}
+                loading="lazy"
+                decoding="async"
+                className="size-20 shrink-0 rounded-full bg-muted object-cover"
+              />
+            )}
             <span className="min-w-0">
-              <span className="block truncate text-sm font-medium text-foreground">
-                {contributor.login}
+              <span className="block text-sm font-medium leading-tight text-foreground group-hover:text-primary">
+                {contributor.name}
               </span>
-              <MonoLabel className="mt-1.5 block text-muted-foreground tabular-nums">
-                {contributor.commits.toLocaleString('ro-RO')} commit-uri
+              <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">
+                {contributor.role}
               </MonoLabel>
             </span>
-          </a>
-        </li>
-      ))}
+          </>
+        )
 
-      {/* The open seat. Same cell, same box, so the row reads as one thing —
-          the difference is that this one is not a person yet. */}
-      <li className="-ml-px -mt-px border">
+        return (
+          <li key={contributor.id}>
+            {contributor.url === undefined || contributor.url === '#' ? (
+              <div className={CONTRIBUTOR_CELL_CLASS}>{body}</div>
+            ) : (
+              <a
+                href={contributor.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label={`${contributor.name} — profil`}
+                className={cn(
+                  CONTRIBUTOR_CELL_CLASS,
+                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring',
+                )}
+              >
+                {body}
+              </a>
+            )}
+          </li>
+        )
+      })}
+
+      {/* The open seat. Same cell, same box; the difference is that this one is
+          not a person yet. */}
+      <li>
         <a
           href={REPO_URL}
           target="_blank"
           rel="noreferrer noopener"
-          className="group flex h-full items-center gap-3 p-4 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:-outline-offset-2"
+          className={cn(
+            CONTRIBUTOR_CELL_CLASS,
+            'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring',
+          )}
         >
           <span
             aria-hidden="true"
-            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-dashed text-muted-foreground"
+            className="flex size-20 shrink-0 items-center justify-center rounded-full border border-dashed text-muted-foreground transition-colors group-hover:border-primary group-hover:text-primary"
           >
-            <Plus className="size-4" />
+            <Plus className="size-5" />
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-medium text-foreground group-hover:text-primary">
+            <span className="block text-sm font-medium leading-tight text-foreground group-hover:text-primary">
               Locul tău aici
             </span>
-            <MonoLabel className="mt-1.5 block text-muted-foreground">
+            <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">
               Contribuie pe GitHub
             </MonoLabel>
           </span>

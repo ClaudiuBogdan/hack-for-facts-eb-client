@@ -114,33 +114,48 @@ export const ANGELS: readonly Person[] = [
 ]
 
 export type Contributor = {
-  readonly login: string
-  readonly avatar: string
-  readonly url: string
-  /** Commits across the three repositories, summed. */
-  readonly commits: number
+  readonly id: string
+  readonly name: string
+  /** What they gave. Not a job title — the thing they actually did. */
+  readonly role: string
+  /** A square crop. Absent means the seat is taken but the picture is not in. */
+  readonly avatar?: string
+  /** Where a click goes: LinkedIn, Facebook, GitHub — whichever they use. */
+  readonly url?: string
 }
 
 /**
- * Measured on 8 September 2026, across client, server and scrapper: one human
- * with 6,128 commits between them.
+ * Everyone who put something in, not only the people with commits.
  *
- * The other two accounts are release machinery, not people — and the filter for
- * them is *not* `type !== 'Bot'`. GitHub types `github-actions[bot]` as a bot
- * but `actions-user`, which pushes the compiled catalogs here and on the server,
- * as a plain `User`. Trusting the field would have put a robot in the grid with
- * 385 commits to its name.
+ * The code tier is measurable and small: on 8 September 2026, across client,
+ * server and scrapper, one human with 6,128 commits. The other two accounts are
+ * release machinery — and the filter for them is *not* `type !== 'Bot'`. GitHub
+ * types `github-actions[bot]` as a bot but `actions-user`, which pushes the
+ * compiled catalogs here and on the server, as a plain `User`. Trusting the
+ * field would have put a robot in the grid with 385 commits to its name.
  *
- * The grid is written for the day this is no longer one row. Until then its last
- * cell is the invitation, which is the honest thing to put in an empty seat.
+ * So the grid stopped being a mirror of the GitHub API and became a list this
+ * file holds: translations, checked figures, a door opened, a bug reported. That
+ * cannot be derived from a repository, which is the point — most of what kept
+ * this going was never a commit.
+ *
+ * Everything below the first entry is stand-in.
  */
 export const CONTRIBUTORS: readonly Contributor[] = [
   {
-    login: 'ClaudiuBogdan',
+    id: 'claudiu',
+    name: 'Claudiu Bogdan',
+    role: 'Cod, date, design',
     avatar: ghClaudiu,
     url: 'https://github.com/ClaudiuBogdan',
-    commits: 6128,
   },
+  { id: 'c2', name: 'Nume Prenume', role: 'A tradus interfața', url: '#' },
+  { id: 'c3', name: 'Prenume Nume', role: 'A verificat cifrele', url: '#' },
+  { id: 'c4', name: 'Nume de Familie', role: 'A raportat erori', url: '#' },
+  { id: 'c5', name: 'Al Cincilea Nume', role: 'A dus vorba mai departe', url: '#' },
+  { id: 'c6', name: 'Prenume Nume-Dublu', role: 'A testat pe teren', url: '#' },
+  { id: 'c7', name: 'Nume Scurt', role: 'A scris documentația', url: '#' },
+  { id: 'c8', name: 'Al Optulea Nume', role: 'A deschis o ușă', url: '#' },
 ]
 
 export const REPO_URL = 'https://github.com/ClaudiuBogdan/hack-for-facts-eb-client'
