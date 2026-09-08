@@ -30,7 +30,6 @@ import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from './home-
 import { NATIONAL_FACTS } from './home-refs.national-facts'
 import type { FieldCell } from './home-refs.pixel-art'
 import { PixelFieldCanvas, useCanvasFieldMotion } from './home-refs.pixel-canvas'
-import { FIELD_HOST_CLASS } from './home-refs.field-motion'
 import {
   FOOTER_SCENE_CLEAR_PX,
   FooterScene,
@@ -80,8 +79,9 @@ import type { LandingEntry, LandingGroup } from './home.data'
  * - **Index cell hover.** Border and index number pick up the single accent and
  *   an arrow fades in. No lift, no shadow.
  * - **Margin field motion.** An intro wave shortly after load, and a ripple
- *   from the click. See `home-refs.field-motion.ts` for the constraints
- *   that keep ~990 animating cells off the main thread.
+ *   from the click. Both are drawn into a canvas rather than animated as
+ *   elements — see `home-refs.pixel-canvas.tsx` for why 1,943 cells a side
+ *   made that the only option.
  */
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
@@ -709,7 +709,7 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
           `overflow-hidden` wrapper, which is what the mask is applied to. The
           clip was inherited from an earlier version where the fields were
           direct children. */}
-      <section ref={heroRef} className={cn('relative border-b', FIELD_HOST_CLASS)}>
+      <section ref={heroRef} className="relative border-b">
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
             module the minor lattice is drawn on, so it reads as one system

@@ -225,11 +225,11 @@ const ARMY_TIERS = [0.95, 0.62, 0.38, 0.2] as const
 /**
  * The intro's peak opacity for a cell, and its peak scale.
  *
- * Exported and shared because there are now two renderers drawing the same
- * field, and a peak that differed between them would be a difference nobody
- * would think to look for. Rounded here rather than at the call site so both
- * get the same rounding too — the SVG used to round on its way into a custom
- * property, which the canvas has no equivalent of.
+ * Kept beside the cell data rather than in the renderer, so the field's own
+ * module owns every number derived from a cell. Rounded here, and the rounding
+ * is not incidental: the SVG renderer rounded on its way into a CSS custom
+ * property, and reproducing it is part of why the canvas port came out
+ * pixel-identical to the renderer it replaced.
  */
 export const introPeakOpacity = (opacity: number): number =>
   Number(Math.min(1, opacity + 0.44).toFixed(3))
@@ -406,5 +406,3 @@ export function fieldCells(edge: 'left' | 'right', cell: FieldCell): readonly Fi
 export const fieldRectCount = (cell: FieldCell): number =>
   getField('left', 'squares', cell).length + getField('left', 'particles', cell).length
 
-/** The settled field's count. */
-export const FIELD_RECT_COUNT = fieldRectCount(BASE_CELL)

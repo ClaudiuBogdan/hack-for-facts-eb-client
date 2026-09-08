@@ -17,22 +17,16 @@
  *   while the front crossed in 476ms — a moving band 1.74x the width of the
  *   field, so everything was in flight at once and the ripple read as one
  *   synchronised swell rather than as something travelling.
- * - **Delays stretch with the visible span, durations barely.** The sweep needs
- *   to take noticeably longer on a narrow margin; a single cell's swell only
- *   needs to be a little slower to stay legible.
+ * - **Delays stretch with the visible span; durations do not.** The sweep needs
+ *   to take noticeably longer on a narrow margin. A matching stretch for
+ *   durations was specified and never implemented — the old stylesheet read a
+ *   custom property for it that nothing ever set — so rather than carry a
+ *   second unused multiplier, this stretches delays only, which is what both
+ *   renderers have always actually done.
  * - **The motion is a flourish, not information.** Nothing here is load-bearing,
  *   which is what makes it safe for reduced motion to drop it outright rather
  *   than substitute something for it.
  */
-
-/**
- * Class on the hero section that hosts the field.
- *
- * Named for hosting rather than for hovering: hover triggers nothing here. The
- * section is the host because it is what a click is measured against and what
- * the canvases are found inside.
- */
-export const FIELD_HOST_CLASS = 'tpz-field-host'
 
 /**
  * How long after mount the intro wave starts.
@@ -53,26 +47,22 @@ export const INTRO_DELAY_MS = 150
  * right at the former is compressed into a fraction of the time at the latter,
  * because most of the schedule is spent on cells that are clipped away.
  */
-export const REFERENCE_SPAN_PX = 510
+const REFERENCE_SPAN_PX = 510
 
 /** Ceiling on that stretch, so a very narrow margin does not crawl. */
-export const MAX_TIME_SCALE = 2.6
+const MAX_TIME_SCALE = 2.6
 
 /**
- * How much to stretch the timings for the span actually on screen.
- *
- * Returns a multiplier for delays and a gentler one for durations, for the
- * reason in this file's header.
+ * Multiplier on a ripple's delays for the span actually on screen.
  *
  * Only the ripple uses it, and that is deliberate. The intro's schedule is
  * built per cell when the field is built, from a ramp measured in milliseconds
  * per *pixel* travelled, so it already crosses the same distance in the same
  * time whatever the module. Applying this on top would stretch it twice.
  */
-export function timeScaleFor(visibleWidth: number) {
-  if (visibleWidth <= 0) return { delay: 1, duration: 1 }
-  const scale = Math.min(MAX_TIME_SCALE, Math.max(1, REFERENCE_SPAN_PX / visibleWidth))
-  return { delay: scale, duration: 1 + (scale - 1) * 0.4 }
+export function timeScaleFor(visibleWidth: number): number {
+  if (visibleWidth <= 0) return 1
+  return Math.min(MAX_TIME_SCALE, Math.max(1, REFERENCE_SPAN_PX / visibleWidth))
 }
 
 /** Milliseconds per pixel, after the distance is raised to the exponent. */

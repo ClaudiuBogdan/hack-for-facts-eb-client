@@ -21,7 +21,7 @@ import { FOCUS_RATIO, SECTION_LIGHT_ATTR, sectionClaimAt } from './home-refs.sec
  * decorating it. The first stop is the pair of crux marks under the hero, which
  * already sit in brand blue at exactly that point.
  *
- * Constraints, following `home-refs.field-motion.ts`:
+ * Constraints, following DESIGN.md's property budget:
  *
  * 1. **`transform` and `opacity` only.** The trail's length is a `scaleY` on a
  *    fixed-height bar, not an animated `height` — height would run layout on

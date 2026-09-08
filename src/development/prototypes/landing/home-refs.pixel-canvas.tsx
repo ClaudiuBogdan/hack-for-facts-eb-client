@@ -178,21 +178,16 @@ function pack(edge: 'left' | 'right', cell: FieldCell): PackedField {
   const { columns, rows } = fieldGeometry(cell)
   const squares = fieldCells(edge, cell)
 
-  // Sorted by fill within each layer rather than across the whole field: the
-  // layer order is the one that means something — the tail is drawn over the
-  // band — while the order within a layer is free, because no two cells of a
-  // layer overlap until one of them scales up mid-animation.
-  const squareCount = squares.filter((s) => s.size === cell).length
-  const order = [
-    ...squares
-      .map((s, i) => ({ s, i }))
-      .filter(({ i }) => i < squareCount)
-      .sort((a, b) => a.s.fill.localeCompare(b.s.fill)),
-    ...squares
-      .map((s, i) => ({ s, i }))
-      .filter(({ i }) => i >= squareCount)
-      .sort((a, b) => a.s.fill.localeCompare(b.s.fill)),
-  ]
+  // Build order, which is the SVG's document order. Sorting by fill would cut
+  // the number of fillStyle assignments per frame from one per cell to about
+  // eight, and it was tried — but cells scale past their own bounds at the peak
+  // of the intro and of a ripple, and two overlapping semi-transparent cells
+  // composite differently depending which is drawn first. That difference is
+  // invisible at rest, which is where the port was diffed against the SVG, so
+  // the optimisation would have bought a few microseconds in exchange for a
+  // discrepancy the verification could not see. The draw loop costs about
+  // 0.7ms a frame against a 16.7ms budget; it does not need the microseconds.
+  const order = squares.map((s, i) => ({ s, i }))
 
   const count = order.length
   const f = () => new Float32Array(count)
@@ -234,8 +229,9 @@ function pack(edge: 'left' | 'right', cell: FieldCell): PackedField {
     const cy = s.y + s.size / 2
     packed.cx[i] = cx
     packed.cy[i] = cy
-    // The same positional hash the SVG driver derives from the rendered
-    // attributes, so a ripple scatters identically in both renderers.
+    // Positional rather than index-based: derived from the cell's centre, so
+    // it stays put if the build order ever changes and two cells at the same
+    // radius still refuse to fire together.
     const noise = Math.sin(cx * 12.9898 + cy * 78.233) * 43758.5453
     packed.jitter[i] = noise - Math.floor(noise)
 
@@ -362,11 +358,10 @@ function drawFrame(
 }
 
 /**
- * One layer of one margin field, on a canvas.
+ * One margin field — both the square band and the tail — on one canvas.
  *
- * Unlike the SVG renderer this draws both the square band and the tail, because
- * the split existed so the stylesheet could reach the two independently and a
- * canvas has no stylesheet to satisfy.
+ * They used to be two elements so that a stylesheet could reach each layer on
+ * its own. A canvas has no stylesheet to satisfy, so they are one.
  */
 export function PixelFieldCanvas({
   edge,
@@ -531,7 +526,7 @@ export function useCanvasFieldMotion(
           const delay =
             (Math.pow(distance, RIPPLE_DISTANCE_EXPONENT) * RIPPLE_MS_PER_PX +
               packed.jitter[i] * RIPPLE_JITTER_MS) *
-            scale.delay
+            scale
           packed.dp[i] = delay
           packed.op[i] = Math.min(1, packed.o[i] + OPACITY_HEADROOM * amplitude)
           packed.sp[i] = 1 + (PEAK_SCALE - 1) * amplitude
