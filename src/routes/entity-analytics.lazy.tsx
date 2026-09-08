@@ -1,3 +1,4 @@
+import { populationMethodologyReference } from '@/lib/population-methodology';
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
@@ -162,8 +163,9 @@ function EntityAnalyticsPage() {
         'population',
         'total_amount',
         'per_capita_amount',
+        'population_methodology',
       ]
-      const rows = all.map((d) => [
+      const rows = all.map((d, index) => [
         d.entity_cui,
         d.entity_name,
         d.entity_type ?? '',
@@ -172,6 +174,7 @@ function EntityAnalyticsPage() {
         String(d.population ?? ''),
         String(d.total_amount),
         d.per_capita_amount == null ? '' : String(d.per_capita_amount),
+        index === 0 ? populationMethodologyReference() : '',
       ])
       const csv = [header, ...rows]
         .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))

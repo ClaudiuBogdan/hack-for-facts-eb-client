@@ -1,3 +1,4 @@
+import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note';
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -111,6 +112,7 @@ export function NormalizationControls({
         </Label>
       </div>
 
+      {allowPerCapita && <PopulationMethodologyNote />}
       {allowGrowth ? (
         <div className="flex items-start gap-2">
           <Checkbox

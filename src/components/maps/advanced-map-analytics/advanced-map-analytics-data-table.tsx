@@ -1,3 +1,4 @@
+import { populationMethodologyReference } from '@/lib/population-methodology';
 import { compareMapDecimals, readMapDecimal } from '@/lib/map-series/decimal';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -931,10 +932,11 @@ export function AdvancedMapAnalyticsDataTable({
           'CUI',
           ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById, groupingLabelById, mapViewType)),
         ])
+      .concat(['Population methodology'])
       .map((value) => escapeCsvCell(value))
       .join(',');
 
-    const csvRows = sortedRows.map((row) => {
+    const csvRows = sortedRows.map((row, index) => {
       const kind = getAdvancedMapAnalyticsTableRowKind(row);
       const rowValues = groupedExport
         ? [
@@ -951,6 +953,7 @@ export function AdvancedMapAnalyticsDataTable({
             row.entityCui ?? '',
             ...visibleColumns.map((column) => getColumnRowValue(row, column.id)),
           ];
+      rowValues.push(index === 0 ? populationMethodologyReference() : '');
       return rowValues.map((value) => escapeCsvCell(value)).join(',');
     });
 

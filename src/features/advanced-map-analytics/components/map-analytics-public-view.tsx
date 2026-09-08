@@ -1,3 +1,4 @@
+import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note';
 import { adaptMapBoundaryData } from '@/features/advanced-map-analytics/map-boundary-data';
 import { getMapDecimalRange } from '@/lib/map-series/decimal';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -964,6 +965,7 @@ export function MapAnalyticsPublicView({
               </SidebarSection>
             ) : null}
 
+            <PopulationMethodologyNote />
             <SidebarSection title={t`Data series`}>
               <MapAnalyticsSeriesSelector
                 mapState={mapState}
@@ -1148,6 +1150,7 @@ export function MapAnalyticsPublicView({
       </main>
 
       <div className="flex flex-col border-t border-border bg-card px-4 py-3 md:hidden">
+        <PopulationMethodologyNote />
         <button
           type="button"
           onClick={() => setMobileFooterExpanded((prev) => !prev)}

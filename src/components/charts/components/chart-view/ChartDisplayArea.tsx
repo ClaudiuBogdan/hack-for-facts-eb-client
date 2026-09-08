@@ -1,3 +1,4 @@
+import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note';
 import * as React from "react";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -88,6 +89,7 @@ export const ChartDisplayArea = React.memo(
         <div className="p-4 flex-grow min-h-[500px] flex items-center justify-center bg-muted/20">
           {content}
         </div>
+        {chart.series.some(series => series.type === 'line-items-aggregated-yearly') && <PopulationMethodologyNote />}
         <ChartFooter />
       </Card>
     );

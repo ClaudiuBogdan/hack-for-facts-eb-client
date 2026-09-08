@@ -1,3 +1,4 @@
+import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note';
 import { adaptMapBoundaryData } from '@/features/advanced-map-analytics/map-boundary-data';
 import { MapDecimal } from '@/lib/map-series/decimal';
 import { getMapDecimalRange, normalizeMapDecimal } from '@/lib/map-series/decimal';
@@ -3751,6 +3752,7 @@ export function MapAnalyticsWorkspace({
         )}
       >
         <div className={cn("flex-1 space-y-0 px-5 py-2", isStandaloneLayout && "flex flex-wrap items-center justify-between gap-4")}>
+          <PopulationMethodologyNote />
           <div className="pt-2 pb-4">
             <ViewTypeRadioGroup
               value={mapState.activeView}

@@ -1,3 +1,4 @@
+import { populationMethodologyReference } from '@/lib/population-methodology';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -595,9 +596,9 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       const csvContent = await csvBlob.text();
       expect(csvContent).toBe(
         [
-          'SIRUTA,CUI,UAT,County,Execution analytics,INS Population',
-          '100,,"Alpha\nCity",A County,100,',
-          '200,87654321,"Zeta, ""Town""",Y County,300,5',
+          'SIRUTA,CUI,UAT,County,Execution analytics,INS Population,Population methodology',
+          `100,,"Alpha\nCity",A County,100,,${populationMethodologyReference()}`,
+          '200,87654321,"Zeta, ""Town""",Y County,300,5,',
         ].join('\n')
       );
 

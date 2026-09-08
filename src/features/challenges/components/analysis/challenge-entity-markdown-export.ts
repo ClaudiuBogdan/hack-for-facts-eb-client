@@ -1,3 +1,4 @@
+import { populationMethodologyReference } from '@/lib/population-methodology';
 import type { TreemapInput } from '@/components/budget-explorer/budget-transform'
 import type { Breadcrumb } from '@/components/budget-explorer/useTreemapDrilldown'
 import type { ExecutionLineItem } from '@/lib/api/entities'
@@ -1302,7 +1303,7 @@ function buildEntitySection(
       : null,
   ].filter(Boolean)
 
-  return [`## ${copy.entitySectionTitle}`, ...lines].join('\n')
+  return [`## ${copy.entitySectionTitle}`, ...lines, populationMethodologyReference()].join('\n')
 }
 
 function buildFiltersSection(

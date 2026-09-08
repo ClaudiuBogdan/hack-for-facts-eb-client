@@ -1,3 +1,4 @@
+import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note';
 import {
   ColumnDef,
   flexRender,
@@ -250,6 +251,7 @@ export function EntityAnalyticsTable({ data, isLoading, sortBy, sortOrder, onSor
 
   return (
     <div className="rounded-md border overflow-hidden">
+      <PopulationMethodologyNote />
       <Table className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
