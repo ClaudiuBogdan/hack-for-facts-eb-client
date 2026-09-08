@@ -4467,7 +4467,7 @@ msgstr "Color mode"
 msgid "Colorare hartă"
 msgstr "Colorare hartă"
 
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:283
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:290
 #: src/components/maps/HeatmapDataTable.tsx:142
 #: src/components/maps/HeatmapDataTable.tsx:207
 #: src/components/maps/HeatmapDataTable.tsx:267
@@ -5367,7 +5367,7 @@ msgstr "Counts describe the records matching these filters, not the platform's t
 #: src/components/charts/components/series-config/SeriesFilter.tsx:860
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1080
 #: src/components/entities/views/entity-profile-view.presentation.tsx:195
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:84
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:86
 #: src/components/filters/EntityAnalyticsFilter.tsx:540
 #: src/components/filters/EntityAnalyticsFilter.tsx:739
 #: src/components/filters/MapFilter.tsx:238
@@ -7646,7 +7646,7 @@ msgstr "Entities"
 msgid "Entities carrying any selected tag are excluded."
 msgstr "Entities carrying any selected tag are excluded."
 
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:70
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:72
 #: src/lib/chart-filter-utils.ts:37
 #: src/routes/entity-analytics.lazy.tsx:246
 msgid "Entity"
@@ -9743,7 +9743,7 @@ msgid "Hidden infrastructure you used"
 msgstr "Hidden infrastructure you used"
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:43
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:299
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:306
 #: src/components/maps/HeatmapDataTable.tsx:150
 #: src/components/maps/HeatmapDataTable.tsx:215
 #: src/components/maps/HeatmapDataTable.tsx:275
@@ -13033,7 +13033,7 @@ msgstr "Move earlier"
 msgid "Move later"
 msgstr "Move later"
 
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:293
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:300
 #: src/components/maps/HeatmapDataTable.tsx:144
 #: src/components/maps/HeatmapDataTable.tsx:209
 #: src/components/maps/HeatmapDataTable.tsx:269
@@ -13042,7 +13042,7 @@ msgstr "Move later"
 msgid "Move left"
 msgstr "Move left"
 
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:296
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:303
 #: src/components/maps/HeatmapDataTable.tsx:147
 #: src/components/maps/HeatmapDataTable.tsx:212
 #: src/components/maps/HeatmapDataTable.tsx:272
@@ -15886,7 +15886,7 @@ msgid "Per capita"
 msgstr "Per capita"
 
 #: src/components/common/NormalizationSelector.tsx:22
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:108
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:110
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:14
 #: src/routes/entity-analytics.lazy.tsx:249
 msgid "Per Capita"
@@ -16165,7 +16165,7 @@ msgstr "Domicile population"
 msgid "Populația după domiciliu la 1 ianuarie, pe județe și municipiul București. Schimbarea procentuală între cele două capete de interval."
 msgstr "Domicile population on 1 January, by county and Bucharest. Percentage change between the two endpoints."
 
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:94
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:96
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:726
 #: src/components/maps/charts/UatDataCharts.tsx:139
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:50
@@ -16223,6 +16223,10 @@ msgstr "Population Range"
 #: src/components/maps/charts/UatDataCharts.tsx:138
 msgid "Population vs. Total Amount"
 msgstr "Population vs. Total Amount"
+
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:259
+msgid "Population, its sorting and filters use the latest selected year's verified value. Per-capita amounts use each year's population before adding values."
+msgstr "Population, its sorting and filters use the latest selected year's verified value. Per-capita amounts use each year's population before adding values."
 
 #: src/features/legal/components/act-timeline-band.tsx:79
 msgid "Portal"
@@ -21840,7 +21844,7 @@ msgstr "Total Allocated Budget"
 msgid "Total amount"
 msgstr "Total amount"
 
-#: src/components/entity-analytics/EntityAnalyticsTable.tsx:144
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:146
 #: src/components/maps/charts/UatCountyBarChart.tsx:30
 #: src/components/maps/charts/UatCountyBarChart.tsx:66
 #: src/components/maps/charts/UatCountyBarChart.tsx:68
@@ -22242,6 +22246,7 @@ msgstr "unavailable"
 
 #: src/components/entities/views/ins-stats-view.formatters.ts:64
 #: src/components/entities/views/ins-stats-view.presentation.tsx:499
+#: src/components/entity-analytics/EntityAnalyticsTable.tsx:102
 msgid "Unavailable"
 msgstr "Unavailable"
 
