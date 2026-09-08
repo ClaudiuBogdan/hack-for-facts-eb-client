@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
@@ -319,7 +319,11 @@ function CruxMarks() {
  * looking at impossible to look at. `import.meta.env.DEV` keeps it out of a
  * build, and results that come from it are labelled as such in the dropdown.
  */
-function RefinedSearch() {
+function RefinedSearch({
+  inputRef,
+}: {
+  readonly inputRef: RefObject<HTMLInputElement | null>
+}) {
   const isMobile = useIsMobile()
 
   return (
@@ -327,6 +331,7 @@ function RefinedSearch() {
     // thirty characters after the magnifier's padding, and the longer wording
     // truncated mid-word.
     <LandingSearch
+      inputRef={inputRef}
       placeholder="Caută o instituție sau CUI..."
       selectionBehavior="navigate-to-preferred-entity"
       autoFocus={!isMobile}
@@ -350,7 +355,58 @@ function RefinedSearch() {
  * `bg-muted-foreground/30` on all three is an authentic monochrome variant
  * rather than a compromise.
  */
-const WINDOW_LIGHTS = ['bg-[#ff5f57]', 'bg-[#febc2e]', 'bg-[#28c840]'] as const
+const WINDOW_LIGHTS = {
+  close: 'bg-[#ff5f57]',
+  minimise: 'bg-[#febc2e]',
+  zoom: 'bg-[#28c840]',
+} as const
+
+/**
+ * One light: a 24px target with a 12px dot inside it.
+ *
+ * The dot stays 12px because that is what makes it read as a window light —
+ * bigger and it is three coloured buttons. The target around it is 24px because
+ * WCAG 2.2 §2.5.8 asks for that much, and the three sit edge to edge with no
+ * gap so their centres land 24px apart and none of them overlap. The wrapper
+ * pulls the row back by the 6px of padding this adds, so the dots end up
+ * exactly where they were when they were three inert spans.
+ *
+ * The glyph appears on hover of the row, as macOS does it — you see what the
+ * lights do when you go near them, not before. It carries no meaning on its
+ * own; the accessible name on the control does that.
+ */
+function WindowLight({
+  tone,
+  glyph,
+}: {
+  readonly tone: string
+  readonly glyph: string
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'flex size-3 items-center justify-center rounded-full text-[9px] font-semibold leading-none text-black/60',
+        tone,
+      )}
+    >
+      <span className="opacity-0 group-hover/lights:opacity-100 group-focus-visible/light:opacity-100 motion-safe:transition-opacity">
+        {glyph}
+      </span>
+    </span>
+  )
+}
+
+/** Shared by the two buttons and the one link, which differ only in what they do. */
+const LIGHT_TARGET_CLASS =
+  'group/light flex size-6 items-center justify-center rounded-full focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring'
+
+/**
+ * What the window is doing. Desktop-only: the title bar that sets it does not
+ * exist below `lg`, and `home-refs.panel-tilt.tsx` acts on this inside the same
+ * media query, so a phone always renders the list.
+ */
+type WindowState = 'open' | 'minimised' | 'closed'
 
 /**
  * Real entities, as product UI. Three-tier hierarchy, tabular CUIs.
@@ -367,11 +423,44 @@ const WINDOW_LIGHTS = ['bg-[#ff5f57]', 'bg-[#febc2e]', 'bg-[#28c840]'] as const
  * and the depth all begin at `lg` together, because they are one idea and half
  * of it is worse than none of it.
  *
- * The chrome is decoration and is marked as such. The lights are not buttons,
- * carry no label and take no focus: a control that looks like it closes
- * something and does nothing is worse than no control.
+ * The lights work, which is the whole reason they are built the way they are: a
+ * control that looks like it closes something and does nothing is worse than no
+ * control, so each one is a real element with a real name and a real target.
+ * Close and minimise are buttons because they act on this page; zoom is a link
+ * because it navigates, and a reader who middle-clicks it should get a tab.
  */
-function StartHerePanel({ panelRef }: { readonly panelRef: RefObject<HTMLDivElement | null> }) {
+function StartHerePanel({
+  panelRef,
+  searchInputRef,
+}: {
+  readonly panelRef: RefObject<HTMLDivElement | null>
+  readonly searchInputRef: RefObject<HTMLInputElement | null>
+}) {
+  const [windowState, setWindowState] = useState<WindowState>('open')
+  const minimiseRef = useRef<HTMLButtonElement>(null)
+  const restoreRef = useRef<HTMLButtonElement>(null)
+  /*
+   * Where focus goes after the click, set by the handler and spent by the
+   * effect below.
+   *
+   * It has to be a two-step: every one of these controls destroys itself, so
+   * focusing the successor synchronously would aim at an element React has not
+   * rendered yet, and doing nothing would drop focus onto <body> and lose a
+   * keyboard reader entirely. A ref rather than state because nothing renders
+   * it, and it must not fire on mount — the search field is already focused
+   * there and stealing it back would scroll the page on load.
+   */
+  const pendingFocus = useRef<'search' | 'restore' | 'minimise' | undefined>(undefined)
+
+  useEffect(() => {
+    const target = pendingFocus.current
+    if (target === undefined) return
+    pendingFocus.current = undefined
+    if (target === 'search') searchInputRef.current?.focus()
+    else if (target === 'restore') restoreRef.current?.focus()
+    else minimiseRef.current?.focus()
+  }, [windowState, searchInputRef])
+
   return (
     /* No margin here, and that is the considered position rather than an
        omission — measured, the panel sits symmetrically already.
@@ -387,7 +476,7 @@ function StartHerePanel({ panelRef }: { readonly panelRef: RefObject<HTMLDivElem
        margin to run the panel up to the rule closed the right gap to zero, and
        a positive one opened it to 44 and then 56 against an unchanged 32 on
        the left. */
-    <div className={TILT_SCENE_CLASS}>
+    <div className={TILT_SCENE_CLASS} data-window={windowState}>
       {/* The shadow the panel casts on the page. Its own element so it keeps its
           own geometry and is not carried through the panel's rotation. */}
       <div aria-hidden="true" className={TILT_SHADOW_CLASS} />
@@ -402,13 +491,46 @@ function StartHerePanel({ panelRef }: { readonly panelRef: RefObject<HTMLDivElem
         ref={panelRef}
         className={cn(TILT_PANEL_CLASS, 'border bg-card lg:overflow-hidden lg:rounded-lg')}
       >
-        <div
-          aria-hidden="true"
-          className="hidden items-center gap-2 border-b bg-muted/40 px-4 py-3 lg:flex"
-        >
-          {WINDOW_LIGHTS.map((light) => (
-            <span key={light} className={cn('size-3 rounded-full', light)} />
-          ))}
+        {/* The title bar, and the only place the window can be closed from —
+            which is why it and the states it sets are both scoped to `lg`. */}
+        <div className="group/lights hidden items-center border-b bg-muted/40 px-4 py-3 lg:flex">
+          {/* Cancels the 6px each 24px target adds around its 12px dot, so the
+              row keeps the height and the left edge it had before. Applied to
+              the group and not between the targets: a negative margin between
+              them would overlap the hit areas and undo the 24px. */}
+          <span className="-my-1.5 -ml-1.5 flex items-center">
+            <button
+              type="button"
+              onClick={() => {
+                pendingFocus.current = 'search'
+                setWindowState('closed')
+              }}
+              aria-label="Închide fereastra cu instituții"
+              className={LIGHT_TARGET_CLASS}
+            >
+              <WindowLight tone={WINDOW_LIGHTS.close} glyph="✕" />
+            </button>
+            <button
+              ref={minimiseRef}
+              type="button"
+              onClick={() => {
+                pendingFocus.current = 'restore'
+                setWindowState('minimised')
+              }}
+              aria-label="Minimizează fereastra cu instituții"
+              className={LIGHT_TARGET_CLASS}
+            >
+              <WindowLight tone={WINDOW_LIGHTS.minimise} glyph="−" />
+            </button>
+            <Link
+              to="/entity-analytics"
+              preload="intent"
+              aria-label="Deschide analiza entităților"
+              className={LIGHT_TARGET_CLASS}
+            >
+              <WindowLight tone={WINDOW_LIGHTS.zoom} glyph="↗" />
+            </Link>
+          </span>
         </div>
         <div className="flex items-baseline justify-between border-b px-4 py-3">
           <MonoLabel className="text-muted-foreground">Începe de aici</MonoLabel>
@@ -442,6 +564,29 @@ function StartHerePanel({ panelRef }: { readonly panelRef: RefObject<HTMLDivElem
           ))}
         </ul>
       </div>
+      {/* What a minimised window is: the app's own icon, the size of a dock
+          tile, and clicking it gives the window back.
+
+          Mounted only in this state and only at `lg`, so there is never a
+          reopen control on a phone for a window a phone cannot have closed. */}
+      {windowState === 'minimised' ? (
+        <button
+          ref={restoreRef}
+          type="button"
+          onClick={() => {
+            pendingFocus.current = 'minimise'
+            setWindowState('open')
+          }}
+          aria-label="Redeschide fereastra cu instituții"
+          className="group hidden size-14 items-center justify-center rounded-full border bg-card shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-90 motion-safe:duration-300 lg:flex"
+        >
+          <img
+            src={logo}
+            alt=""
+            className="size-7 rounded-sm transition-transform group-hover:scale-105 motion-reduce:transition-none"
+          />
+        </button>
+      ) : null}
     </div>
   )
 }
@@ -753,6 +898,9 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
   // scroll. Its own ref: the tilt is written on that element and nowhere else.
   const entityPanelRef = useRef<HTMLDivElement>(null)
   usePanelTilt(entityPanelRef)
+  // Where focus goes when the panel's close button removes the panel from under
+  // it: the field the hero is built around, and the one the window points at.
+  const searchInputRef = useRef<HTMLInputElement>(null)
   useCanvasFieldMotion(heroRef, { cell: fieldCell })
   // One root, lent to every effect that needs the page's geometry. None of them
   // owns it, which is what lets the page decide which of them run at all.
@@ -886,7 +1034,7 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
                 și decide mai bine.
               </p>
               <div className="mt-6 sm:mt-7">
-                <RefinedSearch />
+                <RefinedSearch inputRef={searchInputRef} />
               </div>
               {/* Balances the column against the taller panel, and gives the
                   three heaviest surfaces a direct route out of the hero. The
@@ -911,7 +1059,7 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
               </nav>
             </div>
             <div className="min-w-0 lg:col-span-5">
-              <StartHerePanel panelRef={entityPanelRef} />
+              <StartHerePanel panelRef={entityPanelRef} searchInputRef={searchInputRef} />
             </div>
           </div>
         </Frame>

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
 import type { BaseUIEvent } from '@base-ui/react/types'
@@ -106,6 +106,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
 
 export function LandingSearch({
   className,
+  inputRef: externalInputRef,
   placeholder = 'Caută o instituție sau CUI...',
   autoFocus,
   scrollToTopOnFocus,
@@ -114,6 +115,15 @@ export function LandingSearch({
   fallback,
 }: {
   readonly className?: string
+  /**
+   * Lets a caller move focus into the field.
+   *
+   * Optional and substituted for the internal one rather than merged with it,
+   * because there is only ever one input and nothing here needs two handles on
+   * it. Used by the hero, which has a control that removes itself and has to
+   * put focus somewhere real afterwards.
+   */
+  readonly inputRef?: RefObject<HTMLInputElement | null>
   readonly placeholder?: string
   readonly autoFocus?: boolean
   readonly scrollToTopOnFocus?: boolean
@@ -132,7 +142,8 @@ export function LandingSearch({
   const modifier = useModifierKey()
   const prefersReducedMotion = usePrefersReducedMotion()
   const containerRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const localInputRef = useRef<HTMLInputElement>(null)
+  const inputRef = externalInputRef ?? localInputRef
 
   useHotkeys('mod+k', (event) => {
     event.preventDefault()

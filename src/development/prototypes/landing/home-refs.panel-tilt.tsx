@@ -397,6 +397,29 @@ const CSS = `
       opacity: 0;
     }
   }
+
+  /*
+   * Closed and minimised, from the title bar's own controls.
+   *
+   * Hidden rather than unmounted, and hidden only inside this query. Unmounting
+   * would take the element the perspective hook holds with it and rebuild the
+   * scene on restore; and below this breakpoint there is no title bar, so a
+   * state the reader can neither see nor have set would silently empty the list
+   * on a phone. Stated here, a phone gets the list whatever the window says.
+   *
+   * 'display: none' rather than visibility or opacity, because it has to leave
+   * the accessibility tree as well: a closed window a screen reader still reads
+   * out has not been closed, it has been painted over.
+   *
+   * Two classes deep, so it outranks the single-class rules above at (0,2,0)
+   * regardless of source order.
+   */
+  .${TILT_SCENE_CLASS}[data-window='minimised'] .${TILT_PANEL_CLASS},
+  .${TILT_SCENE_CLASS}[data-window='minimised'] .${TILT_SHADOW_CLASS},
+  .${TILT_SCENE_CLASS}[data-window='closed'] .${TILT_PANEL_CLASS},
+  .${TILT_SCENE_CLASS}[data-window='closed'] .${TILT_SHADOW_CLASS} {
+    display: none;
+  }
 }
 
 /*
@@ -533,6 +556,28 @@ export function usePanelTilt(panelRef: RefObject<HTMLElement | null>) {
       panel.style.removeProperty('--tpz-tilt')
     }
 
+    /*
+     * The panel can also stop and start being drawn without either query
+     * changing — it is hidden when the window is closed or minimised, and comes
+     * back when it is restored. That has the same hazard as the breakpoint: the
+     * memo outlives the property, so the angle it wants matches what it thinks
+     * it last wrote and it declines to write anything, leaving the panel at its
+     * resting angle rather than at the one the scroll position implies.
+     *
+     * Watching the box covers every way that can happen — restore, breakpoint,
+     * or anything later that hides it — rather than enumerating them.
+     */
+    let hadBox = panel.getClientRects().length > 0
+    const observer = new ResizeObserver(() => {
+      const hasBox = panel.getClientRects().length > 0
+      if (hasBox === hadBox) return
+      hadBox = hasBox
+      if (!hasBox || !active) return
+      last = Number.NaN
+      paint()
+    })
+    observer.observe(panel)
+
     if (active) paint()
     window.addEventListener('scroll', onScroll, { passive: true })
     desktop.addEventListener('change', sync)
@@ -540,6 +585,7 @@ export function usePanelTilt(panelRef: RefObject<HTMLElement | null>) {
 
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame)
+      observer.disconnect()
       window.removeEventListener('scroll', onScroll)
       desktop.removeEventListener('change', sync)
       reduced.removeEventListener('change', sync)

@@ -80,6 +80,26 @@ import { LandingRefs } from './home-refs.refined'
  * one column on a phone, where a pane angled at a headline directly above it is
  * angled at nothing and three window controls on a device with no windows are a
  * costume rather than a metaphor.
+ *
+ * Round nine made the three lights work, which is the part of the metaphor the
+ * page had been borrowing without paying for. Red closes the window, amber
+ * collapses it to the app icon that brings it back, green opens the entity
+ * analytics page — a link and not a button, because it is the only one of the
+ * three that navigates.
+ *
+ * The costs of promoting decoration to controls, all of them paid here: each
+ * light is a real element with a name, so the title bar is no longer
+ * `aria-hidden`; each 12px dot sits in a 24px target, since the dot is what
+ * makes it read as a window light and 12px is half of what WCAG 2.2 asks a
+ * target to be; and each of the three destroys itself when used, so focus is
+ * moved deliberately afterwards — to the icon, back to the light that was
+ * pressed, or to the search field — rather than dropped on the body.
+ *
+ * Closed and minimised are states of the window and so are scoped to the width
+ * the window exists at. Below it the list renders whatever they say, because
+ * there is no title bar down there to have set them and no way to undo them.
+ * Closing is one-way by design: nothing on the page reopens a closed window
+ * short of a reload, which is what closing a window means.
  */
 
 export const prototype = {
