@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type RefObject } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { LinkProps } from '@tanstack/react-router'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Minus, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import leu from '@/assets/images/landing-leu.webp'
 import leuAvif from '@/assets/images/landing-leu.avif'
 import atlas from '@/assets/images/landing-atlas.webp'
@@ -374,25 +375,28 @@ const WINDOW_LIGHTS = {
  * The glyph appears on hover of the row, as macOS does it — you see what the
  * lights do when you go near them, not before. It carries no meaning on its
  * own; the accessible name on the control does that.
+ *
+ * Drawn rather than typed. The ✕, − and ↗ characters were each a different
+ * font's idea of the shape at 9px — different weights, different optical
+ * sizes, and the arrow a good deal heavier than the other two — where three
+ * marks sitting in a row have to look like one set. As icons they share a
+ * geometry and a stroke.
+ *
+ * 8px inside the 12px dot, which puts the drawn mark near 6.7px and leaves the
+ * ring of colour macOS leaves. Stroke 3 is the number that makes it 1px: these
+ * are drawn in a 24-unit box and scaled to 8, so the stroke scales by a third
+ * with everything else.
  */
-function WindowLight({
-  tone,
-  glyph,
-}: {
-  readonly tone: string
-  readonly glyph: string
-}) {
+function WindowLight({ tone, icon: Icon }: { readonly tone: string; readonly icon: LucideIcon }) {
   return (
     <span
       aria-hidden="true"
-      className={cn(
-        'flex size-3 items-center justify-center rounded-full text-[9px] font-semibold leading-none text-black/60',
-        tone,
-      )}
+      className={cn('flex size-3 items-center justify-center rounded-full', tone)}
     >
-      <span className="opacity-0 group-hover/lights:opacity-100 group-focus-visible/light:opacity-100 motion-safe:transition-opacity">
-        {glyph}
-      </span>
+      <Icon
+        strokeWidth={3}
+        className="size-2 text-black/55 opacity-0 group-hover/lights:opacity-100 group-focus-visible/light:opacity-100 motion-safe:transition-opacity"
+      />
     </span>
   )
 }
@@ -476,7 +480,17 @@ function StartHerePanel({
        margin to run the panel up to the rule closed the right gap to zero, and
        a positive one opened it to 44 and then 56 against an unchanged 32 on
        the left. */
-    <div className={TILT_SCENE_CLASS} data-window={windowState}>
+    <div
+      className={cn(
+        TILT_SCENE_CLASS,
+        // Only while minimised, and only where the window exists. The column
+        // stretches to the hero's height, so `h-full` gives this something to
+        // put a bottom edge against; at rest neither class is here and the
+        // scene is the plain block it has always been.
+        windowState === 'minimised' && 'lg:flex lg:h-full lg:items-end lg:justify-end',
+      )}
+      data-window={windowState}
+    >
       {/* The shadow the panel casts on the page. Its own element so it keeps its
           own geometry and is not carried through the panel's rotation. */}
       <div aria-hidden="true" className={TILT_SHADOW_CLASS} />
@@ -508,7 +522,7 @@ function StartHerePanel({
               aria-label="Închide fereastra cu instituții"
               className={LIGHT_TARGET_CLASS}
             >
-              <WindowLight tone={WINDOW_LIGHTS.close} glyph="✕" />
+              <WindowLight tone={WINDOW_LIGHTS.close} icon={X} />
             </button>
             <button
               ref={minimiseRef}
@@ -520,7 +534,7 @@ function StartHerePanel({
               aria-label="Minimizează fereastra cu instituții"
               className={LIGHT_TARGET_CLASS}
             >
-              <WindowLight tone={WINDOW_LIGHTS.minimise} glyph="−" />
+              <WindowLight tone={WINDOW_LIGHTS.minimise} icon={Minus} />
             </button>
             <Link
               to="/entity-analytics"
@@ -528,7 +542,7 @@ function StartHerePanel({
               aria-label="Deschide analiza entităților"
               className={LIGHT_TARGET_CLASS}
             >
-              <WindowLight tone={WINDOW_LIGHTS.zoom} glyph="↗" />
+              <WindowLight tone={WINDOW_LIGHTS.zoom} icon={ArrowUpRight} />
             </Link>
           </span>
         </div>
@@ -566,6 +580,11 @@ function StartHerePanel({
       </div>
       {/* What a minimised window is: the app's own icon, the size of a dock
           tile, and clicking it gives the window back.
+
+          It sits at the bottom right of the column the window vacated, which is
+          where a dock is and, on this page, the corner furthest from everything
+          the hero wants read first — a minimised window should be retrievable
+          without competing with the headline it was minimised away from.
 
           Mounted only in this state and only at `lg`, so there is never a
           reopen control on a phone for a window a phone cannot have closed. */}
@@ -1058,7 +1077,13 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
                 </span>
               </nav>
             </div>
-            <div className="min-w-0 lg:col-span-5">
+            {/* `self-stretch` against the grid's `items-start`: with the window
+                minimised this column has only the reopen icon in it, and an
+                icon cannot be at the bottom of a box the height of an icon.
+                Stretched, it is as tall as the hero, and at rest it changes
+                nothing — the panel is the taller of the two columns, so the
+                row's height is already its own. */}
+            <div className="min-w-0 lg:col-span-5 lg:self-stretch">
               <StartHerePanel panelRef={entityPanelRef} searchInputRef={searchInputRef} />
             </div>
           </div>
