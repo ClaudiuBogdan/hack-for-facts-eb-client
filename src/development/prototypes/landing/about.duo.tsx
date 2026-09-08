@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { Frame, PROTOTYPE_MARKER } from './about.parts'
 import { PictureRevealStyles, usePictureReveal } from './home-refs.image-reveal'
-import { ContributorsBand, PeopleBand } from './home-refs.people'
+import { PeopleBand } from './home-refs.people'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
 
 /**
@@ -35,11 +35,6 @@ export function AboutDuo() {
       <Frame className="py-14 sm:py-16">
         <PeopleBand />
       </Frame>
-      <div className="border-t bg-muted/20">
-        <Frame className="py-14">
-          <ContributorsBand />
-        </Frame>
-      </div>
     </section>
   )
 }

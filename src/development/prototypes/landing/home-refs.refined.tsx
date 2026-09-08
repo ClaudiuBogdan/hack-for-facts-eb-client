@@ -53,7 +53,7 @@ import {
   useSectionLight,
 } from './home-refs.section-light'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
-import { ContributorsBand, PeopleBand } from './home-refs.people'
+import { PeopleBand } from './home-refs.people'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
@@ -1261,23 +1261,14 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
         </Frame>
       </section>
 
-      {/* People — open band. The page's only faces, and the one place it speaks
-          in the first person. `home-refs.people.tsx` carries the shape and the
-          two alternatives it beat; everything in it below the founder is still
-          stand-in, and no longer labelled as such on screen. */}
+      {/* People — open band, and the page's only faces. Three tiers in one
+          section: the founder, the angels, and everyone else under a rule.
+          `home-refs.people.tsx` carries the shape and the two alternatives it
+          beat; everything in it below the founder is still stand-in, and no
+          longer labelled as such on screen. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
           <PeopleBand />
-        </Frame>
-      </section>
-
-      {/* Contributors — dense band. Split off the people band on purpose: the
-          tiers above are a few named people with faces, this one is an open list
-          that grows by pull request, and one band said they were the same kind
-          of thing. */}
-      <section className="border-b bg-muted/20">
-        <Frame className="py-14">
-          <ContributorsBand />
         </Frame>
       </section>
 

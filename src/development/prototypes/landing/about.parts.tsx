@@ -197,7 +197,7 @@ export function BandHead({ title, lead }: { readonly title: ReactNode; readonly 
  */
 function PendingAvatar() {
   return (
-    <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted/50">
+    <span className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted/50">
       <svg viewBox="0 0 80 80" className="size-full text-muted-foreground" role="img" aria-hidden="true" focusable="false">
         <circle cx="40" cy="31" r="13" className="fill-current" fillOpacity={0.3} />
         <circle cx="40" cy="73" r="23" className="fill-current" fillOpacity={0.3} />
@@ -206,7 +206,7 @@ function PendingAvatar() {
   )
 }
 
-const CONTRIBUTOR_CELL_CLASS = 'group flex flex-col items-start gap-3 rounded-sm'
+const CONTRIBUTOR_CELL_CLASS = 'group flex flex-col items-start gap-2.5 rounded-sm'
 
 /**
  * The third tier: everyone who put something in, as a wall of faces.
@@ -219,12 +219,16 @@ const CONTRIBUTOR_CELL_CLASS = 'group flex flex-col items-start gap-3 rounded-sm
  * A cell with a profile is a link and opens it; a cell without one is a plain
  * block. Same box either way — someone whose social account we do not have is
  * not a lesser contributor, so nothing about the cell is dimmed for it.
+ *
+ * Condensed to a 56px avatar on an eight-track row: this is the lightest of the
+ * three tiers and the only one that is meant to grow, so it has to still read
+ * as a list at thirty names rather than only at nine.
  */
 export function ContributorGrid({ className }: { readonly className?: string }) {
   return (
     <ul
       className={cn(
-        'grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6',
+        'grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8',
         className,
       )}
     >
@@ -241,14 +245,14 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
                 height={160}
                 loading="lazy"
                 decoding="async"
-                className="size-20 shrink-0 rounded-full bg-muted object-cover"
+                className="size-14 shrink-0 rounded-full bg-muted object-cover"
               />
             )}
             <span className="min-w-0">
-              <span className="block text-sm font-medium leading-tight text-foreground group-hover:text-primary">
+              <span className="block text-[0.8125rem] font-medium leading-tight text-foreground group-hover:text-primary">
                 {contributor.name}
               </span>
-              <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">
+              <MonoLabel className="mt-1.5 block leading-relaxed text-muted-foreground">
                 {contributor.role}
               </MonoLabel>
             </span>
@@ -291,15 +295,15 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
         >
           <span
             aria-hidden="true"
-            className="flex size-20 shrink-0 items-center justify-center rounded-full border border-dashed text-muted-foreground transition-colors group-hover:border-primary group-hover:text-primary"
+            className="flex size-14 shrink-0 items-center justify-center rounded-full border border-dashed text-muted-foreground transition-colors group-hover:border-primary group-hover:text-primary"
           >
-            <Plus className="size-5" />
+            <Plus className="size-4" />
           </span>
           <span className="min-w-0">
-            <span className="block text-sm font-medium leading-tight text-foreground group-hover:text-primary">
+            <span className="block text-[0.8125rem] font-medium leading-tight text-foreground group-hover:text-primary">
               Locul tău aici
             </span>
-            <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">
+            <MonoLabel className="mt-1.5 block leading-relaxed text-muted-foreground">
               Contribuie pe GitHub
             </MonoLabel>
           </span>

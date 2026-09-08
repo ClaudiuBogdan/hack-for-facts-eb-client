@@ -23,17 +23,20 @@ import { MonoLabel } from './home-refs.mono-label'
  *
  * Three tiers, because they are three different claims and one grid would say
  * they are the same one: the person accountable for the platform, the handful
- * who kept it alive, and everyone who has pushed a commit.
+ * who kept it alive, and everyone who put something in — which is a longer list
+ * than the one with commits on it. All three share the band; the third is under
+ * a rule rather than under a number of its own.
  */
 export function PeopleBand() {
   return (
-    /* One grid, not two stacked ones.
+    <>
+    {/* One grid, not two stacked ones.
      *
      * The heading used to sit in its own row above the people, which meant the
      * left column ran out of content while the lead and the link beside it kept
      * growing — about 200px of nothing between `platformei` and the portrait at
      * 1440. Putting the heading and the founder in the same column closes it,
-     * and the portrait now starts where the heading ends. */
+     * and the portrait now starts where the heading ends. */}
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-5">
         <MonoLabel className="block text-primary" data-reveal>
@@ -125,47 +128,26 @@ export function PeopleBand() {
         </ul>
       </div>
     </div>
-  )
-}
 
-/**
- * `04 / Contribuitori` — the third tier, in a band of its own.
- *
- * It was a rule at the foot of the people band and it is a section now: the
- * first two tiers are a small number of named people the page argues for, and
- * this one is an open list anyone can join. Sharing a band said they were the
- * same kind of thing.
- *
- * And it is not a code tier. Translations, checked figures, a bug report, a
- * door opened at the right moment — none of that is a commit, so the list is
- * held in `about.people.ts` rather than read off the GitHub API.
- */
-export function ContributorsBand() {
-  return (
-    <>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-5">
-          <MonoLabel className="block text-primary" data-reveal>
-            04 / Contribuitori
+      {/* Contributors close the same band rather than opening their own.
+
+          They were `04 /` for a while. But the page numbers *subjects*, and
+          this is not a second subject — it is the same one at a third weight,
+          after the founder and the angels. A rule and a caption say that; a
+          number said the band above had finished. */}
+      <div className="mt-14 border-t pt-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+          <MonoLabel data-reveal className="text-primary">
+            Contribuitori
           </MonoLabel>
-          <h2
-            data-reveal
-            className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
-          >
-            Cine a mai pus umărul
-          </h2>
-        </div>
-        <div className="lg:col-span-6 lg:col-start-7">
-          <p data-reveal className="text-base leading-relaxed text-muted-foreground">
-            Cod, traduceri, cifre verificate, erori raportate, o ușă deschisă
-            la momentul potrivit. Clientul, serverul și extractoarele sunt
-            publice — dar lista nu se oprește la commit-uri.
+          <p data-reveal className="max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
+            Cod, traduceri, cifre verificate, erori raportate, o ușă deschisă la
+            momentul potrivit — lista nu se oprește la commit-uri.
           </p>
         </div>
-      </div>
-
-      <div data-reveal>
-        <ContributorGrid className="mt-10" />
+        <div data-reveal>
+          <ContributorGrid className="mt-8" />
+        </div>
       </div>
     </>
   )

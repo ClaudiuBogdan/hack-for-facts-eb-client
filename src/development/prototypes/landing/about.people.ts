@@ -145,17 +145,19 @@ export const CONTRIBUTORS: readonly Contributor[] = [
   {
     id: 'claudiu',
     name: 'Claudiu Bogdan',
-    role: 'Cod, date, design',
+    role: 'Cod și date',
     avatar: ghClaudiu,
     url: 'https://github.com/ClaudiuBogdan',
   },
-  { id: 'c2', name: 'Nume Prenume', role: 'A tradus interfața', url: '#' },
-  { id: 'c3', name: 'Prenume Nume', role: 'A verificat cifrele', url: '#' },
-  { id: 'c4', name: 'Nume de Familie', role: 'A raportat erori', url: '#' },
-  { id: 'c5', name: 'Al Cincilea Nume', role: 'A dus vorba mai departe', url: '#' },
-  { id: 'c6', name: 'Prenume Nume-Dublu', role: 'A testat pe teren', url: '#' },
-  { id: 'c7', name: 'Nume Scurt', role: 'A scris documentația', url: '#' },
-  { id: 'c8', name: 'Al Optulea Nume', role: 'A deschis o ușă', url: '#' },
+  /* Six stand-ins, so the row lands on eight with the open seat. Roles are kept
+     to two or three words: at a 130px track a longer line wraps to three and the
+     row goes ragged, which is the opposite of condensed. */
+  { id: 'c2', name: 'Nume Prenume', role: 'Traduceri', url: '#' },
+  { id: 'c3', name: 'Prenume Nume', role: 'Verifică cifrele', url: '#' },
+  { id: 'c4', name: 'Nume de Familie', role: 'Raportează erori', url: '#' },
+  { id: 'c5', name: 'Al Cincilea Nume', role: 'Duce vorba', url: '#' },
+  { id: 'c6', name: 'Nume Scurt', role: 'Testează pe teren', url: '#' },
+  { id: 'c7', name: 'Al Șaptelea Nume', role: 'Documentație', url: '#' },
 ]
 
 export const REPO_URL = 'https://github.com/ClaudiuBogdan/hack-for-facts-eb-client'
