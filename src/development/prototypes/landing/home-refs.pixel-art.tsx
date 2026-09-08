@@ -1,6 +1,3 @@
-import type { CSSProperties } from 'react'
-import { cn } from '@/lib/utils'
-
 /**
  * The lattice, pixelating at the margins.
  *
@@ -14,13 +11,36 @@ import { cn } from '@/lib/utils'
  * coordinates, not `Math.random()` — so the server and client draw the same
  * squares, it survives hydration, and the pattern is stable across navigations
  * instead of reshuffling on every render.
+ *
+ * The module the whole thing is quantised to is a parameter. `cell` picks it,
+ * every count derives from it, and the noise is sampled in page space rather
+ * than in cell indices — so a finer field is the same composition drawn at a
+ * finer resolution, not a different one.
+ *
+ * This module builds the field and does not draw it. `home-refs.pixel-canvas.tsx`
+ * is what puts it on screen, and the separation is why the module could be made
+ * four times finer without the renderer noticing.
  */
 
-/** Which part of the field to draw. Splitting it lets the tail lag the squares. */
-export type PixelLayer = 'squares' | 'particles'
+/**
+ * Which part of the field to build. The split is kept because the two halves
+ * are built by different rules and the tail is drawn over the band; it is no
+ * longer a rendering boundary, now that one canvas draws both.
+ */
+type PixelLayer = 'squares' | 'particles'
 
-/** Matches the minor lattice in `home-refs.refined.tsx`. */
-const CELL = 24
+/**
+ * Sizes the field can be drawn at.
+ *
+ * Both divide the 24px minor lattice, so a square lands on a lattice line
+ * whichever is chosen — one square per lattice cell at 24, four at 12. A size
+ * that did not divide it would put the field out of register with the grid it
+ * is supposed to be filling in, which is the whole conceit.
+ */
+export type FieldCell = 24 | 12
+
+/** The lattice module, and the coarsest the field is drawn at. */
+const BASE_CELL = 24
 
 /**
  * Total columns drawn inward from the edge. Wider than the margin on purpose:
@@ -28,17 +48,17 @@ const CELL = 24
  * where an eighth-cell particle at this weight is texture rather than something
  * the eye has to reject.
  */
-const COLUMNS = 30
+const BASE_COLUMNS = 30
 
 /**
  * Width of the square band, in columns — and the width the pattern is
  * normalised over. Keeping the normalisation on the square band alone means
- * `COLUMNS` can grow to lengthen the tail without moving a single square.
+ * `BASE_COLUMNS` can grow to lengthen the tail without moving a single square.
  */
-const SQUARE_COLUMNS = 16
+const BASE_SQUARE_COLUMNS = 16
 
 /** Rows, sized to cover a tall hero; the section clips whatever it does not need. */
-const ROWS = 26
+const BASE_ROWS = 26
 
 /**
  * Where particles may start, in columns — six short of where the squares end.
@@ -48,7 +68,7 @@ const ROWS = 26
  * after the band left a visible gap. In the overlap a cell can hold a square or
  * a particle, never both.
  */
-const TAIL_START = 10
+const BASE_TAIL_START = 10
 
 /**
  * Size bands do not interleave — each owns a clean run of columns. Wobbling the
@@ -56,7 +76,26 @@ const TAIL_START = 10
  * three sizes read as one speckled mass. The density falloff carries the
  * transition instead.
  */
-const DIFFUSION_BOUNDS = [19, 25] as const
+const BASE_DIFFUSION_BOUNDS = [19, 25] as const
+
+/**
+ * Everything the field's shape depends on, derived from the cell size.
+ *
+ * `k` is how many cells now stand where one 24px cell stood. Every count is
+ * multiplied by it, so the field covers the same 720x624 area, reaches the same
+ * distance inward, and hands over to the tail at the same place. The only thing
+ * that changes is how finely all of it is cut.
+ */
+export function fieldGeometry(cell: FieldCell) {
+  const k = BASE_CELL / cell
+  return {
+    k,
+    columns: BASE_COLUMNS * k,
+    rows: BASE_ROWS * k,
+    squareColumns: BASE_SQUARE_COLUMNS * k,
+    tailStart: BASE_TAIL_START * k,
+  }
+}
 
 /** Deterministic value in [0, 1) for a cell. Stable across engines, hence SSR-safe. */
 function hash(x: number, y: number): number {
@@ -86,7 +125,7 @@ function fbm(x: number, y: number): number {
   )
 }
 
-type Square = {
+export type FieldSquare = {
   readonly x: number
   readonly y: number
   /** A full cell, or one of its halves, quarters or eighths. */
@@ -184,16 +223,30 @@ const LOGO_TINTS = TINT_LIGHTNESS_STEPS.map(toTint)
 const ARMY_TIERS = [0.95, 0.62, 0.38, 0.2] as const
 
 /**
+ * The intro's peak opacity for a cell, and its peak scale.
+ *
+ * Exported and shared because there are now two renderers drawing the same
+ * field, and a peak that differed between them would be a difference nobody
+ * would think to look for. Rounded here rather than at the call site so both
+ * get the same rounding too — the SVG used to round on its way into a custom
+ * property, which the canvas has no equivalent of.
+ */
+export const introPeakOpacity = (opacity: number): number =>
+  Number(Math.min(1, opacity + 0.44).toFixed(3))
+
+export const introPeakScale = (seed: number): number => Number((1.2 + seed * 0.38).toFixed(2))
+
+/**
  * Bounds on a cell's own animation length.
  *
- * Exported because the stylesheet derives how long to hold the ripple class
- * from the longest of them. Holding it for less would drop the class while the
- * farthest cells were still animating and, with `animation-fill-mode: both`,
- * snap them back mid-flight. Keeping the number here means changing the range
- * cannot silently break that.
+ * These used to be exported so a stylesheet could work out how long to hold a
+ * class before dropping it, and getting that arithmetic wrong snapped every
+ * unfinished cell back mid-flight. The canvas renderer reads each cell's real
+ * delay and duration and stops when the last one is spent, so there is no
+ * derived total to keep in step and nothing outside this module needs them.
  */
-export const SHORTEST_CELL_MS = 720
-export const LONGEST_CELL_MS = 1060
+const SHORTEST_CELL_MS = 720
+const LONGEST_CELL_MS = 1060
 
 /**
  * Per-cell timing for the intro wave.
@@ -205,34 +258,50 @@ export const LONGEST_CELL_MS = 1060
  * step. The duration varies per cell for the same reason — with one duration
  * the whole field snaps back together, which nothing in nature does.
  */
-function timing(col: number, row: number) {
+function timing(col: number, row: number, k: number) {
   const seed = hash(col + 3, row + 11)
-  const rowOffset = fbm(0.5, row * 0.22) * 190
+  const rowOffset = fbm(0.5, (row / k) * 0.22) * 190
   return {
     seed: Number(seed.toFixed(3)),
-    introDelay: Math.round(col * 22 + rowOffset + seed * 95),
+    // The ramp is per *pixel* travelled, not per column. Left at a flat 22ms a
+    // finer field takes k times as long to cross: at 8px the last column
+    // started at 2243ms and then ran for another 1060. That used to overrun a
+    // fixed 2200ms ceiling after which the stylesheet dropped its class,
+    // snapping every cell still in flight back to rest; the canvas renderer
+    // reads each cell's own delay and duration and stops when the last is
+    // spent, so there is no ceiling left to overrun. Dividing by k is kept
+    // because it is what makes the wave cross the same distance in the same
+    // wall-clock time at every cell size.
+    introDelay: Math.round((col * 22) / k + rowOffset + seed * 95),
     duration: Math.round(SHORTEST_CELL_MS + seed * (LONGEST_CELL_MS - SHORTEST_CELL_MS)),
   }
 }
 
-function diffusionSize(col: number): number {
-  if (col < DIFFUSION_BOUNDS[0]) return CELL / 2
-  if (col < DIFFUSION_BOUNDS[1]) return CELL / 4
-  return CELL / 8
+function diffusionSize(col: number, cell: FieldCell, k: number): number {
+  if (col < BASE_DIFFUSION_BOUNDS[0] * k) return cell / 2
+  if (col < BASE_DIFFUSION_BOUNDS[1] * k) return cell / 4
+  return cell / 8
 }
 
-function buildField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[] {
-  const squares: Square[] = []
+function buildField(edge: 'left' | 'right', layer: PixelLayer, cell: FieldCell): readonly FieldSquare[] {
+  const { k, columns, rows, squareColumns, tailStart } = fieldGeometry(cell)
+  const squares: FieldSquare[] = []
 
-  for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLUMNS; col += 1) {
-      const inward = col / (SQUARE_COLUMNS - 1)
-      const x = edge === 'left' ? col * CELL : (COLUMNS - 1 - col) * CELL
-      const y = row * CELL
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < columns; col += 1) {
+      const inward = col / (squareColumns - 1)
+      const x = edge === 'left' ? col * cell : (columns - 1 - col) * cell
+      const y = row * cell
 
       // Quantising smooth noise is what makes patches connect rather than
       // speckle — the defining property of camouflage.
-      const field = fbm(col * 0.34, row * 0.34)
+      //
+      // Sampled in page space, not in cell indices: dividing the coordinates
+      // back out by k holds a patch at the same physical size whatever the
+      // module, so a finer field is the same composition cut more finely. Per
+      // index the patches would shrink with the cells and the field would come
+      // out as speckle at every size.
+      const field = fbm((col / k) * 0.34, (row / k) * 0.34)
       const tier = Math.min(ARMY_TIERS.length - 1, Math.floor(field * 4.6))
       if (field < 0.31) continue
 
@@ -241,44 +310,48 @@ function buildField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[
       // Reach travels far by softening the decay rather than raising density: a
       // flatter exponent carries the patches inward while leaving the outer
       // edge as thick as it already was.
-      const reach = col < SQUARE_COLUMNS ? Math.pow(1 - inward, 1.05) : 0
-      const isSquare = col < SQUARE_COLUMNS && hash(row, col) <= reach + 0.18
+      const reach = col < squareColumns ? Math.pow(1 - inward, 1.05) : 0
+      // The scatter stays per index rather than per pixel — it is what decides
+      // which individual cells fill, so it has to resolve at the module being
+      // drawn or four cells would fill or empty together as one 24px block.
+      const isSquare = col < squareColumns && hash(row, col) <= reach + 0.18
 
       if (isSquare) {
         if (layer !== 'squares') continue
         squares.push({
           x,
           y,
-          size: CELL,
+          size: cell,
           // Weight gets a floor: `reach` runs to zero at the last column, so
           // without one the final squares are drawn at no opacity at all and
           // the band appears to stop several columns before it does.
           opacity: Number((ARMY_TIERS[tier] * Math.max(reach, 0.16)).toFixed(3)),
           fill: tint,
-          ...timing(col, row),
+          ...timing(col, row, k),
         })
         continue
       }
 
-      if (layer !== 'particles' || col < TAIL_START) continue
+      if (layer !== 'particles' || col < tailStart) continue
 
-      const tail = (col - TAIL_START) / (COLUMNS - TAIL_START)
+      const tail = (col - tailStart) / (columns - tailStart)
       // Coherent noise alone streaked the particles into diagonal bands — the
       // clumping was too strong and too smooth to read as scatter. Mixing it
       // with white noise keeps a loose tendency to cluster while breaking the
       // streaks up.
       const drift =
-        fbm(col * 0.62 + 11, row * 0.62 + 7) * 0.55 + hash(col * 3 + 5, row * 3 + 2) * 0.45
+        fbm((col / k) * 0.62 + 11, (row / k) * 0.62 + 7) * 0.55 +
+        hash(col * 3 + 5, row * 3 + 2) * 0.45
       // Dense where it meets the squares: a half-cell covers a quarter of a
       // cell's area, so the tail needs far more cells than the squares to carry
       // the same weight across the handover.
       if (drift < 0.24 + tail * 0.46) continue
 
-      const size = diffusionSize(col)
+      const size = diffusionSize(col, cell, k)
       // Scattered onto the cell's own sub-grid rather than centred in it.
       // Centring put every particle at the same offset, so they lined up into
       // visible rows and the tail read as a lattice of dots.
-      const slots = CELL / size
+      const slots = cell / size
       const slotX = Math.min(slots - 1, Math.floor(hash(col + 41, row + 3) * slots))
       const slotY = Math.min(slots - 1, Math.floor(hash(col + 7, row + 61) * slots))
       const jitter = 0.7 + hash(col + 29, row + 83) * 0.6
@@ -289,7 +362,7 @@ function buildField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[
         size,
         opacity: Number(Math.min(1, ARMY_TIERS[tier] * (0.62 - tail * 0.34) * jitter).toFixed(3)),
         fill: tint,
-        ...timing(col, row),
+        ...timing(col, row, k),
       })
     }
   }
@@ -298,84 +371,40 @@ function buildField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[
 }
 
 /** Deterministic, so each combination is built once and reused. */
-const fieldCache = new Map<string, readonly Square[]>()
+const fieldCache = new Map<string, readonly FieldSquare[]>()
 
-function getField(edge: 'left' | 'right', layer: PixelLayer): readonly Square[] {
-  const key = `${edge}:${layer}`
+function getField(edge: 'left' | 'right', layer: PixelLayer, cell: FieldCell): readonly FieldSquare[] {
+  const key = `${edge}:${layer}:${cell}`
   const cached = fieldCache.get(key)
   if (cached) return cached
-  const built = buildField(edge, layer)
+  const built = buildField(edge, layer, cell)
   fieldCache.set(key, built)
   return built
 }
 
 /**
- * One layer of one margin field. `aria-hidden` and `pointer-events-none`: it is
- * atmosphere and carries no information a reader could need — which also means
- * it can never be the thing under the cursor, so the click that starts a ripple
- * is measured against the hero section rather than against this.
+ * Every cell of one side, squares first and then the tail, in the order they
+ * are drawn.
  *
- * Drawn at its natural 24px scale rather than stretched, because scaling would
- * break alignment with the lattice underneath.
+ * The two layers are still built separately, because they are built by
+ * different rules, but they are no longer drawn separately: the split existed
+ * so a stylesheet could reach each layer on its own, and the canvas draws one
+ * list into one element. Hence the concatenation. Both halves come from the
+ * same cache, so asking for either costs nothing twice.
  */
-export function PixelField({
-  edge,
-  layer,
-  className,
-}: {
-  readonly edge: 'left' | 'right'
-  readonly layer: PixelLayer
-  readonly className?: string
-}) {
-  const squares = getField(edge, layer)
-
-  // The drift travels inward, so each side moves toward the centre rather than
-  // both sliding the same way.
-  const style = { ['--tpz-drift' as string]: edge === 'left' ? '6px' : '-6px' } as CSSProperties
-
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width={COLUMNS * CELL}
-      height={ROWS * CELL}
-      viewBox={`0 0 ${COLUMNS * CELL} ${ROWS * CELL}`}
-      data-field-layer={layer}
-      style={style}
-      className={cn('pointer-events-none absolute', className)}
-    >
-      {squares.map((square) => (
-        <rect
-          key={`${square.x}-${square.y}-${square.size}`}
-          data-field-cell=""
-          x={square.x}
-          y={square.y}
-          width={square.size}
-          height={square.size}
-          fill={square.fill}
-          // Resting opacity, the intro's peak and schedule, and a per-cell
-          // duration. The ripple's own values are written at click time; the
-          // cell's centre is derived from `x`/`y` rather than duplicated here,
-          // which keeps the SSR payload down.
-          style={
-            {
-              ['--o']: square.opacity,
-              // Headroom rather than a jump to full. Interpolating every cell to
-              // 1 made them all peak at the same value, so the camouflage's
-              // tonal structure collapsed to flat at the crest — the single
-              // biggest reason the field read as a flash rather than a wave.
-              ['--oi']: Math.min(1, square.opacity + 0.44).toFixed(3),
-              ['--dw']: `${square.introDelay}ms`,
-              ['--du']: `${square.duration}ms`,
-              ['--s']: (1.2 + square.seed * 0.38).toFixed(2),
-            } as CSSProperties
-          }
-        />
-      ))}
-    </svg>
-  )
+export function fieldCells(edge: 'left' | 'right', cell: FieldCell): readonly FieldSquare[] {
+  return [...getField(edge, 'squares', cell), ...getField(edge, 'particles', cell)]
 }
 
-/** Rectangles drawn per side, reported in the harness note. */
-export const FIELD_RECT_COUNT =
-  getField('left', 'squares').length + getField('left', 'particles').length
+/**
+ * Rectangles drawn per side at a given module, reported in the harness note.
+ *
+ * Worth reading before changing the cell size: it grows with the square of the
+ * divisor — 494 at 24px, 1,943 at 12px — and it is the length of the loop the
+ * renderer runs on every animated frame.
+ */
+export const fieldRectCount = (cell: FieldCell): number =>
+  getField('left', 'squares', cell).length + getField('left', 'particles', cell).length
+
+/** The settled field's count. */
+export const FIELD_RECT_COUNT = fieldRectCount(BASE_CELL)

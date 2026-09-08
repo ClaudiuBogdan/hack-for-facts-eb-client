@@ -1,5 +1,5 @@
 import type { PrototypeDefinition } from '@/development/harness/entry'
-import { FIELD_RECT_COUNT } from './home-refs.pixel-art'
+import { fieldRectCount } from './home-refs.pixel-art'
 import { LandingRefs } from './home-refs.refined'
 
 /**
@@ -23,6 +23,33 @@ import { LandingRefs } from './home-refs.refined'
  * blur unwinding underneath, over four candidates including a pre-blurred
  * placeholder that lost on appearance. `home-refs.image-reveal.tsx` carries the
  * comparison and `docs/search/` the research the parameters came from.
+ *
+ * Round seven settled the margin field: a 12px module, drawn on a canvas.
+ *
+ * Both halves of that were decided by measurement. Cutting the field from the
+ * lattice's 24px to 12px — four squares where there was one, the tail running
+ * down to 1.5px — is the look, and it was chosen over 24px and over an 8px
+ * module that was built and dropped. But the SVG renderer gave every cell an
+ * element and its own CSS animation, and at 12px that is 1,943 elements a side:
+ * the intro wave fell from 196 frames to 66 across the 2.2 seconds it occupies,
+ * and at 8px it managed four.
+ *
+ * So the field moved to a canvas, and the SVG renderer is gone rather than kept
+ * as an option — a second way to draw the same thing is a second thing to keep
+ * correct.
+ *
+ * |                    | SVG 24px | SVG 12px | canvas 12px |
+ * |--------------------|---------:|---------:|------------:|
+ * | elements per side  |      494 |    1,943 |           1 |
+ * | SSR HTML           |   281 KB |   692 KB |      137 KB |
+ * | intro frames /2.2s |      196 |       66 |         230 |
+ * | frames over 33ms   |        5 |       27 |           1 |
+ *
+ * The canvas at 12px beats the 24px SVG it replaces while drawing four times
+ * the cells, and the draw loop costs about 0.7ms a frame with the main thread
+ * better than half idle. The port was verified by diff rather than by eye: the
+ * same crop of the field, drawn both ways, differed in one pixel of 239,400, by
+ * one level.
  */
 
 export const prototype = {
@@ -32,7 +59,7 @@ export const prototype = {
     landing: {
       title: 'Landing page',
       component: LandingRefs,
-      note: `Each figure counts up with every digit smeared by its own rate of change, so the leading digit is sharp while the tail streaks. Section headings decrypt, cells and text arrive as you reach them. Search and results as one grey surface: no gap, no seam under the field, and the divider below the header is the single line between the query and the answers. Diacritic-folded match highlight, two-stage Escape, results that are real links. Intro wave across ${FIELD_RECT_COUNT} cells per side, a ripple on a hero click, and one light at a time: a circuit tracing the card you are reading, and the margins reporting the stretches no card covers, each fading as the other takes over. The illustrations arrive with a fade, a 20px rise, a 0.985 scale and a 5px blur that clears before the motion settles, triggered 320px into the viewport — 180px and softer on a phone.`,
+      note: `Each figure counts up with every digit smeared by its own rate of change, so the leading digit is sharp while the tail streaks. Section headings decrypt, cells and text arrive as you reach them. Search and results as one grey surface: no gap, no seam under the field, and the divider below the header is the single line between the query and the answers. Diacritic-folded match highlight, two-stage Escape, results that are real links. Intro wave across ${fieldRectCount(12)} cells per side, a ripple on a hero click, and one light at a time: a circuit tracing the card you are reading, and the margins reporting the stretches no card covers, each fading as the other takes over. The illustrations arrive with a fade, a 20px rise, a 0.985 scale and a 5px blur that clears before the motion settles, triggered 320px into the viewport — 180px and softer on a phone.`,
     },
   },
 } satisfies PrototypeDefinition

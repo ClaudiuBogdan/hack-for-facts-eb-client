@@ -28,9 +28,9 @@ import {
 import { ScrambleText, scrambleWithin, stopScrambling } from './home-refs.scramble'
 import { CountUpValue, SmearFilters, countUpWithin, stopCounting } from './home-refs.count-up'
 import { NATIONAL_FACTS } from './home-refs.national-facts'
-import { PixelField } from './home-refs.pixel-art'
-import { FIELD_HOST_CLASS, FieldAnimationStyles } from './home-refs.field-animation'
-import { useFieldMotion } from './home-refs.field-motion'
+import type { FieldCell } from './home-refs.pixel-art'
+import { PixelFieldCanvas, useCanvasFieldMotion } from './home-refs.pixel-canvas'
+import { FIELD_HOST_CLASS } from './home-refs.field-motion'
 import {
   FOOTER_SCENE_CLEAR_PX,
   FooterScene,
@@ -80,7 +80,7 @@ import type { LandingEntry, LandingGroup } from './home.data'
  * - **Index cell hover.** Border and index number pick up the single accent and
  *   an arrow fades in. No lift, no shadow.
  * - **Margin field motion.** An intro wave shortly after load, and a ripple
- *   from the click. See `home-refs.field-animation.tsx` for the constraints
+ *   from the click. See `home-refs.field-motion.ts` for the constraints
  *   that keep ~990 animating cells off the main thread.
  */
 
@@ -660,9 +660,18 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
-function RefinedLanding() {
+/**
+ * `fieldCell` is the module the margin field is quantised to. It stays a prop
+ * rather than a constant because the renderer is indifferent to it — 12px is
+ * what this page settled on, and 24px still draws correctly if it is ever
+ * wanted back.
+ */
+function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) {
   const { groups, coverage } = getPlatformCoverage()
-  const heroRef = useFieldMotion()
+  // The hero is the field's host: the canvases are found inside it and a click
+  // is measured against it.
+  const heroRef = useRef<HTMLElement | null>(null)
+  useCanvasFieldMotion(heroRef, { cell: fieldCell })
   // One root, lent to every effect that needs the page's geometry. None of them
   // owns it, which is what lets the page decide which of them run at all.
   const rootRef = useRef<HTMLDivElement>(null)
@@ -701,7 +710,6 @@ function RefinedLanding() {
           clip was inherited from an earlier version where the fields were
           direct children. */}
       <section ref={heroRef} className={cn('relative border-b', FIELD_HOST_CLASS)}>
-        <FieldAnimationStyles />
         <TwoLayerLattice idPrefix="refined-hero" />
         {/* The grid pixelating at the margins — filled cells on the same 24px
             module the minor lattice is drawn on, so it reads as one system
@@ -740,15 +748,13 @@ function RefinedLanding() {
             className="absolute inset-y-0 left-0 w-[calc((100%-72rem)/2*1.45)] overflow-hidden"
             style={FIELD_MASK.left}
           >
-            <PixelField edge="left" layer="squares" className="left-0 top-0" />
-            <PixelField edge="left" layer="particles" className="left-0 top-0" />
+            <PixelFieldCanvas edge="left" cell={fieldCell} className="left-0 top-0" />
           </div>
           <div
             className="absolute inset-y-0 right-0 w-[calc((100%-72rem)/2*1.45)] overflow-hidden"
             style={FIELD_MASK.right}
           >
-            <PixelField edge="right" layer="squares" className="right-0 top-0" />
-            <PixelField edge="right" layer="particles" className="right-0 top-0" />
+            <PixelFieldCanvas edge="right" cell={fieldCell} className="right-0 top-0" />
           </div>
         </div>
         <Frame marker="hero" className="py-12 sm:py-20 lg:py-24">
