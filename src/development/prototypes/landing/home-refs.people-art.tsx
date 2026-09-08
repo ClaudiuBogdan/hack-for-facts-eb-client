@@ -49,6 +49,8 @@ type Layer = {
   readonly depth: number
   /** Draw order. The portrait is 10; behind is below, in front is above. */
   readonly z: number
+  /** Absent at rest, revealed when the collage is hovered. */
+  readonly hover?: boolean
 }
 
 const FOUNDER_LAYERS: readonly Layer[] = [
@@ -65,15 +67,34 @@ const FOUNDER_LAYERS: readonly Layer[] = [
 ]
 
 const ANGEL_LAYERS: readonly Layer[] = [
+  /*
+   * The same shard backdrop the founder stands against, so the three tiers share
+   * one visual language rather than one of them being a different kind of
+   * picture. It is the tallest asset in the set against the squarest box, so it
+   * runs narrower here than it does behind him.
+   */
+  { key: 'shards', webp: shards, avif: shardsAvif, width: 760, height: 931,
+    left: 10, top: -2, size: 82, depth: -1, z: 0 },
+  /*
+   * Wings and halo are the joke, and a joke told once is enough — at rest these
+   * are four people, and only when you reach for one do they become îngeri
+   * păzitori. The wings sit behind the portrait so they open from behind the
+   * shoulders rather than landing on top of them.
+   */
   { key: 'wings', webp: wings, avif: wingsAvif, width: 620, height: 499,
-    left: -10, top: 12, size: 120, depth: -1.4, z: 0 },
+    left: -6, top: 16, size: 112, depth: -1.8, z: 5, hover: true },
   { key: 'halo', webp: halo, avif: haloAvif, width: 340, height: 120,
-    left: 27, top: 1, size: 46, depth: 1.8, z: 20 },
+    left: 30, top: -1, size: 40, depth: 1.8, z: 20, hover: true },
 ]
 
 /** Where the person stands in their own collage. */
 const FOUNDER_PORTRAIT_SLOT: CSSProperties = { left: '2%', bottom: 0, width: '96%', zIndex: 10, ['--tpz-depth' as string]: 0.6 }
-const ANGEL_PORTRAIT_SLOT: CSSProperties = { left: '14%', bottom: '2%', width: '72%', zIndex: 10, ['--tpz-depth' as string]: 0.6 }
+/*
+ * Anchored at the foot, because the generated set is all one shape — 520 wide by
+ * about 625 — so the feet line up and the heads follow. A set framed on the face
+ * instead would want the opposite.
+ */
+const ANGEL_PORTRAIT_SLOT: CSSProperties = { left: '11%', bottom: 0, width: '78%', zIndex: 10, ['--tpz-depth' as string]: 0.6 }
 
 /**
  * The layer's own box.
@@ -105,7 +126,13 @@ function LayerPicture({ layer }: { readonly layer: Layer }) {
         decoding="async"
         fetchPriority="low"
         draggable={false}
-        className="tpz-layer block h-auto w-full select-none"
+        className={cn(
+          'tpz-layer block h-auto w-full select-none',
+          /* On the image, not on its wrapper: every rule that holds these back
+             or lets them in selects '.tpz-layer', and a class on the div would
+             never be matched by any of them. */
+          layer.hover === true && 'tpz-layer-held',
+        )}
       />
     </picture>
   )
@@ -133,7 +160,13 @@ export function PersonCollage({
   readonly fallback?: ReactNode
   readonly className?: string
 }) {
-  const layers = variant === 'founder' ? FOUNDER_LAYERS : ANGEL_LAYERS
+  /*
+   * No photograph, no props. The shard backdrop is vivid enough to carry a cell
+   * on its own, and behind the pale silhouette it read as a picture that had
+   * failed to load rather than as a seat nobody has sat in yet. An empty seat
+   * should be quiet.
+   */
+  const layers = portrait === undefined ? [] : variant === 'founder' ? FOUNDER_LAYERS : ANGEL_LAYERS
   const slot = variant === 'founder' ? FOUNDER_PORTRAIT_SLOT : ANGEL_PORTRAIT_SLOT
 
   return (
@@ -222,14 +255,29 @@ export function PeopleArtStyles() {
     filter 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/*
+ * Held layers are out of the arrival entirely — they are not late, they are
+ * absent. 'opacity' and 'scale' are theirs alone, which is why the entrance
+ * rules below exclude them: two owners of one property is the bug that always
+ * shows up on the frame where both are mid-transition.
+ */
+.tpz-collage .tpz-layer-held {
+  opacity: 0;
+  scale: 0.92;
+  transition:
+    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    scale 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 /* The props arrive with the block, a beat after the face. */
-[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='pending'] .tpz-layer:not(.tpz-pic-img) {
+[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='pending'] .tpz-layer:not(.tpz-pic-img):not(.tpz-layer-held) {
   opacity: 0;
   translate: 0 14px;
   scale: 0.97;
 }
 
-[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='shown'] .tpz-layer:not(.tpz-pic-img) {
+[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='shown'] .tpz-layer:not(.tpz-pic-img):not(.tpz-layer-held) {
   opacity: 1;
   translate: 0 0;
   scale: 1;
@@ -238,6 +286,14 @@ export function PeopleArtStyles() {
     translate 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--tpz-pic-delay, 0ms) + 160ms),
     scale 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--tpz-pic-delay, 0ms) + 160ms),
     transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (hover: hover) {
+  .tpz-collage:hover .tpz-layer-held,
+  .tpz-collage:focus-within .tpz-layer-held {
+    opacity: 1;
+    scale: 1;
+  }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -265,6 +321,13 @@ export function PeopleArtStyles() {
     scale: 1;
     transform: none;
     transition: none;
+  }
+
+  /* Held layers still appear on hover under reduce — the wings are content of a
+     sort, not a flourish — they simply appear rather than growing into place. */
+  .tpz-collage .tpz-layer-held {
+    transition: none;
+    scale: 1;
   }
 }
 `}</style>
