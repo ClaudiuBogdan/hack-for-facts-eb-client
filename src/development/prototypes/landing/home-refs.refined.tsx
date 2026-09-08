@@ -53,7 +53,7 @@ import {
   useSectionLight,
 } from './home-refs.section-light'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
-import { PeopleBand } from './home-refs.people'
+import { ContributorsBand, PeopleBand } from './home-refs.people'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
@@ -1268,6 +1268,16 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
           <PeopleBand />
+        </Frame>
+      </section>
+
+      {/* Contributors — dense band. Split off the people band on purpose: the
+          tiers above are a few named people with faces, this one is an open list
+          that grows by pull request, and one band said they were the same kind
+          of thing. */}
+      <section className="border-b bg-muted/20">
+        <Frame className="py-14">
+          <ContributorsBand />
         </Frame>
       </section>
 

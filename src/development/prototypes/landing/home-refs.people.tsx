@@ -1,6 +1,6 @@
 import { ANGELS, FOUNDER } from './about.people'
 import {
-  ContributorStrip,
+  ContributorGrid,
   PendingPortrait,
   ReadMoreLink,
   SocialRow,
@@ -95,12 +95,14 @@ export function PeopleBand() {
             Oamenii fără de care proiectul s-ar fi oprit. Câte o singură
             propoziție despre ce a făcut fiecare — nu un CV.
           </p>
-          <ul data-reveal className="mt-8 grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3">
+          {/* Two by two. Four across the 6-column half would leave each name
+              about 120px to wrap in; a row of three plus an orphan is worse. */}
+          <ul data-reveal className="mt-8 grid grid-cols-2 gap-x-6 gap-y-9">
             {ANGELS.map((angel) => (
               /* `flex-col` + `mt-auto` on the links: a role that wraps to two
                  lines must not push one cell's icons below its neighbours'. */
               <li key={angel.id} className="flex h-full flex-col">
-                <PendingPortrait className="max-w-[128px]" />
+                <PendingPortrait className="max-w-[140px]" />
                 <p className="mt-3 text-sm font-medium leading-tight text-foreground">
                   {angel.name}
                 </p>
@@ -113,9 +115,44 @@ export function PeopleBand() {
           </ul>
         </div>
       </div>
+    </>
+  )
+}
+
+/**
+ * `04 / Contribuitori` — the third tier, in a band of its own.
+ *
+ * It was a rule at the foot of the people band and it is a section now: the
+ * first two tiers are a small number of named people with faces, and this one
+ * is an open list that grows by pull request. Sharing a band said they were the
+ * same kind of thing.
+ */
+export function ContributorsBand() {
+  return (
+    <>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-5">
+          <MonoLabel className="block text-primary" data-reveal>
+            04 / Contribuitori
+          </MonoLabel>
+          <h2
+            data-reveal
+            className="mt-3 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl"
+          >
+            Codul e deschis
+          </h2>
+        </div>
+        <div className="lg:col-span-6 lg:col-start-7">
+          <p data-reveal className="text-base leading-relaxed text-muted-foreground">
+            Clientul, serverul și extractoarele sunt publice. Deocamdată
+            platforma e scrisă de o singură mână — restul commit-urilor sunt ale
+            roboților care publică versiunile.
+          </p>
+        </div>
+      </div>
 
       <div data-reveal>
-        <ContributorStrip className="mt-14" />
+        <ContributorGrid className="mt-10" />
       </div>
     </>
   )

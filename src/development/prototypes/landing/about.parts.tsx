@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MonoLabel } from './home-refs.mono-label'
 import { CONTRIBUTORS, REPO_URL, type Person, type Portrait } from './about.people'
@@ -188,62 +188,79 @@ export function BandHead({ title, lead }: { readonly title: ReactNode; readonly 
 }
 
 /**
- * The third tier.
+ * The third tier, as a grid.
  *
- * Measured on 8 September 2026: one human across the three repositories. So it
- * is written as the invitation it is, and the avatar row is sized for the day
- * that stops being true — `+N` appears the moment there are more faces than
- * fit, and nothing about the layout has to change.
+ * One cell per person and one more for the seat that is open — which today is
+ * most of the grid, because there is exactly one human contributor across the
+ * three repositories. An empty wall would be the alternative, and a wall of one
+ * face reads as a claim that nobody else is welcome rather than as a fact about
+ * a young project.
+ *
+ * Each cell carries its own border and pulls back a pixel, so neighbours share
+ * one hairline instead of stacking two — and a half-empty row is half a row of
+ * boxes rather than a box with nothing in half of it, which is what a border on
+ * the grid itself drew while there is only one contributor.
  */
-export function ContributorStrip({ className }: { readonly className?: string }) {
-  const shown = CONTRIBUTORS.slice(0, 8)
-  const overflow = CONTRIBUTORS.length - shown.length
-
+export function ContributorGrid({ className }: { readonly className?: string }) {
   return (
-    <div className={cn('flex flex-wrap items-center justify-between gap-x-6 gap-y-4 border-t pt-5', className)}>
-      <div className="flex items-center gap-3">
-        <ul className="flex items-center -space-x-2">
-          {shown.map((contributor) => (
-            <li key={contributor.login}>
-              <a
-                href={contributor.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                title={contributor.login}
-                className="block rounded-full ring-2 ring-background transition-transform hover:z-10 hover:scale-110 focus-visible:outline-hidden focus-visible:ring-ring"
-              >
-                <img
-                  src={contributor.avatar}
-                  alt={contributor.login}
-                  width={160}
-                  height={160}
-                  loading="lazy"
-                  decoding="async"
-                  className="size-8 rounded-full bg-muted"
-                />
-              </a>
-            </li>
-          ))}
-          {overflow > 0 && (
-            <li className="flex size-8 items-center justify-center rounded-full border bg-card ring-2 ring-background">
-              <MonoLabel className="text-muted-foreground">+{overflow}</MonoLabel>
-            </li>
-          )}
-        </ul>
-        <p className="text-sm text-muted-foreground">
-          Codul e deschis. Deocamdată e scris de o singură mână.
-        </p>
-      </div>
-      <a
-        href={REPO_URL}
-        target="_blank"
-        rel="noreferrer noopener"
-        className="group inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        Contribuie pe GitHub
-        <ArrowRight aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-0.5" />
-      </a>
-    </div>
+    <ul
+      className={cn('grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4', className)}
+    >
+      {CONTRIBUTORS.map((contributor) => (
+        <li key={contributor.login} className="-ml-px -mt-px border">
+          <a
+            href={contributor.url}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="group flex h-full items-center gap-3 p-4 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:-outline-offset-2"
+          >
+            <img
+              src={contributor.avatar}
+              alt=""
+              width={160}
+              height={160}
+              loading="lazy"
+              decoding="async"
+              className="size-11 shrink-0 rounded-full bg-muted"
+            />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-medium text-foreground">
+                {contributor.login}
+              </span>
+              <MonoLabel className="mt-1.5 block text-muted-foreground tabular-nums">
+                {contributor.commits.toLocaleString('ro-RO')} commit-uri
+              </MonoLabel>
+            </span>
+          </a>
+        </li>
+      ))}
+
+      {/* The open seat. Same cell, same box, so the row reads as one thing —
+          the difference is that this one is not a person yet. */}
+      <li className="-ml-px -mt-px border">
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="group flex h-full items-center gap-3 p-4 transition-colors hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:-outline-offset-2"
+        >
+          <span
+            aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-dashed text-muted-foreground"
+          >
+            <Plus className="size-4" />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium text-foreground group-hover:text-primary">
+              Locul tău aici
+            </span>
+            <MonoLabel className="mt-1.5 block text-muted-foreground">
+              Contribuie pe GitHub
+            </MonoLabel>
+          </span>
+        </a>
+      </li>
+    </ul>
   )
 }
 

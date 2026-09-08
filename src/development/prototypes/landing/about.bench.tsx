@@ -1,7 +1,7 @@
 import { ANGELS, FOUNDER } from './about.people'
 import {
   BandHead,
-  ContributorStrip,
+  ContributorGrid,
   Frame,
   PROTOTYPE_MARKER,
   PendingPortrait,
@@ -77,7 +77,7 @@ export function AboutBench() {
           conta.
         </p>
 
-        <ContributorStrip className="mt-10" />
+        <ContributorGrid className="mt-10" />
       </Frame>
     </section>
   )

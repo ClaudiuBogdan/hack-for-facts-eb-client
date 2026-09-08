@@ -103,27 +103,43 @@ export const ANGELS: readonly Person[] = [
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
+  {
+    id: 'angel-4',
+    name: 'Al Patrulea Nume',
+    role: 'A dus proiectul mai departe',
+    blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    links: { linkedin: '#', facebook: '#' },
+    provisional: true,
+  },
 ]
 
 export type Contributor = {
   readonly login: string
   readonly avatar: string
   readonly url: string
+  /** Commits across the three repositories, summed. */
+  readonly commits: number
 }
 
 /**
- * Measured, not guessed: on 8 September 2026 the three repositories carry one
- * human contributor between them — plus `actions-user` and `github-actions`,
- * which are the release bots and are not people.
+ * Measured on 8 September 2026, across client, server and scrapper: one human
+ * with 6,128 commits between them.
  *
- * So the tier is written as the invitation it actually is. The avatar row is
- * the same component either way; when a second human lands, it fills.
+ * The other two accounts are release machinery, not people — and the filter for
+ * them is *not* `type !== 'Bot'`. GitHub types `github-actions[bot]` as a bot
+ * but `actions-user`, which pushes the compiled catalogs here and on the server,
+ * as a plain `User`. Trusting the field would have put a robot in the grid with
+ * 385 commits to its name.
+ *
+ * The grid is written for the day this is no longer one row. Until then its last
+ * cell is the invitation, which is the honest thing to put in an empty seat.
  */
 export const CONTRIBUTORS: readonly Contributor[] = [
   {
     login: 'ClaudiuBogdan',
     avatar: ghClaudiu,
     url: 'https://github.com/ClaudiuBogdan',
+    commits: 6128,
   },
 ]
 

@@ -1,6 +1,6 @@
 import { ANGELS, CONTRIBUTORS, FOUNDER, REPO_URL } from './about.people'
 import {
-  ContributorStrip,
+  ContributorGrid,
   Frame,
   PROTOTYPE_MARKER,
   PendingPortrait,
@@ -119,7 +119,7 @@ export function AboutPage() {
             </a>
             .
           </p>
-          <ContributorStrip className="mt-8" />
+          <ContributorGrid className="mt-8" />
         </Frame>
       </section>
     </div>
