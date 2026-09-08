@@ -395,13 +395,13 @@ function StartHerePanel({ panelRef }: { readonly panelRef: RefObject<HTMLDivElem
           squaring them off at the top and bottom of the list. 8px is the
           system's ceiling on radius, which is also about what a macOS window
           uses — the one place those two agree. */}
+      {/* Square and unclipped below `lg`: the radius is here to make a window
+          corner, and with no window to corner it is a softened list that no
+          longer agrees with the flat-edged blocks beneath it. */}
       <div
         ref={panelRef}
         className={cn(TILT_PANEL_CLASS, 'border bg-card lg:overflow-hidden lg:rounded-lg')}
       >
-        {/* Square and unclipped below `lg`. The radius is here to make a window
-            corner, and with no window to corner it is a softened list that no
-            longer agrees with the flat-edged blocks beneath it. */}
         <div
           aria-hidden="true"
           className="hidden items-center gap-2 border-b bg-muted/40 px-4 py-3 lg:flex"

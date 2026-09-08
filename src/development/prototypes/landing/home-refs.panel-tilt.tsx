@@ -37,11 +37,11 @@ import { useEffect, type RefObject } from 'react'
  * pane has squared up.
  *
  * The three share one custom property, and that is what makes the handover
- * seamless rather than a snap. The entrance's final keyframe is written as
- * `rotateY(var(--tpz-tilt))`, not as a literal — `var()` in a keyframe resolves
- * at compute time, so if the reader scrolls *during* the entrance the animation
- * lands on wherever the scroll has since put the angle instead of on the value
- * that was correct when the page loaded.
+ * seamless rather than a snap. The entrance simply does not name a closing
+ * angle: a property present in one keyframe and absent from the other
+ * interpolates toward the element's underlying value, so scrolling *during* the
+ * entrance lands it on wherever the scroll has since put the angle rather than
+ * on the value that was correct when the page loaded.
  */
 
 /**
@@ -86,8 +86,8 @@ const PERSPECTIVE_PX = 1150
 /**
  * How much wider the angle is at the start of the entrance than at rest.
  *
- * Lower than it was, because the resting angle is now much larger: the old 2.1
- * against this yaw would have started the panel at 56 degrees, which is not an
+ * Kept modest deliberately. Against the 18 degree resting yaw this opens the
+ * entrance at 27; the 2.1 it started as would open it at 38, which is not an
  * entrance but a card trick.
  */
 const OPEN_FACTOR = 1.5
@@ -324,14 +324,11 @@ const CSS = `
      * that same rule, so an edge three pixels through it reads as a mistake
      * rather than as depth.
      *
-     * The settled projection has no pitch, so the near edge lands on the rule
-     * exactly — measured 0.0px. The other two put a little back and that is left
-     * alone deliberately: 1.6px for the pitched version and 3.8px for the
-     * sheared one. It is a different thing from the offset above. The yaw's was
-     * the entire edge sitting off the rule; a pitch or a shear anchors that
-     * edge's midpoint on it and swings only a corner forward. A corner of a
-     * tilted pane projecting past the grid is what depth looks like; an edge
-     * parallel to the grid and beside it is what a mistake looks like.
+     * A yaw about this hinge leaves the near edge exactly on the rule, measured
+     * 0.0px. That is part of why the yaw is the only rotation here: the two
+     * projections this was chosen over each added something — a pitch, a shear —
+     * that swings a corner forward past the hinge, and put 1.6px and 3.8px back
+     * respectively.
      */
     transform-origin: right center;
     box-shadow: ${CONTACT_SHADOW};
@@ -452,15 +449,14 @@ export function usePanelTilt(panelRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     const panel = panelRef.current
     if (!panel) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     const desktop = window.matchMedia(DESKTOP_QUERY)
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
     let frame = 0
     /** Last angle written. Writing an unchanged value still invalidates style. */
     let last = Number.NaN
 
     const paint = () => {
-      frame = 0
       const progress = Math.min(1, Math.max(0, window.scrollY / UNWIND_PX))
       // Quantised to a tenth of a degree, which at this perspective is far
       // below anything a display can resolve, so the difference between two
@@ -471,36 +467,82 @@ export function usePanelTilt(panelRef: RefObject<HTMLElement | null>) {
       panel.style.setProperty('--tpz-tilt', `${tilt}deg`)
     }
 
-    // Cached rather than read per event. The check itself is needed — the
-    // stylesheet ignores the angle below this width, and without it the
-    // listener would run on every phone scroll to write a property nothing
-    // reads. Caching is because a media query list can flush style to answer
-    // 'matches' and a scroll event fires many times a frame. The measured gain
-    // was smaller than that reasoning suggests: 348 CPU samples through one
-    // pass of the unwind against 313, with the worst frame 17ms against 9ms.
-    // Kept because it is free and strictly less work, not because it was the
-    // bottleneck — there isn't one here.
-    let active = desktop.matches
-
-    const onScroll = () => {
-      if (!active) return
-      if (frame === 0) frame = requestAnimationFrame(paint)
+    /*
+     * The frame handle is owned here and nowhere else.
+     *
+     * It used to be cleared at the top of paint(), which meant a direct call —
+     * the one below, when the panel becomes eligible again — would overwrite a
+     * pending handle with zero and leave the real frame uncancellable. Teardown
+     * would then find nothing to cancel and the orphaned callback would write to
+     * a detached node. Harmless in effect, and still the only path in here that
+     * could write after cleanup, which is reason enough to close it.
+     */
+    const schedule = () => {
+      if (frame !== 0) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        paint()
+      })
     }
 
-    const onBreakpoint = () => {
-      active = desktop.matches
-      if (active) paint()
-      else panel.style.removeProperty('--tpz-tilt')
+    /*
+     * Whether the angle is being drawn at all: wide enough for the two-column
+     * hero, and not overridden by a reader who asked for no motion.
+     *
+     * Cached rather than read per event. The check is needed — the stylesheet
+     * ignores the angle below this width, and without it the listener would run
+     * on every phone scroll to write a property nothing reads. Caching is
+     * because a media query list can flush style to answer 'matches' and a
+     * scroll event fires many times a frame; the measured gain was smaller than
+     * that reasoning suggests, 348 CPU samples through one pass of the unwind
+     * against 313, so it is kept for being strictly less work rather than for
+     * being a bottleneck.
+     */
+    let active = desktop.matches && !reduced.matches
+
+    const onScroll = () => {
+      if (active) schedule()
+    }
+
+    /*
+     * Both queries are watched, not merely sampled at mount.
+     *
+     * Reduced motion is a setting a reader can change while the page is open,
+     * and sampling it once meant turning it *off* mid-session left the panel at
+     * its resting angle with nothing left to unwind it — the stylesheet would
+     * start honouring the transform again while this hook stayed asleep.
+     */
+    const sync = () => {
+      const next = desktop.matches && !reduced.matches
+      if (next === active) return
+      active = next
+      if (active) {
+        paint()
+        return
+      }
+      /*
+       * The memo is cleared along with the property, and that pairing is the
+       * whole point. Left set, the next activation compares the angle it wants
+       * against a value that is no longer on the element, decides nothing has
+       * changed, and writes nothing — so a reader who scrolled part way through
+       * the unwind, narrowed the window past the breakpoint and widened it back
+       * would find the panel at its full resting angle, and stuck there until
+       * they scrolled far enough to move the quantised tenth of a degree.
+       */
+      last = Number.NaN
+      panel.style.removeProperty('--tpz-tilt')
     }
 
     if (active) paint()
     window.addEventListener('scroll', onScroll, { passive: true })
-    desktop.addEventListener('change', onBreakpoint)
+    desktop.addEventListener('change', sync)
+    reduced.addEventListener('change', sync)
 
     return () => {
       if (frame !== 0) cancelAnimationFrame(frame)
       window.removeEventListener('scroll', onScroll)
-      desktop.removeEventListener('change', onBreakpoint)
+      desktop.removeEventListener('change', sync)
+      reduced.removeEventListener('change', sync)
       panel.style.removeProperty('--tpz-tilt')
     }
   }, [panelRef])
