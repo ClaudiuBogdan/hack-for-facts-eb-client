@@ -53,6 +53,7 @@ import {
   useSectionLight,
 } from './home-refs.section-light'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
+import { PeopleBand } from './home-refs.people'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
@@ -1210,11 +1211,15 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
         </Frame>
       </section>
 
-      {/* Provenance — the closing statement, and the home of every figure that
-          describes *us* rather than the country. Saying "5 servite live" out of
-          23 registered datasets only works next to the sentence that explains
-          it; left in the strip it reads as a shortfall. `DESIGN.md` §Data Trust
-          makes stating it at all a requirement. */}
+      {/* Provenance — the home of every figure that describes *us* rather than
+          the country. Saying "5 servite live" out of 23 registered datasets only
+          works next to the sentence that explains it; left in the strip it reads
+          as a shortfall. `DESIGN.md` §Data Trust makes stating it at all a
+          requirement.
+
+          It used to close the page. `03 / Oameni` now follows it, because the
+          two are the same claim in two forms — where the data comes from, then
+          who stands behind it — and the second is weaker anywhere else. */}
       <section className="border-b">
         <Frame className="py-14 sm:py-16">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -1253,6 +1258,16 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
               </ul>
             </div>
           </div>
+        </Frame>
+      </section>
+
+      {/* People — open band. The page's only faces, and the one place it speaks
+          in the first person. Everything below the founder is stand-in and says
+          so on screen; `home-refs.people.tsx` carries the shape and the two
+          alternatives it beat. */}
+      <section className="border-b">
+        <Frame className="py-14 sm:py-16">
+          <PeopleBand />
         </Frame>
       </section>
 
