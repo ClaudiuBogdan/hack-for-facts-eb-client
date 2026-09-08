@@ -18,6 +18,7 @@ import { ParliamentPromoCard } from '@/features/parliament/components/parliament
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { scraperDatasetCatalog } from '@/lib/scraper-references'
+import { useDockDrag } from './home-refs.dock-drag'
 import { MonoLabel } from './home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
 import {
@@ -444,6 +445,23 @@ function StartHerePanel({
   const minimiseRef = useRef<HTMLButtonElement>(null)
   const restoreRef = useRef<HTMLButtonElement>(null)
   /*
+   * The scene is the box the minimised icon is dragged inside.
+   *
+   * It is the right one because while minimised it is `h-full` against a
+   * stretched column, so it is exactly the space the window vacated — the icon
+   * can be put anywhere the window used to be and nowhere it was not.
+   *
+   * The offset lives here rather than in the icon, so it survives the icon:
+   * reopen and minimise again and the icon comes back where it was left, which
+   * is what a reader who moved it there deliberately expects. This panel does
+   * not unmount, only the button inside it does.
+   */
+  const sceneRef = useRef<HTMLDivElement>(null)
+  const { offset, isDragging, wasDragged, dragHandlers } = useDockDrag({
+    handleRef: restoreRef,
+    boundsRef: sceneRef,
+  })
+  /*
    * Where focus goes after the click, set by the handler and spent by the
    * effect below.
    *
@@ -481,6 +499,7 @@ function StartHerePanel({
        a positive one opened it to 44 and then 56 against an unchanged 32 on
        the left. */
     <div
+      ref={sceneRef}
       className={cn(
         TILT_SCENE_CLASS,
         // Only while minimised, and only where the window exists. The column
@@ -581,10 +600,12 @@ function StartHerePanel({
       {/* What a minimised window is: the app's own icon, the size of a dock
           tile, and clicking it gives the window back.
 
-          It sits at the bottom right of the column the window vacated, which is
-          where a dock is and, on this page, the corner furthest from everything
-          the hero wants read first — a minimised window should be retrievable
-          without competing with the headline it was minimised away from.
+          It starts at the bottom right of the column the window vacated, which
+          is where a dock is and, on this page, the corner furthest from
+          everything the hero wants read first — a minimised window should be
+          retrievable without competing with the headline it was minimised away
+          from. From there it can be dragged anywhere inside that column, or
+          nudged with the arrow keys, and it stays where it is put.
 
           Mounted only in this state and only at `lg`, so there is never a
           reopen control on a phone for a window a phone cannot have closed. */}
@@ -592,16 +613,29 @@ function StartHerePanel({
         <button
           ref={restoreRef}
           type="button"
+          {...dragHandlers}
+          /* `translate` and not `transform`: the entrance below animates the
+             transform, and two owners of one property is the bug this file has
+             already paid for once on the panel. They compose. */
+          style={{ translate: `${offset.x}px ${offset.y}px` }}
           onClick={() => {
+            // The click at the end of a drag is the drag, not the button.
+            if (wasDragged()) return
             pendingFocus.current = 'minimise'
             setWindowState('open')
           }}
           aria-label="Redeschide fereastra cu instituții"
-          className="group hidden size-14 items-center justify-center rounded-full border bg-card shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-90 motion-safe:duration-300 lg:flex"
+          className={cn(
+            'group hidden size-14 touch-none select-none items-center justify-center rounded-full border bg-card shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring motion-safe:animate-in motion-safe:fade-in-0 motion-safe:zoom-in-90 motion-safe:duration-300 lg:flex',
+            isDragging ? 'cursor-grabbing' : 'cursor-grab',
+          )}
         >
           <img
             src={logo}
             alt=""
+            /* Or the browser starts its own drag of the image and the pointer
+               ends up carrying a ghost of the logo instead of the icon. */
+            draggable={false}
             className="size-7 rounded-sm transition-transform group-hover:scale-105 motion-reduce:transition-none"
           />
         </button>
