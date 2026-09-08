@@ -19,6 +19,7 @@ import { Link } from '@tanstack/react-router'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Trans } from '@lingui/react/macro'
+import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
 import type { Currency, Normalization } from '@/schemas/charts'
 
 interface Props {
@@ -45,6 +46,7 @@ interface Props {
 export function EntityAnalyticsTable({ data, isLoading, sortBy, sortOrder, onSortChange, density = 'comfortable', columnVisibility, onColumnVisibilityChange, columnPinning, onColumnPinningChange, columnSizing, onColumnSizingChange, columnOrder, onColumnOrderChange, currencyFormat = 'compact', rowNumberStart = 0, normalization = 'total', currency }: Props) {
   const unit = getNormalizationUnit({ normalization: normalization ?? 'total', currency: currency ?? 'RON' })
   const currencyCode: Currency = currency ?? (unit.includes('EUR') ? 'EUR' : 'RON')
+  const isNative = isRedesignOnlyApiDeployment()
   const isPercentGdp = normalization === 'percent_gdp' || unit.startsWith('%')
   const columns: ColumnDef<EntityAnalyticsDataPoint>[] = [
     {
@@ -96,7 +98,7 @@ export function EntityAnalyticsTable({ data, isLoading, sortBy, sortOrder, onSor
       ),
       cell: ({ row }) => (
         <div className="text-right">
-          {row.original.population != null ? formatNumber(row.original.population) : '-'}
+          {row.original.population != null ? formatNumber(row.original.population) : isNative ? <Trans>Unavailable</Trans> : '-'}
         </div>
       ),
     },
@@ -250,6 +252,11 @@ export function EntityAnalyticsTable({ data, isLoading, sortBy, sortOrder, onSor
 
   return (
     <div className="rounded-md border overflow-hidden">
+      {isNative && (
+        <p className="border-b px-4 py-3 text-sm text-muted-foreground">
+          <Trans>Population, its sorting and filters use the latest selected year's verified value. Per-capita amounts use each year's population before adding values.</Trans>
+        </p>
+      )}
       <Table className="table-fixed">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
