@@ -6,7 +6,7 @@ import {
   SocialRow,
 } from './about.parts'
 import { cn } from '@/lib/utils'
-import { GroupPicture, PICTURE_ATTR } from './home-refs.image-reveal'
+import { PersonCollage } from './home-refs.people-art'
 import { MonoLabel } from './home-refs.mono-label'
 
 /**
@@ -29,45 +29,35 @@ import { MonoLabel } from './home-refs.mono-label'
  * a rule rather than under a number of its own.
  */
 /**
- * A portrait that arrives the way the page's other illustrations do.
+ * A person's art, in the shape the slot wants.
  *
- * `home-refs.image-reveal.tsx`, round six — rather than the plain block reveal,
- * because it is the same kind of object: a cut-out on transparency. `.tpz-pic`
- * is absolute, so the cell has to hold the box itself.
+ * `home-refs.people-art.tsx` owns the stack; this owns the box it stands in.
+ * The box's shape is the caller's, not the art's — `fit`-style containment
+ * inside a percentage-placed stack means art of any ratio sits in whatever box
+ * it is given without cropping, which is how the angels' slots could be squared
+ * off before the art that fills them exists.
  *
- * The box's shape is the caller's, not the art's. `fit="contain"` means art of
- * any ratio sits inside whatever box it is given without cropping, so a slot can
- * be squared off before the art that will fill it exists — which is the state
- * the angels are in: their pictures are the founder's 4:5 collage standing in,
- * pillarboxed inside a square that their own art will fill.
+ * Anyone without a cut-out falls back to the drawn silhouette, which has no
+ * arrival of its own: there is nothing to wait for.
  */
 function RevealPortrait({
   person,
+  variant,
   ratio = 'aspect-4/5',
   className,
 }: {
   readonly person: Person
+  readonly variant: 'founder' | 'angel'
   readonly ratio?: string
   readonly className?: string
 }) {
   return (
-    <div
-      {...(person.portrait === undefined ? {} : { [PICTURE_ATTR]: '' })}
-      className={cn('relative w-full', ratio, className)}
-    >
-      {person.portrait === undefined ? (
-        <PendingPortrait className="absolute inset-0 size-full" />
-      ) : (
-        <GroupPicture
-          src={person.portrait.webp}
-          avif={person.portrait.avif ?? person.portrait.webp}
-          fit="contain"
-          position="50% 50%"
-          width={person.portrait.width}
-          height={person.portrait.height}
-        />
-      )}
-    </div>
+    <PersonCollage
+      variant={variant}
+      portrait={person.portrait}
+      fallback={<PendingPortrait className="w-full" />}
+      className={cn('w-full', ratio, className)}
+    />
   )
 }
 
@@ -98,7 +88,7 @@ export function PeopleBand() {
         <div data-reveal className="mt-8">
           {/* Capped at 380 rather than left to fill the 5/12 column: the band
               got tighter by losing dead space, not by growing the art. */}
-          <RevealPortrait person={FOUNDER} className="max-w-[380px]" />
+          <RevealPortrait person={FOUNDER} variant="founder" className="max-w-[380px]" />
           <h3 className="mt-5 text-lg font-semibold tracking-tight text-foreground">
             {FOUNDER.name}
           </h3>
@@ -146,7 +136,7 @@ export function PeopleBand() {
                  elements the founder's does not, so the slot is cut to the
                  shape it will need rather than to the shape the stand-in
                  happens to be — which is why it is pillarboxed today. */}
-              <RevealPortrait person={angel} ratio="aspect-square" />
+              <RevealPortrait person={angel} variant="angel" ratio="aspect-square" />
               <p className="mt-3 text-sm font-medium leading-tight text-foreground">
                 {angel.name}
               </p>

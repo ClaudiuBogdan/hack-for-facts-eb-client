@@ -1,5 +1,11 @@
-import claudiuWebp from '@/assets/images/people/claudiu.webp'
-import claudiuAvif from '@/assets/images/people/claudiu.avif'
+import founderWebp from '@/assets/images/people/portrait-founder.webp'
+import founderAvif from '@/assets/images/people/portrait-founder.avif'
+import angel1Webp from '@/assets/images/people/portrait-angel-1.webp'
+import angel1Avif from '@/assets/images/people/portrait-angel-1.avif'
+import angel2Webp from '@/assets/images/people/portrait-angel-2.webp'
+import angel2Avif from '@/assets/images/people/portrait-angel-2.avif'
+import angel3Webp from '@/assets/images/people/portrait-angel-3.webp'
+import angel3Avif from '@/assets/images/people/portrait-angel-3.avif'
 import ghClaudiu from '@/assets/images/people/gh-claudiubogdan.webp'
 
 /**
@@ -54,20 +60,21 @@ export type Person = {
 export const PORTRAIT_RATIO = '4 / 5'
 
 /**
- * The one piece of finished art there is.
+ * The cut-outs, one per person.
  *
- * It is the founder's, and until each angel has their own collage it stands in
- * for theirs as well — the same face four times over, which is obviously wrong
- * and is the point: it shows the band at the weight the real pictures will
- * carry, which the drawn silhouette never could. `PendingPortrait` is still
- * there for anyone without even a stand-in.
+ * Built by `scripts/build-people-art.py` from the generated sources: trimmed to
+ * their own alpha, desaturated, exposure-matched to the founder's, and faded out
+ * at the foot so no bust ends on a straight edge. The props they are composed
+ * with live in `home-refs.people-art.tsx`, because which props a person gets is
+ * a question about their tier and not about them.
+ *
+ * There are three angel portraits and four angels. The fourth keeps the drawn
+ * silhouette until their picture exists.
  */
-const PLACEHOLDER_PORTRAIT: Portrait = {
-  webp: claudiuWebp,
-  avif: claudiuAvif,
-  width: 760,
-  height: 950,
-}
+const PORTRAIT_FOUNDER: Portrait = { webp: founderWebp, avif: founderAvif, width: 760, height: 919 }
+const PORTRAIT_ANGEL_1: Portrait = { webp: angel1Webp, avif: angel1Avif, width: 520, height: 627 }
+const PORTRAIT_ANGEL_2: Portrait = { webp: angel2Webp, avif: angel2Avif, width: 520, height: 620 }
+const PORTRAIT_ANGEL_3: Portrait = { webp: angel3Webp, avif: angel3Avif, width: 520, height: 633 }
 
 export const FOUNDER: Person = {
   id: 'claudiu',
@@ -75,7 +82,7 @@ export const FOUNDER: Person = {
   role: 'Fondator · scrie platforma',
   blurb:
     'Datele despre banii publici există deja — dar în zeci de portaluri care nu vorbesc între ele. Transparenta le pune la un loc și spune, de fiecare dată, de unde vine cifra.',
-  portrait: PLACEHOLDER_PORTRAIT,
+  portrait: PORTRAIT_FOUNDER,
   links: {
     linkedin: 'https://www.linkedin.com/in/claudiuconstantinbogdan/',
     /* Asked for, not supplied yet — `SocialRow` renders the glyph in the
@@ -95,7 +102,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Nume Prenume',
     role: 'A deschis ușile',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
-    portrait: PLACEHOLDER_PORTRAIT,
+    portrait: PORTRAIT_ANGEL_1,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
@@ -104,7 +111,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Prenume Nume',
     role: 'A citit fiecare cifră',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
-    portrait: PLACEHOLDER_PORTRAIT,
+    portrait: PORTRAIT_ANGEL_2,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
@@ -113,7 +120,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Nume de Familie',
     role: 'A ținut proiectul în viață',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
-    portrait: PLACEHOLDER_PORTRAIT,
+    portrait: PORTRAIT_ANGEL_3,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },
@@ -122,7 +129,6 @@ export const ANGELS: readonly Person[] = [
     name: 'Al Patrulea Nume',
     role: 'A dus proiectul mai departe',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
-    portrait: PLACEHOLDER_PORTRAIT,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },

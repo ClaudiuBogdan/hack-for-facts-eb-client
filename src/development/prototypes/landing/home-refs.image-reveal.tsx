@@ -55,7 +55,7 @@ export const PICTURE_ATTR = 'data-picture'
  * observer hold them until they are properly in view, without moving text that
  * was tuned against a reference implementation.
  */
-const PICTURE_STATE_ATTR = 'data-pic-state'
+export const PICTURE_STATE_ATTR = 'data-pic-state'
 
 /**
  * Blur radius at the start.
