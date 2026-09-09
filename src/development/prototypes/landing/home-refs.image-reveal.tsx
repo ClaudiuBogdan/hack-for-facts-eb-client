@@ -74,6 +74,9 @@ export const PICTURE_STATE_ATTR = 'data-pic-state'
 const BLUR_PX = 5
 
 const DURATION_MS = 820
+const ZOOM_MS = 520
+/** How long a picture takes to settle into its hover zoom, and back out. */
+
 const BLUR_DURATION_MS = 620
 
 /**
@@ -195,6 +198,48 @@ const CSS = `
   inset: 0;
   width: 100%;
   height: 100%;
+  /*
+   * Zoom lives on 'transform'. The arrival owns 'translate', 'scale' and
+   * 'filter' on this same element, and those are separate properties that
+   * compose — so a picture can still be arriving while the pointer is over it
+   * and neither has to know about the other.
+   *
+   * Two factors, multiplied, because they answer different questions. The base
+   * is the picture's own: the lion is a 'contain' fit and sits small in a cell
+   * whose height comes from the list beside it, so it needs to come forward on
+   * every screen. The viewport factor is the phone's closer crop. Kept apart,
+   * neither has to know the other's value, and hover multiplies both rather
+   * than replacing either — so a laptop with a touchscreen does not quietly
+   * lose the phone's framing.
+   *
+   * (No backticks in here: the whole block is a template literal.)
+   */
+  --tpz-pic-zoom-base: 1;
+  --tpz-pic-zoom-viewport: 1;
+  transform: scale(calc(var(--tpz-pic-zoom-base) * var(--tpz-pic-zoom-viewport)));
+  transition: transform ${ZOOM_MS}ms ${EASE};
+}
+
+/*
+ * A phone gets a closer crop.
+ *
+ * The cells are capped shorter there — a picture the height of a phone screen
+ * pushes the list it belongs to off the bottom — and at 'contain' a shorter box
+ * only makes the art smaller. Scaling it back up spends the space on the subject
+ * instead of on margin, and the cell already clips.
+ */
+@media (max-width: 40rem) {
+  .tpz-pic-img {
+    --tpz-pic-zoom-viewport: 1.16;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [${PICTURE_ATTR}]:hover .tpz-pic-img {
+    transform: scale(
+      calc(var(--tpz-pic-zoom-base) * var(--tpz-pic-zoom-viewport) * 1.06)
+    );
+  }
 }
 
 /*
@@ -234,7 +279,11 @@ const CSS = `
     opacity ${DURATION_MS}ms ${EASE} var(--tpz-pic-delay),
     translate ${DURATION_MS}ms ${EASE} var(--tpz-pic-delay),
     scale ${DURATION_MS}ms ${EASE} var(--tpz-pic-delay),
-    filter ${BLUR_DURATION_MS}ms ${EASE} var(--tpz-pic-delay);
+    filter ${BLUR_DURATION_MS}ms ${EASE} var(--tpz-pic-delay),
+    /* Without this the hover zoom would snap the moment a picture arrives: this
+       rule replaces the element's whole 'transition', so anything not named
+       here stops being animated. */
+    transform ${ZOOM_MS}ms ${EASE};
 }
 
 /*
@@ -502,6 +551,15 @@ type GroupPictureProps = {
   /** The same picture in AVIF, offered first. Same crop, same pixel size. */
   readonly avif: string
   readonly fit: 'cover' | 'contain'
+  /**
+   * How far forward this picture sits before anything is hovered.
+   *
+   * A `contain` fit letterboxes into whatever box the layout gives it, and the
+   * lion's box takes its height from the four entries beside it — so left at 1
+   * the statue reads as a small object in a large frame. This is per picture
+   * because the right amount depends on the art, not on the breakpoint.
+   */
+  readonly zoom?: number
   readonly position: string
   /**
    * The art's own pixels.
@@ -524,7 +582,7 @@ type GroupPictureProps = {
  * above sets, and waiting for the bytes belongs to the hook too, because only it
  * knows when the picture has actually been reached.
  */
-export function GroupPicture({ src, avif, fit, position, width, height }: GroupPictureProps) {
+export function GroupPicture({ src, avif, fit, position, width, height, zoom }: GroupPictureProps) {
   return (
     <div className="tpz-pic">
       {/*
@@ -582,7 +640,7 @@ export function GroupPicture({ src, avif, fit, position, width, height }: GroupP
             // it, but `object-contain` fits inside the content box.
             fit === 'contain' ? 'object-contain p-2' : 'object-cover',
           )}
-          style={{ objectPosition: position }}
+          style={{ objectPosition: position, ['--tpz-pic-zoom-base' as string]: zoom ?? 1 }}
         />
       </picture>
     </div>

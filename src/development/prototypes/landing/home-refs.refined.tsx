@@ -705,6 +705,7 @@ type GroupImage = {
    * cut-outs on transparency; neither brings a ground of its own.
    */
   readonly fit: 'cover' | 'contain'
+  readonly zoom?: number
   /** `object-position`. Load-bearing under `cover`, where the crop decides what survives. */
   readonly position: string
   /** Which side of the entries the picture sits on. */
@@ -745,7 +746,13 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
     width: 760,
     height: 942,
     fit: 'contain',
-    position: '50% 50%',
+    // Sat low rather than centred. `contain` fits this one by width, which
+    // leaves vertical slack, and centred in that slack the statue floated above
+    // its own plinth line.
+    position: '50% 82%',
+    // The only picture that needs it: `contain` inside a cell as tall as the
+    // four entries beside it left the statue small in a wide frame.
+    zoom: 1.2,
     side: 'left',
     // 4:5 against the source's own 0.807, so mobile barely letterboxes.
     mobileAspect: 'aspect-4/5',
@@ -886,7 +893,21 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                 <div
                   {...{ [PICTURE_ATTR]: '' }}
                   className={cn(
-                    'relative -ml-px -mt-px overflow-hidden border-l border-t sm:aspect-auto',
+                    // `max-h` only bites on a phone, where the cell takes its
+                    // height from an aspect ratio rather than from the entries
+                    // beside it. At 4:5 on a 390px screen the picture is 437px
+                    // tall and pushes its own list off the bottom of the
+                    // viewport; capped, the group arrives as one thing. The
+                    // base zoom in `home-refs.image-reveal.tsx` spends the
+                    // height that buys back on the subject.
+                    //
+                    // `w-full` is load-bearing, not decoration. An element with
+                    // an `aspect-ratio` and a `max-height` satisfies the ratio
+                    // by *narrowing* when it is allowed to, so the cell came out
+                    // 218px wide in a 349px column with the picture stranded
+                    // beside a stripe of nothing. Fixing the width makes the cap
+                    // do what it says.
+                    'relative -ml-px -mt-px w-full max-h-[70vw] overflow-hidden border-l border-t sm:aspect-auto sm:max-h-none',
                     image.mobileAspect,
                     ROW_SPAN[group.entries.length],
                     // The picture stays first in the DOM either way, so it
@@ -904,6 +925,7 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
                     position={image.position}
                     width={image.width}
                     height={image.height}
+                    zoom={image.zoom}
                   />
                 </div>
               ) : null}
