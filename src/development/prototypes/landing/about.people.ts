@@ -74,13 +74,19 @@ export const PORTRAIT_RATIO = '4 / 5'
  * why the bottom fade is off: their busts no longer end on a filled row.
  */
 const PORTRAIT_FOUNDER: Portrait = { webp: founderWebp, avif: founderAvif, width: 760, height: 919 }
-const PORTRAIT_ANGEL_1: Portrait = { webp: angel1Webp, avif: angel1Avif, width: 520, height: 627 }
+/* Straightened and reframed rather than taken as it arrived: Vision put this
+   head at 7 degrees of roll and the face at 0.414 of the frame width, against
+   about 0.46 for everyone else — which is why he read as small and slightly
+   tipped. Rotated back, then narrowed until the face was the right share of the
+   width. Only the width: head size on screen is set by the face's share of the
+   frame width, because every portrait is drawn at the same width in its slot,
+   and the build script trims each asset to its own alpha, so vertical framing
+   is discarded regardless. Cropping vertically bought nothing and cost the top
+   of his hair. */
+const PORTRAIT_ANGEL_1: Portrait = { webp: angel1Webp, avif: angel1Avif, width: 520, height: 632 }
 const PORTRAIT_ANGEL_2: Portrait = { webp: angel2Webp, avif: angel2Avif, width: 520, height: 620 }
 const PORTRAIT_ANGEL_3: Portrait = { webp: angel3Webp, avif: angel3Avif, width: 520, height: 633 }
-/* Squarer than the other three — 520x550 against about 520x625 — because that
-   is how the art arrived. The collage anchors portraits at the foot, so a
-   shorter bust simply sits lower in its box. */
-const PORTRAIT_ANGEL_4: Portrait = { webp: angel4Webp, avif: angel4Avif, width: 520, height: 550 }
+const PORTRAIT_ANGEL_4: Portrait = { webp: angel4Webp, avif: angel4Avif, width: 520, height: 627 }
 
 export const FOUNDER: Person = {
   id: 'claudiu',
