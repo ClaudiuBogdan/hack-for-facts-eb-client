@@ -874,10 +874,17 @@ function RefinedLattice({ groups }: { readonly groups: readonly LandingGroup[] }
               {...{ [SECTION_LIGHT_ATTR]: '' }}
               className={cn(
                 'mt-4 grid grid-cols-1 border',
+                // 5/7 between `sm` and `lg`, 4/8 from `lg`. At 768 the 4fr
+                // column is 218px, and the lion — a `contain` fit in a cell as
+                // tall as four entries — rendered 300px tall at the foot of a
+                // 544px box with 240px of nothing above it. On the wider track
+                // it is 382px tall under 179px of air: a quarter more statue,
+                // and the slack is what the fit costs, not what the track
+                // does. The cropped pictures simply show more of themselves.
                 image
                   ? image.side === 'right'
-                    ? 'sm:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]'
-                    : 'sm:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]'
+                    ? 'sm:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)]'
+                    : 'sm:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]'
                   : cn('sm:grid-cols-2', columns === 3 && 'lg:grid-cols-3'),
               )}
             >
@@ -999,7 +1006,17 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
   }, [])
 
   return (
-    <div ref={rootRef} className="relative w-full bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+    /* `overflow-x-clip`, and only the x. The corner ticks and the crux marks
+       are centred on the frame's vertical rules, and below the frame's own
+       1152px those rules sit on the viewport edge — so half of each mark hangs
+       outside it. Measured at 390: `scrollWidth` 396 against a 390 viewport,
+       which on a phone is a page that pans sideways by six pixels, and the
+       layout viewport grows to match so every fixed element is drawn 6px too
+       wide. `clip` rather than `hidden` because it is not a scroll container:
+       the search dropdown still runs past the hero, and nothing here reaches
+       sideways on purpose — the margin fields and the footer scene already
+       clip themselves. */
+    <div ref={rootRef} className="relative w-full overflow-x-clip bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <LightMaterialStyles />
       <ScrollLightStyles />
       <SectionLightStyles />
@@ -1119,18 +1136,25 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
               {/* Balances the column against the taller panel, and gives the
                   three heaviest surfaces a direct route out of the hero. The
                   label sits on its own line below `sm`, where keeping it inline
-                  pushed one shortcut onto a second row on its own. */}
+                  pushed one shortcut onto a second row on its own.
+
+                  On a phone each shortcut is a 44px row rather than a 20px line
+                  of text: these are the first things a thumb reaches for after
+                  the search, and 20px is under the 24 WCAG 2.2 §2.5.8 asks for.
+                  The row's own height carries the target, so the wrapper drops
+                  the 8px it used to add above and the gap between wrapped rows,
+                  and at `sm` the links go back to being text on a line. */}
               <nav aria-label="Scurtături" className="mt-4">
                 <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
                   Sau mergi direct la
                 </MonoLabel>
-                <span className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 sm:ml-4 sm:mt-0 sm:inline-flex sm:align-middle">
+                <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
                   {SHORTCUTS.map((shortcut) => (
                     <Link
                       key={shortcut.label}
                       to={shortcut.to}
                       preload="intent"
-                      className="text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+                      className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline sm:min-h-0"
                     >
                       {shortcut.label}
                     </Link>
@@ -1174,19 +1198,14 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
                   i >= 1 && 'lg:border-l',
                 )}
               >
-                <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                  <CountUpValue value={fact.value} digits={fact.digits} />
-                  {/* The unit never breaks across lines — 'mld.' alone on one
-                      line and 'lei' on the next reads as two facts. */}
-                  <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
-                    {fact.unit}
-                  </span>
-                </dd>
                 {/* Both lines live in the `dt` because a `dl` group admits only
-                    `dt` and `dd`. The tile stretches to the row height, so
-                    `mt-auto` drops the attribution to the bottom-left corner
-                    and it lines up across all four regardless of how many lines
-                    the label above it takes. */}
+                    `dt` and `dd`. A group is also `dt` *then* `dd`, which is why
+                    the term is first here and the tile reorders them: `order-*`
+                    on the flex column puts the number above the label without
+                    the markup having to lie about which is which. The tile
+                    stretches to the row height, so `mt-auto` drops the
+                    attribution to the bottom-left corner and it lines up across
+                    all four regardless of how many lines the label takes. */}
                 <dt className="order-2 mt-2.5 flex flex-1 flex-col">
                   <MonoLabel className="block leading-relaxed text-foreground">
                     {fact.label}
@@ -1195,15 +1214,25 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
                     <ScrambleText>{fact.source}</ScrambleText>
                   </MonoLabel>
                 </dt>
+                <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
+                  <CountUpValue value={fact.value} digits={fact.digits} />
+                  {/* The unit never breaks across lines — 'mld.' alone on one
+                      line and 'lei' on the next reads as two facts. */}
+                  <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">
+                    {fact.unit}
+                  </span>
+                </dd>
               </div>
             ))}
           </dl>
         </Frame>
       </section>
 
-      {/* Statement — open band. */}
+      {/* Statement — open band. `py-14` on a phone, which is what every band
+          below it uses; this was the one at 16 and read as a gap rather than
+          a rhythm. */}
       <section className="border-b">
-        <Frame className="py-16 sm:py-20">
+        <Frame className="py-14 sm:py-20">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <MonoLabel className="block text-primary" data-reveal>
@@ -1362,12 +1391,17 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
                     <MonoLabel className="text-muted-foreground/70">
                       {column.title}
                     </MonoLabel>
-                    <ul className="mt-4 space-y-2.5">
+                    {/* Each link is a full-width 44px row on a phone — a
+                        17px line of text at a 10px gap is a list a thumb
+                        cannot hit one item of — and a line of text again at
+                        `sm`. The row's padding is the spacing, so the list's
+                        own gap and its top margin go while it applies. */}
+                    <ul className="mt-1 space-y-0 sm:mt-4 sm:space-y-2.5">
                       {column.links.map((link) => (
                         <li key={link.label}>
                           <Link
                             to={link.to}
-                            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                            className="block py-3 text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline sm:py-0"
                           >
                             {link.label}
                           </Link>
