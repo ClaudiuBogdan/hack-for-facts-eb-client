@@ -18,12 +18,9 @@ import ghClaudiu from '@/assets/images/people/gh-claudiubogdan.webp'
  * has ever pushed a commit. Flattening them into one grid would say they are
  * the same claim, and the second tier is the one that carries the gratitude.
  *
- * **Provisional content.** Real: the portrait, the name, the LinkedIn and the
- * GitHub. Everything else — the angels, the counts, and the copy — is stand-in
- * or draft, and nothing on screen says so any more: the notice that carried
- * that label was removed on request. `DESIGN.md` §Mock-First Contract is a
- * promotion gate, so this has to be either real or labelled again before the
- * band ships; until then the record is here.
+ * **The people are real now** — names, photographs, institutions and links, all
+ * supplied rather than invented. What is still stand-in is the contributor tier
+ * below them, which is a list this file holds and which has one human in it.
  */
 
 export type SocialLinks = {
@@ -91,59 +88,73 @@ const PORTRAIT_ANGEL_4: Portrait = { webp: angel4Webp, avif: angel4Avif, width: 
 export const FOUNDER: Person = {
   id: 'claudiu',
   name: 'Claudiu Constantin Bogdan',
-  role: 'Fondator · scrie platforma',
+  role: 'Fondator · Transparenta.eu',
   blurb:
     'Datele despre banii publici există deja — dar în zeci de portaluri care nu vorbesc între ele. Transparenta le pune la un loc și spune, de fiecare dată, de unde vine cifra.',
   portrait: PORTRAIT_FOUNDER,
   links: {
+    facebook: 'https://www.facebook.com/claudiuconstantin.bogdan',
     linkedin: 'https://www.linkedin.com/in/claudiuconstantinbogdan/',
-    /* Asked for, not supplied yet — `SocialRow` renders the glyph in the
-       pending state rather than dropping it, so the card is the real width. */
-    facebook: '#',
     github: 'https://github.com/ClaudiuBogdan',
   },
 }
 
 /**
- * Stand-ins. Names, roles and links are placeholders — the portraits are drawn
- * rather than photographed, so nobody mistakes the tier for finished.
+ * Real people, in the order they stand in the band.
+ *
+ * The line under each name is where they work rather than what they did here. A
+ * sentence about a contribution is a claim the person has to agree with and that
+ * ages the moment the next thing happens; an institution is a fact, it is what
+ * they would put on their own page, and next to four faces it says more about
+ * why this project has friends than four descriptions of favours would.
+ *
+ * Names, photographs and links are theirs, so any of it changes on their word
+ * rather than on ours.
  */
 export const ANGELS: readonly Person[] = [
   {
     id: 'angel-1',
-    name: 'Nume Prenume',
-    role: 'A deschis ușile',
-    blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    name: 'Florin Pop',
+    role: 'Geeks for Democracy | Banii noștri',
+    blurb: 'Geeks for Democracy | Banii noștri',
     portrait: PORTRAIT_ANGEL_1,
-    links: { linkedin: '#', facebook: '#' },
-    provisional: true,
+    links: {
+      facebook: 'https://www.facebook.com/orlat84',
+      linkedin: 'https://www.linkedin.com/in/orlat84/',
+    },
   },
   {
     id: 'angel-2',
-    name: 'Prenume Nume',
-    role: 'A citit fiecare cifră',
-    blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    name: 'Flavia Gheorghe',
+    role: 'AmpliFY ONG | How to Web',
+    blurb: 'AmpliFY ONG | How to Web',
     portrait: PORTRAIT_ANGEL_2,
-    links: { linkedin: '#', facebook: '#' },
-    provisional: true,
+    links: {
+      facebook: 'https://www.facebook.com/flavia.obreja',
+      linkedin: 'https://www.linkedin.com/in/flavia-gheorghe-49b63062/',
+    },
   },
   {
     id: 'angel-3',
-    name: 'Nume de Familie',
-    role: 'A ținut proiectul în viață',
-    blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    name: 'Elena Calistru',
+    role: 'Funky Citizens | Member @EESC civil society group',
+    blurb: 'Funky Citizens | Member @EESC civil society group',
     portrait: PORTRAIT_ANGEL_3,
-    links: { linkedin: '#', facebook: '#' },
-    provisional: true,
+    links: {
+      facebook: 'https://www.facebook.com/ElenaCalistru',
+      linkedin: 'https://www.linkedin.com/in/elena-calistru-753a0a30/',
+    },
   },
   {
     id: 'angel-4',
-    name: 'Al Patrulea Nume',
-    role: 'A dus proiectul mai departe',
-    blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    name: 'Vasile Crăciunescu',
+    role: 'Geo-Spatial',
+    blurb: 'Geo-Spatial',
     portrait: PORTRAIT_ANGEL_4,
-    links: { linkedin: '#', facebook: '#' },
-    provisional: true,
+    links: {
+      facebook: 'https://www.facebook.com/vasilecraciunescu',
+      linkedin: 'https://www.linkedin.com/in/vasilecraciunescu/',
+    },
   },
 ]
 

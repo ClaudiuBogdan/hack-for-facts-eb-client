@@ -61,14 +61,43 @@ function RevealPortrait({
   readonly ratio?: string
   readonly className?: string
 }) {
-  return (
+  const art = (
     <PersonCollage
       variant={variant}
       cut={PORTRAIT_CUTS[person.id] ?? 'a'}
       portrait={person.portrait}
       fallback={<PendingPortrait className="w-full" />}
-      className={cn('w-full', ratio, className)}
+      className={cn('w-full', ratio)}
     />
+  )
+
+  const facebook = person.links.facebook
+  if (facebook === undefined || facebook === '#') {
+    return <div className={className}>{art}</div>
+  }
+
+  /*
+   * The picture is a link to the person's own page.
+   *
+   * It needs a name of its own: the portrait is decorative — `alt=""`, because
+   * the heading beside it already says who this is — and a link wrapping
+   * nothing announceable is a link with no name at all. The same profile is
+   * reachable from the glyph row below, which is a duplicate on purpose: one is
+   * the obvious target and the other is the discoverable one.
+   */
+  return (
+    <a
+      href={facebook}
+      target="_blank"
+      rel="noreferrer noopener"
+      aria-label={`${person.name} pe Facebook`}
+      className={cn(
+        'block rounded-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        className,
+      )}
+    >
+      {art}
+    </a>
   )
 }
 
