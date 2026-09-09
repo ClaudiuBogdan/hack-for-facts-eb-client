@@ -111,8 +111,13 @@ export function PeopleBand() {
      * growing — about 200px of nothing between `platformei` and the portrait at
      * 1440. Putting the heading and the founder in the same column closes it,
      * and the portrait now starts where the heading ends. */}
-    <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
-      <div className="lg:col-span-5">
+    {/* Two columns from `md`, not `lg`. Stacked, the angels fill the whole
+        frame two abreast — 318px each at 768, bigger than the founder's
+        proportion allows and 2116px of band. The 5/6 split at an iPad's
+        width gives a 273px founder and 157px angels, which is the desktop
+        shape at the desktop's ratios. */}
+    <div className="grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-8">
+      <div className="md:col-span-5">
         <MonoLabel className="block text-primary" data-reveal>
           03 / Oameni
         </MonoLabel>
@@ -134,15 +139,18 @@ export function PeopleBand() {
           </h3>
           <MonoLabel className="mt-2 block text-muted-foreground">{FOUNDER.role}</MonoLabel>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{FOUNDER.blurb}</p>
-          <SocialRow person={FOUNDER} className="mt-4" />
+          {/* The phone margins are the desktop ones less the 12px the taller
+              touch targets add above their glyphs and text, so the band looks
+              the same and only the hit areas grew. */}
+          <SocialRow person={FOUNDER} className="mt-1 sm:mt-4" />
           {/* The way out of the band sits under the person it is about, not
               above the angels. It was the last 40px keeping the two columns'
               pictures from starting on the same line. */}
-          <ReadMoreLink className="mt-7" />
+          <ReadMoreLink className="mt-4 sm:mt-7" />
         </div>
       </div>
 
-      <div className="lg:col-span-6 lg:col-start-7">
+      <div className="md:col-span-6 md:col-start-7">
         <p data-reveal className="text-base leading-relaxed text-muted-foreground">
           Platforma e scrisă de un singur om și a rămas în picioare pentru că
           alți câțiva au dat timp, date sau o ușă deschisă atunci când conta.
@@ -187,7 +195,7 @@ export function PeopleBand() {
               <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">
                 {angel.role}
               </MonoLabel>
-              <SocialRow person={angel} className="mt-auto pt-2.5" />
+              <SocialRow person={angel} className="mt-auto pt-0 sm:pt-2.5" />
             </li>
           ))}
         </ul>

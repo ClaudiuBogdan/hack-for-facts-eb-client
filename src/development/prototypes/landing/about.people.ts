@@ -184,7 +184,18 @@ export type Contributor = {
  * cannot be derived from a repository, which is the point — most of what kept
  * this going was never a commit.
  *
- * Everything below the first entry is stand-in.
+ * Only real people are in this list.
+ *
+ * It used to carry six invented ones — 'Nume Prenume', 'Al Cincilea Nume' —
+ * to give the wall its shape before the real names arrived. They were never
+ * drawn with a name on screen, so they looked like anonymous placeholders, but
+ * the name went to `title` and to an `sr-only` span: a screen reader read six
+ * fabricated people, with roles, off the band whose whole subject is who is
+ * really behind this. On a site about verifiable public money that is the one
+ * place to get this wrong. `DESIGN.md` §Mock-First Contract says it plainly —
+ * never present stand-in data as served truth.
+ *
+ * The shape is kept by `OPEN_SEATS` instead, which claims nothing about anyone.
  */
 export const CONTRIBUTORS: readonly Contributor[] = [
   {
@@ -194,15 +205,16 @@ export const CONTRIBUTORS: readonly Contributor[] = [
     avatar: ghClaudiu,
     url: 'https://github.com/ClaudiuBogdan',
   },
-  /* Six stand-ins, so the row lands on eight with the open seat. Roles are kept
-     to two or three words: at a 130px track a longer line wraps to three and the
-     row goes ragged, which is the opposite of condensed. */
-  { id: 'c2', name: 'Nume Prenume', role: 'Traduceri', url: '#' },
-  { id: 'c3', name: 'Prenume Nume', role: 'Verifică cifrele', url: '#' },
-  { id: 'c4', name: 'Nume de Familie', role: 'Raportează erori', url: '#' },
-  { id: 'c5', name: 'Al Cincilea Nume', role: 'Duce vorba', url: '#' },
-  { id: 'c6', name: 'Nume Scurt', role: 'Testează pe teren', url: '#' },
-  { id: 'c7', name: 'Al Șaptelea Nume', role: 'Documentație', url: '#' },
 ]
+
+/**
+ * Empty chairs drawn after the real faces, so the wall reads as a wall.
+ *
+ * Not people and not pretending to be: no name, no role, no link, and
+ * `aria-hidden`, so nothing is announced and nothing is claimed. They say the
+ * list is open — which is true — where six invented names said it was already
+ * full, which was not.
+ */
+export const OPEN_SEATS = 6
 
 export const REPO_URL = 'https://github.com/ClaudiuBogdan/hack-for-facts-eb-client'

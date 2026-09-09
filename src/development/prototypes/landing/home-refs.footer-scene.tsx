@@ -140,6 +140,26 @@ export const FOOTER_SCENE_CLEAR_PX =
  */
 const MOON = { w: 76, h: 75, top: 0 } as const
 
+/**
+ * The four painted layers, and the two selectors that can turn them on.
+ *
+ * Written from one list so the gated copy and the no-script copy cannot drift
+ * apart — the second one exists only because a reader with scripting off never
+ * opens the gate, and the scene is worth more than the bytes to someone who is
+ * going to see it either way.
+ */
+const ART_LAYERS = [
+  ['tpz-scene-far', cloudsFar],
+  ['tpz-scene-near', cloudsNear],
+  ['tpz-scene-front', cloudsFront],
+  ['tpz-scene-range', range],
+] as const
+
+const artRules = (gate: string) =>
+  ART_LAYERS.map(([layer, src]) => `${gate} .${layer} {\n  background-image: url(${src});\n}`).join(
+    '\n\n',
+  )
+
 const CSS = `
 .tpz-scene {
   /*
@@ -327,7 +347,6 @@ const CSS = `
   bottom: calc(${FAR.bottom}px * var(--tpz-scene-scale));
   height: calc(${FAR.h}px * var(--tpz-scene-scale));
   width: calc(100% + var(--tpz-tile) * 2);
-  background-image: url(${cloudsFar});
   background-size: var(--tpz-tile) calc(${FAR.h}px * var(--tpz-scene-scale));
   /* Further away, so slightly the palest of the three. Depth here is opacity
      and speed rather than blur, which would cost a filter on a permanently
@@ -343,7 +362,6 @@ const CSS = `
   bottom: calc(${NEAR.bottom}px * var(--tpz-scene-scale));
   height: calc(${NEAR.h}px * var(--tpz-scene-scale));
   width: calc(100% + var(--tpz-tile) * 2);
-  background-image: url(${cloudsNear});
   background-size: var(--tpz-tile) calc(${NEAR.h}px * var(--tpz-scene-scale));
   opacity: 0.94;
 }
@@ -368,7 +386,6 @@ const CSS = `
   bottom: calc(${FRONT.bottom}px * var(--tpz-scene-scale));
   height: calc(${FRONT.h}px * var(--tpz-scene-scale));
   width: calc(100% + var(--tpz-tile) * 2);
-  background-image: url(${cloudsFront});
   background-size: var(--tpz-tile) calc(${FRONT.h}px * var(--tpz-scene-scale));
   /* Solid enough to read as a cloud rather than as ground haze, which is what
      it looked like at half opacity eight pixels off the floor: it hugged the
@@ -393,7 +410,6 @@ const CSS = `
   bottom: 0;
   height: calc(${LAYERS.range.h}px * var(--tpz-scene-scale));
   width: 100%;
-  background-image: url(${range});
   background-size: calc(${LAYERS.range.w}px * var(--tpz-scene-scale))
     calc(${LAYERS.range.h}px * var(--tpz-scene-scale));
 }
@@ -417,10 +433,28 @@ const CSS = `
     animation: none;
   }
 }
+
+/*
+ * The pictures, held back until the footer is one viewport away. Everything
+ * above positions and animates an empty box; this is the only thing that costs
+ * a download, and it is 279 KB for a scene that sits about 8,500px below the
+ * fold. See 'useFooterScene' for the gate itself.
+ */
+${artRules(".tpz-scene[data-scene-art='in']")}
 `
 
 export function FooterSceneStyles() {
-  return <style>{CSS}</style>
+  return (
+    <>
+      <style>{CSS}</style>
+      {/* No script means no observer, so the gate never opens and the scene
+          would stay an empty sky. This hands the pictures straight over
+          instead: nothing is deferred for a reader who cannot be measured. */}
+      <noscript>
+        <style>{artRules('.tpz-scene')}</style>
+      </noscript>
+    </>
+  )
 }
 
 /**
@@ -743,7 +777,18 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
       schedule()
     }
 
-    void Promise.all([
+    /*
+     * Both consumers of the artwork are behind one gate: the stylesheet, which
+     * only sets 'background-image' once the attribute lands, and this decode,
+     * which reads the same four files and would have pulled them in on its own
+     * no matter what the stylesheet said.
+     *
+     * Drag needs the alpha, so a reader who scrolls to the bottom and grabs a
+     * cloud in one motion can outrun the decode. A viewport of margin buys that
+     * time back, and costs nothing to a reader who never arrives.
+     */
+    const artReady = () =>
+      Promise.all([
       loadAlpha(range).then((alpha) => {
         rangeAlpha = alpha
       }),
@@ -768,10 +813,28 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
       scene.addEventListener('pointermove', onMove)
       scene.addEventListener('pointerup', onUp)
       scene.addEventListener('pointercancel', onUp)
-    })
+      })
+      .catch(() => {
+        /* 'OffscreenCanvas' is absent in Safari before 16.4 and 'decode' can
+           reject on its own. Either way the scene keeps its picture and loses
+           only the drag, so this stays silent rather than reported - but it has
+           to be caught, or it surfaces as an unhandled rejection. */
+      })
+
+    const nearby = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return
+        nearby.disconnect()
+        scene.dataset.sceneArt = 'in'
+        void artReady()
+      },
+      { rootMargin: '100% 0px' },
+    )
+    nearby.observe(scene)
 
     return () => {
       live = false
+      nearby.disconnect()
       onScreen.disconnect()
       resized.disconnect()
       scene.removeEventListener('pointerdown', onDown)

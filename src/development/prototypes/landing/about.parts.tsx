@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { ArrowRight, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MonoLabel } from './home-refs.mono-label'
-import { CONTRIBUTORS, REPO_URL, type Person, type Portrait } from './about.people'
+import { CONTRIBUTORS, OPEN_SEATS, REPO_URL, type Person, type Portrait } from './about.people'
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
 export const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
@@ -54,8 +54,11 @@ type SocialKind = keyof typeof SOCIAL
  * carries the LinkedIn path this way; these are the same glyphs, so the app has
  * one drawing of each rather than two that drift.
  *
- * The 16px glyph sits in a 24px box: WCAG 2.2 §2.5.8 is about the target, not
- * the picture, and an icon-only link is exactly the case it was written for.
+ * The 16px glyph sits in a 24px box from `sm` up, and a 40px one below it:
+ * WCAG 2.2 §2.5.8 is about the target, not the picture, and an icon-only link
+ * is exactly the case it was written for. 24 is the floor the rule sets and
+ * fine under a pointer; under a thumb it is the size of the glyph's own
+ * bounding box, so the phone gets a box a thumb can find.
  */
 function SocialGlyph({ kind }: { readonly kind: SocialKind }) {
   return (
@@ -66,7 +69,7 @@ function SocialGlyph({ kind }: { readonly kind: SocialKind }) {
 }
 
 const SOCIAL_TARGET_CLASS =
-  'flex size-6 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring'
+  'flex size-10 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:size-6'
 
 export function SocialRow({ person, className }: { readonly person: Person; readonly className?: string }) {
   const entries = (Object.keys(SOCIAL) as readonly SocialKind[])
@@ -76,7 +79,9 @@ export function SocialRow({ person, className }: { readonly person: Person; read
   if (entries.length === 0) return null
 
   return (
-    <ul className={cn('-ml-1 flex items-center gap-0.5', className)}>
+    /* The negative margin is the glyph's inset in its box, so the first glyph
+       sits on the column edge whichever box it is in. */
+    <ul className={cn('-ml-3 flex items-center gap-0.5 sm:-ml-1', className)}>
       {entries.map(({ kind, href }) => (
         <li key={kind}>
           {href === '#' ? (
@@ -258,6 +263,11 @@ const AVATAR_LINK_CLASS = cn(
  * image with its name as `alt`. Nothing is dimmed for the difference — someone
  * whose social account we do not have is not a lesser contributor.
  *
+ * Then `OPEN_SEATS` unfilled chairs, and the door at the end. The chairs were
+ * already drawn as blank silhouettes, so nothing here looks different — what
+ * changed is that they no longer carry an invented name in `title` and
+ * `sr-only`, which is all a screen reader ever had of them.
+ *
  * Condensed to a 56px avatar at a 6px gap: this is the lightest of the three
  * tiers and the only one meant to grow, so it has to still read as one object
  * at thirty faces rather than only at eight.
@@ -304,6 +314,16 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
           </li>
         )
       })}
+      {/* The unfilled chairs. Nothing is claimed about anyone: no name, no
+          title, no link, and `aria-hidden`, so the wall reads as a wall to the
+          eye and announces only the real people to everyone else. */}
+      {Array.from({ length: OPEN_SEATS }, (_, seat) => (
+        <li key={`seat-${seat}`} aria-hidden="true">
+          <span className={AVATAR_CLASS}>
+            <PendingAvatar />
+          </span>
+        </li>
+      ))}
 
       {/* The open seat, on the same 56px circle so the wall stays one row of one
           shape. It is the only cell that says what it is in words, because it is
@@ -327,13 +347,18 @@ export function ContributorGrid({ className }: { readonly className?: string }) 
   )
 }
 
-/** The one way out of the band: the page that holds the long version. */
+/**
+ * The one way out of the band: the page that holds the long version.
+ *
+ * A 44px row on a phone and a line of text from `sm`. The caller's margin is
+ * expected to give back the 12px the taller row adds above the text.
+ */
 export function ReadMoreLink({ className }: { readonly className?: string }) {
   return (
     <a
       href="/development/landing/about?v=page"
       className={cn(
-        'group inline-flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring',
+        'group inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-foreground hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring sm:min-h-0',
         className,
       )}
     >

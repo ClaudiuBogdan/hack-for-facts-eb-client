@@ -232,6 +232,17 @@ export function PeopleArtStyles() {
   inset: auto;
   width: 100%;
   height: auto;
+  /*
+   * And not the phone's closer crop either. The hook's CSS multiplies a
+   * viewport factor of 1.16 into every '.tpz-pic-img' below 40rem, which is
+   * right for a group picture in a cell that clips and wrong for a portrait
+   * whose box is the collage: measured at 390 the founder rendered 390 by 471
+   * in a 336 by 406 slot, ran 20px past the frame on both sides and 32px over
+   * his own name. Both factors are pinned to 1 here at the same specificity
+   * that pins the layout, so the slot decides the size on every screen.
+   */
+  --tpz-pic-zoom-base: 1;
+  --tpz-pic-zoom-viewport: 1;
 }
 
 /*
