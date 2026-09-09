@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
+import { fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, waitFor, within } from '@/test/test-utils'
-import type { EntitySearchNode } from '@/schemas/entities'
+import type { EntitySearchHit } from '@/schemas/entity-search'
 import { LandingSearch } from './home-refs.search'
-import { placeLine } from './home-refs.search-parts'
 
 /**
  * Rendered against the real hook, with only the router and the API replaced.
@@ -30,8 +30,8 @@ vi.mock('@tanstack/react-router', () => ({
   useSearch: () => ({}),
 }))
 
-vi.mock('@/lib/api/entities', () => ({
-  searchEntities: (...args: readonly unknown[]) => searchEntities(...args),
+vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({
+  searchEntitiesLive: (...args: readonly unknown[]) => searchEntities(...args),
 }))
 
 vi.mock('@/lib/analytics', () => ({
@@ -44,19 +44,17 @@ vi.mock('@/lib/analytics', () => ({
   },
 }))
 
-const IASI: EntitySearchNode = {
-  cui: '4541580',
-  name: 'Municipiul Iași',
-  is_uat: true,
-  uat: { name: 'Iași', county_name: 'Iași' },
+const IASI: EntitySearchHit = {
+  id: 'organization:4541580', title: 'Municipiul Iași', docType: 'organization',
+  href: '/entities/4541580', isExternal: false, identifiers: ['4541580'],
+  countyName: 'Iași', subtitle: null, snippet: null, roles: ['organization'],
+  isActive: true, docId: null, docKey: '4541580', url: null, score: null,
 }
-
-const CLUJ: EntitySearchNode = {
-  cui: '4305857',
-  name: 'Municipiul Cluj-Napoca',
-  is_uat: true,
-  uat: { name: 'Cluj-Napoca', county_name: 'Cluj' },
+const CLUJ: EntitySearchHit = {
+  ...IASI, id: 'organization:4305857', title: 'Municipiul Cluj-Napoca',
+  href: '/entities/4305857', identifiers: ['4305857'], countyName: 'Cluj',
 }
+const response = (hits: readonly EntitySearchHit[]) => ({ hits, degraded: false })
 
 function setup() {
   const user = userEvent.setup()
@@ -79,44 +77,38 @@ async function typeAndWait(user: ReturnType<typeof userEvent.setup>, term: strin
   return input
 }
 
-describe('placeLine', () => {
-  const at = (name: string | null, county: string | null) =>
-    placeLine({ cui: '1', name: 'x', uat: { name, county_name: county } })
-
-  it('prefixes a bare county', () => {
-    expect(at('Cluj-Napoca', 'Cluj')).toBe('Cluj-Napoca · Jud. Cluj')
-  })
-
-  it('does not prefix a county that is already prefixed', () => {
-    // The fixtures store 'Jud. Cluj'; the API sends 'Cluj'. Both have to work.
-    expect(at('Cluj-Napoca', 'Jud. Cluj')).toBe('Cluj-Napoca · Jud. Cluj')
-  })
-
-  it('drops the county when it only repeats the locality', () => {
-    expect(at('Sibiu', 'Jud. Sibiu')).toBe('Sibiu')
-    expect(at('Sibiu', 'Sibiu')).toBe('Sibiu')
-  })
-
-  it('never calls Bucharest a county', () => {
-    expect(at('București', 'București')).toBe('București')
-  })
-
-  it('compares without regard to case', () => {
-    expect(at('Iași', 'JUD. IAȘI')).toBe('Iași')
-  })
-
-  it('survives a missing county or locality', () => {
-    expect(at('Sibiu', null)).toBe('Sibiu')
-    expect(at(null, 'Cluj')).toBe('Jud. Cluj')
-    expect(at(null, null)).toBe('')
-  })
-})
-
 describe('LandingSearch', () => {
   beforeEach(() => {
     navigate.mockReset()
     searchEntities.mockReset()
-    searchEntities.mockResolvedValue([IASI, CLUJ])
+    searchEntities.mockResolvedValue(response([IASI, CLUJ]))
+  })
+
+  it('renders companies, public enterprises and NGOs with their own links', async () => {
+    searchEntities.mockResolvedValue(response([
+      { ...IASI, id: 'company:1', docType: 'company', title: 'Private company', href: '/companies/1' },
+      { ...IASI, id: 'public_enterprise:2', docType: 'public_enterprise', title: 'Public enterprise', href: '/intreprinderi-publice/2' },
+      { ...IASI, id: 'ngo:3', docType: 'ngo', title: 'An NGO', href: '/ong-uri/3' },
+    ]))
+    const { user } = setup()
+    await typeAndWait(user, 'company')
+    expect(screen.getAllByRole('option').map((row) => row.getAttribute('href'))).toEqual([
+      '/companies/1', '/intreprinderi-publice/2', '/ong-uri/3',
+    ])
+    expect(screen.getByText('ONG · Iași')).toBeInTheDocument()
+  })
+
+  it('blocks highlighted stale results when the query changes', async () => {
+    const chosen = vi.fn()
+    const user = userEvent.setup()
+    render(<LandingSearch onSelect={chosen} />, { queryClient: createTestQueryClient() })
+    await typeAndWait(user, 'Iasi')
+    await user.keyboard('{ArrowDown}')
+    searchEntities.mockImplementation(() => new Promise(() => {}))
+    await user.keyboard('x{Enter}')
+    expect(chosen).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
+    expect(screen.getAllByRole('option').every((row) => row.getAttribute('aria-disabled') === 'true')).toBe(true)
   })
 
   describe('the field', () => {
@@ -158,6 +150,14 @@ describe('LandingSearch', () => {
       // to be corrected after hydration. Shipping ⌘ to a Windows reader is the
       // bug this guards, and it is invisible on a Mac.
       await waitFor(() => expect(document.querySelector('kbd')).toHaveTextContent('CtrlK'))
+    })
+
+    it("labels the phone keyboard's action key as search", () => {
+      const { input } = setup()
+
+      // Without it iOS shows a plain "return" on a field whose Enter opens
+      // the first result.
+      expect(input).toHaveAttribute('enterkeyhint', 'search')
     })
 
     it('empties the field from the clear button and keeps focus', async () => {
@@ -206,13 +206,13 @@ describe('LandingSearch', () => {
     })
 
     it('says so when there is nothing, quoting the term back', async () => {
-      searchEntities.mockResolvedValue([])
+      searchEntities.mockResolvedValue(response([]))
       const { user, input } = setup()
 
       await user.click(input)
       await user.type(input, 'Xyzzy')
 
-      await waitFor(() => expect(screen.getByText(/nicio instituție/i)).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByText(/niciun rezultat pentru/i)).toBeInTheDocument())
       expect(screen.getByText('Xyzzy')).toBeInTheDocument()
     })
 
@@ -407,8 +407,44 @@ describe('LandingSearch', () => {
       // side effect of results arriving — and it is gated on the list actually
       // answering what is in the box.
       await waitFor(() => expect(chosen).toHaveBeenCalledWith(
-        expect.objectContaining({ cui: '4541580' }),
+        expect.objectContaining({ id: 'organization:4541580' }),
       ))
+    })
+
+    /**
+     * An IME confirms a candidate with Enter and cancels one with Escape, and
+     * both reach the input as keydowns. Neither may act on the search: the
+     * Enter took the first result and navigated away mid-word in a real
+     * browser, which is the bug this pins. Two shapes are fired because
+     * browsers disagree — Chrome sets `isComposing`, Safari sends the real key
+     * with `isComposing` false and only `keyCode` 229 gives it away.
+     */
+    it('ignores Enter while an IME is composing', async () => {
+      const chosen = vi.fn()
+      const user = userEvent.setup()
+      render(<LandingSearch onSelect={chosen} />, { queryClient: createTestQueryClient() })
+      const input = await typeAndWait(user, 'Iasi')
+
+      fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+      fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 })
+
+      expect(chosen).not.toHaveBeenCalled()
+      expect(input).toHaveValue('Iasi')
+    })
+
+    it('ignores Escape while an IME is composing, even on a closed field', async () => {
+      const { user } = setup()
+      const input = await typeAndWait(user, 'Iasi')
+
+      // Closed, so a plain Escape here would be the second stage and clear.
+      await user.keyboard('{Escape}')
+      expect(input).toHaveAttribute('aria-expanded', 'false')
+
+      fireEvent.keyDown(input, { key: 'Escape', isComposing: true })
+      expect(input).toHaveValue('Iasi')
+
+      fireEvent.keyDown(input, { key: 'Escape', keyCode: 229 })
+      expect(input).toHaveValue('Iasi')
     })
 
     it('dismisses on the first Escape and clears on the second', async () => {
@@ -435,7 +471,7 @@ describe('LandingSearch', () => {
       // called — which is the whole reason Cmd-click opens a tab here. What can
       // be asserted in jsdom is the selection contract.
       await waitFor(() => expect(chosen).toHaveBeenCalledWith(
-        expect.objectContaining({ cui: '4541580' }),
+        expect.objectContaining({ id: 'organization:4541580' }),
       ))
     })
 
@@ -507,7 +543,7 @@ describe('LandingSearch', () => {
     })
 
     it('announces an empty result rather than going silent', async () => {
-      searchEntities.mockResolvedValue([])
+      searchEntities.mockResolvedValue(response([]))
       const { user, input } = setup()
 
       await user.click(input)

@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
-import {
-  buildEntitySelectionPath,
-  type EntitySelectionBehavior,
-} from '@/lib/entity-navigation'
-import type { EntitySearchNode } from '@/schemas/entities'
+import type { EntitySearchHit } from '@/schemas/entity-search'
+import { getDocTypeMeta } from '@/features/entity-search/lib/doc-type-meta'
 import { highlightSegments } from './home-refs.search-highlight'
 import type { SearchStatus } from './home-refs.search-state'
 
@@ -26,32 +23,6 @@ import type { SearchStatus } from './home-refs.search-state'
 
 /** Rows shown while a request is out, matching the height of a real row. */
 const SKELETON_ROWS = 3
-
-/**
- * The place line under a name: locality, then county.
- *
- * Two shapes have to survive this. The API sends a bare county (`Cluj`), which
- * needs the prefix. `PREDEFINED_ENTITIES` stores some already prefixed
- * (`Jud. Cluj`) and some not (`București`). Prefixing unconditionally — as the
- * shipped component does — renders `Jud. Jud. Cluj` on the second shape.
- *
- * The redundancy is the more interesting half. A municipality is usually the
- * seat of the county it names, so the obvious formatting produces
- * `Sibiu · Jud. Sibiu` and, for the capital, `București · Jud. București` —
- * which is not merely repetitive but wrong, since Bucharest is not a county.
- * Both disappear under one rule: when the county *is* the locality, there is no
- * second fact to state, so only the locality is shown.
- */
-export function placeLine(entity: EntitySearchNode): string {
-  const locality = entity.uat?.name?.trim() ?? ''
-  const bareCounty = (entity.uat?.county_name?.trim() ?? '').replace(/^jud\.?\s+/i, '')
-
-  if (!bareCounty || bareCounty.toLocaleLowerCase('ro') === locality.toLocaleLowerCase('ro')) {
-    return locality
-  }
-
-  return [locality, `Jud. ${bareCounty}`].filter(Boolean).join(' · ')
-}
 
 /** Marked-up name, county and CUI. Marks come from the folded matcher. */
 function Highlighted({
@@ -126,16 +97,16 @@ export function ResultRowContent({
   entity,
   query,
 }: {
-  readonly entity: EntitySearchNode
+  readonly entity: EntitySearchHit
   readonly query: string
 }) {
-  const place = placeLine(entity)
+  const place = [getDocTypeMeta(entity.docType).label, entity.countyName].filter(Boolean).join(' · ')
 
   return (
     <>
       <span className="min-w-0">
         <Highlighted
-          text={entity.name}
+          text={entity.title}
           query={query}
           className="block truncate text-sm font-medium text-card-foreground group-data-highlighted:text-primary"
         />
@@ -148,22 +119,11 @@ export function ResultRowContent({
         ) : null}
       </span>
       <Highlighted
-        text={entity.cui}
+        text={entity.identifiers[0] ?? ''}
         query={query}
         className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground"
       />
     </>
-  )
-}
-
-/** Where an entity goes when it is chosen. */
-export function destinationFor(
-  entity: EntitySearchNode,
-  selectionBehavior: EntitySelectionBehavior,
-): string {
-  return buildEntitySelectionPath(
-    { cui: entity.cui, entityType: entity.entity_type, isUat: entity.is_uat },
-    selectionBehavior,
   )
 }
 
@@ -252,9 +212,7 @@ export function announcement(status: SearchStatus) {
     case 'results': {
       if (status.stale) return 'Se actualizează rezultatele.'
       const count = `${status.results.length} ${status.results.length === 1 ? 'rezultat' : 'rezultate'}.`
-      // The caveat is spoken too. A label only a sighted reader gets is not a
-      // label; it is decoration that happens to be true.
-      return status.source === 'local' ? `${count} Date locale, API indisponibil.` : count
+      return count
     }
     case 'empty':
       return 'Niciun rezultat.'

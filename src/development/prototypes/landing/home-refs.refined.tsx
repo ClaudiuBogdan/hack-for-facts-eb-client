@@ -57,7 +57,6 @@ import { PeopleArtStyles } from './home-refs.people-art'
 import { ShardDefs } from './home-refs.shards'
 import { PeopleBand } from './home-refs.people'
 import { LandingSearch } from './home-refs.search'
-import { localEntityMatches } from './home-refs.search-local'
 import { LANDING_GROUPS, visibleGroups } from './home.data'
 import type { LandingEntry, LandingGroup } from './home.data'
 
@@ -318,11 +317,7 @@ function CruxMarks() {
  * over the page before the reader has seen it; `scrollToTopOnFocus` is the
  * mobile counterpart, keeping the field above the keyboard once they do tap it.
  *
- * The fallback is the one thing here that is prototype-only. The GraphQL server
- * lives in another repo, so on this harness the search usually cannot reach it
- * and the dropdown can only be seen failing — which makes the states worth
- * looking at impossible to look at. `import.meta.env.DEV` keeps it out of a
- * build, and results that come from it are labelled as such in the dropdown.
+ * Uses the existing universal search API and its internal destination mappings.
  */
 function RefinedSearch({
   inputRef,
@@ -337,11 +332,9 @@ function RefinedSearch({
     // truncated mid-word.
     <LandingSearch
       inputRef={inputRef}
-      placeholder="Caută o instituție sau CUI..."
-      selectionBehavior="navigate-to-preferred-entity"
+      placeholder="Caută entități sau CUI..."
       autoFocus={!isMobile}
       scrollToTopOnFocus={isMobile}
-      fallback={import.meta.env.DEV ? localEntityMatches : undefined}
     />
   )
 }

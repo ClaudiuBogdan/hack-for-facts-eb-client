@@ -7,12 +7,10 @@ import { Loader2, Search, X } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
-import type { EntitySelectionBehavior } from '@/lib/entity-navigation'
-import type { EntitySearchNode } from '@/schemas/entities'
+import type { EntitySearchHit } from '@/schemas/entity-search'
 import { MonoLabel } from './home-refs.mono-label'
 import {
   announcement,
-  destinationFor,
   Message,
   ResultRowContent,
   resultRowClass,
@@ -52,12 +50,6 @@ import type { SearchStatus } from './home-refs.search-state'
  * room it prefers to stay below and shrink; it flips when the room runs out,
  * and the panel follows rather than being held in place.
  *
- * Written against the same prop contract as the shipped
- * `src/components/entities/EntitySearch`, so promoting it is a file move plus
- * wrapping the strings in Lingui macros. They are plain Romanian here because
- * running the extract cycle rewrites both catalogs, and a prototype should not
- * be why a translation file changes.
- *
  * Layout is the caller's — no `max-w-3xl mx-auto pt-8` baked in. That was what
  * forced the landing to reach into the shipped component with `[&_input]:`
  * descendant selectors, a hack that outranked the component's own classes and
@@ -69,7 +61,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
       return (
         <Message>
           {shortHint(status.remaining)}{' '}
-          <span className="text-muted-foreground/55">Numele instituției sau codul fiscal.</span>
+          <span className="text-muted-foreground/55">Nume sau identificator.</span>
         </Message>
       )
 
@@ -84,7 +76,7 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
     case 'empty':
       return (
         <Message>
-          Nicio instituție pentru{' '}
+          Niciun rezultat pentru{' '}
           <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
           <span className="text-muted-foreground/55">Încearcă numele complet sau CUI-ul.</span>
         </Message>
@@ -107,12 +99,10 @@ function SearchStatusView({ status }: { readonly status: SearchStatus }) {
 export function LandingSearch({
   className,
   inputRef: externalInputRef,
-  placeholder = 'Caută o instituție sau CUI...',
+  placeholder = 'Caută entități sau CUI...',
   autoFocus,
   scrollToTopOnFocus,
-  selectionBehavior = 'navigate-to-preferred-entity',
   onSelect,
-  fallback,
 }: {
   readonly className?: string
   /**
@@ -127,18 +117,16 @@ export function LandingSearch({
   readonly placeholder?: string
   readonly autoFocus?: boolean
   readonly scrollToTopOnFocus?: boolean
-  readonly selectionBehavior?: EntitySelectionBehavior
-  readonly onSelect?: (entity: EntitySearchNode) => void
-  readonly fallback?: (term: string) => readonly EntitySearchNode[]
+  readonly onSelect?: (entity: EntitySearchHit) => void
 }) {
-  const { term, setTerm, status, results, source, isCurrent } = useSearchResults({ fallback })
-  const commit = useEntitySelection({ selectionBehavior, onSelect, source })
+  const { term, setTerm, status, results, isCurrent } = useSearchResults()
+  const commit = useEntitySelection({ onSelect })
 
   const [isOpen, setIsOpen] = useState(false)
   // Which row the keyboard is on, if any. Kept in a ref rather than in state
   // because only the Enter handler reads it, and re-rendering the whole field
   // on every arrow key to store something nothing draws would be waste.
-  const highlightedRef = useRef<EntitySearchNode | undefined>(undefined)
+  const highlightedRef = useRef<EntitySearchHit | undefined>(undefined)
   const modifier = useModifierKey()
   const prefersReducedMotion = usePrefersReducedMotion()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -152,7 +140,7 @@ export function LandingSearch({
 
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
   const isDropdownOpen = isOpen && status.kind !== 'idle'
-  const visibleResults = status.kind === 'results' ? (status.results as EntitySearchNode[]) : []
+  const visibleResults = status.kind === 'results' ? (status.results as EntitySearchHit[]) : []
 
   return (
     <Autocomplete.Root
@@ -180,7 +168,7 @@ export function LandingSearch({
         // arrives with nothing open, so the input handler below clears.
         if (details.reason === 'escape-key' && !isDropdownOpen) setTerm('')
       }}
-      itemToStringValue={(entity: EntitySearchNode) => entity.name}
+      itemToStringValue={(entity: EntitySearchHit) => entity.title}
       onItemHighlighted={(entity) => {
         highlightedRef.current = entity
       }}
@@ -203,11 +191,34 @@ export function LandingSearch({
                 autoFocus={autoFocus}
                 onFocus={() => {
                   if (scrollToTopOnFocus) {
-                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    // The scroll is motion too, and DESIGN.md §Motion makes
+                    // reduced motion drop the flourish rather than shorten it.
+                    containerRef.current?.scrollIntoView({
+                      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+                      block: 'start',
+                    })
                   }
                   setIsOpen(true)
                 }}
                 onKeyDown={(event: BaseUIEvent<KeyboardEvent<HTMLInputElement>>) => {
+                  // Nothing below may act while an IME is composing. The Enter
+                  // that confirms a candidate — CJK, or a dead-key accent on
+                  // macOS Chrome — arrives here as a keydown, and without this
+                  // gate it took the first result and navigated away mid-word;
+                  // the Escape that cancels a composition would have emptied
+                  // the field. Base UI already ignores these for its own
+                  // handling; this handler has to as well. Both checks are
+                  // needed: Chrome reports `isComposing`, Safari reports the
+                  // real key with `isComposing` false and only keyCode 229
+                  // gives it away. Base UI's own handler is opted out as
+                  // well: it checks 229 for navigation and Enter, but its
+                  // "Escape on a closed field clears it" runs before that
+                  // check and would empty a half-composed word.
+                  if (event.nativeEvent.isComposing || event.keyCode === 229) {
+                    event.preventBaseUIHandler()
+                    return
+                  }
+
                   // ArrowUp with the highlight already back in the field ends
                   // the walk there.
                   //
@@ -249,6 +260,11 @@ export function LandingSearch({
                   // Enter with a row highlighted is Base UI's to handle — it
                   // presses the item, the item is an anchor, the router
                   // navigates. Only the *unhighlighted* case is ours.
+                  if (!isCurrent) {
+                    event.preventDefault()
+                    event.preventBaseUIHandler()
+                    return
+                  }
                   if (highlightedRef.current) return
 
                   // Enter with nothing highlighted takes the first result, but
@@ -308,6 +324,11 @@ export function LandingSearch({
             }
             placeholder={placeholder}
             aria-label={placeholder}
+            // Labels the phone keyboard's action key. Enter here takes the
+            // first result once the list answers what is in the box, which is
+            // what a reader who has typed into a search field expects that key
+            // to do; without the hint iOS shows a plain "return".
+            enterKeyHint="search"
           />
 
           <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
@@ -324,7 +345,14 @@ export function LandingSearch({
                 // lying. Escape stays the faster path; this is the discoverable
                 // one.
                 tabIndex={0}
-                className="rounded-sm p-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                // The drawn button is 24px, which is exactly WCAG 2.2's floor
+                // for a target and well under the 44px that is comfortable on
+                // a phone. The hit area is grown with a pseudo-element rather
+                // than padding so the visible box, and the focus ring around
+                // it, stay the size the field was designed for: 10px on every
+                // side makes 44×44, which fits inside the 48px field and,
+                // leftwards, overlaps only the decorative spinner.
+                className="relative rounded-sm p-1 text-muted-foreground transition-colors after:absolute after:-inset-2.5 after:content-[''] hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <X className="size-4" />
               </Autocomplete.Clear>
@@ -383,22 +411,13 @@ export function LandingSearch({
             style={prefersReducedMotion ? { transition: 'none' } : undefined}
           >
             {/* The only divider between the query and the answers, with the
-                field standing directly on it — no seam line of its own, because
-                two rules 45px apart around a tinted strip reads as a boxed-off
-                row rather than as one surface. Kept rather than dropped: it
-                carries the CUI column label and the stand-in-data badge, and
-                that badge is not optional. */}
+                field standing directly on it. The right column holds each
+                result's identifier, which is not necessarily a CUI. */}
             <div className="flex items-baseline justify-between gap-3 border-b bg-muted/40 px-4 py-3">
               <MonoLabel className="text-muted-foreground">
                 {status.kind === 'results' ? 'Rezultate' : 'Caută'}
               </MonoLabel>
-              {status.kind === 'results' && status.source === 'local' ? (
-                <MonoLabel className="ml-auto shrink-0 whitespace-nowrap rounded-sm border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-amber-700 dark:text-amber-500">
-                  Date locale
-                  <span className="hidden sm:inline"> · API indisponibil</span>
-                </MonoLabel>
-              ) : null}
-              <MonoLabel className="text-muted-foreground/55">CUI</MonoLabel>
+              <MonoLabel className="text-muted-foreground/55">Identificator</MonoLabel>
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -412,19 +431,30 @@ export function LandingSearch({
                   instead of through ours. */}
               <Autocomplete.List
                 className={cn(
-                  'transition-opacity',
-                  status.kind === 'results' && status.stale && 'opacity-50',
+                  // The stale dim fades in. Measured under
+                  // `prefers-reduced-motion: reduce`: the popup's inline rule
+                  // above did not reach this element, and the list still
+                  // reported a 150ms opacity transition. Same element, so
+                  // the variant outranks the base utility and the cascade
+                  // order concern in `usePrefersReducedMotion` does not apply.
+                  'transition-opacity motion-reduce:transition-none',
+                  status.kind === 'results' && status.stale && 'pointer-events-none opacity-50',
                 )}
               >
-                {(entity: EntitySearchNode) => (
+                {(entity: EntitySearchHit) => (
                   <Autocomplete.Item
-                    key={entity.cui}
+                    key={entity.id}
                     value={entity}
                     className={resultRowClass}
                     // The anchor navigates, so the recorder is told to skip it.
                     // Cmd-click then works for free: the browser opens a tab,
                     // the router never runs, the selection is still counted.
-                    onClick={() => {
+                    disabled={!isCurrent}
+                    onClick={(event) => {
+                      if (!isCurrent) {
+                        event.preventDefault()
+                        return
+                      }
                       commit(entity, { skipNavigate: true })
                       setTerm('')
                       setIsOpen(false)
@@ -434,8 +464,9 @@ export function LandingSearch({
                     // and Cmd-click working.
                     render={
                       <Link
-                        to={destinationFor(entity, selectionBehavior) as '/'}
-                        preload="intent"
+                        to={entity.href as '/'}
+                        preload={false}
+                        onClick={(event) => { if (!isCurrent) event.preventDefault() }}
                       />
                     }
                   >

@@ -3,320 +3,136 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
-import type { EntitySearchNode } from '@/schemas/entities'
-import { MIN_QUERY_CHARS, useEntitySelection, useSearchResults } from './home-refs.search-state'
-
-/**
- * The data layer, on its own.
- *
- * Keyboard travel, what Escape means and when Enter may act belong to Base UI
- * now, and are tested through the rendered component in
- * `home-refs.search.test.tsx` where they can be exercised the way a reader
- * exercises them. What is left here is everything that would be identical under
- * any combobox: the debounce, the seven states, staleness, the stand-in
- * fallback, and the rule that fabricated rows stay out of telemetry.
- *
- * The debounce is real and driven through the hook's own `debounceMs` rather
- * than mocked to the identity function the shipped hook's test uses — that mock
- * makes every assertion about timing vacuous, and timing is where the
- * interesting failures live. Fake timers deadlock here, because `waitFor` and
- * TanStack Query both schedule against the clock the test is holding still, so
- * two real settings do the same work: `IMMEDIATE`, where the request follows
- * the keystroke, and `HELD`, long enough that nothing fires until the test says.
- */
-
-/** Debounce short enough that a request follows the keystroke. */
-const IMMEDIATE = 0
-
-/** Debounce long enough that the pre-request states can be asserted. */
-const HELD = 10_000
+import type { EntitySearchHit } from '@/schemas/entity-search'
+import { LANDING_SEARCH_TYPES, useEntitySelection, useSearchResults } from './home-refs.search-state'
 
 const navigate = vi.fn()
 const searchEntities = vi.fn()
 const capture = vi.fn()
-
-vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => navigate,
-  useSearch: () => ({}),
+vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
+vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({
+  searchEntitiesLive: (...args: readonly unknown[]) => searchEntities(...args),
 }))
+vi.mock('@/lib/analytics', () => ({ Analytics: {
+  EVENTS: { EntitySearchPerformed: 'search', EntitySearchSelected: 'selected' },
+  capture: (...args: readonly unknown[]) => capture(...args),
+} }))
 
-vi.mock('@/lib/api/entities', () => ({
-  searchEntities: (...args: readonly unknown[]) => searchEntities(...args),
-}))
-
-vi.mock('@/lib/analytics', () => ({
-  Analytics: {
-    EVENTS: {
-      EntitySearchPerformed: 'entity_search_performed',
-      EntitySearchSelected: 'entity_search_selected',
-    },
-    capture: (...args: readonly unknown[]) => capture(...args),
-  },
-}))
-
-const CLUJ: EntitySearchNode = {
-  cui: '4305857',
-  name: 'Municipiul Cluj-Napoca',
-  is_uat: true,
-  uat: { name: 'Cluj-Napoca', county_name: 'Cluj' },
+const COMPANY: EntitySearchHit = {
+  id: 'company:14399840', title: 'DANTE INTERNATIONAL SA', docType: 'company',
+  href: '/companies/14399840', isExternal: false, identifiers: ['14399840'],
+  countyName: null, subtitle: null, snippet: null, roles: ['company'],
+  isActive: true, docId: null, docKey: '14399840', url: null, score: null,
 }
+const response = (hits: readonly EntitySearchHit[] = [COMPANY]) => ({ hits, degraded: false })
 
-const SIBIU: EntitySearchNode = {
-  cui: '4270740',
-  name: 'Municipiul Sibiu',
-  is_uat: true,
-  uat: { name: 'Sibiu', county_name: 'Sibiu' },
-}
-
-function setup(
-  debounceMs = IMMEDIATE,
-  fallback?: (term: string) => readonly EntitySearchNode[],
-) {
+function setup(debounceMs = 0) {
   const queryClient = createTestQueryClient()
-
   function Wrapper({ children }: { readonly children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   }
-
-  const view = renderHook(
-    (props: { readonly debounceMs: number }) =>
-      useSearchResults({ debounceMs: props.debounceMs, fallback }),
-    { wrapper: Wrapper, initialProps: { debounceMs } },
-  )
-
-  return {
-    ...view,
-    /**
-     * Stretches the debounce so the next keystroke cannot reach the API. Lets a
-     * test settle on one term and then hold the hook in the window between
-     * typing and asking, which is where staleness lives.
-     */
-    hold: () => act(() => view.rerender({ debounceMs: HELD })),
-  }
+  return renderHook((props: { readonly debounceMs: number }) => useSearchResults(props), {
+    wrapper: Wrapper, initialProps: { debounceMs },
+  })
 }
-
-/** Types a term and waits for the list to answer it. */
-async function search(
-  result: { current: ReturnType<typeof useSearchResults> },
-  term: string,
-) {
+async function search(result: { current: ReturnType<typeof useSearchResults> }, term = 'Dante') {
   act(() => result.current.setTerm(term))
   await waitFor(() => expect(['results', 'empty', 'error']).toContain(result.current.status.kind))
 }
+beforeEach(() => {
+  navigate.mockReset(); capture.mockReset(); searchEntities.mockReset()
+  searchEntities.mockResolvedValue(response())
+})
 
-describe('useSearchResults', () => {
-  beforeEach(() => {
-    navigate.mockReset()
-    searchEntities.mockReset()
-    capture.mockReset()
-    searchEntities.mockResolvedValue([CLUJ, SIBIU])
+describe('landing universal search', () => {
+  it('waits for three characters and the debounce', () => {
+    const { result } = setup(10_000)
+    expect(result.current.status.kind).toBe('idle')
+    act(() => result.current.setTerm('Da'))
+    expect(result.current.status).toEqual({ kind: 'short', remaining: 1 })
+    act(() => result.current.setTerm('Dante'))
+    expect(result.current.status.kind).toBe('pending')
+    expect(searchEntities).not.toHaveBeenCalled()
   })
-
-  describe('states', () => {
-    it('starts idle', () => {
-      const { result } = setup()
-
-      expect(result.current.status).toEqual({ kind: 'idle' })
-    })
-
-    it('says how many more characters are needed', () => {
-      const { result } = setup()
-
-      act(() => result.current.setTerm('C'))
-      expect(result.current.status).toEqual({ kind: 'short', remaining: MIN_QUERY_CHARS - 1 })
-
-      act(() => result.current.setTerm('Cl'))
-      expect(result.current.status).toEqual({ kind: 'short', remaining: MIN_QUERY_CHARS - 2 })
-    })
-
-    it('is pending before the debounce fires, without asking the API', () => {
-      const { result } = setup(HELD)
-
-      act(() => result.current.setTerm('Cluj'))
-
-      expect(result.current.status.kind).toBe('pending')
-      expect(searchEntities).not.toHaveBeenCalled()
-    })
-
-    it('queries once the typing stops, and reports the results', async () => {
-      const { result } = setup()
-
-      await search(result, 'Cluj')
-
-      expect(searchEntities).toHaveBeenCalledTimes(1)
-      expect(searchEntities).toHaveBeenCalledWith('Cluj', 8)
-      expect(result.current.status).toMatchObject({
-        kind: 'results',
-        results: [CLUJ, SIBIU],
-        stale: false,
-        source: 'live',
-      })
-    })
-
-    it('does not query again for a term that only differs by surrounding space', async () => {
-      const { result } = setup()
-
-      await search(result, 'Cluj')
-      await search(result, '  Cluj  ')
-
-      expect(searchEntities).toHaveBeenCalledTimes(1)
-    })
-
-    it('reports empty when the API finds nothing', async () => {
-      searchEntities.mockResolvedValue([])
-      const { result } = setup()
-
-      await search(result, 'Xyzzy')
-
-      expect(result.current.status).toEqual({ kind: 'empty', term: 'Xyzzy' })
-    })
-
-    it('reports an error when the request fails', async () => {
-      searchEntities.mockRejectedValue(new Error('down'))
-      const { result } = setup()
-
-      await search(result, 'Cluj')
-
-      expect(result.current.status.kind).toBe('error')
-    })
-
-    it('keeps the previous results on screen, marked stale, while the next term loads', async () => {
-      const { result, hold, rerender } = setup()
-
-      await search(result, 'Cluj')
-      await waitFor(() => expect(result.current.status).toMatchObject({ stale: false }))
-
-      searchEntities.mockResolvedValue([SIBIU])
-      hold()
-      act(() => result.current.setTerm('Sibiu'))
-
-      // Dimmed, not emptied: the reader can keep reading the row they were
-      // already looking at.
-      expect(result.current.status).toMatchObject({
-        kind: 'results',
-        results: [CLUJ, SIBIU],
-        stale: true,
-      })
-      expect(result.current.isCurrent).toBe(false)
-
-      rerender({ debounceMs: IMMEDIATE })
-      await waitFor(() => expect(result.current.status).toMatchObject({ results: [SIBIU] }))
-      expect(result.current.status).toMatchObject({ stale: false })
-      expect(result.current.isCurrent).toBe(true)
-    })
+  it('uses universal search with the supported families and cancellation', async () => {
+    const { result } = setup()
+    await search(result)
+    expect(searchEntities).toHaveBeenCalledWith({
+      q: 'Dante', docTypes: LANDING_SEARCH_TYPES, limit: 8,
+    }, expect.any(AbortSignal))
+    expect(LANDING_SEARCH_TYPES).toEqual(['organization', 'company', 'public_enterprise', 'ngo', 'legal_act'])
+    expect(result.current.status).toEqual({ kind: 'results', results: [COMPANY], stale: false })
+    await search(result, '  Dante  ')
+    expect(searchEntities).toHaveBeenCalledTimes(1)
   })
-
-  describe('the stand-in fallback', () => {
-    it('is never consulted while the API answers', async () => {
-      const fallback = vi.fn(() => [SIBIU])
-      const { result } = setup(IMMEDIATE, fallback)
-
-      await search(result, 'Cluj')
-
-      expect(fallback).not.toHaveBeenCalled()
-    })
-
-    it('answers a failed request, and says the answer is local', async () => {
-      searchEntities.mockRejectedValue(new Error('ECONNREFUSED'))
-      const { result } = setup(IMMEDIATE, () => [SIBIU])
-
-      await search(result, 'Sibiu')
-
-      // The flag is the whole point. Stand-in data that arrives unlabelled is
-      // worse than no data, because it is indistinguishable from served truth.
-      expect(result.current.status).toMatchObject({ source: 'local', results: [SIBIU] })
-    })
-
-    it('lets the error stand when the fallback has nothing either', async () => {
-      searchEntities.mockRejectedValue(new Error('ECONNREFUSED'))
-      const { result } = setup(IMMEDIATE, () => [])
-
-      await search(result, 'Xyzzy')
-
-      expect(result.current.status.kind).toBe('error')
-    })
-
-    it('is absent by default, so a bare hook fails honestly', async () => {
-      searchEntities.mockRejectedValue(new Error('ECONNREFUSED'))
-      const { result } = setup()
-
-      await search(result, 'Sibiu')
-
-      expect(result.current.status.kind).toBe('error')
-    })
-
-    it('is kept out of analytics', async () => {
-      searchEntities.mockRejectedValue(new Error('ECONNREFUSED'))
-      const { result } = setup(IMMEDIATE, () => [SIBIU])
-
-      await search(result, 'Sibiu')
-
-      // A fabricated list recorded as a search performed puts fiction into
-      // numbers someone will later read as behaviour.
-      expect(capture).not.toHaveBeenCalled()
-    })
-
-    it('does report a live search', async () => {
-      const { result } = setup()
-
-      await search(result, 'Cluj')
-
-      await waitFor(() =>
-        expect(capture).toHaveBeenCalledWith(
-          'entity_search_performed',
-          expect.objectContaining({ query_len: 4, results_count: 2, has_results: true }),
-        ),
-      )
-    })
+  it('preserves server ordering and omits missing or external destinations', async () => {
+    const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ong-uri/123' }
+    searchEntities.mockResolvedValue(response([
+      ngo, COMPANY, { ...COMPANY, href: '' }, { ...COMPANY, href: 'https://example.com', isExternal: true },
+    ]))
+    const { result } = setup()
+    await search(result)
+    expect(result.current.results).toEqual([ngo, COMPANY])
+  })
+  it('distinguishes empty results from an unavailable engine', async () => {
+    searchEntities.mockResolvedValue(response([]))
+    const { result } = setup()
+    await search(result)
+    expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante' })
+    searchEntities.mockResolvedValue({ hits: [], degraded: true })
+    act(() => result.current.setTerm('Sibiu'))
+    await waitFor(() => expect(result.current.status.kind).toBe('error'))
+    expect(result.current.isCurrent).toBe(false)
+  })
+  it('reports transport errors without substituting sample institutions', async () => {
+    searchEntities.mockRejectedValue(new Error('offline'))
+    const { result } = setup()
+    await search(result)
+    expect(result.current.status.kind).toBe('error')
+    expect(capture).not.toHaveBeenCalled()
+  })
+  it('makes previous results unselectable during typing and failed requests', async () => {
+    const { result, rerender } = setup()
+    await search(result)
+    rerender({ debounceMs: 10_000 })
+    act(() => result.current.setTerm('Sibiu'))
+    expect(result.current.status).toMatchObject({ kind: 'results', stale: true })
+    expect(result.current.isCurrent).toBe(false)
+    searchEntities.mockRejectedValue(new Error('offline'))
+    rerender({ debounceMs: 0 })
+    await waitFor(() => expect(result.current.status.kind).toBe('error'))
+    expect(result.current.isCurrent).toBe(false)
+  })
+  it('aborts an in-flight request on unmount', async () => {
+    searchEntities.mockImplementation(() => new Promise(() => {}))
+    const { result, unmount } = setup()
+    act(() => result.current.setTerm('Dante'))
+    await waitFor(() => expect(searchEntities).toHaveBeenCalledTimes(1))
+    const signal = searchEntities.mock.calls[0][1] as AbortSignal
+    unmount()
+    expect(signal.aborted).toBe(true)
   })
 })
 
-describe('useEntitySelection', () => {
-  const selectionHook = (source: 'live' | 'local') =>
-    renderHook(() => useEntitySelection({ source }))
-
-  beforeEach(() => {
-    navigate.mockReset()
-    capture.mockReset()
+describe('landing selection', () => {
+  it.each([
+    ['company', '/companies/14399840'], ['organization', '/entities/4270740'],
+    ['ngo', '/ong-uri/123'], ['public_enterprise', '/intreprinderi-publice/1590082'],
+    ['legal_act', '/legislation/acts/66150'],
+  ])('uses the mapped %s destination', (docType, href) => {
+    const { result } = renderHook(() => useEntitySelection())
+    act(() => result.current({ ...COMPANY, docType, href }))
+    expect(navigate).toHaveBeenCalledWith({ to: href })
   })
-
-  it('routes a public enterprise to its own surface, not to the entity page', () => {
-    const { result } = selectionHook('live')
-
-    act(() =>
-      result.current({ cui: '1590082', name: 'Hidroelectrica', entity_type: 'public_enterprise' }),
-    )
-
-    expect(navigate).toHaveBeenCalledWith(
-      expect.objectContaining({ to: expect.stringContaining('1590082') }),
-    )
-    expect(navigate.mock.calls[0][0].to).not.toBe('/entities/1590082')
-  })
-
-  it('records the selection without navigating when asked to skip', () => {
-    const { result } = selectionHook('live')
-
-    act(() => result.current(CLUJ, { skipNavigate: true }))
-
-    // This is the path a real anchor takes: the browser or the router follows
-    // the href, and the recorder only counts it.
+  it('lets an anchor navigate and records a typed identity, not a fabricated CUI', () => {
+    const { result } = renderHook(() => useEntitySelection())
+    act(() => result.current(COMPANY, { skipNavigate: true }))
     expect(navigate).not.toHaveBeenCalled()
-    expect(capture).toHaveBeenCalledWith('entity_search_selected', { cui: CLUJ.cui })
+    expect(capture).toHaveBeenCalledWith('selected', { entity_id: COMPANY.id, doc_type: 'company' })
   })
-
-  it('does not record a selection made from stand-in data', () => {
-    const { result } = selectionHook('local')
-
-    act(() => result.current(CLUJ, { skipNavigate: true }))
-
-    expect(capture).not.toHaveBeenCalled()
-  })
-
-  it('does nothing at all without an entity', () => {
-    const { result } = selectionHook('live')
-
-    act(() => result.current(undefined))
-
+  it('ignores missing or unusable destinations', () => {
+    const { result } = renderHook(() => useEntitySelection())
+    act(() => { result.current(undefined); result.current({ ...COMPANY, href: '' }) })
     expect(navigate).not.toHaveBeenCalled()
     expect(capture).not.toHaveBeenCalled()
   })

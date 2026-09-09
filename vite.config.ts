@@ -238,6 +238,21 @@ export default defineConfig(({ mode }) => {
       tanstackStart(),
       nitro({
         preset: "node_server",
+        // Start handles these routes before Vite's proxy. Opt in using the
+        // existing dev proxy setting; Nitro never includes devProxy in builds.
+        devProxy: env.VITE_API_PROXY_TARGET ? {
+          "/api/**": {
+            target: env.VITE_API_PROXY_TARGET,
+            changeOrigin: true,
+            // This is a server-to-server hop; keep the browser same-origin.
+            headers: { origin: "" },
+          },
+          "/graphql": {
+            target: env.VITE_API_PROXY_TARGET,
+            changeOrigin: true,
+            headers: { origin: "" },
+          },
+        } : {},
         alias: {
           "lodash/memoize": "lodash/memoize.js",
         },
