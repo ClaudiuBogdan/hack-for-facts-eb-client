@@ -12,6 +12,7 @@ band notes for which ChatGPT export is which):
 
     halo wings shards receipt orbit dashes
     portrait-founder portrait-angel-1 portrait-angel-2 portrait-angel-3
+    portrait-angel-4
 
 Three edits, in this order:
 
@@ -54,8 +55,15 @@ from PIL import Image
 ALPHA_FLOOR = 8
 """Below this an 'opaque' pixel is generator noise, not art."""
 
-BOTTOM_FADE = 0.10
-"""Fraction of the trimmed bust height dissolved to transparent at the foot."""
+BOTTOM_FADE = 0.0
+"""Fraction of the bust height dissolved to transparent at the foot.
+
+Zero, on request. The mechanism stays because the reason for it has not gone
+away: two of the four generated busts run to the canvas edge as a flat slab —
+their last opaque row is 100% and 99% filled — and on a cut-out with nothing
+behind it that edge is a straight line across the chest. With the fade off it is
+visible again on those two. Set it back to 0.10 to dissolve them.
+"""
 
 WEBP_QUALITY = 82
 AVIF_QUALITY = 62
@@ -84,6 +92,7 @@ TARGETS: tuple[Target, ...] = (
     Target("portrait-angel-1", 520, portrait=True),
     Target("portrait-angel-2", 520, portrait=True),
     Target("portrait-angel-3", 520, portrait=True),
+    Target("portrait-angel-4", 520, portrait=True),
     # The wings run wider than the portrait they sit behind.
     Target("wings", 620),
     Target("halo", 340),

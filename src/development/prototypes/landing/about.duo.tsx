@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { Frame, PROTOTYPE_MARKER } from './about.parts'
 import { PictureRevealStyles, usePictureReveal } from './home-refs.image-reveal'
 import { PeopleArtStyles } from './home-refs.people-art'
+import { ShardDefs } from './home-refs.shards'
 import { PeopleBand } from './home-refs.people'
 import { RevealStyles, useRevealOnView } from './home-refs.reveal'
 
@@ -34,6 +35,7 @@ export function AboutDuo() {
       <RevealStyles />
       <PictureRevealStyles />
       <PeopleArtStyles />
+      <ShardDefs />
       <Frame className="py-14 sm:py-16">
         <PeopleBand />
       </Frame>

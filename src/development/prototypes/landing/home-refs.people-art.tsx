@@ -1,40 +1,25 @@
 import type { CSSProperties, ReactNode } from 'react'
-import shards from '@/assets/images/people/shards.webp'
-import shardsAvif from '@/assets/images/people/shards.avif'
-import receipt from '@/assets/images/people/receipt.webp'
-import receiptAvif from '@/assets/images/people/receipt.avif'
-import orbit from '@/assets/images/people/orbit.webp'
-import orbitAvif from '@/assets/images/people/orbit.avif'
-import dashes from '@/assets/images/people/dashes.webp'
-import dashesAvif from '@/assets/images/people/dashes.avif'
-import wings from '@/assets/images/people/wings.webp'
-import wingsAvif from '@/assets/images/people/wings.avif'
-import halo from '@/assets/images/people/halo.webp'
-import haloAvif from '@/assets/images/people/halo.avif'
+import orbit from '@/assets/images/people/orbit.svg'
+import dashes from '@/assets/images/people/dashes.svg'
 import { cn } from '@/lib/utils'
 import { PICTURE_ATTR, PICTURE_STATE_ATTR } from './home-refs.image-reveal'
+import { ShardBackdrop, type ShardCut } from './home-refs.shards'
 
 /**
  * The people band's art, as a stack rather than a picture.
  *
- * Each piece — the shards behind the founder, the receipt at his shoulder, the
- * wings behind an angel, the halo over their head — is its own file and its own
- * element. That costs a handful of requests the flat composite did not, and buys
- * the only thing a flat composite can never give: the pieces can move
- * separately. `scripts/build-people-art.py` produces them.
+ * Each piece — the shard backdrop, the orbit round the founder's chest, the
+ * dashes at his sleeve — is a separate SVG layer, so each can move independently.
+ * The portrait remains a raster cut-out from `scripts/build-people-art.py`.
  *
  * Two collages, one mechanism. The founder keeps the vocabulary his portrait was
- * made with; the angels get the wings and the halo, which is the whole joke of
- * calling them îngeri păzitori and the reason those two assets exist.
+ * made with — orbit and dashes over the backdrop — and the angels take the
+ * backdrop alone, which is the same language at a lighter weight. The receipt
+ * that used to hang at his shoulder is gone; `receipt` is no longer referenced.
  */
 
-type Layer = {
+type Placement = {
   readonly key: string
-  readonly webp: string
-  readonly avif: string
-  /** The art's own pixels, for the `img` attributes. */
-  readonly width: number
-  readonly height: number
   /** Placement, as a share of the box — so 254px and 380px share one spec. */
   readonly left: number
   readonly top?: number
@@ -49,20 +34,29 @@ type Layer = {
   readonly depth: number
   /** Draw order. The portrait is 10; behind is below, in front is above. */
   readonly z: number
-  /** Absent at rest, revealed when the collage is hovered. */
-  readonly hover?: boolean
 }
 
+type PictureLayer = Placement & {
+  readonly src: string
+  /** The art's own pixels, for the `img` attributes. */
+  readonly width: number
+  readonly height: number
+}
+
+/** The shared inline SVG backdrop. The foreground layers use SVG files. */
+type ShardLayer = Placement & { readonly shards: true }
+
+type Layer = PictureLayer | ShardLayer
+
+const isShards = (layer: Layer): layer is ShardLayer => 'shards' in layer
+
 const FOUNDER_LAYERS: readonly Layer[] = [
-  { key: 'shards', webp: shards, avif: shardsAvif, width: 760, height: 931,
-    left: 3, top: 0, size: 94, depth: -1, z: 0 },
+  { key: 'shards', shards: true, left: 3, top: 0, size: 94, depth: -1, z: 0 },
   /* Low enough to ring the chest. Higher up it crossed the chin, which reads
      as a scratch on the photograph rather than as an object in front of it. */
-  { key: 'orbit', webp: orbit, avif: orbitAvif, width: 520, height: 334,
+  { key: 'orbit', src: orbit, width: 520, height: 334,
     left: -3, bottom: 2, size: 68, depth: 1.4, z: 20 },
-  { key: 'receipt', webp: receipt, avif: receiptAvif, width: 380, height: 525,
-    left: -2, top: 30, size: 33, depth: 2, z: 20 },
-  { key: 'dashes', webp: dashes, avif: dashesAvif, width: 420, height: 110,
+  { key: 'dashes', src: dashes, width: 420, height: 110,
     left: 57, bottom: 20, size: 42, depth: 2.4, z: 20 },
 ]
 
@@ -72,19 +66,14 @@ const ANGEL_LAYERS: readonly Layer[] = [
    * one visual language rather than one of them being a different kind of
    * picture. It is the tallest asset in the set against the squarest box, so it
    * runs narrower here than it does behind him.
+   *
+   * There were wings and a halo here, revealed on hover — the joke in "îngeri
+   * păzitori" made literal. They are gone: `wings` and `halo` are no longer
+   * referenced by anything, and the hold-until-hover machinery went with them,
+   * because a mechanism kept for one absent caller is a mechanism nobody
+   * maintains.
    */
-  { key: 'shards', webp: shards, avif: shardsAvif, width: 760, height: 931,
-    left: 10, top: -2, size: 82, depth: -1, z: 0 },
-  /*
-   * Wings and halo are the joke, and a joke told once is enough — at rest these
-   * are four people, and only when you reach for one do they become îngeri
-   * păzitori. The wings sit behind the portrait so they open from behind the
-   * shoulders rather than landing on top of them.
-   */
-  { key: 'wings', webp: wings, avif: wingsAvif, width: 620, height: 499,
-    left: -6, top: 16, size: 112, depth: -1.8, z: 5, hover: true },
-  { key: 'halo', webp: halo, avif: haloAvif, width: 340, height: 120,
-    left: 30, top: -1, size: 40, depth: 1.8, z: 20, hover: true },
+  { key: 'shards', shards: true, left: 10, top: -2, size: 82, depth: -1, z: 0 },
 ]
 
 /** Where the person stands in their own collage. */
@@ -113,12 +102,10 @@ function layerStyle(layer: Layer): CSSProperties {
   }
 }
 
-function LayerPicture({ layer }: { readonly layer: Layer }) {
+function LayerPicture({ layer }: { readonly layer: PictureLayer }) {
   return (
-    <picture>
-      <source type="image/avif" srcSet={layer.avif} />
-      <img
-        src={layer.webp}
+    <img
+        src={layer.src}
         alt=""
         width={layer.width}
         height={layer.height}
@@ -126,15 +113,8 @@ function LayerPicture({ layer }: { readonly layer: Layer }) {
         decoding="async"
         fetchPriority="low"
         draggable={false}
-        className={cn(
-          'tpz-layer block h-auto w-full select-none',
-          /* On the image, not on its wrapper: every rule that holds these back
-             or lets them in selects '.tpz-layer', and a class on the div would
-             never be matched by any of them. */
-          layer.hover === true && 'tpz-layer-held',
-        )}
+        className="tpz-layer block h-auto w-full select-none"
       />
-    </picture>
   )
 }
 
@@ -152,9 +132,12 @@ export function PersonCollage({
   variant,
   portrait,
   fallback,
+  cut,
   className,
 }: {
   readonly variant: 'founder' | 'angel'
+  /** Which cut of the backdrop this person stands against. */
+  readonly cut?: ShardCut
   readonly portrait?: { readonly webp: string; readonly avif?: string; readonly width: number; readonly height: number }
   /** Drawn in the portrait's slot when there is no cut-out yet. */
   readonly fallback?: ReactNode
@@ -174,16 +157,22 @@ export function PersonCollage({
       /* Only a real image gets the reveal attribute. The hook waits on
          '.tpz-pic-img' and there is none without one, so marking the cell would
          be asking it to wait for something that will never arrive. An angel
-         still without a photograph shows their wings and halo immediately. */
+         still without a photograph is left with nothing to wait for. */
       {...(portrait === undefined ? {} : { [PICTURE_ATTR]: '' })}
       className={cn('tpz-collage relative isolate', className)}
     >
       {layers.map((layer) => (
         <div key={layer.key} className="absolute" style={layerStyle(layer)}>
-          <LayerPicture layer={layer} />
+          {isShards(layer) ? (
+            <ShardBackdrop cut={cut} className="tpz-layer select-none" />
+          ) : (
+            <LayerPicture layer={layer} />
+          )}
         </div>
       ))}
-      <div className="absolute" style={slot}>
+      {/* The wrapper carries the cast shadow and the hover lift; the image
+          inside it is left to the reveal hook, which owns its filter. */}
+      <div className="tpz-cast absolute" style={slot}>
         {portrait === undefined ? (
           fallback
         ) : (
@@ -212,8 +201,8 @@ export function PersonCollage({
  *
  * The hook's own CSS covers `.tpz-pic-img`; this covers everything else in the
  * stack, keyed off the same attribute so there is one state and no second
- * observer. The props are held a beat behind the face — a receipt that lands
- * before the person it belongs to reads as a separate object that happens to be
+ * observer. The props are held a beat behind the face — a prop that lands before
+ * the person it belongs to reads as a separate object that happens to be
  * nearby.
  *
  * Hover writes `transform` and the arrival writes `translate` and `scale`.
@@ -245,39 +234,49 @@ export function PeopleArtStyles() {
   height: auto;
 }
 
-.tpz-collage .tpz-layer {
-  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.tpz-collage .tpz-pic-img {
+/*
+ * The person casts onto the backdrop behind them.
+ *
+ * On the wrapper, not on the image, and that is not a preference. The picture
+ * reveal owns 'filter' on '.tpz-pic-img' — it animates a blur out as the
+ * portrait arrives — and its selector carries the state attribute, so it wins on
+ * specificity. A shadow declared on the image was simply not applied at rest:
+ * the computed value read 'blur(0px)'. Filters on nested elements compose rather
+ * than compete, so the image resolves its own blur and the wrapper casts the
+ * result.
+ *
+ * 'drop-shadow' follows the alpha, so it is the silhouette that casts and not a
+ * rectangle — the whole reason it is this and not 'box-shadow'. It paints under
+ * the portrait and over the shards, because those are two elements and the
+ * portrait is the higher one; that is what separates the person from the facets
+ * instead of leaving them pasted flat against each other.
+ *
+ * 'DESIGN.md' §Property budget puts blur outside the free list and asks for
+ * radii at or under 8. This is over that, deliberately: at 8 the shadow did not
+ * read against the darker facets. It is one element per collage and static at
+ * rest, so it rasterises once and is cached; the only time it re-runs is the
+ * hover transition.
+ */
+.tpz-collage .tpz-cast {
+  filter: drop-shadow(10px 14px 12px rgb(2 6 23 / 0.55));
+  transform-origin: 50% 100%;
   transition:
     transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
     filter 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/*
- * Held layers are out of the arrival entirely — they are not late, they are
- * absent. 'opacity' and 'scale' are theirs alone, which is why the entrance
- * rules below exclude them: two owners of one property is the bug that always
- * shows up on the frame where both are mid-transition.
- */
-.tpz-collage .tpz-layer-held {
-  opacity: 0;
-  scale: 0.92;
-  transition:
-    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    scale 380ms cubic-bezier(0.22, 1, 0.36, 1),
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+.tpz-collage .tpz-layer {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* The props arrive with the block, a beat after the face. */
-[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='pending'] .tpz-layer:not(.tpz-pic-img):not(.tpz-layer-held) {
+[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='pending'] .tpz-layer:not(.tpz-pic-img) {
   opacity: 0;
   translate: 0 14px;
   scale: 0.97;
 }
 
-[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='shown'] .tpz-layer:not(.tpz-pic-img):not(.tpz-layer-held) {
+[${PICTURE_ATTR}][${PICTURE_STATE_ATTR}='shown'] .tpz-layer:not(.tpz-pic-img) {
   opacity: 1;
   translate: 0 0;
   scale: 1;
@@ -286,14 +285,6 @@ export function PeopleArtStyles() {
     translate 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--tpz-pic-delay, 0ms) + 160ms),
     scale 700ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--tpz-pic-delay, 0ms) + 160ms),
     transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@media (hover: hover) {
-  .tpz-collage:hover .tpz-layer-held,
-  .tpz-collage:focus-within .tpz-layer-held {
-    opacity: 1;
-    scale: 1;
-  }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -305,8 +296,25 @@ export function PeopleArtStyles() {
     );
   }
 
-  .tpz-collage:hover .tpz-pic-img {
-    filter: drop-shadow(0 18px 22px rgb(0 0 0 / 0.18));
+  /*
+   * Hovering lifts the person off the backdrop.
+   *
+   * Three things move together, which is what makes it read as depth rather
+   * than as three separate animations: the portrait grows a little, its shadow
+   * travels further and darkens, and the shards behind it slide the other way.
+   * A shadow that changed direction under the pointer would read as a second
+   * light source, so it is the same shadow further out.
+   *
+   * The scale is on the wrapper and the parallax is on the image inside it, so
+   * neither has to know about the other. Origin at the foot: a bust that grows
+   * from its centre floats, and one that grows from its base steps forward.
+   *
+   * (Backticks are a syntax error in this block, not a style choice: the whole
+   * thing is a template literal.)
+   */
+  .tpz-collage:hover .tpz-cast {
+    transform: scale(1.045);
+    filter: drop-shadow(16px 22px 15px rgb(2 6 23 / 0.6));
   }
 }
 
@@ -323,11 +331,12 @@ export function PeopleArtStyles() {
     transition: none;
   }
 
-  /* Held layers still appear on hover under reduce — the wings are content of a
-     sort, not a flourish — they simply appear rather than growing into place. */
-  .tpz-collage .tpz-layer-held {
+  /* The cast shadow stays. It is depth, not motion, and reduce asks for the
+     flourish to go rather than for the picture to flatten. */
+  .tpz-collage .tpz-cast {
+    transform: none;
     transition: none;
-    scale: 1;
+    filter: drop-shadow(10px 14px 12px rgb(2 6 23 / 0.55));
   }
 }
 `}</style>

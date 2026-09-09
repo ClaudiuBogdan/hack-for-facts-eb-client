@@ -1,4 +1,10 @@
 # TODO
+- cookie modal
+- about page and contributors
+
+
+
+---
 - Add population popup with info
 - Add last update
 

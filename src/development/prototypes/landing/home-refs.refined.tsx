@@ -54,6 +54,7 @@ import {
 } from './home-refs.section-light'
 import { ScrollLight, ScrollLightStyles, useScrollLight } from './home-refs.scroll-light'
 import { PeopleArtStyles } from './home-refs.people-art'
+import { ShardDefs } from './home-refs.shards'
 import { PeopleBand } from './home-refs.people'
 import { LandingSearch } from './home-refs.search'
 import { localEntityMatches } from './home-refs.search-local'
@@ -984,6 +985,7 @@ function RefinedLanding({ fieldCell = 12 }: { readonly fieldCell?: FieldCell }) 
       <RevealStyles />
       <PictureRevealStyles />
       <PeopleArtStyles />
+      <ShardDefs />
       <PanelTiltStyles />
       <SmearFilters />
       <ScrollLight />

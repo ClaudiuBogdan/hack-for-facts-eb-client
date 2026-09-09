@@ -6,6 +6,8 @@ import angel2Webp from '@/assets/images/people/portrait-angel-2.webp'
 import angel2Avif from '@/assets/images/people/portrait-angel-2.avif'
 import angel3Webp from '@/assets/images/people/portrait-angel-3.webp'
 import angel3Avif from '@/assets/images/people/portrait-angel-3.avif'
+import angel4Webp from '@/assets/images/people/portrait-angel-4.webp'
+import angel4Avif from '@/assets/images/people/portrait-angel-4.avif'
 import ghClaudiu from '@/assets/images/people/gh-claudiubogdan.webp'
 
 /**
@@ -68,13 +70,17 @@ export const PORTRAIT_RATIO = '4 / 5'
  * with live in `home-refs.people-art.tsx`, because which props a person gets is
  * a question about their tier and not about them.
  *
- * There are three angel portraits and four angels. The fourth keeps the drawn
- * silhouette until their picture exists.
+ * All four angels have art now. Two of them arrived recut at source, which is
+ * why the bottom fade is off: their busts no longer end on a filled row.
  */
 const PORTRAIT_FOUNDER: Portrait = { webp: founderWebp, avif: founderAvif, width: 760, height: 919 }
 const PORTRAIT_ANGEL_1: Portrait = { webp: angel1Webp, avif: angel1Avif, width: 520, height: 627 }
 const PORTRAIT_ANGEL_2: Portrait = { webp: angel2Webp, avif: angel2Avif, width: 520, height: 620 }
 const PORTRAIT_ANGEL_3: Portrait = { webp: angel3Webp, avif: angel3Avif, width: 520, height: 633 }
+/* Squarer than the other three — 520x550 against about 520x625 — because that
+   is how the art arrived. The collage anchors portraits at the foot, so a
+   shorter bust simply sits lower in its box. */
+const PORTRAIT_ANGEL_4: Portrait = { webp: angel4Webp, avif: angel4Avif, width: 520, height: 550 }
 
 export const FOUNDER: Person = {
   id: 'claudiu',
@@ -129,6 +135,7 @@ export const ANGELS: readonly Person[] = [
     name: 'Al Patrulea Nume',
     role: 'A dus proiectul mai departe',
     blurb: 'O propoziție despre ce a făcut, nu un CV.',
+    portrait: PORTRAIT_ANGEL_4,
     links: { linkedin: '#', facebook: '#' },
     provisional: true,
   },

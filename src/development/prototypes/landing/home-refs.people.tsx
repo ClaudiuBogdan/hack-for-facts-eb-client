@@ -7,7 +7,17 @@ import {
 } from './about.parts'
 import { cn } from '@/lib/utils'
 import { PersonCollage } from './home-refs.people-art'
+import type { ShardCut } from './home-refs.shards'
 import { MonoLabel } from './home-refs.mono-label'
+
+/** Keep each person's artwork stable when the list is reordered. */
+const PORTRAIT_CUTS: Readonly<Record<string, ShardCut>> = {
+  claudiu: 'a',
+  'angel-1': 'b',
+  'angel-2': 'c',
+  'angel-3': 'd',
+  'angel-4': 'e',
+}
 
 /**
  * `03 / Oameni` — the landing's people band.
@@ -54,6 +64,7 @@ function RevealPortrait({
   return (
     <PersonCollage
       variant={variant}
+      cut={PORTRAIT_CUTS[person.id] ?? 'a'}
       portrait={person.portrait}
       fallback={<PendingPortrait className="w-full" />}
       className={cn('w-full', ratio, className)}
@@ -136,7 +147,11 @@ export function PeopleBand() {
                  elements the founder's does not, so the slot is cut to the
                  shape it will need rather than to the shape the stand-in
                  happens to be — which is why it is pillarboxed today. */}
-              <RevealPortrait person={angel} variant="angel" ratio="aspect-square" />
+              <RevealPortrait
+                person={angel}
+                variant="angel"
+                ratio="aspect-square"
+              />
               <p className="mt-3 text-sm font-medium leading-tight text-foreground">
                 {angel.name}
               </p>

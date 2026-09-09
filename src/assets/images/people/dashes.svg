@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="110" viewBox="0 0 420 110" fill="none">
+  <defs>
+    <linearGradient id="cyan" gradientUnits="userSpaceOnUse" x1="73" y1="0" x2="388" y2="0">
+      <stop stop-color="#0751f9" />
+      <stop offset="0.25" stop-color="#0981fb" />
+      <stop offset="0.5" stop-color="#10b3fd" />
+      <stop offset="0.75" stop-color="#02c7fc" />
+      <stop offset="1" stop-color="#00e9fb" />
+    </linearGradient>
+    <linearGradient id="violet" gradientUnits="userSpaceOnUse" x1="0" y1="43" x2="246" y2="43">
+      <stop stop-color="#412df8" />
+      <stop offset="0.25" stop-color="#8133f5" />
+      <stop offset="0.5" stop-color="#ad35f7" />
+      <stop offset="0.75" stop-color="#df43f9" />
+      <stop offset="1" stop-color="#fb3ffc" />
+    </linearGradient>
+    <linearGradient id="pink" gradientUnits="userSpaceOnUse" x1="171" y1="83" x2="420" y2="83">
+      <stop stop-color="#9f2af7" />
+      <stop offset="0.25" stop-color="#c92bf8" />
+      <stop offset="0.5" stop-color="#f228fa" />
+      <stop offset="0.75" stop-color="#fc39fa" />
+      <stop offset="1" stop-color="#fc3cf8" />
+    </linearGradient>
+  </defs>
+  <path fill="url(#cyan)" d="M73 0H388V31H73Z" />
+  <path fill="#2dccff" opacity=".12" d="M99 0 132 31 177 0ZM145 31 208 0 267 31Z" />
+  <path fill="url(#violet)" d="M0 43H246V74H0Z" />
+  <path fill="#d557ff" opacity=".08" d="M39 43 83 74 144 43Z" />
+  <path fill="url(#pink)" d="M171 83H420V110H171Z" />
+</svg>
