@@ -305,6 +305,7 @@ export function EntityDetailsRoutePage() {
 
       if (patch.selectedYear !== undefined) {
         searchPatch.year = patch.selectedYear
+        searchPatch.commitments_period_page = undefined
       }
 
       if (patch.periodType !== undefined) {
@@ -321,6 +322,7 @@ export function EntityDetailsRoutePage() {
 
       if (patch.reportType !== undefined) {
         searchPatch.report_type = patch.reportType
+        searchPatch.commitments_period_page = undefined
       } else if (
         search?.report_type !== undefined &&
         search.report_type !== challengeSearch.report_type
@@ -475,7 +477,7 @@ export function EntityDetailsRoutePage() {
             params: { cui: pendingMapEntitySelection.entityCui },
             search: (previousSearch) =>
               mergeWindowManagedSearchState(
-                previousSearch as Record<string, unknown>,
+                {...previousSearch as Record<string, unknown>, commitments_period_page: undefined},
               ),
             replace: false,
             resetScroll: false,
@@ -553,6 +555,8 @@ export function EntityDetailsRoutePage() {
           onStateChange={handleStateChange}
           insSearch={search}
           onInsSearchChange={updateSearch}
+          commitmentPeriodSelection={search}
+          onCommitmentPeriodSelectionChange={updateSearch}
           onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
           onAnalyticsTargetChange={handleAnalyticsTargetChange}
           onEntityCuiChange={handleMapEntitySelection}

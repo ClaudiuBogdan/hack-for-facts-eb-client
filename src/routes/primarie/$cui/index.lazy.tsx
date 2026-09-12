@@ -239,6 +239,7 @@ export function PrimarieEntityRoutePage() {
 
       if (patch.selectedYear !== undefined) {
         searchPatch.year = patch.selectedYear
+        searchPatch.commitments_period_page = undefined
       }
 
       if (patch.periodType !== undefined) {
@@ -255,6 +256,7 @@ export function PrimarieEntityRoutePage() {
 
       if (patch.reportType !== undefined) {
         searchPatch.report_type = patch.reportType
+        searchPatch.commitments_period_page = undefined
       }
 
       if (Object.prototype.hasOwnProperty.call(patch, 'mainCreditorCui')) {
@@ -352,7 +354,7 @@ export function PrimarieEntityRoutePage() {
             params: { cui: pendingMapEntitySelection.entityCui },
             search: (previousSearch) =>
               mergeWindowManagedSearchState(
-                previousSearch as Record<string, unknown>,
+                {...previousSearch as Record<string, unknown>, commitments_period_page: undefined},
               ),
             replace: false,
             resetScroll: false,
@@ -421,6 +423,8 @@ export function PrimarieEntityRoutePage() {
         onStateChange={handleStateChange}
           insSearch={search}
           onInsSearchChange={updateSearch}
+          commitmentPeriodSelection={search}
+          onCommitmentPeriodSelectionChange={updateSearch}
         onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
         onAnalyticsTargetChange={handleAnalyticsTargetChange}
         onEntityCuiChange={handleMapEntitySelection}

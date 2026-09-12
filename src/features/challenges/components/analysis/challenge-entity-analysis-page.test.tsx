@@ -330,6 +330,10 @@ vi.mock('@/components/entities/views/ContractsView', () => ({
   ),
 }))
 
+vi.mock('@/components/commitments/IntervalTable', () => ({
+  CommitmentIntervalTable: (props: { cui:string;year:number;reportType:string }) => <div data-testid="native-commitment-periods">{props.cui}:{props.year}:{props.reportType}</div>,
+}))
+
 vi.mock('@/components/entities/views/Commitments', () => ({
   CommitmentsView: (props: any) => (
     <div data-testid="commitments-view">
@@ -1158,6 +1162,23 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }), expect.anything())
   })
 
+  it.each(['error','loading'])('opens native commitments independently of fiscal %s', async (state) => {
+    runtimeApiMode.value = 'redesign'
+    const ordinaryQuery = useQueryMock.getMockImplementation()
+    useQueryMock.mockImplementation((options: any) => options.queryKey?.[0] === 'entityIdentity' ? {
+      data: options.select({ cui: '12345678', name: 'Entity', uat: { id: 1, level: 'uat' } }),
+      isLoading: false, isFetching: false, isError: false, isSuccess: true, isPlaceholderData: false, error: null, refetch: vi.fn(),
+    } : ordinaryQuery?.(options))
+    const failure = { data: undefined, isLoading: state === 'loading', isError: state === 'error', error: new Error('Fiscal failure'), refetch: vi.fn() }
+    useEntityDetailsMock.mockReturnValue(failure)
+    useEntityExecutionLineItemsMock.mockReturnValue(failure)
+    renderAnalysisPage({ state: { activeView: 'commitments', reportType: 'PRINCIPAL_AGGREGATED' } })
+    expect(await screen.findByTestId('native-commitment-periods')).toHaveTextContent('12345678:2025:PRINCIPAL_AGGREGATED')
+    expect(screen.queryByTestId('commitments-view')).not.toBeInTheDocument()
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ enabled: false }))
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }), expect.anything())
+  })
+
   it('retries only identity after an INS identity error', async () => {
     runtimeApiMode.value = 'redesign'
     const ordinaryQuery = useQueryMock.getMockImplementation()
@@ -1173,24 +1194,11 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(retryFiscal).not.toHaveBeenCalled()
   })
 
-  it('blocks legacy-only views in redesign-only deployments', () => {
+  it('offers commitments in redesign deployments without enabling the legacy screen', () => {
     runtimeApiMode.value = 'redesign'
-
-    renderAnalysisPage({
-      languageQuery: 'en',
-      state: {
-        activeView: 'commitments',
-      },
-    })
-
-    expect(
-      screen.getByText('Not available on the new API yet'),
-    ).toBeInTheDocument()
+    renderAnalysisPage({languageQuery:'en'})
+    expect(screen.getAllByRole('button',{name:'Commitments'}).length).toBeGreaterThan(0)
     expect(screen.queryByTestId('commitments-view')).not.toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Commitments' }),
-    ).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'INS' })).not.toBeInTheDocument()
   })
 
   it('restores native map, category evolution and execution analytics', async () => {

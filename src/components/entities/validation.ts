@@ -152,6 +152,9 @@ export const entitySearchSchema = z.object({
         .optional()
         .describe('Advanced filter for line items (e.g., economic:personal, anomaly:missing).'),
     // Commitments view state
+    commitments_from_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+    commitments_to_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+    commitments_period_page: z.coerce.number().int().min(1).max(10000).optional().catch(undefined),
     commitmentsGrouping: z
         .enum(['fn', 'ec'])
         .optional()

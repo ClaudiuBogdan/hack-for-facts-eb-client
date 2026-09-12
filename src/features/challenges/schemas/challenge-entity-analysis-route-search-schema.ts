@@ -169,6 +169,9 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
     .preprocess(parseSearchParamJson, ChallengeEntityAnalyticsSearchStateSchema)
     .optional(),
   view: z.string().optional(),
+  commitments_from_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+  commitments_to_month: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+  commitments_period_page: z.coerce.number().int().min(1).max(10000).optional().catch(undefined),
   commitments_grouping: z.string().optional(),
   commitments_detail_level: z.string().optional(),
   currency: CurrencySchema.optional(),

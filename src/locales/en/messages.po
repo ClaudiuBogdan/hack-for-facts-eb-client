@@ -4526,6 +4526,7 @@ msgid "Commitment Trends"
 msgstr "Commitment Trends"
 
 #: src/components/commitments/CommitmentsTable.tsx:159
+#: src/components/commitments/IntervalTable.tsx:160
 msgid "Commitments"
 msgstr "Commitments"
 
@@ -7667,7 +7668,7 @@ msgstr "Entity Analytics"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2565
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2570
 msgid "Entity not found"
 msgstr "Entity not found"
 
@@ -10519,7 +10520,7 @@ msgstr "Inflation Adjustment"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Inflation adjustment is ignored for % of GDP."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3321
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3329
 msgid "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 msgstr "Inflation-adjusted (real) values are not available yet; the amounts shown are nominal."
 
@@ -10808,6 +10809,7 @@ msgstr "Interpretation notes"
 msgid "interval"
 msgstr "range"
 
+#: src/components/commitments/IntervalTable.tsx:154
 #: src/components/entities/views/ins-stats-view.formatters.ts:10
 #: src/components/filters/period-filter/PeriodFilter.tsx:426
 msgid "Interval"
@@ -11253,6 +11255,10 @@ msgstr "Latest INS observation"
 #: src/components/charts/components/series-config/ins-map-period-editor.tsx:154
 msgid "Latest observation"
 msgstr "Latest observation"
+
+#: src/components/commitments/IntervalTable.tsx:134
+msgid "Latest published financial reports by sector:"
+msgstr "Latest published financial reports by sector:"
 
 #: src/features/statistics/components/entity-ins-source-history.tsx:185
 msgid "Latest source observation"
@@ -11843,7 +11849,7 @@ msgstr "Loading map editor..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3645
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3890
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:3897
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1001
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1006
 msgid "Loading map..."
 msgstr "Loading map..."
 
@@ -11858,6 +11864,10 @@ msgstr "Loading public data series..."
 #: src/features/advanced-map-analytics/components/map-analytics-public-page.tsx:107
 msgid "Loading public map..."
 msgstr "Loading public map..."
+
+#: src/components/commitments/IntervalTable.tsx:114
+msgid "Loading reported intervals…"
+msgstr "Loading reported intervals…"
 
 #: src/components/entities/EntityReportsSummary.tsx:39
 msgid "Loading reports…"
@@ -11876,7 +11886,7 @@ msgstr "Loading table data..."
 msgid "Loading the entity's geographic context…"
 msgstr "Loading the entity's geographic context…"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1043
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1048
 msgid "Loading view…"
 msgstr "Loading view…"
 
@@ -13360,6 +13370,7 @@ msgstr "Newest"
 msgid "Newest first"
 msgstr "Newest first"
 
+#: src/components/commitments/IntervalTable.tsx:240
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:582
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:211
@@ -13570,6 +13581,10 @@ msgstr "No active series selected."
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:98
 msgid "No activity codes"
 msgstr "No activity codes"
+
+#: src/components/commitments/IntervalTable.tsx:182
+msgid "No admitted financial amounts"
+msgstr "No admitted financial amounts"
 
 #: src/components/maps/utils.ts:201
 msgid "No aggregated data"
@@ -14036,6 +14051,10 @@ msgstr "No rectifications"
 msgid "No regions available."
 msgstr "No regions available."
 
+#: src/components/commitments/IntervalTable.tsx:219
+msgid "No reports on this page for the selected ending months."
+msgstr "No reports on this page for the selected ending months."
+
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:133
 msgid "No representatives or EU branches listed"
 msgstr "No representatives or EU branches listed"
@@ -14111,6 +14130,10 @@ msgstr "noiembrie"
 msgid "Nominal"
 msgstr "Nominal"
 
+#: src/components/commitments/IntervalTable.tsx:65
+msgid "Nominal RON, excluding transfers. Each row keeps its full reported interval. Overlapping intervals must not be added together."
+msgstr "Nominal RON, excluding transfers. Each row keeps its full reported interval. Overlapping intervals must not be added together."
+
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:95
 msgid "Non-direct spending"
 msgstr "Non-direct spending"
@@ -14119,6 +14142,7 @@ msgstr "Non-direct spending"
 msgid "Non-RON values have no RON amount; the currency code is shown instead."
 msgstr "Non-RON values have no RON amount; the currency code is shown instead."
 
+#: src/components/commitments/IntervalTable.tsx:166
 #: src/lib/commitments-metrics.ts:35
 msgid "Non-treasury payments"
 msgstr "Non-treasury payments"
@@ -16442,6 +16466,7 @@ msgstr "Preview selection"
 msgid "Preview unavailable"
 msgstr "Preview unavailable"
 
+#: src/components/commitments/IntervalTable.tsx:230
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:570
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:199
@@ -17671,9 +17696,21 @@ msgstr "Replace"
 msgid "Replace value"
 msgstr "Replace value"
 
+#: src/components/commitments/IntervalTable.tsx:210
+msgid "Report"
+msgstr "Report"
+
 #: src/components/sentry/SendErrorAction.tsx:16
 msgid "Report bug"
 msgstr "Report bug"
+
+#: src/components/commitments/IntervalTable.tsx:72
+msgid "Report ending from month"
+msgstr "Report ending from month"
+
+#: src/components/commitments/IntervalTable.tsx:90
+msgid "Report ending through month"
+msgstr "Report ending through month"
 
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:159
 msgid "Report status"
@@ -17693,6 +17730,15 @@ msgstr "Report type"
 #: src/components/filters/MapFilter.tsx:396
 msgid "Report Type"
 msgstr "Report Type"
+
+#: src/components/commitments/IntervalTable.tsx:60
+#: src/components/commitments/IntervalTable.tsx:62
+msgid "Reported intervals"
+msgstr "Reported intervals"
+
+#: src/components/commitments/IntervalTable.tsx:118
+msgid "Reported intervals could not be loaded."
+msgstr "Reported intervals could not be loaded."
 
 #: src/components/entities/EntityReportCard.tsx:104
 msgid "Reporting entity"
@@ -18715,6 +18761,10 @@ msgstr "Sectiuni profil ONG"
 msgid "Sector"
 msgstr "Sector"
 
+#: src/components/commitments/IntervalTable.tsx:157
+msgid "Sector / creditor"
+msgstr "Sector / creditor"
+
 #: src/features/ngos/components/ngo-profile-page.tsx:86
 msgid "Sectorial"
 msgstr "Sectorial"
@@ -19723,7 +19773,7 @@ msgstr "Soluționat"
 msgid "Some data issues were automatically resolved"
 msgstr "Some data issues were automatically resolved"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3318
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3326
 msgid "Some display settings are not available on this page yet."
 msgstr "Some display settings are not available on this page yet."
 
@@ -19744,6 +19794,10 @@ msgstr "Some periods are unavailable. Totals and calculations requiring them are
 #: src/lib/storage/read-json-from-local-storage.ts:63
 msgid "Some saved local data was corrupted and has been reset."
 msgstr "Some saved local data was corrupted and has been reset."
+
+#: src/components/commitments/IntervalTable.tsx:143
+msgid "Some sectors do not have a December financial report."
+msgstr "Some sectors do not have a December financial report."
 
 #: src/components/charts/components/ChartDataError.tsx:235
 msgid "Some series are unavailable. Review the details before using this chart."
@@ -19816,6 +19870,7 @@ msgstr "Sorted by reported call-off value for the current filters — execution 
 #: src/components/charts/components/filters-details/StaticSeriesFilter.tsx:31
 #: src/components/charts/components/series-config/StaticSeriesEditor.tsx:50
 #: src/components/commitments/CommitmentsTable.tsx:231
+#: src/components/commitments/IntervalTable.tsx:169
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1157
 #: src/features/procurement/components/procurement-filter-sheet.tsx:148
 #: src/features/procurement/lib/export.ts:43
@@ -21231,6 +21286,10 @@ msgstr "The shared map configuration is invalid or unreadable. You can still cre
 msgid "The source publishes no itemised detail for this kind of record — it was collected from official bulk exports that contain only the summary above. This does not mean nothing was purchased."
 msgstr "The source publishes no itemised detail for this kind of record — it was collected from official bulk exports that contain only the summary above. This does not mean nothing was purchased."
 
+#: src/components/commitments/IntervalTable.tsx:110
+msgid "The starting month must not follow the ending month."
+msgstr "The starting month must not follow the ending month."
+
 #. placeholder {0}: formatCurrency(result.employerTotal - result.net)
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:413
 msgid "The state total claim is <0>{0}</0>."
@@ -21971,6 +22030,7 @@ msgstr "Transport"
 msgid "Traseu de navigare"
 msgstr "Traseu de navigare"
 
+#: src/components/commitments/IntervalTable.tsx:163
 #: src/lib/commitments-metrics.ts:33
 msgid "Treasury payments"
 msgstr "Treasury payments"
@@ -22035,6 +22095,7 @@ msgstr "Trimiteri bazate pe CUI sau SIRUTA, fara reclasificare."
 msgid "Try a different search term or sorting."
 msgstr "Try a different search term or sorting."
 
+#: src/components/commitments/IntervalTable.tsx:120
 #: src/components/errors/ErrorBoundary.tsx:68
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:199
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:489
@@ -22050,13 +22111,13 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:493
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2593
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2598
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Try Again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:639
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:644
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
@@ -22631,7 +22692,7 @@ msgstr "Usage analytics"
 msgid "USD"
 msgstr "USD"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3324
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:3332
 msgid "USD values are not available yet; the amounts shown are in RON."
 msgstr "USD values are not available yet; the amounts shown are in RON."
 
@@ -23086,6 +23147,10 @@ msgstr "Verifică și numărul și anul actului — de exemplu „Legea 53/2003�
 msgid "Verificări active"
 msgstr "Verificări active"
 
+#: src/components/commitments/IntervalTable.tsx:125
+msgid "Verified interval data is not available for this selection yet."
+msgstr "Verified interval data is not available for this selection yet."
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:93
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verify a learning certificate (proof of concept)."
@@ -23415,11 +23480,11 @@ msgstr "We cannot confirm whether requests are still open right now. Please try 
 msgid "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 msgstr "We could not find a private company profile for this CUI. Check the identifier or try a mock sample such as 14399840."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2568
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2573
 msgid "We could not find an entity for this CUI. Check the identifier or search for another entity."
 msgstr "We could not find an entity for this CUI. Check the identifier or search for another entity."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2583
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:2588
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 
