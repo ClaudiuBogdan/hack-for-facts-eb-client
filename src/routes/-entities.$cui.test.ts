@@ -1,3 +1,4 @@
+import { QueryClient, dehydrate, hydrate } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const deployment = vi.hoisted(() => ({ native: false }))
@@ -264,6 +265,7 @@ describe('entities route', () => {
           ensureQueryData,
           prefetchQuery,
           getQueryData,
+          getQueryState: () => undefined,
         },
       },
       params: { cui: '4267117' },
@@ -377,6 +379,7 @@ describe('entities route', () => {
           ensureQueryData,
           prefetchQuery,
           getQueryData,
+          getQueryState: () => undefined,
         },
       },
       params: { cui: '4266324' },
@@ -449,6 +452,7 @@ describe('entities route', () => {
           ensureQueryData,
           prefetchQuery,
           getQueryData,
+          getQueryState: () => undefined,
         },
       },
       params: { cui: '12345678' },
@@ -493,6 +497,7 @@ describe('entities route', () => {
           ensureQueryData,
           prefetchQuery,
           getQueryData,
+          getQueryState: () => undefined,
         },
       },
       params: { cui: '4267117' },
@@ -526,6 +531,7 @@ describe('entities route', () => {
           ensureQueryData,
           prefetchQuery,
           getQueryData,
+          getQueryState: () => undefined,
         },
       },
       params: { cui: '87654321' },
@@ -560,6 +566,98 @@ describe('entities route', () => {
     expect(ensureQueryData).toHaveBeenCalledTimes(1)
     expect(ensureQueryData).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['entityIdentity', '4305857'] }))
     expect(prefetchQuery).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { reportType: 'DETAILED', noBudget: false },
+    { reportType: 'PRINCIPAL_AGGREGATED', noBudget: false },
+    { reportType: 'SECONDARY_AGGREGATED', noBudget: false },
+    { reportType: 'DETAILED', noBudget: true },
+  ])(
+    'reuses $reportType overview (no budget: $noBudget) and hydrates it', async ({ reportType, noBudget }) => {
+      const details = vi.fn(async () => createEntityDetailsData({ default_report_type: reportType, ...(noBudget ? {totalIncome: null, totalExpenses: null, budgetBalance: null} : {}) }))
+      const lineItems = vi.fn(async () => ({ nodes: [] }))
+      entityDetailsQueryOptionsMock.mockImplementation((input) => ({
+        queryKey: ['entity-details', input], queryFn: details, staleTime: 300_000,
+      }))
+      entityExecutionLineItemsQueryOptionsMock.mockImplementation((input) => ({
+        queryKey: ['entity-line-items', input], queryFn: lineItems, staleTime: 300_000,
+      }))
+      const queryClient = new QueryClient()
+      const route = await importRoute()
+      const result = await route.loader({ context: { queryClient }, params: { cui: '4305857' }, location: { search: { year: 2023 } } })
+      expect(details).toHaveBeenCalledTimes(1)
+      expect(lineItems).toHaveBeenCalledTimes(1)
+      const target = entityDetailsQueryOptionsMock(result.entityPageBootstrap.exactQueryInputs.entityDetails)
+      const hydrated = new QueryClient()
+      hydrate(hydrated, dehydrate(queryClient))
+      await hydrated.ensureQueryData(target)
+      expect(details).toHaveBeenCalledTimes(1)
+      expect(result.entityPageBootstrap.executionContext.effectiveReportType).toBe(reportType)
+      queryClient.clear()
+      hydrated.clear()
+    },
+  )
+
+  it.each([false, true])('preserves source age and a fresher target cache (target exists: %s)', async (targetExists) => {
+    const details = vi.fn(async () => createEntityDetailsData())
+    entityDetailsQueryOptionsMock.mockImplementation((input) => ({ queryKey: ['entity-details', input], queryFn: details, staleTime: 300_000 }))
+    entityExecutionLineItemsQueryOptionsMock.mockImplementation((input) => ({ queryKey: ['entity-line-items', input], queryFn: async () => ({ nodes: [] }) }))
+    const queryClient = new QueryClient()
+    const sourceTime = Date.now() - 600_000
+    const targetTime = Date.now() - 1_000
+    const route = await importRoute()
+    // Discover the route's real normalized keys, then seed them explicitly.
+    const initial = await route.loader({ context: { queryClient }, params: { cui: '4305857' }, location: { search: { year: 2023 } } })
+    const targetInput = initial.entityPageBootstrap.exactQueryInputs.entityDetails
+    const sourceKey = ['entity-details', { ...targetInput, reportType: undefined }]
+    const targetKey = ['entity-details', targetInput]
+    queryClient.clear()
+    details.mockClear()
+    queryClient.setQueryData(sourceKey, createEntityDetailsData({ name: 'Discovery' }), { updatedAt: sourceTime })
+    if (targetExists) queryClient.setQueryData(targetKey, createEntityDetailsData({ name: 'Newer' }), { updatedAt: targetTime })
+    await route.loader({ context: { queryClient }, params: { cui: '4305857' }, location: { search: { year: 2023 } } })
+    expect(details).not.toHaveBeenCalled()
+    expect(queryClient.getQueryState(targetKey)?.dataUpdatedAt).toBe(targetExists ? targetTime : sourceTime)
+    expect(queryClient.getQueryData(targetKey)).toMatchObject({ name: targetExists ? 'Newer' : 'Discovery' })
+    queryClient.clear()
+  })
+
+  it('keeps explicit report type and distinct period, creditor, and normalization requests separate', async () => {
+    const details = vi.fn(async (input) => createEntityDetailsData({ default_report_type: input.reportType ?? 'DETAILED' }))
+    entityDetailsQueryOptionsMock.mockImplementation((input) => ({ queryKey: ['entity-details', input], queryFn: () => details(input), staleTime: 300_000 }))
+    entityExecutionLineItemsQueryOptionsMock.mockImplementation((input) => ({ queryKey: ['entity-line-items', input], queryFn: async () => ({ nodes: [] }) }))
+    const queryClient = new QueryClient()
+    const route = await importRoute()
+    for (const search of [
+      { year: 2023 }, { year: 2024 }, { year: 2023, currency: 'EUR' },
+      { year: 2023, normalization: 'per_capita' },
+      { year: 2023, main_creditor_cui: '12345' },
+      { year: 2023, report_type: 'PRINCIPAL_AGGREGATED' },
+    ]) {
+      await route.loader({ context: { queryClient }, params: { cui: '4305857' }, location: { search } })
+    }
+    expect(details).toHaveBeenCalledTimes(6)
+    expect(details.mock.calls[details.mock.calls.length - 1]?.[0].reportType).toBe('PRINCIPAL_AGGREGATED')
+    queryClient.clear()
+  })
+
+  it('does not turn an invalidated discovery result into fresh target data', async () => {
+    const details = vi.fn(async () => createEntityDetailsData())
+    entityDetailsQueryOptionsMock.mockImplementation((input) => ({ queryKey: ['entity-details', input], queryFn: details, staleTime: 300_000 }))
+    entityExecutionLineItemsQueryOptionsMock.mockImplementation((input) => ({ queryKey: ['entity-line-items', input], queryFn: async () => ({ nodes: [] }) }))
+    const queryClient = new QueryClient()
+    const route = await importRoute()
+    const request = { context: { queryClient }, params: { cui: '4305857' }, location: { search: { year: 2023 } } }
+    const initial = await route.loader(request)
+    const targetInput = initial.entityPageBootstrap.exactQueryInputs.entityDetails
+    const sourceKey = ['entity-details', { ...targetInput, reportType: undefined }]
+    queryClient.removeQueries({ queryKey: ['entity-details', targetInput], exact: true })
+    await queryClient.invalidateQueries({ queryKey: sourceKey, exact: true, refetchType: 'none' })
+    details.mockClear()
+    await route.loader(request)
+    expect(details).toHaveBeenCalledTimes(1)
+    queryClient.clear()
   })
 
 })

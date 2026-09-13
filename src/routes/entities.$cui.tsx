@@ -1,4 +1,5 @@
 import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
+import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
 import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
@@ -242,6 +243,26 @@ export const Route = createFileRoute('/entities/$cui')({
           adapter,
           defaultExecutionReportType,
         )
+        // The native adapter already queried this effective report type. Reuse
+        // that result without refreshing its age or replacing newer target data.
+        const sourceKey = entityDetailsQueryOptions(
+          adapter.exactQueryInputs.entityDetails,
+        ).queryKey
+        const targetKey = entityDetailsQueryOptions(
+          activeAdapter.exactQueryInputs.entityDetails,
+        ).queryKey
+        const sourceState = queryClient.getQueryState(sourceKey)
+        const targetState = queryClient.getQueryState(targetKey)
+        if (
+          sourceState?.status === 'success' &&
+          !sourceState.isInvalidated &&
+          sourceState.data !== undefined &&
+          sourceState.dataUpdatedAt > (targetState?.dataUpdatedAt ?? 0)
+        ) {
+          queryClient.setQueryData(targetKey, sourceState.data, {
+            updatedAt: sourceState.dataUpdatedAt,
+          })
+        }
         const effectiveQueryPlan = getEntityPageQueryPlan({
           context: activeAdapter.executionContext,
         })
