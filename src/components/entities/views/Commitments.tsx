@@ -50,7 +50,7 @@ import {
 import type { Grouping, DetailLevel } from '@/components/commitments/DetailTable'
 import { buildEntityCommitmentsChartLink } from '@/lib/chart-links'
 
-type Props = {
+export type CommitmentsViewProps = {
   readonly entity: EntityDetailsData | null | undefined
   readonly currentYear: number
   readonly reportPeriod: ReportPeriodInput
@@ -98,14 +98,13 @@ export function CommitmentsView({
   allowPerCapita,
   headerSlot,
   reportsSlot,
-}: Props) {
+}: CommitmentsViewProps) {
   const cui = entity?.cui ?? ''
   const entityName = entity?.name ?? ''
   const grouping: Grouping = commitmentsGrouping ?? 'fn'
   const detailLevel: DetailLevel = commitmentsDetailLevel ?? 'chapter'
   const normalized = normalizeNormalizationOptions(normalizationOptions)
   const effectiveReportType: GqlReportType = reportType ?? entity?.default_report_type ?? 'PRINCIPAL_AGGREGATED'
-  const commitmentReportType = useMemo(() => toCommitmentReportType(effectiveReportType), [effectiveReportType])
 
   // Auto-convert MONTH → QUARTER for commitments data
   const commitmentsReportPeriod = useMemo(
@@ -347,6 +346,31 @@ export function CommitmentsView({
     return null
   }
 
+  return <CommitmentsDashboard entity={entity} currentYear={currentYear} reportPeriod={reportPeriod} trendPeriod={commitmentsTrendPeriod} reportType={reportType} mainCreditorCui={mainCreditorCui} normalizationOptions={normalizationOptions} onNormalizationChange={onNormalizationChange} commitmentsGrouping={commitmentsGrouping} commitmentsDetailLevel={commitmentsDetailLevel} onCommitmentsGroupingChange={onCommitmentsGroupingChange} onYearChange={onYearChange} onSelectPeriod={onSelectPeriod} selectedQuarter={derivedSelectedQuarter} selectedMonth={selectedMonth} onReportTypeToggle={onReportTypeToggle} onNormalizationToggle={onNormalizationToggle} reportTypeLabel={reportTypeLabel} normalizationLabel={normalizationLabel} allowPerCapita={allowPerCapita} headerSlot={headerSlot} reportsSlot={reportsSlot} totalBudget={totalBudget} commitmentAuthority={commitmentAuthority} committed={committed} paid={paid} categoryData={categoryData} categoryChartData={categoryChartData} isSummaryLoading={isSummaryLoading} hasNoSummary={hasNoSummary} isCategoryLoading={isCategoryLoading} isCategoryError={isCategoryError} budgetTrend={budgetTrend} commitmentsTrend={commitmentsTrend} paymentsTrezorTrend={paymentsTrezorTrend} paymentsNonTrezorTrend={paymentsNonTrezorTrend} isAnalyticsLoading={isAnalyticsLoading} filter={filter} commitmentsChartLink={commitmentsChartLink} />
+}
+
+type DashboardProps = CommitmentsViewProps & {
+  readonly totalBudget: number; readonly commitmentAuthority: number; readonly committed: number; readonly paid: number;
+  readonly categoryData: CategoryData[]; readonly categoryChartData: CategoryData[];
+  readonly isSummaryLoading: boolean; readonly hasNoSummary: boolean;
+  readonly isCategoryLoading: boolean; readonly isCategoryError: boolean; readonly isAnalyticsLoading: boolean;
+  readonly budgetTrend: import('@/components/commitments/commitments-trends').CommitmentTrend | null;
+  readonly commitmentsTrend: import('@/components/commitments/commitments-trends').CommitmentTrend | null;
+  readonly paymentsTrezorTrend: import('@/components/commitments/commitments-trends').CommitmentTrend | null;
+  readonly paymentsNonTrezorTrend: import('@/components/commitments/commitments-trends').CommitmentTrend | null;
+  readonly filter: CommitmentsFilterInput;
+  readonly commitmentsChartLink: ReturnType<typeof buildEntityCommitmentsChartLink> | null;
+  readonly getSubRows?: import('@/components/commitments/DetailTable').LocalCommitmentDrill;
+  readonly preserveGaps?: boolean;
+}
+export function CommitmentsDashboard({entity,currentYear,reportPeriod,trendPeriod,reportType,mainCreditorCui,normalizationOptions,onNormalizationChange,commitmentsGrouping,commitmentsDetailLevel,onCommitmentsGroupingChange,onYearChange,onSelectPeriod,selectedQuarter,selectedMonth,onReportTypeToggle,onNormalizationToggle,reportTypeLabel,normalizationLabel,allowPerCapita,headerSlot,reportsSlot,totalBudget,commitmentAuthority,committed,paid,categoryData,categoryChartData,isSummaryLoading,hasNoSummary,isCategoryLoading,isCategoryError,budgetTrend,commitmentsTrend,paymentsTrezorTrend,paymentsNonTrezorTrend,isAnalyticsLoading,filter,commitmentsChartLink, getSubRows, preserveGaps}: DashboardProps) {
+  if (!entity) return null;
+  const cui = entity.cui;
+  const normalized = normalizeNormalizationOptions(normalizationOptions);
+  const grouping = commitmentsGrouping ?? 'fn';
+  const detailLevel = commitmentsDetailLevel ?? 'chapter';
+  const effectiveReportType = reportType ?? entity.default_report_type ?? 'PRINCIPAL_AGGREGATED';
+  const commitmentReportType = toCommitmentReportType(effectiveReportType);
   // Rates (keep denominators consistent with each concept):
   // - payments vs annual budget credits (annual execution)
   // - commitments vs commitment authority (multiannual contracting)
@@ -409,10 +433,11 @@ export function CommitmentsView({
           normalizationOptions={normalizationOptions}
           onNormalizationChange={onNormalizationChange}
           allowPerCapita={supportsEntityPopulation(entity)}
-          periodType={commitmentsTrendPeriod.type}
+          periodType={trendPeriod.type}
+          preserveGaps={preserveGaps}
           onYearChange={onYearChange}
           onSelectPeriod={onSelectPeriod}
-          selectedQuarter={derivedSelectedQuarter}
+          selectedQuarter={selectedQuarter}
           selectedMonth={selectedMonth}
           isLoading={isAnalyticsLoading}
           chartShortcutLink={commitmentsChartLink}
@@ -465,6 +490,8 @@ export function CommitmentsView({
         isLoading={isCategoryLoading}
         isError={isCategoryError}
         filter={filter}
+        getSubRows={getSubRows}
+        periodMovements={preserveGaps && reportPeriod.type !== 'YEAR'}
         grouping={grouping}
         detailLevel={detailLevel}
         onGroupingChange={onCommitmentsGroupingChange}

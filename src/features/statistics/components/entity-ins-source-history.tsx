@@ -10,7 +10,7 @@ import type { PreparedEntityInsSource } from "../api/native-entity-ins-api";
 import type { InsSourceVector } from "@/lib/ins/source-pages";
 import { projectEntityInsHistory } from "../lib/entity-ins-history";
 import { entityInsSourcePatch } from "../lib/entity-ins-selection";
-import { DetailObservationsChart } from "./detail-observations-chart";
+import { EntityInsHistoryChart } from "@/components/entities/views/ins-stats-view.presentation";
 import { DetailObservationsTable } from "./detail-observations-table";
 import { DetailExportButton } from "./detail-export-button";
 import { ValueStatusMarker } from "./detail-value-status-legend";
@@ -162,6 +162,14 @@ export function EntityInsSourceHistory({
   );
   return (
     <div className="space-y-6">
+      <a
+        className="text-sm text-primary underline"
+        href={`http://statistici.insse.ro/tempoins/index.jsp?${new URLSearchParams({ ind: prepared.dataset.code, lang: "ro", page: "tempo3" })}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Trans>View source on INS Tempo</Trans>
+      </a>
       {history.mode === "inspection" ? (
         <p role="status">
           <Trans>
@@ -239,14 +247,44 @@ export function EntityInsSourceHistory({
               </>
             )}
           </section>
+          {projection.chart?.truncated && (
+            <p className="text-xs text-muted-foreground">
+              <Trans>
+                The chart shows the latest periods. Earlier observations remain
+                in the table and export.
+              </Trans>
+            </p>
+          )}
           {projection.chart?.points.some((point) => point.value !== null) ? (
-            <DetailObservationsChart
-              wholeHistory
-              series={projection.chart}
-              title={t`INS source history`}
-              unitLabel={
-                projection.latest.unit.name_ro ?? projection.latest.unit.code
-              }
+            <EntityInsHistoryChart
+              data={projection.chart.points.map((point) => ({
+                period: point.period,
+                numericValue: point.value,
+                rawValue: point.raw,
+                statusLabel: point.valueStatus,
+              }))}
+              renderTooltip={({ active, payload }) => {
+                if (!active || !payload?.length) return null;
+                const entry = payload[0] as {
+                  payload?: {
+                    period: string;
+                    rawValue: string | null;
+                    statusLabel: string | null;
+                  };
+                };
+                const point = entry.payload;
+                return point ? (
+                  <div className="rounded-lg border bg-popover p-3 text-sm text-popover-foreground shadow-lg">
+                    <p className="font-semibold">{point.period}</p>
+                    <p>
+                      {point.rawValue ?? "—"}{" "}
+                      {projection.latest.unit.name_ro ??
+                        projection.latest.unit.code}
+                    </p>
+                    {point.statusLabel && <p>{point.statusLabel}</p>}
+                  </div>
+                ) : null;
+              }}
             />
           ) : (
             <p>

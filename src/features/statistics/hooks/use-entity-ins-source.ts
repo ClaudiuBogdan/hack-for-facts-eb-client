@@ -1,6 +1,9 @@
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { EntityDetailsData } from "@/lib/api/entities";
-import { entityInsSourceSearchSchema, type EntityInsSelectionInput } from "@/lib/ins/entity-source-search";
+import {
+  entityInsSourceSearchSchema,
+  type EntityInsSelectionInput,
+} from "@/lib/ins/entity-source-search";
 import {
   fetchInsEntityContext,
   type NativeInsEntityContext,
@@ -8,12 +11,15 @@ import {
 import {
   fetchEntityInsHistory,
   prepareEntityInsSource,
+  prepareEntityInsBootstrap,
   type PreparedEntityInsSource,
 } from "../api/native-entity-ins-api";
 import { resolveEntityInsSelection } from "../lib/entity-ins-selection";
 
 const STALE_TIME = 5 * 60 * 1000;
 export interface EntityInsSourceInput {
+  readonly bootstrap?: Parameters<typeof prepareEntityInsBootstrap>[2];
+  readonly waitForBootstrap?: boolean;
   readonly cui: string;
   readonly enabled: boolean;
   readonly metadata: Pick<EntityDetailsData, "cui" | "uat"> | null | undefined;
@@ -56,6 +62,7 @@ export function entityInsPreparationOptions(
   cui: string,
   context: NativeInsEntityContext | null,
   search: EntityInsSelectionInput,
+  bootstrap?: Parameters<typeof prepareEntityInsBootstrap>[2],
 ) {
   const sourceSearch = entityInsSourceSearchSchema.parse(search);
   return queryOptions({
@@ -66,10 +73,16 @@ export function entityInsPreparationOptions(
       "prepare",
       context,
       sourceSearch,
+      (!resolveEntityInsSelection(sourceSearch).explicitSource
+        ? bootstrap
+        : null) ?? null,
     ],
     queryFn: ({ signal }) => {
       if (context === null) throw new Error("Missing INS entity context");
-      return prepareEntityInsSource(context, sourceSearch, signal);
+      return bootstrap &&
+        !resolveEntityInsSelection(sourceSearch).explicitSource
+        ? prepareEntityInsBootstrap(context, sourceSearch, bootstrap)
+        : prepareEntityInsSource(context, sourceSearch, signal);
     },
     enabled:
       context !== null &&
@@ -120,10 +133,16 @@ export function useEntityInsSource(input: EntityInsSourceInput) {
     input.cui,
     context,
     input.search,
+    input.bootstrap,
   );
-  const preparationQuery = useQuery(preparationOptions);
+  const preparationQuery = useQuery({
+    ...preparationOptions,
+    enabled: preparationOptions.enabled && !input.waitForBootstrap,
+  });
   const prepared =
-    preparationOptions.enabled && preparationQuery.isSuccess
+    !input.waitForBootstrap &&
+    preparationOptions.enabled &&
+    preparationQuery.isSuccess
       ? preparationQuery.data
       : null;
   const historyOptions = entityInsHistoryOptions(input.cui, prepared);

@@ -6,6 +6,7 @@ type Props = {
   value?: Normalization
   onChange: (value: Normalization) => void
   allowPerCapita?: boolean
+  allowPercentGdp?: boolean
   className?: string
   triggerClassName?: string
   triggerTestId?: string
@@ -15,6 +16,7 @@ export function NormalizationModeSelect({
   value,
   onChange,
   allowPerCapita = false,
+  allowPercentGdp = true,
   className,
   triggerClassName,
   triggerTestId,
@@ -37,7 +39,7 @@ export function NormalizationModeSelect({
         <SelectContent>
           <SelectItem value="total">{t`Total`}</SelectItem>
           <SelectItem value="per_capita" disabled={!allowPerCapita}>{t`Per capita`}</SelectItem>
-          <SelectItem value="percent_gdp">{t`% of GDP`}</SelectItem>
+          {allowPercentGdp && <SelectItem value="percent_gdp">{t`% of GDP`}</SelectItem>}
         </SelectContent>
       </Select>
     </div>

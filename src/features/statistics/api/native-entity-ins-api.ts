@@ -1,3 +1,5 @@
+import type { InsDatasetDetails } from "@/schemas/ins";
+import type { StatisticsLatestValue } from "@/schemas/statistics";
 import { insSourceDescriptorSchema } from "@/lib/ins/source-contract";
 import { inspectSourceSeries } from "@/lib/ins/source-series";
 import { validSourcePeriodFields } from "@/lib/ins/source-periods";
@@ -41,13 +43,28 @@ export async function prepareEntityInsSource(
       });
   const dataset =
     bootstrap?.dataset ?? (await getInsDatasetDetails(code, signal));
+  return prepareEntityInsBootstrap(context, input, {
+    dataset,
+    latest: bootstrap?.latest[0] ?? null,
+  });
+}
+export function prepareEntityInsBootstrap(
+  context: NativeInsEntityContext,
+  input: EntityInsSelectionInput,
+  bootstrap: {
+    dataset: InsDatasetDetails | null;
+    latest: StatisticsLatestValue | null;
+  },
+) {
+  const selection = resolveEntityInsSelection(input);
+  const code = selection.datasetCode;
+  const { dataset, latest } = bootstrap;
   if (!dataset) throw new ComparisonDatasetError("UNKNOWN");
   if (dataset.data_status === "CATALOG_ONLY")
     throw new ComparisonDatasetError("CATALOG_ONLY");
   const descriptor = insSourceDescriptorSchema.parse(dataset);
   if (descriptor.code !== code)
     throw new Error("INS entity dataset identity mismatch");
-  const latest = bootstrap?.latest[0] ?? null;
   if (latest?.hasData) {
     if (!latest.source?.observation)
       throw new Error("Missing INS entity default provenance");

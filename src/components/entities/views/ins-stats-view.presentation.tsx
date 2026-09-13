@@ -1,3 +1,4 @@
+import {ValueStatusMarker} from '@/features/statistics/components/detail-value-status-legend';
 import { memo, useMemo, useState, type CSSProperties, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
@@ -204,7 +205,10 @@ function DerivedIndicatorIcon({ id }: { id: DerivedIndicator['id'] }) {
   }
 }
 
-type SummaryMetricRow = {
+export type SummaryMetricRow = {
+  native?: boolean;
+  error?: boolean;
+  selectedCells?: readonly {period:string;observation:InsObservation|null}[];
   dataset: InsDataset | null;
   observation: InsObservation | null;
   periodLabel: string;
@@ -213,7 +217,7 @@ type SummaryMetricRow = {
   hasData: boolean;
 };
 
-type SummaryMetricCard = {
+export type SummaryMetricCard = {
   code: string;
   label: string;
   row: SummaryMetricRow | undefined;
@@ -247,7 +251,7 @@ function SummaryMetricsSectionBase(props: {
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {summaryCards.map((summary) => {
         const observation = summary.row?.observation;
-        const formattedValue = observation ? getCardNumericValue(observation) : { value: t`N/A` };
+        const formattedValue = observation ? summary.row?.native ? {...getCardNumericValue({...observation,value_status:null}),statusLabel:observation.value_status??undefined} : getCardNumericValue(observation) : { value: t`N/A` };
         const period = summary.row?.periodLabel || t`Unknown`;
         const selectedPeriodTag = summary.row?.selectedPeriodLabel || selectedReportPeriodLabel;
         const isPeriodFallback =
@@ -272,13 +276,14 @@ function SummaryMetricsSectionBase(props: {
               </CardHeader>
               <CardContent className="flex flex-1 flex-col pb-4">
                 <div className="flex items-center gap-2 text-[2.2rem] font-bold leading-none tracking-tight text-foreground">
-                  <span>{formattedValue.value}</span>
+                  {summary.row?.selectedCells && summary.row.selectedCells.length > 1 ? <div className="space-y-1 text-sm">{summary.row.selectedCells.map(cell=><div key={cell.period}>{cell.period}: {cell.observation?.value??t`N/A`} {cell.observation?.unit?.name_ro??''} {cell.observation?.value_status&&<ValueStatusMarker status={cell.observation.value_status}/>}</div>)}</div> : <span>{formattedValue.value}</span>}
                   {formattedValue.statusLabel && (
-                    <Badge variant="outline" className="text-[10px]">
+                    summary.row?.native ? <ValueStatusMarker status={formattedValue.statusLabel}/> : <Badge variant="outline" className="text-[10px]">
                       {formattedValue.statusLabel}
                     </Badge>
                   )}
                 </div>
+                {summary.row?.error&&<p role="status" className="text-xs text-muted-foreground"><Trans>Source verification unavailable</Trans></p>}
                 <div className="mt-2 line-clamp-2 text-[13px] leading-snug text-muted-foreground">{datasetName}</div>
                 <div className="mt-auto pt-2 text-[12px] font-medium text-muted-foreground">
                   <Trans>Period:</Trans> {periodLabelText}
@@ -813,7 +818,7 @@ function DatasetExplorerSectionBase(props: {
 
 export const DatasetExplorerSection = memo(DatasetExplorerSectionBase);
 
-type DatasetDetailsCardModel = {
+export type DatasetDetailsCardModel = {
   code: string;
   title: string;
   hierarchy: Array<{
@@ -849,7 +854,7 @@ type HistoryChartPoint = {
   statusLabel: string | null;
 };
 
-function DatasetDetailSectionBase(props: {
+type DatasetDetailProps = {
   selectedDatasetDetails: DatasetDetailsCardModel | null;
   selectedDatasetBreadcrumbItems: Array<{
     code: string;
@@ -897,17 +902,10 @@ function DatasetDetailSectionBase(props: {
   insTermsUrl: string;
   hasMultiValueSeriesSelection: boolean;
   chartShortcutLink: ChartShortcutLink | null;
-}) {
+};
+function DatasetDetailSectionBase(props: DatasetDetailProps) {
   const {
-    selectedDatasetDetails,
-    selectedDatasetBreadcrumbItems,
-    selectedDataset,
     selectedDatasetCode,
-    locale,
-    hasDatasetMetadataPanel,
-    isDatasetMetaExpanded,
-    setIsDatasetMetaExpanded,
-    handleHierarchyNavigate,
     datasetHistoryQuery,
     historySeries,
     historyRows,
@@ -934,7 +932,6 @@ function DatasetDetailSectionBase(props: {
     selectedDatasetSourceUrl,
     insTermsUrl,
     hasMultiValueSeriesSelection,
-    chartShortcutLink,
   } = props;
 
   const renderHistoryTooltip = ({
@@ -1002,168 +999,7 @@ function DatasetDetailSectionBase(props: {
   };
 
   return (
-    <Card className="rounded-[28px] border-border/50">
-      <CardHeader className="space-y-3 px-8 pb-4">
-        {selectedDatasetDetails && selectedDatasetBreadcrumbItems.length > 0 && (
-          <nav className="text-[12px] font-medium leading-5 tracking-[0.01em] text-muted-foreground">
-            <div className="flex flex-wrap items-center gap-y-1">
-              {selectedDatasetBreadcrumbItems.map((item, index) => {
-                const isCurrent = index === selectedDatasetBreadcrumbItems.length - 1;
-                const displayLabel =
-                  item.kind === 'context' && item.code === selectedDatasetDetails?.rootContextCode
-                    ? selectedDatasetDetails?.rootContextBreadcrumbLabel || item.label
-                    : item.label;
-
-                return (
-                  <div key={`${item.code}-${index}`} className="flex items-center">
-                    {index > 0 && <span className="mx-1.5 text-muted-foreground/50">/</span>}
-                    {isCurrent ? (
-                      <span
-                        title={displayLabel}
-                        className="max-w-[320px] truncate font-semibold tracking-[0.005em] text-foreground"
-                      >
-                        {displayLabel}
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleHierarchyNavigate(item)}
-                        title={displayLabel}
-                        className="max-w-[320px] truncate rounded-sm font-medium tracking-[0.005em] text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                      >
-                        {displayLabel}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </nav>
-        )}
-
-        {selectedDataset ? (
-          <div className="space-y-1">
-            <div className="text-3xl font-bold tracking-tight text-foreground">
-              {selectedDatasetDetails?.title ||
-                getLocalizedText(selectedDataset.name_ro, selectedDataset.name_en, locale) ||
-                selectedDataset.code}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              {chartShortcutLink ? (
-                <Link
-                  to={chartShortcutLink.to}
-                  params={chartShortcutLink.params}
-                  search={chartShortcutLink.search}
-                  preload="intent"
-                  data-testid="ins-open-chart-shortcut"
-                  title={t`Open in chart editor`}
-                  aria-label={`${selectedDataset.code} - ${t`Open in chart editor`}`}
-                  className="inline-flex items-center gap-1 rounded-sm px-1 py-0.5 text-xl font-semibold tracking-[-0.01em] text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
-                >
-                  <span>{selectedDataset.code}</span>
-                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                </Link>
-              ) : (
-                <span className="text-xl font-semibold tracking-[-0.01em] text-foreground/80">{selectedDataset.code}</span>
-              )}
-              {hasDatasetMetadataPanel && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsDatasetMetaExpanded((current) => !current)}
-                  className="h-7 px-2 text-[12px] font-medium tracking-[0.01em] text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  {isDatasetMetaExpanded ? t`Show less` : t`Show more`}
-                </Button>
-              )}
-            </div>
-          </div>
-        ) : selectedDatasetCode !== null ? (
-          <div className="space-y-1">
-            <div className="text-3xl font-bold tracking-tight text-foreground">{selectedDatasetCode}</div>
-            <div className="text-sm text-muted-foreground">
-              <Trans>Dataset metadata is loading or unavailable, but historical data can still be viewed below.</Trans>
-            </div>
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">
-            <Trans>Select a metric card or dataset from the list to load full history.</Trans>
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-4 px-8">
-        {selectedDatasetDetails && isDatasetMetaExpanded && (
-          <div className="rounded-xl border border-border bg-muted/50 p-4">
-            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-lg border border-border bg-card px-3 py-2">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  <Trans>Code</Trans>
-                </div>
-                <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
-                  {selectedDatasetDetails.code}
-                </div>
-              </div>
-              {selectedDatasetDetails.periodicityLabel && (
-                <div className="rounded-lg border border-border bg-card px-3 py-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    <Trans>Periodicity</Trans>
-                  </div>
-                  <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
-                    {selectedDatasetDetails.periodicityLabel}
-                  </div>
-                </div>
-              )}
-              {selectedDatasetDetails.yearRange && (
-                <div className="rounded-lg border border-border bg-card px-3 py-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    <Trans>Coverage</Trans>
-                  </div>
-                  <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
-                    {selectedDatasetDetails.yearRange}
-                  </div>
-                </div>
-              )}
-              {selectedDatasetDetails.dimensionCount && (
-                <div className="rounded-lg border border-border bg-card px-3 py-2">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                    <Trans>Dimensions</Trans>
-                  </div>
-                  <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
-                    {selectedDatasetDetails.dimensionCount}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-3 space-y-3">
-              {selectedDatasetDetails.contextLabel && (
-                <ExpandableMarkdownField label={<Trans>Context</Trans>} content={selectedDatasetDetails.contextLabel} />
-              )}
-
-              {selectedDatasetDetails.definition && (
-                <ExpandableMarkdownField
-                  label={<Trans>Description</Trans>}
-                  content={selectedDatasetDetails.definition}
-                  collapsible={false}
-                />
-              )}
-
-              {selectedDatasetDetails.methodology && (
-                <ExpandableMarkdownField label={<Trans>Methodology</Trans>} content={selectedDatasetDetails.methodology} />
-              )}
-
-              {selectedDatasetDetails.source && (
-                <ExpandableMarkdownField label={<Trans>Source</Trans>} content={selectedDatasetDetails.source} />
-              )}
-
-              {selectedDatasetDetails.notes && (
-                <ExpandableMarkdownField label={<Trans>Notes</Trans>} content={selectedDatasetDetails.notes} />
-              )}
-            </div>
-          </div>
-        )}
-
+    <EntityInsDetailCard {...props}>
         {selectedDatasetCode === null ? (
           <div className="rounded-md border border-dashed p-6 text-sm text-muted-foreground">
             <Trans>No dataset selected yet.</Trans>
@@ -1430,62 +1266,7 @@ function DatasetDetailSectionBase(props: {
               </div>
             )}
 
-            <div className="h-72 w-full">
-              <SafeResponsiveContainer width="100%" height="100%">
-                <ComposedChart data={historyChartData} margin={{ top: 10, right: 16, left: 8, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id={CHART_AREA_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CHART_AREA_TOP_COLOR} stopOpacity={0.55} />
-                      <stop offset="15%" stopColor={CHART_AREA_UPPER_COLOR} stopOpacity={0.42} />
-                      <stop offset="45%" stopColor={CHART_AREA_MID_COLOR} stopOpacity={0.22} />
-                      <stop offset="75%" stopColor={CHART_AREA_LOWER_COLOR} stopOpacity={0.1} />
-                      <stop offset="100%" stopColor={CHART_AREA_BOTTOM_COLOR} stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid stroke={CHART_GRID_COLOR} strokeDasharray="4 5" vertical={false} />
-                  <XAxis
-                    dataKey="period"
-                    minTickGap={24}
-                    stroke={CHART_AXIS_COLOR}
-                    tick={{ fill: CHART_AXIS_COLOR, fontSize: 12 }}
-                    axisLine={{ stroke: CHART_GRID_COLOR }}
-                    tickLine={{ stroke: CHART_GRID_COLOR }}
-                  />
-                  <YAxis
-                    stroke={CHART_AXIS_COLOR}
-                    tick={{ fill: CHART_AXIS_COLOR, fontSize: 12 }}
-                    axisLine={{ stroke: CHART_GRID_COLOR }}
-                    tickLine={{ stroke: CHART_GRID_COLOR }}
-                  />
-                  <Tooltip
-                    cursor={{ stroke: CHART_LINE_HIGHLIGHT_COLOR, strokeWidth: 1, strokeDasharray: '3 3' }}
-                    content={renderHistoryTooltip}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="numericValue"
-                    stroke="none"
-                    fill={`url(#${CHART_AREA_GRADIENT_ID})`}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="numericValue"
-                    stroke={CHART_LINE_COLOR}
-                    strokeWidth={2.5}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    dot={false}
-                    activeDot={{
-                      r: 4,
-                      fill: CHART_LINE_HIGHLIGHT_COLOR,
-                      stroke: CHART_DOT_STROKE_COLOR,
-                      strokeWidth: 2,
-                    }}
-                  />
-                  <Brush dataKey="period" height={20} stroke={CHART_AXIS_COLOR} fill={CHART_BRUSH_FILL} travellerWidth={9} />
-                </ComposedChart>
-              </SafeResponsiveContainer>
-            </div>
+            <EntityInsHistoryChart data={historyChartData} renderTooltip={renderHistoryTooltip} />
             {selectedDatasetSourceUrl && (
               <div className="rounded-md border border-border bg-muted/50 px-3 py-2.5 text-[12px] leading-5 text-muted-foreground">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -1576,9 +1357,238 @@ function DatasetDetailSectionBase(props: {
             )}
           </>
         )}
+    </EntityInsDetailCard>
+  );
+}
+
+export const DatasetDetailSection = memo(DatasetDetailSectionBase);
+
+export function EntityInsDetailCard({selectedDatasetDetails,selectedDatasetBreadcrumbItems,selectedDataset,selectedDatasetCode,locale,hasDatasetMetadataPanel,isDatasetMetaExpanded,setIsDatasetMetaExpanded,handleHierarchyNavigate,chartShortcutLink,children}: Pick<DatasetDetailProps,'selectedDatasetDetails' | 'selectedDatasetBreadcrumbItems' | 'selectedDataset' | 'selectedDatasetCode' | 'locale' | 'hasDatasetMetadataPanel' | 'isDatasetMetaExpanded' | 'setIsDatasetMetaExpanded' | 'handleHierarchyNavigate' | 'chartShortcutLink'> & {readonly children:ReactNode}) {
+  return (
+    <Card className="rounded-[28px] border-border/50">
+      <CardHeader className="space-y-3 px-8 pb-4">
+        {selectedDatasetDetails && selectedDatasetBreadcrumbItems.length > 0 && (
+          <nav className="text-[12px] font-medium leading-5 tracking-[0.01em] text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-y-1">
+              {selectedDatasetBreadcrumbItems.map((item, index) => {
+                const isCurrent = index === selectedDatasetBreadcrumbItems.length - 1;
+                const displayLabel =
+                  item.kind === 'context' && item.code === selectedDatasetDetails?.rootContextCode
+                    ? selectedDatasetDetails?.rootContextBreadcrumbLabel || item.label
+                    : item.label;
+
+                return (
+                  <div key={`${item.code}-${index}`} className="flex items-center">
+                    {index > 0 && <span className="mx-1.5 text-muted-foreground/50">/</span>}
+                    {isCurrent ? (
+                      <span
+                        title={displayLabel}
+                        className="max-w-[320px] truncate font-semibold tracking-[0.005em] text-foreground"
+                      >
+                        {displayLabel}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleHierarchyNavigate(item)}
+                        title={displayLabel}
+                        className="max-w-[320px] truncate rounded-sm font-medium tracking-[0.005em] text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                      >
+                        {displayLabel}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </nav>
+        )}
+
+        {selectedDataset ? (
+          <div className="space-y-1">
+            <div className="text-3xl font-bold tracking-tight text-foreground">
+              {selectedDatasetDetails?.title ||
+                getLocalizedText(selectedDataset.name_ro, selectedDataset.name_en, locale) ||
+                selectedDataset.code}
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              {chartShortcutLink ? (
+                <Link
+                  to={chartShortcutLink.to}
+                  params={chartShortcutLink.params}
+                  search={chartShortcutLink.search}
+                  preload="intent"
+                  data-testid="ins-open-chart-shortcut"
+                  title={t`Open in chart editor`}
+                  aria-label={`${selectedDataset.code} - ${t`Open in chart editor`}`}
+                  className="inline-flex items-center gap-1 rounded-sm px-1 py-0.5 text-xl font-semibold tracking-[-0.01em] text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                >
+                  <span>{selectedDataset.code}</span>
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              ) : (
+                <span className="text-xl font-semibold tracking-[-0.01em] text-foreground/80">{selectedDataset.code}</span>
+              )}
+              {hasDatasetMetadataPanel && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDatasetMetaExpanded((current) => !current)}
+                  className="h-7 px-2 text-[12px] font-medium tracking-[0.01em] text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  {isDatasetMetaExpanded ? t`Show less` : t`Show more`}
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : selectedDatasetCode !== null ? (
+          <div className="space-y-1">
+            <div className="text-3xl font-bold tracking-tight text-foreground">{selectedDatasetCode}</div>
+            <div className="text-sm text-muted-foreground">
+              <Trans>Dataset metadata is loading or unavailable, but historical data can still be viewed below.</Trans>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground">
+            <Trans>Select a metric card or dataset from the list to load full history.</Trans>
+          </div>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4 px-8">
+        {selectedDatasetDetails && isDatasetMetaExpanded && (
+          <div className="rounded-xl border border-border bg-muted/50 p-4">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-lg border border-border bg-card px-3 py-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                  <Trans>Code</Trans>
+                </div>
+                <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
+                  {selectedDatasetDetails.code}
+                </div>
+              </div>
+              {selectedDatasetDetails.periodicityLabel && (
+                <div className="rounded-lg border border-border bg-card px-3 py-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                    <Trans>Periodicity</Trans>
+                  </div>
+                  <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
+                    {selectedDatasetDetails.periodicityLabel}
+                  </div>
+                </div>
+              )}
+              {selectedDatasetDetails.yearRange && (
+                <div className="rounded-lg border border-border bg-card px-3 py-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                    <Trans>Coverage</Trans>
+                  </div>
+                  <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
+                    {selectedDatasetDetails.yearRange}
+                  </div>
+                </div>
+              )}
+              {selectedDatasetDetails.dimensionCount && (
+                <div className="rounded-lg border border-border bg-card px-3 py-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                    <Trans>Dimensions</Trans>
+                  </div>
+                  <div className="mt-0.5 text-[1.05rem] font-semibold tracking-[-0.005em] text-foreground">
+                    {selectedDatasetDetails.dimensionCount}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 space-y-3">
+              {selectedDatasetDetails.contextLabel && (
+                <ExpandableMarkdownField label={<Trans>Context</Trans>} content={selectedDatasetDetails.contextLabel} />
+              )}
+
+              {selectedDatasetDetails.definition && (
+                <ExpandableMarkdownField
+                  label={<Trans>Description</Trans>}
+                  content={selectedDatasetDetails.definition}
+                  collapsible={false}
+                />
+              )}
+
+              {selectedDatasetDetails.methodology && (
+                <ExpandableMarkdownField label={<Trans>Methodology</Trans>} content={selectedDatasetDetails.methodology} />
+              )}
+
+              {selectedDatasetDetails.source && (
+                <ExpandableMarkdownField label={<Trans>Source</Trans>} content={selectedDatasetDetails.source} />
+              )}
+
+              {selectedDatasetDetails.notes && (
+                <ExpandableMarkdownField label={<Trans>Notes</Trans>} content={selectedDatasetDetails.notes} />
+              )}
+            </div>
+          </div>
+        )}
+
+{children}
       </CardContent>
     </Card>
   );
 }
 
-export const DatasetDetailSection = memo(DatasetDetailSectionBase);
+export function EntityInsHistoryChart({data,renderTooltip}:{readonly data:HistoryChartPoint[];readonly renderTooltip: (props:{active?:boolean;payload?:readonly unknown[];label?:string|number})=>ReactNode}) {
+  return (            <div className="h-72 w-full">
+              <SafeResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={data} margin={{ top: 10, right: 16, left: 8, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id={CHART_AREA_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={CHART_AREA_TOP_COLOR} stopOpacity={0.55} />
+                      <stop offset="15%" stopColor={CHART_AREA_UPPER_COLOR} stopOpacity={0.42} />
+                      <stop offset="45%" stopColor={CHART_AREA_MID_COLOR} stopOpacity={0.22} />
+                      <stop offset="75%" stopColor={CHART_AREA_LOWER_COLOR} stopOpacity={0.1} />
+                      <stop offset="100%" stopColor={CHART_AREA_BOTTOM_COLOR} stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke={CHART_GRID_COLOR} strokeDasharray="4 5" vertical={false} />
+                  <XAxis
+                    dataKey="period"
+                    minTickGap={24}
+                    stroke={CHART_AXIS_COLOR}
+                    tick={{ fill: CHART_AXIS_COLOR, fontSize: 12 }}
+                    axisLine={{ stroke: CHART_GRID_COLOR }}
+                    tickLine={{ stroke: CHART_GRID_COLOR }}
+                  />
+                  <YAxis
+                    stroke={CHART_AXIS_COLOR}
+                    tick={{ fill: CHART_AXIS_COLOR, fontSize: 12 }}
+                    axisLine={{ stroke: CHART_GRID_COLOR }}
+                    tickLine={{ stroke: CHART_GRID_COLOR }}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: CHART_LINE_HIGHLIGHT_COLOR, strokeWidth: 1, strokeDasharray: '3 3' }}
+                    content={renderTooltip}
+                  />
+                  <Area connectNulls={false}
+                    type="monotone"
+                    dataKey="numericValue"
+                    stroke="none"
+                    fill={`url(#${CHART_AREA_GRADIENT_ID})`}
+                  />
+                  <Line connectNulls={false}
+                    type="monotone"
+                    dataKey="numericValue"
+                    stroke={CHART_LINE_COLOR}
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                      fill: CHART_LINE_HIGHLIGHT_COLOR,
+                      stroke: CHART_DOT_STROKE_COLOR,
+                      strokeWidth: 2,
+                    }}
+                  />
+                  <Brush dataKey="period" height={20} stroke={CHART_AXIS_COLOR} fill={CHART_BRUSH_FILL} travellerWidth={9} />
+                </ComposedChart>
+              </SafeResponsiveContainer>
+            </div>
+);
+}

@@ -30,6 +30,7 @@ interface BuildInsStatsChartStateOptions {
     datasetLabel: string;
     entityName: string;
     temporalSplit: TemporalSplit;
+    period?: ReportPeriodInput;
     classificationSelections?: Record<string, string[]>;
     unitKey?: string | null;
     isCounty: boolean;
@@ -579,7 +580,7 @@ export function buildInsStatsChartState(
 
     const normalizedUnitCodes =
         unitKey && unitKey !== '__none__' ? [unitKey] : undefined;
-    const period = mapTemporalSplitToInsPeriod(temporalSplit);
+    const period = options.period ?? mapTemporalSplitToInsPeriod(temporalSplit);
     const normalizedSirutaCode = sirutaCode?.trim();
     const normalizedCountyCode = countyCode?.trim().toUpperCase();
 

@@ -1,12 +1,13 @@
-import { useQuery } from '@tanstack/react-query'
-import { Trans } from '@lingui/react/macro'
-import { t } from '@lingui/core/macro'
+import { useQuery } from "@tanstack/react-query";
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 import {
   fetchCommitmentPeriods,
   formatCommitmentAmount,
-} from '@/lib/api/commitment-periods'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+} from "@/lib/api/commitment-periods";
+import { Button } from "@/components/ui/button";
+import type { ReportPeriodInput } from "@/schemas/reporting";
+import { dashboardPeriodLabels } from "@/components/entities/views/native-commitments-model";
 import {
   Table,
   TableBody,
@@ -14,31 +15,45 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from "@/components/ui/table";
 
 export function CommitmentIntervalTable({
   cui,
   year,
   reportType,
+  reportPeriod,
   selection = {},
   onSelectionChange,
 }: {
-  cui: string
-  year: number
-  reportType: string
-  selection?: import('@/lib/api/commitment-periods').CommitmentPeriodSelection
+  cui: string;
+  year: number;
+  reportType: string;
+  reportPeriod?: ReportPeriodInput;
+  selection?: import("@/lib/api/commitment-periods").CommitmentPeriodSelection;
   onSelectionChange?: (
-    patch: import('@/lib/api/commitment-periods').CommitmentPeriodSelection,
-  ) => void
+    patch: import("@/lib/api/commitment-periods").CommitmentPeriodSelection,
+  ) => void;
 }) {
-  const search = selection
-  const startMonth = search.commitments_from_month ?? 1
-  const endMonth = search.commitments_to_month ?? 12
-  const page = search.commitments_period_page ?? 1
-  const update = (values: Partial<typeof search>) => onSelectionChange?.(values)
+  const search = selection;
+  const labels = reportPeriod ? dashboardPeriodLabels(reportPeriod) : [];
+  const monthOf = (label: string, end: boolean) =>
+    reportPeriod?.type === "YEAR"
+      ? end
+        ? 12
+        : 1
+      : reportPeriod?.type === "QUARTER"
+        ? Number(label.slice(-1)) * 3 - (end ? 0 : 2)
+        : Number(label.slice(-2));
+  const startMonth = labels.length ? monthOf(labels[0], false) : 1;
+  const endMonth = labels.length
+    ? monthOf(labels[labels.length - 1], true)
+    : 12;
+  const page = search.commitments_period_page ?? 1;
+  const update = (values: Partial<typeof search>) =>
+    onSelectionChange?.(values);
   const query = useQuery({
     queryKey: [
-      'commitment-periods',
+      "commitment-periods",
       cui,
       year,
       reportType,
@@ -53,9 +68,9 @@ export function CommitmentIntervalTable({
       ),
     enabled: startMonth <= endMonth,
     staleTime: 60_000,
-  })
-  const data = query.data
-  const date = (month: number) => `${year}-${String(month).padStart(2, '0')}`
+  });
+  const data = query.data;
+  const date = (month: number) => `${year}-${String(month).padStart(2, "0")}`;
   return (
     <section className="space-y-3" aria-label={t`Reported intervals`}>
       <h3 className="text-lg font-semibold">
@@ -67,44 +82,6 @@ export function CommitmentIntervalTable({
           interval. Overlapping intervals must not be added together.
         </Trans>
       </p>
-      <div className="flex flex-wrap gap-3 items-end">
-        <label className="text-sm">
-          <Trans>Report ending from month</Trans>
-          <Input
-            disabled={!onSelectionChange}
-            type="number"
-            min={1}
-            max={12}
-            value={startMonth}
-            onChange={(e) => {
-              const value = Number(e.target.value)
-              if (Number.isInteger(value) && value >= 1 && value <= 12)
-                update({
-                  commitments_from_month: value,
-                  commitments_period_page: 1,
-                })
-            }}
-          />
-        </label>
-        <label className="text-sm">
-          <Trans>Report ending through month</Trans>
-          <Input
-            disabled={!onSelectionChange}
-            type="number"
-            min={1}
-            max={12}
-            value={endMonth}
-            onChange={(e) => {
-              const value = Number(e.target.value)
-              if (Number.isInteger(value) && value >= 1 && value <= 12)
-                update({
-                  commitments_to_month: value,
-                  commitments_period_page: 1,
-                })
-            }}
-          />
-        </label>
-      </div>
       {startMonth > endMonth ? (
         <p role="alert">
           <Trans>The starting month must not follow the ending month.</Trans>
@@ -115,7 +92,7 @@ export function CommitmentIntervalTable({
         </p>
       ) : query.isError ? (
         <div role="alert">
-          <Trans>Reported intervals could not be loaded.</Trans>{' '}
+          <Trans>Reported intervals could not be loaded.</Trans>{" "}
           <Button variant="outline" onClick={() => void query.refetch()}>
             <Trans>Try again</Trans>
           </Button>
@@ -131,15 +108,15 @@ export function CommitmentIntervalTable({
           {data.earliestTerminalMonth !== null &&
             data.latestTerminalMonth !== null && (
               <p className="text-sm text-muted-foreground">
-                <Trans>Latest published financial reports by sector:</Trans>{' '}
+                <Trans>Latest published financial reports by sector:</Trans>{" "}
                 {date(data.earliestTerminalMonth)}
                 {data.earliestTerminalMonth !== data.latestTerminalMonth
                   ? ` – ${date(data.latestTerminalMonth)}`
-                  : ''}
+                  : ""}
                 .
                 {data.earliestTerminalMonth < 12 && (
                   <>
-                    {' '}
+                    {" "}
                     <Trans>
                       Some sectors do not have a December financial report.
                     </Trans>
@@ -184,12 +161,12 @@ export function CommitmentIntervalTable({
                     )}
                   </TableCell>
                   <TableCell>
-                    {row.sectorId} / {row.creditorCui ?? '—'}
+                    {row.sectorId} / {row.creditorCui ?? "—"}
                   </TableCell>
                   {[
-                    'credite_angajament',
-                    'plati_trezor',
-                    'plati_non_trezor',
+                    "credite_angajament",
+                    "plati_trezor",
+                    "plati_non_trezor",
                   ].map((metric) => (
                     <TableCell
                       key={metric}
@@ -243,5 +220,5 @@ export function CommitmentIntervalTable({
         </>
       )}
     </section>
-  )
+  );
 }

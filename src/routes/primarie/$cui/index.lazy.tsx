@@ -244,14 +244,17 @@ export function PrimarieEntityRoutePage() {
 
       if (patch.periodType !== undefined) {
         searchPatch.period = patch.periodType
+        searchPatch.commitments_period_page = undefined
       }
 
       if (patch.month !== undefined) {
         searchPatch.month = patch.month
+        searchPatch.commitments_period_page = undefined
       }
 
       if (patch.quarter !== undefined) {
         searchPatch.quarter = patch.quarter
+        searchPatch.commitments_period_page = undefined
       }
 
       if (patch.reportType !== undefined) {

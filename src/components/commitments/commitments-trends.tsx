@@ -36,11 +36,13 @@ type ChartShortcutLink = {
   search: unknown
 }
 
+export type CommitmentTrend = Omit<CommitmentsAnalyticsSeries, 'data'> & {data: Array<{x: string; y: number | null; growth_percent: number | null}>};
 interface CommitmentsTrendsProps {
-  budgetTrend?: CommitmentsAnalyticsSeries | null
-  commitmentsTrend?: CommitmentsAnalyticsSeries | null
-  treasuryPaymentsTrend?: CommitmentsAnalyticsSeries | null
-  nonTreasuryPaymentsTrend?: CommitmentsAnalyticsSeries | null
+  preserveGaps?: boolean
+  budgetTrend?: CommitmentTrend | null
+  commitmentsTrend?: CommitmentTrend | null
+  treasuryPaymentsTrend?: CommitmentTrend | null
+  nonTreasuryPaymentsTrend?: CommitmentTrend | null
   currentYear: number
   normalizationOptions: NormalizationOptions
   onNormalizationChange: (next: NormalizationOptions) => void
@@ -55,7 +57,7 @@ interface CommitmentsTrendsProps {
   chartShortcutLink?: ChartShortcutLink | null
 }
 
-type AnalyticsPoint = CommitmentsAnalyticsSeries['data'][number]
+type AnalyticsPoint = CommitmentTrend['data'][number]
 
 type TooltipPayload = {
   name: string
@@ -67,7 +69,7 @@ type TooltipPayload = {
 
 const PAYMENT_TOTAL_SERIES = 'payments_total'
 
-function toPointMap(series?: CommitmentsAnalyticsSeries | null): Map<string, AnalyticsPoint> | null {
+function toPointMap(series?: CommitmentTrend | null): Map<string, AnalyticsPoint> | null {
   if (!series?.data?.length) return null
   return new Map(series.data.map((point) => [String(point.x), point]))
 }
@@ -98,6 +100,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
   selectedMonth,
   onPrefetchPeriod,
   chartShortcutLink,
+  preserveGaps = false,
 }) => {
   const isMobile = useMediaQuery('(max-width: 768px)')
   const normalized = normalizeNormalizationOptions(normalizationOptions)
@@ -137,19 +140,19 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
       const treasuryPaymentsPoint = treasuryPaymentsMap?.get(label)
       const nonTreasuryPaymentsPoint = nonTreasuryPaymentsMap?.get(label)
 
-      const budgetLevel = safeNumber(budgetPoint?.y)
-      const commitmentsLevel = safeNumber(commitmentsPoint?.y)
-      const paymentsLevel =
+      const budgetLevel = preserveGaps && budgetPoint?.y == null ? null : safeNumber(budgetPoint?.y)
+      const commitmentsLevel = preserveGaps && commitmentsPoint?.y == null ? null : safeNumber(commitmentsPoint?.y)
+      const paymentsLevel = preserveGaps && (treasuryPaymentsPoint?.y == null || nonTreasuryPaymentsPoint?.y == null) ? null :
         safeNumber(treasuryPaymentsPoint?.y) + safeNumber(nonTreasuryPaymentsPoint?.y)
 
       const budgetGrowth = budgetPoint?.growth_percent
       const commitmentsGrowth = commitmentsPoint?.growth_percent
-      const paymentsGrowth = computeGrowthPercent(paymentsLevel, prevPayments)
+      const paymentsGrowth = paymentsLevel === null || (preserveGaps && (prevPayments === null || prevPayments === 0)) ? null : computeGrowthPercent(paymentsLevel, prevPayments)
 
-      const budgetValue = showPeriodGrowth
+      const budgetValue = budgetLevel === null || (preserveGaps && showPeriodGrowth && (prevBudget === null || prevBudget === 0)) ? null : showPeriodGrowth
         ? safeNumber(budgetGrowth ?? computeGrowthPercent(budgetLevel, prevBudget))
         : budgetLevel
-      const commitmentsValue = showPeriodGrowth
+      const commitmentsValue = commitmentsLevel === null || (preserveGaps && showPeriodGrowth && (prevCommitments === null || prevCommitments === 0)) ? null : showPeriodGrowth
         ? safeNumber(commitmentsGrowth ?? computeGrowthPercent(commitmentsLevel, prevCommitments))
         : commitmentsLevel
       const paymentsValue = showPeriodGrowth ? paymentsGrowth : paymentsLevel
@@ -171,6 +174,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
     treasuryPaymentsTrend,
     nonTreasuryPaymentsTrend,
     showPeriodGrowth,
+    preserveGaps,
   ])
 
   const CustomTooltip = ({
@@ -328,6 +332,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
               <Trans>Show growth (%)</Trans>
             </Label>
             <NormalizationModeSelect
+              allowPercentGdp={!preserveGaps}
               value={normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro'}
               allowPerCapita={allowPerCapita}
               onChange={(nextNormalization) => {
@@ -375,7 +380,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
               )}
               {periodType === 'QUARTER' && selectedQuarter && (
                 <ReferenceLine
-                  x={`${currentYear}-${selectedQuarter}`}
+                  x={preserveGaps ? selectedQuarter : `${currentYear}-${selectedQuarter}`}
                   stroke="gray"
                   strokeDasharray="6 3"
                   strokeWidth={1}
@@ -383,7 +388,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
               )}
               {periodType === 'MONTH' && selectedMonth && (
                 <ReferenceLine
-                  x={`${currentYear}-${selectedMonth}`}
+                  x={preserveGaps ? selectedMonth : `${currentYear}-${selectedMonth}`}
                   stroke="gray"
                   strokeDasharray="6 3"
                   strokeWidth={1}
@@ -457,7 +462,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
   )
 }
 
-function areSeriesEqual(a?: CommitmentsAnalyticsSeries | null, b?: CommitmentsAnalyticsSeries | null): boolean {
+function areSeriesEqual(a?: CommitmentTrend | null, b?: CommitmentTrend | null): boolean {
   if (!a && !b) return true
   if (!a || !b) return false
   if (a.seriesId !== b.seriesId || a.metric !== b.metric) return false
@@ -468,8 +473,8 @@ function areSeriesEqual(a?: CommitmentsAnalyticsSeries | null, b?: CommitmentsAn
     const ap = ad[i]
     const bp = bd[i]
     if (String(ap.x) !== String(bp.x)) return false
-    if (Number(ap.y) !== Number(bp.y)) return false
-    if (Number(ap.growth_percent ?? 0) !== Number(bp.growth_percent ?? 0)) return false
+    if (ap.y !== bp.y) return false
+    if (ap.growth_percent !== bp.growth_percent) return false
   }
   return true
 }
@@ -489,6 +494,7 @@ function arePropsEqual(prev: CommitmentsTrendsProps, next: CommitmentsTrendsProp
     areSeriesEqual(prev.commitmentsTrend, next.commitmentsTrend) &&
     areSeriesEqual(prev.treasuryPaymentsTrend, next.treasuryPaymentsTrend) &&
     areSeriesEqual(prev.nonTreasuryPaymentsTrend, next.nonTreasuryPaymentsTrend) &&
+    prev.preserveGaps === next.preserveGaps &&
     prev.currentYear === next.currentYear &&
     prev.normalizationOptions.normalization === next.normalizationOptions.normalization &&
     prev.normalizationOptions.currency === next.normalizationOptions.currency &&

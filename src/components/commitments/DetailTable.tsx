@@ -30,14 +30,17 @@ import {
 } from './detail-table-utils'
 
 export type { Grouping, DetailLevel }
+export type LocalCommitmentDrill = (parentCode: string, level: DrillLevel, grouping: Grouping) => CategoryData[];
 
 type Props = {
+  readonly periodMovements?: boolean
   readonly data: CategoryData[]
   readonly currency?: 'RON' | 'EUR' | 'USD'
   readonly isLoading?: boolean
   /** The rows could not be fetched — distinct from "there are none". */
   readonly isError?: boolean
   readonly onDownload?: () => void
+  readonly getSubRows?: LocalCommitmentDrill
   readonly filter?: CommitmentsFilterInput
   readonly grouping: Grouping
   readonly detailLevel: DetailLevel
@@ -75,7 +78,9 @@ function ExpandedSubRows({
   currency,
   indentLevel,
   grouping,
+  getSubRows,
 }: {
+  readonly getSubRows?: LocalCommitmentDrill
   readonly parentCode: string
   readonly level: DrillLevel
   readonly filter: CommitmentsFilterInput
@@ -105,14 +110,15 @@ function ExpandedSubRows({
     [subFilter]
   )
 
-  const { data: budgetData, isLoading: isBudgetLoading } = useCommitmentsAggregated(budgetInput)
-  const { data: committedData, isLoading: isCommittedLoading } = useCommitmentsAggregated(committedInput)
-  const { data: paidTreasuryData, isLoading: isPaidTreasuryLoading } = useCommitmentsAggregated(paidTreasuryInput)
-  const { data: paidNonTreasuryData } = useCommitmentsAggregated(paidNonTreasuryInput)
+  const { data: budgetData, isLoading: isBudgetLoading } = useCommitmentsAggregated(budgetInput, {enabled: getSubRows === undefined})
+  const { data: committedData, isLoading: isCommittedLoading } = useCommitmentsAggregated(committedInput, {enabled: getSubRows === undefined})
+  const { data: paidTreasuryData, isLoading: isPaidTreasuryLoading } = useCommitmentsAggregated(paidTreasuryInput, {enabled: getSubRows === undefined})
+  const { data: paidNonTreasuryData } = useCommitmentsAggregated(paidNonTreasuryInput, {enabled: getSubRows === undefined})
 
   const isLoading = isBudgetLoading || isCommittedLoading || isPaidTreasuryLoading
 
   const subRows = useMemo<SubRowData[]>(() => {
+    if (getSubRows) return getSubRows(parentCode, level, grouping)
     if (!budgetData || !committedData || !paidTreasuryData) return []
 
     const paidNodes = combineCommitmentsAggregatedNodes(
@@ -252,11 +258,11 @@ function ExpandedSubRows({
         paid: paidMap.get(code)?.amount ?? 0,
       })).sort((a, b) => b.budget - a.budget)
     }
-  }, [budgetData, committedData, paidTreasuryData, paidNonTreasuryData, level, parentCode, grouping])
+  }, [getSubRows, budgetData, committedData, paidTreasuryData, paidNonTreasuryData, level, parentCode, grouping])
 
   // If a functional level returns no rows but we have data, skip to next level
   const nextLevel = NEXT_LEVEL[level]
-  const hasData = budgetData && committedData && paidTreasuryData
+  const hasData = getSubRows !== undefined || (budgetData && committedData && paidTreasuryData)
   const shouldSkip = hasData && subRows.length === 0 && level !== 'economic' && nextLevel
 
   const toggleSubRow = (id: string) => {
@@ -290,6 +296,7 @@ function ExpandedSubRows({
         currency={currency}
         indentLevel={indentLevel}
         grouping={grouping}
+        getSubRows={getSubRows}
       />
     )
   }
@@ -376,6 +383,7 @@ function ExpandedSubRows({
                 currency={currency}
                 indentLevel={indentLevel + 1}
                 grouping={grouping}
+        getSubRows={getSubRows}
               />
             )}
           </Fragment>
@@ -406,10 +414,12 @@ export function DetailTable({
   isLoading = false,
   isError = false,
   onDownload,
+  periodMovements = false,
   filter,
   grouping,
   detailLevel,
   onGroupingChange,
+  getSubRows,
 }: Props) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [sortCol, setSortCol] = useState<SortColumn>('budget')
@@ -605,7 +615,7 @@ export function DetailTable({
                 className="px-2 py-3 font-semibold border-b border-border text-right cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('unpaid')}
               >
-                <Trans>To Pay</Trans>
+                {periodMovements ? <Trans>Commitments minus payments</Trans> : <Trans>To Pay</Trans>}
                 <SortIcon column="unpaid" sortCol={sortCol} sortDir={sortDir} />
               </th>
             </tr>
@@ -680,6 +690,7 @@ export function DetailTable({
                       currency={currency}
                       indentLevel={1}
                       grouping={grouping}
+        getSubRows={getSubRows}
                     />
                   )}
                 </Fragment>

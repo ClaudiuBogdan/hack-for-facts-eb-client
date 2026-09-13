@@ -334,6 +334,9 @@ vi.mock('@/components/commitments/IntervalTable', () => ({
   CommitmentIntervalTable: (props: { cui:string;year:number;reportType:string }) => <div data-testid="native-commitment-periods">{props.cui}:{props.year}:{props.reportType}</div>,
 }))
 
+vi.mock('@/components/entities/views/native-commitments-view', () => ({
+ NativeCommitmentsView: (props: {entity?:{cui?:string};currentYear:number;reportType:string}) => <div data-testid="native-commitments-dashboard">{props.entity?.cui}:{props.currentYear}:{props.reportType}</div>,
+}))
 vi.mock('@/components/entities/views/Commitments', () => ({
   CommitmentsView: (props: any) => (
     <div data-testid="commitments-view">
@@ -1173,7 +1176,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     useEntityDetailsMock.mockReturnValue(failure)
     useEntityExecutionLineItemsMock.mockReturnValue(failure)
     renderAnalysisPage({ state: { activeView: 'commitments', reportType: 'PRINCIPAL_AGGREGATED' } })
-    expect(await screen.findByTestId('native-commitment-periods')).toHaveTextContent('12345678:2025:PRINCIPAL_AGGREGATED')
+    expect(await screen.findByTestId('native-commitments-dashboard')).toHaveTextContent('12345678:2025:PRINCIPAL_AGGREGATED')
     expect(screen.queryByTestId('commitments-view')).not.toBeInTheDocument()
     expect(useEntityDetailsMock).toHaveBeenLastCalledWith(expect.anything(), expect.objectContaining({ enabled: false }))
     expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }), expect.anything())

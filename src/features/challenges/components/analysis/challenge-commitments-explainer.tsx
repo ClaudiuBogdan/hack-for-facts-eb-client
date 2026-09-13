@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeCommitmentsExplainerProps = {
+  readonly periodMovements?: boolean
   readonly locale: ChallengeLocale
   readonly reportType: Extract<
     GqlReportType,
@@ -17,6 +18,7 @@ type ChallengeCommitmentsExplainerProps = {
 
 const EXPLAINER_COPY = {
   ro: {
+    periodMovements: "Bugetul și autorizarea sunt solduri la data raportului. Angajamentele și plățile sunt variații în perioada selectată; diferența lor nu este soldul datoriilor.",
     showLess: 'Arată mai puțin',
     showMore: 'Citește mai mult',
     aggregatedPrimary:
@@ -35,6 +37,7 @@ const EXPLAINER_COPY = {
       'Creditele bugetare sunt anuale (limitează plățile pe anul selectat), dar angajamentele legale sunt adesea contracte multianuale, deci pot fi mai mari decât bugetul anual. Pentru a evalua nivelul de contractare, comparați angajamentele cu autorizarea de angajament.',
   },
   en: {
+    periodMovements: "Budget and authority are balances at the report date. Commitments and payments are movements over the selected period; their difference is not the outstanding debt balance.",
     showLess: 'Show less',
     showMore: 'Read more',
     aggregatedPrimary:
@@ -56,6 +59,7 @@ const EXPLAINER_COPY = {
 
 export function ChallengeCommitmentsExplainer({
   locale,
+  periodMovements = false,
   reportType,
   inflationAdjusted,
   isPerCapita,
@@ -95,7 +99,7 @@ export function ChallengeCommitmentsExplainer({
                   {copy.expandedWhat}
                 </p>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  {copy.expandedWhy}
+                  {periodMovements ? copy.periodMovements : copy.expandedWhy}
                 </p>
                 <p className="text-sm leading-6 text-muted-foreground">
                   {copy.expandedMultiYear}

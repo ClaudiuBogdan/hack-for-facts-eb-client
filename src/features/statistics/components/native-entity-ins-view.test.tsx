@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { fireEvent, render, screen } from "@/test/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NativeEntityInsView } from "./native-entity-ins-view";
@@ -8,12 +8,16 @@ import {
   entityInsRequest,
 } from "../test/native-entity-ins-fixtures";
 import { ComparisonDatasetError } from "../lib/comparison-dataset-error";
-const { read, historyRender } = vi.hoisted(() => ({
+const { read, historyRender, metricsRead } = vi.hoisted(() => ({
   read: vi.fn(),
+  metricsRead: vi.fn(),
   historyRender: vi.fn(),
 }));
 vi.mock("../hooks/use-entity-ins-source", () => ({
   useEntityInsSource: (input: unknown) => read(input),
+}));
+vi.mock("../hooks/use-entity-ins-metrics", () => ({
+  useEntityInsMetrics: () => metricsRead(),
 }));
 vi.mock("./entity-ins-source-history", () => ({
   EntityInsSourceHistory: (props: unknown) => {
@@ -30,6 +34,24 @@ vi.mock("./entity-ins-dataset-picker", () => ({
   }: {
     onSelect: (code: string) => void;
   }) => <button onClick={() => onSelect("NEW")}>Select dataset</button>,
+}));
+vi.mock("@tanstack/react-router", async () => ({
+  ...(await vi.importActual<typeof import("@tanstack/react-router")>(
+    "@tanstack/react-router",
+  )),
+  Link: ({
+    children,
+    to,
+    search,
+  }: {
+    readonly children: ReactNode;
+    readonly to: string;
+    readonly search?: unknown;
+  }) => (
+    <a href={to} data-search={JSON.stringify(search)}>
+      {children}
+    </a>
+  ),
 }));
 const query = { isFetching: false, isSuccess: true, error: null };
 const props: ComponentProps<typeof NativeEntityInsView> = {
@@ -55,6 +77,19 @@ const source = () => {
 beforeEach(() => {
   vi.clearAllMocks();
   read.mockReturnValue(source());
+  metricsRead.mockReturnValue({
+    context: preparedEntityInsFixture().context,
+    topMetrics: [
+      { code: "POP107D", label: "Population" },
+      { code: "FOM104D", label: "Employees (average)" },
+    ],
+    metrics: [],
+    defaults: [],
+    isLoading: false,
+    isBootstrapLoading: false,
+    error: null,
+    refresh: vi.fn().mockResolvedValue(undefined),
+  });
 });
 describe("native entity INS mounted view", () => {
   it("passes settled entity metadata and router search into the native hook", () => {
@@ -70,6 +105,17 @@ describe("native entity INS mounted view", () => {
     expect(historyRender).toHaveBeenCalledWith(
       expect.objectContaining({ reportPeriod: props.reportPeriod }),
     );
+  });
+  it("opens the exact observed periods and pins in the chart editor", () => {
+    render(<NativeEntityInsView {...props} />);
+    const link = screen.getByRole("link", { name: "POP107D" });
+    const chart = JSON.parse(link.getAttribute("data-search")!).chart;
+    expect(chart.series[0]).toMatchObject({
+      period: { type: "YEAR", selection: { dates: ["2025"] } },
+      classificationSelections: { D0: ["0"], D1: ["210"] },
+      unitCodes: ["0"],
+      sirutaCodes: ["54975"],
+    });
   });
   it("shows no geographic anchor separately from an unmapped INS area", () => {
     const { rerender } = render(
@@ -145,9 +191,11 @@ describe("native entity INS mounted view", () => {
   });
   it("changing datasets clears only the seven source fields through the router callback", () => {
     render(<NativeEntityInsView {...props} search={{}} />);
-    fireEvent.click(screen.getByRole("button", { name: "Select dataset" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Employees \(average\)/ }),
+    );
     expect(props.onChange).toHaveBeenCalledWith({
-      insDataset: "NEW",
+      insDataset: "FOM104D",
       insSeries: undefined,
       insUnit: undefined,
       insTemporal: undefined,

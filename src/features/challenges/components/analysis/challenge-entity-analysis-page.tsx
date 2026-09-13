@@ -309,6 +309,7 @@ const DeferredContractsView = lazy(() =>
 const DeferredCommitmentIntervalTable = lazy(() =>
   import('@/components/commitments/IntervalTable').then((module) => ({ default: module.CommitmentIntervalTable })),
 )
+const DeferredNativeCommitmentsView = lazy(() => import('@/components/entities/views/native-commitments-view').then(module => ({default: module.NativeCommitmentsView})))
 const DeferredCommitmentsView = lazy(() =>
   loadCommitmentsView().then((module) => ({
     default: module.CommitmentsView,
@@ -2383,6 +2384,8 @@ export function ChallengeEntityAnalysisPage({
 
   const handleNormalizationOptionsChange = useCallback(
     (next: NormalizationOptions) => {
+      const statePatch: {normalization?: 'total'|'per_capita';showPeriodGrowth?:boolean} = {};
+      if(next.show_period_growth !== undefined && next.show_period_growth !== showPeriodGrowth) statePatch.showPeriodGrowth=next.show_period_growth;
       if (
         (
           next.normalization === 'total' ||
@@ -2393,11 +2396,10 @@ export function ChallengeEntityAnalysisPage({
         ) &&
         next.normalization !== normalizationMode
       ) {
-        onStateChange({
-          normalization: next.normalization,
-        })
+        statePatch.normalization = next.normalization
       }
 
+      if(Object.keys(statePatch).length) onStateChange(statePatch);
       const nextGlobalSettingsPatch: {
         currency?: 'RON' | 'EUR' | 'USD'
         inflationAdjusted?: boolean
@@ -2428,6 +2430,7 @@ export function ChallengeEntityAnalysisPage({
       normalizationMode,
       onStateChange,
       setSettings,
+      showPeriodGrowth,
     ],
   )
 
@@ -2773,6 +2776,7 @@ export function ChallengeEntityAnalysisPage({
           )
         )
 
+  const SelectedCommitmentsView = isRedesignOnlyApi ? DeferredNativeCommitmentsView : DeferredCommitmentsView
   const renderActiveView = () => {
     switch (activeView) {
       case 'contracts':
@@ -2783,21 +2787,11 @@ export function ChallengeEntityAnalysisPage({
         )
 
       case 'commitments':
-        if (isRedesignOnlyApi) {
-          return (
-            <Suspense fallback={<EntityViewContentFallback />}>
-              <DeferredCommitmentIntervalTable
-                cui={entityCui} year={selectedYear} reportType={selectedReportType}
-                selection={commitmentPeriodSelection}
-                onSelectionChange={onCommitmentPeriodSelectionChange}
-              />
-            </Suspense>
-          )
-        }
         return (
           <Suspense fallback={<EntityViewContentFallback />}>
-            <DeferredCommitmentsView
+            <SelectedCommitmentsView
               entity={entity}
+              mainCreditorCui={inferredMainCreditorCui}
               currentYear={selectedYear}
               reportPeriod={reportPeriod}
               trendPeriod={trendPeriod}
@@ -2822,13 +2816,15 @@ export function ChallengeEntityAnalysisPage({
               allowPerCapita={allowPerCapita}
               headerSlot={
                 <ChallengeCommitmentsExplainer
+                  periodMovements={isRedesignOnlyApi && reportPeriod.type !== "YEAR"}
                   locale={locale}
                   reportType={selectedReportType}
                   inflationAdjusted={appliedInflationAdjusted}
                   isPerCapita={normalizationMode === 'per_capita'}
                 />
               }
-              reportsSlot={
+              reportsSlot={<>
+                {isRedesignOnlyApi && <details className="rounded-[28px] border border-border/50 bg-card p-6"><summary className="cursor-pointer font-semibold">{locale === 'ro' ? 'Detalii despre perioadele raportate' : 'Reported period details'}</summary><DeferredCommitmentIntervalTable cui={entityCui} year={selectedYear} reportType={selectedReportType} reportPeriod={reportPeriod} selection={commitmentPeriodSelection} onSelectionChange={onCommitmentPeriodSelectionChange} /></details>}
                 <DeferredChallengeEntityReportsSection
                   locale={locale}
                   entityCui={entityCui}
@@ -2836,7 +2832,7 @@ export function ChallengeEntityAnalysisPage({
                   reportType={toCommitmentReportType(selectedReportType) ?? selectedReportType}
                   mainCreditorCui={inferredMainCreditorCui}
                 />
-              }
+              </>}
             />
           </Suspense>
         )
