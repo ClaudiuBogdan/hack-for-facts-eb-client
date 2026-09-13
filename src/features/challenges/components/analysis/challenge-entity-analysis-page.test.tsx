@@ -1,5 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
+import { renderToString } from 'react-dom/server'
+import { hydrateRoot } from 'react-dom/client'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
@@ -36,6 +38,8 @@ const buildTreemapChartStateMock = vi.fn()
 const useQueryMock = vi.fn()
 const useQueryClientMock = vi.fn()
 const useGlobalSettingsMock = vi.fn()
+const settingsSearchMock = vi.fn(() => ({}))
+const settingsRouterMock = { navigate: vi.fn() }
 const fetchEntityAnalyticsMock = vi.fn()
 const reportsConnectionQueryOptionsMock = vi.fn()
 const budgetTreemapMock = vi.fn()
@@ -75,6 +79,8 @@ function buildHref(to: unknown, params?: Record<string, string>) {
 }
 
 vi.mock('@tanstack/react-router', () => ({
+  useSearch: () => settingsSearchMock(),
+  useRouter: () => settingsRouterMock,
   Link: ({ children, to, params, search, ...props }: any) => (
     <a
       href={buildHref(to, params)}
@@ -1182,6 +1188,77 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false }), expect.anything())
   })
 
+  it.each([false, true])(
+    'hydrates native INS with the real settings hook and saved preferences (explicit URL: %s)',
+    async (explicitUrl) => {
+      runtimeApiMode.value = 'redesign'
+      const ordinaryQuery = useQueryMock.getMockImplementation()
+      useQueryMock.mockImplementation((options: any) =>
+        options.queryKey?.[0] === 'entityIdentity'
+          ? {
+              data: options.select({
+                cui: '12345678',
+                name: 'Entity',
+                uat: { id: 1, level: 'uat' },
+              }),
+              isLoading: false,
+              isFetching: false,
+              isError: false,
+              isSuccess: true,
+              isPlaceholderData: false,
+              error: null,
+              refetch: vi.fn(),
+            }
+          : ordinaryQuery?.(options),
+      )
+      const { useGlobalSettings } = await vi.importActual<
+        typeof import('@/lib/hooks/useGlobalSettings')
+      >('@/lib/hooks/useGlobalSettings')
+      useGlobalSettingsMock.mockImplementation(useGlobalSettings)
+      settingsSearchMock.mockReturnValue(
+        explicitUrl ? { currency: 'RON', inflation_adjusted: false } : {},
+      )
+      window.localStorage.clear()
+      const element = (
+        <ChallengeEntityAnalysisPage
+          entityCui="12345678"
+          pageVariant="entities"
+          languageQuery="en"
+          state={{ ...DEFAULT_PAGE_STATE, activeView: 'ins' }}
+          onStateChange={vi.fn()}
+          onInsSearchChange={vi.fn()}
+          initialSettings={{ currency: 'RON', inflationAdjusted: false }}
+        />
+      )
+      const container = document.createElement('div')
+      // Server has no persisted browser preference. Hydration must initially match
+      // this HTML, then adopt the saved preference without changing URL overrides.
+      container.innerHTML = renderToString(element)
+      expect(container.textContent).not.toContain('Inflation-adjusted values')
+      window.localStorage.setItem('user-currency', JSON.stringify('EUR'))
+      window.localStorage.setItem('user-inflation-adjusted', JSON.stringify(true))
+      document.body.append(container)
+      const errors: unknown[] = []
+      let root: ReturnType<typeof hydrateRoot> | undefined
+      try {
+        await act(async () => {
+          root = hydrateRoot(container, element, {
+            onRecoverableError: (error) => errors.push(error),
+          })
+        })
+        expect(errors).toEqual([])
+        if (explicitUrl)
+          expect(container.textContent).not.toContain('Inflation-adjusted values')
+        else expect(container.textContent).toContain('Inflation-adjusted values')
+      } finally {
+        await act(async () => root?.unmount())
+        container.remove()
+        window.localStorage.clear()
+        settingsSearchMock.mockReturnValue({})
+      }
+    },
+  )
+
   it('retries only identity after an INS identity error', async () => {
     runtimeApiMode.value = 'redesign'
     const ordinaryQuery = useQueryMock.getMockImplementation()
@@ -1737,6 +1814,185 @@ describe('ChallengeEntityAnalysisPage', () => {
         mapNameOverride: 'Cheltuieli UAT (2025)',
       })
     })
+  })
+
+  it('renders the overview while line items are pending, without an empty treemap or evolution', async () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isFetching: true,
+      isError: false,
+      refetch: vi.fn(),
+    })
+    renderAnalysisPage({ pageVariant: 'entities', languageQuery: 'en' })
+    expect(screen.getByTestId('financial-summary')).toBeInTheDocument()
+    expect(screen.getAllByTestId('entity-line-items-loading').length).toBeGreaterThan(0)
+    expect(budgetTreemapMock).not.toHaveBeenCalled()
+    expect(challengeGroupedLineItemsMock).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('category-evolution')).not.toBeInTheDocument()
+  })
+
+  it('keeps the overview visible after line-item failure and retries only the failed rows', () => {
+    const retryRows = vi.fn()
+    const retryDetails = vi.fn()
+    useEntityDetailsMock.mockReturnValue({
+      data: entityDetails,
+      isLoading: false,
+      isError: false,
+      refetch: retryDetails,
+    })
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: new Error('Rows unavailable'),
+      refetch: retryRows,
+    })
+    renderAnalysisPage({ pageVariant: 'entities', languageQuery: 'en' })
+    expect(screen.getByTestId('financial-summary')).toBeInTheDocument()
+    fireEvent.click(
+      within(screen.getAllByTestId('entity-line-items-error')[0]!).getByRole('button'),
+    )
+    expect(retryRows).toHaveBeenCalledTimes(1)
+    expect(retryDetails).not.toHaveBeenCalled()
+    expect(budgetTreemapMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps matching cached rows during background reads and distinguishes empty success', () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: { nodes: [] },
+      isLoading: false,
+      isFetching: true,
+      isPlaceholderData: false,
+      isError: false,
+      refetch: vi.fn(),
+    })
+    renderAnalysisPage({ pageVariant: 'entities' })
+    expect(screen.getByTestId('financial-summary')).toBeInTheDocument()
+    expect(screen.queryByTestId('entity-line-items-loading')).not.toBeInTheDocument()
+    expect(challengeGroupedLineItemsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ lineItems: [] }),
+    )
+  })
+
+  it.each(['overview-first', 'rows-first'])(
+    'never labels previous-query values with new settings (%s), including a rapid reversal',
+    async (order) => {
+      let detailsState = {
+        data: entityDetails,
+        isLoading: false,
+        isFetching: false,
+        isPlaceholderData: false,
+        isError: false,
+        refetch: vi.fn(),
+      }
+      let rowsState = {
+        data: { nodes: lineItems },
+        isLoading: false,
+        isFetching: false,
+        isPlaceholderData: false,
+        isError: false,
+        refetch: vi.fn(),
+      }
+      useEntityDetailsMock.mockImplementation(() => detailsState)
+      useEntityExecutionLineItemsMock.mockImplementation(() => rowsState)
+      const onStateChange = vi.fn()
+      const props = {
+        entityCui: entityDetails.cui,
+        pageVariant: 'entities' as const,
+        languageQuery: 'en' as const,
+        state: DEFAULT_PAGE_STATE,
+        onStateChange,
+      }
+      const view = render(<ChallengeEntityAnalysisPage {...props} />)
+      const oldSummary = screen.getByTestId('financial-summary').textContent
+      useGlobalSettingsMock.mockReturnValue({
+        currency: 'EUR',
+        inflationAdjusted: true,
+        displayCurrency: 'RON',
+        displayInflationAdjusted: false,
+        confirmSettingsApplied: vi.fn(),
+        setSettings: vi.fn(),
+      })
+      const newState = {
+        ...DEFAULT_PAGE_STATE,
+        selectedYear: 2024,
+        month: '02' as const,
+        periodType: 'MONTH' as const,
+        mainCreditorCui: '12345',
+        normalization: 'per_capita' as const,
+      }
+      detailsState = {
+        ...detailsState,
+        data: {
+          ...entityDetails,
+          totalIncome: 321,
+          totalExpenses: 123,
+          budgetBalance: 198,
+        },
+        isPlaceholderData: order === 'rows-first',
+        isFetching: order === 'rows-first',
+      }
+      rowsState = {
+        ...rowsState,
+        isPlaceholderData: order === 'overview-first',
+        isFetching: order === 'overview-first',
+      }
+      budgetTreemapMock.mockClear()
+      view.rerender(<ChallengeEntityAnalysisPage {...props} state={newState} />)
+      if (order === 'overview-first') {
+        expect(screen.getByTestId('financial-summary')).toHaveTextContent(
+          '321:123:198:EUR:true',
+        )
+        expect(budgetTreemapMock).not.toHaveBeenCalled()
+      } else {
+        expect(screen.queryByTestId('financial-summary')).not.toBeInTheDocument()
+      }
+      detailsState = { ...detailsState, isPlaceholderData: false, isFetching: false }
+      rowsState = { ...rowsState, isPlaceholderData: false, isFetching: false }
+      view.rerender(<ChallengeEntityAnalysisPage {...props} state={newState} />)
+      expect(screen.getByTestId('financial-summary')).toHaveTextContent(
+        '321:123:198:EUR:true',
+      )
+      expect(getLatestBudgetTreemapProps()).toMatchObject({
+        currency: 'EUR',
+        normalization: 'per_capita',
+      })
+      // A quick return to the original query can immediately use its own cache.
+      useGlobalSettingsMock.mockReturnValue({
+        currency: 'RON',
+        inflationAdjusted: false,
+        displayCurrency: 'EUR',
+        displayInflationAdjusted: true,
+        confirmSettingsApplied: vi.fn(),
+        setSettings: vi.fn(),
+      })
+      detailsState = { ...detailsState, data: entityDetails }
+      view.rerender(<ChallengeEntityAnalysisPage {...props} />)
+      expect(screen.getByTestId('financial-summary').textContent).toBe(oldSummary)
+      expect(getLatestBudgetTreemapProps().currency).toBe('RON')
+    },
+  )
+
+  it('does not request a treemap path reset while rows are pending', () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: { nodes: lineItems },
+      isLoading: false,
+      isPlaceholderData: true,
+      isError: false,
+      refetch: vi.fn(),
+    })
+    const onStateChange = vi.fn()
+    renderAnalysisPage({
+      pageVariant: 'entities',
+      onStateChange,
+      state: { treemapPath: ['65'] },
+    })
+    expect(budgetTreemapMock).not.toHaveBeenCalled()
+    expect(onStateChange).not.toHaveBeenCalledWith(
+      expect.objectContaining({ treemapPath: [] }),
+    )
+    expect(resetTreemapMock).not.toHaveBeenCalled()
   })
 
   it('uses explicit period growth state for entity details fetches', async () => {

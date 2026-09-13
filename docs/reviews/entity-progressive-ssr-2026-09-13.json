@@ -1,0 +1,418 @@
+{
+  "http": [
+    {
+      "phase": "before",
+      "iteration": 0,
+      "http_code": 200,
+      "ttfb_ms": 1212.494,
+      "total_ms": 1214.051,
+      "bytes": 438438,
+      "sql_statements": 18,
+      "sql_elapsed_sum_ms": 1418.7360399998724,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 9
+      }
+    },
+    {
+      "phase": "after",
+      "iteration": 0,
+      "http_code": 200,
+      "ttfb_ms": 637.181,
+      "total_ms": 638.0369999999999,
+      "bytes": 101336,
+      "sql_statements": 10,
+      "sql_elapsed_sum_ms": 746.7279180001351,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 1
+      }
+    },
+    {
+      "phase": "before",
+      "iteration": 1,
+      "http_code": 200,
+      "ttfb_ms": 1225.967,
+      "total_ms": 1228.674,
+      "bytes": 438438,
+      "sql_statements": 18,
+      "sql_elapsed_sum_ms": 1383.2738769999123,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "\"core\".\"territories\"": 2,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 9
+      }
+    },
+    {
+      "phase": "after",
+      "iteration": 1,
+      "http_code": 200,
+      "ttfb_ms": 599.286,
+      "total_ms": 600.287,
+      "bytes": 101336,
+      "sql_statements": 10,
+      "sql_elapsed_sum_ms": 719.2434180001146,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 1
+      }
+    },
+    {
+      "phase": "before",
+      "iteration": 2,
+      "http_code": 200,
+      "ttfb_ms": 1147.042,
+      "total_ms": 1149.805,
+      "bytes": 438438,
+      "sql_statements": 18,
+      "sql_elapsed_sum_ms": 1278.44499800005,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "\"core\".\"territories\"": 2,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 9
+      }
+    },
+    {
+      "phase": "after",
+      "iteration": 2,
+      "http_code": 200,
+      "ttfb_ms": 586.488,
+      "total_ms": 587.347,
+      "bytes": 101336,
+      "sql_statements": 10,
+      "sql_elapsed_sum_ms": 691.6948740000953,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 1
+      }
+    },
+    {
+      "phase": "before",
+      "iteration": 3,
+      "http_code": 200,
+      "ttfb_ms": 1125.803,
+      "total_ms": 1127.642,
+      "bytes": 438438,
+      "sql_statements": 18,
+      "sql_elapsed_sum_ms": 1267.3259169998346,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "\"core\".\"territories\"": 2,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 9
+      }
+    },
+    {
+      "phase": "after",
+      "iteration": 3,
+      "http_code": 200,
+      "ttfb_ms": 573.947,
+      "total_ms": 574.6940000000001,
+      "bytes": 101336,
+      "sql_statements": 10,
+      "sql_elapsed_sum_ms": 686.8705830000108,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 1
+      }
+    },
+    {
+      "phase": "before",
+      "iteration": 4,
+      "http_code": 200,
+      "ttfb_ms": 1157.178,
+      "total_ms": 1159.538,
+      "bytes": 438438,
+      "sql_statements": 18,
+      "sql_elapsed_sum_ms": 1288.2752129999571,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 9
+      }
+    },
+    {
+      "phase": "after",
+      "iteration": 4,
+      "http_code": 200,
+      "ttfb_ms": 568.639,
+      "total_ms": 569.338,
+      "bytes": 101336,
+      "sql_statements": 10,
+      "sql_elapsed_sum_ms": 688.2186210000655,
+      "tables": {
+        "\"core\".\"organizations\"": 1,
+        "\"budget\".\"mv_execution_summary_annual\"": 3,
+        "\"core\".\"public_entities\"": 4,
+        "\"core\".\"territories\"": 2,
+        "budget.mv_execution_summary_monthly": 1,
+        "\"budget\".\"execution_line_items\"": 1
+      }
+    }
+  ],
+  "browser": [
+    {
+      "phase": "before",
+      "iteration": 0,
+      "status": 200,
+      "ttfb": 1105.300000011921,
+      "domContentLoaded": 1153,
+      "load": 1447.800000011921,
+      "paint": [
+        {
+          "name": "first-paint",
+          "ms": 1244
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 1244
+        }
+      ],
+      "now": 2379.7000000476837,
+      "errors": [],
+      "browserGraphqlCalls": [
+        "GetEntityRelationships",
+        "EntitySubordinateRanking"
+      ],
+      "sqlStatements": 37
+    },
+    {
+      "phase": "after",
+      "iteration": 0,
+      "status": 200,
+      "ttfb": 584.2999999523163,
+      "domContentLoaded": 623.8999999761581,
+      "load": 1039.5,
+      "paint": [
+        {
+          "name": "first-paint",
+          "ms": 708
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 708
+        }
+      ],
+      "now": 1733.699999988079,
+      "errors": [],
+      "browserGraphqlCalls": [
+        "GetEntityRelationships",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityReports",
+        "GetEntityLineItems",
+        "EntitySubordinateRanking",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetExecutionLineItemsAnalytics"
+      ],
+      "sqlStatements": 45
+    },
+    {
+      "phase": "before",
+      "iteration": 1,
+      "status": 200,
+      "ttfb": 1174.8999999761581,
+      "domContentLoaded": 1217.5999999642372,
+      "load": 1487.0999999642372,
+      "paint": [
+        {
+          "name": "first-paint",
+          "ms": 1288
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 1288
+        }
+      ],
+      "now": 2319.800000011921,
+      "errors": [],
+      "browserGraphqlCalls": [
+        "GetEntityRelationships",
+        "EntitySubordinateRanking"
+      ],
+      "sqlStatements": 55
+    },
+    {
+      "phase": "after",
+      "iteration": 1,
+      "status": 200,
+      "ttfb": 605.6000000238419,
+      "domContentLoaded": 646.9000000357628,
+      "load": 921,
+      "paint": [
+        {
+          "name": "first-paint",
+          "ms": 720
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 720
+        }
+      ],
+      "now": 1766,
+      "errors": [],
+      "browserGraphqlCalls": [
+        "GetEntityRelationships",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityReports",
+        "GetEntityLineItems",
+        "EntitySubordinateRanking",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetExecutionLineItemsAnalytics"
+      ],
+      "sqlStatements": 44
+    },
+    {
+      "phase": "before",
+      "iteration": 2,
+      "status": 200,
+      "ttfb": 1154.6000000238419,
+      "domContentLoaded": 1197.800000011921,
+      "load": 1488.800000011921,
+      "paint": [
+        {
+          "name": "first-paint",
+          "ms": 1288
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 1288
+        }
+      ],
+      "now": 2308.300000011921,
+      "errors": [],
+      "browserGraphqlCalls": [
+        "GetEntityRelationships",
+        "EntitySubordinateRanking"
+      ],
+      "sqlStatements": 54
+    },
+    {
+      "phase": "after",
+      "iteration": 2,
+      "status": 200,
+      "ttfb": 598.1999999880791,
+      "domContentLoaded": 633.3999999761581,
+      "load": 919.5999999642372,
+      "paint": [
+        {
+          "name": "first-paint",
+          "ms": 704
+        },
+        {
+          "name": "first-contentful-paint",
+          "ms": 704
+        }
+      ],
+      "now": 1744.5999999642372,
+      "errors": [],
+      "browserGraphqlCalls": [
+        "GetEntityRelationships",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityReports",
+        "GetEntityLineItems",
+        "EntitySubordinateRanking",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetEntityLineItems",
+        "GetExecutionLineItemsAnalytics"
+      ],
+      "sqlStatements": 51
+    }
+  ],
+  "boundary_checks": [
+    {
+      "mode": "delayed",
+      "overviewVisibleAtMs": 1731.800000011921,
+      "rowsReadyAtMs": 2776.5,
+      "requested": 8,
+      "rows": {
+        "INCOME": 87,
+        "EXPENSE": 689
+      },
+      "errors": []
+    },
+    {
+      "mode": "failure",
+      "overviewVisibleAtMs": 746.2999999523163,
+      "rowsReadyAtMs": 3152.899999976158,
+      "requested": 12,
+      "rows": {
+        "INCOME": 87,
+        "EXPENSE": 689
+      },
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "explicitUrlSettings": false,
+      "hydrationErrors": [],
+      "errors": [],
+      "consoleErrors": []
+    },
+    {
+      "phase": "before",
+      "explicitUrlSettings": true,
+      "hydrationErrors": [],
+      "errors": [],
+      "consoleErrors": []
+    },
+    {
+      "phase": "after",
+      "explicitUrlSettings": false,
+      "hydrationErrors": [],
+      "errors": [],
+      "consoleErrors": []
+    },
+    {
+      "phase": "after",
+      "explicitUrlSettings": true,
+      "hydrationErrors": [],
+      "errors": [],
+      "consoleErrors": []
+    }
+  ]
+}

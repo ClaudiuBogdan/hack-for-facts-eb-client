@@ -356,7 +356,7 @@ describe('entities route', () => {
     expect(loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl).toBe(
       'https://transparenta.eu',
     )
-    expect(ensureQueryData).toHaveBeenCalledTimes(2)
+    expect(ensureQueryData).toHaveBeenCalledTimes(1)
     expect(prefetchQuery).not.toHaveBeenCalled()
     expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
     expect(heatmapJudetQueryOptionsMock).not.toHaveBeenCalled()
@@ -416,7 +416,7 @@ describe('entities route', () => {
     ).toEqual(
       loaderResult.entityPageBootstrap.exactQueryInputs.entityExecutionLineItems,
     )
-    expect(ensureQueryData).toHaveBeenCalledTimes(3)
+    expect(ensureQueryData).toHaveBeenCalledTimes(2)
     expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         cui: '4266324',
@@ -587,7 +587,7 @@ describe('entities route', () => {
       const route = await importRoute()
       const result = await route.loader({ context: { queryClient }, params: { cui: '4305857' }, location: { search: { year: 2023 } } })
       expect(details).toHaveBeenCalledTimes(1)
-      expect(lineItems).toHaveBeenCalledTimes(1)
+      expect(lineItems).not.toHaveBeenCalled()
       const target = entityDetailsQueryOptionsMock(result.entityPageBootstrap.exactQueryInputs.entityDetails)
       const hydrated = new QueryClient()
       hydrate(hydrated, dehydrate(queryClient))

@@ -11,7 +11,6 @@ import {
   readEntityPageRequestOrigin,
   resolveEntityPageQueryInputs,
   runEntityPageBlockingBootstrap,
-  type EntityPageBlockingQueryId,
   type EntityPageExecutionContext,
   type EntityPageLoaderPayload,
 } from '@/features/entities/page-core'
@@ -52,15 +51,6 @@ type EntityRouteLoaderData = {
 }
 
 type EntitiesEntityRouteAdapter = ReturnType<typeof resolveEntitiesEntityRouteAdapter>
-
-const ENTITY_DETAILS_STEP_ID = 'entity-details' as const
-
-function hasPlannedStep(
-  steps: readonly { id: string }[],
-  stepId: string,
-): boolean {
-  return steps.some((step) => step.id === stepId)
-}
 
 function resolveEffectiveEntitiesPublicSettings(
   cui: string,
@@ -192,20 +182,9 @@ export const Route = createFileRoute('/entities/$cui')({
     const search = entitySearchSchema.parse(location.search)
     const { adapter, executionContext, ssrSettings, forcedOverrides } =
       resolveEntitiesExecutionContext(params.cui, search)
-    const queryPlan = getEntityPageQueryPlan({
-      context: executionContext,
-    })
     const shouldResolveDefaultReportType =
       executionContext.reportType === undefined &&
       executionContext.effectiveReportType === undefined
-    const blockingQueryIds: EntityPageBlockingQueryId[] =
-      shouldResolveDefaultReportType
-        ? ['entityDetails']
-        : (
-            hasPlannedStep(queryPlan.blocking, ENTITY_DETAILS_STEP_ID)
-              ? ['entityDetails', 'entityExecutionLineItems']
-              : ['entityExecutionLineItems']
-          )
     const baseLoaderPayload = buildEntityPageLoaderPayload({
       executionContext,
       exactQueryInputs: adapter.exactQueryInputs,
@@ -229,7 +208,6 @@ export const Route = createFileRoute('/entities/$cui')({
         executionContext,
         exactQueryInputs: adapter.exactQueryInputs,
         requestSiteUrl,
-        blockingQueryIds,
       })
       const defaultExecutionReportType = toExecutionReportType(
         bootstrapResult.entityDetails?.default_report_type,
@@ -263,20 +241,11 @@ export const Route = createFileRoute('/entities/$cui')({
             updatedAt: sourceState.dataUpdatedAt,
           })
         }
-        const effectiveQueryPlan = getEntityPageQueryPlan({
-          context: activeAdapter.executionContext,
-        })
-        const effectiveBlockingQueryIds: EntityPageBlockingQueryId[] =
-          hasPlannedStep(effectiveQueryPlan.blocking, ENTITY_DETAILS_STEP_ID)
-            ? ['entityDetails', 'entityExecutionLineItems']
-            : ['entityExecutionLineItems']
-
         bootstrapResult = await runEntityPageBlockingBootstrap({
           queryClient,
           executionContext: activeAdapter.executionContext,
           exactQueryInputs: activeAdapter.exactQueryInputs,
           requestSiteUrl,
-          blockingQueryIds: effectiveBlockingQueryIds,
         })
       }
 

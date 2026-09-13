@@ -6,7 +6,7 @@ import { supportsEntityPopulation } from '@/lib/entity-population'
 import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
@@ -610,6 +610,12 @@ function localizeMapPreviewState(
   }
 }
 
+// React uses the server snapshot during hydration and the client snapshot on
+// ordinary navigation, avoiding both mismatched markup and a default-key fetch.
+const subscribeToHydration = () => () => {}
+const getClientHydrationSnapshot = () => true
+const getServerHydrationSnapshot = () => false
+
 function toTrendValues(
   series: EntityDetailsData['incomeTrend'],
   reportPeriod: ReportPeriodInput,
@@ -1170,16 +1176,29 @@ export function ChallengeEntityAnalysisPage({
     setResolvedEntityDefaultReportTypeState,
   ] = useState<ResolvedEntityDefaultReportType | null>(null)
   const {
-    currency,
-    inflationAdjusted,
-    displayCurrency,
-    displayInflationAdjusted,
-    confirmSettingsApplied,
+    currency: requestedCurrency,
+    inflationAdjusted: requestedInflationAdjusted,
+    source: settingsSource,
     setSettings,
   } = useGlobalSettings(initialSettings ?? {
     currency: DEFAULT_CURRENCY,
     inflationAdjusted: DEFAULT_INFLATION_ADJUSTED,
   }, forcedSettings)
+  const isHydrated = useSyncExternalStore(
+    subscribeToHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot,
+  )
+  const currency = !isHydrated && settingsSource?.currency === 'persisted'
+    ? initialSettings?.currency ?? DEFAULT_CURRENCY
+    : requestedCurrency
+  const inflationAdjusted = !isHydrated && settingsSource?.inflationAdjusted === 'persisted'
+    ? initialSettings?.inflationAdjusted ?? DEFAULT_INFLATION_ADJUSTED
+    : requestedInflationAdjusted
+  // Only data belonging to the current query key is rendered below. Labels can
+  // follow the requested settings without waiting for unrelated sections.
+  const displayCurrency = currency
+  const displayInflationAdjusted = inflationAdjusted
   const resolvedSsrEntityDetailsParams =
     ssrLoaderPayload?.ssrEntityDetailsParams ?? ssrEntityDetailsParams
   const resolvedSsrEntityExecutionLineItemsParams =
@@ -1389,10 +1408,14 @@ export function ChallengeEntityAnalysisPage({
     resolvedSsrEntityDetailsParams,
     ssrEntityDetailsCacheData,
   ])
-  const budgetEntityDetailsQuery = useEntityDetails(entityDetailsQueryParams, {
+  const budgetEntityDetailsResult = useEntityDetails(entityDetailsQueryParams, {
     ssrPlaceholder: ssrEntityDetailsPlaceholder,
     ...(isIndependentNativeView ? { enabled: false } : {}),
   })
+  const budgetEntityDetailsQuery = {
+    ...budgetEntityDetailsResult,
+    data: budgetEntityDetailsResult.isPlaceholderData ? undefined : budgetEntityDetailsResult.data,
+  }
   const entityIdentityQuery = useQuery({
     ...entityIdentityQueryOptions(entityCui),
     enabled: isIndependentNativeView && /^[0-9]{1,10}$/.test(entityCui),
@@ -1558,12 +1581,16 @@ export function ChallengeEntityAnalysisPage({
     resolvedSsrEntityExecutionLineItemsParams,
     ssrEntityExecutionLineItemsCacheData,
   ])
-  const entityLineItemsQuery = useEntityExecutionLineItems(
+  const entityLineItemsResult = useEntityExecutionLineItems(
     entityLineItemsQueryParams,
     {
       ssrPlaceholder: ssrEntityExecutionLineItemsPlaceholder,
     },
   )
+  const entityLineItemsQuery = {
+    ...entityLineItemsResult,
+    data: entityLineItemsResult.isPlaceholderData ? undefined : entityLineItemsResult.data,
+  }
   useEffect(() => {
     if (
       !shouldUseEntityDefaultReportType ||
@@ -1651,13 +1678,11 @@ export function ChallengeEntityAnalysisPage({
           entityRelationshipsQuery.isError
         ),
     }),
-    placeholderData: (previousData) => previousData,
   })
 
   const isInitialLoading =
-    (entityDetailsQuery.isLoading && !entityDetailsQuery.data) ||
-    (!isIndependentNativeView && (isResolvingEntityDefaultReportType ||
-    (entityLineItemsQuery.isLoading && !entityLineItemsQuery.data)))
+    ((entityDetailsQuery.isLoading || entityDetailsQuery.isPlaceholderData) && !entityDetailsQuery.data) ||
+    (!isIndependentNativeView && isResolvingEntityDefaultReportType)
 
   const treemapLineItems = useMemo(
     () =>
@@ -2159,25 +2184,6 @@ export function ChallengeEntityAnalysisPage({
     onEntityResolved,
   ])
 
-  useEffect(() => {
-    const areCoreQueriesSettled =
-      !isIndependentNativeView && Boolean(entityDetailsQuery.data) &&
-      Boolean(entityLineItemsQuery.data) &&
-      !entityDetailsQuery.isFetching &&
-      !entityLineItemsQuery.isFetching
-
-    if (areCoreQueriesSettled && !subordinateRankingQuery.isFetching) {
-      confirmSettingsApplied()
-    }
-  }, [
-    confirmSettingsApplied,
-    isIndependentNativeView,
-    entityDetailsQuery.data,
-    entityDetailsQuery.isFetching,
-    entityLineItemsQuery.data,
-    entityLineItemsQuery.isFetching,
-    subordinateRankingQuery.isFetching,
-  ])
 
   useEffect(() => {
     if (!supportsEntityMapPreview) {
@@ -2518,7 +2524,6 @@ export function ChallengeEntityAnalysisPage({
 
   const handleRetry = () => {
     void entityDetailsQuery.refetch()
-    if (!isIndependentNativeView) void entityLineItemsQuery.refetch()
   }
 
   const handleSubordinatesRetry = () => {
@@ -2582,7 +2587,6 @@ export function ChallengeEntityAnalysisPage({
 
   if (
     entityDetailsQuery.isError ||
-    (!isIndependentNativeView && entityLineItemsQuery.isError) ||
     !entityDetailsQuery.data
   ) {
     return (
@@ -2592,8 +2596,7 @@ export function ChallengeEntityAnalysisPage({
         <AlertDescription className="space-y-4">
           <p>
             {resolveErrorMessage(
-              entityDetailsQuery.error ??
-              entityLineItemsQuery.error,
+              entityDetailsQuery.error,
             )}
           </p>
           <Button type="button" variant="outline" onClick={handleRetry}>
@@ -2775,6 +2778,24 @@ export function ChallengeEntityAnalysisPage({
             entityRelationshipsQuery.isError
           )
         )
+
+  const lineItemsFallback = entityLineItemsQuery.isError ? (
+    <Alert className="rounded-[28px] border-destructive/50 bg-destructive/5" data-testid="entity-line-items-error">
+      <AlertTriangle className="h-5 w-5" />
+      <AlertTitle>{t`Error loading data`}</AlertTitle>
+      <AlertDescription className="space-y-4">
+        <p>{resolveErrorMessage(entityLineItemsQuery.error)}</p>
+        <Button type="button" variant="outline" onClick={() => void entityLineItemsQuery.refetch()}>
+          <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+          {t`Try Again`}
+        </Button>
+      </AlertDescription>
+    </Alert>
+  ) : entityLineItemsQuery.data === undefined ? (
+    <div data-testid="entity-line-items-loading" aria-busy="true">
+      <DeferredSectionFallback bodyHeightClassName="h-[360px]" showControls />
+    </div>
+  ) : null
 
   const SelectedCommitmentsView = isRedesignOnlyApi ? DeferredNativeCommitmentsView : DeferredCommitmentsView
   const renderActiveView = () => {
@@ -3005,6 +3026,7 @@ export function ChallengeEntityAnalysisPage({
               </div>
             ) : null}
 
+            {lineItemsFallback ?? (
             <div className="space-y-3">
               <Card className="rounded-[28px] border-border/50">
                 <CardHeader>
@@ -3185,6 +3207,7 @@ export function ChallengeEntityAnalysisPage({
                 </CardContent>
               </Card>
             </div>
+            )}
 
             <DeferredSectionGate
                 className="min-h-[520px] sm:min-h-[540px]"
@@ -3197,7 +3220,7 @@ export function ChallengeEntityAnalysisPage({
                 }
                 onPrefetch={handleCategoryEvolutionPrefetch}
               >
-                <DeferredChallengeEntityCategoryEvolution
+                {lineItemsFallback ?? <DeferredChallengeEntityCategoryEvolution
                   locale={locale}
                   entityCui={entityCui}
                   mainCreditorCui={inferredMainCreditorCui}
@@ -3215,7 +3238,7 @@ export function ChallengeEntityAnalysisPage({
                   accountCategory={evolutionAccountCategory}
                   primary={evolutionPrimary}
                   onStateChange={(patch) => onStateChange(patch)}
-                />
+                />}
               </DeferredSectionGate>
 
             <ChallengeEntitySubordinatesSection
