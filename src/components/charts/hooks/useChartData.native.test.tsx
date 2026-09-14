@@ -35,6 +35,21 @@ describe('native chart coverage', () => {
     expect(convertToTimeSeriesData(map, chart(true)).data.find(p => p.year === 2023)?.b).toBeUndefined()
     expect(convertToAggregatedData(map, chart(true)).data).toEqual([])
   })
+  it('does not zero-fill an absent native point from a sibling series bucket', () => {
+    const map = new Map([
+      ['a', data('a', [])],
+      ['b', { ...data('b', []), data: [{ x: '2023', y: 10 }] }],
+    ])
+    const rows = convertToTimeSeriesData(map, chart()).data
+    expect(rows.find(p => p.year === 2023)?.a).toBeUndefined()
+    expect(rows.find(p => p.year === 2023)?.b.value).toBe(10)
+    expect(rows.find(p => p.year === 2022)?.a.value).toBe(0)
+  })
+  it('treats null coverage metadata like an omitted compatibility field', () => {
+    const a = { ...data('a'), missingPeriods: null }
+    const map = new Map([['a', a], ['b', { ...data('b', []), data: [{ x: '2023', y: 10 }] }]])
+    expect(convertToTimeSeriesData(map, chart()).data.find(p => p.year === 2023)?.a.value).toBe(0)
+  })
   it('preserves compatibility zero filling when coverage metadata is absent', () => {
     const a = data('a'); delete a.missingPeriods
     const map = new Map([['a', a], ['b', { ...data('b', []), data: [{ x: '2023', y: 10 }] }]])

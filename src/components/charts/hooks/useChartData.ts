@@ -471,7 +471,7 @@ export function convertToTimeSeriesData(
             const indexed = indexedSeries.get(seriesId);
             if (indexed?.missing.has(bucketLabel)) return;
             const match = indexed?.points.get(bucketLabel);
-            if (!match && insDependentIds.has(seriesId)) return;
+            if (!match && (insDependentIds.has(seriesId) || seriesData.missingPeriods != null)) return;
             const initialValue = match?.y ?? 0;
             const initialUnit = seriesData.yAxis.unit || "";
 

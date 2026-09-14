@@ -115,6 +115,7 @@ vi.mock('recharts', () => ({
     <div
       data-testid="composed-chart"
       data-points={data?.length}
+      data-values={JSON.stringify(data)}
       onClick={() => onClick?.({ activeLabel: '2024' })}
       onMouseMove={() => onMouseMove?.({ activeLabel: '2023' })}
     >
@@ -592,3 +593,43 @@ describe('EntityFinancialTrends', () => {
     })
   })
 })
+
+
+describe('financial trend availability', () => {
+  const props = { currentYear: 2024, entityName: 'Test', normalizationOptions: createDefaultNormalizationOptions() };
+  it('keeps explicit gaps, preserves real zero and takes labels from all series', () => {
+    render(<EntityFinancialTrends {...props}
+      incomeTrend={createMockTrendSeries('income', {data: [{x:'2024-06',y:0}, {x:'2024-09',y:10}], missingPeriods:['2024-07','2024-08']})}
+      expenseTrend={createMockTrendSeries('expense', {data: [{x:'2024-09',y:5}, {x:'2024-10',y:8}], missingPeriods:['2024-07','2024-08']})}
+    />);
+    expect(JSON.parse(screen.getByTestId('composed-chart').getAttribute('data-values') ?? '[]')).toEqual([
+      {label:'2024-06',income:0,expense:null,balance:null},
+      {label:'2024-07',income:null,expense:null,balance:null},
+      {label:'2024-08',income:null,expense:null,balance:null},
+      {label:'2024-09',income:10,expense:5,balance:null},
+      {label:'2024-10',income:null,expense:8,balance:null},
+    ]);
+    expect(screen.getByRole('status')).toHaveTextContent('Some periods are unavailable');
+  });
+  it('preserves the first point when labels repeat', () => {
+    render(<EntityFinancialTrends {...props}
+      incomeTrend={createMockTrendSeries('income', {
+        data: [{ x: '2024', y: 0 }, { x: '2024', y: 50 }],
+      })}
+    />);
+    expect(JSON.parse(screen.getByTestId('composed-chart').getAttribute('data-values') ?? '[]')).toEqual([
+      { label: '2024', income: 0, expense: null, balance: null },
+    ]);
+  });
+  it('updates when only coverage changes and shows a notice for an all-gap series', () => {
+    const series=createMockTrendSeries('income', {data:[{x:'2024',y:0}],missingPeriods:[]});
+    const {rerender}=render(<EntityFinancialTrends {...props} incomeTrend={series}/>);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    rerender(<EntityFinancialTrends {...props} incomeTrend={{...series, missingPeriods:['2024']}}/>);
+    expect(screen.getByRole('status')).toHaveTextContent('Some periods are unavailable');
+    expect(screen.getByTestId('composed-chart').getAttribute('data-values')).toContain('"income":null');
+    rerender(<EntityFinancialTrends {...props} incomeTrend={{...series,data:[], missingPeriods:['2024']}}/>);
+    expect(screen.getByRole('status')).toHaveTextContent('Some periods are unavailable');
+    expect(screen.queryByTestId('composed-chart')).not.toBeInTheDocument();
+  });
+});

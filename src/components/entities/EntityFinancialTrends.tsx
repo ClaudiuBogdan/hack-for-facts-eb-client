@@ -30,6 +30,7 @@ import { formatNumber, getNormalizationUnit } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { NormalizationModeSelect } from '@/components/normalization/normalization-mode-select';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { ChartCoverageNotice } from '@/components/charts/components/chart-coverage-notice';
 
 /**
  * Given the merged chart data and the currently-selected year, return the Set
@@ -141,24 +142,33 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
   const trendsAvailable = incomeTrend?.data.length || expenseTrend?.data.length || balanceTrend?.data.length;
 
   const mergedData = useMemo(() => {
-    const baseSeries = (incomeTrend?.data?.length ? incomeTrend : (expenseTrend?.data?.length ? expenseTrend : balanceTrend))?.data ?? [];
-    const labels = baseSeries.map(p => String(p.x));
-    const getValue = (series: AnalyticsSeries | null | undefined, label: string): number => {
-      const point = series?.data.find(p => String(p.x) === label);
-      return point?.y ?? 0;
+    const indexed = [incomeTrend, expenseTrend, balanceTrend].map(series => {
+      const points = new Map<string, number | null>();
+      for (const point of series?.data ?? []) {
+        const label = String(point.x);
+        if (!points.has(label)) points.set(label, point.y);
+      }
+      return { points, missing: new Set(series?.missingPeriods ?? []) };
+    });
+    const labels = [...new Set(indexed.flatMap(series => [
+      ...series.points.keys(), ...series.missing,
+    ]))].sort();
+    const getValue = (index: number, label: string): number | null => {
+      const series = indexed[index];
+      return series?.missing.has(label) ? null : series?.points.get(label) ?? null;
     };
     return labels.map(label => ({
       label,
-      expense: getValue(expenseTrend, label),
-      income: getValue(incomeTrend, label),
-      balance: getValue(balanceTrend, label),
+      income: getValue(0, label),
+      expense: getValue(1, label),
+      balance: getValue(2, label),
     }));
   }, [incomeTrend, expenseTrend, balanceTrend]);
 
   const yAxisWidth = useMemo(() => {
     if (!mergedData.length) return 40
     const allValues = mergedData.flatMap((d) => [d.income, d.expense, d.balance])
-    const maxAbsValue = Math.max(...allValues.map(Math.abs))
+    const maxAbsValue = allValues.reduce<number>((max, value) => value === null ? max : Math.max(max, Math.abs(value)), 0)
     const longestLabel = formatNumber(maxAbsValue, 'compact')
     const charCount = Math.max(longestLabel.length, unit.length)
     // ~7px per character at fontSize 12, plus 6px padding
@@ -269,7 +279,8 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
         const x = Number(props.x ?? 0)
         const y = Number(props.y ?? 0)
         const index = Number(props.index ?? 0)
-        const value = props.value ?? 0
+        const value = props.value
+        if (value === null || value === undefined) return null
 
         if (!showUnit && !labelIndices.has(index)) return null
 
@@ -350,6 +361,11 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
         </div>
       </CardHeader>
       <CardContent className="pt-6">
+        <ChartCoverageNotice dataSeriesMap={new Map(
+          [incomeTrend, expenseTrend, balanceTrend]
+            .filter((series): series is AnalyticsSeries => series != null)
+            .map(series => [series.seriesId, series]),
+        )} />
         {!trendsAvailable ? (
           <p className="text-center text-slate-500 dark:text-slate-400 py-4"><Trans>No data available to display financial evolution.</Trans></p>
         ) : (
@@ -424,6 +440,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
               <Line
                 type="monotone"
                 dataKey="balance"
+                connectNulls={false}
                 name={t`Balance`}
                 stroke="#6366f1"
                 isAnimationActive={shouldAnimate}
@@ -445,13 +462,14 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
 function areSeriesEqual(a?: AnalyticsSeries | null, b?: AnalyticsSeries | null): boolean {
   if (!a && !b) return true
   if (!a || !b) return false
+  if (JSON.stringify(a.missingPeriods ?? []) !== JSON.stringify(b.missingPeriods ?? [])) return false
   const ad = a.data || []
   const bd = b.data || []
   if (ad.length !== bd.length) return false
   for (let i = 0; i < ad.length; i++) {
       const ap = ad[i] as { x: string | number; y: number | null }
       const bp = bd[i] as { x: string | number; y: number | null }
-    if (String(ap.x) !== String(bp.x) || Number(ap.y) !== Number(bp.y)) return false
+    if (String(ap.x) !== String(bp.x) || ap.y !== bp.y) return false
   }
   return true
 }
