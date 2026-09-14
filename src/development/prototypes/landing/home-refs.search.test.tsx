@@ -490,22 +490,31 @@ describe('LandingSearch', () => {
       const { user, input } = setup()
       await typeAndWait(user, 'Iasi')
 
+      // The field is the group around the input, not the input: chips sit
+      // inside the border, so the border belongs to what contains both. Base
+      // UI anchors the popup to the group and puts the open/side state on it.
+      const field = input.closest('[role="group"]')
+      expect(field).not.toBeNull()
+      const fieldClass = field?.className ?? ''
+
       // Focus looks the same whether the results are showing or not. This is
       // the assertion, not a detail of it: an indicator that appears on focus
       // and vanishes when the reader types tells them focus moved when it did
       // not, and that is worse than the colour problem it was introduced to
-      // fix. Same border, same lift, under `focus:` and under
-      // `data-popup-open:` alike.
-      for (const state of ['focus:', 'data-popup-open:']) {
-        expect(input.className).toContain(`${state}border-foreground/55`)
-        expect(input.className).toContain(`${state}shadow-lg`)
+      // fix. Same border, same lift, under `focus-within:` and under
+      // `data-popup-open:` alike — `focus-within` because the caret may be in
+      // the input or on a chip's remove button, and the field is focused
+      // either way.
+      for (const state of ['focus-within:', 'data-popup-open:']) {
+        expect(fieldClass).toContain(`${state}border-foreground/55`)
+        expect(fieldClass).toContain(`${state}shadow-lg`)
       }
 
-      // Neutral, not the app's focus blue, and the shadcn ring suppressed with
-      // it — the ring is a box-shadow, so it outlines the field alone and
-      // cannot follow the join.
-      expect(input.className).not.toContain('focus:border-ring')
-      expect(input.className).toContain('focus-visible:ring-0')
+      // Neutral, not the app's focus blue. The input itself draws nothing —
+      // no border, no ring — or the two outlines would fight at the seam.
+      expect(fieldClass).not.toContain('border-ring')
+      expect(input.className).toContain('outline-hidden')
+      expect(input.className).not.toContain('border')
 
       const popup = screen.getByRole('listbox').closest('[class*="max-h-"]')
       expect(popup?.className).toContain('border-foreground/55')
@@ -515,8 +524,8 @@ describe('LandingSearch', () => {
       // header is the single line between the query and the answers. Two rules
       // 45px apart around a tinted strip boxes the field off as its own object
       // again, which is the opposite of the point.
-      expect(input.className).toContain('data-popup-open:data-[popup-side=bottom]:border-b-0')
-      expect(input.className).toContain('data-popup-open:data-[popup-side=top]:border-t-0')
+      expect(fieldClass).toContain('data-popup-open:data-[popup-side=bottom]:border-b-0')
+      expect(fieldClass).toContain('data-popup-open:data-[popup-side=top]:border-t-0')
 
       // Both sides, because Base UI flips when the room below runs out and a
       // join that assumes "below" inverts instead of moving: wrong corners
@@ -524,12 +533,184 @@ describe('LandingSearch', () => {
       // was tried first and was worse — with the field near the bottom edge the
       // panel went entirely off-screen, zero rows reachable where the floating
       // version flipped and showed all five.
-      expect(input.className).toContain('data-[popup-side=bottom]:rounded-b-none')
-      expect(input.className).toContain('data-[popup-side=top]:rounded-t-none')
+      expect(fieldClass).toContain('data-[popup-side=bottom]:rounded-b-none')
+      expect(fieldClass).toContain('data-[popup-side=top]:rounded-t-none')
       expect(popup?.className).toContain('data-[side=bottom]:rounded-t-none')
       expect(popup?.className).toContain('data-[side=bottom]:border-t-0')
       expect(popup?.className).toContain('data-[side=top]:rounded-b-none')
       expect(popup?.className).toContain('data-[side=top]:border-b-0')
+
+      // The group carries the state the styles key off. Open now, below.
+      expect(field).toHaveAttribute('data-popup-open')
+    })
+  })
+
+  describe('keyboard focus', () => {
+    it('rings the field when focus arrives by Tab, and not when it arrives by click', async () => {
+      const { user, input } = setup()
+      const field = input.closest('[role="group"]') as HTMLElement
+
+      await user.click(input)
+      expect(input).toHaveFocus()
+      expect(field.className).not.toContain('outline-ring')
+
+      await user.click(document.body)
+      await user.tab()
+      expect(input).toHaveFocus()
+      expect(field.className).toContain('outline-ring')
+
+      await user.tab()
+      expect(field.className).not.toContain('outline-ring')
+    })
+  })
+
+  describe('filter chips', () => {
+    const DEDEMAN: EntitySearchHit = {
+      ...IASI, id: 'company:2816464', title: 'DEDEMAN SRL', docType: 'company',
+      href: '/companies/2816464', identifiers: ['2816464'], countyName: 'Bacău',
+      subtitle: 'SRL', roles: ['company'],
+    }
+    const UAT_CLUJ: EntitySearchHit = { ...CLUJ, subtitle: 'uat, uat_municipality' }
+    const COURT_CLUJ: EntitySearchHit = {
+      ...IASI, id: 'organization:1', title: 'Tribunalul Cluj', href: '/entities/1',
+      identifiers: ['1'], countyName: 'Cluj', subtitle: 'public_entity, admin_court',
+    }
+
+    async function typeUntilSuggested(user: ReturnType<typeof userEvent.setup>, term: string) {
+      const input = screen.getByRole('combobox')
+      await user.click(input)
+      await user.type(input, term)
+      await waitFor(() => expect(screen.getByRole('option', { name: /filtru/i })).toBeInTheDocument())
+      return input
+    }
+
+    it('offers a filter as the first option when the text names a kind', async () => {
+      searchEntities.mockResolvedValue(response([DEDEMAN, IASI]))
+      const { user } = setup()
+      await typeUntilSuggested(user, 'firma dedeman')
+      await waitFor(() => expect(screen.getAllByRole('option').length).toBeGreaterThan(1))
+
+      const options = screen.getAllByRole('option')
+      expect(options[0]).toHaveTextContent('Firme')
+      expect(options[0]).toHaveTextContent('Filtru')
+      // The suggestion is not a link; the results still are.
+      expect(options[0].tagName).not.toBe('A')
+      expect(options[1].tagName).toBe('A')
+    })
+
+    it('turns the word into a chip on click, lifts it from the text, and narrows the rows', async () => {
+      searchEntities.mockResolvedValue(response([DEDEMAN, IASI]))
+      const { user } = setup()
+      const input = await typeUntilSuggested(user, 'firma dedeman')
+
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+
+      // The chip is in the field, with its own remove button; the word is gone.
+      expect(screen.getByLabelText('Elimină filtrul Firme')).toBeInTheDocument()
+      expect(input).toHaveValue('dedeman')
+      expect(input).toHaveFocus()
+      // Focus came back by way of a mouse press, so no keyboard ring.
+      expect(input.closest('[role="group"]')?.className).not.toContain('outline-ring')
+      // The list stays open — the chip has just changed what it shows.
+      await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
+      expect(screen.getAllByRole('option')[0]).toHaveAttribute('href', '/companies/2816464')
+      // The header names the scope.
+      expect(screen.getByText('Firme', { selector: '.font-mono' })).toBeInTheDocument()
+      // The chip is not sent: the request is the same one, for the remaining text.
+      expect(searchEntities).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: 'dedeman' }), expect.any(AbortSignal),
+      )
+      expect(searchEntities.mock.calls.every(([input]) => !('roles' in (input as object)))).toBe(true)
+    })
+
+    it('accepts a suggestion from the keyboard with ArrowDown and Enter', async () => {
+      searchEntities.mockResolvedValue(response([UAT_CLUJ, COURT_CLUJ]))
+      const { user } = setup()
+      const input = await typeUntilSuggested(user, 'primaria cluj')
+
+      await user.keyboard('{ArrowDown}{Enter}')
+
+      expect(screen.getByLabelText('Elimină filtrul Primării')).toBeInTheDocument()
+      // The word stays for Primării — it is what finds the municipality.
+      expect(input).toHaveValue('primaria cluj')
+      expect(navigate).not.toHaveBeenCalled()
+      // Primării keeps the UAT and drops the court, reading the palette's line.
+      await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
+      expect(screen.getAllByRole('option')[0]).toHaveTextContent('Cluj-Napoca')
+    })
+
+    it('says when a chip has narrowed the page to nothing, rather than claiming no match', async () => {
+      searchEntities.mockResolvedValue(response([IASI, CLUJ]))
+      const { user } = setup()
+      await typeUntilSuggested(user, 'firma iasi')
+
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+
+      await waitFor(() => expect(screen.getByText(/printre primele rezultate/i)).toBeInTheDocument())
+      expect(screen.queryByText(/Niciun rezultat pentru/i)).not.toBeInTheDocument()
+    })
+
+    it('asks for a name when only a chip is left', async () => {
+      const { user } = setup()
+      const input = await typeUntilSuggested(user, 'firma')
+
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+
+      expect(input).toHaveValue('')
+      // Drawn in the panel and announced in the live region — both audiences.
+      expect(screen.getAllByText(/scrie un nume/i)).toHaveLength(2)
+      // Nothing to search for: no request went out for the bare chip.
+      expect(searchEntities).not.toHaveBeenCalled()
+    })
+
+    it('removes the last chip with Backspace on an empty field, and from its own button', async () => {
+      const { user } = setup()
+      const input = await typeUntilSuggested(user, 'firma')
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+      expect(screen.getByLabelText('Elimină filtrul Firme')).toBeInTheDocument()
+
+      await user.keyboard('{Backspace}')
+      expect(screen.queryByLabelText('Elimină filtrul Firme')).not.toBeInTheDocument()
+
+      await user.type(input, 'ong')
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+      await user.click(screen.getByLabelText('Elimină filtrul ONG-uri'))
+      expect(screen.queryByLabelText(/Elimină filtrul/)).not.toBeInTheDocument()
+      expect(input).toHaveFocus()
+    })
+
+    it('clears the chips with the text, from the clear button and from the second Escape', async () => {
+      const { user } = setup()
+      const input = await typeUntilSuggested(user, 'firma dedeman')
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+
+      await user.click(screen.getByLabelText(/[Șș]terge/u))
+      expect(screen.queryByLabelText(/Elimină filtrul/)).not.toBeInTheDocument()
+      expect(input).toHaveValue('')
+
+      await user.type(input, 'firma dedeman')
+      await user.click(await screen.findByRole('option', { name: /filtru/i }))
+      await user.keyboard('{Escape}{Escape}')
+      expect(screen.queryByLabelText(/Elimină filtrul/)).not.toBeInTheDocument()
+      expect(input).toHaveValue('')
+    })
+
+    it('does not offer a filter that is already on', async () => {
+      const { user } = setup()
+      const input = await typeUntilSuggested(user, 'firma')
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+
+      await user.type(input, 'firma')
+      expect(screen.queryByRole('option', { name: /filtru/i })).not.toBeInTheDocument()
+    })
+
+    it('tells a screen reader that a filter is on offer', async () => {
+      const { user } = setup()
+      await typeUntilSuggested(user, 'firma dedeman')
+
+      await waitFor(() =>
+        expect(document.querySelector('[aria-live="polite"]')).toHaveTextContent('Un filtru sugerat'),
+      )
     })
   })
 

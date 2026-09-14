@@ -5,14 +5,25 @@ import { Analytics } from '@/lib/analytics'
 import { searchEntitiesLive } from '@/features/entity-search/api/entity-search-api.live'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import type { EntitySearchHit } from '@/schemas/entity-search'
+import { absorbTriggers, narrowHits, suggestFilters } from './home-refs.search-filters'
+import type { SearchFilter } from './home-refs.search-filters'
 
 export type SearchStatus =
   | { readonly kind: 'idle' }
+  /** Chips and nothing typed. The server answers a blank query with nothing, so the field asks for a name. */
+  | { readonly kind: 'scoped' }
   | { readonly kind: 'short'; readonly remaining: number }
   | { readonly kind: 'pending' }
   | { readonly kind: 'loading' }
   | { readonly kind: 'results'; readonly results: readonly EntitySearchHit[]; readonly stale: boolean }
-  | { readonly kind: 'empty'; readonly term: string }
+  /**
+   * `narrowed` is true when the server did return rows and every one of them
+   * was removed by a chip. The two are different messages: "nothing matches"
+   * versus "nothing of this kind among what came back" — and the second has to
+   * be said, because a chip is applied to the first page only (see
+   * `home-refs.search-filters.ts`).
+   */
+  | { readonly kind: 'empty'; readonly term: string; readonly narrowed: boolean }
   | { readonly kind: 'error' }
 
 export const MIN_QUERY_CHARS = 3
@@ -29,9 +40,13 @@ export function useSearchResults({
   debounceMs = SEARCH_DEBOUNCE_MS,
 }: { readonly debounceMs?: number } = {}) {
   const [term, setTerm] = useState('')
+  const [filters, setFilters] = useState<readonly SearchFilter[]>([])
   const trimmed = term.trim()
   const normalized = useDebouncedValue(trimmed, debounceMs)
   const isQueryable = normalized.length >= MIN_QUERY_CHARS
+  // The request carries the query and the landing's fixed scope only. Chips are
+  // not sent — see the module comment in `home-refs.search-filters.ts` — so the
+  // key is the term alone and adding or removing a chip never refetches.
   const { data, isError, isFetching, isPlaceholderData, isSuccess } = useQuery({
     queryKey: ['landingUniversalSearch', normalized],
     queryFn: async ({ signal }) => {
@@ -47,17 +62,40 @@ export function useSearchResults({
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   })
-  const results = useMemo(() => data ?? [], [data])
+  const served = useMemo(() => data ?? [], [data])
+  const results = useMemo(() => narrowHits(served, filters), [served, filters])
   const isCurrent = isQueryable && normalized === trimmed && isSuccess && !isPlaceholderData && !isFetching
 
   const status: SearchStatus = useMemo(() => {
-    if (!trimmed) return { kind: 'idle' }
+    if (!trimmed) return filters.length > 0 ? { kind: 'scoped' } : { kind: 'idle' }
     if (trimmed.length < MIN_QUERY_CHARS) return { kind: 'short', remaining: MIN_QUERY_CHARS - trimmed.length }
     if (isError && normalized === trimmed) return { kind: 'error' }
     if (results.length) return { kind: 'results', results, stale: !isCurrent }
-    if (isCurrent) return { kind: 'empty', term: trimmed }
+    if (isCurrent) return { kind: 'empty', term: trimmed, narrowed: served.length > 0 }
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
-  }, [trimmed, normalized, isError, isFetching, results, isCurrent])
+  }, [trimmed, normalized, isError, isFetching, results, served, isCurrent, filters])
+
+  const suggestions = useMemo(() => suggestFilters(term, filters), [term, filters])
+
+  /**
+   * Accepting a suggestion: the chip goes on, and the word that earned it
+   * comes out of the text. Both in one step, so there is never a render in
+   * which `firma` is a chip and a word at once.
+   */
+  const addFilter = useCallback((filter: SearchFilter) => {
+    setFilters((current) => (current.some((f) => f.id === filter.id) ? current : [...current, filter]))
+    setTerm((current) => absorbTriggers(current, filter))
+  }, [])
+
+  const removeFilter = useCallback((filter: SearchFilter) => {
+    setFilters((current) => current.filter((f) => f.id !== filter.id))
+  }, [])
+
+  /** The whole field: text and chips together. Escape's second stage and the clear button. */
+  const reset = useCallback(() => {
+    setTerm('')
+    setFilters([])
+  }, [])
 
   const searchedRef = useRef('')
   useEffect(() => {
@@ -67,10 +105,11 @@ export function useSearchResults({
       query_len: normalized.length,
       results_count: results.length,
       has_results: results.length > 0,
+      filter_count: filters.length,
     })
-  }, [isCurrent, normalized, results])
+  }, [isCurrent, normalized, results, filters])
 
-  return { term, setTerm, status, results, isCurrent }
+  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent }
 }
 
 export function useEntitySelection({

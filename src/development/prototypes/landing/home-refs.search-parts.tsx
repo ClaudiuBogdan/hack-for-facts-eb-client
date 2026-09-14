@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { getDocTypeMeta } from '@/features/entity-search/lib/doc-type-meta'
 import { highlightSegments } from './home-refs.search-highlight'
+import type { SearchFilter } from './home-refs.search-filters'
 import type { SearchStatus } from './home-refs.search-state'
 
 /**
@@ -127,6 +129,99 @@ export function ResultRowContent({
   )
 }
 
+/**
+ * The pill a filter is drawn as, in the field and in its suggestion row alike.
+ *
+ * One element for both places on purpose: the suggestion shows the reader the
+ * exact object that will appear in the field if they accept it, so accepting
+ * reads as the pill moving up rather than as one thing turning into another.
+ */
+export function FilterPill({
+  filter,
+  className,
+  children,
+}: {
+  readonly filter: SearchFilter
+  readonly className?: string
+  readonly children?: React.ReactNode
+}) {
+  const Icon = filter.Icon
+  return (
+    <span
+      className={cn(
+        'inline-flex h-7 shrink-0 items-center gap-1.5 rounded-sm bg-muted pl-2 text-xs font-medium text-foreground',
+        children ? 'pr-0.5' : 'pr-2',
+        className,
+      )}
+    >
+      <Icon aria-hidden="true" className="size-3.5 text-muted-foreground" />
+      <span className="whitespace-nowrap">{filter.label}</span>
+      {children}
+    </span>
+  )
+}
+
+/**
+ * A filter the reader has applied, sitting in the field before the text.
+ *
+ * The remove button is a real button with a real name, not a decorated `×` on
+ * the pill: a pill that removes itself when clicked anywhere is a pill nobody
+ * can click to check what it says. Backspace on an empty field removes the last
+ * one as well, which is the faster path; this is the discoverable one.
+ */
+export function FilterChip({
+  filter,
+  onRemove,
+}: {
+  readonly filter: SearchFilter
+  /** The click is passed on so the caller can tell a pointer from a key. */
+  readonly onRemove: (filter: SearchFilter, event: React.MouseEvent<HTMLButtonElement>) => void
+}) {
+  return (
+    <FilterPill filter={filter}>
+      <button
+        type="button"
+        aria-label={`Elimină filtrul ${filter.label}`}
+        onClick={(event) => {
+          // The group around the field focuses the input on any press inside
+          // it; this press is for the chip, and the input is focused explicitly
+          // afterwards so focus does not land on a button that has just gone.
+          event.stopPropagation()
+          onRemove(filter, event)
+        }}
+        // 24px drawn, 44px hit — the same treatment as the clear button, and
+        // for the same reason: WCAG 2.2's floor is 24, a thumb wants 44.
+        className="relative flex size-6 items-center justify-center rounded-sm text-muted-foreground transition-colors after:absolute after:-inset-2.5 after:content-[''] hover:bg-foreground/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <X className="size-3" />
+      </button>
+    </FilterPill>
+  )
+}
+
+/**
+ * What goes inside a suggestion row.
+ *
+ * The pill first, then the hint saying what it keeps — the same two-tier grid
+ * as a result row, so the suggestion group and the results read as one list
+ * that happens to open with filters. The right column says what the row *is*,
+ * where a result row shows an identifier; a reader scanning the column sees at
+ * once where the filters stop and the entities begin.
+ */
+export function FilterSuggestionContent({ filter }: { readonly filter: SearchFilter }) {
+  return (
+    <>
+      <span className="flex min-w-0 items-center gap-2.5">
+        <FilterPill filter={filter} className="group-data-highlighted:bg-background" />
+        <span className="truncate text-xs text-muted-foreground">{filter.hint}</span>
+      </span>
+      <span className="shrink-0 font-mono text-[0.625rem] uppercase tracking-wide text-muted-foreground/55">
+        Filtru
+      </span>
+    </>
+  )
+}
+
 /** A quiet single line, for every state that is not a list. */
 export function Message({ children }: { readonly children: React.ReactNode }) {
   return <p className="px-4 py-6 text-center text-sm text-muted-foreground">{children}</p>
@@ -207,15 +302,24 @@ export function shortHint(remaining: number) {
 }
 
 /** What a screen reader is told when the list changes. Kept out of the visual. */
-export function announcement(status: SearchStatus) {
+export function announcement(status: SearchStatus, suggestionCount = 0) {
+  const suggested = suggestionCount === 0
+    ? ''
+    : suggestionCount === 1
+      ? ' Un filtru sugerat.'
+      : ` ${suggestionCount} filtre sugerate.`
   switch (status.kind) {
     case 'results': {
       if (status.stale) return 'Se actualizează rezultatele.'
       const count = `${status.results.length} ${status.results.length === 1 ? 'rezultat' : 'rezultate'}.`
-      return count
+      return count + suggested
     }
+    case 'scoped':
+      return 'Scrie un nume pentru a căuta.'
+    case 'short':
+      return suggested.trim()
     case 'empty':
-      return 'Niciun rezultat.'
+      return (status.narrowed ? 'Niciun rezultat de acest tip.' : 'Niciun rezultat.') + suggested
     case 'error':
       return 'Căutarea nu a răspuns.'
     case 'loading':

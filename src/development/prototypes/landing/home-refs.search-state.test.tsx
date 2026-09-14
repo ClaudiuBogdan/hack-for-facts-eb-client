@@ -78,7 +78,7 @@ describe('landing universal search', () => {
     searchEntities.mockResolvedValue(response([]))
     const { result } = setup()
     await search(result)
-    expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante' })
+    expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante', narrowed: false })
     searchEntities.mockResolvedValue({ hits: [], degraded: true })
     act(() => result.current.setTerm('Sibiu'))
     await waitFor(() => expect(result.current.status.kind).toBe('error'))
@@ -102,6 +102,43 @@ describe('landing universal search', () => {
     rerender({ debounceMs: 0 })
     await waitFor(() => expect(result.current.status.kind).toBe('error'))
     expect(result.current.isCurrent).toBe(false)
+  })
+  it('applies a chip to the page it has, and never sends it', async () => {
+    const uat = { ...COMPANY, id: 'organization:4305857', docType: 'organization', href: '/entities/4305857', subtitle: 'uat, uat_municipality' }
+    searchEntities.mockResolvedValue(response([uat, COMPANY]))
+    const { result } = setup()
+    await search(result, 'primaria cluj')
+    expect(result.current.suggestions.map((f) => f.id)).toEqual(['uat'])
+    act(() => result.current.addFilter(result.current.suggestions[0]))
+    // Primării keeps its word: the palette's synonym on it is what finds the municipality.
+    expect(result.current.term).toBe('primaria cluj')
+    expect(result.current.filters.map((f) => f.id)).toEqual(['uat'])
+    expect(result.current.suggestions).toEqual([])
+    await waitFor(() => expect(result.current.status).toEqual({ kind: 'results', results: [uat], stale: false }))
+    // The request is the text alone: same fixed scope, no docTypes for the chip, no roles.
+    for (const [input] of searchEntities.mock.calls) {
+      expect(input).toEqual({ q: expect.any(String), docTypes: LANDING_SEARCH_TYPES, limit: 8 })
+    }
+    act(() => result.current.removeFilter(result.current.filters[0]))
+    expect(result.current.status).toEqual({ kind: 'results', results: [uat, COMPANY], stale: false })
+  })
+  it('distinguishes a page narrowed to nothing from a page with nothing on it', async () => {
+    const { result } = setup()
+    await search(result, 'pnrr dante')
+    act(() => result.current.addFilter(result.current.suggestions[0]))
+    // The company carries no PNRR role, so the page is narrowed to nothing — and says so.
+    await waitFor(() => expect(result.current.status).toEqual({ kind: 'empty', term: 'dante', narrowed: true }))
+    act(() => result.current.reset())
+    expect(result.current.status).toEqual({ kind: 'idle' })
+    expect(result.current.filters).toEqual([])
+  })
+  it('asks for a name when a chip is on and the text is empty', async () => {
+    const { result } = setup(10_000)
+    act(() => result.current.setTerm('firma'))
+    act(() => result.current.addFilter(result.current.suggestions[0]))
+    expect(result.current.term).toBe('')
+    expect(result.current.status).toEqual({ kind: 'scoped' })
+    expect(searchEntities).not.toHaveBeenCalled()
   })
   it('aborts an in-flight request on unmount', async () => {
     searchEntities.mockImplementation(() => new Promise(() => {}))
