@@ -31,58 +31,13 @@ import { Trans } from "@lingui/react/macro";
 import { PeriodFilter } from './period-filter/PeriodFilter'
 import { ReportPeriodInput } from '@/schemas/reporting'
 import { getPeriodTags } from '@/lib/period-utils';
-import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
-import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted'
 import { getEconomicPrefixLabel, getFunctionalPrefixLabel } from '@/lib/chart-filter-utils'
 import { NormalizationModeSelect } from '@/components/normalization/normalization-mode-select'
 import { getNormalizationUnit } from '@/lib/utils'
-import type { AnalyticsFilterType } from '@/schemas/charts'
+import type { AnalyticsFilterType, Currency } from '@/schemas/charts'
 
-export function EntityAnalyticsFilter() {
+export function EntityAnalyticsFilter({ currency = 'RON', normalization }: { readonly currency?: Currency; readonly normalization?: AnalyticsFilterType['normalization'] }) {
   const { filter, setFilter, resetFilter, view, setView } = useEntityAnalyticsFilter()
-  const [userCurrency, setUserCurrency] = useUserCurrency()
-  const [userInflationAdjusted, setUserInflationAdjusted] = useUserInflationAdjusted()
-
-  useEffect(() => {
-    const urlCurrency = filter.currency
-    const urlInflationAdjusted = filter.inflation_adjusted
-    const normalizationRaw = filter.normalization
-
-    const nextFilterPatch: Partial<AnalyticsFilterType> = {}
-    let shouldPatchFilter = false
-
-    if (urlCurrency !== undefined) {
-      if (urlCurrency !== userCurrency) setUserCurrency(urlCurrency)
-      nextFilterPatch.currency = undefined
-      shouldPatchFilter = true
-    }
-
-    if (urlInflationAdjusted !== undefined) {
-      if (Boolean(urlInflationAdjusted) !== Boolean(userInflationAdjusted)) {
-        setUserInflationAdjusted(Boolean(urlInflationAdjusted))
-      }
-      nextFilterPatch.inflation_adjusted = undefined
-      shouldPatchFilter = true
-    }
-
-    if (normalizationRaw === 'total_euro' || normalizationRaw === 'per_capita_euro') {
-      if (userCurrency !== 'EUR') setUserCurrency('EUR')
-      nextFilterPatch.normalization = normalizationRaw === 'total_euro' ? 'total' : 'per_capita'
-      shouldPatchFilter = true
-    }
-
-    if (shouldPatchFilter) setFilter(nextFilterPatch)
-  }, [
-    filter.currency,
-    filter.inflation_adjusted,
-    filter.normalization,
-    setFilter,
-    setUserCurrency,
-    setUserInflationAdjusted,
-    userCurrency,
-    userInflationAdjusted,
-  ]);
-
   // Label stores (cache + API-backed)
   const entityLabelsStore = useEntityLabel((filter.entity_cuis ?? []) as string[])
   const uatLabelsStore = useUatLabel((filter.uat_ids ?? []).map((id) => String(id)))
@@ -229,7 +184,7 @@ export function EntityAnalyticsFilter() {
   }
 
   const updateAccountCategory = (accountCategory: 'ch' | 'vn') => setFilter({ account_category: accountCategory })
-  const updateNormalization = (normalization: AnalyticsFilterType['normalization']) => setFilter({ normalization })
+  const updateNormalization = (normalization: AnalyticsFilterType['normalization']) => setFilter({ normalization, currency })
   const updateMinAmount = (minAmount: string | undefined) => setFilter({ aggregate_min_amount: minAmount ? Number(minAmount) : undefined })
   const updateMaxAmount = (maxAmount: string | undefined) => setFilter({ aggregate_max_amount: maxAmount ? Number(maxAmount) : undefined })
   const updateMinPopulation = (min: string | undefined) => setFilter({ min_population: min ? Number(min) : undefined })
@@ -239,8 +194,8 @@ export function EntityAnalyticsFilter() {
   const setIsTerritorialExecutive = (value: boolean | undefined) => setFilter({ is_territorial_executive: value })
 
   const amountUnit = useMemo(
-    () => getNormalizationUnit({ normalization: filter.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: userCurrency as 'RON' | 'EUR' | 'USD' }),
-    [filter.normalization, userCurrency],
+    () => getNormalizationUnit({ normalization: filter.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: currency as 'RON' | 'EUR' | 'USD' }),
+    [filter.normalization, currency],
   )
 
   // ============================================================================
@@ -488,7 +443,7 @@ export function EntityAnalyticsFilter() {
                         <Trans>Normalization</Trans>
                     </h4>
           <NormalizationModeSelect
-            value={filter.normalization}
+            value={normalization ?? filter.normalization}
             allowPerCapita
             onChange={updateNormalization}
             triggerClassName="w-full"

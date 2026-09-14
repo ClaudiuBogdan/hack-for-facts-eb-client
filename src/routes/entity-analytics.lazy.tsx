@@ -1,6 +1,6 @@
 import { populationMethodologyReference } from '@/lib/population-methodology';
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { useMemo, useState, useEffect, useCallback } from 'react'
+import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { EntityAnalyticsFilter as EntityAnalyticsFilterPanel } from '@/components/filters/EntityAnalyticsFilter'
 import { useEntityAnalyticsFilter } from '@/hooks/useEntityAnalyticsFilter'
@@ -25,7 +25,7 @@ import { t } from '@lingui/core/macro'
 import { FloatingQuickNav } from '@/components/ui/FloatingQuickNav'
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted'
-import type { Currency, Normalization } from '@/schemas/charts'
+import { resolveEntityAnalyticsFilter, entityAnalyticsQueryOptions } from '@/lib/entity-analytics-query'
 
 export const Route = createLazyFileRoute('/entity-analytics')({
   component: EntityAnalyticsPage,
@@ -37,37 +37,13 @@ function EntityAnalyticsPage() {
   const [lineItemsGroupBy, setLineItemsGroupBy] = useState<'fn' | 'ec'>(
     filter.account_category === 'vn' ? 'fn' : (treemapPrimary ?? 'fn')
   )
-  const [userCurrency] = useUserCurrency()
-  const [userInflationAdjusted] = useUserInflationAdjusted()
-
-  const effectiveNormalization: Normalization = useMemo(() => {
-    const raw = filter.normalization ?? 'total'
-    if (raw === 'total_euro') return 'total'
-    if (raw === 'per_capita_euro') return 'per_capita'
-    return raw
-  }, [filter.normalization])
-
-  const effectiveCurrency: Currency = useMemo(() => {
-    const rawNormalization = filter.normalization
-    if (rawNormalization === 'total_euro' || rawNormalization === 'per_capita_euro') return 'EUR'
-    return (filter.currency ?? userCurrency) as Currency
-  }, [filter.currency, filter.normalization, userCurrency])
-
-  const effectiveInflationAdjusted = useMemo(() => {
-    if (effectiveNormalization === 'percent_gdp') return false
-    return Boolean(filter.inflation_adjusted ?? userInflationAdjusted)
-  }, [effectiveNormalization, filter.inflation_adjusted, userInflationAdjusted])
-
-  const effectiveFilter: AnalyticsFilterType = useMemo(() => ({
-    ...filter,
-    normalization: effectiveNormalization,
-    currency: effectiveCurrency,
-    inflation_adjusted: effectiveInflationAdjusted,
-  }), [effectiveCurrency, effectiveInflationAdjusted, effectiveNormalization, filter])
-
-  const offset = useMemo(() => (page - 1) * pageSize, [page, pageSize])
-  const filterHash = useMemo(() => generateHash(JSON.stringify(effectiveFilter)), [effectiveFilter])
-  const previousFilterHashRef = useRef<string>(filterHash)
+  const { entityAnalyticsPreferences } = getRouteApi('/entity-analytics').useRouteContext()
+  const [userCurrency] = useUserCurrency(entityAnalyticsPreferences.currency)
+  const [userInflationAdjusted] = useUserInflationAdjusted(entityAnalyticsPreferences.inflationAdjusted)
+  const effectiveFilter = resolveEntityAnalyticsFilter(filter, { currency: userCurrency, inflationAdjusted: userInflationAdjusted })
+  const effectiveCurrency = effectiveFilter.currency!
+  const offset = (page - 1) * pageSize
+  const filterHash = generateHash(JSON.stringify(effectiveFilter))
   const normalizedTreemapPrimary: 'fn' | 'ec' = filter.account_category === 'vn' ? 'fn' : (treemapPrimary ?? 'fn')
 
   const handleActivePrimaryChange = useCallback((primary: 'fn' | 'ec') => {
@@ -91,17 +67,7 @@ function EntityAnalyticsPage() {
   }, [filter.county_codes, filter.entity_types, filter.is_uat, filter.uat_ids])
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['native-entity-analytics', filterHash, sortBy, sortOrder, page, pageSize],
-    queryFn: ({ signal }) =>
-      fetchEntityAnalytics({
-        signal,
-        filter: entityRankingFilter(normalizeFilterForSort(effectiveFilter, sortBy)),
-        sort: sortBy
-          ? { by: mapColumnIdToSortBy(sortBy), order: (normalizeOrder(sortOrder) as 'asc' | 'desc') }
-          : undefined,
-        limit: pageSize,
-        offset,
-      }),
+    ...entityAnalyticsQueryOptions({ filter: effectiveFilter, sortBy, sortOrder, page, pageSize }),
     enabled: view === 'table',
   })
 
@@ -113,14 +79,6 @@ function EntityAnalyticsPage() {
   });
 
   const nodes: readonly EntityAnalyticsDataPoint[] = data?.nodes ?? []
-
-  // Reset page to 1 when filter changes
-  useEffect(() => {
-    if (previousFilterHashRef.current !== filterHash && page !== 1) {
-      setPagination(1, pageSize)
-    }
-    previousFilterHashRef.current = filterHash
-  }, [filterHash, page, pageSize, setPagination])
 
   const { density, setDensity, columnVisibility, setColumnVisibility, columnPinning, setColumnPinning, columnSizing, setColumnSizing, columnOrder, setColumnOrder, currencyFormat, setCurrencyFormat } = useTablePreferences('entity-analytics', {
     columnVisibility: {
@@ -201,7 +159,7 @@ function EntityAnalyticsPage() {
     <div className="container mx-auto py-4 px-2 md:px-6 max-w-full">
       {/* Head handled by Route.head */}
       <EntityAnalyticsLayout
-        filters={<EntityAnalyticsFilterPanel />}
+        filters={<EntityAnalyticsFilterPanel currency={effectiveCurrency} normalization={effectiveFilter.normalization} />}
         subtitle={t`Analyze aggregated values per entity and explore top entities.`}
       >
         <FloatingQuickNav

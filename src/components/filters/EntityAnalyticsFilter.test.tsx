@@ -16,6 +16,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@/test/test-utils'
 import { EntityAnalyticsFilter } from './EntityAnalyticsFilter'
+import type { AnalyticsFilterType } from '@/schemas/charts'
 
 // ============================================================================
 // MOCKS
@@ -60,7 +61,7 @@ vi.mock('@/lib/hooks/useUserInflationAdjusted', () => ({
 const mockSetFilter = vi.fn()
 const mockResetFilter = vi.fn()
 const mockSetView = vi.fn()
-const mockFilter = {
+const mockFilter: Partial<AnalyticsFilterType> = {
   account_category: 'ch' as const,
   normalization: 'total',
 }
@@ -200,7 +201,18 @@ vi.mock('./tag-filter', () => ({
 // ============================================================================
 
 describe('EntityAnalyticsFilter', () => {
+  it('does not rewrite or discard explicit normalization settings on mount', () => {
+    mockFilter.currency = 'EUR'
+    mockFilter.inflation_adjusted = true
+    mockFilter.normalization = 'per_capita_euro'
+    render(<EntityAnalyticsFilter currency="EUR" />)
+    expect(mockSetFilter).not.toHaveBeenCalled()
+  })
+
   beforeEach(() => {
+    delete mockFilter.currency
+    delete mockFilter.inflation_adjusted
+    mockFilter.normalization = 'total'
     vi.clearAllMocks()
   })
 
