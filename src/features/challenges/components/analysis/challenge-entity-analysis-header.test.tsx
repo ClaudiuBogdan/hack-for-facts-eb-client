@@ -152,7 +152,7 @@ describe('ChallengeEntityAnalysisHeader', () => {
       within(compactHeader).getByRole('button', { name: 'Primăria Sibiu' }),
     ).toBeInTheDocument()
     expect(within(compactHeader).getByText('Județul Sibiu')).toBeInTheDocument()
-    expect(within(compactHeader).getByText('134.309 locuitori')).toBeInTheDocument()
+    expect(within(compactHeader).getByText('134.309 inhabitants')).toBeInTheDocument()
     expect(within(compactHeader).getAllByText('2025')).not.toHaveLength(0)
   })
 

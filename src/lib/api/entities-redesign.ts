@@ -1,3 +1,4 @@
+import { AnnualPopulationSchema } from './annual-population';
 import {
   EntityTerritorySchema as TerritorySchema,
   mapEntityTerritory,
@@ -53,6 +54,7 @@ const EntityMetadataResponseSchema = z.object({
   entity: z
     .object({
       cui: z.string(),
+      annualPopulation: AnnualPopulationSchema.nullable().optional(),
       organization: z.object({ name: z.string() }).nullable(),
       territory: TerritorySchema.nullable(),
       reference: z
@@ -101,9 +103,13 @@ const EntityBudgetSeriesResponseSchema = z.object({
 });
 
 const ENTITY_METADATA_QUERY = /* GraphQL */ `
-  query GetEntityMetadata($cui: CUI!) {
+  query GetEntityMetadata($cui: CUI!, $populationYear: Int!) {
     entity(cui: $cui) {
       cui
+      annualPopulation(year: $populationYear) {
+        territoryId year population
+        metadata { sourceYearMin sourceYearMax maxCarryAge carriedCount provisionalCount sourceUrl }
+      }
       organization {
         name
       }
@@ -479,7 +485,7 @@ export async function fetchRedesignEntityDetails(
 ): Promise<EntityDetailsData | null> {
   const metadataRaw = await graphqlQuery<unknown>(
     ENTITY_METADATA_QUERY,
-    { cui: params.cui },
+    { cui: params.cui, populationYear: periodYearBounds(params.reportPeriod).yearTo },
     {
       operationName: "entity-metadata",
       auth: "none",
@@ -496,6 +502,8 @@ export async function fetchRedesignEntityDetails(
         );
   const legacyReportType = toLegacyReportType(reportType);
   const territory = metadata.reference?.territory ?? metadata.territory;
+  const mappedTerritory = mapEntityTerritory(territory);
+  const annualPopulation = metadata.annualPopulation ?? null;
   const base: EntityDetailsData = {
     cui: metadata.cui,
     name:
@@ -505,7 +513,11 @@ export async function fetchRedesignEntityDetails(
     entity_type: metadata.reference?.entityType ?? null,
     is_uat: metadata.reference?.isUat ?? false,
     is_territorial_executive: metadata.reference?.isTerritorialExecutive,
-    uat: mapEntityTerritory(territory),
+    annualPopulation,
+    uat: mappedTerritory === null ? null : {
+      ...mappedTerritory,
+      population: annualPopulation?.population ?? null,
+    },
     totalIncome: null,
     totalExpenses: null,
     budgetBalance: null,

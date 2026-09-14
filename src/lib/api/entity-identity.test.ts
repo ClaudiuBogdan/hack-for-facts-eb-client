@@ -39,6 +39,19 @@ describe("canonical entity identity independent of fiscal reads", () => {
     expect(variables).toEqual({ cui: "123" });
     expect(options).toEqual({ auth: "none", signal });
   });
+  it("uses the selected year's annual value on independent tabs and clears stale population", async () => {
+    const annualPopulation = { territoryId: 1, year: 2021, population: "259084", metadata: null };
+    vi.mocked(graphqlQuery)
+      .mockResolvedValueOnce({ entity: { cui: "123", organization: null, territory: { ...territory, population: 999999 }, annualPopulation } })
+      .mockResolvedValueOnce({ entity: { cui: "123", organization: null, territory: { ...territory, population: 999999 }, annualPopulation: null } });
+    await expect(fetchEntityIdentity("123", undefined, 2021)).resolves.toMatchObject({
+      uat: { population: 259084 }, annualPopulation: { year: 2021, population: 259084 }, is_territorial_executive: true,
+    });
+    expect(vi.mocked(graphqlQuery).mock.calls[0][1]).toEqual({ cui: "123", populationYear: 2021, includePopulation: true });
+    await expect(fetchEntityIdentity("123", undefined, 2016)).resolves.toMatchObject({
+      uat: { population: null }, annualPopulation: null, is_territorial_executive: false,
+    });
+  });
   it("distinguishes missing entity from missing geographic anchor", async () => {
     vi.mocked(graphqlQuery)
       .mockResolvedValueOnce({ entity: null })

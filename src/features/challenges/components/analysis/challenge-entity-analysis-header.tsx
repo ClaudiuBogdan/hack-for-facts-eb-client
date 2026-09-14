@@ -1,6 +1,6 @@
-import { supportsEntityPopulation } from '@/lib/entity-population'
+import { EntityPopulationBadge } from '@/components/entities/entity-population-badge'
 import type { MouseEvent, ReactNode } from 'react'
-import { Calendar, ChevronDown, MapPin, Users } from 'lucide-react'
+import { Calendar, ChevronDown, MapPin } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
-  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'is_uat' | 'is_territorial_executive' | 'uat'>
+  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'is_uat' | 'is_territorial_executive' | 'uat' | 'annualPopulation'>
   readonly reportControlsLabel: string
   readonly renderReportControls: () => ReactNode
   readonly activeView: ChallengeEntityAnalysisView
@@ -80,12 +80,6 @@ export function ChallengeEntityAnalysisHeader({
     ? normalizeDisplayText(countyNameRaw, languageQuery)
     : null
   const displayName = normalizeDisplayText(entity.name, languageQuery)
-  const population =
-    supportsEntityPopulation(entity)
-      ? new Intl.NumberFormat(
-        languageQuery === 'en' ? 'en-US' : 'ro-RO',
-      ).format(entity.uat.population)
-      : null
   const heroHeaderRef = useRef<HTMLElement | null>(null)
   const compactHeaderEnterFrameRef = useRef<number | null>(null)
   const compactHeaderScrollFrameRef = useRef<number | null>(null)
@@ -343,15 +337,7 @@ export function ChallengeEntityAnalysisHeader({
                       {countyName}
                     </Badge>
                   ) : null}
-                  {population ? (
-                    <Badge
-                      variant="outline"
-                      className="gap-1.5 bg-background/80 px-3 py-1 text-[11px] sm:text-xs"
-                    >
-                      <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                      {population} {copy.inhabitants}
-                    </Badge>
-                  ) : null}
+                  <EntityPopulationBadge entity={entity} locale={locale} />
                 </div>
               </div>
             </section>
@@ -382,12 +368,7 @@ export function ChallengeEntityAnalysisHeader({
                 {countyName}
               </Badge>
             ) : null}
-            {population ? (
-              <Badge variant="outline" className="gap-1.5 px-3 py-1">
-                <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                {population} {copy.inhabitants}
-              </Badge>
-            ) : null}
+            <EntityPopulationBadge entity={entity} locale={locale} />
           </div>
 
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex">

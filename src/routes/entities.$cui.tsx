@@ -197,7 +197,7 @@ export const Route = createFileRoute('/entities/$cui')({
     )
 
     if (isRedesignOnlyApiDeployment() && adapter.normalizedSearch.view === 'ins') {
-      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui))
+      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui, adapter.normalizedSearch.year))
       return { entityPageBootstrap, initialSettings: ssrSettings, ssrSettings, forcedOverrides } satisfies EntityRouteLoaderData
     }
 

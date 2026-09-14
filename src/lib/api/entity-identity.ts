@@ -1,3 +1,4 @@
+import { AnnualPopulationSchema } from './annual-population';
 import { z } from "zod";
 import { graphqlQuery } from "@/lib/graphql/graphql-client";
 import type { EntityDetailsData } from "./entities";
@@ -37,9 +38,13 @@ export function mapEntityTerritory(
         county_entity: null,
       };
 }
-const QUERY = `query EntityIdentity($cui: CUI!) {
+const QUERY = `query EntityIdentity($cui: CUI!, $populationYear: Int! = 1, $includePopulation: Boolean! = false) {
   entity(cui: $cui) {
     cui organization { name }
+    annualPopulation(year: $populationYear) @include(if: $includePopulation) {
+      territoryId year population
+      metadata { sourceYearMin sourceYearMax maxCarryAge carriedCount provisionalCount sourceUrl }
+    }
     territory { id level kind territoryKey parentId nutsCode name countyCode countyName sirutaCode population }
   }
 }`;
@@ -47,6 +52,7 @@ const responseSchema = z.object({
   entity: z
     .object({
       cui: z.string(),
+      annualPopulation: AnnualPopulationSchema.nullable().optional(),
       organization: z.object({ name: z.string() }).nullable(),
       territory: EntityTerritorySchema.nullable(),
     })
@@ -57,21 +63,25 @@ const responseSchema = z.object({
 export async function fetchEntityIdentity(
   cui: string,
   signal?: AbortSignal,
-): Promise<Pick<EntityDetailsData, "cui" | "name" | "uat"> | null> {
+  populationYear?: number,
+): Promise<Pick<EntityDetailsData, "cui" | "name" | "uat" | "annualPopulation" | "is_territorial_executive"> | null> {
   if (!/^[0-9]{1,10}$/.test(cui)) throw new RangeError("Invalid entity CUI");
   signal?.throwIfAborted();
   const raw = await graphqlQuery<unknown>(
     QUERY,
-    { cui },
+    { cui, ...(populationYear === undefined ? {} : { populationYear, includePopulation: true }) },
     { auth: "none", signal },
   );
   signal?.throwIfAborted();
   const { entity } = responseSchema.parse(raw);
   if (!entity) return null;
   if (entity.cui !== cui) throw new Error("Entity identity mismatch");
+  const territory = mapEntityTerritory(entity.territory);
+  const annual = entity.annualPopulation ?? null;
   return {
+    ...(populationYear === undefined ? {} : { annualPopulation: annual, is_territorial_executive: annual !== null }),
     cui,
     name: entity.organization?.name ?? cui,
-    uat: mapEntityTerritory(entity.territory),
+    uat: territory === null || populationYear === undefined ? territory : { ...territory, population: annual?.population ?? null },
   };
 }

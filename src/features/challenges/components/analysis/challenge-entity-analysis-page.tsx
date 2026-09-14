@@ -1417,7 +1417,7 @@ export function ChallengeEntityAnalysisPage({
     data: budgetEntityDetailsResult.isPlaceholderData ? undefined : budgetEntityDetailsResult.data,
   }
   const entityIdentityQuery = useQuery({
-    ...entityIdentityQueryOptions(entityCui),
+    ...entityIdentityQueryOptions(entityCui, selectedYear),
     enabled: isIndependentNativeView && /^[0-9]{1,10}$/.test(entityCui),
     // Header controls retain user state; this projection asserts no fiscal report default.
     select: (identity): EntityDetailsData | null => identity === null ? null : {

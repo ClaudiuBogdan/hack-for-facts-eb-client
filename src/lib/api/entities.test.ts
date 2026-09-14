@@ -126,7 +126,7 @@ describe("entities api", () => {
       expect(graphqlQuery).toHaveBeenNthCalledWith(
         1,
         expect.stringContaining("query GetEntityMetadata"),
-        { cui: "123456" },
+        { cui: "123456", populationYear: 2024 },
         expect.objectContaining({ operationName: "entity-metadata" }),
       );
       expect(graphqlQuery).toHaveBeenNthCalledWith(

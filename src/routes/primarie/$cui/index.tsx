@@ -157,7 +157,7 @@ export const Route = createFileRoute('/primarie/$cui/')({
       baseLoaderPayload,
     )
     if (isRedesignOnlyApiDeployment() && normalizedSearch.view === 'ins') {
-      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui))
+      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui, normalizedSearch.year))
       return { entityPageBootstrap: initialEntityPageBootstrap, initialSettings } satisfies PrimarieLoaderData
     }
     const reportPeriod = exactQueryInputs.entityDetails.reportPeriod

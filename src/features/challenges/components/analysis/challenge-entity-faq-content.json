@@ -23,9 +23,9 @@
         "id": "population-2021",
         "question": "Ce populație folosiți în partea de sus a paginii și la calculele per capita?",
         "answerParagraphs": [
-          "Populația din antet este reperul din registrul teritorial, bazat pe populația rezidentă de la Recensământul din 2021.",
-          "Pentru totalurile financiare, graficul principal de evoluție a veniturilor, cheltuielilor și balanței, precum și distribuția cheltuielilor, calculele per capita folosesc populația după domiciliu la 1 ianuarie publicată de INS pentru fiecare an financiar. Anii fără populație verificată rămân indisponibili; nu folosim populația altui an în locul lor.",
-          "Populația rezidentă și populația după domiciliu măsoară lucruri diferite, deci valorile lor pot diferi."
+          "Antetul arată populația folosită pentru anul financiar selectat: populația după domiciliu la 1 ianuarie publicată de INS. Sumele per capita folosesc același tabel anual de populație; valoarea fiecărui an este împărțită la populația sa înainte de însumare.",
+          "Când un an nu are o observație verificată, folosim cea mai recentă valoare verificată dintr-un an anterior, pentru același teritoriu și aceeași măsură a populației. Antetul arată anul sursei și vechimea valorilor preluate și oferă un link la sursă, când este disponibil. Anii fără nicio observație verificată anterioară rămân indisponibili.",
+          "Totalurile pentru județe, regiuni, macroregiuni și țară sunt calculate din populațiile locale. Municipiul București este numărat o singură dată; populațiile sectoarelor nu sunt adăugate din nou."
         ]
       },
       {
@@ -71,9 +71,9 @@
         "id": "population-2021",
         "question": "Which population figure is used at the top of the page and in per capita calculations?",
         "answerParagraphs": [
-          "The header shows the territorial registry reference population, based on resident population from the 2021 census.",
-          "For financial totals, the main income, expenditure and balance evolution chart, and expenditure distribution, per-capita calculations use the population by domicile at January 1 published by INS for each financial year. Years without verified population remain unavailable; another year’s population is never substituted.",
-          "Resident population and population by domicile measure different things, so their values may differ."
+          "The header shows the population used for the selected financial year: INS population by domicile at January 1. Per-capita amounts use the same annual population table, with each year divided by its own population before values are added.",
+          "When a year has no verified observation, we use the latest verified earlier value for the same territory and population measure. The header shows the original year and age of carried values, and links to the source when available. Years without any earlier verified observation remain unavailable.",
+          "County, region, macroregion and national totals are calculated from local populations. Bucharest city is counted once; its sectors are not added again."
         ]
       },
       {
