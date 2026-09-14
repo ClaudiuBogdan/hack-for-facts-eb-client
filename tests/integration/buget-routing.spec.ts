@@ -6,7 +6,13 @@ test.describe('Buget Routing', () => {
 
   test.beforeEach(async ({ mockApi }) => {
     await mockApi.mockGraphQL('GetEntityDetails', 'entity-details')
-    await mockApi.mockGraphQL('GetEntityLineItems', 'entity-line-items')
+    // The analysis route uses native operations, not the legacy details response.
+    await mockApi.mockGraphQL('GetEntityMetadata', '../entity-details-flow/entity-metadata')
+    await mockApi.mockGraphQL('GetEntityBudget', '../entity-details-flow/entity-budget')
+    await mockApi.mockGraphQL('GetEntityRelationships', '../entity-details-flow/challenge-entity-relationships')
+    await mockApi.mockGraphQL('EntitySubordinateRanking', '../entity-details-flow/entity-subordinate-ranking')
+    await mockApi.mockGraphQL('GetEntityReports', '../entity-details-flow/entity-reports')
+    await mockApi.mockGraphQL('GetEntityLineItems', ['../entity-details-flow/entity-line-items-expense', '../entity-details-flow/entity-line-items-income'])
     await mockApi.mockGraphQL('EntityNames', 'entity-names')
     await mockApi.mockGraphQL('EntityAnalytics', 'entity-analytics')
     await mockApi.mockGraphQL('GetReports', 'get-reports')

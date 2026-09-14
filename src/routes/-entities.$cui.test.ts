@@ -564,7 +564,7 @@ describe('entities route', () => {
     })
     expect(result.entityPageBootstrap).toBeDefined()
     expect(ensureQueryData).toHaveBeenCalledTimes(1)
-    expect(ensureQueryData).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['entityIdentity', '4305857'] }))
+    expect(ensureQueryData).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['entityIdentity', '4305857', 2025] }))
     expect(prefetchQuery).not.toHaveBeenCalled()
   })
 

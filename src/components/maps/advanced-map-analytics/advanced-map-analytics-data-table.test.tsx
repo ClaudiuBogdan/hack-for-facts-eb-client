@@ -597,7 +597,7 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       expect(csvContent).toBe(
         [
           'SIRUTA,CUI,UAT,County,Execution analytics,INS Population,Population methodology',
-          `100,,"Alpha\nCity",A County,100,,${populationMethodologyReference()}`,
+          `100,,"Alpha\nCity",A County,100,,"${populationMethodologyReference()}"`,
           '200,87654321,"Zeta, ""Town""",Y County,300,5,',
         ].join('\n')
       );

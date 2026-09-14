@@ -42,6 +42,12 @@
       "budget": {
         "presence": true,
         "reportType": "EXECUTION_AGG_PRINCIPAL"
+      },
+      "annualPopulation": {
+        "territoryId": 1373,
+        "year": 2025,
+        "population": "286598",
+        "metadata": null
       }
     }
   }
