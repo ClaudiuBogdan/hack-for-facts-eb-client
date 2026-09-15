@@ -31,6 +31,40 @@ export function getRouter() {
   const stringifySearch = (search: Record<string, unknown>) =>
     normalizeSearchEncoding(baseStringifySearch(search));
 
+  // On a fresh navigation the SSR inline script (`tsr-scroll-restoration-v1`)
+  // has already placed the page at parse time, before first paint, and the
+  // router repeats that work on its first `onRendered` — which fires when
+  // hydration commits, a second or more later on a heavy route. By then the
+  // reader may have started scrolling, and the repeat takes their place away.
+  // The initial load has no navigation to carry `resetScroll: false` and
+  // `_scroll.next` has no public setter, so this predicate is the only seam.
+  //
+  // On a reload or a back/forward the same pass is a *correction*, not a
+  // repeat: the inline script restores pre-paint against a document that is
+  // still short, so a deep position clamps, and the router's pass is what puts
+  // it right once the real height is in. Measured on `/entities/$cui`, which
+  // grows ~1500px after first paint: skipping it there cost the reader 1800px
+  // of scroll. So only `navigate` is treated as redundant, and anything else —
+  // including a missing navigation entry — keeps the upstream behaviour.
+  //
+  // Position, not render count, decides the `navigate` case: returning false
+  // skips the router's whole scroll pass, hash `scrollIntoView` included, so we
+  // only skip once something has already placed the page.
+  //
+  // Delete this once TanStack guards the hydration render itself; router-core
+  // 1.171.x and `main` both still reset unconditionally. See #7815 / #7956.
+  let initialRenderSettled = false;
+  const scrollRestoration = () => {
+    if (typeof window === "undefined") return true;
+    if (initialRenderSettled) return true;
+    initialRenderSettled = true;
+    const [entry] = performance.getEntriesByType("navigation");
+    if ((entry as PerformanceNavigationTiming | undefined)?.type !== "navigate") {
+      return true;
+    }
+    return window.scrollY === 0 && window.scrollX === 0;
+  };
+
   const router = createRouter({
     routeTree,
     context: { queryClient },
@@ -46,7 +80,7 @@ export function getRouter() {
     defaultPendingMs: 200,
     defaultPendingMinMs: 300,
     // Enable automatic scroll-to-top on navigation
-    scrollRestoration: true,
+    scrollRestoration,
     // Use smooth scrolling for better UX
     scrollRestorationBehavior: "instant",
     // Scroll both window and main content area
