@@ -552,7 +552,8 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
       throw new Error('Expected geojson-dataset-series default');
     }
 
-    expect(geojsonSeries.datasetKey).toBe('insPop2021');
+    expect(geojsonSeries.datasetKey).toBe('annualPopulation');
+    expect(geojsonSeries.year).toBe(new Date().getFullYear());
     expect(geojsonSeries.label).toBe('GeoJSON dataset');
     expect(geojsonSeries.unit).toBe('');
     expect(geojsonSeries.countyFilterIds).toEqual([]);

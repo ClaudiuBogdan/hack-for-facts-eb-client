@@ -534,10 +534,7 @@ function localizeMapPreviewState(
       series.id as keyof typeof MAP_PREVIEW_SERIES_LABELS.ro
       ]
 
-    if (
-      series.type !== 'geojson-dataset-series' ||
-      series.datasetKey !== 'insPop2021'
-    ) {
+    if (series.type !== 'geojson-dataset-series') {
       if (!localizedSeriesLabel || series.label === localizedSeriesLabel) {
         return series
       }
