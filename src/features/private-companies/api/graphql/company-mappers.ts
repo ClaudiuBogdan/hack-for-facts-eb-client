@@ -57,8 +57,9 @@ function mapMatchConfidence(raw: string): PrivateCompanyMatchConfidence {
   }
 }
 
-function mapCaenSource(raw: string): PrivateCompanyCaenActivity['source'] {
-  return raw.toLowerCase() === 'anaf' ? 'anaf' : 'onrc'
+function mapCaenSource(raw: string): PrivateCompanyCaenActivity['source'] | null {
+  const source = raw.toLowerCase()
+  return source === 'anaf' || source === 'onrc' ? source : null
 }
 
 /**
@@ -201,7 +202,7 @@ export function mapCompanyProfile(
 
   const fiscalCaen =
     fiscal?.mainCaenCode != null
-      ? { code: fiscal.mainCaenCode, rev: 'rev2' as const }
+      ? { code: fiscal.mainCaenCode, rev: fiscal.mainCaenRev || null }
       : null
 
   return {
@@ -230,12 +231,15 @@ export function mapCompanyProfile(
           matchConfidence: mapMatchConfidence(company.territory.matchConfidence),
         }
       : null,
-    caenActivities: company.caenActivities.map((activity) => ({
-      code: activity.code,
-      rev: activity.rev,
-      label: activity.label,
-      source: mapCaenSource(activity.source),
-    })),
+    caenActivities: company.caenActivities.flatMap((activity) => {
+      const source = mapCaenSource(activity.source)
+      return source === null ? [] : [{
+        code: activity.code,
+        rev: activity.rev || null,
+        label: activity.rev ? activity.label : null,
+        source,
+      }]
+    }),
     representatives: company.representatives.map((rep) => ({
       name: rep.name,
       role: rep.role,

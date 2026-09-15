@@ -50,6 +50,34 @@ const dedemanResponse: CompanyProfileResponse = {
 }
 
 describe('mapCompanyProfile', () => {
+  it('does not present derived or unknown sources as ONRC and preserves unknown fiscal revision', () => {
+    const input: CompanyProfileResponse = {
+      ...dedemanResponse,
+      company: {
+        ...dedemanResponse.company!,
+        fiscal: { ...dedemanResponse.company!.fiscal!, mainCaenCode: '6210', mainCaenRev: null },
+        caenActivities: [
+          { code: '6210', rev: 'rev2', label: 'Air transport', source: 'derived' },
+          { code: '6210', rev: 'rev2', label: 'Untrusted', source: 'new-source' },
+          { code: '6210', rev: 'rev3', label: 'Software', source: 'onrc' },
+          { code: '6210', rev: null, label: null, source: 'anaf' },
+        ],
+      },
+    }
+    const result = mapCompanyProfile(input)!
+    expect(result.caenActivities.map((row) => row.source)).toEqual(['onrc', 'anaf'])
+    expect(result.fiscal.fiscalCaen).toEqual({ code: '6210', rev: null })
+    expect(() => privateCompanyProfileSchema.parse(result)).not.toThrow()
+  })
+
+  it('passes through an explicitly supplied fiscal revision', () => {
+    const result = mapCompanyProfile({ ...dedemanResponse, company: {
+      ...dedemanResponse.company!,
+      fiscal: { ...dedemanResponse.company!.fiscal!, mainCaenRev: 'rev3' },
+    } })!
+    expect(result.fiscal.fiscalCaen?.rev).toBe('rev3')
+  })
+
   it('maps DEDEMAN into a schema-valid PrivateCompanyProfile', () => {
     const profile = mapCompanyProfile(dedemanResponse)
     expect(profile).not.toBeNull()

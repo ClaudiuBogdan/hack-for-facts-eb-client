@@ -513,7 +513,7 @@ msgstr "{0}: {amountLabel}"
 msgid "{activeCount} active filters"
 msgstr "{activeCount} active filters"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:88
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:89
 msgid "{authorisedCount} authorised activities"
 msgstr "{authorisedCount} authorised activities"
 
@@ -587,7 +587,7 @@ msgstr "{dateLabel} — {countLabel}"
 msgid "{dateLabel} — {countLabel} (încă neconfirmat)"
 msgstr "{dateLabel} — {countLabel} (încă neconfirmat)"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:115
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:116
 msgid "{euBranchCount} EU branches"
 msgstr "{euBranchCount} EU branches"
 
@@ -719,11 +719,11 @@ msgstr "{moneyName} is unavailable for this scope. Select record count to view t
 msgid "{nonCompetitiveCount} contracte"
 msgstr "{nonCompetitiveCount} contracte"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:114
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:115
 msgid "{representativeCount} legal representatives"
 msgstr "{representativeCount} legal representatives"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:112
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:113
 msgid "{representativeCount} representatives · {euBranchCount} EU branches"
 msgstr "{representativeCount} representatives · {euBranchCount} EU branches"
 
@@ -1408,8 +1408,8 @@ msgstr "Activitatea legislativă pe zile, ultimele 12 luni"
 msgid "Activitatea pe zile nu a putut fi încărcată."
 msgstr "Activitatea pe zile nu a putut fi încărcată."
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:93
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:104
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:94
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:105
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:32
 #: src/features/private-companies/lib/tab-config.ts:53
 msgid "Activity"
@@ -2090,6 +2090,10 @@ msgstr "ANAF bilant figures by fiscal year. Only years returned by the API are l
 msgid "ANAF does not return financial statements for this company in the loaded snapshot."
 msgstr "ANAF does not return financial statements for this company in the loaded snapshot."
 
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:93
+msgid "ANAF does not supply the CAEN revision. Activity agreement cannot be confirmed."
+msgstr "ANAF does not supply the CAEN revision. Activity agreement cannot be confirmed."
+
 #: src/features/private-companies/lib/profile-display.ts:23
 msgid "ANAF public fiscal data"
 msgstr "ANAF public fiscal data"
@@ -2100,8 +2104,8 @@ msgid "ANAF query date: {0}"
 msgstr "ANAF query date: {0}"
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:92
-msgid "ANAF reports a fiscal activity code that differs from the ONRC authorized list."
-msgstr "ANAF reports a fiscal activity code that differs from the ONRC authorized list."
+#~ msgid "ANAF reports a fiscal activity code that differs from the ONRC authorized list."
+#~ msgstr "ANAF reports a fiscal activity code that differs from the ONRC authorized list."
 
 #: src/features/private-companies/components/sections/private-company-financials-section.tsx:60
 msgid "ANAF returned no financial statement years for this company in the loaded snapshot."
@@ -7058,7 +7062,7 @@ msgstr "Domeniu"
 msgid "Domeniu necunoscut"
 msgstr "Domeniu necunoscut"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:134
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:135
 msgid "Domestic branches and shareholders are not in the open dump"
 msgstr "Domestic branches and shareholders are not in the open dump"
 
@@ -8163,7 +8167,7 @@ msgstr "Explore data through a map."
 msgid "Explore data through charts."
 msgstr "Explore data through charts."
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:156
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:157
 msgid "Explore details"
 msgstr "Explore details"
 
@@ -9080,11 +9084,11 @@ msgstr "Fiscal"
 msgid "Fiscal CAEN (ANAF)"
 msgstr "Fiscal CAEN (ANAF)"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:97
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:98
 msgid "Fiscal CAEN from ANAF"
 msgstr "Fiscal CAEN from ANAF"
 
-#: src/features/private-companies/components/sections/private-company-activity-section.tsx:112
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:113
 msgid "Fiscal CAEN from ANAF matches an authorized ONRC activity."
 msgstr "Fiscal CAEN from ANAF matches an authorized ONRC activity."
 
@@ -12076,7 +12080,7 @@ msgstr "location"
 
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:225
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:160
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:140
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:141
 #: src/features/private-companies/components/sections/private-company-location-section.tsx:43
 #: src/features/private-companies/lib/tab-config.ts:61
 msgid "Location"
@@ -13618,7 +13622,7 @@ msgstr "No active series"
 msgid "No active series selected."
 msgstr "No active series selected."
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:98
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:99
 msgid "No activity codes"
 msgstr "No activity codes"
 
@@ -13672,7 +13676,7 @@ msgstr "No bins presets configured."
 msgid "No breakdown available"
 msgstr "No breakdown available"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:105
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:106
 msgid "No CAEN codes in snapshot"
 msgstr "No CAEN codes in snapshot"
 
@@ -14099,7 +14103,7 @@ msgstr "No regions available."
 msgid "No reports on this page for the selected ending months."
 msgstr "No reports on this page for the selected ending months."
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:133
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:134
 msgid "No representatives or EU branches listed"
 msgstr "No representatives or EU branches listed"
 
@@ -15937,8 +15941,8 @@ msgstr "Pentru această ședință avem doar înregistrarea sursei și adresa ei
 msgid "people"
 msgstr "people"
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:119
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:132
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:120
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:133
 #: src/features/private-companies/components/sections/private-company-governance-section.tsx:23
 msgid "People and branches"
 msgstr "People and branches"
@@ -17555,7 +17559,7 @@ msgstr "Registered office expired"
 msgid "Registered office from ONRC and administrative location from the API. No client-side address matching is performed."
 msgstr "Registered office from ONRC and administrative location from the API. No client-side address matching is performed."
 
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:146
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:147
 msgid "Registered office only — no resolved UAT"
 msgstr "Registered office only — no resolved UAT"
 
@@ -18051,6 +18055,13 @@ msgstr "Review signals are not wired to search yet. They will filter results whe
 #: src/features/legal/components/reader/legal-reader-page.tsx:346
 msgid "Revino la forma afișată în mod normal"
 msgstr "Revino la forma afișată în mod normal"
+
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:80
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:82
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:75
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:106
+msgid "Revision not supplied"
+msgstr "Revision not supplied"
 
 #: src/features/statistics/components/landing/landing-source.tsx:56
 msgid "Revizie:"
@@ -21201,6 +21212,10 @@ msgstr "The final contract value after a verified chain of amendments. Contracts
 msgid "The final contract value after verified amendments (additional acts)."
 msgstr "The final contract value after verified amendments (additional acts)."
 
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:95
+msgid "The fiscal code and revision do not exactly match the loaded ONRC authorized list."
+msgstr "The fiscal code and revision do not exactly match the loaded ONRC authorized list."
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:503
 msgid "The generated contestation needs a sender identity."
 msgstr "The generated contestation needs a sender identity."
@@ -22285,7 +22300,7 @@ msgid "UAT details"
 msgstr "UAT details"
 
 #. placeholder {0}: geography.matchConfidence
-#: src/features/private-companies/components/private-company-summary-highlights.tsx:145
+#: src/features/private-companies/components/private-company-summary-highlights.tsx:146
 msgid "UAT match: {0}"
 msgstr "UAT match: {0}"
 

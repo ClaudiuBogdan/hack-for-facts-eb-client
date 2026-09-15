@@ -57,15 +57,16 @@ export function PrivateCompanySummaryHighlights({
   // arbitrary: it showed DEDEMAN, a DIY chain, as "growing fruit trees" (0125)
   // because that code sorts first. The main CAEN is what the company actually
   // does, so match the authorised list against it and only fall back to the
-  // first entry when no main code is known.
+  // sole authorization when there is only one; never pick an arbitrary entry.
   const mainCaenCode = profile.fiscal.fiscalCaen?.code ?? null
+  const mainCaenRev = profile.fiscal.fiscalCaen?.rev ?? null
   const onrcActivities = profile.caenActivities.filter(
     (activity) => activity.source === 'onrc',
   )
   const onrcActivity =
     (mainCaenCode !== null
-      ? onrcActivities.find((activity) => activity.code === mainCaenCode)
-      : undefined) ?? onrcActivities[0]
+      ? onrcActivities.find((activity) => mainCaenRev !== null && activity.code === mainCaenCode && activity.rev === mainCaenRev)
+      : undefined) ?? (onrcActivities.length === 1 ? onrcActivities[0] : undefined)
   const authorisedCount = onrcActivities.length
   const representativeCount = profile.representatives.length
   const euBranchCount = profile.euBranches.length
@@ -76,9 +77,9 @@ export function PrivateCompanySummaryHighlights({
   if (onrcActivity || profile.fiscal.fiscalCaen) {
     const fiscalCaen = profile.fiscal.fiscalCaen
     const codeLine = onrcActivity
-      ? `${onrcActivity.code} · ${onrcActivity.rev}`
+      ? `${onrcActivity.code} · ${onrcActivity.rev ?? t`Revision not supplied`}`
       : fiscalCaen
-        ? `${fiscalCaen.code} · ${fiscalCaen.rev}`
+        ? `${fiscalCaen.code} · ${fiscalCaen.rev ?? t`Revision not supplied`}`
         : null
 
     // The count is worth stating: one named activity out of hundreds authorised

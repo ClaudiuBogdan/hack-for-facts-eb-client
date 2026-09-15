@@ -26,7 +26,7 @@ export function PrivateCompanyActivitySection({
     fiscalCaen !== null &&
     !onrcActivities.some(
       (activity) =>
-        activity.code === fiscalCaen.code && activity.rev === fiscalCaen.rev,
+        fiscalCaen.rev !== null && activity.code === fiscalCaen.code && activity.rev === fiscalCaen.rev,
     )
 
   const sectionTitle = <Trans>Activity</Trans>
@@ -72,7 +72,7 @@ export function PrivateCompanyActivitySection({
                   <span className="tabular-nums">
                     {activity.code}
                     <span className="mx-1.5 text-[var(--pnrr-muted)]">·</span>
-                    {activity.rev}
+                    {activity.rev ?? <Trans>Revision not supplied</Trans>}
                   </span>
                 }
               />
@@ -89,10 +89,11 @@ export function PrivateCompanyActivitySection({
           <PrivateCompanyTabPanel
             category={<Trans>Fiscal CAEN (ANAF)</Trans>}
             hint={
-              <Trans>
-                ANAF reports a fiscal activity code that differs from the ONRC
-                authorized list.
-              </Trans>
+              fiscalCaen.rev === null ? (
+                <Trans>ANAF does not supply the CAEN revision. Activity agreement cannot be confirmed.</Trans>
+              ) : (
+                <Trans>The fiscal code and revision do not exactly match the loaded ONRC authorized list.</Trans>
+              )
             }
           >
             <PrivateCompanyTabListItem
@@ -102,7 +103,7 @@ export function PrivateCompanyActivitySection({
                   <span className="mx-1.5 font-normal text-[var(--pnrr-muted)]">
                     ·
                   </span>
-                  {fiscalCaen.rev}
+                  {fiscalCaen.rev ?? <Trans>Revision not supplied</Trans>}
                 </span>
               }
             />

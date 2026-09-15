@@ -31,6 +31,7 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
         vatPayer
         declaredFiscallyInactive
         mainCaenCode
+        mainCaenRev
         registeredName
         asOf
       }
@@ -97,6 +98,7 @@ const rawCompanySchema = z.object({
       vatPayer: z.boolean().nullable(),
       declaredFiscallyInactive: z.boolean().nullable(),
       mainCaenCode: z.string().nullable(),
+      mainCaenRev: z.string().nullable().optional(),
       registeredName: z.string().nullable(),
       asOf: z.string().nullable(),
     })
@@ -104,7 +106,7 @@ const rawCompanySchema = z.object({
   caenActivities: z.array(
     z.object({
       code: z.string(),
-      rev: z.string(),
+      rev: z.string().nullable(),
       label: z.string().nullable(),
       source: z.string(),
     }),

@@ -17,7 +17,7 @@ export const privateCompanyStatusSchema = z.object({
 
 export const privateCompanyCaenActivitySchema = z.object({
   code: z.string(),
-  rev: z.string(),
+  rev: z.string().nullable(),
   label: z.string().nullable(),
   source: z.enum(['onrc', 'anaf']),
 })
@@ -135,7 +135,7 @@ export const privateCompanyFiscalSchema = z.object({
   fiscalCaen: z
     .object({
       code: z.string(),
-      rev: z.string(),
+      rev: z.string().nullable(),
     })
     .nullable(),
 })
