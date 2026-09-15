@@ -3,15 +3,15 @@ import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";
 import { createLogger } from "@/lib/logger";
-import type { EntityInsSelectionInput } from "@/lib/ins/entity-source-search";
 import type { NativeInsObservation } from "@/schemas/ins";
 import type { ReportPeriodInput } from "@/schemas/reporting";
 import type { PreparedEntityInsSource } from "../api/native-entity-ins-api";
 import type { InsSourceVector } from "@/lib/ins/source-pages";
 import { projectEntityInsHistory } from "../lib/entity-ins-history";
-import { entityInsSourcePatch } from "../lib/entity-ins-selection";
-import { EntityInsHistoryChart } from "@/components/entities/views/ins-stats-view.presentation";
-import { DetailObservationsTable } from "./detail-observations-table";
+import {
+  EntityInsHistoryChart,
+  EntityInsObservationsTable,
+} from "@/components/entities/views/ins-stats-view.presentation";
 import { DetailExportButton } from "./detail-export-button";
 import { ValueStatusMarker } from "./detail-value-status-legend";
 
@@ -96,12 +96,10 @@ export function EntityInsSourceHistory({
   prepared,
   history,
   reportPeriod,
-  onChange,
 }: {
   readonly prepared: PreparedEntityInsSource;
   readonly history: History;
   readonly reportPeriod: ReportPeriodInput;
-  readonly onChange: (patch: EntityInsSelectionInput) => void;
 }) {
   const [offset, setOffset] = useState(0);
   const [selectedOffset, setSelectedOffset] = useState(0);
@@ -141,16 +139,6 @@ export function EntityInsSourceHistory({
           source before continuing.
         </Trans>
       </p>
-    );
-  const selectSource = (row: NativeInsObservation) =>
-    onChange(
-      entityInsSourcePatch({
-        insSourcePins: row.classifications.map(
-          (value) => `${value.type_code}:${value.code}`,
-        ),
-        insSourceUnit: row.unit.code,
-        insSourceCadence: row.time_period.periodicity,
-      }),
     );
   const shownOffset = Math.min(
     offset,
@@ -318,18 +306,12 @@ export function EntityInsSourceHistory({
         </div>
         {history.observations.length ? (
           <>
-            <DetailObservationsTable
-              observations={history.observations.slice(
+            <EntityInsObservationsTable
+              rows={history.observations.slice(
                 shownOffset,
                 shownOffset + TABLE_PAGE_SIZE,
               )}
-              sourceDescriptor={history.descriptor}
-              onSelectSource={(row) => {
-                const original = history.observations.find(
-                  (value) => value.id === row.id,
-                );
-                if (original) selectSource(original);
-              }}
+              hasMultiValueSeriesSelection={false}
             />
             <PageControls
               offset={shownOffset}

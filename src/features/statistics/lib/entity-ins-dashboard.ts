@@ -154,13 +154,14 @@ export function entityInsDerivedIndicators(
       second = eligible.find((row) => row.dataset_code === b);
     return first && second && first.unit.code !== second.unit.code;
   };
+  // Keep `unit.symbol`: the derived label prefers it over `name_ro`, so dropping it
+  // renders "Numar persoane / 1.000 locuitori" instead of "persons / 1.000 locuitori"
+  // and pushes the value out of its column. Unit identity is checked on `code` below,
+  // never on the symbol, so the label choice cannot mask a real unit difference.
   return computeDerivedIndicators(
     eligible.map((observation) => ({
       datasetCode: observation.dataset_code,
-      observation: {
-        ...observation,
-        unit: { ...observation.unit, symbol: null },
-      },
+      observation,
     })),
   ).filter(
     (row) =>

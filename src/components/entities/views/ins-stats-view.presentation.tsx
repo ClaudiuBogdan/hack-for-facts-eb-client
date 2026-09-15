@@ -311,6 +311,11 @@ function DerivedIndicatorsSectionBase(props: {
   };
   onSelectDerivedIndicator: (datasetCode: string | null) => void;
   onSelectDataset: (datasetCode: string) => void;
+  /**
+   * Shown in place of a group that computed no rows. Omit to keep the legacy
+   * behaviour of dropping the group entirely.
+   */
+  emptyGroupNote?: string;
 }) {
   const {
     isLoading,
@@ -320,6 +325,7 @@ function DerivedIndicatorsSectionBase(props: {
     derivedIndicatorStatus,
     onSelectDerivedIndicator,
     onSelectDataset,
+    emptyGroupNote,
   } = props;
 
   const isPeriodFallback =
@@ -388,7 +394,27 @@ function DerivedIndicatorsSectionBase(props: {
           <div className="grid gap-4 xl:grid-cols-3">
             {DERIVED_INDICATOR_GROUP_ORDER.map((groupId) => {
               const groupRows = groupedDerivedIndicators[groupId];
-              if (groupRows.length === 0) return null;
+              if (groupRows.length === 0) {
+                if (!emptyGroupNote) return null;
+                return (
+                  <div
+                    key={groupId}
+                    className="rounded-xl border border-dashed border-border/50 bg-muted/20 px-2 py-3"
+                  >
+                    <div className="mb-2">
+                      <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        {DERIVED_INDICATOR_GROUP_META[groupId].label}
+                      </h4>
+                      <p className="text-[12px] text-muted-foreground">
+                        {DERIVED_INDICATOR_GROUP_META[groupId].description}
+                      </p>
+                    </div>
+                    <p role="status" className="text-[12px] text-muted-foreground">
+                      {emptyGroupNote}
+                    </p>
+                  </div>
+                );
+              }
 
               return (
                 <div key={groupId} className="rounded-xl border border-border/50 bg-card px-2 py-3">
@@ -817,6 +843,63 @@ function DatasetExplorerSectionBase(props: {
 }
 
 export const DatasetExplorerSection = memo(DatasetExplorerSectionBase);
+
+/**
+ * The dataset-detail history table: one row per period, the value formatted with its
+ * unit, and the remaining source dimensions collapsed into a Details sentence.
+ * Shared by the legacy dataset detail section and the native entity source history so
+ * both read identically; raw source cells stay available through the CSV export.
+ */
+export function EntityInsObservationsTable({
+  rows,
+  hasMultiValueSeriesSelection,
+}: {
+  readonly rows: readonly InsObservation[];
+  readonly hasMultiValueSeriesSelection: boolean;
+}) {
+  return (
+    <Table className="text-sm">
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-32 text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
+            <Trans>Period</Trans>
+          </TableHead>
+          <TableHead className="text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
+            <Trans>Value</Trans>
+          </TableHead>
+          <TableHead className="text-right text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
+            <Trans>Details</Trans>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => {
+          const { value, statusLabel } = formatObservationValue(row);
+          return (
+            <TableRow key={`${row.dataset_code}-${row.time_period.iso_period}-${row.value}`}>
+              <TableCell className="font-medium tracking-[0.005em]">{formatPeriodLabel(row.time_period)}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <span className={statusLabel ? 'text-muted-foreground' : 'font-medium tracking-[0.005em]'}>
+                    {value}
+                  </span>
+                  {statusLabel && (
+                    <Badge variant="outline" className="text-[10px]">
+                      {statusLabel}
+                    </Badge>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-right text-muted-foreground">
+                {hasMultiValueSeriesSelection ? t`Multiple selected values` : getClassificationLabel(row)}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}
 
 export type DatasetDetailsCardModel = {
   code: string;
@@ -1309,46 +1392,10 @@ function DatasetDetailSectionBase(props: DatasetDetailProps) {
               </Alert>
             )}
 
-            <Table className="text-sm">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-32 text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
-                    <Trans>Period</Trans>
-                  </TableHead>
-                  <TableHead className="text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
-                    <Trans>Value</Trans>
-                  </TableHead>
-                  <TableHead className="text-right text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
-                    <Trans>Details</Trans>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {historyRows.map((row) => {
-                  const { value, statusLabel } = formatObservationValue(row);
-                  return (
-                    <TableRow key={`${row.dataset_code}-${row.time_period.iso_period}-${row.value}`}>
-                      <TableCell className="font-medium tracking-[0.005em]">{formatPeriodLabel(row.time_period)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className={statusLabel ? 'text-muted-foreground' : 'font-medium tracking-[0.005em]'}>
-                            {value}
-                          </span>
-                          {statusLabel && (
-                            <Badge variant="outline" className="text-[10px]">
-                              {statusLabel}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
-                        {hasMultiValueSeriesSelection ? t`Multiple selected values` : getClassificationLabel(row)}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <EntityInsObservationsTable
+              rows={historyRows}
+              hasMultiValueSeriesSelection={hasMultiValueSeriesSelection}
+            />
 
             {historySeries.length > 12 && (
               <Button variant="outline" size="sm" onClick={() => setShowAllRows((previous) => !previous)}>

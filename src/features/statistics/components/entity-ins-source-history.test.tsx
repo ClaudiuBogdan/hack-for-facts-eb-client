@@ -12,22 +12,23 @@ const { chart, exported, table } = vi.hoisted(() => ({
   exported: vi.fn(),
   table: vi.fn(),
 }));
-vi.mock("./detail-observations-chart", () => ({
-  DetailObservationsChart: (props: unknown) => {
+// Both the chart and the observations table now come from the shared presentation
+// module, so they are stubbed there rather than from the feature-local components.
+vi.mock("@/components/entities/views/ins-stats-view.presentation", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  EntityInsHistoryChart: (props: unknown) => {
     chart(props);
     return <div>Chart</div>;
+  },
+  EntityInsObservationsTable: (props: unknown) => {
+    table(props);
+    return <div>Table</div>;
   },
 }));
 vi.mock("./detail-export-button", () => ({
   DetailExportButton: (props: unknown) => {
     exported(props);
     return <div>Export</div>;
-  },
-}));
-vi.mock("./detail-observations-table", () => ({
-  DetailObservationsTable: (props: unknown) => {
-    table(props);
-    return <div>Table</div>;
   },
 }));
 const prepared = preparedEntityInsFixture();
@@ -38,7 +39,6 @@ const props: ComponentProps<typeof EntityInsSourceHistory> = {
     type: "YEAR" as const,
     selection: { dates: ["2024", "2025"] },
   },
-  onChange: vi.fn(),
 };
 beforeEach(() => vi.clearAllMocks());
 describe("native entity INS source presentation", () => {
@@ -133,11 +133,11 @@ describe("native entity INS source presentation", () => {
       />,
     );
     expect(table).toHaveBeenLastCalledWith(
-      expect.objectContaining({ observations: observations.slice(0, 50) }),
+      expect.objectContaining({ rows: observations.slice(0, 50) }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Next observations" }));
     expect(table).toHaveBeenLastCalledWith(
-      expect.objectContaining({ observations: observations.slice(50) }),
+      expect.objectContaining({ rows: observations.slice(50) }),
     );
     expect(exported).toHaveBeenLastCalledWith(
       expect.objectContaining({ observations, complete: true }),

@@ -1,7 +1,13 @@
 import { entityInsDisplayedSelection } from "../lib/entity-ins-controls";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
+import ChevronDown from "lucide-react/dist/esm/icons/chevron-down";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -38,41 +44,96 @@ export function EntityInsSourceControls({
     : latest?.source?.observation
       ? [latest.source.observation]
       : [];
-  const axes = dataset.dimensions.filter(
-    (dimension) =>
-      dimension.type === "CLASSIFICATION" || dimension.type === "TERRITORIAL",
+  // Classification axes are the series choice; the territorial axes are fixed by the
+  // entity and only restate its area, so they read as a sentence and stay editable
+  // under the advanced disclosure.
+  const seriesAxes = dataset.dimensions.filter(
+    (dimension) => dimension.type === "CLASSIFICATION",
+  );
+  const territorialAxes = dataset.dimensions.filter(
+    (dimension) => dimension.type === "TERRITORIAL",
   );
   const unit = dataset.dimensions.find(
     (dimension) => dimension.type === "UNIT_OF_MEASURE",
   );
-  return (
-    <section className="space-y-4" aria-label={t`INS source selection`}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">
-          <Trans>Source selection</Trans>
-        </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() =>
-            onChange(
-              entityInsSourcePatch({
-                insSourcePins: undefined,
-                insSourceUnit: undefined,
-                insSourceCadence: undefined,
-              }),
-            )
+
+  const dimensionLabel = (dimension: (typeof dataset.dimensions)[number]) =>
+    (i18n.locale === "en"
+      ? (dimension.label_en ?? dimension.label_ro)
+      : dimension.label_ro) ?? `D${dimension.index}`;
+
+  const memberLabel = (axis: string) => {
+    const code = resolved.scope.classifications.get(axis) ?? null;
+    const member = rows
+      .flatMap((row) => row.classifications)
+      .find((value) => value.type_code === axis && value.code === code);
+    return {
+      code,
+      label:
+        (i18n.locale === "en"
+          ? (member?.name_en ?? member?.name_ro)
+          : member?.name_ro) ?? code,
+    };
+  };
+
+  const unitLabel =
+    rows.find((row) => row.unit.code === resolved.scope.unitCode)?.unit
+      .name_ro ?? resolved.scope.unitCode;
+
+  const criteriaParts = [
+    ...[...seriesAxes, ...territorialAxes].flatMap((dimension) => {
+      const { label } = memberLabel(`D${dimension.index}`);
+      return label ? [`${dimensionLabel(dimension)}: ${label}`] : [];
+    }),
+    ...(unitLabel ? [`${t`Unit`}: ${unitLabel}`] : []),
+    ...(resolved.scope.periodicity
+      ? [`${t`Frequency`}: ${periodicityLabel(resolved.scope.periodicity)}`]
+      : []),
+  ];
+
+  const renderAxis = (dimension: (typeof dataset.dimensions)[number]) => {
+    const axis = `D${dimension.index}`;
+    const { code, label } = memberLabel(axis);
+    return (
+      <div key={axis}>
+        <DetailDimensionCombobox
+          key={`${prepared.publicationKey}:${dimension.index}`}
+          datasetCode={dataset.code}
+          dimensionIndex={dimension.index}
+          nativePublicationKey={prepared.publicationKey}
+          onSourceRefresh={onSourceRefresh}
+          label={dimensionLabel(dimension)}
+          placeholder={t`Choose a source value`}
+          selectedKey={code}
+          selectedLabel={label}
+          optionKey={(value) => value.classification_value?.code ?? null}
+          onSelect={(value) => {
+            if (value.classification_value?.code != null)
+              change({
+                insSourcePins: editSourcePin(
+                  displayed.insSourcePins,
+                  axis,
+                  value.classification_value.code,
+                ),
+              });
+          }}
+          onClear={() =>
+            change({
+              insSourcePins: editSourcePin(displayed.insSourcePins, axis, null),
+            })
           }
-        >
-          <Trans>Use source defaults</Trans>
-        </Button>
+        />
+        {resolved.scope.defaultedTypes.has(axis) ? (
+          <p className="text-xs text-muted-foreground">
+            <Trans>Source default</Trans>
+          </p>
+        ) : null}
       </div>
-      <p className="text-xs text-muted-foreground">
-        <Trans>
-          The entity's area is fixed. Source dimensions describe how INS
-          measured it; changing them does not change the entity.
-        </Trans>
-      </p>
+    );
+  };
+
+  return (
+    <section className="space-y-3" aria-label={t`INS source selection`}>
       {selection.issues.length > 0 || resolved.issues.length > 0 ? (
         <p role="alert">
           <Trans>
@@ -123,104 +184,108 @@ export function EntityInsSourceControls({
           </Trans>
         </p>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {axes.map((dimension) => {
-          const axis = `D${dimension.index}`;
-          const code = resolved.scope.classifications.get(axis) ?? null;
-          const member = rows
-            .flatMap((row) => row.classifications)
-            .find((value) => value.type_code === axis && value.code === code);
-          const label =
-            (i18n.locale === "en"
-              ? (member?.name_en ?? member?.name_ro)
-              : member?.name_ro) ?? code;
-          return (
-            <div key={axis}>
+
+      {seriesAxes.length > 0 ? (
+        <div className="space-y-3 rounded-md border border-border bg-muted/50 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+              <Trans>Series selector</Trans>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[11px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() =>
+                onChange(
+                  entityInsSourcePatch({
+                    insSourcePins: undefined,
+                    insSourceUnit: undefined,
+                    insSourceCadence: undefined,
+                  }),
+                )
+              }
+            >
+              <Trans>Reset to default</Trans>
+            </Button>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            {seriesAxes.map(renderAxis)}
+          </div>
+        </div>
+      ) : null}
+
+      {criteriaParts.length > 0 ? (
+        <div className="text-[12px] leading-5 text-muted-foreground">
+          <span className="font-semibold text-foreground/80">
+            <Trans>Active series criteria:</Trans>
+          </span>{" "}
+          {criteriaParts.join(" • ")}
+        </div>
+      ) : null}
+
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1 px-2 text-[11px] font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+            <Trans>Advanced: pin the source</Trans>
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-4 pt-3">
+          <p className="text-xs text-muted-foreground">
+            <Trans>
+              The entity's area is fixed. Source dimensions describe how INS
+              measured it; changing them does not change the entity.
+            </Trans>
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {territorialAxes.map(renderAxis)}
+            {unit ? (
               <DetailDimensionCombobox
-                key={`${prepared.publicationKey}:${dimension.index}`}
+                key={`${prepared.publicationKey}:${unit.index}`}
                 datasetCode={dataset.code}
-                dimensionIndex={dimension.index}
+                dimensionIndex={unit.index}
                 nativePublicationKey={prepared.publicationKey}
                 onSourceRefresh={onSourceRefresh}
-                label={
-                  (i18n.locale === "en"
-                    ? (dimension.label_en ?? dimension.label_ro)
-                    : dimension.label_ro) ?? axis
-                }
-                placeholder={t`Choose a source value`}
-                selectedKey={code}
-                selectedLabel={label}
-                optionKey={(value) => value.classification_value?.code ?? null}
+                label={t`Unit`}
+                placeholder={t`Choose a unit`}
+                selectedKey={resolved.scope.unitCode}
+                selectedLabel={unitLabel}
+                optionKey={(value) => value.unit?.code ?? null}
                 onSelect={(value) => {
-                  if (value.classification_value?.code != null)
-                    change({
-                      insSourcePins: editSourcePin(
-                        displayed.insSourcePins,
-                        axis,
-                        value.classification_value.code,
-                      ),
-                    });
+                  if (value.unit) change({ insSourceUnit: value.unit.code });
                 }}
-                onClear={() =>
-                  change({
-                    insSourcePins: editSourcePin(
-                      displayed.insSourcePins,
-                      axis,
-                      null,
-                    ),
-                  })
-                }
+                onClear={() => change({ insSourceUnit: undefined })}
               />
-              {resolved.scope.defaultedTypes.has(axis) ? (
-                <p className="text-xs text-muted-foreground">
-                  <Trans>Source default</Trans>
-                </p>
-              ) : null}
+            ) : null}
+            <div className="space-y-1.5">
+              <Label>
+                <Trans>Frequency</Trans>
+              </Label>
+              <Select
+                value={resolved.scope.periodicity ?? ""}
+                onValueChange={(value) => change({ insSourceCadence: value })}
+              >
+                <SelectTrigger aria-label={t`INS frequency`}>
+                  <SelectValue placeholder={t`Choose a frequency`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {dataset.periodicity.map((cadence) => (
+                    <SelectItem key={cadence} value={cadence}>
+                      {periodicityLabel(cadence)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          );
-        })}
-        {unit ? (
-          <DetailDimensionCombobox
-            key={`${prepared.publicationKey}:${unit.index}`}
-            datasetCode={dataset.code}
-            dimensionIndex={unit.index}
-            nativePublicationKey={prepared.publicationKey}
-            onSourceRefresh={onSourceRefresh}
-            label={t`Unit`}
-            placeholder={t`Choose a unit`}
-            selectedKey={resolved.scope.unitCode}
-            selectedLabel={
-              rows.find((row) => row.unit.code === resolved.scope.unitCode)
-                ?.unit.name_ro ?? resolved.scope.unitCode
-            }
-            optionKey={(value) => value.unit?.code ?? null}
-            onSelect={(value) => {
-              if (value.unit) change({ insSourceUnit: value.unit.code });
-            }}
-            onClear={() => change({ insSourceUnit: undefined })}
-          />
-        ) : null}
-        <div className="space-y-1.5">
-          <Label>
-            <Trans>Frequency</Trans>
-          </Label>
-          <Select
-            value={resolved.scope.periodicity ?? ""}
-            onValueChange={(value) => change({ insSourceCadence: value })}
-          >
-            <SelectTrigger aria-label={t`INS frequency`}>
-              <SelectValue placeholder={t`Choose a frequency`} />
-            </SelectTrigger>
-            <SelectContent>
-              {dataset.periodicity.map((cadence) => (
-                <SelectItem key={cadence} value={cadence}>
-                  {periodicityLabel(cadence)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </section>
   );
 }

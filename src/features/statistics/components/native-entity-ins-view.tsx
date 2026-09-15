@@ -20,6 +20,7 @@ import {
   entityInsDerivedIndicators,
 } from "../lib/entity-ins-dashboard";
 import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";
 import { createLogger } from "@/lib/logger";
 import type { EntityDetailsData } from "@/lib/api/entities";
@@ -132,8 +133,15 @@ export function NativeEntityInsView({
   const cards = metrics.topMetrics.map((metric) => {
     const item = metrics.metrics.find((item) => item.code === metric.code),
       projection = item?.projection;
-    const cells = projection?.status === "SERIES" ? projection.selected : [];
-    const observation = cells.length === 1 ? cells[0].observation : null;
+    const series = projection?.status === "SERIES" ? projection : null;
+    const cells = series?.selected ?? [];
+    const selected = cells.length === 1 ? cells[0].observation : null;
+    // A tile is a standalone reading, so the latest available observation is shown
+    // when the selected period has none — the card labels it "last available".
+    // Multi-period cards list their own cells and must not collapse to one value.
+    const fallback =
+      selected === null && cells.length <= 1 ? (series?.latest ?? null) : null;
+    const observation = selected ?? fallback;
     return {
       ...metric,
       row: {
@@ -146,7 +154,11 @@ export function NativeEntityInsView({
           ? formatPeriodLabel(observation.time_period)
           : periodLabel,
         selectedPeriodLabel: periodLabel,
-        source: observation ? ("selected" as const) : ("none" as const),
+        source: selected
+          ? ("selected" as const)
+          : fallback
+            ? ("fallback" as const)
+            : ("none" as const),
         hasData: observation !== null,
       },
     };
@@ -342,6 +354,7 @@ export function NativeEntityInsView({
               dataPeriodLabel: periodLabel,
               hasFallback: false,
             }}
+            emptyGroupNote={t`No indicator in this group has an observation for the same period as the population, so no ratio can be computed without mixing periods.`}
             onSelectDataset={selectDataset}
             onSelectDerivedIndicator={(code) => {
               if (code) selectDataset(code);
@@ -417,7 +430,6 @@ export function NativeEntityInsView({
                     prepared={source.prepared}
                     history={source.history}
                     reportPeriod={reportPeriod}
-                    onChange={onChange}
                   />
                 ) : null}
               </EntityInsDetailCard>
