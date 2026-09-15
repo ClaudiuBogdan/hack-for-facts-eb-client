@@ -25,6 +25,7 @@ import type {
 } from '@/lib/map-series/interfaces';
 import { buildFinancialMapGroups, matchesFinancialMapGroups } from '@/lib/map-series/financial-groups';
 import { useOptionalUser } from '@/lib/auth';
+import { useMapPopulationSeries } from './useMapPopulationSeries';
 
 const DRAFT_SIZE_WARNING_THRESHOLD = 1800;
 const isBrowser = typeof window !== 'undefined';
@@ -135,6 +136,8 @@ export function useAdvancedMapAnalyticsSeriesData(
     enabled: compatibleBundle === undefined && isBrowser && (params.enabled ?? true),
   });
 
+  const population = useMapPopulationSeries(normalizedSeries, params.granularity ?? 'UAT', params.enabled ?? true, relevantWarningSeriesIds);
+
   const calculated = useMemo(() => {
     const groupedResponse = compatibleBundle ?? groupedDataQuery.data;
     const baseVectors: MapSeriesVectorCache = new Map();
@@ -214,6 +217,16 @@ export function useAdvancedMapAnalyticsSeriesData(
       }
     }
 
+    for (const [id, vector] of population.values) {
+      // Caller-provided datasets retain their explicit override; annual sources are always live.
+      const entry = normalizedSeries.find(series => series.id === id);
+      if (!params.localValuesBySeriesId?.has(id) || (entry?.type === 'geojson-dataset-series' && entry.datasetKey === 'annualPopulation')) {
+        baseVectors.set(id, vector);
+        baseUnits.set(id, population.units.get(id));
+      }
+    }
+    warnings.push(...population.warnings);
+
     const calculationResult = calculateMapSeriesValues({
       series: normalizedSeries,
       groupWorkspaces: params.groupWorkspaces,
@@ -271,6 +284,7 @@ export function useAdvancedMapAnalyticsSeriesData(
       warnings,
     };
   }, [
+    population.values, population.units, population.warnings,
     groupedDataQuery.data,
     compatibleBundle,
     params.localUnitsBySeriesId,
@@ -301,9 +315,9 @@ export function useAdvancedMapAnalyticsSeriesData(
     activeCanonicalValues: resolvedActiveSeriesId
       ? calculated.valuesBySeriesId.get(resolvedActiveSeriesId)
       : undefined,
-    isLoading: compatibleBundle === undefined && groupedDataQuery.isLoading,
-    isFetching: compatibleBundle === undefined && groupedDataQuery.isFetching,
-    error: compatibleBundle === undefined ? groupedDataQuery.error ?? null : null,
+    isLoading: population.isLoading || (compatibleBundle === undefined && groupedDataQuery.isLoading),
+    isFetching: population.isFetching || (compatibleBundle === undefined && groupedDataQuery.isFetching),
+    error: population.error ?? (compatibleBundle === undefined ? groupedDataQuery.error ?? null : null),
   };
 }
 

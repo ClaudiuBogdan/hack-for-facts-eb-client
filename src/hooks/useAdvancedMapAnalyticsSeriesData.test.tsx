@@ -4,6 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 import { useAdvancedMapAnalyticsSeriesData, advancedMapAnalyticsSeriesDataQueryOptions } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
 import {
+  GeoJsonDatasetSeriesConfigurationSchema,
   createDefaultAdvancedMapAnalyticsSeries,
   createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
   createDefaultAdvancedMapAnalyticsValueFilterRule,
@@ -520,7 +521,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
   });
 
   it('loads local geojson dataset vectors without remote fetch rows', async () => {
-    const geojsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    const geojsonSeries = GeoJsonDatasetSeriesConfigurationSchema.parse({type: 'geojson-dataset-series'});
     if (geojsonSeries.type !== 'geojson-dataset-series') {
       throw new Error('Unexpected series type in test setup');
     }
@@ -558,7 +559,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
 
   it('excludes geojson dataset series from grouped-series API payload', async () => {
     const executionSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
-    const geojsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    const geojsonSeries = GeoJsonDatasetSeriesConfigurationSchema.parse({type: 'geojson-dataset-series'});
     if (geojsonSeries.type !== 'geojson-dataset-series') {
       throw new Error('Unexpected series type in test setup');
     }
@@ -597,7 +598,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
   });
 
   it('supports calculations depending on geojson dataset series', async () => {
-    const geojsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    const geojsonSeries = GeoJsonDatasetSeriesConfigurationSchema.parse({type: 'geojson-dataset-series'});
     const calculationSeries = createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation');
 
     if (geojsonSeries.type !== 'geojson-dataset-series') {
@@ -690,7 +691,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
   });
 
   it('applies active group workspace value filters to whole group values', async () => {
-    const populationSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    const populationSeries = GeoJsonDatasetSeriesConfigurationSchema.parse({type: 'geojson-dataset-series'});
     if (populationSeries.type !== 'geojson-dataset-series') {
       throw new Error('Unexpected geojson series type in test setup');
     }

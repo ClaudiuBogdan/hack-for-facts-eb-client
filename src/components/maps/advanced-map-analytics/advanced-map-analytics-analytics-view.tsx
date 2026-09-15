@@ -1793,7 +1793,7 @@ function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
   }
 
   if (series.type === 'geojson-dataset-series') {
-    return getGeoJsonDatasetLabel(series.datasetKey);
+    return series.datasetKey === 'annualPopulation' ? t`Annual INS population (${series.year ?? ''})` : getGeoJsonDatasetLabel(series.datasetKey);
   }
 
   return series.id;

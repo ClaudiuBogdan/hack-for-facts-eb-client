@@ -91,7 +91,6 @@ import {
   createDefaultAdvancedMapAnalyticsValueFilterRule,
   createDefaultAdvancedMapAnalyticsSeries,
   createUniqueAdvancedMapAnalyticsId,
-  getGeoJsonDatasetUnit,
   MapGroupWorkspaceSchema,
 } from '@/schemas/advanced-map-analytics';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
@@ -2094,100 +2093,6 @@ export function MapAnalyticsWorkspace({
     [mapState.series]
   );
 
-  const localGeoJsonValuesBySeriesId = useMemo(() => {
-    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>();
-
-    if (enabledGeoJsonDatasetSeries.length === 0 || geoJsonFeatures.length === 0) {
-      return valuesBySeriesId;
-    }
-
-    for (const series of enabledGeoJsonDatasetSeries) {
-      const vector = new Map<string, string | undefined>();
-      const selectedPopulationKey = series.datasetKey;
-      const countyFilterIdSet = new Set(series.countyFilterIds);
-      const regionFilterIdSet = new Set(series.regionFilterIds);
-
-      for (const feature of geoJsonFeatures) {
-        const properties = feature?.properties;
-        const sirutaCode = String(properties?.natcode ?? '').trim();
-        if (!sirutaCode) {
-          continue;
-        }
-
-        if (countyFilterIdSet.size > 0) {
-          const countyId = readFiniteNumber(properties?.countyId);
-          if (countyId === undefined || !countyFilterIdSet.has(countyId)) {
-            continue;
-          }
-        }
-
-        if (regionFilterIdSet.size > 0) {
-          const regionId = readFiniteNumber(properties?.regionId);
-          if (regionId === undefined || !regionFilterIdSet.has(regionId)) {
-            continue;
-          }
-        }
-
-        const populationValue = readFiniteNumber(properties?.[selectedPopulationKey]);
-        if (populationValue === undefined) {
-          continue;
-        }
-
-        vector.set(sirutaCode, String(populationValue));
-      }
-
-      valuesBySeriesId.set(series.id, vector);
-    }
-
-    return valuesBySeriesId;
-  }, [enabledGeoJsonDatasetSeries, geoJsonFeatures]);
-
-  const localGeoJsonUnitsBySeriesId = useMemo(() => {
-    const unitsBySeriesId = new Map<string, string | undefined>();
-    for (const series of enabledGeoJsonDatasetSeries) {
-      const unitOverride = typeof series.unit === 'string' ? series.unit.trim() : '';
-      unitsBySeriesId.set(
-        series.id,
-        unitOverride.length > 0
-          ? unitOverride
-          : getGeoJsonDatasetUnit(series.datasetKey)
-      );
-    }
-    return unitsBySeriesId;
-  }, [enabledGeoJsonDatasetSeries]);
-
-  const mergedLocalValuesBySeriesId = useMemo(() => {
-    const valuesBySeriesId = new Map<string, Map<string, string | undefined>>();
-
-    for (const [seriesId, vector] of localGeoJsonValuesBySeriesId.entries()) {
-      valuesBySeriesId.set(seriesId, new Map(vector));
-    }
-
-    if (localValuesBySeriesId?.size) {
-      for (const [seriesId, vector] of localValuesBySeriesId.entries()) {
-        valuesBySeriesId.set(seriesId, new Map(vector));
-      }
-    }
-
-    return valuesBySeriesId;
-  }, [localGeoJsonValuesBySeriesId, localValuesBySeriesId]);
-
-  const mergedLocalUnitsBySeriesId = useMemo(() => {
-    const unitsBySeriesId = new Map<string, string | undefined>(
-      localGeoJsonUnitsBySeriesId
-    );
-
-    if (!localUnitsBySeriesId?.size) {
-      return unitsBySeriesId;
-    }
-
-    for (const [seriesId, unit] of localUnitsBySeriesId.entries()) {
-      unitsBySeriesId.set(seriesId, unit);
-    }
-
-    return unitsBySeriesId;
-  }, [localGeoJsonUnitsBySeriesId, localUnitsBySeriesId]);
-
   const {
     valuesBySeriesId,
     unfilteredValuesBySeriesId: rawUnfilteredValuesBySeriesId,
@@ -2210,8 +2115,8 @@ export function MapAnalyticsWorkspace({
     defaultInflationAdjusted: userInflationAdjusted,
     serializedDraftLength,
     enabled: editorState == null,
-    localValuesBySeriesId: mergedLocalValuesBySeriesId,
-    localUnitsBySeriesId: mergedLocalUnitsBySeriesId,
+    localValuesBySeriesId,
+    localUnitsBySeriesId,
     bundledGroupedSeriesData,
     bundledRemoteBaseSeriesHash,
   });

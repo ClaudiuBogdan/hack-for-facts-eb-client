@@ -23,7 +23,8 @@ describe('challenge-entity-public-maps', () => {
       )
 
       expect(populationSeries).toHaveLength(1)
-      expect(populationSeries[0]?.datasetKey).toBe('insPop2021')
+      expect(populationSeries[0]?.datasetKey).toBe('annualPopulation')
+      expect(populationSeries[0]?.year).toBe(2025)
       expect(definition.mapState.activeSeriesId).toBeDefined()
       expect(
         definition.mapState.series.some(

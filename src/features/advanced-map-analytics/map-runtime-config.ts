@@ -4,6 +4,7 @@ import type {
   ReportPeriodInputZ,
   SeriesConfiguration,
 } from '@/schemas/charts';
+import { mapPopulationYear } from '@/lib/map-series/population-year';
 import {
   parseAdvancedMapAnalyticsUrlState,
   type AdvancedMapAnalyticsUrlState,
@@ -198,6 +199,13 @@ function applyRuntimeYearOverride(
     return series;
   }
 
+  if (series.type === 'geojson-dataset-series' && series.datasetKey === 'annualPopulation') {
+    const year = reportPeriodOverride
+      ? mapPopulationYear(reportPeriodOverride)
+      : selectedYearOverride;
+    return year === undefined ? series : { ...series, year };
+  }
+
   if (series.type === 'line-items-aggregated-yearly') {
     return overrideSeriesReportPeriod(
       series,
@@ -298,6 +306,20 @@ export function applyMapRuntimeConfig(
     forceMapActiveView?: boolean;
   },
 ): AdvancedMapAnalyticsUrlState {
+  const financialYears = new Set(mapConfig.series.flatMap(series => {
+    if (series.type !== 'line-items-aggregated-yearly' && series.type !== 'commitments-analytics') {
+      return [];
+    }
+    return [mapPopulationYear(overrideSingleYearReportPeriod(
+      series.filter.report_period,
+      selectedYearOverride,
+    ))];
+  }));
+  // A shared companion year is unambiguous only when the effective budget periods agree.
+  let populationYearOverride = selectedYearOverride;
+  if (selectedYearOverride !== undefined && financialYears.size > 0) {
+    populationYearOverride = financialYears.size === 1 ? [...financialYears][0] : undefined;
+  }
   let didChangeSeries = false;
   const nextSeries = mapConfig.series.map((series) => {
     const nextSeriesEntry = applyRuntimeInflationAdjustedOverride(
@@ -307,7 +329,7 @@ export function applyMapRuntimeConfig(
             applyRuntimeYearOverride(
               series,
               reportPeriodOverride,
-              selectedYearOverride,
+              series.type === 'geojson-dataset-series' ? populationYearOverride : selectedYearOverride,
             ),
             reportTypeOverride,
           ),

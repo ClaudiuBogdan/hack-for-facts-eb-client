@@ -36,6 +36,7 @@ export function createUniqueAdvancedMapAnalyticsId(existingIds: Iterable<string>
 }
 
 export const GEOJSON_POPULATION_DATASET_KEYS = [
+  'annualPopulation',
   'insPop2021',
 ] as const;
 
@@ -48,10 +49,12 @@ export interface GeoJsonFilterOption {
 }
 
 const GEOJSON_DATASET_LABELS_BY_KEY: Record<GeoJsonDatasetKey, string> = {
+  annualPopulation: 'Annual INS population',
   insPop2021: 'INS Population 2021',
 };
 
 const GEOJSON_DATASET_UNITS_BY_KEY: Record<GeoJsonDatasetKey, string> = {
+  annualPopulation: 'inhabitants',
   insPop2021: 'inhabitants',
 };
 
@@ -174,11 +177,15 @@ export const GeoJsonDatasetSeriesConfigurationSchema = z.object({
   groupWorkspaceId: z.string().optional(),
   granularity: TerritorialGranularitySchema.optional(),
   datasetKey: GeoJsonDatasetKeySchema.default('insPop2021'),
+  // The legacy type name is retained for saved-map compatibility. Annual values use the API.
+  year: z.number().int().min(1).max(9999).optional(),
   countyFilterIds: GeoJsonFilterIdsSchema,
   regionFilterIds: GeoJsonFilterIdsSchema,
   config: MapSeriesDisplayConfigSchema,
   createdAt: z.string().default(() => new Date().toISOString()),
   updatedAt: z.string().default(() => new Date().toISOString()),
+}).refine(series => series.datasetKey !== 'annualPopulation' || series.year !== undefined, {
+  path: ['year'], message: 'Annual population requires an explicit year',
 });
 
 export const UploadedMapDatasetSeriesConfigurationSchema = z.object({
@@ -930,12 +937,13 @@ export function createDefaultAdvancedMapAnalyticsSeries(
   }
 
   if (type === 'geojson-dataset-series') {
-    const defaultDatasetKey: GeoJsonDatasetKey = 'insPop2021';
+    const defaultDatasetKey: GeoJsonDatasetKey = 'annualPopulation';
     const series = GeoJsonDatasetSeriesConfigurationSchema.parse({
       id: createAdvancedMapAnalyticsId(),
       type,
       label: 'GeoJSON dataset',
       datasetKey: defaultDatasetKey,
+      year: new Date().getFullYear(),
     }) as GeoJsonDatasetSeriesConfiguration;
     return series;
   }

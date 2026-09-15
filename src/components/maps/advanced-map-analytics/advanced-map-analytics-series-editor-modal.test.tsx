@@ -162,10 +162,10 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
       />
     );
 
-    expect(screen.getByText('Population')).toBeInTheDocument();
+    expect(screen.getAllByText('Population')[0]).toBeInTheDocument();
     expect(screen.getByText('County Filters')).toBeInTheDocument();
     expect(screen.getByText('Region Filters')).toBeInTheDocument();
-    expect(screen.getByText('INS Population 2021')).toBeInTheDocument();
+    expect(screen.getByText('Annual INS population')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'set-County Filters' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'set-Region Filters' })).toBeInTheDocument();
     expect(screen.queryByText('Open Table')).not.toBeInTheDocument();
@@ -209,7 +209,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
     const draftAfterSelect = { ...geojsonSeries };
     updater(draftAfterSelect);
 
-    expect(draftAfterSelect.datasetKey).toBe('insPop2021');
+    expect(draftAfterSelect.datasetKey).toBe('annualPopulation');
     expect(draftAfterSelect.countyFilterIds).toEqual([34]);
 
     fireEvent.click(screen.getByRole('button', { name: 'clear-County Filters' }));
@@ -219,7 +219,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
     const draftAfterClear = { ...geojsonSeries, countyFilterIds: [34] };
     clearUpdater(draftAfterClear);
 
-    expect(draftAfterClear.datasetKey).toBe('insPop2021');
+    expect(draftAfterClear.datasetKey).toBe('annualPopulation');
     expect(draftAfterClear.countyFilterIds).toEqual([]);
   });
 

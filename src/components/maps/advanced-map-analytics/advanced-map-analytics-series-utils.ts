@@ -2,6 +2,7 @@ import { BarChart3, Database, FileText, Sigma, Shapes } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Calculation, Operand } from '@/schemas/charts';
 import { CopiedSeriesSchema } from '@/schemas/charts';
+import { mapPopulationYear } from '@/lib/map-series/population-year';
 import type {
   CopiedAdvancedMapSeries,
   AdvancedMapAnalyticsUrlState,
@@ -29,7 +30,7 @@ export function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
   }
 
   if (series.type === 'geojson-dataset-series') {
-    return getGeoJsonDatasetLabel(series.datasetKey);
+    return series.datasetKey === 'annualPopulation' ? t`Annual INS population (${series.year ?? ''})` : getGeoJsonDatasetLabel(series.datasetKey);
   }
 
   if (series.type === 'uploaded-map-dataset') {
@@ -85,7 +86,7 @@ export const SERIES_TYPE_LABELS: Record<MapSupportedSeries['type'], string> = {
   'line-items-aggregated-yearly': t`Execution analytics`,
   'commitments-analytics': t`Commitments analytics`,
   'ins-series': t`INS series`,
-  'geojson-dataset-series': t`GeoJSON dataset`,
+  'geojson-dataset-series': t`Population`,
   'uploaded-map-dataset': t`Uploaded dataset`,
   'map-grouped-value-series': t`Grouped value series`,
   'aggregated-series-calculation': t`Calculated series`,
@@ -324,6 +325,10 @@ export function convertSeriesToType(
   }
 
   const replacementSeries = createDefaultAdvancedMapAnalyticsSeries(nextType);
+  if (replacementSeries.type === 'geojson-dataset-series' &&
+    (currentSeries.type === 'line-items-aggregated-yearly' || currentSeries.type === 'commitments-analytics')) {
+    replacementSeries.year = mapPopulationYear(currentSeries.filter.report_period) ?? replacementSeries.year;
+  }
   replacementSeries.id = currentSeries.id;
   replacementSeries.enabled = currentSeries.enabled;
   replacementSeries.label = currentSeries.label;

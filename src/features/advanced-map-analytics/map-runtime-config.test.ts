@@ -237,3 +237,31 @@ describe('applyMapRuntimeConfig', () => {
     );
   });
 });
+
+
+describe('annual population runtime year', () => {
+  function state(period: {type: 'YEAR' | 'MONTH'; selection: {interval: {start: string; end: string}}}) {
+    const budget = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    if (budget.type !== 'line-items-aggregated-yearly') throw new Error('Expected budget');
+    return AdvancedMapAnalyticsUrlStateSchema.parse({series: [
+      {...budget, filter: {...budget.filter, report_period: period}},
+      {type: 'geojson-dataset-series', id: 'population', datasetKey: 'annualPopulation', year: 2025},
+      {type: 'geojson-dataset-series', id: 'census', datasetKey: 'insPop2021'},
+    ]});
+  }
+  it.each([
+    [{type: 'YEAR' as const, selection: {interval: {start: '2025', end: '2025'}}}, 2023],
+    [{type: 'YEAR' as const, selection: {interval: {start: '2024', end: '2025'}}}, 2025],
+    [{type: 'MONTH' as const, selection: {interval: {start: '2024-01', end: '2024-09'}}}, 2024],
+  ])('follows the effective financial period %#', (period, expectedYear) => {
+    const next = applyMapRuntimeConfig(state(period), {selectedYearOverride: 2023});
+    expect(next.series.find(series => series.id === 'population')).toMatchObject({year: expectedYear});
+    expect(next.series.find(series => series.id === 'census')).not.toHaveProperty('year');
+  });
+  it('uses the latest explicit interval year and preserves saved years without overrides', () => {
+    const original = state({type: 'YEAR', selection: {interval: {start: '2025', end: '2025'}}});
+    expect(applyMapRuntimeConfig(original, {}).series.find(series => series.id === 'population')).toMatchObject({year: 2025});
+    const next = applyMapRuntimeConfig(original, {selectedYearOverride: 2023, reportPeriodOverride: {type: 'YEAR', selection: {interval: {start: '2021', end: '2024'}}}});
+    expect(next.series.find(series => series.id === 'population')).toMatchObject({year: 2024});
+  });
+});

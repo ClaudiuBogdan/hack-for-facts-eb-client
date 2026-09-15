@@ -176,7 +176,8 @@ function createGeoJsonPopulationSeries(id: string) {
     enabled: true,
     createdAt: MAP_PREVIEW_TIMESTAMP,
     updatedAt: MAP_PREVIEW_TIMESTAMP,
-    datasetKey: 'insPop2021' as const,
+    datasetKey: 'annualPopulation' as const,
+    year: 2025,
     countyFilterIds: [],
     regionFilterIds: [],
   }
@@ -324,7 +325,7 @@ ${buildPreviewConfigSection({
 ### Serii de date
 
 - **Cheltuieli UAT** — cheltuieli totale pentru fiecare UAT
-- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
+- **Populație** — populația anuală INS pentru ultimul an selectat
 
 ### Ce include
 
@@ -395,7 +396,7 @@ ${buildPreviewConfigSection({
 ### Serii de date
 
 - **Venituri UAT** — toate veniturile bugetare din sursele incluse
-- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
+- **Populație** — populația anuală INS pentru ultimul an selectat
 
 ### Ce include
 
@@ -464,7 +465,7 @@ ${buildPreviewConfigSection({
 ### Serii de date
 
 - **Balanță bugetară** — venituri totale minus cheltuieli totale
-- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
+- **Populație** — populația anuală INS pentru ultimul an selectat
 
 ### Ce include
 
@@ -564,7 +565,7 @@ ${buildPreviewConfigSection({
 
 - **Impozite și taxe pe proprietate** (fn:07)
 - **Taxe pe utilizarea bunurilor** (fn:16)
-- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
+- **Populație** — populația anuală INS pentru ultimul an selectat
 
 ### Ce include
 

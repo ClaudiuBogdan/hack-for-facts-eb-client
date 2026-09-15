@@ -140,7 +140,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
       : displayedSeriesType === 'ins-series'
         ? t`INS Settings`
         : displayedSeriesType === 'geojson-dataset-series'
-          ? t`GeoJSON dataset`
+          ? t`Population`
           : displayedSeriesType === 'uploaded-map-dataset'
             ? t`Uploaded datasets`
             : t`Filters`;
@@ -737,6 +737,7 @@ function GeoJsonDatasetSeriesEditor({
 
                 const shouldAutoLabel = shouldAutoUpdateGeoJsonLabel(draft.label, draft.datasetKey);
                 draft.datasetKey = nextDatasetKey as GeoJsonDatasetKey;
+                if (draft.datasetKey === 'annualPopulation') draft.year ??= new Date().getFullYear();
 
                 if (shouldAutoLabel) {
                   draft.label = getGeoJsonDatasetLabel(draft.datasetKey);
@@ -750,12 +751,21 @@ function GeoJsonDatasetSeriesEditor({
             <SelectContent>
               {GEOJSON_POPULATION_DATASET_KEYS.map((populationKey) => (
                 <SelectItem key={populationKey} value={populationKey}>
-                  {getGeoJsonDatasetLabel(populationKey)}
+                  {populationKey === 'annualPopulation' ? t`Annual INS population` : getGeoJsonDatasetLabel(populationKey)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FormField>
+        {series.datasetKey === 'annualPopulation' && <FormField label={t`Population year`} htmlFor="map-population-year" className="mt-4 md:max-w-md">
+          <Input id="map-population-year" type="number" min={1} max={9999} value={series.year ?? ''}
+            onChange={event => {
+              const year = Number(event.target.value);
+              if (!Number.isInteger(year) || year < 1 || year > 9999) return;
+              onUpdateSeries(series.id, draft => { if (draft.type === 'geojson-dataset-series') draft.year = year; });
+            }} />
+          <p className="mt-2 text-xs text-muted-foreground">{t`Uses the same annual INS population as budget per-capita calculations. Earlier observations may be carried forward; coverage details appear with the map.`}</p>
+        </FormField>}
       </div>
 
       <div className="rounded-lg border">

@@ -13,6 +13,7 @@ import type {
 } from '@/schemas/charts'
 import type { ChartUrlState } from '@/components/charts/page-schema'
 import { buildTreemapChartState } from '@/lib/chart-links'
+import { mapPopulationYear } from '@/lib/map-series/population-year'
 import type { ChallengeLocale } from '../../types'
 import type {
   BudgetItemAnalyticsPageContext,
@@ -281,6 +282,7 @@ function buildMapStateDefinition(
           },
       {
         ...populationSeries,
+        year: mapPopulationYear(isCommitmentsTab ? input.commitmentsMapFilter.report_period : input.executionMapFilter.report_period) ?? populationSeries.year,
         label: copy.populationLabel,
         unit: copy.populationUnit,
       },
