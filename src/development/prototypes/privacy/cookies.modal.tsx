@@ -6,7 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { MonoLabel } from '../landing/home-refs.mono-label'
-import { CookieArtStyles, PixelCookie, type CookieState } from './cookies.cookie-art'
+import { CookieIllustration, type CookieState } from './cookies.cookie-art'
 import {
   ESSENTIAL_CATEGORY,
   OPTIONAL_CATEGORIES,
@@ -230,13 +230,12 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
               answer now, and the answer is the thing to look at. */}
           <div
             className={cn(
-              'tpz-cookie-lean shrink-0 transition-transform duration-500 ease-out',
-              view === 'saved' && 'scale-110',
+              'shrink-0 transition-transform duration-500 ease-out motion-reduce:transition-none',
+              view === 'saved' && 'motion-safe:scale-110',
             )}
           >
-            <PixelCookie
+            <CookieIllustration
               state={cookieState}
-              delayMs={ENTER_DELAY_MS + 160}
               className="size-14 sm:size-16"
             />
           </div>
@@ -428,7 +427,6 @@ export function ConsentModalStage() {
 
   return (
     <div className="relative min-h-[140vh] bg-background" data-dev-marker={PROTOTYPE_MARKER}>
-      <CookieArtStyles />
       <ConsentCardStyles />
       <div className="border-b bg-muted/30">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-2 sm:px-8">

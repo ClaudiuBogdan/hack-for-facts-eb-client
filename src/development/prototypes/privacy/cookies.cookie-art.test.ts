@@ -1,31 +1,37 @@
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { COOKIE_CELLS, COOKIE_GRID, COOKIE_RECT_COUNT, buildCells } from './cookies.cookie-art'
+import { CookieIllustration, type CookieState } from './cookies.cookie-art'
 
-describe('pixel cookie', () => {
-  it('stays inside the element budget DESIGN.md sets for per-element animation', () => {
-    expect(COOKIE_RECT_COUNT).toBeLessThan(250)
+const renderCookie = (state: CookieState) =>
+  renderToStaticMarkup(createElement(CookieIllustration, { state }))
+
+describe('cookie illustration', () => {
+  it.each(['whole', 'bitten', 'plain'] as const)('server-renders the %s state with accessible artwork', (state) => {
+    const html = renderCookie(state)
+    const container = document.createElement('div')
+    container.innerHTML = html
+    const svg = container.querySelector('svg')
+    expect(svg?.getAttribute('data-cookie')).toBe(state)
+    expect(svg?.getAttribute('role')).toBe('img')
+    expect(svg?.getAttribute('aria-label')).toBeTruthy()
+    expect(container.querySelectorAll('path').length).toBeGreaterThan(0)
   })
 
-  it('is deterministic, so the server and the client draw the same cookie', () => {
-    const key = (cells: typeof COOKIE_CELLS) =>
-      cells.map((cell) => `${cell.x},${cell.y},${cell.role},${cell.bitten},${cell.seed.toFixed(6)}`).join('|')
-    expect(key(buildCells())).toBe(key(COOKIE_CELLS))
-    expect(COOKIE_CELLS.every((cell) => cell.seed >= 0 && cell.seed < 1)).toBe(true)
-    // Pinned: a change to the map, the chips or the bite must be a decision.
-    expect(COOKIE_CELLS.filter((cell) => cell.bitten).length).toBe(19)
-    expect(COOKIE_CELLS.filter((cell) => cell.role === 'chip').length).toBe(17)
-  })
-
-  it('bites a visible share of the disc from the top right and leaves the rest', () => {
-    const bitten = COOKIE_CELLS.filter((cell) => cell.bitten)
-    expect(bitten.length).toBeGreaterThan(10)
-    expect(bitten.length).toBeLessThan(COOKIE_CELLS.length / 4)
-    expect(bitten.every((cell) => cell.x >= COOKIE_GRID / 2 && cell.y < COOKIE_GRID / 2)).toBe(true)
-  })
-
-  it('keeps chips both inside and outside the bite, so both states still show chocolate', () => {
-    const chips = COOKIE_CELLS.filter((cell) => cell.role === 'chip')
-    expect(chips.some((cell) => cell.bitten)).toBe(true)
-    expect(chips.some((cell) => !cell.bitten)).toBe(true)
+  it('keeps mask references unique when several illustrations share a page', () => {
+    const container = document.createElement('div')
+    container.innerHTML = renderToStaticMarkup(createElement('div', {},
+      createElement(CookieIllustration, { state: 'whole' }),
+      createElement(CookieIllustration, { state: 'bitten' }),
+    ))
+    const ids = [...container.querySelectorAll('[id]')].map((element) => element.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const svg of container.querySelectorAll('svg')) {
+      for (const element of svg.querySelectorAll('[mask], [fill^="url"]')) {
+        const reference = element.getAttribute('mask') ?? element.getAttribute('fill')
+        const id = reference?.slice(5, -1)
+        expect([...svg.querySelectorAll('[id]')].some((definition) => definition.id === id)).toBe(true)
+      }
+    }
   })
 })

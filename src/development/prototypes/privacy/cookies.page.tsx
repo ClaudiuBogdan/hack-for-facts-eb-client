@@ -9,8 +9,7 @@ import { cn, getUserLocale } from '@/lib/utils'
 import { Frame, PROTOTYPE_MARKER } from '../landing/about.parts'
 import { MonoLabel } from '../landing/home-refs.mono-label'
 import { RevealStyles, useRevealOnView } from '../landing/home-refs.reveal'
-import { ScrambleText, scrambleWithin, stopScrambling } from '../landing/home-refs.scramble'
-import { CookieArtStyles, PixelCookie } from './cookies.cookie-art'
+import { CookieIllustration } from './cookies.cookie-art'
 import {
   ESSENTIAL_CATEGORY,
   OPTIONAL_CATEGORIES,
@@ -24,20 +23,26 @@ import {
  *
  * The shipped page is three shadcn cards under a settings icon — competent and
  * anonymous. This one is built from the landing's parts so it reads as a page
- * of the same site: the ruled frame, numbered bands, a lattice of cells for the
- * choices, and mono captions for state. Nothing here is a card inside a card.
+ * of the same site: the ruled frame, a numbered band, full-width choice rows,
+ * and mono captions for state. Nothing here is a card inside a card.
  *
- * Two things the shipped page does not do:
+ * **One choice per row, full width.** The choices were three cells side by
+ * side, which made each one a narrow column of wrapped text and put the switch
+ * at the bottom of a card — three switches on three different baselines, none
+ * of them where the eye lands. A row per choice gives every switch the same
+ * place on the right, the same size target, and the whole text block as its
+ * label, which is the part of the page that has to be effortless.
  *
- * - **It shows the inventory.** The cookie policy lists every key the app
- *   writes; this page lists them too, next to the switches that govern them,
- *   with the state each one is in *right now*. `DESIGN.md` §Data Trust asks
- *   every surface to answer "where did this come from" — for a consent page the
- *   equivalent question is "what exactly did I just allow", and the answer
- *   belongs beside the switch, not in a policy three clicks away.
- * - **The picture reflects the stored answer.** The same cookie as the card,
- *   in the state the reader last chose, so the page opens by telling them
- *   where they stand before they read a word.
+ * **There is no inventory table.** It listed every key the app writes with its
+ * lifetime and its state — the cookie policy's own table, restated. Two copies
+ * of a list like that is one more than can be kept true, and the policy is one
+ * click away in the footer. What survived is the sentence per choice that says
+ * what it actually stores, beside the switch that governs it, which is the part
+ * a reader deciding needs.
+ *
+ * **The picture reflects the stored answer.** The same cookie as the card, in
+ * the state the reader last chose, so the page opens by telling them where they
+ * stand before they read a word.
  *
  * `redirect` is read with `useSearch({ strict: false })` since a prototype
  * cannot bind to `/cookies`; the safe-path check is the shipped one.
@@ -52,30 +57,6 @@ const CATEGORY_ICON: Readonly<Record<'essential' | OptionalCategoryKey, LucideIc
   sentry: Bug,
 }
 
-/**
- * What the app writes, from the cookie policy's own breakdown. `governedBy`
- * ties each row to the switch that controls it, so the table's state column is
- * derived from consent rather than typed in.
- */
-const INVENTORY: readonly {
-  readonly name: string
-  readonly governedBy: 'essential' | 'account' | OptionalCategoryKey
-  readonly purpose: string
-  readonly lifetime: string
-}[] = [
-  { name: 'cookie-consent', governedBy: 'essential', purpose: 'Alegerea de pe această pagină', lifetime: 'până o ștergi' },
-  { name: 'ui-theme · user-locale · user-currency · user-inflation-adjusted', governedBy: 'essential', purpose: 'Cum îți afișăm cifrele: temă, limbă, monedă, ajustare la inflație', lifetime: 'până le ștergi' },
-  { name: 'saved-charts · chart-categories', governedBy: 'essential', purpose: 'Graficele salvate și ordinea lor', lifetime: 'până le ștergi' },
-  { name: 'guided-platform-tour-progress · learning_progress_*', governedBy: 'essential', purpose: 'Unde ai rămas: turul ghidat, progresul la învățare', lifetime: 'până le ștergi' },
-  { name: '__session · __clerk_*', governedBy: 'account', purpose: 'Sesiunea contului, dacă ți-ai făcut unul', lifetime: 'sesiune · 30 de zile cu „ține-mă minte”' },
-  { name: 'ph_*', governedBy: 'analytics', purpose: 'Identificator PostHog pentru statistici', lifetime: 'până la 1 an' },
-  { name: 'sentryReplaySession', governedBy: 'sentry', purpose: 'Pașii de dinaintea erorii, pentru contextul raportului', lifetime: 'sesiunea' },
-]
-
-function startArrivalEffects(block: Element, delay: number) {
-  scrambleWithin(block, delay)
-}
-
 export function CookieSettingsPage() {
   const { saved, draft, hasDecision, hydrated, isDirty, patch, save, essentialOnly, everything } =
     useConsentDraft()
@@ -83,8 +64,7 @@ export function CookieSettingsPage() {
   const redirect = isSafeRedirect(search.redirect) ? search.redirect : undefined
   const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement>(null)
-  useRevealOnView(rootRef, startArrivalEffects)
-  useEffect(() => () => stopScrambling(), [])
+  useRevealOnView(rootRef)
 
   // The moment of saving, so the confirmation line can say so and then let
   // the "last changed" date take over. Local, since a save from another tab
@@ -109,15 +89,9 @@ export function CookieSettingsPage() {
   const locale = getUserLocale()
   const formatDate = (iso: string, month: 'long' | 'short') =>
     new Date(iso).toLocaleDateString(locale, { day: 'numeric', month, year: 'numeric' })
-  const stateOf = (key: 'essential' | 'account' | OptionalCategoryKey): string => {
-    if (key === 'essential') return 'mereu'
-    if (key === 'account') return 'doar cu cont'
-    return saved[key] ? 'pornit' : 'oprit'
-  }
 
   return (
     <div ref={rootRef} className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
-      <CookieArtStyles />
       <RevealStyles />
 
       {/* Head — open band, never hidden by the reveal. The server does not
@@ -149,7 +123,7 @@ export function CookieSettingsPage() {
             </div>
             <div className="flex items-end gap-6 lg:col-span-4 lg:col-start-9 lg:justify-end">
               <div className="tpz-cookie-lean">
-                <PixelCookie state={cookieState} className="size-32 sm:size-40" />
+                <CookieIllustration state={cookieState} className="size-32 sm:size-40" />
               </div>
               <dl className="pb-1">
                 <dt>
@@ -179,40 +153,31 @@ export function CookieSettingsPage() {
         </Frame>
       </section>
 
-      {/* Choices — dense band, the landing's lattice. */}
-      <section className="border-b" aria-labelledby="cookies-choose">
+      {/* Choices. No band heading: the rows are the only thing here, the
+          headline above already says what they are, and a numbered title over
+          three switches was labelling the obvious. The region keeps a name for
+          anyone listing landmarks. */}
+      <section className="border-b" aria-label="Alegerile tale">
         <Frame className="py-12 sm:py-14">
-          <div data-reveal className="flex items-center gap-3">
-            <MonoLabel className="text-primary">01</MonoLabel>
-            <h2 id="cookies-choose">
-              <MonoLabel className="text-foreground">
-                <ScrambleText>Alege</ScrambleText>
-              </MonoLabel>
-            </h2>
-            <span aria-hidden="true" className="h-px flex-1 bg-border" />
-            <MonoLabel className="text-muted-foreground/60 tabular-nums">03</MonoLabel>
-          </div>
-
-          <div className="mt-4 grid grid-cols-1 border md:grid-cols-3">
-            <ChoiceCell
+          {/* No rule above the first row: the band's own divider is a few
+              pixels up, and two hairlines that close together read as a
+              mistake. Each row draws its own bottom edge instead. */}
+          <div>
+            <ChoiceRow
               icon={CATEGORY_ICON.essential}
               index={ESSENTIAL_CATEGORY.index}
               title={ESSENTIAL_CATEGORY.title}
               vendor={ESSENTIAL_CATEGORY.vendor}
               summary={ESSENTIAL_CATEGORY.summary}
               detail={ESSENTIAL_CATEGORY.detail}
-              control={
-                <div className="flex items-center gap-3">
-                  <Switch checked disabled aria-label="Esențiale, mereu active" />
-                  <MonoLabel className="text-muted-foreground">Mereu</MonoLabel>
-                </div>
-              }
+              state={<MonoLabel className="text-muted-foreground">Mereu</MonoLabel>}
+              control={<Switch checked disabled aria-label="Esențiale, mereu active" />}
             />
             {OPTIONAL_CATEGORIES.map((category) => {
               const id = `cookies-${category.key}`
               const on = draft[category.key]
               return (
-                <ChoiceCell
+                <ChoiceRow
                   key={category.key}
                   icon={CATEGORY_ICON[category.key]}
                   index={category.index}
@@ -222,20 +187,22 @@ export function CookieSettingsPage() {
                   detail={category.detail}
                   labelFor={id}
                   active={on}
-                  control={
-                    <div className="flex items-center gap-3">
-                      <Switch
-                        id={id}
-                        checked={on}
-                        onCheckedChange={(checked) => patch({ [category.key]: checked })}
-                      />
+                  state={
+                    <>
                       <MonoLabel className={cn(on ? 'text-foreground' : 'text-muted-foreground')}>
                         {on ? 'Pornit' : 'Oprit'}
                       </MonoLabel>
                       {on !== saved[category.key] ? (
                         <MonoLabel className="text-primary">nesalvat</MonoLabel>
                       ) : null}
-                    </div>
+                    </>
+                  }
+                  control={
+                    <Switch
+                      id={id}
+                      checked={on}
+                      onCheckedChange={(checked) => patch({ [category.key]: checked })}
+                    />
                   }
                 />
               )
@@ -284,87 +251,15 @@ export function CookieSettingsPage() {
         </Frame>
       </section>
 
-      {/* Inventory — what exactly is written, by whom, for how long. */}
-      <section className="border-b" aria-labelledby="cookies-inventory">
-        <Frame className="py-12 sm:py-14">
-          <div data-reveal className="flex items-center gap-3">
-            <MonoLabel className="text-primary">02</MonoLabel>
-            <h2 id="cookies-inventory">
-              <MonoLabel className="text-foreground">
-                <ScrambleText>Inventar</ScrambleText>
-              </MonoLabel>
-            </h2>
-            <span aria-hidden="true" className="h-px flex-1 bg-border" />
-            <MonoLabel className="text-muted-foreground/60 tabular-nums">
-              {String(INVENTORY.length).padStart(2, '0')}
-            </MonoLabel>
-          </div>
-          <p data-reveal className="mt-4 max-w-[62ch] text-base leading-relaxed text-muted-foreground">
-            Tot ce scrie aplicația în browserul tău, cu starea de acum. Lista
-            este aceeași cu cea din politica de cookie-uri; aici e lângă
-            comutatoarele care o guvernează.
-          </p>
-          <div data-reveal className="mt-6 overflow-x-auto border-t">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th scope="col" className="py-2.5 pr-4 text-left font-normal">
-                    <MonoLabel className="text-muted-foreground">Cheie</MonoLabel>
-                  </th>
-                  <th scope="col" className="hidden py-2.5 pr-4 text-left font-normal sm:table-cell">
-                    <MonoLabel className="text-muted-foreground">Scop</MonoLabel>
-                  </th>
-                  <th scope="col" className="hidden py-2.5 pr-4 text-left font-normal sm:table-cell">
-                    <MonoLabel className="text-muted-foreground">Durată</MonoLabel>
-                  </th>
-                  <th scope="col" className="py-2.5 text-right font-normal">
-                    <MonoLabel className="text-muted-foreground">Acum</MonoLabel>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {INVENTORY.map((row) => {
-                  const state = stateOf(row.governedBy)
-                  const off = state === 'oprit'
-                  return (
-                    <tr key={row.name} className={cn('border-b', off && 'text-muted-foreground')}>
-                      {/* On a phone the row folds: key, then purpose, then
-                          lifetime, in one cell — three narrow columns of
-                          wrapped text read as a broken table, not a table. */}
-                      <td className="py-3 pr-4 align-top">
-                        <code className="font-mono text-xs tabular-nums text-foreground">{row.name}</code>
-                        <span className="mt-1 block leading-snug sm:hidden">{row.purpose}</span>
-                        <MonoLabel className="mt-1.5 block leading-relaxed text-muted-foreground sm:hidden">
-                          {row.lifetime}
-                        </MonoLabel>
-                      </td>
-                      <td className="hidden py-3 pr-4 align-top leading-snug sm:table-cell">{row.purpose}</td>
-                      <td className="hidden py-3 pr-4 align-top leading-snug text-muted-foreground sm:table-cell">
-                        {row.lifetime}
-                      </td>
-                      <td className="py-3 text-right align-top whitespace-nowrap">
-                        <MonoLabel
-                          className={cn(
-                            off ? 'text-muted-foreground/60' : 'text-foreground',
-                            state === 'pornit' && 'text-primary',
-                          )}
-                        >
-                          {state}
-                        </MonoLabel>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Frame>
-      </section>
-
-      {/* Where the long version lives. */}
+      {/* Where the long version lives — including the full list of keys and
+          their lifetimes, which is the policy's job to keep current. */}
       <section>
         <Frame className="py-10 sm:py-12">
-          <p data-reveal className="flex flex-wrap gap-x-6 gap-y-2">
+          <p data-reveal className="max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
+            Lista completă a ce se scrie în browserul tău, cu durata fiecărei
+            chei, este în politica de cookie-uri.
+          </p>
+          <p data-reveal className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
             <Link to="/cookie-policy" className={FOOT_LINK_CLASS}>
               <MonoLabel>Politica de cookie-uri</MonoLabel>
             </Link>
@@ -382,10 +277,15 @@ const FOOT_LINK_CLASS =
   'text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring rounded-sm'
 
 /**
- * One choice, as a lattice cell. The shipped page's card, without the card:
- * the cell's edges are the lattice's own hairlines.
+ * One choice, full width, with the switch on the right.
+ *
+ * The text block is the switch's label, so the target is the row rather than a
+ * 44x24 control — everything except the switch itself, which is deliberately
+ * left outside the `<label>`. A Radix `Switch` renders a button, not an input,
+ * so a label wrapping it would forward the click it just received and toggle
+ * twice.
  */
-function ChoiceCell({
+function ChoiceRow({
   icon: Icon,
   index,
   title,
@@ -393,6 +293,7 @@ function ChoiceCell({
   summary,
   detail,
   control,
+  state,
   labelFor,
   active = true,
 }: {
@@ -403,41 +304,48 @@ function ChoiceCell({
   readonly summary: string
   readonly detail: string
   readonly control: ReactNode
+  readonly state: ReactNode
   readonly labelFor?: string
   readonly active?: boolean
 }) {
   const body = (
     <>
-      <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
-      <MonoLabel className="mt-1.5 block text-muted-foreground">{vendor}</MonoLabel>
-      <span className="mt-3 block text-sm leading-snug text-foreground">{summary}</span>
+      <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="text-base font-semibold tracking-tight text-foreground">{title}</span>
+        <MonoLabel className="text-muted-foreground">{vendor}</MonoLabel>
+      </span>
+      <span className="mt-2 block text-sm leading-snug text-foreground">{summary}</span>
+      <span className="mt-1.5 block text-xs leading-relaxed text-muted-foreground">{detail}</span>
     </>
   )
   return (
     <div
       data-reveal
       className={cn(
-        '-ml-px -mt-px flex flex-col border-l border-t p-5 transition-colors',
-        !active && 'bg-muted/20',
+        'flex items-center gap-4 border-b py-5 transition-colors sm:gap-6',
+        !active && 'text-muted-foreground',
       )}
     >
-      <span className="flex items-center justify-between">
-        <Icon
-          className={cn('size-4 transition-colors', active ? 'text-primary' : 'text-muted-foreground')}
-          aria-hidden="true"
-        />
-        <MonoLabel className="text-muted-foreground/50">{index}</MonoLabel>
-      </span>
+      <MonoLabel className="hidden shrink-0 self-start pt-1 text-muted-foreground/50 sm:block">
+        {index}
+      </MonoLabel>
+      <Icon
+        className={cn(
+          'mt-0.5 size-5 shrink-0 self-start transition-colors',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
+        aria-hidden="true"
+      />
       {labelFor ? (
-        <label htmlFor={labelFor} className="mt-4 block cursor-pointer">
+        <label htmlFor={labelFor} className="min-w-0 flex-1 cursor-pointer">
           {body}
         </label>
       ) : (
-        <div className="mt-4">{body}</div>
+        <div className="min-w-0 flex-1">{body}</div>
       )}
-      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{detail}</p>
-      <div className="mt-auto border-t pt-4">
-        <div className="mt-0">{control}</div>
+      <div className="flex shrink-0 flex-col items-end gap-2 pl-2">
+        {control}
+        <span className="flex flex-col items-end gap-0.5 text-right">{state}</span>
       </div>
     </div>
   )
