@@ -1,3 +1,7 @@
+import { isSearchInputError } from '../api/search-input-error'
+import { t } from '@lingui/core/macro'
+import { useEntityTagLabel } from '@/hooks/filters/useFilterLabels'
+import { Button } from '@/components/ui/button'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -54,6 +58,7 @@ export function EntitySearchPage() {
   const searchParams = Route.useSearch()
   const navigate = useNavigate({ from: '/experimental/search' })
   const queryClient = useQueryClient()
+  const tagLabels = useEntityTagLabel()
   const inputRef = useRef<HTMLInputElement | null>(null)
   const rowRefs = useRef<Array<HTMLLIElement | null>>([])
   const actionRefs = useRef<Array<HTMLAnchorElement | null>>([])
@@ -72,10 +77,13 @@ export function EntitySearchPage() {
       q: normalizedQuery,
       docTypes: selectedTypes.length > 0 ? selectedTypes : undefined,
       county: normalizedCounty,
+      isUat: searchParams.isUat,
+      entityTags: searchParams.tags,
+      excludeEntityTags: searchParams.excludeTags,
       ...(activeOnly && { isActive: true }),
       limit: SEARCH_LIMIT,
     }),
-    [activeOnly, normalizedCounty, normalizedQuery, selectedTypes],
+    [activeOnly, normalizedCounty, normalizedQuery, selectedTypes, searchParams.isUat, searchParams.tags, searchParams.excludeTags],
   )
 
   const search = useEntitySearch(queryInput)
@@ -179,6 +187,9 @@ export function EntitySearchPage() {
       search: (previous) => ({
         ...previous,
         types: undefined,
+        isUat: undefined,
+        tags: undefined,
+        excludeTags: undefined,
         county: undefined,
         active: undefined,
       }),
@@ -265,6 +276,21 @@ export function EntitySearchPage() {
         onKeyDown={handleInputKeyDown}
       />
 
+      {(searchParams.isUat !== undefined || searchParams.tags?.length || searchParams.excludeTags?.length) ? (
+        <div className="flex flex-wrap gap-2" aria-label={t`Filtre active`}>
+          {searchParams.isUat !== undefined && <Button size="sm" variant="secondary"
+            onClick={() => { void navigate({ to: '.', search: previous => ({ ...previous, isUat: undefined }) }) }}>
+            {searchParams.isUat ? t`Primării` : <>{t`Instituții`} · {t`Fără primării`}</>} ×
+          </Button>}
+          {(['tags', 'excludeTags'] as const).flatMap(field => (searchParams[field] ?? []).map(tag => (
+            <Button key={`${field}:${tag}`} size="sm" variant="secondary"
+              onClick={() => { void navigate({ to: '.', search: previous => ({ ...previous, [field]: previous[field]?.filter(value => value !== tag) }) }) }}>
+              {field === 'excludeTags' ? '− ' : ''}{tagLabels.map(tag)} ×
+            </Button>
+          )))}
+        </div>
+      ) : null}
+
       {shouldShowFacets ? (
         <EntityFacetChips
           facets={facets}
@@ -294,7 +320,7 @@ export function EntitySearchPage() {
             onSelectPopularType={selectPopularType}
           />
         ) : search.isError ? (
-          <EntityEmptyState variant="error" onRetry={retrySearch} />
+          <EntityEmptyState variant={isSearchInputError(search.error) ? "invalid" : "error"} onRetry={retrySearch} />
         ) : isInitialLoading ? (
           <EntitySearchSkeleton listboxId={LISTBOX_ID} />
         ) : hasResults ? (

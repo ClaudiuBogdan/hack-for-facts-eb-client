@@ -15,6 +15,9 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
     $docTypes: [String!]
     $roles: [String!]
     $county: String
+    $isUat: Boolean
+    $entityTags: [String!]
+    $excludeEntityTags: [String!]
     $isActive: Boolean
     $limit: Int
     $offset: Int
@@ -24,6 +27,9 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
       docTypes: $docTypes
       roles: $roles
       county: $county
+      isUat: $isUat
+      entityTags: $entityTags
+      excludeEntityTags: $excludeEntityTags
       isActive: $isActive
       limit: $limit
       offset: $offset
@@ -52,6 +58,8 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
         identifiers
         roles
         isActive
+        isUat
+        entityTags
       }
     }
   }
@@ -86,12 +94,14 @@ const rawSearchHitSchema = z.object({
   identifiers: z.array(z.string()).nullable(),
   roles: z.array(z.string()).nullable(),
   isActive: z.boolean().nullable(),
+  isUat: z.boolean().nullish(),
+  entityTags: z.array(z.string()).nullish(),
 })
 
 export const searchEntitiesResponseSchema = z.object({
   searchEntities: z.object({
     query: z.string(),
-    engine: z.enum(['meili', 'postgres']),
+    engine: z.enum(['meili', 'postgres', 'none']),
     // DEPLOY ORDER: SERVER FIRST, THEN CLIENT — this default does not change
     // that. An earlier version of this comment claimed the default made a
     // client-first rollout safe; it does not. The document above SELECTS

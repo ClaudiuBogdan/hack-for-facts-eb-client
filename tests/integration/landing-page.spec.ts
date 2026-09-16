@@ -8,14 +8,15 @@
  * - Footer navigation
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
 
 const HERO_HEADING = /decizii informate|informed decisions/i
 const SEARCH_NAME = /entit|cui/i
 
 test.describe('Landing Page', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, mockApi }) => {
+    await mockApi.mockGraphQL('SearchEntities', 'shared/search-cluj')
     await page.goto('/')
     await expect(page.getByRole('heading', { name: HERO_HEADING, level: 1 })).toBeVisible({
       timeout: 10000,
@@ -68,23 +69,20 @@ test.describe('Landing Page', () => {
     }
   })
 
-  test('entity search combobox is functional', async ({ page }) => {
+  test('keyword chips send the UAT filter before rendering results', async ({ page }) => {
     const searchInput = page.getByRole('combobox', { name: SEARCH_NAME })
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    await searchInput.click()
-    // `cluj` alone answers with companies named CLUJ-something; the palette's
-    // synonym on `primaria` is what puts the municipality first.
-    await searchInput.pressSequentially('primaria cluj')
-
-    // Results are options that are real links (debounced request to the API).
-    const options = page.getByRole('option')
-    await expect(options.first()).toBeVisible({ timeout: 15000 })
-    await expect(page.getByRole('option', { name: /Cluj-Napoca/i }).first()).toBeVisible()
-    await expect(page.getByRole('option', { name: /Cluj-Napoca/i }).first()).toHaveAttribute(
-      'href',
-      /\/entities\/4305857/,
-    )
+    await searchInput.fill('primarii Cluj')
+    const filteredRequest = page.waitForRequest(request => {
+      if (request.method() !== 'POST' || !request.url().includes('graphql')) return false
+      const body = request.postDataJSON() as { variables?: { q?: string; isUat?: boolean } }
+      return body.variables?.q === 'Cluj' && body.variables.isUat === true
+    })
+    await page.getByRole('option', { name: /Primării/ }).click()
+    await filteredRequest
+    await expect(searchInput).toHaveValue('Cluj')
+    const result = page.getByRole('option', { name: /MUNICIPIUL CLUJ-NAPOCA/i })
+    await expect(result).toBeVisible()
+    await expect(result).toHaveAttribute('href', /\/entities\/4305857/)
   })
 
   test('clicking a panel entity link navigates to entity page', async ({ page }) => {

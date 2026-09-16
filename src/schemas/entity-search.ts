@@ -34,7 +34,7 @@ export const ENTITY_SEARCH_DOC_TYPES = [
 export type EntitySearchDocType = (typeof ENTITY_SEARCH_DOC_TYPES)[number]
 
 /** The two search engines the server can answer with. */
-export type EntitySearchEngine = 'meili' | 'postgres'
+export type EntitySearchEngine = 'meili' | 'postgres' | 'none'
 
 /**
  * A single search result row. `docType` is typed as `string` (not the enum) on
@@ -51,6 +51,8 @@ export interface EntitySearchHit {
   /** Every role this identity plays (organization + pnrr_entity + …). */
   readonly roles: readonly string[]
   /** False for struck-off companies and repealed acts. */
+  readonly isUat?: boolean | null
+  readonly entityTags?: readonly string[]
   readonly isActive: boolean
   readonly identifiers: readonly string[]
   readonly docId: string | null
@@ -89,6 +91,9 @@ export interface EntitySearchInput {
   readonly docTypes?: readonly string[]
   readonly roles?: readonly string[]
   readonly county?: string
+  readonly isUat?: boolean
+  readonly entityTags?: readonly string[]
+  readonly excludeEntityTags?: readonly string[]
   readonly isActive?: boolean
   readonly limit?: number
   readonly offset?: number
@@ -121,6 +126,12 @@ export const entitySearchParamsSchema = z.object({
     .transform((value) => (Array.isArray(value) ? value : [value]))
     .optional()
     .catch(undefined),
+  tags: z.union([z.array(z.string()).max(100), z.string()])
+    .transform(value => Array.isArray(value) ? value : [value]).optional(),
+  excludeTags: z.union([z.array(z.string()).max(100), z.string()])
+    .transform(value => Array.isArray(value) ? value : [value]).optional(),
+  isUat: z.union([z.boolean(), z.enum(['true', 'false'])])
+    .transform(value => value === true || value === 'true').optional(),
   county: optionalSearchString,
   active: z
     .union([z.boolean(), z.enum(['true', 'false'])])
