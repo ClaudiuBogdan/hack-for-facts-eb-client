@@ -65,6 +65,27 @@ describe('landing universal search', () => {
     await search(result, '  Dante  ')
     expect(searchEntities).toHaveBeenCalledTimes(1)
   })
+  it('sends a caller-fixed scope, keys the cache by it, and offers no chips over it', async () => {
+    const queryClient = createTestQueryClient()
+    function Wrapper({ children }: { readonly children: ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(
+      () => useSearchResults({ debounceMs: 0, docTypes: ['company'], suggestions: false }),
+      { wrapper: Wrapper },
+    )
+    await search(result, 'firma Dante')
+    expect(searchEntities).toHaveBeenCalledWith({
+      q: 'firma Dante', docTypes: ['company'], limit: 8,
+    }, expect.any(AbortSignal))
+    // `firma` would earn a chip on the landing; over a fixed scope it is text.
+    expect(result.current.suggestions).toEqual([])
+    // The scope sits in the key, so the landing's rows for the same term are
+    // never served to a field that asked for companies alone.
+    expect(queryClient.getQueryCache().findAll().map((query) => query.queryKey)).toContainEqual(
+      ['landingUniversalSearch', 'company', 'firma Dante'],
+    )
+  })
   it('preserves server ordering and omits missing or external destinations', async () => {
     const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ong-uri/123' }
     searchEntities.mockResolvedValue(response([

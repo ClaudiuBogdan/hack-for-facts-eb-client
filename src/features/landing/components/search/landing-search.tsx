@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
 import type { BaseUIEvent } from '@base-ui/react/types'
 import { Loader2, Search, X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -19,6 +20,7 @@ import {
   Message,
   ResultRowContent,
   resultRowClass,
+  ScopePill,
   shortHint,
   Skeleton,
   useModifierKey,
@@ -172,8 +174,22 @@ export function LandingSearch({
   autoFocus,
   scrollToTopOnFocus,
   onSelect,
+  docTypes,
+  fixedScope,
 }: {
   readonly className?: string
+  /**
+   * The families the request asks for. Defaults to the landing's set; a page
+   * about one kind of thing passes that kind alone and the server narrows.
+   */
+  readonly docTypes?: readonly string[]
+  /**
+   * A scope the reader cannot take off, worn as a pill before the text. With
+   * it, category words no longer become chips — there is nothing left for a
+   * chip to narrow to — and the messages name the scope. The label is the
+   * caller's, already resolved, so this component owns no copy for it.
+   */
+  readonly fixedScope?: { readonly label: string; readonly Icon: LucideIcon }
   /**
    * Lets a caller move focus into the field.
    *
@@ -192,7 +208,7 @@ export function LandingSearch({
   const placeholder = placeholderProp ?? t`Caută entități sau CUI...`
   const {
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent,
-  } = useSearchResults()
+  } = useSearchResults({ docTypes, suggestions: fixedScope === undefined })
   const commit = useEntitySelection({ onSelect })
 
   const [isOpen, setIsOpen] = useState(false)
@@ -223,10 +239,11 @@ export function LandingSearch({
   const isDropdownOpen = isOpen && status.kind !== 'idle'
   const visibleResults = status.kind === 'results' ? status.results : []
   const scope = describeScope(
-    filters.map((filter) => i18n._(filter.label)),
+    [...(fixedScope ? [fixedScope.label] : []), ...filters.map((filter) => i18n._(filter.label))],
     t`și`,
   )
   const hasContent = term.length > 0 || filters.length > 0
+  const isScoped = fixedScope !== undefined || filters.length > 0
 
   // Two groups, each present only when it has rows. Suggestions first: they
   // change what the rows below mean, so they are read before the rows are.
@@ -369,6 +386,8 @@ export function LandingSearch({
             className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
           />
 
+          {fixedScope ? <ScopePill label={fixedScope.label} Icon={fixedScope.Icon} /> : null}
+
           {filters.map((filter) => (
             <FilterChip
               key={filter.id}
@@ -500,8 +519,10 @@ export function LandingSearch({
               // focus-visible on click. The group draws focus instead.
               'h-full min-w-0 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
             )}
-            placeholder={filters.length > 0 ? t`Nume sau CUI...` : placeholder}
-            aria-label={placeholder}
+            placeholder={isScoped ? t`Nume sau CUI...` : placeholder}
+            // The pill is a sibling the screen reader would not associate with
+            // the input, so the scope is spoken as part of the field's name.
+            aria-label={fixedScope ? `${fixedScope.label} · ${placeholder}` : placeholder}
             // Labels the phone keyboard's action key. Enter here takes the
             // first result once the list answers what is in the box, which is
             // what a reader who has typed into a search field expects that key

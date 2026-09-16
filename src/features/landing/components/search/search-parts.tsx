@@ -2,6 +2,7 @@
    hint and announcement copy and the rows that render them are one surface. */
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
@@ -132,6 +133,38 @@ export function ResultRowContent({
  * exact object that will appear in the field if they accept it, so accepting
  * reads as the pill moving up rather than as one thing turning into another.
  */
+/**
+ * The pill itself: an icon and a name. `FilterPill` resolves a filter's
+ * descriptor into one; a page with a fixed scope draws one directly, with a
+ * label it owns, so the field says what it searches in without the word
+ * having to be a filter the reader could take off.
+ */
+export function ScopePill({
+  label,
+  Icon,
+  className,
+  children,
+}: {
+  readonly label: string
+  readonly Icon: LucideIcon
+  readonly className?: string
+  readonly children?: React.ReactNode
+}) {
+  return (
+    <span
+      className={cn(
+        'inline-flex h-7 shrink-0 items-center gap-1.5 rounded-sm bg-muted pl-2 text-xs font-medium text-foreground',
+        children ? 'pr-0.5' : 'pr-2',
+        className,
+      )}
+    >
+      <Icon aria-hidden="true" className="size-3.5 text-muted-foreground" />
+      <span className="whitespace-nowrap">{label}</span>
+      {children}
+    </span>
+  )
+}
+
 export function FilterPill({
   filter,
   className,
@@ -142,19 +175,10 @@ export function FilterPill({
   readonly children?: React.ReactNode
 }) {
   const { i18n } = useLingui()
-  const Icon = filter.Icon
   return (
-    <span
-      className={cn(
-        'inline-flex h-7 shrink-0 items-center gap-1.5 rounded-sm bg-muted pl-2 text-xs font-medium text-foreground',
-        children ? 'pr-0.5' : 'pr-2',
-        className,
-      )}
-    >
-      <Icon aria-hidden="true" className="size-3.5 text-muted-foreground" />
-      <span className="whitespace-nowrap">{i18n._(filter.label)}</span>
+    <ScopePill label={i18n._(filter.label)} Icon={filter.Icon} className={className}>
       {children}
-    </span>
+    </ScopePill>
   )
 }
 

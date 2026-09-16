@@ -38,20 +38,40 @@ export const LANDING_SEARCH_TYPES = [
 
 export function useSearchResults({
   debounceMs = SEARCH_DEBOUNCE_MS,
-}: { readonly debounceMs?: number } = {}) {
+  docTypes = LANDING_SEARCH_TYPES,
+  suggestions: suggestionsEnabled = true,
+}: {
+  readonly debounceMs?: number
+  /**
+   * The families the request asks for. The landing sends its whole set; a
+   * page that is about one kind of thing (the companies hub) sends that kind
+   * alone, and the narrowing then happens on the server, over the whole
+   * index, rather than on the first page as a chip does.
+   */
+  readonly docTypes?: readonly string[]
+  /**
+   * Whether category words in the text may become chips. Off when the scope
+   * is fixed by the caller: a *Primării* chip over company-only rows can only
+   * narrow them to nothing.
+   */
+  readonly suggestions?: boolean
+} = {}) {
   const [term, setTerm] = useState('')
   const [filters, setFilters] = useState<readonly SearchFilter[]>([])
   const trimmed = term.trim()
   const normalized = useDebouncedValue(trimmed, debounceMs)
   const isQueryable = normalized.length >= MIN_QUERY_CHARS
-  // The request carries the query and the landing's fixed scope only. Chips are
-  // not sent — see the module comment in `search-filters.ts` — so the
-  // key is the term alone and adding or removing a chip never refetches.
+  // The request carries the query and the caller's fixed scope only. Chips are
+  // not sent — see the module comment in `search-filters.ts` — so the key is
+  // the term and the scope, and adding or removing a chip never refetches.
+  // The scope is in the key because the same term over different families
+  // is a different answer, and two fields on two pages must not share one.
+  const scopeKey = docTypes.join(',')
   const { data, isError, isFetching, isPlaceholderData, isSuccess } = useQuery({
-    queryKey: ['landingUniversalSearch', normalized],
+    queryKey: ['landingUniversalSearch', scopeKey, normalized],
     queryFn: async ({ signal }) => {
       const response = await searchEntitiesLive({
-        q: normalized, docTypes: LANDING_SEARCH_TYPES, limit: SEARCH_LIMIT,
+        q: normalized, docTypes, limit: SEARCH_LIMIT,
       }, signal)
       if (response.degraded) throw new Error('Search unavailable')
       return response.hits.filter((hit) => hit.href.startsWith('/') && !hit.isExternal)
@@ -75,7 +95,10 @@ export function useSearchResults({
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
   }, [trimmed, normalized, isError, isFetching, results, served, isCurrent, filters])
 
-  const suggestions = useMemo(() => suggestFilters(term, filters), [term, filters])
+  const suggestions = useMemo(
+    () => (suggestionsEnabled ? suggestFilters(term, filters) : []),
+    [suggestionsEnabled, term, filters],
+  )
 
   /**
    * Accepting a suggestion: the chip goes on, and the word that earned it
