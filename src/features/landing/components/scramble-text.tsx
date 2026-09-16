@@ -16,7 +16,7 @@ import type { ReactNode } from 'react'
  * final string — which is the behaviour copied here.
  *
  * Three things this does differently, all for the same reason as the reveal in
- * `home-refs.reveal.tsx`: the words are the product.
+ * `reveal.tsx`: the words are the product.
  *
  * 1. **The scrambled state never reaches the server.** The markup ships the real
  *    heading twice, and only the copy already hidden from assistive technology

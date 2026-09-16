@@ -13,7 +13,7 @@ import type { KeyboardEvent, PointerEvent, RefObject } from 'react'
  * the interaction being built. This module is about a kilobyte, and the page it
  * is on is the one whose entire job is arriving quickly.
  *
- * The pointer handling follows `home-refs.footer-scene.tsx`, which does the same
+ * The pointer handling follows `footer-scene.tsx`, which does the same
  * capture dance a few hundred lines away.
  */
 

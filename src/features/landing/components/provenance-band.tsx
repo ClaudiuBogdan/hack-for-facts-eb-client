@@ -5,6 +5,7 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { useInstitutionCount } from '@/features/landing/hooks/use-institution-count'
 import type { PlatformCoverage } from '@/features/landing/lib/platform-coverage'
 import { formatValue } from '@/features/landing/lib/national-facts'
+import { getUserLocale } from '@/lib/utils'
 
 /**
  * Provenance — the home of every figure that describes *us* rather than the
@@ -17,13 +18,14 @@ import { formatValue } from '@/features/landing/lib/national-facts'
  */
 export function ProvenanceBand({ coverage }: { readonly coverage: PlatformCoverage }) {
   const institutions = useInstitutionCount()
+  const locale = getUserLocale() === 'en' ? 'en' : 'ro'
 
   const items: readonly { readonly value: string; readonly label: string }[] = [
     ...(institutions.count === undefined
       ? []
       : [
           {
-            value: formatValue(institutions.count, 0),
+            value: formatValue(institutions.count, 0, locale),
             label: t`instituții cu execuție ${institutions.year}`,
           },
         ]),

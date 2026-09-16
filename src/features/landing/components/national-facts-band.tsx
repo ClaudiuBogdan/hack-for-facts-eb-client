@@ -2,7 +2,7 @@ import { useLingui } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { cn } from '@/lib/utils'
+import { cn, getUserLocale } from '@/lib/utils'
 import { NATIONAL_FACTS } from '@/features/landing/lib/national-facts'
 import { CountUpValue } from './count-up'
 import { CruxMarks } from './hero-chrome'
@@ -20,6 +20,7 @@ import { ScrambleText } from './scramble-text'
  */
 export function NationalFactsBand() {
   const { i18n } = useLingui()
+  const locale = getUserLocale() === 'en' ? 'en' : 'ro'
   return (
     <section className="border-b bg-muted/20" aria-label={t`România în cifre`}>
       <RuledFrame>
@@ -27,7 +28,7 @@ export function NationalFactsBand() {
         <dl className="grid grid-cols-2 lg:grid-cols-4">
           {NATIONAL_FACTS.map((fact, i) => (
             <div
-              key={fact.publication}
+              key={fact.key}
               data-reveal
               className={cn(
                 'flex flex-col px-5 py-6 sm:py-7',
@@ -53,7 +54,7 @@ export function NationalFactsBand() {
                 </MonoLabel>
               </dt>
               <dd className="order-1 flex items-baseline gap-1.5 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-                <CountUpValue value={fact.value} digits={fact.digits} />
+                <CountUpValue value={fact.value} digits={fact.digits} locale={locale} />
                 {/* The unit never breaks across lines — 'mld.' alone on one
                     line and 'lei' on the next reads as two facts. */}
                 <span className="shrink-0 whitespace-nowrap text-sm font-medium tracking-normal text-muted-foreground">

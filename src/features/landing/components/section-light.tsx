@@ -8,7 +8,7 @@ import { LIT_CLASS, TRAIL_BASE_PX } from '@/features/landing/components/light-ma
 /**
  * A light that traces the card of whichever section you are reading.
  *
- * The frame light in `home-refs.scroll-light.tsx` answers *how fast* — its
+ * The frame light in `scroll-light.tsx` answers *how fast* — its
  * length is scroll velocity, and it fades the moment you stop. This one answers
  * *where*: two heads leave the top centre of the section's card, run outward
  * along the top border, down the two sides, and close on the bottom centre.
@@ -18,7 +18,7 @@ import { LIT_CLASS, TRAIL_BASE_PX } from '@/features/landing/components/light-ma
  *
  * The two are deliberately independent: separate hooks, separate hosts, no
  * shared state. What they do share is their material, which lives in
- * `home-refs.light-material.tsx` and belongs to neither. They also divide the
+ * `light-material.tsx` and belongs to neither. They also divide the
  * page's two questions cleanly at rest, where the frame light has faded out and
  * this one has not, because standing still says nothing about speed and
  * everything about position.

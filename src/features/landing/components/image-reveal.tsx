@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 /**
  * How the illustrations arrive.
  *
- * Everything else on this page arrives through `home-refs.reveal.tsx` — opacity
+ * Everything else on this page arrives through `reveal.tsx` — opacity
  * and a 12px rise, on a CSS transition, triggered by one IntersectionObserver
  * that also owns the stagger and the safety clock. The pictures were the one
  * thing left out: they snapped in at full strength beside text that faded, which
@@ -184,7 +184,7 @@ const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
  * worth saying so because `decode()` already rejects on a broken image and the
  * catch below covers that. What this covers is the request that stalls without
  * ever failing, and the rule it encodes is the page's own: nothing waits
- * indefinitely to be shown. `home-refs.reveal.tsx` bounds its offset trigger the
+ * indefinitely to be shown. `reveal.tsx` bounds its offset trigger the
  * same way and for the same reason. Half a second would be too eager on a slow
  * connection and three would be long enough to read as broken.
  */

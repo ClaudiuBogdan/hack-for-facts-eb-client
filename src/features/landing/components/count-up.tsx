@@ -2,7 +2,7 @@
    and the hook that drives it are one contract; splitting them would let the
    CSS and the attribute state machine drift apart. */
 import { useId } from 'react'
-import { formatValue } from '@/features/landing/lib/national-facts'
+import { formatValue, type NumberLocale } from '@/features/landing/lib/national-facts'
 
 /**
  * Figures that count up to themselves, each digit smeared by its own speed.
@@ -99,6 +99,8 @@ type Job = {
   readonly element: HTMLElement
   readonly target: number
   readonly digits: number
+  /** The separators the figure is written with, carried from the element. */
+  readonly locale: NumberLocale
   readonly start: number
   /** The per-character slots, in document order. */
   readonly slots: readonly HTMLElement[]
@@ -182,7 +184,7 @@ function tick(now: number) {
         running.delete(job)
         continue
       }
-      paintSlots(job, formatValue(job.target * eased(progress), job.digits), unitsPerSecond(job.target, progress))
+      paintSlots(job, formatValue(job.target * eased(progress), job.digits, job.locale), unitsPerSecond(job.target, progress))
     }
   }
   if (running.size > 0) frame = requestAnimationFrame(tick)
@@ -197,7 +199,7 @@ function tick(now: number) {
  * exchange for a blur too small to see.
  */
 function settle(job: Job) {
-  const text = formatValue(job.target, job.digits)
+  const text = formatValue(job.target, job.digits, job.locale)
   for (let j = 0; j < job.slots.length; j += 1) {
     const slot = job.slots[job.slots.length - 1 - j]
     const index = text.length - 1 - j
@@ -253,6 +255,7 @@ export function countUpWithin(block: Element, delay: number) {
       element,
       target,
       digits,
+      locale: element.dataset.countLocale === 'en' ? 'en' : 'ro',
       start: now + delay,
       slots: Array.from(element.querySelectorAll<HTMLElement>('[data-slot]')),
     })
@@ -314,16 +317,24 @@ export function SmearFilters() {
 export function CountUpValue({
   value,
   digits,
+  locale = 'ro',
 }: {
   readonly value: number
   readonly digits: number
+  readonly locale?: NumberLocale
 }) {
-  const text = formatValue(value, digits)
+  const text = formatValue(value, digits, locale)
   const key = useId()
   return (
     <>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true" data-count="" data-count-value={value} data-count-digits={digits}>
+      <span
+        aria-hidden="true"
+        data-count=""
+        data-count-value={value}
+        data-count-digits={digits}
+        data-count-locale={locale}
+      >
         {/*
          * Split into slots on the server, holding the real figure, so the split
          * costs nothing at trigger time and a reader without JavaScript sees

@@ -55,22 +55,12 @@ export type Person = {
 }
 
 /**
- * The crop every portrait must share.
- *
- * `DESIGN.md` §Delivery: each format is the same crop at the same pixel
- * dimensions, or the framing changes with the reader's browser. 760x950 is the
- * art at 2x the widest slot it is ever given (380 CSS px, the founder in
- * `duo`), so nothing is ever upscaled.
- */
-export const PORTRAIT_RATIO = '4 / 5'
-
-/**
  * The cut-outs, one per person.
  *
  * Built by `scripts/build-people-art.py` from the generated sources: trimmed to
  * their own alpha, desaturated, exposure-matched to the founder's, and faded out
  * at the foot so no bust ends on a straight edge. The props they are composed
- * with live in `home-refs.people-art.tsx`, because which props a person gets is
+ * with live in `people-art.tsx`, because which props a person gets is
  * a question about their tier and not about them.
  *
  * All four angels have art now. Two of them arrived recut at source, which is

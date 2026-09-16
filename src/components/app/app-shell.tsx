@@ -19,7 +19,7 @@ import { HotkeysProvider } from "react-hotkeys-hook";
 import { AppFooter } from "@/components/footer/AppFooter";
 import { ChatFab } from "@/components/footer/ChatFab";
 import { FeedbackFab } from "@/components/feedback/FeedbackFab";
-import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
+import { ConsentCardHost } from "@/features/privacy/components/consent-card-host";
 import { MobileBottomDock } from "@/components/mobile/mobile-bottom-dock";
 import { shouldHideMobileBottomDock } from "@/components/mobile/mobile-bottom-dock-visibility";
 import { Analytics } from "@/lib/analytics";
@@ -128,7 +128,7 @@ export function AppShell({
                         <ChatFab />
                         <FeedbackFab />
                         <MobileBottomDock />
-                        <CookieConsentBanner />
+                        <ConsentCardHost />
                       </SidebarInset>
                     </div>
                   </SidebarProvider>

@@ -21,7 +21,7 @@ export type SearchStatus =
    * was removed by a chip. The two are different messages: "nothing matches"
    * versus "nothing of this kind among what came back" — and the second has to
    * be said, because a chip is applied to the first page only (see
-   * `home-refs.search-filters.ts`).
+   * `search-filters.ts`).
    */
   | { readonly kind: 'empty'; readonly term: string; readonly narrowed: boolean }
   | { readonly kind: 'error' }
@@ -45,7 +45,7 @@ export function useSearchResults({
   const normalized = useDebouncedValue(trimmed, debounceMs)
   const isQueryable = normalized.length >= MIN_QUERY_CHARS
   // The request carries the query and the landing's fixed scope only. Chips are
-  // not sent — see the module comment in `home-refs.search-filters.ts` — so the
+  // not sent — see the module comment in `search-filters.ts` — so the
   // key is the term alone and adding or removing a chip never refetches.
   const { data, isError, isFetching, isPlaceholderData, isSuccess } = useQuery({
     queryKey: ['landingUniversalSearch', normalized],

@@ -17,7 +17,7 @@
  * than in cell indices — so a finer field is the same composition drawn at a
  * finer resolution, not a different one.
  *
- * This module builds the field and does not draw it. `home-refs.pixel-canvas.tsx`
+ * This module builds the field and does not draw it. `pixel-canvas.tsx`
  * is what puts it on screen, and the separation is why the module could be made
  * four times finer without the renderer noticing.
  */

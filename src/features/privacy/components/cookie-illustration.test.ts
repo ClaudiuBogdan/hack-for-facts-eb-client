@@ -1,7 +1,8 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { CookieIllustration, type CookieState } from './cookies.cookie-art'
+import type { CookieState } from '@/features/privacy/lib/consent-categories'
+import { CookieIllustration } from './cookie-illustration'
 
 const renderCookie = (state: CookieState) =>
   renderToStaticMarkup(createElement(CookieIllustration, { state }))

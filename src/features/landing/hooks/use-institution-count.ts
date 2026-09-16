@@ -9,8 +9,7 @@ import { DEFAULT_SELECTED_YEAR } from '@/schemas/charts'
  *
  * Asked for with `limit: 1`: the number lives in `pageInfo.totalCount`, and the
  * rows are not wanted. The filter is the ranking page's own default, so the
- * count means exactly what the ranking page's first row count means, and the
- * request dedupes with it in the query cache when a reader goes there next.
+ * count means exactly what the ranking page's total means.
  *
  * Fetched on the client only. The landing is served from a shared cache for an
  * hour, and a figure baked into that HTML would be a snapshot presented as
@@ -35,8 +34,12 @@ export const institutionCountQueryOptions = queryOptions({
 export function useInstitutionCount() {
   const { data, isError } = useQuery(institutionCountQueryOptions)
   return {
-    /** `undefined` until served; the band omits the item rather than guess. */
-    count: data !== undefined && data > 0 ? data : undefined,
+    /**
+     * `undefined` until served, and again after a failed refresh — the query
+     * keeps the previous `data` alongside its error, and a figure the API can
+     * no longer confirm is not shown. The band omits the item rather than guess.
+     */
+    count: !isError && data !== undefined && data > 0 ? data : undefined,
     year: DEFAULT_SELECTED_YEAR,
     isError,
   }

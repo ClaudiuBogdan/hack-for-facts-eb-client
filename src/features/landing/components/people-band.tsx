@@ -42,7 +42,7 @@ const PORTRAIT_CUTS: Readonly<Record<string, ShardCut>> = {
 /**
  * A person's art, in the shape the slot wants.
  *
- * `home-refs.people-art.tsx` owns the stack; this owns the box it stands in.
+ * `people-art.tsx` owns the stack; this owns the box it stands in.
  * The box's shape is the caller's, not the art's — `fit`-style containment
  * inside a percentage-placed stack means art of any ratio sits in whatever box
  * it is given without cropping, which is how the angels' slots could be squared

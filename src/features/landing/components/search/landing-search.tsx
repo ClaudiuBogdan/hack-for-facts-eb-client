@@ -59,7 +59,7 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
  * dedeman` and the list opens with a *Firme* row above the results; accept it
  * and `firma` leaves the text and becomes a chip in the field, the results
  * narrow to companies, and the query that goes out is `dedeman`. The vocabulary
- * and the narrowing live in `home-refs.search-filters.ts`; what this file owns
+ * and the narrowing live in `search-filters.ts`; what this file owns
  * is the two places a filter is drawn and the three ways it moves — accepted
  * from the list, removed from its own button, removed by Backspace on an empty
  * field. Suggestions are real options in their own group, so the arrow keys

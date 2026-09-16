@@ -25,6 +25,8 @@ import type { MessageDescriptor } from '@lingui/core'
  */
 
 export type NationalFact = {
+  /** Stable identity for rendering; two facts can share a publication. */
+  readonly key: 'gdp' | 'spending' | 'deficit' | 'population'
   /** The number itself, unformatted. Rendered through `ro-RO`. */
   readonly value: number
   /** Decimal places to show, chosen per figure rather than globally. */
@@ -49,6 +51,7 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
     // revised it up to the figure here. The 1,910.390bn we carried first was
     // the first provisional, not the flash. No final annual 2025 estimate has
     // been published, so this stays labelled provisional.
+    key: 'gdp',
     value: 1916.4,
     digits: 0,
     unit: msg`mld. lei`,
@@ -63,6 +66,7 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
     //
     // The annex labels its own 2025 column "date operative", so that is what
     // the tile says. Not final, and not to be presented as final.
+    key: 'spending',
     value: 808.7,
     digits: 0,
     unit: msg`mld. lei`,
@@ -86,6 +90,7 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
     // ratio, not MF's published statistic. Printing MF's 7.65% beside our own
     // GDP tile would invite a reader to divide the two and find a figure that
     // matches neither. Both are defensible alone; together they contradict.
+    key: 'deficit',
     value: 146,
     digits: 0,
     unit: msg`mld. lei`,
@@ -107,6 +112,7 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
     // figure is itself provisional, from the 28 Apr 2025 release, pending
     // revision. Per-capita normalisation uses the resident figure, and an
     // unlabelled number would be the wrong one to half the readers.
+    key: 'population',
     value: 19.04,
     digits: 2,
     unit: msg`mil.`,
@@ -117,20 +123,27 @@ export const NATIONAL_FACTS: readonly NationalFact[] = [
   },
 ]
 
+/** The two languages the app renders numbers in, keyed as `getUserLocale` names them. */
+export type NumberLocale = 'ro' | 'en'
+
+const NUMBER_LOCALE_TAG: Readonly<Record<NumberLocale, string>> = { ro: 'ro-RO', en: 'en-GB' }
+
 /**
- * Romanian formatting: decimal comma, dot as the thousands separator.
+ * Locale formatting: Romanian writes `1.916,4`, English `1,916.4`. The same
+ * digits with the other locale's separators read as a thousandfold error, so
+ * the locale is a parameter and the caller passes the active one.
  *
  * Takes the number rather than the fact so a value on its way to the final one
  * is written exactly as the final one will be — same separators, same decimal
  * places — and the count does not change shape as it passes a thousand.
  */
-export function formatValue(value: number, digits: number): string {
-  return new Intl.NumberFormat('ro-RO', {
+export function formatValue(value: number, digits: number, locale: NumberLocale = 'ro'): string {
+  return new Intl.NumberFormat(NUMBER_LOCALE_TAG[locale] ?? NUMBER_LOCALE_TAG.ro, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   }).format(value)
 }
 
-export function formatFact(fact: NationalFact): string {
-  return formatValue(fact.value, fact.digits)
+export function formatFact(fact: NationalFact, locale: NumberLocale = 'ro'): string {
+  return formatValue(fact.value, fact.digits, locale)
 }

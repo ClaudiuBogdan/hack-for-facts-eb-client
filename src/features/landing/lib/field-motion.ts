@@ -3,7 +3,7 @@
  *
  * There used to be a stylesheet here and a hook beside it: every cell was an
  * SVG rectangle with its own CSS animation, and a sibling module declared the
- * keyframes they ran. That approach is gone — see `home-refs.pixel-canvas.tsx`
+ * keyframes they ran. That approach is gone — see `pixel-canvas.tsx`
  * for why and for what replaced it — but the numbers it was tuned to are not,
  * so they live on here, imported by the renderer that now evaluates them.
  *

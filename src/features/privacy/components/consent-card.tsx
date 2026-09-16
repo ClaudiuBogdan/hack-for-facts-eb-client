@@ -1,51 +1,42 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
 import { ChevronDown, X } from 'lucide-react'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { CookieIllustration, type CookieState } from './cookies.cookie-art'
+import { cn } from '@/lib/utils'
+import { useConsentDraft } from '@/features/privacy/hooks/use-consent-draft'
 import {
   ESSENTIAL_CATEGORY,
   OPTIONAL_CATEGORIES,
   cookieStateFor,
-  useConsentDraft,
-} from './cookies.state'
+  type CookieState,
+} from '@/features/privacy/lib/consent-categories'
+import { CookieIllustration } from './cookie-illustration'
 
 /**
- * The consent card — `CookieConsentBanner.tsx`, rebuilt.
- *
- * What changed, and why each change is a decision:
+ * The consent card.
  *
  * - **Non-modal, and says so.** `role="dialog"` with `aria-modal="false"`, no
  *   backdrop, no focus trap. The page behind it is usable, which is what a
- *   reader who has not decided yet is entitled to. The shipped one was a Radix
- *   Toast with a 20-second timer, which is the wrong primitive: a consent
- *   question does not expire.
+ *   reader who has not decided yet is entitled to. A consent question does not
+ *   expire, so it is not a toast with a timer either.
  * - **Refusing is as easy as accepting.** Two buttons of one size on one row.
  *   The filled one is "accept", the bordered one is "essential only", and both
  *   are one click. There is a third way — choose — but it is a disclosure
- *   inside the card, not a trip to another page, so nobody leaves the article
- *   they were reading to say no to analytics.
+ *   inside the card, not a trip to another page.
  * - **Closing is honest.** The × means "not now": nothing is stored, the
  *   privacy-safe defaults apply, and the question comes back next visit. Its
  *   accessible name says exactly that.
  * - **The picture answers the click.** A whole cookie while the question is
  *   open; bitten when everything is accepted, plain when only the essentials
- *   are. Then the card leaves. That is the only motion keyed to the reader, and
- *   it reports what they did.
- * - **One accent.** The chips and the filled button are the page's navy;
- *   everything else is the neutral scale. The shipped card's `blue-600`,
- *   `slate-200/30` and `shadow-2xl` are gone.
- *
- * Copy is Romanian source text, per `docs/design/prototyping.md`. The shipped
- * banner is English-source under Lingui; promotion has to pick one.
+ *   are. Then the card leaves.
+ * - **One accent.** The filled button is the page's navy; everything else is
+ *   the neutral scale.
  */
-
-/** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
-export const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
 
 type CardView = 'ask' | 'choose' | 'saved'
 type CardPhase = 'entering' | 'open' | 'leaving'
@@ -56,9 +47,9 @@ const PHASE_ATTR = 'data-phase'
 const ENTER_MS = 640
 const ENTER_DELAY_MS = 120
 /** Leaving is quicker than arriving — the reader has already moved on. */
-const LEAVE_MS = 240
+export const LEAVE_MS = 240
 /** How long the confirmation stays before the card goes. Long enough to read one line. */
-const SAVED_HOLD_MS = 1900
+export const SAVED_HOLD_MS = 1900
 const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)'
 
 const CSS = `
@@ -103,23 +94,23 @@ export function ConsentCardStyles() {
   return <style>{CSS}</style>
 }
 
-/** What the confirmation says, by what was decided. */
+/** What the confirmation says, by what was decided. Called at render. */
 function savedCopy(state: CookieState): { readonly title: string; readonly body: string } {
   switch (state) {
     case 'bitten':
       return {
-        title: 'Mulțumim.',
-        body: 'Statisticile și rapoartele de erori sunt pornite. Le oprești oricând din Setări cookie-uri.',
+        title: t`Mulțumim.`,
+        body: t`Statisticile și rapoartele de erori sunt pornite. Le oprești oricând din Setări cookie-uri.`,
       }
     case 'plain':
       return {
-        title: 'Doar esențialul.',
-        body: 'Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri.',
+        title: t`Doar esențialul.`,
+        body: t`Fără statistici, fără rapoarte detaliate de erori. Te răzgândești oricând din Setări cookie-uri.`,
       }
     default:
       return {
-        title: 'Notat.',
-        body: 'Pornești sau oprești fiecare opțiune oricând din Setări cookie-uri.',
+        title: t`Notat.`,
+        body: t`Pornești sau oprești fiecare opțiune oricând din Setări cookie-uri.`,
       }
   }
 }
@@ -132,6 +123,7 @@ function savedCopy(state: CookieState): { readonly title: string; readonly body:
  * unmount it without cutting the fade.
  */
 export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
+  const { i18n } = useLingui()
   const { draft, patch, save, essentialOnly, everything } = useConsentDraft()
   const [view, setView] = useState<CardView>('ask')
   const [phase, setPhase] = useState<CardPhase>('entering')
@@ -142,15 +134,29 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
   const titleId = useId()
   const descriptionId = useId()
   const cardRef = useRef<HTMLElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  // Set when Escape collapses the disclosure, so focus returns to the trigger
+  // once the switches it was on have unmounted rather than falling to <body>.
+  const restoreTriggerFocus = useRef(false)
+  // Whatever had focus when the card arrived, so a keyboard reader who moved
+  // into the card is put back there when it leaves rather than dropped on
+  // <body>. Read once at mount; the card is the only thing that moves focus
+  // between then and its departure.
+  const focusBefore = useRef<Element | null>(null)
   const location = useLocation()
   const redirect = `${location.pathname}${location.searchStr ?? ''}`
 
   // Two frames after mount, so the 'entering' state has been painted and the
-  // switch to 'open' is a transition rather than an initial style.
+  // switch to 'open' is a transition rather than an initial style. Only from
+  // 'entering': a reader who dismisses within those two frames must not have
+  // the card reopened under them.
   useEffect(() => {
+    focusBefore.current = document.activeElement
     let second = 0
     const first = requestAnimationFrame(() => {
-      second = requestAnimationFrame(() => setPhase('open'))
+      second = requestAnimationFrame(() =>
+        setPhase((current) => (current === 'entering' ? 'open' : current)),
+      )
     })
     return () => {
       cancelAnimationFrame(first)
@@ -160,7 +166,14 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
 
   useEffect(() => {
     if (phase !== 'leaving') return
-    const timer = setTimeout(onGone, LEAVE_MS)
+    const timer = setTimeout(() => {
+      const card = cardRef.current
+      const previous = focusBefore.current
+      if (card?.contains(document.activeElement) && previous instanceof HTMLElement && previous.isConnected) {
+        previous.focus({ preventScroll: true })
+      }
+      onGone()
+    }, LEAVE_MS)
     return () => clearTimeout(timer)
   }, [phase, onGone])
 
@@ -172,6 +185,12 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
     cardRef.current?.focus({ preventScroll: true })
     const timer = setTimeout(() => setPhase('leaving'), SAVED_HOLD_MS)
     return () => clearTimeout(timer)
+  }, [view])
+
+  useEffect(() => {
+    if (view !== 'ask' || !restoreTriggerFocus.current) return
+    restoreTriggerFocus.current = false
+    triggerRef.current?.focus()
   }, [view])
 
   // Escape is "not now", the same as the ×, but only when nothing else owns
@@ -186,8 +205,10 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
       const active = document.activeElement
       const focusIsElsewhere = active && active !== document.body && !cardRef.current?.contains(active)
       if (focusIsElsewhere) return
-      if (view === 'choose') setView('ask')
-      else setPhase('leaving')
+      if (view === 'choose') {
+        restoreTriggerFocus.current = true
+        setView('ask')
+      } else setPhase('leaving')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -234,21 +255,18 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
               view === 'saved' && 'motion-safe:scale-110',
             )}
           >
-            <CookieIllustration
-              state={cookieState}
-              className="size-14 sm:size-16"
-            />
+            <CookieIllustration state={cookieState} className="size-14 sm:size-16" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
               <MonoLabel className="block pt-1 text-primary">
-                {view === 'saved' ? 'Salvat' : 'Confidențialitate'}
+                {view === 'saved' ? <Trans>Salvat</Trans> : <Trans>Confidențialitate</Trans>}
               </MonoLabel>
               {view === 'saved' ? null : (
                 <button
                   type="button"
                   onClick={() => setPhase('leaving')}
-                  aria-label="Nu acum — rămâne doar esențialul, întrebăm data viitoare"
+                  aria-label={t`Nu acum — rămâne doar esențialul, întrebăm data viitoare`}
                   className="-mr-2 -mt-2 flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="size-4" aria-hidden="true" />
@@ -259,7 +277,7 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
               id={titleId}
               className="mt-1.5 text-lg font-semibold leading-tight tracking-tight text-balance sm:text-xl"
             >
-              {view === 'saved' ? saved.title : 'Fără urmărire pe ascuns'}
+              {view === 'saved' ? saved.title : <Trans>Fără urmărire pe ascuns</Trans>}
             </h2>
           </div>
         </div>
@@ -269,9 +287,14 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
           aria-live="polite"
           className="mt-3 text-sm leading-relaxed text-muted-foreground"
         >
-          {view === 'saved'
-            ? saved.body
-            : 'Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu.'}
+          {view === 'saved' ? (
+            saved.body
+          ) : (
+            <Trans>
+              Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare
+              și rapoartele de erori pornesc numai dacă le pornești tu.
+            </Trans>
+          )}
         </p>
 
         {view === 'saved' ? null : (
@@ -279,10 +302,13 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
             <Collapsible open={isChoosing} onOpenChange={(open) => setView(open ? 'choose' : 'ask')}>
               <CollapsibleTrigger asChild>
                 <button
+                  ref={triggerRef}
                   type="button"
                   className="group mt-3 -ml-1 flex h-8 items-center gap-1 rounded-md px-1 text-sm font-medium text-foreground transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <span>Alege tu ce pornești</span>
+                  <span>
+                    <Trans>Alege tu ce pornești</Trans>
+                  </span>
                   <ChevronDown
                     aria-hidden="true"
                     className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180"
@@ -298,13 +324,15 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                     <div className="min-w-0">
                       <div className="flex items-baseline gap-2">
                         <MonoLabel className="text-muted-foreground/60">{ESSENTIAL_CATEGORY.index}</MonoLabel>
-                        <span className="text-sm font-medium">{ESSENTIAL_CATEGORY.title}</span>
+                        <span className="text-sm font-medium">{i18n._(ESSENTIAL_CATEGORY.title)}</span>
                       </div>
                       <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                        {ESSENTIAL_CATEGORY.summary}
+                        {i18n._(ESSENTIAL_CATEGORY.summary)}
                       </p>
                     </div>
-                    <MonoLabel className="shrink-0 text-muted-foreground">Mereu</MonoLabel>
+                    <MonoLabel className="shrink-0 text-muted-foreground">
+                      <Trans>Mereu</Trans>
+                    </MonoLabel>
                   </li>
                   {OPTIONAL_CATEGORIES.map((category, index) => {
                     const switchId = `${titleId}-${category.key}`
@@ -317,11 +345,11 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                         <label htmlFor={switchId} className="min-w-0 cursor-pointer">
                           <span className="flex items-baseline gap-2">
                             <MonoLabel className="text-muted-foreground/60">{category.index}</MonoLabel>
-                            <span className="text-sm font-medium">{category.title}</span>
-                            <MonoLabel className="text-muted-foreground">{category.vendor}</MonoLabel>
+                            <span className="text-sm font-medium">{i18n._(category.title)}</span>
+                            <MonoLabel className="text-muted-foreground">{i18n._(category.vendor)}</MonoLabel>
                           </span>
                           <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
-                            {category.summary}
+                            {i18n._(category.summary)}
                           </span>
                         </label>
                         <Switch
@@ -343,28 +371,32 @@ export function ConsentCard({ onGone }: { readonly onGone: () => void }) {
                 onClick={() => decide(essentialOnly, 'plain')}
                 className="h-10 flex-1 border-foreground/25 text-foreground hover:border-foreground/40"
               >
-                Doar esențiale
+                <Trans>Doar esențiale</Trans>
               </Button>
               {isChoosing ? (
                 <Button
                   onClick={() => decide(save, cookieStateFor(draft, true))}
                   className="h-10 flex-1"
                 >
-                  Salvează alegerea
+                  <Trans>Salvează alegerea</Trans>
                 </Button>
               ) : (
                 <Button onClick={() => decide(everything, 'bitten')} className="h-10 flex-1">
-                  Acceptă tot
+                  <Trans>Acceptă tot</Trans>
                 </Button>
               )}
             </div>
 
             <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1.5">
               <Link to="/cookie-policy" className={FOOT_LINK_CLASS}>
-                <MonoLabel className="whitespace-nowrap">Politica de cookie-uri</MonoLabel>
+                <MonoLabel className="whitespace-nowrap">
+                  <Trans>Politica de cookie-uri</Trans>
+                </MonoLabel>
               </Link>
               <Link to="/cookies" search={{ redirect }} className={FOOT_LINK_CLASS}>
-                <MonoLabel className="whitespace-nowrap">Toate setările</MonoLabel>
+                <MonoLabel className="whitespace-nowrap">
+                  <Trans>Toate setările</Trans>
+                </MonoLabel>
               </Link>
             </p>
           </>
@@ -385,88 +417,5 @@ function CornerTicks() {
       <span className={cn(arm, '-left-px -top-px rounded-tl-lg border-l border-t')} />
       <span className={cn(arm, '-right-px -top-px rounded-tr-lg border-r border-t')} />
     </span>
-  )
-}
-
-/**
- * The variant: a page to stand on, and the card over it.
- *
- * The page is a stand-in — two paragraphs and enough height to scroll — so the
- * fixed card can be judged against text, at the bottom of a viewport, with the
- * frame rules the real pages carry. The strip at the top is prototype chrome:
- * the real card mounts once per undecided visit, and iterating on an entrance
- * that plays once per `localStorage` wipe is not iterating.
- */
-export function ConsentModalStage() {
-  const [generation, setGeneration] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  const { saved, hasDecision } = useConsentDraft()
-
-  // The shipped banner waits half a second after navigation; the same here,
-  // so the card arrives on a page that is already there.
-  useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 500)
-    return () => clearTimeout(timer)
-  }, [generation])
-
-  const replay = () => {
-    setMounted(false)
-    setGeneration((current) => current + 1)
-  }
-
-  // Stable, so the card's leave timer is not restarted by a re-render of the
-  // strip above it — which happens on every consent change, i.e. exactly
-  // while the card is leaving.
-  const unmount = useCallback(() => setMounted(false), [])
-
-  const clearDecision = () => {
-    window.localStorage.removeItem('cookie-consent')
-    window.dispatchEvent(new Event('consent:changed'))
-    replay()
-  }
-
-  return (
-    <div className="relative min-h-[140vh] bg-background" data-dev-marker={PROTOTYPE_MARKER}>
-      <ConsentCardStyles />
-      <div className="border-b bg-muted/30">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-5 py-2 sm:px-8">
-          <MonoLabel className="text-muted-foreground">Prototip</MonoLabel>
-          <MonoLabel className="text-muted-foreground/70">
-            decizie stocată: {hasDecision ? 'da' : 'nu'} · statistici:{' '}
-            {saved.analytics ? 'pornit' : 'oprit'} · erori: {saved.sentry ? 'pornit' : 'oprit'}
-          </MonoLabel>
-          <span className="ml-auto flex gap-2">
-            <Button size="sm" variant="outline" onClick={replay}>
-              Reafișează
-            </Button>
-            <Button size="sm" variant="outline" onClick={clearDecision}>
-              Șterge decizia
-            </Button>
-          </span>
-        </div>
-      </div>
-
-      <div className="relative mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
-        <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-border" />
-        <span aria-hidden="true" className="absolute inset-y-0 right-0 w-px bg-border" />
-        <MonoLabel className="block text-primary">Pagina de dedesubt</MonoLabel>
-        <h1 className="mt-3 max-w-[20ch] text-3xl font-semibold tracking-tight text-balance sm:text-5xl">
-          Execuția bugetară, pe scurt
-        </h1>
-        <div className="mt-6 max-w-[62ch] space-y-5 text-base leading-relaxed text-muted-foreground">
-          <p>
-            Text de umplutură, ca să existe ceva sub card. Pagina rămâne
-            utilizabilă cât timp întrebarea e deschisă: fără fundal întunecat,
-            fără blocarea derulării, fără capcană de focus.
-          </p>
-          <p>
-            Derulează. Cardul stă pe loc în colțul din dreapta jos pe ecran lat
-            și ocupă toată lățimea, jos, pe telefon.
-          </p>
-        </div>
-      </div>
-
-      {mounted ? <ConsentCard key={generation} onGone={unmount} /> : null}
-    </div>
   )
 }

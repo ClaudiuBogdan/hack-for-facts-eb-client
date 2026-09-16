@@ -1,58 +1,45 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { ArrowLeft, BarChart3, Bug, Shield } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { cn, getUserLocale } from '@/lib/utils'
-import { RuledFrame as Frame } from '@/components/landing-skin/ruled-frame'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
-import { CookieIllustration } from './cookies.cookie-art'
+import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { cn, getUserLocale } from '@/lib/utils'
+import { useConsentDraft } from '@/features/privacy/hooks/use-consent-draft'
 import {
   ESSENTIAL_CATEGORY,
   OPTIONAL_CATEGORIES,
   cookieStateFor,
-  useConsentDraft,
   type OptionalCategoryKey,
-} from './cookies.state'
+} from '@/features/privacy/lib/consent-categories'
+import { CookieIllustration } from './cookie-illustration'
 
 /**
- * `/cookies`, on the landing's skin.
- *
- * The shipped page is three shadcn cards under a settings icon — competent and
- * anonymous. This one is built from the landing's parts so it reads as a page
- * of the same site: the ruled frame, a numbered band, full-width choice rows,
+ * `/cookies`, on the landing's skin: the ruled frame, one full-width row per
+ * choice with the switch on the right and the whole text block as its label,
  * and mono captions for state. Nothing here is a card inside a card.
- *
- * **One choice per row, full width.** The choices were three cells side by
- * side, which made each one a narrow column of wrapped text and put the switch
- * at the bottom of a card — three switches on three different baselines, none
- * of them where the eye lands. A row per choice gives every switch the same
- * place on the right, the same size target, and the whole text block as its
- * label, which is the part of the page that has to be effortless.
  *
  * **There is no inventory table.** It listed every key the app writes with its
  * lifetime and its state — the cookie policy's own table, restated. Two copies
  * of a list like that is one more than can be kept true, and the policy is one
- * click away in the footer. What survived is the sentence per choice that says
- * what it actually stores, beside the switch that governs it, which is the part
- * a reader deciding needs.
+ * click away in the footer.
  *
  * **The picture reflects the stored answer.** The same cookie as the card, in
  * the state the reader last chose, so the page opens by telling them where they
  * stand before they read a word.
  *
- * `redirect` is read with `useSearch({ strict: false })` since a prototype
- * cannot bind to `/cookies`; the safe-path check is the shipped one.
+ * `redirect` is where the reader came from, validated by the route. A decision
+ * takes them back there; without one, the page confirms and stays.
  */
 
-/** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
-const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
-
-const isSafeRedirect = (value: unknown): value is string =>
-  typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')
+/** How long the "Salvat" confirmation shows before the last-changed date takes over. */
+const SAVED_FLASH_MS = 2400
 
 const CATEGORY_ICON: Readonly<Record<'essential' | OptionalCategoryKey, LucideIcon>> = {
   essential: Shield,
@@ -60,12 +47,18 @@ const CATEGORY_ICON: Readonly<Record<'essential' | OptionalCategoryKey, LucideIc
   sentry: Bug,
 }
 
-export function CookieSettingsPage() {
+export function CookieSettingsPage({
+  redirect,
+  onReturn,
+}: {
+  /** A same-origin path to go back to, already validated by the route. */
+  readonly redirect?: string
+  /** Navigates to `redirect`. Called after a decision, and by the back button. */
+  readonly onReturn: () => void
+}) {
+  const { i18n } = useLingui()
   const { saved, draft, hasDecision, hydrated, isDirty, patch, save, essentialOnly, everything } =
     useConsentDraft()
-  const search = useSearch({ strict: false }) as Readonly<{ redirect?: unknown }>
-  const redirect = isSafeRedirect(search.redirect) ? search.redirect : undefined
-  const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement>(null)
   useRevealOnView(rootRef)
 
@@ -75,17 +68,14 @@ export function CookieSettingsPage() {
   const [justSaved, setJustSaved] = useState(false)
   useEffect(() => {
     if (!justSaved) return
-    const timer = setTimeout(() => setJustSaved(false), 2400)
+    const timer = setTimeout(() => setJustSaved(false), SAVED_FLASH_MS)
     return () => clearTimeout(timer)
   }, [justSaved])
-
-  const goBack = () => {
-    if (redirect) navigate({ href: redirect })
-  }
 
   const commit = (action: () => void) => {
     action()
     setJustSaved(true)
+    if (redirect) onReturn()
   }
 
   const cookieState = cookieStateFor(saved, hasDecision)
@@ -94,7 +84,7 @@ export function CookieSettingsPage() {
     new Date(iso).toLocaleDateString(locale, { day: 'numeric', month, year: 'numeric' })
 
   return (
-    <div ref={rootRef} className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+    <div ref={rootRef} className="bg-background">
       <RevealStyles />
 
       {/* Head — open band, never hidden by the reveal. The server does not
@@ -102,66 +92,70 @@ export function CookieSettingsPage() {
           is whole and the label says it is still reading — not "no choice
           yet", which would be a claim. */}
       <section className="border-b">
-        <Frame className="py-12 sm:py-16">
+        <RuledFrame className="py-12 sm:py-16">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="lg:col-span-7">
               {redirect ? (
                 <button
                   type="button"
-                  onClick={goBack}
+                  onClick={onReturn}
                   className="mb-6 -ml-1 flex h-8 items-center gap-1.5 rounded-md px-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <ArrowLeft className="size-4" aria-hidden="true" />
-                  Înapoi unde erai
+                  <Trans>Înapoi unde erai</Trans>
                 </button>
               ) : null}
-              <MonoLabel className="block text-primary">Setări</MonoLabel>
+              <MonoLabel className="block text-primary">
+                <Trans>Setări</Trans>
+              </MonoLabel>
               <h1 className="mt-3 max-w-[18ch] text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
-                Ce ține minte browserul tău
+                <Trans>Ce ține minte browserul tău</Trans>
               </h1>
               <p className="mt-6 max-w-[58ch] text-lg leading-relaxed text-muted-foreground">
-                Esențialul rămâne la tine, în browser. Restul pornește numai
-                dacă îl pornești — și se vede mai jos, rând cu rând, ce anume.
+                <Trans>
+                  Esențialul rămâne la tine, în browser. Restul pornește numai dacă îl pornești —
+                  și se vede mai jos, rând cu rând, ce anume.
+                </Trans>
               </p>
             </div>
             <div className="flex items-end gap-6 lg:col-span-4 lg:col-start-9 lg:justify-end">
-              <div className="tpz-cookie-lean">
-                <CookieIllustration state={cookieState} className="size-32 sm:size-40" />
-              </div>
+              <CookieIllustration state={cookieState} className="size-32 sm:size-40" />
               <dl className="pb-1">
                 <dt>
-                  <MonoLabel className="text-muted-foreground/70">Starea ta</MonoLabel>
+                  <MonoLabel className="text-muted-foreground/70">
+                    <Trans>Starea ta</Trans>
+                  </MonoLabel>
                 </dt>
                 <dd className="mt-1.5 text-sm font-medium text-foreground">
                   {!hydrated
-                    ? 'Se citește…'
+                    ? t`Se citește…`
                     : !hasDecision
-                      ? 'Nicio alegere încă'
+                      ? t`Nicio alegere încă`
                       : cookieState === 'bitten'
-                        ? 'Totul pornit'
+                        ? t`Totul pornit`
                         : cookieState === 'plain'
-                          ? 'Doar esențiale'
-                          : 'Alegere proprie'}
+                          ? t`Doar esențiale`
+                          : t`Alegere proprie`}
                 </dd>
                 <dd className="mt-0.5 text-xs text-muted-foreground">
                   {!hydrated
-                    ? 'din browserul tău'
+                    ? t`din browserul tău`
                     : hasDecision
-                      ? `din ${formatDate(saved.updatedAt, 'long')}`
-                      : 'se aplică doar esențialele'}
+                      ? t`din ${formatDate(saved.updatedAt, 'long')}`
+                      : t`se aplică doar esențialele`}
                 </dd>
               </dl>
             </div>
           </div>
-        </Frame>
+        </RuledFrame>
       </section>
 
       {/* Choices. No band heading: the rows are the only thing here, the
           headline above already says what they are, and a numbered title over
           three switches was labelling the obvious. The region keeps a name for
           anyone listing landmarks. */}
-      <section className="border-b" aria-label="Alegerile tale">
-        <Frame className="py-12 sm:py-14">
+      <section className="border-b" aria-label={t`Alegerile tale`}>
+        <RuledFrame className="py-12 sm:py-14">
           {/* No rule above the first row: the band's own divider is a few
               pixels up, and two hairlines that close together read as a
               mistake. Each row draws its own bottom edge instead. */}
@@ -169,12 +163,16 @@ export function CookieSettingsPage() {
             <ChoiceRow
               icon={CATEGORY_ICON.essential}
               index={ESSENTIAL_CATEGORY.index}
-              title={ESSENTIAL_CATEGORY.title}
-              vendor={ESSENTIAL_CATEGORY.vendor}
-              summary={ESSENTIAL_CATEGORY.summary}
-              detail={ESSENTIAL_CATEGORY.detail}
-              state={<MonoLabel className="text-muted-foreground">Mereu</MonoLabel>}
-              control={<Switch checked disabled aria-label="Esențiale, mereu active" />}
+              title={i18n._(ESSENTIAL_CATEGORY.title)}
+              vendor={i18n._(ESSENTIAL_CATEGORY.vendor)}
+              summary={i18n._(ESSENTIAL_CATEGORY.summary)}
+              detail={i18n._(ESSENTIAL_CATEGORY.detail)}
+              state={
+                <MonoLabel className="text-muted-foreground">
+                  <Trans>Mereu</Trans>
+                </MonoLabel>
+              }
+              control={<Switch checked disabled aria-label={t`Esențiale, mereu active`} />}
             />
             {OPTIONAL_CATEGORIES.map((category) => {
               const id = `cookies-${category.key}`
@@ -184,19 +182,21 @@ export function CookieSettingsPage() {
                   key={category.key}
                   icon={CATEGORY_ICON[category.key]}
                   index={category.index}
-                  title={category.title}
-                  vendor={category.vendor}
-                  summary={category.summary}
-                  detail={category.detail}
+                  title={i18n._(category.title)}
+                  vendor={i18n._(category.vendor)}
+                  summary={i18n._(category.summary)}
+                  detail={i18n._(category.detail)}
                   labelFor={id}
                   active={on}
                   state={
                     <>
                       <MonoLabel className={cn(on ? 'text-foreground' : 'text-muted-foreground')}>
-                        {on ? 'Pornit' : 'Oprit'}
+                        {on ? <Trans>Pornit</Trans> : <Trans>Oprit</Trans>}
                       </MonoLabel>
                       {on !== saved[category.key] ? (
-                        <MonoLabel className="text-primary">nesalvat</MonoLabel>
+                        <MonoLabel className="text-primary">
+                          <Trans>nesalvat</Trans>
+                        </MonoLabel>
                       ) : null}
                     </>
                   }
@@ -222,20 +222,20 @@ export function CookieSettingsPage() {
                 onClick={() => commit(essentialOnly)}
                 className="h-10 border-foreground/25 px-5 text-foreground hover:border-foreground/40"
               >
-                Doar esențiale
+                <Trans>Doar esențiale</Trans>
               </Button>
               <Button
                 variant="outline"
                 onClick={() => commit(everything)}
                 className="h-10 border-foreground/25 px-5 text-foreground hover:border-foreground/40"
               >
-                Acceptă tot
+                <Trans>Acceptă tot</Trans>
               </Button>
               {/* Stays enabled once there is nothing to save: disabling it
                   under the pointer throws focus to the body, and saving the
                   same answer again is harmless. */}
               <Button onClick={() => commit(save)} className="h-10 px-5">
-                Salvează alegerea
+                <Trans>Salvează alegerea</Trans>
               </Button>
             </div>
             <MonoLabel
@@ -243,34 +243,40 @@ export function CookieSettingsPage() {
               className={cn('block', justSaved ? 'text-primary' : 'text-muted-foreground')}
             >
               {justSaved
-                ? 'Salvat'
+                ? t`Salvat`
                 : isDirty
-                  ? 'Modificări nesalvate'
+                  ? t`Modificări nesalvate`
                   : hasDecision
-                    ? `Ultima alegere · ${formatDate(saved.updatedAt, 'short')}`
-                    : 'Nicio alegere salvată'}
+                    ? t`Ultima alegere · ${formatDate(saved.updatedAt, 'short')}`
+                    : t`Nicio alegere salvată`}
             </MonoLabel>
           </div>
-        </Frame>
+        </RuledFrame>
       </section>
 
       {/* Where the long version lives — including the full list of keys and
           their lifetimes, which is the policy's job to keep current. */}
       <section>
-        <Frame className="py-10 sm:py-12">
+        <RuledFrame className="py-10 sm:py-12">
           <p data-reveal className="max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
-            Lista completă a ce se scrie în browserul tău, cu durata fiecărei
-            chei, este în politica de cookie-uri.
+            <Trans>
+              Lista completă a ce se scrie în browserul tău, cu durata fiecărei chei, este în
+              politica de cookie-uri.
+            </Trans>
           </p>
           <p data-reveal className="mt-4 flex flex-wrap gap-x-6 gap-y-2">
             <Link to="/cookie-policy" className={FOOT_LINK_CLASS}>
-              <MonoLabel>Politica de cookie-uri</MonoLabel>
+              <MonoLabel>
+                <Trans>Politica de cookie-uri</Trans>
+              </MonoLabel>
             </Link>
             <Link to="/privacy" className={FOOT_LINK_CLASS}>
-              <MonoLabel>Politica de confidențialitate</MonoLabel>
+              <MonoLabel>
+                <Trans>Politica de confidențialitate</Trans>
+              </MonoLabel>
             </Link>
           </p>
-        </Frame>
+        </RuledFrame>
       </section>
     </div>
   )

@@ -48,7 +48,7 @@ import {
  * curves, per-cell delays and durations, and the ripple's distance maths are
  * the ones this page was already tuned to; they are evaluated here instead of
  * being declared in a stylesheet, and every value the two could disagree about
- * is imported from `home-refs.field-motion.ts` rather than copied. The port was
+ * is imported from `field-motion.ts` rather than copied. The port was
  * checked by diffing a screenshot of the field against the SVG renderer it
  * replaced: one pixel in 239,400 differed, by one level.
  *

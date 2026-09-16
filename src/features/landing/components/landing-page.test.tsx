@@ -4,9 +4,13 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, within } from '@/test/test-utils'
 import { LANDING_GROUPS } from '@/features/landing/lib/landing-groups'
-import { NATIONAL_FACTS, formatFact } from '@/features/landing/lib/national-facts'
+import { NATIONAL_FACTS, formatFact, formatValue } from '@/features/landing/lib/national-facts'
 import { ANGELS, FOUNDER } from '@/features/landing/lib/people'
+import { getUserLocale } from '@/lib/utils'
 import { LandingPage } from './landing-page'
+
+/** Figures are written in the active locale's separators; the test env mocks it. */
+const locale = getUserLocale() === 'en' ? 'en' : 'ro'
 
 /**
  * The page's contract, as far as a unit test can hold it.
@@ -67,7 +71,7 @@ describe('LandingPage', () => {
       }
     }
     for (const fact of NATIONAL_FACTS) {
-      expect(html).toContain(formatFact(fact))
+      expect(html).toContain(formatFact(fact, locale))
     }
     expect(html).toContain(FOUNDER.name)
     for (const angel of ANGELS) expect(html).toContain(angel.name)
@@ -103,7 +107,7 @@ describe('LandingPage', () => {
     expect(screen.queryByText(/instituții cu execuție/)).not.toBeInTheDocument()
     resolve({ nodes: [], pageInfo: { totalCount: 3295, hasNextPage: false, hasPreviousPage: false } })
     expect(await screen.findByText(/instituții cu execuție/)).toBeInTheDocument()
-    expect(screen.getByText('3.295')).toBeInTheDocument()
+    expect(screen.getByText(formatValue(3295, 0, locale))).toBeInTheDocument()
   })
 
   it('never prints a stand-in count when the request fails', async () => {

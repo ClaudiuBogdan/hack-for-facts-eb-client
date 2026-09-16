@@ -36,7 +36,7 @@ import { FOCUS_RATIO, SECTION_LIGHT_ATTR, sectionClaimAt } from '@/features/land
  *    That is the case it exists for — unlike the ~990 field cells, where asking
  *    for that many layers would cost more than the repaint it saves.
  * 4. **Two palettes, not one, and no hue in either**, and neither of them is
- *    here — see `home-refs.light-material.tsx`, which owns everything both
+ *    here — see `light-material.tsx`, which owns everything both
  *    lights are made of so that retuning the grey is one edit rather than two.
  *    Silver, not white: a
  *    grey core with a lighter edge, which is the material rather than the

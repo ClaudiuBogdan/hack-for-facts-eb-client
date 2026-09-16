@@ -31,13 +31,16 @@ without reading the reason.
 
 1. **Footer content.** The prototype footer is a skin proposal with two short
    columns. Production keeps what the shipped footer carried that tests, copy
-   or provenance depend on: the GitHub repository link, the cookie settings
-   link (the cookies page copy promises it is "one click away in the footer"),
-   a data-source line naming ANAF and the Ministry of Finance (DESIGN.md §Data
-   Trust applies app-wide), and a feedback link. The Better Stack iframe badge
-   becomes a text link to the status page, and "back to top" is dropped: both
-   fought the scene. One `nav` landmark, `Navigare footer`, rather than one per
-   column.
+   or provenance depend on, in a third column, `Proiect`: the GitHub
+   repository and issues links and the status page; the cookie settings link
+   under `Legal` (the cookies page copy promises it is "one click away in the
+   footer"); a data-source line naming ANAF and the Ministry of Finance, with
+   the PNRR variant on PNRR pages (DESIGN.md §Data Trust applies app-wide);
+   and the Sentry feedback control, shown only with consent. The Better Stack
+   iframe badge becomes a text link, "back to top" is dropped (both fought the
+   scene), and the founder's LinkedIn link moves out of the footer — it is on
+   the people band, beside the person it belongs to. One `nav` landmark,
+   `Navigare footer`, rather than one per column.
 2. **"Despre proiect" link.** The band linked to a prototype URL. The about
    page is a sketch with `[Provizoriu]` copy, so no `/despre` route ships and
    the link is omitted until one does. The people band otherwise ships as
@@ -60,6 +63,22 @@ without reading the reason.
    comparison the shipped band won, so they are deleted; the page sketch stays
    under `/development/landing/about` and imports the promoted people data.
 
+## Review outcomes (Codex, 16 September 2026)
+
+- Figures are formatted in the active locale (`formatValue(value, digits, locale)`,
+  carried into the count-up through `data-count-locale`); Romanian separators on
+  the English page read as a thousandfold error.
+- `redirect` on `/cookies` is normalised through URL parsing
+  (`src/features/privacy/lib/safe-redirect.ts`), not a prefix check.
+- The institution count is dropped whenever the query is in error, including a
+  failed refresh over cached data.
+- Escape collapsing the consent disclosure returns focus to its trigger.
+- The footer throw obeys reduced motion, stops off screen, and is owned by one
+  pointer.
+- Left as baseline: `doc-type-meta.ts` resolves labels at module scope,
+  `useSentryConsent` reads storage during first render, and `SidebarInset`
+  nests a `<main>` around the footer.
+
 ## Inline `<style>` blocks
 
 The motion files carry their keyframes in `<style>` elements rather than
@@ -72,4 +91,3 @@ as the exception; do not extend the pattern to static styling.
 
 - A real `/despre` page, and the band link back once it exists.
 - Review of the English copy in `en/messages.po` by a native reader.
-- `tests/e2e-flows/01-landing-page.md` still describes the old page's cards.

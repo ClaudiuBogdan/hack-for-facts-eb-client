@@ -1,235 +1,203 @@
-import type { ReactElement } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
-import { openSentryFeedback } from "@/lib/sentry";
-import { useSentryConsent } from "@/hooks/useSentryConsent";
-import { useTheme } from "@/components/theme/theme-provider";
-import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
-import { defaultYearRange } from "@/schemas/charts";
+import { useRef, type ReactElement } from 'react'
+import { Link, useLocation } from '@tanstack/react-router'
+import type { LinkProps } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
+import { msg } from '@lingui/core/macro'
+import type { MessageDescriptor } from '@lingui/core'
+import logo from '@/assets/logo/logo.png'
+import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { useSentryConsent } from '@/hooks/useSentryConsent'
+import { openSentryFeedback } from '@/lib/sentry'
+import { FOOTER_SCENE_CLEAR_PX, FooterScene, FooterSceneStyles, useFooterScene } from './footer-scene'
 
 /**
- * App-wide footer displayed at the bottom of the main layout.
+ * The app-wide footer, on the landing's skin: the ruled frame, mono column
+ * captions, and the drifting horizon behind the last rows of text.
  *
- * Notes:
- * - Kept lightweight and semantic. Lives inside `SidebarInset` so it naturally
- *   sticks to the bottom when content is short, and pushes below long content.
- * - Uses internal `Link` for app routes and external anchors for resources.
+ * It lives inside `SidebarInset`, so it sits under whatever page is open and
+ * mounts once for the whole session. The scene is gated until the footer is a
+ * viewport away and paused when it is off screen (see `footer-scene.tsx`), so
+ * a page that is never scrolled to the bottom pays nothing for it.
+ *
+ * What is here and what is not is recorded in `docs/design/landing/design.md`.
  */
+
+type FooterLink =
+  | { readonly label: MessageDescriptor; readonly to: LinkProps['to'] }
+  | { readonly label: MessageDescriptor; readonly href: string }
+
+type FooterColumn = {
+  readonly key: 'platform' | 'legal' | 'project'
+  readonly title: MessageDescriptor
+  readonly links: readonly FooterLink[]
+}
+
+const REPO_URL = 'https://github.com/ClaudiuBogdan/hack-for-facts-eb-client'
+const STATUS_URL = 'https://status.transparenta.eu'
+
+/**
+ * Deliberately short. A footer that lists every surface competes with the
+ * landing's own index, and on every other page it competes with the sidebar.
+ * Cookie settings is added at render, because its link carries the current
+ * location so the settings page can come back.
+ */
+const COLUMNS: readonly FooterColumn[] = [
+  {
+    key: 'platform',
+    title: msg`Platformă`,
+    links: [
+      { label: msg`Analiza entităților`, to: '/entity-analytics' },
+      { label: msg`Hărți`, to: '/map' },
+      { label: msg`Grafice`, to: '/charts' },
+    ],
+  },
+  {
+    key: 'legal',
+    title: msg`Legal`,
+    links: [
+      { label: msg`Politica de confidențialitate`, to: '/privacy' },
+      { label: msg`Termeni și condiții`, to: '/terms' },
+      { label: msg`Politica de cookie-uri`, to: '/cookie-policy' },
+    ],
+  },
+  {
+    key: 'project',
+    title: msg`Proiect`,
+    links: [
+      { label: msg`Cod sursă pe GitHub`, href: REPO_URL },
+      { label: msg`Raportează o problemă`, href: `${REPO_URL}/issues` },
+      { label: msg`Stare sistem`, href: STATUS_URL },
+    ],
+  },
+]
+
+/** Each link is a full-width 44px row on a phone and a line of text from `sm`. */
+const LINK_CLASS =
+  'block py-3 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring rounded-sm sm:inline sm:py-0'
+
 export function AppFooter(): ReactElement {
-    const defaultYear = defaultYearRange.end;
-    const showSentryFeedback = useSentryConsent();
-    const location = useLocation();
-    const { resolvedTheme } = useTheme();
-    const isPnrrPage = /(^|\/)pnrr(\/|$)/.test(location.pathname);
+  const { i18n } = useLingui()
+  const location = useLocation()
+  const showSentryFeedback = useSentryConsent()
+  const isPnrrPage = /(^|\/)pnrr(\/|$)/.test(location.pathname)
+  const footerRef = useRef<HTMLElement>(null)
+  useFooterScene(footerRef)
 
-    const handleLinkClick = () => {
-        // Scroll to top of page when navigating
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    };
+  const redirect = `${location.pathname}${location.searchStr ?? ''}`
 
-    return (
-        <footer className="w-full border-t bg-muted/30 text-muted-foreground">
-            <div className="mx-auto w-full max-w-7xl px-6 py-10">
-
-                <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                    {/* Brand + short description */}
-                    <div className="space-y-3">
-                        <div className="font-semibold text-lg text-foreground">Transparenta.eu</div>
-                        <p className="text-sm leading-relaxed">
-                            <Trans>A platform for exploring public financial data for citizens, journalists, public figures, and other interested parties.</Trans>
-                        </p>
-                        <div className="flex items-center gap-4 pt-1">
-                            <a
-                                href="https://github.com/ClaudiuBogdan/hack-for-facts-eb-client"
-                                target="_blank"
-                                rel="noreferrer noopener"
-                                className="inline-flex items-center gap-2 hover:text-foreground"
-                                aria-label="GitHub"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    className="h-4 w-4 fill-current"
-                                    role="img"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    aria-label="GitHub"
-                                >
-                                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.334-1.754-1.334-1.754-1.089-.745.084-.729.084-.729 1.205.086 1.838 1.237 1.838 1.237 1.07 1.835 2.807 1.305 3.492.998.108-.776.418-1.305.762-1.605-2.665-.305-5.467-1.332-5.467-5.931 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.527.117-3.176 0 0 1.009-.322 3.3 1.23.957-.266 1.984-.399 3.005-.404 1.02.005 2.047.138 3.006.404 2.29-1.552 3.297-1.23 3.297-1.23.655 1.649.243 2.873.12 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.371.823 1.102.823 2.222 0 1.604-.014 2.896-.014 3.293 0 .321.216.694.825.576C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                                </svg>
-                                <span className="text-sm">GitHub</span>
-                            </a>
-                            <a
-                                href="https://www.linkedin.com/in/claudiuconstantinbogdan/"
-                                target="_blank"
-                                rel="noreferrer noopener"
-                                className="inline-flex items-center gap-2 hover:text-foreground"
-                                aria-label="LinkedIn"
-                            >
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    className="h-4 w-4 fill-current"
-                                    role="img"
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    aria-label="LinkedIn"
-                                >
-                                    <path d="M20.447 20.452h-3.554V14.87c0-1.332-.024-3.048-1.86-3.048-1.862 0-2.146 1.453-2.146 2.953v5.677H9.332V9h3.414v1.561h.049c.476-.9 1.637-1.848 3.367-1.848 3.6 0 4.264 2.37 4.264 5.451v6.288zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM6.993 20.452H3.678V9h3.315v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.226.792 24 1.771 24h20.451C23.2 24 24 23.226 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                                </svg>
-                                <span className="text-sm">LinkedIn</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    {/* Product */}
-                    <nav aria-label="Product" className="space-y-3" aria-labelledby="footer-product-heading">
-                        <h2 id="footer-product-heading" className="font-medium text-foreground text-base"><Trans>Product</Trans></h2>
-                        <ul className="space-y-2 text-sm">
-                            <li>
-                                <Link to="/" className="hover:text-foreground" onClick={handleLinkClick}>
-                                    <Trans>Home</Trans>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/entity-analytics" className="hover:text-foreground" onClick={handleLinkClick}>
-                                    <Trans>Entity Analytics</Trans>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/map" className="hover:text-foreground" onClick={handleLinkClick}>
-                                    <Trans>Maps</Trans>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/charts" className="hover:text-foreground" onClick={handleLinkClick}>
-                                    <Trans>Charts</Trans>
-                                </Link>
-                            </li>
-                        </ul>
-                    </nav>
-
-                    {/* Legal */}
-                    <nav aria-label="Legal" className="space-y-3" aria-labelledby="footer-legal-heading">
-                        <h2 id="footer-legal-heading" className="font-medium text-foreground text-base"><Trans>Legal</Trans></h2>
-                        <ul className="space-y-2 text-sm">
-                            <li>
-                                <Link to="/privacy" className="hover:text-foreground" onClick={handleLinkClick}><Trans>Privacy Policy</Trans></Link>
-                            </li>
-                            <li>
-                                <Link to="/terms" className="hover:text-foreground" onClick={handleLinkClick}><Trans>Terms of Service</Trans></Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/cookies"
-                                    search={{ redirect: `${location.pathname}${location.searchStr ?? ""}` }}
-                                    className="hover:text-foreground"
-                                    onClick={handleLinkClick}
-                                >
-                                    <Trans>Cookie Settings</Trans>
-                                </Link>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-
-                {/* Divider */}
-                <div className="my-8 h-px w-full bg-border" />
-
-                {/* Data source and copyright */}
-                <div className="flex flex-col items-start justify-between gap-4 text-xs text-muted-foreground md:flex-row">
-                    <p className="break-words">
-                        {isPnrrPage ? (
-                            <>
-                                <Trans>PNRR data source: Ministry of Investments and European Projects (MIPE). See the official dashboard:</Trans>
-                                {" "}
-                                <a
-                                    href="https://mfe.gov.ro/pnrr-dashboard"
-                                    target="_blank"
-                                    rel="noreferrer noopener"
-                                    className="break-all underline underline-offset-2 hover:text-foreground"
-                                >
-                                    mfe.gov.ro/pnrr-dashboard
-                                </a>
-                                .
-                            </>
-                        ) : (
-                            <>
-                                <Trans>Data source: &quot;Budget Transparency&quot; portal administered by ANAF/Ministry of Finance. See official resources:</Trans>
-                                {" "}
-                                <a
-                                    href="https://mfinante.gov.ro/transparenta-bugetara"
-                                    target="_blank"
-                                    rel="noreferrer noopener"
-                                    className="break-all underline underline-offset-2 hover:text-foreground"
-                                >
-                                    mfinante.gov.ro/transparenta-bugetara
-                                </a>
-                                {" "}<Trans>and</Trans>{" "}
-                                <a
-                                    href="https://extranet.anaf.mfinante.gov.ro/anaf/extranet/EXECUTIEBUGETARA"
-                                    target="_blank"
-                                    rel="noreferrer noopener"
-                                    className="break-all underline underline-offset-2 hover:text-foreground"
-                                >
-                                    extranet.anaf.mfinante.gov.ro
-                                </a>
-                                .
-                            </>
-                        )}
-                    </p>
-                    <p className="shrink-0 sm:whitespace-nowrap"><Trans>&copy; {defaultYear} Transparenta.eu. All rights reserved.</Trans></p>
-                </div>
-
-                {/* Bottom utilities: Feedback / Status / Back to top */}
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <div className="flex items-center gap-4">
-                        <a
-                            href="https://github.com/ClaudiuBogdan/hack-for-facts-eb-client/issues"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="underline hover:text-foreground"
-                        >
-                            <Trans>Feedback / Report an issue</Trans>
-                        </a>
-                        {showSentryFeedback && (
-                            <button
-                                type="button"
-                                className="underline hover:text-foreground"
-                                onClick={() => openSentryFeedback?.()}
-                                aria-label={t`Open feedback dialog`}
-                            >
-                                <Trans>Send feedback</Trans>
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <a
-                            href="https://status.transparenta.eu"
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            aria-label={t`System status`}
-                            className="max-w-full"
-                        >
-                            <iframe
-                                src={`https://status.transparenta.eu/badge?theme=${resolvedTheme}`}
-                                width="250"
-                                height="30"
-                                frameBorder="0"
-                                scrolling="no"
-                                title={t`System status badge`}
-                                className="max-w-full pointer-events-none"
-                            />
-                        </a>
-                        <button
-                            type="button"
-                            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                            className="rounded-md border px-2.5 py-1.5 text-[11px] font-medium text-foreground hover:bg-muted"
-                            aria-label={t`Back to top`}
-                        >
-                            <Trans>Back to top</Trans>
-                        </button>
-                    </div>
-                </div>
+  return (
+    /* `relative` so the scene has something to be absolute against, and the
+       content carries `z-10` so the range rises *behind* the last rows of text
+       rather than over them. */
+    <footer ref={footerRef} className="relative overflow-hidden border-t bg-background">
+      <FooterSceneStyles />
+      <FooterScene />
+      {/* The frame does not take pointer events and its two content blocks do.
+          Its box covers the whole footer, padding included, so as a `z-10`
+          positioned element it swallowed every click meant for the sky
+          underneath — the clouds could not be grabbed anywhere the padding
+          reached, which was everywhere. */}
+      <RuledFrame className="pointer-events-none relative z-10 pt-14">
+        {/* Padding rather than a height, so the footer is as tall as its own
+            text plus room for the vista. The figure comes from the scene, so
+            the two cannot drift apart: the text stops above the highest cloud,
+            and the peaks rise behind it. */}
+        <div style={{ paddingBottom: FOOTER_SCENE_CLEAR_PX }}>
+          <div className="pointer-events-auto grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2">
+                <img src={logo} alt="" className="size-5 rounded-sm" />
+                <span className="font-semibold text-foreground">Transparenta.eu</span>
+              </div>
+              <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                <Trans>
+                  Banii publici, deciziile și documentele care le însoțesc — într-un singur loc, cu
+                  sursa și data lângă fiecare cifră.
+                </Trans>
+              </p>
+              {showSentryFeedback ? (
+                <button
+                  type="button"
+                  onClick={() => openSentryFeedback?.()}
+                  className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring rounded-sm sm:min-h-0"
+                >
+                  <Trans>Trimite feedback</Trans>
+                </button>
+              ) : null}
             </div>
-        </footer>
-    );
+            {/* One navigation landmark for the footer, not one per column. A nav
+                per column takes its name from the column, and two landmarks with
+                the same role and a generic name are indistinguishable in the
+                landmark list a screen reader offers. `display: contents` because
+                the columns are grid children of the block above and a real box
+                here would break the row. The column titles stay visual — the
+                lists inside carry the structure. */}
+            <nav aria-label={t`Navigare footer`} className="contents">
+              {COLUMNS.map((column) => (
+                <div key={column.key}>
+                  <MonoLabel className="text-muted-foreground/70">{i18n._(column.title)}</MonoLabel>
+                  <ul className="mt-1 space-y-0 sm:mt-4 sm:space-y-2.5">
+                    {column.links.map((link) => (
+                      <li key={'to' in link ? link.to : link.href}>
+                        {'to' in link ? (
+                          <Link to={link.to} className={LINK_CLASS}>
+                            {i18n._(link.label)}
+                          </Link>
+                        ) : (
+                          <a href={link.href} target="_blank" rel="noreferrer noopener" className={LINK_CLASS}>
+                            {i18n._(link.label)}
+                          </a>
+                        )}
+                      </li>
+                    ))}
+                    {column.key === 'legal' ? (
+                      <li>
+                        <Link to="/cookies" search={{ redirect }} className={LINK_CLASS}>
+                          <Trans>Setări cookie-uri</Trans>
+                        </Link>
+                      </li>
+                    ) : null}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+          </div>
+          <div className="pointer-events-auto mt-12 flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-t pt-5">
+            <MonoLabel className="block max-w-xl leading-relaxed text-muted-foreground/70">
+              {isPnrrPage ? (
+                <Trans>
+                  Date PNRR: Ministerul Investițiilor și Proiectelor Europene ·{' '}
+                  <a
+                    href="https://mfe.gov.ro/pnrr-dashboard"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    mfe.gov.ro/pnrr-dashboard
+                  </a>
+                </Trans>
+              ) : (
+                <Trans>
+                  Date din surse oficiale · Transparență bugetară, ANAF / Ministerul Finanțelor ·{' '}
+                  <a
+                    href="https://mfinante.gov.ro/transparenta-bugetara"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    mfinante.gov.ro
+                  </a>
+                </Trans>
+              )}
+            </MonoLabel>
+            <MonoLabel className="text-muted-foreground/70">
+              © {new Date().getFullYear()} Transparenta.eu
+            </MonoLabel>
+          </div>
+        </div>
+      </RuledFrame>
+    </footer>
+  )
 }

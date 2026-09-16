@@ -220,10 +220,9 @@ const MATERIAL_CSS = `
 `
 
 /**
- * Rendered once by the page, above both lights' own stylesheets.
- *
- * A plain style element rather than an addition to `src/index.css`, which a
- * prototype may not touch. Server-rendered too, so the first paint has it.
+ * Rendered as a style element by the page, on the server too, so the first
+ * paint has it. Kept beside the hook it serves rather than in `src/index.css`
+ * (see `docs/design/landing/design.md`).
  */
 export function LightMaterialStyles() {
   return <style>{MATERIAL_CSS}</style>

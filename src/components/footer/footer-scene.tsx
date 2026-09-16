@@ -577,14 +577,20 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
      * range. That band is all this observer is for.
      */
     const drifting = [...scene.querySelectorAll<HTMLElement>('.tpz-scene-clouds')]
+    /** Whether the scene is on screen. Read by the throw loop, which stops when it is not. */
+    let visible = true
     const onScreen = new IntersectionObserver(([entry]) => {
       if (!entry) return
+      visible = entry.isIntersecting
       // Cleared rather than set to 'running', so the stylesheet stays in charge
       // — 'prefers-reduced-motion' turns the animation off entirely and an
       // inline 'running' would have nothing to say about it either way.
       const state = entry.isIntersecting ? '' : 'paused'
       for (const layer of drifting) layer.style.animationPlayState = state
     })
+    /* The throw is motion too. Under reduced motion a released cloud stays
+       where it was let go, the same as the drift the CSS has already stopped. */
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
     onScreen.observe(scene)
 
     /**
@@ -613,6 +619,8 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
     })
     resized.observe(scene)
     let dragging: Grabbable | null = null
+    /** The pointer that took hold. A second finger neither moves nor ends the drag. */
+    let activePointer: number | null = null
     let lastX = 0
     /** Movement seen since the last frame, so the writes stay one per frame. */
     let pending = 0
@@ -710,6 +718,12 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
 
     const step = () => {
       frame = 0
+      // Off screen there is nothing to see; drop the throws rather than spend
+      // frames on them, and pick up from rest when the scene comes back.
+      if (!visible) {
+        for (const layer of layers) layer.velocity = 0
+        return
+      }
       let busy = false
       if (dragging) {
         if (pending !== 0) {
@@ -722,6 +736,12 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
       // ago keeps going while the reader takes hold of another.
       for (const layer of layers) {
         if (layer === dragging || layer.velocity === 0) continue
+        // Checked per frame, not only at release: a preference flipped while a
+        // cloud is still travelling stops it here, as the CSS stops the drift.
+        if (reducedMotion.matches) {
+          layer.velocity = 0
+          continue
+        }
         layer.velocity *= THROW_DECAY
         if (Math.abs(layer.velocity) < THROW_FLOOR_PX) {
           layer.velocity = 0
@@ -739,8 +759,10 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
 
     const onDown = (event: PointerEvent) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return
+      if (activePointer !== null) return
       const layer = layerAt(event.clientX, event.clientY)
       if (!layer) return
+      activePointer = event.pointerId
       dragging = layer
       layer.velocity = 0
       lastX = event.clientX
@@ -757,6 +779,7 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
         scene.classList.toggle('is-over-cloud', layerAt(event.clientX, event.clientY) !== null)
         return
       }
+      if (event.pointerId !== activePointer) return
       const dx = event.clientX - lastX
       lastX = event.clientX
       pending += dx
@@ -767,12 +790,14 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
     }
 
     const onUp = (event: PointerEvent) => {
-      if (!dragging) return
+      if (!dragging || event.pointerId !== activePointer) return
       if (pending !== 0) {
         write(dragging, pending)
         pending = 0
       }
+      if (reducedMotion.matches) dragging.velocity = 0
       dragging = null
+      activePointer = null
       scene.classList.remove('is-grabbed')
       if (scene.hasPointerCapture(event.pointerId)) {
         scene.releasePointerCapture(event.pointerId)
@@ -816,6 +841,7 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
       scene.addEventListener('pointermove', onMove)
       scene.addEventListener('pointerup', onUp)
       scene.addEventListener('pointercancel', onUp)
+      scene.addEventListener('lostpointercapture', onUp)
       })
       .catch(() => {
         /* 'OffscreenCanvas' is absent in Safari before 16.4 and 'decode' can
@@ -844,6 +870,7 @@ export function useFooterScene(rootRef: RefObject<HTMLElement | null>) {
       scene.removeEventListener('pointermove', onMove)
       scene.removeEventListener('pointerup', onUp)
       scene.removeEventListener('pointercancel', onUp)
+      scene.removeEventListener('lostpointercapture', onUp)
       if (frame) cancelAnimationFrame(frame)
     }
   }, [rootRef])
