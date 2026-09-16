@@ -304,7 +304,7 @@ export function LandingSearch({
           className={cn(
             // The field. Border, radius and lift live here rather than on the
             // input because the chips are inside them too.
-            'flex h-12 items-center gap-1.5 rounded-lg border border-input bg-card pl-10 pr-20 shadow-none',
+            'flex min-h-12 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-card py-2 pl-10 pr-20 shadow-none',
             // The border and the lift move together, so `transition-colors`
             // is not enough: it would fade the border over 150ms while the
             // shadow snapped in, which is visible on every focus.
@@ -351,7 +351,7 @@ export function LandingSearch({
         >
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-3.5 top-6 size-4 -translate-y-1/2 text-muted-foreground"
           />
 
           {filters.map((filter) => (
@@ -477,13 +477,13 @@ export function LandingSearch({
               setIsOpen(false)
             }}
             className={cn(
-              // Bare: the group draws the field. `min-w-0` lets the chips take
-              // room from the text rather than overflowing the border. The
+              // Bare: the group draws the field. Keep room for the query and
+              // wrap it below long or multiple chips on narrow screens. The
               // outline is forced off because `src/index.css` draws one on
               // every `:focus-visible` element from outside any layer, where a
               // plain utility cannot reach it — and a text input is
               // focus-visible on click. The group draws focus instead.
-              'h-full min-w-0 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
+              'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
             )}
             placeholder={filters.length > 0 ? t`Nume sau CUI...` : placeholder}
             aria-label={placeholder}
@@ -494,7 +494,7 @@ export function LandingSearch({
             enterKeyHint="search"
           />
 
-          <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+          <div className="absolute right-3 top-6 flex -translate-y-1/2 items-center gap-1.5">
             {isBusy ? (
               <Loader2 aria-hidden="true" className="size-4 animate-spin text-muted-foreground" />
             ) : null}

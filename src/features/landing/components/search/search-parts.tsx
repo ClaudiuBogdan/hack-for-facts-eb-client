@@ -146,13 +146,13 @@ export function FilterPill({
   return (
     <span
       className={cn(
-        'inline-flex h-7 shrink-0 items-center gap-1.5 rounded-sm bg-muted pl-2 text-xs font-medium text-foreground',
+        'inline-flex h-7 max-w-full shrink-0 items-center gap-1.5 rounded-sm bg-muted pl-2 text-xs font-medium text-foreground',
         children ? 'pr-0.5' : 'pr-2',
         className,
       )}
     >
       <Icon aria-hidden="true" className="size-3.5 text-muted-foreground" />
-      <span className="whitespace-nowrap">{i18n._(filter.label)}</span>
+      <span className="truncate">{i18n._(filter.label)}</span>
       {children}
     </span>
   )
@@ -190,7 +190,7 @@ export function FilterChip({
         }}
         // 24px drawn, 44px hit — the same treatment as the clear button, and
         // for the same reason: WCAG 2.2's floor is 24, a thumb wants 44.
-        className="relative flex size-6 items-center justify-center rounded-sm text-muted-foreground transition-colors after:absolute after:-inset-2.5 after:content-[''] hover:bg-foreground/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+        className="relative flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors after:absolute after:-inset-2.5 after:content-[''] hover:bg-foreground/10 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
       >
         <X className="size-3" />
       </button>
