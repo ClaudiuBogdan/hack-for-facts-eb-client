@@ -2,11 +2,18 @@ import { z } from 'zod'
 import faqContentFile from './challenge-entity-faq-content.json'
 import type { ChallengeLocale } from '../../types'
 
+export type ChallengeEntityFaqSource = {
+  readonly label: string
+  readonly href: string
+}
+
 export type ChallengeEntityFaqItem = {
   readonly id: string
   readonly question: string
   readonly answerParagraphs: readonly string[]
   readonly requiresInflationAdjusted?: boolean
+  /** Where the answer's claim can be checked; rendered as a link under the paragraphs. */
+  readonly source?: ChallengeEntityFaqSource
 }
 
 export type ChallengeEntityFaqContent = {
@@ -20,6 +27,12 @@ const ChallengeEntityFaqItemSchema = z.object({
   question: z.string().min(1),
   answerParagraphs: z.array(z.string().min(1)).min(1),
   requiresInflationAdjusted: z.boolean().optional(),
+  source: z
+    .object({
+      label: z.string().min(1),
+      href: z.string().url(),
+    })
+    .optional(),
 })
 
 const ChallengeEntityFaqContentSchema = z.object({

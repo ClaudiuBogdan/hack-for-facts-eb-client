@@ -134,6 +134,25 @@ export function buildObservationSeriesTupleSignature(observation: InsObservation
   return `${unitPart}||${classificationPart}`;
 }
 
+/**
+ * The source's counting units carry English symbols ("persons", "count",
+ * "number"), which read as a foreign word after a Romanian figure. Persons
+ * get the short Romanian form; a bare count is shown as the number alone,
+ * which is what "163,01 mii" already says. Real units (`m²`, `km`, `%`) pass
+ * through. Display only: `getObservationUnit` still keys unit selection.
+ */
+const GENERIC_COUNT_SYMBOLS = new Set(['count', 'number', 'numar', 'other']);
+const PERSON_SYMBOLS = new Set(['persons', 'person', 'persoane']);
+
+export function getObservationDisplayUnit(observation: InsObservation): string | null {
+  const unit = getObservationUnit(observation);
+  if (!unit) return null;
+  const key = unit.trim().toLowerCase();
+  if (PERSON_SYMBOLS.has(key)) return t`pers.`;
+  if (GENERIC_COUNT_SYMBOLS.has(key)) return null;
+  return unit;
+}
+
 export function formatObservationValue(observation: InsObservation): { value: string; statusLabel?: string } {
   const statusLabel = getObservationStatusLabel(observation.value_status);
   if (statusLabel) return { value: '—', statusLabel };
@@ -141,7 +160,7 @@ export function formatObservationValue(observation: InsObservation): { value: st
   const numericValue = parseObservationValue(observation.value);
   if (numericValue == null) return { value: t`N/A` };
 
-  const unit = getObservationUnit(observation);
+  const unit = getObservationDisplayUnit(observation);
   if (!unit) return { value: formatNumber(numericValue, 'compact') };
 
   return { value: formatValueWithUnit(numericValue, unit, 'compact') };

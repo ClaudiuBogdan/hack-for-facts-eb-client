@@ -51,6 +51,18 @@ export function ChallengeEntityFaqSection({
                     {item.answerParagraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}
+                    {item.source ? (
+                      <p>
+                        <a
+                          href={item.source.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-medium text-foreground underline underline-offset-4"
+                        >
+                          {item.source.label}
+                        </a>
+                      </p>
+                    ) : null}
                   </div>
                 </AccordionContent>
               </AccordionItem>

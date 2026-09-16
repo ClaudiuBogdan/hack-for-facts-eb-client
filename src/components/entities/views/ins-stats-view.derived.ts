@@ -246,8 +246,17 @@ export function computeDerivedIndicators(
 
   const rows: DerivedIndicator[] = [];
 
-  const getBaseUnit = (datasetCode: string, fallbackBaseUnit: string) =>
-    unitMap.get(datasetCode) ?? fallbackBaseUnit;
+  // The source's unit symbol is kept for brevity (`m²`, `km`), but its generic
+  // counting symbols are English tokens ("persons", "count", "number", "other")
+  // that read as a foreign word in a Romanian row. Those fall back to the
+  // curated short label; unit identity is still checked on `unit.code` by the
+  // caller, so the label choice never masks a real unit difference.
+  const GENERIC_UNIT_SYMBOLS = new Set(['persons', 'person', 'count', 'number', 'other', 'numar', 'persoane']);
+  const getBaseUnit = (datasetCode: string, fallbackBaseUnit: string) => {
+    const symbol = unitMap.get(datasetCode);
+    if (!symbol || GENERIC_UNIT_SYMBOLS.has(symbol.trim().toLowerCase())) return fallbackBaseUnit;
+    return symbol;
+  };
 
   const makePerThousandUnit = (datasetCode: string, fallbackBaseUnit: string) => {
     const baseUnit = getBaseUnit(datasetCode, fallbackBaseUnit);

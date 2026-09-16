@@ -22,6 +22,7 @@ import {
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 import { createLogger } from "@/lib/logger";
 import type { EntityDetailsData } from "@/lib/api/entities";
 import type { EntityInsSelectionInput } from "@/lib/ins/entity-source-search";
@@ -273,20 +274,32 @@ export function NativeEntityInsView({
       </p>
     );
   return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="text-lg font-semibold">
+    <section className="space-y-5 sm:space-y-6">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-0.5">
+          <h2 className="text-xl font-bold tracking-tight">
             <Trans>INS statistics</Trans>
           </h2>
           {source.context ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="truncate text-sm text-muted-foreground">
               {source.context.territoryName} · {source.context.territoryCode}
             </p>
           ) : null}
         </div>
-        <Button variant="outline" disabled={busy} onClick={refresh}>
-          <Trans>Refresh source</Trans>
+        {/* Icon-only on a phone: the label made the row wrap under the title. */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          disabled={busy}
+          onClick={refresh}
+          aria-label={t`Refresh source`}
+          title={t`Refresh source`}
+        >
+          <RefreshCw className={busy ? 'size-4 animate-spin' : 'size-4'} aria-hidden="true" />
+          <span className="hidden sm:inline">
+            <Trans>Refresh source</Trans>
+          </span>
         </Button>
       </div>
       {busy ? (

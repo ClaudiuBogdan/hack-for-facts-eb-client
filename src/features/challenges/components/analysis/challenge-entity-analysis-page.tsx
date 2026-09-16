@@ -1,4 +1,3 @@
-import { PopulationMethodologyNote } from '@/components/normalization/population-methodology-note';
 import { isCountyCouncilEntity } from '@/lib/entity-territory'
 import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
 import type { EntityInsSelectionInput } from '@/lib/ins/entity-source-search'
@@ -3332,7 +3331,6 @@ export function ChallengeEntityAnalysisPage({
         languageQuery={languageQuery}
       />
 
-      <PopulationMethodologyNote />
       {normalizationCaveats !== null ? (
         <Alert
           className="rounded-[28px] border-border/60 bg-muted/30"

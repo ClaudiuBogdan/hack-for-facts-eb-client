@@ -248,7 +248,10 @@ function SummaryMetricsSectionBase(props: {
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    // Two columns from the narrowest phone: four stacked cards pushed the
+    // derived indicators a full screen down, and a card's content fits in
+    // half of 390px once the figure is allowed to shrink.
+    <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
       {summaryCards.map((summary) => {
         const observation = summary.row?.observation;
         const formattedValue = observation ? summary.row?.native ? {...getCardNumericValue({...observation,value_status:null}),statusLabel:observation.value_status??undefined} : getCardNumericValue(observation) : { value: t`N/A` };
@@ -256,7 +259,6 @@ function SummaryMetricsSectionBase(props: {
         const selectedPeriodTag = summary.row?.selectedPeriodLabel || selectedReportPeriodLabel;
         const isPeriodFallback =
           summary.row?.source === 'fallback' || (period !== t`Unknown` && period !== selectedPeriodTag);
-        const periodLabelText = isPeriodFallback ? `${period} (${t`last available`})` : period;
         const datasetName =
           getLocalizedText(summary.row?.dataset?.name_ro, summary.row?.dataset?.name_en, locale) || summary.code;
         const isSelected = selectedDatasetCode === summary.code;
@@ -266,17 +268,20 @@ function SummaryMetricsSectionBase(props: {
             key={summary.code}
             type="button"
             onClick={() => onSelectDataset(summary.code)}
-            className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-pressed={isSelected}
+            className="min-w-0 w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            <Card className={`flex h-full flex-col rounded-[28px] border-border/50 ${isSelected ? 'border-primary ring-1 ring-primary/10' : ''}`}>
-              <CardHeader className="pb-2 pt-4">
-                <CardTitle className="min-h-[2lh] text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <Card className={`flex h-full flex-col rounded-2xl border-border/50 sm:rounded-[28px] ${isSelected ? 'border-primary ring-1 ring-primary/10' : ''}`}>
+              <CardHeader className="px-3.5 pb-1.5 pt-3.5 sm:px-5 sm:pb-2 sm:pt-4">
+                <CardTitle className="min-h-[2lh] text-[11px] font-semibold uppercase leading-snug tracking-wide text-muted-foreground">
                   {summary.label}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-1 flex-col pb-4">
-                <div className="flex items-center gap-2 text-[2.2rem] font-bold leading-none tracking-tight text-foreground">
-                  {summary.row?.selectedCells && summary.row.selectedCells.length > 1 ? <div className="space-y-1 text-sm">{summary.row.selectedCells.map(cell=><div key={cell.period}>{cell.period}: {cell.observation?.value??t`N/A`} {cell.observation?.unit?.name_ro??''} {cell.observation?.value_status&&<ValueStatusMarker status={cell.observation.value_status}/>}</div>)}</div> : <span>{formattedValue.value}</span>}
+              <CardContent className="flex flex-1 flex-col px-3.5 pb-3.5 sm:px-5 sm:pb-4">
+                {/* The figure and its scale word ("161,35 mii") are one token
+                    and never break across lines; the size shrinks instead. */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[clamp(1.5rem,4.2vw+0.4rem,2.2rem)] font-bold leading-none tracking-tight tabular-nums text-foreground lg:text-[clamp(1.6rem,1.6vw+0.6rem,2.2rem)]">
+                  {summary.row?.selectedCells && summary.row.selectedCells.length > 1 ? <div className="space-y-1 text-sm">{summary.row.selectedCells.map(cell=><div key={cell.period}>{cell.period}: {cell.observation?.value??t`N/A`} {cell.observation?.unit?.name_ro??''} {cell.observation?.value_status&&<ValueStatusMarker status={cell.observation.value_status}/>}</div>)}</div> : <span className="whitespace-nowrap">{formattedValue.value}</span>}
                   {formattedValue.statusLabel && (
                     summary.row?.native ? <ValueStatusMarker status={formattedValue.statusLabel}/> : <Badge variant="outline" className="text-[10px]">
                       {formattedValue.statusLabel}
@@ -284,9 +289,14 @@ function SummaryMetricsSectionBase(props: {
                   )}
                 </div>
                 {summary.row?.error&&<p role="status" className="text-xs text-muted-foreground"><Trans>Source verification unavailable</Trans></p>}
-                <div className="mt-2 line-clamp-2 text-[13px] leading-snug text-muted-foreground">{datasetName}</div>
-                <div className="mt-auto pt-2 text-[12px] font-medium text-muted-foreground">
-                  <Trans>Period:</Trans> {periodLabelText}
+                <div className="mt-2 line-clamp-2 text-[12px] leading-snug text-muted-foreground sm:text-[13px]" title={datasetName}>{datasetName}</div>
+                <div className="mt-auto flex flex-wrap items-center gap-x-1.5 gap-y-1 pt-2 text-[12px] font-medium text-muted-foreground">
+                  <span className="whitespace-nowrap"><Trans>Period:</Trans> {period}</span>
+                  {isPeriodFallback ? (
+                    <Badge variant="outline" className="h-5 rounded-md px-1.5 text-[10px] font-medium">
+                      <Trans>last available</Trans>
+                    </Badge>
+                  ) : null}
                 </div>
               </CardContent>
             </Card>
@@ -417,8 +427,8 @@ function DerivedIndicatorsSectionBase(props: {
               }
 
               return (
-                <div key={groupId} className="rounded-xl border border-border/50 bg-card px-2 py-3">
-                  <div className="mb-2">
+                <div key={groupId} className="@container rounded-xl border border-border/50 bg-card px-2.5 py-3 sm:px-3">
+                  <div className="mb-2 px-1">
                     <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                       {DERIVED_INDICATOR_GROUP_META[groupId].label}
                     </h4>
@@ -584,17 +594,24 @@ function DerivedIndicatorsSectionBase(props: {
                               setOpenDerivedIndicatorInfoId(null);
                               onSelectDerivedIndicator(row.sourceDatasetCode);
                             }}
-                            className="flex min-w-0 flex-1 items-center justify-between gap-1 overflow-hidden rounded-md px-1.5 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                            className="flex min-w-0 flex-1 flex-col items-stretch gap-0.5 rounded-md px-2 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 @[22rem]:flex-row @[22rem]:items-center @[22rem]:justify-between @[22rem]:gap-3"
                           >
-                            <span className="truncate text-[13px] font-medium text-muted-foreground">{row.label}</span>
-                            <div className="min-w-[96px] shrink-0 pr-1 text-right">
-                              <div className="text-[1.25rem] font-bold leading-none tracking-tight tabular-nums text-foreground">
+                            {/* Stacked in a narrow group column, side by side in
+                                a wide one — decided by the group's own width, not
+                                the viewport. Side by side, the three-column grid
+                                at 1280 left "Rata natalității" as "R.", which
+                                names nothing; stacked, the label has the column. */}
+                            <span className="min-w-0 text-[13px] font-medium leading-snug text-muted-foreground">
+                              {row.label}
+                            </span>
+                            <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 @[22rem]:shrink-0">
+                              <span className="text-[1.2rem] font-bold leading-none tracking-tight tabular-nums text-foreground">
                                 {row.value}
-                              </div>
-                              <div className="mt-0.5 text-[10px] font-medium leading-none text-muted-foreground">
+                              </span>
+                              <span className="whitespace-nowrap text-[10px] font-medium leading-none text-muted-foreground">
                                 {row.unitLabel}
-                              </div>
-                            </div>
+                              </span>
+                            </span>
                           </button>
 
                           {isMobile ? (
@@ -857,47 +874,63 @@ export function EntityInsObservationsTable({
   readonly rows: readonly InsObservation[];
   readonly hasMultiValueSeriesSelection: boolean;
 }) {
+  const detailOf = (row: InsObservation) =>
+    hasMultiValueSeriesSelection ? t`Multiple selected values` : getClassificationLabel(row);
+  // One selection means one classification for every row. Printing
+  // "Total • Total • Sibiu • 143450 MUNICIPIUL SIBIU" thirty-five times told the
+  // reader nothing the first line had not, and on a phone it took half of every
+  // row. Said once above the table; the column stays only when rows differ.
+  const sharedDetail = rows.length > 0 && rows.every((row) => detailOf(row) === detailOf(rows[0])) ? detailOf(rows[0]) : null;
   return (
-    <Table className="text-sm">
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-32 text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
-            <Trans>Period</Trans>
-          </TableHead>
-          <TableHead className="text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
-            <Trans>Value</Trans>
-          </TableHead>
-          <TableHead className="text-right text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
-            <Trans>Details</Trans>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => {
-          const { value, statusLabel } = formatObservationValue(row);
-          return (
-            <TableRow key={`${row.dataset_code}-${row.time_period.iso_period}-${row.value}`}>
-              <TableCell className="font-medium tracking-[0.005em]">{formatPeriodLabel(row.time_period)}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <span className={statusLabel ? 'text-muted-foreground' : 'font-medium tracking-[0.005em]'}>
-                    {value}
-                  </span>
-                  {statusLabel && (
-                    <Badge variant="outline" className="text-[10px]">
-                      {statusLabel}
-                    </Badge>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="text-right text-muted-foreground">
-                {hasMultiValueSeriesSelection ? t`Multiple selected values` : getClassificationLabel(row)}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <div className="space-y-2">
+      {sharedDetail ? (
+        <p className="text-[12px] text-muted-foreground">
+          <span className="font-semibold tracking-[0.02em]"><Trans>Details</Trans>:</span> {sharedDetail}
+        </p>
+      ) : null}
+      <Table className="text-sm">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-32 text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
+              <Trans>Period</Trans>
+            </TableHead>
+            <TableHead className="text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
+              <Trans>Value</Trans>
+            </TableHead>
+            {sharedDetail ? null : (
+              <TableHead className="text-right text-[12px] font-semibold tracking-[0.02em] text-muted-foreground">
+                <Trans>Details</Trans>
+              </TableHead>
+            )}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => {
+            const { value, statusLabel } = formatObservationValue(row);
+            return (
+              <TableRow key={`${row.dataset_code}-${row.time_period.iso_period}-${row.value}`}>
+                <TableCell className="font-medium tracking-[0.005em]">{formatPeriodLabel(row.time_period)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className={statusLabel ? 'text-muted-foreground' : 'font-medium tracking-[0.005em]'}>
+                      {value}
+                    </span>
+                    {statusLabel && (
+                      <Badge variant="outline" className="text-[10px]">
+                        {statusLabel}
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                {sharedDetail ? null : (
+                  <TableCell className="text-right text-muted-foreground">{detailOf(row)}</TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
