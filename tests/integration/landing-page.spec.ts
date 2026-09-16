@@ -2,123 +2,94 @@
  * Landing Page Integration Tests
  *
  * Tests the landing page functionality including:
- * - Main heading and search
- * - Navigation cards
- * - Quick entity links
- * - Global controls (currency, language, price type)
- * - Footer links
+ * - Hero heading and entity search
+ * - "Începe de aici" entity panel
+ * - Shortcuts and the grouped surface index
+ * - Footer navigation
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../utils/integration-base'
+import { waitForHydration } from '../utils/test-helpers'
+
+const HERO_HEADING = /decizii informate|informed decisions/i
+const SEARCH_NAME = /entit|cui/i
 
 test.describe('Landing Page', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, mockApi }) => {
+    await mockApi.mockGraphQL('SearchEntities', 'shared/search-cluj')
     await page.goto('/')
-    // Wait for main heading to ensure page is loaded
-    await expect(
-      page.getByRole('heading', { name: 'Transparenta.eu', level: 1 })
-    ).toBeVisible({ timeout: 10000 })
-  })
-
-  test('displays main heading and entity search', async ({ page }) => {
-    // Check main heading
-    await expect(
-      page.getByRole('heading', { name: 'Transparenta.eu', level: 1 })
-    ).toBeVisible()
-
-    // Check entity search combobox is present
-    await expect(
-      page.getByRole('combobox', { name: /entit|cui/i })
-    ).toBeVisible({ timeout: 5000 })
-  })
-
-  test('displays navigation cards with correct links', async ({ page }) => {
-    // Map card
-    const mapCard = page.getByRole('link', { name: /hartă|map/i }).filter({
-      has: page.locator('img[alt*="Map preview"]'),
+    await expect(page.getByRole('heading', { name: HERO_HEADING, level: 1 })).toBeVisible({
+      timeout: 10000,
     })
-    await expect(mapCard).toBeVisible({ timeout: 5000 })
-    await expect(mapCard).toHaveAttribute('href', '/map')
+    // The page is server-rendered; the search only answers once hydrated.
+    await waitForHydration(page)
+  })
 
-    // National Budget card
-    const budgetCard = page.getByRole('link', { name: /buget național|national budget|explorator bugetar|budget explorer/i }).filter({
-      has: page.locator('img[alt*="Budget explorer preview"]'),
+  test('displays hero heading and entity search', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: HERO_HEADING, level: 1 })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: SEARCH_NAME })).toBeVisible({ timeout: 5000 })
+  })
+
+  test('displays the entity panel with predefined entities', async ({ page }) => {
+    const sibiu = page.getByRole('link', { name: /Mun\. Sibiu/ })
+    await expect(sibiu).toBeVisible({ timeout: 5000 })
+    await expect(sibiu).toHaveAttribute('href', /\/entities\/4270740/)
+
+    await expect(page.getByRole('link', { name: /Mun\. București/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Mun\. Cluj-Napoca/ })).toBeVisible()
+  })
+
+  test('displays the shortcuts to the heaviest surfaces', async ({ page }) => {
+    const shortcuts = page.getByRole('navigation', { name: /scurtături|shortcuts/i })
+    await expect(shortcuts).toBeVisible({ timeout: 5000 })
+
+    const links = shortcuts.getByRole('link')
+    await expect(links).toHaveCount(3)
+    await expect(links.nth(0)).toHaveAttribute('href', '/procurement')
+    await expect(links.nth(1)).toHaveAttribute('href', '/budget-explorer')
+    await expect(links.nth(2)).toHaveAttribute('href', '/legislation')
+  })
+
+  test('displays the grouped index of surfaces', async ({ page }) => {
+    const groups: ReadonlyArray<readonly [RegExp, readonly string[]]> = [
+      [/banii publici|public money/i, ['/budget-explorer', '/procurement', '/investitii-publice', '/pnrr']],
+      [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/ong-uri']],
+      [/lege și justiție|law and justice/i, ['/legislation', '/justitie']],
+      [/^politică$|^politics$/i, ['/alegeri']],
+      [/instrumente|tools/i, ['/map', '/charts', '/statistici']],
+    ]
+
+    for (const [name, hrefs] of groups) {
+      const region = page.getByRole('region', { name })
+      await region.scrollIntoViewIfNeeded()
+      await expect(region).toBeVisible({ timeout: 5000 })
+      for (const href of hrefs) {
+        await expect(region.locator(`a[href="${href}"]`)).toBeVisible()
+      }
+    }
+  })
+
+  test('keyword chips send the UAT filter before rendering results', async ({ page }) => {
+    const searchInput = page.getByRole('combobox', { name: SEARCH_NAME })
+    await searchInput.fill('primarii Cluj')
+    const filteredRequest = page.waitForRequest(request => {
+      if (request.method() !== 'POST' || !request.url().includes('graphql')) return false
+      const body = request.postDataJSON() as { variables?: { q?: string; isUat?: boolean } }
+      return body.variables?.q === 'Cluj' && body.variables.isUat === true
     })
-    await expect(budgetCard).toBeVisible({ timeout: 5000 })
-    await expect(budgetCard).toHaveAttribute('href', '/budget-explorer')
-
-    // Entity Analytics card
-    const entitiesCard = page.getByRole('link', { name: /entități|entities/i }).filter({
-      has: page.locator('img[alt*="Entity analytics preview"]'),
-    })
-    await expect(entitiesCard).toBeVisible({ timeout: 5000 })
-    await expect(entitiesCard).toHaveAttribute('href', '/entity-analytics')
-
-    // Charts card
-    const chartsCard = page.getByRole('link', { name: /grafice|charts/i }).filter({
-      has: page.locator('img[alt*="Charts preview"]'),
-    })
-    await expect(chartsCard).toBeVisible({ timeout: 5000 })
-    await expect(chartsCard).toHaveAttribute('href', '/charts')
+    await page.getByRole('option', { name: /Primării/ }).click()
+    await filteredRequest
+    await expect(searchInput).toHaveValue('Cluj')
+    const result = page.getByRole('option', { name: /MUNICIPIUL CLUJ-NAPOCA/i })
+    await expect(result).toBeVisible()
+    await expect(result).toHaveAttribute('href', /\/entities\/4305857/)
   })
 
-  test('displays quick entity links', async ({ page }) => {
-    // Check for specific pre-populated entity links
-    await expect(
-      page.getByRole('link', { name: /Mun\. Sibiu.*\[4270740\]/i })
-    ).toBeVisible({ timeout: 5000 })
-
-    await expect(
-      page.getByRole('link', { name: /Mun\. București.*\[4267117\]/i })
-    ).toBeVisible({ timeout: 5000 })
-
-    await expect(
-      page.getByRole('link', { name: /Mun\. Cluj-Napoca.*\[4305857\]/i })
-    ).toBeVisible({ timeout: 5000 })
-  })
-
-  test('displays global controls (currency, language, price type)', async ({ page }) => {
-    // Currency selector - find container with "Monedă" label
-    const currencySection = page.locator('div').filter({ hasText: /^Monedă/ }).first()
-    await expect(currencySection).toBeVisible({ timeout: 5000 })
-    // Verify it has currency buttons
-    await expect(currencySection.getByRole('button', { name: '🇪🇺' })).toBeVisible()
-    await expect(currencySection.getByRole('button', { name: '🇺🇸' })).toBeVisible()
-
-    // Price type selector - find container with "Prețuri" label
-    const priceSection = page.locator('div').filter({ hasText: /^Prețuri/ }).first()
-    await expect(priceSection).toBeVisible({ timeout: 5000 })
-    // Verify it has N and R buttons
-    await expect(priceSection.getByRole('button', { name: 'N' })).toBeVisible()
-    await expect(priceSection.getByRole('button', { name: 'R' })).toBeVisible()
-
-    // Language selector - find container with "Limbă" label
-    const languageSection = page.locator('div').filter({ hasText: /^Limbă/ }).first()
-    await expect(languageSection).toBeVisible({ timeout: 5000 })
-    // Verify it has language buttons
-    await expect(languageSection.getByRole('button', { name: '🇬🇧' })).toBeVisible()
-  })
-
-  test('entity search combobox is functional', async ({ page }) => {
-    const searchInput = page.getByRole('combobox', { name: /entit|cui/i })
-    await expect(searchInput).toBeVisible({ timeout: 5000 })
-
-    // Fill search
-    await searchInput.fill('Cluj')
-
-    // Wait for search results to appear (debounced)
-    await expect(
-      page.getByText(/Cluj-Napoca/i).first()
-    ).toBeVisible({ timeout: 5000 })
-  })
-
-  test('clicking entity link navigates to entity page', async ({ page }) => {
-    // Click on Cluj-Napoca link
-    const entityLink = page.getByRole('link', { name: /Mun\. Cluj-Napoca.*\[4305857\]/i })
+  test('clicking a panel entity link navigates to entity page', async ({ page }) => {
+    const entityLink = page.getByRole('link', { name: /Mun\. Cluj-Napoca/ })
     await expect(entityLink).toBeVisible({ timeout: 5000 })
     await entityLink.click()
 
-    // Quick access uses the canonical entity route.
     await page.waitForURL(/\/entities\/4305857/)
     expect(page.url()).toContain('/entities/4305857')
   })
@@ -130,11 +101,11 @@ test.describe('Landing Page', () => {
 
     // Check footer links
     await expect(
-      page.getByRole('link', { name: 'GitHub' })
+      page.getByRole('link', { name: 'GitHub', exact: true })
     ).toBeVisible({ timeout: 5000 })
 
     await expect(
-      page.getByRole('link', { name: 'LinkedIn' })
+      page.getByRole('link', { name: 'LinkedIn', exact: true })
     ).toBeVisible({ timeout: 5000 })
 
     await expect(

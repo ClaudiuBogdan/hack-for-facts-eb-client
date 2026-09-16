@@ -6,11 +6,12 @@
  */
 
 import { test, expect } from '../utils/integration-base'
+import { waitForHydration } from '../utils/test-helpers'
 
 test.describe('Entity Exploration Flow', () => {
   test.beforeEach(async ({ mockApi }) => {
     // Mock entity search results
-    await mockApi.mockGraphQL('EntitySearch', 'entity-search')
+    await mockApi.mockGraphQL('SearchEntities', 'shared/search-cluj')
 
     // Mock the redesign entity metadata and budget operations.
     await mockApi.mockGraphQL('GetEntityMetadata', 'entity-metadata')
@@ -55,8 +56,10 @@ test.describe('Entity Exploration Flow', () => {
 
     // Wait for main heading to appear
     await expect(
-      page.getByRole('heading', { name: 'Transparenta.eu', level: 1 })
+      page.getByRole('heading', { name: /decizii informate|informed decisions/i, level: 1 })
     ).toBeVisible({ timeout: 10000 })
+
+    await waitForHydration(page)
 
     // Find the entity search combobox
     const searchInput = page.getByRole('combobox', { name: /entit|cui/i })
@@ -71,13 +74,13 @@ test.describe('Entity Exploration Flow', () => {
     ).toBeVisible({ timeout: 5000 })
 
     // Click on the first result and wait for the route transition it owns.
-    const firstResult = page.getByRole('link', {
+    const firstResult = page.getByRole('option', {
       name: /MUNICIPIUL CLUJ-NAPOCA|Cluj-Napoca/i,
     }).first()
     await expect(firstResult).toBeVisible({ timeout: 5000 })
 
     await Promise.all([
-      page.waitForURL(/\/entities\/\d+/),
+      page.waitForURL('**/entities/4305857'),
       firstResult.click(),
     ])
 
