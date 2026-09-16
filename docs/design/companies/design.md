@@ -68,14 +68,22 @@ prewarm the last aggregate and SSR it behind the public cache header.
 
 ## Prototypes (16 September 2026)
 
-`src/development/prototypes/companies/hub.prototype.tsx`, three compositions
-over the same modules. Judge each alone:
+`src/development/prototypes/companies/hub.prototype.tsx`. Three compositions
+over the same modules were built and compared; **`editorial` was chosen on
+16 September 2026**, for its layout, and is the one being polished at
+`/development/companies/hub?v=editorial`.
 
-| Variant | Link | Shape |
+| Variant | Shape | Outcome |
 |---|---|---|
-| `editorial` | `/development/companies/hub?v=editorial` | The landing's rhythm: hero with search and the status strip, figures band, then one numbered band each for sectors, counties (map beside list), investigations, sources. |
-| `atlas` | `/development/companies/hub?v=atlas` | The map is the hero, beside the search and the top-5 counties; figures band; sectors with status and investigations in the side column. |
-| `compact` | `/development/companies/hub?v=compact` | Short header, search, figures as a strip, then hairline tiles: sectors, counties with a small map, status, investigations. Least scrolling. |
+| `editorial` | The landing's rhythm: hero with search and the status panel, figures band, then one numbered band each for sectors, counties (map beside list, shared highlight), investigations, sources. | **Chosen.** One idea per band reads top to bottom; nothing competes for the fold. |
+| `atlas` | The map is the hero, beside the search and the top-5 counties; figures band; sectors with status and investigations in the side column. | Rejected, deleted. The map above the fold made the page about places before the reader had said what they wanted; the search lost its primacy. |
+| `compact` | Short header, search, figures as a strip, then hairline tiles: sectors, counties with a small map, status, investigations. | Rejected, deleted. Least scrolling, but the tiles read as a dashboard, not a front door, and the small map lost its labels. |
+
+Polish applied to the chosen variant after the decision: a two-line headline
+with no widow; the status panel with one row per state (count, share, a saved
+query each); the figures count up on arrival as the landing's do; the county
+map and list share a hover highlight; codes with no CAEN division behind them
+are stated below the bars rather than ranked among the sectors.
 
 Live in all three: `companyHubStats`, the all-county profile (a 2.7 s request
 the promoted hub should not make; the server already computes it), and the

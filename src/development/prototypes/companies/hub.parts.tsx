@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Building2 } from 'lucide-react'
@@ -6,6 +6,8 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { DataStatusBadge } from '@/components/data-trust/data-status-badge'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { useRevealOnView } from '@/components/landing-skin/reveal'
+import { CountUpValue, countUpWithin } from '@/features/landing/components/count-up'
 import { LandingSearch } from '@/features/landing/components/search/landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
@@ -17,6 +19,7 @@ import {
   STATUS_INSOLVENCY,
   STATUS_STRUCK_OFF,
   countFor,
+  foldCountyName,
   formatCount,
   formatShare,
   labelDivisions,
@@ -124,7 +127,7 @@ export function LoadError({ onRetry }: { readonly onRetry: () => void }) {
 
 export type Fact = {
   readonly key: string
-  readonly value: string
+  readonly value: number
   readonly label: ReactNode
   readonly note: ReactNode
   readonly search?: Record<string, unknown>
@@ -134,28 +137,28 @@ export function hubFacts(stats: CompanyHubStats): readonly Fact[] {
   return [
     {
       key: 'total',
-      value: formatCount(stats.totalCompanies),
+      value: stats.totalCompanies,
       label: <Trans>firme în setul de date</Trans>,
       note: <Trans>toate stările ONRC, inclusiv radiate</Trans>,
       search: {},
     },
     {
       key: 'active',
-      value: formatCount(stats.activeCompanies),
+      value: stats.activeCompanies,
       label: <Trans>în funcțiune</Trans>,
       note: <Trans>{formatShare(stats.activeCompanies, stats.totalCompanies)} din total, stare ONRC 1048</Trans>,
       search: { status: [STATUS_ACTIVE] },
     },
     {
       key: 'distress',
-      value: formatCount(countFor(stats, STATUS_INSOLVENCY) + countFor(stats, STATUS_BANKRUPTCY)),
+      value: countFor(stats, STATUS_INSOLVENCY) + countFor(stats, STATUS_BANKRUPTCY),
       label: <Trans>în insolvență sau faliment</Trans>,
       note: <Trans>stările ONRC 1107 și 1070</Trans>,
       search: { status: [STATUS_INSOLVENCY, STATUS_BANKRUPTCY] },
     },
     {
       key: 'struck-off',
-      value: formatCount(countFor(stats, STATUS_STRUCK_OFF)),
+      value: countFor(stats, STATUS_STRUCK_OFF),
       label: <Trans>radiate</Trans>,
       note: <Trans>rămân în set cu istoricul lor, stare ONRC 1084</Trans>,
       search: { status: [STATUS_STRUCK_OFF] },
@@ -192,10 +195,19 @@ export function CaenCaveat() {
   )
 }
 
-/** A description list, four terms and their values; the value sits on top. */
+/**
+ * A description list, four terms and their values; the value sits on top.
+ *
+ * Owns its own reveal: the band mounts only once the figures have arrived,
+ * which is after the page's observer took its one look at the tree, so the
+ * tiles would never be seen — or counted up — from there. The landing's
+ * figures are in the HTML from the start and do not have this problem.
+ */
 export function SnapshotBand({ facts, className }: { readonly facts: readonly Fact[]; readonly className?: string }) {
+  const listRef = useRef<HTMLDListElement>(null)
+  useRevealOnView(listRef, countUpWithin)
   return (
-    <dl className={cn('grid grid-cols-2 lg:grid-cols-4', className)}>
+    <dl ref={listRef} className={cn('grid grid-cols-2 lg:grid-cols-4', className)}>
       {facts.map((fact, i) => {
         const body = (
           <>
@@ -204,7 +216,7 @@ export function SnapshotBand({ facts, className }: { readonly facts: readonly Fa
               <MonoLabel className="mt-auto block pt-5 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel>
             </dt>
             <dd className="order-1 text-3xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-              {fact.value}
+              <CountUpValue value={fact.value} digits={0} />
             </dd>
           </>
         )
@@ -254,8 +266,14 @@ export function CaenBars({
 }) {
   const [expanded, setExpanded] = useState(false)
   const labelled = labelDivisions(divisions)
-  const max = labelled[0]?.count ?? 1
-  const shown = expanded ? labelled : labelled.slice(0, limit)
+  // Codes with no division behind them (`00`, `04`, …) are source noise, not
+  // sectors. They are not ranked among the sectors and not dropped either:
+  // their mass is stated below the list, so the reader knows it exists.
+  const named = labelled.filter((division) => division.named)
+  const unnamed = labelled.filter((division) => !division.named)
+  const unnamedCount = unnamed.reduce((sum, division) => sum + division.count, 0)
+  const max = named[0]?.count ?? 1
+  const shown = expanded ? named : named.slice(0, limit)
   return (
     <div className={className}>
       <ol className="divide-y divide-border/70">
@@ -269,10 +287,8 @@ export function CaenBars({
             >
               <div className="flex items-baseline justify-between gap-4">
                 <span className="flex min-w-0 items-baseline gap-2.5">
-                  <MonoLabel className="shrink-0 text-muted-foreground">{division.key}</MonoLabel>
-                  <span className={cn('truncate text-sm', division.named ? 'text-foreground' : 'text-muted-foreground')}>
-                    {division.short}
-                  </span>
+                  <MonoLabel className="w-5 shrink-0 text-muted-foreground">{division.key}</MonoLabel>
+                  <span className="truncate text-sm text-foreground">{division.short}</span>
                 </span>
                 <span className="shrink-0 text-sm tabular-nums text-foreground">{formatCount(division.count)}</span>
               </div>
@@ -286,20 +302,30 @@ export function CaenBars({
           </li>
         ))}
       </ol>
-      {expandable && labelled.length > limit ? (
-        <button
-          type="button"
-          onClick={() => setExpanded((current) => !current)}
-          className="mt-3 inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
-          aria-expanded={expanded}
-        >
-          {expanded ? (
-            <Trans>Doar primele {limit}</Trans>
-          ) : (
-            <Trans>Toate cele {labelled.length} diviziuni</Trans>
-          )}
-        </button>
-      ) : null}
+      <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        {expandable && named.length > limit ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((current) => !current)}
+            className="inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
+            aria-expanded={expanded}
+          >
+            {expanded ? (
+              <Trans>Doar primele {limit}</Trans>
+            ) : (
+              <Trans>Toate cele {named.length} diviziuni</Trans>
+            )}
+          </button>
+        ) : null}
+        {unnamed.length > 0 ? (
+          <MonoLabel className="leading-relaxed text-muted-foreground">
+            <Trans>
+              + {unnamed.length} coduri fără diviziune în nomenclator, {formatCount(unnamedCount)}{' '}
+              activități înregistrate
+            </Trans>
+          </MonoLabel>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -310,10 +336,15 @@ export function CountyList({
   counties,
   limit = 8,
   className,
+  highlightedKey,
+  onHover,
 }: {
   readonly counties: readonly CompanyGroupSlice[]
   readonly limit?: number
   readonly className?: string
+  /** The folded county name under the pointer, here or on the map. */
+  readonly highlightedKey?: string
+  readonly onHover?: (key: string | undefined) => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const shown = expanded ? counties : counties.slice(0, limit)
@@ -326,7 +357,14 @@ export function CountyList({
             <Link
               to="/companies/search"
               search={{ county: [county.key], status: [STATUS_ACTIVE] }}
-              className="group flex items-baseline gap-3 py-2.5 transition-colors hover:bg-muted/40"
+              onPointerEnter={() => onHover?.(foldCountyName(county.key))}
+              onPointerLeave={() => onHover?.(undefined)}
+              onFocus={() => onHover?.(foldCountyName(county.key))}
+              onBlur={() => onHover?.(undefined)}
+              className={cn(
+                'group flex items-baseline gap-3 py-2.5 transition-colors hover:bg-muted/40',
+                highlightedKey === foldCountyName(county.key) && 'bg-muted/40',
+              )}
             >
               <MonoLabel className="w-6 shrink-0 text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
               <span className="min-w-0 flex-1">
@@ -336,7 +374,10 @@ export function CountyList({
                 </span>
                 <span className="mt-1.5 block h-1 w-full bg-muted/70">
                   <span
-                    className="block h-full bg-primary/70 group-hover:bg-primary"
+                    className={cn(
+                      'block h-full bg-primary/70 group-hover:bg-primary',
+                      highlightedKey === foldCountyName(county.key) && 'bg-primary',
+                    )}
                     style={{ width: `${Math.max(1, (county.count / max) * 100).toFixed(1)}%` }}
                   />
                 </span>
@@ -367,6 +408,63 @@ const STATUS_TONE: Record<string, string> = {
   [STATUS_STRUCK_OFF]: 'bg-foreground/25',
   [STATUS_INSOLVENCY]: 'bg-amber-500/70',
   [STATUS_BANKRUPTCY]: 'bg-destructive/60',
+}
+
+/**
+ * The hero's panel: the strip, then one row per state with its count and
+ * share, each a saved query. The legend and the rows are the same list said
+ * twice — the strip for proportion, the rows for the numbers.
+ */
+export function StatusPanel({ stats, className }: { readonly stats: CompanyHubStats; readonly className?: string }) {
+  const known = STATUS_ORDER.map((code) => stats.statusMix.find((slice) => slice.key === code)).filter(
+    (slice): slice is CompanyGroupSlice => slice !== undefined,
+  )
+  const rest = stats.totalCompanies - known.reduce((sum, slice) => sum + slice.count, 0)
+  const segments = [...known, { key: 'other', label: 'alte stări', count: rest }]
+  return (
+    <div className={className}>
+      <div className="flex h-2.5 w-full overflow-hidden rounded-sm bg-muted" role="img" aria-label={t`Firme pe stări ONRC`}>
+        {segments.map((segment) => (
+          <span
+            key={segment.key}
+            className={cn('block h-full', STATUS_TONE[segment.key] ?? 'bg-muted-foreground/30')}
+            style={{ width: `${((segment.count / stats.totalCompanies) * 100).toFixed(2)}%` }}
+          />
+        ))}
+      </div>
+      <ol className="mt-4 divide-y divide-border/70 border-y border-border/70">
+        {segments.map((segment) => {
+          const row = (
+            <>
+              <span className={cn('size-2 shrink-0 rounded-[1px]', STATUS_TONE[segment.key] ?? 'bg-muted-foreground/30')} />
+              <span className="min-w-0 flex-1 truncate text-sm text-foreground">{segment.label ?? segment.key}</span>
+              <MonoLabel className="w-10 shrink-0 text-right text-muted-foreground">
+                {formatShare(segment.count, stats.totalCompanies)}
+              </MonoLabel>
+              <span className="w-24 shrink-0 text-right text-sm tabular-nums text-foreground">
+                {formatCount(segment.count)}
+              </span>
+            </>
+          )
+          return (
+            <li key={segment.key}>
+              {segment.key === 'other' ? (
+                <span className="flex items-center gap-3 py-2">{row}</span>
+              ) : (
+                <Link
+                  to="/companies/search"
+                  search={{ status: [segment.key] }}
+                  className="flex items-center gap-3 py-2 transition-colors hover:bg-muted/40"
+                >
+                  {row}
+                </Link>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </div>
+  )
 }
 
 /** One stacked strip: why the corpus is twice the active population. */

@@ -113,11 +113,16 @@ export function CountyMap({
   counties,
   className,
   labels = true,
+  highlightedKey,
+  onHover,
 }: {
   readonly counties: readonly CompanyGroupSlice[]
   readonly className?: string
   /** Mnemonics at the centroids. Off below the width where they collide. */
   readonly labels?: boolean
+  /** The folded county name under the pointer, here or in the list beside. */
+  readonly highlightedKey?: string
+  readonly onHover?: (key: string | undefined) => void
 }) {
   const geo = useGeoJsonData('County')
   const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)
@@ -190,6 +195,7 @@ export function CountyMap({
                 'stroke-background transition-[fill-opacity,fill] duration-150',
                 county && BIN_CLASSES[binOf(county.count, sorted)],
                 county && 'hover:fill-primary',
+                county && highlightedKey === shape.key && 'fill-primary',
               )}
               strokeWidth={1}
             >
@@ -201,6 +207,10 @@ export function CountyMap({
               key={shape.key}
               to="/companies/search"
               search={{ county: [county.key], status: [STATUS_ACTIVE] }}
+              onPointerEnter={() => onHover?.(shape.key)}
+              onPointerLeave={() => onHover?.(undefined)}
+              onFocus={() => onHover?.(shape.key)}
+              onBlur={() => onHover?.(undefined)}
               className="cursor-pointer outline-hidden focus-visible:[&>path]:stroke-foreground"
               aria-label={title}
             >
