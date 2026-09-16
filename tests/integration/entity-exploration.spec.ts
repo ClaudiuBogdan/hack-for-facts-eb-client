@@ -109,7 +109,11 @@ test.describe('Entity Exploration Flow', () => {
 
     // Verify navigation is accessible
     await expect(
-      page.getByRole('navigation', { name: /produs/i })
+      // The app footer: the old footer's "Produs" navigation went with it, and
+      // the new one has a single nav whose name follows the locale. Not
+      // `contentinfo` — the footer sits inside the shell's `main`, which strips
+      // the landmark role.
+      page.locator('footer').first()
     ).toBeVisible()
   })
 
@@ -149,7 +153,11 @@ test.describe('Entity Exploration - Error Handling', () => {
 
     // Page should still render with navigation (graceful degradation)
     await expect(
-      page.getByRole('navigation', { name: /produs/i })
+      // The app footer: the old footer's "Produs" navigation went with it, and
+      // the new one has a single nav whose name follows the locale. Not
+      // `contentinfo` — the footer sits inside the shell's `main`, which strips
+      // the landmark role.
+      page.locator('footer').first()
     ).toBeVisible({ timeout: 10000 })
 
     // Page should not be completely blank - body has content
@@ -172,7 +180,11 @@ test.describe('Entity Exploration - Error Handling', () => {
 
     // Page should still be functional (navigation present)
     await expect(
-      page.getByRole('navigation', { name: /produs/i })
+      // The app footer: the old footer's "Produs" navigation went with it, and
+      // the new one has a single nav whose name follows the locale. Not
+      // `contentinfo` — the footer sits inside the shell's `main`, which strips
+      // the landmark role.
+      page.locator('footer').first()
     ).toBeVisible({ timeout: 10000 })
   })
 })

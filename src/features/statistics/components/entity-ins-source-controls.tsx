@@ -216,11 +216,23 @@ export function EntityInsSourceControls({
       ) : null}
 
       {criteriaParts.length > 0 ? (
-        <div className="text-[12px] leading-5 text-muted-foreground">
-          <span className="font-semibold text-foreground/80">
+        // One chip per criterion. Joined with bullets the seven of them ran
+        // as a two-line sentence in which "Localitati : 143450 MUNICIPIUL
+        // SIBIU" was indistinguishable from "Unitate: Numar persoane".
+        <div className="flex flex-wrap items-center gap-1.5 text-[12px] leading-5">
+          <span className="mr-0.5 font-semibold text-foreground/80">
             <Trans>Active series criteria:</Trans>
-          </span>{" "}
-          {criteriaParts.join(" • ")}
+          </span>
+          {criteriaParts.map((part) => (
+            <span
+              key={part}
+              className="inline-flex max-w-full items-center rounded-md border border-border/60 bg-muted/40 px-2 py-0.5 text-muted-foreground"
+            >
+              {/* Wraps rather than truncates: a long locality name is the one
+                  value the reader most needs to see whole. */}
+              <span className="whitespace-normal break-words">{part}</span>
+            </span>
+          ))}
         </div>
       ) : null}
 

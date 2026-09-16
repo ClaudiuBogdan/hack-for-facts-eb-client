@@ -269,7 +269,7 @@ function SummaryMetricsSectionBase(props: {
             type="button"
             onClick={() => onSelectDataset(summary.code)}
             aria-pressed={isSelected}
-            className="min-w-0 w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="@container min-w-0 w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             <Card className={`flex h-full flex-col rounded-2xl border-border/50 sm:rounded-[28px] ${isSelected ? 'border-primary ring-1 ring-primary/10' : ''}`}>
               <CardHeader className="px-3.5 pb-1.5 pt-3.5 sm:px-5 sm:pb-2 sm:pt-4">
@@ -279,8 +279,10 @@ function SummaryMetricsSectionBase(props: {
               </CardHeader>
               <CardContent className="flex flex-1 flex-col px-3.5 pb-3.5 sm:px-5 sm:pb-4">
                 {/* The figure and its scale word ("161,35 mii") are one token
-                    and never break across lines; the size shrinks instead. */}
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[clamp(1.5rem,4.2vw+0.4rem,2.2rem)] font-bold leading-none tracking-tight tabular-nums text-foreground lg:text-[clamp(1.6rem,1.6vw+0.6rem,2.2rem)]">
+                    and never break across lines; the size follows the card's
+                    own width (container units), so a narrow card at any
+                    viewport shrinks the figure instead of clipping it. */}
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[clamp(1.25rem,13cqi,2.2rem)] font-bold leading-none tracking-tight tabular-nums text-foreground">
                   {summary.row?.selectedCells && summary.row.selectedCells.length > 1 ? <div className="space-y-1 text-sm">{summary.row.selectedCells.map(cell=><div key={cell.period}>{cell.period}: {cell.observation?.value??t`N/A`} {cell.observation?.unit?.name_ro??''} {cell.observation?.value_status&&<ValueStatusMarker status={cell.observation.value_status}/>}</div>)}</div> : <span className="whitespace-nowrap">{formattedValue.value}</span>}
                   {formattedValue.statusLabel && (
                     summary.row?.native ? <ValueStatusMarker status={formattedValue.statusLabel}/> : <Badge variant="outline" className="text-[10px]">
@@ -594,17 +596,19 @@ function DerivedIndicatorsSectionBase(props: {
                               setOpenDerivedIndicatorInfoId(null);
                               onSelectDerivedIndicator(row.sourceDatasetCode);
                             }}
-                            className="flex min-w-0 flex-1 flex-col items-stretch gap-0.5 rounded-md px-2 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 @[22rem]:flex-row @[22rem]:items-center @[22rem]:justify-between @[22rem]:gap-3"
+                            className="flex min-w-0 flex-1 flex-col items-stretch gap-0.5 rounded-md px-2 py-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 @[17rem]:flex-row @[17rem]:items-center @[17rem]:justify-between @[17rem]:gap-3"
                           >
-                            {/* Stacked in a narrow group column, side by side in
-                                a wide one — decided by the group's own width, not
-                                the viewport. Side by side, the three-column grid
-                                at 1280 left "Rata natalității" as "R.", which
-                                names nothing; stacked, the label has the column. */}
+                            {/* Side by side wherever the group column has room
+                                for a wrapping label beside the figure, stacked
+                                only in a really narrow one — decided by the
+                                group's own width, not the viewport. Truncating
+                                the label is never an option: the three-column
+                                grid at 1280 once left "Rata natalității" as
+                                "R.", which names nothing. */}
                             <span className="min-w-0 text-[13px] font-medium leading-snug text-muted-foreground">
                               {row.label}
                             </span>
-                            <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 @[22rem]:shrink-0">
+                            <span className="flex flex-wrap items-baseline gap-x-1.5 @[17rem]:shrink-0 @[17rem]:flex-col @[17rem]:items-end @[17rem]:gap-0">
                               <span className="text-[1.2rem] font-bold leading-none tracking-tight tabular-nums text-foreground">
                                 {row.value}
                               </span>
@@ -1445,8 +1449,8 @@ export const DatasetDetailSection = memo(DatasetDetailSectionBase);
 
 export function EntityInsDetailCard({selectedDatasetDetails,selectedDatasetBreadcrumbItems,selectedDataset,selectedDatasetCode,locale,hasDatasetMetadataPanel,isDatasetMetaExpanded,setIsDatasetMetaExpanded,handleHierarchyNavigate,chartShortcutLink,children}: Pick<DatasetDetailProps,'selectedDatasetDetails' | 'selectedDatasetBreadcrumbItems' | 'selectedDataset' | 'selectedDatasetCode' | 'locale' | 'hasDatasetMetadataPanel' | 'isDatasetMetaExpanded' | 'setIsDatasetMetaExpanded' | 'handleHierarchyNavigate' | 'chartShortcutLink'> & {readonly children:ReactNode}) {
   return (
-    <Card className="rounded-[28px] border-border/50">
-      <CardHeader className="space-y-3 px-8 pb-4">
+    <Card className="rounded-2xl border-border/50 sm:rounded-[28px]">
+      <CardHeader className="space-y-3 px-5 pb-4 sm:px-8">
         {selectedDatasetDetails && selectedDatasetBreadcrumbItems.length > 0 && (
           <nav className="text-[12px] font-medium leading-5 tracking-[0.01em] text-muted-foreground">
             <div className="flex flex-wrap items-center gap-y-1">
@@ -1485,12 +1489,15 @@ export function EntityInsDetailCard({selectedDatasetDetails,selectedDatasetBread
         )}
 
         {selectedDataset ? (
-          <div className="space-y-1">
-            <div className="text-3xl font-bold tracking-tight text-foreground">
+          <div className="space-y-1.5">
+            {/* Source names run long ("POPULATIA DUPA DOMICILIU la 1 ianuarie pe
+                grupe de varsta …"); at display size they took three lines and
+                shouted. A heading weight, not a hero one. */}
+            <h3 className="text-xl font-semibold leading-snug tracking-tight text-foreground sm:text-2xl">
               {selectedDatasetDetails?.title ||
                 getLocalizedText(selectedDataset.name_ro, selectedDataset.name_en, locale) ||
                 selectedDataset.code}
-            </div>
+            </h3>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               {chartShortcutLink ? (
                 <Link
@@ -1501,13 +1508,13 @@ export function EntityInsDetailCard({selectedDatasetDetails,selectedDatasetBread
                   data-testid="ins-open-chart-shortcut"
                   title={t`Open in chart editor`}
                   aria-label={`${selectedDataset.code} - ${t`Open in chart editor`}`}
-                  className="inline-flex items-center gap-1 rounded-sm px-1 py-0.5 text-xl font-semibold tracking-[-0.01em] text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  className="inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-mono text-sm font-semibold tracking-[0.02em] text-foreground/80 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
                 >
                   <span>{selectedDataset.code}</span>
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               ) : (
-                <span className="text-xl font-semibold tracking-[-0.01em] text-foreground/80">{selectedDataset.code}</span>
+                <span className="font-mono text-sm font-semibold tracking-[0.02em] text-foreground/80">{selectedDataset.code}</span>
               )}
               {hasDatasetMetadataPanel && (
                 <Button
@@ -1535,7 +1542,7 @@ export function EntityInsDetailCard({selectedDatasetDetails,selectedDatasetBread
           </div>
         )}
       </CardHeader>
-      <CardContent className="space-y-4 px-8">
+      <CardContent className="space-y-4 px-5 sm:px-8">
         {selectedDatasetDetails && isDatasetMetaExpanded && (
           <div className="rounded-xl border border-border bg-muted/50 p-4">
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
