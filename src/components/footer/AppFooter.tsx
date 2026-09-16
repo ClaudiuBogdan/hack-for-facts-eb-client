@@ -88,24 +88,25 @@ export function AppFooter(): ReactElement {
   const redirect = `${location.pathname}${location.searchStr ?? ''}`
 
   return (
-    /* `relative` so the scene has something to be absolute against, and the
-       content carries `z-10` so the range rises *behind* the last rows of text
-       rather than over them. */
+    /* `relative` so the scene has something to be absolute against. Three
+       layers: the frame's hairline rules sit unlayered at the bottom, the scene
+       at z-index 1 covers them, and the two content blocks carry `z-10` so the
+       range rises *behind* the last rows of text rather than over them. */
     <footer ref={footerRef} className="relative overflow-hidden border-t bg-background">
       <FooterSceneStyles />
       <FooterScene />
       {/* The frame does not take pointer events and its two content blocks do.
-          Its box covers the whole footer, padding included, so as a `z-10`
+          Its box covers the whole footer, padding included, so as a layered
           positioned element it swallowed every click meant for the sky
           underneath — the clouds could not be grabbed anywhere the padding
           reached, which was everywhere. */}
-      <RuledFrame className="pointer-events-none relative z-10 pt-14">
+      <RuledFrame className="pointer-events-none pt-14">
         {/* Padding rather than a height, so the footer is as tall as its own
             text plus room for the vista. The figure comes from the scene, so
             the two cannot drift apart: the text stops above the highest cloud,
             and the peaks rise behind it. */}
         <div style={{ paddingBottom: FOOTER_SCENE_CLEAR_PX }}>
-          <div className="pointer-events-auto grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="pointer-events-auto relative z-10 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2">
                 <img src={logo} alt="" className="size-5 rounded-sm" />
@@ -164,7 +165,7 @@ export function AppFooter(): ReactElement {
               ))}
             </nav>
           </div>
-          <div className="pointer-events-auto mt-12 flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-t pt-5">
+          <div className="pointer-events-auto relative z-10 mt-12 flex flex-wrap items-start justify-between gap-x-6 gap-y-3 border-t pt-5">
             <MonoLabel className="block max-w-xl leading-relaxed text-muted-foreground/70">
               {isPnrrPage ? (
                 <Trans>

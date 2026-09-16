@@ -173,6 +173,10 @@ const CSS = `
    */
   --tpz-scene-scale: 1;
   position: absolute;
+  /* Above the frame's hairline rules, which are positioned but unlayered, and
+     below the footer's text, which carries z-index 10: the peaks cover the
+     rules and rise behind the last rows of text. */
+  z-index: 1;
   left: 0;
   right: 0;
   bottom: 0;
