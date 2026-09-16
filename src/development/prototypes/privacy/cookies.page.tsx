@@ -6,9 +6,9 @@ import type { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn, getUserLocale } from '@/lib/utils'
-import { Frame, PROTOTYPE_MARKER } from '../landing/about.parts'
-import { MonoLabel } from '../landing/home-refs.mono-label'
-import { RevealStyles, useRevealOnView } from '../landing/home-refs.reveal'
+import { RuledFrame as Frame } from '@/components/landing-skin/ruled-frame'
+import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { CookieIllustration } from './cookies.cookie-art'
 import {
   ESSENTIAL_CATEGORY,
@@ -47,6 +47,9 @@ import {
  * `redirect` is read with `useSearch({ strict: false })` since a prototype
  * cannot bind to `/cookies`; the safe-path check is the shipped one.
  */
+
+/** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
+const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
 
 const isSafeRedirect = (value: unknown): value is string =>
   typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')

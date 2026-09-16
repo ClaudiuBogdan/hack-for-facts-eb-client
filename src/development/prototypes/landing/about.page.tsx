@@ -1,13 +1,16 @@
-import { ANGELS, CONTRIBUTORS, FOUNDER, REPO_URL } from './about.people'
+import { useLingui } from '@lingui/react/macro'
+import { ANGELS, CONTRIBUTORS, FOUNDER, REPO_URL } from '@/features/landing/lib/people'
 import {
   ContributorGrid,
-  Frame,
-  PROTOTYPE_MARKER,
   PersonPortrait,
   PortraitPicture,
   SocialRow,
-} from './about.parts'
-import { MonoLabel } from './home-refs.mono-label'
+} from '@/features/landing/components/people-parts'
+import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { RuledFrame as Frame } from '@/components/landing-skin/ruled-frame'
+
+/** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
+const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
 
 /**
  * The page the band links to — a sketch, not a settled design.
@@ -21,6 +24,8 @@ import { MonoLabel } from './home-refs.mono-label'
  * a prototype URL.
  */
 export function AboutPage() {
+  const { i18n } = useLingui()
+  const text = (value: string | { id: string }) => (typeof value === 'string' ? value : i18n._(value))
   return (
     <div data-dev-marker={PROTOTYPE_MARKER} className="bg-background">
       <section className="border-b">
@@ -50,13 +55,13 @@ export function AboutPage() {
               <h2 className="mt-5 text-lg font-semibold tracking-tight text-foreground">
                 {FOUNDER.name}
               </h2>
-              <MonoLabel className="mt-2 block text-muted-foreground">{FOUNDER.role}</MonoLabel>
+              <MonoLabel className="mt-2 block text-muted-foreground">{text(FOUNDER.role)}</MonoLabel>
               <SocialRow person={FOUNDER} className="mt-4" />
             </div>
             <div className="lg:col-span-7 lg:col-start-6">
               <MonoLabel className="block text-primary">Cum a început</MonoLabel>
               <div className="mt-5 space-y-5 text-base leading-relaxed text-muted-foreground">
-                <p>{FOUNDER.blurb}</p>
+                <p>{text(FOUNDER.blurb)}</p>
                 <p>
                   [Provizoriu] Aici intră povestea lungă: de ce a pornit
                   proiectul, ce s-a construit întâi, ce a fost greu și ce
@@ -87,9 +92,9 @@ export function AboutPage() {
                   {angel.name}
                 </h3>
                 <MonoLabel className="mt-2 block leading-relaxed text-muted-foreground">
-                  {angel.role}
+                  {text(angel.role)}
                 </MonoLabel>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{angel.blurb}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{text(angel.blurb)}</p>
                 <SocialRow person={angel} className="mt-3" />
               </li>
             ))}

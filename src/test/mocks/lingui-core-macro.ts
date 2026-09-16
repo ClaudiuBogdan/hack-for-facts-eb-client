@@ -5,6 +5,16 @@ export const msg = t;
 
 export const defineMessage = <T>(value: T) => value;
 
+/**
+ * Source messages in this codebase are written in Romanian, so plural forms
+ * resolve against Romanian CLDR rules — `one` for 1, `few` for 0 and 2–19,
+ * `other` from 20 up — and `#` is the value, formatted for the locale. The
+ * same rules the `Plural` component mock applies, so a hook and a component
+ * rendering one count agree under test.
+ */
+const PLURAL_RULES = new Intl.PluralRules("ro");
+const NUMBER_FORMAT = new Intl.NumberFormat("ro");
+
 export const plural = (
   value: number,
   options: {
@@ -16,22 +26,11 @@ export const plural = (
     other?: string;
   }
 ) => {
-  if (value === 0 && options.zero !== undefined) {
-    return options.zero;
-  }
-  if (value === 1 && options.one !== undefined) {
-    return options.one;
-  }
-  if (value === 2 && options.two !== undefined) {
-    return options.two;
-  }
-  return (
-    options.other ??
-    options.many ??
-    options.few ??
-    options.one ??
-    ""
-  );
+  const exact = { 0: options.zero, 1: options.one, 2: options.two }[value];
+  const byCategory = options[PLURAL_RULES.select(value)];
+  const form =
+    exact ?? byCategory ?? options.other ?? options.many ?? options.few ?? options.one ?? "";
+  return form.split("#").join(NUMBER_FORMAT.format(value));
 };
 
 export const select = (value: string, options: Record<string, string>) =>

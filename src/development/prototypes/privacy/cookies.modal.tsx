@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { MonoLabel } from '../landing/home-refs.mono-label'
+import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { CookieIllustration, type CookieState } from './cookies.cookie-art'
 import {
   ESSENTIAL_CATEGORY,
