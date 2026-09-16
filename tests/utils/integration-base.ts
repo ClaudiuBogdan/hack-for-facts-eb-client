@@ -90,14 +90,23 @@ const DEFAULT_COOKIE_CONSENT = {
   updatedAt: new Date().toISOString(),
 }
 
-export const test = base.extend<{ mockApi: MockApiFixture }>({
+export const test = base.extend<{ mockApi: MockApiFixture; storedConsent: void }>({
+  /**
+   * A stored consent decision on every page, whether or not the test asks
+   * for `mockApi`. The consent card is a `role="dialog"`; a test that queries
+   * dialogs by role alone would otherwise find two.
+   */
+  storedConsent: [
+    async ({ page }, use) => {
+      await page.addInitScript((consent) => {
+        window.localStorage.setItem('cookie-consent', JSON.stringify(consent))
+      }, DEFAULT_COOKIE_CONSENT)
+      await use()
+    },
+    { auto: true },
+  ],
   mockApi: async ({ page }, provide, testInfo) => {
     const mode = getMode()
-
-    // Set cookie consent in localStorage before page loads to dismiss the banner
-    await page.addInitScript((consent) => {
-      window.localStorage.setItem('cookie-consent', JSON.stringify(consent))
-    }, DEFAULT_COOKIE_CONSENT)
 
     // Derive flow name from test file path for fixture organization
     // e.g., tests/flows/entity-exploration.spec.ts -> entity-exploration-flow
