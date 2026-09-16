@@ -1,0 +1,40 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "Cluj",
+      "engine": "meili",
+      "degraded": false,
+      "estimatedTotalHits": 1,
+      "facets": [],
+      "hits": [
+        {
+          "id": "organization_4305857",
+          "docType": "organization",
+          "title": "MUNICIPIUL CLUJ-NAPOCA",
+          "snippet": null,
+          "score": 1,
+          "docId": null,
+          "docKey": "4305857",
+          "subtitle": null,
+          "countyName": "Cluj",
+          "url": null,
+          "cuis": [
+            "4305857"
+          ],
+          "identifiers": [
+            "4305857"
+          ],
+          "roles": [
+            "organization"
+          ],
+          "isActive": true,
+          "isUat": true,
+          "entityTags": [
+            "kind::uat",
+            "uat::municipality"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -36,3 +36,16 @@ describe('parseEntitySearchParams', () => {
     expect(parseEntitySearchParams({ active: 'nope' }).active).toBeUndefined()
   })
 })
+
+
+it('preserves explicit false and tag filters in shareable search state', () => {
+  expect(parseEntitySearchParams({ q: 'sibiu', isUat: false, tags: ['kind::school'], excludeTags: ['ownership::private'] })).toMatchObject({
+    isUat: false, tags: ['kind::school'], excludeTags: ['ownership::private'],
+  })
+})
+
+it('accepts a single tag in a URL without dropping invalid filters', () => {
+  expect(parseEntitySearchParams({ tags: 'kind::school', excludeTags: 'sector::health' })).toMatchObject({ tags: ['kind::school'], excludeTags: ['sector::health'] })
+  expect(() => parseEntitySearchParams({ isUat: 1 })).toThrow()
+  expect(() => parseEntitySearchParams({ tags: 2 })).toThrow()
+})

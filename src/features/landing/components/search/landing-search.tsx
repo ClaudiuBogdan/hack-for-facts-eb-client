@@ -11,7 +11,6 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { describeScope } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import {
   announcement,
@@ -126,20 +125,7 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
       return null
 
     case 'empty':
-      return status.narrowed ? (
-        // Honest about the reach: the chip was applied to the page the server
-        // returned, not to the index. There may be a company called this; it
-        // was not among the first rows for the unfiltered query.
-        <Message>
-          <Trans>
-            Niciun rezultat de tip{' '}
-            <strong className="font-medium text-foreground">{scope}</strong> printre primele
-            rezultate pentru{' '}
-            <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
-            <span className="text-muted-foreground/55">Încearcă numele complet.</span>
-          </Trans>
-        </Message>
-      ) : (
+      return (
         <Message>
           <Trans>
             Niciun rezultat pentru{' '}
@@ -148,6 +134,9 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
           </Trans>
         </Message>
       )
+
+    case 'invalid':
+      return <Message><Trans>Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele.</Trans></Message>
 
     case 'error':
       return (
@@ -238,10 +227,8 @@ export function LandingSearch({
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
   const isDropdownOpen = isOpen && status.kind !== 'idle'
   const visibleResults = status.kind === 'results' ? status.results : []
-  const scope = describeScope(
-    [...(fixedScope ? [fixedScope.label] : []), ...filters.map((filter) => i18n._(filter.label))],
-    t`și`,
-  )
+  const scope = [...(fixedScope ? [fixedScope.label] : []), ...filters.map((filter) => i18n._(filter.label))]
+    .join(' · ')
   const hasContent = term.length > 0 || filters.length > 0
   const isScoped = fixedScope !== undefined || filters.length > 0
 
@@ -283,7 +270,6 @@ export function LandingSearch({
       items={groups}
       // The list is the server's answer, in the server's order. Filtering it
       // again on the client would silently drop rows the API chose to return.
-      // (A chip narrows it — deliberately, visibly, and named in the header.)
       filter={null}
       value={term}
       onValueChange={(next, details) => {
@@ -336,7 +322,7 @@ export function LandingSearch({
           className={cn(
             // The field. Border, radius and lift live here rather than on the
             // input because the chips are inside them too.
-            'flex h-12 items-center gap-1.5 rounded-lg border border-input bg-card pl-10 pr-20 shadow-none',
+            'flex min-h-12 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-card py-2 pl-10 pr-20 shadow-none',
             // The border and the lift move together, so `transition-colors`
             // is not enough: it would fade the border over 150ms while the
             // shadow snapped in, which is visible on every focus.
@@ -383,7 +369,7 @@ export function LandingSearch({
         >
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-3.5 top-6 size-4 -translate-y-1/2 text-muted-foreground"
           />
 
           {fixedScope ? <ScopePill label={fixedScope.label} Icon={fixedScope.Icon} /> : null}
@@ -511,13 +497,13 @@ export function LandingSearch({
               setIsOpen(false)
             }}
             className={cn(
-              // Bare: the group draws the field. `min-w-0` lets the chips take
-              // room from the text rather than overflowing the border. The
+              // Bare: the group draws the field. Keep room for the query and
+              // wrap it below long or multiple chips on narrow screens. The
               // outline is forced off because `src/index.css` draws one on
               // every `:focus-visible` element from outside any layer, where a
               // plain utility cannot reach it — and a text input is
               // focus-visible on click. The group draws focus instead.
-              'h-full min-w-0 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
+              'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
             )}
             placeholder={isScoped ? t`Nume sau CUI...` : placeholder}
             // The pill is a sibling the screen reader would not associate with
@@ -530,7 +516,7 @@ export function LandingSearch({
             enterKeyHint="search"
           />
 
-          <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1.5">
+          <div className="absolute right-3 top-6 flex -translate-y-1/2 items-center gap-1.5">
             {isBusy ? (
               <Loader2 aria-hidden="true" className="size-4 animate-spin text-muted-foreground" />
             ) : null}

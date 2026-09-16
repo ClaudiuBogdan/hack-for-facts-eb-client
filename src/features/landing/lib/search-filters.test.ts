@@ -1,22 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import type { EntitySearchHit } from '@/schemas/entity-search'
 import {
   absorbTriggers,
   describeScope,
   getSearchFilter,
-  narrowHits,
+  searchFilterInput,
   SEARCH_FILTERS,
   suggestFilters,
+  tagSearchFilters,
 } from '@/features/landing/lib/search-filters'
 
-const hit = (overrides: Partial<EntitySearchHit>): EntitySearchHit => ({
-  id: 'x', title: 'X', docType: 'company', href: '/companies/1', isExternal: false,
-  identifiers: ['1'], countyName: null, subtitle: null, snippet: null, roles: ['company'],
-  isActive: true, docId: null, docKey: null, url: null, score: null,
-  ...overrides,
-})
-
-const ids = (term: string) => suggestFilters(term).map((filter) => filter.id)
+const ids = (term: string) => suggestFilters(term).map(filter => filter.id)
 
 describe('suggestFilters', () => {
   it('recognises the category words the reader actually types', () => {
@@ -87,7 +80,7 @@ describe('absorbTriggers', () => {
   it('leaves the text alone for a filter whose word is doing the finding', () => {
     // The palette's synonym on `primaria` is what surfaces the municipality;
     // `cluj` alone returns companies. The chip narrows, the word stays.
-    expect(absorbTriggers('Primăria Cluj-Napoca', getSearchFilter('uat'))).toBe('Primăria Cluj-Napoca')
+    expect(absorbTriggers('Primăria Cluj-Napoca', getSearchFilter('uat'))).toBe('Cluj-Napoca')
     expect(absorbTriggers('ong cluj', getSearchFilter('ngo'))).toBe('ong cluj')
     expect(absorbTriggers('regia padurilor', getSearchFilter('public_enterprise'))).toBe('regia padurilor')
     expect(absorbTriggers('institutia prefectului', getSearchFilter('organization'))).toBe('institutia prefectului')
@@ -95,7 +88,7 @@ describe('absorbTriggers', () => {
 
   it('absorbs only where the word does no work in the query', () => {
     const absorbing = SEARCH_FILTERS.filter((filter) => filter.absorb).map((filter) => filter.id)
-    expect(absorbing).toEqual(['company', 'legal_act', 'pnrr'])
+    expect(absorbing).toEqual(['uat', 'company', 'legal_act', 'pnrr'])
   })
 
   it('takes a prefix under the caret with it', () => {
@@ -107,38 +100,17 @@ describe('absorbTriggers', () => {
   })
 })
 
-describe('narrowHits', () => {
-  const company = hit({ id: 'c', docType: 'company', roles: ['company'] })
-  const municipality = hit({ id: 'm', docType: 'organization', subtitle: 'uat, uat_municipality', roles: ['organization', 'pnrr_entity'] })
-  const county = hit({ id: 'j', docType: 'organization', subtitle: 'uat, uat_county', roles: ['organization'] })
-  const court = hit({ id: 't', docType: 'organization', subtitle: 'public_entity, admin_court', roles: ['organization'] })
-  const ngo = hit({ id: 'n', docType: 'ngo', roles: ['ngo'] })
-  const all = [company, municipality, county, court, ngo]
-
-  it('keeps everything with no chips on', () => {
-    expect(narrowHits(all, [])).toBe(all)
+describe('server filter scope', () => {
+  it('sends the UAT boolean rather than interpreting subtitles', () => {
+    expect(searchFilterInput([getSearchFilter('uat')])).toEqual({ docTypes: ['organization'], isUat: true })
   })
-
-  it('narrows by the kind a chip names', () => {
-    expect(narrowHits(all, [getSearchFilter('company')])).toEqual([company])
-    expect(narrowHits(all, [getSearchFilter('organization')])).toEqual([municipality, county, court])
-    expect(narrowHits(all, [getSearchFilter('ngo')])).toEqual([ngo])
+  it('intersects UAT scope with the PNRR role', () => {
+    expect(searchFilterInput([getSearchFilter('uat'), getSearchFilter('pnrr')])).toEqual({
+      docTypes: ['organization'], isUat: true, roles: ['pnrr_entity'],
+    })
   })
-
-  it('reads the UAT flag off the palette subtitle, and only for organisations', () => {
-    expect(narrowHits(all, [getSearchFilter('uat')])).toEqual([municipality, county])
-    // A company whose subtitle happened to start with `uat` is still a company.
-    expect(narrowHits([hit({ docType: 'company', subtitle: 'uat' })], [getSearchFilter('uat')])).toEqual([])
-    expect(narrowHits([hit({ docType: 'organization', subtitle: null })], [getSearchFilter('uat')])).toEqual([])
-  })
-
-  it('reads PNRR off the roles, whatever the kind', () => {
-    expect(narrowHits(all, [getSearchFilter('pnrr')])).toEqual([municipality])
-  })
-
-  it('applies every chip at once', () => {
-    expect(narrowHits(all, [getSearchFilter('uat'), getSearchFilter('pnrr')])).toEqual([municipality])
-    expect(narrowHits(all, [getSearchFilter('company'), getSearchFilter('pnrr')])).toEqual([])
+  it('uses the role for public enterprises, including institutions with that role', () => {
+    expect(searchFilterInput([getSearchFilter('public_enterprise')])).toEqual({ roles: ['public_enterprise'] })
   })
 })
 
@@ -169,5 +141,33 @@ describe('the vocabulary', () => {
         seen.set(trigger, filter.id)
       }
     }
+  })
+})
+
+
+describe('keyword-triggered entity tag chips', () => {
+  const tags = tagSearchFilters('ro')
+  it('offers the known hospital tag and consumes only its keyword', () => {
+    const tag = suggestFilters('spital sibiu', [], tags).find(filter => filter.entityTag === 'kind::hospital')!
+    expect(absorbTriggers('spital sibiu', tag)).toBe('sibiu')
+    expect(searchFilterInput([tag])).toEqual({ entityTags: ['kind::hospital'] })
+    expect(suggestFilters('spital', [tag], tags).some(filter => filter.id === tag.id)).toBe(false)
+  })
+  it('offers an exclusion chip for a negative keyword', () => {
+    const tag = suggestFilters('-spital sibiu', [], tags).find(filter => filter.entityTag === 'kind::hospital')!
+    expect(tag.exclude).toBe(true)
+    expect(absorbTriggers('-spital sibiu', tag)).toBe('sibiu')
+    expect(searchFilterInput([tag])).toEqual({ excludeEntityTags: ['kind::hospital'] })
+  })
+  it('supports complete vocabulary labels and keeps sector queries usable', () => {
+    const tag = tags.find(filter => filter.entityTag === 'kind::school::highschool' && !filter.exclude)!
+    expect(suggestFilters('liceul sibiu', [], tags)).toContainEqual(tag)
+    expect(absorbTriggers('sector 1', getSearchFilter('uat'))).toBe('sector 1')
+    expect(absorbTriggers('Sectorul 6', getSearchFilter('uat'))).toBe('Sectorul 6')
+  })
+  it('combines chips into namespace filters rather than filtering returned hits', () => {
+    const school = tags.find(filter => filter.entityTag === 'kind::school' && !filter.exclude)!
+    const hospital = tags.find(filter => filter.entityTag === 'kind::hospital' && !filter.exclude)!
+    expect(searchFilterInput([school, hospital])).toEqual({ entityTags: ['kind::school', 'kind::hospital'] })
   })
 })

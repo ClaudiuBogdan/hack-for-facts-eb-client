@@ -10,7 +10,7 @@ import { DOC_TYPE_META } from '../lib/doc-type-meta'
  * claim we cannot support: we did not look, and the user must not conclude the
  * entity does not exist (SEARCH_LAYER_REVIEW_2026-08-25.md D5).
  */
-type EmptyStateVariant = 'initial' | 'zero' | 'degraded' | 'error'
+type EmptyStateVariant = 'initial' | 'zero' | 'degraded' | 'error' | 'invalid'
 
 type Props = {
   readonly variant: EmptyStateVariant
@@ -115,6 +115,8 @@ export function EntityEmptyState({
           ) : null}
         </>
       ) : null}
+
+      {variant === 'invalid' ? <p><Trans>Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele.</Trans></p> : null}
 
       {variant === 'zero' ? (
         <>
