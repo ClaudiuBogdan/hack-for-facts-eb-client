@@ -1410,7 +1410,7 @@ msgstr ""
 
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:94
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:105
-#: src/features/private-companies/components/sections/private-company-activity-section.tsx:32
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:70
 #: src/features/private-companies/lib/tab-config.ts:53
 msgid "Activity"
 msgstr "Activitate"
@@ -2091,8 +2091,8 @@ msgid "ANAF does not return financial statements for this company in the loaded 
 msgstr "ANAF nu returnează situații financiare pentru această companie în instantaneul încărcat."
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:93
-msgid "ANAF does not supply the CAEN revision. Activity agreement cannot be confirmed."
-msgstr "ANAF nu furnizează revizia CAEN. Corespondența activităților nu poate fi confirmată."
+#~ msgid "ANAF does not supply the CAEN revision. Activity agreement cannot be confirmed."
+#~ msgstr "ANAF nu furnizează revizia CAEN. Corespondența activităților nu poate fi confirmată."
 
 #: src/features/private-companies/lib/profile-display.ts:23
 msgid "ANAF public fiscal data"
@@ -2594,10 +2594,10 @@ msgid "Authority: {0}"
 msgstr "Autoritate: {0}"
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:61
-msgid "Authorized activities (ONRC)"
-msgstr "Activități autorizate (ONRC)"
+#~ msgid "Authorized activities (ONRC)"
+#~ msgstr "Activități autorizate (ONRC)"
 
-#: src/features/private-companies/components/sections/private-company-activity-section.tsx:34
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:72
 msgid "Authorized and fiscal activity codes from ONRC and ANAF."
 msgstr "Coduri de activitate autorizate și fiscale de la ONRC și ANAF."
 
@@ -3161,6 +3161,10 @@ msgstr ""
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:853
 msgid "CAEN"
 msgstr ""
+
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:87
+msgid "CAEN activities"
+msgstr "Activități CAEN"
 
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:159
 msgid "CAEN code"
@@ -9081,16 +9085,16 @@ msgid "Fiscal"
 msgstr "Fiscal"
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:90
-msgid "Fiscal CAEN (ANAF)"
-msgstr "CAEN fiscal (ANAF)"
+#~ msgid "Fiscal CAEN (ANAF)"
+#~ msgstr "CAEN fiscal (ANAF)"
 
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:98
 msgid "Fiscal CAEN from ANAF"
 msgstr "CAEN fiscal de la ANAF"
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:113
-msgid "Fiscal CAEN from ANAF matches an authorized ONRC activity."
-msgstr "CAEN-ul fiscal de la ANAF corespunde unei activități ONRC autorizate."
+#~ msgid "Fiscal CAEN from ANAF matches an authorized ONRC activity."
+#~ msgstr "CAEN-ul fiscal de la ANAF corespunde unei activități ONRC autorizate."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:895
 msgid "Fiscal code (CIF)"
@@ -11213,7 +11217,7 @@ msgstr ""
 msgid "Label"
 msgstr "Etichetă"
 
-#: src/features/private-companies/components/sections/private-company-activity-section.tsx:68
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:116
 msgid "Label not available in nomenclature"
 msgstr "Etichetă indisponibilă în nomenclator"
 
@@ -13619,6 +13623,7 @@ msgid "No active series selected."
 msgstr "Nicio serie activă selectată."
 
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:99
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:83
 msgid "No activity codes"
 msgstr "Fără coduri de activitate"
 
@@ -13644,8 +13649,8 @@ msgid "No annotations yet."
 msgstr "Încă nu există adnotări."
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:45
-msgid "No authorized activity codes"
-msgstr "Fără coduri de activitate autorizate"
+#~ msgid "No authorized activity codes"
+#~ msgstr "Fără coduri de activitate autorizate"
 
 #: src/features/procurement/lib/caveat-text.ts:177
 msgid "No awarded values were observed in this selection, so the total is unknown — not zero."
@@ -14013,8 +14018,8 @@ msgid "No observations were found for this entity and source selection."
 msgstr "Nu au fost găsite observații pentru această entitate și selecție a sursei."
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:83
-msgid "No ONRC authorized activities"
-msgstr "Fără activități autorizate ONRC"
+#~ msgid "No ONRC authorized activities"
+#~ msgstr "Fără activități autorizate ONRC"
 
 #: src/components/charts/components/series-config/CalculationEditor.tsx:256
 msgid "No operands. Add a series or a new calculation."
@@ -15150,9 +15155,13 @@ msgstr "ONRC"
 msgid "ONRC — the trade register (status, legal form, CAEN). ANAF — fiscal data (VAT, inactivity) and financial statements."
 msgstr "ONRC — Registrul Comerțului (stare, formă juridică, CAEN). ANAF — date fiscale (TVA, inactivitate) și situații financiare."
 
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:84
+msgid "ONRC and ANAF did not return CAEN codes for this company in the loaded snapshots."
+msgstr "ONRC și ANAF nu au returnat coduri CAEN pentru această companie în instantaneele încărcate."
+
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:46
-msgid "ONRC did not return CAEN codes for this company in the loaded snapshot."
-msgstr "ONRC nu a returnat coduri CAEN pentru această companie în instantaneul încărcat."
+#~ msgid "ONRC did not return CAEN codes for this company in the loaded snapshot."
+#~ msgstr "ONRC nu a returnat coduri CAEN pentru această companie în instantaneul încărcat."
 
 #: src/features/private-companies/lib/profile-display.ts:21
 msgid "ONRC open data"
@@ -18054,8 +18063,7 @@ msgstr ""
 
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:80
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:82
-#: src/features/private-companies/components/sections/private-company-activity-section.tsx:75
-#: src/features/private-companies/components/sections/private-company-activity-section.tsx:106
+#: src/features/private-companies/components/sections/private-company-activity-section.tsx:109
 msgid "Revision not supplied"
 msgstr "Revizie nefurnizată"
 
@@ -21209,8 +21217,8 @@ msgid "The final contract value after verified amendments (additional acts)."
 msgstr "Valoarea finală a contractului după modificările verificate (acte adiționale)."
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:95
-msgid "The fiscal code and revision do not exactly match the loaded ONRC authorized list."
-msgstr "Codul fiscal și revizia nu corespund exact listei de activități autorizate ONRC încărcate."
+#~ msgid "The fiscal code and revision do not exactly match the loaded ONRC authorized list."
+#~ msgstr "Codul fiscal și revizia nu corespund exact listei de activități autorizate ONRC încărcate."
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:503
 msgid "The generated contestation needs a sender identity."
@@ -22819,8 +22827,8 @@ msgid "Use the association email address from which you will actually send the r
 msgstr "Folosește adresa de email a asociației de pe care vei trimite efectiv cererea."
 
 #: src/features/private-companies/components/sections/private-company-activity-section.tsx:84
-msgid "Use the fiscal CAEN from ANAF below when ONRC activities are missing."
-msgstr "Folosiți CAEN-ul fiscal de la ANAF de mai jos când lipsesc activitățile ONRC."
+#~ msgid "Use the fiscal CAEN from ANAF below when ONRC activities are missing."
+#~ msgstr "Folosiți CAEN-ul fiscal de la ANAF de mai jos când lipsesc activitățile ONRC."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:856
 msgid "Use the full official name exactly as it appears in the Register of Associations and Foundations."

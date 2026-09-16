@@ -1,11 +1,13 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import type {
+  PrivateCompanyCaenActivity,
+  PrivateCompanyProfile,
+} from '@/schemas/private-company'
 import { PrivateCompanyTabEmpty } from '../private-company-tab-empty'
 import { PrivateCompanySection } from './private-company-section'
 import {
   PrivateCompanyTabListItem,
-  PrivateCompanyTabNote,
   PrivateCompanyTabPanel,
 } from './private-company-tab-ui'
 
@@ -14,40 +16,61 @@ type Props = {
   readonly variant?: 'default' | 'tab'
 }
 
+function groupActivities(profile: PrivateCompanyProfile) {
+  const observations = profile.caenActivities.filter(
+    (activity) => activity.source === 'onrc' || activity.source === 'anaf',
+  )
+  const fiscalCaen = profile.fiscal.fiscalCaen
+  // The fiscal field and the ANAF activity are two representations of one observation.
+  if (
+    fiscalCaen &&
+    !observations.some(
+      (activity) =>
+        activity.source === 'anaf' &&
+        activity.code === fiscalCaen.code &&
+        activity.rev === fiscalCaen.rev,
+    )
+  ) {
+    observations.push({ ...fiscalCaen, source: 'anaf', label: null })
+  }
+
+  const groups = new Map<string, Map<string, PrivateCompanyCaenActivity>>()
+  for (const activity of observations) {
+    const observation = {
+      ...activity,
+      rev: activity.rev || null,
+      label: activity.rev ? activity.label : null,
+    }
+    const group =
+      groups.get(activity.code) ?? new Map<string, PrivateCompanyCaenActivity>()
+    group.set(
+      JSON.stringify([observation.source, observation.rev, observation.label]),
+      observation,
+    )
+    groups.set(activity.code, group)
+  }
+  return [...groups]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([code, group]) => ({
+      code,
+      observations: [...group.values()].sort(
+        (left, right) =>
+          Number(right.source === 'onrc') - Number(left.source === 'onrc') ||
+          (left.rev ?? '').localeCompare(right.rev ?? '') ||
+          (left.label ?? '').localeCompare(right.label ?? ''),
+      ),
+    }))
+}
+
 export function PrivateCompanyActivitySection({
   profile,
   variant = 'default',
 }: Props) {
-  const onrcActivities = profile.caenActivities.filter(
-    (activity) => activity.source === 'onrc',
-  )
-  const fiscalCaen = profile.fiscal.fiscalCaen
-  const showFiscalCaen =
-    fiscalCaen !== null &&
-    !onrcActivities.some(
-      (activity) =>
-        fiscalCaen.rev !== null && activity.code === fiscalCaen.code && activity.rev === fiscalCaen.rev,
-    )
-
+  const activities = groupActivities(profile)
   const sectionTitle = <Trans>Activity</Trans>
   const sectionDescription = (
     <Trans>Authorized and fiscal activity codes from ONRC and ANAF.</Trans>
   )
-
-  if (onrcActivities.length === 0 && !showFiscalCaen) {
-    return (
-      <PrivateCompanySection
-        title={variant === 'default' ? sectionTitle : undefined}
-        description={variant === 'default' ? sectionDescription : undefined}
-        variant={variant}
-      >
-        <PrivateCompanyTabEmpty
-          title={t`No authorized activity codes`}
-          description={t`ONRC did not return CAEN codes for this company in the loaded snapshot.`}
-        />
-      </PrivateCompanySection>
-    )
-  }
 
   return (
     <PrivateCompanySection
@@ -55,67 +78,53 @@ export function PrivateCompanyActivitySection({
       description={variant === 'default' ? sectionDescription : undefined}
       variant={variant}
     >
-      <div className="space-y-4">
-        {onrcActivities.length > 0 ? (
-          <PrivateCompanyTabPanel
-            category={<Trans>Authorized activities (ONRC)</Trans>}
-          >
-            {onrcActivities.map((activity) => (
+      {activities.length === 0 ? (
+        <PrivateCompanyTabEmpty
+          title={t`No activity codes`}
+          description={t`ONRC and ANAF did not return CAEN codes for this company in the loaded snapshots.`}
+        />
+      ) : (
+        <PrivateCompanyTabPanel category={<Trans>CAEN activities</Trans>}>
+          <ul className="divide-y-2 divide-[var(--pnrr-border)]">
+            {activities.map((activity) => (
               <PrivateCompanyTabListItem
-                key={`${activity.code}-${activity.rev}`}
-                headline={
-                  activity.label ?? (
-                    <Trans>Label not available in nomenclature</Trans>
-                  )
-                }
+                key={activity.code}
+                headline={<span className="tabular-nums">{activity.code}</span>}
                 supporting={
-                  <span className="tabular-nums">
-                    {activity.code}
-                    <span className="mx-1.5 text-[var(--pnrr-muted)]">·</span>
-                    {activity.rev ?? <Trans>Revision not supplied</Trans>}
+                  <span className="block space-y-2">
+                    {activity.observations.map((observation) => (
+                      <span
+                        key={JSON.stringify([
+                          observation.source,
+                          observation.rev,
+                          observation.label,
+                        ])}
+                        className="block"
+                      >
+                        <strong className="font-semibold text-[var(--pnrr-fg)]">
+                          {observation.source === 'onrc' ? 'ONRC' : 'ANAF'}
+                        </strong>
+                        {' · '}
+                        {observation.rev ?? (
+                          <Trans>Revision not supplied</Trans>
+                        )}
+                        {observation.label ? (
+                          <> — {observation.label}</>
+                        ) : observation.rev ? (
+                          <>
+                            {' '}
+                            — <Trans>Label not available in nomenclature</Trans>
+                          </>
+                        ) : null}
+                      </span>
+                    ))}
                   </span>
                 }
               />
             ))}
-          </PrivateCompanyTabPanel>
-        ) : (
-          <PrivateCompanyTabEmpty
-            title={t`No ONRC authorized activities`}
-            description={t`Use the fiscal CAEN from ANAF below when ONRC activities are missing.`}
-          />
-        )}
-
-        {showFiscalCaen && fiscalCaen ? (
-          <PrivateCompanyTabPanel
-            category={<Trans>Fiscal CAEN (ANAF)</Trans>}
-            hint={
-              fiscalCaen.rev === null ? (
-                <Trans>ANAF does not supply the CAEN revision. Activity agreement cannot be confirmed.</Trans>
-              ) : (
-                <Trans>The fiscal code and revision do not exactly match the loaded ONRC authorized list.</Trans>
-              )
-            }
-          >
-            <PrivateCompanyTabListItem
-              headline={
-                <span className="tabular-nums">
-                  {fiscalCaen.code}
-                  <span className="mx-1.5 font-normal text-[var(--pnrr-muted)]">
-                    ·
-                  </span>
-                  {fiscalCaen.rev ?? <Trans>Revision not supplied</Trans>}
-                </span>
-              }
-            />
-          </PrivateCompanyTabPanel>
-        ) : profile.fiscal.anafFound && fiscalCaen ? (
-          <PrivateCompanyTabNote>
-            <Trans>
-              Fiscal CAEN from ANAF matches an authorized ONRC activity.
-            </Trans>
-          </PrivateCompanyTabNote>
-        ) : null}
-      </div>
+          </ul>
+        </PrivateCompanyTabPanel>
+      )}
     </PrivateCompanySection>
   )
 }
