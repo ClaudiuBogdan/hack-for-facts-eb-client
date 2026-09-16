@@ -1,11 +1,13 @@
+import { isSearchInputError } from '@/features/entity-search/api/search-input-error'
+import { useLingui } from '@lingui/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Analytics } from '@/lib/analytics'
 import { searchEntitiesLive } from '@/features/entity-search/api/entity-search-api.live'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import type { EntitySearchHit } from '@/schemas/entity-search'
-import { absorbTriggers, narrowHits, suggestFilters } from '@/features/landing/lib/search-filters'
+import { absorbTriggers, searchFilterInput, suggestFilters, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 
 export type SearchStatus =
@@ -16,15 +18,9 @@ export type SearchStatus =
   | { readonly kind: 'pending' }
   | { readonly kind: 'loading' }
   | { readonly kind: 'results'; readonly results: readonly EntitySearchHit[]; readonly stale: boolean }
-  /**
-   * `narrowed` is true when the server did return rows and every one of them
-   * was removed by a chip. The two are different messages: "nothing matches"
-   * versus "nothing of this kind among what came back" — and the second has to
-   * be said, because a chip is applied to the first page only (see
-   * `home-refs.search-filters.ts`).
-   */
-  | { readonly kind: 'empty'; readonly term: string; readonly narrowed: boolean }
+  | { readonly kind: 'empty'; readonly term: string }
   | { readonly kind: 'error' }
+  | { readonly kind: 'invalid' }
 
 export const MIN_QUERY_CHARS = 3
 export const SEARCH_DEBOUNCE_MS = 250
@@ -41,41 +37,39 @@ export function useSearchResults({
 }: { readonly debounceMs?: number } = {}) {
   const [term, setTerm] = useState('')
   const [filters, setFilters] = useState<readonly SearchFilter[]>([])
+  const { i18n } = useLingui()
+  const tagFilters = useMemo(() => tagSearchFilters(i18n.locale), [i18n.locale])
+  const serverFilters = searchFilterInput(filters)
   const trimmed = term.trim()
   const normalized = useDebouncedValue(trimmed, debounceMs)
   const isQueryable = normalized.length >= MIN_QUERY_CHARS
-  // The request carries the query and the landing's fixed scope only. Chips are
-  // not sent — see the module comment in `home-refs.search-filters.ts` — so the
-  // key is the term alone and adding or removing a chip never refetches.
-  const { data, isError, isFetching, isPlaceholderData, isSuccess } = useQuery({
-    queryKey: ['landingUniversalSearch', normalized],
+  const { data, error, isError, isFetching, isPlaceholderData, isSuccess } = useQuery({
+    queryKey: ['landingUniversalSearch', normalized, serverFilters],
     queryFn: async ({ signal }) => {
       const response = await searchEntitiesLive({
-        q: normalized, docTypes: LANDING_SEARCH_TYPES, limit: SEARCH_LIMIT,
+        q: normalized, docTypes: LANDING_SEARCH_TYPES, ...serverFilters, limit: SEARCH_LIMIT,
       }, signal)
       if (response.degraded) throw new Error('Search unavailable')
       return response.hits.filter((hit) => hit.href.startsWith('/') && !hit.isExternal)
     },
     enabled: isQueryable,
-    placeholderData: keepPreviousData,
     retry: false,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   })
-  const served = useMemo(() => data ?? [], [data])
-  const results = useMemo(() => narrowHits(served, filters), [served, filters])
+  const results = useMemo(() => data ?? [], [data])
   const isCurrent = isQueryable && normalized === trimmed && isSuccess && !isPlaceholderData && !isFetching
 
   const status: SearchStatus = useMemo(() => {
     if (!trimmed) return filters.length > 0 ? { kind: 'scoped' } : { kind: 'idle' }
     if (trimmed.length < MIN_QUERY_CHARS) return { kind: 'short', remaining: MIN_QUERY_CHARS - trimmed.length }
-    if (isError && normalized === trimmed) return { kind: 'error' }
+    if (isError && normalized === trimmed) return { kind: isSearchInputError(error) ? 'invalid' : 'error' }
     if (results.length) return { kind: 'results', results, stale: !isCurrent }
-    if (isCurrent) return { kind: 'empty', term: trimmed, narrowed: served.length > 0 }
+    if (isCurrent) return { kind: 'empty', term: trimmed }
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
-  }, [trimmed, normalized, isError, isFetching, results, served, isCurrent, filters])
+  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, filters])
 
-  const suggestions = useMemo(() => suggestFilters(term, filters), [term, filters])
+  const suggestions = useMemo(() => suggestFilters(term, filters, tagFilters), [term, filters, tagFilters])
 
   /**
    * Accepting a suggestion: the chip goes on, and the word that earned it
@@ -83,7 +77,18 @@ export function useSearchResults({
    * which `firma` is a chip and a word at once.
    */
   const addFilter = useCallback((filter: SearchFilter) => {
-    setFilters((current) => (current.some((f) => f.id === filter.id) ? current : [...current, filter]))
+    setFilters((current) => {
+      if (current.some(f => f.id === filter.id)) return current
+      // Public-enterprise and PNRR are role scopes; the API roles list is OR,
+      // so never present their combination as an intersection.
+      const kept = current.filter(f => {
+        if (filter.entityTag) return f.entityTag !== filter.entityTag
+        if (f.entityTag) return true
+        return filter.id === 'pnrr' ? f.id !== 'public_enterprise'
+          : f.id === 'pnrr' && filter.id !== 'public_enterprise'
+      })
+      return [...kept, filter]
+    })
     setTerm((current) => absorbTriggers(current, filter))
   }, [])
 

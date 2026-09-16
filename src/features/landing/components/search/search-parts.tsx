@@ -330,7 +330,9 @@ export function announcement(status: SearchStatus, suggestionCount = 0) {
     case 'short':
       return suggested.trim()
     case 'empty':
-      return (status.narrowed ? t`Niciun rezultat de acest tip.` : t`Niciun rezultat.`) + suggested
+      return t`Niciun rezultat.` + suggested
+    case 'invalid':
+      return t`Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele.`
     case 'error':
       return t`Căutarea nu a răspuns.`
     case 'loading':

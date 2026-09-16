@@ -10,7 +10,6 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { describeScope } from '@/features/landing/lib/search-filters'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import {
   announcement,
@@ -59,7 +58,7 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
  * dedeman` and the list opens with a *Firme* row above the results; accept it
  * and `firma` leaves the text and becomes a chip in the field, the results
  * narrow to companies, and the query that goes out is `dedeman`. The vocabulary
- * and the narrowing live in `home-refs.search-filters.ts`; what this file owns
+ * and the narrowing live in `search-filters.ts`; what this file owns
  * is the two places a filter is drawn and the three ways it moves — accepted
  * from the list, removed from its own button, removed by Backspace on an empty
  * field. Suggestions are real options in their own group, so the arrow keys
@@ -124,20 +123,7 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
       return null
 
     case 'empty':
-      return status.narrowed ? (
-        // Honest about the reach: the chip was applied to the page the server
-        // returned, not to the index. There may be a company called this; it
-        // was not among the first rows for the unfiltered query.
-        <Message>
-          <Trans>
-            Niciun rezultat de tip{' '}
-            <strong className="font-medium text-foreground">{scope}</strong> printre primele
-            rezultate pentru{' '}
-            <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
-            <span className="text-muted-foreground/55">Încearcă numele complet.</span>
-          </Trans>
-        </Message>
-      ) : (
+      return (
         <Message>
           <Trans>
             Niciun rezultat pentru{' '}
@@ -146,6 +132,9 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
           </Trans>
         </Message>
       )
+
+    case 'invalid':
+      return <Message><Trans>Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele.</Trans></Message>
 
     case 'error':
       return (
@@ -222,10 +211,7 @@ export function LandingSearch({
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
   const isDropdownOpen = isOpen && status.kind !== 'idle'
   const visibleResults = status.kind === 'results' ? status.results : []
-  const scope = describeScope(
-    filters.map((filter) => i18n._(filter.label)),
-    t`și`,
-  )
+  const scope = filters.map((filter) => i18n._(filter.label)).join(' · ')
   const hasContent = term.length > 0 || filters.length > 0
 
   // Two groups, each present only when it has rows. Suggestions first: they
@@ -266,7 +252,6 @@ export function LandingSearch({
       items={groups}
       // The list is the server's answer, in the server's order. Filtering it
       // again on the client would silently drop rows the API chose to return.
-      // (A chip narrows it — deliberately, visibly, and named in the header.)
       filter={null}
       value={term}
       onValueChange={(next, details) => {

@@ -51,6 +51,8 @@ export function mapSearchHit(raw: RawSearchHit): EntitySearchHit {
     countyName: raw.countyName,
     roles: raw.roles ?? [],
     isActive: raw.isActive ?? true,
+    isUat: raw.isUat ?? null,
+    entityTags: raw.entityTags ?? [],
     identifiers: raw.identifiers ?? cuis,
     docId,
     docKey: raw.docKey,

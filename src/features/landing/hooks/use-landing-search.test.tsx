@@ -3,12 +3,14 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
+import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { LANDING_SEARCH_TYPES, useEntitySelection, useSearchResults } from '@/features/landing/hooks/use-landing-search'
 
 const navigate = vi.fn()
 const searchEntities = vi.fn()
 const capture = vi.fn()
+vi.mock('@lingui/react', () => ({ useLingui: () => ({ i18n: { locale: 'ro' } }) }))
 vi.mock('@tanstack/react-router', () => ({ useNavigate: () => navigate }))
 vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({
   searchEntitiesLive: (...args: readonly unknown[]) => searchEntities(...args),
@@ -78,7 +80,7 @@ describe('landing universal search', () => {
     searchEntities.mockResolvedValue(response([]))
     const { result } = setup()
     await search(result)
-    expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante', narrowed: false })
+    expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante' })
     searchEntities.mockResolvedValue({ hits: [], degraded: true })
     act(() => result.current.setTerm('Sibiu'))
     await waitFor(() => expect(result.current.status.kind).toBe('error'))
@@ -89,6 +91,16 @@ describe('landing universal search', () => {
     const { result } = setup()
     await search(result)
     expect(result.current.status.kind).toBe('error')
+    expect(capture).not.toHaveBeenCalled()
+  })
+  it('distinguishes invalid input from an unavailable search service', async () => {
+    searchEntities.mockRejectedValue(new GraphQLRequestError('Too many terms', {
+      graphQLErrors: [{ message: 'Too many terms', extensions: { code: 'INVALID_INPUT' } }],
+    }))
+    const { result } = setup()
+    act(() => result.current.setTerm('one two three four five six seven eight nine ten eleven'))
+    await waitFor(() => expect(result.current.status.kind).toBe('invalid'))
+    expect(result.current.isCurrent).toBe(false)
     expect(capture).not.toHaveBeenCalled()
   })
   it('makes previous results unselectable during typing and failed requests', async () => {
@@ -103,34 +115,31 @@ describe('landing universal search', () => {
     await waitFor(() => expect(result.current.status.kind).toBe('error'))
     expect(result.current.isCurrent).toBe(false)
   })
-  it('applies a chip to the page it has, and never sends it', async () => {
-    const uat = { ...COMPANY, id: 'organization:4305857', docType: 'organization', href: '/entities/4305857', subtitle: 'uat, uat_municipality' }
-    searchEntities.mockResolvedValue(response([uat, COMPANY]))
+  it('refetches with isUat before pagination and never guesses from subtitles', async () => {
+    const uat = { ...COMPANY, id: 'organization:4270740', docType: 'organization', href: '/entities/4270740', isUat: true }
     const { result } = setup()
-    await search(result, 'primaria cluj')
-    expect(result.current.suggestions.map((f) => f.id)).toEqual(['uat'])
+    await search(result, 'primaria sibiu')
+    searchEntities.mockResolvedValue(response([uat]))
     act(() => result.current.addFilter(result.current.suggestions[0]))
-    // Primării keeps its word: the palette's synonym on it is what finds the municipality.
-    expect(result.current.term).toBe('primaria cluj')
-    expect(result.current.filters.map((f) => f.id)).toEqual(['uat'])
-    expect(result.current.suggestions).toEqual([])
+    expect(result.current.term).toBe('sibiu')
     await waitFor(() => expect(result.current.status).toEqual({ kind: 'results', results: [uat], stale: false }))
-    // The request is the text alone: same fixed scope, no docTypes for the chip, no roles.
-    for (const [input] of searchEntities.mock.calls) {
-      expect(input).toEqual({ q: expect.any(String), docTypes: LANDING_SEARCH_TYPES, limit: 8 })
-    }
+    expect(searchEntities).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'sibiu', docTypes: ['organization'], isUat: true }), expect.any(AbortSignal))
+    searchEntities.mockResolvedValue(response([COMPANY]))
     act(() => result.current.removeFilter(result.current.filters[0]))
-    expect(result.current.status).toEqual({ kind: 'results', results: [uat, COMPANY], stale: false })
+    await waitFor(() => expect(result.current.results).toEqual([COMPANY]))
   })
-  it('distinguishes a page narrowed to nothing from a page with nothing on it', async () => {
+  it('refetches tag selection and removal for the same text', async () => {
     const { result } = setup()
-    await search(result, 'pnrr dante')
-    act(() => result.current.addFilter(result.current.suggestions[0]))
-    // The company carries no PNRR role, so the page is narrowed to nothing — and says so.
-    await waitFor(() => expect(result.current.status).toEqual({ kind: 'empty', term: 'dante', narrowed: true }))
+    await search(result, 'spital Dante')
+    searchEntities.mockResolvedValue(response([]))
+    act(() => result.current.addFilter(result.current.suggestions.find(filter => filter.entityTag === 'kind::hospital')!))
+    await waitFor(() => expect(result.current.status).toEqual({ kind: 'empty', term: 'Dante' }))
+    expect(searchEntities).toHaveBeenLastCalledWith(expect.objectContaining({ entityTags: ['kind::hospital'] }), expect.any(AbortSignal))
+    searchEntities.mockResolvedValue(response([COMPANY]))
+    act(() => result.current.removeFilter(result.current.filters[0]))
+    await waitFor(() => expect(result.current.results).toEqual([COMPANY]))
     act(() => result.current.reset())
-    expect(result.current.status).toEqual({ kind: 'idle' })
-    expect(result.current.filters).toEqual([])
+    expect(result.current.status.kind).toBe('idle')
   })
   it('asks for a name when a chip is on and the text is empty', async () => {
     const { result } = setup(10_000)

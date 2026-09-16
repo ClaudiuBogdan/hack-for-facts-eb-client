@@ -53,6 +53,9 @@ export async function searchEntitiesLive(
     roles: nonEmptyList(input.roles),
     county: county && county.length > 0 ? county : undefined,
     isActive: input.isActive,
+    isUat: input.isUat,
+    entityTags: input.entityTags,
+    excludeEntityTags: input.excludeEntityTags,
     limit: input.limit,
     offset: input.offset,
   }

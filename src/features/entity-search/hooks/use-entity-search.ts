@@ -36,6 +36,9 @@ export function entitySearchQueryKey(input: EntitySearchInput) {
     [...(input.roles ?? [])].map((r) => r.trim()).sort(),
     input.county?.trim() ?? '',
     input.isActive ?? null,
+    input.isUat ?? null,
+    [...new Set(input.entityTags ?? [])].sort(),
+    [...new Set(input.excludeEntityTags ?? [])].sort(),
     input.limit ?? null,
   ] as const
 }

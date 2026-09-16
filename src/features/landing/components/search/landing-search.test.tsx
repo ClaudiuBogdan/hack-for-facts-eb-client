@@ -570,7 +570,7 @@ describe('LandingSearch', () => {
       href: '/companies/2816464', identifiers: ['2816464'], countyName: 'Bacău',
       subtitle: 'SRL', roles: ['company'],
     }
-    const UAT_CLUJ: EntitySearchHit = { ...CLUJ, subtitle: 'uat, uat_municipality' }
+    const UAT_CLUJ: EntitySearchHit = { ...CLUJ, subtitle: null, isUat: true }
     const COURT_CLUJ: EntitySearchHit = {
       ...IASI, id: 'organization:1', title: 'Tribunalul Cluj', href: '/entities/1',
       identifiers: ['1'], countyName: 'Cluj', subtitle: 'public_entity, admin_court',
@@ -598,8 +598,8 @@ describe('LandingSearch', () => {
       expect(options[1].tagName).toBe('A')
     })
 
-    it('turns the word into a chip on click, lifts it from the text, and narrows the rows', async () => {
-      searchEntities.mockResolvedValue(response([DEDEMAN, IASI]))
+    it('turns the word into an inline chip and requests the filtered rows', async () => {
+      searchEntities.mockImplementation((input: { docTypes?: readonly string[] }) => Promise.resolve(response(input.docTypes?.includes('company') ? [DEDEMAN] : [DEDEMAN, IASI])))
       const { user } = setup()
       const input = await typeUntilSuggested(user, 'firma dedeman')
 
@@ -616,38 +616,54 @@ describe('LandingSearch', () => {
       expect(screen.getAllByRole('option')[0]).toHaveAttribute('href', '/companies/2816464')
       // The header names the scope.
       expect(screen.getByText('Firme', { selector: '.font-mono' })).toBeInTheDocument()
-      // The chip is not sent: the request is the same one, for the remaining text.
+      // The scope reaches the API before pagination.
       expect(searchEntities).toHaveBeenLastCalledWith(
-        expect.objectContaining({ q: 'dedeman' }), expect.any(AbortSignal),
+        expect.objectContaining({ q: 'dedeman', docTypes: ['company'] }), expect.any(AbortSignal),
       )
       expect(searchEntities.mock.calls.every(([input]) => !('roles' in (input as object)))).toBe(true)
     })
 
     it('accepts a suggestion from the keyboard with ArrowDown and Enter', async () => {
-      searchEntities.mockResolvedValue(response([UAT_CLUJ, COURT_CLUJ]))
+      searchEntities.mockImplementation((input: { isUat?: boolean }) => Promise.resolve(response(input.isUat ? [UAT_CLUJ] : [UAT_CLUJ, COURT_CLUJ])))
       const { user } = setup()
       const input = await typeUntilSuggested(user, 'primaria cluj')
 
       await user.keyboard('{ArrowDown}{Enter}')
 
       expect(screen.getByLabelText('Elimină filtrul Primării')).toBeInTheDocument()
-      // The word stays for Primării — it is what finds the municipality.
-      expect(input).toHaveValue('primaria cluj')
+      // Server-side isUat makes the category word unnecessary.
+      expect(input).toHaveValue('cluj')
       expect(navigate).not.toHaveBeenCalled()
-      // Primării keeps the UAT and drops the court, reading the palette's line.
+      // The API result contains the UAT even without a subtitle.
       await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
       expect(screen.getAllByRole('option')[0]).toHaveTextContent('Cluj-Napoca')
+      expect(searchEntities).toHaveBeenLastCalledWith(expect.objectContaining({ q: 'cluj', isUat: true }), expect.any(AbortSignal))
     })
 
-    it('says when a chip has narrowed the page to nothing, rather than claiming no match', async () => {
-      searchEntities.mockResolvedValue(response([IASI, CLUJ]))
+    it('shows an empty result for the filtered server query', async () => {
+      searchEntities.mockImplementation((input: { docTypes?: readonly string[] }) => Promise.resolve(response(input.docTypes?.includes('company') ? [] : [IASI, CLUJ])))
       const { user } = setup()
       await typeUntilSuggested(user, 'firma iasi')
 
       await user.click(screen.getByRole('option', { name: /filtru/i }))
 
-      await waitFor(() => expect(screen.getByText(/printre primele rezultate/i)).toBeInTheDocument())
-      expect(screen.queryByText(/Niciun rezultat pentru/i)).not.toBeInTheDocument()
+      await waitFor(() => expect(screen.getByText(/Niciun rezultat pentru/i)).toBeInTheDocument())
+      expect(screen.queryByText(/printre primele rezultate/i)).not.toBeInTheDocument()
+    })
+
+    it('offers a public-entity tag by keyword and keeps it inside the search field', async () => {
+      const { user, input } = setup()
+      expect(screen.queryByRole('button', { name: /spital/i })).not.toBeInTheDocument()
+      await typeUntilSuggested(user, 'spital sibiu')
+      await user.click(screen.getByRole('option', { name: /filtru/i }))
+      expect(input).toHaveValue('sibiu')
+      const chip = screen.getByLabelText('Elimină filtrul Institution type: Hospital')
+      expect(input.closest('[role="group"]')).toContainElement(chip)
+      await waitFor(() => expect(searchEntities).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: 'sibiu', entityTags: ['kind::hospital'] }), expect.any(AbortSignal)))
+      await user.click(chip)
+      await waitFor(() => expect(searchEntities).toHaveBeenLastCalledWith(
+        expect.not.objectContaining({ entityTags: ['kind::hospital'] }), expect.any(AbortSignal)))
     })
 
     it('asks for a name when only a chip is left', async () => {
