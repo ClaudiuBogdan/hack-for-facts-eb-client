@@ -1,10 +1,12 @@
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import type {
   DatasetRequestPayload,
+  StatisticsContextNode,
   StatisticsLandingCatalog,
   StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
+  fetchContextTree,
   fetchLandingCatalog,
   fetchStatisticsTerritoryHub,
   fetchUatSnapshot,
@@ -38,6 +40,21 @@ export const statisticsUatSnapshotQueryOptions = (siruta: string) =>
     queryFn: ({ signal }) => fetchUatSnapshot(siruta, signal),
     staleTime: LONG_STALE_TIME,
   })
+
+/**
+ * The INS context tree. It changes when INS restructures its catalog — a few
+ * times a year at most — so it holds for a day and never refetches on focus.
+ */
+export const statisticsContextTreeQueryOptions = () =>
+  queryOptions<readonly StatisticsContextNode[]>({
+    queryKey: ['statistics', 'native-v2', 'context-tree'] as const,
+    queryFn: ({ signal }) => fetchContextTree(signal),
+    staleTime: LONG_STALE_TIME,
+  })
+
+export function useStatisticsContextTree() {
+  return useQuery(statisticsContextTreeQueryOptions())
+}
 
 export function useStatisticsLandingCatalog(
   initialData?: StatisticsLandingCatalog,

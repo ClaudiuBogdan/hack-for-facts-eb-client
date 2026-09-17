@@ -45,7 +45,7 @@ msgstr ""
 msgid ".csv, .tsv, .xlsx, .xls"
 msgstr ".csv, .tsv, .xlsx, .xls"
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:83
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:73
 msgid "· seturi cu date"
 msgstr ""
 
@@ -194,6 +194,11 @@ msgstr ""
 #. placeholder {0}: query.data.totalCount
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:210
 msgid "{0, plural, one {Un rezultat în catalog} few {Toate cele # rezultate în catalog} other {Toate cele # de rezultate în catalog}}"
+msgstr ""
+
+#. placeholder {0}: row.count
+#: src/features/statistics/components/filters/dataset-explorer-theme-tree.tsx:287
+msgid "{0, plural, one {un set cu date} few {# seturi cu date} other {# de seturi cu date}}"
 msgstr ""
 
 #. placeholder {0}: SOCIAL[kind].label
@@ -855,7 +860,7 @@ msgstr ""
 msgid "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 msgstr "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:139
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:162
 msgid "{totalCount, plural, one {un set de date} few {# seturi de date} other {# de seturi de date}}"
 msgstr ""
 
@@ -1309,7 +1314,7 @@ msgstr ""
 msgid "Achiziții publice"
 msgstr "Achiziții publice"
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:123
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:111
 msgid "Acoperire"
 msgstr ""
 
@@ -1370,11 +1375,11 @@ msgstr "Acoperire teritorială"
 msgid "Acoperire: {0}. Actualizată la {1}."
 msgstr "Acoperire: {0}. Actualizată la {1}."
 
-#: src/features/statistics/lib/explorer-chips.ts:104
+#: src/features/statistics/lib/explorer-chips.ts:108
 msgid "Acoperire: județ"
 msgstr ""
 
-#: src/features/statistics/lib/explorer-chips.ts:102
+#: src/features/statistics/lib/explorer-chips.ts:106
 msgid "Acoperire: UAT"
 msgstr ""
 
@@ -2480,7 +2485,7 @@ msgid "anual"
 msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:95
-#: src/features/statistics/lib/explorer-chips.ts:112
+#: src/features/statistics/lib/explorer-chips.ts:116
 msgid "Anual"
 msgstr "Anual"
 
@@ -3635,7 +3640,7 @@ msgstr ""
 msgid "Catalogul INS declară intervalul {catalogFrom}–{catalogTo}; observațiile încărcate aici acoperă {0}."
 msgstr "Catalogul INS declară intervalul {catalogFrom}–{catalogTo}; observațiile încărcate aici acoperă {0}."
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:187
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:212
 msgid "Catalogul INS este gol"
 msgstr ""
 
@@ -3643,7 +3648,7 @@ msgstr ""
 #~ msgid "Catalogul INS Tempo, filtrabil după temă, periodicitate și acoperire. Doar o parte dintre seturile catalogate au observații încărcate."
 #~ msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:100
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:116
 msgid "Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui."
 msgstr ""
 
@@ -3752,7 +3757,7 @@ msgstr ""
 msgid "Cauta dupa CUI"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:120
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:143
 msgid "Caută după denumire sau cod de matrice"
 msgstr ""
 
@@ -3846,7 +3851,7 @@ msgstr ""
 msgid "Cauta ONG dupa CUI"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:121
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:144
 msgid "Caută seturi de date"
 msgstr ""
 
@@ -3918,7 +3923,7 @@ msgstr ""
 msgid "Căutare limitată"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:114
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:137
 msgid "Căutare și filtre"
 msgstr ""
 
@@ -5321,7 +5326,7 @@ msgid "Context teritorial"
 msgstr "Context teritorial"
 
 #. placeholder {0}: chip.value ?? ''
-#: src/features/statistics/lib/explorer-chips.ts:96
+#: src/features/statistics/lib/explorer-chips.ts:100
 msgid "Conține: {0}"
 msgstr ""
 
@@ -6553,11 +6558,11 @@ msgstr ""
 msgid "Date învechite — sincronizarea este suspendată."
 msgstr ""
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:142
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:130
 msgid "Date la nivel de județ"
 msgstr ""
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:132
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:120
 msgid "Date la nivel de localitate"
 msgstr ""
 
@@ -9381,7 +9386,7 @@ msgstr ""
 #: src/features/legal/components/legislation-changes-feed.tsx:300
 #: src/features/legal/components/legislation-gazette-directory.tsx:203
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:621
-#: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:37
+#: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:51
 #: src/features/statistics/components/filters/statistics-filter-trigger-button.tsx:28
 #: src/features/statistics/components/filters/statistics-filter-trigger-button.tsx:32
 #: src/routes/justitie.cautare.tsx:200
@@ -9458,7 +9463,7 @@ msgstr ""
 msgid "Filtrează obiectivele mock-first fără a pierde dovada sursei."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:107
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:123
 msgid "Filtrează seturile de date"
 msgstr ""
 
@@ -9470,7 +9475,7 @@ msgstr ""
 msgid "Filtrele pot fi păstrate în URL și reîncercate."
 msgstr ""
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:40
+#: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:54
 msgid "Filtrele se aplică imediat. Adresa paginii le păstrează."
 msgstr ""
 
@@ -10915,7 +10920,7 @@ msgstr ""
 msgid "Încearcă din nou"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:165
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:190
 msgid "Încearcă din nou fără să pierzi filtrele curente."
 msgstr ""
 
@@ -10936,7 +10941,7 @@ msgstr ""
 msgid "Încearcă din nou mai târziu. Modul mock rămâne izolat în adaptorul de feature."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:179
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:204
 msgid "Încearcă termeni mai generali sau renunță la câteva filtre."
 msgstr ""
 
@@ -12883,7 +12888,7 @@ msgid "lunar"
 msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:101
-#: src/features/statistics/lib/explorer-chips.ts:116
+#: src/features/statistics/lib/explorer-chips.ts:120
 msgid "Lunar"
 msgstr "Lunar"
 
@@ -14366,7 +14371,7 @@ msgstr ""
 msgid "Niciun set de date cu observații nu se potrivește."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:178
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:203
 msgid "Niciun set nu corespunde filtrelor"
 msgstr ""
 
@@ -15442,7 +15447,7 @@ msgstr "Nu am putut încărca seria de date"
 msgid "Nu am putut încărca setul de date"
 msgstr "Nu am putut încărca setul de date"
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:161
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:186
 msgid "Nu am putut încărca seturile de date"
 msgstr ""
 
@@ -16957,13 +16962,13 @@ msgstr "Perioadă:"
 msgid "Period: {from} – {to}"
 msgstr "Perioada: {from} – {to}"
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:102
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:90
 #: src/features/statistics/components/source-provenance-drawer.tsx:90
 msgid "Periodicitate"
 msgstr ""
 
 #. placeholder {0}: explorerPeriodicityLabel(chip.value as ExplorerPeriodicity)
-#: src/features/statistics/lib/explorer-chips.ts:100
+#: src/features/statistics/lib/explorer-chips.ts:104
 msgid "Periodicitate: {0}"
 msgstr ""
 
@@ -18636,7 +18641,7 @@ msgstr ""
 #: src/features/statistics/components/territory-search.tsx:84
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:147
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:547
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:168
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:193
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:115
 msgid "Reîncearcă"
 msgstr "Reîncearcă"
@@ -19109,7 +19114,7 @@ msgstr ""
 #: src/features/landing/components/search/landing-search.tsx:607
 #: src/features/landing/components/search/landing-search.tsx:658
 #: src/features/legal/components/legislation-act-finder.tsx:372
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:195
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:220
 msgid "Rezultate"
 msgstr "Rezultate"
 
@@ -20428,7 +20433,7 @@ msgstr "Disponibil live din baza de date (fără utilizarea motorului de căutar
 msgid "Serverul a răspuns, dar a respins această interogare. Filtrele selectate pot fi în afara a ceea ce poate servi; încercați să le simplificați sau reîncercați."
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:188
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:213
 msgid "Serverul nu a returnat niciun set de date catalogat."
 msgstr ""
 
@@ -20558,7 +20563,7 @@ msgstr ""
 msgid "Seturi de date cu observații"
 msgstr ""
 
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:97
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:113
 msgid "Seturi de date INS"
 msgstr ""
 
@@ -21540,7 +21545,7 @@ msgstr ""
 #: src/features/landing/components/search/landing-search.tsx:525
 #: src/features/statistics/components/hub/hub-place-finder.tsx:34
 #: src/features/statistics/components/territory-search.tsx:55
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:122
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:145
 msgid "Șterge căutarea"
 msgstr "Șterge căutarea"
 
@@ -21567,8 +21572,8 @@ msgstr "Șterge doar filtrul teritorial"
 #: src/features/legal/components/legislation-acts-directory.tsx:329
 #: src/features/legal/components/legislation-changes-feed.tsx:431
 #: src/features/parliament/components/parliament-list-surface.tsx:163
-#: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:57
-#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:182
+#: src/features/statistics/components/filters/dataset-explorer-filter-sheet.tsx:78
+#: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:207
 #: src/routes/justitie.cautare.tsx:372
 msgid "Șterge filtrele"
 msgstr ""
@@ -22133,12 +22138,12 @@ msgstr ""
 msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
 msgstr ""
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:80
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:70
 msgid "Temă"
 msgstr ""
 
-#. placeholder {0}: explorerContextLabel(chip.value)
-#: src/features/statistics/lib/explorer-chips.ts:98
+#. placeholder {0}: explorerContextLabel(chip.value, contextIndex)
+#: src/features/statistics/lib/explorer-chips.ts:102
 msgid "Temă: {0}"
 msgstr ""
 
@@ -23106,7 +23111,7 @@ msgstr ""
 msgid "Toate stenogramele"
 msgstr ""
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:52
+#: src/features/statistics/components/filters/dataset-explorer-theme-tree.tsx:82
 msgid "Toate temele"
 msgstr ""
 
@@ -23438,7 +23443,7 @@ msgid "trimestrial"
 msgstr ""
 
 #: src/features/statistics/components/comparison-pins.tsx:98
-#: src/features/statistics/lib/explorer-chips.ts:114
+#: src/features/statistics/lib/explorer-chips.ts:118
 msgid "Trimestrial"
 msgstr "Trimestrial"
 

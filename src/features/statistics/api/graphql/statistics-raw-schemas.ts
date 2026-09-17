@@ -96,6 +96,29 @@ export const insDatasetsExplorerResponseRawSchema = z.object({
   }),
 })
 
+/**
+ * A context tree node. `level` and `parent_code` are `.nullish()` because the
+ * SDL leaves them nullable; the mapper drops any node that arrives without the
+ * level, since a node with no place in the hierarchy cannot be drawn in it.
+ */
+export const insContextNodeRawSchema = z.object({
+  code: z.string(),
+  name_ro: z.string().nullish(),
+  name_en: z.string().nullish(),
+  level: z.number().nullish(),
+  parent_code: z.string().nullish(),
+})
+
+const insContextPageRawSchema = z.object({
+  nodes: z.array(insContextNodeRawSchema),
+  pageInfo: z.object({ totalCount: z.number() }),
+})
+
+export const statisticsContextTreeResponseRawSchema = z.object({
+  firstPage: insContextPageRawSchema,
+  secondPage: insContextPageRawSchema,
+})
+
 export type InsTerritoryNodeRaw = z.infer<typeof insTerritoryNodeRawSchema>
 export type InsDatasetNodeRaw = z.infer<typeof insDatasetNodeRawSchema>
 

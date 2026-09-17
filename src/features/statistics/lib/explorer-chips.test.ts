@@ -5,6 +5,10 @@ import {
   explorerContextLabel,
   explorerPeriodicityLabel,
 } from './explorer-chips'
+import {
+  buildStatisticsContextTree,
+  indexStatisticsContextTree,
+} from './context-tree'
 
 describe('buildExplorerChips', () => {
   it('returns no chips for an empty search', () => {
@@ -82,7 +86,7 @@ describe('explorerChipLabel', () => {
       judet: true,
     })
 
-    expect(chips.map(explorerChipLabel)).toEqual([
+    expect(chips.map((chip) => explorerChipLabel(chip))).toEqual([
       'Conține: turism',
       'Temă: Economic',
       'Periodicitate: Anual',
@@ -99,6 +103,27 @@ describe('explorerContextLabel', () => {
 
   it('renders nothing for a missing code', () => {
     expect(explorerContextLabel(null)).toBe('')
+  })
+
+  it('names a subdomain once the context tree is loaded', () => {
+    const index = indexStatisticsContextTree(
+      buildStatisticsContextTree(
+        [
+          { code: '1', level: 0, parentCode: null, nameRo: 'A. STATISTICA SOCIALA', nameEn: null },
+          { code: '10', level: 1, parentCode: '1', nameRo: 'A.1 POPULATIE', nameEn: null },
+          { code: '1012', level: 2, parentCode: '10', nameRo: '2. POPULATIA DUPA DOMICILIU', nameEn: null },
+        ],
+        'ro',
+      ),
+    )
+
+    expect(explorerContextLabel('1012', index)).toBe('2. POPULATIA DUPA DOMICILIU')
+    expect(
+      explorerChipLabel(
+        { id: 'context', kind: 'context', value: '1012', next: {} },
+        index,
+      ),
+    ).toBe('Temă: 2. POPULATIA DUPA DOMICILIU')
   })
 })
 

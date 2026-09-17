@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro'
 import { INS_ROOT_CONTEXTS } from '@/lib/ins/ins-metric-registry'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
+import type { StatisticsContextIndex } from './context-tree'
 
 /** Periodicity values the explorer can filter on, in display order. */
 export const EXPLORER_PERIODICITY_VALUES = [
@@ -90,12 +91,15 @@ export function buildExplorerChips(
 }
 
 /** Localized chip label, e.g. `Periodicitate: Anual`. */
-export function explorerChipLabel(chip: ExplorerChip): string {
+export function explorerChipLabel(
+  chip: ExplorerChip,
+  contextIndex?: StatisticsContextIndex,
+): string {
   switch (chip.kind) {
     case 'q':
       return t`Conține: ${chip.value ?? ''}`
     case 'context':
-      return t`Temă: ${explorerContextLabel(chip.value)}`
+      return t`Temă: ${explorerContextLabel(chip.value, contextIndex)}`
     case 'frecventa':
       return t`Periodicitate: ${explorerPeriodicityLabel(chip.value as ExplorerPeriodicity)}`
     case 'uat':
@@ -118,11 +122,18 @@ export function explorerPeriodicityLabel(value: ExplorerPeriodicity): string {
 }
 
 /**
- * Root-context label for a `rootContextCode`. Unknown codes render as the code
- * itself rather than as an empty chip.
+ * The label of the selected context. The tree names every level of the INS
+ * hierarchy; without it — the rail's read has not landed yet — only the eight
+ * domains have a name, and an unknown code renders as itself rather than as an
+ * empty chip.
  */
-export function explorerContextLabel(code: string | null): string {
+export function explorerContextLabel(
+  code: string | null,
+  contextIndex?: StatisticsContextIndex,
+): string {
   if (!code) return ''
+  const fromTree = contextIndex?.get(code)?.node.label
+  if (fromTree) return fromTree
   const root = INS_ROOT_CONTEXTS.find((entry) => entry.code === code)
   return root ? root.label : code
 }

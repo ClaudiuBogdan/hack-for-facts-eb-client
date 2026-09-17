@@ -105,6 +105,34 @@ export const INS_CONTEXTS_QUERY = `
   }
 `
 
+/**
+ * The whole INS context tree in one round trip.
+ *
+ * `insContexts` caps `limit` at 200 server-side, so the tree arrives as two
+ * aliased pages; it held 340 nodes when this shipped (8 domains, 70 groups,
+ * 262 subdomains, verified live 2026-09-17), and the fetcher logs a warning if
+ * a future catalog outgrows the two pages.
+ *
+ * Only the fields the rail draws are selected. Two the deployed API makes
+ * useless here (probed against dev-chronos-api on 2026-09-17, where the
+ * sibling server sources say otherwise — trust the probe, re-probe before
+ * relying on either): `path` comes back as a display string of ancestor names,
+ * not the ltree identifier, and `matrix_count` is a subtree roll-up filled on
+ * the eight domains alone, `0` on every group and subdomain.
+ */
+export const STATISTICS_CONTEXT_TREE_QUERY = `
+  query StatisticsContextTree {
+    firstPage: insContexts(limit: 200, offset: 0) {
+      nodes { code name_ro name_en level parent_code }
+      pageInfo { totalCount }
+    }
+    secondPage: insContexts(limit: 200, offset: 200) {
+      nodes { code name_ro name_en level parent_code }
+      pageInfo { totalCount }
+    }
+  }
+`
+
 export const INS_DATASETS_QUERY = `
   query InsDatasets($filter: InsDatasetFilterInput, $limit: Int, $offset: Int) {
     insDatasets(filter: $filter, limit: $limit, offset: $offset) {

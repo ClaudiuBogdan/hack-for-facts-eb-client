@@ -293,6 +293,62 @@ Known follow-ups from the review of 2026-09-17, deliberately not in scope:
 - Two territories that differ only in legal form („COMUNA" / „ORAȘ") share a
   bar label on the comparisons chart; the legend and tooltip keep the names.
 
+## 6c. The catalog rail is INS Tempo's own hierarchy (2026-09-17)
+
+The rail's eight themes were the eight INS domains and nothing else, while
+INS Tempo itself navigates a three-level tree. Decision: the rail draws that
+tree, the one a reader recognises from
+`statistici.insse.ro:8077/tempo-online` — domain (`A. STATISTICA SOCIALA`),
+group (`A.4 FORTA DE MUNCA`), subdomain (`4. SOMERI INREGISTRATI`) — as a
+WAI-ARIA tree with one tab stop, arrows to walk and open it, and the branch
+holding the current selection open on arrival.
+
+Shape of the live tree, read 2026-09-17: 340 nodes — 8 domains, 70 groups,
+262 subdomains. Every dataset hangs off a subdomain; the median subdomain
+holds 3 or 4 of the 1,916 matrices and the largest holds 61.
+
+What each level does:
+
+- **Domain** filters as `rootContextCode` and carries the loaded-dataset
+  count the landing catalog already reads.
+- **Subdomain** filters as `contextCode`, the exact context a dataset hangs
+  from.
+- **Group** only opens. The server has no filter between the two — a group
+  code matches no dataset row — so a group that looked selectable would
+  return an empty list. `isSelectableContextLevel` is the single place that
+  says so.
+
+One search param still carries the whole hierarchy (`?context=`), because
+the eight domain codes are a fixed registry: anything else is an exact
+context. The tree is one read of two aliased pages (`insContexts` caps a
+page at 200 rows), cached for a day, and the eight domains render from the
+registry even when that read fails, so the rail never filters worse than it
+did before the tree existed.
+
+INS glues the caption of its own press-release links onto a context name
+(`A.1 POPULATIE SI STRUCTURA DEMOGRAFICA Comunicate de presa`), so the rail
+cuts the caption off; `cleanContextName` only fires on names carrying one of
+the two known captions, which leaves the sentence-case sustainable-
+development names alone.
+
+Follow-ups, deliberately not in scope:
+
+- A group cannot filter. Lifting that needs a server-side filter over a
+  context subtree (`contextCodes: [String!]` or a path prefix on
+  `InsDatasetFilterInput`), after which the group row becomes selectable
+  with no change to the URL contract.
+- Only domains show a count. The deployed API fills `matrix_count` on the
+  eight domains and returns `0` for every group and subdomain (probed against
+  dev-chronos-api on 2026-09-17; the sibling server sources read as a direct
+  per-context count, so the two disagree and the probe wins until it changes).
+  Counting the other 332 nodes client-side would mean reading the whole
+  catalog, so the same server change that unlocks the group filter should
+  carry counts per node — and one caveat with it: `matrix_count` counts the
+  whole catalog while the domain counts here are loaded-only, and two
+  populations must never share a column without saying so.
+- The tree has no search of its own, unlike the INS page. The dataset search
+  beside the list already finds a dataset by name or code.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

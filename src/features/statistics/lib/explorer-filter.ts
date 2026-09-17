@@ -1,5 +1,6 @@
 import type { InsDatasetFilterInput } from '@/schemas/ins'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
+import { isRootContextCode } from './context-tree'
 
 /** Rows per explorer page. */
 export const EXPLORER_PAGE_SIZE = 25
@@ -27,7 +28,14 @@ export function buildDatasetFilterInput(
   }
 
   if (search.q) filter.search = search.q
-  if (search.context) filter.rootContextCode = search.context
+  // One param carries the whole hierarchy: a domain filters the subtree under
+  // it, anything deeper is the exact context a dataset hangs from. The server
+  // has no filter between the two, which is why the rail's middle level opens
+  // instead of filtering (`isSelectableContextLevel`).
+  if (search.context) {
+    if (isRootContextCode(search.context)) filter.rootContextCode = search.context
+    else filter.contextCode = search.context
+  }
   if (search.frecventa) filter.periodicity = [...search.frecventa]
   if (search.uat) filter.hasUatData = true
   if (search.judet) filter.hasCountyData = true

@@ -1,6 +1,7 @@
 import type {
   DatasetRequestPayload,
   DatasetRequestResult,
+  StatisticsContextNode,
   StatisticsHubData,
   StatisticsLandingCatalog,
   StatisticsTerritoryHubResult,
@@ -14,11 +15,13 @@ import {
   fetchStatisticsTerritoryHubMock,
   submitDatasetRequestMock,
 } from './statistics-api.mock'
+import { MOCK_CONTEXT_TREE } from '../mocks/statistics-explorer-fixtures'
 import {
   fetchStatisticsTerritoryHubLive,
   submitDatasetRequestLive,
 } from './statistics-api.live'
 import {
+  fetchStatisticsContextTree,
   fetchStatisticsLandingCatalog,
   fetchStatisticsUatSnapshot,
 } from './graphql/statistics-fetchers'
@@ -45,6 +48,20 @@ export async function fetchLandingCatalog(
   signal?: AbortSignal,
 ): Promise<StatisticsLandingCatalog> {
   return fetchStatisticsLandingCatalog(signal ? { signal } : {})
+}
+
+/**
+ * The INS context tree behind the catalog rail. In mock mode it is the slice
+ * the mock datasets hang from, so the rail filters the same rows either way.
+ */
+export async function fetchContextTree(
+  signal?: AbortSignal,
+): Promise<readonly StatisticsContextNode[]> {
+  if (isStatisticsMockEnabled()) {
+    return Promise.resolve(MOCK_CONTEXT_TREE)
+  }
+
+  return fetchStatisticsContextTree(signal ? { signal } : {})
 }
 
 export async function fetchUatSnapshot(

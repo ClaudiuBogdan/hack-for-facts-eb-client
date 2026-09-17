@@ -5,12 +5,17 @@
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-dataset-explorer-flow/).
  * The list is one operation, `InsDatasetsExplorer`, whose `filter`
  * variable is built by `buildDatasetFilterInput`; the rail reads the theme
- * counts from `StatisticsLandingCatalog`. Variable-matched variants are
- * registered most-specific-first; the unfiltered fallback is registered last.
+ * counts from `StatisticsLandingCatalog` and the INS domain tree from
+ * `StatisticsContextTree`. Variable-matched variants are registered
+ * most-specific-first; the unfiltered fallback is registered last.
+ *
+ * The list fixtures predate the context tree, so their `context_*` fields
+ * carry an older API shape than `context-tree.json`; nothing asserts on them.
  *
  * `filter` keys must be listed in the order `buildDatasetFilterInput` inserts
- * them (dataStatus, search, rootContextCode, periodicity, hasUatData,
- * hasCountyData) — the fixture matcher compares `JSON.stringify` output.
+ * them (dataStatus, search, rootContextCode or contextCode, periodicity,
+ * hasUatData, hasCountyData) — the fixture matcher compares `JSON.stringify`
+ * output.
  */
 
 import { test, expect } from '../utils/integration-base'
@@ -21,8 +26,10 @@ const ROUTE = '/statistici/seturi'
 const BOTH_STATUSES = ['AVAILABLE', 'CATALOG_ONLY']
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  // The rail counts themes from the catalog summary.
+  // The rail counts themes from the catalog summary and draws the INS
+  // hierarchy from the context tree (the live 340 nodes, recorded).
   await mockApi.mockGraphQL('StatisticsLandingCatalog', 'catalog')
+  await mockApi.mockGraphQL('StatisticsContextTree', 'context-tree')
 
   // Page 2 keys on the offset, not the filter.
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'page-2', {
@@ -46,6 +53,11 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   })
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'context', {
     variables: { filter: { dataStatus: BOTH_STATUSES, rootContextCode: '3' } },
+  })
+
+  // A subdomain filters on the exact context the datasets hang from.
+  await mockApi.mockGraphQL('InsDatasetsExplorer', 'context-subdomain', {
+    variables: { filter: { dataStatus: BOTH_STATUSES, contextCode: '1508' } },
   })
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'annual', {
     variables: { filter: { dataStatus: BOTH_STATUSES, periodicity: ['ANNUAL'] } },
@@ -119,7 +131,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
 
     const rail = page.getByRole('complementary', { name: 'Filtrează seturile de date' })
-    await rail.getByRole('radio', { name: /^Finanțe/ }).click()
+    await rail.getByText(/^Finanțe$/).click()
     // Strings that parse as JSON round-trip quoted; `3` alone would come back a number.
     await expect.poll(() => searchParam(page, 'context')).toBe('"3"')
 
@@ -129,6 +141,35 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await expect(page.getByRole('button', { name: 'Elimină filtrul Temă: Finanțe' })).toBeVisible({ timeout: 15000 })
     await expect(page.getByRole('button', { name: 'Elimină filtrul Periodicitate: Anual' })).toBeVisible()
     await expect(page.getByText(/^un set de date$/)).toBeVisible()
+  })
+
+  test('the rail opens the INS hierarchy and filters on a subdomain', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+    await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
+
+    const rail = page.getByRole('complementary', { name: 'Filtrează seturile de date' })
+
+    // A domain filters and opens; the group under it only opens, because the
+    // server has no filter between a domain and an exact context.
+    // Clicks go through the row text: a treeitem's box wraps its open subtree,
+    // so the centre of an open row belongs to one of its children.
+    await rail.getByText(/^Social$/).click()
+    const group = rail.getByRole('treeitem', { name: /^A\.4 FORTA DE MUNCA/ })
+    await expect(group).toBeVisible({ timeout: 15000 })
+    await expect(group).not.toHaveAttribute('aria-selected')
+
+    await rail.getByText(/^A\.4 FORTA DE MUNCA$/).click()
+    await rail.getByText('4. SOMERI INREGISTRATI').click()
+
+    await expect.poll(() => searchParam(page, 'context')).toBe('"1508"')
+    await expect(
+      page.getByRole('button', { name: 'Elimină filtrul Temă: 4. SOMERI INREGISTRATI' }),
+    ).toBeVisible({ timeout: 15000 })
+    // The count is the proof the `contextCode` filter reached the server: the
+    // unfiltered fallback fixture would answer 1,898 and still carry this row.
+    await expect(page.getByText(/^3 seturi de date$/)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Șomerii înregistrați pe sexe' })).toBeVisible()
   })
 
   test.describe('on a phone', () => {
@@ -141,7 +182,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
 
       await page.getByRole('button', { name: 'Filtre', exact: true }).click()
       const sheet = page.getByRole('dialog', { name: 'Filtre' })
-      await sheet.getByRole('radio', { name: /^Finanțe/ }).click()
+      await sheet.getByText(/^Finanțe$/).click()
       await expect.poll(() => searchParam(page, 'context')).toBe('"3"')
       await sheet.getByRole('checkbox', { name: 'Anual' }).click()
       await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
@@ -216,7 +257,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
 
     // The rail reflects the URL too.
     const rail = page.getByRole('complementary', { name: 'Filtrează seturile de date' })
-    await expect(rail.getByRole('radio', { name: /^Economic/ })).toHaveAttribute('aria-checked', 'true')
+    await expect(rail.getByRole('treeitem', { name: /^Economic/ })).toHaveAttribute('aria-selected', 'true')
     await expect(rail.getByRole('checkbox', { name: 'Anual' })).toBeChecked()
     await expect(rail.getByRole('checkbox', { name: 'Date la nivel de localitate' })).toBeChecked()
     await expect(rail.getByRole('checkbox', { name: 'Date la nivel de județ' })).toBeChecked()

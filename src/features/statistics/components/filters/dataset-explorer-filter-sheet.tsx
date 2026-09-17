@@ -9,6 +9,10 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import type { StatisticsDatasetExplorerSearch, StatisticsLandingCatalog } from '@/schemas/statistics'
+import type {
+  StatisticsContextIndex,
+  StatisticsContextTreeNode,
+} from '../../lib/context-tree'
 import { countActiveExplorerFilters } from '../../lib/explorer-filter'
 import { DatasetExplorerFilterControls } from './dataset-explorer-filter-controls'
 
@@ -18,6 +22,8 @@ type Props = {
   readonly search: StatisticsDatasetExplorerSearch
   readonly onChange: (next: StatisticsDatasetExplorerSearch) => void
   readonly catalog?: StatisticsLandingCatalog
+  readonly contextRoots: readonly StatisticsContextTreeNode[]
+  readonly contextIndex: StatisticsContextIndex
 }
 
 /**
@@ -26,7 +32,15 @@ type Props = {
  * selection. The status control stays outside — see
  * `DatasetExplorerStatusToggle`.
  */
-export function DatasetExplorerFilterSheet({ open, onOpenChange, search, onChange, catalog }: Props) {
+export function DatasetExplorerFilterSheet({
+  open,
+  onOpenChange,
+  search,
+  onChange,
+  catalog,
+  contextRoots,
+  contextIndex,
+}: Props) {
   const activeCount = countActiveExplorerFilters(search)
 
   return (
@@ -42,7 +56,14 @@ export function DatasetExplorerFilterSheet({ open, onOpenChange, search, onChang
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <DatasetExplorerFilterControls search={search} onChange={onChange} catalog={catalog} idPrefix="sheet" />
+          <DatasetExplorerFilterControls
+            search={search}
+            onChange={onChange}
+            catalog={catalog}
+            contextRoots={contextRoots}
+            contextIndex={contextIndex}
+            idPrefix="sheet"
+          />
         </div>
 
         <SheetFooter>

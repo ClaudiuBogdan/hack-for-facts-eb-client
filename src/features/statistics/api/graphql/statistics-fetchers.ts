@@ -6,6 +6,7 @@ import {
   fetchInsSourceVector,
   fetchInsSourceInspection,
 } from './ins-source-fetcher'
+import { createLogger } from '@/lib/logger'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
 import { SERIES_MAX_ROWS } from '../../lib/dataset-selection'
@@ -17,6 +18,7 @@ import type {
   NativeInsUatDatasetGroup,
 } from '@/schemas/ins'
 import type {
+  StatisticsContextNode,
   StatisticsDatasetPage,
   StatisticsDatasetSeries,
   StatisticsDatasetTier0,
@@ -29,6 +31,7 @@ import type {
 import {
   INS_DATASETS_EXPLORER_QUERY,
   INS_TERRITORIES_QUERY,
+  STATISTICS_CONTEXT_TREE_QUERY,
   STATISTICS_RELATED_DATASETS_QUERY,
   STATISTICS_DATASET_TIER0_QUERY,
   STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
@@ -46,6 +49,7 @@ import {
 import {
   insDatasetsExplorerResponseRawSchema,
   insTerritoriesResponseRawSchema,
+  statisticsContextTreeResponseRawSchema,
   statisticsRelatedDatasetsRawSchema,
   statisticsDatasetTier0ResponseRawSchema,
   statisticsTerritoryHubContextResponseRawSchema,
@@ -60,6 +64,8 @@ import {
  * parse the wire payload before mapping it, so a server contract change fails
  * loudly at the query boundary instead of rendering as blank cells.
  */
+
+const logger = createLogger('statistics-fetchers')
 
 export async function searchInsTerritories(params: {
   filter?: InsTerritoryFilterInput
@@ -141,6 +147,54 @@ export async function fetchStatisticsLandingCatalog(
       count: parsed[`t${code}`].pageInfo.totalCount,
     })),
   }
+}
+
+/**
+ * The INS context tree — the domain hierarchy the catalog rail is drawn from.
+ *
+ * Two aliased pages because the server caps a context page at 200 rows. A tree
+ * that outgrows both pages would silently lose its tail, so the truncation is
+ * logged rather than swallowed; the rail still draws what arrived.
+ */
+export async function fetchStatisticsContextTree(
+  params: {
+    signal?: AbortSignal
+  } = {},
+): Promise<readonly StatisticsContextNode[]> {
+  const response = await graphqlQuery<unknown>(
+    STATISTICS_CONTEXT_TREE_QUERY,
+    undefined,
+    {
+      auth: 'none',
+      operationName: 'StatisticsContextTree',
+      signal: params.signal,
+    },
+  )
+
+  params.signal?.throwIfAborted()
+  const parsed = statisticsContextTreeResponseRawSchema.parse(response)
+  const nodes = [...parsed.firstPage.nodes, ...parsed.secondPage.nodes]
+
+  if (parsed.firstPage.pageInfo.totalCount > nodes.length) {
+    logger.warn('INS context tree truncated by the two-page read', {
+      fetched: nodes.length,
+      totalCount: parsed.firstPage.pageInfo.totalCount,
+    })
+  }
+
+  return nodes.flatMap((node) =>
+    node.level === null || node.level === undefined
+      ? []
+      : [
+          {
+            code: node.code,
+            nameRo: node.name_ro ?? null,
+            nameEn: node.name_en ?? null,
+            level: node.level,
+            parentCode: node.parent_code ?? null,
+          },
+        ],
+  )
 }
 
 /** „Locul tău" snapshot — latest values + identity for one SIRUTA, one POST. */

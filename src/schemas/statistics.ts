@@ -244,6 +244,8 @@ export interface StatisticsDatasetSummary {
   readonly hasSiruta: boolean
   readonly dataStatus: StatisticsDatasetDataStatus
   readonly latestPeriod: string | null
+  /** The INS context the dataset hangs from — a leaf of the context tree. */
+  readonly contextCode: string | null
   readonly contextNameRo: string | null
   readonly contextPath: string | null
 }
@@ -416,6 +418,22 @@ export interface StatisticsLandingCatalog {
   readonly loadedCount: number
   readonly catalogCount: number
   readonly themes: readonly StatisticsThemeCount[]
+}
+
+/**
+ * One node of the INS Tempo context tree, exactly as INS publishes it.
+ *
+ * Three levels, no deeper: `0` is a domain (A…H), `1` a group (A.1, A.2…) and
+ * `2` a subdomain — the level every dataset hangs from. `parentCode` is the
+ * only edge the tree trusts: the deployed API serves `path` as a display
+ * string of ancestor names (probed 2026-09-17), so it cannot be walked.
+ */
+export interface StatisticsContextNode {
+  readonly code: string
+  readonly nameRo: string | null
+  readonly nameEn: string | null
+  readonly level: number
+  readonly parentCode: string | null
 }
 
 // ---------------------------------------------------------------------------

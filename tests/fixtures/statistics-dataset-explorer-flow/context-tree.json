@@ -1,0 +1,2398 @@
+{
+  "data": {
+    "firstPage": {
+      "nodes": [
+        {
+          "code": "1",
+          "name_ro": "A. STATISTICA SOCIALA",
+          "name_en": "A. SOCIAL STATISTICS",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "2",
+          "name_ro": "B. STATISTICA ECONOMICA",
+          "name_en": "B. ECONOMIC STATISTICS",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "3",
+          "name_ro": "C. FINANTE",
+          "name_en": "C. FINANCES",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "4",
+          "name_ro": "D. JUSTITIE",
+          "name_en": "D. JUSTICE",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "5",
+          "name_ro": "E. MEDIU INCONJURATOR",
+          "name_en": "E. ENVIRONMENT",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "6",
+          "name_ro": "F. UTILITATI PUBLICE SI ADMINISTRAREA TERITORIULUI",
+          "name_en": "F. PUBLIC UTILITIES AND TERRITORY ADMINISTRATION",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "8",
+          "name_ro": "H. DEZVOLTARE DURABILA - Tinte 2030 ( Detalii )",
+          "name_en": "H. SUSTAINABLE DEVELOPMENT - 2030 TARGETS",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "7",
+          "name_ro": "G. DEZVOLTARE DURABILA - Orizont 2020 ( Detalii )",
+          "name_en": "G. SUSTAINABLE DEVELOPMENT - 2020 HORIZON",
+          "level": 0,
+          "parent_code": null
+        },
+        {
+          "code": "10",
+          "name_ro": "A.1 POPULATIE SI STRUCTURA DEMOGRAFICA Comunicate de presa",
+          "name_en": "A.1 POPULATION AND ITS DEMOGRAPHIC STRUCTURE Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "11",
+          "name_ro": "A.2 MISCAREA NATURALA A POPULATIEI Comunicate de presa",
+          "name_en": "A.2 VITAL STATISTICS Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "12",
+          "name_ro": "A.3 MISCAREA MIGRATORIE A POPULATIEI Comunicate de presa",
+          "name_en": "A.3 INTERNAL AND INTERNATIONAL MIGRATION Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "15",
+          "name_ro": "A.4 FORTA DE MUNCA Forta de munca si castiguri salariale-Comunicate de presa ; Ocuparea si somajul-Comunicate de presa",
+          "name_en": "A.4 LABOUR FORCE Labor force and salary earnings-Press releases ; Employment and unemployment-Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "20",
+          "name_ro": "A.5 VENITURI SI CONDITII DE VIATA Comunicate de presa",
+          "name_en": "A.5 INCOME AND LIVING CONDITIONS Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "21",
+          "name_ro": "A.6 PROTECTIE SOCIALA Comunicate de presa",
+          "name_en": "A.6 SOCIAL PROTECTION Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "25",
+          "name_ro": "A.7 EDUCATIE Comunicate de presa",
+          "name_en": "A.7 EDUCATION Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "27",
+          "name_ro": "A.8 EDUCATIA ADULTILOR",
+          "name_en": "A.8 ADULT EDUCATION",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "30",
+          "name_ro": "A.9 SANATATE Comunicate de presa",
+          "name_en": "A.9 HEALTH Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "32",
+          "name_ro": "A.10 CULTURA Comunicate de presa",
+          "name_en": "A.10 CULTURE Press releases",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "33",
+          "name_ro": "A.11 SPORT",
+          "name_en": "A.11 SPORT",
+          "level": 1,
+          "parent_code": "1"
+        },
+        {
+          "code": "35",
+          "name_ro": "B.1 CONTURI NATIONALE Comunicate de presa",
+          "name_en": "B.1 NATIONAL ACCOUNTS Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "37",
+          "name_ro": "B.2 CERCETARE, DEZVOLTARE, INOVARE Comunicate de presa",
+          "name_en": "B.2 RESEARCH, DEVELOPMENT, INNOVATION Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "39",
+          "name_ro": "B.3 UTILIZAREA TIC",
+          "name_en": "B.3 ICT USAGE",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "40",
+          "name_ro": "B.4 PRETURI Comunicate de presa",
+          "name_en": "B.4 PRICES Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "45",
+          "name_ro": "B.5 AGRICULTURA Comunicate de presa",
+          "name_en": "B.5 AGRICULTURE Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "47",
+          "name_ro": "B.6 SILVICULTURA Comunicate de presa",
+          "name_en": "B.6 SILVICULTURE Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "50",
+          "name_ro": "B.7 INDUSTRIE Comunicate de presa",
+          "name_en": "B.7 INDUSTRY Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "51",
+          "name_ro": "B.8 ENERGIE Comunicate de presa",
+          "name_en": "B.8 ENERGY Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "52",
+          "name_ro": "B.9 CONSTRUCTII Comunicate de presa",
+          "name_en": "B.9 CONSTRUCTIONS Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "53",
+          "name_ro": "B.10 LOCUINTE Comunicate de presa",
+          "name_en": "B.10 DWELLINGS Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "54",
+          "name_ro": "B.11 INVESTITII Comunicate de presa",
+          "name_en": "B.11 INVESTMENTS Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "55",
+          "name_ro": "B.12 INTREPRINDERI Comunicate de presa",
+          "name_en": "B.12 ENTERPRISES Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "56",
+          "name_ro": "B.13 REGISTRUL STATISTIC AL INTREPRINDERILOR",
+          "name_en": "B.13 STATISTICAL BUSINESS REGISTER",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "57",
+          "name_ro": "B.14 TRANSPORTURI Comunicate de presa",
+          "name_en": "B.14 TRANSPORTS Press release",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "58",
+          "name_ro": "B.15 POSTA SI TELECOMUNICATII Comunicate de presa",
+          "name_en": "B.15 POST AND TELECOMMUNICATIONS Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "60",
+          "name_ro": "B.16 COMERT INTERIOR Comunicate de presa",
+          "name_en": "B.16 DOMESTIC TRADE Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "62",
+          "name_ro": "B.17 COMERT INTERNATIONAL Comunicate de presa",
+          "name_en": "B.17 INTERNATIONAL TRADE Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "63",
+          "name_ro": "B.18 TURISM Comunicate de presa",
+          "name_en": "B.18 TOURISM Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "64",
+          "name_ro": "B.19 SERVICII Comunicate de presa",
+          "name_en": "B.19 SERVICES Press releases",
+          "level": 1,
+          "parent_code": "2"
+        },
+        {
+          "code": "65",
+          "name_ro": "C.1 FINANTE",
+          "name_en": "C.1 FINANCES",
+          "level": 1,
+          "parent_code": "3"
+        },
+        {
+          "code": "66",
+          "name_ro": "D.1 JUSTITIE",
+          "name_en": "D.1 JUSTICE",
+          "level": 1,
+          "parent_code": "4"
+        },
+        {
+          "code": "67",
+          "name_ro": "E.1 MEDIUL INCONJURATOR Comunicate de presa",
+          "name_en": "E.1 ENVIRONMENT Press releases",
+          "level": 1,
+          "parent_code": "5"
+        },
+        {
+          "code": "70",
+          "name_ro": "F.1 UTILITATI PUBLICE Comunicate de presa",
+          "name_en": "F.1 PUBLIC UTILITIES Press releases",
+          "level": 1,
+          "parent_code": "6"
+        },
+        {
+          "code": "75",
+          "name_ro": "F.2 ADMINISTRAREA TERITORIULUI",
+          "name_en": "F.2 TERRITORY ADMINISTRATION",
+          "level": 1,
+          "parent_code": "6"
+        },
+        {
+          "code": "805",
+          "name_ro": "H.1 OBIECTIVUL 1 FARA SARACIE",
+          "name_en": "H.1 GOAL 1 NO POVERTY",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "810",
+          "name_ro": "H.2 OBIECTIVUL 2 FOAMETE ZERO",
+          "name_en": "H.2 GOAL 2 ZERO HUNGER",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "815",
+          "name_ro": "H.3 OBIECTIVUL 3 SANATATE SI BUNASTARE",
+          "name_en": "H.3 GOAL 3 GOOD HEALTH AND WELL-BEING",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "820",
+          "name_ro": "H.4 OBIECTIVUL 4 EDUCATIE DE CALITATE",
+          "name_en": "H.4 GOAL 4 QUALITY EDUCATION",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "825",
+          "name_ro": "H.5 OBIECTIVUL 5 EGALITATE DE GEN",
+          "name_en": "H.5 GOAL 5 GENDER EQUALITY",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "830",
+          "name_ro": "H.6 OBIECTIVUL 6 APA CURATA SI SANITATIE",
+          "name_en": "H.6 GOAL 6 CLEAN WATER AND SANITATION",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "835",
+          "name_ro": "H.7 OBIECTIVUL 7 ENERGIE CURATA SI LA PRETURI ACCESIBILE",
+          "name_en": "H.7 GOAL 7 AFFORDABLE AND CLEAN ENERGY",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "840",
+          "name_ro": "H.8 OBIECTIVUL 8 MUNCA DECENTA SI CRESTERE ECONOMICA",
+          "name_en": "H.8 GOAL 8 DECENT WORK AND ECONOMIC GROWTH",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "845",
+          "name_ro": "H.9 OBIECTIVUL 9 INDUSTRIE, INOVATIE SI INFRASTRUCTURA",
+          "name_en": "H.9 GOAL 9 INDUSTRY, INNOVATION AND INFRASTRUCTURE",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "850",
+          "name_ro": "H.10 OBIECTIVUL 10 INEGALITATI REDUSE",
+          "name_en": "H.10 GOAL 10 REDUCED INEQUALITIES",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "855",
+          "name_ro": "H.11 OBIECTIVUL 11 ORASE SI COMUNITATI DURABILE",
+          "name_en": "H.11 GOAL 11 SUSTAINABLE CITIES AND COMMUNITIES",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "860",
+          "name_ro": "H.12 OBIECTIVUL 12 CONSUM SI PRODUCTIE RESPONSABILE",
+          "name_en": "H.12 GOAL 12 RESPONSIBLE CONSUMPTION AND PRODUCTION",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "865",
+          "name_ro": "H.13 OBIECTIVUL 13 ACTIUNE IN DOMENIUL SCHIMBARILOR CLIMATICE",
+          "name_en": "H.13 GOAL 13 CLIMATE ACTION",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "870",
+          "name_ro": "H.14 OBIECTIVUL 14 VIATA ACVATICA",
+          "name_en": "H.14 GOAL 14 LIFE BELOW WATER",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "875",
+          "name_ro": "H.15 OBIECTIVUL 15 VIATA TERESTRA",
+          "name_en": "H.15 GOAL 15 LIFE ON LAND",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "880",
+          "name_ro": "H.16 OBIECTIVUL 16 PACE, JUSTITIE SI INSTITUTII EFICIENTE",
+          "name_en": "H.16 GOAL 16 PEACE, JUSTICE AND STRONG INSTITUTIONS",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "885",
+          "name_ro": "H.17 OBIECTIVUL 17 PARTENERIATE PENTRU REALIZAREA OBIECTIVELOR",
+          "name_en": "H.17 GOAL 17 PARTNERSHIPS FOR THE GOALS",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "890",
+          "name_ro": "H.18 ECONOMIE CIRCULARA",
+          "name_en": "H.18 CIRCULAR ECONOMY",
+          "level": 1,
+          "parent_code": "8"
+        },
+        {
+          "code": "705",
+          "name_ro": "G.1 OBIECTIVUL 1 FARA SARACIE",
+          "name_en": "G.1 GOAL 1 NO POVERTY",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "710",
+          "name_ro": "G.2 OBIECTIVUL 2 FOAMETE ZERO",
+          "name_en": "G.2 GOAL 2 ZERO HUNGER",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "715",
+          "name_ro": "G.3 OBIECTIVUL 3 SANATATE SI BUNASTARE",
+          "name_en": "G.3 GOAL 3 GOOD HEALTH AND WELL-BEING",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "720",
+          "name_ro": "G.4 OBIECTIVUL 4 EDUCATIE DE CALITATE",
+          "name_en": "G.4 GOAL 4 QUALITY EDUCATION",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "725",
+          "name_ro": "G.5 OBIECTIVUL 5 EGALITATE DE GEN",
+          "name_en": "G.5 GOAL 5 GENDER EQUALITY",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "730",
+          "name_ro": "G.6 OBIECTIVUL 6 APA CURATA SI SANITATIE",
+          "name_en": "G.6 GOAL 6 CLEAN WATER AND SANITATION",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "735",
+          "name_ro": "G.7 OBIECTIVUL 7 ENERGIE CURATA SI LA PRETURI ACCESIBILE",
+          "name_en": "G.7 GOAL 7 AFFORDABLE AND CLEAN ENERGY",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "740",
+          "name_ro": "G.8 OBIECTIVUL 8 MUNCA DECENTA SI CRESTERE ECONOMICA",
+          "name_en": "G.8 GOAL 8 DECENT WORK AND ECONOMIC GROWTH",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "745",
+          "name_ro": "G.9 OBIECTIVUL 9 INDUSTRIE, INOVATIE SI INFRASTRUCTURA",
+          "name_en": "G.9 GOAL 9 INDUSTRY, INNOVATION AND INFRASTRUCTURE",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "750",
+          "name_ro": "G.10 OBIECTIVUL 10 INEGALITATI REDUSE",
+          "name_en": "G.10 GOAL 10 REDUCED INEQUALITIES",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "755",
+          "name_ro": "G.11 OBIECTIVUL 11 ORASE SI COMUNITATI DURABILE",
+          "name_en": "G.11 GOAL 11 SUSTAINABLE CITIES AND COMMUNITIES",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "760",
+          "name_ro": "G.12 OBIECTIVUL 12 CONSUM SI PRODUCTIE RESPONSABILE",
+          "name_en": "G.12 GOAL 12 RESPONSIBLE CONSUMPTION AND PRODUCTION",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "765",
+          "name_ro": "G.13 OBIECTIVUL 13 ACTIUNE IN DOMENIUL SCHIMBARILOR CLIMATICE",
+          "name_en": "G.13 GOAL 13 CLIMATE ACTION",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "770",
+          "name_ro": "G.14 OBIECTIVUL 14 VIATA ACVATICA",
+          "name_en": "G.14 GOAL 14 LIFE BELOW WATER",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "775",
+          "name_ro": "G.15 OBIECTIVUL 15 VIATA TERESTRA",
+          "name_en": "G.15 GOAL 15 LIFE ON LAND",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "780",
+          "name_ro": "G.16 OBIECTIVUL 16 PACE, JUSTITIE SI INSTITUTII EFICIENTE",
+          "name_en": "G.16 GOAL 16 PEACE, JUSTICE AND STRONG INSTITUTIONS",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "785",
+          "name_ro": "G.17 OBIECTIVUL 17 PARTENERIATE PENTRU REALIZAREA OBIECTIVELOR",
+          "name_en": "G.17 GOAL 17 PARTNERSHIPS FOR THE GOALS",
+          "level": 1,
+          "parent_code": "7"
+        },
+        {
+          "code": "1010",
+          "name_ro": "1. POPULATIA REZIDENTA",
+          "name_en": "1. USUALLY RESIDENT POPULATION",
+          "level": 2,
+          "parent_code": "10"
+        },
+        {
+          "code": "1012",
+          "name_ro": "2. POPULATIA DUPA DOMICILIU",
+          "name_en": "2. LEGALLY RESIDENT POPULATION",
+          "level": 2,
+          "parent_code": "10"
+        },
+        {
+          "code": "1014",
+          "name_ro": "3. DATE ISTORICE DE POPULATIE (1968 - 1991)",
+          "name_en": "3. HISTORICAL POPULATION DATA (1968 - 1991)",
+          "level": 2,
+          "parent_code": "10"
+        },
+        {
+          "code": "1110",
+          "name_ro": "1. NATALITATE",
+          "name_en": "1. LIVE - BIRTH",
+          "level": 2,
+          "parent_code": "11"
+        },
+        {
+          "code": "1120",
+          "name_ro": "2. MORTALITATE",
+          "name_en": "2. DEATH",
+          "level": 2,
+          "parent_code": "11"
+        },
+        {
+          "code": "1130",
+          "name_ro": "3. NUPTIALITATE",
+          "name_en": "3. NUPTIALITY",
+          "level": 2,
+          "parent_code": "11"
+        },
+        {
+          "code": "1140",
+          "name_ro": "4. DIVORTIALITATE",
+          "name_en": "4. DIVORCIALITY",
+          "level": 2,
+          "parent_code": "11"
+        },
+        {
+          "code": "1150",
+          "name_ro": "5. SPOR NATURAL",
+          "name_en": "5. NATURAL INCREASE",
+          "level": 2,
+          "parent_code": "11"
+        },
+        {
+          "code": "1210",
+          "name_ro": "1. SCHIMBARI DE DOMICILIU",
+          "name_en": "1. CHANGES OF PERMANENT RESIDENCE",
+          "level": 2,
+          "parent_code": "12"
+        },
+        {
+          "code": "1220",
+          "name_ro": "2. EMIGRANTI CU SCHIMBAREA DOMICILIULUI PERMANENT (EMIGRANTI DEFINITIVI)",
+          "name_en": "2. EMIGRANTS BY PERMANENT RESIDENCE CHANGE (PERMANENT EMIGRANTS)",
+          "level": 2,
+          "parent_code": "12"
+        },
+        {
+          "code": "1230",
+          "name_ro": "3. IMIGRANTI CU STABILIREA DOMICILIULUI PERMANENT (IMIGRANTI DEFINITIVI)",
+          "name_en": "3. IMMIGRANTS BY PERMANENT RESIDENCE CHANGE (PERMANENT IMMIGRANTS)",
+          "level": 2,
+          "parent_code": "12"
+        },
+        {
+          "code": "1240",
+          "name_ro": "4. EMIGRANTI CU STABILIREA RESEDINTEI OBISNUITE (EMIGRANTI TEMPORARI)",
+          "name_en": "4. EMIGRANTS BY USUAL RESIDENCE CHANGE (TEMPORAR EMIGRANTS)",
+          "level": 2,
+          "parent_code": "12"
+        },
+        {
+          "code": "1250",
+          "name_ro": "5. IMIGRANTI CU STABILIREA RESEDINTEI OBISNUITE (IMIGRANTI TEMPORARI)",
+          "name_en": "5. IMIGRANTS BY USUAL RESIDENCE CHANGE (TEMPORAR IMIGRANTS)",
+          "level": 2,
+          "parent_code": "12"
+        },
+        {
+          "code": "1505",
+          "name_ro": "1. RESURSE DE MUNCA SI UTILIZAREA LOR",
+          "name_en": "1. LABOUR RESOURCES AND THEIR UTILIZATION",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1506",
+          "name_ro": "2. POPULATIA ACTIVA CIVILA - BALANTA FORTEI DE MUNCA",
+          "name_en": "2. CIVIL ECONOMICALLY ACTIVE POPULATION - LABOUR FORCE BALANCE",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1507",
+          "name_ro": "3. POPULATIA OCUPATA CIVILA - BALANTA FORTEI DE MUNCA",
+          "name_en": "3. CIVIL EMPLOYMENT - LABOUR FORCE BALANCE",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1508",
+          "name_ro": "4. SOMERI INREGISTRATI",
+          "name_en": "4. REGISTERED UNEMPLOYED",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1509",
+          "name_ro": "5. POPULATIA ACTIVA-ANCHETA FORTEI DE MUNCA IN GOSPODARII",
+          "name_en": "5. CIVIL ECONOMICALLY ACTIVE POPULATION-HOUSEHOLD LABOUR FORCE SURVEY",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1510",
+          "name_ro": "6. POPULATIA OCUPATA-ANCHETA FORTEI DE MUNCA IN GOSPODARII",
+          "name_en": "6. EMPLOYMENT-HOUSEHOLD LABOUR FORCE SURVEY",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1511",
+          "name_ro": "7. SOMERI BIM-ANCHETA FORTEI DE MUNCA IN GOSPODARII",
+          "name_en": "7. ILO UNEMPLOYED - HOUSEHOLD LABOUR FORCE SURVEY",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1512",
+          "name_ro": "8. POPULATIA INACTIVA-ANCHETA FORTEI DE MUNCA IN GOSPODARII",
+          "name_en": "8. CIVIL ECONOMICALLY INACTIVE POPULATION-HOUSEHOLD LABOUR FORCE SURVEY",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1513",
+          "name_ro": "9. SALARIATI",
+          "name_en": "9. EMPLOYEES",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1520",
+          "name_ro": "10. CONDITII DE MUNCA",
+          "name_en": "10. WORKING CONDITIONS",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1525",
+          "name_ro": "11. CASTIG SALARIAL",
+          "name_en": "11. SALARY EARNING",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1527",
+          "name_ro": "12. COSTUL FORTEI DE MUNCA",
+          "name_en": "12. LABOUR COST",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1530",
+          "name_ro": "13. LOCURI DE MUNCA VACANTE",
+          "name_en": "13. VACANCIES",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1535",
+          "name_ro": "14. FORMARE PROFESIONALA CONTINUA",
+          "name_en": "14. CONTINUING VOCATIONAL TRAINING",
+          "level": 2,
+          "parent_code": "15"
+        },
+        {
+          "code": "1800",
+          "name_ro": "1. SARACIE SI EXCLUZIUNE SOCIALA",
+          "name_en": "1. POVERTY AND SOCIAL EXCLUSION",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2000",
+          "name_ro": "2. GOSPODARII",
+          "name_en": "2. HOUSEHOLD",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2001",
+          "name_ro": "3. NUMARUL GOSPODARIILOR CU DAUNE/FURTURI/ASIGURARI",
+          "name_en": "3. NUMBER OF HOUSEHOLD WITH LOSSES/THEFTS/INSURANCE",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2002",
+          "name_ro": "4. NUMARUL MEDIU DE PERSOANE PE O CAMERA",
+          "name_en": "4. AVERAGE NUMBER OF PERSONS BY A ROOM",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2003",
+          "name_ro": "5. SUPRAFATA MEDIE LOCUIBILA/ UTILA PE O PERSOANA",
+          "name_en": "5. AVERAGE LIVING FLOOR/ USUFUL AREA BY A PERSON",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2004",
+          "name_ro": "6. NUMARUL PERSOANELOR DIN GOSPODARII",
+          "name_en": "6. NUMBER OF PERSONS FROM HOUSEHOLD",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2005",
+          "name_ro": "7. NUMARUL PERSOANELOR DE 7 ANI SI PESTE",
+          "name_en": "7. NUMBER OF PERSONS BY 7 YEARS AND OVER",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2006",
+          "name_ro": "8. NUMARUL PERSOANELOR DE 16 ANI SI PESTE",
+          "name_en": "8. NUMBER OF PERSONS BY 16 YEARS AND OVER",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2008",
+          "name_ro": "9. INZESTRAREA CU BUNURI DE FOLOSINTA INDELUNGATA",
+          "name_en": "9. POPULATION ENDOWMENT WITH DURABLE GOODS",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2011",
+          "name_ro": "10. BUGETE DE FAMILIE",
+          "name_en": "10. FAMILY BUDGETS",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2012",
+          "name_ro": "11. VENITURI",
+          "name_en": "11. INCOME",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2013",
+          "name_ro": "12. CHELTUIELI",
+          "name_en": "12. EXPENDITURE",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2014",
+          "name_ro": "13. CONSUM",
+          "name_en": "13. CONSUMPTION",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "8010",
+          "name_ro": "14. ACCESUL POPULATIEI LA TIC",
+          "name_en": "14. POPULATION ACCESS TO ITC",
+          "level": 2,
+          "parent_code": "20"
+        },
+        {
+          "code": "2015",
+          "name_ro": "1. PROTECTIA SOCIALA A SOMERILOR",
+          "name_en": "1. UNEMPLOYED SOCIAL PROTECTION",
+          "level": 2,
+          "parent_code": "21"
+        },
+        {
+          "code": "2020",
+          "name_ro": "2. NUMARUL MEDIU AL PENSIONARILOR",
+          "name_en": "2. AVERAGE NUMBER OF PENSIONERS",
+          "level": 2,
+          "parent_code": "21"
+        },
+        {
+          "code": "2021",
+          "name_ro": "3. PENSII",
+          "name_en": "3. PENSIONS",
+          "level": 2,
+          "parent_code": "21"
+        },
+        {
+          "code": "2025",
+          "name_ro": "4. ASISTENTA SOCIALA",
+          "name_en": "4. SOCIAL INSURANCE",
+          "level": 2,
+          "parent_code": "21"
+        },
+        {
+          "code": "2505",
+          "name_ro": "1. UNITATI SCOLARE",
+          "name_en": "1. SCHOOL UNITS",
+          "level": 2,
+          "parent_code": "25"
+        },
+        {
+          "code": "2506",
+          "name_ro": "2. POPULATIA SCOLARA",
+          "name_en": "2. SCHOOL AGED POPULATION",
+          "level": 2,
+          "parent_code": "25"
+        },
+        {
+          "code": "2507",
+          "name_ro": "3. PERSONAL DIDACTIC",
+          "name_en": "3. TEACHING STAFF",
+          "level": 2,
+          "parent_code": "25"
+        },
+        {
+          "code": "2508",
+          "name_ro": "4. INFRASTRUCTURA INVATAMANT",
+          "name_en": "4. INFRASTRUCTURE OF EDUCATION",
+          "level": 2,
+          "parent_code": "25"
+        },
+        {
+          "code": "2509",
+          "name_ro": "5. ABSOLVENTI",
+          "name_en": "5. GRADUATES",
+          "level": 2,
+          "parent_code": "25"
+        },
+        {
+          "code": "2700",
+          "name_ro": "1. EDUCATIA ADULTILOR",
+          "name_en": "1. ADULT EDUCATION",
+          "level": 2,
+          "parent_code": "27"
+        },
+        {
+          "code": "3005",
+          "name_ro": "1. INFRASTRUCTURA SANITARA",
+          "name_en": "1. INFRASTRUCTURE OF HEALTH",
+          "level": 2,
+          "parent_code": "30"
+        },
+        {
+          "code": "3010",
+          "name_ro": "2. PERSONAL MEDICO - SANITAR",
+          "name_en": "2. MEDICAL - SANITAR STAFF",
+          "level": 2,
+          "parent_code": "30"
+        },
+        {
+          "code": "3015",
+          "name_ro": "3. ASISTENTA SANITARA",
+          "name_en": "3. SANITARY ASSISTANCE",
+          "level": 2,
+          "parent_code": "30"
+        },
+        {
+          "code": "3205",
+          "name_ro": "1. BIBLIOTECI",
+          "name_en": "1. LIBRARIES",
+          "level": 2,
+          "parent_code": "32"
+        },
+        {
+          "code": "3210",
+          "name_ro": "2. EXPLOATAREA SI PRODUCTIA CINEMATOGRAFICA",
+          "name_en": "2. CINEMATOGRAPHIC EXPLOTATION AND PRODUCTION",
+          "level": 2,
+          "parent_code": "32"
+        },
+        {
+          "code": "3215",
+          "name_ro": "3. INSTITUTII DE SPECTACOL",
+          "name_en": "3. ENTERTAINMENT INSTITUTIONS",
+          "level": 2,
+          "parent_code": "32"
+        },
+        {
+          "code": "3220",
+          "name_ro": "4. MUZEE",
+          "name_en": "4. MUSEUMS",
+          "level": 2,
+          "parent_code": "32"
+        },
+        {
+          "code": "3225",
+          "name_ro": "5. EDITURI",
+          "name_en": "5. PRINTING HOUSES",
+          "level": 2,
+          "parent_code": "32"
+        },
+        {
+          "code": "3230",
+          "name_ro": "6. EMISIUNI RADIO - TV",
+          "name_en": "6. RADIO AND TELEVISION BROADCASTS",
+          "level": 2,
+          "parent_code": "32"
+        },
+        {
+          "code": "3305",
+          "name_ro": "1. SPORT",
+          "name_en": "1. SPORT",
+          "level": 2,
+          "parent_code": "33"
+        },
+        {
+          "code": "3440",
+          "name_ro": "1. INDICATORI MACROECONOMICI PRIVIND POPULATIA OCUPATA",
+          "name_en": "1. MACROECONOMIC INDICATORS ON EMPLOYMENT",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "3504",
+          "name_ro": "2. PRINCIPALELE AGREGATE PE LOCUITOR",
+          "name_en": "2. MAIN AGGREGATES PER INHABITANT",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "3505",
+          "name_ro": "3. TABELUL INTRARI - IESIRI",
+          "name_en": "3. INPUT - OUTPUT TABLE",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "3510",
+          "name_ro": "4. TABELUL ECONOMIC DE ANSAMBLU",
+          "name_en": "4. INTEGRATED ECONOMIC ACCOUNTS TABLE",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "3515",
+          "name_ro": "5. CONTURI NATIONALE REGIONALE",
+          "name_en": "5. REGIONAL NATIONAL ACCOUNTS",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "3520",
+          "name_ro": "6. PRODUSUL INTERN BRUT TRIMESTRIAL",
+          "name_en": "6. QUARTERLY GROSS DOMESTIC PRODUCT",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "3530",
+          "name_ro": "7. ACTIVELE NEFINANCIARE PE TIPURI, PE RAMURI DE ACTIVITATE SI PE SECTOARE",
+          "name_en": "7. NON-FINANCIAL ASSETS BY TYPE, BY INDUSTRY AND BY SECTOR",
+          "level": 2,
+          "parent_code": "35"
+        },
+        {
+          "code": "2600",
+          "name_ro": "1. UNITATI DE CERCETARE - DEZVOLTARE",
+          "name_en": "1. RESEARCH - DEVELOPMENT UNITS",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "2601",
+          "name_ro": "2. SALARIATI DIN ACTIVITATEA DE CERCETARE-DEZVOLTARE",
+          "name_en": "2. EMPLOYEERS FROM RESEARCH - DEVELOPMENT",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "2602",
+          "name_ro": "3. CHELTUIELI DIN ACTIVITATEA DE CERCETARE-DEZVOLTARE",
+          "name_en": "3. EXPENDITURE FROM RESEARCH - DEVELOPMENT",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "2603",
+          "name_ro": "4. ACTIVITATEA DE CERCETARE-DEZVOLTARE",
+          "name_en": "4. DEVELOPMENT-RESEARCH ACTIVITY",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "2604",
+          "name_ro": "5. INOVARE",
+          "name_en": "5. INNOVATION",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "2605",
+          "name_ro": "6. INOVATIE DE PRODUS SI/SAU PROCES",
+          "name_en": "6. PRODUCT/ PROCESS INNOVATION",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "2606",
+          "name_ro": "7. INOVATIE DE ORGANIZARE SI/SAU DE MARKETING",
+          "name_en": "7. ORGANISATIONAL/MARKETING INNOVATION",
+          "level": 2,
+          "parent_code": "37"
+        },
+        {
+          "code": "3901",
+          "name_ro": "1. UTILIZAREA TIC",
+          "name_en": "1. ITC USAGE",
+          "level": 2,
+          "parent_code": "39"
+        },
+        {
+          "code": "4000",
+          "name_ro": "1. INDICII PRETURILOR DE CONSUM",
+          "name_en": "1. CONSUMER PRICE INDICES",
+          "level": 2,
+          "parent_code": "40"
+        },
+        {
+          "code": "4010",
+          "name_ro": "2. INDICII ARMONIZATI AI PRETURILOR DE CONSUM",
+          "name_en": "2. THE HARMONISED INDICES OF CONSUMER PRICES",
+          "level": 2,
+          "parent_code": "40"
+        },
+        {
+          "code": "4020",
+          "name_ro": "3. INDICII PRETURILOR PRODUCTIEI INDUSTRIALE",
+          "name_en": "3. INDUSTRIAL PRODUCTION PRICE INDICES",
+          "level": 2,
+          "parent_code": "40"
+        },
+        {
+          "code": "4050",
+          "name_ro": "4. PRETURILE PRODUSELOR AGRICOLE",
+          "name_en": "4. PRICES OF AGRICULTURAL PRODUCTS",
+          "level": 2,
+          "parent_code": "40"
+        },
+        {
+          "code": "4060",
+          "name_ro": "5. PRETURILE PRODUCTIEI PENTRU SERVICII",
+          "name_en": "5. PRODUCTION PRICE FOR SERVICES",
+          "level": 2,
+          "parent_code": "40"
+        },
+        {
+          "code": "4070",
+          "name_ro": "6. INDICII PRETURILOR PROPRIETATILOR REZIDENTIALE",
+          "name_en": "6. RESIDENTIAL PROPERTY PRICE INDICES",
+          "level": 2,
+          "parent_code": "40"
+        },
+        {
+          "code": "4505",
+          "name_ro": "1. FONDUL FUNCIAR",
+          "name_en": "1. TOTAL LAND FUND",
+          "level": 2,
+          "parent_code": "45"
+        },
+        {
+          "code": "4510",
+          "name_ro": "2. BAZA TEHNICO - MATERIALA A AGRICULTURII",
+          "name_en": "2. MATERIAL- TEHNICAL RESOURCES OF AGRICULTURE",
+          "level": 2,
+          "parent_code": "45"
+        },
+        {
+          "code": "4515",
+          "name_ro": "3. SUPRAFATA SI PRODUCTIA AGRICOLA VEGETALA",
+          "name_en": "3. AREA AND CROP PRODUCTION",
+          "level": 2,
+          "parent_code": "45"
+        },
+        {
+          "code": "4520",
+          "name_ro": "4. EFECTIVELE SI PRODUCTIA AGRICOLA ANIMALA",
+          "name_en": "4. LIVESTOCK AND AGRICOL ANIMAL PRODUCTION",
+          "level": 2,
+          "parent_code": "45"
+        },
+        {
+          "code": "4521",
+          "name_ro": "5. CONTURI ECONOMICE DIN AGRICULTURA",
+          "name_en": "5. ECONOMIC ACCOUNTS FOR AGRICULTURE",
+          "level": 2,
+          "parent_code": "45"
+        },
+        {
+          "code": "4523",
+          "name_ro": "6. INDICATORI DE AGRI - MEDIU",
+          "name_en": "6. INDICATORS OF AGRI- ENVIRONMENT",
+          "level": 2,
+          "parent_code": "45"
+        },
+        {
+          "code": "4525",
+          "name_ro": "1. SILVICULTURA",
+          "name_en": "1. SYLVICULTURE",
+          "level": 2,
+          "parent_code": "47"
+        },
+        {
+          "code": "4550",
+          "name_ro": "2. LUCRARI REALIZATE DE ALTE INSTITUTII",
+          "name_en": "2. WORKS CONDUCTED BY OTHER AUTHORITIES",
+          "level": 2,
+          "parent_code": "47"
+        },
+        {
+          "code": "5010",
+          "name_ro": "1. INDUSTRIE",
+          "name_en": "1. INDUSTRY",
+          "level": 2,
+          "parent_code": "50"
+        },
+        {
+          "code": "5020",
+          "name_ro": "1. ENERGIE",
+          "name_en": "1. ENERGY",
+          "level": 2,
+          "parent_code": "51"
+        },
+        {
+          "code": "5025",
+          "name_ro": "1. CONSTRUCTII",
+          "name_en": "1. CONSTRUCTIONS",
+          "level": 2,
+          "parent_code": "52"
+        },
+        {
+          "code": "5030",
+          "name_ro": "1. LOCUINTE",
+          "name_en": "1. DWELLINGS",
+          "level": 2,
+          "parent_code": "53"
+        },
+        {
+          "code": "5035",
+          "name_ro": "1. INVESTITII",
+          "name_en": "1. INVESTIMENTS",
+          "level": 2,
+          "parent_code": "54"
+        },
+        {
+          "code": "7010",
+          "name_ro": "1. STATISTICA INTREPRINDERILOR",
+          "name_en": "1. ENTREPRISES STATISTIC",
+          "level": 2,
+          "parent_code": "55"
+        },
+        {
+          "code": "7020",
+          "name_ro": "2. DEMOGRAFIA INTREPRINDERILOR",
+          "name_en": "2. BUSINESS DEMOGRAPHY",
+          "level": 2,
+          "parent_code": "55"
+        },
+        {
+          "code": "7008",
+          "name_ro": "1. REGISTRUL STATISTIC AL INTREPRINDERILOR",
+          "name_en": "1. STATISTICAL BUSINESS REGISTER",
+          "level": 2,
+          "parent_code": "56"
+        },
+        {
+          "code": "5503",
+          "name_ro": "1. INFRASTRUCTURA TRANSPORTURILOR",
+          "name_en": "1. INFRASTRUCTURE OF TRANSPORT",
+          "level": 2,
+          "parent_code": "57"
+        },
+        {
+          "code": "5504",
+          "name_ro": "2. ACTIVITATEA DE TRANSPORT",
+          "name_en": "2. TRANSPORT ACTIVITY",
+          "level": 2,
+          "parent_code": "57"
+        },
+        {
+          "code": "5505",
+          "name_ro": "3. TRANSPORT RUTIER",
+          "name_en": "3. ROAD TRANSPORT",
+          "level": 2,
+          "parent_code": "57"
+        },
+        {
+          "code": "5510",
+          "name_ro": "4. TRANSPORT FEROVIAR",
+          "name_en": "4. RAILWAY TRANSPORT",
+          "level": 2,
+          "parent_code": "57"
+        },
+        {
+          "code": "5515",
+          "name_ro": "5. TRANSPORT MARITIM SI PE CAI NAVIGABILE INTERIOARE",
+          "name_en": "5. MARITIME AND INLAND WATERWAYS TRANSPORT",
+          "level": 2,
+          "parent_code": "57"
+        },
+        {
+          "code": "5520",
+          "name_ro": "6. TRANSPORT AERIAN",
+          "name_en": "6. AIR TRANSPORT",
+          "level": 2,
+          "parent_code": "57"
+        },
+        {
+          "code": "5530",
+          "name_ro": "1. POSTA SI TELECOMUNICATII",
+          "name_en": "1. POST AND TELECOMMUNICATION",
+          "level": 2,
+          "parent_code": "58"
+        },
+        {
+          "code": "6005",
+          "name_ro": "1. COMERT INTERIOR",
+          "name_en": "1. DOMESTIC TRADE",
+          "level": 2,
+          "parent_code": "60"
+        },
+        {
+          "code": "6020",
+          "name_ro": "1. COMERT INTERNATIONAL",
+          "name_en": "1. INTERNATIONAL TRADE",
+          "level": 2,
+          "parent_code": "62"
+        },
+        {
+          "code": "6025",
+          "name_ro": "1. TURISM",
+          "name_en": "1. TOURISM",
+          "level": 2,
+          "parent_code": "63"
+        },
+        {
+          "code": "6030",
+          "name_ro": "1. SERVICII",
+          "name_en": "1. SERVICES",
+          "level": 2,
+          "parent_code": "64"
+        },
+        {
+          "code": "6500",
+          "name_ro": "1. FINANTE",
+          "name_en": "1. FINANCES",
+          "level": 2,
+          "parent_code": "65"
+        },
+        {
+          "code": "8005",
+          "name_ro": "1. JUSTITIE",
+          "name_en": "1. JUSTICE",
+          "level": 2,
+          "parent_code": "66"
+        },
+        {
+          "code": "7009",
+          "name_ro": "1. MEDIUL INCONJURATOR",
+          "name_en": "1. ENVIRONMENT",
+          "level": 2,
+          "parent_code": "67"
+        },
+        {
+          "code": "7525",
+          "name_ro": "1. UTILITATI PUBLICE",
+          "name_en": "1. PUBLIC UTILITIES",
+          "level": 2,
+          "parent_code": "70"
+        },
+        {
+          "code": "7530",
+          "name_ro": "1. ADMINISTRAREA TERITORILUI",
+          "name_en": "1. TERRITORY ADMINISTRATION",
+          "level": 2,
+          "parent_code": "75"
+        },
+        {
+          "code": "8051",
+          "name_ro": "1. Eradicarea saraciei extreme pentru toti cetatenii",
+          "name_en": "1. Eradicate extreme poverty for all citizens",
+          "level": 2,
+          "parent_code": "805"
+        },
+        {
+          "code": "8054",
+          "name_ro": "2. Reducerea cu cel putin jumatate a numarului de cetateni care traiesc in saracie relativa",
+          "name_en": "2. Reduce by at least by half the number of citizens living in relative poverty",
+          "level": 2,
+          "parent_code": "805"
+        },
+        {
+          "code": "8057",
+          "name_ro": "3. Consolidarea sistemului national unitar a serviciilor de interventie de urgenta, reabilitare ulterioara si compensare a pierderilor in caz de calamitati naturale, accidente industriale sau evenimente climatice extreme",
+          "name_en": "3. Consolidate the unified national system of emergency intervention, rehabilitation, and compensation services in the event of natural disasters, industrial accidents, or extreme weather events",
+          "level": 2,
+          "parent_code": "805"
+        },
+        {
+          "code": "8101",
+          "name_ro": "1. Eradicarea malnutritiei si mentinerea ratei obezitatii sub 10%, similar cu nivelul inregistrat in anul 2014",
+          "name_en": "1. Eliminate malnutrition and keep the rate of obesity under 10%, i.e. similar to the 2014 level",
+          "level": 2,
+          "parent_code": "810"
+        },
+        {
+          "code": "8104",
+          "name_ro": "2. Finalizarea cadastrului agricol",
+          "name_en": "2. Finalisation of the agricultural cadastre",
+          "level": 2,
+          "parent_code": "810"
+        },
+        {
+          "code": "8107",
+          "name_ro": "3. Dublarea ponderii agriculturii in PIB-ul Romaniei, fata de anul 2018",
+          "name_en": "3. Double the share of agriculture in Romania's GDP relative to 2018",
+          "level": 2,
+          "parent_code": "810"
+        },
+        {
+          "code": "8110",
+          "name_ro": "4. Mentinerea si extinderea diversitatii genetice a semintelor, a plantelor cultivate si a animalelor de ferma si domestice si a speciilor salbatice inrudite",
+          "name_en": "4. Maintain and increase the genetic diversity of seeds, crops and farm, and both domestic animals and related wild species",
+          "level": 2,
+          "parent_code": "810"
+        },
+        {
+          "code": "8113",
+          "name_ro": "5. Cresterea gradului de valorificare a productiei agricole autohtone",
+          "name_en": "5. Increase the use of local agricultural production",
+          "level": 2,
+          "parent_code": "810"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 340
+      }
+    },
+    "secondPage": {
+      "nodes": [
+        {
+          "code": "8116",
+          "name_ro": "6. Cresterea ponderii agriculturii ecologice in totalul productiei agricole",
+          "name_en": "6. Increase the share of ecological agriculture in total agricultural production",
+          "level": 2,
+          "parent_code": "810"
+        },
+        {
+          "code": "8119",
+          "name_ro": "7. Mentinerea si rentabilizarea unor ocupatii si metode traditionale de valorificare a plantelor medicinale si fructelor de padure in zona montana. Mentinerea traditiilor locale prin cresterea numarului de produse cu caracteristici specifice in ceea ce priveste originea geografica",
+          "name_en": "7. Preserve and capitalise on occupations and traditional uses of medicinal plants and forest fruit in mountain areas; maintain local traditions by increasing the number of products with special characteristics in terms of rules of origin",
+          "level": 2,
+          "parent_code": "810"
+        },
+        {
+          "code": "8151",
+          "name_ro": "1. Asigurarea accesului universal la servicii de informare, educare si consiliere pentru promovarea preventiei si adoptarea unui stil de viata fara riscuri",
+          "name_en": "1. Ensure universal access to information, education, and counselling services in order to encourage prevention and the adoption of a healthy lifestyle",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8154",
+          "name_ro": "2. Digitalizarea completa a sistemului de sanatate si, implicit eliminarea documentelor si registrelor tiparite pe suport de hartie, pentru a eficientiza si a facilita interventiile medicale, pentru a asigura populatiei accesul rapid la servicii medicale de calitate, la tratamente si medicamente si pentru monitorizarea eficienta a nevoilor",
+          "name_en": "2. Ensure the complete digitalisation of the health system and implicitly the elimination of documents and records printed on paper, in order to increase the efficiency of and facilitate medical interventions, thereby ensuring the population's rapid access to quality medical services, treatment and medication, and the efficient monitoring of needs",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8157",
+          "name_ro": "3. Reducerea prevalentei mortalitatii materne si infantile, a incidentei cancerului la san sau de col uterin si a sarcinilor la adolescente, avand ca obiectiv prioritar grupurile vulnerabile si defavorizate",
+          "name_en": "3. Reduce the prevalence of maternal and infantile mortality and the incidence of breast and cervical cancer, and teenage pregnancies, with the primary focus on vulnerable and disadvantaged groups",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8160",
+          "name_ro": "4. Reducerea mortalitatii materne si mortalitatii neonatale, astfel incat sa se situeze sub media UE",
+          "name_en": "4. Reduce maternal mortality and neonatal mortality to below the EU average",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8163",
+          "name_ro": "5. Cresterea acoperirii vaccinale pana la nivelul minim recomandat de OMS pentru fiecare vaccin, prin dezvoltarea unei platforme comune de colaborare intre autoritati, medici, pacienti, organizatii internationale cu experienta in acest domeniu, reprezentanti ai companiilor in domeniu, precum si alti factori interesati",
+          "name_en": "5. Increase vaccination coverage to the minimum level recommended by the WHO for each vaccine by developing a common platform for collaboration between the authorities, doctors, patients, international organisations with experience in the field, representatives of companies working in the field and other interested parties",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8166",
+          "name_ro": "6. Promovarea constientizarii bolilor psihice, reducerea stigmatului si crearea unui mediu in care cetatenii afectati se simt acceptati si unde pot cere ajutor",
+          "name_en": "6. Promote awareness of mental illness, reduce the associated stigma and create an environment in which those suffering from mental illness feel accepted and able to ask for help",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8169",
+          "name_ro": "7. Stoparea imbolnavirii de tuberculoza si combaterea hepatitei si a altor boli transmisibile",
+          "name_en": "7. Eliminate the contraction of tuberculosis and combat hepatitis and other transmissible diseases",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8172",
+          "name_ro": "8. Reducerea cu o treime a mortalitatii premature cauzate de bolile netransmisibile prin prevenire si tratament si prin promovarea sanatatii si bunastarii mintale",
+          "name_en": "8. Reduce by one third the number of premature deaths due to nontransmissible diseases through prevention and treatment and by promoting mental health and well-being",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8175",
+          "name_ro": "9. Reducerea mortalitatii cauzate de boli cronice",
+          "name_en": "9. Reduce the death rate from chronic diseases",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8178",
+          "name_ro": "10. Reducerea consumului de substante nocive",
+          "name_en": "10. Reduce the level of consumption of toxic substances",
+          "level": 2,
+          "parent_code": "815"
+        },
+        {
+          "code": "8201",
+          "name_ro": "1. Reducerea ratei de parasire timpurie a sistemului educational",
+          "name_en": "1. Reduce the rate of early school leaving in the educational system",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8204",
+          "name_ro": "2. Invatamant axat pe competente si centrat pe nevoile elevului, caruia sa ii fie oferita o mai mare libertate in definirea prioritatilor de studiu, prin masuri precum cresterea ponderii de materii optionale",
+          "name_en": "2. Achieve an education system based on ability and focused on the needs of the pupils, who should enjoy greater freedom in choosing what they study through measures such as introducing and increasing the amount of optional subjects",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8207",
+          "name_ro": "3. Asigurarea faptului ca toti elevii dobandesc cunostintele si competentele necesare pentru promovarea dezvoltarii durabile, inclusiv prin educatia pentru dezvoltare durabila si stiluri de viata durabile, drepturile omului, egalitatea de gen, promovarea unei culturi a pacii si non-violentei, aprecierea diversitatii culturale si a contributiei culturii la dezvoltarea durabila",
+          "name_en": "3. Ensure that all pupils acquire the necessary skills and knowledge to be able to promote sustainable development, including through education for sustainable development and sustainable lifestyles, human rights and gender equality, to promote a culture of peace and non-violence, and to appreciate cultural diversity and the contribution of culture to sustainable development",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8210",
+          "name_ro": "4. Accentuarea rolului, in procesul educational, al educatiei civice, a principiilor si notiunilor despre o societate durabila pasnica si incluziva, egalitate de gen, despre valorile democratiei si pluralismului, despre valorile multiculturalismului, preventia discriminarii si intelegerea perceptiei 'celuilalt', despre importanta eradicarii violentei cu accent pe fenomenul de violenta in scoli",
+          "name_en": "4. Emphasise the role played in the educational process by civic education, by the principles and notions relating to a peaceful and inclusive sustainable society, the values of democracy and pluralism, the values of multiculturalism, the prevention of discrimination and an understanding of the point of view of the 'other', and the importance of eradicating violence with a focus on the phenomenon of violence in schools and gender equality",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8213",
+          "name_ro": "5. Modernizarea sistemului de invatamant prin adaptarea metodologiilor de predare-invatare la folosirea tehnologiilor informationale si cresterea calitatii actului educational",
+          "name_en": "5. Modernise the education system by adapting the methods of teaching and learning to the use of information technology and increase the quality of education",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8216",
+          "name_ro": "6. Organizarea invatamantului profesional si tehnic in campusuri special amenajate si dotate; pregatirea personalului didactic bine calificat; elaborarea de curriculum potrivit cerintelor de pe piata muncii prin dezvoltarea de parteneriate, incluziv cu mediul de afaceri",
+          "name_en": "6. Organise vocational and technical education into specially designed and equipped campuses; train qualified teaching staff; create a curriculum tailored to the needs of the labour market by developing partnerships, including with the business community",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8219",
+          "name_ro": "7. Extinderea generalizata a facilitatilor pentru formarea si perfectionarea continua pe tot parcursul vietii, sporirea considerabila a participarii la sistemele formale si nonformale de cunoastere in vederea apropierii Romaniei de media performantelor din statele membre ale UE",
+          "name_en": "7. Expand facilities for lifelong continued training and learning, considerably increase participation in formal and non-formal systems of knowledge with a view to bringing Romania's performance closer to the EU average",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8222",
+          "name_ro": "8. Extinderea retelei de centre comunitare de invatare permanenta de catre autoritatile locale; continuarea cointeresarii companiilor in sprijinirea inrolarii angajatilor in asemenea programe",
+          "name_en": "8. Expand the network of communitybased permanent education centres by the local authorities; continue to involve companies in supporting employee enrolment in such programmes",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8225",
+          "name_ro": "9. Cresterea substantiala a numarului de tineri si adulti care detin competente relevante, inclusiv competente profesionale, care sa faciliteze angajarea, crearea de locuri de munca decente si antreprenoriatul",
+          "name_en": "9. Substantially increase the number of youth and adults with relevant skills, including technical and vocational skills, so as to encourage employment, the creation of decent jobs and entrepreneurship",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8228",
+          "name_ro": "10. Cresterea nivelului de educatie financiara a cetatenilor",
+          "name_en": "10. Increase the level of financial literacy among citizens",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8231",
+          "name_ro": "11. Extinderea in educatia formala universitara a dezvoltarii durabile ca principii si specializare si accentuarea rolului cercetarii interdisciplinare in dezvoltarea unei societati durabile",
+          "name_en": "11. Expand the concept of sustainable development in formal university education as a principle and a specialisation, and highlight the role of interdisciplinary research in the development of a sustainable society",
+          "level": 2,
+          "parent_code": "820"
+        },
+        {
+          "code": "8251",
+          "name_ro": "1. Continuarea reducerii disparitatii salariale dintre sexe",
+          "name_en": "1. Continue to reduce the gender pay gap",
+          "level": 2,
+          "parent_code": "825"
+        },
+        {
+          "code": "8254",
+          "name_ro": "2. Eliminarea tuturor formelor de violenta impotriva femeilor si fetelor, in sferele publice si private, inclusiv a traficului, exploatarii sexuale si a altor tipuri de exploatare",
+          "name_en": "2. Eliminate all forms of violence against women and girls in both the public and private sphere, including trafficking, sexual exploitation, and other forms of exploitation",
+          "level": 2,
+          "parent_code": "825"
+        },
+        {
+          "code": "8257",
+          "name_ro": "3. Asigurarea participarii depline si eficiente a femeilor si a egalitatii de sanse la ocuparea posturilor de conducere la toate nivelurile de luare a deciziilor in viata politica, economica si publica",
+          "name_en": "3. Ensure the full and effective participation and equal opportunities of women when it comes to employment in management positions at all levels of political, economic, and public life",
+          "level": 2,
+          "parent_code": "825"
+        },
+        {
+          "code": "8301",
+          "name_ro": "1. Cresterea substantiala a eficientei folosirii apei in activitatile industriale, comerciale si agricole; extinderea reutilizarii rationale a apelor tratate si reciclate in perspectiva atingerii obiectivelor economiei circulare",
+          "name_en": "1. Substantially increase the efficiency of water use in industrial, commercial, and agricultural activities; expand the rational reuse of treated and recycled water with a view to meeting the requirements of a circular economy",
+          "level": 2,
+          "parent_code": "830"
+        },
+        {
+          "code": "8304",
+          "name_ro": "2. Cresterea substantiala a eficientei de utilizare a apei in toate sectoarele si asigurarea unui proces durabil de captare si furnizare a apei potabile, pentru a face fata deficitului de apa",
+          "name_en": "2. Substantially increase the efficiency of water use in all sectors and ensure a sustainable process of abstraction and supply of drinking water in order to address water shortages",
+          "level": 2,
+          "parent_code": "830"
+        },
+        {
+          "code": "8307",
+          "name_ro": "3. Conectarea gospodariilor populatiei din orase, comune si sate compacte la reteaua de apa potabila si canalizare in proportie de cel putin 90%",
+          "name_en": "3. Connect at least 90% of households in towns, communes, and compact villages to the drinking water and sewerage network",
+          "level": 2,
+          "parent_code": "830"
+        },
+        {
+          "code": "8310",
+          "name_ro": "4. Cresterea accesului la apa potabila pentru grupurile vulnerabile si marginalizate",
+          "name_en": "4. Increase access to drinking water among vulnerable and marginalised groups",
+          "level": 2,
+          "parent_code": "830"
+        },
+        {
+          "code": "8313",
+          "name_ro": "5. Imbunatatirea calitatii apei prin reducerea poluarii, eliminarea depozitarii deseurilor si reducerea la minimum a produselor chimice si materialelor periculoase, reducand proportia apelor uzate netratate si sporind substantial reciclarea si reutilizarea sigura",
+          "name_en": "5. Improve water quality by reducing pollution, eliminating waste disposal, and reducing to a minimum the amount of chemical products and dangerous substances, thereby reducing the proportion of untreated waste water, and significantly increasing recycling and safe reuse",
+          "level": 2,
+          "parent_code": "830"
+        },
+        {
+          "code": "8316",
+          "name_ro": "6. Realizarea accesului la conditii sanitare si de igiena adecvate si echitabile pentru toti, acordand o atentie speciala celor in situatii vulnerabile",
+          "name_en": "6. Provide access to adequate and equitable sanitary and hygienic conditions for all with a special focus on those in vulnerable situations",
+          "level": 2,
+          "parent_code": "830"
+        },
+        {
+          "code": "8351",
+          "name_ro": "1. Extinderea retelelor de transport si distributie pentru energie electrica si gaze naturale in vedea asigurarii accesului consumatorilor casnici, industriali si comerciali la surse sigure de energie la preturi acceptabile",
+          "name_en": "1. Expand electricity and gas distribution networks with a view to ensuring household consumer, industrial and commercial access to safe sources of energy at acceptable prices",
+          "level": 2,
+          "parent_code": "835"
+        },
+        {
+          "code": "8354",
+          "name_ro": "2. Asigurarea securitatii cibernetice a platformelor de monitorizare a retelelor de productie, transport si distributie a energiei electrice si gazelor naturale",
+          "name_en": "2. Ensure the cyber security of the platforms for the monitoring of production, transport and supply networks for electricity and natural gas",
+          "level": 2,
+          "parent_code": "835"
+        },
+        {
+          "code": "8357",
+          "name_ro": "3. Decuplarea cresterii economice de procesul de epuizare a resurselor si de degradare a mediului prin sporirea considerabila a eficientei energetice (cu minimum 27% comparativ cu scenariul de status-quo) si folosirea extinsa a schemei EU ETS in conditii de piata previzibile si stabile",
+          "name_en": "3. Decouple economic growth from the process of resource depletion and environmental degradation by substantially boosting energy efficiency (by a minimum of 27% compared with the status quo) and the extensive use of the EU Emission Trading Scheme (ETS) in stable and predictable market conditions",
+          "level": 2,
+          "parent_code": "835"
+        },
+        {
+          "code": "8360",
+          "name_ro": "4. Cresterea ponderii surselor de energie regenerabila si a combustibililor cu continut scazut de carbon in sectorul transporturilor (autovehicule electrice), inclusiv combustibili alternativi",
+          "name_en": "4. Increase the share of renewable energy and low-carbon fuel used in the transport sector (electric vehicles), including the use of alternative fuels",
+          "level": 2,
+          "parent_code": "835"
+        },
+        {
+          "code": "8363",
+          "name_ro": "5. Asigurarea unui cadru de reglementare stabil si transparent in domeniul eficientei energetice in vederea atragerii investitiilor",
+          "name_en": "5. Ensure a stable and transparent regulatory framework in the field f energy efficiency with a view to attracting investment",
+          "level": 2,
+          "parent_code": "835"
+        },
+        {
+          "code": "8366",
+          "name_ro": "6. Sustinerea strategica a ponderii energiei electrice in totalul consumului casnic, industrial si in transporturi prin stabilirea unor norme de performanta pentru instalatii si aparatura",
+          "name_en": "6. Strategically support the share of electricity in total household, industrial and transport consumption by establishing performance standards for facilities and equipment",
+          "level": 2,
+          "parent_code": "835"
+        },
+        {
+          "code": "8401",
+          "name_ro": "1. Pastrarea in continuare a unui ritm al cresterii PIB superior fata de media UE pentru a sustine efortul de reducere a decalajelor in comparatie cu tarile europene avansate, paralel cu aplicarea principiilor dezvoltarii durabile si imbunatatirea constanta a nivelului de trai al populatiei",
+          "name_en": "1. Maintain a GDP growth rate above the EU average in order to help reduce the gap between Romania and the more advanced European economies, while still respecting the principles of sustainable development and continuously improving the living standards of the population",
+          "level": 2,
+          "parent_code": "840"
+        },
+        {
+          "code": "8404",
+          "name_ro": "2. Promovarea unor politici orientate spre dezvoltare care sustin activitatile productive, crearea locurilor de munca decente, antreprenoriatul prin start-up, creativitatea si inovatia, si care incurajeaza formalizarea si cresterea intreprinderilor micro, mici si mijlocii, inclusiv prin acces la servicii financiare",
+          "name_en": "2. Promote development-oriented policies that support productive activities, the creation of decent jobs, entrepreneurship through start-ups, creation and innovation, and which encourage the formalisation and growth of micro, small and mediumsized enterprises, including through access to financial services",
+          "level": 2,
+          "parent_code": "840"
+        },
+        {
+          "code": "8407",
+          "name_ro": "3. Atingerea unor niveluri mai ridicate ale productivitatii prin diversificare, modernizarea tehnologica si inovatie, inclusiv prin accent pe sectoarele cu valoare adaugata sporita si utilizarea intensiva a fortei de munca",
+          "name_en": "3. Achieve high levels of productivity through diversification, technological modernisation, and innovation, including through focusing on sectors with high added value and a more intensive use of the workforce",
+          "level": 2,
+          "parent_code": "840"
+        },
+        {
+          "code": "8410",
+          "name_ro": "4. Realizarea unui turism competitiv pe termen lung, dezvoltarea agroturismului, ecoturismului, turismului rural, balnear si cultural si imbunatatirea imaginii Romaniei ca destinatie turistica",
+          "name_en": "4. Create a tourism sector that is competitive in the long time, develop agritourism, ecotourism, and rural, spa and cultural tourism, and improve Romania's image as a tourist destination",
+          "level": 2,
+          "parent_code": "840"
+        },
+        {
+          "code": "8413",
+          "name_ro": "5. Consolidarea capacitatii institutiilor financiare interne pentru a incuraja si a extinde accesul la servicii bancare, de asigurari si servicii financiare pentru toti",
+          "name_en": "5. Strengthen the capacity of domestic financial institutions in order to encourage and expand access to banking, insurance and financial services for all",
+          "level": 2,
+          "parent_code": "840"
+        },
+        {
+          "code": "8451",
+          "name_ro": "1. Modernizarea si dezvoltarea infrastructurii calitative, fiabile, durabile si puternice, inclusiv infrastructura regionala si transfrontaliera, pentru a sprijini dezvoltarea economica si bunastarea oamenilor, cu accent pe accesul larg si echitabil pentru toti",
+          "name_en": "1. Modernise and develop quality, viable, sustainable, and powerful regional and cross-border infrastructure, in order to support economic development and human well-being, with a focus on fair and equitable access by all",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8454",
+          "name_ro": "2. Imbunatatirea sigurantei rutiere",
+          "name_en": "2. Improve road safety",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8457",
+          "name_ro": "3. Reabilitarea industriilor pentru a deveni durabile, cu eficienta sporita in utilizarea resurselor si adoptare sporita a tehnologiilor si proceselor industriale curate si ecologice, toate tarile luand masuri in conformitate cu capacitatile respective ale acestora",
+          "name_en": "3. Rehabilitate the industrial sector in order to make it sustainable through a more efficient use of resources and increased adoption of clean and ecological industrial technologies and processes, with all countries implementing measures in keeping with their respective capacities",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8460",
+          "name_ro": "4. Stimularea cu precadere a economiei digitale si investitiilor industriale care se situeaza in zona mai profitabila a lantului valoric, care fructifica si rezultatele eforturilor nationale de cercetare-dezvoltare-inovare si care se adreseaza unor piete stabile si in crestere",
+          "name_en": "4. Stimulate in particular the digital economy and investment in industries which are at the more profitable end of the value chain, which utilise the results of national efforts in the area of research, development and innovation, and which target stable and growing markets",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8463",
+          "name_ro": "5. Intarirea cercetarii stiintifice, modernizarea capacitatilor tehnologice ale sectoarelor industriale; incurajarea inovatiilor si cresterea semnificativa a numarului de angajati in cercetare si dezvoltare si sporirea cheltuielilor publice si private pentru cercetare si dezvoltare",
+          "name_en": "5. Boost scientific research and modernise the technological capacity of the industrial sectors; encourage innovation and significantly increase the number of employees in research and development and increase public and private spending on research and development",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8466",
+          "name_ro": "6. Promovarea industrializarii incluzive si durabile si sporirea ratei de ocupare",
+          "name_en": "6. Promote inclusive and sustainable industrialisation and increase the rate of employment",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8469",
+          "name_ro": "7. Cresterea accesului intreprinderilor mici industriale si de alta natura la servicii financiare, inclusiv la credite accesibile, si integrarea acestora in lanturi valorice si piete externe",
+          "name_en": "7. Increase the access of small industrial and other companies to financial services, including accessible loans, and integrate them into value chains and external markets",
+          "level": 2,
+          "parent_code": "845"
+        },
+        {
+          "code": "8501",
+          "name_ro": "1. Adoptarea politicilor, in special fiscale, salariale si de protectie sociala, in scopul reducerii progresive a inegalitatilor, respectiv a proportiei grupurilor dezavantajate",
+          "name_en": "1. Adopt policies, especially in the areas of fiscal, salary and social protection policy, that aim gradually to reduce inequality and the percentage of disadvantaged groups",
+          "level": 2,
+          "parent_code": "850"
+        },
+        {
+          "code": "8504",
+          "name_ro": "2. Aproprierea Romaniei de nivelul mediei UE, corespunzator anului 2030, din punctul de vedere al indicatorilor dezvoltarii durabile",
+          "name_en": "2. Bring Romania closer to the EU average for 2030 in terms of the indicators for sustainable development",
+          "level": 2,
+          "parent_code": "850"
+        },
+        {
+          "code": "8507",
+          "name_ro": "3. Reducerea discriminarii prin acordarea de sprijin organizatiilor neguvernamentale care activeaza in domeniul drepturilor omului",
+          "name_en": "3. Reduce discrimination by supporting non-governmental organisations working in the field of human rights",
+          "level": 2,
+          "parent_code": "850"
+        },
+        {
+          "code": "8551",
+          "name_ro": "1. Asigurarea accesului la conditii de locuire adecvate pentru toti cetatenii",
+          "name_en": "1. Ensure access to decent living conditions for all citizens",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8554",
+          "name_ro": "2. Reducerea semnificativa a pierderilor economice provocate de inundatii si alunecarile de teren, imbunatatirea raspunsului colectiv si intarirea capacitatii de adaptare si revenire la nivel functional in cel mai scurt timp dupa producerea evenimentului, reducerea impactului inundatiilor sau a poluarilor generate de inundatii si ale alunecarilor de teren asupra ecosistemelor, inclusiv prin imbunatatirea constanta a cadrului legislativ",
+          "name_en": "2. Significantly reduce the economic losses caused by flooding and landslides, improve the collective response and strengthen the capacity to adapt and return to a functional situation in the shortest time possible after occurrence of the event, reduce the impact of flooding or the pollution caused by flooding and landslides on the ecosystem, including by means of constant improvements to the legislative framework",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8557",
+          "name_ro": "3. Asigurarea accesului la sisteme de transport sigure, la preturi echitabile, accesibile si durabile pentru toti, in special prin extinderea retelelor de transport public, acordand o atentie deosebita nevoilor celor aflati in situatii vulnerabile, femei, copii, persoane cu dizabilitati si in etate",
+          "name_en": "3. Ensure access to safe, fairly-priced, accessible and sustainable transport systems for all, in particular by extending public transport networks, with a special focus on the needs of those in vulnerable situations, women, children, people with disabilities and the elderly",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8560",
+          "name_ro": "4. Elaborarea si punerea in aplicare a unui program general de planificare spatiala si amenajare a teritoriului in corelare cu strategiile sectoriale la nivel national prin aplicarea conceptului de dezvoltare spatiala policentrica si echilibrata, care sa sustina coeziunea teritoriala",
+          "name_en": "4. Draw up and implement a general programme of spatial and land-use planning in correlation with the sectoral strategies at national level through application of the concept of polycentric and balanced spatial development in order to support territorial cohesion",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8563",
+          "name_ro": "5. Educarea si responsabilizarea populatiei pentru situatii de risc seismic",
+          "name_en": "5. Educate and empower the population in respect of earthquake risk situations",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8566",
+          "name_ro": "6. Reducerea efectelor pe care poluarea atmosferica le are asupra sanatatii umane si a mediului prin acordarea unei atentii deosebite calitatii aerului",
+          "name_en": "6. Reduce the impact atmospheric pollution has on human health and the environment through a special focus on air quality",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8569",
+          "name_ro": "7. Reducerea substantiala a numarului deceselor si bolilor provocate de produsele chimice periculoase de poluare si de contaminarea aerului, apei si a solului",
+          "name_en": "7. Substantially reduce the number of deaths and diseases caused by dangerous chemical products, pollution and the contamination of the air, water and soil",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8572",
+          "name_ro": "8. Consolidarea eforturilor de protectie si salvgardare a patrimoniului cultural si natural, a elementelor de peisaj din mediul urban si rural",
+          "name_en": "8. Consolidate efforts to protect and safeguard cultural and natural heritage and landscape features from the rural and urban environment",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8575",
+          "name_ro": "9. Implementarea prevederilor legale referitoare la productia, transportul, depozitarea, utilizarea si eliminarea produselor chimice, inclusiv a celor farmaceutice, care pot prezenta pericole pentru sanatatea oamenilor si animalelor si pentru integritatea mediului",
+          "name_en": "9. Implement the relevant legal provisions regarding the production, transport, storage, use and disposal of chemical products, including pharmaceutical products, which can be dangerous to human and animal health as well as environmental integrity",
+          "level": 2,
+          "parent_code": "855"
+        },
+        {
+          "code": "8601",
+          "name_ro": "1. Trecerea etapizata la un nou model de dezvoltare bazat pe utilizarea rationala si responsabila a resurselor cu introducerea unor elemente ale economiei circulare, elaborarea unei foi de parcurs",
+          "name_en": "1. Gradually transition to a new development model based on the rational and responsible use of resources by introducing elements of the circular economy and drawing up a road map",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8604",
+          "name_ro": "2. Injumatatirea pe cap de locuitor a risipei de alimente la nivel de vanzare cu amanuntul si de consum si reducerea pierderilor de alimente de-a lungul lanturilor de productie si de aprovizionare, inclusiv a pierderilor post-recoltare",
+          "name_en": "2. Halve per capita food waste at the level of retail and consumption and reduce food waste throughout the production and supply chain, including post-harvest losses",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8607",
+          "name_ro": "3. Reciclarea in proportie de 55% a deseurilor municipale pana in 2025 si 60% pana in 2030",
+          "name_en": "3. Recycle 55% of municipal waste by 2025 and 60% by 2030",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8610",
+          "name_ro": "4. Reciclarea in proportie de 65% a deseurilor de ambalaje pana in 2025 (materiale plastice 50%; lemn 25%; metale feroase 70%, aluminiu 50%, sticla 70%, hartie si carton 75%) si 70% pana in 2030 (materiale plastice 55%; lemn 30%; metale feroase 80%, aluminiu 60%, sticla 75%, hartie si carton 85%)",
+          "name_en": "4. Recycle 65% of packaging waste by 2025 (plastic materials 50%, wood 25%, ferrous metals 70%, aluminium 50%, glass 70%, paper and cardboard 75%) and 70% by 2030 (plastic materials 55%, wood 30%, ferrous metals 80%, aluminium 60%, glass 75%, paper and cardboard 85%)",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8613",
+          "name_ro": "5. Colectarea separata a deseurilor menajere periculoase pana in 2022, a deseurilor biologice pana in 2023 si materialele textile pana in 2025",
+          "name_en": "5. Implement the separate collection of household hazardous waste by 2022, of biological waste by 2023 and of textile waste by 2025",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8616",
+          "name_ro": "6. Stabilirea de scheme obligatorii de raspundere extinsa a producatorilor pentru toate ambalajele pana in 2024",
+          "name_en": "6. Establish extended producer responsibility schemes for all types of packaging by 2024",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8619",
+          "name_ro": "7. Implementarea practicilor durabile de achizitii publice verzi, in conformitate cu prioritatile nationale si politicile europene",
+          "name_en": "7. Implement sustainable green public procurement practices in conformity with national priorities and European policy",
+          "level": 2,
+          "parent_code": "860"
+        },
+        {
+          "code": "8651",
+          "name_ro": "1. Consolidarea rezilientei si capacitatii de adaptare a Romaniei la riscurile legate de clima si dezastre naturale",
+          "name_en": "1. Strengthen Romania's resilience and capacity to adapt to climate-related risks and natural disasters",
+          "level": 2,
+          "parent_code": "865"
+        },
+        {
+          "code": "8654",
+          "name_ro": "2. Imbunatatirea capacitatii de reactie rapida la fenomene meteorologice extreme intempestive de mare intensitate",
+          "name_en": "2. Enhance capacity to react rapidly to unexpected extreme weather events",
+          "level": 2,
+          "parent_code": "865"
+        },
+        {
+          "code": "8657",
+          "name_ro": "3. Imbunatatirea educatiei, sensibilizarii si capacitatii umane si institutionale privind atenuarea schimbarilor climatice, adaptarea, reducerea impactului si alerta timpurie",
+          "name_en": "3. Improve education, awareness and human and institutional capacity with regard to mitigating climate change, adapting to and reducing the impacts of climate change, and the implementation of early warning systems",
+          "level": 2,
+          "parent_code": "865"
+        },
+        {
+          "code": "8660",
+          "name_ro": "4. Intensificarea eforturilor Romaniei pentru a realiza tranzitia la o economie 'verde', cu emisii reduse de dioxid de carbon, rezilienta la schimbarile climatice si pentru integrarea masurilor de adaptare la schimbarile climatice in sectoarele vulnerabile economice, sociale si de mediu, in conformitate cu politicile UE",
+          "name_en": "4. Intensify Romania's efforts to achieve the transition to a 'green' economy, characterised by low carbon dioxide emissions and resilience to climate change, and to integrate measures with a view to adapting to climate change in vulnerable economic, social and environmental sectors, in keeping with EU policies",
+          "level": 2,
+          "parent_code": "865"
+        },
+        {
+          "code": "8701",
+          "name_ro": "1. Prevenirea si reducerea semnificativa a poluarii marine de toate tipurile, in special de la activitatile terestre, inclusiv poluarea cu deseuri marine si poluarea cu nutrienti",
+          "name_en": "1. Prevent and significantly reduce all forms of marine pollution, in particular that resulting from land-based activities, including pollution with marine litter and nutrient pollution",
+          "level": 2,
+          "parent_code": "870"
+        },
+        {
+          "code": "8704",
+          "name_ro": "2. Minimizarea si gestionarea impactului acidificarii mediului apelor marine, inclusiv prin cooperare stiintifica sporita la toate nivelurile",
+          "name_en": "2. Minimise and manage the effects of the acidification of marine waters, including by increased scientific cooperation at all levels",
+          "level": 2,
+          "parent_code": "870"
+        },
+        {
+          "code": "8707",
+          "name_ro": "3. Dezvoltarea responsabila si sustenabila a activitatilor de pescuit la speciile salbatice si de acvacultura cu respectarea cotelor si metodelor stabilite prin lege si mentinerea, in limite rezonabile, a viabilitatii indeletnicirilor traditionale in acest domeniu, inclusiv a pescuitului sportiv si de agrement",
+          "name_en": "3. Responsibly and sustainably manage the fishing of wild and aquaculture species in accordance with the legallyestablished quotas and methods, and preserve, within reasonable limits, the viability of traditional activities in this field, including recreational and sports fishing",
+          "level": 2,
+          "parent_code": "870"
+        },
+        {
+          "code": "8710",
+          "name_ro": "4. Atragerea celorlalte state riverane Marii Negre in actul de management durabil a resurselor acvatice vii",
+          "name_en": "4. Involve other Black Sea countries in the implementation of a responsible and sustainable plan for the exploitation of living aquatic species",
+          "level": 2,
+          "parent_code": "870"
+        },
+        {
+          "code": "8751",
+          "name_ro": "1. Dezvoltarea infrastructurii verzi si folosirea serviciilor oferite de ecosistemele naturale (in special in luncile Dunarii, afluentilor acesteia si in Delta) prin gestionarea integrata a bazinelor hidrografice si zonelor umede",
+          "name_en": "1. Develop green infrastructure and make use of the services offered by natural ecosystems (in particular the Danube floodplains, its tributaries and the Danube Delta) through the integrated management of river basins and wetlands",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8754",
+          "name_ro": "2. Conservarea si protejarea zonelor umede, intre care se afla si Rezervatia Biosferei Delta Dunarii, zona umeda unicat in Europa, ca parte a patrimoniului natural european si mondial",
+          "name_en": "2. Conserve and protect wetland areas, which also include the Danube Delta Biosphere Reserve, a unique wetland in Romania and part of European and world natural heritage",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8757",
+          "name_ro": "3. Asigurarea conservarii ecosistemelor montane, inclusiv a biodiversitatii acestora, in scopul de a spori capacitatea acestora de a oferi beneficii esentiale pentru dezvoltare durabila",
+          "name_en": "3. Ensure the conservation of mountain ecosystems, including their biodiversity, with a view to boosting their capacity to provide essential benefits in terms of sustainable development",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8760",
+          "name_ro": "4. Sustinerea institutiilor si infrastructurilor de cercetare-dezvoltare de interes national si European pentru studierea, gestionarea, protejarea si conservarea diversitatii patrimoniului natural",
+          "name_en": "4. Support the research and development institutions and infrastructure of national and European importance in the study, management, protection and preservation of the diversity of natural heritage",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8763",
+          "name_ro": "5. Gestionarea durabila a padurilor, eliminarea taierilor ilegale de arbori, dezvoltarea sistemului informatic integrat pentru monitorizarea exploatarii si transportului masei lemnoase, inclusiv la punctele de frontiera, asigurarea impaduririi si reimpaduririi terenurilor din fondul forestier si a celor degradate sau supuse desertificarii, desfasurarea plantarii programate a perdelelor forestiere pentru protectia culturilor agricole si a elementelor de infrastructura in scopul limitarii impactului schimbarilor climatice",
+          "name_en": "5. Sustainably manage forests, eradicate illegal logging, develop an integrated digital system for the monitoring of the exploitation and transport of timber, including at border crossings, ensure the afforestation and reforestation of forest land or land that has been degraded or subject to desertification, and implement the planned planting of shelterbelts to shield crops and elements of infrastructure from the impacts of climate change",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8766",
+          "name_ro": "6. Tranzitia catre o economie circulara prin abordari complementare ce implica metode traditionale si tehnologii de ultima generatie pentru restabilirea/refacerea capitalului natural si reducerea dependentei de fertilizatorii sintetici si de pesticide, pentru combaterea degradarii solului",
+          "name_en": "6. Pursue the transition to a circular economy through complementary approaches involving traditional methods and the latest technologies in order to re-establish/rebuild natural capital and reduce dependence on synthetic fertilisers and pesticides, with a view to combating soil degradation",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8769",
+          "name_ro": "7. Combaterea desertificarii, restaurarea terenurilor si solurilor degradate, inclusiv a terenurilor afectate de desertificare, seceta si inundatii",
+          "name_en": "7. Combat desertification, restore degraded land and soil, including land affected by desertification, drought and flooding",
+          "level": 2,
+          "parent_code": "875"
+        },
+        {
+          "code": "8801",
+          "name_ro": "1. Administrarea justitiei in conditii de impartialitate si celeritate, in conformitate cu legile si procedurile stabilite, cu respectarea principiului prezumtiei de nevinovatie",
+          "name_en": "1. Administer justice impartially and with celerity in compliance with established laws and procedures, while respecting the principle of the presumption of innocence",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8804",
+          "name_ro": "2. Asigurarea si sustinerea dialogului cu minoritatile nationale in vederea imbunatatirii actului decizional, prin acces egal pentru toti cetatenii de a-si respecta si valorifica cultura, traditiile, limba materna si de a participa la viata economica, sociala si politica si pentru combaterea preconceptiilor, a prejudecatilor si a discriminarilor in toate formele sale si promovarea dialogului interetnic, valorilor comune, diversitatii culturale si lingvistice",
+          "name_en": "2. Ensure and encourage dialogue with national minorities with a view to improving decision-making through equal access for all citizens, such that they are able to respect and express their culture, traditions and mother tongue and participate in the economic, social and political life, and with a view to combating preconceptions, prejudice and discrimination in all its forms and encouraging interethnic dialogue, common values and cultural and linguistic diversity",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8807",
+          "name_ro": "3. Reducerea semnificativa a tuturor formelor de violenta si ratelor de deces conexe",
+          "name_en": "3. Significantly reduce all forms of violence and the associated death rate",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8810",
+          "name_ro": "4. Stoparea abuzului, exploatarii, traficului si a tuturor formelor de violenta si torturii copiilor",
+          "name_en": "4. Put a stop to the abuse, exploitation, trafficking and all forms of violence and torture of children",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8813",
+          "name_ro": "5. Reducerea semnificativa a fluxurilor ilicite financiare si de armament, consolidarea recuperarii si returnarii bunurilor furate si combaterea tuturor formelor de crima organizata",
+          "name_en": "5. Significantly reduce illicit financial flows and arms dealing, improve the recovery and return of stolen goods and combat all forms of organised crime",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8816",
+          "name_ro": "6. Asigurarea procesului decizional receptiv, incluziv, participativ si reprezentativ la toate nivelurile",
+          "name_en": "6. Ensure a receptive, inclusive, participative and representative decision-making process at all levels",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8819",
+          "name_ro": "7. Dezvoltarea institutiilor eficiente, responsabile si transparente la toate nivelurile",
+          "name_en": "7. Develop efficient, responsible and transparent institutions at all levels",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8822",
+          "name_ro": "8. Profesionalizarea si perfectionarea activitatii tuturor institutiilor administratiei publice centrale si locale, mai ales a compartimentelor care intra in contact direct cu cetatenii, pentru prestarea unor servicii prompte si civilizate; extinderea si generalizarea serviciilor pe internet (on-line)",
+          "name_en": "8. Professionalise and improve the work of all central and local public administrative institutions, especially those departments that come into direct contact with citizens, in order to provide prompt and civilised services; expand and universalise online digitalised services",
+          "level": 2,
+          "parent_code": "880"
+        },
+        {
+          "code": "8851",
+          "name_ro": "1. Majorarea progresiva a cuantumului asistentei oficiale de dezvoltare acordate de Romania in cadrul programelor ODA, in functie de capacitatea de sustinere a economiei nationale, avand ca obiectiv tinta atingerea cifrei de 0,33% din venitul national brut la nivelul anului 2030",
+          "name_en": "1. Gradually increase the quantity of official development aid granted by Romania through ODA programmes, depending on the capacity of the national economy to support this, with the goal of reaching 0.33% of gross national income by 2030",
+          "level": 2,
+          "parent_code": "885"
+        },
+        {
+          "code": "8854",
+          "name_ro": "2. Sporirea si diversificarea ajutorului oficial pentru dezvoltare pe masura cresterii potentialului economic al Romaniei si incurajarea agentilor economici romani sa investeasca, pe baze competitive, in economia tarilor mai putin dezvoltate",
+          "name_en": "2. Increase and diversify official development assistance in line with growth in Romania's economic potential and encourage Romanian economic agents to invest on competitive grounds in the economies of less developed countries",
+          "level": 2,
+          "parent_code": "885"
+        },
+        {
+          "code": "8857",
+          "name_ro": "3. Aderarea Romaniei la Zona Euro, la spatiul Schengen si la Organizatia pentru Dezvoltare si Cooperare Economica",
+          "name_en": "3. Romania's joining of the Eurozone, the Schengen Area, and the Organisation for Economic Cooperation and Development (OECD)",
+          "level": 2,
+          "parent_code": "885"
+        },
+        {
+          "code": "8860",
+          "name_ro": "4. Sustinerea angajamentelor internationale si implicarea proactiva pe plan european si international",
+          "name_en": "4. Support Romania's international commitments and proactive involvement on the European and international level",
+          "level": 2,
+          "parent_code": "885"
+        },
+        {
+          "code": "8901",
+          "name_ro": "1. Trecerea etapizata la un nou model de dezvoltare bazat pe utilizarea rationala si responsabila a resurselor cu introducerea unor elemente ale economiei circulare, elaborarea unei foi de parcurs",
+          "name_en": "1. Gradually transition to a new development model based on the rational and responsible use of resources by introducing elements of the circular economy and drawing up a road map",
+          "level": 2,
+          "parent_code": "890"
+        },
+        {
+          "code": "8904",
+          "name_ro": "2. Injumatatirea pe cap de locuitor a risipei de alimente la nivel de vanzare cu amanuntul si de consum si reducerea pierderilor de alimente de-a lungul lanturilor de productie si de aprovizionare, inclusiv a pierderilor post-recoltare",
+          "name_en": "2. Halve per capita food waste at the level of retail and consumption and reduce food waste throughout the production and supply chain, including post-harvest losses",
+          "level": 2,
+          "parent_code": "890"
+        },
+        {
+          "code": "8907",
+          "name_ro": "3. Reciclarea in proportie de 55% a deseurilor municipale pana in 2025 si 60% pana in 2030",
+          "name_en": "3. Recycle 55% of municipal waste by 2025 and 60% by 2030",
+          "level": 2,
+          "parent_code": "890"
+        },
+        {
+          "code": "8910",
+          "name_ro": "4. Reciclarea in proportie de 65% a deseurilor de ambalaje pana in 2025 (materiale plastice 50%; lemn 25%; metale feroase 70%, aluminiu 50%, sticla 70%, hartie si carton 75%) si 70% pana in 2030 (materiale plastice 55%; lemn 30%; metale feroase 80%, aluminiu 60%, sticla 75%, hartie si carton 85%)",
+          "name_en": "4. Recycle 65% of packaging waste by 2025 (plastic materials 50%, wood 25%, ferrous metals 70%, aluminium 50%, glass 70%, paper and cardboard 75%) and 70% by 2030 (plastic materials 55%, wood 30%, ferrous metals 80%, aluminium 60%, glass 75%, paper and cardboard 85%)",
+          "level": 2,
+          "parent_code": "890"
+        },
+        {
+          "code": "8913",
+          "name_ro": "5. Colectarea separata a deseurilor menajere periculoase pana in 2022, a deseurilor biologice pana in 2023 si materialele textile pana in 2025",
+          "name_en": "5. Implement the separate collection of household hazardous waste by 2022, of biological waste by 2023 and of textile waste by 2025",
+          "level": 2,
+          "parent_code": "890"
+        },
+        {
+          "code": "8917",
+          "name_ro": "6. Implementarea practicilor durabile de achizitii publice verzi, in conformitate cu prioritatile nationale si politicile europene",
+          "name_en": "6. Implement sustainable green public procurement practices in conformity with national priorities and European policy",
+          "level": 2,
+          "parent_code": "890"
+        },
+        {
+          "code": "7051",
+          "name_ro": "1. SERVICII SOCIALE",
+          "name_en": "1. SOCIAL SERVICES",
+          "level": 2,
+          "parent_code": "705"
+        },
+        {
+          "code": "7054",
+          "name_ro": "2. INCLUZIUNE SOCIALA",
+          "name_en": "2. SOCIAL INCLUSION",
+          "level": 2,
+          "parent_code": "705"
+        },
+        {
+          "code": "7057",
+          "name_ro": "3. STIMULAREA PIETEI MUNCII",
+          "name_en": "3. STIMULATING THE LABOR MARKET",
+          "level": 2,
+          "parent_code": "705"
+        },
+        {
+          "code": "7101",
+          "name_ro": "1. AGRICULTURA ECOLOGICA SI ALIMENTATIE SANATOASA",
+          "name_en": "1. ORGANIC FARMING AND HEALTHY EATING",
+          "level": 2,
+          "parent_code": "710"
+        },
+        {
+          "code": "7104",
+          "name_ro": "2. SPRIJINIREA PRODUCTIEI AUTOHTONE IN DOMENIUL AGRO-ALIMENTAR",
+          "name_en": "2. SUPPORTING LOCAL PRODUCTION IN THE AGRI-FOOD FIELD",
+          "level": 2,
+          "parent_code": "710"
+        },
+        {
+          "code": "7107",
+          "name_ro": "3. PREVENIREA SI COMBATEREA POLUARII SOLULUI",
+          "name_en": "3. PREVENTING AND COMBATING SOIL POLLUTION",
+          "level": 2,
+          "parent_code": "710"
+        },
+        {
+          "code": "7151",
+          "name_ro": "1. EDUCATIE IN SANATATE",
+          "name_en": "1. EDUCATION IN HEALTH",
+          "level": 2,
+          "parent_code": "715"
+        },
+        {
+          "code": "7154",
+          "name_ro": "2. BUNASTARE PENTRU TOTI",
+          "name_en": "2. WELFARE FOR ALL",
+          "level": 2,
+          "parent_code": "715"
+        },
+        {
+          "code": "7157",
+          "name_ro": "3. ACCESUL LA SANATATE",
+          "name_en": "3. ACCESS TO HEALTH",
+          "level": 2,
+          "parent_code": "715"
+        },
+        {
+          "code": "7201",
+          "name_ro": "1. EDUCATIE INCLUZIVA",
+          "name_en": "1. INCLUSIVE EDUCATION",
+          "level": 2,
+          "parent_code": "720"
+        },
+        {
+          "code": "7204",
+          "name_ro": "2. INFRASTRUCTURA EDUCATIONALA",
+          "name_en": "2. EDUCATIONAL INFRASTRUCTURE",
+          "level": 2,
+          "parent_code": "720"
+        },
+        {
+          "code": "7251",
+          "name_ro": "1. ORGANIZARE SI RESPONSABILITATE IN CADRUL GOSPODARIEI",
+          "name_en": "1. ORGANIZATION AND RESPONSIBILITY WITHIN THE HOUSEHOLD",
+          "level": 2,
+          "parent_code": "725"
+        },
+        {
+          "code": "7257",
+          "name_ro": "2. INFORMARE SI MONITORIZARE PRIVIND EGALITATEA DE GEN",
+          "name_en": "2. INFORMATION AND MONITORING GENDER EQUALITY",
+          "level": 2,
+          "parent_code": "725"
+        },
+        {
+          "code": "7301",
+          "name_ro": "1. CALITATEA APEI POTABILE",
+          "name_en": "1. DRINKING WATER QUALITY",
+          "level": 2,
+          "parent_code": "730"
+        },
+        {
+          "code": "7351",
+          "name_ro": "1. SURSE REGENERABILE DE ENERGIE",
+          "name_en": "1. RENEWABLE ENERGY SOURCES",
+          "level": 2,
+          "parent_code": "735"
+        },
+        {
+          "code": "7354",
+          "name_ro": "2. EFICIENTA ENERGETICA",
+          "name_en": "2. ENERGETIC EFFICIENCY",
+          "level": 2,
+          "parent_code": "735"
+        },
+        {
+          "code": "7401",
+          "name_ro": "1. ADERAREA ROMANIEI LA ZONA EURO",
+          "name_en": "1. ROMANIA'S ACCESSION TO THE EURO AREA",
+          "level": 2,
+          "parent_code": "740"
+        },
+        {
+          "code": "7404",
+          "name_ro": "2. SUSTINEREA ANTREPRENORIATULUI SI A PARTENERIATELOR PUBLIC-PRIVAT",
+          "name_en": "2. SUPPORTING ENTREPRENEURSHIP AND PUBLIC-PRIVATE PARTNERSHIPS",
+          "level": 2,
+          "parent_code": "740"
+        },
+        {
+          "code": "7407",
+          "name_ro": "3. PROGRAME DE DEZVOLTARE SI VALORIFICARE A POTENTIALULUI EXISTENT",
+          "name_en": "3. DEVELOPMENT AND CAPITALIZATION PROGRAMS OF THE EXISTING POTENTIAL",
+          "level": 2,
+          "parent_code": "740"
+        },
+        {
+          "code": "7451",
+          "name_ro": "1. REGIUNI DE DEZVOLTARE SI INFRASTRUCTURA RUTIERA",
+          "name_en": "1. DEVELOPMENT REGIONS AND ROAD INFRASTRUCTURE",
+          "level": 2,
+          "parent_code": "745"
+        },
+        {
+          "code": "7454",
+          "name_ro": "2. STIMULAREA INVESTITIILOR",
+          "name_en": "2. STIMULATION OF INVESTMENTS",
+          "level": 2,
+          "parent_code": "745"
+        },
+        {
+          "code": "7501",
+          "name_ro": "1. GRUPURI VULNERABILE SI AJUTOARE SOCIALE",
+          "name_en": "1. VULNERABLE GROUPS AND SOCIAL AID",
+          "level": 2,
+          "parent_code": "750"
+        },
+        {
+          "code": "7504",
+          "name_ro": "2. ANTREPRENORIAT IN MEDIUL RURAL",
+          "name_en": "2. ENTREPRENEURSHIP IN RURAL AREAS",
+          "level": 2,
+          "parent_code": "750"
+        },
+        {
+          "code": "7551",
+          "name_ro": "1. CALAMITATI NATURALE SI SCHIMBARI CLIMATICE",
+          "name_en": "1. NATURAL DISASTERS AND CLIMATE CHANGE",
+          "level": 2,
+          "parent_code": "755"
+        },
+        {
+          "code": "7554",
+          "name_ro": "2. VALORIFICAREA PATRIMONIULUI CULTURAL",
+          "name_en": "2. VALORIZATION OF CULTURAL HERITAGE",
+          "level": 2,
+          "parent_code": "755"
+        },
+        {
+          "code": "7601",
+          "name_ro": "1. ECONOMIE CIRCULARA, RESURSE SI PRODUCTIVITATE",
+          "name_en": "1. CIRCULAR ECONOMY, RESOURCES AND PRODUCTIVITY",
+          "level": 2,
+          "parent_code": "760"
+        },
+        {
+          "code": "7604",
+          "name_ro": "2. PRODUCTIE SI CONSUM DURABILE",
+          "name_en": "2. SUSTAINABLE PRODUCTION AND CONSUMPTION",
+          "level": 2,
+          "parent_code": "760"
+        },
+        {
+          "code": "7651",
+          "name_ro": "1. CALAMITATI NATURALE SI SCHIMBARI CLIMATICE",
+          "name_en": "1. NATURAL DISASTERS AND CLIMATE CHANGE",
+          "level": 2,
+          "parent_code": "765"
+        },
+        {
+          "code": "7654",
+          "name_ro": "2. EDUCATIE IN DOMENIUL SCHIMBARILOR CLIMATICE",
+          "name_en": "2. EDUCATION IN THE FIELD OF CLIMATE CHANGE",
+          "level": 2,
+          "parent_code": "765"
+        },
+        {
+          "code": "7701",
+          "name_ro": "1. STAREA ECOLOGICA A APELOR",
+          "name_en": "1. ECOLOGICAL WATER STATUS",
+          "level": 2,
+          "parent_code": "770"
+        },
+        {
+          "code": "7704",
+          "name_ro": "2. PROTEJAREA SI CONSERVAREA RESURSELOR ACVATICE VII",
+          "name_en": "2. PROTECTING AND CONSERVING LIVING AQUATIC RESOURCES",
+          "level": 2,
+          "parent_code": "770"
+        },
+        {
+          "code": "7707",
+          "name_ro": "3. ACTIVITATE DE CERCETARE IN DOMENIU",
+          "name_en": "3. RESEARCH ACTIVITY IN THE FIELD",
+          "level": 2,
+          "parent_code": "770"
+        },
+        {
+          "code": "7751",
+          "name_ro": "1. CONSERVAREA ECOSISTEMELOR",
+          "name_en": "1. ECOSYSTEM CONSERVATION",
+          "level": 2,
+          "parent_code": "775"
+        },
+        {
+          "code": "7754",
+          "name_ro": "2. BRACONAJ SI CONSERVAREA BIODIVERSITATII",
+          "name_en": "2. POACHING AND BIODIVERSITY CONSERVATION",
+          "level": 2,
+          "parent_code": "775"
+        },
+        {
+          "code": "7801",
+          "name_ro": "1. LEGISLATIE, REFORME SI COMBATEREA CORUPTIEI",
+          "name_en": "1. LEGISLATION, REFORMS AND FIGHTING CORRUPTION",
+          "level": 2,
+          "parent_code": "780"
+        },
+        {
+          "code": "7804",
+          "name_ro": "2. CRESTERE DEMOGRAFICA SI MULTICULTURALISM",
+          "name_en": "2. DEMOGRAPHIC GROWTH AND MULTICULTURALISM",
+          "level": 2,
+          "parent_code": "780"
+        },
+        {
+          "code": "7807",
+          "name_ro": "3. DIGITALIZARE",
+          "name_en": "3. DIGITIZATION",
+          "level": 2,
+          "parent_code": "780"
+        },
+        {
+          "code": "7851",
+          "name_ro": "1. ACCESUL DIASPOREI LA CULTURA ROMANEASCA",
+          "name_en": "1. ROMANIAN DIASPORA ACCESS TO CULTURE",
+          "level": 2,
+          "parent_code": "785"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 340
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -19,7 +19,11 @@ import { StatisticsDebouncedSearchInput } from '../components/filters/statistics
 import { StatisticsFilterTriggerButton } from '../components/filters/statistics-filter-trigger-button'
 import { ShareFilteredView } from '../components/share-filtered-view'
 import { useDatasetExplorer } from '../hooks/use-dataset-explorer'
-import { useStatisticsLandingCatalog } from '../hooks/use-statistics'
+import { useStatisticsContextTree, useStatisticsLandingCatalog } from '../hooks/use-statistics'
+import {
+  buildStatisticsContextTree,
+  indexStatisticsContextTree,
+} from '../lib/context-tree'
 import { buildExplorerChips, explorerChipLabel } from '../lib/explorer-chips'
 import { clearedExplorerSearch, countActiveExplorerFilters, hasActiveExplorerFilters } from '../lib/explorer-filter'
 
@@ -52,6 +56,18 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
   const explorerQuery = useDatasetExplorer(search)
   const catalogQuery = useStatisticsLandingCatalog()
   const catalog = catalogQuery.data
+  // 340 nodes, two consumers, no compiler in this build: build once per read.
+  const { i18n } = useLingui()
+  const contextTreeQuery = useStatisticsContextTree()
+  const contextNodes = contextTreeQuery.data
+  const contextRoots = useMemo(
+    () => buildStatisticsContextTree(contextNodes ?? [], i18n.locale),
+    [contextNodes, i18n.locale],
+  )
+  const contextIndex = useMemo(
+    () => indexStatisticsContextTree(contextRoots),
+    [contextRoots],
+  )
 
   const page = search.pagina ?? 1
   const datasets = explorerQuery.data?.datasets ?? []
@@ -75,7 +91,7 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
 
   const chips: readonly StatisticsFilterChip[] = buildExplorerChips(search).map((chip) => ({
     id: chip.id,
-    label: explorerChipLabel(chip),
+    label: explorerChipLabel(chip, contextIndex),
     onRemove: () => applySearch(chip.next),
   }))
 
@@ -103,10 +119,17 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
           <ShareFilteredView />
         </header>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[17rem_minmax(0,1fr)]">
           <aside className="hidden lg:block" aria-label={t`Filtrează seturile de date`}>
             <div className="sticky top-6">
-              <DatasetExplorerFilterControls search={search} onChange={applySearch} catalog={catalog} idPrefix="rail" />
+              <DatasetExplorerFilterControls
+                search={search}
+                onChange={applySearch}
+                catalog={catalog}
+                contextRoots={contextRoots}
+                contextIndex={contextIndex}
+                idPrefix="rail"
+              />
             </div>
           </aside>
 
@@ -150,6 +173,8 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
               search={search}
               onChange={applySearch}
               catalog={catalog}
+              contextRoots={contextRoots}
+              contextIndex={contextIndex}
             />
 
             {explorerQuery.isPending ? <ExplorerSkeleton /> : null}
