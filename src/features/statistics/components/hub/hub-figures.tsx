@@ -74,7 +74,7 @@ export function HubFigureRows({
         return (
           <li key={indicator.code}>
             <Link
-              to="/statistici/seturi/$cod"
+              to="/ins/seturi/$cod"
               params={{ cod: indicator.code }}
               search={indicatorDetailSearch(indicator)}
               className="grid grid-cols-[1fr_auto] items-center gap-x-4 py-3 transition-colors hover:bg-muted/40 sm:grid-cols-[1fr_6rem_8.5rem]"

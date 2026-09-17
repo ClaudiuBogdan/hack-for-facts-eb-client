@@ -3,6 +3,7 @@ import {
   buildDatasetFilterInput,
   EXPLORER_PAGE_SIZE,
   explorerOffset,
+  type DatasetFilterOptions,
 } from '../lib/explorer-filter'
 import { isStatisticsMockEnabled } from '../lib/mock-mode'
 import { fetchInsDatasetPage } from './graphql/statistics-fetchers'
@@ -15,13 +16,14 @@ import { fetchDatasetPageMock } from './dataset-explorer-api.mock'
  */
 export async function fetchDatasetPage(
   search: StatisticsDatasetExplorerSearch,
+  options: DatasetFilterOptions = {},
 ): Promise<StatisticsDatasetPage> {
   if (isStatisticsMockEnabled()) {
-    return fetchDatasetPageMock(search)
+    return fetchDatasetPageMock(search, options)
   }
 
   return fetchInsDatasetPage({
-    filter: buildDatasetFilterInput(search),
+    filter: buildDatasetFilterInput(search, options),
     limit: EXPLORER_PAGE_SIZE,
     offset: explorerOffset(search),
   })

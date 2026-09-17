@@ -53,6 +53,7 @@ import { Route as DevelopmentSplatRouteImport } from './routes/development.$'
 import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ExperimentalSearchRouteImport } from './routes/experimental.search'
+import { Route as InsIndexRouteImport } from './routes/ins/index'
 import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intreprinderi-publice/index'
 import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
 import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
@@ -87,7 +88,6 @@ import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
-import { Route as StatisticiIndexRouteImport } from './routes/statistici/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
@@ -103,6 +103,10 @@ import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classi
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
+import { Route as InsComparatiiIndexRouteImport } from './routes/ins/comparatii/index'
+import { Route as InsSeturiIndexRouteImport } from './routes/ins/seturi/index'
+import { Route as InsSeturiCodRouteImport } from './routes/ins/seturi/$cod'
+import { Route as InsTeritoriiSirutaRouteImport } from './routes/ins/teritorii/$siruta'
 import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/investitii-publice/judete.$countyCode'
 import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/investitii-publice/localitati.$siruta'
 import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
@@ -144,10 +148,6 @@ import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/pr
 import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
 import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
 import { Route as ProcurementSuppliersCuiRouteImport } from './routes/procurement/suppliers/$cui'
-import { Route as StatisticiComparatiiIndexRouteImport } from './routes/statistici/comparatii/index'
-import { Route as StatisticiSeturiIndexRouteImport } from './routes/statistici/seturi/index'
-import { Route as StatisticiSeturiCodRouteImport } from './routes/statistici/seturi/$cod'
-import { Route as StatisticiTeritoriiSirutaRouteImport } from './routes/statistici/teritorii/$siruta'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as AdminCampaignsCampaignKeyIndexRouteImport } from './routes/admin/campaigns/$campaignKey/index'
@@ -436,6 +436,11 @@ const ExperimentalSearchRoute = ExperimentalSearchRouteImport.update({
 } as any).lazy(() =>
   import('./routes/experimental.search.lazy').then((d) => d.Route),
 )
+const InsIndexRoute = InsIndexRouteImport.update({
+  id: '/ins/',
+  path: '/ins/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/ins/index.lazy').then((d) => d.Route))
 const IntreprinderiPubliceIndexRoute =
   IntreprinderiPubliceIndexRouteImport.update({
     id: '/intreprinderi-publice/',
@@ -657,13 +662,6 @@ const SignUpSplatRoute = SignUpSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => SignUpRoute,
 } as any)
-const StatisticiIndexRoute = StatisticiIndexRouteImport.update({
-  id: '/statistici/',
-  path: '/statistici/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/statistici/index.lazy').then((d) => d.Route),
-)
 const UnsubscribeTokenRoute = UnsubscribeTokenRouteImport.update({
   id: '/unsubscribe/$token',
   path: '/unsubscribe/$token',
@@ -779,6 +777,34 @@ const EntitiesCuiShareImageDotpngRoute =
     path: '/share-image.png',
     getParentRoute: () => EntitiesCuiRoute,
   } as any)
+const InsComparatiiIndexRoute = InsComparatiiIndexRouteImport.update({
+  id: '/ins/comparatii/',
+  path: '/ins/comparatii/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/ins/comparatii/index.lazy').then((d) => d.Route),
+)
+const InsSeturiIndexRoute = InsSeturiIndexRouteImport.update({
+  id: '/ins/seturi/',
+  path: '/ins/seturi/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/ins/seturi/index.lazy').then((d) => d.Route),
+)
+const InsSeturiCodRoute = InsSeturiCodRouteImport.update({
+  id: '/ins/seturi/$cod',
+  path: '/ins/seturi/$cod',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/ins/seturi/$cod.lazy').then((d) => d.Route),
+)
+const InsTeritoriiSirutaRoute = InsTeritoriiSirutaRouteImport.update({
+  id: '/ins/teritorii/$siruta',
+  path: '/ins/teritorii/$siruta',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/ins/teritorii/$siruta.lazy').then((d) => d.Route),
+)
 const InvestitiiPubliceJudeteCountyCodeRoute =
   InvestitiiPubliceJudeteCountyCodeRouteImport.update({
     id: '/judete/$countyCode',
@@ -1067,36 +1093,6 @@ const ProcurementSuppliersCuiRoute = ProcurementSuppliersCuiRouteImport.update({
 } as any).lazy(() =>
   import('./routes/procurement/suppliers/$cui.lazy').then((d) => d.Route),
 )
-const StatisticiComparatiiIndexRoute =
-  StatisticiComparatiiIndexRouteImport.update({
-    id: '/statistici/comparatii/',
-    path: '/statistici/comparatii/',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/statistici/comparatii/index.lazy').then((d) => d.Route),
-  )
-const StatisticiSeturiIndexRoute = StatisticiSeturiIndexRouteImport.update({
-  id: '/statistici/seturi/',
-  path: '/statistici/seturi/',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/statistici/seturi/index.lazy').then((d) => d.Route),
-)
-const StatisticiSeturiCodRoute = StatisticiSeturiCodRouteImport.update({
-  id: '/statistici/seturi/$cod',
-  path: '/statistici/seturi/$cod',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/statistici/seturi/$cod.lazy').then((d) => d.Route),
-)
-const StatisticiTeritoriiSirutaRoute =
-  StatisticiTeritoriiSirutaRouteImport.update({
-    id: '/statistici/teritorii/$siruta',
-    path: '/statistici/teritorii/$siruta',
-    getParentRoute: () => rootRouteImport,
-  } as any).lazy(() =>
-    import('./routes/statistici/teritorii/$siruta.lazy').then((d) => d.Route),
-  )
 const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
   id: '/$pathId/',
   path: '/$pathId/',
@@ -1514,6 +1510,7 @@ export interface FileRoutesByFullPath {
   '/companies/': typeof CompaniesIndexRoute
   '/development/': typeof DevelopmentIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/ins/': typeof InsIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
@@ -1522,7 +1519,6 @@ export interface FileRoutesByFullPath {
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
-  '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -1538,6 +1534,8 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/ins/seturi/$cod': typeof InsSeturiCodRoute
+  '/ins/teritorii/$siruta': typeof InsTeritoriiSirutaRoute
   '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
   '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
@@ -1564,11 +1562,11 @@ export interface FileRoutesByFullPath {
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
-  '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
-  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/ins/comparatii/': typeof InsComparatiiIndexRoute
+  '/ins/seturi/': typeof InsSeturiIndexRoute
   '/legislation/acts/': typeof LegislationActsIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
@@ -1581,8 +1579,6 @@ export interface FileRoutesByFullPath {
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
-  '/statistici/comparatii/': typeof StatisticiComparatiiIndexRoute
-  '/statistici/seturi/': typeof StatisticiSeturiIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
@@ -1685,6 +1681,7 @@ export interface FileRoutesByTo {
   '/companies': typeof CompaniesIndexRoute
   '/development': typeof DevelopmentIndexRoute
   '/entities': typeof EntitiesIndexRoute
+  '/ins': typeof InsIndexRoute
   '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice': typeof InvestitiiPubliceIndexRoute
   '/justitie': typeof JustitieIndexRoute
@@ -1693,7 +1690,6 @@ export interface FileRoutesByTo {
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/procurement': typeof ProcurementIndexRoute
-  '/statistici': typeof StatisticiIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
@@ -1705,6 +1701,8 @@ export interface FileRoutesByTo {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/ins/seturi/$cod': typeof InsSeturiCodRoute
+  '/ins/teritorii/$siruta': typeof InsTeritoriiSirutaRoute
   '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
   '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
@@ -1731,11 +1729,11 @@ export interface FileRoutesByTo {
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
-  '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
-  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
+  '/ins/comparatii': typeof InsComparatiiIndexRoute
+  '/ins/seturi': typeof InsSeturiIndexRoute
   '/legislation/acts': typeof LegislationActsIndexRoute
   '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
@@ -1748,8 +1746,6 @@ export interface FileRoutesByTo {
   '/parlament/voturi': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui': typeof PrimarieCuiIndexRoute
   '/primarie/harta': typeof PrimarieHartaIndexRoute
-  '/statistici/comparatii': typeof StatisticiComparatiiIndexRoute
-  '/statistici/seturi': typeof StatisticiSeturiIndexRoute
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
@@ -1863,6 +1859,7 @@ export interface FileRoutesById {
   '/companies/': typeof CompaniesIndexRoute
   '/development/': typeof DevelopmentIndexRoute
   '/entities/': typeof EntitiesIndexRoute
+  '/ins/': typeof InsIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
@@ -1871,7 +1868,6 @@ export interface FileRoutesById {
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
-  '/statistici/': typeof StatisticiIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -1887,6 +1883,8 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/ins/seturi/$cod': typeof InsSeturiCodRoute
+  '/ins/teritorii/$siruta': typeof InsTeritoriiSirutaRoute
   '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
   '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
@@ -1913,11 +1911,11 @@ export interface FileRoutesById {
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
-  '/statistici/seturi/$cod': typeof StatisticiSeturiCodRoute
-  '/statistici/teritorii/$siruta': typeof StatisticiTeritoriiSirutaRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/ins/comparatii/': typeof InsComparatiiIndexRoute
+  '/ins/seturi/': typeof InsSeturiIndexRoute
   '/legislation/acts/': typeof LegislationActsIndexRoute
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
@@ -1930,8 +1928,6 @@ export interface FileRoutesById {
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
-  '/statistici/comparatii/': typeof StatisticiComparatiiIndexRoute
-  '/statistici/seturi/': typeof StatisticiSeturiIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
@@ -2047,6 +2043,7 @@ export interface FileRouteTypes {
     | '/companies/'
     | '/development/'
     | '/entities/'
+    | '/ins/'
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
     | '/justitie/'
@@ -2055,7 +2052,6 @@ export interface FileRouteTypes {
     | '/parlament/'
     | '/primarie/'
     | '/procurement/'
-    | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -2071,6 +2067,8 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/ins/seturi/$cod'
+    | '/ins/teritorii/$siruta'
     | '/investitii-publice/judete/$countyCode'
     | '/investitii-publice/localitati/$siruta'
     | '/investitii-publice/obiective/$id'
@@ -2097,11 +2095,11 @@ export interface FileRouteTypes {
     | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
     | '/procurement/suppliers/$cui'
-    | '/statistici/seturi/$cod'
-    | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/ins/comparatii/'
+    | '/ins/seturi/'
     | '/legislation/acts/'
     | '/maps/datasets/'
     | '/maps/editor/'
@@ -2114,8 +2112,6 @@ export interface FileRouteTypes {
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
-    | '/statistici/comparatii/'
-    | '/statistici/seturi/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
@@ -2218,6 +2214,7 @@ export interface FileRouteTypes {
     | '/companies'
     | '/development'
     | '/entities'
+    | '/ins'
     | '/intreprinderi-publice'
     | '/investitii-publice'
     | '/justitie'
@@ -2226,7 +2223,6 @@ export interface FileRouteTypes {
     | '/parlament'
     | '/primarie'
     | '/procurement'
-    | '/statistici'
     | '/charts'
     | '/$lang/learning/onboarding'
     | '/achizitii/achizitii-directe/$id'
@@ -2238,6 +2234,8 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/ins/seturi/$cod'
+    | '/ins/teritorii/$siruta'
     | '/investitii-publice/judete/$countyCode'
     | '/investitii-publice/localitati/$siruta'
     | '/investitii-publice/obiective/$id'
@@ -2264,11 +2262,11 @@ export interface FileRouteTypes {
     | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
     | '/procurement/suppliers/$cui'
-    | '/statistici/seturi/$cod'
-    | '/statistici/teritorii/$siruta'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
+    | '/ins/comparatii'
+    | '/ins/seturi'
     | '/legislation/acts'
     | '/maps/datasets'
     | '/maps/editor'
@@ -2281,8 +2279,6 @@ export interface FileRouteTypes {
     | '/parlament/voturi'
     | '/primarie/$cui'
     | '/primarie/harta'
-    | '/statistici/comparatii'
-    | '/statistici/seturi'
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
@@ -2395,6 +2391,7 @@ export interface FileRouteTypes {
     | '/companies/'
     | '/development/'
     | '/entities/'
+    | '/ins/'
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
     | '/justitie/'
@@ -2403,7 +2400,6 @@ export interface FileRouteTypes {
     | '/parlament/'
     | '/primarie/'
     | '/procurement/'
-    | '/statistici/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -2419,6 +2415,8 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/ins/seturi/$cod'
+    | '/ins/teritorii/$siruta'
     | '/investitii-publice/judete/$countyCode'
     | '/investitii-publice/localitati/$siruta'
     | '/investitii-publice/obiective/$id'
@@ -2445,11 +2443,11 @@ export interface FileRouteTypes {
     | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
     | '/procurement/suppliers/$cui'
-    | '/statistici/seturi/$cod'
-    | '/statistici/teritorii/$siruta'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/ins/comparatii/'
+    | '/ins/seturi/'
     | '/legislation/acts/'
     | '/maps/datasets/'
     | '/maps/editor/'
@@ -2462,8 +2460,6 @@ export interface FileRouteTypes {
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
-    | '/statistici/comparatii/'
-    | '/statistici/seturi/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
@@ -2561,11 +2557,11 @@ export interface RootRouteChildren {
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
   AlegeriIndexRoute: typeof AlegeriIndexRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
+  InsIndexRoute: typeof InsIndexRoute
   IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
   LegislationIndexRoute: typeof LegislationIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
-  StatisticiIndexRoute: typeof StatisticiIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -2574,6 +2570,8 @@ export interface RootRouteChildren {
   ApiV1GraphqlRoute: typeof ApiV1GraphqlRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
+  InsSeturiCodRoute: typeof InsSeturiCodRoute
+  InsTeritoriiSirutaRoute: typeof InsTeritoriiSirutaRoute
   LegislationActsActIdRoute: typeof LegislationActsActIdRoute
   MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
   MapsDatasetsNewRoute: typeof MapsDatasetsNewRoute
@@ -2587,10 +2585,10 @@ export interface RootRouteChildren {
   PnrrJudeteCountySirutaRoute: typeof PnrrJudeteCountySirutaRoute
   PnrrOrganizatiiCuiRoute: typeof PnrrOrganizatiiCuiRoute
   PnrrProiecteProjectKeyRoute: typeof PnrrProiecteProjectKeyRoute
-  StatisticiSeturiCodRoute: typeof StatisticiSeturiCodRoute
-  StatisticiTeritoriiSirutaRoute: typeof StatisticiTeritoriiSirutaRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
+  InsComparatiiIndexRoute: typeof InsComparatiiIndexRoute
+  InsSeturiIndexRoute: typeof InsSeturiIndexRoute
   LegislationActsIndexRoute: typeof LegislationActsIndexRoute
   MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
@@ -2602,8 +2600,6 @@ export interface RootRouteChildren {
   ParlamentStenogrameIndexRoute: typeof ParlamentStenogrameIndexRoute
   ParlamentVoturiIndexRoute: typeof ParlamentVoturiIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
-  StatisticiComparatiiIndexRoute: typeof StatisticiComparatiiIndexRoute
-  StatisticiSeturiIndexRoute: typeof StatisticiSeturiIndexRoute
   ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
   ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
   ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
@@ -2923,6 +2919,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExperimentalSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ins/': {
+      id: '/ins/'
+      path: '/ins'
+      fullPath: '/ins/'
+      preLoaderRoute: typeof InsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/intreprinderi-publice/': {
       id: '/intreprinderi-publice/'
       path: '/intreprinderi-publice'
@@ -3168,13 +3171,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpSplatRouteImport
       parentRoute: typeof SignUpRoute
     }
-    '/statistici/': {
-      id: '/statistici/'
-      path: '/statistici'
-      fullPath: '/statistici/'
-      preLoaderRoute: typeof StatisticiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/unsubscribe/$token': {
       id: '/unsubscribe/$token'
       path: '/unsubscribe/$token'
@@ -3293,6 +3289,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/entities/$cui/share-image.png'
       preLoaderRoute: typeof EntitiesCuiShareImageDotpngRouteImport
       parentRoute: typeof EntitiesCuiRoute
+    }
+    '/ins/comparatii/': {
+      id: '/ins/comparatii/'
+      path: '/ins/comparatii'
+      fullPath: '/ins/comparatii/'
+      preLoaderRoute: typeof InsComparatiiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ins/seturi/': {
+      id: '/ins/seturi/'
+      path: '/ins/seturi'
+      fullPath: '/ins/seturi/'
+      preLoaderRoute: typeof InsSeturiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ins/seturi/$cod': {
+      id: '/ins/seturi/$cod'
+      path: '/ins/seturi/$cod'
+      fullPath: '/ins/seturi/$cod'
+      preLoaderRoute: typeof InsSeturiCodRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ins/teritorii/$siruta': {
+      id: '/ins/teritorii/$siruta'
+      path: '/ins/teritorii/$siruta'
+      fullPath: '/ins/teritorii/$siruta'
+      preLoaderRoute: typeof InsTeritoriiSirutaRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/investitii-publice/judete/$countyCode': {
       id: '/investitii-publice/judete/$countyCode'
@@ -3580,34 +3604,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/procurement/suppliers/$cui'
       preLoaderRoute: typeof ProcurementSuppliersCuiRouteImport
       parentRoute: typeof ProcurementRouteRoute
-    }
-    '/statistici/comparatii/': {
-      id: '/statistici/comparatii/'
-      path: '/statistici/comparatii'
-      fullPath: '/statistici/comparatii/'
-      preLoaderRoute: typeof StatisticiComparatiiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/statistici/seturi/': {
-      id: '/statistici/seturi/'
-      path: '/statistici/seturi'
-      fullPath: '/statistici/seturi/'
-      preLoaderRoute: typeof StatisticiSeturiIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/statistici/seturi/$cod': {
-      id: '/statistici/seturi/$cod'
-      path: '/statistici/seturi/$cod'
-      fullPath: '/statistici/seturi/$cod'
-      preLoaderRoute: typeof StatisticiSeturiCodRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/statistici/teritorii/$siruta': {
-      id: '/statistici/teritorii/$siruta'
-      path: '/statistici/teritorii/$siruta'
-      fullPath: '/statistici/teritorii/$siruta'
-      preLoaderRoute: typeof StatisticiTeritoriiSirutaRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/$lang/learning/$pathId/': {
       id: '/$lang/learning/$pathId/'
@@ -4337,11 +4333,11 @@ const rootRouteChildren: RootRouteChildren = {
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
   AlegeriIndexRoute: AlegeriIndexRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
+  InsIndexRoute: InsIndexRoute,
   IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
   LegislationIndexRoute: LegislationIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
-  StatisticiIndexRoute: StatisticiIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,
@@ -4353,6 +4349,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiV1GraphqlRoute: ApiV1GraphqlRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
+  InsSeturiCodRoute: InsSeturiCodRoute,
+  InsTeritoriiSirutaRoute: InsTeritoriiSirutaRoute,
   LegislationActsActIdRoute: LegislationActsActIdRoute,
   MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,
   MapsDatasetsNewRoute: MapsDatasetsNewRoute,
@@ -4366,10 +4364,10 @@ const rootRouteChildren: RootRouteChildren = {
   PnrrJudeteCountySirutaRoute: PnrrJudeteCountySirutaRoute,
   PnrrOrganizatiiCuiRoute: PnrrOrganizatiiCuiRoute,
   PnrrProiecteProjectKeyRoute: PnrrProiecteProjectKeyRoute,
-  StatisticiSeturiCodRoute: StatisticiSeturiCodRoute,
-  StatisticiTeritoriiSirutaRoute: StatisticiTeritoriiSirutaRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
+  InsComparatiiIndexRoute: InsComparatiiIndexRoute,
+  InsSeturiIndexRoute: InsSeturiIndexRoute,
   LegislationActsIndexRoute: LegislationActsIndexRoute,
   MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
@@ -4381,8 +4379,6 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentStenogrameIndexRoute: ParlamentStenogrameIndexRoute,
   ParlamentVoturiIndexRoute: ParlamentVoturiIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
-  StatisticiComparatiiIndexRoute: StatisticiComparatiiIndexRoute,
-  StatisticiSeturiIndexRoute: StatisticiSeturiIndexRoute,
   ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,
   ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
   ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,

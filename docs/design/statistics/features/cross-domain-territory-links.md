@@ -1,6 +1,6 @@
 # Feature: Cross-domain territory links
 
-> Domain: statistics · Section of `/statistici/teritorii/$siruta` (and the map
+> Domain: statistics · Section of `/ins/teritorii/$siruta` (and the map
 > side panel) · High-value next #7
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`.
 
@@ -43,7 +43,7 @@ the cross-domain payoff of anchoring statistics on SIRUTA.
     UAT-level company filtering only if supported).
   - **Instituții publice** → `/entities?county=<countyCode>` / search scoped to
     the territory.
-  - **Hartă** → `/statistici/harti?level=<county|uat>&highlight=<siruta>`.
+  - **Hartă** → `/ins/harti?level=<county|uat>&highlight=<siruta>`.
   - **Înapoi la statistici** is implicit (the rail lives on the hub).
 - **Decision:** Every outbound link adds `from=statistici-teritoriu&siruta=<siruta>`
   so destination pages can offer a "back to territory" affordance (foundation
@@ -56,8 +56,8 @@ the cross-domain payoff of anchoring statistics on SIRUTA.
 ## Route and URL state
 
 - **No new route.** Rendered as a section/aside on
-  `/statistici/teritorii/$siruta` and inside the map side panel
-  (`/statistici/harti`). Reads `$siruta`, `level`, `countyCode`, resolved `name`,
+  `/ins/teritorii/$siruta` and inside the map side panel
+  (`/ins/harti`). Reads `$siruta`, `level`, `countyCode`, resolved `name`,
   and optional primărie `cui` from the hub's resolved identity.
 
 ## Data contract and mock states

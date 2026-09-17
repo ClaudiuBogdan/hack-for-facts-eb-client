@@ -9,7 +9,7 @@ import {
 } from './explorer-filter'
 
 describe('buildDatasetFilterInput', () => {
-  it('asks for both data statuses when no status filter is applied', () => {
+  it('asks for both data statuses, since the catalog page shows both', () => {
     // Omitting `dataStatus` makes the server read the fact-loaded view only,
     // which would silently hide the ~1,871 catalog-only datasets.
     expect(buildDatasetFilterInput({}).dataStatus).toEqual([
@@ -18,12 +18,9 @@ describe('buildDatasetFilterInput', () => {
     ])
   })
 
-  it('maps stare to dataStatus, never to syncStatus', () => {
-    expect(buildDatasetFilterInput({ stare: 'available' })).toEqual({
+  it('narrows to dataStatus, never syncStatus, for a picker that needs facts', () => {
+    expect(buildDatasetFilterInput({}, { onlyWithData: true })).toEqual({
       dataStatus: ['AVAILABLE'],
-    })
-    expect(buildDatasetFilterInput({ stare: 'catalog-only' })).toEqual({
-      dataStatus: ['CATALOG_ONLY'],
     })
   })
 
@@ -65,10 +62,8 @@ describe('explorerOffset', () => {
 })
 
 describe('countActiveExplorerFilters', () => {
-  it('excludes the search term, the status toggle and the page', () => {
-    expect(
-      countActiveExplorerFilters({ q: 'somaj', stare: 'available', pagina: 3 }),
-    ).toBe(0)
+  it('excludes the search term and the page', () => {
+    expect(countActiveExplorerFilters({ q: 'somaj', pagina: 3 })).toBe(0)
   })
 
   it('counts each selected periodicity separately', () => {
@@ -87,10 +82,6 @@ describe('hasActiveExplorerFilters', () => {
     expect(hasActiveExplorerFilters({ q: 'somaj' })).toBe(true)
   })
 
-  it('is true for a bare status filter', () => {
-    expect(hasActiveExplorerFilters({ stare: 'catalog-only' })).toBe(true)
-  })
-
   it('is false for a bare page change', () => {
     expect(hasActiveExplorerFilters({ pagina: 2 })).toBe(false)
   })
@@ -107,14 +98,12 @@ describe('parseStatisticsDatasetExplorerSearch', () => {
     expect(
       parseStatisticsDatasetExplorerSearch({
         q: '',
-        stare: 'bogus',
         frecventa: ['WEEKLY'],
         pagina: 0,
         uat: 'yes',
       }),
     ).toEqual({
       q: undefined,
-      stare: undefined,
       frecventa: undefined,
       pagina: undefined,
       uat: undefined,
@@ -126,7 +115,6 @@ describe('parseStatisticsDatasetExplorerSearch', () => {
       q: 'populatie',
       context: '2',
       frecventa: ['ANNUAL'],
-      stare: 'available',
       uat: true,
       judet: true,
       pagina: 2,

@@ -40,7 +40,7 @@ export function HubCountyRank({
           return (
             <li key={county.code}>
               <Link
-                to="/statistici/seturi/$cod"
+                to="/ins/seturi/$cod"
                 params={{ cod: layer.code }}
                 search={{ teritoriu: `cod:${county.code}`, frecventa: 'ANNUAL' }}
                 onPointerEnter={() => onHover?.(county.code)}

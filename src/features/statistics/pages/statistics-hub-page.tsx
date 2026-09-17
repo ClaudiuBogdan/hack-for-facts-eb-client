@@ -24,7 +24,7 @@ import { HUB_SERIES_CAPTURED_AT } from '../lib/hub-national-series'
 import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
 
 /**
- * `/statistici` — the statistics hub, in the landing's visual language, one
+ * `/ins` — the statistics hub, in the landing's visual language, one
  * band per idea (the composition chosen on 2026-09-16, see
  * `docs/design/statistics/design.md` §6).
  *
@@ -73,7 +73,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code)
   const setIndicator = (key: StatisticsHubIndicatorKey) => {
     void navigate({
-      to: '/statistici',
+      to: '/ins',
       search: key === DEFAULT_INDICATOR ? {} : { indicator: key },
       replace: true,
       resetScroll: false,
@@ -106,7 +106,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             label: <Trans>seturi de date cu observații</Trans>,
             note: <Trans>tot catalogul INS Tempo, pe opt teme oficiale</Trans>,
             link: (label, className) => (
-              <Link to="/statistici/seturi" search={{ stare: 'available' }} className={className}>
+              <Link to="/ins/seturi" className={className}>
                 {label}
               </Link>
             ),
@@ -121,7 +121,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             label: <Trans>teritorii, de la țară la localitate</Trans>,
             note: <Trans>42 de județe și fiecare localitate, pe cod SIRUTA</Trans>,
             link: (label, className) => (
-              <Link to="/statistici/comparatii" className={className}>
+              <Link to="/ins/comparatii" className={className}>
                 {label}
               </Link>
             ),
@@ -136,7 +136,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             label: <Trans>locuitori la 1 ianuarie {population.period}</Trans>,
             note: <Trans>populația după domiciliu, {population.code}</Trans>,
             link: (label, className) => (
-              <Link to="/statistici/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}>
+              <Link to="/ins/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}>
                 {label}
               </Link>
             ),
@@ -152,7 +152,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             note: <Trans>{seriesSpan.from}–{seriesSpan.to} pentru speranța de viață, cea mai lungă serie a paginii</Trans>,
             link: (label, className) => (
               <Link
-                to="/statistici/seturi/$cod"
+                to="/ins/seturi/$cod"
                 params={{ cod: lifeExpectancy.code }}
                 search={{ ...indicatorDetailSearch(lifeExpectancy), din: Number(seriesSpan.from), pana: Number(seriesSpan.to) }}
                 className={className}
@@ -203,10 +203,10 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                   <Trans>Sau mergi direct la</Trans>
                 </MonoLabel>
                 <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                  <Link to="/statistici/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
+                  <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
                     <Trans>Toate seturile de date</Trans>
                   </Link>
-                  <Link to="/statistici/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
+                  <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
                     <Trans>Compară teritorii</Trans>
                   </Link>
                 </span>
@@ -229,10 +229,10 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                   {hub?.catalog ? (
                     <Trans>
                       {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt teme
-                      oficiale. Fiecare rând deschide catalogul filtrat.
+                      oficiale. Fiecare rând deschide tema în tot catalogul.
                     </Trans>
                   ) : (
-                    <Trans>Seturile de date cu observații, pe cele opt teme oficiale. Fiecare rând deschide catalogul filtrat.</Trans>
+                    <Trans>Seturile de date cu observații, pe cele opt teme oficiale. Fiecare rând deschide tema în tot catalogul.</Trans>
                   )}
                 </p>
                 <div className="mt-5">
@@ -422,7 +422,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                   </MonoLabel>
                   <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
                     <Link
-                      to="/statistici/seturi/$cod"
+                      to="/ins/seturi/$cod"
                       params={{ cod: births.code }}
                       search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }}
                       className={HUB_TEXT_LINK_CLASS}
@@ -430,7 +430,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                       <Trans>Seria nașterilor</Trans>
                     </Link>
                     <Link
-                      to="/statistici/seturi/$cod"
+                      to="/ins/seturi/$cod"
                       params={{ cod: deaths.code }}
                       search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }}
                       className={HUB_TEXT_LINK_CLASS}
@@ -463,7 +463,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             <ul className="grid gap-px border bg-border/70 sm:grid-cols-3">
               <li>
                 <Link
-                  to="/statistici/comparatii"
+                  to="/ins/comparatii"
                   search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }}
                   className="block h-full bg-background p-5 transition-colors hover:bg-muted/40"
                 >
@@ -477,7 +477,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               </li>
               <li>
                 <Link
-                  to="/statistici/seturi/$cod"
+                  to="/ins/seturi/$cod"
                   params={{ cod: 'SOM101F' }}
                   search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }}
                   className="block h-full bg-background p-5 transition-colors hover:bg-muted/40"
@@ -492,7 +492,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               </li>
               <li>
                 <Link
-                  to="/statistici/seturi/$cod"
+                  to="/ins/seturi/$cod"
                   params={{ cod: 'TUR104E' }}
                   search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }}
                   className="block h-full bg-background p-5 transition-colors hover:bg-muted/40"

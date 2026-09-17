@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { StatisticsTerritoryHubPage } from '@/features/statistics/pages/statistics-territory-hub-page'
 
-export const Route = createLazyFileRoute('/statistici/teritorii/$siruta')({
+export const Route = createLazyFileRoute('/ins/teritorii/$siruta')({
   component: StatisticsTerritoryRoutePage,
 })
 

@@ -24,7 +24,7 @@ type MainItemUrl =
   | "/intreprinderi-publice"
   | "/alegeri"
   | "/ong-uri"
-  | "/statistici";
+  | "/ins";
 
 const mainItems: ReadonlyArray<{
   title: React.ReactNode;
@@ -99,7 +99,7 @@ const mainItems: ReadonlyArray<{
   },
   {
     title: <Trans>Statistici</Trans>,
-    url: "/statistici",
+    url: "/ins",
     icon: Activity,
   },
 ];

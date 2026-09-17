@@ -24,7 +24,7 @@ import { insObservationNodeRawSchema, insPageInfoRawSchema } from './statistics-
 const logger = createLogger('statistics-hub')
 
 /**
- * The `/statistici` hub read.
+ * The `/ins` hub read.
  *
  * Independent sections, so a slow or failed one never blanks the page: the
  * national indicators (one `insLatestDatasetValues` at RO/NATIONAL), three

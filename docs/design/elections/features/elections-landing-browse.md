@@ -106,7 +106,7 @@ historical-included; an election with `publicationStatus` provisional.
    locality) → on submit routes to the latest local/relevant contest for that
    geography, or to `/alegeri/loc/$reportingUnitKey` when only geography chosen.
    Copy: "Cum s-a votat în zona ta?".
-7. `RelatedLinksRail` — links to `/parlament`, `/primarie`, `/statistici`.
+7. `RelatedLinksRail` — links to `/parlament`, `/primarie`, `/ins`.
 
 **Election hub `/alegeri/$electionKey`:**
 

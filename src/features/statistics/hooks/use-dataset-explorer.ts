@@ -18,7 +18,6 @@ function explorerHashSource(search: StatisticsDatasetExplorerSearch) {
     q: search.q ?? null,
     context: search.context ?? null,
     frecventa: search.frecventa ? [...search.frecventa].sort() : null,
-    stare: search.stare ?? null,
     uat: search.uat ?? false,
     judet: search.judet ?? false,
     pagina: search.pagina ?? 1,

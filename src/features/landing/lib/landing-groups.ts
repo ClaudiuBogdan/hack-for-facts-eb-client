@@ -173,7 +173,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       {
         title: msg`Statistici INS`,
         blurb: msg`Serii oficiale INS, cu acoperirea declarată pentru fiecare nivel.`,
-        to: '/statistici',
+        to: '/ins',
         icon: Activity,
       },
     ],

@@ -8,7 +8,7 @@ describe('ShareFilteredView', () => {
 
   beforeEach(() => {
     writeTextMock.mockReset()
-    window.history.pushState({}, '', '/statistici/teritorii/54975?period=2023')
+    window.history.pushState({}, '', '/ins/teritorii/54975?period=2023')
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: {

@@ -24,7 +24,7 @@ export type StatisticsDatasetDetailLoaderData = {
 }
 
 /** Shared source selection governs both SSR reads and client hydration. */
-export const Route = createFileRoute('/statistici/seturi/$cod')({
+export const Route = createFileRoute('/ins/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
   // Canonical uppercase codes: insDataset(code:) is exact-match, and one URL
   // per dataset beats two cache entries.
@@ -32,7 +32,7 @@ export const Route = createFileRoute('/statistici/seturi/$cod')({
     const canonical = params.cod.trim().toUpperCase()
     if (params.cod !== canonical) {
       throw redirect({
-        to: '/statistici/seturi/$cod',
+        to: '/ins/seturi/$cod',
         params: { cod: canonical },
         replace: true,
       })

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the `/statistici` hub — the matrix search hero with
+ * Integration tests for the `/ins` hub — the matrix search hero with
  * the theme panel, the figures band, the national rows, the county map with
  * its indicator switch, the 35-year band and the sources strip.
  *
@@ -46,7 +46,7 @@ test.describe('Statistics hub', () => {
   })
 
   test('renders the hero, the figures and the national rows with exact cell links', async ({ page }) => {
-    await page.goto('/statistici')
+    await page.goto('/ins')
     await waitForHydration(page)
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Fiecare localitate')
 
@@ -64,14 +64,14 @@ test.describe('Statistics hub', () => {
     await expect(population).toContainText('21.646.220')
     await expect(population).toContainText('persoane')
     const href = (await population.getAttribute('href'))!
-    expect(href).toContain('/statistici/seturi/POP107D')
+    expect(href).toContain('/ins/seturi/POP107D')
     expect(searchParam(href, 'teritoriu')).toBe('cod:RO')
     expect(searchParam(href, 'unitate')).toBe('9685')
     expect(searchParam(href, 'frecventa')).toBe('ANNUAL')
   })
 
   test('colours the counties by the indicator in the URL and switches it without a reload', async ({ page }) => {
-    await page.goto('/statistici?indicator=somaj')
+    await page.goto('/ins?indicator=somaj')
     await waitForHydration(page)
     const counties = page.locator('section[aria-labelledby="hub-counties-title"]')
     await counties.scrollIntoViewIfNeeded()
@@ -79,7 +79,7 @@ test.describe('Statistics hub', () => {
     await expect(counties.getByRole('link', { name: /Teleorman/ }).first()).toContainText('9,3%')
 
     await counties.getByRole('radio', { name: 'Speranța de viață' }).click()
-    await expect(page).toHaveURL(/\/statistici$/)
+    await expect(page).toHaveURL(/\/ins$/)
     await expect(counties.getByRole('link', { name: /Vâlcea/ }).first()).toContainText('82,01')
     await expect(counties.getByRole('group', { name: /Durata medie a vieții, 2025/ })).toBeVisible()
     // Counties the read did not return are hatched and counted, never zero.
@@ -87,7 +87,7 @@ test.describe('Statistics hub', () => {
   })
 
   test('draws the 35-year band from the captured series and opens the matrix search on typing', async ({ page }) => {
-    await page.goto('/statistici')
+    await page.goto('/ins')
     await waitForHydration(page)
     const change = page.locator('section[aria-labelledby="hub-change-title"]')
     await change.scrollIntoViewIfNeeded()
@@ -104,6 +104,6 @@ test.describe('Statistics hub', () => {
     await expect(option).toContainText('POP107D')
     await search.press('ArrowDown')
     await search.press('Enter')
-    await expect(page).toHaveURL(/\/statistici\/seturi\/POP107D/)
+    await expect(page).toHaveURL(/\/ins\/seturi\/POP107D/)
   })
 })

@@ -43,7 +43,7 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
           {HUB_EXAMPLE_PLACES.map((place) => (
             <Link
               key={place.siruta}
-              to="/statistici/teritorii/$siruta"
+              to="/ins/teritorii/$siruta"
               params={{ siruta: place.siruta }}
               className="rounded-md border border-border/70 px-2 py-0.5 text-foreground transition-colors hover:border-primary/40 hover:bg-muted/50"
             >
@@ -101,7 +101,7 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
               <li key={row.code}>
                 {row.siruta ? (
                   <Link
-                    to="/statistici/teritorii/$siruta"
+                    to="/ins/teritorii/$siruta"
                     params={{ siruta: row.siruta }}
                     className={cn(
                       'flex items-center justify-between gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50',

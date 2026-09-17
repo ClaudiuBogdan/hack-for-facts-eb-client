@@ -6,7 +6,7 @@
 
 ## 1. Domain purpose and scope
 
-**Decision:** The statistics domain delivers a dedicated `/statistici` area that
+**Decision:** The statistics domain delivers a dedicated `/ins` area that
 exposes INS Tempo statistics and SIRUTA geography as plain-Romanian,
 territory-anchored, shareable surfaces. It is the SIRUTA spine that other
 domains (budget, primărie, companies, institutions, maps) link into.
@@ -63,20 +63,20 @@ custom map-series builder, INS MCP tools, saved queries (UX doc §14 "Advanced")
 
 | Route | Surface | Feature file |
 |---|---|---|
-| `/statistici` | Landing: themed entry, territory search, coverage ribbon | (landing; covered by design.md §6, not a separate assigned file) |
-| `/statistici/teritorii/$siruta` | Territory hub = UAT/county dashboard + time-series switcher + cross-domain rail | `territory-hub-uat-dashboard.md`, `territory-time-series-switcher.md`, `cross-domain-territory-links.md` |
-| `/statistici/harti` | Demographic/economic choropleth maps | `demographic-economic-maps.md` |
-| `/statistici/seturi` | Dataset explorer (catalog, status-aware) | `dataset-explorer.md` |
-| `/statistici/seturi/$matrixCode` | Dataset detail | `dataset-detail.md` |
+| `/ins` | Landing: themed entry, territory search, coverage ribbon | (landing; covered by design.md §6, not a separate assigned file) |
+| `/ins/teritorii/$siruta` | Territory hub = UAT/county dashboard + time-series switcher + cross-domain rail | `territory-hub-uat-dashboard.md`, `territory-time-series-switcher.md`, `cross-domain-territory-links.md` |
+| `/ins/harti` | Demographic/economic choropleth maps | `demographic-economic-maps.md` |
+| `/ins/seturi` | Dataset explorer (catalog, status-aware) | `dataset-explorer.md` |
+| `/ins/seturi/$matrixCode` | Dataset detail | `dataset-detail.md` |
 
 **Decision (route added by this domain, consistent with the canonical scheme):**
 
 | Route | Surface | Feature file |
 |---|---|---|
-| `/statistici/comparatii` | Local comparisons | `local-comparisons.md` |
+| `/ins/comparatii` | Local comparisons | `local-comparisons.md` |
 
 **Decision — non-route features.** Territory time-series switcher and
-cross-domain links are **sections of `/statistici/teritorii/$siruta`**, not
+cross-domain links are **sections of `/ins/teritorii/$siruta`**, not
 routes. Request-this-dataset is a **dialog action** reachable from explorer rows
 and dataset detail (URL state `?request=<matrixCode>`), not a route.
 
@@ -88,7 +88,7 @@ and dataset detail (URL state `?request=<matrixCode>`), not a route.
 County hubs accept the county SIRUTA; level (`LAU` vs `NUTS3`) is derived from
 the resolved territory, mirroring `ins-stats-view`'s `isCounty` branch.
 
-**Decision — navigation.** Add a single sidebar entry "Statistici" → `/statistici`
+**Decision — navigation.** Add a single sidebar entry "Statistici" → `/ins`
 (integration note: `src/components/sidebar/nav-main.tsx` `MainItemUrl` union and
 items array). Sub-surfaces are reached from the landing page and contextual
 links, not from top-level nav.
@@ -169,7 +169,7 @@ under `src/components/charts` (and the recharts usage already present in
 `src/components/maps/InteractiveMap.tsx`, `MapLegend`, `HeatmapDataTable`, and
 binning from `src/hooks/useAdvancedMapAnalyticsBins.ts`.
 
-## 6. Landing page (`/statistici`) — design
+## 6. Landing page (`/ins`) — design
 
 **Decision (2026-09-16): the hub is the companies hub's composition, in the
 landing's visual language (`src/components/landing-skin/*`), one band per
@@ -183,7 +183,7 @@ it is not itself an analytics page. Sections, top→bottom:
    highlighted dataset or the explorer with the term; `mod+K` focuses), and
    „Sau mergi direct la" → explorer, comparisons. Beside it, the **catalog on
    its eight themes**: a proportion strip and one row per theme with count and
-   share, each a saved query into `/statistici/seturi?context=…`.
+   share, each a saved query into `/ins/seturi?context=…`.
 2. **Figures band**, counting up on arrival: datasets with observations,
    territories on SIRUTA, population at the latest 1 January, years of annual
    series. Each cell links to the surface that holds it.
@@ -248,7 +248,7 @@ Known follow-ups from the review of 2026-09-17, deliberately not in scope:
 Audited in the browser (desktop and phone captures, filter and control
 probes) after the hub landed. Decisions, one per page:
 
-**Dataset explorer (`/statistici/seturi`).** Decision: a facet rail beside
+**Dataset explorer (`/ins/seturi`).** Decision: a facet rail beside
 the list on desktop (themes as a list with loaded-dataset counts, cadence,
 coverage), the same controls in the sheet on a phone; the status control
 („Cu date" / „Doar catalog") shows only when it can change something. Rows
@@ -259,7 +259,7 @@ catalog's declared span. Fixed: `?context=1` (a bare digit the router parses
 as a number) and a single `?frecventa=ANNUAL` were dropped by the search
 schema, so every theme link from the hub landed unfiltered.
 
-**Territory hub (`/statistici/teritorii/$siruta`).** Decision: the four
+**Territory hub (`/ins/teritorii/$siruta`).** Decision: the four
 headline indicators as a band with county and national references, then
 every other indicator in an accordion grouped by domain (from the matrix
 code's three-letter prefix: `POP`, `FOM`/`SOM`, `LOC`, `SCL`, `SAN`, `GOS`,
@@ -269,7 +269,7 @@ The first two groups open by default. Replaced a 9,600-pixel wall of
 identical tiles that led with agriculture because it sorted by code and
 printed raw unit symbols („17.953 other").
 
-**Dataset detail (`/statistici/seturi/$cod`).** Decision: the scope is a row
+**Dataset detail (`/ins/seturi/$cod`).** Decision: the scope is a row
 of labelled chips („Sexe: Total", „Teritoriu: România") rather than a run-on
 sentence of bare values, with the same popovers behind them and the same
 bottom sheet on a phone. The hero says the unit in Romanian and formats the
@@ -277,7 +277,7 @@ period; the chart is captioned „Evoluție în timp" rather than repeating the
 title, formats its axis in the active locale, and fills the column. The
 selection logic (native lane, pins, validation) is untouched.
 
-**Comparisons (`/statistici/comparatii`).** Decision: the picture first —
+**Comparisons (`/ins/comparatii`).** Decision: the picture first —
 the whole history, then the chosen period with its selector beside it — and
 the table under them. The indicator picker lists nothing until two
 characters are typed; an unfiltered 1,916-row list taught nothing. Bar labels
@@ -349,6 +349,44 @@ Follow-ups, deliberately not in scope:
 - The tree has no search of its own, unlike the INS page. The dataset search
   beside the list already finds a dataset by name or code.
 
+## 6d. The section is INS, and the catalog page is one of its pages (2026-09-17)
+
+The module answers with one institution's data, so its routes now say so:
+`/statistici/*` became `/ins/*` (`/ins`, `/ins/seturi`, `/ins/seturi/$cod`,
+`/ins/teritorii/$siruta`, `/ins/comparatii`). The sidebar entry keeps reading
+„Statistici" — the acronym names the source, the word names what a reader is
+looking for. No redirect stands behind the old paths: nothing outside the app
+links to them yet, and a redirect tree would outlive the reason for it.
+
+Decisions on `/ins/seturi`, which read as a standalone surface rather than as a
+page of the section:
+
+- **The way back comes first.** A „Înapoi la statistici" button above the
+  title, the same control the dataset detail and the territory hub already
+  carry. Every other page of the section had one; the catalog was the page a
+  reader could only leave through the sidebar.
+- **The status control is gone**, and with it `?stare=`. The catalog is one
+  population again — every catalogued dataset, each row carrying its own
+  `DataStatusBadge` — instead of three tabs over the same list. `dataStatus`
+  survives as a call-site option (`buildDatasetFilterInput(search, { onlyWithData })`)
+  because the hub's matrix search and the comparison picker open a series
+  straight away and must not offer a dataset with no facts in it. This
+  supersedes the status-control decision in §6b and the `Status` toggle in
+  `features/dataset-explorer.md`.
+- **The copy-link button is gone.** The URL is the shareable state and the
+  address bar is where a reader copies it from; `ShareFilteredView` stays on
+  the territory hub, where the state a reader would share is further from the
+  address bar.
+
+Two populations meet wherever a count leads to the catalog: the hub's theme
+rows, its matrix search and the rail all count datasets with observations,
+while the catalog page counts every catalogued dataset. Each of those places
+now names the population it opens — the rail keeps its „· seturi cu date"
+legend, the theme panel's copy says a row opens „tema în tot catalogul", and
+the search's footer link says „Caută în tot catalogul" instead of promising a
+number the other side would not match. `?stare=` used to hide this by
+filtering the destination; without it, the words have to do the work.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):
@@ -379,11 +417,11 @@ and a null-unit observation.
 
 | Order | Feature | Route/Section | Primary reused data | New surface |
 |---|---|---|---|---|
-| 1 | Territory hub + UAT dashboard | `/statistici/teritorii/$siruta` | `getInsUatDashboard`/`getInsCountyDashboard`, registry top metrics, derived indicators | `TerritoryHeader`, dashboard route |
-| 2 | Demographic/economic maps | `/statistici/harti` | geojson + `getInsObservationsSnapshotByDatasets` (county) | INS choropleth fill adapter |
-| 3 | Dataset explorer | `/statistici/seturi` | `useInsDatasetCatalog`, `useInsContexts` | status-aware list route |
-| 4 | Dataset detail | `/statistici/seturi/$matrixCode` | `getInsDatasetDetails`, `getInsDatasetHistory`, dimensions, series-selection | standalone detail route |
-| 5 | Local comparisons | `/statistici/comparatii` | per-territory `getInsLatestDatasetValues`/snapshot OR new `compareInsUats` | comparison route |
+| 1 | Territory hub + UAT dashboard | `/ins/teritorii/$siruta` | `getInsUatDashboard`/`getInsCountyDashboard`, registry top metrics, derived indicators | `TerritoryHeader`, dashboard route |
+| 2 | Demographic/economic maps | `/ins/harti` | geojson + `getInsObservationsSnapshotByDatasets` (county) | INS choropleth fill adapter |
+| 3 | Dataset explorer | `/ins/seturi` | `useInsDatasetCatalog`, `useInsContexts` | status-aware list route |
+| 4 | Dataset detail | `/ins/seturi/$matrixCode` | `getInsDatasetDetails`, `getInsDatasetHistory`, dimensions, series-selection | standalone detail route |
+| 5 | Local comparisons | `/ins/comparatii` | per-territory `getInsLatestDatasetValues`/snapshot OR new `compareInsUats` | comparison route |
 | 6 | Time-series switcher | hub section | `getInsDatasetHistory` for one SIRUTA | dataset switcher |
 | 7 | Cross-domain links | hub section | SIRUTA/CUI join only | `RelatedLinksRail` |
 | 8 | Request this dataset | dialog | metadata-only list | request form + submit adapter |

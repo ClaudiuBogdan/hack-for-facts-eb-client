@@ -22,6 +22,10 @@ const THEME_TONES = [
  * The hero's panel: the catalog on its eight official themes — the strip for
  * proportion, one row per theme with count and share, each a saved query
  * into the explorer. It explains the first figure of the band below.
+ *
+ * The counts are datasets with observations, the destination is the whole
+ * catalog for that theme: two populations, so the copy above the panel says
+ * which one the number is, and the explorer's rail legend says it again.
  */
 export function HubThemePanel({ catalog, className }: { readonly catalog: StatisticsLandingCatalog; readonly className?: string }) {
   const { i18n } = useLingui()
@@ -49,8 +53,8 @@ export function HubThemePanel({ catalog, className }: { readonly catalog: Statis
         {themes.map((theme) => (
           <li key={theme.code}>
             <Link
-              to="/statistici/seturi"
-              search={{ context: theme.code, stare: 'available' }}
+              to="/ins/seturi"
+              search={{ context: theme.code }}
               className="flex items-center gap-3 py-2 transition-colors hover:bg-muted/40"
             >
               <span className={cn('size-2 shrink-0 rounded-[1px]', theme.tone)} aria-hidden="true" />

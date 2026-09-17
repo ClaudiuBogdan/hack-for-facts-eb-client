@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { StatisticsDatasetExplorerPage } from '@/features/statistics/pages/statistics-dataset-explorer-page'
 
-export const Route = createLazyFileRoute('/statistici/seturi/')({
+export const Route = createLazyFileRoute('/ins/seturi/')({
   component: StatisticsDatasetExplorerRoutePage,
 })
 

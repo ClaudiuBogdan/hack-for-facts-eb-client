@@ -1,6 +1,6 @@
 # Feature: Territory hub + UAT dashboard
 
-> Domain: statistics · Route: `/statistici/teritorii/$siruta` · MVP #1
+> Domain: statistics · Route: `/ins/teritorii/$siruta` · MVP #1
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`.
 
 ## Feature owner profile
@@ -53,8 +53,8 @@ page for the time-series switcher (feature 6) and cross-domain links (feature 7)
 
 ## Route and URL state
 
-- **Route:** `/statistici/teritorii/$siruta` (file:
-  `src/routes/statistici/teritorii.$siruta.tsx`, lazy split for the heavy body).
+- **Route:** `/ins/teritorii/$siruta` (file:
+  `src/routes/ins/teritorii.$siruta.tsx`, lazy split for the heavy body).
 - **Path param:** `$siruta` — string SIRUTA code (LAU or county).
 - **Search params** (zod `validateSearch`, all optional, default view renders
   with none):
@@ -108,8 +108,8 @@ Mock states to ship (`src/features/statistics/territory-hub/mocks`):
   Breadcrumb: Statistici / Teritorii / {name}
   <TerritoryHeader> {name} · <LevelBadge> · SIRUTA {siruta} (muted)
   <CoverageRibbon source="INS Tempo" freshness={lastSync} limitNote=… />
-  actions: [Compară] (→ /statistici/comparatii?territory=$siruta&dataset=…)
-           [Vezi pe hartă] (→ /statistici/harti?...) · <ShareFilteredView>
+  actions: [Compară] (→ /ins/comparatii?territory=$siruta&dataset=…)
+           [Vezi pe hartă] (→ /ins/harti?...) · <ShareFilteredView>
 </header>
 
 <section "Prezentare generală">
@@ -147,8 +147,8 @@ Mock states to ship (`src/features/statistics/territory-hub/mocks`):
 - Indicator card → "Vezi evoluția" updates `?dataset&tab=serie`, scrolls to the
   switcher (reuse the smooth-scroll pattern in `ins-stats-view` `scrollToDetailCard`).
 - Source link/icon on any tile → opens `SourceProvenanceDrawer`.
-- "Compară" → `/statistici/comparatii?territory=$siruta&dataset=POP107D`.
-- "Vezi pe hartă" → `/statistici/harti?indicator=POP107D&level=<county|uat>&highlight=$siruta`.
+- "Compară" → `/ins/comparatii?territory=$siruta&dataset=POP107D`.
+- "Vezi pe hartă" → `/ins/harti?indicator=POP107D&level=<county|uat>&highlight=$siruta`.
 - `ShareFilteredView` copies current URL.
 - Keyboard: tiles are buttons/links; full keyboard traversal; visible focus ring.
 
@@ -157,7 +157,7 @@ Mock states to ship (`src/features/statistics/territory-hub/mocks`):
 - **Loading:** identity skeleton + 4–5 tile skeletons (`Skeleton`), DESIGN_PRINCIPLES
   dot loader only for full-page bootstrap.
 - **Empty / not-found territory:** `EmptyState` "Teritoriu negăsit" + a
-  `TerritoryPicker` to search again; link back to `/statistici`.
+  `TerritoryPicker` to search again; link back to `/ins`.
 - **No data for an indicator:** tile shows "Date indisponibile încă" + the
   dataset name + (if catalog-only) `RequestDatasetAction`. Never blank.
 - **Partial dashboard (`partial=true`):** ribbon note "Rezultate parțiale — unele

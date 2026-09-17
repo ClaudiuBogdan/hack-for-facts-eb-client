@@ -669,7 +669,7 @@ to neutral-navy is a token swap.
 | Detail page shell               | Parliament `MemberProfileLayout`                           | breadcrumb band → hero → sidebar/content grid          |
 | Sticky compact header on scroll | PNRR `PnrrHeader` (extract a `useStickyHeader` hook)       | Feature pages with their own full header               |
 | Active-filter chip strip        | PNRR `PnrrActiveFilters` / parliament `MembersActiveFilters` | Any list page (renders `null` when empty)           |
-| Map + legend + toolbar + sheet  | PNRR `PnrrMapView` + `PnrrMapDetailsDrawer`                | `MapListSync` for `/investitii-publice`, `/statistici` |
+| Map + legend + toolbar + sheet  | PNRR `PnrrMapView` + `PnrrMapDetailsDrawer`                | `MapListSync` for `/investitii-publice`, `/ins` |
 | Deferred render + CLS guard     | PNRR `DeferredOverviewSection`                              | Heavy below-the-fold sections                          |
 
 When two domains need one of these, lift it into `src/components/` with a
@@ -846,7 +846,7 @@ here.
 | Justice             | `/justitie`            | `docs/design/justice/`                 | Structural privacy; entities named, persons aggregated |
 | Procurement         | `/achizitii`           | `docs/design/procurement/`             | Grain selector; honest money; neutral review signals|
 | Public investments  | `/investitii-publice`  | `docs/design/public-investments/`      | SIRUTA spine; `AmountWithEvidence`; map+list         |
-| Statistics (INS)    | `/statistici`          | `docs/design/statistics/`              | 27-vs-1,898 dataset gap; coverage-gated map levels   |
+| Statistics (INS)    | `/ins`          | `docs/design/statistics/`              | 27-vs-1,898 dataset gap; coverage-gated map levels   |
 
 **Cross-domain join keys (safe):** `CUI` (entities/fiscal/procurement/grants),
 `SIRUTA` (geography/investments/INS), `CPV` (procurement categories), `ECLI`
@@ -985,7 +985,7 @@ Append-only. Newest first. Each entry: date · decision · why.
   named-person shape cannot.
 - **2026-06-26 — Romanian path slugs** for new public domains (`/ong-uri`,
   `/achizitii`, `/legislatie`, `/alegeri`, `/justitie`, `/investitii-publice`,
-  `/statistici`, `/intreprinderi-publice`). English technical routes already
+  `/ins`, `/intreprinderi-publice`). English technical routes already
   shipped stay as-is. *Why:* Romanian-first audience; stable, understandable URLs.
 - **2026-06-26 — PNRR keeps its brutalist token set**, quarantined to PNRR
   surfaces. *Why:* it predates this system and tested well; isolating it avoids a

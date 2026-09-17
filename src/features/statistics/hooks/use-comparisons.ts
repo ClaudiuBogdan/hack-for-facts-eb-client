@@ -212,7 +212,7 @@ export function useComparisonDatasetSearch(term: string) {
 
   const query = useQuery({
     queryKey: ['statistics', 'comparisons', 'dataset-search', trimmed],
-    queryFn: () => fetchDatasetPage({ q: trimmed, stare: 'available' }),
+    queryFn: () => fetchDatasetPage({ q: trimmed }, { onlyWithData: true }),
     enabled,
   })
 

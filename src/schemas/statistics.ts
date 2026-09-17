@@ -59,7 +59,7 @@ export type StatisticsPeriodSearch = z.infer<
 >
 
 /**
- * Search state for the statistics hub route (`/statistici`).
+ * Search state for the statistics hub route (`/ins`).
  *
  * `indicator` is the county map's colouring — shareable, so a link can land
  * on "unemployment by county". The default view renders with no params.
@@ -77,7 +77,7 @@ export type StatisticsHubSearch = z.infer<typeof statisticsHubSearchSchema>
 
 /**
  * Search state for the territory hub route
- * (`/statistici/teritorii/$siruta`).
+ * (`/ins/teritorii/$siruta`).
  *
  * - `period`: latest | YYYY | YYYY-Qn | YYYY-MM.
  *
@@ -95,7 +95,7 @@ export type StatisticsTerritoryHubSearch = z.infer<
 >
 
 /**
- * Search state for the dataset explorer (`/statistici/seturi`).
+ * Search state for the dataset explorer (`/ins/seturi`).
  *
  * Param names are Romanian to match the route segments. Every field is
  * `.optional().catch(undefined)` so a malformed value in a shared URL degrades
@@ -104,7 +104,6 @@ export type StatisticsTerritoryHubSearch = z.infer<
  * - `q`: free-text dataset search (debounced, never a submit button).
  * - `context`: INS context (theme) code.
  * - `frecventa`: periodicity multi-select.
- * - `stare`: the honesty control — datasets with loaded facts vs. catalog-only.
  * - `uat` / `judet`: coverage flags.
  * - `pagina`: 1-based page index.
  */
@@ -128,7 +127,6 @@ export const statisticsDatasetExplorerSearchSchema = z
         z.array(explorerPeriodicitySchema).nonempty().optional(),
       )
       .catch(undefined),
-    stare: z.enum(['available', 'catalog-only']).optional().catch(undefined),
     uat: z.boolean().optional().catch(undefined),
     judet: z.boolean().optional().catch(undefined),
     pagina: z.number().int().min(1).optional().catch(undefined),
@@ -140,7 +138,7 @@ export type StatisticsDatasetExplorerSearch = z.infer<
 >
 
 /**
- * Search state for the dataset detail route (`/statistici/seturi/$cod`).
+ * Search state for the dataset detail route (`/ins/seturi/$cod`).
  *
  * Preserve identity input for descriptor-aware validation in source-selection.
  * Invalid explicit selections must remain visible and editable.
@@ -166,7 +164,7 @@ export type StatisticsDatasetDetailSearch = z.infer<
 >
 
 /**
- * Search state for the local comparisons route (`/statistici/comparatii`).
+ * Search state for the local comparisons route (`/ins/comparatii`).
  *
  * Raw URL intent is validated after routing. Territory tokens distinguish county
  * codes from SIRUTA; an explicitly selected single territory remains an
@@ -437,7 +435,7 @@ export interface StatisticsContextNode {
 }
 
 // ---------------------------------------------------------------------------
-// Statistics hub (`/statistici`)
+// Statistics hub (`/ins`)
 // ---------------------------------------------------------------------------
 
 /** How a hub value is read: which word follows it and how it is compacted. */

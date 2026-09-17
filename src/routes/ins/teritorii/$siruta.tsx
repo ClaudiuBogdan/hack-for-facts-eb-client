@@ -3,7 +3,7 @@ import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { parseStatisticsTerritoryHubSearch } from '@/schemas/statistics'
 
-export const Route = createFileRoute('/statistici/teritorii/$siruta')({
+export const Route = createFileRoute('/ins/teritorii/$siruta')({
   validateSearch: parseStatisticsTerritoryHubSearch,
   headers: () =>
     createPublicPageCacheHeaders({

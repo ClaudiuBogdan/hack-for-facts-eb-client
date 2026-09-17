@@ -66,7 +66,7 @@ export function TerritoryIndicatorRow({ tile, siruta, countyCode }: RowProps) {
     <li className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_6rem_9rem_auto]">
       <div className="min-w-0">
         <Link
-          to="/statistici/seturi/$cod"
+          to="/ins/seturi/$cod"
           params={{ cod: tile.datasetCode }}
           search={{ teritoriu: `siruta:${siruta}` }}
           className="block truncate text-sm font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -119,7 +119,7 @@ export function TerritoryIndicatorRow({ tile, siruta, countyCode }: RowProps) {
           <RequestDatasetAction datasetCode={tile.datasetCode} datasetName={tile.datasetNameRo} siruta={siruta} />
         ) : tile.tileState === 'available' ? (
           <Link
-            to="/statistici/comparatii"
+            to="/ins/comparatii"
             search={compareSearch(tile, siruta, countyCode)}
             className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
             aria-label={t`Compară ${nameOf(tile)}`}
@@ -129,7 +129,7 @@ export function TerritoryIndicatorRow({ tile, siruta, countyCode }: RowProps) {
           </Link>
         ) : (
           <Link
-            to="/statistici/seturi/$cod"
+            to="/ins/seturi/$cod"
             params={{ cod: tile.datasetCode }}
             search={{ teritoriu: `siruta:${siruta}` }}
             className="text-xs font-medium text-primary underline-offset-2 hover:underline"
@@ -170,7 +170,7 @@ export function TerritoryHeadlineTile({ tile, siruta, countyCode, benchmark }: H
     <article className="flex min-w-0 flex-col gap-1 rounded-lg border border-border/70 bg-card p-4">
       <h3 className="min-w-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         <Link
-          to="/statistici/seturi/$cod"
+          to="/ins/seturi/$cod"
           params={{ cod: tile.datasetCode }}
           search={{ teritoriu: `siruta:${siruta}` }}
           className="block truncate underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -224,7 +224,7 @@ export function TerritoryHeadlineTile({ tile, siruta, countyCode, benchmark }: H
         />
         {tile.tileState === 'available' ? (
           <Link
-            to="/statistici/comparatii"
+            to="/ins/comparatii"
             search={compareSearch(tile, siruta, countyCode)}
             className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
             aria-label={t`Compară ${nameOf(tile)}`}

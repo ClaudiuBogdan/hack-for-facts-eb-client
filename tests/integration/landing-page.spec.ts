@@ -56,7 +56,7 @@ test.describe('Landing Page', () => {
       [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/ong-uri']],
       [/lege și justiție|law and justice/i, ['/legislation', '/justitie']],
       [/^politică$|^politics$/i, ['/alegeri']],
-      [/instrumente|tools/i, ['/map', '/charts', '/statistici']],
+      [/instrumente|tools/i, ['/map', '/charts', '/ins']],
     ]
 
     for (const [name, hrefs] of groups) {

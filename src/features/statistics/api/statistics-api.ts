@@ -37,7 +37,7 @@ import { fetchStatisticsHub as fetchStatisticsHubLive } from './graphql/statisti
  * same domain shapes so the swap stays a one-call change.
  */
 
-/** The `/statistici` hub: always the validated live lane; sections fail independently inside. */
+/** The `/ins` hub: always the validated live lane; sections fail independently inside. */
 export async function fetchStatisticsHub(
   signal?: AbortSignal,
 ): Promise<StatisticsHubData> {

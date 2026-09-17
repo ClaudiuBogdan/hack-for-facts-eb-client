@@ -188,7 +188,7 @@ export function HubCountyMap({
           return county ? (
             <Link
               key={shape.code}
-              to="/statistici/seturi/$cod"
+              to="/ins/seturi/$cod"
               params={{ cod: layer.code }}
               search={{ teritoriu: `cod:${county.code}`, frecventa: 'ANNUAL' }}
               onPointerEnter={() => onHover?.(shape.code)}

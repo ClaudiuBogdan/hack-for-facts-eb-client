@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, ArrowLeft } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -10,14 +10,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 import { DatasetExplorerPagination } from '../components/dataset-explorer-pagination'
 import { DatasetExplorerRow } from '../components/dataset-explorer-row'
-import { DatasetExplorerStatusToggle } from '../components/dataset-explorer-status-toggle'
 import { DatasetExplorerFilterControls } from '../components/filters/dataset-explorer-filter-controls'
 import { DatasetExplorerFilterSheet } from '../components/filters/dataset-explorer-filter-sheet'
 import { StatisticsActiveFilters } from '../components/filters/statistics-active-filters'
 import type { StatisticsFilterChip } from '../components/filters/statistics-active-filters'
 import { StatisticsDebouncedSearchInput } from '../components/filters/statistics-debounced-search-input'
 import { StatisticsFilterTriggerButton } from '../components/filters/statistics-filter-trigger-button'
-import { ShareFilteredView } from '../components/share-filtered-view'
 import { useDatasetExplorer } from '../hooks/use-dataset-explorer'
 import { useStatisticsContextTree, useStatisticsLandingCatalog } from '../hooks/use-statistics'
 import {
@@ -45,10 +43,9 @@ function ExplorerSkeleton() {
  * The dataset catalog: a facet rail beside the list on desktop, the same
  * controls in a sheet on a phone. The URL is the whole state.
  *
- * The status control („Cu date" / „Doar catalog") is the catalog's honesty
- * control and is always there: the list defaults to the whole catalog, and
- * a control that appears only once a second read settles would move the
- * layout under the reader.
+ * The list is the whole catalog, always: datasets with loaded facts and
+ * catalog-only ones side by side, each row carrying its own status badge.
+ * The page opens under the INS hub, so it starts with the way back to it.
  */
 export function StatisticsDatasetExplorerPage({ search }: Props) {
   const navigate = useNavigate()
@@ -76,7 +73,7 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
 
   const applySearch = useCallback(
     (next: StatisticsDatasetExplorerSearch) => {
-      void navigate({ to: '/statistici/seturi', search: next })
+      void navigate({ to: '/ins/seturi', search: next })
     },
     [navigate],
   )
@@ -107,16 +104,20 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
-        <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="space-y-1.5">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              <Trans>Seturi de date INS</Trans>
-            </h1>
-            <p className="max-w-3xl text-sm text-muted-foreground">
-              <Trans>Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui.</Trans>
-            </p>
-          </div>
-          <ShareFilteredView />
+        <Button variant="outline" size="sm" asChild className="w-fit">
+          <Link to="/ins">
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+            <Trans>Înapoi la statistici</Trans>
+          </Link>
+        </Button>
+
+        <header className="space-y-1.5">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            <Trans>Seturi de date INS</Trans>
+          </h1>
+          <p className="max-w-3xl text-sm text-muted-foreground">
+            <Trans>Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui.</Trans>
+          </p>
         </header>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[17rem_minmax(0,1fr)]">
@@ -152,17 +153,11 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
                 />
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <DatasetExplorerStatusToggle
-                  value={search.stare}
-                  onChange={(value) => applySearch({ ...search, stare: value, pagina: undefined })}
-                />
-                {explorerQuery.isSuccess ? (
-                  <p className="text-sm text-muted-foreground" aria-live="polite">
-                    {plural(totalCount, { one: 'un set de date', few: '# seturi de date', other: '# de seturi de date' })}
-                  </p>
-                ) : null}
-              </div>
+              {explorerQuery.isSuccess ? (
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  {plural(totalCount, { one: 'un set de date', few: '# seturi de date', other: '# de seturi de date' })}
+                </p>
+              ) : null}
 
               <StatisticsActiveFilters chips={chips} onClearAll={() => applySearch(clearedExplorerSearch())} />
             </section>

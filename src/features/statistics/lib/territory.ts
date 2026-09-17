@@ -16,8 +16,8 @@ import type {
  *
  * Related links point ONLY at existing platform routes
  * (`/budget-explorer`, `/primarie/$cui`, `/entities/$cui`, `/companies/$cui`,
- * `/map`). Deferred statistics routes (`/statistici/harti`,
- * `/statistici/comparatii`) are intentionally NOT linked.
+ * `/map`). Deferred statistics routes (`/ins/harti`,
+ * `/ins/comparatii`) are intentionally NOT linked.
  */
 
 /**
@@ -66,8 +66,8 @@ export function resolveTerritoryIdentity(params: {
  * - `/companies/$cui` (company detail; only when a company CUI is known).
  * - `/map` (territory map entry, existing map surface).
  *
- * No links are emitted to deferred `/statistici/harti` or
- * `/statistici/comparatii` routes.
+ * No links are emitted to deferred `/ins/harti` or
+ * `/ins/comparatii` routes.
  */
 export function buildTerritoryRelatedLinks(params: {
   readonly identity: StatisticsTerritoryIdentity

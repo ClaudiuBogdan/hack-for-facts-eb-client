@@ -1,6 +1,6 @@
 # Feature: Territory time-series switcher
 
-> Domain: statistics · Section of `/statistici/teritorii/$siruta` · High-value next #6
+> Domain: statistics · Section of `/ins/teritorii/$siruta` · High-value next #6
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`,
 > `features/territory-hub-uat-dashboard.md`.
 
@@ -43,7 +43,7 @@ full dataset detail.
 
 ## Route and URL state
 
-- **No new route.** Lives under `/statistici/teritorii/$siruta`.
+- **No new route.** Lives under `/ins/teritorii/$siruta`.
 - **Shared search params** (owned by the hub route, read/written here):
   - `dataset` — selected matrix code.
   - `split` — `all|year|quarter|month` (constrained to dataset periodicity).
@@ -85,7 +85,7 @@ Mock states (`src/features/statistics/territory-hub/mocks/series.ts`):
     line chart (gaps honest, unit label, value_status annotation)
     compact table (period | value | unit | status), "arată tot"
     footer: Sursă: INS Tempo, matrice {code}, actualizat {date} → Drawer ·
-            [Deschide setul complet] → /statistici/seturi/$matrixCode?siruta=$siruta&...
+            [Deschide setul complet] → /ins/seturi/$matrixCode?siruta=$siruta&...
 ```
 
 - **Decision:** Single full-width band, not a card; the chart + table pair is the

@@ -67,7 +67,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
   // Merge, never replace: a future search key must survive a period change.
   const handlePeriodChange = (value: string) => {
     void navigate({
-      to: '/statistici/teritorii/$siruta',
+      to: '/ins/teritorii/$siruta',
       params: { siruta },
       search: (previous) => ({
         ...previous,
@@ -91,7 +91,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/statistici">
+            <Link to="/ins">
               <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
               <Trans>Înapoi la statistici</Trans>
             </Link>

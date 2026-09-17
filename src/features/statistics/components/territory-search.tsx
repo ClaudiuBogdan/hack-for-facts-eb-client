@@ -158,7 +158,7 @@ function TerritoryResultRow({
 
   return (
     <Link
-      to="/statistici/teritorii/$siruta"
+      to="/ins/teritorii/$siruta"
       params={{ siruta: row.siruta }}
       className="flex items-center justify-between gap-3 px-4 py-3 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
     >

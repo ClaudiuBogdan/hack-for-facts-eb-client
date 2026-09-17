@@ -105,8 +105,8 @@ describe('statistics mock fixtures', () => {
     expect(targets).toContain('/budget-explorer')
     expect(targets).toContain('/map')
     // Deferred statistics routes must NOT appear.
-    expect(targets).not.toContain('/statistici/harti')
-    expect(targets).not.toContain('/statistici/comparatii')
+    expect(targets).not.toContain('/ins/harti')
+    expect(targets).not.toContain('/ins/comparatii')
   })
 
   it('keeps county related links enabled when a county code is known', () => {

@@ -12,7 +12,7 @@ import type {
 } from '@/schemas/statistics'
 
 /**
- * The selection model behind `/statistici/seturi/$cod`.
+ * The selection model behind `/ins/seturi/$cod`.
  *
  * Every pin the user makes lives in the URL as an opaque `"KIND:VALUE"` string,
  * and every server filter is derived from those strings here. Keeping the codec
@@ -417,7 +417,7 @@ export function observedYearSpan(
 }
 
 // ---------------------------------------------------------------------------
-// Comparison territory tokens (shared with /statistici/comparatii)
+// Comparison territory tokens (shared with /ins/comparatii)
 // ---------------------------------------------------------------------------
 
 /**

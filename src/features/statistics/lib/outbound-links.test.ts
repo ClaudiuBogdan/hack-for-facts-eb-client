@@ -50,13 +50,10 @@ describe('outbound links round-trip through their target schemas', () => {
 
   it('landing theme card → explorer (root-context prefilter)', () => {
     for (const theme of LANDING_THEMES) {
-      const parsed = parseStatisticsDatasetExplorerSearch({
-        context: theme.code,
-        stare: 'available',
-      })
+      const parsed = parseStatisticsDatasetExplorerSearch({ context: theme.code })
       const filter = buildDatasetFilterInput(parsed)
       expect(filter.rootContextCode).toBe(theme.code)
-      expect(filter.dataStatus).toEqual(['AVAILABLE'])
+      expect(filter.dataStatus).toEqual(['AVAILABLE', 'CATALOG_ONLY'])
     }
   })
 

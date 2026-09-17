@@ -32,7 +32,7 @@ export function DatasetExplorerRow({ dataset }: Props) {
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link
-            to="/statistici/seturi/$cod"
+            to="/ins/seturi/$cod"
             params={{ cod: dataset.code }}
             className="text-sm font-medium leading-snug text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >

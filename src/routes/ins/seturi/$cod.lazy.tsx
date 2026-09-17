@@ -6,7 +6,7 @@ import {
 } from '@/features/statistics/lib/dataset-selection'
 import { StatisticsDatasetDetailPage } from '@/features/statistics/pages/statistics-dataset-detail-page'
 
-export const Route = createLazyFileRoute('/statistici/seturi/$cod')({
+export const Route = createLazyFileRoute('/ins/seturi/$cod')({
   component: StatisticsDatasetDetailRoutePage,
 })
 

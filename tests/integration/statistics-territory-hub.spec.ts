@@ -2,7 +2,7 @@
  * Integration tests for the territory hub (NEW in the redesign — there was no
  * hub spec before).
  *
- * Route: /statistici/teritorii/$siruta
+ * Route: /ins/teritorii/$siruta
  * Synthetic native contract fixtures; see the fixture README.
  * The hub is exactly two POSTs: dashboard+identity, then counts+benchmarks.
  */
@@ -12,7 +12,7 @@ import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 import type { Page } from '@playwright/test'
 
-const ROUTE = '/statistici/teritorii/54975'
+const ROUTE = '/ins/teritorii/54975'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('StatisticsTerritoryHub', 'hub-cluj')
@@ -117,7 +117,7 @@ test.describe('Territory hub', () => {
 
   test('a malformed SIRUTA renders not-found without a request', async ({ page }) => {
     const posts = countGraphQLPosts(page)
-    await page.goto('/statistici/teritorii/nu-e-siruta')
+    await page.goto('/ins/teritorii/nu-e-siruta')
     await waitForPageReady(page)
 
     await expect(page.getByText('Teritoriu negăsit')).toBeVisible({ timeout: 15000 })

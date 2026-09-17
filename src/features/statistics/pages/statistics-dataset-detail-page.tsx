@@ -121,7 +121,7 @@ export function StatisticsDatasetDetailPage({
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 md:px-6">
         <Button variant="outline" size="sm" asChild className="w-fit">
-          <Link to="/statistici/seturi">
+          <Link to="/ins/seturi">
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             <Trans>Înapoi la seturi de date</Trans>
           </Link>
@@ -658,7 +658,7 @@ function DatasetDetailBody({
               complete={completeSourceSelection}
             />
             <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <Link to="/statistici/comparatii" search={compareSearch}>
+              <Link to="/ins/comparatii" search={compareSearch}>
                 <Trans>Compară teritorii</Trans>
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>

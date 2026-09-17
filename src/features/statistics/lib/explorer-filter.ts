@@ -5,26 +5,34 @@ import { isRootContextCode } from './context-tree'
 /** Rows per explorer page. */
 export const EXPLORER_PAGE_SIZE = 25
 
+/** Filter knobs that are not part of the shareable URL state. */
+export interface DatasetFilterOptions {
+  /** Ask the server for the fact-loaded datasets only. */
+  readonly onlyWithData?: boolean
+}
+
 /**
  * The server-side dataset filter for a given explorer URL state.
  *
- * `stare` maps to `dataStatus`, never to `syncStatus`: `syncStatus` describes
- * the *sync pipeline* of a dataset (`SYNCED`, `SYNCING`, `FAILED`, …) while
- * `dataStatus` answers the product question "does this dataset have facts?".
- * Omitting `dataStatus` entirely makes the server serve only the fact-loaded
- * datasets, so the "Toate" tab must pass both members explicitly to reach the
- * full 1,898-dataset catalog.
+ * `dataStatus` is not a URL filter: the catalog page shows the whole catalog
+ * and every row carries its own status badge. It stays a call-site option because
+ * the hub search and the comparison picker open a series straight away, so
+ * they ask for the fact-loaded datasets only.
+ *
+ * It is `dataStatus`, never `syncStatus`: `syncStatus` describes the *sync
+ * pipeline* of a dataset (`SYNCED`, `SYNCING`, `FAILED`, …) while `dataStatus`
+ * answers the product question "does this dataset have facts?". Omitting it
+ * entirely makes the server serve only the fact-loaded datasets, so reaching
+ * the full 1,898-dataset catalog means passing both members explicitly.
  */
 export function buildDatasetFilterInput(
   search: StatisticsDatasetExplorerSearch,
+  options: DatasetFilterOptions = {},
 ): InsDatasetFilterInput {
   const filter: InsDatasetFilterInput = {
-    dataStatus:
-      search.stare === 'available'
-        ? ['AVAILABLE']
-        : search.stare === 'catalog-only'
-          ? ['CATALOG_ONLY']
-          : ['AVAILABLE', 'CATALOG_ONLY'],
+    dataStatus: options.onlyWithData
+      ? ['AVAILABLE']
+      : ['AVAILABLE', 'CATALOG_ONLY'],
   }
 
   if (search.q) filter.search = search.q
@@ -52,9 +60,8 @@ export function explorerOffset(search: StatisticsDatasetExplorerSearch): number 
 /**
  * Number of active filters shown on the filter-sheet trigger badge.
  *
- * `q` is excluded (it has its own visible input) and so is `stare` (it is a
- * visible segmented control, not a sheet filter) and `pagina` (not a filter).
- * This mirrors the parliament convention.
+ * `q` is excluded (it has its own visible input) and so is `pagina` (not a
+ * filter). This mirrors the parliament convention.
  */
 export function countActiveExplorerFilters(
   search: StatisticsDatasetExplorerSearch,
@@ -67,15 +74,11 @@ export function countActiveExplorerFilters(
   return count
 }
 
-/** True when any sheet filter, search term or status filter is applied. */
+/** True when any sheet filter or search term is applied. */
 export function hasActiveExplorerFilters(
   search: StatisticsDatasetExplorerSearch,
 ): boolean {
-  return (
-    countActiveExplorerFilters(search) > 0 ||
-    Boolean(search.q) ||
-    Boolean(search.stare)
-  )
+  return countActiveExplorerFilters(search) > 0 || Boolean(search.q)
 }
 
 /**

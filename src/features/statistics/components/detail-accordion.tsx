@@ -93,7 +93,7 @@ export function DetailAccordion({
               INS. Alege seria unui rând pentru istoricul complet. Pentru alte
               teritorii,{' '}
               <Link
-                to="/statistici/comparatii"
+                to="/ins/comparatii"
                 search={compareSearch}
                 className="underline underline-offset-2 hover:text-foreground"
               >
@@ -233,7 +233,7 @@ export function DetailAccordion({
               {related.map((entry) => (
                 <li key={entry.code}>
                   <Link
-                    to="/statistici/seturi/$cod"
+                    to="/ins/seturi/$cod"
                     params={{ cod: entry.code }}
                     className="flex items-center justify-between gap-3 py-2 text-sm transition-colors hover:text-primary"
                   >

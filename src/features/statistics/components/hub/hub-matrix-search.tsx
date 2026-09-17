@@ -3,7 +3,7 @@ import type { KeyboardEvent } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { LineChart, Loader2, Search } from 'lucide-react'
-import { plural, t } from '@lingui/core/macro'
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { ScopePill, resultRowClass } from '@/features/landing/components/search/search-parts'
@@ -41,7 +41,7 @@ export function HubMatrixSearch({ autoFocus, className }: { readonly autoFocus?:
   const enabled = debounced.length >= SEARCH_MIN
   const query = useQuery({
     queryKey: ['statistics', 'hub-v1', 'matrix-search', debounced] as const,
-    queryFn: () => fetchDatasetPage({ q: debounced, stare: 'available' }),
+    queryFn: () => fetchDatasetPage({ q: debounced }, { onlyWithData: true }),
     enabled,
     staleTime: 60 * 60 * 1000,
   })
@@ -61,11 +61,11 @@ export function HubMatrixSearch({ autoFocus, className }: { readonly autoFocus?:
   const go = (dataset: StatisticsDatasetSummary | undefined) => {
     setOpen(false)
     if (dataset) {
-      void navigate({ to: '/statistici/seturi/$cod', params: { cod: dataset.code } })
+      void navigate({ to: '/ins/seturi/$cod', params: { cod: dataset.code } })
       return
     }
     const q = term.trim()
-    if (q) void navigate({ to: '/statistici/seturi', search: { q, stare: 'available' } })
+    if (q) void navigate({ to: '/ins/seturi', search: { q } })
   }
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -173,7 +173,7 @@ export function HubMatrixSearch({ autoFocus, className }: { readonly autoFocus?:
               rows.map((dataset, index) => (
                 <li key={dataset.code} id={`${listId}-${dataset.code}`} role="option" aria-selected={index === active}>
                   <Link
-                    to="/statistici/seturi/$cod"
+                    to="/ins/seturi/$cod"
                     params={{ cod: dataset.code }}
                     tabIndex={-1}
                     data-highlighted={index === active ? '' : undefined}
@@ -199,19 +199,21 @@ export function HubMatrixSearch({ autoFocus, className }: { readonly autoFocus?:
               ))
             )}
           </ul>
-          {enabled && query.data && query.data.totalCount > rows.length ? (
+          {/*
+            This list counts the datasets with observations; the catalog page
+            counts every catalogued dataset. The link therefore names the
+            population it opens instead of promising a number that would not
+            match the one on the other side.
+          */}
+          {enabled && query.data ? (
             <Link
-              to="/statistici/seturi"
-              search={{ q: debounced, stare: 'available' }}
+              to="/ins/seturi"
+              search={{ q: debounced }}
               tabIndex={-1}
               onClick={() => setOpen(false)}
               className="flex items-center justify-between border-t px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
-              {plural(query.data.totalCount, {
-                one: 'Un rezultat în catalog',
-                few: 'Toate cele # rezultate în catalog',
-                other: 'Toate cele # de rezultate în catalog',
-              })}
+              <Trans>Caută în tot catalogul</Trans>
               <span aria-hidden="true">→</span>
             </Link>
           ) : null}

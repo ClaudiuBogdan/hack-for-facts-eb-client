@@ -1,6 +1,6 @@
 # Feature: Dataset detail (observations + time series)
 
-> Domain: statistics · Route: `/statistici/seturi/$matrixCode` · MVP #4
+> Domain: statistics · Route: `/ins/seturi/$matrixCode` · MVP #4
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`.
 
 ## Feature owner profile
@@ -48,8 +48,8 @@ and an explicit "no observations yet" state with a request action.
 
 ## Route and URL state
 
-- **Route:** `/statistici/seturi/$matrixCode` (file:
-  `src/routes/statistici/seturi.$matrixCode.tsx` + lazy). `$matrixCode` is the
+- **Route:** `/ins/seturi/$matrixCode` (file:
+  `src/routes/ins/seturi.$matrixCode.tsx` + lazy). `$matrixCode` is the
   INS code (apply `applyInsCodeSubstitution`).
 - **Search params** (zod `validateSearch`):
   - `siruta` — selected territory (default: dataset's representative/national).
@@ -114,7 +114,7 @@ Mock states (`src/features/statistics/dataset-detail/mocks`):
   <Tabs view>: Tabel | Grafic | Hartă
     Tabel: <Table> period | value | unit | classifications | status (12 rows + "arată tot")
     Grafic: time-series line (gaps honest, status annotated, unit label)
-    Hartă: link/embed to /statistici/harti?indicator=$matrixCode (if coverage)
+    Hartă: link/embed to /ins/harti?indicator=$matrixCode (if coverage)
   provenance footer: Sursă: INS Tempo, matrice {code}, actualizat {last_sync}
                      → SourceProvenanceDrawer + "Deschide în INS Tempo"
 ```

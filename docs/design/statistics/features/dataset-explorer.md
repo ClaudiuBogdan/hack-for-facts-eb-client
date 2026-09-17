@@ -1,6 +1,6 @@
 # Feature: Dataset explorer (catalog, status-aware)
 
-> Domain: statistics · Route: `/statistici/seturi` · MVP #3
+> Domain: statistics · Route: `/ins/seturi` · MVP #3
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`.
 
 ## Feature owner profile
@@ -47,7 +47,7 @@ This is the surface that manages the 27-vs-1,871 expectation gap for experts.
 
 ## Route and URL state
 
-- **Route:** `/statistici/seturi` (file: `src/routes/statistici/seturi.index.tsx`
+- **Route:** `/ins/seturi` (file: `src/routes/ins/seturi.index.tsx`
   + lazy). Default renders without params (grouped, available-first).
 - **Search params** (zod `validateSearch`):
   - `q` — free-text search.
@@ -105,7 +105,7 @@ Mock states (`src/features/statistics/explorer/mocks`):
 ```
 
 - **Decision:** Row is a single accessible link to
-  `/statistici/seturi/$matrixCode`. Matrix code is muted secondary text. Status
+  `/ins/seturi/$matrixCode`. Matrix code is muted secondary text. Status
   badge is always present.
 
 ## Component reuse and proposed new components

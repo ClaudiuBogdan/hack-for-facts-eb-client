@@ -8,6 +8,7 @@ import {
   buildDatasetFilterInput,
   EXPLORER_PAGE_SIZE,
   explorerOffset,
+  type DatasetFilterOptions,
 } from '../lib/explorer-filter'
 import { MOCK_CONTEXT_TREE, MOCK_EXPLORER_DATASETS } from '../mocks/statistics-explorer-fixtures'
 
@@ -18,8 +19,9 @@ import { MOCK_CONTEXT_TREE, MOCK_EXPLORER_DATASETS } from '../mocks/statistics-e
  */
 export function fetchDatasetPageMock(
   search: StatisticsDatasetExplorerSearch,
+  options: DatasetFilterOptions = {},
 ): Promise<StatisticsDatasetPage> {
-  const filter = buildDatasetFilterInput(search)
+  const filter = buildDatasetFilterInput(search, options)
   const needle = filter.search ? normalizeFilterSearchText(filter.search) : null
 
   const matches = MOCK_EXPLORER_DATASETS.filter((dataset) => {

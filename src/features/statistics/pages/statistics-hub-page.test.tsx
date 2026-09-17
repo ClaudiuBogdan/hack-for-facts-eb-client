@@ -95,7 +95,7 @@ describe('StatisticsHubPage', () => {
     const rows = screen.getByRole('heading', { name: /România/ }).closest('section')!
     const population = within(rows).getByRole('link', { name: /Populația după domiciliu/ })
     const href = population.getAttribute('href')!
-    expect(href).toContain('/statistici/seturi/POP107D')
+    expect(href).toContain('/ins/seturi/POP107D')
     const params = new URL(href, 'http://localhost').searchParams
     expect(params.get('teritoriu')).toBe('cod:RO')
     expect(params.getAll('clasificari')).toEqual(['D0:1', 'D1:105', 'D2:112'])
@@ -122,11 +122,11 @@ describe('StatisticsHubPage', () => {
     const first = within(counties).getAllByRole('link', { name: /Teleorman|Ilfov/ })[0]!
     expect(first).toHaveTextContent('Teleorman')
     expect(first).toHaveTextContent('9,3%')
-    expect(first.getAttribute('href')).toContain('/statistici/seturi/SOM103A')
+    expect(first.getAttribute('href')).toContain('/ins/seturi/SOM103A')
     expect(new URL(first.getAttribute('href')!, 'http://localhost').searchParams.get('teritoriu')).toBe('cod:TR')
 
     fireEvent.click(within(counties).getByRole('radio', { name: 'Salariați' }))
-    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/statistici', search: { indicator: 'salariati' }, replace: true }))
+    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/ins', search: { indicator: 'salariati' }, replace: true }))
 
     fireEvent.click(within(counties).getByRole('radio', { name: 'Speranța de viață' }))
     expect(navigateMock).toHaveBeenLastCalledWith(expect.objectContaining({ search: {} }))

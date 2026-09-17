@@ -14,7 +14,7 @@ export type StatisticsHubLoaderData = {
  * Sections fail independently inside the read and are named in
  * `failures`; the read itself only throws on abort.
  */
-export const Route = createFileRoute("/statistici/")({
+export const Route = createFileRoute("/ins/")({
   validateSearch: parseStatisticsHubSearch,
   // The retired landing shared `?loc=<siruta>` links to its „Locul tău"
   // band; that place now has its own page.
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/statistici/")({
           : undefined;
     if (siruta && /^\d{1,6}$/.test(siruta)) {
       throw redirect({
-        to: "/statistici/teritorii/$siruta",
+        to: "/ins/teritorii/$siruta",
         params: { siruta },
         replace: true,
       });

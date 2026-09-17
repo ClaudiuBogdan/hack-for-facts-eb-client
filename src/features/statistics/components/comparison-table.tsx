@@ -138,7 +138,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                         ) : null}
                         {'descriptor' in matrix ? (
                           <Link
-                            to="/statistici/seturi/$cod"
+                            to="/ins/seturi/$cod"
                             params={{ cod: matrix.descriptor.code }}
                             search={{
                               teritoriu:

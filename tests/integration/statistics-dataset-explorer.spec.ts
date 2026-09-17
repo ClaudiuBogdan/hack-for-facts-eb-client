@@ -1,7 +1,7 @@
 /**
  * Integration tests for the INS dataset explorer.
  *
- * Route: /statistici/seturi
+ * Route: /ins/seturi (the catalog always reads both data statuses)
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-dataset-explorer-flow/).
  * The list is one operation, `InsDatasetsExplorer`, whose `filter`
  * variable is built by `buildDatasetFilterInput`; the rail reads the theme
@@ -22,7 +22,7 @@ import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
-const ROUTE = '/statistici/seturi'
+const ROUTE = '/ins/seturi'
 const BOTH_STATUSES = ['AVAILABLE', 'CATALOG_ONLY']
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
@@ -34,11 +34,6 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   // Page 2 keys on the offset, not the filter.
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'page-2', {
     variables: { offset: 25 },
-  })
-
-  // Status segmented control.
-  await mockApi.mockGraphQL('InsDatasetsExplorer', 'available', {
-    variables: { filter: { dataStatus: ['AVAILABLE'] } },
   })
 
   // Sheet filters.
@@ -80,7 +75,7 @@ function searchParam(page: import('@playwright/test').Page, key: string) {
   return new URL(page.url()).searchParams.get(key)
 }
 
-test.describe('Dataset explorer — search, status, filters, pagination', () => {
+test.describe('Dataset explorer — search, filters, pagination', () => {
   test.beforeEach(async ({ mockApi }) => {
     await setupMocks(mockApi)
   })
@@ -107,22 +102,21 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await expect(page.getByText('Date disponibile')).toHaveCount(0)
   })
 
-  test('the status control writes ?stare= and refires the query', async ({
+  test('the header leads back to the INS hub, and carries nothing else', async ({
     page,
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
     await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
 
-    await page.getByRole('radio', { name: 'Cu date', exact: true }).click()
+    // The catalog is one population, and the address bar is the share
+    // affordance: neither control returns without this failing.
+    await expect(page.getByRole('radio', { name: 'Cu date' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Copiază link' })).toHaveCount(0)
 
-    await expect.poll(() => searchParam(page, 'stare')).toBe('available')
-    await expect(page.getByText(/^27 de seturi de date$/)).toBeVisible({
-      timeout: 15000,
-    })
-    expect(await resultRows(page).count()).toBe(10)
-    // Catalog-only rows are gone, so no "Cere set" affordance remains.
-    await expect(page.getByRole('button', { name: 'Cere set' })).toHaveCount(0)
+    await page.getByRole('link', { name: 'Înapoi la statistici' }).click()
+
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/ins')
   })
 
   test('rail selections write params and become chips', async ({ page }) => {
@@ -230,7 +224,6 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
   test('a deep-linked URL restores every control', async ({ page }) => {
     const search = new URLSearchParams({
       q: 'populatie',
-      stare: 'catalog-only',
       context: '"2"',
       frecventa: '["ANNUAL"]',
       uat: 'true',
@@ -241,10 +234,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
 
     await expect(page.getByLabel('Caută seturi de date')).toHaveValue('populatie')
-    await expect(
-      page.getByRole('radio', { name: 'Doar catalog', exact: true }),
-    ).toHaveAttribute('data-state', 'on')
-    // One chip per removable filter; `stare` has a visible control instead.
+    // One chip per removable filter.
     for (const label of [
       'Conține: populatie',
       'Temă: Economic',

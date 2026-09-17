@@ -1,6 +1,6 @@
 # Feature: Demographic / economic maps
 
-> Domain: statistics · Route: `/statistici/harti` · MVP #2
+> Domain: statistics · Route: `/ins/harti` · MVP #2
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`.
 
 ## Feature owner profile
@@ -57,7 +57,7 @@ and reuses the verified map geometry/renderer; only the **fill values** are new
 
 ## Route and URL state
 
-- **Route:** `/statistici/harti` (file: `src/routes/statistici/harti.tsx` +
+- **Route:** `/ins/harti` (file: `src/routes/ins/harti.tsx` +
   lazy). Default view renders with no params (county map of POP107D).
 - **Search params** (zod `validateSearch`):
   - `indicator` — matrix code (default `POP107D`).
@@ -109,7 +109,7 @@ Mock states (`src/features/statistics/maps/mocks`):
      latest value + unit + FreshnessBadge + source → Drawer
      mini time-series (getInsDatasetHistory for that siruta+indicator)
      RelatedLinksRail (feature 7): buget, primărie, firme, instituții, hub
-     [Deschide teritoriul] → /statistici/teritorii/$siruta
+     [Deschide teritoriul] → /ins/teritorii/$siruta
 <below map> <HeatmapDataTable> tabular fallback (sortable: territory, value)
 ```
 
@@ -133,7 +133,7 @@ Mock states (`src/features/statistics/maps/mocks`):
 - Pick indicator/level/period → refetch fill via `useInsChoropleth`; URL updates.
 - Click region → `?panel=<siruta>`, side panel opens, region highlighted; table
   row scrolls into view and emphasizes.
-- "Deschide teritoriul" → `/statistici/teritorii/$siruta`.
+- "Deschide teritoriul" → `/ins/teritorii/$siruta`.
 - Drill intent: county click with `has_uat_data` indicator offers "Vezi UAT-urile"
   → `level=uat` zoomed to that county (Assumption: reuse existing zoom-to-feature).
 - `highlight` deep-link pre-selects and zooms on load.

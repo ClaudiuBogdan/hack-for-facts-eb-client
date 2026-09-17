@@ -88,7 +88,7 @@ function link(extra: Record<string, unknown> = {}) {
   })
   for (const [key, value] of Object.entries(extra))
     params.set(key, JSON.stringify(value))
-  return '/statistici/comparatii?' + params
+  return '/ins/comparatii?' + params
 }
 async function mock(
   page: Page,

@@ -1,6 +1,6 @@
 # Feature: Local comparisons
 
-> Domain: statistics · Route: `/statistici/comparatii` · High-value next #5
+> Domain: statistics · Route: `/ins/comparatii` · High-value next #5
 > Consumes: `docs/design/statistics/design.md`, `docs/design/statistics/ux.md`.
 
 ## Feature owner profile
@@ -45,8 +45,8 @@ compare to neighbors / county / national" — the top journalist/analyst job.
 
 ## Route and URL state
 
-- **Route:** `/statistici/comparatii` (file:
-  `src/routes/statistici/comparatii.tsx` + lazy). Default renders an empty
+- **Route:** `/ins/comparatii` (file:
+  `src/routes/ins/comparatii.tsx` + lazy). Default renders an empty
   builder (no params).
 - **Search params** (zod `validateSearch`):
   - `dataset` — matrix code (must be available; required to show results).
@@ -126,7 +126,7 @@ Mock states (`src/features/statistics/comparisons/mocks`):
   URL updates; results recompute.
 - Sort table by value/name; highlight the primary (deep-linked) territory.
 - "Descarcă CSV" exports the comparison matrix with provenance header.
-- Row/bar/line → "Deschide teritoriul" link to `/statistici/teritorii/$siruta`.
+- Row/bar/line → "Deschide teritoriul" link to `/ins/teritorii/$siruta`.
 - `ShareFilteredView` copies the comparison URL.
 
 ## Loading, empty, error, partial, stale states

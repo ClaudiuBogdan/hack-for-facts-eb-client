@@ -115,18 +115,18 @@ for (const language of ['en', 'ro'] as const) {
             },
           })
         })
-        await page.goto('/statistici/teritorii/54975?lang=' + language)
-        const good = page
-          .locator('article')
-          .filter({
-            has: page.getByRole('heading', { name: 'GOOD', exact: true }),
+        await page.goto('/ins/teritorii/54975?lang=' + language)
+        // Every indicator outside the four headline tiles is an accordion row
+        // — an <li> named by the link into its dataset, not an <article> with
+        // a heading, since the hub was grouped by domain.
+        const row = (code: string) =>
+          page.getByRole('listitem').filter({
+            has: page.getByRole('link', { name: code, exact: true }),
           })
-        const ambiguous = page
-          .locator('article')
-          .filter({
-            has: page.getByRole('heading', { name: 'AMBIGUOUS', exact: true }),
-          })
-        await expect(good).toContainText('10 pers.')
+        const good = row('GOOD')
+        const ambiguous = row('AMBIGUOUS')
+        // The unit is its own span beside the number, spaced by margin.
+        await expect(good).toContainText(/10\s*pers\./)
         await expect(ambiguous).toContainText(
           language === 'en'
             ? 'Multiple INS series match'
@@ -139,8 +139,9 @@ for (const language of ['en', 'ro'] as const) {
         ).toBeVisible()
         await page.locator('#statistics-hub-period').click()
         await page.getByRole('option', { name: '2023', exact: true }).click()
+        // The status word reads inline after the period, so it is lower-case.
         await expect(good).toContainText(
-          language === 'en' ? 'Confidential' : 'Confidențial',
+          language === 'en' ? 'confidential' : 'confidențial',
         )
         await expect(ambiguous).toContainText(
           language === 'en'
@@ -148,7 +149,7 @@ for (const language of ['en', 'ro'] as const) {
             : 'Mai multe serii INS corespund',
         )
         await page.goto(
-          '/statistici/teritorii/54975?period=1999&lang=' + language,
+          '/ins/teritorii/54975?period=1999&lang=' + language,
         )
         await expect(good).toContainText(
           language === 'en'

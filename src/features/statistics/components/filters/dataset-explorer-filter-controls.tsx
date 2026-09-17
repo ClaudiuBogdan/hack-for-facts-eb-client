@@ -54,12 +54,10 @@ export function DatasetExplorerFilterControls({
     })
   }
 
-  // The counts are of datasets with observations, whatever the list beside
-  // them is showing, so the legend says so; under „Doar catalog" they would
-  // count the wrong population and step aside rather than mislead.
-  const countsApply = catalog !== undefined && search.stare !== 'catalog-only'
-  const counts = countsApply
-    ? new Map((catalog?.themes ?? []).map((theme) => [theme.code, theme.count]))
+  // The counts are of datasets with observations, while the list beside them
+  // is the whole catalog, so the legend says which population it counts.
+  const counts = catalog
+    ? new Map(catalog.themes.map((theme) => [theme.code, theme.count]))
     : undefined
   const legendId = `${idPrefix}-theme-legend`
 
@@ -68,7 +66,7 @@ export function DatasetExplorerFilterControls({
       <fieldset>
         <legend id={legendId} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Trans>Temă</Trans>
-          {countsApply ? (
+          {counts ? (
             <span className="ml-1.5 font-normal normal-case tracking-normal">
               <Trans>· seturi cu date</Trans>
             </span>
@@ -80,7 +78,7 @@ export function DatasetExplorerFilterControls({
           selectedCode={search.context}
           onSelect={(code) => apply({ context: code })}
           counts={counts}
-          allCount={countsApply ? catalog?.loadedCount : undefined}
+          allCount={catalog?.loadedCount}
           labelledBy={legendId}
         />
       </fieldset>

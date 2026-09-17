@@ -184,7 +184,7 @@ describe('NavMain', () => {
     it('renders Statistics link', async () => {
       await renderNavMain()
 
-      expect(screen.getByTestId('link-/statistici')).toBeInTheDocument()
+      expect(screen.getByTestId('link-/ins')).toBeInTheDocument()
       expect(screen.getByText('Statistici')).toBeInTheDocument()
     })
 
@@ -308,11 +308,11 @@ describe('NavMain', () => {
       expect(ngosLink).toHaveClass('bg-muted')
     })
 
-    it('marks Statistics as active when on /statistici subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/statistici/teritorii/54975' }])
+    it('marks Statistics as active when on /ins subpath', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/ins/teritorii/54975' }])
       await renderNavMain()
 
-      const statisticsLink = screen.getByTestId('link-/statistici')
+      const statisticsLink = screen.getByTestId('link-/ins')
       expect(statisticsLink).toHaveClass('bg-muted')
     })
 

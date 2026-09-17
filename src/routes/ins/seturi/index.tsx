@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { statisticsContextTreeQueryOptions } from '@/features/statistics/hooks/use-statistics'
 import { parseStatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 
-export const Route = createFileRoute('/statistici/seturi/')({
+export const Route = createFileRoute('/ins/seturi/')({
   validateSearch: parseStatisticsDatasetExplorerSearch,
   /**
    * The INS domain tree seeds the rail and names the active theme chip, so a

@@ -16,7 +16,7 @@ vi.mock('@/features/statistics/pages/statistics-hub-page', () => ({
 }))
 
 describe('StatisticsHubRoutePage', () => {
-  it('renders the statistics hub page component for /statistici', async () => {
+  it('renders the statistics hub page component for /ins', async () => {
     const { Route } = await import('./index.lazy')
     const RouteComponent = Route.options.component as ComponentType
 

@@ -29,8 +29,7 @@ type Props = {
 /**
  * The phone home of the filters: the same controls the desktop rail shows,
  * in a side panel. Every control auto-applies; closing never discards a
- * selection. The status control stays outside — see
- * `DatasetExplorerStatusToggle`.
+ * selection.
  */
 export function DatasetExplorerFilterSheet({
   open,

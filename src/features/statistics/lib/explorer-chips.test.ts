@@ -15,10 +15,6 @@ describe('buildExplorerChips', () => {
     expect(buildExplorerChips({})).toEqual([])
   })
 
-  it('does not chip the status control — it is visible as a segmented control', () => {
-    expect(buildExplorerChips({ stare: 'catalog-only' })).toEqual([])
-  })
-
   it('emits one chip per filter, including one per periodicity value', () => {
     const chips = buildExplorerChips({
       q: 'populatie',
@@ -42,7 +38,6 @@ describe('buildExplorerChips', () => {
     const chips = buildExplorerChips({
       q: 'populatie',
       context: '2',
-      stare: 'available',
       uat: true,
     })
 
@@ -50,7 +45,6 @@ describe('buildExplorerChips', () => {
     expect(contextChip?.next).toEqual({
       q: 'populatie',
       context: undefined,
-      stare: 'available',
       uat: true,
       pagina: undefined,
     })

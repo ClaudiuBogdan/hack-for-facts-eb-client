@@ -30,7 +30,7 @@ const defaultRailLinks: readonly RelatedLinkItem[] = [
   {
     label: 'Statistici',
     description: 'Indicatori teritoriali folositi ca fundal de analiza.',
-    to: '/statistici',
+    to: '/ins',
     disabled: true,
   },
 ]

@@ -2,7 +2,7 @@
 
 > Source UX document: `docs/ux-research/statistics.md`
 > Shared foundation: `docs/design/README.md`
-> Domain slug: `statistics`. Public route base: `/statistici`.
+> Domain slug: `statistics`. Public route base: `/ins`.
 
 ## Product intent
 
@@ -13,7 +13,7 @@ the average wage in my county, how does my place compare" without ever learning
 a matrix code; an analyst should reach citable time series, comparisons, maps
 and provenance. The platform already ships a deep INS engine embedded inside the
 entity profile (`src/components/entities/views/ins-stats-view.*`); this domain
-promotes that capability into dedicated, shareable `/statistici` surfaces and
+promotes that capability into dedicated, shareable `/ins` surfaces and
 makes the **27-loaded-vs-1,898-cataloged** coverage gap an honest, first-class
 state everywhere.
 
@@ -34,23 +34,23 @@ state everywhere.
 
 ## MVP scope (in assigned order)
 
-1. **Territory hub + UAT dashboard** (`/statistici/teritorii/$siruta`) — headline
+1. **Territory hub + UAT dashboard** (`/ins/teritorii/$siruta`) — headline
    identity (population, area, urban/rural), the 4–5 priority indicators with
    latest value + unit + sparkline + source, "compare to county/national".
-2. **Demographic / economic maps** (`/statistici/harti`) — county-level
+2. **Demographic / economic maps** (`/ins/harti`) — county-level
    choropleth by indicator, drill toward UAT where coverage allows, click → side
    panel with the territory's trend and cross-domain links.
-3. **Dataset explorer** (`/statistici/seturi`) — searchable/filterable catalog of
+3. **Dataset explorer** (`/ins/seturi`) — searchable/filterable catalog of
    all datasets, grouped by context, with the `date disponibile` vs `doar catalog`
    distinction as a primary column.
-4. **Dataset detail** (`/statistici/seturi/$matrixCode`) — one dataset fully
+4. **Dataset detail** (`/ins/seturi/$matrixCode`) — one dataset fully
    explained: definition, periodicity, year range, unit, dimensions, coverage
    flags, observations table with dimension selectors, time-series chart, CSV
    export, provenance.
 
 ## High-value next scope (in assigned order)
 
-5. **Local comparisons** (`/statistici/comparatii`) — 1 dataset + 2–N territories
+5. **Local comparisons** (`/ins/comparatii`) — 1 dataset + 2–N territories
    + time range → side-by-side table + bar/line chart + export.
 6. **Territory time-series switcher** — a section of the territory hub: switch
    the visible dataset for one territory and read its trend.

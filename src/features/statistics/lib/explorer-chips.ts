@@ -27,9 +27,8 @@ export interface ExplorerChip {
 /**
  * The removable chips for a given explorer URL state.
  *
- * `stare` is deliberately absent: it is a visible segmented control, so a chip
- * would duplicate a control the user is already looking at. `pagina` is dropped
- * from every `next` because removing a filter invalidates the current offset.
+ * `pagina` is dropped from every `next` because removing a filter invalidates
+ * the current offset.
  */
 export function buildExplorerChips(
   search: StatisticsDatasetExplorerSearch,

@@ -1,7 +1,7 @@
 /**
  * Integration tests for the dataset detail disclosure ladder.
  *
- * Route: /statistici/seturi/$cod
+ * Route: /ins/seturi/$cod
  * Synthetic native contract fixtures; see the fixture README. Tier zero,
  * one complete source page and the related catalog are separate operations.
  */
@@ -32,7 +32,7 @@ const sourceFixture = JSON.parse(
   ),
 )
 
-const ROUTE = '/statistici/seturi/POP107D'
+const ROUTE = '/ins/seturi/POP107D'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('StatisticsDatasetTier0', 'tier0-catalog-only', {
@@ -365,7 +365,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
   test('an unknown code renders not-found, not an error page', async ({
     page,
   }) => {
-    await page.goto('/statistici/seturi/NUEXISTA')
+    await page.goto('/ins/seturi/NUEXISTA')
     await waitForPageReady(page)
 
     await expect(page.getByText('Set de date negăsit')).toBeVisible({

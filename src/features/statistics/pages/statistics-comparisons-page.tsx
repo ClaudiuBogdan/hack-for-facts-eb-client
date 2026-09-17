@@ -55,8 +55,8 @@ import { ComparisonTerritoryPicker } from '../components/comparison-territory-pi
  * exemplu) instead of an empty shell; one click adopts it.
  */
 export function StatisticsComparisonsPage() {
-  const search = useSearch({ from: '/statistici/comparatii/' })
-  const navigate = useNavigate({ from: '/statistici/comparatii/' })
+  const search = useSearch({ from: '/ins/comparatii/' })
+  const navigate = useNavigate({ from: '/ins/comparatii/' })
   const { i18n } = useLingui()
 
   const patchSearch = useCallback(
@@ -242,7 +242,7 @@ export function StatisticsComparisonsPage() {
           {COMPARISON_PRESETS.map((preset) => (
             <Link
               key={preset.id}
-              to="/statistici/comparatii"
+              to="/ins/comparatii"
               search={preset.search}
               className="rounded-full border border-border/70 px-3 py-1 text-xs font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

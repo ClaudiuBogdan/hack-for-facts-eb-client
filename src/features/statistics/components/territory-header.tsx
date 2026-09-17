@@ -35,7 +35,7 @@ export function TerritoryHeader({ identity }: TerritoryHeaderProps) {
         <ol className="flex flex-wrap items-center gap-1">
           <li>
             <Link
-              to="/statistici"
+              to="/ins"
               className="underline-offset-2 hover:text-foreground hover:underline"
             >
               <Trans>România</Trans>
