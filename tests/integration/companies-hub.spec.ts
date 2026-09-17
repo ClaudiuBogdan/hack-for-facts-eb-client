@@ -17,6 +17,8 @@ const ACTIVE_FILTER = { status: { eq: '1048' } }
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('CompanyHubStats', 'hub-stats')
   await mockApi.mockGraphQL('CompanyGroupProfile', 'counties')
+  // The hub's field is the landing search pinned to `docTypes: ['company']`.
+  await mockApi.mockGraphQL('SearchEntities', 'search-entities-dante')
 
   await mockApi.mockGraphQL('CompaniesSearch', 'search-cluj', {
     variables: { filter: { county: { eq: 'CLUJ' }, ...ACTIVE_FILTER } },
@@ -77,10 +79,12 @@ test.describe('Companies hub', () => {
     await page.goto('/companies')
     await waitForPageReady(page)
 
-    // 677.879 of 1.724.391 active companies have no county in the register, so
-    // the bars deliberately do not sum to the "Active" tile.
+    // The unplaced population is the `(none)` bucket of the very grouping the
+    // map is drawn from, so the gap is always measured against the counties
+    // shown. It is not `coverage.territoryUnmatched`, which counts the
+    // different question of which counties resolved to a SIRUTA territory.
     await expect(page.getByTestId('company-hub-county-coverage')).toContainText(
-      '677.879',
+      '593',
       { timeout: 30000 },
     )
     await expect(page.getByTestId('company-hub-computed-at')).toContainText(
@@ -121,7 +125,7 @@ test.describe('Companies hub', () => {
     expect(searchParam(page.url(), 'status')).toBe('["1048"]')
   })
 
-  test('Enter in the search dock searches; it does not navigate while typing', async ({
+  test('the search asks the index for companies only, and typing navigates nowhere', async ({
     page,
   }) => {
     await page.goto('/companies')
@@ -131,19 +135,24 @@ test.describe('Companies hub', () => {
       timeout: 30000,
     })
 
-    const dock = page.getByTestId('company-search-input')
-    await dock.fill('dante')
-    // The dock commits on Enter only — typing must leave us on the hub.
-    await expect(page).toHaveURL(/\/companies$/)
+    const requests: string[] = []
+    page.on('request', (request) => {
+      const body = request.postData()
+      if (body?.includes('SearchEntities')) requests.push(body)
+    })
 
-    await dock.press('Enter')
-    await expect(page).toHaveURL(/\/companies\/search/, { timeout: 30000 })
-    expect(searchParam(page.url(), 'q')).toBe('dante')
+    await page.getByRole('combobox').first().fill('dante')
+    await expect(page.getByRole('option', { name: /DANTE INTERNATIONAL/ })).toBeVisible({
+      timeout: 30000,
+    })
+
+    // The scope is sent to the server, not applied to a mixed page of hits.
+    expect(requests.some((body) => body.includes('"company"'))).toBe(true)
+    // Typing is not a commit: the reader is still on the hub.
+    await expect(page).toHaveURL(/\/companies$/)
   })
 
-  test('picking a suggestion jumps straight to the company profile', async ({
-    page,
-  }) => {
+  test('picking a result opens that company profile', async ({ page }) => {
     await page.goto('/companies')
     await waitForPageReady(page)
 
@@ -151,11 +160,9 @@ test.describe('Companies hub', () => {
       timeout: 30000,
     })
 
-    await page.getByTestId('company-search-input').fill('dante')
-    const suggestions = page.getByTestId('company-search-suggestions')
-    await expect(suggestions).toBeVisible({ timeout: 30000 })
+    await page.getByRole('combobox').first().fill('dante')
+    await page.getByRole('option', { name: /DANTE INTERNATIONAL/ }).click()
 
-    await suggestions.getByRole('option', { name: /DANTE INTERNATIONAL/ }).click()
     await expect(page).toHaveURL(/\/companies\/14399840/, { timeout: 30000 })
   })
 
@@ -181,6 +188,7 @@ test.describe('Companies hub — stats not ready', () => {
   test.beforeEach(async ({ mockApi }) => {
     await mockApi.mockGraphQL('CompanyHubStats', 'hub-stats-null')
     await mockApi.mockGraphQL('CompanyGroupProfile', 'counties')
+    await mockApi.mockGraphQL('SearchEntities', 'search-entities-dante')
     await mockApi.mockGraphQL('CompaniesSearch', 'search')
     await mockApi.mockGraphQL('CompanyResolve', 'resolve')
   })
@@ -191,7 +199,17 @@ test.describe('Companies hub — stats not ready', () => {
 
     await expect(page.getByRole('alert').first()).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('company-hub-tile-total')).toHaveCount(0)
-    await expect(page.getByTestId('company-hub-counties')).toHaveCount(0)
+  })
+
+  test('still draws the counties, which ride their own query', async ({ page }) => {
+    // The county grouping is a separate request from the cached aggregate, so
+    // a cold hub cache costs the reader the figures, not the whole page.
+    await page.goto('/companies')
+    await waitForPageReady(page)
+
+    await expect(page.getByTestId('company-hub-counties')).toContainText('CLUJ', {
+      timeout: 30000,
+    })
   })
 
   test('still renders the shell, the search dock and the investigation cards', async ({
@@ -200,12 +218,12 @@ test.describe('Companies hub — stats not ready', () => {
     await page.goto('/companies')
     await waitForPageReady(page)
 
-    await expect(page.getByRole('heading', { name: 'Firme', level: 1 })).toBeVisible({
-      timeout: 30000,
-    })
-    await expect(page.getByTestId('company-search-input')).toBeVisible()
     await expect(
-      page.getByRole('link', { name: /insolvență sau faliment/ }),
+      page.getByRole('heading', { name: /Fiecare firmă/, level: 1 }),
+    ).toBeVisible({ timeout: 30000 })
+    await expect(page.getByRole('combobox').first()).toBeVisible()
+    await expect(
+      page.getByRole('link', { name: /insolvență sau faliment/ }).first(),
     ).toBeVisible()
   })
 })

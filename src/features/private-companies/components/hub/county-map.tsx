@@ -1,3 +1,6 @@
+/* eslint-disable react-refresh/only-export-components -- the projection and the
+   component that draws it are one contract; splitting them would let the shape
+   of a projected county and its only consumer drift apart. */
 import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { Feature, FeatureCollection, Polygon, MultiPolygon, Position } from 'geojson'
@@ -7,23 +10,26 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { cn } from '@/lib/utils'
 import type { CompanyGroupSlice } from '@/schemas/private-company-search'
-import { STATUS_ACTIVE, foldCountyName, formatCount } from './hub.data'
+import { STATUS_ACTIVE } from '../../lib/company-status-codes'
+import { foldCountyName } from '../../lib/county-names'
+import { formatInteger } from '../../lib/formatting'
 
 /**
  * A county choropleth drawn as plain SVG.
  *
- * The app's maps run on MapLibre or Leaflet, which is the right tool for
- * 3,000 UATs and the wrong one for 42 counties on a landing page: a tile
- * engine, a style, a worker, for a shape that is a picture. This projects the
- * county GeoJSON the app already ships (`/geojson/judete-2026-03-09.json`) with
- * an equirectangular projection — at Romania's latitude the distortion across
- * 4° is not visible — into one `viewBox`, and colours each polygon by its
- * count. No dependency, no runtime beyond `useMemo`.
+ * The app's other maps run on MapLibre or Leaflet, which is the right tool for
+ * three thousand UATs on an interactive surface and the wrong one for
+ * forty-two counties on a hub: a tile engine, a style and a worker, for a
+ * shape that is a picture. This projects the county boundaries the app already
+ * ships (`/geojson/judete-*.json`) with an equirectangular projection — across
+ * Romania's four degrees of latitude the distortion is not visible — into one
+ * `viewBox`, and shades each county by its count. No new dependency, and no
+ * JavaScript beyond the projection itself, which is memoised.
  *
- * What it must never do is invent a county. A county the API did not return
- * is hatched and named as such; it is not zero. Today all 42 come back
- * (measured 16 September 2026), so the hatch is a guard rather than a state
- * the reader will see.
+ * What it must never do is invent a county. One the API did not return is
+ * hatched and named as having no data, never shaded as zero. With the full
+ * county list from `fetchCompanyCountyCounts` all forty-two match, so the
+ * hatch is a guard rather than a state readers meet.
  */
 
 type CountyProperties = { readonly name: string; readonly mnemonic: string }
@@ -39,7 +45,8 @@ const BIN_CLASSES = [
   'fill-primary/90',
 ] as const
 
-type Projected = {
+export type ProjectedCounty = {
+  /** The folded county name, the key both spellings agree on. */
   readonly key: string
   readonly name: string
   readonly mnemonic: string
@@ -51,8 +58,14 @@ function rings(geometry: Polygon | MultiPolygon): readonly Position[][] {
   return geometry.type === 'Polygon' ? geometry.coordinates : geometry.coordinates.flat()
 }
 
-/** Projects every feature into one box `WIDTH` wide; height follows the country. */
-function project(features: readonly CountyFeature[]) {
+/**
+ * Projects every feature into one box `WIDTH` wide; the height follows the
+ * country's own proportions. Exported for its test.
+ */
+export function project(features: readonly CountyFeature[]): {
+  readonly projected: readonly ProjectedCounty[]
+  readonly height: number
+} {
   let minLon = Infinity
   let maxLon = -Infinity
   let minLat = Infinity
@@ -67,6 +80,8 @@ function project(features: readonly CountyFeature[]) {
       }
     }
   }
+  // Longitude degrees are narrower than latitude degrees away from the equator;
+  // without this the country comes out stretched sideways.
   const stretch = Math.cos(((minLat + maxLat) / 2) * (Math.PI / 180))
   const scale = WIDTH / ((maxLon - minLon) * stretch)
   const height = (maxLat - minLat) * scale
@@ -74,21 +89,22 @@ function project(features: readonly CountyFeature[]) {
     (lon - minLon) * stretch * scale,
     (maxLat - lat) * scale,
   ]
-  const projected: Projected[] = features.map((feature) => {
+  const projected: ProjectedCounty[] = features.map((feature) => {
     let sumX = 0
     let sumY = 0
     let points = 0
     const d = rings(feature.geometry)
-      .map((ring) =>
-        ring
-          .map((position, index) => {
-            const [x, y] = toXY(position)
-            sumX += x
-            sumY += y
-            points += 1
-            return `${index === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`
-          })
-          .join('') + 'Z',
+      .map(
+        (ring) =>
+          ring
+            .map((position, index) => {
+              const [x, y] = toXY(position)
+              sumX += x
+              sumY += y
+              points += 1
+              return `${index === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`
+            })
+            .join('') + 'Z',
       )
       .join('')
     return {
@@ -103,10 +119,28 @@ function project(features: readonly CountyFeature[]) {
 }
 
 /** Equal-count bins over the served counts; the top bin is the darkest. */
-function binOf(count: number, sorted: readonly number[]): number {
+export function binOf(count: number, sorted: readonly number[]): number {
   const rank = sorted.findIndex((value) => value >= count)
   const position = (rank < 0 ? sorted.length - 1 : rank) / Math.max(sorted.length - 1, 1)
   return Math.min(BINS - 1, Math.floor(position * BINS))
+}
+
+/**
+ * The smallest served count that lands in each bin, so the legend names the
+ * boundaries the shading actually uses.
+ *
+ * Derived from `binOf`'s own arithmetic rather than re-sliced independently:
+ * a bin starts at the first rank whose position reaches it, which is
+ * `ceil(bin × (n − 1) / BINS)`. Computed the other way round the legend said
+ * a county was in the darkest band one step before the map shaded it so.
+ */
+export function binThresholds(sorted: readonly number[]): readonly number[] {
+  if (sorted.length === 0) return Array.from({ length: BINS }, () => 0)
+  const last = sorted.length - 1
+  return Array.from({ length: BINS }, (_, bin) => {
+    const rank = Math.min(last, Math.ceil((bin * last) / BINS))
+    return sorted[rank] ?? 0
+  })
 }
 
 export function CountyMap({
@@ -118,29 +152,26 @@ export function CountyMap({
 }: {
   readonly counties: readonly CompanyGroupSlice[]
   readonly className?: string
-  /** Mnemonics at the centroids. Off below the width where they collide. */
+  /** Mnemonics at the centroids. Off where the column is too narrow for them. */
   readonly labels?: boolean
   /** The folded county name under the pointer, here or in the list beside. */
   readonly highlightedKey?: string
   readonly onHover?: (key: string | undefined) => void
 }) {
   const geo = useGeoJsonData('County')
-  const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)
-    ?.features
+  const features = (
+    geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined
+  )?.features
   const shapes = useMemo(() => (features ? project(features) : undefined), [features])
   const byKey = useMemo(
     () => new Map(counties.map((county) => [foldCountyName(county.key), county])),
     [counties],
   )
-  const sorted = useMemo(() => counties.map((county) => county.count).sort((a, b) => a - b), [counties])
-  const thresholds = useMemo(
-    () =>
-      Array.from({ length: BINS }, (_, bin) => {
-        const index = Math.min(sorted.length - 1, Math.floor((bin / BINS) * (sorted.length - 1)))
-        return sorted[index] ?? 0
-      }),
-    [sorted],
+  const sorted = useMemo(
+    () => counties.map((county) => county.count).sort((a, b) => a - b),
+    [counties],
   )
+  const thresholds = useMemo(() => binThresholds(sorted), [sorted])
 
   if (geo.isError) {
     return (
@@ -168,7 +199,7 @@ export function CountyMap({
   }
 
   return (
-    <figure className={cn('relative w-full', className)}>
+    <figure className={cn('relative w-full', className)} data-testid="company-hub-map">
       <svg
         viewBox={`0 0 ${WIDTH} ${shapes.height.toFixed(0)}`}
         className="block h-auto w-full"
@@ -176,13 +207,19 @@ export function CountyMap({
         aria-label={t`Firme în funcțiune pe județe`}
       >
         <defs>
-          <pattern id="county-no-data" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <pattern
+            id="county-no-data"
+            width="6"
+            height="6"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
             <line x1="0" y1="0" x2="0" y2="6" className="stroke-border" strokeWidth="1.5" />
           </pattern>
         </defs>
         {shapes.projected.map((shape) => {
           const county = byKey.get(shape.key)
-          const count = county ? formatCount(county.count) : ''
+          const count = county ? formatInteger(county.count) : ''
           const title = county
             ? t`${shape.name}: ${count} firme în funcțiune`
             : t`${shape.name}: fără date`
@@ -247,7 +284,9 @@ export function CountyMap({
               </svg>
               {index === 0 || index === BIN_CLASSES.length - 1 ? (
                 <MonoLabel className="text-muted-foreground">
-                  {index === 0 ? formatCount(thresholds[0] ?? 0) : `${formatCount(thresholds[index] ?? 0)}+`}
+                  {index === 0
+                    ? formatInteger(thresholds[0] ?? 0)
+                    : `${formatInteger(thresholds[index] ?? 0)}+`}
                 </MonoLabel>
               ) : null}
             </span>

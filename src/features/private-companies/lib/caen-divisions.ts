@@ -1,140 +1,38 @@
-import { useQuery } from '@tanstack/react-query'
-import {
-  COMPANY_GROUP_PROFILE_QUERY,
-  companyGroupProfileResponseSchema,
-} from '@/features/private-companies/api/graphql/company-queries'
-import { fetchCompanyHubStatsLive } from '@/features/private-companies/api/private-company-api.live'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import type { CompanyGroupSlice, CompanyHubStats } from '@/schemas/private-company-search'
-
-const GROUP_KEY_NONE = '(none)'
+import type { CompanyGroupSlice } from '@/schemas/private-company-search'
 
 /**
- * What the hub prototypes draw from, and where each figure comes from.
+ * The CAEN Rev.2 division nomenclature, and the naming of the served counts.
  *
- * **Live** (the API on `VITE_API_URL`):
- * - `companyHubStats` — totals, status mix, top-10 counties, CAEN divisions,
- *   `computedAt`. Cached six hours server-side.
- * - `companyCountyProfile(status = 1048, groupBy: COUNTY)` — every county,
- *   measured at 2.7 s on 16 September 2026. The promoted hub should get this
- *   from `companyHubStats` itself (the server already computes it and trims to
- *   ten); the extra request is prototype-only.
- * - The entity search, scoped to `docTypes: ['company']`.
+ * `companyHubStats.caenDivisions` returns the first two characters of every
+ * recorded activity code with its company count, and `label: null` — the
+ * reference module publishes four-character classes only, so nothing serves a
+ * division name. This table is the official Rev.2 division list, typed in, and
+ * it is the one place a name for a division comes from.
  *
- * **Not served, so stand-ins** — badged as mock wherever drawn:
- * - CAEN division names. The reference module carries four-character classes
- *   only; `CAEN_DIVISIONS` below is the Rev.2 division nomenclature typed in
- *   by hand. Production moves it to the server, keyed by revision.
- * - Source as-of dates (`MOCK_SOURCE_AS_OF`). The profile answers per company;
- *   nothing corpus-wide is served yet.
+ * Two honesty constraints it carries, which the surface drawing these rows
+ * must repeat to the reader:
+ *
+ * - **The names are Rev.2; the counts are not.** The server groups codes from
+ *   every CAEN revision present in the registry, so a division's count can
+ *   include activities recorded under an older revision where that prefix
+ *   meant something else. Revision-aware grouping is server work.
+ * - **A company can sit in several divisions.** The counts are of recorded
+ *   activities per division, so they overlap and must never be summed or
+ *   presented as a share of anything.
+ *
+ * Codes with no division behind them (`00`, `04`, source noise) keep their
+ * code as a name and are flagged `named: false`, so a surface can set them
+ * apart rather than rank them among real sectors.
  */
-
-/** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
-export const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
-
-export const STATUS_ACTIVE = '1048'
-export const STATUS_STRUCK_OFF = '1084'
-export const STATUS_BANKRUPTCY = '1070'
-export const STATUS_INSOLVENCY = '1107'
-
-export function useHubStats() {
-  return useQuery({
-    queryKey: ['proto-companies-hub-stats'],
-    queryFn: ({ signal }) => fetchCompanyHubStatsLive(signal),
-    staleTime: 60 * 60_000,
-    refetchOnWindowFocus: false,
-  })
-}
-
-export type CountyCounts = {
-  /** Every county the registry names, count-desc. The `(none)` bucket is not here. */
-  readonly counties: readonly CompanyGroupSlice[]
-  /** The population the groups were computed over: active companies, in this answer. */
-  readonly denominator: number
-  /**
-   * Active companies with no county in the registry — the `(none)` bucket of
-   * the same answer, so it is never a difference between two snapshots.
-   */
-  readonly unplaced: number
-}
-
-const ACTIVE_FILTER = { status: { eq: STATUS_ACTIVE } } as const
-
-async function fetchCountyCounts(signal?: AbortSignal): Promise<CountyCounts> {
-  const data = await graphqlQuery<unknown>(
-    COMPANY_GROUP_PROFILE_QUERY,
-    { filter: ACTIVE_FILTER, groupBy: 'COUNTY' },
-    { operationName: 'CompanyGroupProfile', signal },
-  )
-  const profile = companyGroupProfileResponseSchema.parse(data).companyCountyProfile
-  const none = profile.groups.find((group) => group.key === GROUP_KEY_NONE)
-  return {
-    counties: profile.groups.filter((group) => group.key !== GROUP_KEY_NONE),
-    denominator: profile.denominator,
-    unplaced: none?.count ?? 0,
-  }
-}
-
-export function useCountyCounts() {
-  return useQuery({
-    queryKey: ['proto-companies-county-counts'],
-    queryFn: ({ signal }) => fetchCountyCounts(signal),
-    staleTime: 60 * 60_000,
-    refetchOnWindowFocus: false,
-  })
-}
-
-/** Corpus-wide dates the API does not serve yet. Mock. */
-export const MOCK_SOURCE_AS_OF = {
-  onrcCapture: '2026-07-08',
-  anafSnapshot: '2026-07-07',
-  financialsFrom: 2008,
-  financialsTo: 2025,
-} as const
-
-export function formatCount(value: number): string {
-  return new Intl.NumberFormat('ro-RO', { maximumFractionDigits: 0 }).format(value)
-}
-
-export function formatShare(part: number, whole: number): string {
-  if (whole <= 0) return '–'
-  return new Intl.NumberFormat('ro-RO', { style: 'percent', maximumFractionDigits: 0 }).format(
-    part / whole,
-  )
-}
-
-export function countFor(stats: CompanyHubStats, code: string): number {
-  return stats.statusMix.find((slice) => slice.key === code)?.count ?? 0
-}
-
-/**
- * Folds both spellings of the Romanian diacritics — the registry writes the
- * cedilla forms (`Timiş`), the GeoJSON the comma-below forms (`Timiș`) — so a
- * county from the API finds its polygon. Verified 42 ↔ 42 on 16 September 2026.
- */
-export function foldCountyName(name: string): string {
-  return name
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[şș]/g, 's')
-    .replace(/[ţț]/g, 't')
-    .toLowerCase()
-    .trim()
-}
 
 export type CaenDivision = {
   readonly code: string
+  /** The nomenclature's own wording, for a tooltip. */
   readonly label: string
-  /** The bar label: the same thing said in fewer words. */
+  /** The same thing in fewer words, for a bar label. */
   readonly short: string
 }
 
-/**
- * CAEN Rev.2 divisions. NOMENCLATURE STAND-IN — typed in, not served. The
- * hub's `caenDivisions` keys are the first two characters of every recorded
- * code across revisions, so a key is looked up here and, when it has no
- * entry (`00`, `04`), shown as its code.
- */
 export const CAEN_DIVISIONS: readonly CaenDivision[] = [
   { code: '01', label: 'Agricultură, vânătoare și servicii anexe', short: 'Agricultură' },
   { code: '02', label: 'Silvicultură și exploatare forestieră', short: 'Silvicultură' },
@@ -235,11 +133,14 @@ export function caenDivision(code: string): CaenDivision | undefined {
 export type LabelledDivision = CompanyGroupSlice & {
   readonly short: string
   readonly long: string
+  /** False when the code has no division in the nomenclature. */
   readonly named: boolean
 }
 
 /** Every served division with its nomenclature name, or its code when it has none. */
-export function labelDivisions(divisions: readonly CompanyGroupSlice[]): readonly LabelledDivision[] {
+export function labelDivisions(
+  divisions: readonly CompanyGroupSlice[],
+): readonly LabelledDivision[] {
   return divisions.map((division) => {
     const named = caenDivision(division.key)
     return {

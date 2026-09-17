@@ -1,296 +1,264 @@
+import { useEffect, useRef, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { Link, useNavigate } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
-import type {
-  CompanyCoverage,
-  CompanyHubStats,
-} from '@/schemas/private-company-search'
+import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
+import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { SmearFilters, stopCounting } from '@/features/landing/components/count-up'
+import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
+import { useCompanyCountyCounts } from '../../hooks/use-company-county-counts'
 import { usePrivateCompanyHub } from '../../hooks/use-private-company-hub'
-import { formatInteger } from '../../lib/formatting'
-import { CompanySearchAutocomplete } from '../search/company-search-autocomplete'
+import { STATUS_ACTIVE } from '../../lib/company-status-codes'
+import { CountyMap } from './county-map'
 import {
-  HubBlock,
-  HubBlockError,
-  HubBlockSkeleton,
-  HubGroupBars,
-} from './company-hub-blocks'
-
-const ACTIVE = '1048'
-const STRUCK_OFF = '1084'
-const BANKRUPTCY = '1070'
-const INSOLVENCY = '1107'
-
-function countFor(stats: CompanyHubStats, code: string): number {
-  return stats.statusMix.find((slice) => slice.key === code)?.count ?? 0
-}
-
-export function PrivateCompanyHubPage() {
-  const navigate = useNavigate()
-  const hub = usePrivateCompanyHub()
-  const stats = hub.data
-
-  return (
-    <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-8 sm:px-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--pnrr-fg)]">
-          <Trans>Companies</Trans>
-        </h1>
-        <p className="max-w-2xl text-base leading-relaxed text-[var(--pnrr-muted)]">
-          <Trans>
-            Companies from the ONRC trade register snapshot, with registry
-            status, ANAF fiscal data and annual financial statements. Look up a
-            company, or start from a question.
-          </Trans>
-        </p>
-      </header>
-
-      <section aria-label={t`Key figures`}>
-        {hub.isPending ? (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {Array.from({ length: 4 }, (_, index) => (
-              <div
-                key={index}
-                aria-hidden
-                className="h-24 animate-pulse border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-subtle)]"
-              />
-            ))}
-          </div>
-        ) : hub.isError || !stats ? (
-          <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
-            <HubBlockError onRetry={() => void hub.refetch()} />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatTile
-              label={<Trans>Total companies</Trans>}
-              value={stats.totalCompanies}
-              search={{}}
-              testId="company-hub-tile-total"
-            />
-            <StatTile
-              label={<Trans>Active</Trans>}
-              value={stats.activeCompanies}
-              search={{ status: [ACTIVE] }}
-              testId="company-hub-tile-active"
-            />
-            <StatTile
-              label={<Trans>Struck off</Trans>}
-              value={countFor(stats, STRUCK_OFF)}
-              search={{ status: [STRUCK_OFF] }}
-              testId="company-hub-tile-struck-off"
-            />
-            <StatTile
-              label={<Trans>Insolvency and bankruptcy</Trans>}
-              value={countFor(stats, INSOLVENCY) + countFor(stats, BANKRUPTCY)}
-              search={{ status: [INSOLVENCY, BANKRUPTCY] }}
-              testId="company-hub-tile-distress"
-            />
-          </div>
-        )}
-      </section>
-
-      <section
-        aria-label={t`Search a company`}
-        className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5"
-      >
-        <label
-          htmlFor="company-hub-search"
-          className="mb-2 block text-sm font-bold uppercase tracking-widest text-[var(--pnrr-fg)]"
-        >
-          <Trans>Search a company</Trans>
-        </label>
-        <CompanySearchAutocomplete
-          value={undefined}
-          commitMode="enter"
-          onCommit={(q) =>
-            void navigate({ to: '/companies/search', search: q ? { q } : {} })
-          }
-          placeholder={t`e.g. Dedeman or 2816464`}
-          inputId="company-hub-search"
-          ariaLabel={t`Company name or CUI`}
-        />
-        <p className="mt-2 text-xs text-[var(--pnrr-muted)]">
-          <Trans>
-            Press Enter to search, or pick a suggestion to jump straight to that
-            company's profile.
-          </Trans>
-        </p>
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <HubBlock title={<Trans>Counties with the most companies</Trans>}>
-          {hub.isPending ? (
-            <HubBlockSkeleton rows={6} />
-          ) : hub.isError || !stats ? (
-            <HubBlockError onRetry={() => void hub.refetch()} />
-          ) : (
-            <>
-              <HubGroupBars
-                groups={stats.topCounties}
-                testId="company-hub-counties"
-                buildSearch={(group) => ({ county: [group.key], status: [ACTIVE] })}
-              />
-              <CountyCoverageNote coverage={stats.coverage} />
-            </>
-          )}
-        </HubBlock>
-
-        <HubBlock title={<Trans>Activity sectors (CAEN)</Trans>}>
-          {hub.isPending ? (
-            <HubBlockSkeleton rows={6} />
-          ) : hub.isError || !stats ? (
-            <HubBlockError onRetry={() => void hub.refetch()} />
-          ) : (
-            <HubGroupBars
-              groups={stats.caenDivisions}
-              testId="company-hub-caen"
-              buildSearch={(group) => ({ caen: group.key, status: [ACTIVE] })}
-            />
-          )}
-        </HubBlock>
-      </div>
-
-      <section aria-label={t`Quick investigations`} className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-[var(--pnrr-fg)]">
-          <Trans>Start an investigation</Trans>
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <InvestigationCard
-            title={<Trans>Companies in insolvency or bankruptcy</Trans>}
-            description={
-              <Trans>
-                Companies under proceedings — useful when checking the suppliers
-                of a public institution.
-              </Trans>
-            }
-            search={{ status: [INSOLVENCY, BANKRUPTCY] }}
-          />
-          <InvestigationCard
-            title={<Trans>Companies declared fiscally inactive</Trans>}
-            description={
-              <Trans>
-                Marked inactive by ANAF, yet still active in the ONRC register.
-              </Trans>
-            }
-            search={{ inactive: true, status: [ACTIVE] }}
-          />
-          <InvestigationCard
-            title={<Trans>Companies registered since 2024</Trans>}
-            description={
-              <Trans>
-                Young companies — check who won contracts shortly after being
-                founded.
-              </Trans>
-            }
-            search={{ regFrom: '2024-01-01', status: [ACTIVE] }}
-          />
-          <InvestigationCard
-            title={<Trans>Active construction companies</Trans>}
-            description={
-              <Trans>
-                CAEN division 41 — building construction, the sector with the most
-                public contracts.
-              </Trans>
-            }
-            search={{ caen: '41', status: [ACTIVE] }}
-          />
-        </div>
-      </section>
-
-      <footer className="border-t-2 border-[var(--pnrr-border)] pt-4 text-xs leading-relaxed text-[var(--pnrr-muted)]">
-        <p className="font-bold uppercase tracking-widest text-[var(--pnrr-fg)]">
-          <Trans>Sources</Trans>
-        </p>
-        <p className="mt-2">
-          <Trans>
-            ONRC — the trade register (status, legal form, CAEN). ANAF — fiscal
-            data (VAT, inactivity) and financial statements.
-          </Trans>
-        </p>
-        {stats ? (
-          <p className="mt-1" data-testid="company-hub-computed-at">
-            <Trans>Figures computed on {formatDay(stats.computedAt)}</Trans>
-          </p>
-        ) : null}
-      </footer>
-    </main>
-  )
-}
-
-/** ISO-8601 → `YYYY-MM-DD`; the time of day is noise for a 6-hourly aggregate. */
-function formatDay(iso: string): string {
-  return iso.slice(0, 10)
-}
+  CaenBars,
+  CaenCaveat,
+  CountyGapNote,
+  CountyList,
+  HubSearch,
+  InvestigationLinks,
+  LoadError,
+  Pending,
+  SectionHead,
+  SnapshotBand,
+  SourcesStrip,
+  StatusPanel,
+  hubFacts,
+} from './hub-sections'
 
 /**
- * 39% of active companies carry no county in the ONRC register and are excluded
- * from the ranking, so the bars do not add up to "Active". Saying nothing would
- * leave the reader to assume they do.
+ * The `/companies` hub: the front door to the company registry.
+ *
+ * One idea per band, in the landing's visual language, so arriving here from
+ * the landing does not feel like arriving at a different product. Search
+ * first, because most readers come with a name; then the size of the thing
+ * being searched; then two ways in that do not need a name at all, by sector
+ * and by place; then three questions to start from.
+ *
+ * It is deliberately not the analytics page. Financial rankings, coverage by
+ * year and the public-money intersections are a separate surface; this one
+ * has to load fast and stay legible.
+ *
+ * Chosen on 16 September 2026 over an atlas layout and a compact tiled one.
+ * The comparison, the data inventory and the follow-ups are recorded in
+ * `docs/design/companies/design.md`.
+ *
+ * **Two queries, on purpose.** The cached hub aggregate answers in
+ * milliseconds; the full county grouping takes about three seconds. Joined,
+ * the four figures would wait for the map. Apart, each band fills in when its
+ * own answer lands and a failure in one leaves the other standing.
  */
-function CountyCoverageNote({ coverage }: { readonly coverage: CompanyCoverage }) {
-  const unmatched = coverage.territoryUnmatched
-  if (unmatched === null || unmatched <= 0) return null
-  return (
-    <p
-      className="mt-3 border-t border-[var(--pnrr-border)] pt-2 text-xs leading-relaxed text-[var(--pnrr-muted)]"
-      data-testid="company-hub-county-coverage"
-    >
-      <Trans>
-        {formatInteger(unmatched)} active companies have no county in the
-        register and are not ranked here, so the bars do not sum to the total.
-      </Trans>
-    </p>
-  )
-}
+export function PrivateCompanyHubPage() {
+  const rootRef = useRef<HTMLDivElement>(null)
+  useRevealOnView(rootRef)
+  // The count-up driver is module state; unmounting mid-flight would leave it
+  // ticking against nodes that have left the document.
+  useEffect(() => () => stopCounting(), [])
+  const hub = usePrivateCompanyHub()
+  const counties = useCompanyCountyCounts()
+  const stats = hub.data ?? undefined
+  // Shared between the map and the list beside it, so pointing at a county in
+  // one lights it in the other.
+  const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined)
 
-function StatTile({
-  label,
-  value,
-  search,
-  testId,
-}: {
-  readonly label: ReactNode
-  readonly value: number
-  readonly search: Record<string, unknown>
-  readonly testId: string
-}) {
   return (
-    <Link
-      to="/companies/search"
-      search={search}
-      data-testid={testId}
-      className="block border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-    >
-      <p className="text-xs font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">
-        {label}
-      </p>
-      <p className="mt-2 text-2xl font-black tabular-nums text-[var(--pnrr-fg)]">
-        {formatInteger(value)}
-      </p>
-    </Link>
-  )
-}
+    <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
+      <RevealStyles />
+      <SmearFilters />
 
-function InvestigationCard({
-  title,
-  description,
-  search,
-}: {
-  readonly title: ReactNode
-  readonly description: ReactNode
-  readonly search: Record<string, unknown>
-}) {
-  return (
-    <Link
-      to="/companies/search"
-      search={search}
-      className="block border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-    >
-      <p className="text-base font-bold text-[var(--pnrr-fg)]">{title}</p>
-      <p className="mt-1 text-sm leading-relaxed text-[var(--pnrr-muted)]">
-        {description}
-      </p>
-    </Link>
+      <section className="relative border-b">
+        <TwoLayerLattice idPrefix="companies-hub" />
+        <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20">
+          <CornerTicks />
+          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
+            <div className="min-w-0 lg:col-span-7">
+              <MonoLabel className="text-muted-foreground">
+                <Trans>Firme / România</Trans>
+              </MonoLabel>
+              {/* Two lines at every width: the second is the shorter, so no
+                  word is ever left alone on a third. */}
+              <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+                <Trans>
+                  Fiecare firmă,
+                  <br />
+                  cu datele la vedere
+                </Trans>
+              </h1>
+              <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
+                <Trans>
+                  Registrul comerțului, datele fiscale ANAF și situațiile financiare anuale, la un
+                  loc. Caută după nume sau CUI, sau pornește de la un domeniu ori un județ.
+                </Trans>
+              </p>
+              <div className="mt-6 sm:mt-7">
+                <HubSearch autoFocus />
+              </div>
+              <nav aria-label={t`Scurtături`} className="mt-4">
+                <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
+                  <Trans>Sau mergi direct la</Trans>
+                </MonoLabel>
+                <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
+                  <Link
+                    to="/companies/search"
+                    search={{ status: [STATUS_ACTIVE] }}
+                    preload="intent"
+                    className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline sm:min-h-0"
+                  >
+                    <Trans>Toate firmele în funcțiune</Trans>
+                  </Link>
+                  <Link
+                    to="/procurement"
+                    preload="intent"
+                    className="inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline sm:min-h-0"
+                  >
+                    <Trans>Achiziții publice</Trans>
+                  </Link>
+                </span>
+              </nav>
+            </div>
+            <div className="min-w-0 lg:col-span-5">
+              {/* The register's states: the one figure that explains the next
+                  band's first two numbers to each other. */}
+              <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6">
+                <div className="flex items-baseline justify-between gap-4">
+                  <MonoLabel className="text-primary">
+                    <Trans>Starea registrului</Trans>
+                  </MonoLabel>
+                  <MonoLabel className="text-muted-foreground">ONRC</MonoLabel>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  <Trans>
+                    Toate firmele cu CUI, pe stări. Radiatele rămân în set, cu istoricul lor.
+                  </Trans>
+                </p>
+                <div className="mt-5">
+                  {hub.isPending ? (
+                    <Pending rows={6} />
+                  ) : stats ? (
+                    <StatusPanel stats={stats} />
+                  ) : (
+                    <LoadError onRetry={() => void hub.refetch()} />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </RuledFrame>
+      </section>
+
+      <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
+        <RuledFrame>
+          <CruxMarks />
+          {stats ? (
+            <SnapshotBand facts={hubFacts(stats)} />
+          ) : (
+            <div className="px-5 py-7">
+              {hub.isPending ? <Pending rows={2} /> : <LoadError onRetry={() => void hub.refetch()} />}
+            </div>
+          )}
+        </RuledFrame>
+      </section>
+
+      <section className="border-b">
+        <RuledFrame className="py-14 sm:py-20">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <SectionHead
+                index={t`01 / Domenii de activitate`}
+                title={
+                  <Trans>
+                    Ce fac
+                    <br />
+                    firmele în funcțiune
+                  </Trans>
+                }
+                lede={
+                  <Trans>
+                    Diviziuni CAEN după activitățile înregistrate la ONRC. O firmă cu mai multe
+                    activități apare în mai multe bare, așa că barele nu se adună.
+                  </Trans>
+                }
+              />
+              <div className="mt-5" data-reveal>
+                <CaenCaveat />
+              </div>
+            </div>
+            <div className="lg:col-span-6 lg:col-start-7" data-reveal>
+              {hub.isPending ? (
+                <Pending rows={10} />
+              ) : stats ? (
+                <CaenBars divisions={stats.caenDivisions} />
+              ) : (
+                <LoadError onRetry={() => void hub.refetch()} />
+              )}
+            </div>
+          </div>
+        </RuledFrame>
+      </section>
+
+      <section className="border-b">
+        <RuledFrame className="py-14 sm:py-20">
+          <SectionHead
+            index={t`02 / Pe județe`}
+            title={<Trans>Unde sunt firmele în funcțiune</Trans>}
+            lede={
+              <Trans>
+                Județul din registrul ONRC. Apasă un județ, pe hartă sau în listă, pentru firmele
+                de acolo.
+              </Trans>
+            }
+          />
+          <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+            <div className="lg:col-span-7" data-reveal>
+              {counties.data ? (
+                <CountyMap
+                  counties={counties.data.counties}
+                  highlightedKey={hoveredCounty}
+                  onHover={setHoveredCounty}
+                />
+              ) : counties.isError ? (
+                <LoadError onRetry={() => void counties.refetch()} />
+              ) : (
+                <div aria-hidden="true" className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" />
+              )}
+            </div>
+            <div className="lg:col-span-4 lg:col-start-9" data-reveal>
+              {counties.data ? (
+                <>
+                  <CountyList
+                    counties={counties.data.counties}
+                    highlightedKey={hoveredCounty}
+                    onHover={setHoveredCounty}
+                  />
+                  <CountyGapNote unplaced={counties.data.unplaced} className="mt-4" />
+                </>
+              ) : counties.isError ? null : (
+                <Pending rows={10} />
+              )}
+            </div>
+          </div>
+        </RuledFrame>
+      </section>
+
+      <section className="border-b">
+        <RuledFrame className="py-14 sm:py-20">
+          <SectionHead
+            index={t`03 / Pornește o investigație`}
+            title={<Trans>Întrebări cu care se începe</Trans>}
+            lede={<Trans>Fiecare deschide lista de firme deja filtrată. Rafinează de acolo.</Trans>}
+          />
+          <div className="mt-8" data-reveal>
+            <InvestigationLinks className="border" />
+          </div>
+        </RuledFrame>
+      </section>
+
+      <section>
+        <RuledFrame className="py-12 sm:py-16">
+          <SourcesStrip stats={stats} />
+        </RuledFrame>
+      </section>
+    </div>
   )
 }

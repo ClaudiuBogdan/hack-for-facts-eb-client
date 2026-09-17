@@ -1,5 +1,6 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import type {
+  CompanyCountyCounts,
   CompanyHubStats,
   PrivateCompanyCountyFacet,
   PrivateCompanySearchQuery,
@@ -8,6 +9,7 @@ import type {
 import { isPrivateCompanyMockEnabled } from '../lib/mock-mode'
 import { fetchPrivateCompanyProfileMock } from './private-company-api.mock'
 import {
+  fetchCompanyCountyCountsLive,
   fetchCompanyHubStatsLive,
   fetchPrivateCompanyCountiesLive,
   fetchPrivateCompanyProfileLive,
@@ -16,6 +18,7 @@ import {
   type CompanyResolveHit,
 } from './private-company-api.live'
 import {
+  fetchCompanyCountyCountsMock,
   fetchCompanyHubStatsMock,
   fetchPrivateCompanyCountiesMock,
   fetchPrivateCompanySearchMock,
@@ -49,6 +52,19 @@ export async function fetchPrivateCompanyCounties(): Promise<
     return fetchPrivateCompanyCountiesMock()
   }
   return fetchPrivateCompanyCountiesLive()
+}
+
+/**
+ * Every county the hub's map draws, and the active companies it cannot place.
+ * Both out of one answer — see `CompanyCountyCounts`.
+ */
+export async function fetchCompanyCountyCounts(
+  signal?: AbortSignal,
+): Promise<CompanyCountyCounts> {
+  if (isPrivateCompanyMockEnabled()) {
+    return fetchCompanyCountyCountsMock()
+  }
+  return fetchCompanyCountyCountsLive(signal)
 }
 
 /**

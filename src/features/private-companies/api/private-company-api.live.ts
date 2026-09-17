@@ -7,6 +7,7 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
+  CompanyCountyCounts,
   CompanyGroupByDim,
   CompanyGroupSlice,
   CompanyHubStats,
@@ -99,6 +100,35 @@ export async function fetchCompanyGroupProfileLive(
   )
   const parsed = companyGroupProfileResponseSchema.parse(data)
   return parsed.companyCountyProfile.groups.filter((group) => group.key !== '(none)')
+}
+
+/** The `(none)` key the server uses for a group with no value. */
+const GROUP_KEY_NONE = '(none)'
+
+/**
+ * Every county over the active population, plus the companies that have none.
+ *
+ * One request, and both figures come out of the same answer, so the gap stated
+ * beside the map can never be a difference between two snapshots. Measured at
+ * 2.7s on 16 September 2026, which the hub pays once an hour. The server
+ * already computes this to build `topCounties`; extending `companyHubStats`
+ * with the full list would retire this call.
+ */
+export async function fetchCompanyCountyCountsLive(
+  signal?: AbortSignal,
+): Promise<CompanyCountyCounts> {
+  const data = await graphqlQuery<unknown>(
+    COMPANY_GROUP_PROFILE_QUERY,
+    { filter: ACTIVE_COMPANY_FILTER, groupBy: 'COUNTY' },
+    { operationName: 'CompanyGroupProfile', signal },
+  )
+  const profile = companyGroupProfileResponseSchema.parse(data).companyCountyProfile
+  const none = profile.groups.find((group) => group.key === GROUP_KEY_NONE)
+  return {
+    counties: profile.groups.filter((group) => group.key !== GROUP_KEY_NONE),
+    denominator: profile.denominator,
+    unplaced: none?.count ?? 0,
+  }
 }
 
 export async function fetchPrivateCompanyCountiesLive(): Promise<
