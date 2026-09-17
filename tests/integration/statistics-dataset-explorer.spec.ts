@@ -3,8 +3,9 @@
  *
  * Route: /statistici/seturi
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-dataset-explorer-flow/).
- * The page fires a single operation, `InsDatasetsExplorer`, whose `filter`
- * variable is built by `buildDatasetFilterInput`. Variable-matched variants are
+ * The list is one operation, `InsDatasetsExplorer`, whose `filter`
+ * variable is built by `buildDatasetFilterInput`; the rail reads the theme
+ * counts from `StatisticsLandingCatalog`. Variable-matched variants are
  * registered most-specific-first; the unfiltered fallback is registered last.
  *
  * `filter` keys must be listed in the order `buildDatasetFilterInput` inserts
@@ -20,6 +21,9 @@ const ROUTE = '/statistici/seturi'
 const BOTH_STATUSES = ['AVAILABLE', 'CATALOG_ONLY']
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
+  // The rail counts themes from the catalog summary.
+  await mockApi.mockGraphQL('StatisticsLandingCatalog', 'catalog')
+
   // Page 2 keys on the offset, not the filter.
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'page-2', {
     variables: { offset: 25 },
@@ -75,7 +79,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
 
     await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
     expect(await resultRows(page).count()).toBe(25)
-    await expect(page.getByText(/1[.,]898 seturi de date/)).toBeVisible()
+    await expect(page.getByText(/1[.,]898 de seturi de date/)).toBeVisible()
 
     // The matrix code is provenance next to the name, which is the link.
     await expect(
@@ -85,9 +89,10 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     ).toBeVisible()
     await expect(page.getByText('POP107D')).toBeVisible()
 
-    // Honesty badges, both flavours, on the same page.
-    await expect(page.getByText('Date disponibile').first()).toBeVisible()
+    // The honesty badge marks only the rows without observations; an
+    // „available" badge on every other row would be noise.
     await expect(page.getByText('Doar catalog').first()).toBeVisible()
+    await expect(page.getByText('Date disponibile')).toHaveCount(0)
   })
 
   test('the status control writes ?stare= and refires the query', async ({
@@ -100,7 +105,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await page.getByRole('radio', { name: 'Cu date', exact: true }).click()
 
     await expect.poll(() => searchParam(page, 'stare')).toBe('available')
-    await expect(page.getByText(/^27 seturi de date$/)).toBeVisible({
+    await expect(page.getByText(/^27 de seturi de date$/)).toBeVisible({
       timeout: 15000,
     })
     expect(await resultRows(page).count()).toBe(10)
@@ -108,29 +113,43 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await expect(page.getByRole('button', { name: 'Cere set' })).toHaveCount(0)
   })
 
-  test('sheet selections write params and the trigger badge counts them', async ({
-    page,
-  }) => {
+  test('rail selections write params and become chips', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
     await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
 
-    await page.getByRole('button', { name: 'Filtre', exact: true }).click()
-
-    await page.getByRole('combobox', { name: 'Temă' }).click()
-    await page.getByRole('option', { name: 'Finanțe' }).click()
+    const rail = page.getByRole('complementary', { name: 'Filtrează seturile de date' })
+    await rail.getByRole('radio', { name: /^Finanțe/ }).click()
     // Strings that parse as JSON round-trip quoted; `3` alone would come back a number.
     await expect.poll(() => searchParam(page, 'context')).toBe('"3"')
 
-    await page.getByRole('checkbox', { name: 'Anual' }).click()
+    await rail.getByRole('checkbox', { name: 'Anual' }).click()
     await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
 
-    await page.keyboard.press('Escape')
+    await expect(page.getByRole('button', { name: 'Elimină filtrul Temă: Finanțe' })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('button', { name: 'Elimină filtrul Periodicitate: Anual' })).toBeVisible()
+    await expect(page.getByText(/^un set de date$/)).toBeVisible()
+  })
 
-    await expect(
-      page.getByRole('button', { name: 'Filtre (2 active)' }),
-    ).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText(/^1 seturi de date$/)).toBeVisible()
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 390, height: 844 } })
+
+    test('the sheet holds the same controls and the trigger counts them', async ({ page }) => {
+      await page.goto(ROUTE)
+      await waitForPageReady(page)
+      await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
+
+      await page.getByRole('button', { name: 'Filtre', exact: true }).click()
+      const sheet = page.getByRole('dialog', { name: 'Filtre' })
+      await sheet.getByRole('radio', { name: /^Finanțe/ }).click()
+      await expect.poll(() => searchParam(page, 'context')).toBe('"3"')
+      await sheet.getByRole('checkbox', { name: 'Anual' }).click()
+      await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
+
+      await page.keyboard.press('Escape')
+      await expect(page.getByRole('button', { name: 'Filtre (2 active)' })).toBeVisible({ timeout: 15000 })
+      await expect(page.getByText(/^un set de date$/)).toBeVisible()
+    })
   })
 
   test('removing a chip clears exactly that filter and refires', async ({
@@ -140,7 +159,7 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     const search = new URLSearchParams({ context: '"3"', frecventa: '["ANNUAL"]' })
     await page.goto(`${ROUTE}?${search.toString()}`)
     await waitForPageReady(page)
-    await expect(page.getByText(/^1 seturi de date$/)).toBeVisible({
+    await expect(page.getByText(/^un set de date$/)).toBeVisible({
       timeout: 15000,
     })
 
@@ -184,10 +203,6 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await expect(
       page.getByRole('radio', { name: 'Doar catalog', exact: true }),
     ).toHaveAttribute('data-state', 'on')
-    await expect(
-      page.getByRole('button', { name: 'Filtre (4 active)' }),
-    ).toBeVisible()
-
     // One chip per removable filter; `stare` has a visible control instead.
     for (const label of [
       'Conține: populatie',
@@ -199,16 +214,12 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
       await expect(page.getByRole('button', { name: `Elimină filtrul ${label}` })).toBeVisible()
     }
 
-    // The sheet reflects the URL too.
-    await page.getByRole('button', { name: 'Filtre (4 active)' }).click()
-    await expect(page.getByRole('combobox', { name: 'Temă' })).toHaveText('Economic')
-    await expect(page.getByRole('checkbox', { name: 'Anual' })).toBeChecked()
-    await expect(
-      page.getByRole('checkbox', { name: 'Date la nivel de UAT' }),
-    ).toBeChecked()
-    await expect(
-      page.getByRole('checkbox', { name: 'Date la nivel de județ' }),
-    ).toBeChecked()
+    // The rail reflects the URL too.
+    const rail = page.getByRole('complementary', { name: 'Filtrează seturile de date' })
+    await expect(rail.getByRole('radio', { name: /^Economic/ })).toHaveAttribute('aria-checked', 'true')
+    await expect(rail.getByRole('checkbox', { name: 'Anual' })).toBeChecked()
+    await expect(rail.getByRole('checkbox', { name: 'Date la nivel de localitate' })).toBeChecked()
+    await expect(rail.getByRole('checkbox', { name: 'Date la nivel de județ' })).toBeChecked()
   })
 
   test('a no-match filter shows an empty state with a clear-filters escape', async ({
@@ -259,6 +270,6 @@ test.describe('Dataset explorer — search, status, filters, pagination', () => 
     await page.getByRole('button', { name: 'Reîncearcă' }).click()
 
     await expect(resultRows(page).first()).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText(/1[.,]898 seturi de date/)).toBeVisible()
+    await expect(page.getByText(/1[.,]898 de seturi de date/)).toBeVisible()
   })
 })

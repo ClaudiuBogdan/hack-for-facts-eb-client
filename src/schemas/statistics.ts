@@ -108,14 +108,25 @@ export type StatisticsTerritoryHubSearch = z.infer<
  * - `uat` / `judet`: coverage flags.
  * - `pagina`: 1-based page index.
  */
+const explorerPeriodicitySchema = z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY'])
+
 export const statisticsDatasetExplorerSearchSchema = z
   .object({
     q: z.string().trim().min(1).optional().catch(undefined),
-    context: z.string().trim().min(1).optional().catch(undefined),
+    // The router JSON-parses a bare digit (`?context=1`) into a number; every
+    // theme code is a digit, so coerce it back or every theme link drops.
+    context: z
+      .preprocess(
+        (value) => (typeof value === 'number' ? String(value) : value),
+        z.string().trim().min(1).optional(),
+      )
+      .catch(undefined),
+    // A single `?frecventa=ANNUAL` is one filter, not a malformed list.
     frecventa: z
-      .array(z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY']))
-      .nonempty()
-      .optional()
+      .preprocess(
+        (value) => (typeof value === 'string' ? [value] : value),
+        z.array(explorerPeriodicitySchema).nonempty().optional(),
+      )
       .catch(undefined),
     stare: z.enum(['available', 'catalog-only']).optional().catch(undefined),
     uat: z.boolean().optional().catch(undefined),

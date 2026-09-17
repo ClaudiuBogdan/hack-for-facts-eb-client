@@ -55,10 +55,30 @@ describe('statistics route search schemas', () => {
     })
   })
 
-  describe('statisticsLandingSearchSchema', () => {
+  describe('statisticsDatasetExplorerSearchSchema', () => {
+    it('keeps a theme code the router parsed as a number', async () => {
+      const { parseStatisticsDatasetExplorerSearch } = await import('./statistics')
+      expect(parseStatisticsDatasetExplorerSearch({ context: 1 })).toEqual({ context: '1' })
+      expect(parseStatisticsDatasetExplorerSearch({ context: '1' })).toEqual({ context: '1' })
+    })
+
+    it('accepts a single periodicity as a one-item list and drops an unknown one', async () => {
+      const { parseStatisticsDatasetExplorerSearch } = await import('./statistics')
+      expect(parseStatisticsDatasetExplorerSearch({ frecventa: 'MONTHLY' })).toEqual({ frecventa: ['MONTHLY'] })
+      expect(parseStatisticsDatasetExplorerSearch({ frecventa: ['ANNUAL', 'MONTHLY'] })).toEqual({ frecventa: ['ANNUAL', 'MONTHLY'] })
+      expect(parseStatisticsDatasetExplorerSearch({ frecventa: 'WEEKLY' })).toEqual({})
+    })
+  })
+
+  describe('statisticsHubSearchSchema', () => {
     it('applies undefined defaults when no search is provided', () => {
-      const parsed = parseStatisticsLandingSearch({})
+      const parsed = parseStatisticsHubSearch({})
       expect(parsed).toEqual({})
+    })
+
+    it('keeps a known indicator and drops an unknown one', () => {
+      expect(parseStatisticsHubSearch({ indicator: 'salariati' })).toEqual({ indicator: 'salariati' })
+      expect(parseStatisticsHubSearch({ indicator: 'altceva' })).toEqual({})
     })
   })
 
