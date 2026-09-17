@@ -395,6 +395,12 @@ floated between the search box and the list, the pager floated under it, and
 every component carried its own class strings. Decisions, all of them
 DESIGN.md's own rules applied to this page:
 
+- **The page header is a band of its own**, closed by a rule: the way back,
+  the title, then one line on what the page holds. The way back is a quiet
+  link, not an outlined button — it was the heaviest thing above the title and
+  it is the least important control on the page. `StatisticsBackLink` is the
+  single implementation, used by the catalog, the dataset detail and the
+  territory hub, so the module cannot drift into three weights of „back".
 - **The class constants live in `statistics-theme.ts`** — `bandHeader`,
   `railGroup`, `railOption`, `facetRow`, `facetRowSelected`, `facetCount` —
   and the components import them, the parliament convention the module already

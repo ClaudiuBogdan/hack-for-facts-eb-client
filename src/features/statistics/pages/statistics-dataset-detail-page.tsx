@@ -10,7 +10,7 @@ import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useMemo } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { AlertTriangle, ArrowLeft, ArrowRight } from 'lucide-react'
+import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -38,6 +38,7 @@ import { periodicityLabel } from '../lib/periodicity-labels'
 import { DetailTier0Hero } from '../components/detail-tier0-hero'
 import { FreshnessBadge } from '../components/freshness-badge'
 import { RequestDatasetAction } from '../components/request-dataset-action'
+import { StatisticsBackLink } from '../components/statistics-back-link'
 import { useDatasetSeries, useDatasetTier0 } from '../hooks/use-dataset-detail'
 import {
   classificationTypeCode,
@@ -120,12 +121,9 @@ export function StatisticsDatasetDetailPage({
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 md:px-6">
-        <Button variant="outline" size="sm" asChild className="w-fit">
-          <Link to="/ins/seturi">
-            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-            <Trans>Înapoi la seturi de date</Trans>
-          </Link>
-        </Button>
+        <StatisticsBackLink to="/ins/seturi">
+          <Trans>Înapoi la seturi de date</Trans>
+        </StatisticsBackLink>
 
         {tier0Query.isLoading ? <DetailSkeleton /> : null}
 

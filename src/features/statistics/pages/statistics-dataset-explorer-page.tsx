@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { AlertTriangle, ArrowLeft } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 import { DatasetExplorerPagination } from '../components/dataset-explorer-pagination'
 import { DatasetExplorerRow } from '../components/dataset-explorer-row'
+import { StatisticsBackLink } from '../components/statistics-back-link'
 import { DatasetExplorerFilterControls } from '../components/filters/dataset-explorer-filter-controls'
 import { DatasetExplorerFilterSheet } from '../components/filters/dataset-explorer-filter-sheet'
 import { StatisticsActiveFilters } from '../components/filters/statistics-active-filters'
@@ -120,18 +121,18 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
-        <Button variant="outline" size="sm" asChild className="w-fit">
-          <Link to="/ins">
-            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+        {/* One band: the way out, the title, what the page holds — then a
+            rule that closes it, so the header does not float over the work. */}
+        <header className="border-b border-border/70 pb-5">
+          <StatisticsBackLink to="/ins">
             <Trans>Înapoi la statistici</Trans>
-          </Link>
-        </Button>
-
-        <header className="space-y-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          </StatisticsBackLink>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
             <Trans>Seturi de date INS</Trans>
           </h1>
-          <p className="max-w-3xl text-sm text-muted-foreground">
+          {/* `text-pretty` keeps the last line off a single orphan word when
+              the subtitle wraps on a phone. */}
+          <p className="mt-1.5 max-w-3xl text-pretty text-sm leading-relaxed text-muted-foreground">
             <Trans>Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui.</Trans>
           </p>
         </header>

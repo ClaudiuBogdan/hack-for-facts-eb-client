@@ -1,7 +1,7 @@
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { AlertTriangle, ArrowLeft } from 'lucide-react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { AlertTriangle } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,7 @@ import { groupTerritoryTiles } from '../lib/territory-groups'
 import { CoverageRibbon } from '../components/coverage-ribbon'
 import { RelatedLinksRail } from '../components/related-links-rail'
 import { ShareFilteredView } from '../components/share-filtered-view'
+import { StatisticsBackLink } from '../components/statistics-back-link'
 import { TerritoryHeader } from '../components/territory-header'
 import { TerritoryHeadlineTile, TerritoryIndicatorRow } from '../components/territory-indicator-row'
 import { useStatisticsTerritoryHub } from '../hooks/use-statistics'
@@ -90,12 +91,9 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/ins">
-              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              <Trans>Înapoi la statistici</Trans>
-            </Link>
-          </Button>
+          <StatisticsBackLink to="/ins">
+            <Trans>Înapoi la statistici</Trans>
+          </StatisticsBackLink>
           <ShareFilteredView />
         </div>
 
