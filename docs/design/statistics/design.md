@@ -171,22 +171,77 @@ binning from `src/hooks/useAdvancedMapAnalyticsBins.ts`.
 
 ## 6. Landing page (`/statistici`) — design
 
-**Decision.** Primary content = curated entry points, not the 1,898 list.
-Sections, top→bottom:
-1. Title "Statistici" + subtitle "Date oficiale INS Tempo, ancorate în
-   teritoriu." + `CoverageRibbon`.
-2. **Territory search** (prominent `TerritoryPicker`): "Caută localitatea sau
-   județul tău" → navigates to `/statistici/teritorii/$siruta`.
-3. **Themed dataset cards** for the loaded set, grouped by registry theme
-   (Populație, Forță de muncă & salarii, Indicatori locali, Sector public,
-   Educație, Sănătate, Turism). Each card lists its `Date disponibile` datasets
-   → dataset detail. Built from `INS_PRIORITIZED_*` filtered to available.
-4. **Entry tiles** to `/statistici/harti`, `/statistici/seturi`,
-   `/statistici/comparatii`.
+**Decision (2026-09-16): the hub is the companies hub's composition, in the
+landing's visual language (`src/components/landing-skin/*`), one band per
+idea.** It is a presentation page that hands off to the analysis surfaces;
+it is not itself an analytics page. Sections, top→bottom:
 
-**Assumption.** Landing is straightforward composition of domain components and
-is specified here rather than as a separate feature file (it has no assigned
-slug). Implementer builds it after the four MVP features exist.
+1. **Hero** — mono caption „Statistici / INS Tempo", the two-line headline
+   „Fiecare localitate, cu cifrele la vedere", one sentence on the dataset,
+   the **matrix search** (the landing field's chrome over
+   `insDatasets(filter: {search})`, observations-loaded only; Enter opens the
+   highlighted dataset or the explorer with the term; `mod+K` focuses), and
+   „Sau mergi direct la" → explorer, comparisons. Beside it, the **catalog on
+   its eight themes**: a proportion strip and one row per theme with count and
+   share, each a saved query into `/statistici/seturi?context=…`.
+2. **Figures band**, counting up on arrival: datasets with observations,
+   territories on SIRUTA, population at the latest 1 January, years of annual
+   series. Each cell links to the surface that holds it.
+3. **01 / Indicatori naționali** — eight national cells with period, matrix
+   code, sparkline and the unit as a Romanian word; each row opens the dataset
+   detail on exactly that cell (`teritoriu`, `clasificari`, `unitate`,
+   `frecventa`).
+4. **02 / Pe județe** — an SVG county choropleth beside the ranked list, a
+   shared hover highlight, and a switch between three indicators
+   (`?indicator=viata|somaj|salariati`, default `viata`, in the URL so the
+   view is shareable). Counties the read did not return are hatched and
+   counted, never zero. Below the band, the **territory search** („Sau
+   localitatea ta") with quick tries; LAU rows link into the territory hub.
+5. **03 / Din 1990 până azi** — births versus deaths as a two-line chart, with
+   three 35-year deltas beside it and links into each series with its span.
+6. **04 / Pornește o investigație** — three prefilled analyses.
+7. **Surse și acoperire** — source, loaded/catalog counts, the periods read,
+   and the capture date of the series.
+
+**Data.** `fetchStatisticsHub` (`api/graphql/statistics-hub-fetchers.ts`):
+one `insLatestDatasetValues` at RO/NATIONAL for nine codes
+(`HUB_NATIONAL_DATASETS`), one `insObservations` per county layer at the
+national indicator's latest year filtered client-side to the national cell
+on every axis but the county one, the catalog counts, and one territory
+count. Sections fail independently and are named in `failures`; the page
+renders a retry for a failed section and keeps the others. The **annual
+histories behind the charts are kept in the client**
+(`lib/hub-national-series.ts`, captured from the same API on 2026-09-16):
+closed years of official statistics do not change, and re-reading 35 years
+of six datasets on every view carries no information. The live latest point
+is appended only when it is a newer year of the same cell and unit.
+
+**Prototypes (2026-09-16).** Four compositions were built and compared at
+`/development/statistics/ins-landing`, all on the shipped link contracts,
+with captured values labelled as such:
+
+| Variant | Shape | Outcome |
+|---|---|---|
+| `editorial` | The companies hub's rhythm: matrix search hero with the theme panel, figures band, numbered bands. | **Chosen.** One idea per band reads top to bottom; the same language as `/companies` makes the two front doors read as one site. |
+| `place` | App skin; the territory search is the hero, compact tiles, four trend cards, tools, themes as chips. | Rejected. The strongest single act, but the page had no reason to keep reading past the tiles. Its territory search survives inside the counties band. |
+| `stories` | App skin; a data brief: eight key figures, births vs deaths, two county rankings. | Rejected. The stories survive as bands 02 and 03; as a whole the page read as an article, not a front door. |
+| `questions` | App skin; three question cards wired to their surfaces, one featured figure. | Rejected. The cards competed for the fold and each carried a control; the hub keeps one search. |
+
+The shipped landing before this decision (national tiles, county decade
+story, a three-level example, themes, honesty band) was retired with the
+prototype; `useStatisticsUatSnapshot` and `fetchStatisticsLandingCatalog`
+remain in use.
+
+Known follow-ups from the review of 2026-09-17, deliberately not in scope:
+
+- The three county layers share one read and one retry: a failed layer
+  hides the map for all three. Splitting the read per layer needs a UI for
+  a toggle option whose layer is missing.
+- The national unemployment share (SOM101F, monthly) and the county map's
+  registered unemployment rate (SOM103A, annual) are different measures;
+  the map has no national reference of its own yet.
+- The hub gave up its ⌘K binding because the global entity search owns
+  that key; a hub-local shortcut needs a key of its own.
 
 ## 7. Data model expectations at the UI boundary
 

@@ -59,35 +59,21 @@ export type StatisticsPeriodSearch = z.infer<
 >
 
 /**
- * Search state for the statistics landing route (`/statistici`).
+ * Search state for the statistics hub route (`/statistici`).
  *
- * `q` is the debounced territory search term, shareable so a colleague can be
- * sent straight to "the Cluj-Napoca result".
- *
- * `loc` is the picked territory (SIRUTA) the „Locul tău" band renders for —
- * shareable, so a link can land directly on "your place" numbers.
+ * `indicator` is the county map's colouring — shareable, so a link can land
+ * on "unemployment by county". The default view renders with no params.
  */
-export const statisticsLandingSearchSchema = z
+export const STATISTICS_HUB_INDICATORS = ['viata', 'somaj', 'salariati'] as const
+export type StatisticsHubIndicatorKey = (typeof STATISTICS_HUB_INDICATORS)[number]
+
+export const statisticsHubSearchSchema = z
   .object({
-    q: z.string().trim().min(1).optional().catch(undefined),
-    // The router's search parser JSON-parses bare digits into a number —
-    // coerce back before validating, or every ?loc= deep link drops.
-    loc: z
-      .preprocess(
-        (value) => (typeof value === 'number' ? String(value) : value),
-        z
-          .string()
-          .trim()
-          .regex(/^\d{1,6}$/)
-          .optional(),
-      )
-      .catch(undefined),
+    indicator: z.enum(STATISTICS_HUB_INDICATORS).optional().catch(undefined),
   })
   .catch({})
 
-export type StatisticsLandingSearch = z.infer<
-  typeof statisticsLandingSearchSchema
->
+export type StatisticsHubSearch = z.infer<typeof statisticsHubSearchSchema>
 
 /**
  * Search state for the territory hub route
@@ -190,10 +176,10 @@ export type StatisticsComparisonsSearch = z.infer<
 >
 
 /** Parse function for TanStack Router `validateSearch` on the landing route. */
-export function parseStatisticsLandingSearch(
+export function parseStatisticsHubSearch(
   search: Record<string, unknown>,
-): StatisticsLandingSearch {
-  return statisticsLandingSearchSchema.parse(search)
+): StatisticsHubSearch {
+  return statisticsHubSearchSchema.parse(search)
 }
 
 /** Parse function for TanStack Router `validateSearch` on the dataset explorer. */
@@ -419,6 +405,68 @@ export interface StatisticsLandingCatalog {
   readonly loadedCount: number
   readonly catalogCount: number
   readonly themes: readonly StatisticsThemeCount[]
+}
+
+// ---------------------------------------------------------------------------
+// Statistics hub (`/statistici`)
+// ---------------------------------------------------------------------------
+
+/** How a hub value is read: which word follows it and how it is compacted. */
+export type StatisticsHubUnit = 'persons' | 'count' | 'percent' | 'years' | 'other'
+
+export interface StatisticsHubSeriesPoint {
+  readonly period: string
+  readonly value: number
+}
+
+export interface StatisticsHubCountyValue {
+  /** The county code (`CJ`, `B`) — also the GeoJSON mnemonic. */
+  readonly code: string
+  readonly name: string
+  readonly value: number
+}
+
+/** One national indicator: the latest total cell and, when read, its annual history. */
+export interface StatisticsHubIndicator {
+  readonly code: string
+  readonly nameRo: string | null
+  /** Null when the server resolved no cell (`NO_DATA`) or the cell is null-valued. */
+  readonly value: number | null
+  /** The source decimal string, verbatim. */
+  readonly rawValue: string | null
+  readonly valueStatus: string | null
+  readonly unit: StatisticsHubUnit
+  readonly unitLabel: string | null
+  readonly unitCode: string | null
+  readonly period: string | null
+  readonly periodicity: InsPeriodicity | null
+  /** `Dn:member` pins of the resolved cell — what the detail page needs to land on it. */
+  readonly pins: readonly string[]
+  /** Annual total-cell history, oldest first: the client's capture plus the live latest point when newer. */
+  readonly series: readonly StatisticsHubSeriesPoint[]
+}
+
+/** One dataset over the 42 counties, at the national indicator's latest year. */
+export interface StatisticsHubCountyLayer {
+  readonly code: string
+  readonly period: string | null
+  readonly unit: StatisticsHubUnit
+  readonly unitLabel: string | null
+  readonly values: readonly StatisticsHubCountyValue[]
+  /** Counties the read did not return a total cell for — hatched on the map, never zero. */
+  readonly missingCounties: readonly string[]
+}
+
+export type StatisticsHubSection = 'indicators' | 'counties' | 'catalog' | 'territories'
+
+/** The hub payload. Sections fail independently; a failed one is null and named. */
+export interface StatisticsHubData {
+  readonly nativeContract: 'hub-v1'
+  readonly indicators: readonly StatisticsHubIndicator[] | null
+  readonly counties: readonly StatisticsHubCountyLayer[] | null
+  readonly catalog: StatisticsLandingCatalog | null
+  readonly territoryCount: number | null
+  readonly failures: readonly StatisticsHubSection[]
 }
 
 /** Detail POST A payload: the dataset + the resolved tier-0 value. */

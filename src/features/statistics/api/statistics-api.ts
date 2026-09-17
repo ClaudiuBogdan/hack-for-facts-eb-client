@@ -1,6 +1,7 @@
 import type {
   DatasetRequestPayload,
   DatasetRequestResult,
+  StatisticsHubData,
   StatisticsLandingCatalog,
   StatisticsTerritoryHubResult,
   StatisticsUatSnapshot,
@@ -21,6 +22,7 @@ import {
   fetchStatisticsLandingCatalog,
   fetchStatisticsUatSnapshot,
 } from './graphql/statistics-fetchers'
+import { fetchStatisticsHub as fetchStatisticsHubLive } from './graphql/statistics-hub-fetchers'
 
 /**
  * Statistics API seam.
@@ -31,6 +33,13 @@ import {
  * fetcher lane (`graphql/statistics-fetchers.ts`); both adapters answer the
  * same domain shapes so the swap stays a one-call change.
  */
+
+/** The `/statistici` hub: always the validated live lane; sections fail independently inside. */
+export async function fetchStatisticsHub(
+  signal?: AbortSignal,
+): Promise<StatisticsHubData> {
+  return fetchStatisticsHubLive(signal)
+}
 
 export async function fetchLandingCatalog(
   signal?: AbortSignal,

@@ -11,18 +11,21 @@ const query = `query InsLandingTiles($codes: [String!]!) {
     datasetCodes: $codes, preferredClassificationCodes: ["TOTAL"]) { ${INS_LATEST_VALUE_FIELDS} }
 }`
 
-export async function fetchNativeLandingTiles(signal?: AbortSignal) {
+export async function fetchNativeLandingTiles(
+  signal?: AbortSignal,
+  codes: readonly string[] = LANDING_NATIONAL_DATASET_CODES,
+) {
   signal?.throwIfAborted()
   const response = await graphqlQuery<unknown>(
     query,
-    { codes: LANDING_NATIONAL_DATASET_CODES },
+    { codes },
     { auth: 'none', signal },
   )
   signal?.throwIfAborted()
   const { latest } = z
     .object({ latest: z.array(insLatestValueNodeRawSchema) })
     .parse(response)
-  validateLandingLatest(latest, LANDING_NATIONAL_DATASET_CODES, {
+  validateLandingLatest(latest, codes, {
     code: 'RO',
     level: 'NATIONAL',
   })

@@ -1,19 +1,13 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { StatisticsLandingPage } from '@/features/statistics/pages/statistics-landing-page'
+import { StatisticsHubPage } from '@/features/statistics/pages/statistics-hub-page'
 
 export const Route = createLazyFileRoute('/statistici/')({
-  component: StatisticsLandingRoutePage,
+  component: StatisticsHubRoutePage,
 })
 
-function StatisticsLandingRoutePage() {
+function StatisticsHubRoutePage() {
   const search = Route.useSearch()
-  const { landingData, landingCatalog } = Route.useLoaderData()
+  const { hub } = Route.useLoaderData()
 
-  return (
-    <StatisticsLandingPage
-      search={search}
-      {...(landingData ? { initialLandingData: landingData } : {})}
-      {...(landingCatalog ? { initialLandingCatalog: landingCatalog } : {})}
-    />
-  )
+  return <StatisticsHubPage search={search} initialHub={hub} />
 }

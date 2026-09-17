@@ -147,11 +147,11 @@ describe('B12: the router leaks raw-typed values past validateSearch', () => {
     })
   })
 
-  it('coerces a numeric ?loc= on the landing', async () => {
-    const { parseStatisticsLandingSearch } =
-      await import('@/schemas/statistics')
-    expect(parseStatisticsLandingSearch({ loc: 54975 })).toEqual({
-      loc: '54975',
+  it('drops an unknown ?indicator= on the hub instead of throwing', async () => {
+    const { parseStatisticsHubSearch } = await import('@/schemas/statistics')
+    expect(parseStatisticsHubSearch({ indicator: 42 })).toEqual({})
+    expect(parseStatisticsHubSearch({ indicator: 'somaj' })).toEqual({
+      indicator: 'somaj',
     })
   })
 

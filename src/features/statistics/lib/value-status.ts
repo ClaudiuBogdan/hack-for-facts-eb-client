@@ -21,7 +21,11 @@ export function describeValueStatus(status: string): string {
       return t`date confidențiale`
     case 'b':
       return t`serie întreruptă`
+    case ':':
+      return t`date indisponibile`
+    case 'x':
+      return t`nu se aplică`
     default:
-      return t`marcaj INS necunoscut`
+      return t`marcaj INS „${status.trim()}”`
   }
 }

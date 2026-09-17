@@ -1,0 +1,218 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "SOM103A-TR",
+          "dataset_code": "SOM103A",
+          "value": "9.3",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "TR",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Teleorman"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM103A-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM103A-1",
+              "type_code": "D1",
+              "code": "3000",
+              "name_ro": "3000"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "SOM103A-MH",
+          "dataset_code": "SOM103A",
+          "value": "9.1",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "MH",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Mehedinți"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM103A-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM103A-1",
+              "type_code": "D1",
+              "code": "3001",
+              "name_ro": "3001"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "SOM103A-IF",
+          "dataset_code": "SOM103A",
+          "value": "0.5",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "IF",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Ilfov"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM103A-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM103A-1",
+              "type_code": "D1",
+              "code": "3002",
+              "name_ro": "3002"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "SOM103A-B",
+          "dataset_code": "SOM103A",
+          "value": "0.5",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "B",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "București"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM103A-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM103A-1",
+              "type_code": "D1",
+              "code": "3003",
+              "name_ro": "3003"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "SOM103A-CJ",
+          "dataset_code": "SOM103A",
+          "value": "1.5",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM103A-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM103A-1",
+              "type_code": "D1",
+              "code": "3004",
+              "name_ro": "3004"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 5,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

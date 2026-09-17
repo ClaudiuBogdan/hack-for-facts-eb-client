@@ -1,0 +1,1125 @@
+{
+  "data": {
+    "latest": [
+      {
+        "dataset": {
+          "id": "POP107D",
+          "code": "POP107D",
+          "name_ro": "Populatia dupa domiciliu la 1 ianuarie",
+          "name_en": "Populatia dupa domiciliu la 1 ianuarie",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "D2",
+              "label_en": "D2",
+              "classification_type": {
+                "code": "D2"
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "POP107D-RO",
+          "dataset_code": "POP107D",
+          "value": "21646220",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2026",
+            "year": 2026,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "POP107D-0",
+              "type_code": "D0",
+              "code": "1",
+              "name_ro": "1"
+            },
+            {
+              "id": "POP107D-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP107D-2",
+              "type_code": "D2",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2026",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "FOM104D",
+          "code": "FOM104D",
+          "name_ro": "Numarul mediu al salariatilor",
+          "name_en": "Numarul mediu al salariatilor",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "FOM104D-RO",
+          "dataset_code": "FOM104D",
+          "value": "5453155",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "FOM104D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2024",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "SOM101F",
+          "code": "SOM101F",
+          "name_ro": "Ponderea somerilor inregistrati",
+          "name_en": "Ponderea somerilor inregistrati",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "MONTHLY"
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "D2",
+              "label_en": "D2",
+              "classification_type": {
+                "code": "D2"
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "SOM101F-RO",
+          "dataset_code": "SOM101F",
+          "value": "1.9",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2026-05",
+            "year": 2026,
+            "quarter": null,
+            "month": 5,
+            "periodicity": "MONTHLY"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM101F-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM101F-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "SOM101F-2",
+              "type_code": "D2",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2026-05",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "LOC101B",
+          "code": "LOC101B",
+          "name_ro": "Locuinte existente",
+          "name_en": "Locuinte existente",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "D2",
+              "label_en": "D2",
+              "classification_type": {
+                "code": "D2"
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "LOC101B-RO",
+          "dataset_code": "LOC101B",
+          "value": "10177161",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9669",
+            "symbol": "count",
+            "name_ro": "Numar"
+          },
+          "classifications": [
+            {
+              "id": "LOC101B-0",
+              "type_code": "D0",
+              "code": "7388",
+              "name_ro": "7388"
+            },
+            {
+              "id": "LOC101B-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "LOC101B-2",
+              "type_code": "D2",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2025",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "POP217A",
+          "code": "POP217A",
+          "name_ro": "Durata medie a vietii",
+          "name_en": "Durata medie a vietii",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "D2",
+              "label_en": "D2",
+              "classification_type": {
+                "code": "D2"
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "POP217A-RO",
+          "dataset_code": "POP217A",
+          "value": "77.45",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP217A-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP217A-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP217A-2",
+              "type_code": "D2",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2025",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "TUR104E",
+          "code": "TUR104E",
+          "name_ro": "Sosiri ale turistilor",
+          "name_en": "Sosiri ale turistilor",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 5,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "CLASSIFICATION",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TERRITORIAL",
+              "label_ro": "D2",
+              "label_en": "D2",
+              "classification_type": {
+                "code": "D2"
+              }
+            },
+            {
+              "index": 3,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 4,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "TUR104E-RO",
+          "dataset_code": "TUR104E",
+          "value": "14258382",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "TUR104E-0",
+              "type_code": "D0",
+              "code": "9148",
+              "name_ro": "9148"
+            },
+            {
+              "id": "TUR104E-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "TUR104E-2",
+              "type_code": "D2",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  2,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2025",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "POP201D",
+          "code": "POP201D",
+          "name_ro": "Nascuti vii",
+          "name_en": "Nascuti vii",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "POP201D-RO",
+          "dataset_code": "POP201D",
+          "value": "145725",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "POP201D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "POP201D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2025",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "POP206D",
+          "code": "POP206D",
+          "name_ro": "Decedati",
+          "name_en": "Decedati",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "POP206D-RO",
+          "dataset_code": "POP206D",
+          "value": "239691",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "POP206D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "POP206D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2025",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      },
+      {
+        "dataset": {
+          "id": "SOM103A",
+          "code": "SOM103A",
+          "name_ro": "Rata somajului",
+          "name_en": "Rata somajului",
+          "data_status": "AVAILABLE",
+          "periodicity": [
+            "ANNUAL"
+          ],
+          "dimension_count": 4,
+          "has_uat_data": true,
+          "has_county_data": true,
+          "has_siruta": true,
+          "metadata": {
+            "revision_id": "1",
+            "custody_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "transform_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          },
+          "dimensions": [
+            {
+              "index": 0,
+              "type": "CLASSIFICATION",
+              "label_ro": "D0",
+              "label_en": "D0",
+              "classification_type": {
+                "code": "D0"
+              }
+            },
+            {
+              "index": 1,
+              "type": "TERRITORIAL",
+              "label_ro": "D1",
+              "label_en": "D1",
+              "classification_type": {
+                "code": "D1"
+              }
+            },
+            {
+              "index": 2,
+              "type": "TEMPORAL",
+              "label_ro": "Perioade",
+              "label_en": "Periods",
+              "classification_type": null
+            },
+            {
+              "index": 3,
+              "type": "UNIT_OF_MEASURE",
+              "label_ro": "UM",
+              "label_en": "UM",
+              "classification_type": null
+            }
+          ]
+        },
+        "observation": {
+          "id": "SOM103A-RO",
+          "dataset_code": "SOM103A",
+          "value": "3.3",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "RO",
+            "siruta_code": null,
+            "level": "NATIONAL",
+            "name_ro": "Romania"
+          },
+          "unit": {
+            "code": "10225",
+            "symbol": "percent",
+            "name_ro": "Procente"
+          },
+          "classifications": [
+            {
+              "id": "SOM103A-0",
+              "type_code": "D0",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "SOM103A-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": {
+              "pairs": [
+                [
+                  1,
+                  112
+                ]
+              ],
+              "resolution": "EXACT",
+              "flags": [],
+              "qualified": false,
+              "resolvedTerritory": {
+                "code": "RO",
+                "level": "NATIONAL"
+              },
+              "contextTerritory": null,
+              "applicableRules": []
+            }
+          }
+        },
+        "latestPeriod": "2025",
+        "hasData": true,
+        "matchStrategy": "TOTAL_FALLBACK",
+        "geographicWitnesses": []
+      }
+    ]
+  }
+}

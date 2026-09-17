@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   datasetRequestPayloadSchema,
-  parseStatisticsLandingSearch,
+  parseStatisticsHubSearch,
   parseStatisticsTerritoryHubSearch,
 } from './statistics'
 

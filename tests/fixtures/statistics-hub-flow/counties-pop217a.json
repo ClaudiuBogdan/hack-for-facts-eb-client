@@ -1,0 +1,248 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "POP217A-VL",
+          "dataset_code": "POP217A",
+          "value": "82.01",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP217A-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP217A-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP217A-2",
+              "type_code": "D2",
+              "code": "3000",
+              "name_ro": "3000"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP217A-B",
+          "dataset_code": "POP217A",
+          "value": "79.68",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "B",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "București"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP217A-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP217A-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP217A-2",
+              "type_code": "D2",
+              "code": "3001",
+              "name_ro": "3001"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP217A-BV",
+          "dataset_code": "POP217A",
+          "value": "79.16",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "BV",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Brașov"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP217A-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP217A-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP217A-2",
+              "type_code": "D2",
+              "code": "3002",
+              "name_ro": "3002"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP217A-CJ",
+          "dataset_code": "POP217A",
+          "value": "78.71",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP217A-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP217A-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP217A-2",
+              "type_code": "D2",
+              "code": "3003",
+              "name_ro": "3003"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP217A-CL",
+          "dataset_code": "POP217A",
+          "value": "74.82",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Călărași"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP217A-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP217A-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP217A-2",
+              "type_code": "D2",
+              "code": "3004",
+              "name_ro": "3004"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 5,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

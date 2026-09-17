@@ -1,0 +1,177 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "FOM104D-B",
+          "dataset_code": "FOM104D",
+          "value": "1053348",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "B",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "București"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "FOM104D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM104D-CJ",
+          "dataset_code": "FOM104D",
+          "value": "261239",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "FOM104D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM104D-TM",
+          "dataset_code": "FOM104D",
+          "value": "255705",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "TM",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Timiș"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "FOM104D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM104D-GR",
+          "dataset_code": "FOM104D",
+          "value": "38238",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "GR",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Giurgiu"
+          },
+          "unit": {
+            "code": "9685",
+            "symbol": "persons",
+            "name_ro": "Numar persoane"
+          },
+          "classifications": [
+            {
+              "id": "FOM104D-0",
+              "type_code": "D0",
+              "code": "112",
+              "name_ro": "112"
+            },
+            {
+              "id": "FOM104D-1",
+              "type_code": "D1",
+              "code": "112",
+              "name_ro": "112"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 4,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

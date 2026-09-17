@@ -7,21 +7,21 @@ vi.mock('@tanstack/react-router', () => ({
     ...options,
     options,
     useSearch: () => ({}),
-    useLoaderData: () => ({ landingData: null, landingCatalog: null }),
+    useLoaderData: () => ({ hub: { nativeContract: 'hub-v1', indicators: null, counties: null, catalog: null, territoryCount: null, failures: [] } }),
   }),
 }))
 
-vi.mock('@/features/statistics/pages/statistics-landing-page', () => ({
-  StatisticsLandingPage: () => <div data-testid="statistics-landing-page" />,
+vi.mock('@/features/statistics/pages/statistics-hub-page', () => ({
+  StatisticsHubPage: () => <div data-testid="statistics-hub-page" />,
 }))
 
-describe('StatisticsLandingRoutePage', () => {
-  it('renders the statistics landing page component for /statistici', async () => {
+describe('StatisticsHubRoutePage', () => {
+  it('renders the statistics hub page component for /statistici', async () => {
     const { Route } = await import('./index.lazy')
     const RouteComponent = Route.options.component as ComponentType
 
     render(<RouteComponent />)
 
-    expect(screen.getByTestId('statistics-landing-page')).toBeInTheDocument()
+    expect(screen.getByTestId('statistics-hub-page')).toBeInTheDocument()
   })
 })
