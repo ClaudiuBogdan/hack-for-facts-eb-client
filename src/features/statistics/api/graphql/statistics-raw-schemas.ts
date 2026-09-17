@@ -66,6 +66,19 @@ export const insPeriodicityRawSchema = insSourcePeriodicitySchema
  * of the server field still parses; the mapper then falls back to deriving the
  * status from `sync_status`.
  */
+export const insDataSourceRawSchema = z.object({
+  name: z.string(),
+  type: z.string().nullish(),
+  type_code: z.number().nullish(),
+  link_number: z.number().nullish(),
+})
+
+export const insSeriesPredecessorRawSchema = z.object({
+  dataset_code: z.string(),
+  last_period_ro: z.string(),
+  last_period_en: z.string().nullish(),
+})
+
 export const insDatasetNodeRawSchema = z.object({
   id: z.string(),
   code: z.string(),
@@ -87,6 +100,19 @@ export const insDatasetNodeRawSchema = z.object({
   context_path: z.string().nullish(),
   metadata: z.record(z.string(), z.unknown()).nullish(),
   data_status: insDataStatusRawSchema.nullish(),
+  // Published matrix text (server 2026-09-17); nullish so an older server still parses.
+  methodology_ro: z.string().nullish(),
+  methodology_en: z.string().nullish(),
+  data_sources_ro: z.string().nullish(),
+  data_sources_en: z.string().nullish(),
+  data_sources: z.array(insDataSourceRawSchema).nullish(),
+  observations_ro: z.string().nullish(),
+  observations_en: z.string().nullish(),
+  discontinued_after_ro: z.string().nullish(),
+  discontinued_after_en: z.string().nullish(),
+  successor_dataset_code: z.string().nullish(),
+  continues_from: z.array(insSeriesPredecessorRawSchema).nullish(),
+  source_last_update: z.string().nullish(),
 })
 
 export const insDatasetsExplorerResponseRawSchema = z.object({

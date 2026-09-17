@@ -131,6 +131,37 @@ export interface InsDataset {
   context_path?: string | null;
   metadata?: Record<string, unknown> | null;
   dimensions?: InsDatasetDimension[] | InsDimension[] | null;
+  /** Published matrix text (TEMPO page). Absent on payloads predating the fields. */
+  methodology_ro?: string | null;
+  methodology_en?: string | null;
+  data_sources_ro?: string | null;
+  data_sources_en?: string | null;
+  data_sources?: InsDataSource[] | null;
+  observations_ro?: string | null;
+  observations_en?: string | null;
+  /** TEMPO's published series break ("Anul 2007"); null when not discontinued. */
+  discontinued_after_ro?: string | null;
+  discontinued_after_en?: string | null;
+  successor_dataset_code?: string | null;
+  continues_from?: InsSeriesPredecessor[] | null;
+  /** INS's own last-update date for the matrix (YYYY-MM-DD). */
+  source_last_update?: string | null;
+}
+
+/** One published data source of a matrix (Romanian list). `name` may end in TEMPO's `<<NNNN>>` marker. */
+export interface InsDataSource {
+  name: string;
+  type: string | null;
+  type_code: number | null;
+  /** TEMPO's "Detalii" reference; its URL pattern is not published, so it is never a link. */
+  link_number: number | null;
+}
+
+/** A predecessor matrix this series continues. */
+export interface InsSeriesPredecessor {
+  dataset_code: string;
+  last_period_ro: string;
+  last_period_en: string | null;
 }
 
 export interface InsDatasetDetails extends InsDataset {
