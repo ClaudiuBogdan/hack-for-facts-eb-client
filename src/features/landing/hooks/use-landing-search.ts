@@ -29,7 +29,7 @@ export const SEARCH_LIMIT = 8
 // Use existing internal destination mappings. Parliament person/case keys and
 // source-only publication links need separate routing work before inclusion.
 export const LANDING_SEARCH_TYPES = [
-  'organization', 'company', 'public_enterprise', 'ngo', 'legal_act',
+  'organization', 'company', 'public_enterprise', 'ngo', 'legal_act', 'ins_dataset',
 ] as const
 
 export function useSearchResults({
@@ -109,6 +109,9 @@ export function useSearchResults({
       // Public-enterprise and PNRR are role scopes; the API roles list is OR,
       // so never present their combination as an intersection.
       const kept = current.filter(f => {
+        // INS is a catalog scope: tags, UAT and beneficiary roles do not apply.
+        // Switching back to any entity filter also leaves the INS scope.
+        if (filter.id === 'ins_dataset' || f.id === 'ins_dataset') return false
         if (filter.entityTag) return f.entityTag !== filter.entityTag
         if (f.entityTag) return true
         return filter.id === 'pnrr' ? f.id !== 'public_enterprise'

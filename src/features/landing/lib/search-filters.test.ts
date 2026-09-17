@@ -88,7 +88,7 @@ describe('absorbTriggers', () => {
 
   it('absorbs only where the word does no work in the query', () => {
     const absorbing = SEARCH_FILTERS.filter((filter) => filter.absorb).map((filter) => filter.id)
-    expect(absorbing).toEqual(['uat', 'company', 'legal_act', 'pnrr'])
+    expect(absorbing).toEqual(['uat', 'company', 'legal_act', 'pnrr', 'ins_dataset'])
   })
 
   it('takes a prefix under the caret with it', () => {
@@ -169,5 +169,21 @@ describe('keyword-triggered entity tag chips', () => {
     const school = tags.find(filter => filter.entityTag === 'kind::school' && !filter.exclude)!
     const hospital = tags.find(filter => filter.entityTag === 'kind::hospital' && !filter.exclude)!
     expect(searchFilterInput([school, hospital])).toEqual({ entityTags: ['kind::school', 'kind::hospital'] })
+  })
+})
+
+
+describe('INS keyword scope', () => {
+  it.each(['INS', 'tempo', 'statistici'])('offers %s and absorbs only the scope keyword', keyword => {
+    const filter = getSearchFilter('ins_dataset')
+    expect(suggestFilters(`${keyword} populație`)).toContainEqual(filter)
+    expect(absorbTriggers(`${keyword} populație`, filter)).toBe('populație')
+    expect(searchFilterInput([filter])).toEqual({ docTypes: ['ins_dataset'] })
+    expect(suggestFilters(keyword, [filter])).not.toContainEqual(filter)
+  })
+  it('does not match INS inside institution names or display it without a keyword', () => {
+    expect(ids('institutul')).not.toContain('ins_dataset')
+    expect(ids('')).toEqual([])
+    expect(ids('POP107D')).toEqual([])
   })
 })

@@ -10,7 +10,7 @@ import { z } from 'zod'
  */
 
 /**
- * The doc_type values the server allows in `docTypes`. All ten are populated.
+ * The doc_type values the server allows in `docTypes`, including INS catalog matrices.
  * KEEP IN SYNC with SEARCH_ENTITY_DOC_TYPES on the server and PALETTE_DOC_TYPES
  * in the scrapper.
  *
@@ -29,6 +29,7 @@ export const ENTITY_SEARCH_DOC_TYPES = [
   'committee',
   'legal_act',
   'mo_act',
+  'ins_dataset',
 ] as const
 
 export type EntitySearchDocType = (typeof ENTITY_SEARCH_DOC_TYPES)[number]

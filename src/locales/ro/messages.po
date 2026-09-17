@@ -2599,7 +2599,7 @@ msgstr "Întreabă agentul Transparenta…"
 msgid "Ask us to send it"
 msgstr "Solicită-ne să trimitem"
 
-#: src/features/landing/lib/search-filters.ts:102
+#: src/features/landing/lib/search-filters.ts:103
 msgid "asociații și fundații"
 msgstr "asociații și fundații"
 
@@ -2916,7 +2916,7 @@ msgstr "Înainte:"
 msgid "Beneficiar"
 msgstr ""
 
-#: src/features/landing/lib/search-filters.ts:129
+#: src/features/landing/lib/search-filters.ts:130
 msgid "beneficiari ai Planului Național de Redresare"
 msgstr "beneficiari ai Planului Național de Redresare"
 
@@ -3624,8 +3624,8 @@ msgstr ""
 
 #: src/features/landing/components/landing-page.tsx:107
 #: src/features/landing/components/search/landing-search.tsx:197
-msgid "Caută entități sau CUI..."
-msgstr "Caută entități sau CUI..."
+#~ msgid "Caută entități sau CUI..."
+#~ msgstr "Caută entități sau CUI..."
 
 #: src/features/entity-search/components/entity-search-input.tsx:90
 msgid "Caută firme, instituții, legi, contracte, PNRR…"
@@ -4667,7 +4667,7 @@ msgstr ""
 msgid "Comfortable"
 msgstr "Confortabil"
 
-#: src/features/entity-search/lib/doc-type-meta.ts:82
+#: src/features/entity-search/lib/doc-type-meta.ts:88
 msgid "Comisie"
 msgstr ""
 
@@ -4731,7 +4731,7 @@ msgstr "Compact"
 msgid "Companie"
 msgstr ""
 
-#: src/features/entity-search/lib/doc-type-meta.ts:40
+#: src/features/entity-search/lib/doc-type-meta.ts:46
 msgid "Companie de stat"
 msgstr ""
 
@@ -4760,7 +4760,7 @@ msgstr "Firme înregistrate din 2024"
 msgid "Companies under proceedings — useful when checking the suppliers of a public institution."
 msgstr "Firmele aflate în procedură, utile pentru a verifica furnizorii unei instituții publice."
 
-#: src/features/landing/lib/search-filters.ts:92
+#: src/features/landing/lib/search-filters.ts:93
 msgid "Companii de stat"
 msgstr "Companii de stat"
 
@@ -7244,7 +7244,7 @@ msgstr ""
 msgid "Doar tabel"
 msgstr ""
 
-#: src/features/entity-search/lib/doc-type-meta.ts:90
+#: src/features/entity-search/lib/doc-type-meta.ts:96
 #: src/routes/justitie.dosare.$caseId.tsx:251
 msgid "Document"
 msgstr "Document"
@@ -8246,7 +8246,7 @@ msgstr "Excelent"
 msgid "Exclude"
 msgstr "Exclude"
 
-#: src/features/landing/lib/search-filters.ts:157
+#: src/features/landing/lib/search-filters.ts:166
 msgid "Exclude entitățile cu această etichetă"
 msgstr "Exclude entitățile cu această etichetă"
 
@@ -9172,7 +9172,7 @@ msgstr ""
 msgid "Filtrează după vorbitor"
 msgstr ""
 
-#: src/features/landing/lib/search-filters.ts:157
+#: src/features/landing/lib/search-filters.ts:166
 msgid "Filtrează entitățile publice după etichetă"
 msgstr "Filtrează entitățile publice după etichetă"
 
@@ -9334,7 +9334,7 @@ msgstr "Găsește resurse, raportează probleme sau ia legătura cu noi."
 msgid "Finish"
 msgstr "Finalizează"
 
-#: src/features/entity-search/lib/doc-type-meta.ts:28
+#: src/features/entity-search/lib/doc-type-meta.ts:34
 msgid "Firmă"
 msgstr ""
 
@@ -9344,7 +9344,7 @@ msgstr ""
 
 #: src/components/sidebar/nav-main.tsx:77
 #: src/features/landing/lib/landing-groups.ts:107
-#: src/features/landing/lib/search-filters.ts:78
+#: src/features/landing/lib/search-filters.ts:79
 msgid "Firme"
 msgstr "Firme"
 
@@ -11127,7 +11127,7 @@ msgstr ""
 msgid "Instanțe principale"
 msgstr ""
 
-#: src/features/entity-search/lib/doc-type-meta.ts:46
+#: src/features/entity-search/lib/doc-type-meta.ts:52
 msgid "Instituție"
 msgstr ""
 
@@ -11138,7 +11138,7 @@ msgid "Instituție publică"
 msgstr ""
 
 #: src/features/entity-search/components/entity-search-page.tsx:283
-#: src/features/landing/lib/search-filters.ts:69
+#: src/features/landing/lib/search-filters.ts:70
 #: src/features/procurement/components/procurement-institution-page.tsx:309
 msgid "Instituții"
 msgstr "Instituții"
@@ -11295,7 +11295,7 @@ msgstr ""
 msgid "Întreprinderi publice de stat — Transparenta.eu"
 msgstr ""
 
-#: src/features/landing/lib/search-filters.ts:93
+#: src/features/landing/lib/search-filters.ts:94
 msgid "întreprinderi publice și regii"
 msgstr "întreprinderi publice și regii"
 
@@ -11803,7 +11803,7 @@ msgstr "Legendă"
 msgid "Legendă hartă"
 msgstr ""
 
-#: src/features/landing/lib/search-filters.ts:115
+#: src/features/landing/lib/search-filters.ts:116
 msgid "legi, hotărâri și ordonanțe"
 msgstr "legi, hotărâri și ordonanțe"
 
@@ -11821,10 +11821,10 @@ msgid "Legislația României"
 msgstr ""
 
 #: src/components/sidebar/nav-main.tsx:82
-#: src/features/entity-search/lib/doc-type-meta.ts:52
+#: src/features/entity-search/lib/doc-type-meta.ts:58
 #: src/features/landing/components/landing-page.tsx:72
 #: src/features/landing/lib/landing-groups.ts:125
-#: src/features/landing/lib/search-filters.ts:114
+#: src/features/landing/lib/search-filters.ts:115
 msgid "Legislație"
 msgstr "Legislație"
 
@@ -13382,7 +13382,7 @@ msgstr "Bani pe care vânzătorul îi colectează doar pentru a-i transmite stat
 msgid "Monitor this institution"
 msgstr "Monitorizează această instituție"
 
-#: src/features/entity-search/lib/doc-type-meta.ts:64
+#: src/features/entity-search/lib/doc-type-meta.ts:70
 #: src/features/legal/components/act-publication-band.tsx:83
 #: src/features/legal/components/act-timeline-band.tsx:78
 #: src/features/legal/components/legislation-tab-nav.tsx:52
@@ -13561,7 +13561,7 @@ msgstr ""
 #~ msgid "municipii, orașe, comune și județe"
 #~ msgstr "municipii, orașe, comune și județe"
 
-#: src/features/landing/lib/search-filters.ts:54
+#: src/features/landing/lib/search-filters.ts:55
 msgid "municipii, orașe, comune și sectoare"
 msgstr "municipii, orașe, comune și sectoare"
 
@@ -13990,8 +13990,8 @@ msgstr ""
 
 #. placeholder {0}: status.term
 #: src/features/landing/components/search/landing-search.tsx:130
-msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau CUI-ul.</1>"
-msgstr "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau CUI-ul.</1>"
+#~ msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau CUI-ul.</1>"
+#~ msgstr "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau CUI-ul.</1>"
 
 #: src/features/landing/components/search/search-parts.tsx:357
 msgid "Niciun rezultat."
@@ -15366,8 +15366,8 @@ msgid "Nume reținut - verificare în curs"
 msgstr ""
 
 #: src/features/landing/components/search/landing-search.tsx:508
-msgid "Nume sau CUI..."
-msgstr "Nume sau CUI..."
+#~ msgid "Nume sau CUI..."
+#~ msgstr "Nume sau CUI..."
 
 #: src/features/landing/components/search/landing-search.tsx:114
 msgid "Nume sau identificator."
@@ -15540,7 +15540,7 @@ msgstr "Una dintre cele mai scăzute"
 msgid "One side of this ratio has no observed amounts in this selection, so no ratio can be derived."
 msgstr "Una dintre laturile acestui raport nu are sume observate în această selecție, așa că raportul nu poate fi calculat."
 
-#: src/features/entity-search/lib/doc-type-meta.ts:34
+#: src/features/entity-search/lib/doc-type-meta.ts:40
 msgid "ONG"
 msgstr ""
 
@@ -15550,7 +15550,7 @@ msgstr ""
 
 #: src/components/sidebar/nav-main.tsx:60
 #: src/features/landing/lib/landing-groups.ts:113
-#: src/features/landing/lib/search-filters.ts:101
+#: src/features/landing/lib/search-filters.ts:102
 #: src/features/legal/lib/legal-vocabulary.ts:68
 msgid "ONG-uri"
 msgstr "ONG-uri"
@@ -15962,7 +15962,7 @@ msgstr "Organizații neguvernamentale și servicii sociale, cu nivel de identita
 msgid "organizatii si dovezi directe in schema ngo"
 msgstr ""
 
-#: src/features/landing/lib/search-filters.ts:70
+#: src/features/landing/lib/search-filters.ts:71
 msgid "orice entitate publică, inclusiv primăriile"
 msgstr "orice entitate publică, inclusiv primăriile"
 
@@ -16195,7 +16195,7 @@ msgstr "Categorii părinte"
 msgid "Parlament"
 msgstr "Parlament"
 
-#: src/features/entity-search/lib/doc-type-meta.ts:76
+#: src/features/entity-search/lib/doc-type-meta.ts:82
 msgid "Parlamentar"
 msgstr ""
 
@@ -16709,9 +16709,9 @@ msgstr ""
 msgid "PNMC"
 msgstr ""
 
-#: src/features/entity-search/lib/doc-type-meta.ts:70
+#: src/features/entity-search/lib/doc-type-meta.ts:76
 #: src/features/landing/lib/landing-groups.ts:82
-#: src/features/landing/lib/search-filters.ts:128
+#: src/features/landing/lib/search-filters.ts:129
 #: src/features/procurement/components/procurement-supplier-slice.tsx:380
 msgid "PNRR"
 msgstr "PNRR"
@@ -17154,7 +17154,7 @@ msgid "Primăria Municipiului Cluj-Napoca"
 msgstr ""
 
 #: src/features/entity-search/components/entity-search-page.tsx:283
-#: src/features/landing/lib/search-filters.ts:53
+#: src/features/landing/lib/search-filters.ts:54
 msgid "Primării"
 msgstr "Primării"
 
@@ -17361,7 +17361,7 @@ msgstr "Progres"
 msgid "Proiect"
 msgstr "Proiect"
 
-#: src/features/entity-search/lib/doc-type-meta.ts:58
+#: src/features/entity-search/lib/doc-type-meta.ts:64
 msgid "Proiect de lege"
 msgstr ""
 
@@ -19001,8 +19001,8 @@ msgid "Scrie un nume pentru a căuta în <0>{scope}</0>."
 msgstr "Scrie un nume pentru a căuta în <0>{scope}</0>."
 
 #: src/features/landing/components/search/search-parts.tsx:353
-msgid "Scrie un nume pentru a căuta."
-msgstr "Scrie un nume pentru a căuta."
+#~ msgid "Scrie un nume pentru a căuta."
+#~ msgstr "Scrie un nume pentru a căuta."
 
 #: src/components/maps/InteractiveMap.tsx:1507
 #: src/components/maps/ScrollWheelZoomControl.tsx:39
@@ -20491,7 +20491,7 @@ msgstr "Contrib. sociale"
 msgid "Social media"
 msgstr "Rețele sociale"
 
-#: src/features/landing/lib/search-filters.ts:79
+#: src/features/landing/lib/search-filters.ts:80
 msgid "societăți comerciale private"
 msgstr "societăți comerciale private"
 
@@ -20874,7 +20874,9 @@ msgstr "Statistici"
 msgid "Statistici de utilizare"
 msgstr "Statistici de utilizare"
 
+#: src/features/entity-search/lib/doc-type-meta.ts:29
 #: src/features/landing/lib/landing-groups.ts:174
+#: src/features/landing/lib/search-filters.ts:138
 #: src/routes/statistici/index.tsx:40
 msgid "Statistici INS"
 msgstr "Statistici INS"
@@ -24844,3 +24846,26 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr ""
+
+
+#: src/features/landing/components/landing-page.tsx:107
+#: src/features/landing/components/search/landing-search.tsx:197
+msgid "Caută entități, statistici sau identificatori..."
+msgstr "Caută entități, statistici sau identificatori..."
+
+#: src/features/landing/lib/search-filters.ts:139
+msgid "matrice din catalogul INS TEMPO"
+msgstr "matrice din catalogul INS TEMPO"
+
+#. placeholder {0}: status.term
+#: src/features/landing/components/search/landing-search.tsx:130
+msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
+msgstr "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
+
+#: src/features/landing/components/search/landing-search.tsx:508
+msgid "Nume sau identificator..."
+msgstr "Nume sau identificator..."
+
+#: src/features/landing/components/search/search-parts.tsx:353
+msgid "Scrie un nume sau un identificator pentru a căuta."
+msgstr "Scrie un nume sau un identificator pentru a căuta."

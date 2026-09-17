@@ -754,3 +754,23 @@ describe('LandingSearch', () => {
     })
   })
 })
+
+
+it('accepts an INS keyword chip and renders a matrix code linked to its detail page', async () => {
+  const matrix = { ...IASI, id: 'ins_dataset_POP107D_digest', docType: 'ins_dataset',
+    title: 'Populația după domiciliu', countyName: null, roles: [],
+    identifiers: ['POP107D'], docKey: 'POP107D', href: '/statistici/seturi/POP107D' }
+  searchEntities.mockResolvedValue(response([matrix]))
+  const { user, input } = setup()
+  expect(screen.queryByRole('option')).not.toBeInTheDocument()
+  await user.click(input)
+  await user.type(input, 'INS populație')
+  const suggestion = await screen.findByRole('option', { name: /Statistici INS.*filtru/i })
+  await user.click(suggestion)
+  expect(input).toHaveValue('populație')
+  expect(screen.getByLabelText('Elimină filtrul Statistici INS')).toBeInTheDocument()
+  await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(1))
+  expect(screen.getByRole('option')).toHaveAttribute('href', '/statistici/seturi/POP107D')
+  expect(screen.getByRole('option')).toHaveTextContent('POP107D')
+  expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: ['ins_dataset'], limit: 8 }, expect.any(AbortSignal))
+})

@@ -130,7 +130,7 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
           <Trans>
             Niciun rezultat pentru{' '}
             <strong className="font-medium text-foreground">{status.term}</strong>.{' '}
-            <span className="text-muted-foreground/55">Încearcă numele complet sau CUI-ul.</span>
+            <span className="text-muted-foreground/55">Încearcă numele complet sau identificatorul.</span>
           </Trans>
         </Message>
       )
@@ -194,7 +194,7 @@ export function LandingSearch({
   readonly onSelect?: (entity: EntitySearchHit) => void
 }) {
   const { i18n } = useLingui()
-  const placeholder = placeholderProp ?? t`Caută entități sau CUI...`
+  const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
   const {
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent,
   } = useSearchResults({ docTypes, suggestions: fixedScope === undefined })
@@ -505,7 +505,7 @@ export function LandingSearch({
               // focus-visible on click. The group draws focus instead.
               'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
             )}
-            placeholder={isScoped ? t`Nume sau CUI...` : placeholder}
+            placeholder={isScoped ? t`Nume sau identificator...` : placeholder}
             // The pill is a sibling the screen reader would not associate with
             // the input, so the scope is spoken as part of the field's name.
             aria-label={fixedScope ? `${fixedScope.label} · ${placeholder}` : placeholder}

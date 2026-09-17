@@ -161,3 +161,14 @@ describe('mapSearchResult', () => {
     expect(mapSearchResult(response).degraded).toBe(false)
   })
 })
+
+
+it('maps an INS code into its internal detail page without using the Meili id', () => {
+  const hit = mapSearchHit(rawHit({
+    id: 'ins_dataset_POP107D_digest', docType: 'ins_dataset', docId: 'ins_dataset:POP107D',
+    docKey: 'POP107D', identifiers: ['POP107D'], cuis: [], roles: [],
+    subtitle: 'INS TEMPO · POP107D', url: '/statistici/seturi/POP107D',
+  }))
+  expect(hit).toMatchObject({ href: '/statistici/seturi/POP107D', isExternal: false,
+    identifiers: ['POP107D'], roles: [], subtitle: 'INS TEMPO · POP107D' })
+})
