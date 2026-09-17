@@ -1,3 +1,4 @@
+import { getPeriodLabels as dashboardPeriodLabels } from "@/lib/period-utils";
 import Decimal from "decimal.js";
 import type { CommitmentDashboardRow } from "@/lib/api/commitment-dashboard";
 import type { ReportPeriodInput } from "@/schemas/reporting";
@@ -40,26 +41,7 @@ export function dashboardPeriodLabel(
       ? `${row.year}-Q${row.period}`
       : `${row.year}-${String(row.period).padStart(2, "0")}`;
 }
-export function dashboardPeriodLabels(period: ReportPeriodInput): string[] {
-  if (period.selection.dates) return [...period.selection.dates];
-  const { start, end } = period.selection.interval!;
-  const values: string[] = [];
-  for (
-    let year = Number(start.slice(0, 4));
-    year <= Number(end.slice(0, 4));
-    year++
-  ) {
-    for (
-      let n = 1;
-      n <= (period.type === "YEAR" ? 1 : period.type === "QUARTER" ? 4 : 12);
-      n++
-    ) {
-      const label = dashboardPeriodLabel({ year, period: n }, period.type);
-      if (label >= start && label <= end) values.push(label);
-    }
-  }
-  return values;
-}
+export { getPeriodLabels as dashboardPeriodLabels } from "@/lib/period-utils";
 export function selectDashboardRows(
   rows: readonly CommitmentDashboardRow[],
   period: ReportPeriodInput,
