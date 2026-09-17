@@ -386,4 +386,75 @@ describe('StatisticsDatasetDetailPage', () => {
       pagina: undefined,
     })
   })
+
+  it('shows what INS publishes about the matrix: methodology with its report link, sources without markers, continuity', async () => {
+    useDatasetTier0Mock.mockReturnValue(
+      queryStub({
+        ...tier0,
+        dataset: {
+          ...tier0.dataset!,
+          methodology_ro:
+            'Obiectivul cercetarii statistice anuale privind costul fortei de munca.\r\n<a href="https://insse.ro/cms/files/raport.pdf" target="_blank"> Raport de metadate si calitate </a>\r\n',
+          data_sources_ro:
+            'Cercetarea statistica privind costul fortei de munca <<6263>>',
+          data_sources: [
+            {
+              name: 'Cercetarea statistica privind costul fortei de munca <<6263>>',
+              type: 'Surse statistice (INS)',
+              type_code: 1,
+              link_number: 6263,
+            },
+          ],
+          observations_ro: 'Datele sunt disponibile incepand cu anul 2008.',
+          continues_from: [
+            { dataset_code: 'FOM106A', last_period_ro: 'Anul 2008', last_period_en: 'Year 2008' },
+          ],
+          source_last_update: '2025-09-04',
+        },
+      }),
+    )
+    render(
+      <StatisticsDatasetDetailPage
+        code="POP107D"
+        search={{}}
+        onSearchChange={vi.fn()}
+      />,
+    )
+    expect(screen.getByTestId('dataset-metadata')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Metodologie' }))
+    expect(
+      screen.getByText(/Obiectivul cercetarii statistice anuale/),
+    ).toBeInTheDocument()
+    const report = screen.getByRole('link', {
+      name: 'Raport de metadate si calitate',
+    })
+    expect(report).toHaveAttribute('href', 'https://insse.ro/cms/files/raport.pdf')
+    expect(report).toHaveAttribute('rel', 'noopener noreferrer')
+    await userEvent.click(
+      screen.getByRole('button', { name: /Surse de date/ }),
+    )
+    expect(
+      screen.getByText('Cercetarea statistica privind costul fortei de munca'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/<<6263>>/)).not.toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Continuitatea seriei' }),
+    )
+    expect(screen.getByText('FOM106A')).toBeInTheDocument()
+    expect(screen.getByText(/Anul 2008/)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Ultima actualizare INS: 2025-09-04/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('renders no metadata section when INS published none of it', () => {
+    render(
+      <StatisticsDatasetDetailPage
+        code="POP107D"
+        search={{}}
+        onSearchChange={vi.fn()}
+      />,
+    )
+    expect(screen.queryByTestId('dataset-metadata')).not.toBeInTheDocument()
+  })
 })
