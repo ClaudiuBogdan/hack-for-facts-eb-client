@@ -27,6 +27,11 @@
           "key": "IAŞI",
           "label": null,
           "count": 40456
+        },
+        {
+          "key": "(none)",
+          "label": null,
+          "count": 593
         }
       ]
     }

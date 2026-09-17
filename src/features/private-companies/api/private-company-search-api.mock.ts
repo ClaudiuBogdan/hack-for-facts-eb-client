@@ -8,6 +8,7 @@
  * and `regFrom`/`regTo` are an inclusive range.
  */
 import type {
+  CompanyCountyCounts,
   CompanyGroupByDim,
   CompanyGroupSlice,
   CompanyHubStats,
@@ -125,6 +126,23 @@ export async function fetchPrivateCompanySearchMock(
     nextCursor: null,
     totalCount: items.length,
     totalEstimated: false,
+  }
+}
+
+/**
+ * Counties over the active fixtures, plus the ones with no county on them.
+ * `groupKeyFor` drops a profile with no county, so the unplaced share is
+ * counted here rather than read back out of the grouping.
+ */
+export async function fetchCompanyCountyCountsMock(): Promise<CompanyCountyCounts> {
+  const active = mockProfiles().filter(
+    (profile) => profile.status?.code === ACTIVE_STATUS_CODE,
+  )
+  const counties = await fetchCompanyGroupProfileMock('COUNTY', active)
+  return {
+    counties,
+    denominator: active.length,
+    unplaced: active.filter((profile) => profile.address.county === null).length,
   }
 }
 
