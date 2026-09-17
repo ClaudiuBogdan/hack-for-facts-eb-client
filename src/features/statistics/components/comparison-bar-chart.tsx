@@ -17,6 +17,7 @@ import { ComparisonFigure } from './comparison-chart-shell'
 import {
   formatComparisonAxisTick,
   formatComparisonNumber,
+  shortTerritoryName,
   type ComparisonSeriesDescriptor,
 } from '../lib/comparison-format'
 
@@ -134,6 +135,7 @@ export function ComparisonBarChart({ matrix, series, selectedPeriod }: Props) {
                 axisLine={false}
                 tick={{ fontSize: 11 }}
                 interval={0}
+                tickFormatter={shortTerritoryName}
                 className="fill-muted-foreground"
               />
               <YAxis

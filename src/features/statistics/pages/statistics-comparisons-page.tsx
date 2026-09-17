@@ -486,7 +486,17 @@ export function StatisticsComparisonsPage() {
           </p>
         ) : null}
 
-        <div className="flex flex-wrap items-end justify-between gap-4">
+        {/* The picture first — the whole history, then the chosen period —
+            and the numbers under it, where a reader who wants to quote one
+            will look for it. */}
+        <ComparisonLineChart matrix={matrix} series={series} />
+
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_14rem] xl:items-start">
+          <ComparisonBarChart
+            matrix={matrix}
+            series={series}
+            selectedPeriod={selectedPeriod}
+          />
           <ComparisonPeriodSelect
             periods={matrix.periods}
             selectedPeriod={selectedPeriod}
@@ -499,15 +509,6 @@ export function StatisticsComparisonsPage() {
           series={series}
           selectedPeriod={selectedPeriod}
         />
-
-        <div className="grid gap-4 xl:grid-cols-2">
-          <ComparisonBarChart
-            matrix={matrix}
-            series={series}
-            selectedPeriod={selectedPeriod}
-          />
-          <ComparisonLineChart matrix={matrix} series={series} />
-        </div>
       </>
     )
   }

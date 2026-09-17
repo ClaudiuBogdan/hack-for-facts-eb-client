@@ -58,3 +58,13 @@ export function comparisonLevelLabel(
       return t`localitate`
   }
 }
+
+/**
+ * A bar label that fits under its bar: the legal-form prefix INS prints in
+ * capitals („MUNICIPIUL ", „ORAȘ ", „COMUNA ") goes, and what is left is cut
+ * at sixteen characters. The legend and the tooltip keep the full name.
+ */
+export function shortTerritoryName(name: string): string {
+  const bare = name.replace(/^(MUNICIPIUL|ORAȘUL|ORASUL|ORAȘ|ORAS|COMUNA|JUDEȚUL|JUDETUL)\s+/i, '')
+  return bare.length > 16 ? `${bare.slice(0, 15)}…` : bare
+}

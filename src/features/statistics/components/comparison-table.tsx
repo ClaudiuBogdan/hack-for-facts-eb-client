@@ -15,6 +15,7 @@ import {
   type ComparisonMatrix,
 } from '../lib/comparison-series'
 import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
+import { describeUnitSymbol } from '../lib/hub-format'
 import {
   comparisonLevelLabel,
   hasMixedComparisonLevels,
@@ -198,7 +199,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
 
       {matrix.unitSymbol ? (
         <p className="mt-2 text-xs text-muted-foreground">
-          <Trans>Unitate de măsură: {matrix.unitSymbol}</Trans>
+          <Trans>Unitate de măsură: {describeUnitSymbol(matrix.unitSymbol)}</Trans>
         </p>
       ) : null}
     </div>

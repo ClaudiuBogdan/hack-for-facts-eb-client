@@ -235,7 +235,8 @@ export function projectNativeComparison(input: {
           valueStatus: row.value_status ?? null,
         }
         labels.add(label)
-        unitLabel ??= row.unit.symbol || row.unit.name_ro || row.unit.code
+        // „other" is the API's placeholder symbol, not a unit; the name is.
+        unitLabel ??= (row.unit.symbol !== 'other' && row.unit.symbol) || row.unit.name_ro || row.unit.code
       }
     }
     return {

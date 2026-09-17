@@ -197,6 +197,9 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
   }
 }
 
+/** Characters typed before the dataset picker searches. */
+export const COMPARISON_DATASET_SEARCH_MIN_LENGTH = 2
+
 /**
  * Dataset search for the picker. Only datasets with loaded facts are offered —
  * a catalog-only dataset would render six empty rows and teach the user
@@ -204,19 +207,18 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
  */
 export function useComparisonDatasetSearch(term: string) {
   const trimmed = term.trim()
+  // Below the minimum no request is made: an unfiltered catalog page teaches nothing.
+  const enabled = trimmed.length >= COMPARISON_DATASET_SEARCH_MIN_LENGTH
 
   const query = useQuery({
     queryKey: ['statistics', 'comparisons', 'dataset-search', trimmed],
-    queryFn: () =>
-      fetchDatasetPage({
-        q: trimmed.length > 0 ? trimmed : undefined,
-        stare: 'available',
-      }),
+    queryFn: () => fetchDatasetPage({ q: trimmed, stare: 'available' }),
+    enabled,
   })
 
   return {
     datasets: query.data?.datasets ?? [],
-    isLoading: query.isPending,
+    isLoading: enabled && query.isPending,
     error: query.error,
   }
 }

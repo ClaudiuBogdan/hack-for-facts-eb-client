@@ -4,7 +4,7 @@ import { t } from '@lingui/core/macro'
 import { Check } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { useComparisonDatasetSearch } from '../hooks/use-comparisons'
+import { COMPARISON_DATASET_SEARCH_MIN_LENGTH, useComparisonDatasetSearch } from '../hooks/use-comparisons'
 import { StatisticsDebouncedSearchInput } from './filters/statistics-debounced-search-input'
 
 /** Rows shown before the list scrolls. Keeps the picker from dominating the page. */
@@ -21,11 +21,16 @@ type Props = {
  *
  * Only datasets with loaded facts are listed (see `useComparisonDatasetSearch`);
  * offering a catalog-only dataset here would produce a table of dashes and
- * teach the user nothing about the territories.
+ * teach the user nothing about the territories. Below the minimum term the
+ * catalog is not listed: an unfiltered 1,916-row list teaches nothing either.
  */
 export function ComparisonDatasetPicker({ selectedCode, selectedLabel, onSelect }: Props) {
   const [term, setTerm] = useState<string | undefined>(undefined)
-  const { datasets, isLoading, error } = useComparisonDatasetSearch(term ?? '')
+  const active = (term ?? '').trim().length >= COMPARISON_DATASET_SEARCH_MIN_LENGTH
+  const search = useComparisonDatasetSearch(term ?? '')
+  const datasets = active ? search.datasets : []
+  const isLoading = active && search.isLoading
+  const error = active ? search.error : null
 
   return (
     <section className="space-y-2" aria-labelledby="comparison-dataset-heading">
@@ -50,6 +55,7 @@ export function ComparisonDatasetPicker({ selectedCode, selectedLabel, onSelect 
         clearLabel={t`Șterge căutarea de indicatori`}
       />
 
+      <div aria-live="polite">
       {error ? (
         <p className="text-sm text-destructive">
           <Trans>Nu am putut încărca lista de indicatori.</Trans>
@@ -64,11 +70,18 @@ export function ComparisonDatasetPicker({ selectedCode, selectedLabel, onSelect 
         </div>
       ) : null}
 
-      {!isLoading && !error && datasets.length === 0 ? (
+      {!active ? (
+        <p className="text-sm text-muted-foreground">
+          <Trans>Scrie numele sau codul unui indicator, de exemplu „salariați" sau „POP107D".</Trans>
+        </p>
+      ) : null}
+
+      {active && !isLoading && !error && datasets.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           <Trans>Niciun indicator cu date încărcate nu se potrivește căutării.</Trans>
         </p>
       ) : null}
+      </div>
 
       {datasets.length > 0 ? (
         <ul

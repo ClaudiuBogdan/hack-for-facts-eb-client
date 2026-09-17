@@ -243,6 +243,56 @@ Known follow-ups from the review of 2026-09-17, deliberately not in scope:
 - The hub gave up its ⌘K binding because the global entity search owns
   that key; a hub-local shortcut needs a key of its own.
 
+## 6b. Analysis pages — rework of 2026-09-17
+
+Audited in the browser (desktop and phone captures, filter and control
+probes) after the hub landed. Decisions, one per page:
+
+**Dataset explorer (`/statistici/seturi`).** Decision: a facet rail beside
+the list on desktop (themes as a list with loaded-dataset counts, cadence,
+coverage), the same controls in the sheet on a phone; the status control
+(„Cu date" / „Doar catalog") shows only when it can change something. Rows
+carry a `DataStatusBadge` only when catalog-only — an „available" badge on
+every row of an all-available catalog was noise. The right column shows the
+cadence and the latest period when the catalog row carries one, else the
+catalog's declared span. Fixed: `?context=1` (a bare digit the router parses
+as a number) and a single `?frecventa=ANNUAL` were dropped by the search
+schema, so every theme link from the hub landed unfiltered.
+
+**Territory hub (`/statistici/teritorii/$siruta`).** Decision: the four
+headline indicators as a band with county and national references, then
+every other indicator in an accordion grouped by domain (from the matrix
+code's three-letter prefix: `POP`, `FOM`/`SOM`, `LOC`, `SCL`, `SAN`, `GOS`,
+`TUR`, `ART`, `AGR`, `JUS`, `ADM`), one compact row each — name, latest
+value with a Romanian unit word, period, sparkline, provenance, compare.
+The first two groups open by default. Replaced a 9,600-pixel wall of
+identical tiles that led with agriculture because it sorted by code and
+printed raw unit symbols („17.953 other").
+
+**Dataset detail (`/statistici/seturi/$cod`).** Decision: the scope is a row
+of labelled chips („Sexe: Total", „Teritoriu: România") rather than a run-on
+sentence of bare values, with the same popovers behind them and the same
+bottom sheet on a phone. The hero says the unit in Romanian and formats the
+period; the chart is captioned „Evoluție în timp" rather than repeating the
+title, formats its axis in the active locale, and fills the column. The
+selection logic (native lane, pins, validation) is untouched.
+
+**Comparisons (`/statistici/comparatii`).** Decision: the picture first —
+the whole history, then the chosen period with its selector beside it — and
+the table under them. The indicator picker lists nothing until two
+characters are typed; an unfiltered 1,916-row list taught nothing. Bar labels
+drop the legal-form prefix INS capitalises and are cut to fit; the unit
+symbol reads as a Romanian word.
+
+Known follow-ups from the review of 2026-09-17, deliberately not in scope:
+
+- The theme labels in `src/lib/ins/ins-metric-registry.ts` are translated at
+  module scope, so a locale switch leaves the rail in the boot locale.
+- An explorer row shows loaded coverage („până în 2024") and a catalog year
+  span in the same slot; only the wording tells them apart.
+- Two territories that differ only in legal form („COMUNA" / „ORAȘ") share a
+  bar label on the comparisons chart; the legend and tooltip keep the names.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):
