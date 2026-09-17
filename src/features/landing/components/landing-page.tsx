@@ -104,7 +104,7 @@ function HeroSearch({ inputRef }: { readonly inputRef: RefObject<HTMLInputElemen
     // truncated mid-word.
     <LandingSearch
       inputRef={inputRef}
-      placeholder={t`Caută entități sau CUI...`}
+      placeholder={t`Caută entități, statistici sau identificatori...`}
       autoFocus={!isMobile}
       scrollToTopOnFocus={isMobile}
     />

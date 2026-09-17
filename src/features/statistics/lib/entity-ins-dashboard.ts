@@ -155,9 +155,11 @@ export function entityInsDerivedIndicators(
     return first && second && first.unit.code !== second.unit.code;
   };
   // Keep `unit.symbol`: the derived label prefers it over `name_ro`, so dropping it
-  // renders "Numar persoane / 1.000 locuitori" instead of "persons / 1.000 locuitori"
-  // and pushes the value out of its column. Unit identity is checked on `code` below,
-  // never on the symbol, so the label choice cannot mask a real unit difference.
+  // renders "Numar persoane / 1.000 locuitori" and pushes the value out of its
+  // column. Generic counting symbols ("persons", "count") are replaced by the
+  // derived module's short forms ("pers.", "nr."); real units (`m²`, `km`) pass
+  // through. Unit identity is checked on `code` below, never on the symbol, so
+  // the label choice cannot mask a real unit difference.
   return computeDerivedIndicators(
     eligible.map((observation) => ({
       datasetCode: observation.dataset_code,

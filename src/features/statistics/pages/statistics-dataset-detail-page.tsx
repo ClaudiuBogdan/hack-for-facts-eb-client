@@ -30,6 +30,7 @@ import type {
 } from '@/schemas/statistics'
 import { DataStatusBadge } from '../components/data-status-badge'
 import { DetailAccordion } from '../components/detail-accordion'
+import { DetailMetadataSection } from '../components/detail-metadata-section'
 import { DetailExportButton } from '../components/detail-export-button'
 import { DetailObservationsChart } from '../components/detail-observations-chart'
 import { DetailScopePrompt } from '../components/detail-scope-prompt'
@@ -159,6 +160,7 @@ export function StatisticsDatasetDetailPage({
           <>
             <DatasetHeader dataset={dataset} latestPeriod={null} />
             <CatalogOnlyBody dataset={dataset} />
+            <DetailMetadataSection dataset={dataset} />
           </>
         ) : null}
 
@@ -702,6 +704,11 @@ function DatasetDetailBody({
           ) : null}
         </section>
       ) : null}
+
+      {/* What INS publishes about the matrix: rendered whatever the series
+          state, because methodology and continuity explain the data even when
+          the selection is unresolved. */}
+      <DetailMetadataSection dataset={dataset} />
     </>
   )
 }

@@ -25,8 +25,13 @@
         "answerParagraphs": [
           "Antetul arată populația folosită pentru anul financiar selectat: populația după domiciliu la 1 ianuarie publicată de INS. Sumele per capita folosesc același tabel anual de populație; valoarea fiecărui an este împărțită la populația sa înainte de însumare.",
           "Când un an nu are o observație verificată, folosim cea mai recentă valoare verificată dintr-un an anterior, pentru același teritoriu și aceeași măsură a populației. Antetul arată anul sursei și vechimea valorilor preluate și oferă un link la sursă, când este disponibil. Anii fără nicio observație verificată anterioară rămân indisponibili.",
+          "Cifrele pentru sectoarele Bucureștiului din 2020 sunt date INS provizorii (populația după domiciliu la 1 ianuarie). Municipiul București folosește o serie separată.",
           "Totalurile pentru județe, regiuni, macroregiuni și țară sunt calculate din populațiile locale. Municipiul București este numărat o singură dată; populațiile sectoarelor nu sunt adăugate din nou."
-        ]
+        ],
+        "source": {
+          "label": "Sursa INS",
+          "href": "https://bucuresti.insse.ro/wp-content/uploads/2020/07/POPULATIA-DUPA-DOMICILIU-LA-1-IANUARIE_2020.pdf"
+        }
       },
       {
         "id": "consolidation-caveat",
@@ -73,8 +78,13 @@
         "answerParagraphs": [
           "The header shows the population used for the selected financial year: INS population by domicile at January 1. Per-capita amounts use the same annual population table, with each year divided by its own population before values are added.",
           "When a year has no verified observation, we use the latest verified earlier value for the same territory and population measure. The header shows the original year and age of carried values, and links to the source when available. Years without any earlier verified observation remain unavailable.",
+          "Bucharest sector figures for 2020 are provisional INS data (population by domicile at January 1). Bucharest city uses a separate series.",
           "County, region, macroregion and national totals are calculated from local populations. Bucharest city is counted once; its sectors are not added again."
-        ]
+        ],
+        "source": {
+          "label": "INS source",
+          "href": "https://bucuresti.insse.ro/wp-content/uploads/2020/07/POPULATIA-DUPA-DOMICILIU-LA-1-IANUARIE_2020.pdf"
+        }
       },
       {
         "id": "consolidation-caveat",

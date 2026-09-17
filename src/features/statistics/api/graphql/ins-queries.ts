@@ -26,6 +26,18 @@ export const INS_DATASET_FIELDS = `
   context_name_en
   context_path
   metadata
+  methodology_ro
+  methodology_en
+  data_sources_ro
+  data_sources_en
+  data_sources { name type type_code link_number }
+  observations_ro
+  observations_en
+  discontinued_after_ro
+  discontinued_after_en
+  successor_dataset_code
+  continues_from { dataset_code last_period_ro last_period_en }
+  source_last_update
 `
 
 export const INS_DATASET_DIMENSION_FIELDS = `

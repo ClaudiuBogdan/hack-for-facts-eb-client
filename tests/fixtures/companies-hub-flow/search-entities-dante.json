@@ -1,0 +1,31 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "dante",
+      "engine": "meili",
+      "degraded": false,
+      "estimatedTotalHits": 1,
+      "facets": [],
+      "hits": [
+        {
+          "id": "company_14399840",
+          "docType": "company",
+          "title": "DANTE INTERNATIONAL SA",
+          "snippet": null,
+          "score": 1,
+          "docId": null,
+          "docKey": "14399840",
+          "subtitle": "SA",
+          "countyName": "Ilfov",
+          "url": null,
+          "cuis": ["14399840"],
+          "identifiers": ["14399840"],
+          "roles": ["company"],
+          "isActive": true,
+          "isUat": false,
+          "entityTags": []
+        }
+      ]
+    }
+  }
+}

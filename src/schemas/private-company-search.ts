@@ -195,6 +195,26 @@ export type CompanyCoverage = {
 }
 
 /**
+ * Every county the registry names, for the hub's map and its ranking.
+ *
+ * Separate from `CompanyHubStats.topCounties`, which is trimmed to ten: a map
+ * drawn from ten counties would render the other thirty-two as no-data, which
+ * is a lie. `unplaced` is the `(none)` bucket of this same answer, so the gap
+ * the map cannot show is always measured against the population it draws,
+ * never against a figure from another snapshot. It is not
+ * `coverage.territoryUnmatched`, which counts a different thing: companies
+ * whose county could not be resolved to a SIRUTA territory.
+ */
+export type CompanyCountyCounts = {
+  /** Count-desc, `(none)` removed. */
+  readonly counties: ReadonlyArray<CompanyGroupSlice>
+  /** The population the groups were computed over. */
+  readonly denominator: number
+  /** Companies in that population with no county in the registry. */
+  readonly unplaced: number
+}
+
+/**
  * Aggregate powering the /companies hub, from the cached server-side
  * `companyHubStats` query (6h TTL). Assembling it client-side from three cold
  * `companyCountyProfile` calls is not an option — that is ~30s of scans.

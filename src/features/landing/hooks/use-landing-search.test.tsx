@@ -4,6 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
+import { getSearchFilter, tagSearchFilters } from '@/features/landing/lib/search-filters'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { LANDING_SEARCH_TYPES, useEntitySelection, useSearchResults } from '@/features/landing/hooks/use-landing-search'
 
@@ -62,7 +63,7 @@ describe('landing universal search', () => {
     expect(searchEntities).toHaveBeenCalledWith({
       q: 'Dante', docTypes: LANDING_SEARCH_TYPES, limit: 8,
     }, expect.any(AbortSignal))
-    expect(LANDING_SEARCH_TYPES).toEqual(['organization', 'company', 'public_enterprise', 'ngo', 'legal_act'])
+    expect(LANDING_SEARCH_TYPES).toEqual(['organization', 'company', 'public_enterprise', 'ngo', 'legal_act', 'ins_dataset'])
     expect(result.current.status).toEqual({ kind: 'results', results: [COMPANY], stale: false })
     await search(result, '  Dante  ')
     expect(searchEntities).toHaveBeenCalledTimes(1)
@@ -202,5 +203,35 @@ describe('landing selection', () => {
     act(() => { result.current(undefined); result.current({ ...COMPANY, href: '' }) })
     expect(navigate).not.toHaveBeenCalled()
     expect(capture).not.toHaveBeenCalled()
+  })
+})
+
+
+describe('INS scope transitions', () => {
+  const hospital = tagSearchFilters('ro').find(filter => filter.entityTag === 'kind::hospital' && !filter.exclude)!
+  const excluded = tagSearchFilters('ro').find(filter => filter.entityTag === 'kind::school' && filter.exclude)!
+  it('replaces entity qualifiers and requests matrix results from the server', async () => {
+    const matrix = { ...COMPANY, id: 'ins_dataset_POP107D_digest', docType: 'ins_dataset',
+      href: '/ins/seturi/POP107D', docKey: 'POP107D', identifiers: ['POP107D'], roles: [] }
+    searchEntities.mockResolvedValue(response([matrix]))
+    const { result } = setup()
+    act(() => {
+      for (const filter of [getSearchFilter('uat'), getSearchFilter('pnrr'), hospital, excluded]) result.current.addFilter(filter)
+      result.current.setTerm('INS populație')
+    })
+    act(() => result.current.addFilter(result.current.suggestions.find(filter => filter.id === 'ins_dataset')!))
+    expect(result.current.filters.map(filter => filter.id)).toEqual(['ins_dataset'])
+    expect(result.current.term).toBe('populație')
+    await waitFor(() => expect(result.current.isCurrent).toBe(true))
+    expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: ['ins_dataset'], limit: 8 }, expect.any(AbortSignal))
+    expect(result.current.results).toEqual([matrix])
+    act(() => result.current.removeFilter(result.current.filters[0]))
+    await waitFor(() => expect(searchEntities).toHaveBeenLastCalledWith({ q: 'populație', docTypes: LANDING_SEARCH_TYPES, limit: 8 }, expect.any(AbortSignal)))
+  })
+  it.each([getSearchFilter('uat'), getSearchFilter('pnrr'), getSearchFilter('public_enterprise'), hospital, excluded])('leaves INS when selecting $id', filter => {
+    const { result } = setup()
+    act(() => result.current.addFilter(getSearchFilter('ins_dataset')))
+    act(() => result.current.addFilter(filter))
+    expect(result.current.filters).toEqual([filter])
   })
 })

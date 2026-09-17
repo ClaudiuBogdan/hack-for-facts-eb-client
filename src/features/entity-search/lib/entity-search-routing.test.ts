@@ -288,3 +288,17 @@ describe('entityHref', () => {
     })
   })
 })
+
+
+describe('INS matrix routes', () => {
+  it('routes using the encoded source key, regardless of docId or url', () => {
+    expect(entityHref(input({ docType: 'ins_dataset', docKey: ' POP107D ',
+      docId: 'ins_dataset:POP107D', url: 'https://insse.ro' }))).toEqual({
+      href: '/ins/seturi/POP107D', isExternal: false,
+    })
+    expect(entityHref(input({ docType: 'ins_dataset', docKey: 'A/B' }))?.href).toBe('/ins/seturi/A%2FB')
+  })
+  it('does not fabricate a matrix code from an engine id or unrelated url', () => {
+    expect(entityHref(input({ docType: 'ins_dataset', docKey: ' ', docId: 'ins_dataset_digest', url: 'https://insse.ro' }))).toBeNull()
+  })
+})

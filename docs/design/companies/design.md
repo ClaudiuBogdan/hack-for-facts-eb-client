@@ -1,9 +1,64 @@
 # Companies hub (`/companies`) — design record
 
-**Status:** candidates, 16 September 2026. Nothing decided yet. The hub is
-rebuilt as prototypes under `/development/companies/*` so several
-compositions can be compared; the winner is promoted per
+**Status:** promoted, 17 September 2026. The `editorial` variant is live at
+`/companies`; the prototypes under `/development/companies/hub` are deleted
+with the promotion, losers included, per
 [`prototyping.md`](../prototyping.md).
+
+## Where the code went
+
+| Prototype | Promoted to |
+|---|---|
+| `hub.editorial.tsx` | `src/features/private-companies/components/hub/private-company-hub-page.tsx` |
+| `hub.parts.tsx` | `.../components/hub/hub-sections.tsx` |
+| `hub.map.tsx` | `.../components/hub/county-map.tsx` |
+| the CAEN table in `hub.data.ts` | `.../lib/caen-divisions.ts` |
+| `foldCountyName` | `.../lib/county-names.ts` |
+| the status codes | `.../lib/company-status-codes.ts` |
+| `useCountyCounts` | `.../hooks/use-company-county-counts.ts` over `fetchCompanyCountyCounts` in the feature's `api/` |
+
+The old hub page and its `company-hub-blocks.tsx` are deleted. The route is
+unchanged: `companies.index.tsx` keeps the `?q=` redirect into the directory,
+and `companies.index.lazy.tsx` keeps pointing at `PrivateCompanyHubPage`.
+
+## Decisions taken at promotion
+
+These are the places where the prototype could not decide for production.
+
+1. **The search changed behaviour.** The old dock committed Enter to
+   `/companies/search?q=…`; the promoted field is the landing's search pinned
+   to `docTypes: ['company']`, so Enter opens the first matching company's
+   profile and there is no "search the directory for this text" path from the
+   hub. The directory stays one click away through the active-companies
+   shortcut, the four tiles, the sector bars, the county map and list, and the
+   three investigation cards. Revisit if readers ask for the old path back.
+2. **No mock badges ship.** The prototype's invented ONRC capture and ANAF
+   snapshot dates are gone rather than badged: an operational date that can
+   drift silently is worse than none. The sources strip shows the served
+   `computedAt` and says the per-source dates are not published by the API.
+   The CAEN division names stay, because they are the real Rev.2 nomenclature
+   rather than fabricated data, with the caveat beside the bars.
+3. **The counties keep their own query.** `companyHubStats.topCounties` is
+   trimmed to ten and a map drawn from ten counties would render the other
+   thirty-two as no-data. `fetchCompanyCountyCounts` asks
+   `companyCountyProfile` for all of them, measured at 2.7 s and held for an
+   hour. Kept separate from the cached aggregate on purpose, so the four
+   figures never wait for the map and one failing leaves the other standing.
+4. **Numbers are pinned to Romanian separators.** The feature's
+   `formatInteger` is `ro-RO` for every surface, so the count-up and the
+   percentages are pinned too. Following the UI language for some of them
+   would print `3,892,657` above `341.116` on an English page.
+5. **Romanian source strings**, as the landing did, with English filled into
+   `en` and the source pinned into `ro`. An empty `ro` msgstr compiles to the
+   source locale, which becomes English the moment `en` is filled.
+
+## Follow-ups
+
+- Extend `companyHubStats` with all counties and their labels, and retire the
+  second request.
+- Group `caenDivisions` by division *and* revision on the server, and serve the
+  labels, so the nomenclature table here can go.
+- Publish the ONRC capture and ANAF snapshot dates on the hub payload.
 
 The hub is the front door, not the analytics page. A dedicated companies
 analytics surface may follow (the scrapper's
@@ -66,12 +121,11 @@ caller wait about 30 s, so the page shell must never await it; either fetch
 client-side with reserved dimensions (today's landing pattern) or persist and
 prewarm the last aggregate and SSR it behind the public cache header.
 
-## Prototypes (16 September 2026)
+## The comparison that settled it (16 September 2026)
 
-`src/development/prototypes/companies/hub.prototype.tsx`. Three compositions
-over the same modules were built and compared; **`editorial` was chosen on
-16 September 2026**, for its layout, and is the one being polished at
-`/development/companies/hub?v=editorial`.
+Three compositions over the same modules were built at
+`/development/companies/hub` and compared; **`editorial` was chosen for its
+layout** and is what shipped. The prototypes are deleted.
 
 | Variant | Shape | Outcome |
 |---|---|---|

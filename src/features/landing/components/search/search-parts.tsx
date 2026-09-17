@@ -350,7 +350,7 @@ export function announcement(status: SearchStatus, suggestionCount = 0) {
       return count + suggested
     }
     case 'scoped':
-      return t`Scrie un nume pentru a căuta.`
+      return t`Scrie un nume sau un identificator pentru a căuta.`
     case 'short':
       return suggested.trim()
     case 'empty':

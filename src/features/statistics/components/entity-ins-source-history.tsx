@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createLogger } from "@/lib/logger";
 import type { NativeInsObservation } from "@/schemas/ins";
@@ -148,16 +149,20 @@ export function EntityInsSourceHistory({
         TABLE_PAGE_SIZE,
     ),
   );
+  const sourceHref = `http://statistici.insse.ro/tempoins/index.jsp?${new URLSearchParams({ ind: prepared.dataset.code, lang: "ro", page: "tempo3" })}`;
+  const sourceLink = (
+    <a
+      className="inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-4 hover:underline"
+      href={sourceHref}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <Trans>View source on INS Tempo</Trans>
+      <ExternalLink className="size-3" aria-hidden="true" />
+    </a>
+  );
   return (
-    <div className="space-y-6">
-      <a
-        className="text-sm text-primary underline"
-        href={`http://statistici.insse.ro/tempoins/index.jsp?${new URLSearchParams({ ind: prepared.dataset.code, lang: "ro", page: "tempo3" })}`}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Trans>View source on INS Tempo</Trans>
-      </a>
+    <div className="space-y-5">
       {history.mode === "inspection" ? (
         <p role="status">
           <Trans>
@@ -176,65 +181,81 @@ export function EntityInsSourceHistory({
       ) : null}
       {projection.status === "SERIES" ? (
         <>
-          <section className="space-y-2" aria-label={t`Latest INS observation`}>
-            <h3 className="text-xs font-semibold text-muted-foreground">
-              <Trans>Latest source observation</Trans>
-            </h3>
-            <div className="text-lg font-semibold">
-              <OriginalValue observation={projection.latest} />{" "}
-              <span className="text-sm font-normal">
-                {projection.latest.unit.name_ro ?? projection.latest.unit.code}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {projection.latest.time_period.iso_period} ·{" "}
-              {prepared.context.territoryName} · {prepared.dataset.code}
-            </p>
-          </section>
-          <section className="space-y-2" aria-label={t`Selected INS periods`}>
-            <h3 className="text-sm font-semibold">
-              <Trans>Selected periods</Trans>
-            </h3>
-            {projection.selectedPeriodStatus === "CADENCE_MISMATCH" ? (
-              <p>
-                <Trans>
-                  The selected budget period uses a different frequency. Choose
-                  matching periods to see the corresponding INS observations.
-                </Trans>
+          {/* Two tiles on one row: the source's latest reading, and the reading
+              for each selected budget period. They were a loose stack of
+              headings, a bare link and unlabelled numbers; as tiles with the
+              same small-caps header as the series selector they read as one
+              panel. Values stay the source's own digits (`OriginalValue`). */}
+          <div className="grid gap-3 md:grid-cols-2">
+            <section
+              className="flex flex-col rounded-xl border border-border/60 bg-muted/30 p-4"
+              aria-label={t`Latest INS observation`}
+            >
+              <h3 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                <Trans>Latest source observation</Trans>
+              </h3>
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="text-2xl font-bold leading-none tracking-tight text-foreground">
+                  <OriginalValue observation={projection.latest} />
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {projection.latest.unit.name_ro ?? projection.latest.unit.code}
+                </span>
+              </div>
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                {projection.latest.time_period.iso_period} ·{" "}
+                {prepared.context.territoryName} · {prepared.dataset.code}
               </p>
-            ) : (
-              <>
-                <p className="text-xs text-muted-foreground">
+              <div className="mt-auto pt-3">{sourceLink}</div>
+            </section>
+            <section
+              className="rounded-xl border border-border/60 bg-muted/30 p-4"
+              aria-label={t`Selected INS periods`}
+            >
+              <h3 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                <Trans>Selected periods</Trans>
+              </h3>
+              {projection.selectedPeriodStatus === "CADENCE_MISMATCH" ? (
+                <p className="mt-2 text-sm text-muted-foreground">
                   <Trans>
-                    Each period is shown separately. Values from different
-                    periods are not added.
+                    The selected budget period uses a different frequency. Choose
+                    matching periods to see the corresponding INS observations.
                   </Trans>
                 </p>
-                <dl className="divide-y rounded-md border px-3">
-                  {projection.selected
-                    .slice(selectedOffset, selectedOffset + TABLE_PAGE_SIZE)
-                    .map((cell) => (
-                      <div
-                        key={cell.period}
-                        className="flex justify-between gap-4 py-2 text-sm"
-                      >
-                        <dt>{cell.period}</dt>
-                        <dd className="min-w-0 break-all text-right">
-                          <OriginalValue observation={cell.observation} />
-                        </dd>
-                      </div>
-                    ))}
-                </dl>
-                {projection.selected.length > TABLE_PAGE_SIZE ? (
-                  <PageControls
-                    offset={selectedOffset}
-                    length={projection.selected.length}
-                    onPage={setSelectedOffset}
-                  />
-                ) : null}
-              </>
-            )}
-          </section>
+              ) : (
+                <>
+                  <dl className="mt-2 divide-y divide-border/60">
+                    {projection.selected
+                      .slice(selectedOffset, selectedOffset + TABLE_PAGE_SIZE)
+                      .map((cell) => (
+                        <div
+                          key={cell.period}
+                          className="flex items-baseline justify-between gap-4 py-1.5 text-sm"
+                        >
+                          <dt className="font-medium text-foreground">{cell.period}</dt>
+                          <dd className="min-w-0 break-all text-right font-semibold tabular-nums text-foreground">
+                            <OriginalValue observation={cell.observation} />
+                          </dd>
+                        </div>
+                      ))}
+                  </dl>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    <Trans>
+                      Each period is shown separately. Values from different
+                      periods are not added.
+                    </Trans>
+                  </p>
+                  {projection.selected.length > TABLE_PAGE_SIZE ? (
+                    <PageControls
+                      offset={selectedOffset}
+                      length={projection.selected.length}
+                      onPage={setSelectedOffset}
+                    />
+                  ) : null}
+                </>
+              )}
+            </section>
+          </div>
           {projection.chart?.truncated && (
             <p className="text-xs text-muted-foreground">
               <Trans>
@@ -284,12 +305,15 @@ export function EntityInsSourceHistory({
           )}
         </>
       ) : (
-        <p role="status">
-          <Trans>
-            A single comparable series is not available for this selection.
-            Inspect the original source rows and their qualifications below.
-          </Trans>
-        </p>
+        <div className="space-y-2">
+          <p role="status">
+            <Trans>
+              A single comparable series is not available for this selection.
+              Inspect the original source rows and their qualifications below.
+            </Trans>
+          </p>
+          {sourceLink}
+        </div>
       )}
       <section className="space-y-3" aria-label={t`Original INS observations`}>
         <div className="flex flex-wrap items-start justify-between gap-3">

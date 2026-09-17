@@ -35,7 +35,8 @@ describe("native entity INS presentation adapter", () => {
       {
         id: "birth-rate",
         value: "20,00",
-        unitLabel: "Persoane / 1,000 inhabitants",
+        // The source's counting symbol is generic, so the curated short form wins.
+        unitLabel: "pers. / 1,000 inhabitants",
       },
     ]);
     expect(

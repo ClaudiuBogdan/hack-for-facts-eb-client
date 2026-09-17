@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { Building2, HeartHandshake, Landmark, MapPin, Scale, Factory, Sprout, Tag } from 'lucide-react'
+import { Building2, HeartHandshake, Landmark, MapPin, Scale, Factory, Sprout, Tag, ChartNoAxesCombined } from 'lucide-react'
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 import vocabulary from '@/assets/entity-tags.json'
@@ -17,6 +17,7 @@ export type SearchFilterId =
   | 'organization'
   | 'uat'
   | 'pnrr'
+  | 'ins_dataset'
   | `tag:${string}`
   | `exclude-tag:${string}`
 
@@ -130,6 +131,14 @@ export const SEARCH_FILTERS: readonly SearchFilter[] = [
     Icon: Sprout,
     triggers: ['pnrr'],
     // `pnrr cluj` returns nothing at all; the word is not in any title.
+    absorb: true,
+  },
+  {
+    id: 'ins_dataset',
+    label: msg`Statistici INS`,
+    hint: msg`matrice din catalogul INS TEMPO`,
+    Icon: ChartNoAxesCombined,
+    triggers: ['ins', 'tempo', 'statistici'],
     absorb: true,
   },
 ]

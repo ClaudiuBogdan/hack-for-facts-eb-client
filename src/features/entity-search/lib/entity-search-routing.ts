@@ -14,6 +14,7 @@
  *   bill                /parlament/proiecte/$id  (internal, best-effort docId)
  *   committee           /parlament/comisii/$id   (internal, docKey = committee_key)
  *   legal_act           /legislation/acts/$id    (internal, docId = act_id)
+ *   ins_dataset         /ins/seturi/$cod  (internal, docKey = matrix code)
  *   mo_act              url                      (external, new tab)
  *   pnrr_project        url                      (external, new tab)
  *   pnrr_entity         url                      (external, new tab)
@@ -100,6 +101,12 @@ function firstInternalId(hit: EntityRoutingInput): string | null {
  * - interim/unknown: external `url`.
  */
 export function entityHref(hit: EntityRoutingInput): EntityHref | null {
+  // Matrix codes are source keys, never CUIs or sanitized Meilisearch ids.
+  if (hit.docType === 'ins_dataset') {
+    const code = hit.docKey?.trim()
+    return code ? { href: `/ins/seturi/${encodeURIComponent(code)}`, isExternal: false } : null
+  }
+
   const externalUrl = makeExternal(hit.url)
 
   const cuiRoute = CUI_SPINE_ROUTES[hit.docType]

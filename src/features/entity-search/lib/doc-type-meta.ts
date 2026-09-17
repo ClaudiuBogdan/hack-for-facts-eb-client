@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
 import {
+  ChartNoAxesCombined,
   Building,
   Building2,
   FileText,
@@ -24,6 +25,11 @@ export type EntityDocTypeMeta = {
 }
 
 export const DOC_TYPE_META = {
+  ins_dataset: {
+    label: t`Statistici INS`,
+    color: 'border-teal-200 bg-teal-100 text-teal-900 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-200',
+    Icon: ChartNoAxesCombined,
+  },
   company: {
     label: t`Firmă`,
     color:
