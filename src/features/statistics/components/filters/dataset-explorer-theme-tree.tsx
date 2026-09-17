@@ -3,6 +3,7 @@ import type { FocusEvent, KeyboardEvent, ReactNode } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { ChevronRight } from 'lucide-react'
 import { cn, formatNumber } from '@/lib/utils'
+import { statisticsTheme } from '../../lib/statistics-theme'
 import type {
   StatisticsContextIndex,
   StatisticsContextTreeNode,
@@ -213,7 +214,10 @@ export function DatasetExplorerThemeTree({
       ref={treeRef}
       role="tree"
       aria-labelledby={labelledBy}
-      className="mt-2 -mx-2 max-h-[min(60vh,32rem)] space-y-0.5 overflow-y-auto pl-0.5 pr-1.5"
+      // No negative margin: the phone sheet scrolls this column, and a
+      // scroller clips whatever hangs past its start edge — which took the
+      // selected row's accent bar with it.
+      className="mt-2 max-h-[min(60vh,32rem)] space-y-0.5 overflow-y-auto pl-0.5 pr-1.5"
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}
     >
@@ -250,9 +254,9 @@ function TreeRow({
       <span
         onClick={onActivate}
         className={cn(
-          'flex items-baseline gap-1.5 rounded-md py-1.5 pr-2 text-left transition-colors hover:bg-muted/60',
+          statisticsTheme.facetRow,
           row.depth === 0 ? 'text-sm' : 'text-xs',
-          row.selected ? 'bg-muted font-medium text-foreground' : 'text-foreground/90',
+          row.selected ? statisticsTheme.facetRowSelected : 'text-foreground/90',
           // A group opens rather than filters; it reads as a heading over its
           // subdomains, which is a weight difference, not a colour one.
           !row.selectable && 'font-medium text-muted-foreground',
@@ -272,7 +276,7 @@ function TreeRow({
         )}
         <span className="min-w-0 flex-1 leading-snug">{row.label}</span>
         {row.count !== undefined ? (
-          <span className="shrink-0 tabular-nums text-xs text-muted-foreground">
+          <span className={cn(statisticsTheme.facetCount, row.selected && 'text-foreground')}>
             {formatNumber(row.count)}
           </span>
         ) : null}

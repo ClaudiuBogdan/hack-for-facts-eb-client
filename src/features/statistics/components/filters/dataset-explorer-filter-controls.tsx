@@ -1,6 +1,8 @@
 import { Trans } from '@lingui/react/macro'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { statisticsTheme } from '../../lib/statistics-theme'
 import type { StatisticsDatasetExplorerSearch, StatisticsLandingCatalog } from '@/schemas/statistics'
 import type {
   StatisticsContextIndex,
@@ -62,73 +64,78 @@ export function DatasetExplorerFilterControls({
   const legendId = `${idPrefix}-theme-legend`
 
   return (
-    <div className="space-y-6">
-      <fieldset>
-        <legend id={legendId} className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <Trans>Temă</Trans>
-          {counts ? (
-            <span className="ml-1.5 font-normal normal-case tracking-normal">
-              <Trans>· seturi cu date</Trans>
-            </span>
-          ) : null}
-        </legend>
-        <DatasetExplorerThemeTree
-          roots={contextRoots}
-          index={contextIndex}
-          selectedCode={search.context}
-          onSelect={(code) => apply({ context: code })}
-          counts={counts}
-          allCount={catalog?.loadedCount}
-          labelledBy={legendId}
-        />
-      </fieldset>
+    <div className="space-y-5">
+      <div className={statisticsTheme.railGroup}>
+        <fieldset>
+          <legend className={cn(statisticsTheme.sectionLabel, 'mb-1.5')} id={legendId}>
+            <Trans>Temă</Trans>
+            {counts ? (
+              <span className="ml-1.5 font-normal normal-case tracking-normal">
+                <Trans>· seturi cu date</Trans>
+              </span>
+            ) : null}
+          </legend>
+          {/* The tree caps its own height and scrolls inside itself. */}
+          <DatasetExplorerThemeTree
+            roots={contextRoots}
+            index={contextIndex}
+            selectedCode={search.context}
+            onSelect={(code) => apply({ context: code })}
+            counts={counts}
+            allCount={catalog?.loadedCount}
+            labelledBy={legendId}
+          />
+        </fieldset>
+      </div>
 
-      <fieldset className="space-y-2.5">
-        <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <Trans>Periodicitate</Trans>
-        </legend>
-        {EXPLORER_PERIODICITY_VALUES.map((value) => {
-          const id = `${idPrefix}-periodicity-${value.toLowerCase()}`
-          return (
-            <div key={value} className="flex items-center gap-2 pt-1">
+      <div className={statisticsTheme.railGroup}>
+        <fieldset>
+          <legend className={cn(statisticsTheme.sectionLabel, 'mb-1.5')}>
+            <Trans>Periodicitate</Trans>
+          </legend>
+          <div className="space-y-0.5">
+            {EXPLORER_PERIODICITY_VALUES.map((value) => {
+              const id = `${idPrefix}-periodicity-${value.toLowerCase()}`
+              return (
+                <Label key={value} htmlFor={id} className={statisticsTheme.railOption}>
+                  <Checkbox
+                    id={id}
+                    checked={(search.frecventa ?? []).includes(value)}
+                    onCheckedChange={(checked) => togglePeriodicity(value, checked === true)}
+                  />
+                  {explorerPeriodicityLabel(value)}
+                </Label>
+              )
+            })}
+          </div>
+        </fieldset>
+      </div>
+
+      <div className={statisticsTheme.railGroup}>
+        <fieldset>
+          <legend className={cn(statisticsTheme.sectionLabel, 'mb-1.5')}>
+            <Trans>Acoperire</Trans>
+          </legend>
+          <div className="space-y-0.5">
+            <Label htmlFor={`${idPrefix}-coverage-uat`} className={statisticsTheme.railOption}>
               <Checkbox
-                id={id}
-                checked={(search.frecventa ?? []).includes(value)}
-                onCheckedChange={(checked) => togglePeriodicity(value, checked === true)}
+                id={`${idPrefix}-coverage-uat`}
+                checked={search.uat === true}
+                onCheckedChange={(checked) => apply({ uat: checked === true ? true : undefined })}
               />
-              <Label htmlFor={id} className="font-normal">
-                {explorerPeriodicityLabel(value)}
-              </Label>
-            </div>
-          )
-        })}
-      </fieldset>
-
-      <fieldset className="space-y-2.5">
-        <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <Trans>Acoperire</Trans>
-        </legend>
-        <div className="flex items-center gap-2 pt-1">
-          <Checkbox
-            id={`${idPrefix}-coverage-uat`}
-            checked={search.uat === true}
-            onCheckedChange={(checked) => apply({ uat: checked === true ? true : undefined })}
-          />
-          <Label htmlFor={`${idPrefix}-coverage-uat`} className="font-normal">
-            <Trans>Date la nivel de localitate</Trans>
-          </Label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id={`${idPrefix}-coverage-county`}
-            checked={search.judet === true}
-            onCheckedChange={(checked) => apply({ judet: checked === true ? true : undefined })}
-          />
-          <Label htmlFor={`${idPrefix}-coverage-county`} className="font-normal">
-            <Trans>Date la nivel de județ</Trans>
-          </Label>
-        </div>
-      </fieldset>
+              <Trans>Date la nivel de localitate</Trans>
+            </Label>
+            <Label htmlFor={`${idPrefix}-coverage-county`} className={statisticsTheme.railOption}>
+              <Checkbox
+                id={`${idPrefix}-coverage-county`}
+                checked={search.judet === true}
+                onCheckedChange={(checked) => apply({ judet: checked === true ? true : undefined })}
+              />
+              <Trans>Date la nivel de județ</Trans>
+            </Label>
+          </div>
+        </fieldset>
+      </div>
     </div>
   )
 }

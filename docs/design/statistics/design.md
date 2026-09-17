@@ -387,6 +387,46 @@ the search's footer link says „Caută în tot catalogul" instead of promising 
 number the other side would not match. `?stare=` used to hide this by
 filtering the destination; without it, the words have to do the work.
 
+## 6e. The catalog's polish pass (2026-09-17)
+
+The layout was right and the parts were not: the rail's groups were separated
+by whitespace alone, the selected theme read as a grey fill, the row count
+floated between the search box and the list, the pager floated under it, and
+every component carried its own class strings. Decisions, all of them
+DESIGN.md's own rules applied to this page:
+
+- **The class constants live in `statistics-theme.ts`** — `bandHeader`,
+  `railGroup`, `railOption`, `facetRow`, `facetRowSelected`, `facetCount` —
+  and the components import them, the parliament convention the module already
+  followed everywhere else.
+- **The results are one band, mounted for the page's whole life.** The count is
+  its header strip, the rows (or the skeleton, or the empty state) are its
+  body, the pager is its footer. Nothing floats beside the list any more. The
+  band is permanent on purpose: the count is a live region, and a live region
+  that is destroyed and re-inserted with its text already inside it — which is
+  what a query-key change does — announces nothing. `overflow-hidden` keeps the
+  last row's focus ring inside the card's radius when there is no pager under
+  it.
+- **The row is the target.** The title's `after:inset-0` overlay makes the
+  whole row clickable and draws the focus ring around it — the overlay the
+  hub's figure tiles already use. Only two things are lifted above it — the
+  request action and the matrix code; lifting the whole metadata column made
+  its empty space a dead zone that still lit up on hover.
+- **The active facet carries a navy left bar**, not a grey fill: weight, tint
+  and position say it together, so colour is never the only signal. Two
+  scrollers tried to eat that bar before it landed: a second bounded box around
+  the tree (which caps its own height already), and the negative margins the
+  rail's rows used to bleed their hover fill to the edges — `overflow-y: auto`
+  computes `overflow-x: auto`, so inside the phone sheet anything hanging past
+  the column's start edge is clipped away. The rail carries no negative margin
+  now.
+- **A row stops repeating the context** the list is already filtered by. Nine
+  rows under „4. SOMERI INREGISTRATI" said it nine times.
+- **The matrix code wears the shared provenance chip** and is lifted above the
+  row overlay, because it is the string a reader copies into INS Tempo and an
+  overlay would make it unselectable — §Data Trust treats the source id as
+  data. Filter chips lost their pill radius: §Shapes caps radius at 8px.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

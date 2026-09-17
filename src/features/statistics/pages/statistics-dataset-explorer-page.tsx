@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 import { DatasetExplorerPagination } from '../components/dataset-explorer-pagination'
 import { DatasetExplorerRow } from '../components/dataset-explorer-row'
@@ -24,16 +25,31 @@ import {
 } from '../lib/context-tree'
 import { buildExplorerChips, explorerChipLabel } from '../lib/explorer-chips'
 import { clearedExplorerSearch, countActiveExplorerFilters, hasActiveExplorerFilters } from '../lib/explorer-filter'
+import { statisticsTheme } from '../lib/statistics-theme'
 
 type Props = {
   readonly search: StatisticsDatasetExplorerSearch
 }
 
-function ExplorerSkeleton() {
+/**
+ * The band's body while the read is in flight: the row anatomy the real list
+ * will have — title, provenance line, meta column — so the page rebuilds into
+ * the same layout rather than a different one.
+ */
+function ExplorerSkeletonRows() {
   return (
-    <div className="space-y-2" aria-hidden>
+    <div className="divide-y divide-border/70" aria-hidden>
       {Array.from({ length: 8 }, (_, index) => (
-        <Skeleton key={index} className="h-14 w-full" />
+        <div key={index} className="flex items-baseline justify-between gap-6 px-4 py-3">
+          <div className="min-w-0 flex-1 space-y-2.5">
+            <Skeleton className="h-3.5 w-[min(28rem,80%)]" />
+            <Skeleton className="h-4 w-40" />
+          </div>
+          <div className="w-20 shrink-0 space-y-2">
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-3/4" />
+          </div>
+        </div>
       ))}
     </div>
   )
@@ -153,12 +169,6 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
                 />
               </div>
 
-              {explorerQuery.isSuccess ? (
-                <p className="text-sm text-muted-foreground" aria-live="polite">
-                  {plural(totalCount, { one: 'un set de date', few: '# seturi de date', other: '# de seturi de date' })}
-                </p>
-              ) : null}
-
               <StatisticsActiveFilters chips={chips} onClearAll={() => applySearch(clearedExplorerSearch())} />
             </section>
 
@@ -171,8 +181,6 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
               contextRoots={contextRoots}
               contextIndex={contextIndex}
             />
-
-            {explorerQuery.isPending ? <ExplorerSkeleton /> : null}
 
             {explorerQuery.isError ? (
               <Alert variant="destructive">
@@ -189,37 +197,67 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
                   </Button>
                 </AlertDescription>
               </Alert>
-            ) : null}
-
-            {explorerQuery.isSuccess && datasets.length === 0 ? (
-              isFiltered ? (
-                <div className="space-y-3">
-                  <EmptyState
-                    title={t`Niciun set nu corespunde filtrelor`}
-                    description={t`Încearcă termeni mai generali sau renunță la câteva filtre.`}
-                  />
-                  <Button variant="outline" size="sm" onClick={() => applySearch(clearedExplorerSearch())}>
-                    <Trans>Șterge filtrele</Trans>
-                  </Button>
+            ) : (
+              /*
+                One band for every answer — rows, nothing, or a read still in
+                flight. It is mounted for the page's whole life on purpose: the
+                count is a live region, and a live region that arrives with its
+                text already inside it is not announced. `overflow-hidden`
+                keeps the last row's focus ring inside the card's radius.
+              */
+              <section className={cn(statisticsTheme.band, 'overflow-hidden')}>
+                <div className={statisticsTheme.bandHeader}>
+                  <p className={statisticsTheme.sectionLabel} aria-live="polite">
+                    {explorerQuery.isSuccess
+                      ? plural(totalCount, { one: 'un set de date', few: '# seturi de date', other: '# de seturi de date' })
+                      : null}
+                  </p>
+                  {explorerQuery.isPending ? <Skeleton className="h-3.5 w-36" /> : null}
                 </div>
-              ) : (
-                <EmptyState
-                  title={t`Catalogul INS este gol`}
-                  description={t`Serverul nu a returnat niciun set de date catalogat.`}
-                />
-              )
-            ) : null}
 
-            {explorerQuery.isSuccess && datasets.length > 0 ? (
-              <section className="space-y-4">
-                <ul className="divide-y divide-border/70 rounded-lg border border-border/70 bg-card" aria-label={t`Rezultate`}>
-                  {datasets.map((dataset) => (
-                    <DatasetExplorerRow key={dataset.code} dataset={dataset} />
-                  ))}
-                </ul>
+                {explorerQuery.isPending ? <ExplorerSkeletonRows /> : null}
+
+                {explorerQuery.isSuccess && datasets.length > 0 ? (
+                  <ul className="divide-y divide-border/70" aria-label={t`Rezultate`}>
+                    {datasets.map((dataset) => (
+                      <DatasetExplorerRow
+                        key={dataset.code}
+                        dataset={dataset}
+                        filteredContextCode={search.context}
+                      />
+                    ))}
+                  </ul>
+                ) : null}
+
+                {explorerQuery.isSuccess && datasets.length === 0 ? (
+                  <div className="space-y-3 p-4">
+                    {/* Inside the band, so the dashed frame would be a card in a card. */}
+                    {isFiltered ? (
+                      <>
+                        <EmptyState
+                          className="border-0 p-2"
+                          title={t`Niciun set nu corespunde filtrelor`}
+                          description={t`Încearcă termeni mai generali sau renunță la câteva filtre.`}
+                        />
+                        <div className="flex justify-center">
+                          <Button variant="outline" size="sm" onClick={() => applySearch(clearedExplorerSearch())}>
+                            <Trans>Șterge filtrele</Trans>
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <EmptyState
+                        className="border-0 p-2"
+                        title={t`Catalogul INS este gol`}
+                        description={t`Serverul nu a returnat niciun set de date catalogat.`}
+                      />
+                    )}
+                  </div>
+                ) : null}
+
                 {pagination}
               </section>
-            ) : null}
+            )}
           </div>
         </div>
       </div>

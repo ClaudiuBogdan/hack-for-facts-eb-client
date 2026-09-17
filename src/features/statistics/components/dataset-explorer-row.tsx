@@ -3,11 +3,18 @@ import { Trans } from '@lingui/react/macro'
 import type { StatisticsDatasetSummary } from '@/schemas/statistics'
 import { DataStatusBadge } from './data-status-badge'
 import { RequestDatasetAction } from './request-dataset-action'
+import { cn } from '@/lib/utils'
 import { explorerPeriodicityLabel, type ExplorerPeriodicity } from '../lib/explorer-chips'
 import { formatHubPeriod } from '../lib/hub-format'
+import { statisticsTheme } from '../lib/statistics-theme'
 
 type Props = {
   readonly dataset: StatisticsDatasetSummary
+  /**
+   * The context the list is filtered by. A row whose context is that one says
+   * nothing new by repeating it, so it stays quiet about it.
+   */
+  readonly filteredContextCode?: string
 }
 
 /**
@@ -17,47 +24,63 @@ type Props = {
  *
  * A status badge appears only when the dataset is catalog-only — an
  * „available" badge on every row of an all-available catalog is noise, and
- * the honesty it stood for lives in the status control and the row count.
+ * the honesty it stood for lives in the badge and the row count.
+ *
+ * The whole row is the link's target (`after:inset-0`), so the pointer does
+ * not have to find the title. Two things sit above that overlay on purpose:
+ * the request action, which is its own control, and the matrix code, because
+ * it is the string a reader copies out of this page into INS Tempo and an
+ * overlay would make it unselectable.
  */
-export function DatasetExplorerRow({ dataset }: Props) {
+export function DatasetExplorerRow({ dataset, filteredContextCode }: Props) {
   const name = dataset.nameRo || dataset.nameEn || dataset.code
   const periodicity = dataset.periodicity
     .map((value) => explorerPeriodicityLabel(value as ExplorerPeriodicity))
     .join(', ')
   const catalogOnly = dataset.dataStatus === 'catalog-only'
   const years = formatYearRange(dataset.yearRange)
+  const context =
+    dataset.contextCode && dataset.contextCode === filteredContextCode
+      ? null
+      : dataset.contextNameRo
 
   return (
-    <li className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+    <li className="group relative flex flex-col gap-2 px-4 py-3 transition-colors hover:bg-muted/70 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             to="/ins/seturi/$cod"
             params={{ cod: dataset.code }}
-            className="text-sm font-medium leading-snug text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            // The row is the target and the ring draws around the row, the same
+            // overlay the hub's figure tiles use.
+            className="text-sm font-medium leading-snug text-foreground underline-offset-4 after:absolute after:inset-0 after:content-[''] group-hover:underline focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-ring"
           >
             {name}
           </Link>
           {catalogOnly ? <DataStatusBadge status={dataset.dataStatus} /> : null}
         </div>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          <span className="font-mono tabular-nums">{dataset.code}</span>
-          {dataset.contextNameRo ? <span> · {dataset.contextNameRo}</span> : null}
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+          <span className={cn(statisticsTheme.provenanceChip, 'relative z-10 select-text')}>
+            {dataset.code}
+          </span>
+          {context ? <span className="min-w-0 truncate">{context}</span> : null}
         </p>
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground sm:flex-col sm:items-end sm:gap-y-0.5 sm:text-right">
-        {periodicity ? <span>{periodicity}</span> : null}
+        {periodicity ? <span className="whitespace-nowrap">{periodicity}</span> : null}
         {catalogOnly ? (
-          <RequestDatasetAction datasetCode={dataset.code} datasetName={dataset.nameRo || dataset.nameEn} />
+          <span className="relative z-10">
+            <RequestDatasetAction datasetCode={dataset.code} datasetName={dataset.nameRo || dataset.nameEn} />
+          </span>
         ) : dataset.latestPeriod ? (
-          <span className="tabular-nums">
+          <span className="whitespace-nowrap tabular-nums">
             <Trans>până în {formatHubPeriod(dataset.latestPeriod)}</Trans>
           </span>
         ) : years ? (
           // The catalog's declared span — what INS Tempo publishes, which can
           // run wider than what is loaded here. The detail page says exactly.
-          <span className="tabular-nums">{years}</span>
+          <span className="whitespace-nowrap tabular-nums">{years}</span>
         ) : (
           <span>
             <Trans>Interval necunoscut</Trans>

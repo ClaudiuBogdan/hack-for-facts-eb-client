@@ -12,9 +12,11 @@ type Props = {
 }
 
 /**
- * Prev/next pager over `?pagina=`. Deliberately not the shared `Pagination`
- * component: that one ships hardcoded English copy and a page-size selector the
- * explorer does not offer.
+ * Prev/next pager over `?pagina=`, as the results band's footer strip — the
+ * count heads the band, the pager closes it, and the rows sit between them.
+ *
+ * Deliberately not the shared `Pagination` component: that one ships hardcoded
+ * English copy and a page-size selector the explorer does not offer.
  */
 export function DatasetExplorerPagination({
   page,
@@ -27,10 +29,10 @@ export function DatasetExplorerPagination({
 
   return (
     <nav
-      className="flex flex-col items-center justify-between gap-3 rounded-lg border border-border/70 px-4 py-3 sm:flex-row"
+      className="flex flex-col items-center justify-between gap-3 border-t border-border/70 px-4 py-2.5 sm:flex-row"
       aria-label={t`Paginare seturi de date`}
     >
-      <p className="text-xs text-muted-foreground" aria-live="polite">
+      <p className="text-xs tabular-nums text-muted-foreground" aria-live="polite">
         <Trans>
           Pagina {page} din {totalPages}
         </Trans>

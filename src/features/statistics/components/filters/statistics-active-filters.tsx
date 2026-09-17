@@ -36,7 +36,9 @@ export function StatisticsActiveFilters({ chips, onClearAll, className }: Props)
           type="button"
           onClick={chip.onRemove}
           aria-label={t`Elimină filtrul ${chip.label}`}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 py-1 pl-3 pr-2 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          // DESIGN.md §Shapes: radius caps at 8px, so a filter chip is a
+          // rounded rectangle rather than a pill.
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 py-1 pl-2.5 pr-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span>{chip.label}</span>
           <X aria-hidden className="h-3.5 w-3.5 text-muted-foreground" />

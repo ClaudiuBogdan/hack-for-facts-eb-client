@@ -83,7 +83,10 @@ export function StatisticsDebouncedSearchInput({
         placeholder={placeholder}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
-        className="h-10 pl-9 pr-9 [&::-webkit-search-cancel-button]:hidden"
+        // The field sits on the page surface and queries the white band under
+        // it, so it takes the card's white too. DESIGN.md §Elevation: focus is
+        // a 2px navy ring, not the primitive's 1px.
+        className="h-10 bg-card pl-9 pr-9 focus-visible:ring-2 [&::-webkit-search-cancel-button]:hidden"
       />
       {draft ? (
         <button
