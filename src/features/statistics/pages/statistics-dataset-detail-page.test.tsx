@@ -208,8 +208,8 @@ describe('StatisticsDatasetDetailPage', () => {
       expect(
         screen.getByText('Fără o valoare recentă pentru selecția curentă.'),
       ).toBeInTheDocument()
-      expect(screen.getByText(/stare: c/)).toHaveTextContent('c')
-      expect(screen.getAllByText('2025').length).toBeGreaterThan(0)
+      expect(screen.getByText(/date confidențiale/)).toBeInTheDocument()
+      expect(screen.getAllByText(/2025/).length).toBeGreaterThan(0)
       expect(screen.queryByText('Nicio observație')).not.toBeInTheDocument()
       expect(screen.queryByText(byDigits('21002024'))).not.toBeInTheDocument()
     },
@@ -332,7 +332,7 @@ describe('StatisticsDatasetDetailPage', () => {
     // and the prompt names ONLY the unresolved dimension.
     expect(
       screen.getByRole('button', {
-        name: /Filtru teritorial canonic: România/,
+        name: /Teritoriu: România/,
       }),
     ).toBeInTheDocument()
     expect(screen.getByText(/Alege o valoare pentru: Sexe/)).toBeInTheDocument()

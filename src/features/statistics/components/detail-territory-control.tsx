@@ -47,7 +47,7 @@ export function DetailTerritoryControl({
   return (
     <div className="space-y-2">
       <Label htmlFor={inputId}>
-        <Trans>Filtru teritorial canonic</Trans>
+        <Trans>Teritoriu</Trans>
       </Label>
       <p className="text-xs text-muted-foreground">
         <Trans>

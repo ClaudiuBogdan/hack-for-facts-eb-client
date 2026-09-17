@@ -2,6 +2,9 @@ import { Trans } from '@lingui/react/macro'
 import type { StatisticsLatestValue } from '@/schemas/statistics'
 import { formatObservationValue } from '../lib/format'
 import { statisticsTheme } from '../lib/statistics-theme'
+import { describeValueStatus } from '../lib/value-status'
+import { tileUnit } from '../lib/territory-groups'
+import { formatHubPeriod, hubUnitWord } from '../lib/hub-format'
 
 type Props = {
   readonly latest: StatisticsLatestValue
@@ -34,27 +37,26 @@ export function DetailTier0Hero({ latest, matchChip }: Props) {
         </p>
         {!ambiguous && latest.hasData ? (
           <p>
-            {latest.period}
-            {latest.valueStatus ? (
-              <span className="ml-2">
-                <Trans>stare:</Trans> {latest.valueStatus}
-              </span>
-            ) : null}
+            {latest.period ? formatHubPeriod(latest.period) : null}
+            {latest.valueStatus ? ` · ${describeValueStatus(latest.valueStatus)}` : null}
           </p>
         ) : null}
       </div>
     )
   }
 
+  // The unit as a Romanian word where the API's symbol is a code
+  // („persons", „percent"); otherwise the unit's own name.
+  const unit = tileUnit(latest)
+  const unitWord = hubUnitWord(unit, latest.unitNameRo ?? latest.unitSymbol)
+
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
       <span className={statisticsTheme.heroValue}>
         {formatted}
-        {latest.unitSymbol ? (
-          <span className={statisticsTheme.heroUnit}>{latest.unitSymbol}</span>
-        ) : null}
+        {unitWord ? <span className={statisticsTheme.heroUnit}>{unitWord}</span> : null}
       </span>
-      <span className="text-sm text-muted-foreground">{latest.period}</span>
+      <span className="text-sm text-muted-foreground">{latest.period ? formatHubPeriod(latest.period) : null}</span>
       {matchChip === 'representative' ? (
         <span className={statisticsTheme.warningChip}>
           <Trans>selecție reprezentativă</Trans>

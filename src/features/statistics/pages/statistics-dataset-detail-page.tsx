@@ -634,7 +634,7 @@ function DatasetDetailBody({
           {chartSeries && hasAnyValue(chartSeries) ? (
             <DetailObservationsChart
               series={chartSeries}
-              title={dataset.name_ro ?? dataset.code}
+              title={t`Evoluție în timp`}
               unitLabel={unitLabel ?? null}
             />
           ) : null}
@@ -649,7 +649,7 @@ function DatasetDetailBody({
             </p>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border/70 pt-4">
             <DetailExportButton
               datasetCode={dataset.code}
               sourceDescriptor={seriesData?.sourceDescriptor}

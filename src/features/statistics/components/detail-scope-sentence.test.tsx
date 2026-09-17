@@ -101,7 +101,7 @@ describe('source scope edits', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
-        name: /Filtru teritorial canonic: România/,
+        name: /Teritoriu: România/,
       }),
     ).toBeInTheDocument()
   })

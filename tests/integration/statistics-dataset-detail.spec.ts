@@ -86,7 +86,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
 
     // The latest resolved value, LARGE, with unit and period.
     await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText('pers.').first()).toBeVisible()
+    await expect(page.getByText('persoane').first()).toBeVisible()
 
     // Provenance chips: INS Tempo + the matrix code, never in title position.
     await expect(page.getByText('INS Tempo').first()).toBeVisible()
@@ -140,10 +140,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
 
     // Every source dimension uses the same paginated picker, including small
     // lists. Segment order follows the dimensions: age first, then sex.
-    await page
-      .locator('button', { hasText: /^total/i })
-      .nth(1)
-      .click()
+    await page.getByRole('button', { name: /^Sexe: Total/ }).click()
     await page.getByRole('combobox', { name: 'Sexe' }).click()
     await page.getByRole('option', { name: /Feminin/i }).click()
 
@@ -209,10 +206,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     })
     await page.goto(ROUTE)
     await expect(page.getByText('21.739.373')).toBeVisible()
-    await page
-      .locator('button', { hasText: /^total/i })
-      .first()
-      .click()
+    await page.getByRole('button', { name: /^Varste si grupe de varsta: Total/ }).click()
     await page
       .getByRole('combobox', { name: 'Varste si grupe de varsta' })
       .click()
@@ -419,9 +413,8 @@ for (const language of ['en', 'ro'] as const) {
             ? 'Fără o valoare recentă pentru selecția curentă.'
             : 'No recent value for the current selection.'
         await expect(page.getByText(unavailable)).toBeVisible()
-        await expect(
-          page.getByText(language === 'ro' ? 'stare: c' : 'status: c'),
-        ).toBeVisible()
+        // The flag is spelled out; the English catalog carries the source string.
+        await expect(page.getByText(/date confidențiale/)).toBeVisible()
         await expect(page.getByText('21.739.373')).toHaveCount(0)
         await page
           .getByText(

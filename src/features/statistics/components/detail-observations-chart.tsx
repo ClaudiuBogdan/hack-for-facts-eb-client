@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { activeNumberLocale } from '../lib/format'
 import type { TimeSeries, TimeSeriesPoint } from '../lib/time-series'
 import { describeValueStatus } from '../lib/value-status'
 
@@ -23,10 +24,6 @@ const LINE_COLOR = 'hsl(var(--chart-1))'
 const FLAG_COLOR = 'hsl(38 92% 45%)'
 const SURFACE_COLOR = 'hsl(var(--background))'
 
-const compactNumber = new Intl.NumberFormat('ro-RO', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-})
 
 /**
  * A single INS series over time.
@@ -42,16 +39,20 @@ const compactNumber = new Intl.NumberFormat('ro-RO', {
  * out in the tooltip, so identity never rests on color alone.
  */
 export function DetailObservationsChart({ series, title, unitLabel, wholeHistory = false }: Props) {
+  const compactNumber = new Intl.NumberFormat(activeNumberLocale(), {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
   return (
     <figure className="space-y-2">
-      <figcaption className="space-y-0.5">
-        <h3 className="text-sm font-semibold">{title}</h3>
+      <figcaption className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
         {unitLabel ? (
           <p className="text-xs text-muted-foreground">{unitLabel}</p>
         ) : null}
       </figcaption>
 
-      <div className="h-72 w-full">
+      <div className="h-72 w-full min-w-0">
         <SafeResponsiveContainer width="100%" height="100%">
           <LineChart
             data={series.points as TimeSeriesPoint[]}

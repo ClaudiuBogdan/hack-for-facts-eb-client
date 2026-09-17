@@ -109,47 +109,52 @@ export function DetailScopeSentence({
 
   return (
     <div className="text-sm text-muted-foreground">
-      {/* Desktop: each segment is its own popover control. Dotted underline
-          marks a server default; solid marks a user pin (the legend line
-          below says so once; aria carries the mark per segment). */}
-      <div className="hidden flex-wrap items-center gap-x-1 gap-y-1.5 md:flex">
-        {segments.map((segment, index) => (
-          <span key={segment.id} className="flex items-center gap-1">
-            {index > 0 ? <span aria-hidden>·</span> : null}
-            {segment.control ? (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
+      {/* Desktop: one chip per axis, the dimension's name before its value,
+          so „Total" never stands alone. Each chip opens its own popover.
+          A dotted underline marks a server default; solid marks a user pin
+          (the legend line below says so once; aria carries the mark per
+          chip). */}
+      <div className="hidden flex-wrap items-center gap-1.5 md:flex">
+        {segments.map((segment) =>
+          segment.control ? (
+            <Popover key={segment.id}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border/70 bg-card py-1 pl-2 pr-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={
+                    segment.defaulted
+                      ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                      : t`${segment.controlLabel}: ${segment.text}`
+                  }
+                >
+                  <span className="shrink-0 text-muted-foreground">{segment.controlLabel}</span>
+                  <span
                     className={
                       segment.defaulted || segment.unresolved
-                        ? 'inline-flex items-center gap-0.5 rounded-sm px-1 py-0.5 font-medium text-foreground underline decoration-border decoration-dotted underline-offset-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                        : 'inline-flex items-center gap-0.5 rounded-sm px-1 py-0.5 font-medium text-foreground underline decoration-foreground/50 decoration-solid underline-offset-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                    }
-                    aria-label={
-                      segment.defaulted
-                        ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                        : t`${segment.controlLabel}: ${segment.text}`
+                        ? 'truncate font-medium text-foreground underline decoration-border decoration-dotted underline-offset-4'
+                        : 'truncate font-medium text-foreground underline decoration-foreground/50 decoration-solid underline-offset-4'
                     }
                   >
                     {segment.text}
-                    <ChevronDown
-                      className="h-3 w-3 text-muted-foreground"
-                      aria-hidden
-                    />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-80 space-y-1.5">
-                  {segment.control}
-                </PopoverContent>
-              </Popover>
-            ) : (
-              <span className="font-medium text-foreground">
-                {segment.text}
-              </span>
-            )}
-          </span>
-        ))}
+                  </span>
+                  <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-80 space-y-1.5">
+                {segment.control}
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <span
+              key={segment.id}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-card px-2 py-1 text-xs"
+            >
+              <span className="text-muted-foreground">{segment.controlLabel}</span>
+              <span className="font-medium text-foreground">{segment.text}</span>
+            </span>
+          ),
+        )}
       </div>
       {segments.some((segment) => segment.defaulted || segment.unresolved) ? (
         <p className="mt-1 text-xs text-muted-foreground">
@@ -169,8 +174,8 @@ export function DetailScopeSentence({
               aria-label={t`Alege ce arată seria`}
               className="flex w-full items-center justify-between gap-2 rounded-md border border-border/70 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="line-clamp-2 min-w-0">
-                {segments.map((segment) => segment.text).join(' · ')}
+              <span className="line-clamp-2 min-w-0 text-sm">
+                {segments.map((segment) => `${segment.controlLabel}: ${segment.text}`).join(' · ')}
               </span>
               <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden />
             </button>
@@ -260,7 +265,7 @@ function buildSegments(params: {
         ? t`Fără filtru teritorial canonic`
         : territoryLabel,
     defaulted: scope.territoryDefaulted,
-    controlLabel: t`Filtru teritorial canonic`,
+    controlLabel: t`Teritoriu`,
     control: <DetailTerritoryControl search={search} onChange={onChange} />,
   })
 
@@ -300,11 +305,16 @@ function buildSegments(params: {
 
   const unitDimension = dimensionsOfType(dimensions, 'UNIT_OF_MEASURE')[0]
   if (unitDimension) {
+    // INS names this axis „UM: <unit>"; the value already says which unit.
+    const unitAxisLabel = unitDimension.label_ro?.replace(/^UM\s*:\s*/i, '').trim()
     segments.push({
       id: 'unitate',
       text: unitLabel ?? t`Alege o unitate`,
       defaulted: scope.unitDefaulted,
-      controlLabel: unitDimension.label_ro ?? t`Unitate de măsură`,
+      controlLabel:
+        unitLabel && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitLabel.toLowerCase()
+          ? unitAxisLabel
+          : t`Unitate de măsură`,
       control: (
         <UnitControl
           datasetCode={dataset.code}
