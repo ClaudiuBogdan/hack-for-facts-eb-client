@@ -307,17 +307,3 @@ describe("native entity evolution", () => {
     expect(graphqlQuery).toHaveBeenCalledTimes(2);
   });
 });
-
-
-it("keeps missing months as gaps and zero/negative observations as values", async () => {
-  vi.mocked(graphqlQuery).mockResolvedValueOnce(metadata).mockResolvedValueOnce(series([
-    {periodLabel:"2026-03",amount:"100"},
-    {periodLabel:"2026-05",amount:"0"},
-    {periodLabel:"2026-06",amount:"-100"},
-  ]));
-  const result=await fetchRedesignEntityDetails({...params,
-    reportPeriod:{type:"MONTH",selection:{interval:{start:"2026-01",end:"2026-06"}}}});
-  expect(result?.expenseTrend?.data).toEqual([
-    {x:"2026-03",y:100},{x:"2026-05",y:0},{x:"2026-06",y:-100}]);
-  expect(result?.expenseTrend?.missingPeriods).toEqual(["2026-01","2026-02","2026-04"]);
-});

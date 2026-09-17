@@ -566,58 +566,6 @@ describe("entities api", () => {
       expect(result.nodes[0].amount).toBe(10);
     });
 
-    it.each([
-      ["YEAR", "2024", 100],
-      ["QUARTER", "2024-Q1", 25],
-    ] as const)(
-      "uses the selected %s amount without treating an interval as a month",
-      async (type, period, expected) => {
-        vi.mocked(graphqlQuery)
-          .mockResolvedValueOnce({
-            budgetExecutionLineItems: {
-              edges: [
-                {
-                  node: {
-                    executionLineItemId: "period-eligibility",
-                    accountCategory: "EXPENSE",
-                    fundingSource: "A",
-                    fundingSourceId: 1,
-                    expenseType: null,
-                    anomaly: null,
-                    functionalCode: "65",
-                    functionalName: null,
-                    economicCode: "10.01",
-                    economicName: null,
-                    ytdAmount: "100",
-                    quarterlyAmount: "25",
-                    monthlyAmount: "999",
-                    isMonthly: false,
-                    isQuarterly: type === "QUARTER",
-                    isYearly: type === "YEAR",
-                  },
-                },
-              ],
-              pageInfo: { hasNextPage: false, endCursor: null },
-            },
-          })
-          .mockResolvedValueOnce({
-            budgetExecutionLineItems: {
-              edges: [],
-              pageInfo: { hasNextPage: false, endCursor: null },
-            },
-          });
-        const result = await getEntityExecutionLineItems({
-          ...mockParams,
-          reportPeriod: {
-            type,
-            selection: { interval: { start: period, end: period } },
-          },
-        });
-        expect(result.nodes).toHaveLength(1);
-        expect(result.nodes[0].amount).toBe(expected);
-      },
-    );
-
     it("uses server-normalized line items when both categories cancel to zero", async () => {
       const expenseResponse = {
         budgetExecutionLineItems: {

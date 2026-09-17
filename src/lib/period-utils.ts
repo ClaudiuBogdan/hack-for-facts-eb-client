@@ -108,26 +108,3 @@ export function getReportDateRange(period: ReportPeriodInput): {
         end: toReportDateBoundary(latestDate, false),
     };
 }
-
-export function getPeriodLabels(period: ReportPeriodInput): string[] {
-  if (period.selection.dates) return [...period.selection.dates];
-  const { start, end } = period.selection.interval!;
-  const values: string[] = [];
-  for (
-    let year = Number(start.slice(0, 4));
-    year <= Number(end.slice(0, 4));
-    year++
-  ) {
-    for (
-      let n = 1;
-      n <= (period.type === "YEAR" ? 1 : period.type === "QUARTER" ? 4 : 12);
-      n++
-    ) {
-      const label = period.type === "YEAR" ? String(year)
-        : period.type === "QUARTER" ? `${year}-Q${n}`
-        : `${year}-${String(n).padStart(2,"0")}`;
-      if (label >= start && label <= end) values.push(label);
-    }
-  }
-  return values;
-}

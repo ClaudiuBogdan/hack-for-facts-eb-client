@@ -1,4 +1,3 @@
-import { getPeriodLabels } from "@/lib/period-utils";
 import { AnnualPopulationSchema } from './annual-population';
 import {
   EntityTerritorySchema as TerritorySchema,
@@ -472,9 +471,6 @@ function toAnalyticsSeries(params: {
       unit: params.showPeriodGrowth ? "%" : seriesUnit(params.normalization, params.options),
     },
     data: points.map((point) => ({ x: point.periodLabel, y: point.amount })),
-    missingPeriods: getPeriodLabels(params.period).filter(
-      (label) => !points.some((point) => point.periodLabel === label),
-    ),
   };
 }
 
