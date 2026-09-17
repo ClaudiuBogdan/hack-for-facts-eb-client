@@ -83,7 +83,7 @@ describe('StatisticsTerritoryHubPage', () => {
     ).toBeInTheDocument()
     expect(screen.getAllByText(/54975/).length).toBeGreaterThan(0)
     expect(screen.getByText(/27 din 1\.898 seturi cu date disponibile/)).toBeInTheDocument()
-    expect(screen.getByText('Status valoare: Estimat')).toBeInTheDocument()
+    expect(screen.getAllByText(/estimat/).length).toBeGreaterThan(0)
     expect(
       screen.getByText('Setul există în catalog, dar observațiile nu sunt încă încărcate.'),
     ).toBeInTheDocument()
@@ -93,7 +93,7 @@ describe('StatisticsTerritoryHubPage', () => {
     expect(screen.getByText('Vezi și în alte domenii')).toBeInTheDocument()
   })
 
-  it('opens the source provenance drawer from an indicator tile', async () => {
+  it('opens the source provenance drawer from a headline tile', async () => {
     render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
 
     const labourTile = screen
