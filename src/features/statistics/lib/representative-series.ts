@@ -1,10 +1,19 @@
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { sourceRowSelection } from '@/lib/ins/source-series'
-import type { InsObservation } from '@/schemas/ins'
+import type { InsObservation, InsPeriodicity } from '@/schemas/ins'
 
 /** One complete INS cell: a value for every classification axis, plus a unit. */
 export interface RepresentativeCell {
   readonly classifications: ReadonlyMap<string, string>
   readonly unitCode: string
+  /**
+   * The cadence to read the cell at. A matrix that declares both ANNUAL and
+   * QUARTERLY has no cadence of its own, and with no server-resolved default
+   * the page had a complete coordinate and still could not draw it: a series
+   * cannot mix cadences, so an unresolved one blocks the chart exactly like a
+   * missing axis. `null` when the cell's rows carry none a chart can use.
+   */
+  readonly periodicity: InsPeriodicity | null
 }
 
 /**
@@ -40,6 +49,39 @@ function memberCodes(observation: InsObservation): readonly number[] {
       const code = Number(item.code)
       return Number.isFinite(code) ? code : Number.MAX_SAFE_INTEGER
     })
+}
+
+/**
+ * The cadence to read a cell at: one a chart can draw, with the most rows
+ * behind it, and — where those tie — the one reaching furthest.
+ */
+function chooseCadence(rows: readonly InsObservation[]): InsPeriodicity | null {
+  const cadences = new Map<
+    InsPeriodicity,
+    { rows: number; latest: string }
+  >()
+  for (const row of rows) {
+    const cadence = row.time_period.periodicity
+    const existing = cadences.get(cadence)
+    const period = row.time_period.iso_period
+    if (existing) {
+      existing.rows += 1
+      if (period > existing.latest) existing.latest = period
+      continue
+    }
+    cadences.set(cadence, { rows: 1, latest: period })
+  }
+
+  const ranked = [...cadences.entries()].sort(
+    ([leftCadence, left], [rightCadence, right]) =>
+      Number(isInsChartPeriodicity(rightCadence)) -
+        Number(isInsChartPeriodicity(leftCadence)) ||
+      right.rows - left.rows ||
+      right.latest.localeCompare(left.latest) ||
+      leftCadence.localeCompare(rightCadence),
+  )
+  const best = ranked[0]?.[0]
+  return best && isInsChartPeriodicity(best) ? best : null
 }
 
 /** Lexicographic on the tuple, then on the unit — a total order, never 0. */
@@ -134,7 +176,11 @@ export function chooseRepresentativeCell(input: {
     // No size check: a matrix whose only axes are time and unit is a valid
     // source layout, and `sourceRowSelection` has already said so. Discarding
     // its empty coordinate would leave such a page permanently unresolved.
-    return { classifications, unitCode: selection.unitate }
+    return {
+      classifications,
+      unitCode: selection.unitate,
+      periodicity: chooseCadence(group.rows),
+    }
   }
 
   return null
@@ -147,6 +193,7 @@ export function sameRepresentativeCell(
 ): boolean {
   if (left === null || right === null) return left === right
   if (left.unitCode !== right.unitCode) return false
+  if (left.periodicity !== right.periodicity) return false
   if (left.classifications.size !== right.classifications.size) return false
   for (const [type, code] of left.classifications) {
     if (right.classifications.get(type) !== code) return false

@@ -78,6 +78,15 @@ export function resolveDetailSelection(params: {
   issues: readonly SourceSelectionIssue[]
   unresolvedDimensions: readonly InsDimension[]
   canDerive: boolean
+  /**
+   * True when the read cannot be sent at all yet. `insObservations` refuses a
+   * non-geographic matrix with neither a classification pin nor a unit —
+   * „needs a classification pin or a unit for a non-geographic dataset" — and
+   * a matrix like ACC102C has no territorial axis to stand in for one. With
+   * no server-resolved default there is nothing to anchor the read on, so the
+   * page has to find a unit before it can ask for anything.
+   */
+  needsSourceAnchor: boolean
 } {
   const { search, dataset, latest, representative } = params
   const issues = new Set<SourceSelectionIssue>()
@@ -162,20 +171,26 @@ export function resolveDetailSelection(params: {
       search.frecventa ??
       (dataset?.periodicity.length === 1
         ? dataset.periodicity[0]
-        : (latest?.resolvedPeriodicity ?? null)),
+        // A matrix declaring several cadences and resolving none left the page
+        // with a complete coordinate it still could not draw.
+        : (latest?.resolvedPeriodicity ??
+          representative?.periodicity ??
+          null)),
   }
   const unresolvedDimensions = axes.filter(
     (d) => !classifications.has(`D${d.index}`),
   )
   const incompleteGeo =
     explicitGeo && [...geoAxes].some((type) => !explicit.has(type))
+  const needsSourceAnchor =
+    geoAxes.size === 0 && classifications.size === 0 && unitCode === null
   // The legacy two-list representation loses pairing when IDs repeat across axes.
   const filter = buildSeriesFilter({ ...scope, classifications: new Map() })
   if (classifications.size > 0)
     filter.sourcePins = sourcePinsFilter(classifications)
   return {
     scope,
-    filter: issues.size || incompleteGeo ? null : filter,
+    filter: issues.size || incompleteGeo || needsSourceAnchor ? null : filter,
     issues: [...issues],
     unresolvedDimensions,
     canDerive:
@@ -183,5 +198,6 @@ export function resolveDetailSelection(params: {
       !incompleteGeo &&
       unresolvedDimensions.length === 0 &&
       unitCode !== null,
+    needsSourceAnchor,
   }
 }

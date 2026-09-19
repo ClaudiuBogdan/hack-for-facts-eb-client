@@ -590,6 +590,28 @@ need a name and a closed resting state.
   and Enter cleared the value. The reset sits in the footer with the pager,
   which leaves the search input first in tab order.
 
+**Two matrices that still could not draw, found by sweeping 44 of them.**
+
+- **ACC102C had nothing to ask with.** `insObservations` refuses a
+  non-geographic matrix carrying neither a classification pin nor a unit
+  („needs a classification pin or a unit for a non-geographic dataset"), and a
+  matrix with no territorial axis has nothing for `territoryLevels: [NATIONAL]`
+  to stand on. With no server-resolved default the page sent the read anyway
+  and put a red error where the series belongs — a chicken-and-egg the
+  representative could not break, because it reads the rows that read could not
+  fetch. `resolveDetailSelection` now reports `needsSourceAnchor` and withholds
+  the filter, and the page fetches ONE member of the unit axis to anchor the
+  first read. One extra request, only on the pages that would otherwise be
+  unable to ask for anything at all.
+- **AMG155D had a complete coordinate it could not draw.** It declares both
+  ANNUAL and QUARTERLY, so `dataset.periodicity.length === 1` does not resolve
+  the cadence and `latest` was null. A series may never mix cadences, so an
+  unresolved cadence blocks the chart exactly like a missing axis. The
+  representative carries one now, taken from the chosen cell's own rows:
+  chart-capable first, then the cadence with the most rows behind it, then the
+  one reaching furthest. What the reader pinned and what the server resolved
+  both still win over it.
+
 **Two things the review caught that the types could not.** The series cache key
 is built from the URL, and the URL is identical whichever cell was latched — so
 two different defaults for one address shared a cache entry and the second read

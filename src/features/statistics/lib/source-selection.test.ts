@@ -215,6 +215,114 @@ describe('detail source selection', () => {
   })
 })
 
+describe('a matrix with no territorial axis', () => {
+  // ACC102C's shape: two classification axes, a unit, and no geography for a
+  // NATIONAL filter to stand on.
+  const flat: InsDatasetDetails = {
+    ...dataset,
+    dimension_count: 4,
+    dimensions: [
+      { index: 0, type: 'CLASSIFICATION', classification_type: { code: 'D0' } },
+      { index: 1, type: 'CLASSIFICATION', classification_type: { code: 'D1' } },
+      { index: 2, type: 'TEMPORAL', classification_type: null },
+      { index: 3, type: 'UNIT_OF_MEASURE', classification_type: null },
+    ],
+  }
+
+  it('refuses to send a read the server would reject', () => {
+    // „insObservations needs a classification pin or a unit for a
+    // non-geographic dataset" — with no server default there is neither, and
+    // sending it anyway put a red error where the series belongs.
+    const resolved = resolveDetailSelection({
+      search: {},
+      dataset: flat,
+      latest: null,
+    })
+    expect(resolved.needsSourceAnchor).toBe(true)
+    expect(resolved.filter).toBeNull()
+  })
+
+  it('is answerable once a unit anchors it', () => {
+    const resolved = resolveDetailSelection({
+      search: {},
+      dataset: flat,
+      latest: null,
+      representative: {
+        classifications: new Map(),
+        unitCode: '10225',
+        periodicity: null,
+      },
+    })
+    expect(resolved.needsSourceAnchor).toBe(false)
+    expect(resolved.filter).toMatchObject({ unitCodes: ['10225'] })
+    // The unit was not the reader's choice, so it reads as a default.
+    expect(resolved.scope.unitDefaulted).toBe(true)
+  })
+
+  it('never claims an anchor is needed while geography can carry the read', () => {
+    expect(
+      resolveDetailSelection({ search: {}, dataset, latest: null })
+        .needsSourceAnchor,
+    ).toBe(false)
+  })
+})
+
+describe('a matrix that declares several cadences', () => {
+  const dual: InsDatasetDetails = {
+    ...dataset,
+    periodicity: ['ANNUAL', 'QUARTERLY'],
+  }
+
+  it('takes the cadence from the chosen cell when the server resolved none', () => {
+    // Without this the page holds a complete coordinate it still cannot draw:
+    // a series may never mix cadences, so an unresolved one blocks the chart
+    // exactly like a missing axis.
+    expect(
+      resolveDetailSelection({ search: {}, dataset: dual, latest: null }).scope
+        .periodicity,
+    ).toBeNull()
+    expect(
+      resolveDetailSelection({
+        search: {},
+        dataset: dual,
+        latest: null,
+        representative: {
+          classifications: new Map(),
+          unitCode: '0',
+          periodicity: 'QUARTERLY',
+        },
+      }).scope.periodicity,
+    ).toBe('QUARTERLY')
+  })
+
+  it('still prefers what the reader and the server said', () => {
+    expect(
+      resolveDetailSelection({
+        search: { frecventa: 'ANNUAL' },
+        dataset: dual,
+        latest: null,
+        representative: {
+          classifications: new Map(),
+          unitCode: '0',
+          periodicity: 'QUARTERLY',
+        },
+      }).scope.periodicity,
+    ).toBe('ANNUAL')
+    expect(
+      resolveDetailSelection({
+        search: {},
+        dataset: dual,
+        latest,
+        representative: {
+          classifications: new Map(),
+          unitCode: '0',
+          periodicity: 'QUARTERLY',
+        },
+      }).scope.periodicity,
+    ).toBe('ANNUAL')
+  })
+})
+
 describe('raw selection recovery and cache identity', () => {
   it('edits only the requested axis, preserving unrelated malformed entries', () => {
     const input = ['D0:1', 'bad', null, 'D1:01', 'D0:2']

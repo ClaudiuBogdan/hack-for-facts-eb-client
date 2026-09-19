@@ -122,6 +122,31 @@ describe('chooseRepresentativeCell', () => {
     expect(chosen?.classifications.get('D0')).toBe('2')
   })
 
+  it('reads the cell at a cadence a chart can draw', () => {
+    // A matrix declaring both ANNUAL and QUARTERLY resolves neither on its
+    // own; without a cadence the page has a complete coordinate it cannot
+    // draw, because a series may never mix cadences.
+    const chosen = chooseRepresentativeCell({
+      descriptor,
+      observations: [
+        { ...row({ id: 'a', year: 2023, value: '1', category: ['1', 'Total'], region: ['9', 'TOTAL'] }) },
+        { ...row({ id: 'b', year: 2024, value: '2', category: ['1', 'Total'], region: ['9', 'TOTAL'] }) },
+        {
+          ...row({ id: 'c', year: 2024, value: '3', category: ['1', 'Total'], region: ['9', 'TOTAL'] }),
+          time_period: {
+            iso_period: '2024-Q1',
+            year: 2024,
+            quarter: 1,
+            month: null,
+            periodicity: 'QUARTERLY',
+          },
+        } as unknown as InsObservation,
+      ],
+    })
+    // Two annual rows outweigh one quarterly one.
+    expect(chosen?.periodicity).toBe('ANNUAL')
+  })
+
   it('breaks a tie that the member codes sum the same way', () => {
     // {D0:1,D1:4} and {D0:2,D1:3} both sum to 5 and are different cells; a sum
     // comparator returned 0 and let the response order decide.

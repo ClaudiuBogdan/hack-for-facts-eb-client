@@ -45,10 +45,15 @@ import { DetailTier0Hero } from '../components/detail-tier0-hero'
 import { FreshnessBadge } from '../components/freshness-badge'
 import { RequestDatasetAction } from '../components/request-dataset-action'
 import { StatisticsBackLink } from '../components/statistics-back-link'
-import { useDatasetSeries, useDatasetTier0 } from '../hooks/use-dataset-detail'
+import {
+  useDatasetSeries,
+  useDatasetTier0,
+  useDimensionValues,
+} from '../hooks/use-dataset-detail'
 import {
   classificationTypeCode,
   detailScopeKey,
+  dimensionsOfType,
   encodeTerritoryPin,
   DETAIL_PAGE_SIZE,
   filterExactCell,
@@ -126,8 +131,49 @@ export function StatisticsDatasetDetailPage({
     readonly cell: RepresentativeCell
   } | null>(null)
   const representativeKey = `${code}|${detailScopeKey(search)}`
-  const representative =
-    latched?.key === representativeKey ? latched.cell : null
+
+  /**
+   * The unit that makes the first read possible on a matrix with no
+   * territorial axis and no server-resolved default. It is the axis's first
+   * published member — a heuristic, so it is marked like every other default
+   * — and it is the only thing fetched: one option, only on the pages that
+   * would otherwise be unable to ask for anything at all.
+   */
+  const anchorProbe = useMemo(
+    () => resolveDetailSelection({ search, dataset, latest }),
+    [search, dataset, latest],
+  )
+  const unitDimension = dimensionsOfType(
+    dataset?.dimensions ?? [],
+    'UNIT_OF_MEASURE',
+  )[0]
+  const anchorUnitQuery = useDimensionValues({
+    datasetCode: code,
+    dimensionIndex: unitDimension?.index ?? 0,
+    search: undefined,
+    limit: 1,
+    offset: 0,
+    enabled: anchorProbe.needsSourceAnchor && unitDimension !== undefined,
+  })
+  const anchorUnit = anchorProbe.needsSourceAnchor
+    ? (anchorUnitQuery.data?.nodes[0]?.unit?.code ?? null)
+    : null
+
+  // Memoized: a fresh object per render would re-run the resolve and the
+  // latching effect on every render.
+  const representative = useMemo<RepresentativeCell | null>(
+    () =>
+      latched?.key === representativeKey
+        ? latched.cell
+        : anchorUnit !== null
+          ? {
+              classifications: new Map<string, string>(),
+              unitCode: anchorUnit,
+              periodicity: null,
+            }
+          : null,
+    [latched, representativeKey, anchorUnit],
+  )
 
   const selection = useMemo(
     () => resolveDetailSelection({ search, dataset, latest, representative }),
@@ -306,7 +352,7 @@ function representativeSignature(cell: RepresentativeCell | null): string {
   const coordinates = [...cell.classifications]
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([type, code]) => `${type}:${code}`)
-  return `${cell.unitCode}|${coordinates.join(',')}`
+  return `${cell.unitCode}|${cell.periodicity ?? ''}|${coordinates.join(',')}`
 }
 
 /**
