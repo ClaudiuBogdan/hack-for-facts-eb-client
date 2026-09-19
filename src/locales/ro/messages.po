@@ -25650,3 +25650,234 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr ""
+
+
+#: src/features/ngos/registry/registry-page.tsx:191
+msgid "{total} registry records in this snapshot. Records without a CUI are included."
+msgstr "{total} înregistrări în acest instantaneu. Sunt incluse și înregistrările fără CUI."
+
+#: src/features/ngos/registry/registry-page.tsx:254
+msgid "All categories"
+msgstr "Toate categoriile"
+
+#: src/features/ngos/registry/registry-page.tsx:284
+msgid "All statuses"
+msgstr "Toate stările"
+
+#: src/features/ngos/registry/registry-page.tsx:314
+msgid "Any"
+msgstr "Oricare"
+
+#: src/features/ngos/registry/registry-page.tsx:453
+msgid "Branch reported"
+msgstr "Filială conform sursei"
+
+#: src/features/ngos/components/ngo-landing-page.tsx:163
+msgid "Browse the supplied Ministry of Justice export, including records without a CUI."
+msgstr "Explorează exportul furnizat de la Ministerul Justiției, inclusiv înregistrările fără CUI."
+
+#: src/features/ngos/registry/registry-page.tsx:449
+msgid "Court"
+msgstr "Instanță"
+
+#: src/features/ngos/registry/registry-page.tsx:353
+msgid "CUI not provided or invalid"
+msgstr "CUI necompletat sau nevalid"
+
+#: src/features/ngos/registry/registry-page.tsx:452
+msgid "CUI reported in source"
+msgstr "CUI raportat în sursă"
+
+#: src/features/ngos/registry/registry-page.tsx:99
+msgid "Dates, status and public utility are claims in this snapshot. Records include duplicates and are not a count of distinct organizations."
+msgstr "Datele, starea și utilitatea publică sunt informații raportate în acest instantaneu. Înregistrările includ duplicate și nu reprezintă numărul de organizații distincte."
+
+#: src/features/ngos/registry/registry-page.tsx:484
+msgid "Explore fiscal and company data for this CUI"
+msgstr "Explorează datele fiscale și despre firme pentru acest CUI"
+
+#: src/features/ngos/registry/registry-page.tsx:263
+msgid "Federation"
+msgstr "Federație"
+
+#: src/features/ngos/registry/registry-page.tsx:66
+msgid "File received on {date}"
+msgstr "Fișier primit la {date}"
+
+#: src/features/ngos/registry/registry-page.tsx:438
+msgid "Find current records with this registry number"
+msgstr "Caută înregistrările curente cu acest număr de registru"
+
+#: src/features/ngos/registry/registry-page.tsx:372
+msgid "First page"
+msgstr "Prima pagină"
+
+#: src/features/ngos/registry/registry-page.tsx:266
+msgid "Foreign legal person"
+msgstr "Persoană juridică străină"
+
+#: src/features/ngos/registry/registry-page.tsx:260
+msgid "Foundation"
+msgstr "Fundație"
+
+#: src/features/ngos/registry/registry-page.tsx:62
+msgid "Historical snapshot"
+msgstr "Instantaneu istoric"
+
+#: src/features/ngos/registry/registry-page.tsx:91
+msgid "Imported on {imported}"
+msgstr "Importat la {imported}"
+
+#: src/features/ngos/registry/registry-page.tsx:290
+msgid "In liquidation"
+msgstr "În lichidare"
+
+#: src/features/ngos/registry/registry-page.tsx:476
+msgid "Linked CUI"
+msgstr "CUI corelat"
+
+#: src/features/ngos/registry/registry-page.tsx:147
+msgid "Loading registry records…"
+msgstr "Se încarcă înregistrările…"
+
+#: src/features/ngos/registry/registry-page.tsx:451
+msgid "Locality"
+msgstr "Localitate"
+
+#: src/features/ngos/registry/registry-page.tsx:74
+msgid "Ministry of Justice source"
+msgstr "Sursa Ministerului Justiției"
+
+#: src/features/ngos/registry/registry-page.tsx:85
+msgid "National completeness has not been independently verified."
+msgstr "Caracterul complet la nivel național nu a fost verificat independent."
+
+#: src/features/ngos/registry/registry-page.tsx:52
+msgid "National completeness unverified"
+msgstr "Caracterul complet la nivel național este neverificat"
+
+#: src/features/ngos/registry/registry-page.tsx:57
+msgid "New export overdue"
+msgstr "Este necesar un export nou"
+
+#: src/features/ngos/registry/registry-page.tsx:185
+msgid "NGO data"
+msgstr "Date despre ONG-uri"
+
+#: src/features/ngos/registry/registry-page.tsx:188
+#: src/features/ngos/registry/registry-page.tsx:417
+msgid "NGO registry"
+msgstr "Registrul ONG"
+
+#: src/features/ngos/registry/registry-page.tsx:113
+msgid "NGO registry unavailable"
+msgstr "Registrul ONG nu este disponibil"
+
+#: src/features/ngos/registry/registry-page.tsx:331
+msgid "No records match these filters."
+msgstr "Nicio înregistrare nu corespunde filtrelor."
+
+#: src/features/ngos/registry/registry-page.tsx:400
+#: src/features/ngos/registry/registry-page.tsx:408
+#: src/features/ngos/registry/registry-page.tsx:462
+msgid "Not provided"
+msgstr "Necompletat"
+
+#: src/features/ngos/components/ngo-landing-page.tsx:182
+msgid "Open registry"
+msgstr "Deschide registrul"
+
+#: src/features/ngos/registry/registry-page.tsx:213
+msgid "Organization name"
+msgstr "Denumirea organizației"
+
+#: src/features/ngos/registry/registry-page.tsx:488
+msgid "Other sources may have different coverage. This link does not change the registry's legal classification."
+msgstr "Alte surse pot avea o acoperire diferită. Această legătură nu modifică încadrarea juridică din registru."
+
+#: src/features/ngos/registry/registry-page.tsx:52
+msgid "Partial coverage"
+msgstr "Acoperire parțială"
+
+#: src/features/ngos/registry/registry-page.tsx:303
+#: src/features/ngos/registry/registry-page.tsx:455
+msgid "Public utility reported"
+msgstr "Utilitate publică raportată"
+
+#: src/features/ngos/registry/registry-page.tsx:447
+msgid "Registration date in source"
+msgstr "Data înregistrării conform sursei"
+
+#: src/features/ngos/registry/registry-page.tsx:224
+#: src/features/ngos/registry/registry-page.tsx:445
+msgid "Registry number"
+msgstr "Număr de registru"
+
+#: src/features/ngos/registry/registry-page.tsx:366
+msgid "Registry pages"
+msgstr "Paginile registrului"
+
+#: src/features/ngos/registry/registry-page.tsx:156
+msgid "Registry record not found"
+msgstr "Înregistrarea nu a fost găsită"
+
+#: src/features/ngos/registry/registry-page.tsx:269
+msgid "Religious association"
+msgstr "Asociație religioasă"
+
+#: src/features/ngos/registry/registry-page.tsx:136
+msgid "Restart search"
+msgstr "Reia căutarea"
+
+#: src/features/ngos/components/ngo-landing-page.tsx:160
+msgid "RNONG registry records"
+msgstr "Înregistrări din RNONG"
+
+#: src/features/ngos/registry/registry-page.tsx:326
+msgid "Search registry"
+msgstr "Caută în registru"
+
+#: src/features/ngos/registry/registry-page.tsx:163
+msgid "Search the registry"
+msgstr "Caută în registru"
+
+#: src/features/ngos/registry/registry-page.tsx:46
+msgid "Source and coverage"
+msgstr "Sursă și acoperire"
+
+#: src/features/ngos/registry/registry-page.tsx:95
+msgid "Source-declared snapshot date: {sourceDate}"
+msgstr "Data instantaneului declarată de sursă: {sourceDate}"
+
+#: src/features/ngos/registry/registry-page.tsx:446
+msgid "Special registry number"
+msgstr "Număr în registrul special"
+
+#: src/features/ngos/registry/registry-page.tsx:276
+#: src/features/ngos/registry/registry-page.tsx:448
+msgid "Status in source"
+msgstr "Stare conform sursei"
+
+#: src/features/ngos/registry/registry-page.tsx:120
+msgid "The live dataset may not be published yet, or the snapshot may have changed. No sample data is shown."
+msgstr "Setul de date poate să nu fie publicat încă sau instantaneul s-a schimbat. Nu sunt afișate date demonstrative."
+
+#: src/features/ngos/registry/registry-page.tsx:117
+msgid "The registry could not be loaded"
+msgstr "Registrul nu a putut fi încărcat"
+
+#: src/features/ngos/registry/registry-page.tsx:468
+msgid "The source registration date is not necessarily the organization's founding date."
+msgstr "Data înregistrării din sursă nu este neapărat data înființării organizației."
+
+#: src/features/ngos/registry/registry-page.tsx:80
+msgid "This page uses a supplied registry export."
+msgstr "Această pagină folosește un export de registru furnizat."
+
+#: src/features/ngos/registry/registry-page.tsx:68
+msgid "This page uses a supplied registry export. National completeness has not been independently verified."
+msgstr "Această pagină folosește un export de registru furnizat. Caracterul complet la nivel național nu a fost verificat independent."
+
+#: src/features/ngos/registry/registry-page.tsx:428
+msgid "This record belongs to an earlier snapshot"
+msgstr "Această înregistrare aparține unui instantaneu anterior"

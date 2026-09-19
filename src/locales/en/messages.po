@@ -25654,3 +25654,234 @@ msgstr "ziua curentă nu este încă confirmată după încheierea ședinței"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:197
 msgid "Ziua: {day}"
 msgstr "Ziua: {day}"
+
+
+#: src/features/ngos/registry/registry-page.tsx:191
+msgid "{total} registry records in this snapshot. Records without a CUI are included."
+msgstr "{total} registry records in this snapshot. Records without a CUI are included."
+
+#: src/features/ngos/registry/registry-page.tsx:254
+msgid "All categories"
+msgstr "All categories"
+
+#: src/features/ngos/registry/registry-page.tsx:284
+msgid "All statuses"
+msgstr "All statuses"
+
+#: src/features/ngos/registry/registry-page.tsx:314
+msgid "Any"
+msgstr "Any"
+
+#: src/features/ngos/registry/registry-page.tsx:453
+msgid "Branch reported"
+msgstr "Branch reported"
+
+#: src/features/ngos/components/ngo-landing-page.tsx:163
+msgid "Browse the supplied Ministry of Justice export, including records without a CUI."
+msgstr "Browse the supplied Ministry of Justice export, including records without a CUI."
+
+#: src/features/ngos/registry/registry-page.tsx:449
+msgid "Court"
+msgstr "Court"
+
+#: src/features/ngos/registry/registry-page.tsx:353
+msgid "CUI not provided or invalid"
+msgstr "CUI not provided or invalid"
+
+#: src/features/ngos/registry/registry-page.tsx:452
+msgid "CUI reported in source"
+msgstr "CUI reported in source"
+
+#: src/features/ngos/registry/registry-page.tsx:99
+msgid "Dates, status and public utility are claims in this snapshot. Records include duplicates and are not a count of distinct organizations."
+msgstr "Dates, status and public utility are claims in this snapshot. Records include duplicates and are not a count of distinct organizations."
+
+#: src/features/ngos/registry/registry-page.tsx:484
+msgid "Explore fiscal and company data for this CUI"
+msgstr "Explore fiscal and company data for this CUI"
+
+#: src/features/ngos/registry/registry-page.tsx:263
+msgid "Federation"
+msgstr "Federation"
+
+#: src/features/ngos/registry/registry-page.tsx:66
+msgid "File received on {date}"
+msgstr "File received on {date}"
+
+#: src/features/ngos/registry/registry-page.tsx:438
+msgid "Find current records with this registry number"
+msgstr "Find current records with this registry number"
+
+#: src/features/ngos/registry/registry-page.tsx:372
+msgid "First page"
+msgstr "First page"
+
+#: src/features/ngos/registry/registry-page.tsx:266
+msgid "Foreign legal person"
+msgstr "Foreign legal person"
+
+#: src/features/ngos/registry/registry-page.tsx:260
+msgid "Foundation"
+msgstr "Foundation"
+
+#: src/features/ngos/registry/registry-page.tsx:62
+msgid "Historical snapshot"
+msgstr "Historical snapshot"
+
+#: src/features/ngos/registry/registry-page.tsx:91
+msgid "Imported on {imported}"
+msgstr "Imported on {imported}"
+
+#: src/features/ngos/registry/registry-page.tsx:290
+msgid "In liquidation"
+msgstr "In liquidation"
+
+#: src/features/ngos/registry/registry-page.tsx:476
+msgid "Linked CUI"
+msgstr "Linked CUI"
+
+#: src/features/ngos/registry/registry-page.tsx:147
+msgid "Loading registry records…"
+msgstr "Loading registry records…"
+
+#: src/features/ngos/registry/registry-page.tsx:451
+msgid "Locality"
+msgstr "Locality"
+
+#: src/features/ngos/registry/registry-page.tsx:74
+msgid "Ministry of Justice source"
+msgstr "Ministry of Justice source"
+
+#: src/features/ngos/registry/registry-page.tsx:85
+msgid "National completeness has not been independently verified."
+msgstr "National completeness has not been independently verified."
+
+#: src/features/ngos/registry/registry-page.tsx:52
+msgid "National completeness unverified"
+msgstr "National completeness unverified"
+
+#: src/features/ngos/registry/registry-page.tsx:57
+msgid "New export overdue"
+msgstr "New export overdue"
+
+#: src/features/ngos/registry/registry-page.tsx:185
+msgid "NGO data"
+msgstr "NGO data"
+
+#: src/features/ngos/registry/registry-page.tsx:188
+#: src/features/ngos/registry/registry-page.tsx:417
+msgid "NGO registry"
+msgstr "NGO registry"
+
+#: src/features/ngos/registry/registry-page.tsx:113
+msgid "NGO registry unavailable"
+msgstr "NGO registry unavailable"
+
+#: src/features/ngos/registry/registry-page.tsx:331
+msgid "No records match these filters."
+msgstr "No records match these filters."
+
+#: src/features/ngos/registry/registry-page.tsx:400
+#: src/features/ngos/registry/registry-page.tsx:408
+#: src/features/ngos/registry/registry-page.tsx:462
+msgid "Not provided"
+msgstr "Not provided"
+
+#: src/features/ngos/components/ngo-landing-page.tsx:182
+msgid "Open registry"
+msgstr "Open registry"
+
+#: src/features/ngos/registry/registry-page.tsx:213
+msgid "Organization name"
+msgstr "Organization name"
+
+#: src/features/ngos/registry/registry-page.tsx:488
+msgid "Other sources may have different coverage. This link does not change the registry's legal classification."
+msgstr "Other sources may have different coverage. This link does not change the registry's legal classification."
+
+#: src/features/ngos/registry/registry-page.tsx:52
+msgid "Partial coverage"
+msgstr "Partial coverage"
+
+#: src/features/ngos/registry/registry-page.tsx:303
+#: src/features/ngos/registry/registry-page.tsx:455
+msgid "Public utility reported"
+msgstr "Public utility reported"
+
+#: src/features/ngos/registry/registry-page.tsx:447
+msgid "Registration date in source"
+msgstr "Registration date in source"
+
+#: src/features/ngos/registry/registry-page.tsx:224
+#: src/features/ngos/registry/registry-page.tsx:445
+msgid "Registry number"
+msgstr "Registry number"
+
+#: src/features/ngos/registry/registry-page.tsx:366
+msgid "Registry pages"
+msgstr "Registry pages"
+
+#: src/features/ngos/registry/registry-page.tsx:156
+msgid "Registry record not found"
+msgstr "Registry record not found"
+
+#: src/features/ngos/registry/registry-page.tsx:269
+msgid "Religious association"
+msgstr "Religious association"
+
+#: src/features/ngos/registry/registry-page.tsx:136
+msgid "Restart search"
+msgstr "Restart search"
+
+#: src/features/ngos/components/ngo-landing-page.tsx:160
+msgid "RNONG registry records"
+msgstr "RNONG registry records"
+
+#: src/features/ngos/registry/registry-page.tsx:326
+msgid "Search registry"
+msgstr "Search registry"
+
+#: src/features/ngos/registry/registry-page.tsx:163
+msgid "Search the registry"
+msgstr "Search the registry"
+
+#: src/features/ngos/registry/registry-page.tsx:46
+msgid "Source and coverage"
+msgstr "Source and coverage"
+
+#: src/features/ngos/registry/registry-page.tsx:95
+msgid "Source-declared snapshot date: {sourceDate}"
+msgstr "Source-declared snapshot date: {sourceDate}"
+
+#: src/features/ngos/registry/registry-page.tsx:446
+msgid "Special registry number"
+msgstr "Special registry number"
+
+#: src/features/ngos/registry/registry-page.tsx:276
+#: src/features/ngos/registry/registry-page.tsx:448
+msgid "Status in source"
+msgstr "Status in source"
+
+#: src/features/ngos/registry/registry-page.tsx:120
+msgid "The live dataset may not be published yet, or the snapshot may have changed. No sample data is shown."
+msgstr "The live dataset may not be published yet, or the snapshot may have changed. No sample data is shown."
+
+#: src/features/ngos/registry/registry-page.tsx:117
+msgid "The registry could not be loaded"
+msgstr "The registry could not be loaded"
+
+#: src/features/ngos/registry/registry-page.tsx:468
+msgid "The source registration date is not necessarily the organization's founding date."
+msgstr "The source registration date is not necessarily the organization's founding date."
+
+#: src/features/ngos/registry/registry-page.tsx:80
+msgid "This page uses a supplied registry export."
+msgstr "This page uses a supplied registry export."
+
+#: src/features/ngos/registry/registry-page.tsx:68
+msgid "This page uses a supplied registry export. National completeness has not been independently verified."
+msgstr "This page uses a supplied registry export. National completeness has not been independently verified."
+
+#: src/features/ngos/registry/registry-page.tsx:428
+msgid "This record belongs to an earlier snapshot"
+msgstr "This record belongs to an earlier snapshot"
