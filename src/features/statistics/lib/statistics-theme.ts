@@ -45,6 +45,54 @@ export const statisticsTheme = {
   /** A band's own header strip: the label that says what the band holds. */
   bandHeader:
     'flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-4 py-2.5',
+  /** A band's body. The only padded surface inside a band, so nothing nests. */
+  bandBody: 'p-4 md:p-5',
+  /**
+   * A band's closing strip: where the data came from and what can be taken
+   * away with it. Reads as the band's footnote, not as a second header.
+   */
+  bandFooter:
+    'flex flex-col gap-3 border-t border-border/70 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between',
+
+  // -- Detail page ----------------------------------------------------------
+
+  /**
+   * The quiet identity line under a page title: source, matrix code, cadence.
+   * Everything a badge used to say and did not need a badge to say it.
+   */
+  metaLine:
+    'flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground',
+  /** Long published prose (definitions, methodology). Measured, not cramped. */
+  prose: 'max-w-prose text-sm leading-relaxed text-muted-foreground',
+  /**
+   * An advisory note inside a band: tinted, not outlined. A second bordered
+   * box inside a bordered band is a card in a card. (`Alert` keeps its border
+   * — an error or a warning is meant to interrupt, and it is a shared
+   * primitive whose framing every other surface relies on.)
+   */
+  note: 'space-y-2 rounded-md bg-muted/60 p-3 text-sm',
+  /**
+   * The strip that holds the scope controls: tinted so it reads as the input
+   * to the band below it rather than as more metadata about the title above.
+   */
+  controlStrip: 'border-b border-border/70 bg-muted/30 px-4 py-3',
+  /**
+   * One scope chip — the dimension's name, its value, a chevron. A dotted
+   * underline on the value marks a server default, a solid one a user pin;
+   * the legend under the row says so once, and `aria-label` says it per chip.
+   */
+  scopeChip:
+    'inline-flex max-w-full items-center gap-1.5 rounded-md border border-border/70 bg-card py-1 pl-2 pr-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  /**
+   * A scope axis with nothing to choose — one periodicity, one unit. It wears
+   * no border and no surface: given the same chip as its neighbours it read as
+   * a control that did nothing when pressed.
+   */
+  scopeChipStatic: 'inline-flex items-center gap-1.5 px-1 py-1 text-xs',
+  scopeChipName: 'shrink-0 text-muted-foreground',
+  scopeChipValue: 'truncate font-medium text-foreground underline-offset-4',
+  scopeChipValueDefault: 'decoration-border decoration-dotted',
+  scopeChipValuePinned: 'decoration-foreground/50 decoration-solid',
 
   // -- Facet rail (catalog list pages) --------------------------------------
 

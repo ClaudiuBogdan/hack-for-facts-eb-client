@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
 import type { InsDataset } from '@/schemas/ins'
+import { statisticsTheme } from '../lib/statistics-theme'
 import { stripSourceMarker } from '../lib/published-text'
 import { PublishedText } from './published-text'
 
@@ -18,9 +19,14 @@ type Props = {
 /**
  * What INS publishes ABOUT the matrix on its own TEMPO page, beyond the
  * definition the header already shows: methodology, data sources,
- * observations, series continuity and the source's last update. One closed
- * accordion so the page stays a disclosure ladder; every row's trigger says
- * whether it has something to open. Text is served verbatim and rendered
+ * observations and series continuity. One closed accordion so the page stays
+ * a disclosure ladder; every row's trigger says whether it has something to
+ * open.
+ *
+ * The source's last update is NOT a row here. A date is a fact, not a section,
+ * and dressing it as one put a disclosure control over a string already fully
+ * visible in its own trigger. It belongs beside the data it dates — see
+ * `DetailSourceLine`, at the foot of the series band. Text is served verbatim and rendered
  * through PublishedText (links only for absolute http(s) anchors).
  *
  * Language: the English text when the app runs in English and INS published
@@ -58,7 +64,6 @@ export function DetailMetadataSection({ dataset }: Props) {
   )
   const successor = dataset.successor_dataset_code ?? null
   const predecessors = dataset.continues_from ?? []
-  const lastUpdate = dataset.source_last_update ?? null
   const hasContinuity =
     discontinuedAfter !== null || successor !== null || predecessors.length > 0
 
@@ -66,23 +71,19 @@ export function DetailMetadataSection({ dataset }: Props) {
     methodology === null &&
     observations === null &&
     sources.length === 0 &&
-    !hasContinuity &&
-    lastUpdate === null
+    !hasContinuity
   ) {
     return null
   }
 
   return (
     <section className="space-y-2" data-testid="dataset-metadata">
-      <h2 className="text-base font-semibold">
+      <h2 className={statisticsTheme.sectionLabel}>
         <Trans>Despre acest set de date</Trans>
       </h2>
-      <Accordion
-        type="multiple"
-        className="rounded-lg border border-border bg-card"
-      >
+      <Accordion type="multiple" className={statisticsTheme.band}>
         {methodology !== null ? (
-          <AccordionItem value="metodologie" className="px-4">
+          <AccordionItem value="metodologie" className="px-4 last:border-b-0">
             <AccordionTrigger className="text-sm font-medium">
               <Trans>Metodologie</Trans>
             </AccordionTrigger>
@@ -93,7 +94,7 @@ export function DetailMetadataSection({ dataset }: Props) {
         ) : null}
 
         {sources.length > 0 ? (
-          <AccordionItem value="surse" className="px-4">
+          <AccordionItem value="surse" className="px-4 last:border-b-0">
             <AccordionTrigger className="text-sm font-medium">
               <Trans>Surse de date ({sources.length})</Trans>
             </AccordionTrigger>
@@ -118,7 +119,7 @@ export function DetailMetadataSection({ dataset }: Props) {
         ) : null}
 
         {observations !== null ? (
-          <AccordionItem value="observatii" className="px-4">
+          <AccordionItem value="observatii" className="px-4 last:border-b-0">
             <AccordionTrigger className="text-sm font-medium">
               <Trans>Observații INS</Trans>
             </AccordionTrigger>
@@ -129,7 +130,7 @@ export function DetailMetadataSection({ dataset }: Props) {
         ) : null}
 
         {hasContinuity ? (
-          <AccordionItem value="continuitate" className="px-4">
+          <AccordionItem value="continuitate" className="px-4 last:border-b-0">
             <AccordionTrigger className="text-sm font-medium">
               <Trans>Continuitatea seriei</Trans>
             </AccordionTrigger>
@@ -184,19 +185,6 @@ export function DetailMetadataSection({ dataset }: Props) {
           </AccordionItem>
         ) : null}
 
-        {lastUpdate !== null ? (
-          <AccordionItem value="actualizare" className="border-b-0 px-4">
-            <AccordionTrigger className="text-sm font-medium">
-              <Trans>Ultima actualizare INS: {lastUpdate}</Trans>
-            </AccordionTrigger>
-            <AccordionContent className="text-sm text-muted-foreground">
-              <Trans>
-                Data la care INS declară că a actualizat matricea în TEMPO. Textul
-                de mai sus este cel publicat de INS la momentul captării.
-              </Trans>
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
       </Accordion>
     </section>
   )

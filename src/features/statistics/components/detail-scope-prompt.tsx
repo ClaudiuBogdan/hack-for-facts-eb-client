@@ -19,7 +19,10 @@ export function DetailScopePrompt({
 }: Props) {
   return (
     <div
-      className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border bg-muted/20 px-6 py-12 text-center"
+      // No border of its own: this renders inside the series band, and a
+      // dashed box inside a bordered card is a card in a card (DESIGN.md
+      // §Do's and Don'ts). The band is the frame; this is its content.
+      className="flex flex-col items-center gap-3 px-2 py-10 text-center"
       role="status"
     >
       <Filter aria-hidden className="h-8 w-8 text-muted-foreground" />

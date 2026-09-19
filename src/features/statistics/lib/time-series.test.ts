@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { InsObservation } from '@/schemas/ins'
-import { buildTimeSeries, enumeratePeriods, hasAnyValue, toChartValue } from './time-series'
+import {
+  buildTimeSeries,
+  enumeratePeriods,
+  hasAnyValue,
+  seriesAxis,
+  toChartValue,
+} from './time-series'
+import type { TimeSeriesPoint } from './time-series'
 
 function annual(year: number, value: string | null, valueStatus?: string): InsObservation {
   return {
@@ -164,5 +171,68 @@ describe('buildTimeSeries', () => {
       to: 2022,
     })
     expect(hasAnyValue(series)).toBe(false)
+  })
+})
+
+describe('seriesAxis', () => {
+  const points = (values: readonly (number | null)[]): TimeSeriesPoint[] =>
+    values.map((value, index) => ({
+      period: `${2000 + index}`,
+      value,
+      raw: value === null ? null : String(value),
+      valueStatus: null,
+    }))
+
+  it('keeps the zero baseline when the series reaches down toward zero', () => {
+    // 1,9–5,0: the shape is still legible from zero, and zero is the floor a
+    // reader expects on a rate.
+    expect(seriesAxis(points([5, 3.2, 1.9])).domain).toEqual([0, 'auto'])
+  })
+
+  it('keeps the zero baseline for an empty or all-gap series', () => {
+    expect(seriesAxis([]).domain).toEqual([0, 'auto'])
+    expect(seriesAxis(points([null, null])).domain).toEqual([0, 'auto'])
+  })
+
+  it('keeps the zero baseline when a value is zero or negative', () => {
+    expect(seriesAxis(points([0, 12, 14])).domain).toEqual([0, 'auto'])
+    expect(seriesAxis(points([-3, 12, 14])).domain).toEqual([0, 'auto'])
+  })
+
+  it('pads the window when the series never comes near zero', () => {
+    // Romania's population: 23,2M → 21,6M is a 7% fall that a zero baseline
+    // draws as a flat stripe.
+    const axis = seriesAxis(points([23_200_000, 22_400_000, 21_646_220]))
+    expect(axis.domain[0]).toBeGreaterThan(0)
+    expect(axis.domain[0]).toBeLessThan(21_646_220)
+    expect(axis.domain[1]).toBeGreaterThan(23_200_000)
+  })
+
+  it('steps the ticks itself so every label is a round number', () => {
+    const axis = seriesAxis(points([23_200_000, 22_400_000, 21_646_220]))
+    expect(axis.ticks?.length).toBeGreaterThan(2)
+    for (const tick of axis.ticks ?? []) {
+      expect(tick % 500_000).toBe(0)
+    }
+    expect(axis.ticks?.[0]).toBe(axis.domain[0])
+    expect(axis.ticks?.[axis.ticks.length - 1]).toBe(axis.domain[1])
+  })
+
+  it('degrades to the zero baseline rather than hanging on extreme values', () => {
+    // 1e308 overflows the padded upper bound to Infinity, which would make the
+    // tick loop endless — and this runs during render, on the server too.
+    expect(seriesAxis(points([1e308, 1.7e308])).domain).toEqual([0, 'auto'])
+    // A subnormal underflows the step to zero, which used to return NaN bounds.
+    expect(seriesAxis(points([Number.MIN_VALUE])).domain).toEqual([0, 'auto'])
+  })
+
+  it('keeps the zero baseline for a series that barely moves', () => {
+    // A flat series is flat. Padding a window around a range that spans a
+    // thousandth of its magnitude turns rounding into a trend, on gridlines
+    // that all round to the same label.
+    expect(seriesAxis(points([100, 100, 100])).domain).toEqual([0, 'auto'])
+    expect(
+      seriesAxis(points([21_002_023, 21_002_024, 21_002_025])).domain,
+    ).toEqual([0, 'auto'])
   })
 })

@@ -80,6 +80,22 @@ export function formatHubPeriod(period: string): string {
   return period
 }
 
+/**
+ * The same period as an axis tick. „mai 2026" is fine beside a figure and far
+ * too wide under a monthly series with 200 points, so months abbreviate
+ * („mai 2026" → „mai 2026", „iulie" → „iul."). Quarters and years are already
+ * short enough to share the long form.
+ */
+export function formatChartPeriod(period: string): string {
+  const month = /^(\d{4})-(\d{2})$/.exec(period)
+  if (month) {
+    return new Intl.DateTimeFormat(activeNumberLocale(), { month: 'short', year: 'numeric' }).format(
+      new Date(Number(month[1]), Number(month[2]) - 1, 1),
+    )
+  }
+  return formatHubPeriod(period)
+}
+
 export interface HubChange {
   readonly text: string
 }

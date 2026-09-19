@@ -14,6 +14,7 @@ import { DataStatusBadge } from './data-status-badge'
 import { DetailObservationsTable } from './detail-observations-table'
 import { ValueStatusLegend } from './detail-value-status-legend'
 import { DETAIL_PAGE_SIZE } from '../lib/dataset-selection'
+import { dimensionTypeLabel } from '../lib/dimension-labels'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { formatObservationValue } from '../lib/format'
 
@@ -40,6 +41,10 @@ type Props = {
  * (a count, a coverage fact) so a closed row still says something. Content
  * mounts on open (Radix unmounts closed items), so nothing here costs a
  * request or a render until asked for.
+ *
+ * It carries its own section heading. Two accordion stacks separated by
+ * nothing but a gap read as one wall of nine identical rows; a quiet tier-1
+ * label on each says which question that stack answers.
  */
 export function DetailAccordion({
   dataset,
@@ -78,198 +83,196 @@ export function DetailAccordion({
     : null
 
   return (
-    <Accordion type="multiple" className="rounded-lg border border-border/70">
-      <AccordionItem value="tabel" className="px-4">
-        <AccordionTrigger className="text-sm font-medium">
-          <Trans>
-            Tabelul seriei (
-            {formatObservationValue(String(observations.length))})
-          </Trans>
-        </AccordionTrigger>
-        <AccordionContent className="space-y-3">
-          <p className="text-xs text-muted-foreground">
+    <section className="space-y-2">
+      <h2 className={statisticsTheme.sectionLabel}>
+        <Trans>Explorează datele</Trans>
+      </h2>
+      <Accordion type="multiple" className={statisticsTheme.band}>
+        <AccordionItem value="tabel" className="px-4 last:border-b-0">
+          <AccordionTrigger className="text-sm font-medium">
             <Trans>
-              Observațiile selecției curente păstrează coordonatele originale
-              INS. Alege seria unui rând pentru istoricul complet. Pentru alte
-              teritorii,{' '}
-              <Link
-                to="/ins/comparatii"
-                search={compareSearch}
-                className="underline underline-offset-2 hover:text-foreground"
-              >
-                compară teritorii
-              </Link>
-              .
+              Tabelul seriei (
+              {formatObservationValue(String(observations.length))})
             </Trans>
-          </p>
-          {observations.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              <Trans>Selecția curentă nu are observații.</Trans>
-            </p>
-          ) : (
-            <>
-              <DetailObservationsTable
-                observations={pageRows}
-                sourceDescriptor={sourceDescriptor}
-                onSelectSource={onSelectSource}
-              />
-              <ValueStatusLegend statuses={presentStatuses} />
-              {observations.length > DETAIL_PAGE_SIZE ? (
-                <Pagination
-                  currentPage={page}
-                  pageSize={DETAIL_PAGE_SIZE}
-                  totalCount={observations.length}
-                  onPageChange={onPageChange}
-                  isLoading={false}
-                />
-              ) : null}
-            </>
-          )}
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="dimensiuni" className="px-4">
-        <AccordionTrigger className="text-sm font-medium">
-          <Trans>Dimensiuni și clasificări ({dimensions.length} axe)</Trans>
-        </AccordionTrigger>
-        <AccordionContent>
-          <ul className="divide-y divide-border/70">
-            {dimensions.map((dimension) => (
-              <li
-                key={dimension.index}
-                className="flex items-center justify-between gap-3 py-2 text-sm"
-              >
-                <span>
-                  {dimension.label_ro ??
-                    dimension.classification_type?.name_ro ??
-                    `#${dimension.index}`}
-                </span>
-                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                  {dimensionTypeLabel(dimension.type)}
-                  {dimension.option_count
-                    ? ` · ${formatObservationValue(String(dimension.option_count))} ${t`opțiuni`}`
-                    : ''}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="acoperire" className="px-4">
-        <AccordionTrigger className="text-sm font-medium">
-          <Trans>Acoperire teritorială</Trans>
-        </AccordionTrigger>
-        <AccordionContent className="space-y-2 text-sm">
-          <CoverageFact
-            label={t`Localități (SIRUTA)`}
-            covered={dataset.has_uat_data}
-          />
-          <CoverageFact label={t`Județe`} covered={dataset.has_county_data} />
-          {territorial?.option_count ? (
+          </AccordionTrigger>
+          <AccordionContent className="space-y-3">
             <p className="text-xs text-muted-foreground">
               <Trans>
-                Dimensiunea teritorială are{' '}
-                {formatObservationValue(String(territorial.option_count))}{' '}
-                opțiuni.
-              </Trans>
-            </p>
-          ) : null}
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="provenienta" className="px-4">
-        <AccordionTrigger className="text-sm font-medium">
-          <Trans>Proveniență și limite</Trans>
-        </AccordionTrigger>
-        <AccordionContent className="space-y-2 text-sm">
-          <p className="flex flex-wrap items-center gap-2">
-            <span className={statisticsTheme.provenanceChip}>INS Tempo</span>
-            <span className={statisticsTheme.provenanceChip}>
-              {dataset.code}
-            </span>
-            {dataset.context_name_ro ? (
-              <span className="text-xs text-muted-foreground">
-                {dataset.context_name_ro}
-              </span>
-            ) : null}
-          </p>
-          {catalogFrom !== null && catalogTo !== null ? (
-            <p className="text-muted-foreground">
-              <Trans>
-                Catalogul INS declară intervalul {catalogFrom}–{catalogTo};
-                observațiile încărcate aici acoperă{' '}
-                {observedSpan
-                  ? `${observedSpan.from}–${observedSpan.to}`
-                  : t`— (nicio observație pentru selecția curentă)`}
+                Observațiile selecției curente păstrează coordonatele originale
+                INS. Alege seria unui rând pentru istoricul complet. Pentru alte
+                teritorii,{' '}
+                <Link
+                  to="/ins/comparatii"
+                  search={compareSearch}
+                  className="underline underline-offset-2 hover:text-foreground"
+                >
+                  compară teritorii
+                </Link>
                 .
               </Trans>
             </p>
-          ) : null}
-          <p className="text-muted-foreground">
-            <Trans>
-              Datele sunt un instantaneu al INS Tempo. Fiecare valoare își arată
-              perioada de referință; valorile lipsă rămân goluri, niciodată
-              zero.
-            </Trans>
-          </p>
-        </AccordionContent>
-      </AccordionItem>
+            {observations.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                <Trans>Selecția curentă nu are observații.</Trans>
+              </p>
+            ) : (
+              <>
+                <DetailObservationsTable
+                  observations={pageRows}
+                  sourceDescriptor={sourceDescriptor}
+                  onSelectSource={onSelectSource}
+                />
+                <ValueStatusLegend statuses={presentStatuses} />
+                {observations.length > DETAIL_PAGE_SIZE ? (
+                  <Pagination
+                    currentPage={page}
+                    pageSize={DETAIL_PAGE_SIZE}
+                    totalCount={observations.length}
+                    onPageChange={onPageChange}
+                    isLoading={false}
+                  />
+                ) : null}
+              </>
+            )}
+          </AccordionContent>
+        </AccordionItem>
 
-      {related.length > 0 ? (
-        <AccordionItem value="inrudite" className="border-b-0 px-4">
+        <AccordionItem value="dimensiuni" className="px-4 last:border-b-0">
           <AccordionTrigger className="text-sm font-medium">
-            <Trans>
-              Seturi înrudite ({formatObservationValue(String(related.length))}
-              {relatedTotalCount !== null &&
-              relatedTotalCount - 1 > related.length
-                ? ` din ${formatObservationValue(String(relatedTotalCount - 1))}`
-                : ''}
-              )
-            </Trans>
+            <Trans>Dimensiuni și clasificări ({dimensions.length} axe)</Trans>
           </AccordionTrigger>
           <AccordionContent>
             <ul className="divide-y divide-border/70">
-              {related.map((entry) => (
-                <li key={entry.code}>
-                  <Link
-                    to="/ins/seturi/$cod"
-                    params={{ cod: entry.code }}
-                    className="flex items-center justify-between gap-3 py-2 text-sm transition-colors hover:text-primary"
-                  >
-                    <span className="min-w-0 truncate">
-                      {entry.nameRo ?? entry.code}
-                    </span>
-                    <span className="flex shrink-0 items-center gap-2">
-                      <span className={statisticsTheme.provenanceChip}>
-                        {entry.code}
-                      </span>
-                      <DataStatusBadge status={entry.dataStatus} />
-                    </span>
-                  </Link>
+              {dimensions.map((dimension) => (
+                <li
+                  key={dimension.index}
+                  className="flex items-center justify-between gap-3 py-2 text-sm"
+                >
+                  <span>
+                    {dimension.label_ro ??
+                      dimension.classification_type?.name_ro ??
+                      `#${dimension.index}`}
+                  </span>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    {dimensionTypeLabel(dimension.type)}
+                    {dimension.option_count
+                      ? ` · ${formatObservationValue(String(dimension.option_count))} ${t`opțiuni`}`
+                      : ''}
+                  </span>
                 </li>
               ))}
             </ul>
           </AccordionContent>
         </AccordionItem>
-      ) : null}
-    </Accordion>
-  )
-}
 
-function dimensionTypeLabel(type: string): string {
-  switch (type) {
-    case 'TEMPORAL':
-      return t`timp`
-    case 'TERRITORIAL':
-      return t`teritoriu`
-    case 'CLASSIFICATION':
-      return t`clasificare`
-    case 'UNIT_OF_MEASURE':
-      return t`unitate`
-    default:
-      return type
-  }
+        <AccordionItem value="acoperire" className="px-4 last:border-b-0">
+          <AccordionTrigger className="text-sm font-medium">
+            <Trans>Acoperire teritorială</Trans>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-2 text-sm">
+            <CoverageFact
+              label={t`Localități (SIRUTA)`}
+              covered={dataset.has_uat_data}
+            />
+            <CoverageFact label={t`Județe`} covered={dataset.has_county_data} />
+            {territorial?.option_count ? (
+              <p className="text-xs text-muted-foreground">
+                <Trans>
+                  Dimensiunea teritorială are{' '}
+                  {formatObservationValue(String(territorial.option_count))}{' '}
+                  opțiuni.
+                </Trans>
+              </p>
+            ) : null}
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="provenienta" className="px-4 last:border-b-0">
+          <AccordionTrigger className="text-sm font-medium">
+            <Trans>Proveniență și limite</Trans>
+          </AccordionTrigger>
+          <AccordionContent className="space-y-2 text-sm">
+            <p className="flex flex-wrap items-center gap-2">
+              <span className={statisticsTheme.provenanceChip}>INS Tempo</span>
+              <span className={statisticsTheme.provenanceChip}>
+                {dataset.code}
+              </span>
+              {dataset.context_name_ro ? (
+                <span className="text-xs text-muted-foreground">
+                  {dataset.context_name_ro}
+                </span>
+              ) : null}
+            </p>
+            {catalogFrom !== null && catalogTo !== null ? (
+              <p className="text-muted-foreground">
+                <Trans>
+                  Catalogul INS declară intervalul {catalogFrom}–{catalogTo};
+                  observațiile încărcate aici acoperă{' '}
+                  {observedSpan
+                    ? `${observedSpan.from}–${observedSpan.to}`
+                    : t`— (nicio observație pentru selecția curentă)`}
+                  .
+                </Trans>
+              </p>
+            ) : null}
+            <p className="text-muted-foreground">
+              <Trans>
+                Datele sunt un instantaneu al INS Tempo. Fiecare valoare își arată
+                perioada de referință; valorile lipsă rămân goluri, niciodată
+                zero.
+              </Trans>
+            </p>
+          </AccordionContent>
+        </AccordionItem>
+
+        {related.length > 0 ? (
+          <AccordionItem value="inrudite" className="px-4 last:border-b-0">
+            <AccordionTrigger className="text-sm font-medium">
+              {/* Two whole sentences, not one with „din" spliced into it: a
+                  literal inside a <Trans> is never extracted, so the English
+                  page read „Related datasets (6 din 8)". */}
+              {relatedTotalCount !== null &&
+              relatedTotalCount - 1 > related.length ? (
+                <Trans>
+                  Seturi înrudite (
+                  {formatObservationValue(String(related.length))} din{' '}
+                  {formatObservationValue(String(relatedTotalCount - 1))})
+                </Trans>
+              ) : (
+                <Trans>
+                  Seturi înrudite (
+                  {formatObservationValue(String(related.length))})
+                </Trans>
+              )}
+            </AccordionTrigger>
+            <AccordionContent>
+              <ul className="divide-y divide-border/70">
+                {related.map((entry) => (
+                  <li key={entry.code}>
+                    <Link
+                      to="/ins/seturi/$cod"
+                      params={{ cod: entry.code }}
+                      className="flex items-center justify-between gap-3 py-2 text-sm transition-colors hover:text-primary"
+                    >
+                      <span className="min-w-0 truncate">
+                        {entry.nameRo ?? entry.code}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className={statisticsTheme.provenanceChip}>
+                          {entry.code}
+                        </span>
+                        <DataStatusBadge status={entry.dataStatus} />
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        ) : null}
+      </Accordion>
+    </section>
+  )
 }
 
 function CoverageFact({

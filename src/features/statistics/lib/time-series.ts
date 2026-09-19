@@ -131,3 +131,95 @@ export function buildTimeSeries(params: {
 export function hasAnyValue(series: TimeSeries): boolean {
   return series.points.some((point) => point.value !== null)
 }
+
+/**
+ * Below this, the series reaches far enough toward zero that a zero baseline
+ * still shows the shape, and zero is the honest floor. Above it, the series
+ * varies by less than half its own magnitude and a zero baseline spends most
+ * of the plot on empty space — Romania's population falling 23,2M → 21,6M
+ * drew as a flat stripe across the top, which is the one reading of that
+ * series that is false.
+ */
+const ZERO_BASELINE_BELOW_RATIO = 0.5
+
+/**
+ * And below THIS the series is flat and a zero baseline says so honestly.
+ * Padding a window around a range that spans a thousandth of its own
+ * magnitude magnifies rounding into a trend: the plot would climb and fall
+ * dramatically while every gridline it is measured against rounds to the same
+ * label. A series that moved 0,5% moved 0,5%, and the chart should show that.
+ */
+const MIN_RELATIVE_SPAN = 0.01
+
+/** A round step near `raw`, so the axis lands on 1/2/5 × 10ⁿ ticks. */
+function niceStep(raw: number): number {
+  if (!Number.isFinite(raw) || raw <= 0) return Number.NaN
+  const exponent = Math.floor(Math.log10(raw))
+  const base = 10 ** exponent
+  const normalized = raw / base
+  const multiple =
+    normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10
+  return multiple * base
+}
+
+/** More gridlines than this is chartjunk, and an unbounded count is a hang. */
+const MAX_TICKS = 12
+
+/**
+ * The y axis for a series.
+ *
+ * `[0, auto]` whenever the data comes near zero or crosses it; otherwise a
+ * padded window around the observed range with its own explicit ticks. The
+ * ticks have to be explicit: given only a domain, Recharts divides it into
+ * four equal parts, which turns a clean 21–23,5 mil. window into
+ * 21 / 21,6 / 22,3 / 22,9 / 23,5. Stepping the ticks ourselves keeps every
+ * label a round number, so a baseline that is not zero still reads as a
+ * number rather than as a mystery.
+ *
+ * Every arithmetic result is checked before it is used. This runs during
+ * render, on both the server and the client, so a value INS could in
+ * principle publish — 1e308, or a subnormal that underflows the step to zero
+ * — must degrade to the zero baseline, never to `NaN` bounds or to a loop
+ * that does not end. The domain is read back off the ticks so the two can
+ * never disagree.
+ */
+export function seriesAxis(points: readonly TimeSeriesPoint[]): {
+  readonly domain: [number, 'auto'] | [number, number]
+  readonly ticks?: readonly number[]
+} {
+  const zeroBaseline: { domain: [number, 'auto'] } = { domain: [0, 'auto'] }
+
+  const values = points
+    .map((point) => point.value)
+    .filter((value): value is number => value !== null && Number.isFinite(value))
+  if (values.length === 0) return zeroBaseline
+
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  if (min <= 0 || max <= 0) return zeroBaseline
+  if (min / max < ZERO_BASELINE_BELOW_RATIO) return zeroBaseline
+
+  const span = max - min
+  if (span / max < MIN_RELATIVE_SPAN) return zeroBaseline
+
+  const padding = span * 0.15
+  const step = niceStep((span + 2 * padding) / 4)
+  if (!Number.isFinite(step) || step <= 0) return zeroBaseline
+
+  const lower = Math.max(0, Math.floor((min - padding) / step) * step)
+  const upper = Math.ceil((max + padding) / step) * step
+  if (!Number.isFinite(lower) || !Number.isFinite(upper) || upper <= lower)
+    return zeroBaseline
+
+  const count = Math.round((upper - lower) / step)
+  if (!Number.isFinite(count) || count < 1 || count > MAX_TICKS)
+    return zeroBaseline
+
+  // Floating-point steps drift, so every tick is computed from its index.
+  const ticks: number[] = []
+  for (let index = 0; index <= count; index += 1) {
+    ticks.push(lower + index * step)
+  }
+
+  return { domain: [ticks[0]!, ticks[ticks.length - 1]!], ticks }
+}

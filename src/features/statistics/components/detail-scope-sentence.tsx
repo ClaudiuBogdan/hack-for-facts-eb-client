@@ -38,6 +38,8 @@ import {
   type EffectiveScope,
 } from '../lib/dataset-selection'
 import { periodicityLabel } from '../lib/periodicity-labels'
+import { cn } from '@/lib/utils'
+import { statisticsTheme } from '../lib/statistics-theme'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
 import { DetailTerritoryControl } from './detail-territory-control'
 
@@ -121,20 +123,24 @@ export function DetailScopeSentence({
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border/70 bg-card py-1 pl-2 pr-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className={statisticsTheme.scopeChip}
                   aria-label={
                     segment.defaulted
                       ? t`${segment.controlLabel}: ${segment.text} (implicit)`
                       : t`${segment.controlLabel}: ${segment.text}`
                   }
                 >
-                  <span className="shrink-0 text-muted-foreground">{segment.controlLabel}</span>
+                  <span className={statisticsTheme.scopeChipName}>
+                    {segment.controlLabel}
+                  </span>
                   <span
-                    className={
+                    className={cn(
+                      statisticsTheme.scopeChipValue,
+                      'underline',
                       segment.defaulted || segment.unresolved
-                        ? 'truncate font-medium text-foreground underline decoration-border decoration-dotted underline-offset-4'
-                        : 'truncate font-medium text-foreground underline decoration-foreground/50 decoration-solid underline-offset-4'
-                    }
+                        ? statisticsTheme.scopeChipValueDefault
+                        : statisticsTheme.scopeChipValuePinned,
+                    )}
                   >
                     {segment.text}
                   </span>
@@ -146,18 +152,20 @@ export function DetailScopeSentence({
               </PopoverContent>
             </Popover>
           ) : (
-            <span
-              key={segment.id}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-card px-2 py-1 text-xs"
-            >
-              <span className="text-muted-foreground">{segment.controlLabel}</span>
+            <span key={segment.id} className={statisticsTheme.scopeChipStatic}>
+              <span className={statisticsTheme.scopeChipName}>
+                {segment.controlLabel}
+              </span>
               <span className="font-medium text-foreground">{segment.text}</span>
             </span>
           ),
         )}
       </div>
       {segments.some((segment) => segment.defaulted || segment.unresolved) ? (
-        <p className="mt-1 text-xs text-muted-foreground">
+        // Desktop only: it explains the dotted underline on the chips, and the
+        // phone renders the sheet trigger instead of the chips, so on a phone
+        // it was a sentence about something not on screen.
+        <p className="mt-1 hidden text-xs text-muted-foreground md:block">
           <Trans>
             Valorile subliniate punctat sunt implicite sau încă nealese — apasă
             pe ele ca să le alegi sau să le schimbi.
@@ -175,7 +183,14 @@ export function DetailScopeSentence({
               className="flex w-full items-center justify-between gap-2 rounded-md border border-border/70 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="line-clamp-2 min-w-0 text-sm">
-                {segments.map((segment) => `${segment.controlLabel}: ${segment.text}`).join(' · ')}
+                {/* Trimmed: INS ships labels with a trailing space, which
+                    rendered as „Localitati : TOTAL". */}
+                {segments
+                  .map(
+                    (segment) =>
+                      `${segment.controlLabel.trim()}: ${segment.text.trim()}`,
+                  )
+                  .join(' · ')}
               </span>
               <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden />
             </button>

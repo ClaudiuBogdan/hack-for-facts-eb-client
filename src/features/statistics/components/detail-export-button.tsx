@@ -21,6 +21,34 @@ type Props = {
   readonly sourceDescriptor?: unknown
   readonly disabled: boolean
   readonly complete: boolean
+  /**
+   * Whether the button prints its note under itself. A surface that lays the
+   * note out itself passes `false` and renders `DetailExportNote`, so the
+   * toolbar stays one row of controls at any note length.
+   */
+  readonly showNote?: boolean
+}
+
+/**
+ * What the export will and will not contain. One definition, wherever a
+ * surface chooses to put it — under the button, or beside it.
+ */
+export function DetailExportNote({
+  complete,
+}: {
+  readonly complete: boolean
+}) {
+  return (
+    <p className="text-xs text-muted-foreground">
+      {complete ? (
+        <Trans>
+          CSV cu texte codificate JSON pentru a păstra exact valorile și sursa.
+        </Trans>
+      ) : (
+        <Trans>Restrânge selecția pentru a exporta toate observațiile.</Trans>
+      )}
+    </p>
+  )
 }
 
 /**
@@ -34,6 +62,7 @@ export function DetailExportButton({
   sourceDescriptor,
   disabled,
   complete,
+  showNote = true,
 }: Props) {
   const [isExporting, setIsExporting] = useState(false)
 
@@ -77,18 +106,7 @@ export function DetailExportButton({
         <Download aria-hidden className="h-3.5 w-3.5" />
         {isExporting ? <Trans>Se exportă…</Trans> : <Trans>Descarcă CSV</Trans>}
       </Button>
-      {!complete ? (
-        <p className="text-xs text-muted-foreground">
-          <Trans>Restrânge selecția pentru a exporta toate observațiile.</Trans>
-        </p>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          <Trans>
-            CSV cu texte codificate JSON pentru a păstra exact valorile și
-            sursa.
-          </Trans>
-        </p>
-      )}
+      {showNote ? <DetailExportNote complete={complete} /> : null}
     </div>
   )
 }

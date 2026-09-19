@@ -442,8 +442,46 @@ describe('StatisticsDatasetDetailPage', () => {
     )
     expect(screen.getByText('FOM106A')).toBeInTheDocument()
     expect(screen.getByText(/Anul 2008/)).toBeInTheDocument()
+    // The publication date is a fact about the data, not a section of its own:
+    // it reads on the band's source line, next to the matrix it dates.
+    expect(screen.getByText(/actualizată/)).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /Ultima actualizare INS: 2025-09-04/ }),
+      screen.getByRole('link', { name: /Deschide pe INS Tempo/ }),
+    ).toHaveAttribute(
+      'href',
+      'https://statistici.insse.ro/tempoins/index.jsp?ind=POP107D&lang=ro&page=tempo3',
+    )
+  })
+
+  it('still judges freshness when the URL pins a source coordinate', () => {
+    // POST A returns `latest: null` for any pinned classification or unit, so
+    // reading freshness from it alone silenced the stale badge on exactly the
+    // deep-linked URLs where an abandoned series matters most.
+    useDatasetTier0Mock.mockReturnValue(
+      queryStub({ ...tier0, latest: null }),
+    )
+    useDatasetSeriesMock.mockReturnValue(
+      queryStub({
+        ...series,
+        observations: series.observations.map((observation, index) => ({
+          ...observation,
+          time_period: {
+            ...observation.time_period,
+            iso_period: String(1998 + index),
+            year: 1998 + index,
+          },
+        })),
+      }),
+    )
+    render(
+      <StatisticsDatasetDetailPage
+        code="POP107D"
+        search={{ clasificari: ['D1:105'] }}
+        onSearchChange={vi.fn()}
+      />,
+    )
+    expect(
+      screen.getByText(/Date până în 2000 · posibil neactualizat/),
     ).toBeInTheDocument()
   })
 

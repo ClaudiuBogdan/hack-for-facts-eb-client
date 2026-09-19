@@ -30,3 +30,45 @@ export function formatPercent(
   }).format(value)
   return `${formatted}%`
 }
+
+/**
+ * An INS publication date (`2026-04-02`) in the active locale. Anything that
+ * is not a plain ISO day renders verbatim — the field is published text, and
+ * inventing a date from an unparseable one would be worse than showing it.
+ */
+export function formatSourceDate(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
+  const parsed = new Date(`${value}T00:00:00Z`)
+  if (Number.isNaN(parsed.getTime())) return value
+  return new Intl.DateTimeFormat(activeNumberLocale(), {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(parsed)
+}
+
+/**
+ * A wire value with thousands separators, and not one digit changed.
+ *
+ * The observations table and the chart tooltip print what INS published,
+ * unrounded — that is the archival contract. But `22516004` beside a figure
+ * that reads `22.516.004` looks like a different number, so this groups the
+ * integer part and swaps the decimal mark for the locale's, working on the
+ * STRING: parsing to a float would silently round a long decimal, which is
+ * exactly what the contract forbids. Anything that is not a plain decimal
+ * comes back verbatim.
+ */
+export function groupWireValue(raw: string, locale: string): string {
+  const trimmed = raw.trim()
+  const parsed = /^(-?)(\d+)(?:[.,](\d+))?$/.exec(trimmed)
+  if (!parsed) return trimmed
+
+  const [, sign, whole, fraction] = parsed
+  const parts = new Intl.NumberFormat(locale).formatToParts(1234.5)
+  const group = parts.find((part) => part.type === 'group')?.value ?? ','
+  const decimal = parts.find((part) => part.type === 'decimal')?.value ?? '.'
+
+  const grouped = whole!.replace(/\B(?=(\d{3})+(?!\d))/g, group)
+  return `${sign}${grouped}${fraction ? `${decimal}${fraction}` : ''}`
+}

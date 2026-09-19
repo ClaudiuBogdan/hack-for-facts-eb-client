@@ -433,6 +433,109 @@ DESIGN.md's own rules applied to this page:
   overlay would make it unselectable — §Data Trust treats the source id as
   data. Filter chips lost their pill radius: §Shapes caps radius at 8px.
 
+## 6f. The dataset detail's polish pass (2026-09-19)
+
+`/ins/seturi/$cod` had every part the page needs and no hierarchy between
+them. Measured on SOM101F at 390px, a reader scrolled past roughly four
+screens of published legalese before reaching the number the page exists to
+show. Decisions:
+
+- **The definition is clamped to three lines** behind „Citește definiția
+  completă" (`DetailDefinition`). INS publishes these verbatim from the
+  methodology annex and SOM101F's quotes Legea 76/2002 in full — 3,400
+  characters. The clamp is visual (`line-clamp-3`), so the whole string stays
+  in the DOM for search, copy and assistive tech, and the threshold is a
+  character count rather than a measured height because the server renders
+  this and a measurement would need an effect — a flash of the wrong state.
+- **Identity is a line of text, not six badges.** The header used to open with
+  `INS Tempo`, the code, the status, the freshness and one badge per cadence,
+  in four visual weights, which made the metadata about the dataset the
+  heaviest thing on the page. It is now the title, then one quiet line —
+  code chip, source, cadence, context. A badge is kept for the two facts that
+  are exceptions worth stopping on: `Doar catalog`, and a series INS appears to
+  have stopped refreshing. On the common page neither renders.
+- **Freshness is the dataset's, not the window's.** The stale check reads the
+  server-resolved latest period rather than the last row of the charted
+  window, so pinning `?pana=2000` no longer makes the matrix look abandoned.
+  POST A returns no latest value at all when the URL pins a classification or
+  a unit, so it falls back to the newest period among the resolved
+  observations — all of them, not the windowed ones. Reading it only from POST
+  A silenced the stale badge on exactly the deep-linked URLs where an
+  abandoned series matters most.
+- **The working surface is one band**: a header strip naming it and counting
+  its observations, the scope chips on their own tinted strip as the band's
+  input, the figure and the chart in its body, the export and compare controls
+  at the foot of that body, and the source line as the band's closing strip.
+  Loose above the band the chips read as more metadata about the title; inside
+  it they read as the control they are.
+- **The source line is on the page, not in a drawer.** §Data Trust asks for
+  source, date and the way back to the original beside the claim:
+  `Sursă: INS Tempo · matricea POP107D · actualizată 2 aprilie 2026 · Deschide
+  pe INS Tempo`. That date used to be an accordion row of its own — a
+  disclosure control over a string already fully visible in its own trigger.
+  `insTempoDatasetUrl` is the one builder, and it is locale-aware; the host is
+  INS's own `statistici.insse.ro` and has nothing to do with this app's `/ins`
+  routes.
+- **Two accordion stacks, each with a name.** Nine identical rows separated by
+  an unnamed gap read as one wall; „Explorează datele" and „Despre acest set de
+  date" are quiet tier-1 labels, and the second heading dropped from
+  `text-base font-semibold`, which competed with the h1.
+- **The y axis may leave zero, between two bounds.** Romania's population
+  falling 23,2M → 21,6M drew as a flat stripe across the top of a zero-based
+  plot — the one reading of that series that is false. `seriesAxis` keeps the
+  zero baseline when the series reaches within half its own magnitude of zero
+  (rates and shares keep it) **and** when it spans less than 1% of its
+  magnitude, because padding a window around a range that narrow magnifies
+  rounding into a trend on gridlines that all round to the same label. In
+  between it pads the observed range and **steps the ticks itself**: given
+  only a domain, Recharts quarters it and turns a clean 21–23,5 mil. window
+  into 21 / 21,6 / 22,3 / 22,9 / 23,5. The value axis then picks the first
+  number format that gives every tick a distinct label, widening its gutter as
+  it goes — a magnified plot measured against five identical labels would be
+  worse than the flat line it replaced. Every bound is checked before use:
+  this runs during render on the server too, and a 1e308 upper bound is an
+  endless tick loop, a subnormal one is `NaN` bounds.
+- **The grid is a solid hairline** and the period axis reads in words
+  („iul. 2010", not `2010-07`). A dashed grid reads as a projection or a
+  threshold when it is neither.
+- **Skeletons match the layout they replace** — a header block and a band with
+  a figure and a chart, not three grey rectangles — so the page rebuilds into
+  the shape it was already occupying.
+- **Found by review in the browser, and fixed there.** Opening SOM101F's
+  definition moved the band 1,388px down at 390px while the scroll position
+  stayed put — the figure, the chart and the control that undoes the tap all
+  left the screen at once — so the opened text scrolls inside a bounded box.
+  The character threshold that decided whether to clamp was a desktop measure
+  (585px of prose ≈ 250 characters in three lines, against 348px ≈ 135 on a
+  phone) and under-triggered on exactly the viewport that needed it, so the
+  clamp is measured instead, on mount and on resize; before hydration the text
+  is clamped and no toggle renders, which is the honest state. Separator
+  glyphs came out of both meta lines: a „·" between flex items lands either at
+  the end of a wrapped line, where it reads as a typo, or at the start of the
+  next, where it reads as a bullet list — the catalog's own rows have always
+  used spacing alone. The column went to `max-w-6xl` to match that catalog,
+  since at 5xl clicking a row and coming back shifted the page 64px sideways.
+  Plain chart markers switch off past 60 points, where they merged into a 5px
+  band on a phone and the blob rather than the line carried the shape; flagged
+  points keep their marker at any density. The tooltip groups its digits
+  without changing one of them (`groupWireValue` works on the string —
+  parsing to a float would round the long decimals the archival contract
+  exists to preserve) and names its unit. A scope axis with nothing to choose
+  lost its chip: given the same border as its neighbours it read as a control
+  that did nothing when pressed. And „Seturi înrudite (6 din 8)" had „din"
+  spliced into a `<Trans>` as a literal, which Lingui never extracts — the
+  English page read „Related datasets (6 din 8)".
+
+- **Deferred.** The figure still carries no change-versus-previous-period: the
+  difference between two INS values is in percentage points for a rate and in
+  percent for a count, and getting that wording wrong on a public-money surface
+  is worse than omitting it. `DetailObservationsTable` prints wire values
+  verbatim by design (archival fidelity) and stays unformatted. A monthly
+  series' x axis still ends at the last period of the selected year rather
+  than at the last published one — `buildTimeSeries` pads the window with
+  explicit gaps, which is right, but it means the axis's last word can be a
+  month INS has not reached.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):
@@ -502,8 +605,13 @@ and a null-unit observation.
 
 ## 11. Acceptance criteria (domain-level)
 
-- Every dataset reference across all surfaces shows a `DataStatusBadge`
-  (`Date disponibile` / `Doar catalog`) sourced from `getDatasetDataStatus`.
+- Every dataset reference across all surfaces states its data status, and a
+  `DataStatusBadge` (`Doar catalog`, from `getDatasetDataStatus`) is what says
+  it when there is something to say. A `Date disponibile` badge on every row
+  of an all-available catalog, and on every detail page of one, is noise: the
+  honesty it stood for is carried by the badge on the exceptions, by the row
+  count, and on the detail page by the figure and the series itself. Decided
+  in §6e for the catalog and §6f for the detail page.
 - Every primary result shows a `CoverageRibbon` and a per-number source line.
 - No surface forces a territory level a dataset lacks (coverage flags enforced).
 - Romanian names lead; matrix codes appear only as provenance.
