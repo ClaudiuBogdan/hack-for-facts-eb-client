@@ -89,6 +89,22 @@ export const statisticsTheme = {
    * a control that did nothing when pressed.
    */
   scopeChipStatic: 'inline-flex items-center gap-1.5 px-1 py-1 text-xs',
+
+  // -- Dimension option panel ------------------------------------------------
+
+  /** The panel's own header strip: which axis is being chosen, and a reset. */
+  optionPanelHeader:
+    'flex items-center justify-between gap-2 border-b border-border/70 px-3 py-2',
+  /**
+   * One option row. `data-[selected=true]` is cmdk's KEYBOARD cursor, not the
+   * chosen value — the shared `CommandItem` paints it with `bg-accent`, which
+   * in this theme is pure black and made the list read as a terminal. Here it
+   * is the module's own navy tint, the same signal the catalog's facet rows
+   * use, and the chosen value keeps the check mark and the weight.
+   */
+  optionRow:
+    'cursor-pointer rounded-md px-2 py-2 text-sm data-[selected=true]:bg-primary/10 data-[selected=true]:text-foreground',
+  optionRowChosen: 'bg-primary/5 font-medium',
   scopeChipName: 'shrink-0 text-muted-foreground',
   scopeChipValue: 'truncate font-medium text-foreground underline-offset-4',
   scopeChipValueDefault: 'decoration-border decoration-dotted',

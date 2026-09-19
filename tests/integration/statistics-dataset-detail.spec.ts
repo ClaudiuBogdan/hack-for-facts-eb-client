@@ -140,8 +140,9 @@ test.describe('Dataset detail — the disclosure ladder', () => {
 
     // Every source dimension uses the same paginated picker, including small
     // lists. Segment order follows the dimensions: age first, then sex.
+    // The chip opens straight onto the options — it already names the axis,
+    // so there is no second trigger inside the panel.
     await page.getByRole('button', { name: /^Sexe: Total/ }).click()
-    await page.getByRole('combobox', { name: 'Sexe' }).click()
     await page.getByRole('option', { name: /Feminin/i }).click()
 
     // The URL contract: the pin lands in ?clasificari=.
@@ -207,9 +208,6 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await page.goto(ROUTE)
     await expect(page.getByText('21.739.373')).toBeVisible()
     await page.getByRole('button', { name: /^Varste si grupe de varsta: Total/ }).click()
-    await page
-      .getByRole('combobox', { name: 'Varste si grupe de varsta' })
-      .click()
     await expect(
       page.getByRole('option', { name: 'Synthetic age 100' }),
     ).toBeVisible()
@@ -309,7 +307,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     expect(observationRequests).toBe(0)
   })
 
-  test('partial selection offers a bounded inspection and disables incomplete CSV', async ({
+  test('a partial selection completes itself and fetches that cell in full', async ({
     page,
   }) => {
     const requested: { limit: number; offset: number; filter: unknown }[] = []
@@ -321,37 +319,52 @@ test.describe('Dataset detail — the disclosure ladder', () => {
       const fixture = structuredClone(sourceFixture)
       fixture.data.insObservations.nodes =
         fixture.data.insObservations.nodes.slice(0, 2)
-      fixture.data.insObservations.pageInfo = {
-        totalCount: -1,
-        hasNextPage: true,
-        hasPreviousPage: false,
-      }
+      // The bounded inspection reports an unknown, still-open page — that is
+      // what makes it an inspection. Once the selection names a single cell
+      // (every axis pinned), the read is complete and ends, exactly as the
+      // server behaves; a mock that claims `hasNextPage` forever would page
+      // until the row cap.
+      const complete =
+        (body.variables?.filter?.sourcePins?.length ?? 0) === 4
+      fixture.data.insObservations.pageInfo = complete
+        ? { totalCount: 2, hasNextPage: false, hasPreviousPage: false }
+        : { totalCount: -1, hasNextPage: true, hasPreviousPage: false }
       await route.fulfill({ json: fixture })
     })
     await page.goto(
       `${ROUTE}?clasificari=${encodeURIComponent(JSON.stringify(['D2:931', 'D3:932']))}&unitate=0`,
     )
-    await expect(
-      page.getByText(/Tabelul arată o pagină de explorare/),
-    ).toBeVisible()
-    await expect(
-      page.getByRole('button', { name: 'Descarcă CSV' }),
-    ).toBeDisabled()
-    await expect(page.locator('.recharts-responsive-container')).toHaveCount(0)
-    expect(requested).toEqual([
-      {
-        datasetCode: 'POP107D',
-        filter: {
-          unitCodes: ['0'],
-          sourcePins: [
-            { dimensionIndex: 2, memberCode: '931' },
-            { dimensionIndex: 3, memberCode: '932' },
-          ],
-        },
-        offset: 0,
-        limit: 50,
+    // The first read is the bounded inspection, asking only for the axes the
+    // URL pinned — it must never guess the rest server-side.
+    await expect.poll(() => requested.length).toBeGreaterThan(0)
+    expect(requested[0]).toEqual({
+      datasetCode: 'POP107D',
+      filter: {
+        unitCodes: ['0'],
+        sourcePins: [
+          { dimensionIndex: 2, memberCode: '931' },
+          { dimensionIndex: 3, memberCode: '932' },
+        ],
       },
-    ])
+      offset: 0,
+      limit: 50,
+    })
+
+    // The page then completes the selection from what that page returned and
+    // asks for that one cell in full, so a partial URL still draws a series.
+    await expect(page.locator('.recharts-responsive-container')).toBeVisible()
+    await expect(page.getByText('selecție reprezentativă')).toBeVisible()
+    await expect.poll(() => requested.length).toBeGreaterThan(1)
+    expect(requested.at(-1)).toMatchObject({
+      filter: {
+        sourcePins: [
+          { dimensionIndex: 0, memberCode: '100' },
+          { dimensionIndex: 1, memberCode: '105' },
+          { dimensionIndex: 2, memberCode: '931' },
+          { dimensionIndex: 3, memberCode: '932' },
+        ],
+      },
+    })
     await page.getByText(/Tabelul seriei \(/).click()
     await expect(page.getByRole('table')).toBeVisible()
     await expect(

@@ -28,6 +28,7 @@ import {
 import type {
   InsDatasetDetails,
   InsDimension,
+  InsDimensionValue,
   InsPeriodicity,
 } from '@/schemas/ins'
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
@@ -41,7 +42,20 @@ import { periodicityLabel } from '../lib/periodicity-labels'
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
+import { DetailDimensionPanel } from './detail-dimension-panel'
 import { DetailTerritoryControl } from './detail-territory-control'
+
+/** How a segment's control is being asked to render itself. */
+export interface ScopeControlOptions {
+  /**
+   * `panel` paints a desktop popover edge to edge — the chip already names
+   * the axis, so the control opens straight onto its options. `field` is the
+   * labelled, closed form the phone sheet stacks six of.
+   */
+  readonly variant: 'panel' | 'field'
+  /** Close the surface the control is in, once a value has been chosen. */
+  readonly onPicked: () => void
+}
 
 export interface ScopeSegment {
   readonly id: string
@@ -52,7 +66,9 @@ export interface ScopeSegment {
   /** True when the dimension has NO effective value yet. */
   readonly unresolved?: boolean
   /** The control rendered in the popover / sheet. Null = display-only. */
-  readonly control: ReactNode
+  readonly control: ((options: ScopeControlOptions) => ReactNode) | null
+  /** True when the control paints the popover itself and wants no padding. */
+  readonly fills?: boolean
   readonly controlLabel: string
 }
 
@@ -93,6 +109,8 @@ export function DetailScopeSentence({
   onChange,
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
+  // One open chip at a time, and controlled, so picking a value can close it.
+  const [openSegment, setOpenSegment] = useState<string | null>(null)
 
   const segments = buildSegments({
     dataset,
@@ -119,7 +137,13 @@ export function DetailScopeSentence({
       <div className="hidden flex-wrap items-center gap-1.5 md:flex">
         {segments.map((segment) =>
           segment.control ? (
-            <Popover key={segment.id}>
+            <Popover
+              key={segment.id}
+              open={openSegment === segment.id}
+              onOpenChange={(open) =>
+                setOpenSegment(open ? segment.id : null)
+              }
+            >
               <PopoverTrigger asChild>
                 <button
                   type="button"
@@ -147,8 +171,20 @@ export function DetailScopeSentence({
                   <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-80 space-y-1.5">
-                {segment.control}
+              <PopoverContent align="start" className="w-[22rem] max-w-[calc(100vw-2rem)] p-0">
+                {segment.fills ? (
+                  segment.control({
+                    variant: 'panel',
+                    onPicked: () => setOpenSegment(null),
+                  })
+                ) : (
+                  <div className="space-y-1.5 p-3">
+                    {segment.control({
+                      variant: 'panel',
+                      onPicked: () => setOpenSegment(null),
+                    })}
+                  </div>
+                )}
               </PopoverContent>
             </Popover>
           ) : (
@@ -206,7 +242,10 @@ export function DetailScopeSentence({
                 .filter((segment) => segment.control)
                 .map((segment) => (
                   <div key={segment.id} className="space-y-1.5">
-                    {segment.control}
+                    {segment.control?.({
+                      variant: 'field',
+                      onPicked: () => undefined,
+                    })}
                   </div>
                 ))}
               <Button className="w-full" onClick={() => setSheetOpen(false)}>
@@ -281,7 +320,7 @@ function buildSegments(params: {
         : territoryLabel,
     defaulted: scope.territoryDefaulted,
     controlLabel: t`Teritoriu`,
-    control: <DetailTerritoryControl search={search} onChange={onChange} />,
+    control: () => <DetailTerritoryControl search={search} onChange={onChange} />,
   })
 
   const unresolvedTypeCodes = new Set(
@@ -298,14 +337,18 @@ function buildSegments(params: {
     segments.push({
       id: `clasificare-${typeCode}`,
       // Labels verbatim — blanket lowercasing would mangle acronyms (CAEN…).
+      // The chip prints its axis name already; „alege Categorii de unitati
+      // administrative" inside a chip labelled „Categorii de unitati
+      // administrative" said it twice.
       text:
         value === undefined
-          ? `${t`alege`} ${controlLabel}`
+          ? t`alege`
           : (classificationLabels.get(typeCode) ?? value),
       defaulted: scope.defaultedTypes.has(typeCode),
       unresolved: value === undefined,
       controlLabel,
-      control: (
+      fills: true,
+      control: (options) => (
         <ClassificationControl
           datasetCode={dataset.code}
           dimension={dimension}
@@ -313,6 +356,7 @@ function buildSegments(params: {
           pinnedValue={value ?? null}
           selectedLabel={classificationLabels.get(typeCode) ?? value ?? null}
           onChange={onSourceChange}
+          options={options}
         />
       ),
     })
@@ -330,13 +374,15 @@ function buildSegments(params: {
         unitLabel && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitLabel.toLowerCase()
           ? unitAxisLabel
           : t`Unitate de măsură`,
-      control: (
+      fills: true,
+      control: (options) => (
         <UnitControl
           datasetCode={dataset.code}
           dimension={unitDimension}
           selectedCode={scope.unitCode}
           selectedLabel={unitLabel}
           onChange={onSourceChange}
+          options={options}
         />
       ),
     })
@@ -352,7 +398,7 @@ function buildSegments(params: {
       defaulted: !search.frecventa && periodicities.length > 1,
       controlLabel: t`Frecvență`,
       control:
-        periodicities.length > 1 ? (
+        periodicities.length > 1 ? (() => (
           <div className="space-y-1.5">
             <Label>{t`Frecvență`}</Label>
             <Select
@@ -379,7 +425,7 @@ function buildSegments(params: {
               </SelectContent>
             </Select>
           </div>
-        ) : null,
+        )) : null,
     })
   }
 
@@ -389,7 +435,7 @@ function buildSegments(params: {
       text: yearSpanLabel,
       defaulted: search.din === undefined && search.pana === undefined,
       controlLabel: t`Interval de ani`,
-      control: <YearWindowControl search={search} onChange={onChange} />,
+      control: () => <YearWindowControl search={search} onChange={onChange} />,
     })
   }
 
@@ -403,6 +449,7 @@ function ClassificationControl({
   pinnedValue,
   selectedLabel,
   onChange,
+  options,
 }: {
   readonly datasetCode: string
   readonly dimension: InsDimension
@@ -410,6 +457,7 @@ function ClassificationControl({
   readonly pinnedValue: string | null
   readonly selectedLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
+  readonly options: ScopeControlOptions
 }) {
   if (search.clasificari !== undefined && !Array.isArray(search.clasificari))
     return (
@@ -428,20 +476,31 @@ function ClassificationControl({
   const clearPin = () =>
     onChange({ clasificari: editSourcePin(search.clasificari, typeCode, null) })
 
-  return (
+  const shared = {
+    datasetCode,
+    dimensionIndex: dimension.index,
+    label,
+    selectedKey: pinnedValue,
+    optionKey: (value: InsDimensionValue) =>
+      value.classification_value?.code ?? null,
+    onSelect: (value: InsDimensionValue) => {
+      const code = value.classification_value?.code
+      if (code) selectPin(code)
+    },
+    onClear: clearPin,
+  }
+
+  return options.variant === 'panel' ? (
+    <DetailDimensionPanel
+      {...shared}
+      active
+      onPicked={options.onPicked}
+    />
+  ) : (
     <DetailDimensionCombobox
-      datasetCode={datasetCode}
-      dimensionIndex={dimension.index}
-      label={label}
+      {...shared}
       placeholder={t`Alege o valoare`}
-      selectedKey={pinnedValue}
       selectedLabel={selectedLabel}
-      optionKey={(value) => value.classification_value?.code ?? null}
-      onSelect={(value) => {
-        const code = value.classification_value?.code
-        if (code) selectPin(code)
-      }}
-      onClear={clearPin}
     />
   )
 }
@@ -452,28 +511,36 @@ function UnitControl({
   selectedCode,
   selectedLabel,
   onChange,
+  options,
 }: {
   readonly datasetCode: string
   readonly dimension: InsDimension
   readonly selectedCode: string | null
   readonly selectedLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
+  readonly options: ScopeControlOptions
 }) {
-  return (
+  const shared = {
+    datasetCode,
+    dimensionIndex: dimension.index,
+    label: t`Unitate de măsură`,
+    selectedKey: selectedCode,
+    optionKey: (value: InsDimensionValue) => value.unit?.code ?? null,
+    onSelect: (value: InsDimensionValue) => {
+      if (value.unit?.code !== undefined && value.unit.code !== null) {
+        onChange({ unitate: value.unit.code })
+      }
+    },
+    onClear: () => onChange({ unitate: undefined }),
+  }
+
+  return options.variant === 'panel' ? (
+    <DetailDimensionPanel {...shared} active onPicked={options.onPicked} />
+  ) : (
     <DetailDimensionCombobox
-      datasetCode={datasetCode}
-      dimensionIndex={dimension.index}
-      label={t`Unitate de măsură`}
+      {...shared}
       placeholder={t`Alege o unitate`}
-      selectedKey={selectedCode}
       selectedLabel={selectedLabel ?? selectedCode}
-      optionKey={(value) => value.unit?.code ?? null}
-      onSelect={(value) => {
-        if (value.unit?.code !== undefined && value.unit.code !== null) {
-          onChange({ unitate: value.unit.code })
-        }
-      }}
-      onClear={() => onChange({ unitate: undefined })}
     />
   )
 }

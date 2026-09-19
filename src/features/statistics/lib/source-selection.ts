@@ -17,6 +17,7 @@ import type {
   StatisticsDatasetDetailSearch,
   StatisticsLatestValue,
 } from '@/schemas/statistics'
+import type { RepresentativeCell } from './representative-series'
 import {
   buildSeriesFilter,
   NATIONAL_ENTITY,
@@ -63,6 +64,14 @@ export function resolveDetailSelection(params: {
   search: StatisticsDatasetDetailSearch
   dataset: InsDatasetDetails | null
   latest: StatisticsLatestValue | null
+  /**
+   * A cell chosen from the observations when the server resolved none
+   * (`chooseRepresentativeCell`). It fills gaps exactly as the server's own
+   * pick does — after it, before anything the reader pinned — and lands in
+   * `defaultedTypes`, so the sentence marks it as a default rather than as a
+   * choice.
+   */
+  representative?: RepresentativeCell | null
 }): {
   scope: EffectiveScope
   filter: InsObservationFilterInput | null
@@ -70,7 +79,7 @@ export function resolveDetailSelection(params: {
   unresolvedDimensions: readonly InsDimension[]
   canDerive: boolean
 } {
-  const { search, dataset, latest } = params
+  const { search, dataset, latest, representative } = params
   const issues = new Set<SourceSelectionIssue>()
   const dimensions = dataset?.dimensions ?? []
   const axes = dimensions.filter(
@@ -114,13 +123,27 @@ export function resolveDetailSelection(params: {
       }
     }
   }
+  if (representative) {
+    for (const [type, code] of representative.classifications) {
+      if (
+        !classifications.has(type) &&
+        declaredAxes.has(type) &&
+        insSourceMemberCodeSchema.safeParse(code).success &&
+        !(explicitGeo && geoAxes.has(type))
+      ) {
+        classifications.set(type, code)
+        defaultedTypes.add(type)
+      }
+    }
+  }
   for (const [type, value] of explicit) {
     classifications.set(type, value)
     defaultedTypes.delete(type)
   }
   const unitCode =
     search.unitate === undefined
-      ? parseSourceUnit(latest?.unitCode)
+      ? (parseSourceUnit(latest?.unitCode) ??
+        parseSourceUnit(representative?.unitCode))
       : parseSourceUnit(search.unitate)
   if (search.unitate !== undefined && unitCode === null) issues.add('unit')
   const scope: EffectiveScope = {

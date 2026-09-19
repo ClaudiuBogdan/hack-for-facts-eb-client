@@ -215,7 +215,10 @@ describe('StatisticsDatasetDetailPage', () => {
     },
   )
 
-  it('permits a complete inspection archive while keeping unresolved data out of charts', () => {
+  it('fills an unresolved axis from the observations instead of asking', () => {
+    // POST A answers NO_DATA for any matrix without a row at the requested
+    // entity, which used to leave a filter prompt sitting over perfectly good
+    // observations. The page picks a cell from them and says it did.
     useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
     useDatasetSeriesMock.mockReturnValue(
       queryStub({
@@ -224,16 +227,21 @@ describe('StatisticsDatasetDetailPage', () => {
         inspectionTruncated: false,
       }),
     )
+    const onChange = vi.fn()
     render(
       <StatisticsDatasetDetailPage
         code="POP107D"
         search={{ clasificari: ['D0:931'], unitate: '0' }}
-        onSearchChange={vi.fn()}
+        onSearchChange={onChange}
       />,
     )
     expect(screen.getByRole('button', { name: 'Descarcă CSV' })).toBeEnabled()
-    expect(screen.queryByText(byDigits('21002025'))).not.toBeInTheDocument()
-    expect(screen.getByText('Alege ce vrei să vezi')).toBeInTheDocument()
+    expect(screen.getAllByText(byDigits('21002025')).length).toBeGreaterThan(0)
+    // Marked as a heuristic, never as the reader's own choice…
+    expect(screen.getByText('selecție reprezentativă')).toBeInTheDocument()
+    expect(screen.queryByText('Alege ce vrei să vezi')).not.toBeInTheDocument()
+    // …and, being a default, it stays out of the URL.
+    expect(onChange).not.toHaveBeenCalled()
   })
 
   it('keeps the POST-A hero visible when the series fails, with a retry beside it', () => {
@@ -373,7 +381,9 @@ describe('StatisticsDatasetDetailPage', () => {
         onSearchChange={onChange}
       />,
     )
-    expect(screen.queryByRole('figure')).not.toBeInTheDocument()
+    // The default series is on screen; picking a row from the table replaces
+    // it with an explicit selection.
+    expect(screen.getByRole('figure')).toBeInTheDocument()
     await userEvent.click(
       screen.getByRole('button', { name: /Tabelul seriei/ }),
     )

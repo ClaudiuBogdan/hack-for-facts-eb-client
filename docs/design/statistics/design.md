@@ -536,6 +536,68 @@ show. Decisions:
   explicit gaps, which is right, but it means the axis's last word can be a
   month INS has not reached.
 
+## 6g. A page that shows a series, and one panel to change it (2026-09-19)
+
+Two problems, one root: `/ins/seturi/ADM101A` showed a filter prompt over 50
+perfectly good observations, and changing any axis took three clicks through
+two stacked popovers.
+
+**A default series, always.** `insLatestDatasetValues` answers `NO_DATA` for
+any matrix with no row at the requested entity, and ADM101A's territorial axis
+holds macroregions and counties — there is no national total to find. Probed
+2026-09-19: `matchStrategy: "NO_DATA"` for `{ territoryCode: RO, level:
+NATIONAL }`, while `insObservations` returns 50 rows for the same matrix. So
+the page stopped waiting for the server's pick and makes one of its own.
+
+- `chooseRepresentativeCell` reads the observations already fetched and ranks
+  the complete identities in them: INS's own „Total" on the most axes, then
+  the most published periods (a default that draws a line beats one that draws
+  a point), then the latest period, then the lowest member codes — INS's
+  declaration order, and the tie-break that makes the answer independent of
+  the order the server returned rows in. `sourceRowSelection` is the gate: a
+  row that does not carry every declared axis is never adopted.
+- It is a **default, not a choice**: it fills gaps in `resolveDetailSelection`
+  exactly where the server's own pick does, lands in `defaultedTypes` (dotted
+  underline on the chip), raises the „selecție reprezentativă" chip on the
+  figure, and is never written to the URL.
+- It is **latched** per dataset + pinned selection, because the read it comes
+  from is the read it changes: adopting a cell completes the scope, which
+  turns the next fetch into a complete series for that one cell. Latching
+  means the choice is made once per URL and cannot chase its own result.
+- When nothing is safe to pick — no observations, or no row that is a valid
+  complete source coordinate — the prompt still renders. That state is real,
+  it is just no longer the common one.
+
+**One panel, not two.** The scope chip used to open a popover holding a
+labelled combobox that opened a second popover holding the options: three
+clicks and two overlapping white panels to change one axis. The chip already
+names the axis, so it now opens straight onto `DetailDimensionPanel` — a
+header naming the axis and carrying „Șterge", the server-backed search, the
+options, the pager. `ScopeSegment.control` became a function of its surface:
+`panel` on desktop, `field` in the phone sheet, where six stacked axes do each
+need a name and a closed resting state.
+
+- The option rows no longer paint cmdk's keyboard cursor with `bg-accent`,
+  which in this theme is pure black and made the list read as a terminal. It
+  is the module's navy tint, the same signal the catalog's facet rows use.
+- The panel header wraps rather than truncates: INS axis names run past 40
+  characters, and a header ending in „…" does not say which axis is open.
+- The unresolved chip reads „alege", not „alege {axis}" — it sat inside a chip
+  that already printed the axis name, so it said it twice.
+- The panel header holds nothing focusable. Radix moves focus to the first
+  tabbable element when a popover opens, so a „Șterge" button in the header
+  took it: typing did not search, the arrows did not move through the options,
+  and Enter cleared the value. The reset sits in the footer with the pager,
+  which leaves the search input first in tab order.
+
+**Two things the review caught that the types could not.** The series cache key
+is built from the URL, and the URL is identical whichever cell was latched — so
+two different defaults for one address shared a cache entry and the second read
+was served the first one's rows for 24 hours; the key now carries the cell. And
+the tie-break compared the *sum* of the member codes, which makes {D0:1,D1:4}
+and {D0:2,D1:3} equal; it compares the ordered tuple and the unit now, so there
+is a total order and no dependence on response order.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

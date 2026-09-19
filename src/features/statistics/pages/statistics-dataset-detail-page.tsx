@@ -7,7 +7,7 @@ import {
   sourceRowSelection,
 } from '@/lib/ins/source-series'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
@@ -58,6 +58,11 @@ import {
   type EffectiveScope,
 } from '../lib/dataset-selection'
 import { getDatasetDataStatus } from '../lib/dataset-status'
+import {
+  chooseRepresentativeCell,
+  sameRepresentativeCell,
+  type RepresentativeCell,
+} from '../lib/representative-series'
 import { dimensionTypeLabel } from '../lib/dimension-labels'
 import { isPeriodStale, periodSortKey } from '../lib/period'
 import { statisticsTheme } from '../lib/statistics-theme'
@@ -107,9 +112,26 @@ export function StatisticsDatasetDetailPage({
     ? getDatasetDataStatus(dataset) === 'catalog-only'
     : false
 
+  /**
+   * The cell this page falls back to when the server resolves none.
+   *
+   * It is latched rather than derived, and keyed to the dataset plus whatever
+   * the reader pinned, because the read it comes from is the read it changes:
+   * adopting a cell completes the scope, which makes the next fetch a complete
+   * series for that one cell. Latching means the choice is made once per URL
+   * and cannot chase its own result.
+   */
+  const [latched, setLatched] = useState<{
+    readonly key: string
+    readonly cell: RepresentativeCell
+  } | null>(null)
+  const representativeKey = `${code}|${detailScopeKey(search)}`
+  const representative =
+    latched?.key === representativeKey ? latched.cell : null
+
   const selection = useMemo(
-    () => resolveDetailSelection({ search, dataset, latest }),
-    [search, dataset, latest],
+    () => resolveDetailSelection({ search, dataset, latest, representative }),
+    [search, dataset, latest, representative],
   )
   const { scope, unresolvedDimensions } = selection
   const seriesEnabled =
@@ -117,13 +139,29 @@ export function StatisticsDatasetDetailPage({
 
   const seriesQuery = useDatasetSeries({
     code,
-    scopeKey: detailScopeKey(search),
+    // The key has to carry the representative cell too. `detailScopeKey` reads
+    // the URL, and the URL is identical whichever cell was latched — so two
+    // different defaults for the same address shared one cache entry, and the
+    // second read was served the first one's rows for 24 hours.
+    scopeKey: `${detailScopeKey(search)}|${representativeSignature(representative)}`,
     filter: selection.filter ?? {},
     inspection: !selection.canDerive,
     contextCode: dataset?.context_code ?? null,
     enabled: seriesEnabled,
     ...(initialSeries ? { initialData: initialSeries } : {}),
   })
+
+  // Runs only while the scope is still incomplete, so it cannot re-fire on the
+  // narrowed read it causes.
+  useEffect(() => {
+    if (selection.canDerive || !seriesQuery.data?.sourceDescriptor) return
+    const chosen = chooseRepresentativeCell({
+      descriptor: seriesQuery.data.sourceDescriptor,
+      observations: seriesQuery.data.observations,
+    })
+    if (chosen && !sameRepresentativeCell(chosen, representative))
+      setLatched({ key: representativeKey, cell: chosen })
+  }, [selection.canDerive, seriesQuery.data, representative, representativeKey])
 
   /**
    * The last period this matrix publishes — what the freshness badge judges.
@@ -249,6 +287,7 @@ export function StatisticsDatasetDetailPage({
             seriesQuery={seriesQuery}
             seriesEnabled={seriesEnabled}
             canDerive={selection.canDerive}
+            representativeDefaults={representative !== null}
             unresolvedDimensions={unresolvedDimensions}
             territoryPin={
               territoryPin ? encodeTerritoryPin(territoryPin) : null
@@ -259,6 +298,15 @@ export function StatisticsDatasetDetailPage({
       </div>
     </div>
   )
+}
+
+/** A stable string for a latched cell, for the series cache key. */
+function representativeSignature(cell: RepresentativeCell | null): string {
+  if (!cell) return ''
+  const coordinates = [...cell.classifications]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([type, code]) => `${type}:${code}`)
+  return `${cell.unitCode}|${coordinates.join(',')}`
 }
 
 /**
@@ -457,6 +505,7 @@ function DatasetDetailBody({
   seriesQuery,
   seriesEnabled,
   canDerive,
+  representativeDefaults,
   unresolvedDimensions,
   territoryPin,
   onSearchChange,
@@ -468,6 +517,8 @@ function DatasetDetailBody({
   readonly seriesQuery: ReturnType<typeof useDatasetSeries>
   readonly seriesEnabled: boolean
   readonly canDerive: boolean
+  /** True when this page, not the server, chose the axes the series shows. */
+  readonly representativeDefaults: boolean
   readonly unresolvedDimensions: readonly InsDimension[]
   readonly territoryPin: string | null
   readonly onSearchChange: (patch: DetailSearchPatch) => void
@@ -676,7 +727,8 @@ function DatasetDetailBody({
                     <DetailTier0Hero
                       latest={latest}
                       matchChip={
-                        latest.matchStrategy === 'REPRESENTATIVE_FALLBACK'
+                        latest.matchStrategy === 'REPRESENTATIVE_FALLBACK' ||
+                        representativeDefaults
                           ? 'representative'
                           : null
                       }
@@ -720,9 +772,10 @@ function DatasetDetailBody({
                     resolvedClassifications: [],
                   }}
                   matchChip={
-                    latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
-                    search.clasificari === undefined &&
-                    search.unitate === undefined
+                    (latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
+                      search.clasificari === undefined &&
+                      search.unitate === undefined) ||
+                    representativeDefaults
                       ? 'representative'
                       : null
                   }

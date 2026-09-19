@@ -1,16 +1,22 @@
 import { describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { render, screen } from '@/test/test-utils'
-import type { InsDatasetDetails, InsDimensionValue } from '@/schemas/ins'
+import type { InsDatasetDetails } from '@/schemas/ins'
 import { DetailScopeSentence } from './detail-scope-sentence'
 
-vi.mock('./detail-dimension-combobox', () => ({
-  DetailDimensionCombobox: ({
+/**
+ * The picker is stubbed down to one button that reports a pick. Both forms
+ * are stubbed: a desktop chip opens the panel directly, the phone sheet opens
+ * the labelled field. `vi.hoisted` because `vi.mock` factories run before the
+ * module body.
+ */
+const { pickerStub } = vi.hoisted(() => ({
+  pickerStub: ({
     dimensionIndex,
     onSelect,
   }: {
     dimensionIndex: number
-    onSelect: (row: InsDimensionValue) => void
+    onSelect: (row: unknown) => void
   }) => (
     <button
       onClick={() =>
@@ -26,6 +32,13 @@ vi.mock('./detail-dimension-combobox', () => ({
       Pick {dimensionIndex}
     </button>
   ),
+}))
+
+vi.mock('./detail-dimension-combobox', () => ({
+  DetailDimensionCombobox: pickerStub,
+}))
+vi.mock('./detail-dimension-panel', () => ({
+  DetailDimensionPanel: pickerStub,
 }))
 const dataset: InsDatasetDetails = {
   id: 'TEST',
