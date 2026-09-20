@@ -1124,7 +1124,7 @@ msgstr "O nouă versiune a aplicației este disponibilă. Vă rugăm să reînc�
 
 #: src/features/ngos/profile/profile-page.tsx:28
 msgid "A profile is available only when the current published registry has an accepted CUI link. A historical registry record may still be available."
-msgstr ""
+msgstr "Profilul este disponibil doar dacă registrul publicat în prezent conține o asociere acceptată cu acest CUI. O înregistrare istorică din registru poate fi în continuare disponibilă."
 
 #: src/features/procurement/components/procurement-info-sheet.tsx:31
 msgid "A public tender: the notice, the evaluation and the award are tracked as one procedure."
@@ -2339,7 +2339,7 @@ msgstr "ANAF nu returnează situații financiare pentru această companie în in
 
 #: src/features/ngos/profile/profile-page.tsx:123
 msgid "ANAF fiscal observation"
-msgstr ""
+msgstr "Date fiscale ANAF"
 
 #: src/features/private-companies/lib/profile-display.ts:23
 msgid "ANAF public fiscal data"
@@ -2360,7 +2360,7 @@ msgstr "ANAF nu a returnat ani de situații financiare pentru această companie 
 
 #: src/features/ngos/profile/profile-page.tsx:167
 msgid "ANAF source service"
-msgstr ""
+msgstr "Serviciul ANAF — sursa datelor"
 
 #: src/features/legal/components/legislation-tab-nav.tsx:48
 msgid "Analiză"
@@ -3238,7 +3238,7 @@ msgstr "Explorează cheltuielile pe CPV din clasamentele de mai sus."
 
 #: src/features/ngos/profile/profile-page.tsx:17
 msgid "Browse the NGO registry"
-msgstr ""
+msgstr "Consultă registrul ONG-urilor"
 
 #: src/features/ngos/components/ngo-landing-page.tsx:164
 msgid "Browse the supplied Ministry of Justice export, including records without a CUI."
@@ -3481,7 +3481,7 @@ msgstr "Cod CAEN"
 
 #: src/features/ngos/profile/profile-page.tsx:145
 msgid "CAEN revision"
-msgstr ""
+msgstr "Revizie CAEN"
 
 #: src/features/procurement/components/procurement-institution-signals.tsx:166
 msgid "Calculat pe contractele cu lanț de modificări verificabil."
@@ -3699,7 +3699,7 @@ msgstr "captura zilei nu a fost încă finalizată după încheiere"
 
 #: src/features/ngos/profile/profile-page.tsx:147
 msgid "Captured on"
-msgstr ""
+msgstr "Preluat la"
 
 #: src/features/parliament/components/member-interventii-tab.tsx:252
 msgid "Cardurile afișează rezumatul fiecărei luări de cuvânt; transcrierea completă apare acolo unde a fost încărcată din stenogramă. Acolo unde intervenția are o poziție dovedită în stenogramă, cardul duce la locul ei exact în textul integral al ședinței."
@@ -6913,7 +6913,7 @@ msgstr "Declarate inactive fiscal de ANAF"
 
 #: src/features/ngos/profile/profile-page.tsx:140
 msgid "Declared fiscally inactive"
-msgstr ""
+msgstr "Declarat inactiv fiscal"
 
 #: src/features/public-investments/components/HowToReadData.tsx:62
 #: src/features/public-investments/components/ObjectiveListRow.tsx:59
@@ -9729,7 +9729,7 @@ msgstr "Situațiile financiare sunt disponibile doar când compania apare în da
 
 #: src/features/ngos/profile/profile-page.tsx:178
 msgid "Financial statements, services, accreditations and funding are not released on this profile yet. Their absence here does not mean there are none."
-msgstr ""
+msgstr "Situațiile financiare, serviciile, acreditările și finanțările nu sunt încă publicate în acest profil. Absența lor aici nu înseamnă că nu există."
 
 #: src/components/entities/EntityFinancialTrends.tsx:321
 msgid "Financial Trends"
@@ -9865,7 +9865,7 @@ msgstr "Cod fiscal (CIF)"
 
 #: src/features/ngos/profile/profile-page.tsx:156
 msgid "Fiscal inactivity is not legal dissolution. These values describe the source's response for the query date."
-msgstr ""
+msgstr "Inactivitatea fiscală nu înseamnă dizolvarea persoanei juridice. Aceste valori reflectă răspunsul sursei pentru data interogării."
 
 #: src/features/legal/lib/legal-domains.ts:37
 msgid "Fiscal și bugetar"
@@ -12541,7 +12541,7 @@ msgstr ""
 
 #: src/features/ngos/profile/profile-page.tsx:82
 msgid "Linked by an accepted CUI in the current registry. Each source retains its own observations."
-msgstr ""
+msgstr "Asociere acceptată prin CUI în registrul curent. Datele fiecărei surse sunt prezentate separat."
 
 #: src/features/ngos/registry/registry-page.tsx:486
 msgid "Linked CUI"
@@ -13196,7 +13196,7 @@ msgstr "Agregat principal"
 
 #: src/features/ngos/profile/profile-page.tsx:144
 msgid "Main CAEN code"
-msgstr ""
+msgstr "Cod CAEN principal"
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:1037
 msgid "Main Categories"
@@ -14077,7 +14077,7 @@ msgstr "Mai mult"
 
 #: src/features/ngos/profile/profile-page.tsx:175
 msgid "More sources are being prepared"
-msgstr ""
+msgstr "Pregătim date din alte surse"
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:143
 msgid "Most people think they know, but the reality often surprises. Ready to test your intuition?"
@@ -14527,11 +14527,11 @@ msgstr "Date despre ONG-uri"
 #: src/features/ngos/profile/profile-page.tsx:75
 #: src/routes/ong-uri.$cui.tsx:24
 msgid "NGO profile"
-msgstr ""
+msgstr "Profil ONG"
 
 #: src/features/ngos/profile/profile-page.tsx:43
 msgid "NGO profile temporarily unavailable"
-msgstr ""
+msgstr "Profilul ONG-ului este temporar indisponibil"
 
 #: src/features/ngos/registry/registry-page.tsx:188
 #: src/features/ngos/registry/registry-page.tsx:421
@@ -14907,7 +14907,7 @@ msgstr "Niciun județ nu se potrivește."
 
 #: src/features/ngos/profile/profile-page.tsx:25
 msgid "No current registry link for this CUI"
-msgstr ""
+msgstr "Nu există o asociere în registrul curent pentru acest CUI"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:511
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:34
@@ -15224,7 +15224,7 @@ msgstr "Nu sunt disponibile seturi de date publice."
 
 #: src/features/ngos/profile/profile-page.tsx:129
 msgid "No public fiscal observation is available for this CUI yet. This is not a confirmed negative result."
-msgstr ""
+msgstr "Nu sunt încă disponibile date fiscale publice pentru acest CUI. Lipsa datelor nu reprezintă un rezultat negativ confirmat."
 
 #: src/features/statistics/components/native-entity-ins-view.tsx:340
 msgid "No published datasets currently cover this area. You can still search the general catalog."
@@ -18494,7 +18494,7 @@ msgstr "Interogare"
 
 #: src/features/ngos/profile/profile-page.tsx:146
 msgid "Query date"
-msgstr ""
+msgstr "Data interogării"
 
 #: src/components/footer/ChatFab.tsx:15
 msgid "Quick actions"
@@ -19022,7 +19022,7 @@ msgstr "Număr de registru"
 
 #: src/features/ngos/profile/profile-page.tsx:92
 msgid "Registry observations"
-msgstr ""
+msgstr "Înregistrări în registru"
 
 #: src/routes/ong-uri.$cui.tsx:28
 msgid "Registry observations and dated fiscal information linked by CUI."
@@ -21699,7 +21699,7 @@ msgstr "Ecran împărțit"
 
 #: src/features/ngos/profile/profile-page.tsx:143
 msgid "Split VAT"
-msgstr ""
+msgstr "Plată defalcată a TVA"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:119
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
@@ -22897,7 +22897,7 @@ msgstr "Datele nu au putut fi încărcate"
 
 #: src/features/ngos/profile/profile-page.tsx:46
 msgid "The data could not be loaded. Please try again later."
-msgstr ""
+msgstr "Datele nu au putut fi încărcate. Încearcă din nou mai târziu."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:597
 msgid "The dataset copy link is invalid or expired. Starting from an empty draft instead."
@@ -25317,7 +25317,7 @@ msgstr "Vizualizează detaliile și starea hărții."
 
 #: src/features/ngos/registry/registry-page.tsx:494
 msgid "View NGO profile for this CUI"
-msgstr ""
+msgstr "Vezi profilul ONG-ului pentru acest CUI"
 
 #: src/features/procurement/components/procurement-ranking-table.tsx:204
 msgid "View records"
