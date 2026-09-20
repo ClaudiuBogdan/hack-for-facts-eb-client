@@ -647,6 +647,28 @@ definition and numbered notes under the figure. It deliberately does not take
 and the table keeps its own scroller, so SOM101F's 1,500-word definition and
 POP107D's formula block land at the foot of the page instead of dwarfing it.
 
+Everything the page knows ABOUT the dataset sits under the title, once. The
+figure used to close on a source strip naming the matrix code and the source
+that the line under the title already named — the same fact stated twice, 500px
+apart, with the refresh date reachable only by scrolling past the chart. The
+strip is gone and its facts moved up, ordered identity → placement →
+provenance:
+
+```
+ACC101B   10. CONDITII DE MUNCA   Sursă: INS Tempo ↗, actualizată 5 noiembrie 2025
+```
+
+Cadence and span are NOT in that line. The rail states both a hundred and fifty
+pixels to the left, and „Interval de ani" is the control you change them with —
+restating a control's current value as static text beside it is the same
+duplication the footer was. Every fact on the page now appears once.
+
+„Sursă" and the way back are one item, because the source's name IS the link:
+a standalone „INS Tempo" beside „Deschide pe INS Tempo" said the same words
+twice. The group stays intact when the line wraps, which on a phone puts the
+whole provenance statement on its own row. Spacing separates the items, never
+„·" (§6f). The link keeps the 24px hit area WCAG 2.2 AA 2.5.8 asks for.
+
 Its reading order is figure → what it says → the notes → the table. The table
 is last on purpose: it is the appendix a reader consults once the figure and
 the notes have told them what they are looking at, and 197 rows sitting between

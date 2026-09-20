@@ -161,19 +161,57 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
       className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6"
       data-dev-marker={PROTOTYPE_MARKER}
     >
+      {/*
+        Everything the page knows ABOUT the dataset lives here, once.
+        The figure used to close on a source strip repeating the matrix code
+        and the source that the line under the title already named — two
+        statements of the same fact, 500px apart, and the reader had to scroll
+        past the chart to learn when INS last refreshed it.
+
+        Ordered identity → placement → provenance:
+
+          ACC101B · 10. CONDITII DE MUNCA · Sursă: INS Tempo, actualizată 5 noiembrie 2025
+
+        Cadence and span are NOT here. The rail states both a hundred and fifty
+        pixels to the left, and „Interval de ani" is the control you change
+        them with — restating a control's current value as static text beside
+        it is the same duplication the footer was.
+
+        „Sursă" and the way back are ONE item, because the source's name is
+        the link — a separate „INS Tempo" beside „Deschide pe INS Tempo" said
+        the same words twice. Spacing separates the items, never „·": a bullet
+        between flex items has nowhere good to go when the line wraps (§6f).
+      */}
       <header className="border-b border-border/70 pb-4">
         <h1 className="text-balance text-xl font-semibold tracking-tight">
           {dataset.name_ro ?? dataset.code}
         </h1>
-        <p className={cn(statisticsTheme.metaLine, 'mt-2')}>
+        <p className={cn(statisticsTheme.metaLine, 'mt-2.5')}>
           <span className={statisticsTheme.provenanceChip}>{dataset.code}</span>
-          <span>INS Tempo</span>
-          {cadence ? <span>{cadence}</span> : null}
           {dataset.context_name_ro ? (
             <span>{dataset.context_name_ro}</span>
           ) : null}
           <span className="tabular-nums">
-            {span ? `${span.from}–${span.to}` : null}
+            Sursă:{' '}
+            <a
+              href={insTempoDatasetUrl(dataset.code, 'ro')}
+              target="_blank"
+              rel="noreferrer"
+              // Visibly the source's name; announced as the action it is.
+              // „INS Tempo" read out of context says where the link goes but
+              // not that it goes anywhere, and the „Sursă:" that supplies that
+              // context sits outside the link.
+              aria-label={`Deschide matricea ${dataset.code} pe INS Tempo (se deschide într-un tab nou)`}
+              // `-mx-1 px-1 py-1` is the hit area: a 16px line of text is
+              // under WCAG 2.2 AA's 24px minimum target (2.5.8).
+              className="-mx-1 inline-flex items-center gap-1 rounded-sm px-1 py-1 font-medium underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              INS Tempo
+              <ExternalLink className="h-3 w-3" aria-hidden />
+            </a>
+            {dataset.source_last_update
+              ? `, actualizată ${formatSourceDate(dataset.source_last_update)}`
+              : null}
           </span>
         </p>
       </header>
@@ -291,7 +329,7 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
             </div>
 
             {chart ? (
-              <div className="px-2 pb-4 pt-4 md:px-4">
+              <div className="px-2 pb-5 pt-4 md:px-4">
                 <PrototypeChart
                   series={chart}
                   unitLabel={unitLabel}
@@ -303,30 +341,6 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
                 />
               </div>
             ) : null}
-
-            <div className={statisticsTheme.bandFooter}>
-              <p className={statisticsTheme.metaLine}>
-                <span>Sursă: INS Tempo</span>
-                <span>
-                  matricea{' '}
-                  <span className="font-mono tabular-nums">{dataset.code}</span>
-                </span>
-                {dataset.source_last_update ? (
-                  <span className="tabular-nums">
-                    actualizată {formatSourceDate(dataset.source_last_update)}
-                  </span>
-                ) : null}
-                <a
-                  href={insTempoDatasetUrl(dataset.code, 'ro')}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="-mx-1 inline-flex items-center gap-1 rounded-sm px-1 py-1 font-medium underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  Deschide pe INS Tempo
-                  <ExternalLink className="h-3 w-3" aria-hidden />
-                </a>
-              </p>
-            </div>
           </section>
 
           {/* What the shape says, then what it measures. Both read AFTER the
