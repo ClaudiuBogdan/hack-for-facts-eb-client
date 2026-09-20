@@ -620,6 +620,65 @@ the tie-break compared the *sum* of the member codes, which makes {D0:1,D1:4}
 and {D0:2,D1:3} equal; it compares the ordered tuple and the unit now, so there
 is a total order and no dependence on response order.
 
+## 6h. Four designs for the detail page, side by side (2026-09-20)
+
+Open, not decided. The prototype is `statistics/dataset-detail`; each variant is
+a deep link, and `?cod=` points any of them at another matrix:
+
+| Variant | Link | Argues |
+|---|---|---|
+| Editorial | `/development/statistics/dataset-detail?v=editorial` | The figure means nothing without its scale. Value, the sentence that reads it and two comparisons come first; the scope moves BELOW the chart as its caption. |
+| Workbench | `?v=workbench` | The axes are a standing left rail, the data column is only data, the table is open. Built for the second visit. |
+| Brief | `?v=brief` | Nothing is collapsed: a five-tile stat band, a full-width annotated figure, and the former accordion rows as two readable columns. |
+| Report | `?v=report` | A published statistical release — title block, lede, numbered figure with its source note underneath, numbered table, numbered notes. |
+
+All four call `useDatasetPrototypeModel`, which runs the feature's real hooks
+against one fixed scope and reuses `chooseRepresentativeCell`, so the panes
+differ in layout and in what they choose to say — never in their numbers.
+
+What the panes already settled, whichever wins:
+
+- **Summary facts earn their space.** Every variant grew peak / trough / mean /
+  change because „10" alone says nothing. Today's page shows the value and the
+  chart and never connects them.
+- **Mark the extremes on the figure.** A 33-point line whose peak and trough
+  are the point of the page should not need hovering to locate them.
+- **A figure that is capped must say so.** `buildTimeSeries` caps the plot at
+  200 periods. SOM101F's peak (february 2010) therefore falls outside its own
+  figure, so an extreme the chart does not contain is NOT annotated, and a note
+  under the plot says the reperele cover the whole series. Without it a summary
+  silently describes a wider series than the figure below it.
+- **The masthead is ours.** `report`'s first pass set „Institutul Național de
+  Statistică" as the byline because it looked like a release. It was corrected
+  the same day: this page is published by Transparenta.eu over INS data, and a
+  document wearing the institute's name claims an authorship it does not have
+  (§Data Trust — the source is named as a source, never as the publisher).
+- **A scope line is read off the rows, never assumed.** All four panes first
+  printed a literal „TOTAL" for the classification axis. ADM101A has no Total
+  member — its representative cell is „Municipii" — so three of the four were
+  stating something false about the series on screen. The labels now come from
+  the shown rows' own classifications, and the unpinned national case is named
+  „România" rather than INS's own row name („TOTAL"), which says nothing under
+  the heading „Teritoriu".
+- **A reference that cannot be drawn is withheld, not lost.** `workbench`'s
+  mean line is a whole-series figure against a possibly-capped plot; when it
+  falls outside the domain Recharts discards it silently. It is now tested
+  against the effective domain first — including the `[0, 'auto']` baseline
+  case, where the ceiling is the highest plotted value — and simply not drawn
+  when it does not belong there.
+
+What the panes exposed as costs:
+
+- `brief`'s „nothing is collapsed" holds for ACC101B's three-sentence
+  definition and fails on SOM101F, whose published definition runs ~1,500 words
+  and dwarfs the table beside it. A stat band without a disclosure ladder needs
+  a measure cap somewhere.
+- `workbench` at `max-w-7xl` overflows the app shell at 1440px with the sidebar
+  open; the column is `max-w-6xl`, like every other page in the domain.
+- `report` gives up density entirely. Its figure is set to a reading measure,
+  which is the right call for a document and the wrong one for 197 monthly
+  points.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):
