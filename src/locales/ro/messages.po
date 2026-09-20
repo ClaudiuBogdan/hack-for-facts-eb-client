@@ -15458,8 +15458,6 @@ msgstr "Nu este legată de un contract în datele sursă — nu are pagină de d
 #: src/features/ngos/profile/profile-page.tsx:61
 #: src/features/ngos/profile/profile-page.tsx:64
 #: src/features/ngos/profile/profile-page.tsx:112
-#: src/features/ngos/profile/profile-page.tsx:144
-#: src/features/ngos/profile/profile-page.tsx:145
 #: src/features/ngos/registry/registry-page.tsx:404
 #: src/features/ngos/registry/registry-page.tsx:412
 #: src/features/ngos/registry/registry-page.tsx:472
@@ -24258,6 +24256,8 @@ msgstr "indisponibil"
 #: src/components/entities/views/ins-stats-view.formatters.ts:64
 #: src/components/entities/views/ins-stats-view.presentation.tsx:542
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:102
+#: src/features/ngos/profile/profile-page.tsx:144
+#: src/features/ngos/profile/profile-page.tsx:145
 msgid "Unavailable"
 msgstr "Indisponibil"
 

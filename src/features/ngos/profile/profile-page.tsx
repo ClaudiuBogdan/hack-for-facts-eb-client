@@ -141,8 +141,8 @@ export function NgoLiveProfilePage({
                     booleanLabel(fiscal.declaredFiscallyInactive),
                   ],
                   [t`Split VAT`, booleanLabel(fiscal.splitVat)],
-                  [t`Main CAEN code`, fiscal.mainCaenCode ?? t`Not provided`],
-                  [t`CAEN revision`, fiscal.mainCaenRev ?? t`Not provided`],
+                  [t`Main CAEN code`, fiscal.mainCaenCode ?? t`Unavailable`],
+                  [t`CAEN revision`, fiscal.mainCaenRev ?? t`Unavailable`],
                   [t`Query date`, date(fiscal.queryDate)],
                   [t`Captured on`, date(fiscal.capturedAt)],
                 ].map(([label, value]) => (
