@@ -341,7 +341,7 @@ export function NgoRegistryPage({
               >
                 <div className="min-w-0 space-y-1">
                   <h2 className="break-words font-semibold text-primary group-hover:underline">
-                    {node.name}
+                    {node.nameWithheld ? <Trans>Name pending verification</Trans> : node.name}
                   </h2>
                   <p className="text-sm">
                     {node.registryNumber} · {node.legalForm} ·{" "}
@@ -416,7 +416,7 @@ export function NgoRegistryDetail({
         >
           <Trans>NGO registry</Trans>
         </Link>
-        <h1 className="break-words text-2xl font-semibold">{record.name}</h1>
+        <h1 className="break-words text-2xl font-semibold">{record.nameWithheld ? <Trans>Name pending verification</Trans> : record.name}</h1>
         <p className="text-muted-foreground">
           {record.registryNumber} · {record.legalForm}
         </p>

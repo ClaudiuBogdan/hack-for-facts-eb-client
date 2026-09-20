@@ -28,6 +28,7 @@ const record = {
   category: "association",
   legalForm: "Asociație",
   name: "EXEMPLU",
+  nameWithheld: false,
   court: "Judecatoria TEST",
   sourceRegistryStatus: "Radiat",
   county: null,
@@ -101,6 +102,11 @@ describe("RNONG client contract", () => {
     expect(result.ngoRegistryRecord).not.toHaveProperty("purpose");
     expect(result.ngoRegistryRecord).not.toHaveProperty("attrs");
     expect(result.ngoRegistryRecord?.snapshot).not.toHaveProperty("objectKey");
+  });
+  it("keeps a withheld-name record and its safe source identifiers", () => {
+    const result = registryDetailSchema.parse({ ngoRegistryRecord: { ...record, name: "[name pending verification]", nameWithheld: true } });
+    expect(result.ngoRegistryRecord?.nameWithheld).toBe(true);
+    expect(result.ngoRegistryRecord?.registryNumber).toBe("1/A/2001");
   });
   it("fails rather than treating an invalid or missing response as an empty registry", () => {
     expect(() => registryPageSchema.parse({})).toThrow();

@@ -25881,3 +25881,8 @@ msgstr "Această pagină folosește un export de registru furnizat. Caracterul c
 #: src/features/ngos/registry/registry-page.tsx:428
 msgid "This record belongs to an earlier snapshot"
 msgstr "Această înregistrare aparține unui instantaneu anterior"
+
+#: src/features/ngos/registry/registry-page.tsx:344
+#: src/features/ngos/registry/registry-page.tsx:419
+msgid "Name pending verification"
+msgstr "Denumire în curs de verificare"

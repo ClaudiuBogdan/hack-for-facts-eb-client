@@ -25885,3 +25885,8 @@ msgstr "This page uses a supplied registry export. National completeness has not
 #: src/features/ngos/registry/registry-page.tsx:428
 msgid "This record belongs to an earlier snapshot"
 msgstr "This record belongs to an earlier snapshot"
+
+#: src/features/ngos/registry/registry-page.tsx:344
+#: src/features/ngos/registry/registry-page.tsx:419
+msgid "Name pending verification"
+msgstr "Name pending verification"

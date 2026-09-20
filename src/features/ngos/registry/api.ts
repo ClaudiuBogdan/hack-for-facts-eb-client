@@ -23,6 +23,7 @@ const recordSchema = z.object({
   category: z.string(),
   legalForm: z.string(),
   name: z.string(),
+  nameWithheld: z.boolean(),
   court: z.string(),
   sourceRegistryStatus: z.string(),
   county: z.string().nullable(),
@@ -54,7 +55,7 @@ export type RegistryPage = z.infer<
 
 const snapshotFields =
   "id sourceDeclaredDate importedAt capturedAt refreshOverdue acceptedAt recordCount isCurrent sourceUrl coverageBasis nationalCompleteness";
-const recordFields = `id sourceRowNumber registryNumber specialRegistryNumber sourceRegistrationDate category legalForm name court sourceRegistryStatus county locality sourceCui linkedOrganizationCui isBranch sourceReportsPublicUtility snapshot { ${snapshotFields} }`;
+const recordFields = `id sourceRowNumber registryNumber specialRegistryNumber sourceRegistrationDate category legalForm name nameWithheld court sourceRegistryStatus county locality sourceCui linkedOrganizationCui isBranch sourceReportsPublicUtility snapshot { ${snapshotFields} }`;
 export const REGISTRY_LIST_QUERY = `query NgoRegistryRecords($filter: NgoRegistryFilter, $first: Int!, $after: String) {
   ngoRegistryRecords(filter: $filter, first: $first, after: $after) {
     edges { cursor node { ${recordFields} } } pageInfo { hasNextPage endCursor } snapshot { ${snapshotFields} }
