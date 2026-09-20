@@ -1,5 +1,10 @@
 import { useId, type ReactNode } from 'react'
-import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react'
+import {
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  ChevronDown,
+} from 'lucide-react'
 import {
   Area,
   ComposedChart,
@@ -45,6 +50,20 @@ const SURFACE = 'hsl(var(--background))'
 export function formatValue(value: number): string {
   return new Intl.NumberFormat(activeNumberLocale(), {
     maximumFractionDigits: 2,
+  }).format(value)
+}
+
+/**
+ * A DERIVED figure — a mean — at a precision the source justifies.
+ *
+ * `formatValue` prints two decimals, which is right for a value INS published
+ * and wrong for one we computed: a population mean came out as
+ * „22.511.356,94", claiming a hundredth of a person across 35 censuses. Past a
+ * thousand the decimals are noise, so they go.
+ */
+export function formatDerived(value: number): string {
+  return new Intl.NumberFormat(activeNumberLocale(), {
+    maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2,
   }).format(value)
 }
 
@@ -128,8 +147,15 @@ type ChartProps = {
   readonly series: TimeSeries
   readonly unitLabel: string | null
   readonly stats: SeriesStats
-  /** `plain` is today's chart; the others are what the variants propose. */
-  readonly treatment?: 'plain' | 'annotated' | 'area'
+  /**
+   * Three independent treatments, not one enum. The combined variant asks for
+   * all three at once, which a single `treatment` prop could not express
+   * without growing a name per combination.
+   */
+  /** Tint the area under the line. */
+  readonly area?: boolean
+  /** Mark the peak, the trough and the latest point, with their values. */
+  readonly annotate?: boolean
   /** Draw the series mean as a horizontal reference. */
   readonly mean?: boolean
   readonly height?: string
@@ -151,7 +177,8 @@ export function PrototypeChart({
   series,
   unitLabel,
   stats,
-  treatment = 'plain',
+  area = false,
+  annotate = false,
   mean = false,
   height = 'h-72',
   className,
@@ -165,8 +192,23 @@ export function PrototypeChart({
     notation: 'compact',
     maximumFractionDigits: 1,
   })
-  const annotated = treatment === 'annotated'
   const dense = series.points.length > 60
+
+  /**
+   * The right gutter has to hold the end label, whatever it says.
+   *
+   * A fixed 44px fits „10" and truncates „21.646.220" to „21.64…" — the one
+   * number on the chart a reader is most likely to be looking for. Recharts
+   * gives no measured text, so this estimates from the label's own length at
+   * the 12px the label is drawn in.
+   */
+  const endLabel =
+    annotate && stats.latest ? formatValue(stats.latest.value) : ''
+  // Capped as well as floored: a pathologically long label must not eat the
+  // plot it is labelling. Past the cap it truncates, which is the lesser loss.
+  const rightGutter = annotate
+    ? Math.min(120, Math.max(24, Math.round(endLabel.length * 7.2) + 14))
+    : 16
 
   /**
    * Where to hang an extreme's label — and whether to hang one at all.
@@ -197,9 +239,18 @@ export function PrototypeChart({
   const peakPosition = stats.peak
     ? labelPosition(stats.peak.period, 'top')
     : null
+  /**
+   * An edge label is drawn on the dot's own baseline, which for POP107D's
+   * first-point peak laid „maxim 23.143.860" straight across the line's next
+   * few points. Nudged clear of the mark, away from the series.
+   */
+  const peakNudge =
+    peakPosition === 'left' || peakPosition === 'right' ? -12 : 0
   const troughPosition = stats.trough
     ? labelPosition(stats.trough.period, 'bottom')
     : null
+  const troughNudge =
+    troughPosition === 'left' || troughPosition === 'right' ? 12 : 0
   /** The end dot needs the same membership test — see `labelPosition`. */
   const latestOnChart =
     stats.latest !== null &&
@@ -243,9 +294,14 @@ export function PrototypeChart({
       <SafeResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={series.points as TimeSeriesPoint[]}
-          margin={{ top: annotated ? 24 : 8, right: annotated ? 44 : 16, bottom: 0, left: 8 }}
+          margin={{
+            top: annotate ? 24 : 8,
+            right: rightGutter,
+            bottom: 0,
+            left: 8,
+          }}
         >
-          {treatment === 'area' ? (
+          {area ? (
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={LINE} stopOpacity={0.18} />
@@ -283,16 +339,19 @@ export function PrototypeChart({
               stroke="hsl(var(--muted-foreground))"
               strokeDasharray="4 4"
               strokeWidth={1}
+              // Anchored right, not left. A series that falls leaves its right
+              // side empty, while the left is where the line and the area fill
+              // are busiest — „medie 31,3" set there sat on top of both.
               label={{
-                value: `medie ${formatValue(stats.mean)}`,
-                position: 'insideTopLeft',
+                value: `medie ${formatDerived(stats.mean)}`,
+                position: 'insideTopRight',
                 fill: 'hsl(var(--muted-foreground))',
                 fontSize: 11,
               }}
             />
           ) : null}
 
-          {treatment === 'area' ? (
+          {area ? (
             <Area
               type="linear"
               dataKey="value"
@@ -315,7 +374,7 @@ export function PrototypeChart({
             activeDot={{ r: 5, strokeWidth: 2, stroke: SURFACE }}
           />
 
-          {annotated && stats.peak && peakPosition ? (
+          {annotate && stats.peak && peakPosition ? (
             <ReferenceDot
               x={stats.peak.period}
               y={stats.peak.value}
@@ -327,12 +386,13 @@ export function PrototypeChart({
               label={{
                 value: `maxim ${formatValue(stats.peak.value)}`,
                 position: peakPosition,
+                dy: peakNudge,
                 fill: 'hsl(var(--foreground))',
                 fontSize: 11,
               }}
             />
           ) : null}
-          {annotated && stats.trough && troughPosition && !stats.latestIsTrough ? (
+          {annotate && stats.trough && troughPosition && !stats.latestIsTrough ? (
             <ReferenceDot
               x={stats.trough.period}
               y={stats.trough.value}
@@ -344,12 +404,13 @@ export function PrototypeChart({
               label={{
                 value: `minim ${formatValue(stats.trough.value)}`,
                 position: troughPosition,
+                dy: troughNudge,
                 fill: 'hsl(var(--foreground))',
                 fontSize: 11,
               }}
             />
           ) : null}
-          {annotated && stats.latest && latestOnChart ? (
+          {annotate && stats.latest && latestOnChart ? (
             <ReferenceDot
               x={stats.latest.period}
               y={stats.latest.value}
@@ -359,7 +420,7 @@ export function PrototypeChart({
               strokeWidth={2}
 
               label={{
-                value: formatValue(stats.latest.value),
+                value: endLabel,
                 position: 'right',
                 fill: 'hsl(var(--foreground))',
                 fontSize: 12,
@@ -444,6 +505,114 @@ function ChartTooltip({
         </p>
       ) : null}
     </div>
+  )
+}
+
+
+// ---------------------------------------------------------------------------
+// The selection rail
+// ---------------------------------------------------------------------------
+
+/**
+ * One axis in the standing rail: its name, its current value, and — when the
+ * axis has something to choose — a count and a chevron.
+ *
+ * An axis with a single member renders as text, not as a button. Given the
+ * same affordance as its neighbours it read as a control that did nothing when
+ * pressed, which is the same rule `statisticsTheme.scopeChipStatic` encodes on
+ * the production page.
+ */
+export function RailControl({
+  label,
+  value,
+  fixed,
+  count,
+}: {
+  readonly label: string
+  readonly value: string
+  readonly fixed?: boolean
+  readonly count?: number | null
+}) {
+  const content = (
+    <>
+      <span className="flex min-w-0 flex-col items-start">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="mt-0.5 w-full truncate text-left text-sm font-medium">
+          {value}
+        </span>
+      </span>
+      {fixed ? null : (
+        <span className="ml-2 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+          {count ? <span className="tabular-nums">{count}</span> : null}
+          <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+        </span>
+      )}
+    </>
+  )
+
+  if (fixed) {
+    return (
+      <div className="flex items-center justify-between px-4 py-2.5">
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+    >
+      {content}
+    </button>
+  )
+}
+
+/** One summary fact beside the hero: the number, and the period it belongs to. */
+export function RailFact({
+  label,
+  point,
+}: {
+  readonly label: string
+  readonly point: { readonly value: number; readonly period: string } | null
+}) {
+  return (
+    <div>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium tabular-nums">
+        {point ? formatValue(point.value) : '—'}
+        {point ? (
+          <span className="ml-1 font-normal text-muted-foreground">
+            {formatHubPeriod(point.period)}
+          </span>
+        ) : null}
+      </dd>
+    </div>
+  )
+}
+
+/**
+ * A numbered document section — methodology, sources, the institute's own
+ * notes. A number is cheaper to reference than a chevron is to open, and these
+ * are the parts of the page a reader cites rather than browses.
+ */
+export function DocumentNote({
+  index,
+  title,
+  children,
+}: {
+  readonly index: number
+  readonly title: string
+  readonly children: ReactNode
+}) {
+  return (
+    <section>
+      <h3 className="text-sm font-semibold">
+        <span className="tabular-nums text-muted-foreground">{index}.</span>{' '}
+        {title}
+      </h3>
+      <div className="mt-1.5">{children}</div>
+    </section>
   )
 }
 

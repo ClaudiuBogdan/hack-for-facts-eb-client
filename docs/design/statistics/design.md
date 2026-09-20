@@ -627,6 +627,7 @@ a deep link, and `?cod=` points any of them at another matrix:
 
 | Variant | Link | Argues |
 |---|---|---|
+| **Combined** | `?v=combined` | The parts of the other four that survived the comparison — see below. Currently the one to beat. |
 | Editorial | `/development/statistics/dataset-detail?v=editorial` | The figure means nothing without its scale. Value, the sentence that reads it and two comparisons come first; the scope moves BELOW the chart as its caption. |
 | Workbench | `?v=workbench` | The axes are a standing left rail, the data column is only data, the table is open. Built for the second visit. |
 | Brief | `?v=brief` | Nothing is collapsed: a five-tile stat band, a full-width annotated figure, and the former accordion rows as two readable columns. |
@@ -635,6 +636,28 @@ a deep link, and `?cod=` points any of them at another matrix:
 All four call `useDatasetPrototypeModel`, which runs the feature's real hooks
 against one fixed scope and reuses `chooseRepresentativeCell`, so the panes
 differ in layout and in what they choose to say — never in their numbers.
+
+`combined` is `workbench`'s spine — a standing selection rail, a data column
+that never gets pushed down when an axis changes — carrying `workbench`'s own
+opening (the value LARGE with the extremes, mean and count as a fact row on the
+same baseline), `brief`'s marked extremes (the row says what the peak IS, the
+mark says WHERE), `editorial`'s area tint, and `report`'s reading sentence,
+definition and numbered notes under the figure. It deliberately does not take
+`brief`'s uncollapsed prose column: the definition is set to a reading measure
+and the table keeps its own scroller, so SOM101F's 1,500-word definition and
+POP107D's formula block land at the foot of the page instead of dwarfing it.
+
+Three things the combination itself forced:
+
+- The mean's label moved to the right of the plot. A falling series leaves its
+  right side empty, while the left is where the line and the new area tint are
+  busiest — „medie 31,3" set there sat on top of both.
+- The chart's right gutter is sized from the end label. A fixed 44px fits „10"
+  and truncates POP107D's „21.646.220" to „21.64…" — the one number on the
+  figure a reader is most likely looking for.
+- A computed figure prints at a precision the source justifies. The population
+  mean came out as „22.511.356,94", claiming a hundredth of a person across 35
+  observations; past a thousand the decimals are noise.
 
 What the panes already settled, whichever wins:
 

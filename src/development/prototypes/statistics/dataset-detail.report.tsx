@@ -10,6 +10,8 @@ import { periodicityLabel } from '@/features/statistics/lib/periodicity-labels'
 import { statisticsTheme } from '@/features/statistics/lib/statistics-theme'
 import { useDatasetPrototypeModel } from './dataset-detail.data'
 import {
+  DocumentNote,
+  formatDerived,
   formatValue,
   PROTOTYPE_MARKER,
   PrototypeChart,
@@ -101,7 +103,6 @@ export function DatasetDetailReport({ code }: { readonly code: string }) {
               series={chart}
               unitLabel={unitLabel}
               stats={stats}
-              treatment="plain"
               height="h-72"
             />
           </div>
@@ -156,7 +157,7 @@ export function DatasetDetailReport({ code }: { readonly code: string }) {
           <ReportFact
             term="Media perioadei"
             detail={span ? `${span.from}–${span.to}` : null}
-            value={stats.mean === null ? '—' : formatValue(stats.mean)}
+            value={stats.mean === null ? '—' : formatDerived(stats.mean)}
           />
           <ReportFact
             term="Observații"
@@ -183,29 +184,29 @@ export function DatasetDetailReport({ code }: { readonly code: string }) {
       <section className="mt-10 space-y-6 border-t border-border/70 pt-6">
         <h2 className={statisticsTheme.sectionLabel}>Note</h2>
         {dataset.methodology_ro ? (
-          <ReportNote index={1} title="Metodologie">
+          <DocumentNote index={1} title="Metodologie">
             <PublishedText
               text={dataset.methodology_ro}
               className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
             />
-          </ReportNote>
+          </DocumentNote>
         ) : null}
         {(dataset.data_sources ?? []).length > 0 ? (
-          <ReportNote index={2} title="Surse de date">
+          <DocumentNote index={2} title="Surse de date">
             <ul className="space-y-1 text-sm text-muted-foreground">
               {(dataset.data_sources ?? []).map((source) => (
                 <li key={source.name}>{source.name}</li>
               ))}
             </ul>
-          </ReportNote>
+          </DocumentNote>
         ) : null}
         {dataset.observations_ro ? (
-          <ReportNote index={3} title="Observații INS">
+          <DocumentNote index={3} title="Observații INS">
             <PublishedText
               text={dataset.observations_ro}
               className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground"
             />
-          </ReportNote>
+          </DocumentNote>
         ) : null}
       </section>
 
@@ -250,25 +251,5 @@ function ReportFact({
       </dt>
       <dd className="shrink-0 font-medium tabular-nums">{value}</dd>
     </div>
-  )
-}
-
-function ReportNote({
-  index,
-  title,
-  children,
-}: {
-  readonly index: number
-  readonly title: string
-  readonly children: React.ReactNode
-}) {
-  return (
-    <section>
-      <h3 className="text-sm font-semibold">
-        <span className="tabular-nums text-muted-foreground">{index}.</span>{' '}
-        {title}
-      </h3>
-      <div className="mt-1.5">{children}</div>
-    </section>
   )
 }

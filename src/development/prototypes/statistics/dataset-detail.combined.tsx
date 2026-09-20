@@ -1,50 +1,124 @@
+import type { ReactNode } from 'react'
 import { ArrowRight, Download, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DetailObservationsTable } from '@/features/statistics/components/detail-observations-table'
+import { PublishedText } from '@/features/statistics/components/published-text'
+import { classificationTypeCode } from '@/features/statistics/lib/dataset-selection'
+import { dimensionTypeLabel } from '@/features/statistics/lib/dimension-labels'
 import { formatSourceDate } from '@/features/statistics/lib/format'
 import { formatHubPeriod } from '@/features/statistics/lib/hub-format'
 import { insTempoDatasetUrl } from '@/features/statistics/lib/ins-tempo'
 import { periodicityLabel } from '@/features/statistics/lib/periodicity-labels'
 import { statisticsTheme } from '@/features/statistics/lib/statistics-theme'
-import { classificationTypeCode } from '@/features/statistics/lib/dataset-selection'
-import { dimensionTypeLabel } from '@/features/statistics/lib/dimension-labels'
 import { useDatasetPrototypeModel } from './dataset-detail.data'
 import {
+  DocumentNote,
   formatDerived,
   formatValue,
   PROTOTYPE_MARKER,
+  PrototypeChart,
   RailControl,
   RailFact,
-  PrototypeChart,
-  seriesSentence,
+  seriesReading,
   VariantError,
   VariantSkeleton,
 } from './dataset-detail.parts'
 
 /**
- * Variant „workbench" — the selection is a rail, the data is the page.
+ * Variant „combined" — the parts of the other four that survived the review.
  *
- * The premise: this page is used twice. Once to read a number, and then many
- * times to move around inside the same matrix — another county, another
- * classification, another window. Today every one of those moves goes through
- * a chip row that sits above the figure and pushes it down.
+ * The spine is `workbench`: a standing selection rail on the left, a data
+ * column on the right, so changing one axis never pushes the figure down the
+ * page. Into that column go the pieces the other panes won on:
  *
- * So the axes become a standing left rail: every axis visible at once, each
- * naming its current value, the window and the actions underneath. The right
- * column is nothing but data — figure, then the table, open, because a reader
- * who is comparing selections is reading rows, not chevrons.
+ * - `workbench`'s own opening — the value LARGE, and the series' extremes,
+ *   mean and count as a quiet fact row on the same baseline. The numbers that
+ *   give „10" its scale sit beside it, not three sections below.
+ * - `brief`'s marked extremes. The fact row says what the peak and trough ARE;
+ *   the marks say WHERE they are. Neither answers the other's question.
+ * - `editorial`'s area tint, which reads the line as a quantity rather than as
+ *   a path — right for a count that has a meaningful zero.
+ * - `report`'s reading text and numbered notes. The sentence and the
+ *   definition sit under the figure, where a reader who has seen the shape
+ *   comes looking for what it measures; methodology and the institute's own
+ *   notes are numbered sections rather than a row of chevrons.
+ *
+ * The one thing deliberately NOT combined is `brief`'s „nothing is collapsed"
+ * for the definition column: SOM101F's published definition runs some 1,500
+ * words, so the prose here is measured (`max-w-prose`) and the table keeps its
+ * own scroller instead of setting the page's height.
  */
-export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
+export function DatasetDetailCombined({ code }: { readonly code: string }) {
   const model = useDatasetPrototypeModel(code)
 
   if (model.isLoading) return <VariantSkeleton />
   if (model.isError || !model.dataset) return <VariantError code={code} />
 
   const { dataset, stats, chart, unitLabel, unitWord, span, scope } = model
-  const sentence = seriesSentence(stats, unitWord)
+  const reading = seriesReading(stats, unitWord)
   const cadence = (dataset.periodicity ?? []).map(periodicityLabel).join(', ')
   const axes = (dataset.dimensions ?? []).filter((d) => d.type !== 'TEMPORAL')
+  const sources = dataset.data_sources ?? []
+
+  // Built as a list, then numbered: „2. Surse de date" under no „1." reads as
+  // a section that failed to load rather than as one INS never published.
+  const notes: readonly { readonly title: string; readonly body: ReactNode }[] =
+    [
+      dataset.methodology_ro
+        ? {
+            title: 'Metodologie',
+            body: (
+              <PublishedText
+                text={dataset.methodology_ro}
+                className={cn(statisticsTheme.prose, 'whitespace-pre-line')}
+              />
+            ),
+          }
+        : null,
+      sources.length > 0
+        ? {
+            title: 'Surse de date',
+            body: (
+              <ul className={cn(statisticsTheme.prose, 'space-y-1')}>
+                {sources.map((source) => (
+                  <li key={source.name}>{source.name}</li>
+                ))}
+              </ul>
+            ),
+          }
+        : null,
+      dataset.observations_ro
+        ? {
+            title: 'Observații INS',
+            body: (
+              <PublishedText
+                text={dataset.observations_ro}
+                className={cn(statisticsTheme.prose, 'whitespace-pre-line')}
+              />
+            ),
+          }
+        : null,
+      model.related.length > 0
+        ? {
+            title: `Seturi înrudite (${model.relatedTotalCount ?? model.related.length})`,
+            body: (
+              <ul className="space-y-1">
+                {model.related.slice(0, 6).map((related) => (
+                  <li key={related.code} className="text-sm">
+                    <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                      {related.code}
+                    </span>{' '}
+                    <span className="text-muted-foreground">
+                      {related.nameRo}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ),
+          }
+        : null,
+    ].filter((note) => note !== null)
 
   return (
     <div
@@ -59,7 +133,9 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
           <span className={statisticsTheme.provenanceChip}>{dataset.code}</span>
           <span>INS Tempo</span>
           {cadence ? <span>{cadence}</span> : null}
-          {dataset.context_name_ro ? <span>{dataset.context_name_ro}</span> : null}
+          {dataset.context_name_ro ? (
+            <span>{dataset.context_name_ro}</span>
+          ) : null}
           <span className="tabular-nums">
             {span ? `${span.from}–${span.to}` : null}
           </span>
@@ -67,8 +143,8 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
       </header>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
-        {/* The rail. Sticky, so the axes stay reachable while the table
-            scrolls — the move this layout exists to make cheap. */}
+        {/* Sticky, so the axes stay reachable while the table and the notes
+            scroll past — the move this layout exists to make cheap. */}
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <div className={cn(statisticsTheme.band, 'divide-y divide-border/70')}>
             <div className="px-4 py-2.5">
@@ -101,9 +177,7 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
             <RailControl label="Frecvență" value={cadence} fixed />
 
             <div className="px-4 py-3">
-              <p className="text-xs font-medium text-muted-foreground">
-                Interval de ani
-              </p>
+              <p className="text-xs text-muted-foreground">Interval de ani</p>
               <div className="mt-2 flex items-center gap-2">
                 <span className="rounded-md border border-border/70 px-2 py-1 text-sm tabular-nums">
                   {span?.from}
@@ -116,11 +190,19 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
             </div>
 
             <div className="flex flex-col gap-2 px-4 py-3">
-              <Button size="sm" variant="outline" className="w-full justify-start gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start gap-2"
+              >
                 <Download className="h-3.5 w-3.5" aria-hidden />
                 Descarcă CSV
               </Button>
-              <Button size="sm" variant="outline" className="w-full justify-start gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full justify-start gap-2"
+              >
                 Compară teritorii
                 <ArrowRight className="ml-auto h-3.5 w-3.5" aria-hidden />
               </Button>
@@ -133,8 +215,9 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
           </p>
         </aside>
 
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-8">
           <section className={statisticsTheme.band}>
+            {/* The figure and the numbers that scale it, on one baseline. */}
             <div className="flex flex-wrap items-end justify-between gap-4 px-5 pt-5">
               <div>
                 <p className={statisticsTheme.sectionLabel}>Ultima valoare</p>
@@ -176,8 +259,10 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
                   series={chart}
                   unitLabel={unitLabel}
                   stats={stats}
+                  area
+                  annotate
                   mean
-                  height="h-72"
+                  height="h-80"
                 />
               </div>
             ) : null}
@@ -198,7 +283,7 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
                   href={insTempoDatasetUrl(dataset.code, 'ro')}
                   target="_blank"
                   rel="noreferrer"
-                  className="-mx-1 inline-flex items-center gap-1 rounded-sm px-1 py-1 font-medium underline-offset-4 hover:text-foreground hover:underline"
+                  className="-mx-1 inline-flex items-center gap-1 rounded-sm px-1 py-1 font-medium underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Deschide pe INS Tempo
                   <ExternalLink className="h-3 w-3" aria-hidden />
@@ -207,13 +292,23 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
             </div>
           </section>
 
-          {sentence ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {sentence}
-            </p>
-          ) : null}
+          {/* What the shape says, then what it measures. Both read AFTER the
+              figure: a definition before the number is an obstacle, and after
+              it is an answer. */}
+          <section className="space-y-3">
+            {reading ? (
+              <p className="text-base leading-relaxed">
+                <span className="font-semibold tabular-nums">
+                  {reading.figure}
+                </span>
+                {reading.unit ? ` ${reading.unit}` : null} {reading.clause}
+              </p>
+            ) : null}
+            {dataset.definition_ro ? (
+              <p className={statisticsTheme.prose}>{dataset.definition_ro}</p>
+            ) : null}
+          </section>
 
-          {/* Open, not behind a chevron: this column exists to be read. */}
           <section className="space-y-2">
             <div className="flex items-baseline justify-between gap-2">
               <h2 className={statisticsTheme.sectionLabel}>Tabelul seriei</h2>
@@ -221,6 +316,8 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
                 {model.rows.length} rânduri
               </p>
             </div>
+            {/* Its own scroller: a 197-row matrix must not set the height of
+                the page the notes below it live on. */}
             <div className="max-h-[28rem] overflow-auto">
               <DetailObservationsTable
                 observations={model.rows}
@@ -228,6 +325,21 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
               />
             </div>
           </section>
+
+          {notes.length > 0 ? (
+            <section className="space-y-5 border-t border-border/70 pt-6">
+              <h2 className={statisticsTheme.sectionLabel}>Note</h2>
+              {notes.map((note, index) => (
+                <DocumentNote
+                  key={note.title}
+                  index={index + 1}
+                  title={note.title}
+                >
+                  {note.body}
+                </DocumentNote>
+              ))}
+            </section>
+          ) : null}
         </div>
       </div>
     </div>

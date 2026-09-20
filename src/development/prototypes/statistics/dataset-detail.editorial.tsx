@@ -124,7 +124,7 @@ export function DatasetDetailEditorial({ code }: { readonly code: string }) {
               series={chart}
               unitLabel={unitLabel}
               stats={stats}
-              treatment="area"
+              area
               height="h-80"
             />
           </div>

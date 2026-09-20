@@ -121,7 +121,7 @@ export function DatasetDetailBrief({ code }: { readonly code: string }) {
               series={chart}
               unitLabel={unitLabel}
               stats={stats}
-              treatment="annotated"
+              annotate
               height="h-80"
             />
           </div>

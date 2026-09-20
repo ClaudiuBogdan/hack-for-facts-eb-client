@@ -1,6 +1,7 @@
 import { useSearch } from '@tanstack/react-router'
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { DatasetDetailBrief } from './dataset-detail.brief'
+import { DatasetDetailCombined } from './dataset-detail.combined'
 import { DatasetDetailEditorial } from './dataset-detail.editorial'
 import { DatasetDetailReport } from './dataset-detail.report'
 import { DatasetDetailWorkbench } from './dataset-detail.workbench'
@@ -15,6 +16,10 @@ import { DatasetDetailWorkbench } from './dataset-detail.workbench'
  * that only works on a 3-axis annual series.
  *
  * What each is arguing:
+ *
+ * - **combined** — the parts of the other four that survived: `workbench`'s
+ *   rail and its hero-plus-facts row, `brief`'s marked extremes,
+ *   `editorial`'s area tint, `report`'s reading text and numbered notes.
  *
  * - **editorial** — the figure means nothing without its scale, so the value,
  *   the sentence that reads it and its two comparisons come first, and the
@@ -44,6 +49,10 @@ function usePrototypeCode(): string {
     : DEFAULT_CODE
 }
 
+function Combined() {
+  return <DatasetDetailCombined code={usePrototypeCode()} />
+}
+
 function Editorial() {
   return <DatasetDetailEditorial code={usePrototypeCode()} />
 }
@@ -64,6 +73,11 @@ export const prototype = {
   title: 'INS dataset detail',
   spec: 'docs/design/statistics/design.md',
   variants: {
+    combined: {
+      title: 'Combined',
+      component: Combined,
+      note: 'rail + marked extremes + area + notes',
+    },
     editorial: {
       title: 'Editorial',
       component: Editorial,
@@ -85,5 +99,5 @@ export const prototype = {
       note: 'statistical release, numbered figure',
     },
   },
-  compare: ['editorial', 'workbench', 'brief', 'report'],
+  compare: ['combined', 'editorial', 'workbench', 'brief', 'report'],
 } satisfies PrototypeDefinition
