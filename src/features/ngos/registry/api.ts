@@ -14,7 +14,7 @@ const snapshotSchema = z.object({
   coverageBasis: z.string(),
   nationalCompleteness: z.string(),
 });
-const recordSchema = z.object({
+export const recordSchema = z.object({
   id: z.string(),
   sourceRowNumber: z.number().int().positive(),
   registryNumber: z.string(),
@@ -55,7 +55,7 @@ export type RegistryPage = z.infer<
 
 const snapshotFields =
   "id sourceDeclaredDate importedAt capturedAt refreshOverdue acceptedAt recordCount isCurrent sourceUrl coverageBasis nationalCompleteness";
-const recordFields = `id sourceRowNumber registryNumber specialRegistryNumber sourceRegistrationDate category legalForm name nameWithheld court sourceRegistryStatus county locality sourceCui linkedOrganizationCui isBranch sourceReportsPublicUtility snapshot { ${snapshotFields} }`;
+export const recordFields = `id sourceRowNumber registryNumber specialRegistryNumber sourceRegistrationDate category legalForm name nameWithheld court sourceRegistryStatus county locality sourceCui linkedOrganizationCui isBranch sourceReportsPublicUtility snapshot { ${snapshotFields} }`;
 export const REGISTRY_LIST_QUERY = `query NgoRegistryRecords($filter: NgoRegistryFilter, $first: Int!, $after: String) {
   ngoRegistryRecords(filter: $filter, first: $first, after: $after) {
     edges { cursor node { ${recordFields} } } pageInfo { hasNextPage endCursor } snapshot { ${snapshotFields} }
