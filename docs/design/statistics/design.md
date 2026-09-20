@@ -647,6 +647,31 @@ definition and numbered notes under the figure. It deliberately does not take
 and the table keeps its own scroller, so SOM101F's 1,500-word definition and
 POP107D's formula block land at the foot of the page instead of dwarfing it.
 
+Its reading order is figure → what it says → the notes → the table. The table
+is last on purpose: it is the appendix a reader consults once the figure and
+the notes have told them what they are looking at, and 197 rows sitting between
+the prose and the methodology separate two halves of one argument.
+
+„Seturi înrudite" is a list of links, with the row shape the accordion already
+uses — name, code chip, and a status badge ONLY when the set is catalog-only,
+because „Date disponibile" down every row of an all-available list is the noise
+§6f removed from the header and the catalog. In the prototype the links carry
+`cod` back into the same variant, so a reader comparing designs can follow a
+related set and still be looking at the pane they are judging; on promotion the
+destination becomes `/ins/seturi/$cod`.
+
+A matrix with no territorial axis is not „România". ACC101C declares only CAEN,
+time and unit, and the rail read „Teritoriu: România" — the same class of false
+claim as the hardcoded „TOTAL". The territory is now null for such a matrix and
+every pane drops the segment rather than defaulting it.
+
+Making them clickable forced the prototype's own read to grow up. Half the sets
+related to ACC101B are non-geographic — ACC101C has only CAEN, time and unit —
+and `insObservations` refuses such a matrix a read carrying neither a pin nor a
+unit, so a click landed on an error. The prototype model now does what the page
+does: it fetches one member of the unit axis and pins it, and keeps the anchor
+in the query key. 13 of 13 sets reachable from ACC101B now open on a chart.
+
 Three things the combination itself forced:
 
 - The mean's label moved to the right of the plot. A falling series leaves its

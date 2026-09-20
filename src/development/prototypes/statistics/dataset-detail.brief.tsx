@@ -106,7 +106,9 @@ export function DatasetDetailBrief({ code }: { readonly code: string }) {
         <StatTile
           label="Acoperire"
           value={span ? `${span.from}–${span.to}` : '—'}
-          caption={`${stats.count} observații · ${scope.territory ?? 'România'}`}
+          caption={[`${stats.count} observații`, scope.territory]
+            .filter(Boolean)
+            .join(' · ')}
         />
       </section>
 

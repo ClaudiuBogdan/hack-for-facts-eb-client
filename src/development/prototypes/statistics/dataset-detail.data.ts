@@ -7,10 +7,13 @@ import {
   observedYearSpan,
 } from '@/features/statistics/lib/dataset-selection'
 import { chooseRepresentativeCell } from '@/features/statistics/lib/representative-series'
+import type { InsObservationFilterInput } from '@/schemas/ins'
 import {
   useDatasetSeries,
   useDatasetTier0,
+  useDimensionValues,
 } from '@/features/statistics/hooks/use-dataset-detail'
+import { dimensionsOfType } from '@/features/statistics/lib/dataset-selection'
 import { hubUnitWord } from '@/features/statistics/lib/hub-format'
 import { periodSortKey } from '@/features/statistics/lib/period'
 import { tileUnit } from '@/features/statistics/lib/territory-groups'
@@ -77,6 +80,11 @@ export type DatasetPrototypeModel = {
    * line may never be (DESIGN.md §Data Trust).
    */
   readonly scope: {
+    /**
+     * Null when the matrix declares no territorial axis at all. Such a series
+     * is not „România" — it has no geography, and saying otherwise states a
+     * scope the data does not have.
+     */
     readonly territory: string | null
     readonly members: readonly {
       readonly typeCode: string
@@ -188,6 +196,58 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
   const dataset = tier0Query.data?.dataset ?? null
 
   /**
+   * A matrix with no territorial axis cannot answer a national read.
+   *
+   * `insObservations` refuses a non-geographic matrix that carries neither a
+   * classification pin nor a unit — ACC101C has only CAEN, time and unit, so
+   * `territoryLevels: ['NATIONAL']` has nothing to stand on. The production
+   * page solves this by fetching one member of the unit axis and pinning it;
+   * the prototype does the same, because the related-set links make these
+   * matrices one click away rather than something you have to go looking for.
+   */
+  const needsAnchor =
+    dataset !== null &&
+    !(dataset.dimensions ?? []).some(
+      (dimension) => dimension.type === 'TERRITORIAL',
+    )
+  const unitDimension = dimensionsOfType(
+    dataset?.dimensions ?? [],
+    'UNIT_OF_MEASURE',
+  )[0]
+  const anchorQuery = useDimensionValues({
+    datasetCode: normalized,
+    dimensionIndex: unitDimension?.index ?? 0,
+    search: undefined,
+    limit: 1,
+    offset: 0,
+    enabled: needsAnchor && unitDimension !== undefined,
+  })
+  const anchorUnit = needsAnchor
+    ? (anchorQuery.data?.nodes[0]?.unit?.code ?? null)
+    : null
+
+  /**
+   * The anchor is not merely missing — it is not coming.
+   *
+   * Without this, three ordinary cases skeleton forever: a non-geographic
+   * matrix that declares no unit axis at all (the query never runs, so it
+   * never errors), one whose unit page comes back empty, and one whose first
+   * member carries no unit code. „Still loading" and „cannot be answered here"
+   * look identical to a reader, so they must not look identical to the model.
+   */
+  const anchorUnavailable =
+    needsAnchor &&
+    anchorUnit === null &&
+    (unitDimension === undefined ||
+      anchorQuery.isError ||
+      anchorQuery.isSuccess)
+
+  const filter: InsObservationFilterInput =
+    needsAnchor && anchorUnit !== null
+      ? { unitCodes: [anchorUnit] }
+      : { territoryLevels: ['NATIONAL'] }
+
+  /**
    * The context code is IN the cache key, not just in the request.
    *
    * There is no route loader here, so the first render has no dataset and the
@@ -199,10 +259,15 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
   const contextCode = dataset?.context_code ?? null
   const seriesQuery = useDatasetSeries({
     code: normalized,
-    scopeKey: `prototype-national|${contextCode ?? ''}`,
-    filter: { territoryLevels: ['NATIONAL'] },
+    // The anchor is in the key for the same reason the context code is: it
+    // arrives a render later than the first one, and a 24-hour stale time
+    // would otherwise pin the empty answer that went out without it.
+    scopeKey: `prototype|${contextCode ?? ''}|${anchorUnit ?? 'national'}`,
+    filter,
     contextCode,
-    enabled: normalized.length > 0,
+    // Never send the read that the server is going to refuse.
+    enabled:
+      normalized.length > 0 && (!needsAnchor || anchorUnit !== null),
   })
 
   /**
@@ -254,14 +319,20 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
 
   const sample = rows[rows.length - 1] ?? null
 
+  const hasTerritorialAxis = (dataset?.dimensions ?? []).some(
+    (dimension) => dimension.type === 'TERRITORIAL',
+  )
+
   const scope = useMemo(
     () => ({
       // INS names its national row „TOTAL". Printing that under the heading
       // „Teritoriu" says nothing; the production page has always rendered the
       // unpinned national case as „România" and shown the row's own name only
-      // for a real sub-national territory.
-      territory:
-        sample?.territory?.level === 'NATIONAL'
+      // for a real sub-national territory. A matrix with no territorial axis
+      // gets null, and its callers drop the segment entirely.
+      territory: !hasTerritorialAxis
+        ? null
+        : sample?.territory?.level === 'NATIONAL'
           ? 'România'
           : (sample?.territory?.name_ro ?? null),
       members: (sample?.classifications ?? []).flatMap((classification) => {
@@ -279,7 +350,7 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
         ]
       }),
     }),
-    [sample],
+    [sample, hasTerritorialAxis],
   )
 
   const unitLabel = sample?.unit?.name_ro ?? sample?.unit?.symbol ?? null
@@ -305,7 +376,11 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
     related: seriesQuery.data?.related ?? [],
     relatedTotalCount: seriesQuery.data?.relatedTotalCount ?? null,
     sourceDescriptor: seriesQuery.data?.sourceDescriptor,
-    isLoading: tier0Query.isLoading || seriesQuery.isLoading,
-    isError: tier0Query.isError || seriesQuery.isError,
+    isLoading:
+      tier0Query.isLoading ||
+      seriesQuery.isLoading ||
+      // A matrix waiting on its anchor has not failed; it has not asked yet.
+      (needsAnchor && anchorUnit === null && !anchorUnavailable),
+    isError: tier0Query.isError || seriesQuery.isError || anchorUnavailable,
   }
 }

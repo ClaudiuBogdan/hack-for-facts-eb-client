@@ -75,10 +75,11 @@ export function DatasetDetailWorkbench({ code }: { readonly code: string }) {
               <h2 className={statisticsTheme.sectionLabel}>Selecție</h2>
             </div>
 
-            <RailControl
-              label="Teritoriu"
-              value={scope.territory ?? 'România'}
-            />
+            {/* Omitted, not defaulted: ACC101C has no territorial axis, and a
+                rail reading „Teritoriu: România" would invent one. */}
+            {scope.territory ? (
+              <RailControl label="Teritoriu" value={scope.territory} />
+            ) : null}
             {axes.map((axis) => (
               <RailControl
                 key={axis.index}

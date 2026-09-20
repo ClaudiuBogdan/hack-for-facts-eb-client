@@ -134,9 +134,11 @@ export function DatasetDetailEditorial({ code }: { readonly code: string }) {
             „ce am văzut?"; above it, it asked „ce vrei să vezi?" before the
             reader had any reason to have an opinion. */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 border-t border-border/70 px-4 py-3 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">
-            {scope.territory ?? 'România'}
-          </span>
+          {scope.territory ? (
+            <span className="font-medium text-foreground">
+              {scope.territory}
+            </span>
+          ) : null}
           {scope.members.map((member) => (
             <Fragment key={member.typeCode}>
               <span aria-hidden>·</span>

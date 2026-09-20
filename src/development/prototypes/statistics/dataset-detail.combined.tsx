@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 import { ArrowRight, Download, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { DataStatusBadge } from '@/features/statistics/components/data-status-badge'
 import { DetailObservationsTable } from '@/features/statistics/components/detail-observations-table'
 import { PublishedText } from '@/features/statistics/components/published-text'
 import { classificationTypeCode } from '@/features/statistics/lib/dataset-selection'
@@ -103,15 +105,49 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
         ? {
             title: `Seturi înrudite (${model.relatedTotalCount ?? model.related.length})`,
             body: (
-              <ul className="space-y-1">
-                {model.related.slice(0, 6).map((related) => (
-                  <li key={related.code} className="text-sm">
-                    <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                      {related.code}
-                    </span>{' '}
-                    <span className="text-muted-foreground">
-                      {related.nameRo}
-                    </span>
+              <ul className="divide-y divide-border/70">
+                {model.related.slice(0, 8).map((related) => (
+                  <li key={related.code}>
+                    {/*
+                      Inside the prototype, not out of it: the link carries
+                      `cod` back into this same variant, so a reader comparing
+                      designs can follow a related set and still be looking at
+                      the pane they are judging. The affordance — full-width
+                      row, name, code chip, data status — is the production
+                      one; on promotion only the destination changes, to
+                      `to="/ins/seturi/$cod" params={{ cod }}`.
+                    */}
+                    <Link
+                      to="/development/$"
+                      params={{ _splat: 'statistics/dataset-detail' }}
+                      // A function, not a literal: rebuilding the search from
+                      // scratch silently dropped `layout`, so following a
+                      // related set from the stacked comparison came back
+                      // side-by-side. Carry everything, change `cod`.
+                      search={(previous) => ({
+                        ...previous,
+                        v: 'combined',
+                        cod: related.code,
+                      })}
+                      className="flex items-center justify-between gap-3 py-2 text-sm transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <span className="min-w-0 truncate">
+                        {related.nameRo ?? related.code}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className={statisticsTheme.provenanceChip}>
+                          {related.code}
+                        </span>
+                        {/* Only the exception wears a badge. „Date
+                            disponibile" down every row of an all-available
+                            list is the noise §6f removed from the header and
+                            the catalog; a set we hold no observations for is
+                            worth stopping on. */}
+                        {related.dataStatus === 'available' ? null : (
+                          <DataStatusBadge status={related.dataStatus} />
+                        )}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -151,10 +187,11 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
               <h2 className={statisticsTheme.sectionLabel}>Selecție</h2>
             </div>
 
-            <RailControl
-              label="Teritoriu"
-              value={scope.territory ?? 'România'}
-            />
+            {/* Omitted, not defaulted: ACC101C has no territorial axis, and a
+                rail reading „Teritoriu: România" would invent one. */}
+            {scope.territory ? (
+              <RailControl label="Teritoriu" value={scope.territory} />
+            ) : null}
             {axes.map((axis) => (
               <RailControl
                 key={axis.index}
@@ -309,23 +346,6 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
             ) : null}
           </section>
 
-          <section className="space-y-2">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className={statisticsTheme.sectionLabel}>Tabelul seriei</h2>
-              <p className="text-xs tabular-nums text-muted-foreground">
-                {model.rows.length} rânduri
-              </p>
-            </div>
-            {/* Its own scroller: a 197-row matrix must not set the height of
-                the page the notes below it live on. */}
-            <div className="max-h-[28rem] overflow-auto">
-              <DetailObservationsTable
-                observations={model.rows}
-                sourceDescriptor={model.sourceDescriptor}
-              />
-            </div>
-          </section>
-
           {notes.length > 0 ? (
             <section className="space-y-5 border-t border-border/70 pt-6">
               <h2 className={statisticsTheme.sectionLabel}>Note</h2>
@@ -340,6 +360,26 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
               ))}
             </section>
           ) : null}
+
+          {/* The appendix. Last, because it is the thing a reader consults
+              after the figure and the notes have told them what they are
+              looking at — and because 197 rows between the prose and the
+              methodology would separate two halves of one argument. It keeps
+              its own scroller so the page still ends somewhere. */}
+          <section className="space-y-2 border-t border-border/70 pt-6">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className={statisticsTheme.sectionLabel}>Tabelul seriei</h2>
+              <p className="text-xs tabular-nums text-muted-foreground">
+                {model.rows.length} rânduri
+              </p>
+            </div>
+            <div className="max-h-[28rem] overflow-auto">
+              <DetailObservationsTable
+                observations={model.rows}
+                sourceDescriptor={model.sourceDescriptor}
+              />
+            </div>
+          </section>
         </div>
       </div>
     </div>

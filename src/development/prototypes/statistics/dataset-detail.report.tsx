@@ -94,7 +94,8 @@ export function DatasetDetailReport({ code }: { readonly code: string }) {
         <figure className="mt-8">
           <figcaption className="text-sm">
             <span className="font-semibold">Figura 1.</span>{' '}
-            {dataset.name_ro ?? dataset.code}, {scope.territory ?? 'România'},{' '}
+            {dataset.name_ro ?? dataset.code}
+            {scope.territory ? `, ${scope.territory}` : null},{' '}
             {span ? `${span.from}–${span.to}` : null}
             {unitLabel ? ` (${unitLabel})` : null}
           </figcaption>
@@ -114,7 +115,7 @@ export function DatasetDetailReport({ code }: { readonly code: string }) {
               : null}
             . Selecție:{' '}
             {[
-              scope.territory ?? 'România',
+              scope.territory,
               ...scope.members.map((member) => member.valueName),
               unitLabel,
               cadence.toLowerCase(),
@@ -161,7 +162,7 @@ export function DatasetDetailReport({ code }: { readonly code: string }) {
           />
           <ReportFact
             term="Observații"
-            detail={scope.territory ?? 'România'}
+            detail={scope.territory}
             value={String(stats.count)}
           />
         </dl>
