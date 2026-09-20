@@ -13,6 +13,7 @@ import { formatHubPeriod } from '@/features/statistics/lib/hub-format'
 import { insTempoDatasetUrl } from '@/features/statistics/lib/ins-tempo'
 import { periodicityLabel } from '@/features/statistics/lib/periodicity-labels'
 import { statisticsTheme } from '@/features/statistics/lib/statistics-theme'
+import { describeUnitSymbol } from '@/features/statistics/lib/hub-format'
 import { useDatasetPrototypeModel } from './dataset-detail.data'
 import {
   DocumentNote,
@@ -57,9 +58,23 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
   if (model.isLoading) return <VariantSkeleton />
   if (model.isError || !model.dataset) return <VariantError code={code} />
 
-  const { dataset, stats, chart, unitLabel, unitWord, span, scope } = model
+  const { dataset, stats, chart, unitLabel, unitWord, unitSymbol, span, scope } =
+    model
   const reading = seriesReading(stats, unitWord)
   const cadence = (dataset.periodicity ?? []).map(periodicityLabel).join(', ')
+  /**
+   * The unit beside the figure.
+   *
+   * `unitWord` is the Romanian word („persoane", „%") and is deliberately
+   * empty for a bare count, because „10 numar" is not a sentence. But a figure
+   * with no unit at all leaves the reader to guess what 10 counts, so the
+   * symbol is worded instead. `describeUnitSymbol` is the right fallback and
+   * `unitLabel` is not: the label is `name_ro ?? symbol`, so a unit INS
+   * published without a Romanian name would have printed the API's own
+   * „count" to the reader. It also spells „număr" with its diacritic.
+   */
+  const heroUnit =
+    unitWord || (unitSymbol ? describeUnitSymbol(unitSymbol) : null)
   const axes = (dataset.dimensions ?? []).filter((d) => d.type !== 'TEMPORAL')
   const sources = dataset.data_sources ?? []
 
@@ -296,18 +311,43 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
             <div className="flex flex-wrap items-end justify-between gap-4 px-5 pt-5">
               <div>
                 <p className={statisticsTheme.sectionLabel}>Ultima valoare</p>
-                <p className="mt-1 flex items-baseline gap-2">
-                  <span className="text-4xl font-semibold tabular-nums tracking-tight">
+                {/*
+                  The figure and its unit are ONE span, as in `DetailTier0Hero`:
+                  a flex gap between a number and its unit lets them land on
+                  different lines, and „21.646.220" over „persoane" is two
+                  facts where there was one. The theme's own `heroValue` and
+                  `heroUnit` carry the sizes, rather than a local copy of them.
+
+                  The rule before the period is a `before:` decoration, not a
+                  sibling element — drawn on the period's own span it can never
+                  wrap away from what it separates, and it keeps the outer
+                  `items-baseline` honest (an empty flex child has no baseline
+                  to align to). It appears only from `sm` up: below that the
+                  figure fills the line and the period drops to its own, where
+                  a separator has nothing left to separate and reads as a stray
+                  tick at the start of a line.
+                */}
+                <p className="mt-1.5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                  <span className={statisticsTheme.heroValue}>
                     {stats.latest ? formatValue(stats.latest.value) : '—'}
+                    {heroUnit ? (
+                      <>
+                        {/* A literal space, not only the margin: adjacent text
+                            nodes with no whitespace between them are spoken as
+                            one word („10număr"). The margin shrinks to keep the
+                            visible gap where it was. */}
+                        {' '}
+                        <span className={cn(statisticsTheme.heroUnit, 'ml-0.5')}>
+                          {heroUnit}
+                        </span>
+                      </>
+                    ) : null}
                   </span>
-                  {unitWord ? (
-                    <span className="text-base text-muted-foreground">
-                      {unitWord}
+                  {stats.latest ? (
+                    <span className="relative text-sm tabular-nums text-muted-foreground before:absolute before:left-0 before:top-1/2 before:hidden before:h-4 before:w-px before:-translate-y-1/2 before:bg-border sm:pl-4 sm:before:block">
+                      {formatHubPeriod(stats.latest.period)}
                     </span>
                   ) : null}
-                  <span className="text-sm tabular-nums text-muted-foreground">
-                    {stats.latest ? formatHubPeriod(stats.latest.period) : null}
-                  </span>
                 </p>
               </div>
               <dl className="flex flex-wrap items-end gap-x-6 gap-y-2">

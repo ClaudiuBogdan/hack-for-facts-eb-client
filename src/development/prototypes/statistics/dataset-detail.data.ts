@@ -70,6 +70,9 @@ export type DatasetPrototypeModel = {
    * has always dropped it — `hubUnitWord` is where that rule lives.
    */
   readonly unitWord: string
+  /** The API's raw unit symbol („count", „persons", „percent"), for callers
+   *  that need to word a unit `hubUnitWord` deliberately leaves empty. */
+  readonly unitSymbol: string | null
   readonly stats: SeriesStats
   /**
    * What the shown series ACTUALLY covers, read off its own rows.
@@ -354,6 +357,7 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
   )
 
   const unitLabel = sample?.unit?.name_ro ?? sample?.unit?.symbol ?? null
+  const unitSymbol = sample?.unit?.symbol ?? null
   const unitWord = hubUnitWord(
     tileUnit({
       unitSymbol: sample?.unit?.symbol ?? null,
@@ -370,6 +374,7 @@ export function useDatasetPrototypeModel(code: string): DatasetPrototypeModel {
     chart,
     unitLabel,
     unitWord,
+    unitSymbol,
     stats,
     scope,
     totalCount: seriesQuery.data?.totalCount ?? rows.length,

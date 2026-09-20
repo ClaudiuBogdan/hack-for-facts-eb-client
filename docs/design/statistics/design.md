@@ -669,6 +669,37 @@ twice. The group stays intact when the line wraps, which on a phone puts the
 whole provenance statement on its own row. Spacing separates the items, never
 „·" (§6f). The link keeps the 24px hit area WCAG 2.2 AA 2.5.8 asks for.
 
+The opening figure carries its unit and is separated from its period by a
+rule, not a gap:
+
+```
+ULTIMA VALOARE
+10 numar │ 2024        minim 5 2021   maxim 50 1997   medie 31,3   observații 33
+```
+
+Three rules behind that line:
+
+- **The figure and its unit are one span**, as in `DetailTier0Hero`. A flex gap
+  between them lets them land on different lines, and „21.646.220" over
+  „persoane" is two facts where there was one.
+- **A bare count still gets a unit.** `hubUnitWord` is deliberately empty for
+  „count" because „10 numar" is not a sentence — but a figure with no unit at
+  all leaves the reader to guess what 10 counts, so the SYMBOL is worded, by
+  `describeUnitSymbol`: „număr", with its diacritic. The dataset's `unitLabel`
+  is the wrong fallback — it is `name_ro ?? symbol`, so a unit INS published
+  without a Romanian name would have printed the API's own „count" to the
+  reader. „%" and „persoane" come through `hubUnitWord` unchanged. A literal
+  space sits between the figure and the unit: a margin alone leaves two
+  adjacent text nodes that a screen reader speaks as „10număr".
+- **The rule is a `before:` decoration on the period's own span**, so it can
+  never wrap away from what it separates, and it shows only from `sm` up. Below
+  that a long figure fills the line and the period drops to its own, where a
+  separator has nothing to separate and reads as a stray tick at a line start;
+  a short figure still fits beside its period there, and simply goes without
+  the rule. This is §6f's „no „·" between flex items" rule solved rather than
+  obeyed — but note the `sm:pl-4` that carries the rule adds 16px at the
+  breakpoint, so the line can rewrap there.
+
 Its reading order is figure → what it says → the notes → the table. The table
 is last on purpose: it is the appendix a reader consults once the figure and
 the notes have told them what they are looking at, and 197 rows sitting between
