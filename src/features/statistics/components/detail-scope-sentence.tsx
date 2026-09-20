@@ -86,6 +86,15 @@ type Props = {
   readonly unitLabel: string | null
   readonly yearSpanLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
+  /**
+   * How the DESKTOP surface renders. `chips` is the inline sentence; `rail`
+   * stacks the same segments in a bordered column beside the figure, so
+   * changing one axis never pushes the chart down the page.
+   *
+   * The phone sheet is shared: six axes never become six popovers, whichever
+   * shape the desktop takes.
+   */
+  readonly layout?: 'chips' | 'rail'
 }
 
 /**
@@ -107,6 +116,7 @@ export function DetailScopeSentence({
   unitLabel,
   yearSpanLabel,
   onChange,
+  layout = 'chips',
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
   // One open chip at a time, and controlled, so picking a value can close it.
@@ -127,66 +137,150 @@ export function DetailScopeSentence({
 
   if (segments.length === 0) return null
 
+  const hasDefaults = segments.some(
+    (segment) => segment.defaulted || segment.unresolved,
+  )
+
+  /** The popover every desktop shape opens, whatever its trigger looks like. */
+  const controlPopover = (segment: ScopeSegment, trigger: ReactNode) => (
+    <Popover
+      key={segment.id}
+      open={openSegment === segment.id}
+      onOpenChange={(open) => setOpenSegment(open ? segment.id : null)}
+    >
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-[22rem] max-w-[calc(100vw-2rem)] p-0"
+      >
+        {segment.fills ? (
+          segment.control?.({
+            variant: 'panel',
+            onPicked: () => setOpenSegment(null),
+          })
+        ) : (
+          <div className="space-y-1.5 p-3">
+            {segment.control?.({
+              variant: 'panel',
+              onPicked: () => setOpenSegment(null),
+            })}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  )
+
   return (
     <div className="text-sm text-muted-foreground">
-      {/* Desktop: one chip per axis, the dimension's name before its value,
-          so „Total" never stands alone. Each chip opens its own popover.
-          A dotted underline marks a server default; solid marks a user pin
-          (the legend line below says so once; aria carries the mark per
-          chip). */}
+      {/* Desktop, `rail`: one row per axis in a bordered column. An axis with
+          nothing to choose renders as text, not as a button — given the same
+          affordance as its neighbours it read as a control that did nothing
+          when pressed. */}
+      {layout === 'rail' ? (
+        <div className="hidden md:block">
+          <div className={cn(statisticsTheme.band, 'divide-y divide-border/70')}>
+            <div className="px-4 py-2.5">
+              <h2 className={statisticsTheme.sectionLabel}>
+                <Trans>Selecție</Trans>
+              </h2>
+            </div>
+            {segments.map((segment) =>
+              segment.control
+                ? controlPopover(
+                    segment,
+                    <button
+                      type="button"
+                      className={statisticsTheme.scopeRailRow}
+                      aria-label={
+                        segment.defaulted
+                          ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                          : t`${segment.controlLabel}: ${segment.text}`
+                      }
+                    >
+                      <span className="flex min-w-0 flex-col items-start">
+                        <span className={statisticsTheme.scopeRailLabel}>
+                          {segment.controlLabel.trim()}
+                        </span>
+                        <span className={statisticsTheme.scopeRailValue}>
+                          {segment.text}
+                        </span>
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1.5">
+                        {segment.defaulted || segment.unresolved ? (
+                          <span className="text-xs text-muted-foreground">
+                            <Trans>implicit</Trans>
+                          </span>
+                        ) : null}
+                        <ChevronDown
+                          className="h-3.5 w-3.5 text-muted-foreground"
+                          aria-hidden
+                        />
+                      </span>
+                    </button>,
+                  )
+                : (
+                    <div
+                      key={segment.id}
+                      className={statisticsTheme.scopeRailStatic}
+                    >
+                      <span className={statisticsTheme.scopeRailLabel}>
+                        {segment.controlLabel.trim()}
+                      </span>
+                      <span className={statisticsTheme.scopeRailValue}>
+                        {segment.text}
+                      </span>
+                    </div>
+                  ),
+            )}
+          </div>
+          {hasDefaults ? (
+            <p className="mt-3 px-1 text-xs leading-relaxed text-muted-foreground">
+              <Trans>
+                Valorile marcate „implicit" au fost alese automat. Apasă pe ele
+                ca să le schimbi.
+              </Trans>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {/* Desktop, `chips`: one chip per axis, the dimension's name before its
+          value, so „Total" never stands alone. Each chip opens its own
+          popover. A dotted underline marks a server default; solid marks a
+          user pin (the legend line below says so once; aria carries the mark
+          per chip). */}
+      {layout === 'rail' ? null : (
       <div className="hidden flex-wrap items-center gap-1.5 md:flex">
         {segments.map((segment) =>
           segment.control ? (
-            <Popover
-              key={segment.id}
-              open={openSegment === segment.id}
-              onOpenChange={(open) =>
-                setOpenSegment(open ? segment.id : null)
-              }
-            >
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className={statisticsTheme.scopeChip}
-                  aria-label={
-                    segment.defaulted
-                      ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                      : t`${segment.controlLabel}: ${segment.text}`
-                  }
+            controlPopover(
+              segment,
+              <button
+                type="button"
+                className={statisticsTheme.scopeChip}
+                aria-label={
+                  segment.defaulted
+                    ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                    : t`${segment.controlLabel}: ${segment.text}`
+                }
+              >
+                <span className={statisticsTheme.scopeChipName}>
+                  {segment.controlLabel}
+                </span>
+                <span
+                  className={cn(
+                    statisticsTheme.scopeChipValue,
+                    'underline',
+                    segment.defaulted || segment.unresolved
+                      ? statisticsTheme.scopeChipValueDefault
+                      : statisticsTheme.scopeChipValuePinned,
+                  )}
                 >
-                  <span className={statisticsTheme.scopeChipName}>
-                    {segment.controlLabel}
-                  </span>
-                  <span
-                    className={cn(
-                      statisticsTheme.scopeChipValue,
-                      'underline',
-                      segment.defaulted || segment.unresolved
-                        ? statisticsTheme.scopeChipValueDefault
-                        : statisticsTheme.scopeChipValuePinned,
-                    )}
-                  >
-                    {segment.text}
-                  </span>
-                  <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-[22rem] max-w-[calc(100vw-2rem)] p-0">
-                {segment.fills ? (
-                  segment.control({
-                    variant: 'panel',
-                    onPicked: () => setOpenSegment(null),
-                  })
-                ) : (
-                  <div className="space-y-1.5 p-3">
-                    {segment.control({
-                      variant: 'panel',
-                      onPicked: () => setOpenSegment(null),
-                    })}
-                  </div>
-                )}
-              </PopoverContent>
-            </Popover>
+                  {segment.text}
+                </span>
+                <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
+              </button>,
+            )
           ) : (
             <span key={segment.id} className={statisticsTheme.scopeChipStatic}>
               <span className={statisticsTheme.scopeChipName}>
@@ -197,7 +291,8 @@ export function DetailScopeSentence({
           ),
         )}
       </div>
-      {segments.some((segment) => segment.defaulted || segment.unresolved) ? (
+      )}
+      {layout !== 'rail' && hasDefaults ? (
         // Desktop only: it explains the dotted underline on the chips, and the
         // phone renders the sheet trigger instead of the chips, so on a phone
         // it was a sentence about something not on screen.
@@ -270,6 +365,15 @@ function buildSegments(params: {
   readonly unitLabel: string | null
   readonly yearSpanLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
+  /**
+   * How the DESKTOP surface renders. `chips` is the inline sentence; `rail`
+   * stacks the same segments in a bordered column beside the figure, so
+   * changing one axis never pushes the chart down the page.
+   *
+   * The phone sheet is shared: six axes never become six popovers, whichever
+   * shape the desktop takes.
+   */
+  readonly layout?: 'chips' | 'rail'
 }): readonly ScopeSegment[] {
   const {
     dataset,

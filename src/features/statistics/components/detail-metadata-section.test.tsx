@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { render, screen } from '@/test/test-utils'
-import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { InsDataset } from '@/schemas/ins'
 import { DetailMetadataSection } from './detail-metadata-section'
@@ -47,13 +46,13 @@ const dataset: InsDataset = {
 }
 
 describe('DetailMetadataSection in English', () => {
-  it('prefers the English text and names, falling back to Romanian where INS published none', async () => {
+  it('prefers the English text and names, falling back to Romanian where INS published none', () => {
     render(<DetailMetadataSection dataset={dataset} />)
-    await userEvent.click(screen.getByRole('button', { name: 'Metodologie' }))
+    // Numbered sections, not chevrons: everything INS published is on screen
+    // without a click.
     expect(
       screen.getByText('The objective of the annual labour cost survey'),
     ).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Surse de date/ }))
     expect(screen.getByText('Labour cost survey')).toBeInTheDocument()
     expect(
       screen.queryByText('Cercetarea statistica privind costul fortei de munca'),
@@ -61,13 +60,25 @@ describe('DetailMetadataSection in English', () => {
     // No type badge in English: the type belongs to the Romanian list and the
     // two lists are not guaranteed to share an order.
     expect(screen.queryByText('Surse statistice (INS)')).not.toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Observații INS' }))
     expect(
       screen.getByText('Datele sunt disponibile incepand cu anul 2008.'),
     ).toBeInTheDocument()
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Continuitatea seriei' }),
-    )
     expect(screen.getByText(/Year 2008/)).toBeInTheDocument()
+  })
+
+  it('numbers the sections it renders, skipping what INS never published', () => {
+    render(
+      <DetailMetadataSection
+        dataset={{ ...dataset, methodology_ro: null, methodology_en: null }}
+      />,
+    )
+    // With no methodology, „Surse de date" is 1., not an orphaned 2.
+    const headings = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent?.replace(/\s+/g, ' ').trim())
+    expect(headings[0]).toBe('1. Surse de date')
+    expect(headings.some((heading) => heading?.includes('Metodologie'))).toBe(
+      false,
+    )
   })
 })

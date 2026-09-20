@@ -592,6 +592,48 @@ export function RailFact({
 }
 
 /**
+ * One fact in the summary row beside the hero: its name, its number, and the
+ * period that number belongs to.
+ *
+ * The dot sits between the VALUE and its period, the same separator the hero
+ * uses between „10 număr" and „2024" — „5 2021" without it is one number
+ * followed by another number.
+ *
+ * It is a real node rather than `before:content-['·']`, which the prototype
+ * rules forbid: full-checkout CSS is generated from this source and would
+ * carry the literal. It lives INSIDE the period's span, so it travels with
+ * what it separates instead of being left at the end of a wrapped line, and it
+ * is `aria-hidden` — a screen reader saying „5 dot 2021" is worse than the run
+ * of two numbers the dot exists to break up.
+ */
+export function SummaryFact({
+  label,
+  value,
+  period,
+}: {
+  readonly label: string
+  readonly value: string
+  readonly period?: string | null
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="text-sm font-medium tabular-nums">
+        {value}
+        {period ? (
+          <span className="ml-1.5 font-normal text-muted-foreground">
+            <span aria-hidden className="mr-1.5 text-muted-foreground/50">
+              ·
+            </span>
+            {period}
+          </span>
+        ) : null}
+      </dd>
+    </div>
+  )
+}
+
+/**
  * A numbered document section — methodology, sources, the institute's own
  * notes. A number is cheaper to reference than a chevron is to open, and these
  * are the parts of the page a reader cites rather than browses.

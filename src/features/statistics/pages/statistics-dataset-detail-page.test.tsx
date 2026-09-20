@@ -1,7 +1,7 @@
 import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
-import { render, screen } from '@/test/test-utils'
+import { render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type {
   StatisticsDatasetSeries,
@@ -211,7 +211,15 @@ describe('StatisticsDatasetDetailPage', () => {
       expect(screen.getByText(/date confidențiale/)).toBeInTheDocument()
       expect(screen.getAllByText(/2025/).length).toBeGreaterThan(0)
       expect(screen.queryByText('Nicio observație')).not.toBeInTheDocument()
-      expect(screen.queryByText(byDigits('21002024'))).not.toBeInTheDocument()
+      // Scoped to the headline block. The FIGURE must not present 2024's value
+      // as the latest when INS's own latest cell is confidential; the chart
+      // below may still label the last point it plots, which is a different
+      // claim and a true one.
+      expect(
+        within(screen.getByTestId('series-summary')).queryByText(
+          byDigits('21002024'),
+        ),
+      ).not.toBeInTheDocument()
     },
   )
 
@@ -431,7 +439,8 @@ describe('StatisticsDatasetDetailPage', () => {
       />,
     )
     expect(screen.getByTestId('dataset-metadata')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Metodologie' }))
+    // Numbered sections, not chevrons: what INS published is on screen without
+    // a click.
     expect(
       screen.getByText(/Obiectivul cercetarii statistice anuale/),
     ).toBeInTheDocument()
@@ -440,23 +449,18 @@ describe('StatisticsDatasetDetailPage', () => {
     })
     expect(report).toHaveAttribute('href', 'https://insse.ro/cms/files/raport.pdf')
     expect(report).toHaveAttribute('rel', 'noopener noreferrer')
-    await userEvent.click(
-      screen.getByRole('button', { name: /Surse de date/ }),
-    )
     expect(
       screen.getByText('Cercetarea statistica privind costul fortei de munca'),
     ).toBeInTheDocument()
     expect(screen.queryByText(/<<6263>>/)).not.toBeInTheDocument()
-    await userEvent.click(
-      screen.getByRole('button', { name: 'Continuitatea seriei' }),
-    )
     expect(screen.getByText('FOM106A')).toBeInTheDocument()
     expect(screen.getByText(/Anul 2008/)).toBeInTheDocument()
     // The publication date is a fact about the data, not a section of its own:
-    // it reads on the band's source line, next to the matrix it dates.
+    // it reads on the provenance line under the title, next to the matrix code
+    // it dates, and the source's own name is the link back to it.
     expect(screen.getByText(/actualizată/)).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: /Deschide pe INS Tempo/ }),
+      screen.getByRole('link', { name: /Deschide matricea POP107D/ }),
     ).toHaveAttribute(
       'href',
       'https://statistici.insse.ro/tempoins/index.jsp?ind=POP107D&lang=ro&page=tempo3',

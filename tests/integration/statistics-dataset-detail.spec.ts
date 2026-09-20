@@ -75,6 +75,15 @@ function countGraphQLPosts(page: Page): { readonly count: () => number } {
   return { count: () => posts }
 }
 
+/**
+ * The tier-0 figure itself.
+ *
+ * The same number legitimately appears more than once on the page now — as the
+ * headline, as an extreme in the facts row beside it, and as the chart's end
+ * label — so anything less specific trips Playwright's strict mode.
+ */
+const heroValue = (page: Page) => page.getByTestId('series-latest-value')
+
 test.describe('Dataset detail — the disclosure ladder', () => {
   test.beforeEach(async ({ mockApi }) => {
     await setupMocks(mockApi)
@@ -85,7 +94,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await waitForPageReady(page)
 
     // The latest resolved value, LARGE, with unit and period.
-    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+    await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
     await expect(page.getByText('persoane').first()).toBeVisible()
 
     // Provenance chips: INS Tempo + the matrix code, never in title position.
@@ -112,7 +121,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     const posts = countGraphQLPosts(page)
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+    await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
     await page.waitForTimeout(1500)
 
     expect(posts.count()).toBe(3)
@@ -123,7 +132,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+    await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
 
     await expect(page.getByRole('table')).toHaveCount(0)
     await page.getByText(/Tabelul seriei \(/).click()
@@ -136,7 +145,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
-    await expect(page.getByText('21.739.373')).toBeVisible({ timeout: 15000 })
+    await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
 
     // Every source dimension uses the same paginated picker, including small
     // lists. Segment order follows the dimensions: age first, then sex.
@@ -206,7 +215,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
       })
     })
     await page.goto(ROUTE)
-    await expect(page.getByText('21.739.373')).toBeVisible()
+    await expect(heroValue(page)).toBeVisible()
     await page.getByRole('button', { name: /^Varste si grupe de varsta: Total/ }).click()
     await expect(
       page.getByRole('option', { name: 'Synthetic age 100' }),
@@ -246,7 +255,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     page,
   }) => {
     await page.goto(ROUTE)
-    await expect(page.getByText('21.739.373')).toBeVisible()
+    await expect(heroValue(page)).toBeVisible()
     const downloadPromise = page.waitForEvent('download')
     await page.getByRole('button', { name: 'Descarcă CSV' }).click()
     const download = await downloadPromise
@@ -428,7 +437,7 @@ for (const language of ['en', 'ro'] as const) {
         await expect(page.getByText(unavailable)).toBeVisible()
         // The flag is spelled out; the English catalog carries the source string.
         await expect(page.getByText(/date confidențiale/)).toBeVisible()
-        await expect(page.getByText('21.739.373')).toHaveCount(0)
+        await expect(heroValue(page)).toHaveCount(0)
         await page
           .getByText(
             language === 'ro' ? /Tabelul seriei \(/ : /Series table \(/,

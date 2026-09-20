@@ -40,7 +40,7 @@ import { DetailObservationsChart } from '../components/detail-observations-chart
 import { DetailScopePrompt } from '../components/detail-scope-prompt'
 import { DetailScopeSentence } from '../components/detail-scope-sentence'
 import { DetailSourceLine } from '../components/detail-source-line'
-import { periodicityLabel } from '../lib/periodicity-labels'
+import { DetailSeriesSummary } from '../components/detail-series-summary'
 import { DetailTier0Hero } from '../components/detail-tier0-hero'
 import { FreshnessBadge } from '../components/freshness-badge'
 import { RequestDatasetAction } from '../components/request-dataset-action'
@@ -69,9 +69,12 @@ import {
   type RepresentativeCell,
 } from '../lib/representative-series'
 import { dimensionTypeLabel } from '../lib/dimension-labels'
+import { describeUnitSymbol, hubUnitWord } from '../lib/hub-format'
 import { isPeriodStale, periodSortKey } from '../lib/period'
+import { summarizeSeries } from '../lib/series-stats'
+import { tileUnit } from '../lib/territory-groups'
 import { statisticsTheme } from '../lib/statistics-theme'
-import { buildTimeSeries, hasAnyValue } from '../lib/time-series'
+import { buildTimeSeries, hasAnyValue, toChartValue } from '../lib/time-series'
 
 type Props = {
   readonly code: string
@@ -382,25 +385,49 @@ function HeaderSkeleton() {
   )
 }
 
-/** The series band's shape: label, figure, chart. */
+/**
+ * What is about to arrive: a rail on the left, the figure and its chart on the
+ * right. A skeleton that does not match the layout it precedes is worse than
+ * none — the page visibly rearranges itself the moment the data lands.
+ */
 function BandSkeleton() {
   return (
-    <div className={statisticsTheme.band} aria-hidden="true">
-      <div className={statisticsTheme.bandHeader}>
-        <Skeleton className="h-3 w-28" />
-        <Skeleton className="h-3 w-20" />
-      </div>
-      <div
-        className={cn(statisticsTheme.controlStrip, 'flex flex-wrap gap-1.5')}
-      >
+    <div
+      className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]"
+      aria-hidden="true"
+    >
+      <div className={cn(statisticsTheme.band, 'divide-y divide-border/70')}>
+        <div className="px-4 py-2.5">
+          <Skeleton className="h-3 w-20" />
+        </div>
         {/* Literal classes, not an interpolated width: Tailwind scans source
             text, so a computed `w-[7rem]` would never be generated. */}
-        {['w-28', 'w-20', 'w-24', 'w-32'].map((width) => (
-          <Skeleton key={width} className={cn('h-6', width)} />
+        {['w-24', 'w-32', 'w-20', 'w-28'].map((width) => (
+          <div key={width} className="space-y-1.5 px-4 py-2.5">
+            <Skeleton className="h-2.5 w-16" />
+            <Skeleton className={cn('h-3.5', width)} />
+          </div>
         ))}
       </div>
-      <div className={cn(statisticsTheme.bandBody, 'space-y-5')}>
-        <SeriesSkeleton />
+
+      <div className={statisticsTheme.band}>
+        <div className={cn(statisticsTheme.bandBody, 'space-y-5')}>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-28" />
+              <Skeleton className="h-9 w-32" />
+            </div>
+            <div className="flex gap-6">
+              {['w-16', 'w-14', 'w-12', 'w-10'].map((width) => (
+                <div key={width} className="space-y-1.5">
+                  <Skeleton className="h-2.5 w-12" />
+                  <Skeleton className={cn('h-3.5', width)} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <Skeleton className="h-72 w-full" />
+        </div>
       </div>
     </div>
   )
@@ -440,12 +467,9 @@ function DatasetHeader({
   readonly latestPeriod: string | null
 }) {
   const status = getDatasetDataStatus(dataset)
-  const cadence = (dataset.periodicity ?? [])
-    .map((periodicity) => periodicityLabel(periodicity))
-    .join(', ')
 
   return (
-    <header className="mt-2 border-b border-border/70 pb-5">
+    <header className="mt-2 border-b border-border/70 pb-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {/* `text-balance` keeps an INS name — they run to 100+ characters —
             from ending on one orphan word. */}
@@ -458,20 +482,31 @@ function DatasetHeader({
         ) : null}
       </div>
 
-      {/* Spacing separates these, not „·". A bullet between flex items has
-          nowhere good to go when the line wraps: at the end it reads as a
-          typo, at the start of the next line as an accidental list. The
-          catalog's own rows have always used spacing alone. */}
+      {/*
+        Everything the page knows ABOUT the dataset, once. The series band used
+        to close on a source strip naming the matrix code and the source this
+        line already named — the same fact twice, 500px apart, with the refresh
+        date reachable only by scrolling past the chart.
+
+        Ordered identity → placement → provenance. „Sursă" and the way back are
+        ONE item, because the source's name IS the link: a standalone „INS
+        Tempo" beside „Deschide pe INS Tempo" said the same words twice. The
+        group stays intact when the line wraps, so a phone gets the whole
+        provenance statement on its own row.
+
+        Cadence and the year span are NOT here: the scope rail states both, and
+        „Interval de ani" is the control you change them with. Spacing
+        separates the items, never „·" — a bullet between flex items has
+        nowhere good to go when the line wraps.
+      */}
       <p className={cn(statisticsTheme.metaLine, 'mt-2.5')}>
         <span className={statisticsTheme.provenanceChip}>{dataset.code}</span>
-        <span>INS Tempo</span>
-        {cadence ? <span>{cadence}</span> : null}
         {dataset.context_name_ro ? <span>{dataset.context_name_ro}</span> : null}
+        <DetailSourceLine
+          datasetCode={dataset.code}
+          sourceLastUpdate={dataset.source_last_update ?? null}
+        />
       </p>
-
-      {dataset.definition_ro ? (
-        <DetailDefinition text={dataset.definition_ro} />
-      ) : null}
     </header>
   )
 }
@@ -485,6 +520,12 @@ function DatasetHeader({
 function CatalogOnlyBody({ dataset }: { readonly dataset: InsDatasetDetails }) {
   return (
     <section className="space-y-6" data-testid="catalog-only-body">
+      {/* The definition moved out of the shared header and into the body, so
+          it has to be rendered on BOTH paths. A catalog-only matrix is exactly
+          the case where what it measures is all the page can say. */}
+      {dataset.definition_ro ? (
+        <DetailDefinition text={dataset.definition_ro} />
+      ) : null}
       <Alert>
         <AlertTriangle className="h-4 w-4" aria-hidden="true" />
         <AlertTitle>
@@ -532,12 +573,6 @@ function CatalogOnlyBody({ dataset }: { readonly dataset: InsDatasetDetails }) {
             </li>
           ))}
         </ul>
-        <div className={statisticsTheme.bandFooter}>
-          <DetailSourceLine
-            datasetCode={dataset.code}
-            sourceLastUpdate={dataset.source_last_update ?? null}
-          />
-        </div>
       </div>
     </section>
   )
@@ -668,6 +703,17 @@ function DatasetDetailBody({
     ? null
     : (windowedRows[windowedRows.length - 1] ?? null)
 
+  /**
+   * The facts beside the figure, over the SAME rows the chart draws.
+   *
+   * Narrowing „?din/?pana" narrows the summary with it: an extreme outside the
+   * window the reader chose is not a fact about what they are looking at.
+   */
+  const windowStats = useMemo(
+    () => summarizeSeries(windowedRows),
+    [windowedRows],
+  )
+
   // Display labels for the scope sentence, read from the fetched rows.
   const sampleRow = exactRows[0] ?? null
   const territoryLabel =
@@ -686,6 +732,25 @@ function DatasetDetailBody({
   }, [scope.classifications, sampleRow])
   const unitLabel =
     sampleRow?.unit?.name_ro ?? sampleRow?.unit?.symbol ?? scope.unitCode
+  /**
+   * The unit as a WORD, for the figure — „persoane", „%", and for a bare count
+   * „număr". `hubUnitWord` is deliberately empty for a count, because „10
+   * numar" is not a sentence; but a figure with no unit at all leaves the
+   * reader to guess what 10 counts, so the SYMBOL is worded instead.
+   * `unitLabel` is the wrong fallback: it is `name_ro ?? symbol`, so a unit INS
+   * published without a Romanian name would print the API's own „count".
+   */
+  const summaryUnitWord =
+    hubUnitWord(
+      tileUnit({
+        unitSymbol: sampleRow?.unit?.symbol ?? null,
+        unitNameRo: sampleRow?.unit?.name_ro ?? null,
+      }),
+      unitLabel ?? null,
+    ) ||
+    (sampleRow?.unit?.symbol
+      ? describeUnitSymbol(sampleRow.unit.symbol)
+      : '')
 
   const missingClassificationLabels = unresolvedDimensions.map(
     (dimension) =>
@@ -712,281 +777,281 @@ function DatasetDetailBody({
   }
 
   return (
-    <>
-      {/* The whole working surface is ONE band: what the reader chose, what
-          that resolves to, and where it came from. The controls live inside it
-          on their own strip because they are this band's input — loose above
-          it they read as more metadata about the title. */}
-      <section className={statisticsTheme.band}>
-        <div className={statisticsTheme.bandHeader}>
-          <h2 className={statisticsTheme.sectionLabel}>
-            <Trans>Seria selectată</Trans>
-          </h2>
-          {seriesEnabled && seriesQuery.isSuccess && windowedRows.length > 0 ? (
-            <p className="text-xs tabular-nums text-muted-foreground">
-              {plural(windowedRows.length, {
-                one: 'o observație',
-                few: '# observații',
-                other: '# de observații',
-              })}
-            </p>
-          ) : null}
-        </div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      {/*
+        The selection is a standing rail, not a strip above the figure.
 
-        {/* Tier 1 renders WHENEVER the dataset is loaded: the scope sentence is
-            the way OUT of an unresolved state, so it can never hide behind it.
-            It sits ABOVE the prompt — the prompt's copy points „mai sus". */}
-        <div className={statisticsTheme.controlStrip}>
-          <DetailScopeSentence
-            dataset={dataset}
-            search={search}
-            scope={scope}
-            canDerive={canDerive}
-            unresolvedDimensions={unresolvedDimensions}
-            territoryLabel={territoryLabel}
-            classificationLabels={classificationLabels}
-            unitLabel={unitLabel ?? null}
-            yearSpanLabel={
-              yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null
-            }
-            onChange={onSearchChange}
-          />
-        </div>
+        This page is used twice: once to read a number, then many times to move
+        around inside the same matrix — another county, another classification,
+        another window. Every one of those moves went through a chip row that
+        sat above the chart and pushed it down. Sticky on the left, the axes
+        stay reachable while the notes and the table scroll past, and the
+        figure never moves.
 
-        <div className={cn(statisticsTheme.bandBody, 'space-y-5')}>
-          {!canDerive || scope.periodicity === null ? (
-            <DetailScopePrompt
-              needsTerritory={false}
-              missingClassificationLabels={missingClassificationLabels}
-            />
-          ) : null}
+        Tier 1 renders WHENEVER the dataset is loaded: the scope controls are
+        the way OUT of an unresolved state, so they can never hide behind it.
+        On a phone the rail becomes the shared bottom sheet — six axes never
+        become six popovers.
+      */}
+      <aside className="lg:sticky lg:top-6 lg:self-start">
+        <DetailScopeSentence
+          layout="rail"
+          dataset={dataset}
+          search={search}
+          scope={scope}
+          canDerive={canDerive}
+          unresolvedDimensions={unresolvedDimensions}
+          territoryLabel={territoryLabel}
+          classificationLabels={classificationLabels}
+          unitLabel={unitLabel ?? null}
+          yearSpanLabel={
+            yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null
+          }
+          onChange={onSearchChange}
+        />
+      </aside>
 
-          {seriesEnabled ? (
-            <>
-              {seriesQuery.isLoading ? <SeriesSkeleton /> : null}
+      <div className="min-w-0 space-y-8">
+        <section className={statisticsTheme.band}>
+          <div className={cn(statisticsTheme.bandBody, 'space-y-5')}>
+            {!canDerive || scope.periodicity === null ? (
+              <DetailScopePrompt
+                needsTerritory={false}
+                missingClassificationLabels={missingClassificationLabels}
+              />
+            ) : null}
 
-              {seriesQuery.isError ? (
-                <>
-                  {/* POST B failing must not discard POST A: the resolved latest
-                      value stays on screen, the retry sits beside it. */}
-                  {canDerive && latest && latest.hasData ? (
-                    <DetailTier0Hero
-                      latest={latest}
-                      matchChip={
-                        latest.matchStrategy === 'REPRESENTATIVE_FALLBACK' ||
-                        representativeDefaults
-                          ? 'representative'
-                          : null
-                      }
-                    />
-                  ) : null}
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+            {seriesEnabled ? (
+              <>
+                {seriesQuery.isLoading ? <SeriesSkeleton /> : null}
+
+                {seriesQuery.isError ? (
+                  <>
+                    {/* POST B failing must not discard POST A: the resolved latest
+                        value stays on screen, the retry sits beside it. */}
+                    {canDerive && latest && latest.hasData ? (
+                      <DetailTier0Hero
+                        latest={latest}
+                        matchChip={
+                          latest.matchStrategy === 'REPRESENTATIVE_FALLBACK' ||
+                          representativeDefaults
+                            ? 'representative'
+                            : null
+                        }
+                      />
+                    ) : null}
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                      <AlertTitle>
+                        <Trans>Nu am putut încărca seria de date</Trans>
+                      </AlertTitle>
+                      <AlertDescription className="space-y-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => seriesQuery.refetch()}
+                        >
+                          <Trans>Reîncearcă</Trans>
+                        </Button>
+                      </AlertDescription>
+                    </Alert>
+                  </>
+                ) : null}
+
+                {seriesQuery.isSuccess && latestSourceRow ? (
+                  <DetailSeriesSummary
+                    stats={windowStats}
+                    unitWord={summaryUnitWord}
+                    valueStatus={latestSourceRow.value_status ?? null}
+                    absent={
+                      // The latest PUBLISHED cell, not the latest readable one.
+                      toChartValue(latestSourceRow.value) === null
+                        ? {
+                            period: latestSourceRow.time_period.iso_period,
+                            valueStatus: latestSourceRow.value_status ?? null,
+                          }
+                        : null
+                    }
+                    matchChip={
+                      (latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
+                        search.clasificari === undefined &&
+                        search.unitate === undefined) ||
+                      representativeDefaults
+                        ? 'representative'
+                        : null
+                    }
+                  />
+                ) : null}
+
+                {seriesQuery.isSuccess &&
+                canDerive &&
+                scope.periodicity !== null &&
+                sourceUnavailable ? (
+                  <Alert>
                     <AlertTitle>
-                      <Trans>Nu am putut încărca seria de date</Trans>
+                      <Trans>Seria necesită o selecție din sursă</Trans>
                     </AlertTitle>
-                    <AlertDescription className="space-y-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => seriesQuery.refetch()}
-                      >
-                        <Trans>Reîncearcă</Trans>
-                      </Button>
+                    <AlertDescription>
+                      <Trans>
+                        Observațiile includ alternative sau calificări geografice.
+                        Inspectează datele din tabel înainte de a le compara.
+                      </Trans>
                     </AlertDescription>
                   </Alert>
-                </>
-              ) : null}
+                ) : null}
+                {seriesQuery.isSuccess &&
+                !sourceUnavailable &&
+                !latestSourceRow &&
+                !(
+                  exactRows.length === 0 &&
+                  scope.territory !== null &&
+                  hasGeographicSourcePins
+                ) ? (
+                  <EmptyState
+                    // Unframed: the band is already the frame.
+                    className="border-none px-0 py-8"
+                    title={t`Nicio observație`}
+                    description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}
+                  />
+                ) : null}
 
-              {seriesQuery.isSuccess && latestSourceRow ? (
-                <DetailTier0Hero
-                  latest={{
-                    datasetCode: dataset.code,
-                    datasetNameRo: dataset.name_ro ?? null,
-                    datasetNameEn: dataset.name_en ?? null,
-                    periodicity: dataset.periodicity ?? [],
-                    matchStrategy: 'PREFERRED_CLASSIFICATION',
-                    hasData: true,
-                    value: latestSourceRow.value,
-                    valueStatus: latestSourceRow.value_status ?? null,
-                    unitCode: latestSourceRow.unit?.code ?? null,
-                    unitSymbol: latestSourceRow.unit?.symbol ?? null,
-                    unitNameRo: latestSourceRow.unit?.name_ro ?? null,
-                    period: latestSourceRow.time_period.iso_period,
-                    resolvedPeriodicity:
-                      latestSourceRow.time_period.periodicity,
-                    resolvedClassifications: [],
-                  }}
-                  matchChip={
-                    (latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
-                      search.clasificari === undefined &&
-                      search.unitate === undefined) ||
-                    representativeDefaults
-                      ? 'representative'
-                      : null
-                  }
-                />
-              ) : null}
-
-              {seriesQuery.isSuccess &&
-              canDerive &&
-              scope.periodicity !== null &&
-              sourceUnavailable ? (
-                <Alert>
-                  <AlertTitle>
-                    <Trans>Seria necesită o selecție din sursă</Trans>
-                  </AlertTitle>
-                  <AlertDescription>
-                    <Trans>
-                      Observațiile includ alternative sau calificări geografice.
-                      Inspectează datele din tabel înainte de a le compara.
-                    </Trans>
-                  </AlertDescription>
-                </Alert>
-              ) : null}
-              {seriesQuery.isSuccess &&
-              !sourceUnavailable &&
-              !latestSourceRow &&
-              !(
+                {seriesQuery.isSuccess &&
                 exactRows.length === 0 &&
                 scope.territory !== null &&
-                hasGeographicSourcePins
-              ) ? (
-                <EmptyState
-                  // Unframed: the band is already the frame.
-                  className="border-none px-0 py-8"
-                  title={t`Nicio observație`}
-                  description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}
-                />
-              ) : null}
-
-              {seriesQuery.isSuccess &&
-              exactRows.length === 0 &&
-              scope.territory !== null &&
-              hasGeographicSourcePins ? (
-                <div className={statisticsTheme.note}>
-                  <p>
-                    <Trans>
-                      Coordonatele INS și filtrul teritorial canonic se
-                      intersectează. Nicio observație nu corespunde ambelor
-                      selecții.
-                    </Trans>
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onSearchChange({ teritoriu: undefined })}
-                  >
-                    <Trans>Șterge doar filtrul teritorial</Trans>
-                  </Button>
-                </div>
-              ) : null}
-
-              {chartSeries && hasAnyValue(chartSeries) ? (
-                <DetailObservationsChart
-                  series={chartSeries}
-                  title={t`Evoluție în timp`}
-                  unitLabel={unitLabel ?? null}
-                />
-              ) : null}
-
-              {seriesData?.inspectionTruncated ? (
-                <p role="status" className={statisticsTheme.note}>
-                  <Trans>
-                    Sunt disponibile mai multe observații. Tabelul arată o
-                    pagină de explorare; restrânge selecția sau alege seria unui
-                    rând pentru istoricul complet.
-                  </Trans>
-                </p>
-              ) : null}
-
-              {/* What the reader can take away: one row, the export's note
-                  immediately left of its own button. Under the button the note
-                  set the row's height and dragged the compare link off the
-                  baseline; spread to the far edge it read as a page footnote
-                  rather than as that button's caption. */}
-              <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 pt-1">
-                {windowedRows.length > 0 ? (
-                  <div className="max-w-xs text-right">
-                    <DetailExportNote complete={completeSourceSelection} />
+                hasGeographicSourcePins ? (
+                  <div className={statisticsTheme.note}>
+                    <p>
+                      <Trans>
+                        Coordonatele INS și filtrul teritorial canonic se
+                        intersectează. Nicio observație nu corespunde ambelor
+                        selecții.
+                      </Trans>
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onSearchChange({ teritoriu: undefined })}
+                    >
+                      <Trans>Șterge doar filtrul teritorial</Trans>
+                    </Button>
                   </div>
                 ) : null}
-                <div className="flex flex-wrap items-center gap-3">
-                  <DetailExportButton
-                    datasetCode={dataset.code}
-                    sourceDescriptor={seriesData?.sourceDescriptor}
-                    observations={windowedRows}
-                    disabled={windowedRows.length === 0}
-                    complete={completeSourceSelection}
-                    showNote={false}
+
+                {chartSeries && hasAnyValue(chartSeries) ? (
+                  <DetailObservationsChart
+                    series={chartSeries}
+                    title={t`Evoluție în timp`}
+                    unitLabel={unitLabel ?? null}
+                    // The extremes the summary names are marked where they
+                    // happened; the mean gives the line a reference; the tint
+                    // reads the series as a quantity rather than a path.
+                    area
+                    annotate
+                    mean
+                    stats={windowStats}
+                    height="h-80"
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="gap-1.5"
-                  >
-                    <Link to="/ins/comparatii" search={compareSearch}>
-                      <Trans>Compară teritorii</Trans>
-                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Link>
-                  </Button>
+                ) : null}
+
+                {seriesData?.inspectionTruncated ? (
+                  <p role="status" className={statisticsTheme.note}>
+                    <Trans>
+                      Sunt disponibile mai multe observații. Tabelul arată o
+                      pagină de explorare; restrânge selecția sau alege seria unui
+                      rând pentru istoricul complet.
+                    </Trans>
+                  </p>
+                ) : null}
+
+                {/* What the reader can take away: one row, the export's note
+                    immediately left of its own button. Under the button the note
+                    set the row's height and dragged the compare link off the
+                    baseline; spread to the far edge it read as a page footnote
+                    rather than as that button's caption. */}
+                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 pt-1">
+                  {windowedRows.length > 0 ? (
+                    <div className="max-w-xs text-right">
+                      <DetailExportNote complete={completeSourceSelection} />
+                    </div>
+                  ) : null}
+                  <div className="flex flex-wrap items-center gap-3">
+                    <DetailExportButton
+                      datasetCode={dataset.code}
+                      sourceDescriptor={seriesData?.sourceDescriptor}
+                      observations={windowedRows}
+                      disabled={windowedRows.length === 0}
+                      complete={completeSourceSelection}
+                      showNote={false}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="gap-1.5"
+                    >
+                      <Link to="/ins/comparatii" search={compareSearch}>
+                        <Trans>Compară teritorii</Trans>
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </>
-          ) : null}
-        </div>
+              </>
+            ) : null}
+          </div>
 
-        {/* The band closes on its receipt: DESIGN.md §Data Trust wants the
-            source, its date and the way back to the original beside the
-            numbers, not two clicks away in a drawer. */}
-        <div className={statisticsTheme.bandFooter}>
-          <DetailSourceLine
-            datasetCode={dataset.code}
-            sourceLastUpdate={dataset.source_last_update ?? null}
+        </section>
+
+        {/* What the matrix measures, read AFTER the figure: a definition before
+            the number is an obstacle, and after it is an answer. */}
+        {dataset.definition_ro ? (
+          <DetailDefinition text={dataset.definition_ro} />
+        ) : null}
+
+        {/* What INS publishes about the matrix: rendered whatever the series
+            state, because methodology and continuity explain the data even when
+            the selection is unresolved. */}
+        <DetailMetadataSection dataset={dataset} />
+
+        {/* The appendix, LAST: the table, the axes, the coverage and the related
+            sets are what a reader consults once the figure and the notes have
+            told them what they are looking at. Rows between the prose and the
+            methodology separated two halves of one argument. */}
+        {seriesEnabled && seriesQuery.isSuccess ? (
+          <DetailAccordion
+            dataset={dataset}
+            sourceDescriptor={seriesData?.sourceDescriptor}
+            observations={windowedRows}
+            observedSpan={observedSpan}
+            related={seriesData?.related ?? []}
+            relatedTotalCount={seriesData?.relatedTotalCount ?? null}
+            page={Math.min(
+              Math.max(1, typeof search.pagina === 'number' ? search.pagina : 1),
+              Math.max(1, Math.ceil(windowedRows.length / DETAIL_PAGE_SIZE)),
+            )}
+            compareSearch={compareSearch}
+            onSelectSource={
+              seriesData?.sourceDescriptor
+                ? (observation) => {
+                    const selected = sourceRowSelection(
+                      seriesData.sourceDescriptor,
+                      observation,
+                    )
+                    if (selected)
+                      onSearchChange({
+                        clasificari: [...selected.clasificari],
+                        unitate: selected.unitate,
+                        pagina: undefined,
+                      })
+                  }
+                : undefined
+            }
+            onPageChange={(next) =>
+              onSearchChange({ pagina: next > 1 ? next : undefined })
+            }
           />
-        </div>
-      </section>
-
-      {seriesEnabled && seriesQuery.isSuccess ? (
-        <DetailAccordion
-          dataset={dataset}
-          sourceDescriptor={seriesData?.sourceDescriptor}
-          observations={windowedRows}
-          observedSpan={observedSpan}
-          related={seriesData?.related ?? []}
-          relatedTotalCount={seriesData?.relatedTotalCount ?? null}
-          page={Math.min(
-            Math.max(1, typeof search.pagina === 'number' ? search.pagina : 1),
-            Math.max(1, Math.ceil(windowedRows.length / DETAIL_PAGE_SIZE)),
-          )}
-          compareSearch={compareSearch}
-          onSelectSource={
-            seriesData?.sourceDescriptor
-              ? (observation) => {
-                  const selected = sourceRowSelection(
-                    seriesData.sourceDescriptor,
-                    observation,
-                  )
-                  if (selected)
-                    onSearchChange({
-                      clasificari: [...selected.clasificari],
-                      unitate: selected.unitate,
-                      pagina: undefined,
-                    })
-                }
-              : undefined
-          }
-          onPageChange={(next) =>
-            onSearchChange({ pagina: next > 1 ? next : undefined })
-          }
-        />
-      ) : null}
-
-      {/* What INS publishes about the matrix: rendered whatever the series
-          state, because methodology and continuity explain the data even when
-          the selection is unresolved. */}
-      <DetailMetadataSection dataset={dataset} />
-    </>
+        ) : null}
+      </div>
+    </div>
   )
 }

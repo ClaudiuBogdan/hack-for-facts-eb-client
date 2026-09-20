@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Download, ExternalLink } from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DataStatusBadge } from '@/features/statistics/components/data-status-badge'
@@ -22,8 +28,7 @@ import {
   PROTOTYPE_MARKER,
   PrototypeChart,
   RailControl,
-  RailFact,
-  seriesReading,
+  SummaryFact,
   VariantError,
   VariantSkeleton,
 } from './dataset-detail.parts'
@@ -60,7 +65,6 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
 
   const { dataset, stats, chart, unitLabel, unitWord, unitSymbol, span, scope } =
     model
-  const reading = seriesReading(stats, unitWord)
   const cadence = (dataset.periodicity ?? []).map(periodicityLabel).join(', ')
   /**
    * The unit beside the figure.
@@ -318,14 +322,16 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
                   facts where there was one. The theme's own `heroValue` and
                   `heroUnit` carry the sizes, rather than a local copy of them.
 
-                  The rule before the period is a `before:` decoration, not a
-                  sibling element — drawn on the period's own span it can never
-                  wrap away from what it separates, and it keeps the outer
-                  `items-baseline` honest (an empty flex child has no baseline
-                  to align to). It appears only from `sm` up: below that the
-                  figure fills the line and the period drops to its own, where
-                  a separator has nothing left to separate and reads as a stray
-                  tick at the start of a line.
+                  The dot before the period lives INSIDE the period's span,
+                  not between two flex children, so it travels with what it
+                  separates rather than ending a wrapped line — which is the
+                  whole of §6f's objection to „·" between flex items. It is a
+                  real node, never `before:content-['·']`: the prototype rules
+                  forbid an arbitrary-value utility carrying text, because
+                  full-checkout CSS is generated from this source. It shows
+                  only from `sm` up — below that a long figure fills the line
+                  and the period drops to its own, where a separator has
+                  nothing left to separate.
                 */}
                 <p className="mt-1.5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                   <span className={statisticsTheme.heroValue}>
@@ -344,27 +350,47 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
                     ) : null}
                   </span>
                   {stats.latest ? (
-                    <span className="relative text-sm tabular-nums text-muted-foreground before:absolute before:left-0 before:top-1/2 before:hidden before:h-4 before:w-px before:-translate-y-1/2 before:bg-border sm:pl-4 sm:before:block">
+                    <span className="text-sm tabular-nums text-muted-foreground">
+                      <span
+                        aria-hidden
+                        className="mr-3 hidden text-muted-foreground/50 sm:inline"
+                      >
+                        ·
+                      </span>
                       {formatHubPeriod(stats.latest.period)}
                     </span>
                   ) : null}
                 </p>
               </div>
+              {/*
+                The unit is the row's FIRST fact, not a heading over it: given
+                its own column it is one more thing the series is, beside its
+                extremes and its mean, and it is stated once rather than
+                repeated after every figure („5 număr · 50 număr · 31,3
+                număr", or three „persoane" beside three twenty-million
+                figures).
+              */}
               <dl className="flex flex-wrap items-end gap-x-6 gap-y-2">
-                <RailFact label="minim" point={stats.trough} />
-                <RailFact label="maxim" point={stats.peak} />
-                <div>
-                  <dt className="text-xs text-muted-foreground">medie</dt>
-                  <dd className="text-sm font-medium tabular-nums">
-                    {stats.mean === null ? '—' : formatDerived(stats.mean)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-muted-foreground">observații</dt>
-                  <dd className="text-sm font-medium tabular-nums">
-                    {stats.count}
-                  </dd>
-                </div>
+                {heroUnit ? (
+                  <SummaryFact label="unitate" value={heroUnit} />
+                ) : null}
+                <SummaryFact
+                  label="minim"
+                  value={stats.trough ? formatValue(stats.trough.value) : '—'}
+                  period={
+                    stats.trough ? formatHubPeriod(stats.trough.period) : null
+                  }
+                />
+                <SummaryFact
+                  label="maxim"
+                  value={stats.peak ? formatValue(stats.peak.value) : '—'}
+                  period={stats.peak ? formatHubPeriod(stats.peak.period) : null}
+                />
+                <SummaryFact
+                  label="medie"
+                  value={stats.mean === null ? '—' : formatDerived(stats.mean)}
+                />
+                <SummaryFact label="observații" value={String(stats.count)} />
               </dl>
             </div>
 
@@ -383,22 +409,17 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
             ) : null}
           </section>
 
-          {/* What the shape says, then what it measures. Both read AFTER the
-              figure: a definition before the number is an obstacle, and after
-              it is an answer. */}
-          <section className="space-y-3">
-            {reading ? (
-              <p className="text-base leading-relaxed">
-                <span className="font-semibold tabular-nums">
-                  {reading.figure}
-                </span>
-                {reading.unit ? ` ${reading.unit}` : null} {reading.clause}
-              </p>
-            ) : null}
-            {dataset.definition_ro ? (
+          {/* What it measures, read AFTER the figure: a definition before the
+              number is an obstacle, and after it is an answer.
+
+              The derived sentence („10 în 2024, față de un maxim de 50 în
+              1997") used to open this section and no longer does — every one
+              of its facts is now in the summary row above, stated once. */}
+          {dataset.definition_ro ? (
+            <section>
               <p className={statisticsTheme.prose}>{dataset.definition_ro}</p>
-            ) : null}
-          </section>
+            </section>
+          ) : null}
 
           {notes.length > 0 ? (
             <section className="space-y-5 border-t border-border/70 pt-6">
@@ -417,22 +438,32 @@ export function DatasetDetailCombined({ code }: { readonly code: string }) {
 
           {/* The appendix. Last, because it is the thing a reader consults
               after the figure and the notes have told them what they are
-              looking at — and because 197 rows between the prose and the
-              methodology would separate two halves of one argument. It keeps
-              its own scroller so the page still ends somewhere. */}
-          <section className="space-y-2 border-t border-border/70 pt-6">
-            <div className="flex items-baseline justify-between gap-2">
-              <h2 className={statisticsTheme.sectionLabel}>Tabelul seriei</h2>
-              <p className="text-xs tabular-nums text-muted-foreground">
-                {model.rows.length} rânduri
-              </p>
-            </div>
-            <div className="max-h-[28rem] overflow-auto">
-              <DetailObservationsTable
-                observations={model.rows}
-                sourceDescriptor={model.sourceDescriptor}
-              />
-            </div>
+              looking at — and CLOSED, because that consultation is the
+              exception. The trigger carries the row count, so the one fact an
+              unopened table still owes the reader is on its face. Open, it
+              keeps its own scroller: 197 rows must not set the height of the
+              page they end. */}
+          <section className="border-t border-border/70 pt-2">
+            <Accordion type="single" collapsible>
+              <AccordionItem value="table" className="border-b-0">
+                <AccordionTrigger className="gap-3 hover:no-underline">
+                  <span className={statisticsTheme.sectionLabel}>
+                    Tabelul seriei
+                  </span>
+                  <span className="ml-auto text-xs font-normal tabular-nums text-muted-foreground">
+                    {model.rows.length} rânduri
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="pb-2">
+                  <div className="max-h-[28rem] overflow-auto">
+                    <DetailObservationsTable
+                      observations={model.rows}
+                      sourceDescriptor={model.sourceDescriptor}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </section>
         </div>
       </div>

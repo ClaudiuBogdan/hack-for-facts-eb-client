@@ -72,11 +72,6 @@ export const statisticsTheme = {
    */
   note: 'space-y-2 rounded-md bg-muted/60 p-3 text-sm',
   /**
-   * The strip that holds the scope controls: tinted so it reads as the input
-   * to the band below it rather than as more metadata about the title above.
-   */
-  controlStrip: 'border-b border-border/70 bg-muted/30 px-4 py-3',
-  /**
    * One scope chip — the dimension's name, its value, a chevron. A dotted
    * underline on the value marks a server default, a solid one a user pin;
    * the legend under the row says so once, and `aria-label` says it per chip.
@@ -89,6 +84,19 @@ export const statisticsTheme = {
    * a control that did nothing when pressed.
    */
   scopeChipStatic: 'inline-flex items-center gap-1.5 px-1 py-1 text-xs',
+  /**
+   * One row of the standing scope rail: the axis name over its value, with the
+   * chevron and the „implicit" mark at the far edge. The rail is the desktop
+   * alternative to the chip row — the same segments, stacked, so changing an
+   * axis never pushes the figure down the page.
+   */
+  scopeRailRow:
+    'flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+  /** The same row for an axis with nothing to choose: text, not a button. */
+  scopeRailStatic: 'flex min-w-0 flex-col items-start px-4 py-2.5',
+  scopeRailLabel: 'text-xs text-muted-foreground',
+  scopeRailValue:
+    'mt-0.5 w-full truncate text-left text-sm font-medium text-foreground',
 
   // -- Dimension option panel ------------------------------------------------
 

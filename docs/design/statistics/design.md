@@ -780,6 +780,64 @@ What the panes exposed as costs:
   which is the right call for a document and the wrong one for 197 monthly
   points.
 
+## 6i. The detail page adopts the combined design (2026-09-20)
+
+Promoted from the prototype `statistics/dataset-detail`, variant **`combined`**
+(`/development/statistics/dataset-detail?v=combined`). The four it was built
+from — `editorial`, `workbench`, `brief`, `report` — stay on disk as the record
+of what was compared; §6h says what each argued and what it cost.
+
+What the page is now, top to bottom:
+
+1. **Title, then one provenance line.** `ACC101B · 10. CONDITII DE MUNCA ·
+   Sursă: INS Tempo ↗, actualizată 5 noiembrie 2025`. The series band used to
+   close on a source strip repeating the matrix code and the source this line
+   already named. „Sursă" and the way back are ONE item, because the source's
+   name IS the link. Cadence and the year span are not here: the rail states
+   both, and „Interval de ani" is the control that changes them.
+2. **A standing scope rail on the left**, sticky, with the data column beside
+   it — `DetailScopeSentence layout="rail"`. Same segments, same controls, same
+   phone sheet; only the desktop shape differs, and the chips branch is not
+   rendered at all when the rail is chosen (two copies of every control is a
+   duplicate for a screen reader, not a style).
+3. **The figure and the facts that scale it**, on one baseline:
+   `10 număr · 2024` beside `unitate · minim · maxim · medie · observații`.
+   The unit is the row's first fact rather than a heading over it, stated once
+   instead of repeated after every figure.
+4. **The chart marks what the facts name** — peak, trough and the latest point,
+   with an area tint and the mean as a dashed reference. The facts say WHAT the
+   extremes are; the marks say WHERE.
+5. **The definition, then the numbered notes.** Methodology, sources, INS's own
+   observations and continuity are sections `1.`–`4.`, not four identical
+   chevrons: a number is cheaper to cite than a chevron is to open, and a
+   reader could not tell from the outside which row held what they came for.
+6. **The appendix last**, closed: the table, the axes, the coverage, the
+   provenance and the related sets. It is what a reader consults once the
+   figure and the notes have said what they are looking at.
+
+Rules the promotion had to hold, and does:
+
+- **The latest PUBLISHED cell is the headline, readable or not.**
+  `summarizeSeries` skips unreadable values, so its „latest" is the last
+  READABLE one — printing that under „Ultima valoare" while INS's actual latest
+  cell is confidential would present a stale number as current. The page passes
+  `absent` for exactly that case and the summary says so in words, with the
+  cell's period and quality flag. Absence is never a figure and never 0.
+- **The summary parses values with the chart's own reader.** `toChartValue`,
+  not `parseFloat` — `parseFloat('0oops')` is 0, which would report a new
+  minimum for a row the figure below draws as a gap.
+- **An extreme the chart does not contain is not marked.** `buildTimeSeries`
+  caps the plot at `CHART_MAX_POINTS`, so a long monthly series' peak can live
+  outside its own figure; Recharts drops such a mark silently, which is worse
+  than not claiming it. The mean is withheld the same way when it falls outside
+  the plotted domain.
+- **A computed figure prints at a precision its source justifies.** A
+  population mean read „22.511.356,94" — a hundredth of a person across 35
+  observations.
+- **Both catalogs are filled.** The unit words („număr", „persoane",
+  „procente", „ani") had empty `ro` msgstrs and Romanian `en` ones, so English
+  showed Romanian; this page is the first to render them, and it fixed them.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

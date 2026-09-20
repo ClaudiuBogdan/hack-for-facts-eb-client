@@ -1,11 +1,7 @@
+import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import type { InsDataset } from '@/schemas/ins'
 import { statisticsTheme } from '../lib/statistics-theme'
@@ -18,10 +14,16 @@ type Props = {
 
 /**
  * What INS publishes ABOUT the matrix on its own TEMPO page, beyond the
- * definition the header already shows: methodology, data sources,
- * observations and series continuity. One closed accordion so the page stays
- * a disclosure ladder; every row's trigger says whether it has something to
- * open.
+ * definition the page already shows: methodology, data sources, observations
+ * and series continuity.
+ *
+ * Numbered sections, not a stack of chevrons. Four identical closed rows are
+ * cheap to open and expensive to find — a reader cannot tell from the outside
+ * which one holds the thing they came for, and these are the parts of the page
+ * they cite rather than browse. A number is cheaper to reference than a
+ * chevron is to open. They are numbered in the order they RENDER, skipping
+ * what INS never published: „2. Surse de date" under no „1." reads as a
+ * section that failed to load.
  *
  * The source's last update is NOT a row here. A date is a fact, not a section,
  * and dressing it as one put a disclosure control over a string already fully
@@ -76,34 +78,23 @@ export function DetailMetadataSection({ dataset }: Props) {
     return null
   }
 
-  return (
-    <section className="space-y-2" data-testid="dataset-metadata">
-      <h2 className={statisticsTheme.sectionLabel}>
-        <Trans>Despre acest set de date</Trans>
-      </h2>
-      <Accordion type="multiple" className={statisticsTheme.band}>
-        {methodology !== null ? (
-          <AccordionItem value="metodologie" className="px-4 last:border-b-0">
-            <AccordionTrigger className="text-sm font-medium">
-              <Trans>Metodologie</Trans>
-            </AccordionTrigger>
-            <AccordionContent>
-              <PublishedText text={methodology} />
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
-
-        {sources.length > 0 ? (
-          <AccordionItem value="surse" className="px-4 last:border-b-0">
-            <AccordionTrigger className="text-sm font-medium">
-              <Trans>Surse de date ({sources.length})</Trans>
-            </AccordionTrigger>
-            <AccordionContent>
+  const notes: readonly { readonly title: string; readonly body: ReactNode }[] =
+    [
+      methodology !== null
+        ? {
+            title: t`Metodologie`,
+            body: <PublishedText text={methodology} className={noteProse} />,
+          }
+        : null,
+      sources.length > 0
+        ? {
+            title: t`Surse de date`,
+            body: (
               <ul className="space-y-2">
                 {sources.map((source, index) => (
                   <li
                     key={`${source.name}-${index}`}
-                    className="flex flex-wrap items-center gap-2 text-sm"
+                    className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
                   >
                     <span>{stripSourceMarker(source.name)}</span>
                     {source.type ? (
@@ -114,78 +105,99 @@ export function DetailMetadataSection({ dataset }: Props) {
                   </li>
                 ))}
               </ul>
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
-
-        {observations !== null ? (
-          <AccordionItem value="observatii" className="px-4 last:border-b-0">
-            <AccordionTrigger className="text-sm font-medium">
-              <Trans>Observații INS</Trans>
-            </AccordionTrigger>
-            <AccordionContent>
-              <PublishedText text={observations} />
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
-
-        {hasContinuity ? (
-          <AccordionItem value="continuitate" className="px-4 last:border-b-0">
-            <AccordionTrigger className="text-sm font-medium">
-              <Trans>Continuitatea seriei</Trans>
-            </AccordionTrigger>
-            <AccordionContent className="space-y-2 text-sm">
-              {discontinuedAfter !== null ? (
-                <p>
-                  <Trans>Seria se încheie cu perioada „{discontinuedAfter}”.</Trans>{' '}
-                  {successor !== null ? (
-                    <Trans>
-                      Continuă în{' '}
-                      <Link
-                        to="/ins/seturi/$cod"
-                        params={{ cod: successor }}
-                        className="font-mono underline underline-offset-2"
-                      >
-                        {successor}
-                      </Link>
-                      .
-                    </Trans>
-                  ) : null}
-                </p>
-              ) : null}
-              {predecessors.length > 0 ? (
-                <div className="space-y-1">
+            ),
+          }
+        : null,
+      observations !== null
+        ? {
+            title: t`Observații INS`,
+            body: <PublishedText text={observations} className={noteProse} />,
+          }
+        : null,
+      hasContinuity
+        ? {
+            title: t`Continuitatea seriei`,
+            body: (
+              <div className="space-y-2 text-sm text-muted-foreground">
+                {discontinuedAfter !== null ? (
                   <p>
-                    <Trans>Continuă seriile:</Trans>
-                  </p>
-                  <ul className="list-inside list-disc space-y-1">
-                    {predecessors.map((link) => (
-                      <li key={link.dataset_code}>
+                    <Trans>
+                      Seria se încheie cu perioada „{discontinuedAfter}”.
+                    </Trans>{' '}
+                    {successor !== null ? (
+                      <Trans>
+                        Continuă în{' '}
                         <Link
                           to="/ins/seturi/$cod"
-                          params={{ cod: link.dataset_code }}
+                          params={{ cod: successor }}
                           className="font-mono underline underline-offset-2"
                         >
-                          {link.dataset_code}
-                        </Link>{' '}
-                        <span className="text-muted-foreground">
-                          <Trans>
-                            (până la{' '}
-                            {pick(link.last_period_ro, link.last_period_en) ??
-                              link.last_period_ro}
-                            )
-                          </Trans>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </AccordionContent>
-          </AccordionItem>
-        ) : null}
+                          {successor}
+                        </Link>
+                        .
+                      </Trans>
+                    ) : null}
+                  </p>
+                ) : null}
+                {predecessors.length > 0 ? (
+                  <div className="space-y-1">
+                    <p>
+                      <Trans>Continuă seriile:</Trans>
+                    </p>
+                    <ul className="list-inside list-disc space-y-1">
+                      {predecessors.map((link) => (
+                        <li key={link.dataset_code}>
+                          <Link
+                            to="/ins/seturi/$cod"
+                            params={{ cod: link.dataset_code }}
+                            className="font-mono underline underline-offset-2"
+                          >
+                            {link.dataset_code}
+                          </Link>{' '}
+                          <span className="text-muted-foreground">
+                            <Trans>
+                              (până la{' '}
+                              {pick(link.last_period_ro, link.last_period_en) ??
+                                link.last_period_ro}
+                              )
+                            </Trans>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ),
+          }
+        : null,
+    ].filter((note) => note !== null)
 
-      </Accordion>
+  if (notes.length === 0) return null
+
+  return (
+    <section className="space-y-5" data-testid="dataset-metadata">
+      {/* Not „Note": that msgid is shared with another feature and is
+          translated „Notă" in Romanian, which renders as a singular heading
+          over four sections. This one is the section's own, and says more. */}
+      <h2 className={statisticsTheme.sectionLabel}>
+        <Trans>Despre acest set de date</Trans>
+      </h2>
+      {notes.map((note, index) => (
+        <section key={note.title}>
+          <h3 className="text-sm font-semibold">
+            <span className="tabular-nums text-muted-foreground">
+              {index + 1}.
+            </span>{' '}
+            {note.title}
+          </h3>
+          <div className="mt-1.5">{note.body}</div>
+        </section>
+      ))}
     </section>
   )
 }
+
+/** Published prose in the quiet tier, measured rather than full-bleed. */
+const noteProse =
+  'max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted-foreground'
