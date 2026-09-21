@@ -58,11 +58,15 @@ export function ComparisonTerritoryPicker({
   const isFull = selected.length >= MAX_COMPARISON_TERRITORIES
   const selectedTokens = new Set(selected.map((entry) => entry.token))
 
-  const chips: readonly StatisticsFilterChip[] = selected.map((entry) => ({
-    id: entry.token,
-    label: labelByCode.get(entry.code) ?? entry.code,
-    onRemove: () => onRemove(entry.token),
-  }))
+  const chips: readonly StatisticsFilterChip[] = selected.map((entry) => {
+    const label = labelByCode.get(entry.code) ?? entry.code
+    return {
+      id: entry.token,
+      value: label,
+      removeLabel: t`Scoate ${label} din comparație`,
+      onRemove: () => onRemove(entry.token),
+    }
+  })
 
   const available = rows.flatMap((row) => {
     const token = rowToken(row)
@@ -76,7 +80,13 @@ export function ComparisonTerritoryPicker({
         <Trans>Teritorii</Trans>
       </h2>
 
-      <StatisticsActiveFilters chips={chips} onClearAll={onClear} />
+      {/* The chips here are a selection, not filters — the row's copy says so. */}
+      <StatisticsActiveFilters
+        chips={chips}
+        onClearAll={onClear}
+        ariaLabel={t`Teritorii selectate`}
+        clearAllLabel={t`Scoate toate teritoriile`}
+      />
 
       {!isFull && peers.length > 0 ? (
         <div className="flex flex-wrap gap-1.5">

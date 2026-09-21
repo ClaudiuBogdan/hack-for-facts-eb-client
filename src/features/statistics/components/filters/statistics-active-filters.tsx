@@ -1,58 +1,104 @@
 import { X } from 'lucide-react'
-import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { statisticsTheme } from '../../lib/statistics-theme'
 
-/** One removable filter chip. `onRemove` clears exactly that filter. */
+/**
+ * One removable chip. `name` is the dimension the filter narrows and is set
+ * quiet before the value; omit it when the value names itself — a territory,
+ * say. `onRemove` clears exactly that filter.
+ */
 export type StatisticsFilterChip = {
   readonly id: string
-  readonly label: string
+  readonly name?: string
+  readonly value: string
+  /**
+   * Overrides the dismiss button's name. The default calls the chip a filter,
+   * which is wrong on a surface where the chips are a selection.
+   */
+  readonly removeLabel?: string
   readonly onRemove: () => void
 }
 
 type Props = {
   readonly chips: readonly StatisticsFilterChip[]
   readonly onClearAll: () => void
+  /** Names the row for assistive tech. */
+  readonly ariaLabel?: string
+  /** The clear-all copy, when „filters" is not what the chips are. */
+  readonly clearAllLabel?: string
   readonly className?: string
 }
 
 /**
- * Active-filter chips with a clear-all affordance. Renders nothing when no
- * filter is applied, so callers can mount it unconditionally.
+ * Active-filter chips with a clear-all escape. Renders nothing when no filter
+ * is applied, so callers can mount it unconditionally.
+ *
+ * A `group`, not a live region: `role="status"` is implicitly atomic, so every
+ * debounced keystroke would re-announce the whole row — each chip and the
+ * clear-all — on top of the result count the explorer already announces. The
+ * count is the better live region, because it says what actually changed.
+ *
+ * Clear-all sits opposite the chips rather than after them — trailing the row
+ * it read as one more chip that happened to have lost its border. It only goes
+ * opposite them once the ROW is wide enough to hold both, which is a container
+ * query rather than a breakpoint: the comparison picker mounts this in a 20rem
+ * column of a wide desktop, where a viewport breakpoint would reserve half the
+ * column for the button and stack the chips one per line.
  */
-export function StatisticsActiveFilters({ chips, onClearAll, className }: Props) {
+export function StatisticsActiveFilters({
+  chips,
+  onClearAll,
+  ariaLabel,
+  clearAllLabel,
+  className,
+}: Props) {
   if (chips.length === 0) return null
 
   return (
     <div
-      className={cn('flex flex-wrap items-center gap-2', className)}
+      className={cn('@container', className)}
       role="group"
-      aria-label={t`Filtre active`}
+      aria-label={ariaLabel ?? t`Filtre active`}
     >
-      {chips.map((chip) => (
+      <div className="flex flex-col items-start gap-2 @lg:flex-row @lg:items-start @lg:justify-between @lg:gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {chips.map((chip) => {
+            // Named `label` because the catalog already carries
+            // `Elimină filtrul {label}` translated — renaming it orphans that.
+            const label = chip.name ? `${chip.name}: ${chip.value}` : chip.value
+            return (
+              <span key={chip.id} className={statisticsTheme.filterChip}>
+                {chip.name ? (
+                  <span className={statisticsTheme.filterChipName}>
+                    {chip.name}:
+                  </span>
+                ) : null}
+                {/* The title is the only way back to a value the chip had to
+                    truncate — a long query, a four-level INS context name. */}
+                <span className={statisticsTheme.filterChipValue} title={label}>
+                  {chip.value}
+                </span>
+                <button
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={chip.removeLabel ?? t`Elimină filtrul ${label}`}
+                  className={statisticsTheme.filterChipRemove}
+                >
+                  <X aria-hidden className="h-4 w-4" />
+                </button>
+              </span>
+            )
+          })}
+        </div>
         <button
-          key={chip.id}
           type="button"
-          onClick={chip.onRemove}
-          aria-label={t`Elimină filtrul ${chip.label}`}
-          // DESIGN.md §Shapes: radius caps at 8px, so a filter chip is a
-          // rounded rectangle rather than a pill.
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/60 py-1 pl-2.5 pr-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          onClick={onClearAll}
+          className={statisticsTheme.filterClearAll}
         >
-          <span>{chip.label}</span>
-          <X aria-hidden className="h-3.5 w-3.5 text-muted-foreground" />
+          {clearAllLabel ?? t`Șterge toate filtrele`}
         </button>
-      ))}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-7 px-2 text-xs"
-        onClick={onClearAll}
-      >
-        <Trans>Șterge toate filtrele</Trans>
-      </Button>
+      </div>
     </div>
   )
 }

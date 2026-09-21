@@ -118,6 +118,29 @@ export const statisticsTheme = {
   scopeChipValueDefault: 'decoration-border decoration-dotted',
   scopeChipValuePinned: 'decoration-foreground/50 decoration-solid',
 
+  // -- Active filters (catalog list pages) ----------------------------------
+
+  /**
+   * One active-filter chip: the dimension's name quiet, its value in weight,
+   * and a dismiss square of its own. 32px tall under a 40px search input, so
+   * the row reads as part of the control band rather than as a footnote to it.
+   * The chip itself is not the remove target — a chip that is loses a filter to
+   * a misplaced click and leaves the reader nothing safe to point at.
+   */
+  filterChip:
+    'inline-flex h-8 max-w-[min(100%,22rem)] items-center gap-1.5 rounded-md border border-border bg-card pl-2.5 pr-1 text-sm',
+  filterChipName: 'shrink-0 text-muted-foreground',
+  filterChipValue: 'min-w-0 truncate font-medium text-foreground',
+  /** The dismiss square. 28px, clear of the 24px floor in WCAG 2.5.8. */
+  filterChipRemove:
+    'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  /**
+   * Clear-all is an action, not a token: underlined and unboxed, so it never
+   * reads as one more chip at the end of the row.
+   */
+  filterClearAll:
+    'inline-flex h-8 shrink-0 items-center rounded-md px-1 text-sm font-medium text-muted-foreground underline decoration-border underline-offset-4 transition-colors hover:text-foreground hover:decoration-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+
   // -- Facet rail (catalog list pages) --------------------------------------
 
   /**

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildExplorerChips,
   explorerChipLabel,
+  explorerChipParts,
   explorerContextLabel,
   explorerPeriodicityLabel,
 } from './explorer-chips'
@@ -87,6 +88,35 @@ describe('explorerChipLabel', () => {
       'Acoperire: UAT',
       'Acoperire: județ',
     ])
+  })
+})
+
+describe('explorerChipParts', () => {
+  it('splits every chip kind into the dimension and its value', () => {
+    const chips = buildExplorerChips({
+      q: 'turism',
+      context: '2',
+      frecventa: ['ANNUAL'],
+      uat: true,
+      judet: true,
+    })
+
+    expect(chips.map((chip) => explorerChipParts(chip))).toEqual([
+      { name: 'Conține', value: 'turism' },
+      { name: 'Temă', value: 'Economic' },
+      { name: 'Periodicitate', value: 'Anual' },
+      { name: 'Acoperire', value: 'UAT' },
+      { name: 'Acoperire', value: 'județ' },
+    ])
+  })
+
+  // The chips row sets the two halves apart; the joined phrase is what the
+  // dismiss button is named, and the integration spec clicks it by that name.
+  it('joins back into the phrase the label carries', () => {
+    const [chip] = buildExplorerChips({ frecventa: ['MONTHLY'] })
+
+    expect(chip).toBeDefined()
+    expect(explorerChipLabel(chip!)).toBe('Periodicitate: Lunar')
   })
 })
 

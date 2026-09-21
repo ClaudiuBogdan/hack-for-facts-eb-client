@@ -89,23 +89,50 @@ export function buildExplorerChips(
   return chips
 }
 
+/** A chip's two halves: the dimension it narrows, and the value it holds. */
+export interface ExplorerChipParts {
+  /** The dimension's name. `null` when the value names itself. */
+  readonly name: string | null
+  readonly value: string
+}
+
+/**
+ * The chip's name and its value apart, so the row can set the dimension quiet
+ * and the value in weight — which is what makes a row of chips scannable
+ * rather than four phrases to read. `explorerChipLabel` joins them back into
+ * the one phrase assistive tech hears.
+ */
+export function explorerChipParts(
+  chip: ExplorerChip,
+  contextIndex?: StatisticsContextIndex,
+): ExplorerChipParts {
+  switch (chip.kind) {
+    case 'q':
+      return { name: t`Conține`, value: chip.value ?? '' }
+    case 'context':
+      return {
+        name: t`Temă`,
+        value: explorerContextLabel(chip.value, contextIndex),
+      }
+    case 'frecventa':
+      return {
+        name: t`Periodicitate`,
+        value: explorerPeriodicityLabel(chip.value as ExplorerPeriodicity),
+      }
+    case 'uat':
+      return { name: t`Acoperire`, value: t`UAT` }
+    case 'judet':
+      return { name: t`Acoperire`, value: t`județ` }
+  }
+}
+
 /** Localized chip label, e.g. `Periodicitate: Anual`. */
 export function explorerChipLabel(
   chip: ExplorerChip,
   contextIndex?: StatisticsContextIndex,
 ): string {
-  switch (chip.kind) {
-    case 'q':
-      return t`Conține: ${chip.value ?? ''}`
-    case 'context':
-      return t`Temă: ${explorerContextLabel(chip.value, contextIndex)}`
-    case 'frecventa':
-      return t`Periodicitate: ${explorerPeriodicityLabel(chip.value as ExplorerPeriodicity)}`
-    case 'uat':
-      return t`Acoperire: UAT`
-    case 'judet':
-      return t`Acoperire: județ`
-  }
+  const { name, value } = explorerChipParts(chip, contextIndex)
+  return name === null ? value : `${name}: ${value}`
 }
 
 /** Romanian periodicity word — never the raw enum member. */

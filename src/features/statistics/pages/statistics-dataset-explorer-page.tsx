@@ -24,7 +24,7 @@ import {
   buildStatisticsContextTree,
   indexStatisticsContextTree,
 } from '../lib/context-tree'
-import { buildExplorerChips, explorerChipLabel } from '../lib/explorer-chips'
+import { buildExplorerChips, explorerChipParts } from '../lib/explorer-chips'
 import { clearedExplorerSearch, countActiveExplorerFilters, hasActiveExplorerFilters } from '../lib/explorer-filter'
 import { statisticsTheme } from '../lib/statistics-theme'
 
@@ -103,11 +103,15 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
     [applySearch, search],
   )
 
-  const chips: readonly StatisticsFilterChip[] = buildExplorerChips(search).map((chip) => ({
-    id: chip.id,
-    label: explorerChipLabel(chip, contextIndex),
-    onRemove: () => applySearch(chip.next),
-  }))
+  const chips: readonly StatisticsFilterChip[] = buildExplorerChips(search).map((chip) => {
+    const { name, value } = explorerChipParts(chip, contextIndex)
+    return {
+      id: chip.id,
+      name: name ?? undefined,
+      value,
+      onRemove: () => applySearch(chip.next),
+    }
+  })
 
   const pagination = explorerQuery.isSuccess && datasets.length > 0 ? (
     <DatasetExplorerPagination
@@ -161,12 +165,15 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
                   placeholder={t`Caută după denumire sau cod de matrice`}
                   ariaLabel={t`Caută seturi de date`}
                   clearLabel={t`Șterge căutarea`}
+                  size="lg"
                   className="sm:flex-1"
                 />
+                {/* Matches the field it stands beside — a 40px button next to a
+                    48px input reads as the smaller of two unequal controls. */}
                 <StatisticsFilterTriggerButton
                   activeCount={countActiveExplorerFilters(search)}
                   onClick={() => setFiltersOpen(true)}
-                  className="lg:hidden"
+                  className="h-12 lg:hidden"
                 />
               </div>
 
