@@ -55,7 +55,7 @@ describe("entity INS source URL intent", () => {
     expect(result.issues).toContain("classifications");
     expect(result.explicitSource).toBe(true);
   });
-  it.each([null, "", [], {}, ["D0:1", "garbage"], ["D0:0", "D0:0"]])(
+  it.each([null, "", {}, ["D0:1", "garbage"], ["D0:0", "D0:0"]])(
     "retains invalid native pins %j without a legacy fallback",
     (pins) => {
       const input = entityInsSourceSearchSchema.parse({ insSourcePins: pins });
@@ -64,6 +64,13 @@ describe("entity INS source URL intent", () => {
       expect(result.issues).toContain("classifications");
     },
   );
+  it("treats an empty native pin list as no pins, not as an invalid one", () => {
+    // The same rule the detail page needs: „no pins" is what both an empty
+    // list and an absent one say.
+    const input = entityInsSourceSearchSchema.parse({ insSourcePins: [] });
+    const result = resolveEntityInsSelection({ ...input });
+    expect(result.issues).not.toContain("classifications");
+  });
   it("cadence alone requires source confirmation instead of borrowing another cadence latest default", () => {
     expect(resolveEntityInsSelection({ insTemporal: "month" })).toMatchObject({
       cadence: "MONTHLY",

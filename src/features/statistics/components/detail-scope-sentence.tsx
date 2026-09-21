@@ -34,6 +34,7 @@ import type {
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import {
   classificationTypeCode,
+  datasetTerritoryLevels,
   dimensionsOfType,
   type DetailSearchPatch,
   type EffectiveScope,
@@ -416,6 +417,17 @@ function buildSegments(params: {
   const segments: ScopeSegment[] = []
   const dimensions = dataset.dimensions ?? []
 
+  /**
+   * A national-only matrix gets a territory STATEMENT, not a picker.
+   *
+   * DESIGN.md §11: no surface forces a territory level a dataset lacks. The
+   * picker searched every level for every matrix, so JUS101A — „Judecatori",
+   * whose only axes are „Ani" and „UM: Numar persoane" — offered all 42
+   * counties, and choosing one wrote `?teritoriu=cod:AB`, a filter no row can
+   * satisfy. The page went empty with nothing saying why.
+   */
+  const territoryLevels = datasetTerritoryLevels(dataset)
+  const territoryChoosable = territoryLevels.length > 1
   segments.push({
     id: 'teritoriu',
     text:
@@ -424,7 +436,15 @@ function buildSegments(params: {
         : territoryLabel,
     defaulted: scope.territoryDefaulted,
     controlLabel: t`Teritoriu`,
-    control: () => <DetailTerritoryControl search={search} onChange={onChange} />,
+    control: territoryChoosable
+      ? () => (
+          <DetailTerritoryControl
+            search={search}
+            onChange={onChange}
+            levels={territoryLevels}
+          />
+        )
+      : null,
   })
 
   const unresolvedTypeCodes = new Set(

@@ -67,6 +67,10 @@ describe('detail source selection', () => {
       territoryLevel: 'NUTS3',
     })
     expect(detailBootstrapEntity({ clasificari: ['D0:100'] })).toBeNull()
+    // An empty list pins nothing, so it does not suppress the bootstrap.
+    expect(detailBootstrapEntity({ clasificari: [] })).toEqual(NATIONAL_ENTITY)
+    // A malformed non-array still counts as an explicit source intent.
+    expect(detailBootstrapEntity({ clasificari: 'D0:100' })).toBeNull()
     expect(detailBootstrapEntity({ unitate: 0 })).toBeNull()
     expect(resolve({}, latest).canDerive).toBe(true)
   })
@@ -97,7 +101,6 @@ describe('detail source selection', () => {
   it.each([
     null,
     'D0:100',
-    [],
     {},
     [null],
     ['D0:100', 'D0:100'],
@@ -120,6 +123,22 @@ describe('detail source selection', () => {
     expect(selected.canDerive).toBe(false)
     expect(selected.issues).toContain('classifications')
   })
+  it('treats an EMPTY pin list exactly as an absent one', () => {
+    // „No pins" is what both say. A matrix whose only axes are time and a unit
+    // has no classification coordinate to pin, so `sourceRowSelection` returns
+    // `clasificari: []` for every one of its rows — rejecting that made the
+    // page refuse a URL its own „Alege această serie" had just written.
+    const empty = resolve(
+      statisticsDatasetDetailSearchSchema.parse({ clasificari: [] }),
+      latest,
+    )
+    const absent = resolve(statisticsDatasetDetailSearchSchema.parse({}), latest)
+    expect(empty.issues).not.toContain('classifications')
+    expect(empty.issues).toEqual(absent.issues)
+    expect(empty.canDerive).toBe(absent.canDerive)
+    expect(empty.filter).toEqual(absent.filter)
+  })
+
   it.each(['-2147483648', '0', '2147483647'])(
     'accepts canonical source integer %s without assuming member existence',
     (code) => {

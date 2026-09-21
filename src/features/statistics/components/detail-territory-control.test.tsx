@@ -42,6 +42,7 @@ const page = (rows: StatisticsTerritorySearchRow[], hasNextPage = false) => ({
 const mount = (onChange = vi.fn()) => {
   render(
     <DetailTerritoryControl
+      levels={['NATIONAL', 'NUTS3', 'LAU']}
       search={{
         teritoriu: 'siruta:179132',
         clasificari: ['D0:7', 'D1:8'],
@@ -127,7 +128,11 @@ describe('independent canonical territory control', () => {
       () => new Promise(() => {}),
     )
     const { unmount } = render(
-      <DetailTerritoryControl search={{}} onChange={vi.fn()} />,
+      <DetailTerritoryControl
+        search={{}}
+        onChange={vi.fn()}
+        levels={['NATIONAL', 'NUTS3', 'LAU']}
+      />,
       { queryClient: createTestQueryClient() },
     )
     const signal = vi.mocked(searchInsTerritories).mock.calls[0][0].signal

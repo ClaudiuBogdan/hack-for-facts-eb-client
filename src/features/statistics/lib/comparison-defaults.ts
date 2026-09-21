@@ -5,7 +5,11 @@ import {
   isInsChartPeriodicity,
   insSourcePeriodicitySchema,
 } from '@/lib/ins/source-contract'
-import { parseSourcePins, parseSourceUnit } from '@/lib/ins/source-pins'
+import {
+  hasSourcePinIntent,
+  parseSourcePins,
+  parseSourceUnit,
+} from '@/lib/ins/source-pins'
 import { inspectSourceSeries } from '@/lib/ins/source-series'
 
 /** Native defaults are proposals only; full source vectors decide each territory's eligibility. */
@@ -23,7 +27,7 @@ export function resolveComparisonDefaults(input: {
       .map((d) => `D${d.index}`),
   )
   const explicit =
-    input.classifications !== undefined ||
+    hasSourcePinIntent(input.classifications) ||
     input.unit !== undefined ||
     input.cadence !== undefined
   const parsed = parseSourcePins(input.classifications, axes)

@@ -7,7 +7,11 @@ export type {
   EntityInsSelectionInput,
   EntityInsSourceSearch,
 } from "@/lib/ins/entity-source-search";
-import { parseSourcePins, parseSourceUnit } from "@/lib/ins/source-pins";
+import {
+  hasSourcePinIntent,
+  parseSourcePins,
+  parseSourceUnit,
+} from "@/lib/ins/source-pins";
 import { insSourcePeriodicitySchema } from "@/lib/ins/source-contract";
 import type { StatisticsDatasetDetailSearch } from "@/schemas/statistics";
 import type { NativeInsEntityContext } from "../api/graphql/ins-entity-context";
@@ -74,7 +78,7 @@ export function resolveEntityInsSelection(input: EntityInsSelectionInput) {
     issues,
     // Cadence-only legacy links require source confirmation: latest defaults may belong to another cadence.
     explicitSource:
-      classifications !== undefined ||
+      hasSourcePinIntent(classifications) ||
       unit !== undefined ||
       cadence !== undefined,
   };

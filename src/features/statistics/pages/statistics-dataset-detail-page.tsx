@@ -6,6 +6,7 @@ import {
   inspectSourceSeries,
   sourceRowSelection,
 } from '@/lib/ins/source-series'
+import { hasSourcePinIntent } from '@/lib/ins/source-pins'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useEffect, useMemo, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
@@ -874,7 +875,7 @@ function DatasetDetailBody({
                     }
                     matchChip={
                       (latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
-                        search.clasificari === undefined &&
+                        !hasSourcePinIntent(search.clasificari) &&
                         search.unitate === undefined) ||
                       representativeDefaults
                         ? 'representative'
@@ -907,12 +908,32 @@ function DatasetDetailBody({
                   scope.territory !== null &&
                   hasGeographicSourcePins
                 ) ? (
-                  <EmptyState
-                    // Unframed: the band is already the frame.
-                    className="border-none px-0 py-8"
-                    title={t`Nicio observație`}
-                    description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}
-                  />
+                  <div className="space-y-3">
+                    <EmptyState
+                      // Unframed: the band is already the frame.
+                      className="border-none px-0 py-8"
+                      title={t`Nicio observație`}
+                      description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}
+                    />
+                    {/* A pinned territory that matches nothing has to be
+                        undoable HERE. On a national-only matrix the rail shows
+                        the territory as a statement rather than a picker — the
+                        dataset has no sub-national coverage to offer — so a
+                        link carrying `?teritoriu=cod:AB` would otherwise leave
+                        the reader on an empty page with no control to clear
+                        it. */}
+                    {scope.territory !== null ? (
+                      <div className="flex justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onSearchChange({ teritoriu: undefined })}
+                        >
+                          <Trans>Șterge filtrul teritorial</Trans>
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
                 ) : null}
 
                 {seriesQuery.isSuccess &&
@@ -1039,7 +1060,15 @@ function DatasetDetailBody({
                     )
                     if (selected)
                       onSearchChange({
-                        clasificari: [...selected.clasificari],
+                        // Empty means „no pins", and the canonical way to say
+                        // that is to leave the parameter out — the same
+                        // normalisation `editSourcePin` does when the last pin
+                        // is cleared. A matrix with no classification axes
+                        // would otherwise get `?clasificari=[]` in its URL.
+                        clasificari:
+                          selected.clasificari.length > 0
+                            ? [...selected.clasificari]
+                            : undefined,
                         unitate: selected.unitate,
                         pagina: undefined,
                       })

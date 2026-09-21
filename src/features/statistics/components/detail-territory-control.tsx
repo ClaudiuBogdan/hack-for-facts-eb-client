@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
+import type { InsTerritoryLevel } from '@/schemas/ins'
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import { searchInsTerritories } from '../api/graphql/statistics-fetchers'
 import { type DetailSearchPatch } from '../lib/dataset-selection'
@@ -14,22 +15,36 @@ import { type DetailSearchPatch } from '../lib/dataset-selection'
 export function DetailTerritoryControl({
   search,
   onChange,
+  levels,
 }: {
   readonly search: StatisticsDatasetDetailSearch
   readonly onChange: (patch: DetailSearchPatch) => void
+  /**
+   * The levels THIS dataset publishes — `datasetTerritoryLevels`. Searching
+   * every level for every matrix offered a national-only series every county
+   * in the country, and choosing one wrote a filter no row could satisfy.
+   */
+  readonly levels: readonly InsTerritoryLevel[]
 }) {
   const inputId = useId()
   const [draft, setDraft] = useState('')
   const [offsets, setOffsets] = useState([0])
   const term = useDebouncedValue(draft.trim(), 300)
   const offset = offsets[offsets.length - 1]
+  const levelKey = [...levels].join(',')
   const query = useQuery({
-    queryKey: ['statisticsCanonicalTerritories', 'native-v1', term, offset],
+    queryKey: [
+      'statisticsCanonicalTerritories',
+      'native-v1',
+      levelKey,
+      term,
+      offset,
+    ],
     queryFn: async ({ signal }) => {
       const page = await searchInsTerritories({
         filter: {
           ...(term ? { search: term } : {}),
-          levels: ['NATIONAL', 'NUTS3', 'LAU'],
+          levels: [...levels],
         },
         limit: 20,
         offset,

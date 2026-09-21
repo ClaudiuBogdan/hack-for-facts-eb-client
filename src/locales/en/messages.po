@@ -182,7 +182,7 @@ msgid "{0, plural, one {# vot} few {# voturi} other {# de voturi}}"
 msgstr "{0, plural, one {# vot} few {# voturi} other {# de voturi}}"
 
 #. placeholder {0}: dataset.dimensions?.length ?? 0
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:524
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:554
 msgid "{0, plural, one {o axă} few {# axe} other {# de axe}}"
 msgstr "{0, plural, one {one axis} other {# axes}}"
 
@@ -604,15 +604,15 @@ msgstr "{0}, {1}, {2}. Județele sunt ordonate după valoare; harta folosește c
 
 #. placeholder {0}: segment.controlLabel
 #. placeholder {1}: segment.text
-#: src/features/statistics/components/detail-scope-sentence.tsx:197
-#: src/features/statistics/components/detail-scope-sentence.tsx:264
+#: src/features/statistics/components/detail-scope-sentence.tsx:198
+#: src/features/statistics/components/detail-scope-sentence.tsx:265
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
 
 #. placeholder {0}: segment.controlLabel
 #. placeholder {1}: segment.text
-#: src/features/statistics/components/detail-scope-sentence.tsx:196
-#: src/features/statistics/components/detail-scope-sentence.tsx:263
+#: src/features/statistics/components/detail-scope-sentence.tsx:197
+#: src/features/statistics/components/detail-scope-sentence.tsx:264
 msgid "{0}: {1} (implicit)"
 msgstr "{0}: {1} (default)"
 
@@ -1990,7 +1990,7 @@ msgstr "Ajutor de stat"
 msgid "Ajutor de stat RegAS"
 msgstr "Ajutor de stat RegAS"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:449
+#: src/features/statistics/components/detail-scope-sentence.tsx:469
 msgid "alege"
 msgstr "choose"
 
@@ -2002,8 +2002,8 @@ msgstr "Select this series"
 msgid "Alege anul"
 msgstr "Alege anul"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:313
-#: src/features/statistics/components/detail-scope-sentence.tsx:332
+#: src/features/statistics/components/detail-scope-sentence.tsx:314
+#: src/features/statistics/components/detail-scope-sentence.tsx:333
 msgid "Alege ce arată seria"
 msgstr "Choose what the series shows"
 
@@ -2011,7 +2011,7 @@ msgstr "Choose what the series shows"
 msgid "Alege ce vrei să vezi"
 msgstr "Choose what to display"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:501
+#: src/features/statistics/components/detail-scope-sentence.tsx:521
 msgid "Alege frecvența"
 msgstr "Choose frequency"
 
@@ -2023,15 +2023,15 @@ msgstr "Alege o localitate din județ"
 msgid "Alege o perioadă"
 msgstr "Choose a period"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:475
-#: src/features/statistics/components/detail-scope-sentence.tsx:646
+#: src/features/statistics/components/detail-scope-sentence.tsx:495
+#: src/features/statistics/components/detail-scope-sentence.tsx:666
 msgid "Alege o unitate"
 msgstr "Choose a unit"
 
 #: src/features/statistics/components/comparison-pins.tsx:58
 #: src/features/statistics/components/comparison-pins.tsx:77
 #: src/features/statistics/components/comparison-pins.tsx:91
-#: src/features/statistics/components/detail-scope-sentence.tsx:606
+#: src/features/statistics/components/detail-scope-sentence.tsx:626
 msgid "Alege o valoare"
 msgstr "Choose a value"
 
@@ -2300,11 +2300,11 @@ msgstr "An awarded contract between a contracting authority and a supplier, from
 #~ msgid "An comun verificat:"
 #~ msgstr "Common year checked:"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:679
+#: src/features/statistics/components/detail-scope-sentence.tsx:699
 msgid "An de început"
 msgstr "Start year"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:693
+#: src/features/statistics/components/detail-scope-sentence.tsx:713
 msgid "An de sfârșit"
 msgstr "End year"
 
@@ -2522,7 +2522,7 @@ msgid "Anterioară"
 msgstr "Anterioară"
 
 #: src/features/ngos/components/ngo-services-page.tsx:528
-#: src/features/statistics/components/detail-territory-control.tsx:145
+#: src/features/statistics/components/detail-territory-control.tsx:160
 msgid "Anterior"
 msgstr "Previous"
 
@@ -3888,7 +3888,7 @@ msgstr "Caută întreprindere publică"
 #~ msgid "Caută localitatea ta ca să vezi indicatorii disponibili pentru ea."
 #~ msgstr "Find your locality to see its available indicators."
 
-#: src/features/statistics/components/detail-territory-control.tsx:60
+#: src/features/statistics/components/detail-territory-control.tsx:75
 msgid "Caută o localitate sau un județ"
 msgstr "Search for a locality or county"
 
@@ -5078,7 +5078,7 @@ msgstr "Compară"
 msgid "Compară {0}"
 msgstr "Compară {0}"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:968
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:1013
 #: src/features/statistics/pages/statistics-hub-page.tsx:210
 msgid "Compară teritorii"
 msgstr "Compare territories"
@@ -5581,7 +5581,7 @@ msgstr "INS geographic coordinates"
 #~ msgid "Coordonate sursă:"
 #~ msgstr "Source coordinates:"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:899
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:944
 msgid "Coordonatele INS și filtrul teritorial canonic se intersectează. Nicio observație nu corespunde ambelor selecții."
 msgstr "INS coordinates and the canonical territory filter intersect. No observations match both selections."
 
@@ -6273,7 +6273,7 @@ msgstr "Cumpărători"
 msgid "Cumulat"
 msgstr "Cumulat"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:506
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:536
 msgid "Cunoaștem structura acestei matrice din catalogul INS, dar nu i-am încărcat încă datele. Poți cere prioritizarea ei."
 msgstr "We know this matrix's structure from the INS catalog, but its data has not been loaded yet. You can request that it be prioritized."
 
@@ -7324,7 +7324,7 @@ msgstr "Dimensiune (bytes)"
 msgid "Dimensiunea teritorială are {0} opțiuni."
 msgstr "The territorial dimension has {0} options."
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:521
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:551
 msgid "Dimensiuni"
 msgstr "Dimensions"
 
@@ -7337,7 +7337,7 @@ msgstr "Fixed dimensions"
 msgid "Dimensiuni și clasificări ({0} axe)"
 msgstr "Dimensions and classifications ({0} axes)"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:680
+#: src/features/statistics/components/detail-scope-sentence.tsx:700
 msgid "din"
 msgstr "from"
 
@@ -8510,7 +8510,7 @@ msgstr "Evoluție de la {first} până în {last}, între {0} și {1}"
 #~ msgstr "Evoluție de la {firstPeriod} până în {lastPeriod}, între {0} și {1}"
 
 #: src/features/statistics/components/comparison-line-chart.tsx:84
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:918
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:963
 msgid "Evoluție în timp"
 msgstr "Change over time"
 
@@ -9154,7 +9154,7 @@ msgstr "fără dată exactă"
 msgid "fără date"
 msgstr "no data"
 
-#: src/features/statistics/components/detail-observations-chart.tsx:453
+#: src/features/statistics/components/detail-observations-chart.tsx:460
 msgid "Fără date"
 msgstr "Fără date"
 
@@ -9193,7 +9193,7 @@ msgstr "fără documente de dosar"
 msgid "Fără expresie canonică"
 msgstr "Fără expresie canonică"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:423
+#: src/features/statistics/components/detail-scope-sentence.tsx:435
 msgid "Fără filtru teritorial canonic"
 msgstr "No canonical territory filter"
 
@@ -9209,7 +9209,7 @@ msgstr "Fara legaturi de finantare"
 msgid "fără nume de persoane"
 msgstr "fără nume de persoane"
 
-#: src/features/statistics/components/detail-series-summary.tsx:79
+#: src/features/statistics/components/detail-series-summary.tsx:88
 #: src/features/statistics/components/detail-tier0-hero.tsx:44
 msgid "Fără o valoare recentă pentru selecția curentă."
 msgstr "No recent value for the current selection."
@@ -9626,7 +9626,7 @@ msgstr "Filtrul pe valoare lasă complet deoparte contractele încredințate uno
 msgid "Filtrul rămâne în adresă. Istoricul poate fi incomplet sau selecția din sursă poate necesita clarificare."
 msgstr "The filter stays in the URL. The history may be incomplete or the source selection may need clarification."
 
-#: src/features/statistics/components/detail-territory-control.tsx:53
+#: src/features/statistics/components/detail-territory-control.tsx:68
 msgid "Filtrul se intersectează cu selecțiile geografice INS de mai jos."
 msgstr "The filter intersects with the INS geographic selections below."
 
@@ -9957,11 +9957,11 @@ msgid "Framework ceilings"
 msgstr "Framework ceilings"
 
 #: src/features/statistics/components/comparison-pins.tsx:87
-#: src/features/statistics/components/detail-scope-sentence.tsx:503
-#: src/features/statistics/components/detail-scope-sentence.tsx:507
-#: src/features/statistics/components/detail-scope-sentence.tsx:516
+#: src/features/statistics/components/detail-scope-sentence.tsx:523
+#: src/features/statistics/components/detail-scope-sentence.tsx:527
+#: src/features/statistics/components/detail-scope-sentence.tsx:536
 #: src/features/statistics/hooks/use-comparisons.ts:159
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:739
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:763
 msgid "Frecvență"
 msgstr "Frequency"
 
@@ -10109,7 +10109,7 @@ msgstr "Gas volume per inhabitant indicates reliance on gas infrastructure and e
 msgid "Găsește un act normativ după număr (Legea 53/2003) sau după denumire (Codul muncii), cu statutul lui actual. Căutarea după expresii din textul legilor nu este încă disponibilă."
 msgstr "Găsește un act normativ după număr (Legea 53/2003) sau după denumire (Codul muncii), cu statutul lui actual. Căutarea după expresii din textul legilor nu este încă disponibilă."
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:347
+#: src/features/statistics/components/detail-scope-sentence.tsx:348
 msgid "Gata"
 msgstr "Done"
 
@@ -10293,7 +10293,7 @@ msgid "Grafice"
 msgstr "Charts"
 
 #. placeholder {0}: series.points.length
-#: src/features/statistics/components/detail-observations-chart.tsx:393
+#: src/features/statistics/components/detail-observations-chart.tsx:400
 msgid "Graficul afișează ultimele {0} perioade. Restrânge intervalul pentru a vedea perioade mai vechi."
 msgstr "The chart shows the latest {0} periods. Narrow the range to see earlier ones."
 
@@ -10791,7 +10791,7 @@ msgstr "Immigrants (POP310E)"
 msgid "Immigrants − Emigrants"
 msgstr "Immigrants − Emigrants"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:211
+#: src/features/statistics/components/detail-scope-sentence.tsx:212
 msgid "implicit"
 msgstr "default"
 
@@ -11682,8 +11682,8 @@ msgstr "range"
 msgid "Interval"
 msgstr "Interval"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:541
-#: src/features/statistics/components/detail-scope-sentence.tsx:673
+#: src/features/statistics/components/detail-scope-sentence.tsx:561
+#: src/features/statistics/components/detail-scope-sentence.tsx:693
 msgid "Interval de ani"
 msgstr "Year range"
 
@@ -13488,12 +13488,12 @@ msgstr "Max"
 msgid "Max percentile"
 msgstr "Max percentile"
 
-#: src/features/statistics/components/detail-series-summary.tsx:150
+#: src/features/statistics/components/detail-series-summary.tsx:167
 msgid "maxim"
 msgstr "maximum"
 
 #. placeholder {0}: formatMarkValue(marks.peak.value)
-#: src/features/statistics/components/detail-observations-chart.tsx:337
+#: src/features/statistics/components/detail-observations-chart.tsx:344
 msgid "maxim {0}"
 msgstr "max {0}"
 
@@ -13528,12 +13528,12 @@ msgstr "Median"
 msgid "Median compare"
 msgstr "Median compare"
 
-#: src/features/statistics/components/detail-series-summary.tsx:155
+#: src/features/statistics/components/detail-series-summary.tsx:172
 msgid "medie"
 msgstr "average"
 
 #. placeholder {0}: formatDerivedMark(stats.mean)
-#: src/features/statistics/components/detail-observations-chart.tsx:297
+#: src/features/statistics/components/detail-observations-chart.tsx:304
 msgid "medie {0}"
 msgstr "avg {0}"
 
@@ -13668,12 +13668,12 @@ msgstr "Min"
 msgid "Min percentile"
 msgstr "Min percentile"
 
-#: src/features/statistics/components/detail-series-summary.tsx:145
+#: src/features/statistics/components/detail-series-summary.tsx:162
 msgid "minim"
 msgstr "minimum"
 
 #. placeholder {0}: formatMarkValue(marks.trough.value)
-#: src/features/statistics/components/detail-observations-chart.tsx:359
+#: src/features/statistics/components/detail-observations-chart.tsx:366
 msgid "minim {0}"
 msgstr "min {0}"
 
@@ -14482,7 +14482,7 @@ msgstr "Nicio modificare nu corespunde filtrelor."
 msgid "Nicio notă de parsare"
 msgstr "Nicio notă de parsare"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:888
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:914
 msgid "Nicio observație"
 msgstr "No observations"
 
@@ -14586,7 +14586,7 @@ msgstr "Niciun set nu corespunde filtrelor"
 msgid "Niciun teritoriu nou nu se potrivește căutării."
 msgstr "Niciun teritoriu nou nu se potrivește căutării."
 
-#: src/features/statistics/components/detail-territory-control.tsx:101
+#: src/features/statistics/components/detail-territory-control.tsx:116
 #: src/features/statistics/components/hub/hub-place-finder.tsx:74
 #: src/features/statistics/components/territory-search.tsx:92
 msgid "Niciun teritoriu nu se potrivește cu acest termen."
@@ -15520,7 +15520,7 @@ msgid "Nu am putut căuta teritoriile"
 msgstr "Could not search territories"
 
 #: src/features/statistics/components/comparison-territory-picker.tsx:120
-#: src/features/statistics/components/detail-territory-control.tsx:92
+#: src/features/statistics/components/detail-territory-control.tsx:107
 #: src/features/statistics/components/hub/hub-place-finder.tsx:65
 msgid "Nu am putut căuta teritoriile."
 msgstr "Could not search territories."
@@ -15646,7 +15646,7 @@ msgstr "Nu am putut încărca rezultatele."
 msgid "Nu am putut incarca scrutinul"
 msgstr "Nu am putut incarca scrutinul"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:822
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:846
 msgid "Nu am putut încărca seria de date"
 msgstr "Could not load the data series"
 
@@ -16046,7 +16046,7 @@ msgstr "obiective în catalog"
 msgid "Obiective, acoperire și absorbție pe teritoriul selectat."
 msgstr "Obiective, acoperire și absorbție pe teritoriul selectat."
 
-#: src/features/statistics/components/detail-series-summary.tsx:158
+#: src/features/statistics/components/detail-series-summary.tsx:175
 msgid "observații"
 msgstr "observations"
 
@@ -16054,7 +16054,7 @@ msgstr "observations"
 msgid "Observații INS"
 msgstr "INS notes"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:870
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:895
 msgid "Observațiile includ alternative sau calificări geografice. Inspectează datele din tabel înainte de a le compara."
 msgstr "The observations include source alternatives or geographic qualifications. Inspect the table before comparing them."
 
@@ -16774,7 +16774,7 @@ msgstr "Paint by"
 msgid "Painted on the map (named territories)"
 msgstr "Painted on the map (named territories)"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:694
+#: src/features/statistics/components/detail-scope-sentence.tsx:714
 msgid "până în"
 msgstr "to"
 
@@ -18881,11 +18881,11 @@ msgstr "Reincearca"
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:82
 #: src/features/statistics/components/comparison-states.tsx:103
 #: src/features/statistics/components/detail-dimension-panel.tsx:152
-#: src/features/statistics/components/detail-territory-control.tsx:95
+#: src/features/statistics/components/detail-territory-control.tsx:110
 #: src/features/statistics/components/hub/hub-place-finder.tsx:67
 #: src/features/statistics/components/territory-search.tsx:84
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:276
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:830
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:854
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:197
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:113
 msgid "Reîncearcă"
@@ -19149,7 +19149,7 @@ msgstr "Reset to default"
 msgid "Reseteaza"
 msgstr "Reseteaza"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:713
+#: src/features/statistics/components/detail-scope-sentence.tsx:733
 msgid "Resetează"
 msgstr "Reset"
 
@@ -19442,7 +19442,7 @@ msgstr "Robust anomaly detection based on median absolute deviation (MAD), less 
 msgid "Rol"
 msgstr "Rol"
 
-#: src/features/statistics/components/detail-territory-control.tsx:72
+#: src/features/statistics/components/detail-territory-control.tsx:87
 #: src/features/statistics/components/territory-header.tsx:41
 #: src/features/statistics/components/territory-indicator-row.tsx:209
 #: src/features/statistics/hooks/use-comparisons.ts:284
@@ -19898,7 +19898,7 @@ msgstr "Se încarcă textul…"
 #: src/features/parliament/components/member-interventii-tab.tsx:338
 #: src/features/parliament/components/parliament-stenogram-interventions-view.tsx:163
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:207
-#: src/features/statistics/components/detail-territory-control.tsx:86
+#: src/features/statistics/components/detail-territory-control.tsx:101
 msgid "Se încarcă…"
 msgstr "Loading…"
 
@@ -20455,7 +20455,7 @@ msgstr "Selected UATs are already in group."
 msgid "Selecția curentă nu are observații."
 msgstr "The current selection has no observations."
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:889
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:915
 msgid "Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare."
 msgstr "The current selection returns no observations. Try another territory or value."
 
@@ -20468,11 +20468,11 @@ msgid "Selecția INS nu este validă. Corectează teritoriile, dimensiunile, uni
 msgstr "The INS selection is invalid. Correct the territories, dimensions, unit or frequency."
 
 #: src/features/statistics/components/detail-observations-table.tsx:69
-#: src/features/statistics/components/detail-scope-sentence.tsx:184
+#: src/features/statistics/components/detail-scope-sentence.tsx:185
 msgid "Selecție"
 msgstr "Selection"
 
-#: src/features/statistics/components/detail-series-summary.tsx:135
+#: src/features/statistics/components/detail-series-summary.tsx:147
 #: src/features/statistics/components/detail-tier0-hero.tsx:81
 msgid "selecție reprezentativă"
 msgstr "representative selection"
@@ -20576,7 +20576,7 @@ msgstr "Seria deceselor"
 msgid "Seria nașterilor"
 msgstr "Seria nașterilor"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:867
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:892
 msgid "Seria necesită o selecție din sursă"
 msgstr "Choose a source series"
 
@@ -20752,7 +20752,7 @@ msgstr "Set active series"
 msgid "Set de date"
 msgstr "Set de date"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:502
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:532
 msgid "Set de date fără observații încărcate"
 msgstr "Dataset without loaded observations"
 
@@ -21564,6 +21564,7 @@ msgstr "Stare revizuire"
 msgid "Stare sistem"
 msgstr "System status"
 
+#: src/features/statistics/components/detail-series-summary.tsx:152
 #: src/features/statistics/components/detail-tier0-hero.tsx:86
 msgid "stare:"
 msgstr "status:"
@@ -21834,11 +21835,11 @@ msgstr "Șterge căutarea de teritorii"
 msgid "Șterge clasificările invalide"
 msgstr "Clear invalid classifications"
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:569
+#: src/features/statistics/components/detail-scope-sentence.tsx:589
 msgid "Șterge clasificările invalide înainte de a alege alte valori."
 msgstr "Clear invalid classifications before choosing other values."
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:910
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:955
 msgid "Șterge doar filtrul teritorial"
 msgstr "Clear only the territory filter"
 
@@ -21859,9 +21860,10 @@ msgstr "Șterge filtrul"
 msgid "Șterge filtrul de perioadă"
 msgstr "Șterge filtrul de perioadă"
 
-#: src/features/statistics/components/detail-territory-control.tsx:80
+#: src/features/statistics/components/detail-territory-control.tsx:95
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:931
 msgid "Șterge filtrul teritorial"
-msgstr "Clear territory filter"
+msgstr "Clear the territory filter"
 
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:312
 msgid "Șterge teritoriul invalid"
@@ -22030,7 +22032,7 @@ msgstr "Sumarul pastreaza distinctia dintre rezultate de alegeri si voturi parla
 msgid "Summary"
 msgstr "Summary"
 
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:933
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:978
 msgid "Sunt disponibile mai multe observații. Tabelul arată o pagină de explorare; restrânge selecția sau alege seria unui rând pentru istoricul complet."
 msgstr "More observations are available. The table shows an inspection page; narrow the selection or select a row's series for its complete history."
 
@@ -22476,8 +22478,8 @@ msgid "teritoriu"
 msgstr "territory"
 
 #: src/features/statistics/components/comparison-table.tsx:69
-#: src/features/statistics/components/detail-scope-sentence.tsx:426
-#: src/features/statistics/components/detail-territory-control.tsx:50
+#: src/features/statistics/components/detail-scope-sentence.tsx:438
+#: src/features/statistics/components/detail-territory-control.tsx:65
 msgid "Teritoriu"
 msgstr "Territory"
 
@@ -22666,7 +22668,7 @@ msgid "The category breakdown could not be loaded"
 msgstr "The category breakdown could not be loaded"
 
 #. placeholder {0}: series.points.length
-#: src/features/statistics/components/detail-observations-chart.tsx:393
+#: src/features/statistics/components/detail-observations-chart.tsx:400
 msgid "The chart shows the latest {0} periods. Earlier observations remain in the table and complete export."
 msgstr "The chart shows the latest {0} periods. Earlier observations remain in the table and complete export."
 
@@ -23979,8 +23981,8 @@ msgstr "Ultima perioadă"
 msgid "Ultima ședință"
 msgstr "Ultima ședință"
 
-#: src/features/statistics/components/detail-series-summary.tsx:76
-#: src/features/statistics/components/detail-series-summary.tsx:100
+#: src/features/statistics/components/detail-series-summary.tsx:85
+#: src/features/statistics/components/detail-series-summary.tsx:109
 #: src/features/statistics/components/detail-tier0-hero.tsx:36
 #: src/features/statistics/components/detail-tier0-hero.tsx:67
 msgid "Ultima valoare"
@@ -24130,7 +24132,7 @@ msgstr "Unit override"
 msgid "Unit price"
 msgstr "Unit price"
 
-#: src/features/statistics/components/detail-series-summary.tsx:143
+#: src/features/statistics/components/detail-series-summary.tsx:160
 #: src/features/statistics/lib/dimension-labels.ts:18
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:155
 msgid "unitate"
@@ -24142,10 +24144,10 @@ msgid "Unitate"
 msgstr "Unit"
 
 #: src/features/statistics/components/comparison-pins.tsx:76
-#: src/features/statistics/components/detail-scope-sentence.tsx:480
-#: src/features/statistics/components/detail-scope-sentence.tsx:630
+#: src/features/statistics/components/detail-scope-sentence.tsx:500
+#: src/features/statistics/components/detail-scope-sentence.tsx:650
 #: src/features/statistics/hooks/use-comparisons.ts:158
-#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:738
+#: src/features/statistics/pages/statistics-dataset-detail-page.tsx:762
 msgid "Unitate de măsură"
 msgstr "Unit of measure"
 
@@ -24408,7 +24410,7 @@ msgstr "Urmatoarele suprafete"
 msgid "Urmator"
 msgstr "Urmator"
 
-#: src/features/statistics/components/detail-territory-control.tsx:155
+#: src/features/statistics/components/detail-territory-control.tsx:170
 msgid "Următor"
 msgstr "Next"
 
@@ -24707,7 +24709,7 @@ msgstr "Absolute values; territory levels are not normalized per capita."
 msgid "Valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă. Fiecare rând deschide seria lui; „Compară\" o pune lângă județ și țară."
 msgstr "Valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă. Fiecare rând deschide seria lui; „Compară\" o pune lângă județ și țară."
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:238
+#: src/features/statistics/components/detail-scope-sentence.tsx:239
 msgid "Valorile marcate „implicit\" au fost alese automat. Apasă pe ele ca să le schimbi."
 msgstr "Values marked \"default\" were chosen automatically. Tap one to change it."
 
@@ -24719,7 +24721,7 @@ msgstr "Valorile pentru perioada aleasă. Reperele pe județ și pe țară sunt 
 msgid "Valorile raportate pentru perioada {selectedPeriod}."
 msgstr "Reported values for {selectedPeriod}."
 
-#: src/features/statistics/components/detail-scope-sentence.tsx:300
+#: src/features/statistics/components/detail-scope-sentence.tsx:301
 msgid "Valorile subliniate punctat sunt implicite sau încă nealese — apasă pe ele ca să le alegi sau să le schimbi."
 msgstr "Dotted underlines mark default or unselected values — click to choose or change them."
 

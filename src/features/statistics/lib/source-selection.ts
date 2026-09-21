@@ -1,4 +1,5 @@
 import {
+  hasSourcePinIntent,
   parseSourcePins,
   parseSourceUnit,
   sourcePinsFilter,
@@ -33,7 +34,7 @@ export type SourceSelectionIssue =
 export function detailBootstrapEntity(
   search: StatisticsDatasetDetailSearch,
 ): InsEntitySelectorInput | null {
-  if (search.clasificari !== undefined || search.unitate !== undefined)
+  if (hasSourcePinIntent(search.clasificari) || search.unitate !== undefined)
     return null
   if (search.teritoriu === undefined) return NATIONAL_ENTITY
   const pin = parseTerritoryPin(search.teritoriu)

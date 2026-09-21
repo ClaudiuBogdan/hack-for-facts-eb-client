@@ -1,4 +1,5 @@
 import type {
+  InsDataset,
   InsDimension,
   InsEntitySelectorInput,
   InsObservation,
@@ -403,6 +404,31 @@ export function detailScopeKey(search: StatisticsDatasetDetailSearch): string {
 }
 
 /** The observed year span of fetched rows — never the catalog `year_range`. */
+/**
+ * The canonical territory levels a dataset actually publishes.
+ *
+ * DESIGN.md §11: no surface forces a territory level a dataset lacks. The
+ * detail page's territory picker searched NATIONAL, NUTS3 and LAU for every
+ * matrix, so a national-only series like JUS101A („Judecatori": only „Ani" and
+ * „UM: Numar persoane") offered every county in the country — and choosing one
+ * wrote `?teritoriu=cod:AB`, a filter no row can satisfy, emptying the page.
+ *
+ * NATIONAL is always available: every series has a country total.
+ */
+export function datasetTerritoryLevels(
+  dataset: Pick<
+    InsDataset,
+    'has_county_data' | 'has_uat_data' | 'has_siruta'
+  > | null,
+): readonly InsTerritoryLevel[] {
+  const levels: InsTerritoryLevel[] = ['NATIONAL']
+  if (dataset?.has_county_data) levels.push('NUTS3')
+  // `has_siruta` is the LAU key: a dataset carrying SIRUTA codes is addressable
+  // at locality level even where the UAT flag was not set.
+  if (dataset?.has_uat_data || dataset?.has_siruta) levels.push('LAU')
+  return levels
+}
+
 export function observedYearSpan(
   observations: readonly InsObservation[],
 ): { readonly from: number; readonly to: number } | null {
