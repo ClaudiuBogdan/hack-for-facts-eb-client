@@ -19,12 +19,12 @@ const THEME_TONES = [
 ] as const
 
 /**
- * The hero's panel: the catalog on its eight official themes — the strip for
- * proportion, one row per theme with count and share, each a saved query
+ * The hero's panel: the catalog on its eight official domains — the strip for
+ * proportion, one row per domain with count and share, each a saved query
  * into the explorer. It explains the first figure of the band below.
  *
  * The counts are datasets with observations, the destination is the whole
- * catalog for that theme: two populations, so the copy above the panel says
+ * catalog for that domain: two populations, so the copy above the panel says
  * which one the number is, and the explorer's rail legend says it again.
  */
 export function HubThemePanel({ catalog, className }: { readonly catalog: StatisticsLandingCatalog; readonly className?: string }) {
@@ -40,7 +40,7 @@ export function HubThemePanel({ catalog, className }: { readonly catalog: Statis
 
   return (
     <div className={className}>
-      <div className="flex h-2.5 w-full overflow-hidden rounded-sm bg-muted" role="img" aria-label={t`Seturi de date pe teme`}>
+      <div className="flex h-2.5 w-full overflow-hidden rounded-sm bg-muted" role="img" aria-label={t`Seturi de date pe domenii`}>
         {themes.map((theme) => (
           <span
             key={theme.code}

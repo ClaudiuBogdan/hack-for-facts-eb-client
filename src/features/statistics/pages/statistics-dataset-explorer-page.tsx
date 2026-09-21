@@ -137,7 +137,7 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
           {/* `text-pretty` keeps the last line off a single orphan word when
               the subtitle wraps on a phone. */}
           <p className="mt-1.5 max-w-3xl text-pretty text-sm leading-relaxed text-muted-foreground">
-            <Trans>Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui.</Trans>
+            <Trans>Catalogul INS Tempo, pe domenii, periodicitate și acoperire teritorială. Fiecare set deschide seria lui.</Trans>
           </p>
         </header>
 

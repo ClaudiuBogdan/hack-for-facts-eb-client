@@ -83,7 +83,7 @@ describe('explorerChipLabel', () => {
 
     expect(chips.map((chip) => explorerChipLabel(chip))).toEqual([
       'Conține: turism',
-      'Temă: Economic',
+      'Domeniu: Economic',
       'Periodicitate: Anual',
       'Acoperire: UAT',
       'Acoperire: județ',
@@ -103,7 +103,7 @@ describe('explorerChipParts', () => {
 
     expect(chips.map((chip) => explorerChipParts(chip))).toEqual([
       { name: 'Conține', value: 'turism' },
-      { name: 'Temă', value: 'Economic' },
+      { name: 'Domeniu', value: 'Economic' },
       { name: 'Periodicitate', value: 'Anual' },
       { name: 'Acoperire', value: 'UAT' },
       { name: 'Acoperire', value: 'județ' },
@@ -147,7 +147,7 @@ describe('explorerContextLabel', () => {
         { id: 'context', kind: 'context', value: '1012', next: {} },
         index,
       ),
-    ).toBe('Temă: 2. POPULATIA DUPA DOMICILIU')
+    ).toBe('Domeniu: 2. POPULATIA DUPA DOMICILIU')
   })
 })
 

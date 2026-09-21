@@ -18,7 +18,7 @@ import { DatasetExplorerThemeTree } from './dataset-explorer-theme-tree'
 type Props = {
   readonly search: StatisticsDatasetExplorerSearch
   readonly onChange: (next: StatisticsDatasetExplorerSearch) => void
-  /** Loaded-dataset counts per theme; shown beside each theme when known. */
+  /** Loaded-dataset counts per domain; shown beside each one when known. */
   readonly catalog?: StatisticsLandingCatalog
   /** The INS domain hierarchy, already built and indexed by the page. */
   readonly contextRoots: readonly StatisticsContextTreeNode[]
@@ -32,7 +32,7 @@ type Props = {
  * desktop rail and in the phone sheet. Every control auto-applies and resets
  * the page, since a filter change invalidates the offset.
  *
- * The theme filter is INS Tempo's own domain tree — the reader recognises it
+ * The domain filter is INS Tempo's own hierarchy — the reader recognises it
  * from the INS site, and it reaches far deeper than eight rows ever could.
  */
 export function DatasetExplorerFilterControls({
@@ -61,14 +61,14 @@ export function DatasetExplorerFilterControls({
   const counts = catalog
     ? new Map(catalog.themes.map((theme) => [theme.code, theme.count]))
     : undefined
-  const legendId = `${idPrefix}-theme-legend`
+  const legendId = `${idPrefix}-domain-legend`
 
   return (
     <div className="space-y-5">
       <div className={statisticsTheme.railGroup}>
         <fieldset>
           <legend className={cn(statisticsTheme.sectionLabel, 'mb-1.5')} id={legendId}>
-            <Trans>Temă</Trans>
+            <Trans>Domeniu</Trans>
             {counts ? (
               <span className="ml-1.5 font-normal normal-case tracking-normal">
                 <Trans>· seturi cu date</Trans>
@@ -96,12 +96,20 @@ export function DatasetExplorerFilterControls({
           <div className="space-y-0.5">
             {EXPLORER_PERIODICITY_VALUES.map((value) => {
               const id = `${idPrefix}-periodicity-${value.toLowerCase()}`
+              const checked = (search.frecventa ?? []).includes(value)
               return (
-                <Label key={value} htmlFor={id} className={statisticsTheme.railOption}>
+                <Label
+                  key={value}
+                  htmlFor={id}
+                  className={cn(
+                    statisticsTheme.railOption,
+                    checked && statisticsTheme.railOptionChecked,
+                  )}
+                >
                   <Checkbox
                     id={id}
-                    checked={(search.frecventa ?? []).includes(value)}
-                    onCheckedChange={(checked) => togglePeriodicity(value, checked === true)}
+                    checked={checked}
+                    onCheckedChange={(next) => togglePeriodicity(value, next === true)}
                   />
                   {explorerPeriodicityLabel(value)}
                 </Label>
@@ -117,7 +125,13 @@ export function DatasetExplorerFilterControls({
             <Trans>Acoperire</Trans>
           </legend>
           <div className="space-y-0.5">
-            <Label htmlFor={`${idPrefix}-coverage-uat`} className={statisticsTheme.railOption}>
+            <Label
+              htmlFor={`${idPrefix}-coverage-uat`}
+              className={cn(
+                statisticsTheme.railOption,
+                search.uat === true && statisticsTheme.railOptionChecked,
+              )}
+            >
               <Checkbox
                 id={`${idPrefix}-coverage-uat`}
                 checked={search.uat === true}
@@ -125,7 +139,13 @@ export function DatasetExplorerFilterControls({
               />
               <Trans>Date la nivel de localitate</Trans>
             </Label>
-            <Label htmlFor={`${idPrefix}-coverage-county`} className={statisticsTheme.railOption}>
+            <Label
+              htmlFor={`${idPrefix}-coverage-county`}
+              className={cn(
+                statisticsTheme.railOption,
+                search.judet === true && statisticsTheme.railOptionChecked,
+              )}
+            >
               <Checkbox
                 id={`${idPrefix}-coverage-county`}
                 checked={search.judet === true}

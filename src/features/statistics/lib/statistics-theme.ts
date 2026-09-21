@@ -155,15 +155,35 @@ export const statisticsTheme = {
    * clips whatever hangs past its start edge.
    */
   railOption:
-    'flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-sm font-normal transition-colors hover:bg-muted/50',
+    'flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-2 text-sm font-normal transition-colors hover:bg-muted/50',
   /**
-   * A facet row: quiet by default, tinted when it is the active filter, with
-   * the accent carried by a left bar as well as by weight — colour is never
-   * the only signal (DESIGN.md §Colors, parliament's status border).
+   * A checked row. Lighter than a chosen facet: the box beside it has already
+   * gone navy, so the row only has to agree with it.
+   */
+  railOptionChecked: 'bg-primary/5 font-medium text-foreground',
+  /**
+   * A facet row: quiet by default, and when it is the active filter a tinted
+   * block with a navy bar down its leading edge. `overflow-hidden` is what
+   * makes the bar part of the block — inset and pill-shaped, it read as a
+   * separate dark mark floating in a field too pale to look like anything.
+   * The bar is the second signal beside the weight, because colour is never
+   * the only one (DESIGN.md §Colors, parliament's status border).
    */
   facetRow:
-    'relative flex items-baseline gap-1.5 rounded-md py-1.5 pr-2 text-left transition-colors hover:bg-muted/50',
+    'relative flex items-baseline gap-1.5 overflow-hidden rounded-md py-1.5 pr-2 text-left transition-colors hover:bg-muted/50',
   facetRowSelected:
-    'bg-primary/10 font-medium text-foreground before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-full before:bg-primary',
+    'bg-primary/10 font-semibold text-foreground before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-primary',
+  /**
+   * The level that only opens — the INS group between a domain and a
+   * subdomain, which the server cannot filter on. It stays quieter than the
+   * rows it holds, because those are the ones that can be picked; INS ships
+   * these labels in caps, and a bolder weight on top of that turned a branch
+   * into eleven lines of shouting.
+   *
+   * Not `text-muted-foreground`: at 12px over a hovered row that measures
+   * 4.47:1, under the 4.5:1 AA floor for text this size.
+   */
+  facetRowGroup: 'font-medium text-foreground/70',
   facetCount: 'shrink-0 text-xs tabular-nums text-muted-foreground',
+  facetCountSelected: 'text-foreground',
 } as const

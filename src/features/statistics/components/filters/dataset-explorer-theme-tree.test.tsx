@@ -32,7 +32,7 @@ const emptyIndex = indexStatisticsContextTree(emptyRoots)
 function tree(props: Partial<React.ComponentProps<typeof DatasetExplorerThemeTree>>) {
   return (
     <>
-      <span id="legend">Temă</span>
+      <span id="legend">Domeniu</span>
       <DatasetExplorerThemeTree
         roots={roots}
         index={index}
@@ -63,7 +63,7 @@ describe('DatasetExplorerThemeTree', () => {
   it('shows the domains closed, with their counts, under one tab stop', () => {
     renderTree()
 
-    expect(screen.getByRole('tree', { name: 'Temă' })).toBeInTheDocument()
+    expect(screen.getByRole('tree', { name: 'Domeniu' })).toBeInTheDocument()
     expect(item(/^Social/)).toHaveAttribute('aria-expanded', 'false')
     expect(item(/^Social/)).toHaveAccessibleName('Social, 844 de seturi cu date')
     expect(item(/^Social/)).toHaveTextContent('844')
@@ -118,7 +118,7 @@ describe('DatasetExplorerThemeTree', () => {
     const { onSelect } = renderTree()
 
     await user.tab()
-    expect(item(/^Toate temele/)).toHaveFocus()
+    expect(item(/^Toate domeniile/)).toHaveFocus()
 
     await user.keyboard('{ArrowDown}')
     expect(item(/^Social/)).toHaveFocus()
@@ -196,7 +196,7 @@ describe('DatasetExplorerThemeTree', () => {
     await user.tab()
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}')
 
-    expect(item(/^Toate temele/)).toHaveFocus()
+    expect(item(/^Toate domeniile/)).toHaveFocus()
   })
 
   it('opens the deep-linked branch when the tree arrives after the first paint', () => {
@@ -226,7 +226,7 @@ describe('DatasetExplorerThemeTree', () => {
     const user = userEvent.setup()
     const { onSelect } = renderTree({ selectedCode: '1012' })
 
-    await user.click(label(/^Toate temele/))
+    await user.click(label(/^Toate domeniile/))
 
     expect(onSelect).toHaveBeenCalledWith(undefined)
   })

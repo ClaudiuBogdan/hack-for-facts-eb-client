@@ -132,7 +132,7 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
     await rail.getByRole('checkbox', { name: 'Anual' }).click()
     await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
 
-    await expect(page.getByRole('button', { name: 'Elimină filtrul Temă: Finanțe' })).toBeVisible({ timeout: 15000 })
+    await expect(page.getByRole('button', { name: 'Elimină filtrul Domeniu: Finanțe' })).toBeVisible({ timeout: 15000 })
     await expect(page.getByRole('button', { name: 'Elimină filtrul Periodicitate: Anual' })).toBeVisible()
     await expect(page.getByText(/^un set de date$/)).toBeVisible()
   })
@@ -158,7 +158,7 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
 
     await expect.poll(() => searchParam(page, 'context')).toBe('"1508"')
     await expect(
-      page.getByRole('button', { name: 'Elimină filtrul Temă: 4. SOMERI INREGISTRATI' }),
+      page.getByRole('button', { name: 'Elimină filtrul Domeniu: 4. SOMERI INREGISTRATI' }),
     ).toBeVisible({ timeout: 15000 })
     // The count is the proof the `contextCode` filter reached the server: the
     // unfiltered fallback fixture would answer 1,898 and still carry this row.
@@ -198,7 +198,7 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
       timeout: 15000,
     })
 
-    await page.getByRole('button', { name: 'Elimină filtrul Temă: Finanțe' }).click()
+    await page.getByRole('button', { name: 'Elimină filtrul Domeniu: Finanțe' }).click()
 
     await expect.poll(() => searchParam(page, 'context')).toBeNull()
     await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
@@ -237,7 +237,7 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
     // One chip per removable filter.
     for (const label of [
       'Conține: populatie',
-      'Temă: Economic',
+      'Domeniu: Economic',
       'Periodicitate: Anual',
       'Acoperire: UAT',
       'Acoperire: județ',

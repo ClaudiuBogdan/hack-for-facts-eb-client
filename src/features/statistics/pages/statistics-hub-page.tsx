@@ -104,7 +104,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             key: 'datasets',
             value: hub.catalog.loadedCount,
             label: <Trans>seturi de date cu observații</Trans>,
-            note: <Trans>tot catalogul INS Tempo, pe opt teme oficiale</Trans>,
+            note: <Trans>tot catalogul INS Tempo, pe opt domenii oficiale</Trans>,
             link: (label, className) => (
               <Link to="/ins/seturi" className={className}>
                 {label}
@@ -219,7 +219,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6">
                 <div className="flex items-baseline justify-between gap-4">
                   <MonoLabel className="text-primary">
-                    <Trans>Catalogul pe teme</Trans>
+                    <Trans>Catalogul pe domenii</Trans>
                   </MonoLabel>
                   <MonoLabel className="text-muted-foreground">
                     <Trans>INS Tempo</Trans>
@@ -228,11 +228,11 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {hub?.catalog ? (
                     <Trans>
-                      {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt teme
-                      oficiale. Fiecare rând deschide tema în tot catalogul.
+                      {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt domenii
+                      oficiale. Fiecare rând deschide domeniul în tot catalogul.
                     </Trans>
                   ) : (
-                    <Trans>Seturile de date cu observații, pe cele opt teme oficiale. Fiecare rând deschide tema în tot catalogul.</Trans>
+                    <Trans>Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul.</Trans>
                   )}
                 </p>
                 <div className="mt-5">

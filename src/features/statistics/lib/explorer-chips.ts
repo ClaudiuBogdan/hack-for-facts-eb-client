@@ -111,7 +111,7 @@ export function explorerChipParts(
       return { name: t`Conține`, value: chip.value ?? '' }
     case 'context':
       return {
-        name: t`Temă`,
+        name: t`Domeniu`,
         value: explorerContextLabel(chip.value, contextIndex),
       }
     case 'frecventa':

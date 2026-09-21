@@ -11,7 +11,7 @@ import type {
 import { contextAncestorCodes, isSelectableContextLevel } from '../../lib/context-tree'
 
 /**
- * The code of the „all themes" row. INS context codes are numeric, so none can
+ * The code of the „all domains" row. INS context codes are numeric, so none can
  * collide with it, and keeping the row inside the tree keeps one keyboard model
  * for the whole rail.
  */
@@ -21,7 +21,7 @@ type Props = {
   readonly roots: readonly StatisticsContextTreeNode[]
   readonly index: StatisticsContextIndex
   readonly selectedCode: string | undefined
-  /** `undefined` clears the filter — the „all themes" row. */
+  /** `undefined` clears the filter — the „all domains" row. */
   readonly onSelect: (code: string | undefined) => void
   /** Dataset counts per domain. INS publishes none below that level. */
   readonly counts?: ReadonlyMap<string, number>
@@ -80,7 +80,7 @@ export function DatasetExplorerThemeTree({
   const rows: readonly Row[] = [
     {
       code: ALL_ROW_CODE,
-      label: t`Toate temele`,
+      label: t`Toate domeniile`,
       depth: 0,
       parentCode: null,
       open: false,
@@ -256,10 +256,8 @@ function TreeRow({
         className={cn(
           statisticsTheme.facetRow,
           row.depth === 0 ? 'text-sm' : 'text-xs',
-          row.selected ? statisticsTheme.facetRowSelected : 'text-foreground/90',
-          // A group opens rather than filters; it reads as a heading over its
-          // subdomains, which is a weight difference, not a colour one.
-          !row.selectable && 'font-medium text-muted-foreground',
+          row.selected ? statisticsTheme.facetRowSelected : 'text-foreground',
+          !row.selectable && statisticsTheme.facetRowGroup,
         )}
         style={{ paddingLeft: `${0.5 + row.depth * 0.75}rem` }}
       >
@@ -276,7 +274,12 @@ function TreeRow({
         )}
         <span className="min-w-0 flex-1 leading-snug">{row.label}</span>
         {row.count !== undefined ? (
-          <span className={cn(statisticsTheme.facetCount, row.selected && 'text-foreground')}>
+          <span
+            className={cn(
+              statisticsTheme.facetCount,
+              row.selected && statisticsTheme.facetCountSelected,
+            )}
+          >
             {formatNumber(row.count)}
           </span>
         ) : null}
