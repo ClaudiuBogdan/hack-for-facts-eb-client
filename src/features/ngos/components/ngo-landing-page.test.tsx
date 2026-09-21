@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from '@/test/test-utils'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ngoDomainCoverage } from '@/features/ngos/mocks/ngo-mocks'
+import { isNgoRegistryEnabled } from '@/config/env'
 import { NgoLandingPage } from './ngo-landing-page'
 
 const navigateMock = vi.fn()
@@ -50,6 +51,18 @@ describe('NgoLandingPage', () => {
     coverageQueryState.isFetching = false
     coverageQueryState.isError = false
     navigateMock.mockReset()
+    vi.mocked(isNgoRegistryEnabled).mockReturnValue(false)
+  })
+
+  it('hides the registry entry until release is enabled', () => {
+    render(<NgoLandingPage initialCoverage={ngoDomainCoverage} />)
+    expect(screen.queryByRole('link', { name: 'Open registry' })).not.toBeInTheDocument()
+  })
+
+  it('links to the live registry only when enabled', () => {
+    vi.mocked(isNgoRegistryEnabled).mockReturnValue(true)
+    render(<NgoLandingPage initialCoverage={ngoDomainCoverage} />)
+    expect(screen.getByRole('link', { name: 'Open registry' })).toHaveAttribute('href', expect.stringContaining('/ong-uri/registru'))
   })
 
   it('renders source coverage matrix with loaded, stale, pending, and name-only states', () => {

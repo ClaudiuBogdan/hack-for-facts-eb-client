@@ -1,100 +1,41 @@
-import { render, screen } from '@/test/test-utils'
-import type { ComponentType } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  getMockNgoProfile,
-  getMockPublicFunding,
-} from '@/features/ngos/mocks/ngo-mocks'
-import type { NgoProfileRouteLoaderData } from './ong-uri.$cui'
-
-const ngoProfilePagePropsMock = vi.fn()
-
-let mockedParams = { cui: '12345678' }
-let mockedSearch: { tab?: string; evidence?: boolean } = {}
-let mockedLoaderData: NgoProfileRouteLoaderData | undefined
-
-vi.mock('@tanstack/react-router', () => ({
+import { render, screen } from "@/test/test-utils";
+import type { ComponentType } from "react";
+import { describe, expect, it, vi } from "vitest";
+import { profileFixture } from "@/features/ngos/profile/profile.fixture";
+const pageProps = vi.fn();
+vi.mock("@tanstack/react-router", () => ({
   createLazyFileRoute: () => (options: Record<string, unknown>) => ({
-    ...options,
     options,
-    useParams: () => mockedParams,
-    useSearch: () => mockedSearch,
-    useLoaderData: () => mockedLoaderData,
+    useLoaderData: () => ({ profile: profileFixture }),
   }),
-}))
-
-vi.mock('@/features/ngos/components/ngo-profile-page', () => ({
-  NgoProfilePage: (props: Record<string, unknown>) => {
-    ngoProfilePagePropsMock(props)
-    return (
-      <div data-testid="ngo-profile-page">
-        {String(props.cui)}:{String(props.tab)}:{String(props.evidenceOpen)}
-      </div>
-    )
+}));
+vi.mock("@/features/ngos/profile/profile-page", () => ({
+  NgoLiveProfilePage: (props: Record<string, unknown>) => {
+    pageProps(props);
+    return <div>Live profile</div>;
   },
-  NgoProfileNotFound: () => (
-    <div data-testid="ngo-profile-not-found">ONG negasit</div>
-  ),
-}))
-
-describe('NgoProfileRoutePage', () => {
-  beforeEach(() => {
-    mockedParams = { cui: '12345678' }
-    mockedSearch = { tab: 'dovezi', evidence: true }
-    mockedLoaderData = {
-      cui: '12345678',
-      profile: getMockNgoProfile('12345678')!,
-      funding: getMockPublicFunding('12345678'),
-    }
-    ngoProfilePagePropsMock.mockReset()
-  })
-
-  it('renders NgoProfilePage with loader data, tab, and evidence flag', async () => {
-    const { Route } = await import('./ong-uri.$cui.lazy')
-    const RouteComponent = Route.options.component as ComponentType
-
-    render(<RouteComponent />)
-
-    expect(screen.getByTestId('ngo-profile-page')).toHaveTextContent(
-      '12345678:dovezi:true',
-    )
-    expect(ngoProfilePagePropsMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        cui: '12345678',
-        initialProfile: mockedLoaderData?.profile,
-        initialFunding: mockedLoaderData?.funding,
-        tab: 'dovezi',
-        evidenceOpen: true,
-      }),
-    )
-  })
-
-  it('renders NgoProfileNotFound when profile data is missing', async () => {
-    mockedLoaderData = {
-      cui: '00000000',
-      profile: null as unknown as NgoProfileRouteLoaderData['profile'],
-      funding: null,
-    }
-
-    const { Route } = await import('./ong-uri.$cui.lazy')
-    const RouteComponent = Route.options.component as ComponentType
-
-    render(<RouteComponent />)
-
-    expect(screen.getByTestId('ngo-profile-not-found')).toBeInTheDocument()
-    expect(screen.getByText('ONG negasit')).toBeInTheDocument()
-    expect(ngoProfilePagePropsMock).not.toHaveBeenCalled()
-  })
-
-  it('renders NgoProfileNotFound when loader data is undefined', async () => {
-    mockedLoaderData = undefined
-
-    const { Route } = await import('./ong-uri.$cui.lazy')
-    const RouteComponent = Route.options.component as ComponentType
-
-    render(<RouteComponent />)
-
-    expect(screen.getByTestId('ngo-profile-not-found')).toBeInTheDocument()
-    expect(ngoProfilePagePropsMock).not.toHaveBeenCalled()
-  })
-})
+  NgoLiveProfileNotFound: () => <div>No current link</div>,
+  NgoLiveProfileUnavailable: () => <div>Read unavailable</div>,
+}));
+describe("live NGO profile route", () => {
+  it("renders the live loader result without funding or mock profile props", async () => {
+    const { Route } = await import("./ong-uri.$cui.lazy");
+    const Component = Route.options.component as ComponentType;
+    render(<Component />);
+    expect(screen.getByText("Live profile")).toBeInTheDocument();
+    expect(pageProps).toHaveBeenCalledWith({ profile: profileFixture });
+  });
+  it("keeps missing current admission distinct from a read error", async () => {
+    const { Route } = await import("./ong-uri.$cui.lazy");
+    const Missing = Route.options.notFoundComponent as ComponentType;
+    const Failed = Route.options.errorComponent as ComponentType;
+    render(
+      <>
+        <Missing />
+        <Failed />
+      </>,
+    );
+    expect(screen.getByText("No current link")).toBeInTheDocument();
+    expect(screen.getByText("Read unavailable")).toBeInTheDocument();
+  });
+});

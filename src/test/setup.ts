@@ -19,6 +19,7 @@ vi.mock("@/config/env", () => ({
     VITE_CAMPAIGN_SELF_SEND_CC_EMAILS: undefined,
   },
   getSiteUrl: () => "http://localhost:3000",
+  isNgoRegistryEnabled: vi.fn(() => false),
 }));
 
 // Legal surfaces default to their live adapters; unit tests must stay on the
