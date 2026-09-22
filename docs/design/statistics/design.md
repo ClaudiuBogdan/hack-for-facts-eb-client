@@ -902,6 +902,46 @@ chart. The popovers size to their content — 22rem for a list, 20rem for the
 two form-shaped controls, which in a list-sized popover sat in a field of
 white.
 
+## 6k. A nested axis carries its parent (2026-09-22)
+
+Picking a locality on SOM101F while „Judete" stayed at TOTAL drew „Nicio
+observație", and the rail then named every pin by its code — „Sexe 105 ·
+Judete 112 · Localitati 114 · Procente 10225". Two defects, one cause.
+
+**INS nests an axis under the one before it.** A hierarchical axis's members
+name a parent with `parent_nom_item_id`, and that parent is a member of the
+PRECEDING axis: 1071 CIUGUD's parent is 3064, Alba on the county axis. A child
+exists only under its own parent. Probed 2026-09-22: TOTAL · Ciugud has 0 rows;
+Alba · Ciugud has 197 months; Alba · TOTAL is the county's own aggregate. A
+sweep of 76 matrices with a hierarchical axis — localities, and smaller ones
+such as ART103B's 67 members — found every parent on the preceding axis, none
+inside the axis itself, and never two nested axes in a row. Member codes equal
+`nom_item_id` (1,520 sampled), so a parent id can be written as a pin. The
+server's dimension filter takes only `search`, so the list cannot be narrowed
+to a county server-side; the rule is kept on the pick instead
+(`lib/source-hierarchy.ts`):
+
+- **A nested pick pins its parent.** Choosing Ciugud writes Judete = Alba with
+  it, in one URL write.
+- **A new parent resets the nested axis to its root.** Choosing Arad under
+  Ciugud writes Localitati = TOTAL. The root is read from the axis (the member
+  with no parent, one request per axis, kept a day) rather than assumed to be
+  112 — that it is 112 on both of SOM101F's axes is INS's numbering, not a
+  contract. The root is read as soon as the parent's panel opens, so the pick
+  nearly always finds it cached and writes with the click. When it does have
+  to wait, any other write in the meantime supersedes it and the waiting pick
+  is dropped — the review caught it restoring the previous unit and cadence
+  over a newer pick from its stale snapshot. Leaving the axis unpinned is NOT
+  a fallback: the page renders an unpinned nested axis as „alege" with no
+  figure, so a failed root read unpins only as the honest last resort.
+
+**A cell with no rows still names its pins.** The rail read every label from
+the first row of the series; no rows, no labels. `useSourceMemberLabels` now
+finds each unnamed pin on its own axis, a thousand members a read, and only
+once the series has answered with nothing to name it from — a page with data
+never asks. An old shared link to TOTAL · Ciugud now reads „Total · TOTAL ·
+1071 CIUGUD · Procente" over its empty state, in four small reads.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

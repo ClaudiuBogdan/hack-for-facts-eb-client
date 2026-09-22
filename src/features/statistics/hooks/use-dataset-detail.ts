@@ -1,7 +1,8 @@
 import { getInsDimensionValuesPage } from '../api/graphql/ins-bootstrap-fetchers'
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import type {
+  InsDimensionValue,
   InsDimensionValueConnection,
   InsEntitySelectorInput,
   InsObservationFilterInput,
@@ -184,4 +185,94 @@ export function useDatasetSeries(params: {
       ? { initialData: params.initialData }
       : {}),
   })
+}
+
+/** One pinned member whose label the fetched rows could not supply. */
+export type SourceMemberLookup = {
+  readonly dimensionIndex: number
+  readonly code: string
+  /** Classification members are keyed by their code, units by the unit's. */
+  readonly kind: 'classification' | 'unit'
+}
+
+/** Reads per lookup at most: 5,000 members, past the largest INS axis (3,183). */
+const MEMBER_LOOKUP_MAX_PAGES = 5
+const MEMBER_LOOKUP_PAGE_SIZE = 1000
+
+/**
+ * Labels for pinned members, read from their axis.
+ *
+ * The rail names each pin from the rows the series returned. When the cell
+ * holds no rows there is nothing to read — an old link to a cell INS never
+ * published, a hand-edited URL — and the rail printed the pins themselves:
+ * „Sexe 105 · Judete 112 · Localitati 114". This finds each such member on
+ * its axis instead, a thousand members a read; the caller enables it only for
+ * pins the rows left unnamed, so a page with data never asks.
+ */
+export function useSourceMemberLabels(params: {
+  readonly datasetCode: string
+  readonly lookups: readonly SourceMemberLookup[]
+}): ReadonlyMap<string, string> {
+  const datasetCode = normalizeInsDatasetCode(params.datasetCode)
+  const results = useQueries({
+    queries: params.lookups.map((lookup) => ({
+      queryKey: [
+        'statisticsSourceMemberLabel',
+        datasetCode,
+        lookup.dimensionIndex,
+        lookup.kind,
+        lookup.code,
+      ],
+      queryFn: ({ signal }: { signal: AbortSignal }) =>
+        findSourceMemberLabel({ datasetCode, lookup, signal }),
+      enabled: datasetCode.length > 0,
+      staleTime: DIMENSION_STALE_TIME,
+      retry: false,
+    })),
+  })
+
+  const labels = new Map<string, string>()
+  params.lookups.forEach((lookup, index) => {
+    const label = results[index]?.data
+    if (label) labels.set(sourceMemberLabelKey(lookup), label)
+  })
+  return labels
+}
+
+/** The key a resolved label is filed under: axis and member together. */
+export function sourceMemberLabelKey(lookup: SourceMemberLookup): string {
+  return `${lookup.kind}:${lookup.dimensionIndex}:${lookup.code}`
+}
+
+async function findSourceMemberLabel(params: {
+  readonly datasetCode: string
+  readonly lookup: SourceMemberLookup
+  readonly signal: AbortSignal
+}): Promise<string | null> {
+  const { datasetCode, lookup, signal } = params
+  const matches = (value: InsDimensionValue) =>
+    lookup.kind === 'unit'
+      ? value.unit?.code === lookup.code
+      : value.classification_value?.code === lookup.code
+  let offset = 0
+  for (let page = 0; page < MEMBER_LOOKUP_MAX_PAGES; page++) {
+    const result = await fetchDimensionValuesPage({
+      datasetCode,
+      dimensionIndex: lookup.dimensionIndex,
+      limit: MEMBER_LOOKUP_PAGE_SIZE,
+      offset,
+      signal,
+    })
+    const hit = result.nodes.find(matches)
+    if (hit) {
+      const label =
+        lookup.kind === 'unit'
+          ? (hit.unit?.name_ro ?? hit.unit?.symbol ?? hit.label_ro)
+          : (hit.label_ro ?? hit.classification_value?.name_ro)
+      return label?.trim() || null
+    }
+    if (!result.pageInfo.hasNextPage || result.nodes.length === 0) return null
+    offset += result.nodes.length
+  }
+  return null
 }

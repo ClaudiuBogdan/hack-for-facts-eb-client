@@ -1,7 +1,8 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
-import { render, screen } from '@/test/test-utils'
+import { render, screen, waitFor } from '@/test/test-utils'
 import type { InsDatasetDetails } from '@/schemas/ins'
+import { fetchDimensionValuesPage } from '../api/dataset-detail-api'
 import { DetailScopeSentence } from './detail-scope-sentence'
 
 /**
@@ -18,19 +19,34 @@ const { pickerStub } = vi.hoisted(() => ({
     dimensionIndex: number
     onSelect: (row: unknown) => void
   }) => (
-    <button
-      onClick={() =>
-        onSelect({
-          nom_item_id: 9,
-          dimension_type:
-            dimensionIndex === 4 ? 'UNIT_OF_MEASURE' : 'CLASSIFICATION',
-          classification_value: { type_code: `D${dimensionIndex}`, code: '9' },
-          unit: { code: '9' },
-        })
-      }
-    >
-      Pick {dimensionIndex}
-    </button>
+    <>
+      <button
+        onClick={() =>
+          onSelect({
+            nom_item_id: 9,
+            dimension_type:
+              dimensionIndex === 4 ? 'UNIT_OF_MEASURE' : 'CLASSIFICATION',
+            classification_value: { type_code: `D${dimensionIndex}`, code: '9' },
+            unit: { code: '9' },
+          })
+        }
+      >
+        Pick {dimensionIndex}
+      </button>
+      {/* A member nested under member 7 of the axis before. */}
+      <button
+        onClick={() =>
+          onSelect({
+            nom_item_id: 44,
+            dimension_type: 'CLASSIFICATION',
+            parent_nom_item_id: 7,
+            classification_value: { type_code: `D${dimensionIndex}`, code: '44' },
+          })
+        }
+      >
+        Pick nested {dimensionIndex}
+      </button>
+    </>
   ),
 }))
 
@@ -39,6 +55,9 @@ vi.mock('./detail-dimension-combobox', () => ({
 }))
 vi.mock('./detail-dimension-panel', () => ({
   DetailDimensionPanel: pickerStub,
+}))
+vi.mock('../api/dataset-detail-api', () => ({
+  fetchDimensionValuesPage: vi.fn(),
 }))
 const dataset: InsDatasetDetails = {
   id: 'TEST',
@@ -71,11 +90,11 @@ const dataset: InsDatasetDetails = {
     { index: 4, type: 'UNIT_OF_MEASURE', classification_type: null },
   ],
 }
-function mount(canDerive = true, clasificari?: unknown) {
+function mount(canDerive = true, clasificari?: unknown, source = dataset) {
   const change = vi.fn()
   render(
     <DetailScopeSentence
-      dataset={dataset}
+      dataset={source}
       search={{ clasificari }}
       scope={{
         territory: null,
@@ -149,5 +168,161 @@ describe('source scope edits', () => {
     expect(change).toHaveBeenCalledWith({
       clasificari: ['broken', null, 'D0:9'],
     })
+  })
+})
+
+describe('nested source axes', () => {
+  beforeEach(() => vi.mocked(fetchDimensionValuesPage).mockReset())
+
+  // D2 hangs off D1, as SOM101F's localities hang off its counties.
+  const nested: InsDatasetDetails = {
+    ...dataset,
+    dimensions: dataset.dimensions.map((dimension) =>
+      dimension.index === 2 ? { ...dimension, is_hierarchical: true } : dimension,
+    ),
+  }
+
+  it('pins the parent of a nested member it picks', async () => {
+    const change = mount(true, undefined, nested)
+    await userEvent.click(screen.getByRole('button', { name: /Geografie doi: 3/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick nested 2' }))
+    expect(change).toHaveBeenCalledTimes(1)
+    const pins = change.mock.calls[0][0].clasificari as string[]
+    expect([...pins].sort()).toEqual(['D0:1', 'D1:7', 'D2:44'])
+    expect(fetchDimensionValuesPage).not.toHaveBeenCalled()
+  })
+
+  it('sends the nested axis back to its root, read from the axis, when its parent changes', async () => {
+    vi.mocked(fetchDimensionValuesPage).mockResolvedValue({
+      nodes: [
+        {
+          nom_item_id: 200,
+          dimension_type: 'CLASSIFICATION',
+          parent_nom_item_id: null,
+          classification_value: { type_code: 'D2', code: '200' },
+        },
+      ],
+      pageInfo: { totalCount: 1, hasNextPage: false, hasPreviousPage: false },
+    })
+    const change = mount(true, undefined, nested)
+    await userEvent.click(screen.getByRole('button', { name: /Geografie unu: 2/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 1' }))
+    await waitFor(() => expect(change).toHaveBeenCalledTimes(1))
+    expect(fetchDimensionValuesPage).toHaveBeenCalledWith(
+      expect.objectContaining({ datasetCode: 'TEST', dimensionIndex: 2, offset: 0 }),
+    )
+    const pins = change.mock.calls[0][0].clasificari as string[]
+    expect([...pins].sort()).toEqual(['D0:1', 'D1:9', 'D2:200'])
+  })
+
+  it('drops a pick still waiting for its root when the rail writes again before the URL moves', async () => {
+    let answer: (value: Awaited<ReturnType<typeof fetchDimensionValuesPage>>) => void = () => {}
+    vi.mocked(fetchDimensionValuesPage).mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+    const change = mount(true, undefined, nested)
+    await userEvent.click(screen.getByRole('button', { name: /Geografie unu: 2/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 1' }))
+    // A second pick on another axis, written while the first still waits —
+    // the `search` prop has not moved (the router is still loading). The
+    // stub does not close its popover the way a real pick does.
+    await userEvent.keyboard('{Escape}')
+    await userEvent.click(screen.getByRole('button', { name: /Categorie: 1/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 0' }))
+    expect(change).toHaveBeenCalledTimes(1)
+    answer({
+      nodes: [
+        {
+          nom_item_id: 200,
+          dimension_type: 'CLASSIFICATION',
+          parent_nom_item_id: null,
+          classification_value: { type_code: 'D2', code: '200' },
+        },
+      ],
+      pageInfo: { totalCount: 1, hasNextPage: false, hasPreviousPage: false },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(change).toHaveBeenCalledTimes(1)
+  })
+
+  it('lets the newer of two waiting picks land', async () => {
+    let answer: (value: Awaited<ReturnType<typeof fetchDimensionValuesPage>>) => void = () => {}
+    vi.mocked(fetchDimensionValuesPage).mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+    const change = mount(true, undefined, nested)
+    await userEvent.click(screen.getByRole('button', { name: /Geografie unu: 2/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 1' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick nested 1' }))
+    answer({
+      nodes: [
+        {
+          nom_item_id: 200,
+          dimension_type: 'CLASSIFICATION',
+          parent_nom_item_id: null,
+          classification_value: { type_code: 'D2', code: '200' },
+        },
+      ],
+      pageInfo: { totalCount: 1, hasNextPage: false, hasPreviousPage: false },
+    })
+    await waitFor(() => expect(change).toHaveBeenCalledTimes(1))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(change).toHaveBeenCalledTimes(1)
+    const pins = change.mock.calls[0][0].clasificari as string[]
+    expect(pins).toContain('D1:44')
+  })
+
+  it('drops a pick still waiting for its root once the selection has moved on', async () => {
+    let answer: (value: Awaited<ReturnType<typeof fetchDimensionValuesPage>>) => void = () => {}
+    vi.mocked(fetchDimensionValuesPage).mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve
+      }),
+    )
+    const change = vi.fn()
+    const props = {
+      dataset: nested,
+      scope: {
+        territory: null,
+        territoryMode: 'national-default' as const,
+        territoryDefaulted: true,
+        classifications: new Map([['D0', '1'], ['D1', '2'], ['D2', '3']]),
+        defaultedTypes: new Set(['D0', 'D1', 'D2']),
+        unitCode: '0',
+        unitDefaulted: true,
+        periodicity: 'ANNUAL' as const,
+      },
+      canDerive: true,
+      unresolvedDimensions: [],
+      territoryLabel: 'România',
+      classificationLabels: new Map<string, string>(),
+      unitLabel: 'Persoane',
+      observedSpan: null,
+      yearWindow: null,
+      onChange: change,
+    }
+    const { rerender } = render(<DetailScopeSentence {...props} search={{}} />)
+    await userEvent.click(screen.getByRole('button', { name: /Geografie unu: 2/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 1' }))
+    expect(change).not.toHaveBeenCalled()
+    // Another write lands first — here, the back button.
+    rerender(<DetailScopeSentence {...props} search={{ clasificari: ['D0:5'] }} />)
+    answer({
+      nodes: [
+        {
+          nom_item_id: 200,
+          dimension_type: 'CLASSIFICATION',
+          parent_nom_item_id: null,
+          classification_value: { type_code: 'D2', code: '200' },
+        },
+      ],
+      pageInfo: { totalCount: 1, hasNextPage: false, hasPreviousPage: false },
+    })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(change).not.toHaveBeenCalled()
   })
 })

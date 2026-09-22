@@ -1,6 +1,7 @@
 import { editSourcePin } from '../lib/source-selection'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ChevronDown, SlidersHorizontal } from 'lucide-react'
@@ -24,13 +25,21 @@ import type {
 } from '@/schemas/ins'
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import {
+  classificationPinMap,
   classificationTypeCode,
   datasetTerritoryLevels,
   dimensionsOfType,
   type DetailSearchPatch,
   type EffectiveScope,
 } from '../lib/dataset-selection'
+import { fetchDimensionValuesPage } from '../api/dataset-detail-api'
 import { periodicityLabel } from '../lib/periodicity-labels'
+import {
+  childAxisAfterPick,
+  childSourceAxis,
+  pickSourceMember,
+  rootMemberCode,
+} from '../lib/source-hierarchy'
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { DetailCadenceControl } from './detail-cadence-control'
@@ -128,6 +137,30 @@ export function DetailScopeSentence({
   const [sheetOpen, setSheetOpen] = useState(false)
   // One open chip at a time, and controlled, so picking a value can close it.
   const [openSegment, setOpenSegment] = useState<string | null>(null)
+  // The selection a pick was made against. A pick that has to read a root
+  // before it can write (`ClassificationControl`) checks this is still the
+  // one it started from; any other write in the meantime supersedes it, and
+  // its stale snapshot is dropped rather than written over the newer
+  // selection. Every write from this rail moves it synchronously — the
+  // router keeps the old search until the new route has loaded, so waiting
+  // for the prop would let a second write slip under the check — and the
+  // effect covers writes from elsewhere, such as the back button, another
+  // dataset, and leaving the page. A pick that starts waiting mints its own
+  // token, so of two waiting picks the newer is the one that lands. Held
+  // here, not in the control: the control lives in a popover that unmounts
+  // the moment it closes.
+  const selectionKey = JSON.stringify(search)
+  const selectionToken = useRef<object>({})
+  useEffect(() => {
+    selectionToken.current = {}
+    return () => {
+      selectionToken.current = {}
+    }
+  }, [selectionKey, dataset.code])
+  const write = (patch: DetailSearchPatch) => {
+    selectionToken.current = {}
+    onChange(patch)
+  }
 
   const segments = buildSegments({
     dataset,
@@ -140,7 +173,8 @@ export function DetailScopeSentence({
     unitLabel,
     observedSpan,
     yearWindow,
-    onChange,
+    onChange: write,
+    selectionToken,
   })
 
   if (segments.length === 0) return null
@@ -392,6 +426,7 @@ function buildSegments(params: {
   readonly observedSpan: YearSpan | null
   readonly yearWindow: YearSpan | null
   readonly onChange: (patch: DetailSearchPatch) => void
+  readonly selectionToken: RefObject<object>
 }): readonly ScopeSegment[] {
   const {
     dataset,
@@ -405,6 +440,7 @@ function buildSegments(params: {
     observedSpan,
     yearWindow,
     onChange,
+    selectionToken,
   } = params
 
   // Editing a resolved cell materializes its complete selection atomically.
@@ -496,6 +532,8 @@ function buildSegments(params: {
       control: (options) => (
         <ClassificationControl
           datasetCode={dataset.code}
+          selectionToken={selectionToken}
+          dimensions={dimensions}
           dimension={dimension}
           search={sourceSearch}
           pinnedValue={value ?? null}
@@ -584,8 +622,37 @@ function buildSegments(params: {
   return segments
 }
 
+/** A nested axis's root member, read once per axis and kept: INS changes it never. */
+const ROOT_STALE_TIME = 1000 * 60 * 60 * 24
+/** The root is the first member INS lists; a page this size has always held it. */
+const ROOT_PAGE_SIZE = 50
+
+/**
+ * The read of a nested axis's root, shared by the prefetch and the pick.
+ * It takes no abort signal on purpose: the pick closes its popover, which
+ * unmounts the prefetch's observer, and a query that honours the signal is
+ * cancelled when its last observer leaves — the pick waiting on it would then
+ * fail and unpin the axis. Fifty rows, read once a day; letting it finish
+ * costs nothing.
+ */
+function childRootQuery(datasetCode: string, childIndex: number) {
+  return {
+    queryKey: ['statisticsDimensionRoot', datasetCode, childIndex] as const,
+    queryFn: () =>
+      fetchDimensionValuesPage({
+        datasetCode,
+        dimensionIndex: childIndex,
+        limit: ROOT_PAGE_SIZE,
+        offset: 0,
+      }).then((page) => rootMemberCode(page.nodes)),
+    staleTime: ROOT_STALE_TIME,
+  }
+}
+
 function ClassificationControl({
   datasetCode,
+  selectionToken,
+  dimensions,
   dimension,
   search,
   pinnedValue,
@@ -594,6 +661,8 @@ function ClassificationControl({
   options,
 }: {
   readonly datasetCode: string
+  readonly selectionToken: RefObject<object>
+  readonly dimensions: readonly InsDimension[]
   readonly dimension: InsDimension
   readonly search: StatisticsDatasetDetailSearch
   readonly pinnedValue: string | null
@@ -601,6 +670,14 @@ function ClassificationControl({
   readonly onChange: (patch: DetailSearchPatch) => void
   readonly options: ScopeControlOptions
 }) {
+  const queryClient = useQueryClient()
+  // Opening a parent axis reads its nested axis's root at once, so a pick
+  // almost always finds it cached and writes in the same tick as the click.
+  const childAxis = childSourceAxis(dimensions, dimension)
+  useQuery({
+    ...childRootQuery(datasetCode, childAxis?.index ?? -1),
+    enabled: childAxis !== null,
+  })
   if (search.clasificari !== undefined && !Array.isArray(search.clasificari))
     return (
       <p>
@@ -613,8 +690,52 @@ function ClassificationControl({
   const label =
     dimension.label_ro ?? dimension.classification_type?.name_ro ?? typeCode
 
-  const selectPin = (code: string) =>
-    onChange({ clasificari: editSourcePin(search.clasificari, typeCode, code) })
+  /**
+   * A pick keeps the cell one INS publishes (`source-hierarchy.ts`): a
+   * locality brings its county with it, and a new county sends a pinned
+   * locality back to its root. The root is the nested axis's own member,
+   * read from the axis — prefetched when this panel opens, kept a day. If a
+   * pick still has to wait for it, any other write in the meantime wins and
+   * this one is dropped: its snapshot of the selection is stale by then.
+   */
+  const selectMember = (value: InsDimensionValue) => {
+    const code = value.classification_value?.code
+    if (!code) return
+    const commit = (childReset?: Parameters<typeof pickSourceMember>[0]['childReset']) =>
+      onChange({
+        clasificari: pickSourceMember({
+          pins: search.clasificari,
+          dimensions,
+          dimension,
+          value,
+          childReset,
+        }),
+      })
+
+    const after = childAxisAfterPick({
+      dimensions,
+      dimension,
+      pins: classificationPinMap(search.clasificari),
+      memberCode: code,
+    })
+    if (after.action === 'keep') {
+      commit()
+      return
+    }
+    const rootQuery = childRootQuery(datasetCode, after.child.index)
+    const cached = queryClient.getQueryData<string | null>(rootQuery.queryKey)
+    if (cached !== undefined) {
+      commit({ child: after.child, rootCode: cached })
+      return
+    }
+    const startedFrom = {}
+    selectionToken.current = startedFrom
+    const commitIfCurrent = (rootCode: string | null) => {
+      if (selectionToken.current === startedFrom)
+        commit({ child: after.child, rootCode })
+    }
+    queryClient.fetchQuery(rootQuery).then(commitIfCurrent, () => commitIfCurrent(null))
+  }
   const clearPin = () =>
     onChange({ clasificari: editSourcePin(search.clasificari, typeCode, null) })
 
@@ -625,10 +746,7 @@ function ClassificationControl({
     selectedKey: pinnedValue,
     optionKey: (value: InsDimensionValue) =>
       value.classification_value?.code ?? null,
-    onSelect: (value: InsDimensionValue) => {
-      const code = value.classification_value?.code
-      if (code) selectPin(code)
-    },
+    onSelect: selectMember,
     onClear: clearPin,
   }
 

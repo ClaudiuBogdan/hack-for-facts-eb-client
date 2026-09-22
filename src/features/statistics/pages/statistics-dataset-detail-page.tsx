@@ -47,9 +47,12 @@ import { FreshnessBadge } from '../components/freshness-badge'
 import { RequestDatasetAction } from '../components/request-dataset-action'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import {
+  sourceMemberLabelKey,
   useDatasetSeries,
   useDatasetTier0,
   useDimensionValues,
+  useSourceMemberLabels,
+  type SourceMemberLookup,
 } from '../hooks/use-dataset-detail'
 import {
   classificationTypeCode,
@@ -721,18 +724,53 @@ function DatasetDetailBody({
     scope.territory === null
       ? 'România'
       : (sampleRow?.territory?.name_ro ?? scope.territory.value)
-  const classificationLabels = useMemo(() => {
-    const labels = new Map<string, string>()
+  const rowLabel = (typeCode: string) =>
+    (sampleRow?.classifications ?? [])
+      .find((classification) => classification.type_code === typeCode)
+      ?.name_ro?.trim() || null
+  const rowUnitLabel = sampleRow?.unit?.name_ro ?? sampleRow?.unit?.symbol ?? null
+
+  // A cell with no rows leaves its pins unnamed; the rail then reads each
+  // label from the pin's own axis rather than print „105" and „10225". Asked
+  // only once the series has answered, so a page still loading never looks.
+  const unitAxis = dimensionsOfType(dataset.dimensions, 'UNIT_OF_MEASURE')[0]
+  const unitLookup: SourceMemberLookup | null =
+    unitAxis && scope.unitCode !== null
+      ? { dimensionIndex: unitAxis.index, code: scope.unitCode, kind: 'unit' }
+      : null
+  const labelLookups: SourceMemberLookup[] = []
+  if (seriesQuery.isSuccess) {
     for (const [typeCode, valueCode] of scope.classifications) {
-      const match = (sampleRow?.classifications ?? []).find(
-        (classification) => classification.type_code === typeCode,
+      const dimension = dataset.dimensions.find(
+        (candidate) => classificationTypeCode(candidate) === typeCode,
       )
-      labels.set(typeCode, match?.name_ro?.trim() || valueCode)
+      if (dimension && !rowLabel(typeCode))
+        labelLookups.push({ dimensionIndex: dimension.index, code: valueCode, kind: 'classification' })
     }
-    return labels
-  }, [scope.classifications, sampleRow])
+    if (unitLookup && rowUnitLabel === null) labelLookups.push(unitLookup)
+  }
+  const memberLabels = useSourceMemberLabels({ datasetCode: dataset.code, lookups: labelLookups })
+
+  const classificationLabels = new Map<string, string>()
+  for (const [typeCode, valueCode] of scope.classifications) {
+    const dimension = dataset.dimensions.find(
+      (candidate) => classificationTypeCode(candidate) === typeCode,
+    )
+    classificationLabels.set(
+      typeCode,
+      rowLabel(typeCode) ??
+        (dimension
+          ? memberLabels.get(
+              sourceMemberLabelKey({ dimensionIndex: dimension.index, code: valueCode, kind: 'classification' }),
+            )
+          : undefined) ??
+        valueCode,
+    )
+  }
   const unitLabel =
-    sampleRow?.unit?.name_ro ?? sampleRow?.unit?.symbol ?? scope.unitCode
+    rowUnitLabel ??
+    (unitLookup ? memberLabels.get(sourceMemberLabelKey(unitLookup)) : undefined) ??
+    scope.unitCode
   /**
    * The unit as a WORD, for the figure — „persoane", „%", and for a bare count
    * „număr". `hubUnitWord` is deliberately empty for a count, because „10
