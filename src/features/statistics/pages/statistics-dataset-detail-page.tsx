@@ -62,7 +62,6 @@ import {
   DETAIL_PAGE_SIZE,
   filterExactCell,
   observedYearSpan,
-  parseTerritoryPin,
   type DetailSearchPatch,
   type EffectiveScope,
 } from '../lib/dataset-selection'
@@ -108,7 +107,6 @@ export function StatisticsDatasetDetailPage({
 }: Props) {
   const code = rawCode.trim().toUpperCase()
 
-  const territoryPin = parseTerritoryPin(search.teritoriu)
   const entity = detailBootstrapEntity(search)
   const tier0Query = useDatasetTier0({
     code,
@@ -342,9 +340,6 @@ export function StatisticsDatasetDetailPage({
             canDerive={selection.canDerive}
             representativeDefaults={representative !== null}
             unresolvedDimensions={unresolvedDimensions}
-            territoryPin={
-              territoryPin ? encodeTerritoryPin(territoryPin) : null
-            }
             onSearchChange={onSearchChange}
           />
         ) : null}
@@ -592,7 +587,6 @@ function DatasetDetailBody({
   canDerive,
   representativeDefaults,
   unresolvedDimensions,
-  territoryPin,
   onSearchChange,
 }: {
   readonly dataset: InsDatasetDetails
@@ -605,7 +599,6 @@ function DatasetDetailBody({
   /** True when this page, not the server, chose the axes the series shows. */
   readonly representativeDefaults: boolean
   readonly unresolvedDimensions: readonly InsDimension[]
-  readonly territoryPin: string | null
   readonly onSearchChange: (patch: DetailSearchPatch) => void
 }) {
   const seriesData = seriesEnabled ? seriesQuery.data : undefined
@@ -801,18 +794,16 @@ function DatasetDetailBody({
     missingClassificationLabels.push(t`Unitate de măsură`)
   if (scope.periodicity === null) missingClassificationLabels.push(t`Frecvență`)
 
-  const hasGeographicSourcePins = dataset.dimensions.some(
-    (d) =>
-      d.type === 'TERRITORIAL' &&
-      Array.isArray(search.clasificari) &&
-      search.clasificari.some(
-        (pin) => typeof pin === 'string' && pin.startsWith(`D${d.index}:`),
-      ),
-  )
-
+  // Comparison starts from the place on screen: the territory the scope
+  // applies, or else the one the row a pinned geography axis resolved to —
+  // picking Arad on the axis compares Arad, whatever link the page came from.
   const compareSearch = {
     cod: dataset.code,
-    teritorii: [territoryPin ?? 'cod:RO'] as [string, ...string[]],
+    teritorii: [
+      (scope.territory ? encodeTerritoryPin(scope.territory) : null) ??
+        rowTerritoryPin(sampleRow) ??
+        'cod:RO',
+    ] as [string, ...string[]],
   }
 
   return (
@@ -939,12 +930,7 @@ function DatasetDetailBody({
                 ) : null}
                 {seriesQuery.isSuccess &&
                 !sourceUnavailable &&
-                !latestSourceRow &&
-                !(
-                  exactRows.length === 0 &&
-                  scope.territory !== null &&
-                  hasGeographicSourcePins
-                ) ? (
+                !latestSourceRow ? (
                   <div className="space-y-3">
                     <EmptyState
                       // Unframed: the band is already the frame.
@@ -952,13 +938,10 @@ function DatasetDetailBody({
                       title={t`Nicio observație`}
                       description={t`Selecția curentă nu returnează observații. Încearcă alt teritoriu sau altă valoare.`}
                     />
-                    {/* A pinned territory that matches nothing has to be
-                        undoable HERE. On a national-only matrix the rail shows
-                        the territory as a statement rather than a picker — the
-                        dataset has no sub-national coverage to offer — so a
-                        link carrying `?teritoriu=cod:AB` would otherwise leave
-                        the reader on an empty page with no control to clear
-                        it. */}
+                    {/* A `?teritoriu=` that matches nothing has to be undoable
+                        HERE: a link can carry a place this matrix does not
+                        publish — a county into a national-only series — and
+                        the rail has no territory picker to clear it with. */}
                     {scope.territory !== null ? (
                       <div className="flex justify-center">
                         <Button
@@ -970,28 +953,6 @@ function DatasetDetailBody({
                         </Button>
                       </div>
                     ) : null}
-                  </div>
-                ) : null}
-
-                {seriesQuery.isSuccess &&
-                exactRows.length === 0 &&
-                scope.territory !== null &&
-                hasGeographicSourcePins ? (
-                  <div className={statisticsTheme.note}>
-                    <p>
-                      <Trans>
-                        Coordonatele INS și filtrul teritorial canonic se
-                        intersectează. Nicio observație nu corespunde ambelor
-                        selecții.
-                      </Trans>
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onSearchChange({ teritoriu: undefined })}
-                    >
-                      <Trans>Șterge doar filtrul teritorial</Trans>
-                    </Button>
                   </div>
                 ) : null}
 
@@ -1108,6 +1069,11 @@ function DatasetDetailBody({
                             : undefined,
                         unitate: selected.unitate,
                         pagina: undefined,
+                        // The row pins every axis, its geography included,
+                        // and a pinned geography names the territory itself.
+                        ...(dataset.dimensions.some((d) => d.type === 'TERRITORIAL')
+                          ? { teritoriu: undefined }
+                          : {}),
                       })
                   }
                 : undefined
@@ -1120,4 +1086,19 @@ function DatasetDetailBody({
       </div>
     </div>
   )
+}
+
+/**
+ * The comparison token for the territory a row resolved to — a county by
+ * its code, a locality by its SIRUTA, the country as RO. A region or a
+ * macroregion has no comparison token, so it falls back to the country.
+ */
+function rowTerritoryPin(row: InsObservation | null): string | null {
+  const territory = row?.territory
+  if (!territory) return null
+  if (territory.level === 'LAU' && territory.siruta_code)
+    return `siruta:${territory.siruta_code}`
+  if (territory.level === 'NUTS3' && territory.code) return `cod:${territory.code}`
+  if (territory.level === 'NATIONAL') return 'cod:RO'
+  return null
 }

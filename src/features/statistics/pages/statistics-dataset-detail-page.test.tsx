@@ -348,7 +348,7 @@ describe('StatisticsDatasetDetailPage', () => {
     // and the prompt names ONLY the unresolved dimension.
     expect(
       screen.getByRole('button', {
-        name: /Teritoriu: România/,
+        name: /^Sexe: alege/,
       }),
     ).toBeInTheDocument()
     expect(screen.getByText(/Alege o valoare pentru: Sexe/)).toBeInTheDocument()

@@ -857,10 +857,9 @@ listbox over `useInfiniteQuery` (`DIMENSION_PAGE_SIZE` = 200 rows a read; the
 server serves up to 1,000 and 3,182 localities are 16 reads at most, taken
 only as far as the reader scrolls) and `@tanstack/react-virtual`, so a
 3,000-row axis costs the same to draw as a 3-row one. The footer states the
-count — „3.182 de opțiuni" — instead of a page. The dimension panel and the
-canonical territory picker both use it; the territory picker had its own
-chrome (a label, a note, a bordered list, „Anterior / Următor") and now looks
-like its neighbours.
+count — „3.182 de opțiuni" — instead of a page. Every classification and
+geography axis opens onto it (the separate territory picker it also served
+was removed the same day — §6l).
 
 - **Not cmdk.** cmdk keeps its cursor in the DOM and walks the rendered
   items; a virtualised list renders only the rows in view, so the cursor would
@@ -941,6 +940,45 @@ finds each unnamed pin on its own axis, a thousand members a read, and only
 once the series has answered with nothing to name it from — a page with data
 never asks. An old shared link to TOTAL · Ciugud now reads „Total · TOTAL ·
 1071 CIUGUD · Procente" over its empty state, in four small reads.
+
+## 6l. One place to choose a place (2026-09-22)
+
+The rail had two territory controls: „Teritoriu", a canonical picker writing
+`?teritoriu=`, and the matrix's own geography axis. They chose the same thing,
+and both went into the read as an intersection. `ACC101B?teritoriu=cod:AB`
+with the axis pinned to Arad sent `territoryCodes: ["AB"]` beside
+`sourcePins: D0 = Arad` — a row has one territory, so the page drew nothing.
+The natural path there was two clicks: the hub's county map links in with
+`teritoriu=cod:AB`, then the reader picks another county on the axis.
+
+The separation was a decision of `1342329d5` (2026-09-05), and the case that
+would justify it — a matrix with two INDEPENDENT geography axes, where
+„Teritoriu" alone is ambiguous — does not occur: of 239 matrices swept on
+2026-09-22, 122 have one geography axis, 85 a nested chain (Judete →
+Localitati), none two independent ones, and 32 none at all. Wherever the
+picker appeared, it repeated the axis. So:
+
+- **The axes are the territory control.** A matrix with a geography axis has
+  no „Teritoriu" row; the axis names the place, lists only places the matrix
+  publishes, and can reach regions and macroregions, which the canonical
+  levels cannot (ACC101B has 13). A matrix with no geography axis states
+  „Teritoriu: România" and offers nothing to change. `DetailTerritoryControl`
+  and `datasetTerritoryLevels` are gone. The one thing lost is a single
+  search across county and locality; the locality axis finds the town, and
+  §6k pins its county with it.
+- **`?teritoriu=` is the way IN, not a second filter.** The hub map and
+  ranking, territory pages, comparisons and entity pages link with it, and
+  it seeds the axis: the server's default resolves `cod:AB` to D0 = Alba,
+  marked implicit. `resolveDetailSelection` takes
+  `territoryBesidePinnedGeography`: on the detail page (`axis`, the default)
+  an explicitly pinned geography axis names the territory and `teritoriu` is
+  ignored; every edit that pins geography also drops it from the URL. On the
+  entity page (`intersect`) the territory is the page's subject and stays in
+  every read as a guard — no row outside the entity may be shown.
+- The note „Coordonatele INS și filtrul teritorial canonic se intersectează"
+  and its button went with the state they described. „Compară teritorii"
+  starts from the territory the page shows — the scope's, or else the one the
+  resolved row carries — not from the raw URL.
 
 ## 7. Data model expectations at the UI boundary
 

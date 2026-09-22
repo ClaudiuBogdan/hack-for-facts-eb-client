@@ -12,11 +12,10 @@ const PREFETCH_ROWS = 40
 const ROW_ESTIMATE_PX = 36
 const PAGE_KEY_ROWS = 10
 
-/** One pickable row. `key` is what the URL will carry; `meta` a quiet second line. */
+/** One pickable row. `key` is what the URL will carry. */
 export type DetailOption = {
   readonly key: string
   readonly label: string
-  readonly meta?: string
 }
 
 type Props = {
@@ -246,14 +245,7 @@ export function DetailOptionList({
                     chosen ? 'opacity-100' : 'opacity-0',
                   )}
                 />
-                <span className="min-w-0 flex-1 leading-snug">
-                  {option.label}
-                  {option.meta ? (
-                    <span className="block text-xs font-normal text-muted-foreground">
-                      {option.meta}
-                    </span>
-                  ) : null}
-                </span>
+                <span className="min-w-0 flex-1 leading-snug">{option.label}</span>
               </div>
             )
           })}

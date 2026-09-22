@@ -27,7 +27,6 @@ import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import {
   classificationPinMap,
   classificationTypeCode,
-  datasetTerritoryLevels,
   dimensionsOfType,
   type DetailSearchPatch,
   type EffectiveScope,
@@ -45,7 +44,6 @@ import { statisticsTheme } from '../lib/statistics-theme'
 import { DetailCadenceControl } from './detail-cadence-control'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
 import { DetailDimensionPanel } from './detail-dimension-panel'
-import { DetailTerritoryControl } from './detail-territory-control'
 import { DetailYearWindowControl, type YearSpan } from './detail-year-window-control'
 
 /** How a segment's control is being asked to render itself. */
@@ -454,55 +452,53 @@ function buildSegments(params: {
         unitate: scope.unitCode ?? undefined,
       }
     : search
-  const onSourceChange = (patch: DetailSearchPatch) =>
-    onChange(
-      canDerive
-        ? {
-            clasificari: sourceSearch.clasificari,
-            unitate: sourceSearch.unitate,
-            ...(scope.periodicity && isInsChartPeriodicity(scope.periodicity)
-              ? { frecventa: scope.periodicity }
-              : {}),
-            ...patch,
-          }
-        : patch,
-    )
+  const dimensions = dataset.dimensions ?? []
+  const geographyTypes = new Set(
+    dimensions
+      .filter((d) => d.type === 'TERRITORIAL')
+      .map(classificationTypeCode),
+  )
+  const onSourceChange = (patch: DetailSearchPatch) => {
+    const next: DetailSearchPatch = canDerive
+      ? {
+          clasificari: sourceSearch.clasificari,
+          unitate: sourceSearch.unitate,
+          ...(scope.periodicity && isInsChartPeriodicity(scope.periodicity)
+            ? { frecventa: scope.periodicity }
+            : {}),
+          ...patch,
+        }
+      : patch
+    // Once a geography axis is pinned it names the territory, and the
+    // `teritoriu` that seeded it has nothing left to say.
+    const pinsGeography =
+      Array.isArray(next.clasificari) &&
+      next.clasificari.some(
+        (pin) => typeof pin === 'string' && geographyTypes.has(pin.split(':')[0]),
+      )
+    onChange(pinsGeography ? { ...next, teritoriu: undefined } : next)
+  }
 
   const segments: ScopeSegment[] = []
-  const dimensions = dataset.dimensions ?? []
 
   /**
-   * A national-only matrix gets a territory STATEMENT, not a picker.
-   *
-   * DESIGN.md §11: no surface forces a territory level a dataset lacks. The
-   * picker searched every level for every matrix, so JUS101A — „Judecatori",
-   * whose only axes are „Ani" and „UM: Numar persoane" — offered all 42
-   * counties, and choosing one wrote `?teritoriu=cod:AB`, a filter no row can
-   * satisfy. The page went empty with nothing saying why.
+   * The territory is chosen on the matrix's own geography axes — „Judete",
+   * „Localitati", „Macroregiuni, regiuni de dezvoltare si judete" — which list
+   * exactly the places the matrix publishes, regions included. A separate
+   * „Teritoriu" picker beside them chose the same thing twice: on ACC101B it
+   * read Alba while the axis read Arad, and the page filtered on both and drew
+   * nothing. A matrix with no geography axis is national, and says so.
    */
-  const territoryLevels = datasetTerritoryLevels(dataset)
-  const territoryChoosable = territoryLevels.length > 1
-  segments.push({
-    id: 'teritoriu',
-    text:
-      scope.territoryMode === 'source-coordinates'
-        ? t`Fără filtru teritorial canonic`
-        : territoryLabel,
-    defaulted: scope.territoryDefaulted,
-    controlLabel: t`Teritoriu`,
-    fills: true,
-    control: territoryChoosable
-      ? (options) => (
-          <DetailTerritoryControl
-            search={search}
-            onChange={onChange}
-            levels={territoryLevels}
-            variant={options.variant}
-            onPicked={options.onPicked}
-          />
-        )
-      : null,
-  })
+  const hasGeographyAxis = dimensions.some((d) => d.type === 'TERRITORIAL')
+  if (!hasGeographyAxis) {
+    segments.push({
+      id: 'teritoriu',
+      text: territoryLabel,
+      defaulted: scope.territoryDefaulted,
+      controlLabel: t`Teritoriu`,
+      control: null,
+    })
+  }
 
   const unresolvedTypeCodes = new Set(
     unresolvedDimensions.map(classificationTypeCode),

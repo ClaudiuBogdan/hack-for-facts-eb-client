@@ -187,11 +187,33 @@ describe('detail source selection', () => {
       expect(result.unresolvedDimensions.map((d) => d.index)).toEqual([2])
     }
   })
-  it('keeps canonical territory as an intersection with complete source geography', () => {
+  it('lets a pinned geography axis name the territory on the detail page', () => {
     const result = resolve(
       { clasificari: ['D1:0', 'D2:-1'], teritoriu: 'siruta:179132' },
       latest,
     )
+    expect(result.scope.territory).toBeNull()
+    expect(result.scope.territoryMode).toBe('source-coordinates')
+    expect(result.filter?.sirutaCodes).toBeUndefined()
+    expect(result.filter?.territoryLevels).toBeUndefined()
+    expect(result.filter?.sourcePins).toEqual([
+      { dimensionIndex: 0, memberCode: '100' },
+      { dimensionIndex: 1, memberCode: '0' },
+      { dimensionIndex: 2, memberCode: '-1' },
+    ])
+  })
+  it('keeps teritoriu as the seed of a geography nothing has pinned', () => {
+    const result = resolve({ teritoriu: 'siruta:179132' }, latest)
+    expect(result.scope.territoryMode).toBe('explicit')
+    expect(result.filter?.sirutaCodes).toEqual(['179132'])
+  })
+  it('keeps an entity territory as an intersection with complete source geography', () => {
+    const result = resolveDetailSelection({
+      search: { clasificari: ['D1:0', 'D2:-1'], teritoriu: 'siruta:179132' },
+      dataset,
+      latest,
+      territoryBesidePinnedGeography: 'intersect',
+    })
     expect(result.filter?.sirutaCodes).toEqual(['179132'])
     expect(result.filter?.sourcePins).toEqual([
       { dimensionIndex: 0, memberCode: '100' },

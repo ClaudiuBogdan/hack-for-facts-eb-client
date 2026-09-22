@@ -41,7 +41,12 @@ export function preparedEntityInsFixture(
     dataset,
     latest: null,
     search,
-    resolved: resolveDetailSelection({ search, dataset, latest: null }),
+    resolved: resolveDetailSelection({
+      search,
+      dataset,
+      latest: null,
+      territoryBesidePinnedGeography: "intersect",
+    }),
     publicationKey: comparisonPublicationKey(descriptor),
   };
 }

@@ -73,6 +73,20 @@ export function resolveDetailSelection(params: {
    * choice.
    */
   representative?: RepresentativeCell | null
+  /**
+   * What a `teritoriu` does beside a pinned geography axis.
+   *
+   * `axis` — the detail page. The pinned axis member names the place, so
+   * `teritoriu` only seeds a geography nothing has pinned yet (the hub map, a
+   * territory page link in with it) and is ignored once the reader pins the
+   * axis. Both at once could only agree or empty the page: ACC101B read
+   * `teritoriu=cod:AB` beside an axis pinned to Arad and drew nothing.
+   *
+   * `intersect` — an entity page. There the territory is the page's subject,
+   * fixed whatever the axes are pinned to, and it stays in every read as a
+   * guard: no row outside the entity may be shown.
+   */
+  territoryBesidePinnedGeography?: 'axis' | 'intersect'
 }): {
   scope: EffectiveScope
   filter: InsObservationFilterInput | null
@@ -89,7 +103,13 @@ export function resolveDetailSelection(params: {
    */
   needsSourceAnchor: boolean
 } {
-  const { search, dataset, latest, representative } = params
+  const {
+    search,
+    dataset,
+    latest,
+    representative,
+    territoryBesidePinnedGeography = 'axis',
+  } = params
   const issues = new Set<SourceSelectionIssue>()
   const dimensions = dataset?.dimensions ?? []
   const axes = dimensions.filter(
@@ -104,9 +124,19 @@ export function resolveDetailSelection(params: {
   if (!dataset || !insSourceLayoutSchema.safeParse(dataset).success)
     issues.add('descriptor')
 
-  const territory = parseTerritoryPin(search.teritoriu)
+  const parsedPins = parseSourcePins(search.clasificari, declaredAxes)
+  const explicit = parsedPins.pins
+  if (!parsedPins.valid) issues.add('classifications')
+  const explicitGeo = [...explicit.keys()].some((type) => geoAxes.has(type))
+
+  const axisNamesTerritory =
+    explicitGeo && territoryBesidePinnedGeography === 'axis'
+  const territory = axisNamesTerritory
+    ? null
+    : parseTerritoryPin(search.teritoriu)
   const territoryEntity = territoryPinToEntity(territory)
   if (
+    !axisNamesTerritory &&
     search.teritoriu !== undefined &&
     (!territory ||
       !territoryEntity ||
@@ -114,11 +144,6 @@ export function resolveDetailSelection(params: {
         !/^[1-9][0-9]*$/.test(territoryEntity.sirutaCode)))
   )
     issues.add('territory')
-
-  const parsedPins = parseSourcePins(search.clasificari, declaredAxes)
-  const explicit = parsedPins.pins
-  if (!parsedPins.valid) issues.add('classifications')
-  const explicitGeo = [...explicit.keys()].some((type) => geoAxes.has(type))
   const classifications = new Map<string, string>()
   const defaultedTypes = new Set<string>()
   if (latest?.hasData && latest.matchStrategy !== 'AMBIGUOUS_GEOGRAPHY') {

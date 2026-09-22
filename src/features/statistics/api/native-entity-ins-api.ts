@@ -83,7 +83,12 @@ export function prepareEntityInsBootstrap(
     assertEntityRows(context, [latest.source.observation]);
   }
   const search = entityInsDetailSearch(context, selection);
-  const detail = resolveDetailSelection({ search, dataset, latest });
+  const detail = resolveDetailSelection({
+    search,
+    dataset,
+    latest,
+    territoryBesidePinnedGeography: "intersect",
+  });
   const resolved = {
     ...detail,
     scope: {

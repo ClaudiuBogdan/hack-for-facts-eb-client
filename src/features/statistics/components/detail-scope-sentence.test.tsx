@@ -124,7 +124,7 @@ function mount(canDerive = true, clasificari?: unknown, source = dataset) {
 }
 
 describe('source scope edits', () => {
-  it('renders every geographic source axis independently', () => {
+  it('chooses the territory on the geography axes alone', () => {
     mount()
     expect(
       screen.getByRole('button', { name: /Geografie unu: 2/ }),
@@ -132,11 +132,22 @@ describe('source scope edits', () => {
     expect(
       screen.getByRole('button', { name: /Geografie doi: 3/ }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', {
-        name: /Teritoriu: România/,
-      }),
-    ).toBeInTheDocument()
+    expect(screen.queryByText('Teritoriu')).not.toBeInTheDocument()
+  })
+  it('states the territory of a matrix with no geography axis', () => {
+    mount(true, undefined, {
+      ...dataset,
+      dimensions: dataset.dimensions.filter((d) => d.type !== 'TERRITORIAL'),
+    })
+    expect(screen.getByText('Teritoriu')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Teritoriu/ })).not.toBeInTheDocument()
+  })
+  it('drops the teritoriu that seeded the geography once an edit pins it', async () => {
+    const change = mount(true, undefined)
+    await userEvent.click(screen.getByRole('button', { name: /Categorie: 1/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 0' }))
+    const patch = change.mock.calls[0][0] as Record<string, unknown>
+    expect('teritoriu' in patch && patch.teritoriu === undefined).toBe(true)
   })
   it('materializes the other default coordinates and unit when editing one axis', async () => {
     const change = mount()

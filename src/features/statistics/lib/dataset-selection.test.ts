@@ -9,7 +9,7 @@ import {
   removeClassificationPin,
   territoryPinFromValue,
   upsertClassificationPin,
-  datasetTerritoryLevels,} from './dataset-selection'
+} from './dataset-selection'
 
 describe('classification pin codec', () => {
   it('round-trips a pin', () => {
@@ -106,51 +106,5 @@ describe('territory pin codec', () => {
       kind: 'cod',
       value: 'CJ',
     })
-  })
-})
-
-describe('datasetTerritoryLevels', () => {
-  it('offers only the country for a national-only matrix', () => {
-    // JUS101A: „Ani" plus „UM: Numar persoane", no territorial axis and no
-    // sub-national coverage. Offering its 42 counties let a reader pick one
-    // and empty the page.
-    expect(
-      datasetTerritoryLevels({
-        has_county_data: false,
-        has_uat_data: false,
-        has_siruta: false,
-      }),
-    ).toEqual(['NATIONAL'])
-  })
-
-  it('adds counties and localities only where the dataset carries them', () => {
-    expect(
-      datasetTerritoryLevels({
-        has_county_data: true,
-        has_uat_data: false,
-        has_siruta: false,
-      }),
-    ).toEqual(['NATIONAL', 'NUTS3'])
-    expect(
-      datasetTerritoryLevels({
-        has_county_data: true,
-        has_uat_data: true,
-        has_siruta: false,
-      }),
-    ).toEqual(['NATIONAL', 'NUTS3', 'LAU'])
-  })
-
-  it('treats SIRUTA coverage as locality coverage', () => {
-    expect(
-      datasetTerritoryLevels({
-        has_county_data: false,
-        has_uat_data: false,
-        has_siruta: true,
-      }),
-    ).toEqual(['NATIONAL', 'LAU'])
-  })
-
-  it('falls back to the country when the dataset is unknown', () => {
-    expect(datasetTerritoryLevels(null)).toEqual(['NATIONAL'])
   })
 })
