@@ -92,7 +92,8 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
     return indicator ? [indicator] : []
   })
   // The longest series the hub carries; the band says which, because the
-  // others end earlier (employees stop a year before, tourism starts 2003).
+  // others start later or end earlier (tourism starts 2001, employees stop a
+  // year before).
   const seriesSpan = lifeExpectancy && lifeExpectancy.series.length > 1
     ? { from: lifeExpectancy.series[0].period, to: lifeExpectancy.series[lifeExpectancy.series.length - 1].period }
     : null
@@ -486,7 +487,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                     <Trans>Șomajul, lună de lună</Trans>
                   </span>
                   <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">
-                    <Trans>Ponderea șomerilor înregistrați din 2016 încoace, la nivel național și pe județe.</Trans>
+                    <Trans>Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe.</Trans>
                   </span>
                 </Link>
               </li>

@@ -2,23 +2,29 @@ import type { StatisticsHubSeriesPoint } from '@/schemas/statistics'
 
 /**
  * National annual histories for the hub's charts, captured from INS Tempo
- * through the Chronos API on 2026-09-16 and kept in the client.
+ * through the Chronos API on 2026-09-22 and kept in the client.
  *
  * Why static: these are closed years of official statistics — INS revises
- * them rarely and never silently — and reading 35 years of six datasets on
+ * them rarely and never silently — and reading 35 years of eight datasets on
  * every page view is a cost with no information in it. The hub reads the
  * *latest* value live and appends it when it is newer than the last point
  * here, so the charts stay current at the edge without the history being
  * re-fetched.
  *
  * Each block is the total cell of its dataset at RO/NATIONAL, annual cadence,
- * the same cell `insLatestDatasetValues` resolves with `TOTAL_FALLBACK`:
+ * the same cell `insLatestDatasetValues` resolves with `TOTAL_FALLBACK`.
+ * To refresh one, read every annual observation of that cell —
  * `insObservations(datasetCode, filter: {territoryCodes: ["RO"],
- * territoryLevels: [NATIONAL]})`, filtered to `unit.code` and the
- * classification members listed. To refresh, re-run that read and replace
- * the block; `HUB_SERIES_CAPTURED_AT` records when.
+ * territoryLevels: [NATIONAL], unitCodes: [unitCode], sourcePins: pins})`,
+ * `sourcePins` being the `pins` below as `{dimensionIndex, memberCode}` —
+ * and replace the whole block. Take the dataset's own range as the answer:
+ * the first capture stopped SOM101F at 2016 and TUR104E at 2003 although
+ * INS publishes both from 2010 and 2001, which cost the hub two sparklines'
+ * worth of history and mis-stated tourism's growth base.
+ * `HUB_SERIES_CAPTURED_AT` records when the read was taken, and the hub
+ * shows that month beside the charts.
  */
-export const HUB_SERIES_CAPTURED_AT = '2026-09-16'
+export const HUB_SERIES_CAPTURED_AT = '2026-09-22'
 
 export interface HubStaticSeries {
   readonly code: string
@@ -69,6 +75,96 @@ const FOM104D_RO: HubStaticSeries = {
     { period: '2022', value: 5209493 },
     { period: '2023', value: 5364938 },
     { period: '2024', value: 5453155 },
+  ],
+}
+
+// INS carries the total from 1990 but the ownership split only from 1993, and
+// the total steps down 8.01M → 7.66M between 1990 and 1991 — a source break the
+// notes do not explain. Kept: the line is what INS publishes.
+const LOC101B_RO: HubStaticSeries = {
+  code: 'LOC101B',
+  unitCode: '9669',
+  pins: ['D0:7388', 'D1:112', 'D2:112'],
+  points: [
+    { period: '1990', value: 8006349 },
+    { period: '1991', value: 7659003 },
+    { period: '1992', value: 7682359 },
+    { period: '1993', value: 7710081 },
+    { period: '1994', value: 7748667 },
+    { period: '1995', value: 7782095 },
+    { period: '1996', value: 7810624 },
+    { period: '1997', value: 7836860 },
+    { period: '1998', value: 7859919 },
+    { period: '1999', value: 7884890 },
+    { period: '2000', value: 7907520 },
+    { period: '2001', value: 8107114 },
+    { period: '2002', value: 8128914 },
+    { period: '2003', value: 8152375 },
+    { period: '2004', value: 8176487 },
+    { period: '2005', value: 8201508 },
+    { period: '2006', value: 8231295 },
+    { period: '2007', value: 8270549 },
+    { period: '2008', value: 8328663 },
+    { period: '2009', value: 8384972 },
+    { period: '2010', value: 8427941 },
+    { period: '2011', value: 8722398 },
+    { period: '2012', value: 8760923 },
+    { period: '2013', value: 8799832 },
+    { period: '2014', value: 8840595 },
+    { period: '2015', value: 8882090 },
+    { period: '2016', value: 8929167 },
+    { period: '2017', value: 8976794 },
+    { period: '2018', value: 9031317 },
+    { period: '2019', value: 9092963 },
+    { period: '2020', value: 9156311 },
+    { period: '2021', value: 9930134 },
+    { period: '2022', value: 9998666 },
+    { period: '2023', value: 10065204 },
+    { period: '2024', value: 10122333 },
+    { period: '2025', value: 10177161 },
+  ],
+}
+
+const POP107D_RO: HubStaticSeries = {
+  code: 'POP107D',
+  unitCode: '9685',
+  pins: ['D0:1', 'D1:105', 'D2:112', 'D3:112'],
+  points: [
+    { period: '1992', value: 23143860 },
+    { period: '1993', value: 23118745 },
+    { period: '1994', value: 23093262 },
+    { period: '1995', value: 23062448 },
+    { period: '1996', value: 23009075 },
+    { period: '1997', value: 22938405 },
+    { period: '1998', value: 22885802 },
+    { period: '1999', value: 22852905 },
+    { period: '2000', value: 22825288 },
+    { period: '2001', value: 22809546 },
+    { period: '2002', value: 22779441 },
+    { period: '2003', value: 22733751 },
+    { period: '2004', value: 22688392 },
+    { period: '2005', value: 22648514 },
+    { period: '2006', value: 22614980 },
+    { period: '2007', value: 22582773 },
+    { period: '2008', value: 22561686 },
+    { period: '2009', value: 22541941 },
+    { period: '2010', value: 22516004 },
+    { period: '2011', value: 22480599 },
+    { period: '2012', value: 22433741 },
+    { period: '2013', value: 22390978 },
+    { period: '2014', value: 22346178 },
+    { period: '2015', value: 22312887 },
+    { period: '2016', value: 22273309 },
+    { period: '2017', value: 22236154 },
+    { period: '2018', value: 22221895 },
+    { period: '2019', value: 22215217 },
+    { period: '2020', value: 22211708 },
+    { period: '2021', value: 22138604 },
+    { period: '2022', value: 22028486 },
+    { period: '2023', value: 21953617 },
+    { period: '2024', value: 21849217 },
+    { period: '2025', value: 21751865 },
+    { period: '2026', value: 21646220 },
   ],
 }
 
@@ -209,6 +305,8 @@ const TUR104E_RO: HubStaticSeries = {
   unitCode: '9685',
   pins: ['D0:9148', 'D1:112', 'D2:112'],
   points: [
+    { period: '2001', value: 4874777 },
+    { period: '2002', value: 4847496 },
     { period: '2003', value: 5056693 },
     { period: '2004', value: 5638517 },
     { period: '2005', value: 5805096 },
@@ -240,6 +338,12 @@ const SOM101F_RO: HubStaticSeries = {
   unitCode: '10225',
   pins: ['D0:105', 'D1:112', 'D2:112'],
   points: [
+    { period: '2010', value: 4.3 },
+    { period: '2011', value: 3.2 },
+    { period: '2012', value: 3.4 },
+    { period: '2013', value: 3.5 },
+    { period: '2014', value: 3.3 },
+    { period: '2015', value: 3.1 },
     { period: '2016', value: 2.9 },
     { period: '2017', value: 2.5 },
     { period: '2018', value: 2.1 },
@@ -253,7 +357,16 @@ const SOM101F_RO: HubStaticSeries = {
   ],
 }
 
-export const HUB_STATIC_SERIES: readonly HubStaticSeries[] = [FOM104D_RO, POP201D_RO, POP206D_RO, POP217A_RO, TUR104E_RO, SOM101F_RO]
+export const HUB_STATIC_SERIES: readonly HubStaticSeries[] = [
+  FOM104D_RO,
+  LOC101B_RO,
+  POP107D_RO,
+  POP201D_RO,
+  POP206D_RO,
+  POP217A_RO,
+  TUR104E_RO,
+  SOM101F_RO,
+]
 
 export function hubStaticSeries(code: string): HubStaticSeries | undefined {
   return HUB_STATIC_SERIES.find((series) => series.code === code)

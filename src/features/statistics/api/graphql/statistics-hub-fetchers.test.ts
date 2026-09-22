@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import { HUB_SERIES_CAPTURED_AT, hubStaticSeries } from '../../lib/hub-national-series'
+import { HUB_SERIES_CAPTURED_AT, HUB_STATIC_SERIES, hubStaticSeries } from '../../lib/hub-national-series'
+import { HUB_FIGURE_CODES } from '../../lib/landing-constants'
 import {
   HUB_NATIONAL_SPECS,
   hubCatalogResponse,
@@ -90,6 +91,29 @@ describe('fetchStatisticsHub', () => {
     const births = hub.indicators?.find((indicator) => indicator.code === 'POP201D')
     expect(births?.series).toEqual(hubStaticSeries('POP201D')?.points)
     expect(HUB_SERIES_CAPTURED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  // A row whose history was never captured renders without its sparkline, and
+  // says nothing about it. That is how POP107D and LOC101B went a week without
+  // one, so the band's codes are checked against the captures here.
+  it('carries a well-formed capture for every row of the figures band', () => {
+    for (const code of HUB_FIGURE_CODES) {
+      const series = hubStaticSeries(code)
+      expect(series, `no captured history for ${code}`).toBeDefined()
+      expect(series?.points.length ?? 0).toBeGreaterThan(1)
+    }
+    for (const series of HUB_STATIC_SERIES) {
+      const years = series.points.map((point) => Number(point.period))
+      expect(years, `${series.code} is not one contiguous run of years`).toEqual(
+        years.map((_, index) => years[0] + index),
+      )
+      for (const point of series.points) {
+        expect(point.period, `${series.code} has a non-annual period`).toMatch(/^\d{4}$/)
+        expect(Number.isFinite(point.value), `${series.code} ${point.period} is not a number`).toBe(true)
+      }
+      expect(series.pins.length, `${series.code} has no cell pins`).toBeGreaterThan(0)
+      expect(series.unitCode, `${series.code} has no unit`).toBeTruthy()
+    }
   })
 
   it('keeps only county rows that are the national cell on every axis but the county one, and names what is missing', async () => {

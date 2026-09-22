@@ -211,10 +211,14 @@ on every axis but the county one, the catalog counts, and one territory
 count. Sections fail independently and are named in `failures`; the page
 renders a retry for a failed section and keeps the others. The **annual
 histories behind the charts are kept in the client**
-(`lib/hub-national-series.ts`, captured from the same API on 2026-09-16):
+(`lib/hub-national-series.ts`, captured from the same API on 2026-09-22):
 closed years of official statistics do not change, and re-reading 35 years
-of six datasets on every view carries no information. The live latest point
-is appended only when it is a newer year of the same cell and unit.
+of eight datasets on every view carries no information. The live latest point
+is appended only when it is a newer year of the same cell and unit. The first
+capture (2026-09-16) covered six of the band's eight rows and cut two of those
+short, so POP107D and LOC101B drew no sparkline and tourism's growth was
+measured from 2003 rather than 2001; a unit test now holds every band code to
+a well-formed capture.
 
 **Prototypes (2026-09-16).** Four compositions were built and compared at
 `/development/statistics/ins-landing`, all on the shipped link contracts,
