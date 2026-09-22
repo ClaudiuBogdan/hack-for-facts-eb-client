@@ -293,17 +293,7 @@ export const insLatestValueNodeRawSchema = z
     if (error) context.addIssue({ code: 'custom', message: error })
   })
 
-export const statisticsUatSnapshotResponseRawSchema = z.object({
-  latest: z.array(insLatestValueNodeRawSchema),
-  territory: z.object({
-    nodes: z.array(insTerritoryNodeRawSchema),
-  }),
-})
-
 export type InsLatestValueNodeRaw = z.infer<typeof insLatestValueNodeRawSchema>
-export type StatisticsLandingCatalogResponseRaw = z.infer<
-  typeof statisticsLandingCatalogResponseRawSchema
->
 
 export const statisticsDatasetTier0ResponseRawSchema = z.object({
   dataset: insDatasetNodeRawSchema
@@ -337,7 +327,6 @@ export const statisticsRelatedDatasetsRawSchema = z.object({
     .nullish(),
 })
 
-export type InsObservationNodeRaw = z.infer<typeof insObservationNodeRawSchema>
 export type StatisticsDatasetTier0ResponseRaw = z.infer<
   typeof statisticsDatasetTier0ResponseRawSchema
 >
@@ -375,6 +364,3 @@ export const statisticsTerritoryHubContextResponseRawSchema = z.object({
   national: z.array(insLatestValueNodeRawSchema),
 })
 
-export type StatisticsTerritoryHubResponseRaw = z.infer<
-  typeof statisticsTerritoryHubResponseRawSchema
->

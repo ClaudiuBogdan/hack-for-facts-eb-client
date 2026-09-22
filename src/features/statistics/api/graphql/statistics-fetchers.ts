@@ -1,4 +1,3 @@
-import { validateLandingLatest } from './landing-latest-validation'
 import { getInsDatasetDetails } from './ins-bootstrap-fetchers'
 import { inspectSourceSeries } from '@/lib/ins/source-series'
 import { InsSourcePageError } from '@/lib/ins/source-pages'
@@ -26,7 +25,6 @@ import type {
   StatisticsLandingCatalog,
   StatisticsTerritorySearchResult,
   StatisticsTerritorySearchRow,
-  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
   INS_DATASETS_EXPLORER_QUERY,
@@ -37,7 +35,6 @@ import {
   STATISTICS_TERRITORY_HUB_CONTEXT_QUERY,
   STATISTICS_TERRITORY_HUB_QUERY,
   STATISTICS_LANDING_CATALOG_QUERY,
-  STATISTICS_UAT_SNAPSHOT_QUERY,
 } from './ins-queries'
 import {
   mapDatasetDetails,
@@ -55,7 +52,6 @@ import {
   statisticsTerritoryHubContextResponseRawSchema,
   statisticsTerritoryHubResponseRawSchema,
   statisticsLandingCatalogResponseRawSchema,
-  statisticsUatSnapshotResponseRawSchema,
 } from './statistics-raw-schemas'
 
 /**
@@ -195,49 +191,6 @@ export async function fetchStatisticsContextTree(
           },
         ],
   )
-}
-
-/** „Locul tău" snapshot — latest values + identity for one SIRUTA, one POST. */
-export async function fetchStatisticsUatSnapshot(params: {
-  siruta: string
-  datasetCodes: readonly string[]
-  signal?: AbortSignal
-}): Promise<StatisticsUatSnapshot> {
-  const response = await graphqlQuery<unknown>(
-    STATISTICS_UAT_SNAPSHOT_QUERY,
-    { siruta: params.siruta, codes: params.datasetCodes },
-    { auth: 'none', signal: params.signal },
-  )
-
-  params.signal?.throwIfAborted()
-  const parsed = statisticsUatSnapshotResponseRawSchema.parse(response)
-  const territoryNode = parsed.territory.nodes[0]
-  if (
-    parsed.territory.nodes.length > 1 ||
-    (territoryNode &&
-      (territoryNode.code !== params.siruta ||
-        territoryNode.level !== 'LAU' ||
-        territoryNode.siruta_code !== params.siruta))
-  )
-    throw new Error('Invalid native landing territory identity')
-  if (
-    !territoryNode &&
-    parsed.latest.some((entry) => entry.observation !== null)
-  )
-    throw new Error(
-      'Native landing observations lack canonical territory identity',
-    )
-  if (territoryNode || parsed.latest.length > 0)
-    validateLandingLatest(parsed.latest, params.datasetCodes, {
-      code: params.siruta,
-      level: 'LAU',
-    })
-
-  return {
-    nativeContract: 'native-v2',
-    territory: territoryNode ? mapTerritorySearchRow(territoryNode) : null,
-    values: parsed.latest.map(mapLatestValue),
-  }
 }
 
 /** Detail POST A — dataset metadata + the resolved tier-0 latest value. */

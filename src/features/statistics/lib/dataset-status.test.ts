@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getDatasetDataStatus, isDatasetAvailable } from './dataset-status'
+import { getDatasetDataStatus } from './dataset-status'
 
 describe('dataset-status mapping', () => {
   it('prefers the server data_status over any sync_status', () => {
@@ -12,9 +12,6 @@ describe('dataset-status mapping', () => {
     expect(
       getDatasetDataStatus({ sync_status: 'SYNCED', data_status: 'CATALOG_ONLY' }),
     ).toBe('catalog-only')
-    expect(
-      isDatasetAvailable({ sync_status: 'PENDING', data_status: 'AVAILABLE' }),
-    ).toBe(true)
   })
 
   it('maps full / partial / loaded-style statuses to available', () => {
@@ -69,9 +66,4 @@ describe('dataset-status mapping', () => {
     )
   })
 
-  it('isDatasetAvailable mirrors getDatasetDataStatus', () => {
-    expect(isDatasetAvailable({ sync_status: 'full' })).toBe(true)
-    expect(isDatasetAvailable({ sync_status: 'PENDING' })).toBe(false)
-    expect(isDatasetAvailable({ sync_status: null })).toBe(false)
-  })
 })

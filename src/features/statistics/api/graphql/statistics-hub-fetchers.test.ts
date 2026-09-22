@@ -229,6 +229,20 @@ describe('fetchStatisticsHub', () => {
     expect(hub.failures).toEqual(['counties'])
   })
 
+  it('leaves a county INS flagged confidential or missing out of the map, as the national figures do', async () => {
+    const life = spec('POP217A')
+    const page = hubCountyResponse(life, [
+      { county: { code: 'VL', name: 'Vâlcea' }, value: '82.01', countyAxis: 2 },
+      { county: { code: 'CL', name: 'Călărași' }, value: '0', countyAxis: 2 },
+    ])
+    ;(page.insObservations.nodes[1] as { value_status: string | null }).value_status = 'c'
+    answer({ counties: { POP217A: page } })
+    const hub = await fetchStatisticsHub()
+    const layer = hub.counties?.find((entry) => entry.code === 'POP217A')
+    expect(layer?.values.map((county) => county.code)).toEqual(['VL'])
+    expect(layer?.missingCounties).toContain('CL')
+  })
+
   it('refuses a truncated county page rather than drawing a partial map', async () => {
     answer({ counties: { FOM104D: hubCountyResponse(spec('FOM104D'), [{ county: { code: 'CJ', name: 'Cluj' }, value: '1' }], true) } })
     const hub = await fetchStatisticsHub()

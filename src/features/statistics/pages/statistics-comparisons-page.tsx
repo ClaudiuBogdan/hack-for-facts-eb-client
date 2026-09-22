@@ -19,6 +19,11 @@ import {
   useComparisons,
   useComparisonTerritoryNames,
 } from '../hooks/use-comparisons'
+import {
+  sourceMemberLabelKey,
+  useSourceMemberLabels,
+  type SourceMemberLookup,
+} from '../hooks/use-dataset-detail'
 import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-series'
 import {
   COMPARISON_EXAMPLE_PRESET,
@@ -145,19 +150,63 @@ export function StatisticsComparisonsPage() {
     [matrix],
   )
 
-  const pinsSummary = effectivePins
-    .map((pin) => {
-      const dimension = datasetMeta?.dimensions.find(
-        (d) => `D${d.index}` === pin.typeCode,
-      )
-      return `${dimension?.label_ro || pin.typeCode}: ${pin.valueCode}`
+  // Every shared coordinate by its name. The fetched rows name their members;
+  // a pin the rows leave unnamed (a cell with no data) is looked up on its
+  // axis. The pins used to print as „Sexe: 105 · unitate: 9685".
+  const unitDimension = datasetMeta?.dimensions.find((d) => d.type === 'UNIT_OF_MEASURE')
+  const rowLabels = useMemo(() => {
+    const labels = new Map<string, string>()
+    for (const row of matrix?.observations ?? []) {
+      for (const member of row.classifications) {
+        const name = member.name_ro?.trim()
+        const dimension = datasetMeta?.dimensions.find((d) => `D${d.index}` === member.type_code)
+        if (name && dimension) {
+          labels.set(sourceMemberLabelKey({ dimensionIndex: dimension.index, code: member.code, kind: 'classification' }), name)
+        }
+      }
+      const unitName = row.unit.name_ro?.trim() || row.unit.symbol?.trim()
+      if (unitName && unitDimension) {
+        labels.set(sourceMemberLabelKey({ dimensionIndex: unitDimension.index, code: row.unit.code, kind: 'unit' }), unitName)
+      }
+    }
+    return labels
+  }, [matrix, datasetMeta, unitDimension])
+  const pinLookups: SourceMemberLookup[] = [
+    ...effectivePins.flatMap((pin) => {
+      const dimension = datasetMeta?.dimensions.find((d) => `D${d.index}` === pin.typeCode)
+      return dimension ? [{ dimensionIndex: dimension.index, code: pin.valueCode, kind: 'classification' as const }] : []
+    }),
+    ...(unitCode && unitDimension ? [{ dimensionIndex: unitDimension.index, code: unitCode, kind: 'unit' as const }] : []),
+  ]
+  const axisLabels = useSourceMemberLabels({
+    datasetCode: datasetMeta?.code ?? '',
+    // Held back only while rows are on their way; with the selection still
+    // incomplete no rows will come, and the pins would print as codes.
+    lookups: observationsLoading ? [] : pinLookups.filter((lookup) => !rowLabels.has(sourceMemberLabelKey(lookup))),
+  })
+  const memberLabel = (lookup: SourceMemberLookup) =>
+    rowLabels.get(sourceMemberLabelKey(lookup)) ?? axisLabels.get(sourceMemberLabelKey(lookup)) ?? lookup.code
+
+  const pinsSummary = pinLookups
+    .map((lookup) => {
+      if (lookup.kind === 'unit') return `${t`unitate`}: ${memberLabel(lookup)}`
+      const dimension = datasetMeta?.dimensions.find((d) => d.index === lookup.dimensionIndex)
+      return `${dimension?.label_ro || `D${lookup.dimensionIndex}`}: ${memberLabel(lookup)}`
     })
-    .concat(unitCode ? [`${t`unitate`}: ${unitCode}`] : [])
     .join(' · ')
+
+  // An edit of the view while the example is showing edits the example: its
+  // dataset and territories become the reader's own. Without them the edit
+  // lands on an empty selection and the results the reader was adjusting
+  // disappear.
+  const exampleSelection = exampleMode
+    ? { cod: COMPARISON_EXAMPLE_PRESET.search.cod, teritorii: COMPARISON_EXAMPLE_PRESET.search.teritorii }
+    : {}
 
   // A UI edit materializes the whole resolved selection. Malformed entries on
   // other axes survive until explicitly repaired or reset by the user.
   const materialized = () => ({
+    ...exampleSelection,
     clasificari:
       search.clasificari !== undefined
         ? search.clasificari
@@ -298,6 +347,7 @@ export function StatisticsComparisonsPage() {
                     effectivePins={effectivePins}
                     unitCode={unitCode}
                     cadence={cadence}
+                    memberLabel={memberLabel}
                     onPinClassification={handlePinClassification}
                     onPinUnit={(next) =>
                       patchSearch({
@@ -500,7 +550,7 @@ export function StatisticsComparisonsPage() {
           <ComparisonPeriodSelect
             periods={matrix.periods}
             selectedPeriod={selectedPeriod}
-            onSelect={(isoPeriod) => patchSearch({ perioada: isoPeriod })}
+            onSelect={(isoPeriod) => patchSearch({ ...exampleSelection, perioada: isoPeriod })}
           />
         </div>
 

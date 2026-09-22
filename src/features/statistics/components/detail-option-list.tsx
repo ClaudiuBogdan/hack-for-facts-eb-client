@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import { defaultRangeExtractor, useVirtualizer } from '@tanstack/react-virtual'
 import { Check, Search } from 'lucide-react'
+import { t } from '@lingui/core/macro'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../lib/statistics-theme'
@@ -167,6 +168,7 @@ export function DetailOptionList({
         <input
           type="text"
           role="combobox"
+          aria-label={t`Caută în ${label}`}
           aria-expanded
           aria-controls={listId}
           aria-autocomplete="list"

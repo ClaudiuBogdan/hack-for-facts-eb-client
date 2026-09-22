@@ -10,7 +10,7 @@ import {
   resolveDetailSelection,
 } from '@/features/statistics/lib/source-selection'
 import { getDatasetDataStatus } from '@/features/statistics/lib/dataset-status'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { parseStatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import type {
   StatisticsDatasetSeries,
@@ -21,19 +21,23 @@ export type StatisticsDatasetDetailLoaderData = {
   readonly tier0: StatisticsDatasetTier0 | null
   readonly series: StatisticsDatasetSeries | null
   readonly scopeKey: string
+  /** A read threw: the page renders its retry, and that render is not cached. */
+  readonly failed: boolean
 }
 
 /** Shared source selection governs both SSR reads and client hydration. */
 export const Route = createFileRoute('/ins/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
   // Canonical uppercase codes: insDataset(code:) is exact-match, and one URL
-  // per dataset beats two cache entries.
-  beforeLoad: ({ params }) => {
+  // per dataset beats two cache entries. The selection travels with it — a
+  // redirect without `search` lands on the empty one.
+  beforeLoad: ({ params, search }) => {
     const canonical = params.cod.trim().toUpperCase()
     if (params.cod !== canonical) {
       throw redirect({
         to: '/ins/seturi/$cod',
         params: { cod: canonical },
+        search,
         replace: true,
       })
     }
@@ -63,12 +67,12 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
         signal: abortController.signal,
       })
     } catch {
-      return { tier0: null, series: null, scopeKey }
+      return { tier0: null, series: null, scopeKey, failed: true }
     }
 
-    if (!tier0.dataset) return { tier0, series: null, scopeKey }
+    if (!tier0.dataset) return { tier0, series: null, scopeKey, failed: false }
     if (getDatasetDataStatus(tier0.dataset) === 'catalog-only') {
-      return { tier0, series: null, scopeKey }
+      return { tier0, series: null, scopeKey, failed: false }
     }
 
     const selection = resolveDetailSelection({
@@ -76,7 +80,7 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
       dataset: tier0.dataset,
       latest: tier0.latest,
     })
-    if (selection.filter === null) return { tier0, series: null, scopeKey }
+    if (selection.filter === null) return { tier0, series: null, scopeKey, failed: false }
 
     try {
       const series = await fetchDatasetSeries({
@@ -86,16 +90,20 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
         contextCode: tier0.dataset.context_code ?? null,
         signal: abortController.signal,
       })
-      return { tier0, series, scopeKey }
+      return { tier0, series, scopeKey, failed: false }
     } catch {
-      return { tier0, series: null, scopeKey }
+      return { tier0, series: null, scopeKey, failed: true }
     }
   },
-  headers: () =>
-    createPublicPageCacheHeaders({
-      sharedMaxAgeSeconds: 600,
-      staleWhileRevalidateSeconds: 3600,
-    }),
+  // A render after a failed read is served once, and the next request reads
+  // again — as on the hub.
+  headers: ({ loaderData }) =>
+    !loaderData || loaderData.failed
+      ? createNoStoreHeaders()
+      : createPublicPageCacheHeaders({
+          sharedMaxAgeSeconds: 600,
+          staleWhileRevalidateSeconds: 3600,
+        }),
   head: ({ loaderData }) => {
     const dataset = (
       loaderData as StatisticsDatasetDetailLoaderData | undefined

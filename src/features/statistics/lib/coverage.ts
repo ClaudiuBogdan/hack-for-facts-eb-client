@@ -1,7 +1,5 @@
 import { t } from '@lingui/core/macro'
-import type { InsDataset } from '@/schemas/ins'
 import type { StatisticsCoverageSummary } from '@/schemas/statistics'
-import { isDatasetAvailable } from './dataset-status'
 
 /**
  * Centralized coverage fallback constants used by mock fixtures and by the
@@ -13,9 +11,7 @@ import { isDatasetAvailable } from './dataset-status'
  * are `metadata_only` / `PENDING`."
  *
  * These are documentation-grounded defaults for the mock surface, NOT live
- * counts. Live counts are always derived from `getInsDatasetsCatalog`
- * `pageInfo.totalCount` + per-dataset `sync_status` in
- * {@link buildCoverageFromCatalog}.
+ * counts; live counts come from the catalog's own `pageInfo.totalCount`.
  */
 export const STATISTICS_DOCS_FALLBACK_AVAILABLE_DATASETS = 27 as const
 export const STATISTICS_DOCS_FALLBACK_TOTAL_DATASETS = 1898 as const
@@ -29,37 +25,6 @@ export function buildDocsFallbackCoverage(): StatisticsCoverageSummary {
       STATISTICS_DOCS_FALLBACK_TOTAL_DATASETS -
       STATISTICS_DOCS_FALLBACK_AVAILABLE_DATASETS,
     partial: false,
-  }
-}
-
-/**
- * Builds a live coverage summary from a catalog page of `InsDataset` nodes.
- *
- * `totalCount` comes from the connection `pageInfo.totalCount`; available vs.
- * catalog-only is derived from each dataset's `sync_status` via
- * {@link isDatasetAvailable}. `partial` is true when the page was truncated
- * (hasNextPage) so callers can show a "showing first N" caveat.
- */
-export function buildCoverageFromCatalog(params: {
-  readonly datasets: readonly InsDataset[]
-  readonly totalCount: number
-  readonly hasNextPage: boolean
-}): StatisticsCoverageSummary {
-  const { datasets, totalCount, hasNextPage } = params
-  const safeTotal = Math.max(totalCount, datasets.length)
-
-  let available = 0
-  for (const dataset of datasets) {
-    if (isDatasetAvailable(dataset)) {
-      available += 1
-    }
-  }
-
-  return {
-    availableDatasetCount: available,
-    totalDatasetCount: safeTotal,
-    catalogOnlyDatasetCount: Math.max(safeTotal - available, 0),
-    partial: hasNextPage || datasets.length < safeTotal,
   }
 }
 

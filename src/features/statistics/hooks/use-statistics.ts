@@ -3,13 +3,11 @@ import type {
   DatasetRequestPayload,
   StatisticsContextNode,
   StatisticsLandingCatalog,
-  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
   fetchContextTree,
   fetchLandingCatalog,
   fetchStatisticsTerritoryHub,
-  fetchUatSnapshot,
   submitDatasetRequest,
 } from '../api/statistics-api'
 
@@ -34,13 +32,6 @@ export const statisticsLandingCatalogQueryOptions = (
     ...(initialData?.nativeContract === 'native-v2' ? { initialData } : {}),
   })
 
-export const statisticsUatSnapshotQueryOptions = (siruta: string) =>
-  queryOptions<StatisticsUatSnapshot>({
-    queryKey: ['statistics', 'native-v2', 'landing', 'uat', siruta] as const,
-    queryFn: ({ signal }) => fetchUatSnapshot(siruta, signal),
-    staleTime: LONG_STALE_TIME,
-  })
-
 /**
  * The INS context tree. It changes when INS restructures its catalog — a few
  * times a year at most — so it holds for a day and never refetches on focus.
@@ -60,13 +51,6 @@ export function useStatisticsLandingCatalog(
   initialData?: StatisticsLandingCatalog,
 ) {
   return useQuery(statisticsLandingCatalogQueryOptions(initialData))
-}
-
-export function useStatisticsUatSnapshot(siruta: string | undefined) {
-  return useQuery({
-    ...statisticsUatSnapshotQueryOptions(siruta ?? ''),
-    enabled: Boolean(siruta),
-  })
 }
 
 // ---------------------------------------------------------------------------

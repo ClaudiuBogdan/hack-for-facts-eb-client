@@ -1,14 +1,10 @@
 import { vi } from 'vitest'
 import type { UseQueryResult } from '@tanstack/react-query'
 import type {
-  StatisticsLandingCatalog,
   StatisticsTerritoryHubResult,
-  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import {
-  getMockStatisticsLandingCatalog,
   getMockStatisticsTerritoryHub,
-  getMockStatisticsUatSnapshot,
 } from '../mocks/statistics-fixtures'
 
 type QueryStub<TData> = Pick<
@@ -28,19 +24,6 @@ function createQueryStub<TData>(
     refetch: vi.fn(),
     ...overrides,
   }
-}
-
-export function createLandingCatalogQueryStub(
-  overrides: Partial<QueryStub<StatisticsLandingCatalog>> = {},
-): QueryStub<StatisticsLandingCatalog> {
-  return createQueryStub(getMockStatisticsLandingCatalog(), overrides)
-}
-
-export function createUatSnapshotQueryStub(
-  siruta = '54975',
-  overrides: Partial<QueryStub<StatisticsUatSnapshot>> = {},
-): QueryStub<StatisticsUatSnapshot> {
-  return createQueryStub(getMockStatisticsUatSnapshot(siruta), overrides)
 }
 
 export function createTerritoryHubQueryStub(

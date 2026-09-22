@@ -300,6 +300,33 @@ describe('a matrix with no territorial axis', () => {
     expect(resolved.scope.unitDefaulted).toBe(true)
   })
 
+  it('ignores a territory carried in from a territory page: the matrix publishes the country alone', () => {
+    const anchor = { classifications: new Map(), unitCode: '10225', periodicity: null }
+    for (const teritoriu of ['cod:AB', 'siruta:54975', 'cod:RO']) {
+      const resolved = resolveDetailSelection({
+        search: { teritoriu },
+        dataset: flat,
+        latest: null,
+        representative: anchor,
+      })
+      expect(resolved.scope.territory).toBeNull()
+      expect(resolved.issues).toEqual([])
+      expect(resolved.filter).not.toHaveProperty('territoryCodes')
+      expect(resolved.filter).not.toHaveProperty('sirutaCodes')
+    }
+  })
+
+  it('keeps an entity territory as a guard even there', () => {
+    const resolved = resolveDetailSelection({
+      search: { teritoriu: 'siruta:54975' },
+      dataset: flat,
+      latest: null,
+      representative: { classifications: new Map(), unitCode: '10225', periodicity: null },
+      territoryBesidePinnedGeography: 'intersect',
+    })
+    expect(resolved.scope.territory).not.toBeNull()
+  })
+
   it('never claims an anchor is needed while geography can carry the read', () => {
     expect(
       resolveDetailSelection({ search: {}, dataset, latest: null })

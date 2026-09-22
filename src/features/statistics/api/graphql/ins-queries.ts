@@ -78,24 +78,6 @@ export const INS_TERRITORY_FIELDS = `
   parent_name_ro
 `
 
-export const INS_UAT_DASHBOARD_QUERY = `
-  query InsUatDashboard($sirutaCode: String!, $period: PeriodDate, $contextCode: String) {
-    insUatDashboard(sirutaCode: $sirutaCode, period: $period, contextCode: $contextCode) {
-      latestPeriod
-      dataset { ${INS_DATASET_FIELDS} }
-      observations { ${INS_OBSERVATION_FIELDS} }
-    }
-  }
-`
-
-export const INS_DATASETS_BY_CODES_QUERY = `
-  query InsDatasetsByCodes($codes: [String!], $limit: Int) {
-    insDatasets(filter: { codes: $codes }, limit: $limit, offset: 0) {
-      nodes { ${INS_DATASET_FIELDS} }
-    }
-  }
-`
-
 export const INS_CONTEXTS_QUERY = `
   query InsContexts($filter: InsContextFilterInput, $limit: Int, $offset: Int) {
     insContexts(filter: $filter, limit: $limit, offset: $offset) {
@@ -318,27 +300,6 @@ export const STATISTICS_LANDING_CATALOG_QUERY = `
     t6: insDatasets(filter: { rootContextCode: "6" }, limit: 1) { pageInfo { totalCount } }
     t7: insDatasets(filter: { rootContextCode: "7" }, limit: 1) { pageInfo { totalCount } }
     t8: insDatasets(filter: { rootContextCode: "8" }, limit: 1) { pageInfo { totalCount } }
-  }
-`
-
-/**
- * The „Locul tău" band re-render — latest values for a picked UAT plus its
- * identity, ONE POST. `insLatestDatasetValues` is deliberate: the no-period
- * `insUatIndicators` path fans out to the 2000-row dashboard budget (measured
- * 15.8s uncached) for four values this query returns in ~1s.
- */
-export const STATISTICS_UAT_SNAPSHOT_QUERY = `
-  query StatisticsUatSnapshot($siruta: String!, $codes: [String!]!) {
-    latest: insLatestDatasetValues(
-      entity: { sirutaCode: $siruta }
-      datasetCodes: $codes
-      preferredClassificationCodes: ["TOTAL"]
-    ) {
-      ${INS_LATEST_VALUE_FIELDS}
-    }
-    territory: insTerritories(filter: { sirutaCodes: [$siruta] }, limit: 1) {
-      nodes { ${INS_TERRITORY_FIELDS} }
-    }
   }
 `
 

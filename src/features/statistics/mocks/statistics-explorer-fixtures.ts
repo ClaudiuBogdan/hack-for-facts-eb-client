@@ -1,39 +1,7 @@
 import type {
   StatisticsContextNode,
   StatisticsDatasetSummary,
-  StatisticsTerritorySearchRow,
 } from '@/schemas/statistics'
-
-/**
- * Mock fixtures for the territory search and dataset explorer surfaces.
- *
- * These are EXAMPLES shaped like the live INS serving contract, not claimed
- * real facts. They exist so every new page is fully operable under
- * `VITE_MOCK_DATASETS=ins-indicators` before the server ships `dataStatus` and
- * `insTerritories`. They deliberately cover:
- * - diacritics (Târgu Mureș, Brăila, Bacău) so unaccented search is exercised;
- * - both territory levels (LAU rows with a parent county, NUTS3 county rows);
- * - more than one explorer page at 25 rows/page;
- * - catalog-only datasets alongside fact-loaded ones;
- * - a county-only dataset (`has_uat_data: false`).
- */
-
-export const MOCK_TERRITORIES: readonly StatisticsTerritorySearchRow[] = [
-  { code: '54975', siruta: '54975', name: 'Municipiul Cluj-Napoca', level: 'LAU', countyCode: 'CJ', countyName: 'Cluj' },
-  { code: '179132', siruta: '179132', name: 'Municipiul București', level: 'LAU', countyCode: 'B', countyName: 'București' },
-  { code: '114523', siruta: '114523', name: 'Municipiul Târgu Mureș', level: 'LAU', countyCode: 'MS', countyName: 'Mureș' },
-  { code: '44269', siruta: '44269', name: 'Municipiul Brăila', level: 'LAU', countyCode: 'BR', countyName: 'Brăila' },
-  { code: '22597', siruta: '22597', name: 'Municipiul Bacău', level: 'LAU', countyCode: 'BC', countyName: 'Bacău' },
-  { code: '54984', siruta: '54984', name: 'Municipiul Turda', level: 'LAU', countyCode: 'CJ', countyName: 'Cluj' },
-  { code: '54993', siruta: '54993', name: 'Municipiul Dej', level: 'LAU', countyCode: 'CJ', countyName: 'Cluj' },
-  { code: '38357', siruta: '38357', name: 'Municipiul Timișoara', level: 'LAU', countyCode: 'TM', countyName: 'Timiș' },
-  { code: '26564', siruta: '26564', name: 'Municipiul Iași', level: 'LAU', countyCode: 'IS', countyName: 'Iași' },
-  { code: '31883', siruta: '31883', name: 'Municipiul Constanța', level: 'LAU', countyCode: 'CT', countyName: 'Constanța' },
-  { code: 'CJ', siruta: null, name: 'Cluj', level: 'NUTS3', countyCode: null, countyName: null },
-  { code: 'MS', siruta: null, name: 'Mureș', level: 'NUTS3', countyCode: null, countyName: null },
-  { code: 'TM', siruta: null, name: 'Timiș', level: 'NUTS3', countyCode: null, countyName: null },
-  { code: 'B', siruta: null, name: 'București', level: 'NUTS3', countyCode: null, countyName: null },
-]
 
 /**
  * The slice of the INS context tree the seeds hang from — real codes and real

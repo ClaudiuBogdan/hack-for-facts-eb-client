@@ -59,7 +59,3 @@ export function getDatasetDataStatus(
   return 'catalog-only'
 }
 
-/** True when the dataset is considered to have loaded observations. */
-export function isDatasetAvailable(dataset: DatasetStatusSource): boolean {
-  return getDatasetDataStatus(dataset) === 'available'
-}

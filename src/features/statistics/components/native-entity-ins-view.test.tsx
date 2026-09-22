@@ -28,13 +28,6 @@ vi.mock("./entity-ins-source-history", () => ({
 vi.mock("./entity-ins-source-controls", () => ({
   EntityInsSourceControls: () => <div>Source controls</div>,
 }));
-vi.mock("./entity-ins-dataset-picker", () => ({
-  EntityInsDatasetPicker: ({
-    onSelect,
-  }: {
-    onSelect: (code: string) => void;
-  }) => <button onClick={() => onSelect("NEW")}>Select dataset</button>,
-}));
 vi.mock("@tanstack/react-router", async () => ({
   ...(await vi.importActual<typeof import("@tanstack/react-router")>(
     "@tanstack/react-router",

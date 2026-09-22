@@ -1,15 +1,12 @@
 import type {
   InsDataset,
-  InsDatasetConnection,
   InsDashboardData,
   InsObservation,
   InsTerritory,
   InsTimePeriod,
 } from '@/schemas/ins'
 import type {
-  StatisticsLandingCatalog,
   StatisticsTerritoryHubResult,
-  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import { buildDocsFallbackCoverage } from '../lib/coverage'
 import { getDatasetDataStatus } from '../lib/dataset-status'
@@ -236,31 +233,6 @@ const gos107aCountyOnlyDataset: InsDataset = {
   context_name_en: 'Public administration',
   context_path: 'GOS',
   metadata: null,
-}
-
-const mockAvailableDatasets: readonly InsDataset[] = [
-  pop107dDataset,
-  fom104dDataset,
-  som101fDataset,
-  som103aDataset,
-  loc101bDataset,
-  scl101cNoDataDataset,
-  gos107aCountyOnlyDataset,
-]
-
-const mockCatalogDatasets: readonly InsDataset[] = [
-  ...mockAvailableDatasets,
-  tur101cCatalogOnlyDataset,
-]
-
-/** Catalog connection used to build landing coverage in mock mode. */
-export const mockStatisticsDatasetCatalog: InsDatasetConnection = {
-  nodes: [...mockCatalogDatasets],
-  pageInfo: {
-    totalCount: mockCatalogDatasets.length,
-    hasNextPage: false,
-    hasPreviousPage: false,
-  },
 }
 
 // ---------------------------------------------------------------------------
@@ -671,102 +643,3 @@ export function getMockStatisticsTerritoryHub(
 // Landing fixtures (post-redesign shapes)
 // ---------------------------------------------------------------------------
 
-export function getMockStatisticsLandingCatalog(): StatisticsLandingCatalog {
-  return {
-    loadedCount: 1898,
-    catalogCount: 1898,
-    themes: [
-      { code: '1', count: 832 },
-      { code: '2', count: 531 },
-      { code: '3', count: 9 },
-      { code: '4', count: 20 },
-      { code: '5', count: 23 },
-      { code: '6', count: 39 },
-      { code: '7', count: 107 },
-      { code: '8', count: 337 },
-    ],
-  }
-}
-
-/** „Locul tău" fixture for the Cluj-Napoca SIRUTA; null-shape otherwise. */
-export function getMockStatisticsUatSnapshot(siruta: string): StatisticsUatSnapshot {
-  if (siruta.trim() !== '54975') {
-    return { territory: null, values: [] }
-  }
-  return {
-    territory: {
-      code: '54975',
-      siruta: '54975',
-      name: 'MUNICIPIUL CLUJ-NAPOCA',
-      level: 'LAU',
-      countyCode: 'CJ',
-      countyName: 'Cluj',
-    },
-    values: [
-      {
-        datasetCode: 'POP107D',
-        datasetNameRo: pop107dDataset.name_ro ?? null,
-        datasetNameEn: pop107dDataset.name_en ?? null,
-        periodicity: ['ANNUAL'],
-        matchStrategy: 'PREFERRED_CLASSIFICATION',
-        hasData: true,
-        value: '325353',
-        valueStatus: null,
-        unitCode: 'PERS',
-        unitSymbol: 'pers.',
-        unitNameRo: 'Numar persoane',
-        period: '2025',
-        resolvedPeriodicity: 'ANNUAL',
-        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
-      },
-      {
-        datasetCode: 'FOM104D',
-        datasetNameRo: fom104dDataset.name_ro ?? null,
-        datasetNameEn: fom104dDataset.name_en ?? null,
-        periodicity: ['ANNUAL'],
-        matchStrategy: 'TOTAL_FALLBACK',
-        hasData: true,
-        value: '195025',
-        valueStatus: null,
-        unitCode: 'PERS',
-        unitSymbol: 'pers.',
-        unitNameRo: 'Numar persoane',
-        period: '2024',
-        resolvedPeriodicity: 'ANNUAL',
-        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
-      },
-      {
-        datasetCode: 'SOM101F',
-        datasetNameRo: som101fDataset.name_ro ?? null,
-        datasetNameEn: som101fDataset.name_en ?? null,
-        periodicity: ['ANNUAL', 'MONTHLY'],
-        matchStrategy: 'TOTAL_FALLBACK',
-        hasData: true,
-        value: '0.3',
-        valueStatus: null,
-        unitCode: 'PCT',
-        unitSymbol: '%',
-        unitNameRo: 'Procente',
-        period: '2025-11',
-        resolvedPeriodicity: 'MONTHLY',
-        resolvedClassifications: [{ typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' }],
-      },
-      {
-        datasetCode: 'LOC101B',
-        datasetNameRo: loc101bDataset.name_ro ?? null,
-        datasetNameEn: loc101bDataset.name_en ?? null,
-        periodicity: ['ANNUAL'],
-        matchStrategy: 'NO_DATA',
-        hasData: false,
-        value: null,
-        valueStatus: null,
-        unitCode: null,
-        unitSymbol: null,
-        unitNameRo: null,
-        period: null,
-        resolvedPeriodicity: null,
-        resolvedClassifications: [],
-      },
-    ],
-  }
-}

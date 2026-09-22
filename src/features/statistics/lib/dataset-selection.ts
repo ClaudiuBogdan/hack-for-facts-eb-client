@@ -8,7 +8,6 @@ import type {
 } from '@/schemas/ins'
 import type {
   StatisticsDatasetDetailSearch,
-  StatisticsLatestValue,
 } from '@/schemas/statistics'
 
 /**
@@ -151,23 +150,6 @@ export function encodeTerritoryPin(pin: TerritoryPin): string {
   return `${pin.kind}:${pin.value}`
 }
 
-/**
- * A dimension value is a territory pin when it carries a SIRUTA code; county
- * and region rows only have a territory `code`.
- */
-export function territoryPinFromValue(territory: {
-  readonly siruta_code?: string | null
-  readonly code?: string | null
-}): TerritoryPin | null {
-  const siruta = territory.siruta_code?.trim()
-  if (siruta) return { kind: 'siruta', value: siruta }
-
-  const code = territory.code?.trim()
-  if (code) return { kind: 'cod', value: code }
-
-  return null
-}
-
 // ---------------------------------------------------------------------------
 // Dimension helpers
 // ---------------------------------------------------------------------------
@@ -242,12 +224,6 @@ export function territoryPinToEntity(
   return { territoryCode: pin.value.toUpperCase(), territoryLevel: level }
 }
 
-function singlePeriodicity(
-  periodicity: readonly string[] | undefined,
-): InsPeriodicity | null {
-  return periodicity?.length === 1 ? (periodicity[0] as InsPeriodicity) : null
-}
-
 export interface EffectiveScope {
   /** The territory pin, or null = the national default. */
   readonly territory: TerritoryPin | null
@@ -261,62 +237,6 @@ export interface EffectiveScope {
   readonly unitCode: string | null
   readonly unitDefaulted: boolean
   readonly periodicity: InsPeriodicity | null
-}
-
-/**
- * The effective tier-0 scope: URL pins where present, server-resolved
- * defaults everywhere else. Defaults are display-marked (defaultedTypes,
- * territoryDefaulted) and never written into the URL.
- */
-export function buildEffectiveScope(params: {
-  readonly search: StatisticsDatasetDetailSearch
-  readonly latest: StatisticsLatestValue | null
-}): EffectiveScope {
-  const { search, latest } = params
-
-  const rawTerritory = parseTerritoryPin(search.teritoriu)
-  // Unknown cod: level (e.g. RO99) is treated as no pin — never guessed.
-  const territory =
-    rawTerritory?.kind === 'cod' &&
-    inferCodTerritoryLevel(rawTerritory.value) === null
-      ? null
-      : rawTerritory
-  const pinned = classificationPinMap(search.clasificari)
-
-  const classifications = new Map<string, string>()
-  const defaultedTypes = new Set<string>()
-
-  for (const resolved of latest?.resolvedClassifications ?? []) {
-    classifications.set(resolved.typeCode, resolved.code)
-    defaultedTypes.add(resolved.typeCode)
-  }
-  for (const [typeCode, value] of pinned) {
-    classifications.set(typeCode, value)
-    defaultedTypes.delete(typeCode)
-  }
-
-  const unitCode =
-    typeof search.unitate === 'string'
-      ? search.unitate
-      : (latest?.unitCode ?? null)
-
-  return {
-    territory,
-    territoryDefaulted: territory === null,
-    classifications,
-    defaultedTypes,
-    unitCode,
-    unitDefaulted: !search.unitate && unitCode !== null,
-    // Explicit product rule, never string grammar: the URL pin, else the
-    // dataset's only cadence, else MONTHLY when offered (the freshest view),
-    // else the resolved observation's own periodicity FIELD.
-    periodicity:
-      search.frecventa ??
-      (singlePeriodicity(latest?.periodicity) ||
-        (latest?.periodicity?.includes('MONTHLY') ? 'MONTHLY' : null) ||
-        latest?.resolvedPeriodicity ||
-        null),
-  }
 }
 
 /**

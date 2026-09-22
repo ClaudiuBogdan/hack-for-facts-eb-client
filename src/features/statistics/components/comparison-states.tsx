@@ -108,20 +108,3 @@ export function ComparisonErrorState({ onRetry, isRetrying }: ErrorProps) {
   )
 }
 
-/** Warns that the single read hit its row cap, so the view is incomplete. */
-export function ComparisonPartialNotice() {
-  return (
-    <Alert>
-      <AlertTriangle aria-hidden className="h-4 w-4" />
-      <AlertTitle>
-        <Trans>Rezultate parțiale</Trans>
-      </AlertTitle>
-      <AlertDescription>
-        <Trans>
-          Indicatorul a returnat mai multe observații decât putem afișa. Fixează
-          mai multe dimensiuni sau alege mai puține teritorii.
-        </Trans>
-      </AlertDescription>
-    </Alert>
-  )
-}

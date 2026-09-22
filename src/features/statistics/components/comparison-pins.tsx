@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { InsDatasetDetails } from '@/schemas/ins'
+import type { SourceMemberLookup } from '../hooks/use-dataset-detail'
 import type {
   ClassificationPin,
   ComparisonPeriodOption,
@@ -20,6 +21,8 @@ type PinsProps = {
   readonly effectivePins: readonly ClassificationPin[]
   readonly unitCode: string | null
   readonly cadence: string | null
+  /** A pinned member's name; its code while the name is still unknown. */
+  readonly memberLabel: (lookup: SourceMemberLookup) => string
   readonly onPinClassification: (
     typeCode: string,
     valueCode: string | null,
@@ -34,6 +37,7 @@ export function ComparisonPins({
   effectivePins,
   unitCode,
   cadence,
+  memberLabel,
   onPinClassification,
   onPinUnit,
   onPinCadence,
@@ -57,7 +61,11 @@ export function ComparisonPins({
               label={dimension.label_ro || type}
               placeholder={t`Alege o valoare`}
               selectedKey={selected}
-              selectedLabel={selected}
+              selectedLabel={
+                selected === null
+                  ? null
+                  : memberLabel({ dimensionIndex: dimension.index, code: selected, kind: 'classification' })
+              }
               optionKey={(value) => String(value.nom_item_id)}
               onSelect={(value) =>
                 onPinClassification(type, String(value.nom_item_id))
@@ -76,7 +84,11 @@ export function ComparisonPins({
             label={t`Unitate de măsură`}
             placeholder={t`Alege o valoare`}
             selectedKey={unitCode}
-            selectedLabel={unitCode}
+            selectedLabel={
+              unitCode === null
+                ? null
+                : memberLabel({ dimensionIndex: dimension.index, code: unitCode, kind: 'unit' })
+            }
             optionKey={(value) => String(value.nom_item_id)}
             onSelect={(value) => onPinUnit(String(value.nom_item_id))}
             onClear={() => onPinUnit(null)}

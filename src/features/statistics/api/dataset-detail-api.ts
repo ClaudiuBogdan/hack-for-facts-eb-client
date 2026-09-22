@@ -1,5 +1,4 @@
 import type {
-  InsDatasetDetails,
   InsDimensionValueConnection,
   InsEntitySelectorInput,
   InsObservationFilterInput,
@@ -10,7 +9,6 @@ import type {
 } from '@/schemas/statistics'
 import { isStatisticsMockEnabled } from '../lib/mock-mode'
 import {
-  getInsDatasetDetails,
   getInsDimensionValuesPage,
 } from './graphql/ins-fetchers'
 import {
@@ -31,16 +29,6 @@ import {
  * Browser development uses explicit synthetic native fixtures; live enablement
  * waits for the producer and remaining consumer migration gates.
  */
-
-export async function fetchDatasetDetail(
-  code: string,
-  signal?: AbortSignal,
-): Promise<InsDatasetDetails | null> {
-  if (isStatisticsMockEnabled()) {
-    return fetchDatasetDetailMock(code)
-  }
-  return getInsDatasetDetails(code, signal)
-}
 
 export async function fetchDimensionValuesPage(params: {
   readonly datasetCode: string

@@ -25,7 +25,7 @@ import {
   indexStatisticsContextTree,
 } from '../lib/context-tree'
 import { buildExplorerChips, explorerChipParts } from '../lib/explorer-chips'
-import { clearedExplorerSearch, countActiveExplorerFilters, hasActiveExplorerFilters } from '../lib/explorer-filter'
+import { clearedExplorerSearch, countActiveExplorerFilters, EXPLORER_PAGE_SIZE, hasActiveExplorerFilters } from '../lib/explorer-filter'
 import { statisticsTheme } from '../lib/statistics-theme'
 
 type Props = {
@@ -87,6 +87,11 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
   const datasets = explorerQuery.data?.datasets ?? []
   const totalCount = explorerQuery.data?.totalCount ?? 0
   const isFiltered = hasActiveExplorerFilters(search)
+  // A page past the end — an old link, a hand-edited URL — returns no rows
+  // while the count is not zero. It used to read as an empty catalog under
+  // „1.916 seturi de date", with no pagination to get back.
+  const lastPage = Math.max(1, Math.ceil(totalCount / EXPLORER_PAGE_SIZE))
+  const pastTheEnd = explorerQuery.isSuccess && datasets.length === 0 && totalCount > 0 && page > lastPage
 
   const applySearch = useCallback(
     (next: StatisticsDatasetExplorerSearch) => {
@@ -237,7 +242,30 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
                   </ul>
                 ) : null}
 
-                {explorerQuery.isSuccess && datasets.length === 0 ? (
+                {pastTheEnd ? (
+                  <div className="space-y-3 p-4">
+                    <EmptyState
+                      className="border-0 p-2"
+                      title={t`Pagina ${page} nu există`}
+                      description={plural(lastPage, {
+                        one: 'Rezultatele încap pe o singură pagină.',
+                        few: 'Rezultatele au # pagini.',
+                        other: 'Rezultatele au # de pagini.',
+                      })}
+                    />
+                    <div className="flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => applySearch({ ...search, pagina: lastPage > 1 ? lastPage : undefined })}
+                      >
+                        <Trans>Mergi la ultima pagină</Trans>
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {explorerQuery.isSuccess && datasets.length === 0 && !pastTheEnd ? (
                   <div className="space-y-3 p-4">
                     {/* Inside the band, so the dashed frame would be a card in a card. */}
                     {isFiltered ? (

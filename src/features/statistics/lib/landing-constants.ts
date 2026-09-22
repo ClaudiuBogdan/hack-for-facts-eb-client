@@ -15,11 +15,6 @@ import type { MessageDescriptor } from '@lingui/core'
  */
 export const LANDING_NATIONAL_DATASET_CODES: readonly string[] = ['POP107D', 'FOM104D', 'SOM101F', 'LOC101B']
 
-/** Worked comparison example: salaried employees, Cluj-Napoca / Cluj / RO. */
-export const EXAMPLE_DATASET_CODE = 'FOM104D'
-/** A LAU's territory code IS its SIRUTA code (M0-verified). */
-export const EXAMPLE_LAU_SIRUTA = '54975'
-
 /**
  * The eight INS level-0 context groups ("domains"). Codes are the
  * `rootContextCode` values the server filters on; labels are translatable

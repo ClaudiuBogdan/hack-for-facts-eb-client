@@ -10,10 +10,7 @@ import {
   getComparisonCell,
   lineSeriesKey,
   parseClassificationPin,
-  pickAutoPinnedOption,
   removeClassificationPin,
-  resolveEffectiveClassificationPins,
-  resolveSelectedPeriod,
   toChartValue,
   upsertClassificationPin,
 } from './comparison-series'
@@ -125,29 +122,6 @@ describe('buildPeriodOptions', () => {
 
   it('returns nothing for an empty observation list', () => {
     expect(buildPeriodOptions([])).toEqual([])
-  })
-})
-
-describe('resolveSelectedPeriod', () => {
-  const periods = buildPeriodOptions([
-    observation({ code: '1', period: annual(2022), value: '1' }),
-    observation({ code: '1', period: annual(2024), value: '2' }),
-  ])
-
-  it('defaults to the latest period', () => {
-    expect(resolveSelectedPeriod(periods, undefined)).toBe('2024')
-  })
-
-  it('honours a requested period that exists', () => {
-    expect(resolveSelectedPeriod(periods, '2022')).toBe('2022')
-  })
-
-  it('degrades a stale deep-linked period to the latest', () => {
-    expect(resolveSelectedPeriod(periods, '1999')).toBe('2024')
-  })
-
-  it('is null when there is no data', () => {
-    expect(resolveSelectedPeriod([], '2024')).toBeNull()
   })
 })
 
@@ -330,84 +304,6 @@ describe('classification pins', () => {
     expect(removeClassificationPin(['SEX:TOTAL', 'AGE:ALL'], 'SEX')).toEqual(['AGE:ALL'])
   })
 
-  it('auto-pins a Total option case-insensitively', () => {
-    expect(
-      pickAutoPinnedOption([
-        { code: 'M', label: 'Masculin' },
-        { code: 'T', label: 'Total' },
-      ]),
-    ).toEqual({ code: 'T', label: 'Total' })
-
-    expect(
-      pickAutoPinnedOption([{ code: 'T', label: 'TOTAL populație' }]),
-    ).toEqual({ code: 'T', label: 'TOTAL populație' })
-  })
-
-  it('does not invent a pin when no Total option exists', () => {
-    expect(pickAutoPinnedOption([{ code: 'M', label: 'Masculin' }])).toBeNull()
-  })
-})
-
-describe('resolveEffectiveClassificationPins', () => {
-  const dimensions = [
-    {
-      typeCode: 'SEX',
-      options: [
-        { code: 'T', label: 'Total' },
-        { code: 'M', label: 'Masculin' },
-      ],
-    },
-    {
-      typeCode: 'AGE',
-      options: [
-        { code: 'ALL', label: 'Total' },
-        { code: '0_14', label: '0-14 ani' },
-      ],
-    },
-  ]
-
-  it('auto-pins Total for every unpinned dimension', () => {
-    expect(resolveEffectiveClassificationPins({ dimensions, urlPins: [] })).toEqual([
-      { typeCode: 'SEX', valueCode: 'T' },
-      { typeCode: 'AGE', valueCode: 'ALL' },
-    ])
-  })
-
-  it('honours a URL pin and auto-pins only the rest', () => {
-    expect(
-      resolveEffectiveClassificationPins({ dimensions, urlPins: ['SEX:M'] }),
-    ).toEqual([
-      { typeCode: 'SEX', valueCode: 'M' },
-      { typeCode: 'AGE', valueCode: 'ALL' },
-    ])
-  })
-
-  it('drops a pin whose value this dataset does not offer, falling back to Total', () => {
-    expect(
-      resolveEffectiveClassificationPins({ dimensions, urlPins: ['SEX:UNKNOWN'] }),
-    ).toEqual([
-      { typeCode: 'SEX', valueCode: 'T' },
-      { typeCode: 'AGE', valueCode: 'ALL' },
-    ])
-  })
-
-  it('drops a pin for a dimension this dataset does not have', () => {
-    expect(
-      resolveEffectiveClassificationPins({
-        dimensions: [dimensions[0]],
-        urlPins: ['SEX:M', 'CAEN:A'],
-      }),
-    ).toEqual([{ typeCode: 'SEX', valueCode: 'M' }])
-  })
-
-  it('leaves a dimension unpinned when it has no Total option', () => {
-    expect(
-      resolveEffectiveClassificationPins({
-        dimensions: [{ typeCode: 'CAEN', options: [{ code: 'A', label: 'Agricultură' }] }],
-        urlPins: [],
-      }),
-    ).toEqual([])
-  })
 })
 
 describe('parseComparisonTokens (mixed-level URL tokens)', () => {

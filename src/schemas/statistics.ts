@@ -54,10 +54,6 @@ export const statisticsPeriodSearchSchema = z
   )
   .catch('latest')
 
-export type StatisticsPeriodSearch = z.infer<
-  typeof statisticsPeriodSearchSchema
->
-
 /**
  * Search state for the statistics hub route (`/ins`).
  *
@@ -521,13 +517,6 @@ export interface StatisticsDatasetSeries {
   readonly related: readonly StatisticsRelatedDataset[]
   /** Catalog size of the dataset's context, self included; null when unprobed. */
   readonly relatedTotalCount: number | null
-}
-
-/** „Locul tău" snapshot: the picked territory's identity + latest values. */
-export interface StatisticsUatSnapshot {
-  readonly nativeContract?: 'native-v2'
-  readonly territory: StatisticsTerritorySearchRow | null
-  readonly values: readonly StatisticsLatestValue[]
 }
 
 // ---------------------------------------------------------------------------

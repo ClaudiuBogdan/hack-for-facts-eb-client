@@ -13,3 +13,8 @@ const PERIODICITY_LABELS: Record<InsPeriodicity, () => string> = {
 export function periodicityLabel(periodicity: InsPeriodicity): string {
   return PERIODICITY_LABELS[periodicity]()
 }
+
+/** Whether a cadence string from the API is one this module has a label for. */
+export function isInsPeriodicity(value: string): value is InsPeriodicity {
+  return Object.prototype.hasOwnProperty.call(PERIODICITY_LABELS, value)
+}

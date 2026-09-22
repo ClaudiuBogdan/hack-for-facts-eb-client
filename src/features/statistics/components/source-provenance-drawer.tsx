@@ -12,12 +12,8 @@ import {
 } from '@/components/ui/sheet'
 import { getScraperDatasetById } from '@/lib/scraper-references'
 import { buildDataThroughLabel } from '../lib/period'
+import { isInsPeriodicity, periodicityLabel } from '../lib/periodicity-labels'
 
-const PERIODICITY_LABELS: Readonly<Record<string, string>> = {
-  ANNUAL: t`anual`,
-  QUARTERLY: t`trimestrial`,
-  MONTHLY: t`lunar`,
-}
 
 type SourceProvenanceDrawerProps = {
   readonly datasetCode: string
@@ -38,8 +34,8 @@ export function SourceProvenanceDrawer({
   const dataThrough = buildDataThroughLabel(latestPeriod ?? null)
   const fallbackSource = t`INS Tempo`
   const tempoUrl = `https://statistici.insse.ro/tempoins/index.jsp?ind=${encodeURIComponent(datasetCode)}&lang=ro&page=tempo3`
-  const periodicityLabel = periodicity
-    ?.map((item) => PERIODICITY_LABELS[item] ?? item)
+  const cadences = periodicity
+    ?.map((item) => (isInsPeriodicity(item) ? periodicityLabel(item) : item))
     .join(', ')
 
   return (
@@ -84,13 +80,13 @@ export function SourceProvenanceDrawer({
               <dd className="mt-1 text-muted-foreground">{dataThrough}</dd>
             </div>
           ) : null}
-          {periodicityLabel ? (
+          {cadences ? (
             <div>
               <dt className="font-medium text-foreground">
                 <Trans>Periodicitate</Trans>
               </dt>
               <dd className="mt-1 text-muted-foreground">
-                {periodicityLabel}
+                {cadences}
               </dd>
             </div>
           ) : null}

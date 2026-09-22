@@ -341,7 +341,7 @@ export function useComparisonTerritoryNames(
   return useMemo(() => {
     const names = new Map<string, string>()
     for (const token of unresolved) {
-      if (token.level === 'NATIONAL') names.set(token.code, 'România')
+      if (token.level === 'NATIONAL') names.set(token.code, t`România`)
     }
     for (const row of lauQuery.data?.rows ?? []) {
       if (row.siruta && row.name) names.set(row.siruta, row.name)

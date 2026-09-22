@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { InsObservation } from '@/schemas/ins'
-import type { StatisticsLatestValue } from '@/schemas/statistics'
 import {
-  buildEffectiveScope,
   parseComparisonToken,
   parseComparisonTokens,
   buildSeriesFilter,
@@ -13,30 +11,8 @@ import {
   observedYearSpan,
   parseTerritoryPin,
   territoryPinToEntity,
+  type EffectiveScope,
 } from './dataset-selection'
-
-const latest = (
-  overrides: Partial<StatisticsLatestValue> = {},
-): StatisticsLatestValue => ({
-  datasetCode: 'POP107D',
-  datasetNameRo: null,
-  datasetNameEn: null,
-  periodicity: ['ANNUAL'],
-  matchStrategy: 'TOTAL_FALLBACK',
-  hasData: true,
-  value: '21739373',
-  valueStatus: null,
-  unitCode: 'PERS',
-  unitSymbol: 'pers.',
-  unitNameRo: null,
-  period: '2025',
-  resolvedPeriodicity: 'ANNUAL',
-  resolvedClassifications: [
-    { typeCode: 'SEX', code: 'TOTAL', nameRo: 'Total' },
-    { typeCode: 'AGE_GROUP', code: 'TOTAL', nameRo: 'Total' },
-  ],
-  ...overrides,
-})
 
 const observation = (params: {
   readonly year: number
@@ -90,58 +66,23 @@ describe('territory entity mapping', () => {
   })
 })
 
-describe('buildEffectiveScope', () => {
-  it('takes server-resolved defaults and marks them as defaulted', () => {
-    const scope = buildEffectiveScope({ search: {}, latest: latest() })
-    expect(scope.territory).toBeNull()
-    expect(scope.territoryDefaulted).toBe(true)
-    expect(scope.classifications.get('SEX')).toBe('TOTAL')
-    expect(scope.defaultedTypes.has('SEX')).toBe(true)
-    expect(scope.unitCode).toBe('PERS')
-    expect(scope.unitDefaulted).toBe(true)
-    expect(scope.periodicity).toBe('ANNUAL')
-  })
-
-  it('URL pins override defaults and clear the defaulted mark', () => {
-    const scope = buildEffectiveScope({
-      search: { clasificari: ['SEX:FEMININ'] },
-      latest: latest(),
-    })
-    expect(scope.classifications.get('SEX')).toBe('FEMININ')
-    expect(scope.defaultedTypes.has('SEX')).toBe(false)
-    expect(scope.classifications.get('AGE_GROUP')).toBe('TOTAL')
-    expect(scope.defaultedTypes.has('AGE_GROUP')).toBe(true)
-  })
-
-  it('prefers MONTHLY when offered, else the resolved cadence FIELD — never grammar', () => {
-    const monthlyOffered = buildEffectiveScope({
-      search: {},
-      latest: latest({ periodicity: ['ANNUAL', 'MONTHLY'], period: '2025-11' }),
-    })
-    expect(monthlyOffered.periodicity).toBe('MONTHLY')
-
-    const fieldFallback = buildEffectiveScope({
-      search: {},
-      latest: latest({
-        periodicity: ['ANNUAL', 'QUARTERLY'],
-        resolvedPeriodicity: 'QUARTERLY',
-      }),
-    })
-    expect(fieldFallback.periodicity).toBe('QUARTERLY')
-
-    const pinned = buildEffectiveScope({
-      search: { frecventa: 'ANNUAL' },
-      latest: latest({ periodicity: ['ANNUAL', 'MONTHLY'] }),
-    })
-    expect(pinned.periodicity).toBe('ANNUAL')
-  })
-})
-
 describe('buildSeriesFilter', () => {
+  const scope = (overrides: Partial<EffectiveScope> = {}): EffectiveScope => ({
+    territory: null,
+    territoryDefaulted: true,
+    classifications: new Map([
+      ['SEX', 'TOTAL'],
+      ['AGE_GROUP', 'TOTAL'],
+    ]),
+    defaultedTypes: new Set(['SEX', 'AGE_GROUP']),
+    unitCode: 'PERS',
+    unitDefaulted: true,
+    periodicity: 'ANNUAL',
+    ...overrides,
+  })
+
   it('is ALWAYS territory-scoped: the national default sends territoryLevels', () => {
-    const filter = buildSeriesFilter(
-      buildEffectiveScope({ search: {}, latest: latest() }),
-    )
+    const filter = buildSeriesFilter(scope())
     expect(filter.territoryLevels).toEqual(['NATIONAL'])
     expect(filter.classificationValueCodes).toEqual(['TOTAL'])
     expect(filter.classificationTypeCodes).toEqual(['SEX', 'AGE_GROUP'])
@@ -149,23 +90,13 @@ describe('buildSeriesFilter', () => {
   })
 
   it('maps cod:RO pins to the national level, never NUTS3', () => {
-    const filter = buildSeriesFilter(
-      buildEffectiveScope({
-        search: { teritoriu: 'cod:RO' },
-        latest: latest(),
-      }),
-    )
+    const filter = buildSeriesFilter(scope({ territory: parseTerritoryPin('cod:RO'), territoryDefaulted: false }))
     expect(filter.territoryCodes).toEqual(['RO'])
     expect(filter.territoryLevels).toEqual(['NATIONAL'])
   })
 
   it('omits typeCodes when a fallback DIM key is present', () => {
-    const filter = buildSeriesFilter(
-      buildEffectiveScope({
-        search: { clasificari: ['DIM3:X'] },
-        latest: latest({ resolvedClassifications: [] }),
-      }),
-    )
+    const filter = buildSeriesFilter(scope({ classifications: new Map([['DIM3', 'X']]), defaultedTypes: new Set() }))
     expect(filter.classificationValueCodes).toEqual(['X'])
     expect(filter.classificationTypeCodes).toBeUndefined()
   })

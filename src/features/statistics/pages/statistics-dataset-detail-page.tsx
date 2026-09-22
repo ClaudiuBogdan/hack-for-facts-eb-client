@@ -715,7 +715,7 @@ function DatasetDetailBody({
   const sampleRow = exactRows[0] ?? null
   const territoryLabel =
     scope.territory === null
-      ? 'România'
+      ? t`România`
       : (sampleRow?.territory?.name_ro ?? scope.territory.value)
   const rowLabel = (typeCode: string) =>
     (sampleRow?.classifications ?? [])
@@ -800,6 +800,16 @@ function DatasetDetailBody({
   // Comparison starts from the place on screen: the territory the scope
   // applies, or else the one the row a pinned geography axis resolved to —
   // picking Arad on the axis compares Arad, whatever link the page came from.
+  // It carries the series on screen too — its non-geographic members, unit
+  // and cadence — which the comparison page reads as one explicit selection.
+  // With the dataset alone it compared the matrix's default cell: „Feminin"
+  // here became „Total" there.
+  const geographyTypes = new Set(
+    dimensionsOfType(dataset.dimensions, 'TERRITORIAL').map(classificationTypeCode),
+  )
+  const sharedPins = [...scope.classifications]
+    .filter(([typeCode]) => !geographyTypes.has(typeCode))
+    .map(([typeCode, code]) => `${typeCode}:${code}`)
   const compareSearch = {
     cod: dataset.code,
     teritorii: [
@@ -807,6 +817,15 @@ function DatasetDetailBody({
         rowTerritoryPin(sampleRow) ??
         'cod:RO',
     ] as [string, ...string[]],
+    // Only a cadence the comparison can chart: a semestrial or range cadence
+    // sent explicitly is an invalid selection there, not a prompt.
+    ...(missingClassificationLabels.length === 0 && scope.unitCode !== null && isInsChartPeriodicity(periodicity)
+      ? {
+          ...(sharedPins.length > 0 ? { clasificari: sharedPins } : {}),
+          unitate: scope.unitCode,
+          frecventa: periodicity,
+        }
+      : {}),
   }
 
   return (

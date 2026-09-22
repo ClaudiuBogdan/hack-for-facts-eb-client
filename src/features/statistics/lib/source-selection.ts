@@ -79,7 +79,7 @@ export function resolveDetailSelection(params: {
    * `axis` — the detail page. The pinned axis member names the place, so
    * `teritoriu` only seeds a geography nothing has pinned yet (the hub map, a
    * territory page link in with it) and is ignored once the reader pins the
-   * axis. Both at once could only agree or empty the page: ACC101B read
+   * axis — or always, on a matrix with no geography axis to seed. Both at once could only agree or empty the page: ACC101B read
    * `teritoriu=cod:AB` beside an axis pinned to Arad and drew nothing.
    *
    * `intersect` — an entity page. There the territory is the page's subject,
@@ -129,8 +129,14 @@ export function resolveDetailSelection(params: {
   if (!parsedPins.valid) issues.add('classifications')
   const explicitGeo = [...explicit.keys()].some((type) => geoAxes.has(type))
 
+  // On the detail page a place is chosen on the matrix's own geography axes:
+  // a pinned axis already names it, and a matrix with no geography axis
+  // publishes the country alone. A `teritoriu` carried in from a territory
+  // page (JUS101A with `siruta:54975`) had nothing to filter there but the
+  // read itself, and drew „Nicio observație" under „Teritoriu 54975".
+  const nationalOnly = dataset !== null && dimensions.length > 0 && geoAxes.size === 0
   const axisNamesTerritory =
-    explicitGeo && territoryBesidePinnedGeography === 'axis'
+    territoryBesidePinnedGeography === 'axis' && (explicitGeo || nationalOnly)
   const territory = axisNamesTerritory
     ? null
     : parseTerritoryPin(search.teritoriu)

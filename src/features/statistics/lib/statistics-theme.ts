@@ -11,26 +11,10 @@ export const statisticsTheme = {
   sectionLabel:
     'text-xs font-semibold uppercase tracking-wide text-muted-foreground',
   sectionTitle: 'text-lg font-semibold',
-  sectionSubtitle: 'mt-1 text-sm text-muted-foreground',
 
   /** Mono provenance chip for matrix codes — secondary text, never a title. */
   provenanceChip:
     'inline-flex items-center gap-1 rounded-sm border border-border/70 bg-muted/40 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground',
-
-  /** Stat tile: bordered, flat, three-tier. */
-  statTile:
-    'group relative flex min-w-0 flex-col gap-1 rounded-lg border border-border/70 bg-card p-4 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-  statTileLabel:
-    'text-xs font-semibold uppercase tracking-wide text-muted-foreground',
-  statTileValue: 'text-2xl font-semibold tabular-nums tracking-tight',
-  statTileUnit: 'text-sm font-normal text-muted-foreground',
-  statTileMeta: 'text-xs text-muted-foreground',
-
-  /** Ranked list rows with the inline proportion fill (PNRR pattern, re-skinned). */
-  rankedRow:
-    'relative flex items-center justify-between gap-3 overflow-hidden rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
-  rankedFill: 'absolute inset-y-0 left-0 bg-primary/10',
-  rankedValue: 'shrink-0 tabular-nums text-sm font-medium',
 
   /** The tier-0 hero figure: the one LARGE number per page. */
   heroValue: 'text-4xl font-semibold tabular-nums tracking-tight',
@@ -41,18 +25,11 @@ export const statisticsTheme = {
 
   /** Flat bordered band container (single level, never nested). */
   band: 'rounded-lg border border-border/70 bg-card',
-  bandPadded: 'rounded-lg border border-border/70 bg-card p-4 md:p-6',
   /** A band's own header strip: the label that says what the band holds. */
   bandHeader:
     'flex flex-wrap items-center justify-between gap-2 border-b border-border/70 px-4 py-2.5',
   /** A band's body. The only padded surface inside a band, so nothing nests. */
   bandBody: 'p-4 md:p-5',
-  /**
-   * A band's closing strip: where the data came from and what can be taken
-   * away with it. Reads as the band's footnote, not as a second header.
-   */
-  bandFooter:
-    'flex flex-col gap-3 border-t border-border/70 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between',
 
   // -- Detail page ----------------------------------------------------------
 

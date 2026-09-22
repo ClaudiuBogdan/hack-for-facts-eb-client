@@ -7,7 +7,6 @@ import {
   parseClassificationPins,
   parseTerritoryPin,
   removeClassificationPin,
-  territoryPinFromValue,
   upsertClassificationPin,
 } from './dataset-selection'
 
@@ -94,17 +93,4 @@ describe('territory pin codec', () => {
     expect(parseTerritoryPin(undefined)).toBeNull()
   })
 
-  it('prefers the SIRUTA code when a dimension value has both', () => {
-    expect(territoryPinFromValue({ siruta_code: '54975', code: '54975' })).toEqual({
-      kind: 'siruta',
-      value: '54975',
-    })
-  })
-
-  it('falls back to the territory code for counties, which have no SIRUTA', () => {
-    expect(territoryPinFromValue({ siruta_code: null, code: 'CJ' })).toEqual({
-      kind: 'cod',
-      value: 'CJ',
-    })
-  })
 })

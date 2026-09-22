@@ -13,23 +13,21 @@ export interface InsRootContextDefinition {
   label: string;
 }
 
-export const INS_CODE_SUBSTITUTIONS: Record<string, string> = {
-  POP102D: 'POP108D',
-  POP2017A: 'POP217A',
-};
+// Labels are getters: `t` resolves against the active locale when it runs, and
+// a module-scope call runs once, at import, in whatever locale was active then.
 
 export const INS_TOP_METRICS_BY_LEVEL: Record<InsMetricLevel, InsMetricDefinition[]> = {
   uat: [
-    { code: 'POP107D', label: t`Population` },
-    { code: 'FOM104D', label: t`Employees (average)` },
-    { code: 'SOM101F', label: t`Registered unemployment share` },
-    { code: 'LOC101B', label: t`Existing dwellings` },
+    { code: 'POP107D', get label() { return t`Population` } },
+    { code: 'FOM104D', get label() { return t`Employees (average)` } },
+    { code: 'SOM101F', get label() { return t`Registered unemployment share` } },
+    { code: 'LOC101B', get label() { return t`Existing dwellings` } },
   ],
   county: [
-    { code: 'POP107D', label: t`Population` },
-    { code: 'FOM104D', label: t`Employees (average)` },
-    { code: 'SOM103A', label: t`Unemployment rate` },
-    { code: 'LOC101B', label: t`Existing dwellings` },
+    { code: 'POP107D', get label() { return t`Population` } },
+    { code: 'FOM104D', get label() { return t`Employees (average)` } },
+    { code: 'SOM103A', get label() { return t`Unemployment rate` } },
+    { code: 'LOC101B', get label() { return t`Existing dwellings` } },
   ],
 };
 
@@ -104,16 +102,13 @@ export const INS_DERIVED_INDICATOR_BASE_CODES = [
 ] as const;
 
 export const INS_ROOT_CONTEXTS: InsRootContextDefinition[] = [
-  { code: '1', shortLabel: 'A', label: t`Social` },
-  { code: '2', shortLabel: 'B', label: t`Economic` },
-  { code: '3', shortLabel: 'C', label: t`Finance` },
-  { code: '4', shortLabel: 'D', label: t`Justice` },
-  { code: '5', shortLabel: 'E', label: t`Environment` },
-  { code: '6', shortLabel: 'F', label: t`Utilities & territory` },
-  { code: '7', shortLabel: 'G', label: t`SDG 2020` },
-  { code: '8', shortLabel: 'H', label: t`SDG 2030` },
+  { code: '1', shortLabel: 'A', get label() { return t`Social` } },
+  { code: '2', shortLabel: 'B', get label() { return t`Economic` } },
+  { code: '3', shortLabel: 'C', get label() { return t`Finance` } },
+  { code: '4', shortLabel: 'D', get label() { return t`Justice` } },
+  { code: '5', shortLabel: 'E', get label() { return t`Environment` } },
+  { code: '6', shortLabel: 'F', get label() { return t`Utilities & territory` } },
+  { code: '7', shortLabel: 'G', get label() { return t`SDG 2020` } },
+  { code: '8', shortLabel: 'H', get label() { return t`SDG 2030` } },
 ];
 
-export const applyInsCodeSubstitution = (code: string): string => {
-  return INS_CODE_SUBSTITUTIONS[code] ?? code;
-};

@@ -5,12 +5,8 @@ import type {
   StatisticsHubData,
   StatisticsLandingCatalog,
   StatisticsTerritoryHubResult,
-  StatisticsUatSnapshot,
 } from '@/schemas/statistics'
 import { isStatisticsMockEnabled } from '../lib/mock-mode'
-import {
-  LANDING_NATIONAL_DATASET_CODES,
-} from '../lib/landing-constants'
 import {
   fetchStatisticsTerritoryHubMock,
   submitDatasetRequestMock,
@@ -23,7 +19,6 @@ import {
 import {
   fetchStatisticsContextTree,
   fetchStatisticsLandingCatalog,
-  fetchStatisticsUatSnapshot,
 } from './graphql/statistics-fetchers'
 import { fetchStatisticsHub as fetchStatisticsHubLive } from './graphql/statistics-hub-fetchers'
 
@@ -62,17 +57,6 @@ export async function fetchContextTree(
   }
 
   return fetchStatisticsContextTree(signal ? { signal } : {})
-}
-
-export async function fetchUatSnapshot(
-  siruta: string,
-  signal?: AbortSignal,
-): Promise<StatisticsUatSnapshot> {
-  return fetchStatisticsUatSnapshot({
-    siruta,
-    datasetCodes: LANDING_NATIONAL_DATASET_CODES,
-    ...(signal ? { signal } : {}),
-  })
 }
 
 export async function fetchStatisticsTerritoryHub(

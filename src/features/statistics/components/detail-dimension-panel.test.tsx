@@ -126,7 +126,7 @@ describe('dimension option list', () => {
     serveAxis(3, 200)
     const { select, picked } = mount()
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3))
-    const input = screen.getByRole('combobox')
+    const input = screen.getByRole('combobox', { name: /^Caută în / })
     await userEvent.click(input)
     await userEvent.keyboard('{ArrowDown}{ArrowDown}')
     expect(input).toHaveAttribute(

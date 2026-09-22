@@ -440,7 +440,10 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               <li>
                 <Link
                   to="/ins/comparatii"
-                  search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }}
+                  // Dataset and territories only, as the page's own presets: a
+                  // cadence alone is an explicit selection with its other
+                  // coordinates missing, and the page waits for them.
+                  search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'] }}
                   className="block h-full bg-background p-5 transition-colors hover:bg-muted/40"
                 >
                   <span className="block text-base font-semibold tracking-tight text-foreground">

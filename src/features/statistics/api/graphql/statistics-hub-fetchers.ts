@@ -194,6 +194,9 @@ async function fetchCountyLayer(
     const axis = axes[0] as string
     if (countyAxis === null) countyAxis = axis
     else if (axis !== countyAxis) continue
+    // The flags the national figures honour: a confidential or missing cell
+    // has no number to colour a county with, whatever the value field holds.
+    if (BLOCKING_VALUE_STATUSES.has(row.value_status?.trim().toLowerCase() ?? '')) continue
     const value = parseDecimal(row.value)
     if (value === null || values.has(countyCode)) continue
     const name = ROMANIA_COUNTIES.find((county) => county.code === countyCode)?.nameRo ?? row.territory?.name_ro ?? countyCode

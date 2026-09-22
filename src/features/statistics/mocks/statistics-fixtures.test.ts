@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
 import { applyHubPeriod } from '../lib/hub-period'
 import {
-  getMockStatisticsLandingCatalog,
   getMockStatisticsTerritoryHub,
-  getMockStatisticsUatSnapshot,
 } from './statistics-fixtures'
 
 describe('statistics mock fixtures', () => {
@@ -86,17 +84,6 @@ describe('statistics mock fixtures', () => {
     expect(somTile).toBeDefined()
     // Latest (2023) has a unit symbol; the 2022 point has a null unit.
     expect(somTile?.unitSymbol).toBe('lei')
-  })
-
-  it('answers catalog counts whose theme totals sum to the catalog', () => {
-    const catalog = getMockStatisticsLandingCatalog()
-    const themeSum = catalog.themes.reduce((sum, theme) => sum + theme.count, 0)
-    expect(themeSum).toBe(catalog.catalogCount)
-  })
-
-  it('returns a null-territory snapshot for an unknown SIRUTA', () => {
-    expect(getMockStatisticsUatSnapshot('00000000').territory).toBeNull()
-    expect(getMockStatisticsUatSnapshot('54975').territory?.siruta).toBe('54975')
   })
 
   it('emits related links only to existing routes (no deferred statistics routes)', () => {

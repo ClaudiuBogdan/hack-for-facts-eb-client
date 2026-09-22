@@ -1,80 +1,23 @@
-import { createLogger } from '@/lib/logger'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
   InsContextConnection,
   InsContextFilterInput,
-  InsDashboardData,
-  InsDataset,
   InsDatasetConnection,
   InsDatasetDimensionsResult,
   InsDatasetFilterInput,
   InsObservation,
   InsObservationConnection,
   InsObservationFilterInput,
-  InsUatDatasetGroup,
 } from '@/schemas/ins'
 import {
   buildInsObservationsBatchQuery,
   INS_CONTEXTS_QUERY,
   INS_DATASET_DIMENSIONS_QUERY,
   INS_DATASET_HISTORY_QUERY,
-  INS_DATASETS_BY_CODES_QUERY,
   INS_DATASETS_QUERY,
-  INS_OBSERVATIONS_QUERY,
-  INS_UAT_DASHBOARD_QUERY,
 } from './ins-queries'
 
-const logger = createLogger('ins-api')
-
-const INS_UAT_DASHBOARD_LIMIT = 2000
 const INS_OBSERVATION_LIMIT = 200
-
-export async function getInsUatDashboard(params: {
-  sirutaCode: string
-  period?: string
-  contextCode?: string
-  signal?: AbortSignal
-}): Promise<InsDashboardData> {
-  logger.info('Fetching INS UAT dashboard', params)
-
-  const response = await graphqlQuery<{ insUatDashboard: InsUatDatasetGroup[] }>(
-    INS_UAT_DASHBOARD_QUERY,
-    {
-      sirutaCode: params.sirutaCode,
-      period: params.period,
-      contextCode: params.contextCode,
-    },
-    { auth: 'none', signal: params.signal }
-  )
-
-  const groups = response.insUatDashboard ?? []
-  const totalObservations = groups.reduce((total, group) => total + group.observations.length, 0)
-
-  return {
-    groups,
-    partial: totalObservations >= INS_UAT_DASHBOARD_LIMIT,
-  }
-}
-
-export async function getInsDatasetsByCodes(
-  codes: string[],
-  signal?: AbortSignal,
-): Promise<InsDataset[]> {
-  if (codes.length === 0) return []
-
-  logger.info('Fetching INS datasets by codes', { count: codes.length })
-
-  const response = await graphqlQuery<{ insDatasets: { nodes: InsDataset[] } }>(
-    INS_DATASETS_BY_CODES_QUERY,
-    {
-      codes,
-      limit: Math.min(codes.length, 200),
-    },
-    { auth: 'none', signal }
-  )
-
-  return response.insDatasets.nodes ?? []
-}
 
 export async function getInsContexts(params: {
   filter?: InsContextFilterInput
@@ -125,27 +68,6 @@ export async function searchInsDatasets(params: {
 }
 
 export { getInsDatasetDetails, getInsDimensionValuesPage } from './ins-bootstrap-fetchers'
-
-export async function getInsObservationsPage(params: {
-  datasetCode: string
-  filter?: InsObservationFilterInput
-  limit?: number
-  offset?: number
-  signal?: AbortSignal
-}): Promise<InsObservationConnection> {
-  const response = await graphqlQuery<{ insObservations: InsObservationConnection }>(
-    INS_OBSERVATIONS_QUERY,
-    {
-      datasetCode: params.datasetCode,
-      filter: params.filter,
-      limit: params.limit ?? 200,
-      offset: params.offset ?? 0,
-    },
-    { auth: 'none', signal: params.signal }
-  )
-
-  return response.insObservations
-}
 
 export interface InsDatasetHistoryResult {
   observations: InsObservation[]
@@ -292,82 +214,4 @@ export async function getInsObservationsSnapshotByDatasets(params: {
   }
 
   return { observationsByDataset }
-}
-
-function getLatestPeriod(observations: InsObservation[]): string | null {
-  let latestPeriod: string | null = null
-  let latestKey: number | null = null
-
-  for (const observation of observations) {
-    const period = observation.time_period
-    const key = period.year * 10000 + (period.quarter ?? 0) * 100 + (period.month ?? 0)
-    if (latestKey === null || key > latestKey) {
-      latestKey = key
-      latestPeriod = period.iso_period
-    }
-  }
-
-  return latestPeriod
-}
-
-export async function getInsCountyDashboard(params: {
-  countyCode: string
-  datasetCodes: string[]
-  signal?: AbortSignal
-}): Promise<InsDashboardData> {
-  const datasetCodes = params.datasetCodes
-  if (datasetCodes.length === 0) return { groups: [], partial: false }
-
-  const normalizedCountyCode = params.countyCode.trim().toUpperCase()
-  if (normalizedCountyCode.length === 0) {
-    return { groups: [], partial: false }
-  }
-
-  const observationFilter: InsObservationFilterInput = {
-    territoryCodes: [normalizedCountyCode],
-    territoryLevels: ['NUTS3'],
-  }
-
-  logger.info('Fetching INS county dashboard', {
-    countyCode: normalizedCountyCode,
-    filterMode: 'territoryCode',
-    datasetCount: datasetCodes.length,
-  })
-
-  const datasets = await getInsDatasetsByCodes(datasetCodes, params.signal)
-  const datasetMap = new Map(datasets.map((dataset) => [dataset.code, dataset]))
-
-  const buildGroups = (observationsMap: Map<string, InsObservationConnection>) => {
-    const groups: InsUatDatasetGroup[] = []
-    let partial = false
-
-    for (const code of datasetCodes) {
-      const dataset = datasetMap.get(code)
-      const connection = observationsMap.get(code)
-      if (!dataset || !connection) continue
-      if (!dataset.has_county_data) continue
-      if (connectionHasNextPage(connection)) {
-        partial = true
-      }
-
-      const observations = getConnectionNodes(connection)
-      if (observations.length === 0) continue
-
-      groups.push({
-        dataset,
-        observations,
-        latestPeriod: getLatestPeriod(observations),
-      })
-    }
-
-    return { groups, partial }
-  }
-
-  const observationsByDataset = await getInsObservationsBatch({
-    datasetCodes,
-    filter: observationFilter,
-    signal: params.signal,
-  })
-
-  return buildGroups(observationsByDataset)
 }

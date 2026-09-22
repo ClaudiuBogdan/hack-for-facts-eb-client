@@ -15,8 +15,6 @@ import {
   COMPARISON_PRESETS,
 } from './comparison-presets'
 import {
-  EXAMPLE_DATASET_CODE,
-  EXAMPLE_LAU_SIRUTA,
   LANDING_THEMES,
 } from './landing-constants'
 
@@ -27,21 +25,6 @@ import {
  * dead page because the two sides drifted.
  */
 describe('outbound links round-trip through their target schemas', () => {
-  it('landing B3 example card → compare (mixed-level tokens)', () => {
-    const emitted = {
-      cod: EXAMPLE_DATASET_CODE,
-      teritorii: [`siruta:${EXAMPLE_LAU_SIRUTA}`, 'cod:CJ', 'cod:RO'],
-    }
-    const parsed = parseStatisticsComparisonsSearch(emitted)
-    const tokens = parseComparisonTokens(parsed.teritorii)
-    expect(parsed.cod).toBe('FOM104D')
-    expect(tokens.map((token) => token.level)).toEqual([
-      'LAU',
-      'NUTS3',
-      'NATIONAL',
-    ])
-  })
-
   it('landing B2 decade row → dataset detail (county scope)', () => {
     const parsed = parseStatisticsDatasetDetailSearch({ teritoriu: 'cod:TR' })
     const entity = territoryPinToEntity(parseTerritoryPin(parsed.teritoriu))

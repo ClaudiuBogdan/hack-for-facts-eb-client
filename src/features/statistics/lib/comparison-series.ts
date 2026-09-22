@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import type { InsObservation, InsTimePeriod } from '@/schemas/ins'
 import { periodSortKey } from './period'
 
@@ -23,9 +24,6 @@ import { periodSortKey } from './period'
  *    from a neighbouring period — a territory that has no 2024 figure
  *    genuinely has no 2024 figure, and the UI must say so.
  */
-
-/** Lower bound before a comparison is meaningful (one line is not a comparison). */
-export const MIN_COMPARISON_TERRITORIES = 2
 
 /** Upper bound, matching `statisticsComparisonsSearchSchema.teritorii`. */
 export const MAX_COMPARISON_TERRITORIES = 6
@@ -85,24 +83,6 @@ export function buildPeriodOptions(
 }
 
 /**
- * Resolves the period to display: the requested one when the data actually
- * contains it, otherwise the latest available. A period from a stale deep link
- * degrades to "latest" rather than to an all-empty view.
- */
-export function resolveSelectedPeriod(
-  periods: readonly ComparisonPeriodOption[],
-  requested: string | undefined,
-): string | null {
-  if (periods.length === 0) return null
-
-  if (requested && periods.some((option) => option.isoPeriod === requested)) {
-    return requested
-  }
-
-  return periods[periods.length - 1].isoPeriod
-}
-
-/**
  * Folds a flat observation list into the territory × period matrix.
  *
  * Rows follow `territoryCodes` order, so the chart colour assigned to a territory
@@ -141,7 +121,7 @@ export function buildComparisonMatrix(params: {
 
     const rawName = observation.territory?.name_ro?.trim()
     // The API names the national row "TOTAL" — render the country.
-    const name = code === 'RO' ? 'România' : rawName
+    const name = code === 'RO' ? t`România` : rawName
     if (name && !nameByCode.has(code)) {
       nameByCode.set(code, name)
     }
@@ -271,10 +251,6 @@ export {
   type ClassificationPin,
   type ComparisonTerritoryToken,
 } from './dataset-selection'
-import {
-  parseClassificationPin as parsePinInternal,
-  type ClassificationPin as ClassificationPinInternal,
-} from './dataset-selection'
 
 /** A selectable classification value. */
 export interface ClassificationOptionLike {
@@ -282,61 +258,3 @@ export interface ClassificationOptionLike {
   readonly label: string
 }
 
-/**
- * The option a dimension defaults to when the URL pins nothing for it.
- *
- * INS classification dimensions almost always carry a "Total" option, and
- * comparing territories on an unpinned dimension would silently mix its
- * members. Preferring `/^total/i` keeps the default honest; when there is no
- * such option the caller must ask the user rather than pick arbitrarily.
- */
-export function pickAutoPinnedOption<T extends ClassificationOptionLike>(
-  options: readonly T[],
-): T | null {
-  return options.find((option) => /^total/i.test(option.label.trim())) ?? null
-}
-
-/** A classification dimension with its (bounded) option list. */
-export interface ClassificationDimensionLike {
-  readonly typeCode: string
-  readonly options: readonly ClassificationOptionLike[]
-}
-
-/**
- * The pins actually sent to the server: the URL's pins, plus an auto-pinned
- * "Total" for every dimension the URL left unpinned.
- *
- * Auto-pins are derived, not written back to the URL — the same dataset always
- * resolves to the same defaults, so a link stays short and still restores the
- * exact view. Pins for dimensions this dataset does not have are dropped, which
- * is what makes a link copied from one dataset degrade safely on another.
- */
-export function resolveEffectiveClassificationPins(params: {
-  readonly dimensions: readonly ClassificationDimensionLike[]
-  readonly urlPins: readonly string[]
-}): readonly ClassificationPinInternal[] {
-  const { dimensions, urlPins } = params
-
-  const pinnedByType = new Map<string, ClassificationPinInternal>()
-  for (const raw of urlPins) {
-    const pin = parsePinInternal(raw)
-    if (pin) pinnedByType.set(pin.typeCode, pin)
-  }
-
-  const resolved: ClassificationPinInternal[] = []
-
-  for (const dimension of dimensions) {
-    const pinned = pinnedByType.get(dimension.typeCode)
-    if (pinned && dimension.options.some((option) => option.code === pinned.valueCode)) {
-      resolved.push(pinned)
-      continue
-    }
-
-    const auto = pickAutoPinnedOption(dimension.options)
-    if (auto) {
-      resolved.push({ typeCode: dimension.typeCode, valueCode: auto.code })
-    }
-  }
-
-  return resolved
-}

@@ -1064,6 +1064,49 @@ text.
 - The hub's strings are translated into English; before, the English page
   rendered the Romanian source text.
 
+## 6o. Review of the INS section before release (2026-09-22)
+
+A pass over the whole section — routes, data layer, UI — for defects, dead
+code and copy. What changed in behaviour:
+
+- **A dataset link keeps its selection.** `/ins/seturi/pop107d?…` redirects to
+  the uppercase code with the same search; it used to land on the empty one.
+- **A failed read is not cached.** The detail route answers `no-store` when
+  its loader caught an upstream failure, as the hub does; it used to cache the
+  retry page publicly for ten minutes.
+- **A matrix with no geography axis ignores `teritoriu`** on the detail page.
+  It publishes the country alone; a territory carried in from a territory page
+  (JUS101A with `siruta:54975`) used to filter the read to nothing under
+  „Teritoriu 54975". Entity pages keep the territory as their guard.
+- **„Compară teritorii" compares the series on screen**: the link carries its
+  non-geographic members, unit and cadence as one explicit selection. With
+  the dataset alone the comparison fell back to the default cell — „Feminin"
+  on the detail became „Total" on the comparison.
+- **The comparison page names its coordinates** from the fetched rows, or
+  from the member's axis for a cell with no rows: „Sexe: Feminin · unitate:
+  Procente", not „Sexe: 107 · unitate: 10225". An edit made while the example
+  is showing (period, cadence, a member, the unit) keeps the example's dataset
+  and territories; it used to drop them and the results disappeared.
+- **The hub's „Județele care pierd populație"** links dataset and territories
+  only, like the page's own presets. Its extra `frecventa` made the selection
+  explicit and incomplete, and the page waited for three more choices.
+- **The catalog names a page past the end** („Pagina 999 nu există", with the
+  way to the last page) instead of calling the catalog empty under „1.916
+  seturi de date".
+- **The county map honours INS flags** as the national figures do: a county
+  cell marked confidential or missing is left out and counted, never coloured.
+- **Labels translate when they are read**, not when their module loads: the
+  INS metric registry (shared with the entity pages) and the provenance
+  drawer's cadences. The option panel's search box has an accessible name.
+- **Dead code removed**: the legacy comparisons adapter and its fixtures, the
+  UAT snapshot chain (hook, fetcher, query, schema, type, mock), the
+  territory-search mock, two unmounted components, the landing-era national
+  comparison, dashboard fetchers nothing called, test-only helpers, eleven
+  unused theme tokens, and the promoted dataset-detail prototypes — the
+  `/development/statistics/*` links in §6, §6h and §6i are now history.
+- **The section's strings are translated into English**; they rendered the
+  Romanian source on the English site.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

@@ -67,13 +67,6 @@ export function resolveLatestPeriod(params: {
   return latest?.iso_period ?? null
 }
 
-/** Extracts the latest observation year from a list, or `null`. */
-export function getLatestYear(
-  observations: readonly InsObservation[],
-): number | null {
-  return getLatestTimePeriod(observations)?.year ?? null
-}
-
 /**
  * Romanian "data-through" label built from a period only.
  *
