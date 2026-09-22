@@ -469,6 +469,8 @@ export interface StatisticsHubIndicator {
   readonly periodicity: InsPeriodicity | null
   /** `Dn:member` pins of the resolved cell — what the detail page needs to land on it. */
   readonly pins: readonly string[]
+  /** False for a matrix with no geography axis: national by construction, so its link names no territory. */
+  readonly hasGeography: boolean
   /** Annual total-cell history, oldest first: the client's capture plus the live latest point when newer. */
   readonly series: readonly StatisticsHubSeriesPoint[]
 }
@@ -484,15 +486,13 @@ export interface StatisticsHubCountyLayer {
   readonly missingCounties: readonly string[]
 }
 
-export type StatisticsHubSection = 'indicators' | 'counties' | 'catalog' | 'territories'
+export type StatisticsHubSection = 'indicators' | 'counties'
 
 /** The hub payload. Sections fail independently; a failed one is null and named. */
 export interface StatisticsHubData {
   readonly nativeContract: 'hub-v1'
   readonly indicators: readonly StatisticsHubIndicator[] | null
   readonly counties: readonly StatisticsHubCountyLayer[] | null
-  readonly catalog: StatisticsLandingCatalog | null
-  readonly territoryCount: number | null
   readonly failures: readonly StatisticsHubSection[]
 }
 

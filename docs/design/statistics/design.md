@@ -171,6 +171,10 @@ binning from `src/hooks/useAdvancedMapAnalyticsBins.ts`.
 
 ## 6. Landing page (`/ins`) — design
 
+> The hero's copy, the figures band, band 01's rows, the search and the closing
+> sources strip were rewritten on 2026-09-22 — see §6n. The composition below
+> stands.
+
 **Decision (2026-09-16): the hub is the companies hub's composition, in the
 landing's visual language (`src/components/landing-skin/*`), one band per
 idea.** It is a presentation page that hands off to the analysis surfaces;
@@ -1009,6 +1013,56 @@ the chart's body.
   on a series that keeps crossing its mean, a minimum in a V. A minimum on the
   floor of the plot (a 0 on a zero baseline) hangs its label above the point;
   below it, „minim 0" sat on the „2018" tick.
+
+## 6n. The hub says what the numbers are, not what the database holds (2026-09-22)
+
+The hub spent its best space on itself: „1.916 seturi de date cu observații",
+„3.239 teritorii", „36 ani de serie anuală", a proportion strip of the catalog
+by domain, a closing „Surse și acoperire" strip with the same counts again, and
+ledes that explained how the page worked („Fiecare rând deschide seria
+completă", „tendința vine din captura INS Tempo din septembrie 2026"). None of
+it answers a question a reader brings to INS. The rule now: a band says what
+its numbers are; where there is nothing a reader needs to be told, there is no
+text.
+
+- **The figures band is the four numbers people come for**: annual inflation
+  (IPC102E, the index against the same month a year earlier, less 100 — how
+  INS states the rate — at the index's own precision), the average net
+  monthly pay (FOM106D, in lei), the registered unemployment rate (SOM103B,
+  monthly — the same measure as the county map's SOM103A), and the resident
+  population (POP105A, the official count; POP107D by domicile keeps the
+  emigrants who never changed address). Each cell names its period and links
+  to its exact national cell; a blocked or absent cell leaves the band.
+- **Band 01 keeps its rows and sparklines and loses its lede.** It no longer
+  repeats the band: population and the registered-unemployment share
+  (SOM101F, a different measure from the rate) left it, which also retires the
+  two unemployment numbers the page used to show side by side.
+- **Matrices with no geography axis** (IPC102E, FOM106D) are national by
+  construction. `validateLandingLatest` accepts their cell — no territory, no
+  geography — for a national request only, and their links name no
+  `teritoriu`: the detail page has no axis to show one on.
+- **The hero** names the source and the reach („De la Institutul Național de
+  Statistică, pentru țară, județe și fiecare localitate"). Beside it the eight
+  domains are listed by what they hold („Populație, muncă și salarii, educație,
+  sănătate"), with no counts or shares; on a phone the summaries drop so the
+  figures are not pushed a screen down.
+- **The search is the site's search**: `LandingSearch` scoped to
+  `ins_dataset`, as the companies hub scopes it to `company`. The universal
+  index ranks by relevance and folds words („salariu mediu" found 59 matrices
+  where the catalog's substring filter found none), and the field gains the
+  site's keyboard model, `mod+K`, the clear button and link rows. A scoped
+  row drops the family word the pill already says, and a row with no place
+  line wraps its title to two lines — INS titles share a long stem and differ
+  at the end. A fixed scope now shows the caller's placeholder („Nume sau CUI"
+  on the companies hub had never been visible).
+- **Band 03** says what the chart shows: „Din 1992, în fiecare an au murit mai
+  mulți oameni decât s-au născut", computed from the two series (the unbroken
+  run that reaches the latest year), not written in.
+- **Removed**: the catalog and territory counts (and their two reads), the
+  sources strip, the capture-date notes, the county list's method note, the
+  matrix search, and the POP107D and SOM101F captures nothing drew any more.
+- The hub's strings are translated into English; before, the English page
+  rendered the Romanian source text.
 
 ## 7. Data model expectations at the UI boundary
 

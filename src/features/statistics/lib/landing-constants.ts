@@ -21,23 +21,27 @@ export const EXAMPLE_DATASET_CODE = 'FOM104D'
 export const EXAMPLE_LAU_SIRUTA = '54975'
 
 /**
- * The eight INS level-0 context groups ("themes"). Codes are the
+ * The eight INS level-0 context groups ("domains"). Codes are the
  * `rootContextCode` values the server filters on; labels are translatable
  * renderings of the INS group names (the API's own `name_ro` for these rows
- * carries raw HTML anchors and shouting caps).
+ * carries raw HTML anchors and shouting caps). The summary names what a
+ * reader finds inside, read off the domain's own subdomains and matrices —
+ * the bare name does not say that „Finanțe" holds the budget executions or
+ * that the two sustainable-development domains are the UN goals.
  */
 export const LANDING_THEMES: readonly {
   readonly code: string
   readonly label: MessageDescriptor
+  readonly summary: MessageDescriptor
 }[] = [
-  { code: '1', label: msg`Statistică socială` },
-  { code: '2', label: msg`Statistică economică` },
-  { code: '3', label: msg`Finanțe` },
-  { code: '4', label: msg`Justiție` },
-  { code: '5', label: msg`Mediu înconjurător` },
-  { code: '6', label: msg`Utilități publice și administrarea teritoriului` },
-  { code: '7', label: msg`Dezvoltare durabilă — Orizont 2020` },
-  { code: '8', label: msg`Dezvoltare durabilă — Ținte 2030` },
+  { code: '1', label: msg`Statistică socială`, summary: msg`Populație, muncă și salarii, educație, sănătate` },
+  { code: '2', label: msg`Statistică economică`, summary: msg`PIB, prețuri, industrie, agricultură, locuințe, turism` },
+  { code: '3', label: msg`Finanțe`, summary: msg`Bugetul de stat, bugetele locale, balanța de plăți` },
+  { code: '4', label: msg`Justiție`, summary: msg`Instanțe, condamnări, criminalitate` },
+  { code: '5', label: msg`Mediu înconjurător`, summary: msg`Ape, emisii, cheltuieli pentru mediu` },
+  { code: '6', label: msg`Utilități publice și administrarea teritoriului`, summary: msg`Apă, canalizare, gaze, spații verzi, transport local` },
+  { code: '7', label: msg`Dezvoltare durabilă — Orizont 2020`, summary: msg`Indicatorii strategiei naționale, până în 2020` },
+  { code: '8', label: msg`Dezvoltare durabilă — Ținte 2030`, summary: msg`Cele 17 obiective ONU, până în 2030` },
 ]
 
 // ---------------------------------------------------------------------------
@@ -47,18 +51,21 @@ export const LANDING_THEMES: readonly {
 /**
  * The national indicators the hub reads in one `insLatestDatasetValues` call.
  * Labels are short, truthful renderings for a row; the API `name_ro` travels
- * alongside. Verified against the live data (2026-09-16): every code resolves
- * a `TOTAL_FALLBACK` cell at RO/NATIONAL.
+ * alongside. Verified against the live data (2026-09-22): every code resolves
+ * a `TOTAL_FALLBACK` cell at RO/NATIONAL. IPC102E and FOM106D have no
+ * geography axis — national by construction — and their cells carry none.
  */
 export const HUB_NATIONAL_DATASETS: readonly {
   readonly code: string
   readonly shortLabel: MessageDescriptor
 }[] = [
-  { code: 'POP107D', shortLabel: msg`Populația după domiciliu` },
+  { code: 'IPC102E', shortLabel: msg`Inflația anuală` },
+  { code: 'FOM106D', shortLabel: msg`Salariul mediu net` },
+  { code: 'SOM103B', shortLabel: msg`Rata șomajului` },
+  { code: 'POP105A', shortLabel: msg`Populația rezidentă` },
   { code: 'FOM104D', shortLabel: msg`Salariați (număr mediu)` },
-  { code: 'SOM101F', shortLabel: msg`Șomeri înregistrați (pondere)` },
-  { code: 'LOC101B', shortLabel: msg`Locuințe existente` },
   { code: 'POP217A', shortLabel: msg`Speranța de viață` },
+  { code: 'LOC101B', shortLabel: msg`Locuințe existente` },
   { code: 'TUR104E', shortLabel: msg`Sosiri turiști` },
   { code: 'POP201D', shortLabel: msg`Născuți vii` },
   { code: 'POP206D', shortLabel: msg`Decedați` },
@@ -69,13 +76,32 @@ export const HUB_NATIONAL_DATASET_CODES: readonly string[] = HUB_NATIONAL_DATASE
   (entry) => entry.code,
 )
 
-/** The rows the „România în cifre" band shows, in order. SOM103A is read for the county layer only. */
+/**
+ * The four figures under the hero: the numbers a reader comes to INS for,
+ * each at its latest published period.
+ *
+ * - IPC102E is the consumer price index against the same month a year
+ *   earlier (=100); the band shows the index less 100, which is how INS
+ *   itself states the annual inflation rate.
+ * - FOM106D is the monthly average net earnings; its CAEN Rev.2 series ends
+ *   in December 2025, where INS moved to Rev.3.
+ * - SOM103B is the REGISTERED unemployment rate at the end of the month —
+ *   the same measure as the county map's SOM103A, monthly.
+ * - POP105A is the resident population, the official count; the population
+ *   by domicile (POP107D) keeps the emigrants who never changed address.
+ */
+export const HUB_HEADLINE_CODES = {
+  inflation: 'IPC102E',
+  earnings: 'FOM106D',
+  unemployment: 'SOM103B',
+  population: 'POP105A',
+} as const
+
+/** The rows the „România, an de an" band shows, in order: annual series with a captured history. */
 export const HUB_FIGURE_CODES: readonly string[] = [
-  'POP107D',
   'FOM104D',
-  'SOM101F',
-  'LOC101B',
   'POP217A',
+  'LOC101B',
   'TUR104E',
   'POP201D',
   'POP206D',

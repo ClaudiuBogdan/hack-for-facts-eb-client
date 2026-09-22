@@ -48,10 +48,12 @@ export function HubPending({ rows = 6, className }: { readonly rows?: number; re
 }
 
 /** A section whose read failed: says so, offers the retry, never renders a blank. */
-export function HubLoadError({ onRetry, children }: { readonly onRetry: () => void; readonly children?: ReactNode }) {
+export function HubLoadError({ onRetry }: { readonly onRetry: () => void }) {
   return (
     <div role="alert" className="space-y-3 text-sm text-muted-foreground">
-      <p>{children ?? <Trans>Cifrele nu au sosit. Sursa INS Tempo se citește la fiecare încărcare și poate întârzia.</Trans>}</p>
+      <p>
+        <Trans>Cifrele nu s-au încărcat.</Trans>
+      </p>
       <button
         type="button"
         onClick={onRetry}

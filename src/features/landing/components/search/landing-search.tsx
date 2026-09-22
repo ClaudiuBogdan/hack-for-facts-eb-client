@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, RefObject } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Autocomplete } from '@base-ui/react/autocomplete'
@@ -83,6 +83,9 @@ import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
  * descendant selectors, a hack that outranked the component's own classes and
  * broke silently when its internals moved.
  */
+
+/** Below this width the field is never focused on mount; `useIsMobile`'s breakpoint. */
+const NARROW_VIEWPORT = '(max-width: 767px)'
 
 /** What the list can hold: a filter to accept, or an entity to open. */
 type ListItem = SearchFilter | EntitySearchHit
@@ -208,7 +211,11 @@ export function LandingSearch({
   // causes — and consumed by the focus event; a focus with no pointer before
   // it was Tab, ⌘K or a script. Autofocus on mount counts as not-keyboard.
   const [keyboardFocus, setKeyboardFocus] = useState(false)
-  const pointerFocusRef = useRef(Boolean(autoFocus))
+  const pointerFocusRef = useRef(false)
+  // The caller's wish at mount, and only then: callers pass `!useIsMobile()`,
+  // which flips when a window is resized, and a resize is not a reason to take
+  // focus from wherever the reader has put it.
+  const autoFocusOnMountRef = useRef(autoFocus)
   // Which row the keyboard is on, if any. Kept in a ref rather than in state
   // because only the Enter handler reads it, and re-rendering the whole field
   // on every arrow key to store something nothing draws would be waste.
@@ -224,13 +231,26 @@ export function LandingSearch({
     inputRef.current?.focus()
   })
 
+  // Focus after mount, and only on a wide viewport. An `autoFocus` attribute
+  // is server-rendered, where no viewport exists — callers pass
+  // `!useIsMobile()`, which reads false on the server — so a phone got the
+  // attribute and the browser could raise its keyboard over the page before
+  // hydration corrected the value. The media query is the real viewport. The
+  // focus is marked as not-keyboard for exactly this call, so a skipped one
+  // leaves no flag behind to swallow the ring of the reader's first Tab.
+  useEffect(() => {
+    if (!autoFocusOnMountRef.current || window.matchMedia(NARROW_VIEWPORT).matches) return
+    pointerFocusRef.current = true
+    inputRef.current?.focus()
+    pointerFocusRef.current = false
+  }, [inputRef])
+
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
   const isDropdownOpen = isOpen && status.kind !== 'idle'
   const visibleResults = status.kind === 'results' ? status.results : []
   const scope = [...(fixedScope ? [fixedScope.label] : []), ...filters.map((filter) => i18n._(filter.label))]
     .join(' · ')
   const hasContent = term.length > 0 || filters.length > 0
-  const isScoped = fixedScope !== undefined || filters.length > 0
 
   // Two groups, each present only when it has rows. Suggestions first: they
   // change what the rows below mean, so they are read before the rows are.
@@ -387,7 +407,6 @@ export function LandingSearch({
 
           <Autocomplete.Input
             ref={inputRef}
-            autoFocus={autoFocus}
             onFocus={() => {
               if (scrollToTopOnFocus) {
                 // The scroll is motion too, and DESIGN.md §Motion makes
@@ -505,7 +524,11 @@ export function LandingSearch({
               // focus-visible on click. The group draws focus instead.
               'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
             )}
-            placeholder={isScoped ? t`Nume sau identificator...` : placeholder}
+            // A chip narrows the field to a family whose hint the caller never
+            // wrote, so the field falls back to the generic one. A fixed scope
+            // is the caller's, and so is the hint that fits it — „Nume sau
+            // CUI" for companies, a subject or a matrix code for INS.
+            placeholder={filters.length > 0 || (fixedScope && !placeholderProp) ? t`Nume sau identificator...` : placeholder}
             // The pill is a sibling the screen reader would not associate with
             // the input, so the scope is spoken as part of the field's name.
             aria-label={fixedScope ? `${fixedScope.label} · ${placeholder}` : placeholder}
@@ -687,7 +710,7 @@ export function LandingSearch({
                                 />
                               }
                             >
-                              <ResultRowContent entity={entity} query={term.trim()} />
+                              <ResultRowContent entity={entity} query={term.trim()} showDocType={!fixedScope} />
                             </Autocomplete.Item>
                           )}
                         </Autocomplete.Collection>

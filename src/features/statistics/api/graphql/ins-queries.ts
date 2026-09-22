@@ -440,10 +440,3 @@ export const STATISTICS_RELATED_DATASETS_QUERY = `
     }
   }
 `
-
-/** Hub: how many territories the catalog names, one count probe. */
-export const STATISTICS_HUB_TERRITORY_COUNT_QUERY = `
-  query StatisticsHubTerritoryCount {
-    insTerritories(limit: 1) { pageInfo { totalCount } }
-  }
-`

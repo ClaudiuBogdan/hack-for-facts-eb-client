@@ -17,8 +17,7 @@ import type {
 import { hubStaticSeries } from '../../lib/hub-national-series'
 import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
 import { fetchNativeLandingTiles } from './ins-landing-tiles'
-import { INS_OBSERVATIONS_QUERY, STATISTICS_HUB_TERRITORY_COUNT_QUERY } from './ins-queries'
-import { fetchStatisticsLandingCatalog } from './statistics-fetchers'
+import { INS_OBSERVATIONS_QUERY } from './ins-queries'
 import { insObservationNodeRawSchema, insPageInfoRawSchema } from './statistics-raw-schemas'
 
 const logger = createLogger('statistics-hub')
@@ -26,15 +25,14 @@ const logger = createLogger('statistics-hub')
 /**
  * The `/ins` hub read.
  *
- * Independent sections, so a slow or failed one never blanks the page: the
- * national indicators (one `insLatestDatasetValues` at RO/NATIONAL), three
- * county layers (one `insObservations` each at the indicator's latest year),
- * and the catalog counts. The annual histories behind the charts are kept in
- * the client (`lib/hub-national-series.ts`, captured from the same API) and
- * only extended with the live latest point when it is newer. The county
- * layers need the resolved national cell — its unit and classification
- * members are what "the total" means for each dataset — so they wait for
- * the first read.
+ * Two sections, so a slow or failed one never blanks the page: the national
+ * indicators (one `insLatestDatasetValues` at RO/NATIONAL) and three county
+ * layers (one `insObservations` each at the indicator's latest year). The
+ * annual histories behind the charts are kept in the client
+ * (`lib/hub-national-series.ts`, captured from the same API) and only
+ * extended with the live latest point when it is newer. The county layers
+ * need the resolved national cell — its unit and classification members are
+ * what "the total" means for each dataset — so they wait for the first read.
  */
 
 /** The server's page ceiling; a layer past it is refused rather than drawn short. */
@@ -45,10 +43,6 @@ const observationsPageResponseSchema = z.object({
     nodes: z.array(insObservationNodeRawSchema),
     pageInfo: insPageInfoRawSchema,
   }),
-})
-
-const territoryCountResponseSchema = z.object({
-  insTerritories: z.object({ pageInfo: z.object({ totalCount: z.number().int().nonnegative() }) }),
 })
 
 type RawObservation = z.infer<typeof insObservationNodeRawSchema>
@@ -99,6 +93,16 @@ function differingAxes(row: RawObservation, cell: ReadonlyMap<string, string>): 
   return different
 }
 
+/**
+ * Whether the matrix publishes places at all. Read off the certified layout;
+ * a layout that failed to parse keeps the territory, which every matrix with
+ * a geography axis needs and a national-only one tolerates.
+ */
+function hasGeographyAxis(latest: StatisticsLatestValue): boolean {
+  const dimensions = latest.source?.descriptor?.dimensions
+  return dimensions ? dimensions.some((dimension) => dimension.type === 'TERRITORIAL') : true
+}
+
 /** INS flags under which a cell has no publishable number. */
 const BLOCKING_VALUE_STATUSES = new Set([':', 'c', 'x'])
 
@@ -117,6 +121,7 @@ function toIndicator(latest: StatisticsLatestValue): StatisticsHubIndicator {
     period: latest.period,
     periodicity: latest.resolvedPeriodicity,
     pins: latest.resolvedClassifications.map((entry) => `${entry.typeCode}:${entry.code}`),
+    hasGeography: hasGeographyAxis(latest),
     series: [],
   }
 }
@@ -204,15 +209,6 @@ async function fetchCountyLayer(
   }
 }
 
-async function fetchTerritoryCount(signal?: AbortSignal): Promise<number> {
-  const response = await graphqlQuery<unknown>(STATISTICS_HUB_TERRITORY_COUNT_QUERY, undefined, {
-    auth: 'none',
-    signal,
-  })
-  signal?.throwIfAborted()
-  return territoryCountResponseSchema.parse(response).insTerritories.pageInfo.totalCount
-}
-
 async function settle<T>(section: StatisticsHubSection, read: Promise<T>, failures: StatisticsHubSection[]): Promise<T | null> {
   try {
     return await read
@@ -226,13 +222,6 @@ async function settle<T>(section: StatisticsHubSection, read: Promise<T>, failur
 
 export async function fetchStatisticsHub(signal?: AbortSignal): Promise<StatisticsHubData> {
   const failures: StatisticsHubSection[] = []
-  // Observed from the start: if the read below exits on abort, these must
-  // not be left rejecting into nothing.
-  const sideReads = Promise.all([
-    settle('catalog', fetchStatisticsLandingCatalog(signal ? { signal } : {}), failures),
-    settle('territories', fetchTerritoryCount(signal), failures),
-  ])
-  sideReads.catch(() => undefined)
   const tiles = await settle(
     'indicators',
     fetchNativeLandingTiles(signal, HUB_NATIONAL_DATASET_CODES),
@@ -267,14 +256,10 @@ export async function fetchStatisticsHub(signal?: AbortSignal): Promise<Statisti
     failures.push('counties')
   }
 
-  const [catalog, territoryCount] = await sideReads
-  signal?.throwIfAborted()
   return {
     nativeContract: 'hub-v1',
     indicators,
     counties,
-    catalog,
-    territoryCount,
     failures,
   }
 }

@@ -51,7 +51,7 @@ export const Route = createFileRoute("/ins/")({
       { title: `${t`Statistici INS`} — Transparenta.eu` },
       {
         name: "description",
-        content: t`România în cifre: populație, salariați, șomaj, locuințe, speranță de viață și turism pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo.`,
+        content: t`Cifrele oficiale ale României, de la Institutul Național de Statistică: inflație, salarii, șomaj, populație, locuințe și turism, pentru țară, județe și fiecare localitate.`,
       },
     ],
   }),

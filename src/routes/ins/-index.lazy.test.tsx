@@ -7,7 +7,7 @@ vi.mock('@tanstack/react-router', () => ({
     ...options,
     options,
     useSearch: () => ({}),
-    useLoaderData: () => ({ hub: { nativeContract: 'hub-v1', indicators: null, counties: null, catalog: null, territoryCount: null, failures: [] } }),
+    useLoaderData: () => ({ hub: { nativeContract: 'hub-v1', indicators: null, counties: null, failures: [] } }),
   }),
 }))
 

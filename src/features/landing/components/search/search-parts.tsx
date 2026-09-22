@@ -95,19 +95,29 @@ export const resultRowClass = cn(
 export function ResultRowContent({
   entity,
   query,
+  showDocType = true,
 }: {
   readonly entity: EntitySearchHit
   readonly query: string
+  /** Off in a field with a fixed scope: its pill already names every row's kind. */
+  readonly showDocType?: boolean
 }) {
-  const place = [getDocTypeMeta(entity.docType).label, entity.countyName].filter(Boolean).join(' · ')
+  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, entity.countyName].filter(Boolean).join(' · ')
 
   return (
     <>
       <span className="min-w-0">
+        {/* A row with no place line has room for a second line of title, and
+            an INS matrix needs it: its titles share a long stem and differ at
+            the end („…pe sexe", „…pe județe"), so one truncated line drew
+            three identical rows. */}
         <Highlighted
           text={entity.title}
           query={query}
-          className="block truncate text-sm font-medium text-card-foreground group-data-highlighted:text-primary"
+          className={cn(
+            'block text-sm font-medium text-card-foreground group-data-highlighted:text-primary',
+            place ? 'truncate' : 'line-clamp-2',
+          )}
         />
         {place ? (
           <Highlighted

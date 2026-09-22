@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { CountUpValue } from '@/features/landing/components/count-up'
+import type { NumberLocale } from '@/features/landing/lib/national-facts'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubIndicator } from '@/schemas/statistics'
 import { describeValueStatus } from '../../lib/value-status'
@@ -14,6 +15,10 @@ import { formatHubPeriod, formatIndicatorValue, indicatorDetailSearch } from '..
 export type HubFact = {
   readonly key: string
   readonly value: number
+  /** Decimal places, as the source published them. */
+  readonly digits: number
+  /** `%` sits against the figure; a word („lei") sits after it, a step quieter. */
+  readonly unit?: string
   readonly label: ReactNode
   readonly note: ReactNode
   /** Wraps the term in its link; the caller owns the route. */
@@ -26,7 +31,15 @@ export type HubFact = {
  * allows — with the term as the link, so the pairing survives assistive
  * technology and the whole cell still answers hover.
  */
-export function HubFiguresBand({ facts, className }: { readonly facts: readonly HubFact[]; readonly className?: string }) {
+export function HubFiguresBand({
+  facts,
+  locale,
+  className,
+}: {
+  readonly facts: readonly HubFact[]
+  readonly locale: NumberLocale
+  readonly className?: string
+}) {
   return (
     <dl className={cn('grid grid-cols-2 lg:grid-cols-4', className)}>
       {facts.map((fact, index) => (
@@ -45,10 +58,15 @@ export function HubFiguresBand({ facts, className }: { readonly facts: readonly 
               <MonoLabel className="block leading-relaxed text-foreground">{fact.label}</MonoLabel>,
               'after:absolute after:inset-0 after:content-[""] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring',
             )}
-            <MonoLabel className="mt-auto block pt-5 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel>
+            <MonoLabel className="mt-auto block pt-3 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel>
           </dt>
           <dd className="order-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
-            <CountUpValue value={fact.value} digits={0} />
+            <CountUpValue value={fact.value} digits={fact.digits} locale={locale} />
+            {fact.unit === '%' ? (
+              '%'
+            ) : fact.unit ? (
+              <span className="ml-1.5 text-base font-medium tracking-normal text-muted-foreground sm:text-xl">{fact.unit}</span>
+            ) : null}
           </dd>
         </div>
       ))}

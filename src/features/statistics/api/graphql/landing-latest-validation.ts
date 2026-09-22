@@ -1,7 +1,12 @@
 import { validSourcePeriodFields } from '@/lib/ins/source-periods'
 import type { InsLatestValueNodeRaw } from './statistics-raw-schemas'
 
-/** Every requested dataset has an explicit outcome, and successful cells keep the requested geography. */
+/**
+ * Every requested dataset has an explicit outcome, and successful cells keep
+ * the requested geography. A matrix with no geography axis (IPC102E, FOM106D)
+ * publishes the country and nothing else: its cell carries no territory to
+ * check, and it can only answer a national request.
+ */
 export function validateLandingLatest(
   latest: readonly InsLatestValueNodeRaw[],
   datasetCodes: readonly string[],
@@ -18,7 +23,13 @@ export function validateLandingLatest(
     const row = outcome.observation
     if (!row) continue // Explicit no-data and ambiguity already validated by the outcome schema.
     const geo = row.dimensions.geography
-    if (
+    const dimensions = outcome.dataset.dimensions ?? []
+    const nationalOnly =
+      dimensions.length > 0 && dimensions.every((dimension) => dimension.type !== 'TERRITORIAL')
+    if (nationalOnly) {
+      if (territory.level !== 'NATIONAL' || geo || row.territory)
+        throw new Error('Landing observation is outside the requested territory scope')
+    } else if (
       geo?.resolution !== 'EXACT' ||
       geo.resolvedTerritory?.code !== territory.code ||
       geo.resolvedTerritory.level !== territory.level ||

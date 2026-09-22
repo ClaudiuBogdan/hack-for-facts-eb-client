@@ -1,4 +1,7 @@
 import type { ReactNode } from 'react'
+import { renderToString } from 'react-dom/server'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { Building2, ChartNoAxesCombined } from 'lucide-react'
 import { fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -109,6 +112,77 @@ describe('LandingSearch', () => {
     expect(chosen).not.toHaveBeenCalled()
     expect(navigate).not.toHaveBeenCalled()
     expect(screen.getAllByRole('option').every((row) => row.getAttribute('aria-disabled') === 'true')).toBe(true)
+  })
+
+  describe('focus on mount', () => {
+    const narrow = (matches: boolean) =>
+      vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
+        matches, media: query, onchange: null,
+        addListener: vi.fn(), removeListener: vi.fn(),
+        addEventListener: vi.fn(), removeEventListener: vi.fn(), dispatchEvent: vi.fn(),
+      }))
+
+    it('never server-renders an autofocus attribute, which would reach phones too', () => {
+      // React writes the attribute only on the server; the client focuses
+      // instead. So the markup a phone parses before hydration is the test.
+      const html = renderToString(
+        <QueryClientProvider client={createTestQueryClient()}>
+          <LandingSearch autoFocus />
+        </QueryClientProvider>,
+      )
+      expect(html).toContain('role="combobox"')
+      expect(html).not.toMatch(/autofocus/i)
+    })
+
+    it('focuses the field after mount on a wide viewport, without the keyboard ring', () => {
+      narrow(false)
+      render(<LandingSearch autoFocus />, { queryClient: createTestQueryClient() })
+      const input = screen.getByRole('combobox')
+      expect(input).toHaveFocus()
+      expect(input.closest('[aria-label="Căutare"]')?.className).not.toContain('outline-ring')
+    })
+
+    it('leaves a narrow viewport unfocused, and the first keyboard focus still draws its ring', () => {
+      narrow(true)
+      render(<LandingSearch autoFocus />, { queryClient: createTestQueryClient() })
+      const input = screen.getByRole('combobox')
+      expect(input).not.toHaveFocus()
+      fireEvent.focus(input)
+      expect(input.closest('[aria-label="Căutare"]')?.className).toContain('outline-ring')
+      narrow(false)
+    })
+
+    it('does not take focus when a resize turns autofocus on after mount', () => {
+      narrow(false)
+      const { rerender } = render(<LandingSearch autoFocus={false} />, { queryClient: createTestQueryClient() })
+      expect(screen.getByRole('combobox')).not.toHaveFocus()
+      rerender(<LandingSearch autoFocus />)
+      expect(screen.getByRole('combobox')).not.toHaveFocus()
+    })
+  })
+
+  describe('a fixed scope', () => {
+    it('shows the caller\'s hint, and drops the family word the pill already says', async () => {
+      searchEntities.mockResolvedValue(response([
+        { ...IASI, id: 'ins_dataset:POP107D', docType: 'ins_dataset', title: 'Populatia dupa domiciliu', href: '/ins/seturi/POP107D', countyName: null, identifiers: ['POP107D'] },
+      ]))
+      const user = userEvent.setup()
+      render(<LandingSearch docTypes={['ins_dataset']} fixedScope={{ label: 'Statistici INS', Icon: ChartNoAxesCombined }} placeholder="Salariu sau cod INS..." />, {
+        queryClient: createTestQueryClient(),
+      })
+      const input = screen.getByRole('combobox')
+      expect(input).toHaveAttribute('placeholder', 'Salariu sau cod INS...')
+      await typeAndWait(user, 'populatia')
+      const row = screen.getByRole('option')
+      expect(row).not.toHaveTextContent('Statistici INS')
+      // No place line, so the title may take a second line.
+      expect(row.querySelector('.line-clamp-2')).not.toBeNull()
+    })
+
+    it('keeps the generic hint when the caller wrote none', () => {
+      render(<LandingSearch fixedScope={{ label: 'Firme', Icon: Building2 }} />, { queryClient: createTestQueryClient() })
+      expect(screen.getByRole('combobox')).toHaveAttribute('placeholder', 'Nume sau identificator...')
+    })
   })
 
   describe('the field', () => {

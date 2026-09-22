@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { alignSeriesByPeriod, describeHubChange } from './hub-format'
+import {
+  alignSeriesByPeriod,
+  annualInflationRate,
+  deathsExceedBirthsSince,
+  describeHubChange,
+  hubUnitWord,
+  sameMonthLastYear,
+  sourceDecimals,
+} from './hub-format'
 
 describe('alignSeriesByPeriod', () => {
   it('places each point at its period, so a year one series lacks is a gap, not a shift', () => {
@@ -38,5 +46,64 @@ describe('describeHubChange', () => {
 
   it('returns null when the anchor year is not in the series', () => {
     expect(describeHubChange([{ period: '2024', value: 1 }], 'persons', '2025')).toBeNull()
+  })
+})
+
+describe('the headline helpers', () => {
+  it('keeps the precision the source published', () => {
+    expect(sourceDecimals('110.85')).toBe(2)
+    expect(sourceDecimals('3.2')).toBe(1)
+    expect(sourceDecimals('5914')).toBe(0)
+    expect(sourceDecimals(null)).toBe(0)
+  })
+
+  it('states annual inflation as the index less 100, without float noise', () => {
+    expect(annualInflationRate(110.85, 2)).toBe(10.85)
+    expect(annualInflationRate(99.4, 1)).toBe(-0.6)
+    expect(annualInflationRate(100, 0)).toBe(0)
+  })
+
+  it('names the base month of a year-on-year index, and nothing for a year', () => {
+    expect(sameMonthLastYear('2026-05')).toBe('2025-05')
+    expect(sameMonthLastYear('2026-01')).toBe('2025-01')
+    expect(sameMonthLastYear('2025')).toBeNull()
+  })
+
+  it('says „lei" for the currency INS spells „Lei RON", and keeps any other unit verbatim', () => {
+    expect(hubUnitWord('other', 'Lei RON')).toBe('lei')
+    expect(hubUnitWord('other', 'Kilometri')).toBe('Kilometri')
+  })
+})
+
+describe('deathsExceedBirthsSince', () => {
+  const points = (values: readonly (readonly [string, number])[]) => values.map(([period, value]) => ({ period, value }))
+
+  it('dates the unbroken run of years with more deaths than births that reaches the latest year', () => {
+    const births = points([['1990', 300], ['1991', 280], ['1992', 250], ['1993', 240]])
+    const deaths = points([['1990', 250], ['1991', 290], ['1992', 240], ['1993', 260]])
+    // 1991 had more deaths, but 1992 broke the run.
+    expect(deathsExceedBirthsSince(births, deaths)).toBe('1993')
+  })
+
+  it('says nothing when the latest year had more births', () => {
+    expect(deathsExceedBirthsSince(points([['2024', 10], ['2025', 12]]), points([['2024', 11], ['2025', 11]]))).toBeNull()
+  })
+
+  it('does not bridge a year one series lacks', () => {
+    const births = points([['2022', 10], ['2024', 10], ['2025', 10]])
+    const deaths = points([['2022', 20], ['2023', 20], ['2024', 20], ['2025', 20]])
+    expect(deathsExceedBirthsSince(births, deaths)).toBe('2024')
+  })
+
+  it('does not bridge a year both series lack', () => {
+    const births = points([['2024', 10], ['2025', 10], ['2027', 10]])
+    const deaths = points([['2024', 20], ['2025', 20], ['2027', 20]])
+    expect(deathsExceedBirthsSince(births, deaths)).toBe('2027')
+  })
+
+  it('ends at the latest year both series have', () => {
+    const births = points([['2023', 10], ['2024', 10]])
+    const deaths = points([['2023', 20], ['2024', 20], ['2025', 5]])
+    expect(deathsExceedBirthsSince(births, deaths)).toBe('2023')
   })
 })

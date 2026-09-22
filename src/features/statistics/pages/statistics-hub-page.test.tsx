@@ -82,35 +82,94 @@ describe('StatisticsHubPage', () => {
     useStatisticsHubMock.mockReset()
   })
 
-  it('renders the figures, the national rows with their exact cell links, and the theme panel', () => {
+  it('opens on the four headline figures, each linked to its exact national cell', () => {
     stub(hubData())
     render(<StatisticsHubPage search={{}} />)
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Fiecare localitate')
-    // The figures band: the count-up carries the full number for readers.
-    expect(screen.getAllByText('1.916').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('21.646.220').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('3.239').length).toBeGreaterThan(0)
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cifrele oficiale')
+    const band = screen.getByRole('region', { name: 'Cifre-cheie' })
+    // The count-up carries the full number for readers; inflation is the
+    // index less 100, at the index's own precision.
+    expect(within(band).getByText('10,85')).toBeInTheDocument()
+    expect(within(band).getByText('5.914')).toBeInTheDocument()
+    expect(within(band).getByText('3,2')).toBeInTheDocument()
+    expect(within(band).getByText('19.043.151')).toBeInTheDocument()
+    expect(band).toHaveTextContent('mai 2026 față de mai 2025')
+    expect(band).toHaveTextContent('lei')
+    expect(band).toHaveTextContent('decembrie 2025')
+    expect(band).toHaveTextContent('Populația rezidentă la 1 ianuarie 2025')
 
-    const rows = screen.getByRole('heading', { name: /România/ }).closest('section')!
-    const population = within(rows).getByRole('link', { name: /Populația după domiciliu/ })
-    const href = population.getAttribute('href')!
-    expect(href).toContain('/ins/seturi/POP107D')
+    // A matrix with no geography axis is linked without a territory.
+    const inflation = new URL(within(band).getByRole('link', { name: /Inflația anuală/ }).getAttribute('href')!, 'http://localhost')
+    expect(inflation.pathname).toBe('/ins/seturi/IPC102E')
+    expect(inflation.searchParams.get('teritoriu')).toBeNull()
+    expect(inflation.searchParams.getAll('clasificari')).toEqual(['D0:12668'])
+    expect(inflation.searchParams.get('frecventa')).toBe('MONTHLY')
+    const population = new URL(within(band).getByRole('link', { name: /Locuitori/ }).getAttribute('href')!, 'http://localhost')
+    expect(population.pathname).toBe('/ins/seturi/POP105A')
+    expect(population.searchParams.get('teritoriu')).toBe('cod:RO')
+
+    // Nothing about the database behind the page.
+    expect(screen.queryByText(/1\.916/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/3\.239/)).not.toBeInTheDocument()
+  })
+
+  it('leaves a headline out when INS published no number for it', () => {
+    const data = hubData()
+    const blocked = data.indicators!.map((indicator) =>
+      indicator.code === 'IPC102E' ? { ...indicator, value: null, valueStatus: ':' } : indicator,
+    )
+    stub(hubData({ indicators: blocked }))
+    render(<StatisticsHubPage search={{}} />)
+    const band = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(within(band).queryByRole('link', { name: /Inflația anuală/ })).not.toBeInTheDocument()
+    expect(within(band).getByRole('link', { name: /Salariul mediu net/ })).toBeInTheDocument()
+  })
+
+  it('spells out an INS flag on a headline figure, as the rows do', () => {
+    const data = hubData()
+    const flagged = data.indicators!.map((indicator) =>
+      indicator.code === 'FOM106D' ? { ...indicator, valueStatus: 'p' } : indicator,
+    )
+    stub(hubData({ indicators: flagged }))
+    render(<StatisticsHubPage search={{}} />)
+    const band = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(band).toHaveTextContent('decembrie 2025, date provizorii')
+  })
+
+  it('lists the national series with their exact cell links, without repeating the headline figures', () => {
+    stub(hubData())
+    render(<StatisticsHubPage search={{}} />)
+
+    const rows = screen.getByRole('heading', { name: /an de an/ }).closest('section')!
+    const employees = within(rows).getByRole('link', { name: /Salariați/ })
+    const href = employees.getAttribute('href')!
+    expect(href).toContain('/ins/seturi/FOM104D')
     const params = new URL(href, 'http://localhost').searchParams
     expect(params.get('teritoriu')).toBe('cod:RO')
-    expect(params.getAll('clasificari')).toEqual(['D0:1', 'D1:105', 'D2:112'])
+    expect(params.getAll('clasificari')).toEqual(['D0:112', 'D1:112'])
     expect(params.get('unitate')).toBe('9685')
     expect(params.get('frecventa')).toBe('ANNUAL')
-    expect(within(population).getByText('21.646.220')).toBeInTheDocument()
-    expect(within(population).getByText('persoane')).toBeInTheDocument()
-    // The monthly share keeps its month and folds the percent into the value.
-    const share = within(rows).getByRole('link', { name: /Șomeri înregistrați/ })
-    expect(share).toHaveTextContent('mai 2026')
-    expect(within(share).getByText('1,9%')).toBeInTheDocument()
+    expect(within(employees).getByText('5.453.155')).toBeInTheDocument()
+    expect(within(employees).getByText('persoane')).toBeInTheDocument()
+    expect(within(rows).getAllByRole('listitem')).toHaveLength(6)
+    expect(within(rows).queryByText(/Populația|Rata șomajului|Inflația/)).not.toBeInTheDocument()
+  })
 
-    const themes = screen.getByRole('link', { name: /Statistică socială/ })
-    expect(themes.getAttribute('href')).toContain('context=1')
-    expect(themes).toHaveTextContent('844')
+  it('offers the eight domains by what they hold, not by how many matrices they count', () => {
+    stub(hubData())
+    render(<StatisticsHubPage search={{}} />)
+    const social = screen.getByRole('link', { name: /Statistică socială/ })
+    expect(social.getAttribute('href')).toContain('context=1')
+    expect(social).toHaveTextContent('Populație, muncă și salarii, educație, sănătate')
+    expect(social).not.toHaveTextContent(/\d/)
+  })
+
+  it('searches INS datasets in the site search field, with its own hint', () => {
+    stub(hubData())
+    render(<StatisticsHubPage search={{}} />)
+    const field = screen.getByPlaceholderText('Salariu, inflație, populație sau cod INS...')
+    expect(field).toHaveAttribute('aria-label', 'Statistici INS · Salariu, inflație, populație sau cod INS...')
   })
 
   it('colours the map by the indicator in the URL and switches it through navigation, not state', () => {
@@ -155,29 +214,31 @@ describe('StatisticsHubPage', () => {
     expect(params.get('din')).toBe('1990')
     expect(params.get('pana')).toBe('2025')
     expect(within(change).getByText(/-33,1% din 1990/)).toBeInTheDocument()
+    expect(change).toHaveTextContent('Din 1992, în fiecare an au murit mai mulți oameni decât s-au născut.')
+    expect(change).not.toHaveTextContent(/captură/i)
     expect(within(change).getByText(/\+7,9 ani din 1990/)).toBeInTheDocument()
   })
 
   it('spells out an INS quality flag next to the period instead of showing the raw letter', () => {
     const data = hubData()
     const flagged = data.indicators!.map((indicator) =>
-      indicator.code === 'POP107D' ? { ...indicator, valueStatus: 'p' } : indicator,
+      indicator.code === 'FOM104D' ? { ...indicator, valueStatus: 'p' } : indicator,
     )
     stub(hubData({ indicators: flagged }))
     render(<StatisticsHubPage search={{}} />)
-    const rows = screen.getByRole('heading', { name: /România/ }).closest('section')!
-    const population = within(rows).getByRole('link', { name: /Populația după domiciliu/ }).closest('li')!
-    expect(population).toHaveTextContent('date provizorii')
-    expect(population).not.toHaveTextContent(/· p$/)
+    const rows = screen.getByRole('heading', { name: /an de an/ }).closest('section')!
+    const employees = within(rows).getByRole('link', { name: /Salariați/ }).closest('li')!
+    expect(employees).toHaveTextContent('date provizorii')
+    expect(employees).not.toHaveTextContent(/· p$/)
   })
 
   it('shows a failed section as a retry, never a blank, and keeps the others', () => {
-    const { refetch } = stub(hubData({ counties: null, catalog: null, failures: ['counties', 'catalog'] }))
+    const { refetch } = stub(hubData({ counties: null, failures: ['counties'] }))
     render(<StatisticsHubPage search={{}} />)
 
-    expect(screen.getAllByText('21.646.220').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('19.043.151').length).toBeGreaterThan(0)
     const alerts = screen.getAllByRole('alert')
-    expect(alerts.length).toBeGreaterThanOrEqual(2)
+    expect(alerts.length).toBeGreaterThanOrEqual(1)
     fireEvent.click(within(alerts[0]!).getByRole('button', { name: 'Încearcă din nou' }))
     expect(refetch).toHaveBeenCalledTimes(1)
   })

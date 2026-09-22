@@ -162,7 +162,7 @@ msgid "{0, plural, one {# publicare} few {# publicări} other {# de publicări}}
 msgstr "{0, plural, one {# publicare} few {# publicări} other {# de publicări}}"
 
 #. placeholder {0}: status.results.length
-#: src/features/landing/components/search/search-parts.tsx:345
+#: src/features/landing/components/search/search-parts.tsx:355
 msgid "{0, plural, one {# rezultat.} few {# rezultate.} other {# de rezultate.}}"
 msgstr "{0, plural, one {# result.} few {# results.} other {# results.}}"
 
@@ -192,24 +192,24 @@ msgstr "{0, plural, one {one axis} other {# axes}}"
 #~ msgstr "{0, plural, one {one observation} other {# observations}}"
 
 #. placeholder {0}: deaths.value
-#: src/features/statistics/pages/statistics-hub-page.tsx:389
+#: src/features/statistics/pages/statistics-hub-page.tsx:372
 msgid "{0, plural, one {o persoană} few {# persoane} other {# de persoane}}"
-msgstr "{0, plural, one {o persoană} few {# persoane} other {# de persoane}}"
+msgstr "{0, plural, one {one person} other {# people}}"
 
 #. placeholder {0}: ranked.length
 #: src/features/statistics/components/hub/hub-county-rank.tsx:85
 msgid "{0, plural, one {Tot județul} few {Toate cele # județe} other {Toate cele # de județe}}"
-msgstr "{0, plural, one {Tot județul} few {Toate cele # județe} other {Toate cele # de județe}}"
+msgstr "{0, plural, one {The one county} other {All # counties}}"
 
 #. placeholder {0}: births.value
-#: src/features/statistics/pages/statistics-hub-page.tsx:388
+#: src/features/statistics/pages/statistics-hub-page.tsx:371
 msgid "{0, plural, one {un copil} few {# copii} other {# de copii}}"
-msgstr "{0, plural, one {un copil} few {# copii} other {# de copii}}"
+msgstr "{0, plural, one {one child} other {# children}}"
 
 #. placeholder {0}: layer.missingCounties.length
 #: src/features/statistics/components/hub/hub-county-map.tsx:240
 msgid "{0, plural, one {un județ fără valoare (hașurat)} few {# județe fără valoare (hașurate)} other {# de județe fără valoare (hașurate)}}"
-msgstr "{0, plural, one {un județ fără valoare (hașurat)} few {# județe fără valoare (hașurate)} other {# de județe fără valoare (hașurate)}}"
+msgstr "{0, plural, one {one county without a value (hatched)} other {# counties without a value (hatched)}}"
 
 #. placeholder {0}: row.count
 #: src/features/statistics/components/filters/dataset-explorer-theme-tree.tsx:297
@@ -250,7 +250,7 @@ msgstr "{0} active"
 #. placeholder {1}: from.period
 #: src/features/statistics/lib/hub-format.ts:118
 msgid "{0} ani din {1}"
-msgstr "{0} ani din {1}"
+msgstr "{0} years since {1}"
 
 #. placeholder {0}: chart.annotations.length
 #: src/components/charts/components/chart-annotations/AnnotationsList.tsx:61
@@ -305,6 +305,12 @@ msgstr "{0} ediții în {year}"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:512
 msgid "{0} enabled series"
 msgstr "{0} enabled series"
+
+#. placeholder {0}: formatHubPeriod(inflation.period)
+#. placeholder {1}: formatHubPeriod(inflationBase)
+#: src/features/statistics/pages/statistics-hub-page.tsx:148
+msgid "{0} față de {1}"
+msgstr "{0} vs {1}"
 
 #. placeholder {0}: formatInteger(unplaced)
 #: src/features/private-companies/components/hub/hub-sections.tsx:476
@@ -435,7 +441,7 @@ msgstr "{0} potriviri pentru „{debouncedLookup}”"
 #. placeholder {1}: from.period
 #: src/features/statistics/lib/hub-format.ts:117
 msgid "{0} pp din {1}"
-msgstr "{0} pp din {1}"
+msgstr "{0} pp since {1}"
 
 #. placeholder {0}: presets.length
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel.tsx:36
@@ -533,8 +539,8 @@ msgstr "{0} series pasted"
 
 #. placeholder {0}: formatHubNumber(hub.catalog.loadedCount)
 #: src/features/statistics/pages/statistics-hub-page.tsx:231
-msgid "{0} seturi de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul."
-msgstr "{0} datasets with observations, across the eight official domains. Each row opens that domain in the whole catalog."
+#~ msgid "{0} seturi de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul."
+#~ msgstr "{0} datasets with observations, across the eight official domains. Each row opens that domain in the whole catalog."
 
 #. placeholder {0}: formatHubNumber(hub.catalog.loadedCount)
 #: src/features/statistics/pages/statistics-hub-page.tsx:230
@@ -550,7 +556,7 @@ msgstr "{0} datasets with observations, across the eight official domains. Each 
 #. placeholder {1}: b.label
 #: src/features/statistics/components/hub/hub-charts.tsx:103
 msgid "{0} și {1}, {firstPeriod}–{lastPeriod}"
-msgstr "{0} și {1}, {firstPeriod}–{lastPeriod}"
+msgstr "{0} and {1}, {firstPeriod}–{lastPeriod}"
 
 #. placeholder {0}: activeGroupMetadata.memberSirutaCodes.length
 #. placeholder {0}: group.memberSirutaCodes.length
@@ -594,8 +600,8 @@ msgstr "{0} years with no records"
 #. placeholder {0}: seriesSpan.from
 #. placeholder {1}: seriesSpan.to
 #: src/features/statistics/pages/statistics-hub-page.tsx:153
-msgid "{0}–{1} pentru speranța de viață, cea mai lungă serie a paginii"
-msgstr "{0}–{1} pentru speranța de viață, cea mai lungă serie a paginii"
+#~ msgid "{0}–{1} pentru speranța de viață, cea mai lungă serie a paginii"
+#~ msgstr "{0}–{1} pentru speranța de viață, cea mai lungă serie a paginii"
 
 #. placeholder {0}: point.title
 #. placeholder {1}: programLabel(point.program)
@@ -609,8 +615,8 @@ msgstr "{0}, {1}, {2}, {3}"
 #. placeholder {1}: layer.period
 #. placeholder {2}: layer.code
 #: src/features/statistics/pages/statistics-hub-page.tsx:343
-msgid "{0}, {1}, {2}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe."
-msgstr "{0}, {1}, {2}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe."
+#~ msgid "{0}, {1}, {2}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe."
+#~ msgstr "{0}, {1}, {2}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe."
 
 #. placeholder {0}: segment.controlLabel
 #. placeholder {1}: segment.text
@@ -652,7 +658,7 @@ msgstr "{0}: no data"
 #. placeholder {1}: from.period
 #: src/features/statistics/lib/hub-format.ts:120
 msgid "{0}% din {1}"
-msgstr "{0}% din {1}"
+msgstr "{0}% since {1}"
 
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:88
 msgid "{activeCount} active filters"
@@ -868,7 +874,7 @@ msgstr "{moneyName} is unavailable for this scope. Select record count to view t
 msgid "{nonCompetitiveCount} contracte"
 msgstr "{nonCompetitiveCount} contracte"
 
-#: src/features/landing/components/search/search-parts.tsx:326
+#: src/features/landing/components/search/search-parts.tsx:336
 msgid "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
 msgstr "{remaining, plural, one {One more character to search.} few {# more characters to search.} other {# more characters to search.}}"
 
@@ -892,7 +898,7 @@ msgstr "{shownCount, plural, one {cel puțin # trimitere} few {cel puțin # trim
 msgid "{staleCount} surse incarcate dar vechi"
 msgstr "{staleCount} surse incarcate dar vechi"
 
-#: src/features/landing/components/search/search-parts.tsx:337
+#: src/features/landing/components/search/search-parts.tsx:347
 msgid "{suggestionCount, plural, one {Un filtru sugerat.} few {# filtre sugerate.} other {# de filtre sugerate.}}"
 msgstr "{suggestionCount, plural, one {One suggested filter.} few {# suggested filters.} other {# suggested filters.}}"
 
@@ -1030,12 +1036,12 @@ msgstr "01 / What you will find here"
 msgid "01 / Domenii de activitate"
 msgstr "01 / Fields of activity"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:271
+#: src/features/statistics/pages/statistics-hub-page.tsx:274
 msgid "01 / Indicatori naționali"
-msgstr "01 / Indicatori naționali"
+msgstr "01 / National indicators"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:203
-#: src/features/statistics/pages/statistics-hub-page.tsx:305
+#: src/features/statistics/pages/statistics-hub-page.tsx:301
 msgid "02 / Pe județe"
 msgstr "02 / By county"
 
@@ -1043,9 +1049,13 @@ msgstr "02 / By county"
 msgid "02 / Proveniență"
 msgstr "02 / Provenance"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:358
+msgid "03 / Din {since} până azi"
+msgstr "03 / From {since} to today"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:376
-msgid "03 / Din 1990 până azi"
-msgstr "03 / Din 1990 până azi"
+#~ msgid "03 / Din 1990 până azi"
+#~ msgstr "03 / Din 1990 până azi"
 
 #: src/features/landing/components/people-band.tsx:124
 msgid "03 / Oameni"
@@ -1055,9 +1065,13 @@ msgstr "03 / People"
 msgid "03 / Pornește o investigație"
 msgstr "03 / Start an investigation"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:437
+msgid "04 / Analize"
+msgstr "04 / Analyses"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:459
-msgid "04 / Pornește o investigație"
-msgstr "04 / Pornește o investigație"
+#~ msgid "04 / Pornește o investigație"
+#~ msgstr "04 / Pornește o investigație"
 
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:56
 msgid "1 group"
@@ -1121,8 +1135,8 @@ msgid "1234/3/2024"
 msgstr "1234/3/2024"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:123
-msgid "42 de județe și fiecare localitate, pe cod SIRUTA"
-msgstr "42 de județe și fiecare localitate, pe cod SIRUTA"
+#~ msgid "42 de județe și fiecare localitate, pe cod SIRUTA"
+#~ msgstr "42 de județe și fiecare localitate, pe cod SIRUTA"
 
 #: src/features/procurement/components/procurement-filter-sheet.tsx:138
 msgid "45 (division), 452 (group), 4523 (class), 45233 (category) or 45233140 (code)"
@@ -1310,8 +1324,8 @@ msgid "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true 
 msgstr "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true sau VITE_MOCK_DATASETS=all, investments-anghel-saligny ori investments-pndl pentru a vedea fixture-urile locale."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:360
-msgid "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
-msgstr "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
+#~ msgid "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
+#~ msgstr "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
 
 #: src/features/landing/lib/landing-groups.ts:163
 msgid "Aceleași cifre, distribuite pe județe și localități."
@@ -2049,7 +2063,7 @@ msgstr "Choose frequency"
 
 #: src/features/statistics/components/hub/hub-place-finder.tsx:83
 msgid "Alege o localitate din județ"
-msgstr "Alege o localitate din județ"
+msgstr "Pick a locality in the county"
 
 #: src/features/statistics/components/comparison-pins.tsx:144
 msgid "Alege o perioadă"
@@ -2487,13 +2501,13 @@ msgstr "angajați"
 msgid "Anghel Saligny"
 msgstr "Anghel Saligny"
 
-#: src/features/statistics/lib/hub-format.ts:38
+#: src/features/statistics/lib/hub-format.ts:37
 msgid "ani"
 msgstr "years"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:152
-msgid "ani de serie anuală"
-msgstr "ani de serie anuală"
+#~ msgid "ani de serie anuală"
+#~ msgstr "ani de serie anuală"
 
 #: src/features/procurement/components/procurement-party-quick-filters.tsx:206
 msgid "Ani mai vechi"
@@ -2618,6 +2632,10 @@ msgstr "Anyone with the public link can view this map."
 msgid "Anyone with the public link will see this saved version."
 msgstr "Anyone with the public link will see this saved version."
 
+#: src/features/statistics/lib/landing-constants.ts:42
+msgid "Apă, canalizare, gaze, spații verzi, transport local"
+msgstr "Water, sewers, gas, green space, local transport"
+
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:104
 msgid "apă, drum, Cluj"
 msgstr "apă, drum, Cluj"
@@ -2649,6 +2667,10 @@ msgstr "Apasă o categorie pentru a filtra pagina."
 #: src/features/entity-search/components/entity-search-header.tsx:55
 msgid "Apasă slash ca să cauți"
 msgstr "Apasă slash ca să cauți"
+
+#: src/features/statistics/lib/landing-constants.ts:41
+msgid "Ape, emisii, cheltuieli pentru mediu"
+msgstr "Water, emissions, environmental spending"
 
 #: src/features/justice/components/case-results-table.tsx:114
 msgid "apel"
@@ -3420,6 +3442,10 @@ msgstr "Budgetary Academy"
 msgid "Buget național"
 msgstr "National budget"
 
+#: src/features/statistics/lib/landing-constants.ts:39
+msgid "Bugetul de stat, bugetele locale, balanța de plăți"
+msgstr "State and local budgets, balance of payments"
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1222
 msgid "Build a custom dataset for use in the map editor."
 msgstr "Build a custom dataset for use in the map editor."
@@ -3725,8 +3751,8 @@ msgstr "Captura acestei ședințe nu conține textul dezbaterii. Păstrăm ședi
 
 #. placeholder {0}: formatHubPeriod(HUB_SERIES_CAPTURED_AT.slice(0, 7))
 #: src/features/statistics/components/hub/hub-sources-strip.tsx:68
-msgid "captură INS Tempo din {0}, completată cu ultimul an publicat"
-msgstr "captură INS Tempo din {0}, completată cu ultimul an publicat"
+#~ msgid "captură INS Tempo din {0}, completată cu ultimul an publicat"
+#~ msgstr "captură INS Tempo din {0}, completată cu ultimul an publicat"
 
 #: src/features/parliament/components/parliament-hub-vote-activity.tsx:230
 msgid "captura programată nu a rulat"
@@ -3783,8 +3809,8 @@ msgstr "The INS Tempo catalog, by domain, frequency and territorial coverage. Ea
 #~ msgstr "Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:223
-msgid "Catalogul pe domenii"
-msgstr "The catalog by domain"
+#~ msgid "Catalogul pe domenii"
+#~ msgstr "The catalog by domain"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:222
 #~ msgid "Catalogul pe teme"
@@ -3857,7 +3883,7 @@ msgstr "Câteva rânduri au decontat > contractat în sursă (avertizare de prec
 msgid "Cauta"
 msgstr "Cauta"
 
-#: src/features/landing/components/search/landing-search.tsx:607
+#: src/features/landing/components/search/landing-search.tsx:630
 #: src/features/legal/components/legislation-act-finder.tsx:232
 #: src/features/legal/components/legislation-search-band.tsx:65
 #: src/features/legal/components/legislation-tab-nav.tsx:49
@@ -3918,7 +3944,7 @@ msgstr "Caută entități"
 #~ msgstr "Search entities or CUI..."
 
 #: src/features/landing/components/landing-page.tsx:107
-#: src/features/landing/components/search/landing-search.tsx:197
+#: src/features/landing/components/search/landing-search.tsx:200
 msgid "Caută entități, statistici sau identificatori..."
 msgstr "Search entities, statistics or identifiers..."
 
@@ -3956,8 +3982,8 @@ msgid "Caută în textul ședințelor"
 msgstr "Caută în textul ședințelor"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:216
-msgid "Caută în tot catalogul"
-msgstr "Caută în tot catalogul"
+#~ msgid "Caută în tot catalogul"
+#~ msgstr "Caută în tot catalogul"
 
 #: src/features/parliament/components/parliament-stenograme-page.tsx:205
 msgid "Caută în tot istoricul stenogramelor…"
@@ -3975,17 +4001,17 @@ msgstr "Caută întreprindere publică"
 #~ msgid "Caută localitatea ta ca să vezi indicatorii disponibili pentru ea."
 #~ msgstr "Find your locality to see its available indicators."
 
-#: src/features/statistics/components/detail-territory-control.tsx:107
-#~ msgid "Caută o localitate sau un județ"
-#~ msgstr "Search for a locality or county"
+#: src/features/statistics/components/hub/hub-place-finder.tsx:32
+msgid "Caută o localitate sau un județ"
+msgstr "Search for a locality or a county"
 
 #: src/features/statistics/components/comparison-territory-picker.tsx:114
 msgid "Caută o localitate sau un județ (min. {TERRITORY_SEARCH_MIN_LENGTH} caractere)…"
 msgstr "Caută o localitate sau un județ (min. {TERRITORY_SEARCH_MIN_LENGTH} caractere)…"
 
 #: src/features/statistics/components/hub/hub-place-finder.tsx:32
-msgid "Caută o localitate, un oraș sau un județ"
-msgstr "Caută o localitate, un oraș sau un județ"
+#~ msgid "Caută o localitate, un oraș sau un județ"
+#~ msgstr "Search for a village, a town or a county"
 
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:88
 msgid "Caută obiective"
@@ -4020,8 +4046,8 @@ msgid "Caută un indicator INS…"
 msgstr "Caută un indicator INS…"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:108
-msgid "Caută un set de date INS"
-msgstr "Caută un set de date INS"
+#~ msgid "Caută un set de date INS"
+#~ msgstr "Caută un set de date INS"
 
 #: src/features/parliament/components/member-interventii-tab.tsx:202
 #: src/features/parliament/components/parliament-stenograme-page.tsx:206
@@ -4046,7 +4072,7 @@ msgstr "Cauta zona ta"
 msgid "Caută…"
 msgstr "Caută…"
 
-#: src/features/landing/components/search/landing-search.tsx:310
+#: src/features/landing/components/search/landing-search.tsx:330
 #: src/routes/investitii-publice/route.tsx:63
 msgid "Căutare"
 msgstr "Search"
@@ -4103,14 +4129,14 @@ msgstr "Căutarea nu a putut fi realizată. Încearcă din nou."
 msgid "Căutarea nu a răspuns — încearcă din nou."
 msgstr "Căutarea nu a răspuns — încearcă din nou."
 
-#: src/features/landing/components/search/landing-search.tsx:145
-#: src/features/landing/components/search/search-parts.tsx:361
+#: src/features/landing/components/search/landing-search.tsx:148
+#: src/features/landing/components/search/search-parts.tsx:371
 msgid "Căutarea nu a răspuns."
 msgstr "Search did not respond."
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:166
-msgid "Căutarea nu a răspuns. Încearcă din nou."
-msgstr "Căutarea nu a răspuns. Încearcă din nou."
+#~ msgid "Căutarea nu a răspuns. Încearcă din nou."
+#~ msgstr "Căutarea nu a răspuns. Încearcă din nou."
 
 #: src/features/legal/components/legislation-guide.tsx:94
 msgid "Cauți fie după citare — „Legea 53/2003” — fie după denumire — „Codul muncii”. Ambele te duc la fișa actului, cu statutul lui și istoricul modificărilor."
@@ -4193,8 +4219,12 @@ msgstr "Ce s-a întâmplat cu acest act"
 
 #. placeholder {0}: seriesSpan?.from ?? '1990'
 #: src/features/statistics/pages/statistics-hub-page.tsx:378
-msgid "Ce s-a schimbat<0/>din {0} încoace"
-msgstr "Ce s-a schimbat<0/>din {0} încoace"
+#~ msgid "Ce s-a schimbat<0/>din {0} încoace"
+#~ msgstr "Ce s-a schimbat<0/>din {0} încoace"
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:360
+msgid "Ce s-a schimbat<0/>din {since} încoace"
+msgstr "What has changed<0/>since {since}"
 
 #: src/features/legal/components/legislation-guide.tsx:209
 msgid "Ce text citești aici — și unde e forma oficială"
@@ -4260,18 +4290,22 @@ msgstr "Cele {0} de decizii ale Curții Constituționale există ca acte, dar nu
 msgid "Cele 16 domenii pe care le acoperă corpusul."
 msgstr "Cele 16 domenii pe care le acoperă corpusul."
 
+#: src/features/statistics/lib/landing-constants.ts:44
+msgid "Cele 17 obiective ONU, până în 2030"
+msgstr "The 17 UN goals, to 2030"
+
 #. placeholder {0}: seriesSpan?.from ?? '1990'
 #: src/features/statistics/pages/statistics-hub-page.tsx:392
-msgid "Cele mai lungi serii naționale încep în {0}."
-msgstr "Cele mai lungi serii naționale încep în {0}."
+#~ msgid "Cele mai lungi serii naționale încep în {0}."
+#~ msgstr "Cele mai lungi serii naționale încep în {0}."
 
 #. placeholder {0}: seriesSpan?.from ?? '1990'
 #. placeholder {1}: births.period
-#. placeholder {2}: import { useEffect, useRef, useState } from 'react' import { Link, useNavigate } from '@tanstack/react-router' import { plural, t } from '@lingui/core/macro' import { Trans, useLingui } from '@lingui/react/macro' import { MonoLabel } from '@/components/landing-skin/mono-label' import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal' import { RuledFrame } from '@/components/landing-skin/ruled-frame' import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up' import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome' import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics' import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts' import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome' import { HubCountyMap } from '../components/hub/hub-county-map' import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank' import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures' import { useIndicatorLabel } from '../components/hub/hub-labels' import { describeHubChange, formatHubNumber, formatHubPeriod, formatHubValue, indicatorDetailSearch } from '../lib/hub-format' import { HubMatrixSearch } from '../components/hub/hub-matrix-search' import { HubPlaceFinder } from '../components/hub/hub-place-finder' import { HubSourcesStrip } from '../components/hub/hub-sources-strip' import { HubThemePanel } from '../components/hub/hub-theme-panel' import { useStatisticsHub } from '../hooks/use-statistics-hub' import { HUB_SERIES_CAPTURED_AT } from '../lib/hub-national-series' import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants' /** * `/ins` — the statistics hub, in the landing's visual language, one * band per idea (the composition chosen on 2026-09-16, see * `docs/design/statistics/design.md` §6). * * Search first, in a hero that says what the dataset is, with the catalog's * themes beside it. Then four figures, counting up. Then one numbered band * per module: the national indicators, the counties (map beside list, * shared highlight, one indicator at a time, the choice in the URL), 35 * years of change, three investigations, the sources. The territory search * lives inside the counties band; the matrix search owns the hero. * * Every section reads independently and fails independently: a failed one * says so and offers the retry, never a blank. */ type StatisticsHubPageProps = { readonly search: StatisticsHubSearch readonly initialHub?: StatisticsHubData } const DEFAULT_INDICATOR: StatisticsHubIndicatorKey = 'viata' function startArrivalEffects(block: Element, delay: number) { countUpWithin(block, delay) } function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined { return hub?.indicators?.find((indicator) => indicator.code === code) } export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) { const { i18n } = useLingui() const navigate = useNavigate() const rootRef = useRef<HTMLDivElement>(null) useRevealOnView(rootRef, startArrivalEffects) // The count-up driver is module state; an unmount mid-flight would leave it // ticking against nodes that are no longer in the document. useEffect(() => () => stopCounting(), []) const query = useStatisticsHub(initialHub) const hub = query.data const retry = () => void query.refetch() const labelOf = useIndicatorLabel() const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined) const indicatorKey = search.indicator ?? DEFAULT_INDICATOR const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0] const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code) const setIndicator = (key: StatisticsHubIndicatorKey) => { void navigate({ to: '/ins', search: key === DEFAULT_INDICATOR ? {} : { indicator: key }, replace: true, resetScroll: false, }) } const population = indicatorByCode(hub, 'POP107D') const lifeExpectancy = indicatorByCode(hub, 'POP217A') const employees = indicatorByCode(hub, 'FOM104D') const tourists = indicatorByCode(hub, 'TUR104E') const births = indicatorByCode(hub, 'POP201D') const deaths = indicatorByCode(hub, 'POP206D') const captureMonth = formatHubPeriod(HUB_SERIES_CAPTURED_AT.slice(0, 7)) const figureRows = HUB_FIGURE_CODES.flatMap((code) => { const indicator = indicatorByCode(hub, code) return indicator ? [indicator] : [] }) // The longest series the hub carries; the band says which, because the // others start later or end earlier (tourism starts 2001, employees stop a // year before). const seriesSpan = lifeExpectancy && lifeExpectancy.series.length > 1 ? { from: lifeExpectancy.series[0].period, to: lifeExpectancy.series[lifeExpectancy.series.length - 1].period } : null const facts: readonly HubFact[] = [ ...(hub?.catalog ? [ { key: 'datasets', value: hub.catalog.loadedCount, label: <Trans>seturi de date cu observații</Trans>, note: <Trans>tot catalogul INS Tempo, pe opt domenii oficiale</Trans>, link: (label, className) => ( <Link to="/ins/seturi" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(hub?.territoryCount !== null && hub?.territoryCount !== undefined ? [ { key: 'territories', value: hub.territoryCount, label: <Trans>teritorii, de la țară la localitate</Trans>, note: <Trans>42 de județe și fiecare localitate, pe cod SIRUTA</Trans>, link: (label, className) => ( <Link to="/ins/comparatii" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(population?.value !== null && population?.value !== undefined ? [ { key: 'population', value: population.value, label: <Trans>locuitori la 1 ianuarie {population.period}</Trans>, note: <Trans>populația după domiciliu, {population.code}</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(seriesSpan && lifeExpectancy ? [ { key: 'years', value: Number(seriesSpan.to) - Number(seriesSpan.from) + 1, label: <Trans>ani de serie anuală</Trans>, note: <Trans>{seriesSpan.from}–{seriesSpan.to} pentru speranța de viață, cea mai lungă serie a paginii</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: lifeExpectancy.code }} search={{ ...indicatorDetailSearch(lifeExpectancy), din: Number(seriesSpan.from), pana: Number(seriesSpan.to) }} className={className} > {label} </Link> ), } satisfies HubFact, ] : []), ] return ( <div ref={rootRef} className="relative w-full overflow-x-clip bg-background"> <RevealStyles /> <SmearFilters /> <section className="relative border-b"> <TwoLayerLattice idPrefix="statistics-hub" /> <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20"> <CornerTicks /> <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8"> <div className="min-w-0 lg:col-span-7"> <MonoLabel className="text-muted-foreground"> <Trans>Statistici / INS Tempo</Trans> </MonoLabel> {/* Two lines at every width: the second is the shorter, so it never leaves a word alone on a third. */} <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl"> <Trans> Fiecare localitate, <br /> cu cifrele la vedere </Trans> </h1> <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl"> <Trans> Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc. </Trans> </p> <div className="mt-6 sm:mt-7"> <HubMatrixSearch autoFocus /> </div> <nav aria-label={t`Scurtături`} className="mt-4"> <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle"> <Trans>Sau mergi direct la</Trans> </MonoLabel> <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle"> <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Toate seturile de date</Trans> </Link> <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Compară teritorii</Trans> </Link> </span> </nav> </div> <div className="min-w-0 lg:col-span-5"> {/* The catalog's themes: the one figure that explains the next band's first number. A card, because it is real product UI in the hero. */} <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6"> <div className="flex items-baseline justify-between gap-4"> <MonoLabel className="text-primary"> <Trans>Catalogul pe domenii</Trans> </MonoLabel> <MonoLabel className="text-muted-foreground"> <Trans>INS Tempo</Trans> </MonoLabel> </div> <p className="mt-2 text-sm leading-relaxed text-muted-foreground"> {hub?.catalog ? ( <Trans> {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul. </Trans> ) : ( <Trans>Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul.</Trans> )} </p> <div className="mt-5"> {hub?.catalog ? ( <HubThemePanel catalog={hub.catalog} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </div> </div> </RuledFrame> </section> <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}> <RuledFrame> <CruxMarks /> {facts.length > 0 ? ( <HubFiguresBand facts={facts} /> ) : ( <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div> )} </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-national-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-national-title" index={t`01 / Indicatori naționali`} title={ <Trans> România <br /> în cifre </Trans> } lede={ <Trans> Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă. </Trans> } /> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {figureRows.length > 0 ? ( <HubFigureRows indicators={figureRows} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-counties-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-counties-title" index={t`02 / Pe județe`} title={<Trans>Unde stă județul tău</Trans>} lede={ <Trans> Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă. </Trans> } aside={ <HubIndicatorToggle label={t`Indicatorul de pe hartă`} options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))} value={layerDefinition.key} onChange={setIndicator} /> } /> <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"> <div className="lg:col-span-7" data-reveal> {layer ? ( <HubCountyMap key={layer.code} layer={layer} legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" /> ) : ( <HubLoadError onRetry={retry} /> )} </div> <div className="lg:col-span-4 lg:col-start-9" data-reveal> {layer ? ( <> <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground"> <Trans> {i18n._(layerDefinition.legend)}, {layer.period}, {layer.code}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe. </Trans> </MonoLabel> </> ) : query.isPending ? ( <HubPending rows={10} /> ) : null} </div> </div> <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal> <div className="lg:col-span-5"> <MonoLabel className="block text-primary"> <Trans>Sau localitatea ta</Trans> </MonoLabel> <p className="mt-3 text-sm leading-relaxed text-muted-foreground"> <Trans>Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper.</Trans> </p> </div> <div className="lg:col-span-6 lg:col-start-7"> <HubPlaceFinder inputId="statistics-hub-place" /> </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-change-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-change-title" index={t`03 / Din 1990 până azi`} title={ <Trans> Ce s-a schimbat <br /> din {seriesSpan?.from ?? '1990'} încoace </Trans> } lede={ births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? ( <Trans> Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}. În {births.period} s-au născut{' '} {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '} {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}. </Trans> ) : ( <Trans>Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}.</Trans> ) } /> <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal> {[employees, lifeExpectancy, tourists].map((indicator) => indicator && indicator.series.length > 1 ? ( <ChangeItem key={indicator.code} label={labelOf(indicator)} indicator={indicator} since={indicator.series[0].period} /> ) : null, )} </dl> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? ( <> <MonoLabel className="block text-muted-foreground"> <Trans>Născuți vii și decedați, pe an</Trans> </MonoLabel> <div className="mt-3"> <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} /> </div> <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground"> <Trans> Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa. </Trans> </MonoLabel> <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"> <Link to="/ins/seturi/$cod" params={{ cod: births.code }} search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria nașterilor</Trans> </Link> <Link to="/ins/seturi/$cod" params={{ cod: deaths.code }} search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria deceselor</Trans> </Link> </p> </> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry}> <Trans>Seriile din 1990 nu au sosit.</Trans> </HubLoadError> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-investigations-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-investigations-title" index={t`04 / Pornește o investigație`} title={<Trans>Întrebări cu care se începe</Trans>} lede={<Trans>Fiecare deschide o analiză deja configurată. Rafinează de acolo.</Trans>} /> <div className="mt-8" data-reveal> <ul className="grid gap-px border bg-border/70 sm:grid-cols-3"> <li> <Link to="/ins/comparatii" search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Județele care pierd populație</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'SOM101F' }} search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Șomajul, lună de lună</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'TUR104E' }} search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Turismul înainte și după pandemie</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate.</Trans> </span> </Link> </li> </ul> </div> </RuledFrame> </section> <section aria-label={t`Surse și acoperire`}> <RuledFrame className="py-12 sm:py-16"> {hub ? <HubSourcesStrip hub={hub} /> : <HubPending rows={3} />} </RuledFrame> </section> </div> ) } function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) { const last = indicator.series[indicator.series.length - 1] if (!last) return null const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true }) const change = describeHubChange(indicator.series, indicator.unit, since) return ( <div> <dt> <MonoLabel className="text-muted-foreground"> {label} · {formatHubPeriod(last.period)} </MonoLabel> </dt> <dd className="mt-1 text-sm text-foreground"> <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span> {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null} {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null} {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null} </dd> </div> ) } 
-#. placeholder {3}: import { useEffect, useRef, useState } from 'react' import { Link, useNavigate } from '@tanstack/react-router' import { plural, t } from '@lingui/core/macro' import { Trans, useLingui } from '@lingui/react/macro' import { MonoLabel } from '@/components/landing-skin/mono-label' import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal' import { RuledFrame } from '@/components/landing-skin/ruled-frame' import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up' import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome' import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics' import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts' import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome' import { HubCountyMap } from '../components/hub/hub-county-map' import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank' import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures' import { useIndicatorLabel } from '../components/hub/hub-labels' import { describeHubChange, formatHubNumber, formatHubPeriod, formatHubValue, indicatorDetailSearch } from '../lib/hub-format' import { HubMatrixSearch } from '../components/hub/hub-matrix-search' import { HubPlaceFinder } from '../components/hub/hub-place-finder' import { HubSourcesStrip } from '../components/hub/hub-sources-strip' import { HubThemePanel } from '../components/hub/hub-theme-panel' import { useStatisticsHub } from '../hooks/use-statistics-hub' import { HUB_SERIES_CAPTURED_AT } from '../lib/hub-national-series' import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants' /** * `/ins` — the statistics hub, in the landing's visual language, one * band per idea (the composition chosen on 2026-09-16, see * `docs/design/statistics/design.md` §6). * * Search first, in a hero that says what the dataset is, with the catalog's * themes beside it. Then four figures, counting up. Then one numbered band * per module: the national indicators, the counties (map beside list, * shared highlight, one indicator at a time, the choice in the URL), 35 * years of change, three investigations, the sources. The territory search * lives inside the counties band; the matrix search owns the hero. * * Every section reads independently and fails independently: a failed one * says so and offers the retry, never a blank. */ type StatisticsHubPageProps = { readonly search: StatisticsHubSearch readonly initialHub?: StatisticsHubData } const DEFAULT_INDICATOR: StatisticsHubIndicatorKey = 'viata' function startArrivalEffects(block: Element, delay: number) { countUpWithin(block, delay) } function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined { return hub?.indicators?.find((indicator) => indicator.code === code) } export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) { const { i18n } = useLingui() const navigate = useNavigate() const rootRef = useRef<HTMLDivElement>(null) useRevealOnView(rootRef, startArrivalEffects) // The count-up driver is module state; an unmount mid-flight would leave it // ticking against nodes that are no longer in the document. useEffect(() => () => stopCounting(), []) const query = useStatisticsHub(initialHub) const hub = query.data const retry = () => void query.refetch() const labelOf = useIndicatorLabel() const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined) const indicatorKey = search.indicator ?? DEFAULT_INDICATOR const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0] const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code) const setIndicator = (key: StatisticsHubIndicatorKey) => { void navigate({ to: '/ins', search: key === DEFAULT_INDICATOR ? {} : { indicator: key }, replace: true, resetScroll: false, }) } const population = indicatorByCode(hub, 'POP107D') const lifeExpectancy = indicatorByCode(hub, 'POP217A') const employees = indicatorByCode(hub, 'FOM104D') const tourists = indicatorByCode(hub, 'TUR104E') const births = indicatorByCode(hub, 'POP201D') const deaths = indicatorByCode(hub, 'POP206D') const captureMonth = formatHubPeriod(HUB_SERIES_CAPTURED_AT.slice(0, 7)) const figureRows = HUB_FIGURE_CODES.flatMap((code) => { const indicator = indicatorByCode(hub, code) return indicator ? [indicator] : [] }) // The longest series the hub carries; the band says which, because the // others start later or end earlier (tourism starts 2001, employees stop a // year before). const seriesSpan = lifeExpectancy && lifeExpectancy.series.length > 1 ? { from: lifeExpectancy.series[0].period, to: lifeExpectancy.series[lifeExpectancy.series.length - 1].period } : null const facts: readonly HubFact[] = [ ...(hub?.catalog ? [ { key: 'datasets', value: hub.catalog.loadedCount, label: <Trans>seturi de date cu observații</Trans>, note: <Trans>tot catalogul INS Tempo, pe opt domenii oficiale</Trans>, link: (label, className) => ( <Link to="/ins/seturi" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(hub?.territoryCount !== null && hub?.territoryCount !== undefined ? [ { key: 'territories', value: hub.territoryCount, label: <Trans>teritorii, de la țară la localitate</Trans>, note: <Trans>42 de județe și fiecare localitate, pe cod SIRUTA</Trans>, link: (label, className) => ( <Link to="/ins/comparatii" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(population?.value !== null && population?.value !== undefined ? [ { key: 'population', value: population.value, label: <Trans>locuitori la 1 ianuarie {population.period}</Trans>, note: <Trans>populația după domiciliu, {population.code}</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(seriesSpan && lifeExpectancy ? [ { key: 'years', value: Number(seriesSpan.to) - Number(seriesSpan.from) + 1, label: <Trans>ani de serie anuală</Trans>, note: <Trans>{seriesSpan.from}–{seriesSpan.to} pentru speranța de viață, cea mai lungă serie a paginii</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: lifeExpectancy.code }} search={{ ...indicatorDetailSearch(lifeExpectancy), din: Number(seriesSpan.from), pana: Number(seriesSpan.to) }} className={className} > {label} </Link> ), } satisfies HubFact, ] : []), ] return ( <div ref={rootRef} className="relative w-full overflow-x-clip bg-background"> <RevealStyles /> <SmearFilters /> <section className="relative border-b"> <TwoLayerLattice idPrefix="statistics-hub" /> <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20"> <CornerTicks /> <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8"> <div className="min-w-0 lg:col-span-7"> <MonoLabel className="text-muted-foreground"> <Trans>Statistici / INS Tempo</Trans> </MonoLabel> {/* Two lines at every width: the second is the shorter, so it never leaves a word alone on a third. */} <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl"> <Trans> Fiecare localitate, <br /> cu cifrele la vedere </Trans> </h1> <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl"> <Trans> Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc. </Trans> </p> <div className="mt-6 sm:mt-7"> <HubMatrixSearch autoFocus /> </div> <nav aria-label={t`Scurtături`} className="mt-4"> <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle"> <Trans>Sau mergi direct la</Trans> </MonoLabel> <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle"> <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Toate seturile de date</Trans> </Link> <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Compară teritorii</Trans> </Link> </span> </nav> </div> <div className="min-w-0 lg:col-span-5"> {/* The catalog's themes: the one figure that explains the next band's first number. A card, because it is real product UI in the hero. */} <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6"> <div className="flex items-baseline justify-between gap-4"> <MonoLabel className="text-primary"> <Trans>Catalogul pe domenii</Trans> </MonoLabel> <MonoLabel className="text-muted-foreground"> <Trans>INS Tempo</Trans> </MonoLabel> </div> <p className="mt-2 text-sm leading-relaxed text-muted-foreground"> {hub?.catalog ? ( <Trans> {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul. </Trans> ) : ( <Trans>Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul.</Trans> )} </p> <div className="mt-5"> {hub?.catalog ? ( <HubThemePanel catalog={hub.catalog} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </div> </div> </RuledFrame> </section> <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}> <RuledFrame> <CruxMarks /> {facts.length > 0 ? ( <HubFiguresBand facts={facts} /> ) : ( <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div> )} </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-national-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-national-title" index={t`01 / Indicatori naționali`} title={ <Trans> România <br /> în cifre </Trans> } lede={ <Trans> Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă. </Trans> } /> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {figureRows.length > 0 ? ( <HubFigureRows indicators={figureRows} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-counties-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-counties-title" index={t`02 / Pe județe`} title={<Trans>Unde stă județul tău</Trans>} lede={ <Trans> Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă. </Trans> } aside={ <HubIndicatorToggle label={t`Indicatorul de pe hartă`} options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))} value={layerDefinition.key} onChange={setIndicator} /> } /> <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"> <div className="lg:col-span-7" data-reveal> {layer ? ( <HubCountyMap key={layer.code} layer={layer} legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" /> ) : ( <HubLoadError onRetry={retry} /> )} </div> <div className="lg:col-span-4 lg:col-start-9" data-reveal> {layer ? ( <> <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground"> <Trans> {i18n._(layerDefinition.legend)}, {layer.period}, {layer.code}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe. </Trans> </MonoLabel> </> ) : query.isPending ? ( <HubPending rows={10} /> ) : null} </div> </div> <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal> <div className="lg:col-span-5"> <MonoLabel className="block text-primary"> <Trans>Sau localitatea ta</Trans> </MonoLabel> <p className="mt-3 text-sm leading-relaxed text-muted-foreground"> <Trans>Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper.</Trans> </p> </div> <div className="lg:col-span-6 lg:col-start-7"> <HubPlaceFinder inputId="statistics-hub-place" /> </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-change-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-change-title" index={t`03 / Din 1990 până azi`} title={ <Trans> Ce s-a schimbat <br /> din {seriesSpan?.from ?? '1990'} încoace </Trans> } lede={ births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? ( <Trans> Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}. În {births.period} s-au născut{' '} {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '} {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}. </Trans> ) : ( <Trans>Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}.</Trans> ) } /> <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal> {[employees, lifeExpectancy, tourists].map((indicator) => indicator && indicator.series.length > 1 ? ( <ChangeItem key={indicator.code} label={labelOf(indicator)} indicator={indicator} since={indicator.series[0].period} /> ) : null, )} </dl> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? ( <> <MonoLabel className="block text-muted-foreground"> <Trans>Născuți vii și decedați, pe an</Trans> </MonoLabel> <div className="mt-3"> <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} /> </div> <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground"> <Trans> Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa. </Trans> </MonoLabel> <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"> <Link to="/ins/seturi/$cod" params={{ cod: births.code }} search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria nașterilor</Trans> </Link> <Link to="/ins/seturi/$cod" params={{ cod: deaths.code }} search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria deceselor</Trans> </Link> </p> </> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry}> <Trans>Seriile din 1990 nu au sosit.</Trans> </HubLoadError> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-investigations-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-investigations-title" index={t`04 / Pornește o investigație`} title={<Trans>Întrebări cu care se începe</Trans>} lede={<Trans>Fiecare deschide o analiză deja configurată. Rafinează de acolo.</Trans>} /> <div className="mt-8" data-reveal> <ul className="grid gap-px border bg-border/70 sm:grid-cols-3"> <li> <Link to="/ins/comparatii" search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Județele care pierd populație</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'SOM101F' }} search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Șomajul, lună de lună</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'TUR104E' }} search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Turismul înainte și după pandemie</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate.</Trans> </span> </Link> </li> </ul> </div> </RuledFrame> </section> <section aria-label={t`Surse și acoperire`}> <RuledFrame className="py-12 sm:py-16"> {hub ? <HubSourcesStrip hub={hub} /> : <HubPending rows={3} />} </RuledFrame> </section> </div> ) } function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) { const last = indicator.series[indicator.series.length - 1] if (!last) return null const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true }) const change = describeHubChange(indicator.series, indicator.unit, since) return ( <div> <dt> <MonoLabel className="text-muted-foreground"> {label} · {formatHubPeriod(last.period)} </MonoLabel> </dt> <dd className="mt-1 text-sm text-foreground"> <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span> {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null} {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null} {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null} </dd> </div> ) } 
+#. placeholder {2}: import { useEffect, useRef, useState } from 'react' import { Link, useNavigate } from '@tanstack/react-router' import { plural, t } from '@lingui/core/macro' import { Trans, useLingui } from '@lingui/react/macro' import { MonoLabel } from '@/components/landing-skin/mono-label' import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal' import { RuledFrame } from '@/components/landing-skin/ruled-frame' import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up' import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome' import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics' import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts' import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome' import { HubCountyMap } from '../components/hub/hub-county-map' import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank' import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures' import { useIndicatorLabel } from '../components/hub/hub-labels' import { describeHubChange, formatHubNumber, formatHubPeriod, formatHubValue, indicatorDetailSearch } from '../lib/hub-format' import { HubMatrixSearch } from '../components/hub/hub-matrix-search' import { HubPlaceFinder } from '../components/hub/hub-place-finder' import { HubSourcesStrip } from '../components/hub/hub-sources-strip' import { HubThemePanel } from '../components/hub/hub-theme-panel' import { useStatisticsHub } from '../hooks/use-statistics-hub' import { HUB_SERIES_CAPTURED_AT } from '../lib/hub-national-series' import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants' /** * `/ins` — the statistics hub, in the landing's visual language, one * band per idea (the composition chosen on 2026-09-16, see * `docs/design/statistics/design.md` §6). * * Search first, in a hero that says what the dataset is, with the catalog's * themes beside it. Then four figures, counting up. Then one numbered band * per module: the national indicators, the counties (map beside list, * shared highlight, one indicator at a time, the choice in the URL), 35 * years of change, three investigations, the sources. The territory search * lives inside the counties band; the matrix search owns the hero. * * Every section reads independently and fails independently: a failed one * says so and offers the retry, never a blank. */ type StatisticsHubPageProps = { readonly search: StatisticsHubSearch readonly initialHub?: StatisticsHubData } const DEFAULT_INDICATOR: StatisticsHubIndicatorKey = 'viata' function startArrivalEffects(block: Element, delay: number) { countUpWithin(block, delay) } function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined { return hub?.indicators?.find((indicator) => indicator.code === code) } export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) { const { i18n } = useLingui() const navigate = useNavigate() const rootRef = useRef<HTMLDivElement>(null) useRevealOnView(rootRef, startArrivalEffects) // The count-up driver is module state; an unmount mid-flight would leave it // ticking against nodes that are no longer in the document. useEffect(() => () => stopCounting(), []) const query = useStatisticsHub(initialHub) const hub = query.data const retry = () => void query.refetch() const labelOf = useIndicatorLabel() const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined) const indicatorKey = search.indicator ?? DEFAULT_INDICATOR const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0] const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code) const setIndicator = (key: StatisticsHubIndicatorKey) => { void navigate({ to: '/ins', search: key === DEFAULT_INDICATOR ? {} : { indicator: key }, replace: true, resetScroll: false, }) } const population = indicatorByCode(hub, 'POP107D') const lifeExpectancy = indicatorByCode(hub, 'POP217A') const employees = indicatorByCode(hub, 'FOM104D') const tourists = indicatorByCode(hub, 'TUR104E') const births = indicatorByCode(hub, 'POP201D') const deaths = indicatorByCode(hub, 'POP206D') const captureMonth = formatHubPeriod(HUB_SERIES_CAPTURED_AT.slice(0, 7)) const figureRows = HUB_FIGURE_CODES.flatMap((code) => { const indicator = indicatorByCode(hub, code) return indicator ? [indicator] : [] }) // The longest series the hub carries; the band says which, because the // others start later or end earlier (tourism starts 2001, employees stop a // year before). const seriesSpan = lifeExpectancy && lifeExpectancy.series.length > 1 ? { from: lifeExpectancy.series[0].period, to: lifeExpectancy.series[lifeExpectancy.series.length - 1].period } : null const facts: readonly HubFact[] = [ ...(hub?.catalog ? [ { key: 'datasets', value: hub.catalog.loadedCount, label: <Trans>seturi de date cu observații</Trans>, note: <Trans>tot catalogul INS Tempo, pe opt domenii oficiale</Trans>, link: (label, className) => ( <Link to="/ins/seturi" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(hub?.territoryCount !== null && hub?.territoryCount !== undefined ? [ { key: 'territories', value: hub.territoryCount, label: <Trans>teritorii, de la țară la localitate</Trans>, note: <Trans>42 de județe și fiecare localitate, pe cod SIRUTA</Trans>, link: (label, className) => ( <Link to="/ins/comparatii" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(population?.value !== null && population?.value !== undefined ? [ { key: 'population', value: population.value, label: <Trans>locuitori la 1 ianuarie {population.period}</Trans>, note: <Trans>populația după domiciliu, {population.code}</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(seriesSpan && lifeExpectancy ? [ { key: 'years', value: Number(seriesSpan.to) - Number(seriesSpan.from) + 1, label: <Trans>ani de serie anuală</Trans>, note: <Trans>{seriesSpan.from}–{seriesSpan.to} pentru speranța de viață, cea mai lungă serie a paginii</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: lifeExpectancy.code }} search={{ ...indicatorDetailSearch(lifeExpectancy), din: Number(seriesSpan.from), pana: Number(seriesSpan.to) }} className={className} > {label} </Link> ), } satisfies HubFact, ] : []), ] return ( <div ref={rootRef} className="relative w-full overflow-x-clip bg-background"> <RevealStyles /> <SmearFilters /> <section className="relative border-b"> <TwoLayerLattice idPrefix="statistics-hub" /> <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20"> <CornerTicks /> <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8"> <div className="min-w-0 lg:col-span-7"> <MonoLabel className="text-muted-foreground"> <Trans>Statistici / INS Tempo</Trans> </MonoLabel> {/* Two lines at every width: the second is the shorter, so it never leaves a word alone on a third. */} <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl"> <Trans> Fiecare localitate, <br /> cu cifrele la vedere </Trans> </h1> <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl"> <Trans> Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc. </Trans> </p> <div className="mt-6 sm:mt-7"> <HubMatrixSearch autoFocus /> </div> <nav aria-label={t`Scurtături`} className="mt-4"> <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle"> <Trans>Sau mergi direct la</Trans> </MonoLabel> <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle"> <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Toate seturile de date</Trans> </Link> <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Compară teritorii</Trans> </Link> </span> </nav> </div> <div className="min-w-0 lg:col-span-5"> {/* The catalog's themes: the one figure that explains the next band's first number. A card, because it is real product UI in the hero. */} <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6"> <div className="flex items-baseline justify-between gap-4"> <MonoLabel className="text-primary"> <Trans>Catalogul pe domenii</Trans> </MonoLabel> <MonoLabel className="text-muted-foreground"> <Trans>INS Tempo</Trans> </MonoLabel> </div> <p className="mt-2 text-sm leading-relaxed text-muted-foreground"> {hub?.catalog ? ( <Trans> {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul. </Trans> ) : ( <Trans>Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul.</Trans> )} </p> <div className="mt-5"> {hub?.catalog ? ( <HubThemePanel catalog={hub.catalog} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </div> </div> </RuledFrame> </section> <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}> <RuledFrame> <CruxMarks /> {facts.length > 0 ? ( <HubFiguresBand facts={facts} /> ) : ( <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div> )} </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-national-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-national-title" index={t`01 / Indicatori naționali`} title={ <Trans> România <br /> în cifre </Trans> } lede={ <Trans> Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă. </Trans> } /> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {figureRows.length > 0 ? ( <HubFigureRows indicators={figureRows} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-counties-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-counties-title" index={t`02 / Pe județe`} title={<Trans>Unde stă județul tău</Trans>} lede={ <Trans> Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă. </Trans> } aside={ <HubIndicatorToggle label={t`Indicatorul de pe hartă`} options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))} value={layerDefinition.key} onChange={setIndicator} /> } /> <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"> <div className="lg:col-span-7" data-reveal> {layer ? ( <HubCountyMap key={layer.code} layer={layer} legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" /> ) : ( <HubLoadError onRetry={retry} /> )} </div> <div className="lg:col-span-4 lg:col-start-9" data-reveal> {layer ? ( <> <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground"> <Trans> {i18n._(layerDefinition.legend)}, {layer.period}, {layer.code}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe. </Trans> </MonoLabel> </> ) : query.isPending ? ( <HubPending rows={10} /> ) : null} </div> </div> <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal> <div className="lg:col-span-5"> <MonoLabel className="block text-primary"> <Trans>Sau localitatea ta</Trans> </MonoLabel> <p className="mt-3 text-sm leading-relaxed text-muted-foreground"> <Trans>Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper.</Trans> </p> </div> <div className="lg:col-span-6 lg:col-start-7"> <HubPlaceFinder inputId="statistics-hub-place" /> </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-change-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-change-title" index={t`03 / Din 1990 până azi`} title={ <Trans> Ce s-a schimbat <br /> din {seriesSpan?.from ?? '1990'} încoace </Trans> } lede={ births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? ( <Trans> Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}. În {births.period} s-au născut{' '} {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '} {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}. </Trans> ) : ( <Trans>Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}.</Trans> ) } /> <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal> {[employees, lifeExpectancy, tourists].map((indicator) => indicator && indicator.series.length > 1 ? ( <ChangeItem key={indicator.code} label={labelOf(indicator)} indicator={indicator} since={indicator.series[0].period} /> ) : null, )} </dl> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? ( <> <MonoLabel className="block text-muted-foreground"> <Trans>Născuți vii și decedați, pe an</Trans> </MonoLabel> <div className="mt-3"> <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} /> </div> <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground"> <Trans> Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa. </Trans> </MonoLabel> <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"> <Link to="/ins/seturi/$cod" params={{ cod: births.code }} search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria nașterilor</Trans> </Link> <Link to="/ins/seturi/$cod" params={{ cod: deaths.code }} search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria deceselor</Trans> </Link> </p> </> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry}> <Trans>Seriile din 1990 nu au sosit.</Trans> </HubLoadError> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-investigations-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-investigations-title" index={t`04 / Pornește o investigație`} title={<Trans>Întrebări cu care se începe</Trans>} lede={<Trans>Fiecare deschide o analiză deja configurată. Rafinează de acolo.</Trans>} /> <div className="mt-8" data-reveal> <ul className="grid gap-px border bg-border/70 sm:grid-cols-3"> <li> <Link to="/ins/comparatii" search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Județele care pierd populație</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'SOM101F' }} search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Șomajul, lună de lună</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'TUR104E' }} search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Turismul înainte și după pandemie</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate.</Trans> </span> </Link> </li> </ul> </div> </RuledFrame> </section> <section aria-label={t`Surse și acoperire`}> <RuledFrame className="py-12 sm:py-16"> {hub ? <HubSourcesStrip hub={hub} /> : <HubPending rows={3} />} </RuledFrame> </section> </div> ) } function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) { const last = indicator.series[indicator.series.length - 1] if (!last) return null const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true }) const change = describeHubChange(indicator.series, indicator.unit, since) return ( <div> <dt> <MonoLabel className="text-muted-foreground"> {label} · {formatHubPeriod(last.period)} </MonoLabel> </dt> <dd className="mt-1 text-sm text-foreground"> <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span> {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null} {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null} {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null} </dd> </div> ) }
+#. placeholder {3}: import { useEffect, useRef, useState } from 'react' import { Link, useNavigate } from '@tanstack/react-router' import { plural, t } from '@lingui/core/macro' import { Trans, useLingui } from '@lingui/react/macro' import { MonoLabel } from '@/components/landing-skin/mono-label' import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal' import { RuledFrame } from '@/components/landing-skin/ruled-frame' import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up' import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome' import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics' import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts' import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome' import { HubCountyMap } from '../components/hub/hub-county-map' import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank' import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures' import { useIndicatorLabel } from '../components/hub/hub-labels' import { describeHubChange, formatHubNumber, formatHubPeriod, formatHubValue, indicatorDetailSearch } from '../lib/hub-format' import { HubMatrixSearch } from '../components/hub/hub-matrix-search' import { HubPlaceFinder } from '../components/hub/hub-place-finder' import { HubSourcesStrip } from '../components/hub/hub-sources-strip' import { HubThemePanel } from '../components/hub/hub-theme-panel' import { useStatisticsHub } from '../hooks/use-statistics-hub' import { HUB_SERIES_CAPTURED_AT } from '../lib/hub-national-series' import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants' /** * `/ins` — the statistics hub, in the landing's visual language, one * band per idea (the composition chosen on 2026-09-16, see * `docs/design/statistics/design.md` §6). * * Search first, in a hero that says what the dataset is, with the catalog's * themes beside it. Then four figures, counting up. Then one numbered band * per module: the national indicators, the counties (map beside list, * shared highlight, one indicator at a time, the choice in the URL), 35 * years of change, three investigations, the sources. The territory search * lives inside the counties band; the matrix search owns the hero. * * Every section reads independently and fails independently: a failed one * says so and offers the retry, never a blank. */ type StatisticsHubPageProps = { readonly search: StatisticsHubSearch readonly initialHub?: StatisticsHubData } const DEFAULT_INDICATOR: StatisticsHubIndicatorKey = 'viata' function startArrivalEffects(block: Element, delay: number) { countUpWithin(block, delay) } function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined { return hub?.indicators?.find((indicator) => indicator.code === code) } export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) { const { i18n } = useLingui() const navigate = useNavigate() const rootRef = useRef<HTMLDivElement>(null) useRevealOnView(rootRef, startArrivalEffects) // The count-up driver is module state; an unmount mid-flight would leave it // ticking against nodes that are no longer in the document. useEffect(() => () => stopCounting(), []) const query = useStatisticsHub(initialHub) const hub = query.data const retry = () => void query.refetch() const labelOf = useIndicatorLabel() const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined) const indicatorKey = search.indicator ?? DEFAULT_INDICATOR const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0] const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code) const setIndicator = (key: StatisticsHubIndicatorKey) => { void navigate({ to: '/ins', search: key === DEFAULT_INDICATOR ? {} : { indicator: key }, replace: true, resetScroll: false, }) } const population = indicatorByCode(hub, 'POP107D') const lifeExpectancy = indicatorByCode(hub, 'POP217A') const employees = indicatorByCode(hub, 'FOM104D') const tourists = indicatorByCode(hub, 'TUR104E') const births = indicatorByCode(hub, 'POP201D') const deaths = indicatorByCode(hub, 'POP206D') const captureMonth = formatHubPeriod(HUB_SERIES_CAPTURED_AT.slice(0, 7)) const figureRows = HUB_FIGURE_CODES.flatMap((code) => { const indicator = indicatorByCode(hub, code) return indicator ? [indicator] : [] }) // The longest series the hub carries; the band says which, because the // others start later or end earlier (tourism starts 2001, employees stop a // year before). const seriesSpan = lifeExpectancy && lifeExpectancy.series.length > 1 ? { from: lifeExpectancy.series[0].period, to: lifeExpectancy.series[lifeExpectancy.series.length - 1].period } : null const facts: readonly HubFact[] = [ ...(hub?.catalog ? [ { key: 'datasets', value: hub.catalog.loadedCount, label: <Trans>seturi de date cu observații</Trans>, note: <Trans>tot catalogul INS Tempo, pe opt domenii oficiale</Trans>, link: (label, className) => ( <Link to="/ins/seturi" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(hub?.territoryCount !== null && hub?.territoryCount !== undefined ? [ { key: 'territories', value: hub.territoryCount, label: <Trans>teritorii, de la țară la localitate</Trans>, note: <Trans>42 de județe și fiecare localitate, pe cod SIRUTA</Trans>, link: (label, className) => ( <Link to="/ins/comparatii" className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(population?.value !== null && population?.value !== undefined ? [ { key: 'population', value: population.value, label: <Trans>locuitori la 1 ianuarie {population.period}</Trans>, note: <Trans>populația după domiciliu, {population.code}</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}> {label} </Link> ), } satisfies HubFact, ] : []), ...(seriesSpan && lifeExpectancy ? [ { key: 'years', value: Number(seriesSpan.to) - Number(seriesSpan.from) + 1, label: <Trans>ani de serie anuală</Trans>, note: <Trans>{seriesSpan.from}–{seriesSpan.to} pentru speranța de viață, cea mai lungă serie a paginii</Trans>, link: (label, className) => ( <Link to="/ins/seturi/$cod" params={{ cod: lifeExpectancy.code }} search={{ ...indicatorDetailSearch(lifeExpectancy), din: Number(seriesSpan.from), pana: Number(seriesSpan.to) }} className={className} > {label} </Link> ), } satisfies HubFact, ] : []), ] return ( <div ref={rootRef} className="relative w-full overflow-x-clip bg-background"> <RevealStyles /> <SmearFilters /> <section className="relative border-b"> <TwoLayerLattice idPrefix="statistics-hub" /> <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20"> <CornerTicks /> <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8"> <div className="min-w-0 lg:col-span-7"> <MonoLabel className="text-muted-foreground"> <Trans>Statistici / INS Tempo</Trans> </MonoLabel> {/* Two lines at every width: the second is the shorter, so it never leaves a word alone on a third. */} <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl"> <Trans> Fiecare localitate, <br /> cu cifrele la vedere </Trans> </h1> <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl"> <Trans> Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc. </Trans> </p> <div className="mt-6 sm:mt-7"> <HubMatrixSearch autoFocus /> </div> <nav aria-label={t`Scurtături`} className="mt-4"> <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle"> <Trans>Sau mergi direct la</Trans> </MonoLabel> <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle"> <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Toate seturile de date</Trans> </Link> <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Compară teritorii</Trans> </Link> </span> </nav> </div> <div className="min-w-0 lg:col-span-5"> {/* The catalog's themes: the one figure that explains the next band's first number. A card, because it is real product UI in the hero. */} <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6"> <div className="flex items-baseline justify-between gap-4"> <MonoLabel className="text-primary"> <Trans>Catalogul pe domenii</Trans> </MonoLabel> <MonoLabel className="text-muted-foreground"> <Trans>INS Tempo</Trans> </MonoLabel> </div> <p className="mt-2 text-sm leading-relaxed text-muted-foreground"> {hub?.catalog ? ( <Trans> {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul. </Trans> ) : ( <Trans>Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul.</Trans> )} </p> <div className="mt-5"> {hub?.catalog ? ( <HubThemePanel catalog={hub.catalog} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </div> </div> </RuledFrame> </section> <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}> <RuledFrame> <CruxMarks /> {facts.length > 0 ? ( <HubFiguresBand facts={facts} /> ) : ( <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div> )} </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-national-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-national-title" index={t`01 / Indicatori naționali`} title={ <Trans> România <br /> în cifre </Trans> } lede={ <Trans> Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă. </Trans> } /> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {figureRows.length > 0 ? ( <HubFigureRows indicators={figureRows} /> ) : query.isPending ? ( <HubPending rows={8} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-counties-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-counties-title" index={t`02 / Pe județe`} title={<Trans>Unde stă județul tău</Trans>} lede={ <Trans> Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă. </Trans> } aside={ <HubIndicatorToggle label={t`Indicatorul de pe hartă`} options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))} value={layerDefinition.key} onChange={setIndicator} /> } /> <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"> <div className="lg:col-span-7" data-reveal> {layer ? ( <HubCountyMap key={layer.code} layer={layer} legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" /> ) : ( <HubLoadError onRetry={retry} /> )} </div> <div className="lg:col-span-4 lg:col-start-9" data-reveal> {layer ? ( <> <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground"> <Trans> {i18n._(layerDefinition.legend)}, {layer.period}, {layer.code}. Județele sunt ordonate după valoare; harta folosește cinci clase cu număr egal de județe. </Trans> </MonoLabel> </> ) : query.isPending ? ( <HubPending rows={10} /> ) : null} </div> </div> <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal> <div className="lg:col-span-5"> <MonoLabel className="block text-primary"> <Trans>Sau localitatea ta</Trans> </MonoLabel> <p className="mt-3 text-sm leading-relaxed text-muted-foreground"> <Trans>Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper.</Trans> </p> </div> <div className="lg:col-span-6 lg:col-start-7"> <HubPlaceFinder inputId="statistics-hub-place" /> </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-change-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-change-title" index={t`03 / Din 1990 până azi`} title={ <Trans> Ce s-a schimbat <br /> din {seriesSpan?.from ?? '1990'} încoace </Trans> } lede={ births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? ( <Trans> Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}. În {births.period} s-au născut{' '} {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '} {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}. </Trans> ) : ( <Trans>Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}.</Trans> ) } /> <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal> {[employees, lifeExpectancy, tourists].map((indicator) => indicator && indicator.series.length > 1 ? ( <ChangeItem key={indicator.code} label={labelOf(indicator)} indicator={indicator} since={indicator.series[0].period} /> ) : null, )} </dl> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? ( <> <MonoLabel className="block text-muted-foreground"> <Trans>Născuți vii și decedați, pe an</Trans> </MonoLabel> <div className="mt-3"> <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} /> </div> <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground"> <Trans> Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa. </Trans> </MonoLabel> <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"> <Link to="/ins/seturi/$cod" params={{ cod: births.code }} search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria nașterilor</Trans> </Link> <Link to="/ins/seturi/$cod" params={{ cod: deaths.code }} search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria deceselor</Trans> </Link> </p> </> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry}> <Trans>Seriile din 1990 nu au sosit.</Trans> </HubLoadError> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-investigations-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-investigations-title" index={t`04 / Pornește o investigație`} title={<Trans>Întrebări cu care se începe</Trans>} lede={<Trans>Fiecare deschide o analiză deja configurată. Rafinează de acolo.</Trans>} /> <div className="mt-8" data-reveal> <ul className="grid gap-px border bg-border/70 sm:grid-cols-3"> <li> <Link to="/ins/comparatii" search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Județele care pierd populație</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'SOM101F' }} search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Șomajul, lună de lună</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'TUR104E' }} search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Turismul înainte și după pandemie</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate.</Trans> </span> </Link> </li> </ul> </div> </RuledFrame> </section> <section aria-label={t`Surse și acoperire`}> <RuledFrame className="py-12 sm:py-16"> {hub ? <HubSourcesStrip hub={hub} /> : <HubPending rows={3} />} </RuledFrame> </section> </div> ) } function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) { const last = indicator.series[indicator.series.length - 1] if (!last) return null const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true }) const change = describeHubChange(indicator.series, indicator.unit, since) return ( <div> <dt> <MonoLabel className="text-muted-foreground"> {label} · {formatHubPeriod(last.period)} </MonoLabel> </dt> <dd className="mt-1 text-sm text-foreground"> <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span> {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null} {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null} {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null} </dd> </div> ) }
 #: src/features/statistics/pages/statistics-hub-page.tsx:386
-msgid "Cele mai lungi serii naționale încep în {0}. În {1} s-au născut {2} și au murit {3}."
-msgstr "Cele mai lungi serii naționale încep în {0}. În {1} s-au născut {2} și au murit {3}."
+#~ msgid "Cele mai lungi serii naționale încep în {0}. În {1} s-au născut {2} și au murit {3}."
+#~ msgstr "Cele mai lungi serii naționale încep în {0}. În {1} s-au născut {2} și au murit {3}."
 
 #: src/features/statistics/lib/comparison-presets.ts:32
 msgid "Cele mai mari 6 orașe"
@@ -4290,8 +4324,8 @@ msgid "Cele mai recente"
 msgstr "Cele mai recente"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:280
-msgid "Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă."
-msgstr "Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă."
+#~ msgid "Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă."
+#~ msgstr "Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă."
 
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:212
 msgid "Cele mai recente valori, cu județul și țara ca reper. Fiecare deschide seria completă."
@@ -4550,7 +4584,7 @@ msgid "Cifre de ansamblu"
 msgstr "Cifre de ansamblu"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:150
-#: src/features/statistics/pages/statistics-hub-page.tsx:254
+#: src/features/statistics/pages/statistics-hub-page.tsx:257
 msgid "Cifre-cheie"
 msgstr "Key figures"
 
@@ -4567,6 +4601,10 @@ msgstr "Cifrele de mai sus sunt măsurate pe baza de date de producție la {0}."
 msgid "Cifrele de mai sus vin dintr-un agregat calculat periodic pe server, nu la fiecare vizită."
 msgstr "The figures above come from an aggregate computed periodically on the server, not on every visit."
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:342
+msgid "Cifrele INS ale oricărei localități, lângă cele ale județului și ale țării."
+msgstr "INS figures for any locality, beside its county's and the country's."
+
 #: src/features/statistics/components/landing/landing-hero.tsx:167
 #~ msgid "Cifrele naționale rămân disponibile mai jos."
 #~ msgstr "National figures remain available below."
@@ -4580,8 +4618,20 @@ msgid "Cifrele nu au sosit. Agregatul se calculează pe server și poate dura la
 msgstr "The figures have not arrived. The aggregate is computed on the server and the first request can take a while."
 
 #: src/features/statistics/components/hub/hub-chrome.tsx:54
-msgid "Cifrele nu au sosit. Sursa INS Tempo se citește la fiecare încărcare și poate întârzia."
-msgstr "Cifrele nu au sosit. Sursa INS Tempo se citește la fiecare încărcare și poate întârzia."
+#~ msgid "Cifrele nu au sosit. Sursa INS Tempo se citește la fiecare încărcare și poate întârzia."
+#~ msgstr "Cifrele nu au sosit. Sursa INS Tempo se citește la fiecare încărcare și poate întârzia."
+
+#: src/features/statistics/components/hub/hub-chrome.tsx:55
+msgid "Cifrele nu s-au încărcat."
+msgstr "The figures did not load."
+
+#: src/routes/ins/index.tsx:54
+msgid "Cifrele oficiale ale României, de la Institutul Național de Statistică: inflație, salarii, șomaj, populație, locuințe și turism, pentru țară, județe și fiecare localitate."
+msgstr "Romania's official figures from the National Institute of Statistics: inflation, pay, unemployment, population, housing and tourism, for the country, its counties and every locality."
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:217
+msgid "Cifrele oficiale<0/>ale României"
+msgstr "Romania's<0/>official figures"
 
 #: src/features/landing/components/people-band.tsx:130
 msgid "Cine e în spatele<0/>platformei"
@@ -5166,7 +5216,7 @@ msgid "Compară {0}"
 msgstr "Compară {0}"
 
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:1023
-#: src/features/statistics/pages/statistics-hub-page.tsx:211
+#: src/features/statistics/pages/statistics-hub-page.tsx:238
 msgid "Compară teritorii"
 msgstr "Compare territories"
 
@@ -6917,6 +6967,10 @@ msgstr "day"
 msgid "days"
 msgstr "days"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:437
+msgid "De aici poți începe"
+msgstr "Start from here"
+
 #: src/features/statistics/components/request-dataset-action.tsx:97
 msgid "De ce ai nevoie de acest set?"
 msgstr "De ce ai nevoie de acest set?"
@@ -6929,6 +6983,10 @@ msgstr "De la"
 #: src/features/legal/components/act-publication-band.tsx:58
 msgid "De la data apariției în Monitorul Oficial, un act produce efecte."
 msgstr "De la data apariției în Monitorul Oficial, un act produce efecte."
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:224
+msgid "De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate."
+msgstr "From the National Institute of Statistics, for the country, its counties and every locality."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:195
 msgid "Deactivate"
@@ -6962,9 +7020,9 @@ msgstr "Debate request unavailable"
 msgid "Debate took place"
 msgstr "Debate took place"
 
-#: src/features/statistics/lib/landing-constants.ts:64
+#: src/features/statistics/lib/landing-constants.ts:71
 msgid "Decedați"
-msgstr "Decedați"
+msgstr "Deaths"
 
 #: src/components/commitments/commitments-trends.tsx:202
 #: src/components/entities/EntityFinancialTrends.tsx:182
@@ -7412,11 +7470,11 @@ msgstr "Development regions are coloured by supplier registered-office totals. R
 msgid "Development regions are coloured by their own totals. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Development regions are coloured by their own totals. Records without known buyer geography are excluded from the map — never shown as zero."
 
-#: src/features/statistics/lib/landing-constants.ts:39
+#: src/features/statistics/lib/landing-constants.ts:43
 msgid "Dezvoltare durabilă — Orizont 2020"
 msgstr "Sustainable development — Horizon 2020"
 
-#: src/features/statistics/lib/landing-constants.ts:40
+#: src/features/statistics/lib/landing-constants.ts:44
 msgid "Dezvoltare durabilă — Ținte 2030"
 msgstr "Sustainable development — 2030 targets"
 
@@ -7483,6 +7541,10 @@ msgstr "Din {awarded} atribuiți în această selecție, {withheld} ({share}) re
 #: src/features/procurement/lib/caveat-text.ts:294
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:377
+msgid "Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut."
+msgstr "Every year since {naturalDecreaseSince}, more people have died than were born."
 
 #: src/features/privacy/components/cookie-settings-page.tsx:142
 msgid "din browserul tău"
@@ -7916,9 +7978,9 @@ msgstr "Duplicate series"
 msgid "Duplicate Series"
 msgstr "Duplicate Series"
 
-#: src/features/statistics/lib/landing-constants.ts:91
+#: src/features/statistics/lib/landing-constants.ts:117
 msgid "Durata medie a vieții"
-msgstr "Durata medie a vieții"
+msgstr "Life expectancy"
 
 #: src/features/learning/components/cards/LearningPathCard.tsx:159
 msgid "Duration"
@@ -8178,7 +8240,7 @@ msgstr "Elimină filtrul"
 msgid "Elimină filtrul {0}"
 msgstr "Elimină filtrul {0}"
 
-#: src/features/landing/components/search/search-parts.tsx:207
+#: src/features/landing/components/search/search-parts.tsx:217
 #: src/features/procurement/components/procurement-category-bars.tsx:272
 #: src/features/statistics/components/filters/statistics-active-filters.tsx:85
 msgid "Elimină filtrul {label}"
@@ -9274,7 +9336,7 @@ msgstr "fără dată exactă"
 msgid "fără date"
 msgstr "no data"
 
-#: src/features/statistics/components/detail-observations-chart.tsx:488
+#: src/features/statistics/components/detail-observations-chart.tsx:494
 msgid "Fără date"
 msgstr "Fără date"
 
@@ -9470,8 +9532,8 @@ msgid "Fiecare deschide lista de firme deja filtrată. Rafinează de acolo."
 msgstr "Each one opens the company list already filtered. Refine from there."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:461
-msgid "Fiecare deschide o analiză deja configurată. Rafinează de acolo."
-msgstr "Fiecare deschide o analiză deja configurată. Rafinează de acolo."
+#~ msgid "Fiecare deschide o analiză deja configurată. Rafinează de acolo."
+#~ msgstr "Fiecare deschide o analiză deja configurată. Rafinează de acolo."
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:82
 msgid "Fiecare firmă,<0/>cu datele la vedere"
@@ -9486,8 +9548,8 @@ msgid "Fiecare lege, ordonanță și hotărâre publicată în România — cu s
 msgstr "Fiecare lege, ordonanță și hotărâre publicată în România — cu statutul ei actual, ce a modificat, ce a modificat-o și numărul din Monitorul Oficial în care a apărut."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:186
-msgid "Fiecare localitate,<0/>cu cifrele la vedere"
-msgstr "Fiecare localitate,<0/>cu cifrele la vedere"
+#~ msgid "Fiecare localitate,<0/>cu cifrele la vedere"
+#~ msgstr "Fiecare localitate,<0/>cu cifrele la vedere"
 
 #: src/features/parliament/components/member-interventii-tab.tsx:235
 msgid "Fiecare pătrat este o zi; intensitatea arată câte intervenții a avut parlamentarul. Faceți clic pe o zi pentru a filtra lista."
@@ -9665,7 +9727,7 @@ msgstr "Filtre rapide"
 msgid "Filtre servicii"
 msgstr "Filtre servicii"
 
-#: src/features/landing/components/search/landing-search.tsx:640
+#: src/features/landing/components/search/landing-search.tsx:663
 msgid "Filtre sugerate"
 msgstr "Suggested filters"
 
@@ -9721,7 +9783,7 @@ msgstr "Filtrele se aplică imediat. Adresa paginii le păstrează."
 msgid "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 msgstr "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 
-#: src/features/landing/components/search/search-parts.tsx:243
+#: src/features/landing/components/search/search-parts.tsx:253
 msgid "Filtru"
 msgstr "Filter"
 
@@ -9827,7 +9889,7 @@ msgstr "Financials"
 msgid "Financiar"
 msgstr "Financiar"
 
-#: src/features/statistics/lib/landing-constants.ts:35
+#: src/features/statistics/lib/landing-constants.ts:39
 msgid "Finanțe"
 msgstr "Finance"
 
@@ -10445,7 +10507,7 @@ msgid "Grafice"
 msgstr "Charts"
 
 #. placeholder {0}: series.points.length
-#: src/features/statistics/components/detail-observations-chart.tsx:428
+#: src/features/statistics/components/detail-observations-chart.tsx:434
 msgid "Graficul afișează ultimele {0} perioade. Restrânge intervalul pentru a vedea perioade mai vechi."
 msgstr "The chart shows the latest {0} periods. Narrow the range to see earlier ones."
 
@@ -10812,7 +10874,7 @@ msgstr "ID"
 msgid "Identification"
 msgstr "Identification"
 
-#: src/features/landing/components/search/landing-search.tsx:610
+#: src/features/landing/components/search/landing-search.tsx:633
 msgid "Identificator"
 msgstr "Identifier"
 
@@ -11012,6 +11074,13 @@ msgstr "Împotrivă"
 msgid "in \"invisible\" consumption taxes."
 msgstr "in \"invisible\" consumption taxes."
 
+#. placeholder {0}: births.period
+#. placeholder {1}: import { useEffect, useRef, useState } from 'react' import type { ReactNode } from 'react' import { Link, useNavigate } from '@tanstack/react-router' import { plural, t } from '@lingui/core/macro' import { Trans, useLingui } from '@lingui/react/macro' import { MonoLabel } from '@/components/landing-skin/mono-label' import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal' import { RuledFrame } from '@/components/landing-skin/ruled-frame' import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up' import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome' import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics' import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts' import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome' import { HubCountyMap } from '../components/hub/hub-county-map' import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank' import { HubDatasetSearch } from '../components/hub/hub-dataset-search' import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures' import { useIndicatorLabel } from '../components/hub/hub-labels' import { HubPlaceFinder } from '../components/hub/hub-place-finder' import { HubThemePanel } from '../components/hub/hub-theme-panel' import { useStatisticsHub } from '../hooks/use-statistics-hub' import { annualInflationRate, deathsExceedBirthsSince, describeHubChange, formatHubPeriod, formatHubValue, hubUnitWord, indicatorDetailSearch, sameMonthLastYear, sourceDecimals, } from '../lib/hub-format' import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES, HUB_HEADLINE_CODES } from '../lib/landing-constants' import { describeValueStatus } from '../lib/value-status' /** * `/ins` — the statistics hub, in the landing's visual language, one * band per idea (the composition chosen on 2026-09-16, see * `docs/design/statistics/design.md` §6 and §6n). * * Search first, in a hero that names the source, with the eight domains * beside it. Then the four figures a reader comes for — inflation, net * earnings, unemployment, population — counting up. Then one numbered band * per module: the national series with their sparklines, the counties (map * beside list, shared highlight, one indicator at a time, the choice in the * URL), 35 years of births and deaths, three ready analyses. A band says * what its numbers are and nothing about the database behind them. * * Every section reads independently and fails independently: a failed one * says so and offers the retry, never a blank. */ type StatisticsHubPageProps = { readonly search: StatisticsHubSearch readonly initialHub?: StatisticsHubData } const DEFAULT_INDICATOR: StatisticsHubIndicatorKey = 'viata' function startArrivalEffects(block: Element, delay: number) { countUpWithin(block, delay) } function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined { return hub?.indicators?.find((indicator) => indicator.code === code) } /** An indicator with a number and a period to show, or nothing — a blocked or absent cell has no figure to put in the band. */ function withFigure(indicator: StatisticsHubIndicator | undefined) { return indicator && indicator.value !== null && indicator.period ? { ...indicator, value: indicator.value, period: indicator.period } : null } /** The cell's INS flag, spelled out after its period: a provisional or estimated figure says so here as it does in the rows. */ function withValueStatus(note: ReactNode, indicator: StatisticsHubIndicator): ReactNode { return indicator.valueStatus ? ( <> {note}, {describeValueStatus(indicator.valueStatus)} </> ) : ( note ) } function detailLink(indicator: StatisticsHubIndicator) { return function DetailLink(label: ReactNode, className: string) { return ( <Link to="/ins/seturi/$cod" params={{ cod: indicator.code }} search={indicatorDetailSearch(indicator)} className={className}> {label} </Link> ) } } export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) { const { i18n } = useLingui() const navigate = useNavigate() const rootRef = useRef<HTMLDivElement>(null) useRevealOnView(rootRef, startArrivalEffects) // The count-up driver is module state; an unmount mid-flight would leave it // ticking against nodes that are no longer in the document. useEffect(() => () => stopCounting(), []) const query = useStatisticsHub(initialHub) const hub = query.data const retry = () => void query.refetch() const labelOf = useIndicatorLabel() const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined) const indicatorKey = search.indicator ?? DEFAULT_INDICATOR const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0] const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code) const setIndicator = (key: StatisticsHubIndicatorKey) => { void navigate({ to: '/ins', search: key === DEFAULT_INDICATOR ? {} : { indicator: key }, replace: true, resetScroll: false, }) } const lifeExpectancy = indicatorByCode(hub, 'POP217A') const employees = indicatorByCode(hub, 'FOM104D') const tourists = indicatorByCode(hub, 'TUR104E') const births = indicatorByCode(hub, 'POP201D') const deaths = indicatorByCode(hub, 'POP206D') const figureRows = HUB_FIGURE_CODES.flatMap((code) => { const indicator = indicatorByCode(hub, code) return indicator ? [indicator] : [] }) const since = lifeExpectancy?.series[0]?.period ?? '1990' const naturalDecreaseSince = births && deaths ? deathsExceedBirthsSince(births.series, deaths.series) : null const inflation = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.inflation)) const earnings = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.earnings)) const unemployment = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.unemployment)) const population = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.population)) const inflationBase = inflation ? sameMonthLastYear(inflation.period) : null const facts: readonly HubFact[] = [ ...(inflation ? [ { key: 'inflation', value: annualInflationRate(inflation.value, sourceDecimals(inflation.rawValue)), digits: sourceDecimals(inflation.rawValue), unit: '%', label: <Trans>Inflația anuală</Trans>, note: withValueStatus( inflationBase ? ( <Trans> {formatHubPeriod(inflation.period)} față de {formatHubPeriod(inflationBase)} </Trans> ) : ( formatHubPeriod(inflation.period) ), inflation, ), link: detailLink(inflation), } satisfies HubFact, ] : []), ...(earnings ? [ { key: 'earnings', value: earnings.value, digits: sourceDecimals(earnings.rawValue), unit: hubUnitWord(earnings.unit, earnings.unitLabel), label: <Trans>Salariul mediu net</Trans>, note: withValueStatus(formatHubPeriod(earnings.period), earnings), link: detailLink(earnings), } satisfies HubFact, ] : []), ...(unemployment ? [ { key: 'unemployment', value: unemployment.value, digits: sourceDecimals(unemployment.rawValue), unit: '%', label: <Trans>Rata șomajului</Trans>, note: withValueStatus(<Trans>Șomeri înregistrați, {formatHubPeriod(unemployment.period)}</Trans>, unemployment), link: detailLink(unemployment), } satisfies HubFact, ] : []), ...(population ? [ { key: 'population', value: population.value, digits: 0, label: <Trans>Locuitori</Trans>, note: withValueStatus(<Trans>Populația rezidentă la 1 ianuarie {population.period}</Trans>, population), link: detailLink(population), } satisfies HubFact, ] : []), ] return ( <div ref={rootRef} className="relative w-full overflow-x-clip bg-background"> <RevealStyles /> <SmearFilters /> <section className="relative border-b"> <TwoLayerLattice idPrefix="statistics-hub" /> <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20"> <CornerTicks /> <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8"> <div className="min-w-0 lg:col-span-7"> <MonoLabel className="text-muted-foreground"> <Trans>Statistici / INS</Trans> </MonoLabel> {/* Two lines at every width: the second is the shorter, so it never leaves a word alone on a third. */} <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl"> <Trans> Cifrele oficiale <br /> ale României </Trans> </h1> <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl"> <Trans>De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate.</Trans> </p> <div className="mt-6 sm:mt-7"> <HubDatasetSearch autoFocus /> </div> <nav aria-label={t`Scurtături`} className="mt-4"> <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle"> <Trans>Sau mergi direct la</Trans> </MonoLabel> <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle"> <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Toate seturile de date</Trans> </Link> <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Compară teritorii</Trans> </Link> </span> </nav> </div> <div className="min-w-0 lg:col-span-5"> {/* The domains are the catalog's own map: the way in for a reader who does not yet know what to search for. */} <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6"> <MonoLabel className="text-primary"> <Trans>Pe domenii</Trans> </MonoLabel> <HubThemePanel className="mt-3" /> </div> </div> </div> </RuledFrame> </section> <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}> <RuledFrame> <CruxMarks /> {facts.length > 0 ? ( <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} /> ) : ( <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div> )} </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-national-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-national-title" index={t`01 / Indicatori naționali`} title={ <Trans> România, <br /> an de an </Trans> } /> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {figureRows.length > 0 ? ( <HubFigureRows indicators={figureRows} /> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-counties-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-counties-title" index={t`02 / Pe județe`} title={<Trans>Unde stă județul tău</Trans>} aside={ <HubIndicatorToggle label={t`Indicatorul de pe hartă`} options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))} value={layerDefinition.key} onChange={setIndicator} /> } /> <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"> <div className="lg:col-span-7" data-reveal> {layer ? ( <HubCountyMap key={layer.code} layer={layer} legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" /> ) : ( <HubLoadError onRetry={retry} /> )} </div> <div className="lg:col-span-4 lg:col-start-9" data-reveal> {layer ? ( <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <HubPending rows={10} /> ) : null} </div> </div> <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal> <div className="lg:col-span-5"> <MonoLabel className="block text-primary"> <Trans>Localitatea ta</Trans> </MonoLabel> <p className="mt-3 text-sm leading-relaxed text-muted-foreground"> <Trans>Cifrele INS ale oricărei localități, lângă cele ale județului și ale țării.</Trans> </p> </div> <div className="lg:col-span-6 lg:col-start-7"> <HubPlaceFinder inputId="statistics-hub-place" /> </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-change-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-change-title" index={t`03 / Din ${since} până azi`} title={ <Trans> Ce s-a schimbat <br /> din {since} încoace </Trans> } lede={ births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? ( <> <Trans> În {births.period} s-au născut{' '} {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '} {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}. </Trans> {naturalDecreaseSince ? ( <> {' '} <Trans>Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut.</Trans> </> ) : null} </> ) : null } /> <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal> {[employees, lifeExpectancy, tourists].map((indicator) => indicator && indicator.series.length > 1 ? ( <ChangeItem key={indicator.code} label={labelOf(indicator)} indicator={indicator} since={indicator.series[0].period} /> ) : null, )} </dl> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? ( <> <MonoLabel className="block text-muted-foreground"> <Trans>Născuți vii și decedați, pe an</Trans> </MonoLabel> <div className="mt-3"> <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} /> </div> <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"> <Link to="/ins/seturi/$cod" params={{ cod: births.code }} search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria nașterilor</Trans> </Link> <Link to="/ins/seturi/$cod" params={{ cod: deaths.code }} search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria deceselor</Trans> </Link> </p> </> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section aria-labelledby="hub-analyses-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-analyses-title" index={t`04 / Analize`} title={<Trans>De aici poți începe</Trans>} /> <div className="mt-8" data-reveal> <ul className="grid gap-px border bg-border/70 sm:grid-cols-3"> <li> <Link to="/ins/comparatii" search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Județele care pierd populație</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'SOM103B' }} search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Șomajul, lună de lună</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Rata șomajului înregistrat din 1992 până azi, pentru țară și pentru fiecare județ.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'TUR104E' }} search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Turismul înainte și după pandemie</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate.</Trans> </span> </Link> </li> </ul> </div> </RuledFrame> </section> </div> ) } function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) { const last = indicator.series[indicator.series.length - 1] if (!last) return null const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true }) const change = describeHubChange(indicator.series, indicator.unit, since) return ( <div> <dt> <MonoLabel className="text-muted-foreground"> {label} · {formatHubPeriod(last.period)} </MonoLabel> </dt> <dd className="mt-1 text-sm text-foreground"> <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span> {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null} {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null} {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null} </dd> </div> ) } 
+#. placeholder {2}: import { useEffect, useRef, useState } from 'react' import type { ReactNode } from 'react' import { Link, useNavigate } from '@tanstack/react-router' import { plural, t } from '@lingui/core/macro' import { Trans, useLingui } from '@lingui/react/macro' import { MonoLabel } from '@/components/landing-skin/mono-label' import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal' import { RuledFrame } from '@/components/landing-skin/ruled-frame' import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up' import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome' import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics' import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts' import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome' import { HubCountyMap } from '../components/hub/hub-county-map' import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank' import { HubDatasetSearch } from '../components/hub/hub-dataset-search' import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures' import { useIndicatorLabel } from '../components/hub/hub-labels' import { HubPlaceFinder } from '../components/hub/hub-place-finder' import { HubThemePanel } from '../components/hub/hub-theme-panel' import { useStatisticsHub } from '../hooks/use-statistics-hub' import { annualInflationRate, deathsExceedBirthsSince, describeHubChange, formatHubPeriod, formatHubValue, hubUnitWord, indicatorDetailSearch, sameMonthLastYear, sourceDecimals, } from '../lib/hub-format' import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES, HUB_HEADLINE_CODES } from '../lib/landing-constants' import { describeValueStatus } from '../lib/value-status' /** * `/ins` — the statistics hub, in the landing's visual language, one * band per idea (the composition chosen on 2026-09-16, see * `docs/design/statistics/design.md` §6 and §6n). * * Search first, in a hero that names the source, with the eight domains * beside it. Then the four figures a reader comes for — inflation, net * earnings, unemployment, population — counting up. Then one numbered band * per module: the national series with their sparklines, the counties (map * beside list, shared highlight, one indicator at a time, the choice in the * URL), 35 years of births and deaths, three ready analyses. A band says * what its numbers are and nothing about the database behind them. * * Every section reads independently and fails independently: a failed one * says so and offers the retry, never a blank. */ type StatisticsHubPageProps = { readonly search: StatisticsHubSearch readonly initialHub?: StatisticsHubData } const DEFAULT_INDICATOR: StatisticsHubIndicatorKey = 'viata' function startArrivalEffects(block: Element, delay: number) { countUpWithin(block, delay) } function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined { return hub?.indicators?.find((indicator) => indicator.code === code) } /** An indicator with a number and a period to show, or nothing — a blocked or absent cell has no figure to put in the band. */ function withFigure(indicator: StatisticsHubIndicator | undefined) { return indicator && indicator.value !== null && indicator.period ? { ...indicator, value: indicator.value, period: indicator.period } : null } /** The cell's INS flag, spelled out after its period: a provisional or estimated figure says so here as it does in the rows. */ function withValueStatus(note: ReactNode, indicator: StatisticsHubIndicator): ReactNode { return indicator.valueStatus ? ( <> {note}, {describeValueStatus(indicator.valueStatus)} </> ) : ( note ) } function detailLink(indicator: StatisticsHubIndicator) { return function DetailLink(label: ReactNode, className: string) { return ( <Link to="/ins/seturi/$cod" params={{ cod: indicator.code }} search={indicatorDetailSearch(indicator)} className={className}> {label} </Link> ) } } export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) { const { i18n } = useLingui() const navigate = useNavigate() const rootRef = useRef<HTMLDivElement>(null) useRevealOnView(rootRef, startArrivalEffects) // The count-up driver is module state; an unmount mid-flight would leave it // ticking against nodes that are no longer in the document. useEffect(() => () => stopCounting(), []) const query = useStatisticsHub(initialHub) const hub = query.data const retry = () => void query.refetch() const labelOf = useIndicatorLabel() const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined) const indicatorKey = search.indicator ?? DEFAULT_INDICATOR const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0] const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code) const setIndicator = (key: StatisticsHubIndicatorKey) => { void navigate({ to: '/ins', search: key === DEFAULT_INDICATOR ? {} : { indicator: key }, replace: true, resetScroll: false, }) } const lifeExpectancy = indicatorByCode(hub, 'POP217A') const employees = indicatorByCode(hub, 'FOM104D') const tourists = indicatorByCode(hub, 'TUR104E') const births = indicatorByCode(hub, 'POP201D') const deaths = indicatorByCode(hub, 'POP206D') const figureRows = HUB_FIGURE_CODES.flatMap((code) => { const indicator = indicatorByCode(hub, code) return indicator ? [indicator] : [] }) const since = lifeExpectancy?.series[0]?.period ?? '1990' const naturalDecreaseSince = births && deaths ? deathsExceedBirthsSince(births.series, deaths.series) : null const inflation = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.inflation)) const earnings = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.earnings)) const unemployment = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.unemployment)) const population = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.population)) const inflationBase = inflation ? sameMonthLastYear(inflation.period) : null const facts: readonly HubFact[] = [ ...(inflation ? [ { key: 'inflation', value: annualInflationRate(inflation.value, sourceDecimals(inflation.rawValue)), digits: sourceDecimals(inflation.rawValue), unit: '%', label: <Trans>Inflația anuală</Trans>, note: withValueStatus( inflationBase ? ( <Trans> {formatHubPeriod(inflation.period)} față de {formatHubPeriod(inflationBase)} </Trans> ) : ( formatHubPeriod(inflation.period) ), inflation, ), link: detailLink(inflation), } satisfies HubFact, ] : []), ...(earnings ? [ { key: 'earnings', value: earnings.value, digits: sourceDecimals(earnings.rawValue), unit: hubUnitWord(earnings.unit, earnings.unitLabel), label: <Trans>Salariul mediu net</Trans>, note: withValueStatus(formatHubPeriod(earnings.period), earnings), link: detailLink(earnings), } satisfies HubFact, ] : []), ...(unemployment ? [ { key: 'unemployment', value: unemployment.value, digits: sourceDecimals(unemployment.rawValue), unit: '%', label: <Trans>Rata șomajului</Trans>, note: withValueStatus(<Trans>Șomeri înregistrați, {formatHubPeriod(unemployment.period)}</Trans>, unemployment), link: detailLink(unemployment), } satisfies HubFact, ] : []), ...(population ? [ { key: 'population', value: population.value, digits: 0, label: <Trans>Locuitori</Trans>, note: withValueStatus(<Trans>Populația rezidentă la 1 ianuarie {population.period}</Trans>, population), link: detailLink(population), } satisfies HubFact, ] : []), ] return ( <div ref={rootRef} className="relative w-full overflow-x-clip bg-background"> <RevealStyles /> <SmearFilters /> <section className="relative border-b"> <TwoLayerLattice idPrefix="statistics-hub" /> <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20"> <CornerTicks /> <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8"> <div className="min-w-0 lg:col-span-7"> <MonoLabel className="text-muted-foreground"> <Trans>Statistici / INS</Trans> </MonoLabel> {/* Two lines at every width: the second is the shorter, so it never leaves a word alone on a third. */} <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl"> <Trans> Cifrele oficiale <br /> ale României </Trans> </h1> <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl"> <Trans>De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate.</Trans> </p> <div className="mt-6 sm:mt-7"> <HubDatasetSearch autoFocus /> </div> <nav aria-label={t`Scurtături`} className="mt-4"> <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle"> <Trans>Sau mergi direct la</Trans> </MonoLabel> <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle"> <Link to="/ins/seturi" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Toate seturile de date</Trans> </Link> <Link to="/ins/comparatii" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}> <Trans>Compară teritorii</Trans> </Link> </span> </nav> </div> <div className="min-w-0 lg:col-span-5"> {/* The domains are the catalog's own map: the way in for a reader who does not yet know what to search for. */} <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6"> <MonoLabel className="text-primary"> <Trans>Pe domenii</Trans> </MonoLabel> <HubThemePanel className="mt-3" /> </div> </div> </div> </RuledFrame> </section> <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}> <RuledFrame> <CruxMarks /> {facts.length > 0 ? ( <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} /> ) : ( <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div> )} </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-national-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-national-title" index={t`01 / Indicatori naționali`} title={ <Trans> România, <br /> an de an </Trans> } /> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {figureRows.length > 0 ? ( <HubFigureRows indicators={figureRows} /> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-counties-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-counties-title" index={t`02 / Pe județe`} title={<Trans>Unde stă județul tău</Trans>} aside={ <HubIndicatorToggle label={t`Indicatorul de pe hartă`} options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))} value={layerDefinition.key} onChange={setIndicator} /> } /> <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8"> <div className="lg:col-span-7" data-reveal> {layer ? ( <HubCountyMap key={layer.code} layer={layer} legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" /> ) : ( <HubLoadError onRetry={retry} /> )} </div> <div className="lg:col-span-4 lg:col-start-9" data-reveal> {layer ? ( <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} /> ) : query.isPending ? ( <HubPending rows={10} /> ) : null} </div> </div> <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal> <div className="lg:col-span-5"> <MonoLabel className="block text-primary"> <Trans>Localitatea ta</Trans> </MonoLabel> <p className="mt-3 text-sm leading-relaxed text-muted-foreground"> <Trans>Cifrele INS ale oricărei localități, lângă cele ale județului și ale țării.</Trans> </p> </div> <div className="lg:col-span-6 lg:col-start-7"> <HubPlaceFinder inputId="statistics-hub-place" /> </div> </div> </RuledFrame> </section> <section className="border-b" aria-labelledby="hub-change-title"> <RuledFrame className="py-14 sm:py-20"> <div className="grid grid-cols-1 gap-8 lg:grid-cols-12"> <div className="lg:col-span-5"> <HubSectionHead titleId="hub-change-title" index={t`03 / Din ${since} până azi`} title={ <Trans> Ce s-a schimbat <br /> din {since} încoace </Trans> } lede={ births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? ( <> <Trans> În {births.period} s-au născut{' '} {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '} {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}. </Trans> {naturalDecreaseSince ? ( <> {' '} <Trans>Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut.</Trans> </> ) : null} </> ) : null } /> <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal> {[employees, lifeExpectancy, tourists].map((indicator) => indicator && indicator.series.length > 1 ? ( <ChangeItem key={indicator.code} label={labelOf(indicator)} indicator={indicator} since={indicator.series[0].period} /> ) : null, )} </dl> </div> <div className="lg:col-span-6 lg:col-start-7" data-reveal> {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? ( <> <MonoLabel className="block text-muted-foreground"> <Trans>Născuți vii și decedați, pe an</Trans> </MonoLabel> <div className="mt-3"> <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} /> </div> <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"> <Link to="/ins/seturi/$cod" params={{ cod: births.code }} search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria nașterilor</Trans> </Link> <Link to="/ins/seturi/$cod" params={{ cod: deaths.code }} search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }} className={HUB_TEXT_LINK_CLASS} > <Trans>Seria deceselor</Trans> </Link> </p> </> ) : query.isPending ? ( <HubPending rows={6} /> ) : ( <HubLoadError onRetry={retry} /> )} </div> </div> </RuledFrame> </section> <section aria-labelledby="hub-analyses-title"> <RuledFrame className="py-14 sm:py-20"> <HubSectionHead titleId="hub-analyses-title" index={t`04 / Analize`} title={<Trans>De aici poți începe</Trans>} /> <div className="mt-8" data-reveal> <ul className="grid gap-px border bg-border/70 sm:grid-cols-3"> <li> <Link to="/ins/comparatii" search={{ cod: 'POP107D', teritorii: ['cod:TR', 'cod:BR', 'cod:TL', 'cod:OT', 'cod:HD'], frecventa: 'ANNUAL' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Județele care pierd populație</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'SOM103B' }} search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Șomajul, lună de lună</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Rata șomajului înregistrat din 1992 până azi, pentru țară și pentru fiecare județ.</Trans> </span> </Link> </li> <li> <Link to="/ins/seturi/$cod" params={{ cod: 'TUR104E' }} search={{ teritoriu: 'cod:RO', frecventa: 'ANNUAL', din: 2018, pana: 2025 }} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40" > <span className="block text-base font-semibold tracking-tight text-foreground"> <Trans>Turismul înainte și după pandemie</Trans> </span> <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground"> <Trans>Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate.</Trans> </span> </Link> </li> </ul> </div> </RuledFrame> </section> </div> ) } function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) { const last = indicator.series[indicator.series.length - 1] if (!last) return null const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true }) const change = describeHubChange(indicator.series, indicator.unit, since) return ( <div> <dt> <MonoLabel className="text-muted-foreground"> {label} · {formatHubPeriod(last.period)} </MonoLabel> </dt> <dd className="mt-1 text-sm text-foreground"> <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span> {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null} {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null} {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null} </dd> </div> ) } 
+#: src/features/statistics/pages/statistics-hub-page.tsx:369
+msgid "În {0} s-au născut {1} și au murit {2}."
+msgstr "In {0}, {1} were born and {2} died."
+
 #: src/features/statistics/components/detail-series-summary.tsx:175
 msgid "în {period}"
 msgstr "in {period}"
@@ -11207,8 +11276,8 @@ msgid "Înapoi unde erai"
 msgstr "Back to where you were"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:150
-msgid "Încă un caracter pentru a căuta."
-msgstr "Încă un caracter pentru a căuta."
+#~ msgid "Încă un caracter pentru a căuta."
+#~ msgstr "Încă un caracter pentru a căuta."
 
 #: src/features/entity-search/components/entity-load-more.tsx:18
 msgid "Încarcă mai mult"
@@ -11245,7 +11314,7 @@ msgstr "Încărcat"
 #: src/features/legal/components/reader/legal-reader-page.tsx:535
 #: src/features/private-companies/components/hub/county-map.tsx:187
 #: src/features/private-companies/components/hub/hub-sections.tsx:152
-#: src/features/statistics/components/hub/hub-chrome.tsx:60
+#: src/features/statistics/components/hub/hub-chrome.tsx:62
 #: src/features/statistics/components/hub/hub-county-map.tsx:141
 msgid "Încearcă din nou"
 msgstr "Try again"
@@ -11254,7 +11323,7 @@ msgstr "Try again"
 msgid "Încearcă din nou fără să pierzi filtrele curente."
 msgstr "Încearcă din nou fără să pierzi filtrele curente."
 
-#: src/features/landing/components/search/landing-search.tsx:148
+#: src/features/landing/components/search/landing-search.tsx:151
 msgid "Încearcă din nou într-un moment."
 msgstr "Try again in a moment."
 
@@ -11281,7 +11350,7 @@ msgstr "Încearcă un termen mai scurt sau elimină un filtru."
 
 #: src/features/statistics/components/hub/hub-place-finder.tsx:41
 msgid "Încearcă:"
-msgstr "Încearcă:"
+msgstr "Try:"
 
 #: src/features/landing/components/start-here-panel.tsx:237
 msgid "Începe de aici"
@@ -11412,8 +11481,8 @@ msgid "Indicator financiar"
 msgstr "Indicator financiar"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:112
-msgid "Indicator sau cod de matrice, ex. populația, POP107D..."
-msgstr "Indicator sau cod de matrice, ex. populația, POP107D..."
+#~ msgid "Indicator sau cod de matrice, ex. populația, POP107D..."
+#~ msgstr "Indicator sau cod de matrice, ex. populația, POP107D..."
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1462
 msgid "indicator/KPI AMEPIP, nu valoare contabilă absolută"
@@ -11447,13 +11516,17 @@ msgstr "Indicatorii financiari sunt in curs de incarcare"
 msgid "Indicatorii ne-numerici rămân disponibili în tabel."
 msgstr "Indicatorii ne-numerici rămân disponibili în tabel."
 
+#: src/features/statistics/lib/landing-constants.ts:43
+msgid "Indicatorii strategiei naționale, până în 2020"
+msgstr "The national strategy's indicators, to 2020"
+
 #: src/features/statistics/components/comparison-states.tsx:120
 msgid "Indicatorul a returnat mai multe observații decât putem afișa. Fixează mai multe dimensiuni sau alege mai puține teritorii."
 msgstr "Indicatorul a returnat mai multe observații decât putem afișa. Fixează mai multe dimensiuni sau alege mai puține teritorii."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:315
+#: src/features/statistics/pages/statistics-hub-page.tsx:305
 msgid "Indicatorul de pe hartă"
-msgstr "Indicatorul de pe hartă"
+msgstr "Indicator on the map"
 
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:410
 msgid "Indicatorul este în catalog, dar observațiile nu au fost încă publicate. Alege alt indicator."
@@ -11497,6 +11570,11 @@ msgstr "Indisponibil pentru această selecție — vezi nota de acoperire de mai
 #: src/features/procurement/components/procurement-institution-signals.tsx:165
 msgid "Indisponibil: lanțurile de modificări nu se pot ordona."
 msgstr "Indisponibil: lanțurile de modificări nu se pot ordona."
+
+#: src/features/statistics/lib/landing-constants.ts:62
+#: src/features/statistics/pages/statistics-hub-page.tsx:145
+msgid "Inflația anuală"
+msgstr "Annual inflation"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:777
 msgid "Inflation Adjustment"
@@ -11644,7 +11722,7 @@ msgstr "INS indicators are only available for UATs."
 #. placeholder {0}: layer.period
 #: src/features/statistics/components/hub/hub-county-map.tsx:125
 msgid "INS nu a publicat încă valorile pe județe pentru {0}."
-msgstr "INS nu a publicat încă valorile pe județe pentru {0}."
+msgstr "INS has not yet published county values for {0}."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:88
 msgid "INS series"
@@ -11682,13 +11760,12 @@ msgstr "INS statistics"
 #: src/components/entities/views/ins-stats-view.tsx:816
 #: src/features/statistics/components/coverage-ribbon.tsx:38
 #: src/features/statistics/components/source-provenance-drawer.tsx:39
-#: src/features/statistics/pages/statistics-hub-page.tsx:226
 msgid "INS Tempo"
 msgstr "INS Tempo"
 
 #: src/features/statistics/components/hub/hub-sources-strip.tsx:17
-msgid "INS Tempo Online — statistica oficială a României. Aici sunt seturile de date cu observații încărcate, pe toate temele catalogului. Teritoriile urmează nomenclatorul SIRUTA, aceeași cheie prin care o localitate își regăsește bugetul și achizițiile pe platformă. Golurile din serii rămân goluri; nimic nu este interpolat. Fiecare cifră își arată propria perioadă de referință, pentru că INS nu publică totul în același an."
-msgstr "INS Tempo Online — statistica oficială a României. Aici sunt seturile de date cu observații încărcate, pe toate temele catalogului. Teritoriile urmează nomenclatorul SIRUTA, aceeași cheie prin care o localitate își regăsește bugetul și achizițiile pe platformă. Golurile din serii rămân goluri; nimic nu este interpolat. Fiecare cifră își arată propria perioadă de referință, pentru că INS nu publică totul în același an."
+#~ msgid "INS Tempo Online — statistica oficială a României. Aici sunt seturile de date cu observații încărcate, pe toate temele catalogului. Teritoriile urmează nomenclatorul SIRUTA, aceeași cheie prin care o localitate își regăsește bugetul și achizițiile pe platformă. Golurile din serii rămân goluri; nimic nu este interpolat. Fiecare cifră își arată propria perioadă de referință, pentru că INS nu publică totul în același an."
+#~ msgstr "INS Tempo Online — statistica oficială a României. Aici sunt seturile de date cu observații încărcate, pe toate temele catalogului. Teritoriile urmează nomenclatorul SIRUTA, aceeași cheie prin care o localitate își regăsește bugetul și achizițiile pe platformă. Golurile din serii rămân goluri; nimic nu este interpolat. Fiecare cifră își arată propria perioadă de referință, pentru că INS nu publică totul în același an."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1413
 msgid "INS terms"
@@ -11770,6 +11847,10 @@ msgstr "Instanțe cu volum ridicat"
 #: src/features/justice/components/litigation-slice-section.tsx:192
 msgid "Instanțe principale"
 msgstr "Instanțe principale"
+
+#: src/features/statistics/lib/landing-constants.ts:40
+msgid "Instanțe, condamnări, criminalitate"
+msgstr "Courts, convictions, crime"
 
 #: src/features/entity-search/lib/doc-type-meta.ts:52
 msgid "Instituție"
@@ -11921,7 +12002,6 @@ msgid "între {0} și {1}"
 msgstr "between {0} and {1}"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:248
-#: src/features/statistics/pages/statistics-hub-page.tsx:460
 msgid "Întrebări cu care se începe"
 msgstr "Questions to start with"
 
@@ -12051,8 +12131,8 @@ msgid "Issued at"
 msgstr "Issued at"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:419
-msgid "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
-msgstr "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
+#~ msgid "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
+#~ msgstr "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
 
 #: src/features/parliament/components/member-voting-tab.tsx:196
 msgid "Istoricul de vot nu a putut fi încărcat"
@@ -12160,9 +12240,9 @@ msgstr "Judete filtrate"
 msgid "Județe în schimbare: Ilfov vs Teleorman"
 msgstr "Județe în schimbare: Ilfov vs Teleorman"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:472
+#: src/features/statistics/pages/statistics-hub-page.tsx:447
 msgid "Județele care pierd populație"
-msgstr "Județele care pierd populație"
+msgstr "The counties losing people"
 
 #: src/features/statistics/components/territory-header.tsx:47
 #: src/features/statistics/hooks/use-comparisons.ts:279
@@ -12194,7 +12274,7 @@ msgstr "Justice"
 
 #: src/features/landing/lib/landing-groups.ts:131
 #: src/features/legal/lib/legal-domains.ts:39
-#: src/features/statistics/lib/landing-constants.ts:36
+#: src/features/statistics/lib/landing-constants.ts:40
 #: src/features/statistics/lib/territory-groups.ts:32
 #: src/routes/justitie.cautare.tsx:40
 #: src/routes/justitie.index.tsx:30
@@ -12497,6 +12577,10 @@ msgstr "Legislația României"
 #: src/features/landing/lib/search-filters.ts:115
 msgid "Legislație"
 msgstr "Legislation"
+
+#: src/features/statistics/lib/hub-format.ts:44
+msgid "lei"
+msgstr "lei"
 
 #: src/components/alerts/components/ConditionsList.tsx:93
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:39
@@ -13103,6 +13187,10 @@ msgstr "Localitate {0}"
 msgid "localitate necunoscută"
 msgstr "localitate necunoscută"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:339
+msgid "Localitatea ta"
+msgstr "Your locality"
+
 #: src/features/statistics/lib/comparison-presets.ts:24
 msgid "Localitatea vs județul vs România"
 msgstr "Localitatea vs județul vs România"
@@ -13175,7 +13263,7 @@ msgstr "Lock In Prediction"
 msgid "Locked"
 msgstr "Locked"
 
-#: src/features/statistics/lib/landing-constants.ts:60
+#: src/features/statistics/lib/landing-constants.ts:68
 msgid "Locuințe existente"
 msgstr "Existing dwellings"
 
@@ -13187,10 +13275,14 @@ msgstr "Locuințe în marile orașe"
 msgid "Locuire"
 msgstr "Locuire"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:192
+msgid "Locuitori"
+msgstr "Residents"
+
 #. placeholder {0}: population.period
 #: src/features/statistics/pages/statistics-hub-page.tsx:137
-msgid "locuitori la 1 ianuarie {0}"
-msgstr "locuitori la 1 ianuarie {0}"
+#~ msgid "locuitori la 1 ianuarie {0}"
+#~ msgstr "locuitori la 1 ianuarie {0}"
 
 #: src/features/statistics/components/landing/landing-hero.tsx:106
 #~ msgid "Locul tău în cifre"
@@ -13689,7 +13781,7 @@ msgid "maxim"
 msgstr "maximum"
 
 #. placeholder {0}: formatMarkValue(marks.peak.value)
-#: src/features/statistics/components/detail-observations-chart.tsx:367
+#: src/features/statistics/components/detail-observations-chart.tsx:373
 msgid "maxim {0}"
 msgstr "max {0}"
 
@@ -13729,7 +13821,7 @@ msgid "medie"
 msgstr "average"
 
 #. placeholder {0}: formatDerivedMark(stats.mean)
-#: src/features/statistics/components/detail-observations-chart.tsx:326
+#: src/features/statistics/components/detail-observations-chart.tsx:332
 msgid "medie {0}"
 msgstr "avg {0}"
 
@@ -13737,7 +13829,7 @@ msgstr "avg {0}"
 msgid "Mediu"
 msgstr "Mediu"
 
-#: src/features/statistics/lib/landing-constants.ts:37
+#: src/features/statistics/lib/landing-constants.ts:41
 msgid "Mediu înconjurător"
 msgstr "Environment"
 
@@ -13869,7 +13961,7 @@ msgid "minim"
 msgstr "minimum"
 
 #. placeholder {0}: formatMarkValue(marks.trough.value)
-#: src/features/statistics/components/detail-observations-chart.tsx:390
+#: src/features/statistics/components/detail-observations-chart.tsx:396
 msgid "minim {0}"
 msgstr "min {0}"
 
@@ -14390,13 +14482,13 @@ msgstr "Name pending verification"
 msgid "Narrow the paginated record list."
 msgstr "Narrow the paginated record list."
 
-#: src/features/statistics/lib/landing-constants.ts:63
+#: src/features/statistics/lib/landing-constants.ts:70
 msgid "Născuți vii"
-msgstr "Născuți vii"
+msgstr "Live births"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:413
+#: src/features/statistics/pages/statistics-hub-page.tsx:401
 msgid "Născuți vii și decedați, pe an"
-msgstr "Născuți vii și decedați, pe an"
+msgstr "Live births and deaths, by year"
 
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:171
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:446
@@ -14780,7 +14872,7 @@ msgstr "Niciun indicator cu date încărcate nu se potrivește căutării."
 #. placeholder {0}: layer.period
 #: src/features/statistics/components/hub/hub-county-rank.tsx:31
 msgid "Niciun județ cu valoare pentru {0}."
-msgstr "Niciun județ cu valoare pentru {0}."
+msgstr "No county has a value for {0}."
 
 #: src/features/parliament/components/parliament-hub-bill-activity.tsx:106
 msgid "Niciun proiect cu etape noi în ultimele 12 luni."
@@ -14809,11 +14901,11 @@ msgstr "Niciun rezultat pentru \"{query}\"."
 #~ msgstr "No results for <0>{0}</0>. <1>Try the full name or the CUI.</1>"
 
 #. placeholder {0}: status.term
-#: src/features/landing/components/search/landing-search.tsx:130
+#: src/features/landing/components/search/landing-search.tsx:133
 msgid "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau identificatorul.</1>"
 msgstr "No results for <0>{0}</0>. <1>Try the full name or identifier.</1>"
 
-#: src/features/landing/components/search/search-parts.tsx:357
+#: src/features/landing/components/search/search-parts.tsx:367
 msgid "Niciun rezultat."
 msgstr "No results."
 
@@ -14822,8 +14914,8 @@ msgid "Niciun serviciu nu corespunde filtrelor curente."
 msgstr "Niciun serviciu nu corespunde filtrelor curente."
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:170
-msgid "Niciun set de date cu observații nu se potrivește."
-msgstr "Niciun set de date cu observații nu se potrivește."
+#~ msgid "Niciun set de date cu observații nu se potrivește."
+#~ msgstr "Niciun set de date cu observații nu se potrivește."
 
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:247
 msgid "Niciun set nu corespunde filtrelor"
@@ -16141,7 +16233,7 @@ msgid "Numar"
 msgstr "Numar"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1687
-#: src/features/statistics/lib/hub-format.ts:180
+#: src/features/statistics/lib/hub-format.ts:221
 msgid "număr"
 msgstr "number"
 
@@ -16169,9 +16261,9 @@ msgstr "Numărul de acte pe domeniu nu a putut fi încărcat."
 msgid "Numărul de voturi pe grup poate diferi de totalul din divizare atunci când unii membri nu au participat sau nu au votat în mod explicit."
 msgstr "Numărul de voturi pe grup poate diferi de totalul din divizare atunci când unii membri nu au participat sau nu au votat în mod explicit."
 
-#: src/features/statistics/lib/landing-constants.ts:93
+#: src/features/statistics/lib/landing-constants.ts:119
 msgid "Numărul mediu al salariaților"
-msgstr "Numărul mediu al salariaților"
+msgstr "Average number of employees"
 
 #: src/features/statistics/components/landing/landing-example-card.tsx:24
 #~ msgid "Numărul mediu de salariați în România, județul Cluj și Cluj-Napoca."
@@ -16226,11 +16318,11 @@ msgstr "Nume reținut - verificare în curs"
 msgid "Nume sau CUI..."
 msgstr "Name or CUI..."
 
-#: src/features/landing/components/search/landing-search.tsx:114
+#: src/features/landing/components/search/landing-search.tsx:117
 msgid "Nume sau identificator."
 msgstr "Name or identifier."
 
-#: src/features/landing/components/search/landing-search.tsx:508
+#: src/features/landing/components/search/landing-search.tsx:531
 msgid "Nume sau identificator..."
 msgstr "Name or identifier..."
 
@@ -17061,7 +17153,6 @@ msgstr "Painted on the map (named territories)"
 
 #. placeholder {0}: formatHubPeriod(dataset.latestPeriod)
 #: src/features/statistics/components/dataset-explorer-row.tsx:78
-#: src/features/statistics/components/hub/hub-matrix-search.tsx:190
 msgid "până în {0}"
 msgstr "până în {0}"
 
@@ -17304,6 +17395,10 @@ msgstr "PDF oficial disponibil"
 msgid "Pe cine privește"
 msgstr "Pe cine privește"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:248
+msgid "Pe domenii"
+msgstr "By domain"
+
 #: src/features/legal/components/act-plain-summary.tsx:111
 #: src/features/legal/components/act-plain-summary.tsx:126
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:203
@@ -17424,8 +17519,8 @@ msgid "Perioadă: {start} – {end}"
 msgstr "Perioadă: {start} – {end}"
 
 #: src/features/statistics/components/hub/hub-sources-strip.tsx:54
-msgid "Perioade acoperite"
-msgstr "Perioade acoperite"
+#~ msgid "Perioade acoperite"
+#~ msgstr "Perioade acoperite"
 
 #: src/features/statistics/components/landing/landing-source.tsx:85
 #~ msgid "Perioade incompatibile"
@@ -17493,8 +17588,8 @@ msgstr "Permanently delete this map and all saved versions. This cannot be undon
 msgid "pers."
 msgstr "pers."
 
-#: src/features/statistics/lib/hub-format.ts:36
-#: src/features/statistics/lib/hub-format.ts:176
+#: src/features/statistics/lib/hub-format.ts:35
+#: src/features/statistics/lib/hub-format.ts:217
 msgid "persoane"
 msgstr "persons"
 
@@ -17541,6 +17636,10 @@ msgstr "Phase: {0}"
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:93
 msgid "Phone"
 msgstr "Phone"
+
+#: src/features/statistics/lib/landing-constants.ts:38
+msgid "PIB, prețuri, industrie, agricultură, locuințe, turism"
+msgstr "GDP, prices, industry, farming, housing, tourism"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:466
 msgid "Pick a dataset from the list above."
@@ -17670,8 +17769,8 @@ msgid "Pondere judeteana"
 msgstr "Pondere judeteana"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:490
-msgid "Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe."
-msgstr "Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe."
+#~ msgid "Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe."
+#~ msgstr "Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:489
 #~ msgid "Ponderea șomerilor înregistrați din 2016 încoace, la nivel național și pe județe."
@@ -17682,8 +17781,8 @@ msgid "Poor"
 msgstr "Poor"
 
 #: src/features/statistics/lib/landing-constants.ts:57
-msgid "Populația după domiciliu"
-msgstr "Domicile population"
+#~ msgid "Populația după domiciliu"
+#~ msgstr "Domicile population"
 
 #: src/features/statistics/components/landing/landing-decade-section.tsx:32
 #~ msgid "Populația după domiciliu la 1 ianuarie, pe județe și municipiul București. Schimbarea procentuală între cele două capete de interval."
@@ -17691,8 +17790,17 @@ msgstr "Domicile population"
 
 #. placeholder {0}: population.code
 #: src/features/statistics/pages/statistics-hub-page.tsx:138
-msgid "populația după domiciliu, {0}"
-msgstr "populația după domiciliu, {0}"
+#~ msgid "populația după domiciliu, {0}"
+#~ msgstr "populația după domiciliu, {0}"
+
+#: src/features/statistics/lib/landing-constants.ts:65
+msgid "Populația rezidentă"
+msgstr "Resident population"
+
+#. placeholder {0}: population.period
+#: src/features/statistics/pages/statistics-hub-page.tsx:193
+msgid "Populația rezidentă la 1 ianuarie {0}"
+msgstr "Resident population on 1 January {0}"
 
 #: src/features/statistics/lib/territory-groups.ts:23
 msgid "Populație"
@@ -17701,6 +17809,10 @@ msgstr "Populație"
 #: src/features/landing/lib/national-facts.ts:119
 msgid "Populație rezidentă"
 msgstr "Resident population"
+
+#: src/features/statistics/lib/landing-constants.ts:37
+msgid "Populație, muncă și salarii, educație, sănătate"
+msgstr "Population, jobs and pay, education, health"
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:96
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:143
@@ -17867,8 +17979,8 @@ msgid "Potrivirea a fost respinsă în revizuire."
 msgstr "Potrivirea a fost respinsă în revizuire."
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:143
-msgid "potriviri"
-msgstr "potriviri"
+#~ msgid "potriviri"
+#~ msgstr "potriviri"
 
 #: src/features/legal/components/legislation-act-finder.tsx:324
 msgid "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
@@ -18207,7 +18319,7 @@ msgstr "Proceduri"
 msgid "Procent"
 msgstr "Procent"
 
-#: src/features/statistics/lib/hub-format.ts:178
+#: src/features/statistics/lib/hub-format.ts:219
 msgid "procente"
 msgstr "percent"
 
@@ -18784,14 +18896,20 @@ msgstr "răspuns degradat — o parte din căutare nu a rulat"
 msgid "Rată apel"
 msgstr "Rată apel"
 
-#: src/features/statistics/lib/landing-constants.ts:65
-#: src/features/statistics/lib/landing-constants.ts:92
+#: src/features/statistics/lib/landing-constants.ts:64
+#: src/features/statistics/lib/landing-constants.ts:72
+#: src/features/statistics/lib/landing-constants.ts:118
+#: src/features/statistics/pages/statistics-hub-page.tsx:180
 msgid "Rata șomajului"
-msgstr "Rata șomajului"
+msgstr "Unemployment rate"
 
-#: src/features/statistics/lib/landing-constants.ts:92
+#: src/features/statistics/lib/landing-constants.ts:118
 msgid "Rata șomajului înregistrat"
-msgstr "Rata șomajului înregistrat"
+msgstr "Registered unemployment rate"
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:465
+msgid "Rata șomajului înregistrat din 1992 până azi, pentru țară și pentru fiecare județ."
+msgstr "The registered unemployment rate from 1992 to today, for the country and for every county."
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:912
 msgid "Rate/KPI AMEPIP, afișate fără transformare în valori contabile."
@@ -19686,8 +19804,8 @@ msgstr "rezultate"
 #: src/features/elections/components/contest-result-explorer-page.tsx:166
 #: src/features/entity-search/components/entity-results-header.tsx:38
 #: src/features/entity-search/components/entity-search-skeleton.tsx:15
-#: src/features/landing/components/search/landing-search.tsx:607
-#: src/features/landing/components/search/landing-search.tsx:658
+#: src/features/landing/components/search/landing-search.tsx:630
+#: src/features/landing/components/search/landing-search.tsx:681
 #: src/features/legal/components/legislation-act-finder.tsx:372
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:229
 msgid "Rezultate"
@@ -19792,16 +19910,20 @@ msgstr "Romania in figures"
 #~ msgstr "România în cifre: populație, salariați, șomaj și locuințe pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo."
 
 #: src/routes/ins/index.tsx:54
-msgid "România în cifre: populație, salariați, șomaj, locuințe, speranță de viață și turism pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo."
-msgstr "România în cifre: populație, salariați, șomaj, locuințe, speranță de viață și turism pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo."
+#~ msgid "România în cifre: populație, salariați, șomaj, locuințe, speranță de viață și turism pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo."
+#~ msgstr "România în cifre: populație, salariați, șomaj, locuințe, speranță de viață și turism pentru fiecare localitate, județ și pentru întreaga țară — date oficiale INS Tempo."
 
 #: src/routes/map.lazy.tsx:168
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Romania spending heatmap - Transparenta.eu"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:276
+msgid "România,<0/>an de an"
+msgstr "Romania,<0/>year by year"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:273
-msgid "România<0/>în cifre"
-msgstr "România<0/>în cifre"
+#~ msgid "România<0/>în cifre"
+#~ msgstr "România<0/>în cifre"
 
 #: src/components/theme/language-toggle.tsx:68
 msgid "Romanian"
@@ -19900,13 +20022,22 @@ msgstr "Ruta de referendum este planificata, dar nu face parte din acest MVP."
 msgid "S.C. EXEMPLU COMERCIAL SA"
 msgstr "S.C. EXEMPLU COMERCIAL SA"
 
-#: src/features/statistics/lib/landing-constants.ts:93
+#: src/features/statistics/lib/landing-constants.ts:119
 msgid "Salariați"
-msgstr "Salariați"
+msgstr "Employees"
 
-#: src/features/statistics/lib/landing-constants.ts:58
+#: src/features/statistics/lib/landing-constants.ts:66
 msgid "Salariați (număr mediu)"
 msgstr "Employees (average count)"
+
+#: src/features/statistics/components/hub/hub-dataset-search.tsx:23
+msgid "Salariu, inflație, populație sau cod INS..."
+msgstr "Pay, inflation, population or INS code..."
+
+#: src/features/statistics/lib/landing-constants.ts:63
+#: src/features/statistics/pages/statistics-hub-page.tsx:167
+msgid "Salariul mediu net"
+msgstr "Average net pay"
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:340
 msgid "Salary Calculation"
@@ -19952,12 +20083,12 @@ msgid "Sari la textul ședinței"
 msgstr "Sari la textul ședinței"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:357
-msgid "Sau localitatea ta"
-msgstr "Sau localitatea ta"
+#~ msgid "Sau localitatea ta"
+#~ msgstr "Sau localitatea ta"
 
 #: src/features/landing/components/landing-page.tsx:280
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:99
-#: src/features/statistics/pages/statistics-hub-page.tsx:204
+#: src/features/statistics/pages/statistics-hub-page.tsx:231
 msgid "Sau mergi direct la"
 msgstr "Or go straight to"
 
@@ -20039,7 +20170,7 @@ msgstr "Scrie numele sau codul unui indicator, de exemplu „salariați\" sau �
 msgid "Scrie numele unei localități sau al unui județ. Căutarea ignoră diacriticele."
 msgstr "Enter a locality or county name. Search ignores diacritics."
 
-#: src/features/landing/components/search/landing-search.tsx:102
+#: src/features/landing/components/search/landing-search.tsx:105
 msgid "Scrie un nume pentru a căuta în <0>{scope}</0>."
 msgstr "Type a name to search in <0>{scope}</0>."
 
@@ -20047,7 +20178,7 @@ msgstr "Type a name to search in <0>{scope}</0>."
 #~ msgid "Scrie un nume pentru a căuta."
 #~ msgstr "Type a name to search."
 
-#: src/features/landing/components/search/search-parts.tsx:353
+#: src/features/landing/components/search/search-parts.tsx:363
 msgid "Scrie un nume sau un identificator pentru a căuta."
 msgstr "Enter a name or identifier to search."
 
@@ -20067,7 +20198,7 @@ msgstr "Scrutin negasit"
 
 #: src/features/landing/components/landing-page.tsx:278
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:97
-#: src/features/statistics/pages/statistics-hub-page.tsx:202
+#: src/features/statistics/pages/statistics-hub-page.tsx:229
 msgid "Scurtături"
 msgstr "Shortcuts"
 
@@ -20076,8 +20207,8 @@ msgid "Scurtături căutare"
 msgstr "Scurtături căutare"
 
 #: src/features/entity-search/components/entity-empty-state.tsx:119
-#: src/features/landing/components/search/landing-search.tsx:139
-#: src/features/landing/components/search/search-parts.tsx:359
+#: src/features/landing/components/search/landing-search.tsx:142
+#: src/features/landing/components/search/search-parts.tsx:369
 msgid "Scurtează căutarea la cel mult 10 cuvinte și verifică ghilimelele."
 msgstr "Shorten your search to at most 10 words and check the quotation marks."
 
@@ -20089,7 +20220,7 @@ msgstr "SDG 2020"
 msgid "SDG 2030"
 msgstr "SDG 2030"
 
-#: src/features/landing/components/search/search-parts.tsx:344
+#: src/features/landing/components/search/search-parts.tsx:354
 msgid "Se actualizează rezultatele."
 msgstr "Updating results."
 
@@ -20140,7 +20271,7 @@ msgstr "only the essentials apply"
 
 #: src/features/statistics/components/hub/hub-place-finder.tsx:57
 msgid "Se caută"
-msgstr "Se caută"
+msgstr "Searching"
 
 #: src/features/legal/components/legislation-search-skeleton.tsx:15
 msgid "Se caută în legislație"
@@ -20150,7 +20281,7 @@ msgstr "Se caută în legislație"
 msgid "Se caută intervenția…"
 msgstr "Se caută intervenția…"
 
-#: src/features/landing/components/search/search-parts.tsx:363
+#: src/features/landing/components/search/search-parts.tsx:373
 msgid "Se caută."
 msgstr "Searching."
 
@@ -20917,13 +21048,13 @@ msgstr "septembrie"
 #~ msgid "Seria completă nu a putut fi citită. Rezultatele parțiale nu sunt afișate."
 #~ msgstr "The complete series could not be read. Partial results are not displayed."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:439
+#: src/features/statistics/pages/statistics-hub-page.tsx:421
 msgid "Seria deceselor"
-msgstr "Seria deceselor"
+msgstr "The deaths series"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:431
+#: src/features/statistics/pages/statistics-hub-page.tsx:413
 msgid "Seria nașterilor"
-msgstr "Seria nașterilor"
+msgstr "The births series"
 
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:924
 msgid "Seria necesită o selecție din sursă"
@@ -21020,12 +21151,12 @@ msgid "Serii oficiale INS, cu acoperirea declarată pentru fiecare nivel."
 msgstr "Official INS series, with declared coverage for each level."
 
 #: src/features/statistics/components/hub/hub-sources-strip.tsx:64
-msgid "Seriile din 1990"
-msgstr "Seriile din 1990"
+#~ msgid "Seriile din 1990"
+#~ msgstr "Seriile din 1990"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:447
-msgid "Seriile din 1990 nu au sosit."
-msgstr "Seriile din 1990 nu au sosit."
+#~ msgid "Seriile din 1990 nu au sosit."
+#~ msgstr "Seriile din 1990 nu au sosit."
 
 #: src/features/procurement/components/procurement-list-provenance-notice.tsx:62
 msgid "Served live from the database (search engine not used)."
@@ -21146,32 +21277,32 @@ msgid "Setul există în catalog, dar observațiile nu sunt încă încărcate."
 msgstr "Setul există în catalog, dar observațiile nu sunt încă încărcate."
 
 #: src/features/statistics/components/hub/hub-sources-strip.tsx:38
-msgid "Seturi cu observații"
-msgstr "Seturi cu observații"
+#~ msgid "Seturi cu observații"
+#~ msgstr "Seturi cu observații"
 
 #: src/features/landing/components/provenance-band.tsx:32
 msgid "seturi de date"
 msgstr "datasets"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:147
-msgid "Seturi de date"
-msgstr "Seturi de date"
+#~ msgid "Seturi de date"
+#~ msgstr "Seturi de date"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:107
-msgid "seturi de date cu observații"
-msgstr "seturi de date cu observații"
+#~ msgid "seturi de date cu observații"
+#~ msgstr "seturi de date cu observații"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:139
-msgid "Seturi de date cu observații"
-msgstr "Seturi de date cu observații"
+#~ msgid "Seturi de date cu observații"
+#~ msgstr "Seturi de date cu observații"
 
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:135
 msgid "Seturi de date INS"
 msgstr "Seturi de date INS"
 
 #: src/features/statistics/components/hub/hub-theme-panel.tsx:43
-msgid "Seturi de date pe domenii"
-msgstr "Datasets by domain"
+#~ msgid "Seturi de date pe domenii"
+#~ msgstr "Datasets by domain"
 
 #: src/features/statistics/components/hub/hub-theme-panel.tsx:43
 #~ msgid "Seturi de date pe teme"
@@ -21195,12 +21326,12 @@ msgstr "Related datasets ({0})"
 #~ msgstr "Related datasets ({0}{1})"
 
 #: src/features/statistics/components/hub/hub-matrix-search.tsx:99
-msgid "Seturi INS"
-msgstr "Seturi INS"
+#~ msgid "Seturi INS"
+#~ msgstr "Seturi INS"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:236
-msgid "Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul."
-msgstr "The datasets with observations, across the eight official domains. Each row opens that domain in the whole catalog."
+#~ msgid "Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul."
+#~ msgstr "The datasets with observations, across the eight official domains. Each row opens that domain in the whole catalog."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:235
 #~ msgid "Seturile de date cu observații, pe cele opt teme oficiale. Fiecare rând deschide tema în tot catalogul."
@@ -21642,9 +21773,9 @@ msgstr "Solicită datele lipsă sau blocate"
 msgid "Soluționat"
 msgstr "Soluționat"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:487
+#: src/features/statistics/pages/statistics-hub-page.tsx:462
 msgid "Șomajul, lună de lună"
-msgstr "Șomajul, lună de lună"
+msgstr "Unemployment, month by month"
 
 #: src/components/charts/components/ChartDataError.tsx:236
 msgid "Some data issues were automatically resolved"
@@ -21681,8 +21812,13 @@ msgid "Some series are unavailable. Review the details before using this chart."
 msgstr "Some series are unavailable. Review the details before using this chart."
 
 #: src/features/statistics/lib/landing-constants.ts:59
-msgid "Șomeri înregistrați (pondere)"
-msgstr "Registered unemployment (share)"
+#~ msgid "Șomeri înregistrați (pondere)"
+#~ msgstr "Registered unemployment (share)"
+
+#. placeholder {0}: formatHubPeriod(unemployment.period)
+#: src/features/statistics/pages/statistics-hub-page.tsx:181
+msgid "Șomeri înregistrați, {0}"
+msgstr "Registered unemployed, {0}"
 
 #: src/features/procurement/components/procurement-error-state.tsx:77
 msgid "Something went wrong while fetching procurement data. Try again — if the problem persists, the data source may be temporarily unavailable."
@@ -21744,13 +21880,13 @@ msgstr "Sorted by record count. Modifications are counts-only — no money colum
 msgid "Sorted by reported call-off value for the current filters — execution under frameworks, never summed with contract awards."
 msgstr "Sorted by reported call-off value for the current filters — execution under frameworks, never summed with contract awards."
 
-#: src/features/statistics/lib/landing-constants.ts:62
+#: src/features/statistics/lib/landing-constants.ts:69
 msgid "Sosiri turiști"
-msgstr "Sosiri turiști"
+msgstr "Tourist arrivals"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:505
+#: src/features/statistics/pages/statistics-hub-page.tsx:480
 msgid "Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate."
-msgstr "Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate."
+msgstr "Arrivals at places to stay, 2018–2025, for the country or for a locality."
 
 #: src/components/charts/components/filters-details/StaticSeriesFilter.tsx:31
 #: src/components/charts/components/series-config/StaticSeriesEditor.tsx:50
@@ -21857,10 +21993,10 @@ msgstr "Spending categories"
 msgid "Spending categories in this territory."
 msgstr "Spending categories in this territory."
 
-#: src/features/statistics/lib/landing-constants.ts:61
-#: src/features/statistics/lib/landing-constants.ts:91
+#: src/features/statistics/lib/landing-constants.ts:67
+#: src/features/statistics/lib/landing-constants.ts:117
 msgid "Speranța de viață"
-msgstr "Speranța de viață"
+msgstr "Life expectancy"
 
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:293
 msgid "Split"
@@ -22032,15 +22168,15 @@ msgstr "Static Dataset Alert"
 msgid "Static Series"
 msgstr "Static Series"
 
-#: src/features/statistics/lib/landing-constants.ts:34
+#: src/features/statistics/lib/landing-constants.ts:38
 msgid "Statistică economică"
 msgstr "Economic statistics"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:193
-msgid "Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc."
-msgstr "Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc."
+#~ msgid "Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc."
+#~ msgstr "Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc."
 
-#: src/features/statistics/lib/landing-constants.ts:33
+#: src/features/statistics/lib/landing-constants.ts:37
 msgid "Statistică socială"
 msgstr "Social statistics"
 
@@ -22048,9 +22184,13 @@ msgstr "Social statistics"
 msgid "Statistici"
 msgstr "Statistics"
 
+#: src/features/statistics/pages/statistics-hub-page.tsx:212
+msgid "Statistici / INS"
+msgstr "Statistics / INS"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:181
-msgid "Statistici / INS Tempo"
-msgstr "Statistici / INS Tempo"
+#~ msgid "Statistici / INS Tempo"
+#~ msgstr "Statistici / INS Tempo"
 
 #: src/features/privacy/lib/consent-categories.ts:38
 msgid "Statistici de utilizare"
@@ -22059,6 +22199,7 @@ msgstr "Usage statistics"
 #: src/features/entity-search/lib/doc-type-meta.ts:29
 #: src/features/landing/lib/landing-groups.ts:174
 #: src/features/landing/lib/search-filters.ts:138
+#: src/features/statistics/components/hub/hub-dataset-search.tsx:22
 #: src/routes/ins/index.tsx:51
 msgid "Statistici INS"
 msgstr "INS statistics"
@@ -22194,7 +22335,7 @@ msgstr "Steps"
 msgid "Șterge"
 msgstr "Șterge"
 
-#: src/features/landing/components/search/landing-search.tsx:525
+#: src/features/landing/components/search/landing-search.tsx:548
 #: src/features/statistics/components/hub/hub-place-finder.tsx:34
 #: src/features/statistics/components/territory-search.tsx:55
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:167
@@ -22504,7 +22645,6 @@ msgstr "sursă"
 #: src/features/justice/components/data-trust.tsx:200
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1608
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1623
-#: src/features/statistics/components/hub/hub-sources-strip.tsx:30
 #: src/features/statistics/components/source-provenance-drawer.tsx:50
 #: src/features/statistics/components/source-provenance-drawer.tsx:73
 msgid "Sursă"
@@ -22642,8 +22782,6 @@ msgid "Surse divergente asupra valorii — verifică sursa."
 msgstr "Surse divergente asupra valorii — verifică sursa."
 
 #: src/features/private-companies/components/hub/hub-sections.tsx:650
-#: src/features/statistics/components/hub/hub-sources-strip.tsx:14
-#: src/features/statistics/pages/statistics-hub-page.tsx:514
 msgid "Surse și acoperire"
 msgstr "Sources and coverage"
 
@@ -22718,7 +22856,7 @@ msgstr "System"
 #. placeholder {1}: quarter[1]
 #: src/features/statistics/lib/hub-format.ts:79
 msgid "T{0} {1}"
-msgstr "T{0} {1}"
+msgstr "Q{0} {1}"
 
 #: src/features/elections/components/contest-result-explorer-page.tsx:127
 #: src/features/public-investments/components/SourceProvenanceDrawer.tsx:86
@@ -22809,8 +22947,12 @@ msgid "Telecomunicații și digital"
 msgstr "Telecomunicații și digital"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:475
-msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
-msgstr "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
+#~ msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
+#~ msgstr "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:450
+msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an."
+msgstr "Teleorman, Brăila, Tulcea, Olt and Hunedoara, year by year."
 
 #: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:71
 #: src/features/statistics/lib/explorer-chips.ts:114
@@ -22852,8 +22994,8 @@ msgid "Teritorii selectate"
 msgstr "Selected territories"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:122
-msgid "teritorii, de la țară la localitate"
-msgstr "teritorii, de la țară la localitate"
+#~ msgid "teritorii, de la țară la localitate"
+#~ msgstr "teritorii, de la țară la localitate"
 
 #: src/features/statistics/lib/dimension-labels.ts:14
 msgid "teritoriu"
@@ -23049,7 +23191,7 @@ msgid "The category breakdown could not be loaded"
 msgstr "The category breakdown could not be loaded"
 
 #. placeholder {0}: series.points.length
-#: src/features/statistics/components/detail-observations-chart.tsx:428
+#: src/features/statistics/components/detail-observations-chart.tsx:434
 msgid "The chart shows the latest {0} periods. Earlier observations remain in the table and complete export."
 msgstr "The chart shows the latest {0} periods. Earlier observations remain in the table and complete export."
 
@@ -23807,9 +23949,9 @@ msgstr "Toate randurile de evidenta grupate dupa tipul sursei."
 msgid "Toate setările"
 msgstr "All settings"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:208
+#: src/features/statistics/pages/statistics-hub-page.tsx:235
 msgid "Toate seturile de date"
-msgstr "Toate seturile de date"
+msgstr "All datasets"
 
 #: src/features/statistics/components/landing/landing-themes-section.tsx:38
 #~ msgid "Toate seturile INS Tempo, grupate pe domeniile oficiale."
@@ -23958,8 +24100,8 @@ msgid "Topic"
 msgstr "Topic"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:108
-msgid "tot catalogul INS Tempo, pe opt domenii oficiale"
-msgstr "the whole INS Tempo catalog, across eight official domains"
+#~ msgid "tot catalogul INS Tempo, pe opt domenii oficiale"
+#~ msgstr "the whole INS Tempo catalog, across eight official domains"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:107
 #~ msgid "tot catalogul INS Tempo, pe opt teme oficiale"
@@ -24248,9 +24390,9 @@ msgstr "Try once more before moving on."
 msgid "Turism"
 msgstr "Turism"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:502
+#: src/features/statistics/pages/statistics-hub-page.tsx:477
 msgid "Turismul înainte și după pandemie"
-msgstr "Turismul înainte și după pandemie"
+msgstr "Tourism before and after the pandemic"
 
 #: src/features/private-companies/components/charts/financial-chart-legend.tsx:43
 #: src/features/private-companies/components/charts/financial-chart-tooltip.tsx:21
@@ -24439,8 +24581,8 @@ msgid "Un cookie mușcat, cu firimituri alături"
 msgstr "A bitten cookie, with crumbs beside it"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:308
-msgid "Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă."
-msgstr "Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă."
+#~ msgid "Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă."
+#~ msgstr "Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru seria lui completă."
 
 #: src/features/legal/components/legislation-changes-feed.tsx:291
 msgid "Un sfert dintre evenimente nu au dată de intrare în vigoare înregistrată — le găsești sub „fără dată”. Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
@@ -24477,9 +24619,9 @@ msgstr "unavailable under the current answerability policy"
 msgid "Unde a fost publicat"
 msgstr "Unde a fost publicat"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:306
+#: src/features/statistics/pages/statistics-hub-page.tsx:302
 msgid "Unde stă județul tău"
-msgstr "Unde stă județul tău"
+msgstr "Where your county stands"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:204
 msgid "Unde sunt firmele în funcțiune"
@@ -24962,7 +25104,7 @@ msgstr "Utilitate publica SGG"
 msgid "Utilități publice"
 msgstr "Utilități publice"
 
-#: src/features/statistics/lib/landing-constants.ts:38
+#: src/features/statistics/lib/landing-constants.ts:42
 msgid "Utilități publice și administrarea teritoriului"
 msgstr "Public utilities and territorial administration"
 

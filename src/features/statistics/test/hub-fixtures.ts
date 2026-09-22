@@ -11,7 +11,7 @@ import { hubStaticSeries } from '../lib/hub-national-series'
  * builders feed the fetcher test (wire shape) and the page test (domain
  * shape). The wire builders satisfy the native validators: a descriptor with
  * custody metadata and a legal dimension layout, observations with EXACT
- * geography at RO/NATIONAL.
+ * geography at RO/NATIONAL — or, for a matrix with no geography axis, none.
  */
 
 type UnitSpec = { readonly code: string; readonly symbol: string; readonly name_ro: string; readonly kind: StatisticsHubUnit }
@@ -21,6 +21,7 @@ export const HUB_UNITS = {
   count: { code: '9669', symbol: 'count', name_ro: 'Numar', kind: 'count' },
   percent: { code: '10225', symbol: 'percent', name_ro: 'Procente', kind: 'percent' },
   years: { code: '9361', symbol: 'other', name_ro: 'Ani', kind: 'years' },
+  lei: { code: '9718', symbol: 'other', name_ro: 'Lei RON', kind: 'other' },
 } as const satisfies Record<string, UnitSpec>
 
 export interface HubNationalSpec {
@@ -32,15 +33,19 @@ export interface HubNationalSpec {
   readonly unit: UnitSpec
   /** Member per classification axis, `D0` first. */
   readonly members: readonly string[]
+  /** A matrix with no geography axis: every member axis is a classification, and the cell names no territory. */
+  readonly nationalOnly?: boolean
 }
 
-/** The nine national cells the hub reads, at the values measured on 2026-09-16. */
+/** The national cells the hub reads, at the values measured on 2026-09-22. */
 export const HUB_NATIONAL_SPECS: readonly HubNationalSpec[] = [
-  { code: 'POP107D', nameRo: 'Populatia dupa domiciliu la 1 ianuarie', value: '21646220', period: '2026', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['1', '105', '112'] },
+  { code: 'IPC102E', nameRo: 'Indicii preturilor de consum fata de luna corespunzatoare din anul precedent', value: '110.85', period: '2026-05', periodicity: 'MONTHLY', unit: HUB_UNITS.percent, members: ['12668'], nationalOnly: true },
+  { code: 'FOM106D', nameRo: 'Castigul salarial mediu net lunar', value: '5914', period: '2025-12', periodicity: 'MONTHLY', unit: HUB_UNITS.lei, members: ['23415'], nationalOnly: true },
+  { code: 'SOM103B', nameRo: 'Rata somajului inregistrat la sfarsitul lunii', value: '3.2', period: '2026-05', periodicity: 'MONTHLY', unit: HUB_UNITS.percent, members: ['105', '112'] },
+  { code: 'POP105A', nameRo: 'Populatia rezidenta la 1 ianuarie', value: '19043151', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['1', '105', '108', '112'] },
   { code: 'FOM104D', nameRo: 'Numarul mediu al salariatilor', value: '5453155', period: '2024', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['112', '112'] },
-  { code: 'SOM101F', nameRo: 'Ponderea somerilor inregistrati', value: '1.9', period: '2026-05', periodicity: 'MONTHLY', unit: HUB_UNITS.percent, members: ['105', '112', '112'] },
-  { code: 'LOC101B', nameRo: 'Locuinte existente', value: '10177161', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.count, members: ['7388', '112', '112'] },
   { code: 'POP217A', nameRo: 'Durata medie a vietii', value: '77.45', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.years, members: ['108', '105', '112'] },
+  { code: 'LOC101B', nameRo: 'Locuinte existente', value: '10177161', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.count, members: ['7388', '112', '112'] },
   { code: 'TUR104E', nameRo: 'Sosiri ale turistilor', value: '14258382', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['9148', '112', '112'] },
   { code: 'POP201D', nameRo: 'Nascuti vii', value: '145725', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['112', '112'] },
   { code: 'POP206D', nameRo: 'Decedati', value: '239691', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['112', '112'] },
@@ -49,11 +54,11 @@ export const HUB_NATIONAL_SPECS: readonly HubNationalSpec[] = [
 
 function descriptor(spec: HubNationalSpec) {
   // The last member axis is the territorial one, as on every INS dataset the
-  // hub reads: the national total sits on it, and the geography of a cell is
-  // the pair of that axis and its member.
+  // hub reads that has one: the national total sits on it, and the geography
+  // of a cell is the pair of that axis and its member.
   const classificationDimensions = spec.members.map((_, index) => ({
     index,
-    type: index === spec.members.length - 1 ? 'TERRITORIAL' : 'CLASSIFICATION',
+    type: index === spec.members.length - 1 && !spec.nationalOnly ? 'TERRITORIAL' : 'CLASSIFICATION',
     label_ro: `D${index}`,
     label_en: `D${index}`,
     classification_type: { code: `D${index}` },
@@ -91,11 +96,11 @@ export function nationalObservation(spec: HubNationalSpec) {
     value: spec.value,
     value_status: null,
     time_period: timePeriod(spec.period, spec.periodicity),
-    territory: { code: 'RO', siruta_code: null, level: 'NATIONAL', name_ro: 'Romania' },
+    territory: spec.nationalOnly ? null : { code: 'RO', siruta_code: null, level: 'NATIONAL', name_ro: 'Romania' },
     unit: { code: spec.unit.code, symbol: spec.unit.symbol, name_ro: spec.unit.name_ro },
     classifications: spec.members.map((member, index) => ({ id: `${spec.code}-${index}`, type_code: `D${index}`, code: member, name_ro: member })),
     dimensions: {
-      geography: {
+      geography: spec.nationalOnly ? null : {
         pairs: [[spec.members.length - 1, Number(spec.members[spec.members.length - 1])]],
         resolution: 'EXACT',
         flags: [],
@@ -108,7 +113,7 @@ export function nationalObservation(spec: HubNationalSpec) {
   }
 }
 
-/** The `InsLandingTiles` response for the hub's nine codes. */
+/** The `InsLandingTiles` response for the hub's codes. */
 export function hubTilesResponse(overrides: Partial<Record<string, Partial<HubNationalSpec>>> = {}) {
   return {
     latest: HUB_NATIONAL_SPECS.map((base) => {
@@ -123,25 +128,6 @@ export function hubTilesResponse(overrides: Partial<Record<string, Partial<HubNa
       }
     }),
   }
-}
-
-export function hubCatalogResponse() {
-  return {
-    loaded: { pageInfo: { totalCount: 1916 } },
-    catalog: { pageInfo: { totalCount: 1916 } },
-    t1: { pageInfo: { totalCount: 844 } },
-    t2: { pageInfo: { totalCount: 532 } },
-    t3: { pageInfo: { totalCount: 9 } },
-    t4: { pageInfo: { totalCount: 20 } },
-    t5: { pageInfo: { totalCount: 25 } },
-    t6: { pageInfo: { totalCount: 39 } },
-    t7: { pageInfo: { totalCount: 107 } },
-    t8: { pageInfo: { totalCount: 340 } },
-  }
-}
-
-export function hubTerritoryCountResponse() {
-  return { insTerritories: { pageInfo: { totalCount: 3239 } } }
 }
 
 export interface HubCountyRowSpec {
@@ -201,6 +187,7 @@ export function hubIndicator(spec: HubNationalSpec): StatisticsHubIndicator {
     period: spec.period,
     periodicity: spec.periodicity,
     pins: spec.members.map((member, index) => `D${index}:${member}`),
+    hasGeography: !spec.nationalOnly,
     series: hubStaticSeries(spec.code)?.points ?? [],
   }
 }
@@ -228,8 +215,6 @@ export function hubData(overrides: Partial<StatisticsHubData> = {}): StatisticsH
         { code: 'CJ', name: 'Cluj', value: 261239 },
       ]),
     ],
-    catalog: { nativeContract: 'native-v2', loadedCount: 1916, catalogCount: 1916, themes: [{ code: '1', count: 844 }, { code: '2', count: 532 }, { code: '3', count: 9 }, { code: '4', count: 20 }, { code: '5', count: 25 }, { code: '6', count: 39 }, { code: '7', count: 107 }, { code: '8', count: 340 }] },
-    territoryCount: 3239,
     failures: [],
     ...overrides,
   }

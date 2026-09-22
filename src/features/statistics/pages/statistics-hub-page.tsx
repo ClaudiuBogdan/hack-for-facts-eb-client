@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -12,28 +13,38 @@ import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts'
 import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
 import { HubCountyMap } from '../components/hub/hub-county-map'
 import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank'
+import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
 import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures'
 import { useIndicatorLabel } from '../components/hub/hub-labels'
-import { describeHubChange, formatHubNumber, formatHubPeriod, formatHubValue, indicatorDetailSearch } from '../lib/hub-format'
-import { HubMatrixSearch } from '../components/hub/hub-matrix-search'
 import { HubPlaceFinder } from '../components/hub/hub-place-finder'
-import { HubSourcesStrip } from '../components/hub/hub-sources-strip'
 import { HubThemePanel } from '../components/hub/hub-theme-panel'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
-import { HUB_SERIES_CAPTURED_AT } from '../lib/hub-national-series'
-import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
+import {
+  annualInflationRate,
+  deathsExceedBirthsSince,
+  describeHubChange,
+  formatHubPeriod,
+  formatHubValue,
+  hubUnitWord,
+  indicatorDetailSearch,
+  sameMonthLastYear,
+  sourceDecimals,
+} from '../lib/hub-format'
+import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES, HUB_HEADLINE_CODES } from '../lib/landing-constants'
+import { describeValueStatus } from '../lib/value-status'
 
 /**
  * `/ins` — the statistics hub, in the landing's visual language, one
  * band per idea (the composition chosen on 2026-09-16, see
- * `docs/design/statistics/design.md` §6).
+ * `docs/design/statistics/design.md` §6 and §6n).
  *
- * Search first, in a hero that says what the dataset is, with the catalog's
- * themes beside it. Then four figures, counting up. Then one numbered band
- * per module: the national indicators, the counties (map beside list,
- * shared highlight, one indicator at a time, the choice in the URL), 35
- * years of change, three investigations, the sources. The territory search
- * lives inside the counties band; the matrix search owns the hero.
+ * Search first, in a hero that names the source, with the eight domains
+ * beside it. Then the four figures a reader comes for — inflation, net
+ * earnings, unemployment, population — counting up. Then one numbered band
+ * per module: the national series with their sparklines, the counties (map
+ * beside list, shared highlight, one indicator at a time, the choice in the
+ * URL), 35 years of births and deaths, three ready analyses. A band says
+ * what its numbers are and nothing about the database behind them.
  *
  * Every section reads independently and fails independently: a failed one
  * says so and offers the retry, never a blank.
@@ -52,6 +63,32 @@ function startArrivalEffects(block: Element, delay: number) {
 
 function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined {
   return hub?.indicators?.find((indicator) => indicator.code === code)
+}
+
+/** An indicator with a number and a period to show, or nothing — a blocked or absent cell has no figure to put in the band. */
+function withFigure(indicator: StatisticsHubIndicator | undefined) {
+  return indicator && indicator.value !== null && indicator.period ? { ...indicator, value: indicator.value, period: indicator.period } : null
+}
+
+/** The cell's INS flag, spelled out after its period: a provisional or estimated figure says so here as it does in the rows. */
+function withValueStatus(note: ReactNode, indicator: StatisticsHubIndicator): ReactNode {
+  return indicator.valueStatus ? (
+    <>
+      {note}, {describeValueStatus(indicator.valueStatus)}
+    </>
+  ) : (
+    note
+  )
+}
+
+function detailLink(indicator: StatisticsHubIndicator) {
+  return function DetailLink(label: ReactNode, className: string) {
+    return (
+      <Link to="/ins/seturi/$cod" params={{ cod: indicator.code }} search={indicatorDetailSearch(indicator)} className={className}>
+        {label}
+      </Link>
+    )
+  }
 }
 
 export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) {
@@ -80,87 +117,81 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
     })
   }
 
-  const population = indicatorByCode(hub, 'POP107D')
   const lifeExpectancy = indicatorByCode(hub, 'POP217A')
   const employees = indicatorByCode(hub, 'FOM104D')
   const tourists = indicatorByCode(hub, 'TUR104E')
   const births = indicatorByCode(hub, 'POP201D')
   const deaths = indicatorByCode(hub, 'POP206D')
-  const captureMonth = formatHubPeriod(HUB_SERIES_CAPTURED_AT.slice(0, 7))
   const figureRows = HUB_FIGURE_CODES.flatMap((code) => {
     const indicator = indicatorByCode(hub, code)
     return indicator ? [indicator] : []
   })
-  // The longest series the hub carries; the band says which, because the
-  // others start later or end earlier (tourism starts 2001, employees stop a
-  // year before).
-  const seriesSpan = lifeExpectancy && lifeExpectancy.series.length > 1
-    ? { from: lifeExpectancy.series[0].period, to: lifeExpectancy.series[lifeExpectancy.series.length - 1].period }
-    : null
+  const since = lifeExpectancy?.series[0]?.period ?? '1990'
+  const naturalDecreaseSince = births && deaths ? deathsExceedBirthsSince(births.series, deaths.series) : null
 
+  const inflation = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.inflation))
+  const earnings = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.earnings))
+  const unemployment = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.unemployment))
+  const population = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.population))
+  const inflationBase = inflation ? sameMonthLastYear(inflation.period) : null
   const facts: readonly HubFact[] = [
-    ...(hub?.catalog
+    ...(inflation
       ? [
           {
-            key: 'datasets',
-            value: hub.catalog.loadedCount,
-            label: <Trans>seturi de date cu observații</Trans>,
-            note: <Trans>tot catalogul INS Tempo, pe opt domenii oficiale</Trans>,
-            link: (label, className) => (
-              <Link to="/ins/seturi" className={className}>
-                {label}
-              </Link>
+            key: 'inflation',
+            value: annualInflationRate(inflation.value, sourceDecimals(inflation.rawValue)),
+            digits: sourceDecimals(inflation.rawValue),
+            unit: '%',
+            label: <Trans>Inflația anuală</Trans>,
+            note: withValueStatus(
+              inflationBase ? (
+                <Trans>
+                  {formatHubPeriod(inflation.period)} față de {formatHubPeriod(inflationBase)}
+                </Trans>
+              ) : (
+                formatHubPeriod(inflation.period)
+              ),
+              inflation,
             ),
+            link: detailLink(inflation),
           } satisfies HubFact,
         ]
       : []),
-    ...(hub?.territoryCount !== null && hub?.territoryCount !== undefined
+    ...(earnings
       ? [
           {
-            key: 'territories',
-            value: hub.territoryCount,
-            label: <Trans>teritorii, de la țară la localitate</Trans>,
-            note: <Trans>42 de județe și fiecare localitate, pe cod SIRUTA</Trans>,
-            link: (label, className) => (
-              <Link to="/ins/comparatii" className={className}>
-                {label}
-              </Link>
-            ),
+            key: 'earnings',
+            value: earnings.value,
+            digits: sourceDecimals(earnings.rawValue),
+            unit: hubUnitWord(earnings.unit, earnings.unitLabel),
+            label: <Trans>Salariul mediu net</Trans>,
+            note: withValueStatus(formatHubPeriod(earnings.period), earnings),
+            link: detailLink(earnings),
           } satisfies HubFact,
         ]
       : []),
-    ...(population?.value !== null && population?.value !== undefined
+    ...(unemployment
+      ? [
+          {
+            key: 'unemployment',
+            value: unemployment.value,
+            digits: sourceDecimals(unemployment.rawValue),
+            unit: '%',
+            label: <Trans>Rata șomajului</Trans>,
+            note: withValueStatus(<Trans>Șomeri înregistrați, {formatHubPeriod(unemployment.period)}</Trans>, unemployment),
+            link: detailLink(unemployment),
+          } satisfies HubFact,
+        ]
+      : []),
+    ...(population
       ? [
           {
             key: 'population',
             value: population.value,
-            label: <Trans>locuitori la 1 ianuarie {population.period}</Trans>,
-            note: <Trans>populația după domiciliu, {population.code}</Trans>,
-            link: (label, className) => (
-              <Link to="/ins/seturi/$cod" params={{ cod: population.code }} search={indicatorDetailSearch(population)} className={className}>
-                {label}
-              </Link>
-            ),
-          } satisfies HubFact,
-        ]
-      : []),
-    ...(seriesSpan && lifeExpectancy
-      ? [
-          {
-            key: 'years',
-            value: Number(seriesSpan.to) - Number(seriesSpan.from) + 1,
-            label: <Trans>ani de serie anuală</Trans>,
-            note: <Trans>{seriesSpan.from}–{seriesSpan.to} pentru speranța de viață, cea mai lungă serie a paginii</Trans>,
-            link: (label, className) => (
-              <Link
-                to="/ins/seturi/$cod"
-                params={{ cod: lifeExpectancy.code }}
-                search={{ ...indicatorDetailSearch(lifeExpectancy), din: Number(seriesSpan.from), pana: Number(seriesSpan.to) }}
-                className={className}
-              >
-                {label}
-              </Link>
-            ),
+            digits: 0,
+            label: <Trans>Locuitori</Trans>,
+            note: withValueStatus(<Trans>Populația rezidentă la 1 ianuarie {population.period}</Trans>, population),
+            link: detailLink(population),
           } satisfies HubFact,
         ]
       : []),
@@ -178,26 +209,22 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
           <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-7">
               <MonoLabel className="text-muted-foreground">
-                <Trans>Statistici / INS Tempo</Trans>
+                <Trans>Statistici / INS</Trans>
               </MonoLabel>
               {/* Two lines at every width: the second is the shorter, so it never
                   leaves a word alone on a third. */}
               <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
                 <Trans>
-                  Fiecare localitate,
+                  Cifrele oficiale
                   <br />
-                  cu cifrele la vedere
+                  ale României
                 </Trans>
               </h1>
               <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                <Trans>
-                  Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru
-                  țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice,
-                  sau pornește de la un loc.
-                </Trans>
+                <Trans>De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate.</Trans>
               </p>
               <div className="mt-6 sm:mt-7">
-                <HubMatrixSearch autoFocus />
+                <HubDatasetSearch autoFocus />
               </div>
               <nav aria-label={t`Scurtături`} className="mt-4">
                 <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
@@ -214,37 +241,13 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               </nav>
             </div>
             <div className="min-w-0 lg:col-span-5">
-              {/* The catalog's themes: the one figure that explains the next
-                  band's first number. A card, because it is real product UI
-                  in the hero. */}
+              {/* The domains are the catalog's own map: the way in for a reader
+                  who does not yet know what to search for. */}
               <div className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6">
-                <div className="flex items-baseline justify-between gap-4">
-                  <MonoLabel className="text-primary">
-                    <Trans>Catalogul pe domenii</Trans>
-                  </MonoLabel>
-                  <MonoLabel className="text-muted-foreground">
-                    <Trans>INS Tempo</Trans>
-                  </MonoLabel>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {hub?.catalog ? (
-                    <Trans>
-                      {formatHubNumber(hub.catalog.loadedCount)} seturi de date cu observații, pe cele opt domenii
-                      oficiale. Fiecare rând deschide domeniul în tot catalogul.
-                    </Trans>
-                  ) : (
-                    <Trans>Seturile de date cu observații, pe cele opt domenii oficiale. Fiecare rând deschide domeniul în tot catalogul.</Trans>
-                  )}
-                </p>
-                <div className="mt-5">
-                  {hub?.catalog ? (
-                    <HubThemePanel catalog={hub.catalog} />
-                  ) : query.isPending ? (
-                    <HubPending rows={8} />
-                  ) : (
-                    <HubLoadError onRetry={retry} />
-                  )}
-                </div>
+                <MonoLabel className="text-primary">
+                  <Trans>Pe domenii</Trans>
+                </MonoLabel>
+                <HubThemePanel className="mt-3" />
               </div>
             </div>
           </div>
@@ -255,7 +258,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
         <RuledFrame>
           <CruxMarks />
           {facts.length > 0 ? (
-            <HubFiguresBand facts={facts} />
+            <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
           ) : (
             <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div>
           )}
@@ -271,16 +274,9 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                 index={t`01 / Indicatori naționali`}
                 title={
                   <Trans>
-                    România
+                    România,
                     <br />
-                    în cifre
-                  </Trans>
-                }
-                lede={
-                  <Trans>
-                    Cele mai recente valori publicate pentru întreaga țară. Fiecare cifră își arată
-                    perioada, pentru că INS nu publică totul în același an; tendința de lângă ea vine din
-                    captura INS Tempo din {captureMonth}. Fiecare rând deschide seria completă.
+                    an de an
                   </Trans>
                 }
               />
@@ -289,7 +285,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               {figureRows.length > 0 ? (
                 <HubFigureRows indicators={figureRows} />
               ) : query.isPending ? (
-                <HubPending rows={8} />
+                <HubPending rows={6} />
               ) : (
                 <HubLoadError onRetry={retry} />
               )}
@@ -304,12 +300,6 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             titleId="hub-counties-title"
             index={t`02 / Pe județe`}
             title={<Trans>Unde stă județul tău</Trans>}
-            lede={
-              <Trans>
-                Un indicator, toate cele 42 de județe. Apasă un județ, pe hartă sau în listă, pentru
-                seria lui completă.
-              </Trans>
-            }
             aside={
               <HubIndicatorToggle
                 label={t`Indicatorul de pe hartă`}
@@ -337,15 +327,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             </div>
             <div className="lg:col-span-4 lg:col-start-9" data-reveal>
               {layer ? (
-                <>
-                  <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} />
-                  <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">
-                    <Trans>
-                      {i18n._(layerDefinition.legend)}, {layer.period}, {layer.code}. Județele sunt ordonate după
-                      valoare; harta folosește cinci clase cu număr egal de județe.
-                    </Trans>
-                  </MonoLabel>
-                </>
+                <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} />
               ) : query.isPending ? (
                 <HubPending rows={10} />
               ) : null}
@@ -354,10 +336,10 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
           <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal>
             <div className="lg:col-span-5">
               <MonoLabel className="block text-primary">
-                <Trans>Sau localitatea ta</Trans>
+                <Trans>Localitatea ta</Trans>
               </MonoLabel>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                <Trans>Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper.</Trans>
+                <Trans>Cifrele INS ale oricărei localități, lângă cele ale județului și ale țării.</Trans>
               </p>
             </div>
             <div className="lg:col-span-6 lg:col-start-7">
@@ -373,24 +355,30 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             <div className="lg:col-span-5">
               <HubSectionHead
                 titleId="hub-change-title"
-                index={t`03 / Din 1990 până azi`}
+                index={t`03 / Din ${since} până azi`}
                 title={
                   <Trans>
                     Ce s-a schimbat
                     <br />
-                    din {seriesSpan?.from ?? '1990'} încoace
+                    din {since} încoace
                   </Trans>
                 }
                 lede={
                   births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? (
-                    <Trans>
-                      Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}. În {births.period} s-au născut{' '}
-                      {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '}
-                      {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}.
-                    </Trans>
-                  ) : (
-                    <Trans>Cele mai lungi serii naționale încep în {seriesSpan?.from ?? '1990'}.</Trans>
-                  )
+                    <>
+                      <Trans>
+                        În {births.period} s-au născut{' '}
+                        {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '}
+                        {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}.
+                      </Trans>
+                      {naturalDecreaseSince ? (
+                        <>
+                          {' '}
+                          <Trans>Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut.</Trans>
+                        </>
+                      ) : null}
+                    </>
+                  ) : null
                 }
               />
               <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal>
@@ -415,12 +403,6 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                   <div className="mt-3">
                     <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} />
                   </div>
-                  <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground">
-                    <Trans>
-                      Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an
-                      publicat. Fiecare serie deschide sursa.
-                    </Trans>
-                  </MonoLabel>
                   <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
                     <Link
                       to="/ins/seturi/$cod"
@@ -443,23 +425,16 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               ) : query.isPending ? (
                 <HubPending rows={6} />
               ) : (
-                <HubLoadError onRetry={retry}>
-                  <Trans>Seriile din 1990 nu au sosit.</Trans>
-                </HubLoadError>
+                <HubLoadError onRetry={retry} />
               )}
             </div>
           </div>
         </RuledFrame>
       </section>
 
-      <section className="border-b" aria-labelledby="hub-investigations-title">
+      <section aria-labelledby="hub-analyses-title">
         <RuledFrame className="py-14 sm:py-20">
-          <HubSectionHead
-            titleId="hub-investigations-title"
-            index={t`04 / Pornește o investigație`}
-            title={<Trans>Întrebări cu care se începe</Trans>}
-            lede={<Trans>Fiecare deschide o analiză deja configurată. Rafinează de acolo.</Trans>}
-          />
+          <HubSectionHead titleId="hub-analyses-title" index={t`04 / Analize`} title={<Trans>De aici poți începe</Trans>} />
           <div className="mt-8" data-reveal>
             <ul className="grid gap-px border bg-border/70 sm:grid-cols-3">
               <li>
@@ -472,14 +447,14 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                     <Trans>Județele care pierd populație</Trans>
                   </span>
                   <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">
-                    <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire.</Trans>
+                    <Trans>Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an.</Trans>
                   </span>
                 </Link>
               </li>
               <li>
                 <Link
                   to="/ins/seturi/$cod"
-                  params={{ cod: 'SOM101F' }}
+                  params={{ cod: 'SOM103B' }}
                   search={{ teritoriu: 'cod:RO', frecventa: 'MONTHLY' }}
                   className="block h-full bg-background p-5 transition-colors hover:bg-muted/40"
                 >
@@ -487,7 +462,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                     <Trans>Șomajul, lună de lună</Trans>
                   </span>
                   <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">
-                    <Trans>Ponderea șomerilor înregistrați din 2010 încoace, la nivel național și pe județe.</Trans>
+                    <Trans>Rata șomajului înregistrat din 1992 până azi, pentru țară și pentru fiecare județ.</Trans>
                   </span>
                 </Link>
               </li>
@@ -508,12 +483,6 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               </li>
             </ul>
           </div>
-        </RuledFrame>
-      </section>
-
-      <section aria-label={t`Surse și acoperire`}>
-        <RuledFrame className="py-12 sm:py-16">
-          {hub ? <HubSourcesStrip hub={hub} /> : <HubPending rows={3} />}
         </RuledFrame>
       </section>
     </div>

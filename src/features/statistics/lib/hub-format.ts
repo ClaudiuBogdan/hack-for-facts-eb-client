@@ -1,6 +1,5 @@
 import { t } from '@lingui/core/macro'
 import type {
-  StatisticsHubData,
   StatisticsHubIndicator,
   StatisticsHubSeriesPoint,
   StatisticsHubUnit,
@@ -41,7 +40,8 @@ export function hubUnitWord(unit: StatisticsHubUnit, unitLabel: string | null): 
     case 'count':
       return ''
     case 'other':
-      return unitLabel ?? ''
+      // INS spells its currency „Lei RON"; the reader says „lei".
+      return unitLabel && /^lei\b/i.test(unitLabel.trim()) ? t`lei` : (unitLabel ?? '')
   }
 }
 
@@ -120,10 +120,14 @@ export function describeHubChange(
   return { text: t`${formatSigned(pct, 1)}% din ${from.period}` }
 }
 
-/** The detail-page search that lands on exactly this national cell. */
+/**
+ * The detail-page search that lands on exactly this national cell. A matrix
+ * without a geography axis is national already; a territory in its link would
+ * only be a filter the page has no axis to show.
+ */
 export function indicatorDetailSearch(indicator: StatisticsHubIndicator) {
   return {
-    teritoriu: 'cod:RO',
+    ...(indicator.hasGeography ? { teritoriu: 'cod:RO' } : {}),
     ...(indicator.pins.length > 0 ? { clasificari: indicator.pins } : {}),
     ...(indicator.unitCode ? { unitate: indicator.unitCode } : {}),
     ...(indicator.periodicity === 'ANNUAL' || indicator.periodicity === 'QUARTERLY' || indicator.periodicity === 'MONTHLY'
@@ -132,15 +136,52 @@ export function indicatorDetailSearch(indicator: StatisticsHubIndicator) {
   }
 }
 
-/** The earliest and latest periods the hub shows — the capture's first year to the live latest — derived, never invented. */
-export function hubDataSpan(hub: StatisticsHubData): { readonly from: string | null; readonly to: string | null } {
-  const periods = (hub.indicators ?? []).flatMap((indicator) => [
-    ...(indicator.period ? [indicator.period] : []),
-    ...indicator.series.map((point) => point.period),
-  ])
-  if (periods.length === 0) return { from: null, to: null }
-  const sorted = [...periods].sort()
-  return { from: sorted[0] ?? null, to: sorted[sorted.length - 1] ?? null }
+/** Decimal places the source published a value with („110.85" → 2), so a figure derived from it keeps that precision. */
+export function sourceDecimals(raw: string | null): number {
+  const match = raw ? /\.(\d+)$/.exec(raw) : null
+  return match ? match[1].length : 0
+}
+
+/**
+ * The annual inflation rate from a consumer price index against the same
+ * month a year earlier (=100): the index less 100, which is how INS states
+ * the rate. Rounded to the index's own precision, so 110.85 reads 10,85 and
+ * not 10,849999….
+ */
+export function annualInflationRate(index: number, decimals: number): number {
+  const scale = 10 ** decimals
+  return Math.round((index - 100) * scale) / scale
+}
+
+/** `2026-05` → `2025-05`; null for anything that is not a month. */
+export function sameMonthLastYear(period: string): string | null {
+  const month = /^(\d{4})-(\d{2})$/.exec(period)
+  return month ? `${Number(month[1]) - 1}-${month[2]}` : null
+}
+
+/**
+ * The first year of the unbroken run of years, ending at the latest year both
+ * series have, in which deaths outnumbered births. Null when that latest year
+ * does not have more deaths than births. A year either series lacks — or
+ * both do — ends the run: a gap is not evidence either way.
+ */
+export function deathsExceedBirthsSince(
+  births: readonly StatisticsHubSeriesPoint[],
+  deaths: readonly StatisticsHubSeriesPoint[],
+): string | null {
+  const aligned = alignSeriesByPeriod(births, deaths)
+  let last = aligned.periods.length - 1
+  while (last >= 0 && (aligned.a[last] === null || aligned.b[last] === null)) last -= 1
+  let first: number | null = null
+  for (let index = last; index >= 0; index -= 1) {
+    const born = aligned.a[index]
+    const died = aligned.b[index]
+    if (born === null || died === null || died <= born) break
+    // The union of both series' periods skips a year neither has.
+    if (first !== null && Number(aligned.periods[index]) !== Number(aligned.periods[first]) - 1) break
+    first = index
+  }
+  return first === null ? null : (aligned.periods[first] ?? null)
 }
 
 /**

@@ -29,7 +29,7 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
         value={term}
         onCommit={setTerm}
         inputId={inputId}
-        placeholder={t`Caută o localitate, un oraș sau un județ`}
+        placeholder={t`Caută o localitate sau un județ`}
         ariaLabel={t`Caută un teritoriu`}
         clearLabel={t`Șterge căutarea`}
         className="max-w-md"

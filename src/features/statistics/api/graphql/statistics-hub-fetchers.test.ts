@@ -3,13 +3,7 @@ vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { HUB_SERIES_CAPTURED_AT, HUB_STATIC_SERIES, hubStaticSeries } from '../../lib/hub-national-series'
 import { HUB_FIGURE_CODES } from '../../lib/landing-constants'
-import {
-  HUB_NATIONAL_SPECS,
-  hubCatalogResponse,
-  hubCountyResponse,
-  hubTerritoryCountResponse,
-  hubTilesResponse,
-} from '../../test/hub-fixtures'
+import { HUB_NATIONAL_SPECS, hubCountyResponse, hubTilesResponse } from '../../test/hub-fixtures'
 import { fetchStatisticsHub, hubUnitOf } from './statistics-hub-fetchers'
 
 const spec = (code: string) => {
@@ -24,18 +18,12 @@ type Call = { readonly query: string; readonly variables: Record<string, unknown
 function answer(overrides: {
   readonly tiles?: unknown
   readonly counties?: Partial<Record<string, unknown>>
-  readonly failCatalog?: boolean
   readonly failCounty?: string
 } = {}) {
   const calls: Call[] = []
   vi.mocked(graphqlQuery).mockImplementation(async (query: string, variables?: unknown) => {
     calls.push({ query, variables: variables as Record<string, unknown> | undefined })
     if (query.includes('query InsLandingTiles')) return overrides.tiles ?? hubTilesResponse()
-    if (query.includes('query StatisticsLandingCatalog')) {
-      if (overrides.failCatalog) throw new Error('catalog down')
-      return hubCatalogResponse()
-    }
-    if (query.includes('query StatisticsHubTerritoryCount')) return hubTerritoryCountResponse()
     if (query.includes('query InsObservations(')) {
       const code = String((variables as { datasetCode: string }).datasetCode)
       if (overrides.failCounty === code) throw new Error(`${code} down`)
@@ -51,25 +39,48 @@ function answer(overrides: {
 describe('fetchStatisticsHub', () => {
   beforeEach(() => vi.resetAllMocks())
 
-  it('reads the nine national cells and keys each indicator on the resolved unit and pins', async () => {
-    answer()
+  it('reads the national cells and keys each indicator on the resolved unit and pins', async () => {
+    const calls = answer()
     const hub = await fetchStatisticsHub()
     expect(hub.failures).toEqual([])
     expect(hub.indicators?.map((indicator) => indicator.code)).toEqual(HUB_NATIONAL_SPECS.map((entry) => entry.code))
-    const population = hub.indicators?.find((indicator) => indicator.code === 'POP107D')
+    const population = hub.indicators?.find((indicator) => indicator.code === 'POP105A')
     expect(population).toMatchObject({
-      value: 21646220,
-      rawValue: '21646220',
+      value: 19043151,
+      rawValue: '19043151',
       unit: 'persons',
       unitCode: '9685',
-      period: '2026',
+      period: '2025',
       periodicity: 'ANNUAL',
-      pins: ['D0:1', 'D1:105', 'D2:112'],
+      pins: ['D0:1', 'D1:105', 'D2:108', 'D3:112'],
+      hasGeography: true,
     })
-    const share = hub.indicators?.find((indicator) => indicator.code === 'SOM101F')
-    expect(share).toMatchObject({ value: 1.9, unit: 'percent', period: '2026-05', periodicity: 'MONTHLY' })
-    expect(hub.catalog?.loadedCount).toBe(1916)
-    expect(hub.territoryCount).toBe(3239)
+    const rate = hub.indicators?.find((indicator) => indicator.code === 'SOM103B')
+    expect(rate).toMatchObject({ value: 3.2, unit: 'percent', period: '2026-05', periodicity: 'MONTHLY' })
+    // Only the indicators and the county layers: nothing about the catalog.
+    expect(calls.filter((call) => !call.query.includes('query InsObservations(')).map((call) => call.query.match(/query (\w+)/)?.[1])).toEqual(['InsLandingTiles'])
+  })
+
+  it('accepts a matrix with no geography axis as national, and says so on the indicator', async () => {
+    answer()
+    const hub = await fetchStatisticsHub()
+    expect(hub.failures).toEqual([])
+    const inflation = hub.indicators?.find((indicator) => indicator.code === 'IPC102E')
+    expect(inflation).toMatchObject({ value: 110.85, rawValue: '110.85', unit: 'percent', period: '2026-05', pins: ['D0:12668'], hasGeography: false })
+    const earnings = hub.indicators?.find((indicator) => indicator.code === 'FOM106D')
+    expect(earnings).toMatchObject({ value: 5914, unit: 'other', unitLabel: 'Lei RON', period: '2025-12', hasGeography: false })
+  })
+
+  it('refuses a national-only cell that names a territory', async () => {
+    const tiles = hubTilesResponse()
+    const inflation = tiles.latest.find((entry) => entry.dataset.code === 'IPC102E')
+    if (inflation?.observation) {
+      ;(inflation.observation as { territory: unknown }).territory = { code: 'CJ', siruta_code: null, level: 'NUTS3', name_ro: 'Cluj' }
+    }
+    answer({ tiles })
+    const hub = await fetchStatisticsHub()
+    expect(hub.indicators).toBeNull()
+    expect(hub.failures).toContain('indicators')
   })
 
   it('serves the captured history and appends the live point only when it is a newer year of the same cell', async () => {
@@ -191,8 +202,6 @@ describe('fetchStatisticsHub', () => {
   it('names the counties section as failed when there is no national year to anchor it on', async () => {
     vi.mocked(graphqlQuery).mockImplementation(async (query: string) => {
       if (query.includes('query InsLandingTiles')) throw new Error('tiles down')
-      if (query.includes('query StatisticsLandingCatalog')) return hubCatalogResponse()
-      if (query.includes('query StatisticsHubTerritoryCount')) return hubTerritoryCountResponse()
       throw new Error('unexpected')
     })
     const hub = await fetchStatisticsHub()
@@ -213,13 +222,11 @@ describe('fetchStatisticsHub', () => {
   })
 
   it('fails sections independently and names them', async () => {
-    answer({ failCatalog: true, failCounty: 'SOM103A' })
+    answer({ failCounty: 'SOM103A' })
     const hub = await fetchStatisticsHub()
-    expect(hub.catalog).toBeNull()
     expect(hub.counties).toBeNull()
-    expect(hub.indicators).toHaveLength(9)
-    expect(hub.territoryCount).toBe(3239)
-    expect([...hub.failures].sort()).toEqual(['catalog', 'counties'])
+    expect(hub.indicators).toHaveLength(HUB_NATIONAL_SPECS.length)
+    expect(hub.failures).toEqual(['counties'])
   })
 
   it('refuses a truncated county page rather than drawing a partial map', async () => {
