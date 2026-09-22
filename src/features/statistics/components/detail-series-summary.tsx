@@ -65,9 +65,11 @@ function formatDerived(value: number): string {
  * the quiet tier, on the same baseline, so a reader never has to open anything
  * to know whether the headline number is news.
  *
- * The unit is the row's FIRST fact rather than a heading over it: given its
- * own column it is one more thing the series is, and it is stated once instead
- * of repeated after every figure („5 număr · 50 număr · 31,3 număr").
+ * The unit is said ONCE, beside the figure. It used to be the facts' first
+ * column as well, and the chart's caption a third time in INS's own spelling
+ * („6 număr … unitate număr … Numar"). Periods read as words — „6 număr în
+ * 2024", „1 în 2021" — not behind a „·" that a reader has to decode and a
+ * screen reader skips.
  */
 export function DetailSeriesSummary({
   stats,
@@ -112,7 +114,7 @@ export function DetailSeriesSummary({
             them land on different lines, and „21.646.220" over „persoane" is
             two facts where there was one. The literal space matters too —
             adjacent text nodes with none are spoken as „10număr". */}
-        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
           <span
             className={statisticsTheme.heroValue}
             data-testid="series-latest-value"
@@ -128,18 +130,8 @@ export function DetailSeriesSummary({
             ) : null}
           </span>
           {stats.latest ? (
-            <span className="text-sm tabular-nums text-muted-foreground">
-              {/* The dot lives INSIDE the period's span, so it travels with
-                  what it separates instead of ending a wrapped line. Below
-                  `sm` a long figure fills the line and the period drops to its
-                  own, where a separator has nothing left to separate. */}
-              <span
-                aria-hidden
-                className="mr-3 hidden text-muted-foreground/50 sm:inline"
-              >
-                ·
-              </span>
-              {formatHubPeriod(stats.latest.period)}
+            <span className="text-base tabular-nums text-muted-foreground">
+              <PeriodPhrase period={formatHubPeriod(stats.latest.period)} />
             </span>
           ) : null}
           {matchChip === 'representative' ? (
@@ -156,8 +148,7 @@ export function DetailSeriesSummary({
       </div>
 
       {stats.latest ? (
-        <dl className="flex flex-wrap items-end gap-x-6 gap-y-2">
-          {unit ? <Fact label={t`unitate`} value={unit} /> : null}
+        <dl className="flex flex-wrap items-end gap-x-7 gap-y-3">
           <Fact
             label={t`minim`}
             value={stats.trough ? formatValue(stats.trough.value) : '—'}
@@ -179,14 +170,12 @@ export function DetailSeriesSummary({
   )
 }
 
-/**
- * One fact: its name, its number, and the period that number belongs to.
- *
- * The dot between the value and its period is a real node, never
- * `before:content-['·']` — and it sits inside the period's span so it travels
- * with what it separates. It is `aria-hidden`: „5 dot 2021" is worse for a
- * screen reader than the run of two numbers the dot exists to break up.
- */
+/** „în 2024", „în mai 2026" — the period a figure belongs to, as words. */
+function PeriodPhrase({ period }: { readonly period: string }) {
+  return <Trans>în {period}</Trans>
+}
+
+/** One fact: its name, its number, and the period that number belongs to. */
 function Fact({
   label,
   value,
@@ -199,15 +188,15 @@ function Fact({
   return (
     <div className="min-w-0">
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium tabular-nums">
+      <dd className="mt-0.5 text-base font-semibold tabular-nums">
         {value}
         {period ? (
-          <span className="ml-1.5 font-normal text-muted-foreground">
-            <span aria-hidden className="mr-1.5 text-muted-foreground/50">
-              ·
+          <>
+            {' '}
+            <span className="text-sm font-normal text-muted-foreground">
+              <PeriodPhrase period={period} />
             </span>
-            {period}
-          </span>
+          </>
         ) : null}
       </dd>
     </div>

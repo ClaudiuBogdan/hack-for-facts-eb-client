@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils'
 
 type Props = {
   readonly series: TimeSeries
+  /** The figure's accessible name; with the unit, it is its only caption. */
   readonly title: string
   readonly unitLabel: string | null
   readonly wholeHistory?: boolean
@@ -51,6 +52,18 @@ type Props = {
 const LINE_COLOR = 'hsl(var(--chart-1))'
 const FLAG_COLOR = 'hsl(38 92% 45%)'
 const SURFACE_COLOR = 'hsl(var(--background))'
+/**
+ * A halo under every mark label: the label's own outline in the band's
+ * colour, painted beneath its fill. The line runs through the extremes it
+ * labels — a trough in a V, a mean the series keeps crossing — and without
+ * one „minim 0" and „medie 1,38" were struck through.
+ */
+const LABEL_HALO = {
+  stroke: 'hsl(var(--card))',
+  strokeWidth: 4,
+  strokeLinejoin: 'round',
+  paintOrder: 'stroke',
+} as const
 
 /**
  * Past this many periods the plain markers stop being markers. SOM101F's 200
@@ -178,18 +191,21 @@ export function DetailObservationsChart({
   const peakPosition = marks?.peak
     ? labelPosition(marks.peak.period, 'top')
     : null
-  const troughPosition = marks?.trough
-    ? labelPosition(marks.trough.period, 'bottom')
-    : null
   const latestOnChart =
     marks?.latest !== undefined &&
     marks?.latest !== null &&
     series.points.some((point) => point.period === marks.latest!.period)
-  // The trough is not marked twice when the series ends on it.
+  // The trough is not marked twice when the series ends on it — nor at all
+  // when it IS the peak: a flat series (every value 0) has one extreme, and
+  // two labels on the same point wrote „maxim 0" over „minim 0".
   const troughIsLatest =
     marks?.trough != null &&
     marks?.latest != null &&
     marks.trough.period === marks.latest.period
+  const troughIsPeak =
+    marks?.trough != null &&
+    marks?.peak != null &&
+    marks.trough.period === marks.peak.period
 
   const plottedValues = series.points
     .map((point) => point.value)
@@ -198,6 +214,18 @@ export function DetailObservationsChart({
     plottedValues.length > 0 ? Math.max(...plottedValues) : null
   const plottedMin =
     plottedValues.length > 0 ? Math.min(...plottedValues) : null
+
+  // A minimum on the floor of the plot — a 0 on a zero baseline — has no room
+  // below it: a label hung there lands on the year ticks („minim 0" over
+  // „2018"). It hangs above the point instead.
+  const troughOnFloor =
+    marks?.trough != null &&
+    plottedMax !== null &&
+    marks.trough.value - axis.domain[0] <=
+      Math.max(0, plottedMax - axis.domain[0]) * 0.06
+  const troughPosition = marks?.trough
+    ? labelPosition(marks.trough.period, troughOnFloor ? 'top' : 'bottom')
+    : null
   // `seriesAxis` returns `[0, 'auto']` on the zero-baseline path and Recharts
   // derives the top from the data, so the effective ceiling is the highest
   // plotted value rather than the literal `'auto'`.
@@ -241,11 +269,11 @@ export function DetailObservationsChart({
 
   return (
     <figure className="space-y-2">
-      <figcaption className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
-        {unitLabel ? (
-          <p className="text-xs text-muted-foreground">{unitLabel}</p>
-        ) : null}
+      {/* Named for assistive tech only. On screen the figure above it
+          already says what this is and in what unit, and a visible
+          „EVOLUȚIE ÎN TIMP număr" over it said nothing a reader needed. */}
+      <figcaption className="sr-only">
+        {unitLabel ? `${title}, ${unitLabel}` : title}
       </figcaption>
 
       <div className={cn(height, 'w-full min-w-0')}>
@@ -305,6 +333,7 @@ export function DetailObservationsChart({
                   position: 'insideTopRight',
                   fill: 'hsl(var(--muted-foreground))',
                   fontSize: 11,
+                  ...LABEL_HALO,
                 }}
               />
             ) : null}
@@ -351,10 +380,11 @@ export function DetailObservationsChart({
                       : 0,
                   fill: 'hsl(var(--foreground))',
                   fontSize: 11,
+                  ...LABEL_HALO,
                 }}
               />
             ) : null}
-            {marks?.trough && troughPosition && !troughIsLatest ? (
+            {marks?.trough && troughPosition && !troughIsLatest && !troughIsPeak ? (
               <ReferenceDot
                 x={marks.trough.period}
                 y={marks.trough.value}
@@ -367,10 +397,13 @@ export function DetailObservationsChart({
                   position: troughPosition,
                   dy:
                     troughPosition === 'left' || troughPosition === 'right'
-                      ? 12
+                      ? troughOnFloor
+                        ? -12
+                        : 12
                       : 0,
                   fill: 'hsl(var(--foreground))',
                   fontSize: 11,
+                  ...LABEL_HALO,
                 }}
               />
             ) : null}
@@ -387,6 +420,7 @@ export function DetailObservationsChart({
                   position: 'right',
                   fill: 'hsl(var(--foreground))',
                   fontSize: 12,
+                  ...LABEL_HALO,
                   fontWeight: 600,
                 }}
               />

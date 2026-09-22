@@ -42,7 +42,8 @@ export function DetailExportNote({
     <p className="text-xs text-muted-foreground">
       {complete ? (
         <Trans>
-          CSV cu texte codificate JSON pentru a păstra exact valorile și sursa.
+          CSV-ul păstrează valorile exact cum le publică INS, cu sursa
+          fiecărui rând.
         </Trans>
       ) : (
         <Trans>Restrânge selecția pentru a exporta toate observațiile.</Trans>

@@ -980,6 +980,36 @@ picker appeared, it repeated the axis. So:
   starts from the territory the page shows — the scope's, or else the one the
   resolved row carries — not from the raw URL.
 
+## 6m. The series band, said once (2026-09-22)
+
+The band stated its unit three times — „6 număr" beside the figure, „unitate
+număr" as the facts' first column, and „EVOLUȚIE ÎN TIMP Numar" over the chart
+in INS's own spelling — and closed on a note and two buttons floating inside
+the chart's body.
+
+- **The unit once, beside the figure.** The facts are minim, maxim, medie,
+  observații. The chart's caption is `sr-only`: the figure above already says
+  what it is, and a visible „Evoluție în timp număr" said nothing a reader
+  needed. The tooltip carries the same word the figure uses („număr", „%").
+- **Periods as words.** „6 număr în 2024", „1 în 2021", „în mai 2026" —
+  not behind a „·" a reader has to decode and a screen reader skips. The
+  facts' values are one step up (base, semibold) so the row reads as figures.
+- **The actions in the band's own footer strip**, ruled off from the chart:
+  the export note opposite „Descarcă CSV" and „Compară teritorii". The strip
+  lays out on its own width, a container query: beside the rail at 1024px the
+  band is too narrow for one row, and a breakpoint squeezed the note to three
+  lines and stacked the buttons. The actions keep the foreground colour; the
+  strip's muted text had made them look disabled. „Compară teritorii" appears
+  only when the matrix has a geography axis — a national series has one
+  territory. The note says what the CSV is for, not how it is encoded:
+  „CSV-ul păstrează valorile exact cum le publică INS, cu sursa fiecărui
+  rând."
+- **Mark labels carry a halo** — their outline in the card's colour, painted
+  under the fill — because the line runs through what they label: „medie"
+  on a series that keeps crossing its mean, a minimum in a V. A minimum on the
+  floor of the plot (a 0 on a zero baseline) hangs its label above the point;
+  below it, „minim 0" sat on the „2018" tick.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

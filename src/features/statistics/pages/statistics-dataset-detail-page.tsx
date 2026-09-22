@@ -794,6 +794,9 @@ function DatasetDetailBody({
     missingClassificationLabels.push(t`Unitate de măsură`)
   if (scope.periodicity === null) missingClassificationLabels.push(t`Frecvență`)
 
+  const hasGeographyAxis = dataset.dimensions.some(
+    (dimension) => dimension.type === 'TERRITORIAL',
+  )
   // Comparison starts from the place on screen: the territory the scope
   // applies, or else the one the row a pinned geography axis resolved to —
   // picking Arad on the axis compares Arad, whatever link the page came from.
@@ -960,7 +963,9 @@ function DatasetDetailBody({
                   <DetailObservationsChart
                     series={chartSeries}
                     title={t`Evoluție în timp`}
-                    unitLabel={unitLabel ?? null}
+                    // The same word the figure uses — „număr", „%" — not
+                    // INS's own spelling of the unit („Numar").
+                    unitLabel={summaryUnitWord || unitLabel || null}
                     // The extremes the summary names are marked where they
                     // happened; the mean gives the line a reference; the tint
                     // reads the series as a quantity rather than a path.
@@ -982,43 +987,48 @@ function DatasetDetailBody({
                   </p>
                 ) : null}
 
-                {/* What the reader can take away: one row, the export's note
-                    immediately left of its own button. Under the button the note
-                    set the row's height and dragged the compare link off the
-                    baseline; spread to the far edge it read as a page footnote
-                    rather than as that button's caption. */}
-                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 pt-1">
-                  {windowedRows.length > 0 ? (
-                    <div className="max-w-xs text-right">
-                      <DetailExportNote complete={completeSourceSelection} />
-                    </div>
-                  ) : null}
-                  <div className="flex flex-wrap items-center gap-3">
-                    <DetailExportButton
-                      datasetCode={dataset.code}
-                      sourceDescriptor={seriesData?.sourceDescriptor}
-                      observations={windowedRows}
-                      disabled={windowedRows.length === 0}
-                      complete={completeSourceSelection}
-                      showNote={false}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="gap-1.5"
-                    >
+              </>
+            ) : null}
+          </div>
+
+          {/* What the reader can take away, in the band's own closing strip:
+              the export's note opposite the actions. Inside the body it
+              floated under the chart, the note wrapped into a right-aligned
+              block beside the buttons. The strip lays out on its OWN width —
+              a container query, not a breakpoint: beside the rail at 1024px
+              the band is narrower than a phone in landscape, and a row there
+              squeezed the note to three lines and stacked the buttons.
+              Comparing territories is offered only where the matrix has a
+              territory to vary — a national series has one. */}
+          {seriesEnabled ? (
+            <div className="@container border-t border-border/70 px-4 py-3 md:px-5">
+              <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-center @2xl:justify-between @2xl:gap-6">
+                {windowedRows.length > 0 ? (
+                  <div className="min-w-0 max-w-md">
+                    <DetailExportNote complete={completeSourceSelection} />
+                  </div>
+                ) : null}
+                <div className="flex shrink-0 flex-wrap items-center gap-2 @2xl:ml-auto">
+                  <DetailExportButton
+                    datasetCode={dataset.code}
+                    sourceDescriptor={seriesData?.sourceDescriptor}
+                    observations={windowedRows}
+                    disabled={windowedRows.length === 0}
+                    complete={completeSourceSelection}
+                    showNote={false}
+                  />
+                  {hasGeographyAxis ? (
+                    <Button variant="outline" size="sm" asChild className="gap-1.5">
                       <Link to="/ins/comparatii" search={compareSearch}>
                         <Trans>Compară teritorii</Trans>
                         <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                       </Link>
                     </Button>
-                  </div>
+                  ) : null}
                 </div>
-              </>
-            ) : null}
-          </div>
-
+              </div>
+            </div>
+          ) : null}
         </section>
 
         {/* What the matrix measures, read AFTER the figure: a definition before
