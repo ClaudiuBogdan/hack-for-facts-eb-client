@@ -1,6 +1,6 @@
 import { getInsDimensionValuesPage } from '../api/graphql/ins-bootstrap-fetchers'
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import type {
   InsDimensionValueConnection,
   InsEntitySelectorInput,
@@ -60,6 +60,59 @@ export function useDimensionValues(params: {
     enabled: params.enabled && datasetCode.length > 0,
     staleTime: DIMENSION_STALE_TIME,
     placeholderData: () => undefined,
+    retry: false,
+  })
+}
+
+/**
+ * A dimension's options as one growing list: the pages `useDimensionValues`
+ * reads one at a time, appended as the reader scrolls. The panel virtualises
+ * the rows, so a 3,000-locality axis costs the same to draw as a 3-row one;
+ * what it never does is ask for the whole axis in one read.
+ *
+ * The offset of the next page is the number of rows already held, not a
+ * page counter: a server that returned a short page must not be asked to
+ * skip rows it never sent.
+ */
+export function useDimensionValuesInfinite(params: {
+  readonly datasetCode: string
+  readonly dimensionIndex: number
+  readonly nativePublicationKey?: string
+  readonly search: string | undefined
+  readonly pageSize: number
+  readonly enabled: boolean
+}) {
+  const search = params.search?.trim() || undefined
+  const datasetCode = normalizeInsDatasetCode(params.datasetCode)
+
+  return useInfiniteQuery<InsDimensionValueConnection>({
+    queryKey: [
+      'statisticsDimensionValues',
+      'scroll-v1',
+      params.nativePublicationKey === undefined ? 'legacy-or-demo-v1' : 'native-only-v1',
+      params.nativePublicationKey ?? null,
+      datasetCode,
+      params.dimensionIndex,
+      search ?? '',
+      params.pageSize,
+    ],
+    initialPageParam: 0,
+    queryFn: ({ pageParam, signal }) =>
+      (params.nativePublicationKey === undefined ? fetchDimensionValuesPage : getInsDimensionValuesPage)({
+        expectedPublicationKey: params.nativePublicationKey,
+        datasetCode,
+        dimensionIndex: params.dimensionIndex,
+        search,
+        limit: params.pageSize,
+        offset: pageParam as number,
+        signal,
+      }),
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.pageInfo.hasNextPage && lastPage.nodes.length > 0
+        ? pages.reduce((count, page) => count + page.nodes.length, 0)
+        : undefined,
+    enabled: params.enabled && datasetCode.length > 0,
+    staleTime: DIMENSION_STALE_TIME,
     retry: false,
   })
 }

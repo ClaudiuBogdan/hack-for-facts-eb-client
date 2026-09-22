@@ -1,23 +1,15 @@
 import { InsSourcePageError } from '@/lib/ins/source-pages'
 import { useState } from 'react'
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
-import { cn } from '@/lib/utils'
+import { cn, formatNumber } from '@/lib/utils'
 import type { InsDimensionValue } from '@/schemas/ins'
-import { useDimensionValues } from '../hooks/use-dataset-detail'
+import { useDimensionValuesInfinite } from '../hooks/use-dataset-detail'
 import { DIMENSION_PAGE_SIZE } from '../lib/dataset-selection'
 import { statisticsTheme } from '../lib/statistics-theme'
+import { DetailOptionList, type DetailOption } from './detail-option-list'
 
 const SEARCH_DEBOUNCE_MS = 300
 
@@ -40,7 +32,7 @@ export type DimensionPanelProps = {
 
 /**
  * The option list for one dataset dimension: a header naming the axis, a
- * server-backed search, the options, and a pager.
+ * server-backed search, and the options as one scrolling list.
  *
  * This is the whole picker, meant to BE a popover's contents. It used to sit
  * behind a second one — the scope chip opened a panel that held a combobox
@@ -48,11 +40,10 @@ export type DimensionPanelProps = {
  * left two overlapping white panels on screen. The chip already names the
  * axis; opening it should show the options.
  *
- * Classification dimensions can hold thousands of hierarchical values, so this
- * never loads the full list and never renders a drill-down tree: it asks the
- * server for a page at a time, filtered by the typed query.
- * `shouldFilter={false}` hands filtering to the server — cmdk's built-in
- * client filter would hide rows the server deliberately returned.
+ * Classification dimensions can hold thousands of hierarchical values — the
+ * locality axis of SOM101F has 3,182 — so the list never loads the whole
+ * axis and never renders a drill-down tree: `DetailOptionList` reads a page
+ * at a time, filtered by the typed query, and draws only the rows in view.
  */
 export function DetailDimensionPanel({
   datasetCode,
@@ -68,42 +59,39 @@ export function DetailDimensionPanel({
   active,
 }: DimensionPanelProps) {
   const [draft, setDraft] = useState('')
-  const [pageOffsets, setPageOffsets] = useState([0])
-  const offset = pageOffsets[pageOffsets.length - 1]
   const search = useDebouncedValue(draft, SEARCH_DEBOUNCE_MS)
 
-  const valuesQuery = useDimensionValues({
+  const valuesQuery = useDimensionValuesInfinite({
     datasetCode,
     dimensionIndex,
     nativePublicationKey,
     search,
-    limit: DIMENSION_PAGE_SIZE,
-    offset,
+    pageSize: DIMENSION_PAGE_SIZE,
     enabled: active,
   })
 
-  const loading =
-    valuesQuery.isFetching || valuesQuery.isPending || draft !== search
-  const nodes =
-    loading || valuesQuery.isError ? [] : (valuesQuery.data?.nodes ?? [])
-  const pageInfo =
-    loading || valuesQuery.isError ? undefined : valuesQuery.data?.pageInfo
+  // The first page is what the reader waits for; later pages arrive under a
+  // list that is already usable, so they never blank it.
+  const loading = valuesQuery.isPending || draft !== search
+  const [options, values] =
+    loading || valuesQuery.isError
+      ? [[], new Map<string, InsDimensionValue>()]
+      : flattenOptions(valuesQuery.data?.pages, optionKey)
+  const totalCount =
+    loading || valuesQuery.isError
+      ? undefined
+      : valuesQuery.data?.pages[0]?.pageInfo.totalCount
   const publicationChanged =
     valuesQuery.error instanceof InsSourcePageError &&
     valuesQuery.error.code === 'PUBLICATION_CHANGED'
-
-  const handleSearchChange = (next: string) => {
-    setDraft(next)
-    setPageOffsets([0])
-  }
 
   return (
     <div className="flex flex-col">
       {/* The header holds NOTHING focusable. Radix moves focus to the first
           tabbable element when a popover opens, so a „Șterge" button up here
           took it: typing did not search, the arrows did not move through the
-          options, and Enter cleared the value. The reset lives in the footer
-          with the pager, which puts the search input first in tab order.
+          options, and Enter cleared the value. The reset lives in the footer,
+          which puts the search input first in tab order.
           The label wraps rather than truncates — INS axis names run past 40
           characters, and a header ending in „…" does not say which axis is
           open. */}
@@ -118,23 +106,23 @@ export function DetailDimensionPanel({
         </p>
       </div>
 
-      <Command shouldFilter={false}>
-        <CommandInput
-          value={draft}
-          onValueChange={handleSearchChange}
-          placeholder={t`Caută…`}
-        />
-        <CommandList className="max-h-72">
-          {loading ? (
-            <div className="space-y-1 p-2" aria-busy="true">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <Skeleton key={index} className="h-8 w-full" />
-              ))}
-            </div>
-          ) : null}
-
-          {!loading && valuesQuery.isError ? (
-            <div className="space-y-2 p-3 text-sm">
+      <DetailOptionList
+        label={label.trim()}
+        placeholder={t`Caută…`}
+        draft={draft}
+        onDraftChange={setDraft}
+        options={options}
+        selectedKey={selectedKey}
+        onPick={(option) => {
+          const value = values.get(option.key)
+          if (!value) return
+          onSelect(value)
+          onPicked?.()
+        }}
+        loading={loading}
+        error={
+          valuesQuery.isError ? (
+            <>
               <p className="text-destructive">
                 <Trans>Nu am putut încărca opțiunile.</Trans>
               </p>
@@ -152,108 +140,67 @@ export function DetailDimensionPanel({
                   <Trans>Reîncearcă</Trans>
                 )}
               </Button>
-            </div>
+            </>
+          ) : undefined
+        }
+        empty={valuesQuery.isSuccess && options.length === 0}
+        emptyLabel={t`Niciun rezultat`}
+        hasNextPage={valuesQuery.hasNextPage}
+        isFetchingNextPage={valuesQuery.isFetchingNextPage}
+        fetchNextPage={() => void valuesQuery.fetchNextPage()}
+      />
+
+      {selectedKey || totalCount !== undefined ? (
+        <div className={statisticsTheme.optionPanelFooter}>
+          {/* The count is the live region: it says what a search changed,
+              which the rows themselves cannot. */}
+          <span role="status">
+            {totalCount !== undefined && totalCount >= 0
+              ? valuesQuery.isFetchingNextPage
+                ? t`${formatNumber(totalCount)} opțiuni · se încarcă…`
+                : plural(totalCount, {
+                    one: 'o opțiune',
+                    few: '# opțiuni',
+                    other: '# de opțiuni',
+                  })
+              : null}
+          </span>
+          {selectedKey ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClear()
+                onPicked?.()
+              }}
+              className="rounded-sm px-1 py-1 font-medium underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Trans>Șterge</Trans>
+            </button>
           ) : null}
-
-          {!loading && valuesQuery.isSuccess && nodes.length === 0 ? (
-            <CommandEmpty>
-              <Trans>Niciun rezultat</Trans>
-            </CommandEmpty>
-          ) : null}
-
-          {nodes.map((value) => {
-            const key = optionKey(value)
-            if (!key) return null
-            const isSelected = key === selectedKey
-
-            return (
-              <CommandItem
-                key={value.nom_item_id}
-                value={key}
-                className={cn(
-                  statisticsTheme.optionRow,
-                  isSelected && statisticsTheme.optionRowChosen,
-                )}
-                onSelect={() => {
-                  onSelect(value)
-                  onPicked?.()
-                }}
-              >
-                <Check
-                  aria-hidden
-                  className={cn(
-                    'mr-2 h-4 w-4 text-primary',
-                    isSelected ? 'opacity-100' : 'opacity-0',
-                  )}
-                />
-                <span className="min-w-0 flex-1">{value.label_ro ?? key}</span>
-              </CommandItem>
-            )
-          })}
-        </CommandList>
-
-        {selectedKey || (pageInfo && (pageInfo.hasNextPage || offset > 0)) ? (
-          <div className="flex items-center justify-between gap-2 border-t border-border/70 px-2 py-1.5 text-xs tabular-nums text-muted-foreground">
-            <span className="flex items-center gap-2">
-              {selectedKey ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClear()
-                    onPicked?.()
-                  }}
-                  className="rounded-sm px-1 py-1 font-medium underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  <Trans>Șterge</Trans>
-                </button>
-              ) : null}
-              {pageInfo && (pageInfo.hasNextPage || offset > 0) ? (
-                pageInfo.totalCount >= 0 ? (
-                  <Trans>
-                    {offset + 1}–{offset + nodes.length} din{' '}
-                    {pageInfo.totalCount}
-                  </Trans>
-                ) : (
-                  <span>{`${offset + 1}–${offset + nodes.length}`}</span>
-                )
-              ) : null}
-            </span>
-            {pageInfo && (pageInfo.hasNextPage || offset > 0) ? (
-              <div className="flex gap-1">
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7"
-                  aria-label={t`Pagina anterioară de opțiuni`}
-                  disabled={offset === 0}
-                  onClick={() =>
-                    setPageOffsets((previous) => previous.slice(0, -1))
-                  }
-                >
-                  <ChevronLeft aria-hidden className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7"
-                  aria-label={t`Pagina următoare de opțiuni`}
-                  disabled={!pageInfo.hasNextPage}
-                  onClick={() =>
-                    setPageOffsets((previous) => [
-                      ...previous,
-                      offset + nodes.length,
-                    ])
-                  }
-                >
-                  <ChevronRight aria-hidden className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-      </Command>
+        </div>
+      ) : null}
     </div>
   )
+}
+
+/**
+ * The pages as one list of rows, keyed and deduplicated, with the member
+ * behind each key. A server that re-sorts between two reads can hand the
+ * same member on two pages, and a duplicate key would give two rows one id.
+ */
+function flattenOptions(
+  pages: readonly { readonly nodes: readonly InsDimensionValue[] }[] | undefined,
+  optionKey: (value: InsDimensionValue) => string | null,
+): [readonly DetailOption[], ReadonlyMap<string, InsDimensionValue>] {
+  const values = new Map<string, InsDimensionValue>()
+  const options: DetailOption[] = []
+  for (const page of pages ?? []) {
+    for (const value of page.nodes) {
+      const key = optionKey(value)
+      if (!key || values.has(key)) continue
+      values.set(key, value)
+      options.push({ key, label: value.label_ro ?? key })
+    }
+  }
+  return [options, values]
 }

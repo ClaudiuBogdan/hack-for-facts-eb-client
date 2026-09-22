@@ -31,8 +31,12 @@ export type DetailSearchPatch = Partial<StatisticsDatasetDetailSearch>
 /** Rows per observations table page. */
 export const DETAIL_PAGE_SIZE = 50
 
-/** Options fetched per dimension-combobox page. Never load-all. */
-export const DIMENSION_PAGE_SIZE = 20
+/**
+ * Options fetched per scroll of a dimension list. Never load-all: the list
+ * virtualises what it holds and asks for the next page as the reader nears
+ * the end, so this is a read size, not a page the reader sees.
+ */
+export const DIMENSION_PAGE_SIZE = 200
 
 /** Hard cap on chart points, before gap injection trims to the recent window. */
 export const CHART_MAX_POINTS = 200

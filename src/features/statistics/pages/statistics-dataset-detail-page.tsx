@@ -778,7 +778,7 @@ function DatasetDetailBody({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
       {/*
         The selection is a standing rail, not a strip above the figure.
 
@@ -805,9 +805,8 @@ function DatasetDetailBody({
           territoryLabel={territoryLabel}
           classificationLabels={classificationLabels}
           unitLabel={unitLabel ?? null}
-          yearSpanLabel={
-            yearWindow ? `${yearWindow.from}–${yearWindow.to}` : null
-          }
+          observedSpan={observedSpan}
+          yearWindow={yearWindow}
           onChange={onSearchChange}
         />
       </aside>

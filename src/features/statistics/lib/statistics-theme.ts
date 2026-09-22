@@ -95,8 +95,13 @@ export const statisticsTheme = {
   /** The same row for an axis with nothing to choose: text, not a button. */
   scopeRailStatic: 'flex min-w-0 flex-col items-start px-4 py-2.5',
   scopeRailLabel: 'text-xs text-muted-foreground',
+  /**
+   * The value wraps to a second line rather than truncating: it is the
+   * reader's own selection, and „1017 MUNICIPIUL AL…" says nothing about
+   * which town is on the chart.
+   */
   scopeRailValue:
-    'mt-0.5 w-full truncate text-left text-sm font-medium text-foreground',
+    'mt-0.5 line-clamp-2 w-full break-words text-left text-sm font-medium text-foreground',
 
   // -- Dimension option panel ------------------------------------------------
 
@@ -104,15 +109,22 @@ export const statisticsTheme = {
   optionPanelHeader:
     'flex items-center justify-between gap-2 border-b border-border/70 px-3 py-2',
   /**
-   * One option row. `data-[selected=true]` is cmdk's KEYBOARD cursor, not the
-   * chosen value — the shared `CommandItem` paints it with `bg-accent`, which
-   * in this theme is pure black and made the list read as a terminal. Here it
-   * is the module's own navy tint, the same signal the catalog's facet rows
-   * use, and the chosen value keeps the check mark and the weight.
+   * One option row. `data-[active=true]` is the KEYBOARD cursor, not the
+   * chosen value: the panel keeps its own, announced through
+   * `aria-activedescendant`, because the rows are virtualised and a cursor
+   * that lives in the DOM is lost with the row it sat on. It is the module's
+   * navy tint — the same signal the catalog's facet rows use, never
+   * `bg-accent`, which in this theme is pure black and made the list read as
+   * a terminal — and the chosen value keeps the check mark and the weight.
    */
   optionRow:
-    'cursor-pointer rounded-md px-2 py-2 text-sm data-[selected=true]:bg-primary/10 data-[selected=true]:text-foreground',
+    'flex cursor-pointer items-start gap-2 rounded-md px-2 py-2 text-left text-sm text-foreground data-[active=true]:bg-primary/10',
   optionRowChosen: 'bg-primary/5 font-medium',
+  /** An option that can be read but not picked — a cadence no chart can draw. */
+  optionRowDisabled: 'cursor-not-allowed text-muted-foreground',
+  /** The panel's closing strip: how many options there are, and the reset. */
+  optionPanelFooter:
+    'flex items-center justify-between gap-2 border-t border-border/70 px-3 py-1.5 text-xs tabular-nums text-muted-foreground',
   scopeChipName: 'shrink-0 text-muted-foreground',
   scopeChipValue: 'truncate font-medium text-foreground underline-offset-4',
   scopeChipValueDefault: 'decoration-border decoration-dotted',

@@ -842,6 +842,66 @@ Rules the promotion had to hold, and does:
   „procente", „ani") had empty `ro` msgstrs and Romanian `en` ones, so English
   showed Romanian; this page is the first to render them, and it fixed them.
 
+## 6j. The rail's popovers open onto the thing itself (2026-09-22)
+
+Three of the rail's controls were a second control in a box. The locality
+axis paged twenty rows at a time behind „1–20 din 3182" and two arrows, so
+the end of the list was 159 clicks away; „Frecvență" opened a popover that
+held a `Select` that opened a menu of two rows — a dropdown whose only job was
+to open a dropdown; and „Interval de ani" was two bare number fields that said
+nothing about the years the series actually had and quietly drew an empty
+chart for a year outside them.
+
+**One list for every axis** — `DetailOptionList`. A searched, scrolling
+listbox over `useInfiniteQuery` (`DIMENSION_PAGE_SIZE` = 200 rows a read; the
+server serves up to 1,000 and 3,182 localities are 16 reads at most, taken
+only as far as the reader scrolls) and `@tanstack/react-virtual`, so a
+3,000-row axis costs the same to draw as a 3-row one. The footer states the
+count — „3.182 de opțiuni" — instead of a page. The dimension panel and the
+canonical territory picker both use it; the territory picker had its own
+chrome (a label, a note, a bordered list, „Anterior / Următor") and now looks
+like its neighbours.
+
+- **Not cmdk.** cmdk keeps its cursor in the DOM and walks the rendered
+  items; a virtualised list renders only the rows in view, so the cursor would
+  vanish with the row it sat on and End would stop at the overscan. The list
+  is a plain WAI-ARIA combobox — the input owns focus, `aria-activedescendant`
+  names the row the arrows are on, the virtualiser scrolls it into view.
+  Home/End/PageUp/PageDown work; End reaches the end of what is held, and the
+  next read follows from there.
+- The next page is asked for when the rows in view come within forty of the
+  end. The offset is the number of rows held, never a page counter: a server
+  that returned a short page must not be asked to skip rows it never sent.
+- Rows are keyed by the value the URL will carry and deduplicated across
+  pages, so a re-sorting server cannot give two rows one id.
+
+**The cadence is rows, not a select** — `DetailCadenceControl`, a Radix radio
+group styled as the same option rows: one click picks and closes. A cadence
+no chart can draw is disabled and the footer says why.
+
+**The year window is bounded** — `DetailYearWindowControl`: a two-thumb slider
+across the observed span with the span's ends printed beneath it, the two
+years as fields beside it, „ultimii 5 / 10 / 20 ani" where the span is longer
+than that, and „tot intervalul" once something is pinned. Nothing navigates
+while a thumb is dragged — the fields and the „N ani" count follow the drag
+and the URL is written on release; the fields commit on blur or Enter, clamped
+to the span and put in order. A window equal to the whole span is written as
+no pin, which is what it means, so the rail keeps saying „implicit".
+
+**The rail below `lg`.** The standing column has room beside the figure only
+from `lg`. Between the phone sheet and that it used to render full-width —
+seven rows of 118px, the figure 830px down the page. It is now the same rows
+as a three-column grid above the figure: one DOM, two layouts. Not a second,
+chip-shaped copy for that range — the page test caught that first attempt,
+and §6i already says why: two copies of every control is a duplicate for a
+screen reader, not a style. (It also opened two popovers on one state, and
+the hidden one dismissed both on seeing focus land in the other.) The column
+is 16rem from `lg`, and the value wraps to a second line rather than
+truncating: „1017 MUNICIPIUL AL…" says nothing about which town is on the
+chart. The popovers size to their content — 22rem for a list, 20rem for the
+two form-shaped controls, which in a list-sized popover sat in a field of
+white.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

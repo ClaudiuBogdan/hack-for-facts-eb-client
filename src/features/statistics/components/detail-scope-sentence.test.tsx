@@ -96,7 +96,8 @@ function mount(canDerive = true, clasificari?: unknown) {
       territoryLabel="România"
       classificationLabels={new Map()}
       unitLabel="Persoane"
-      yearSpanLabel={null}
+      observedSpan={null}
+      yearWindow={null}
       onChange={change}
     />,
   )

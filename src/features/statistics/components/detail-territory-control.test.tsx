@@ -13,6 +13,22 @@ import type { StatisticsTerritorySearchRow } from '@/schemas/statistics'
 vi.mock('../api/graphql/statistics-fetchers', () => ({
   searchInsTerritories: vi.fn(),
 }))
+// jsdom has no layout, so the virtualiser would draw nothing; here it draws
+// every row, which also makes „the last row is in view" true at once.
+vi.mock('@tanstack/react-virtual', () => ({
+  useVirtualizer: ({ count }: { count: number }) => ({
+    getVirtualItems: () =>
+      Array.from({ length: count }, (_, index) => ({
+        index,
+        key: index,
+        start: index * 36,
+        size: 36,
+      })),
+    getTotalSize: () => count * 36,
+    scrollToIndex: vi.fn(),
+    measureElement: () => undefined,
+  }),
+}))
 const county: StatisticsTerritorySearchRow = {
   code: 'B',
   siruta: null,
@@ -64,14 +80,14 @@ describe('independent canonical territory control', () => {
     )
     const change = mount()
     await userEvent.click(
-      await screen.findByRole('button', { name: /București județ/ }),
+      await screen.findByRole('option', { name: /București județ/ }),
     )
     expect(change).toHaveBeenLastCalledWith({ teritoriu: 'cod:B' })
     await userEvent.click(
-      screen.getByRole('button', { name: /Municipiul București/ }),
+      screen.getByRole('option', { name: /Municipiul București/ }),
     )
     expect(change).toHaveBeenLastCalledWith({ teritoriu: 'siruta:179132' })
-    await userEvent.click(screen.getByRole('button', { name: /Sectorul 1/ }))
+    await userEvent.click(screen.getByRole('option', { name: /Sectorul 1/ }))
     expect(change).toHaveBeenLastCalledWith({ teritoriu: 'siruta:179141' })
     await userEvent.click(
       screen.getByRole('button', { name: 'Șterge filtrul teritorial' }),
@@ -84,24 +100,20 @@ describe('independent canonical territory control', () => {
       }),
     )
   })
-  it('advances by returned row count and resets the offset for a new search', async () => {
+  it('reads on by returned row count as the list is scrolled, and restarts a new search from the first page', async () => {
     vi.mocked(searchInsTerritories)
       .mockResolvedValueOnce(page([county, city], true))
       .mockResolvedValueOnce(page([sector]))
       .mockResolvedValue(page([county]))
     mount()
-    await userEvent.click(
-      await screen.findByRole('button', { name: 'Următor' }),
-    )
-    await screen.findByRole('button', { name: /Sectorul 1/ })
+    await screen.findByRole('option', { name: /Sectorul 1/ })
     expect(searchInsTerritories).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({ offset: 2 }),
     )
-    await userEvent.type(screen.getByRole('textbox'), 'București')
-    expect(
-      screen.queryByRole('button', { name: /Sectorul 1/ }),
-    ).not.toBeInTheDocument()
+    expect(screen.getAllByRole('option')).toHaveLength(3)
+    expect(screen.queryByRole('button', { name: 'Următor' })).not.toBeInTheDocument()
+    await userEvent.type(screen.getByRole('combobox'), 'București')
     await waitFor(() =>
       expect(searchInsTerritories).toHaveBeenLastCalledWith(
         expect.objectContaining({
@@ -109,6 +121,11 @@ describe('independent canonical territory control', () => {
           filter: { levels: ['NATIONAL', 'NUTS3', 'LAU'], search: 'București' },
         }),
       ),
+    )
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('option', { name: /Sectorul 1/ }),
+      ).not.toBeInTheDocument(),
     )
   })
   it('offers retry for an empty continuing page instead of silently ending the result list', async () => {
@@ -120,7 +137,7 @@ describe('independent canonical territory control', () => {
       await screen.findByRole('button', { name: 'Reîncearcă' }),
     )
     expect(
-      await screen.findByRole('button', { name: /București județ/ }),
+      await screen.findByRole('option', { name: /București județ/ }),
     ).toBeInTheDocument()
   })
   it('aborts an outstanding lookup when the control closes', async () => {

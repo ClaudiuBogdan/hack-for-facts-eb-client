@@ -5,19 +5,11 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Sheet,
   SheetContent,
@@ -29,7 +21,6 @@ import type {
   InsDatasetDetails,
   InsDimension,
   InsDimensionValue,
-  InsPeriodicity,
 } from '@/schemas/ins'
 import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import {
@@ -42,9 +33,11 @@ import {
 import { periodicityLabel } from '../lib/periodicity-labels'
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../lib/statistics-theme'
+import { DetailCadenceControl } from './detail-cadence-control'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
 import { DetailDimensionPanel } from './detail-dimension-panel'
 import { DetailTerritoryControl } from './detail-territory-control'
+import { DetailYearWindowControl, type YearSpan } from './detail-year-window-control'
 
 /** How a segment's control is being asked to render itself. */
 export interface ScopeControlOptions {
@@ -70,6 +63,12 @@ export interface ScopeSegment {
   readonly control: ((options: ScopeControlOptions) => ReactNode) | null
   /** True when the control paints the popover itself and wants no padding. */
   readonly fills?: boolean
+  /**
+   * How wide the popover opens. `list` is the option panel, wide enough for
+   * an INS member name; `form` is a control with a fixed shape, which in a
+   * list-sized popover sat in a field of white.
+   */
+  readonly width?: 'list' | 'form'
   readonly controlLabel: string
 }
 
@@ -85,12 +84,18 @@ type Props = {
   readonly territoryLabel: string
   readonly classificationLabels: ReadonlyMap<string, string>
   readonly unitLabel: string | null
-  readonly yearSpanLabel: string | null
+  /** The years the series covers, from the rows fetched. Null before any. */
+  readonly observedSpan: YearSpan | null
+  /** The years on screen: the span narrowed by `?din`/`?pana`, if pinned. */
+  readonly yearWindow: YearSpan | null
   readonly onChange: (patch: DetailSearchPatch) => void
   /**
    * How the DESKTOP surface renders. `chips` is the inline sentence; `rail`
    * stacks the same segments in a bordered column beside the figure, so
-   * changing one axis never pushes the chart down the page.
+   * changing one axis never pushes the chart down the page. The rail only
+   * has a column of its own from `lg`; between the phone sheet and that it
+   * is the same rows laid out as a grid above the figure — stacked
+   * full-width, seven rows of rail put the figure 800px down the page.
    *
    * The phone sheet is shared: six axes never become six popovers, whichever
    * shape the desktop takes.
@@ -115,7 +120,8 @@ export function DetailScopeSentence({
   territoryLabel,
   classificationLabels,
   unitLabel,
-  yearSpanLabel,
+  observedSpan,
+  yearWindow,
   onChange,
   layout = 'chips',
 }: Props) {
@@ -132,7 +138,8 @@ export function DetailScopeSentence({
     territoryLabel,
     classificationLabels,
     unitLabel,
-    yearSpanLabel,
+    observedSpan,
+    yearWindow,
     onChange,
   })
 
@@ -152,7 +159,10 @@ export function DetailScopeSentence({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[22rem] max-w-[calc(100vw-2rem)] p-0"
+        className={cn(
+          'max-w-[calc(100vw-2rem)] p-0',
+          segment.width === 'form' ? 'w-80' : 'w-[22rem]',
+        )}
       >
         {segment.fills ? (
           segment.control?.({
@@ -176,11 +186,26 @@ export function DetailScopeSentence({
       {/* Desktop, `rail`: one row per axis in a bordered column. An axis with
           nothing to choose renders as text, not as a button — given the same
           affordance as its neighbours it read as a control that did nothing
-          when pressed. */}
+          when pressed.
+          Below `lg` the column has no room beside the figure, so the same
+          rows sit above it as a three-column grid: a rule over every cell
+          after the header, and a rule before the second and third columns
+          (children 3n+3 and 3n+4, the header being child 1). Borders, not
+          gaps over a border-coloured band — a short last row would have
+          shown the band through its empty cells. One DOM, two layouts: a
+          second, chip-shaped copy for that range would be a duplicate of
+          every control for a screen reader, not a style. */}
       {layout === 'rail' ? (
         <div className="hidden md:block">
-          <div className={cn(statisticsTheme.band, 'divide-y divide-border/70')}>
-            <div className="px-4 py-2.5">
+          <div
+            className={cn(
+              statisticsTheme.band,
+              'overflow-hidden md:grid md:grid-cols-3 lg:block',
+              '[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-border/70',
+              'md:[&>*:nth-child(3n+3)]:border-l md:[&>*:nth-child(3n+4)]:border-l lg:[&>*]:border-l-0',
+            )}
+          >
+            <div className="px-4 py-2.5 md:col-span-full">
               <h2 className={statisticsTheme.sectionLabel}>
                 <Trans>Selecție</Trans>
               </h2>
@@ -191,7 +216,7 @@ export function DetailScopeSentence({
                     segment,
                     <button
                       type="button"
-                      className={statisticsTheme.scopeRailRow}
+                      className={cn(statisticsTheme.scopeRailRow, 'h-full')}
                       aria-label={
                         segment.defaulted
                           ? t`${segment.controlLabel}: ${segment.text} (implicit)`
@@ -222,7 +247,7 @@ export function DetailScopeSentence({
                 : (
                     <div
                       key={segment.id}
-                      className={statisticsTheme.scopeRailStatic}
+                      className={cn(statisticsTheme.scopeRailStatic, 'h-full')}
                     >
                       <span className={statisticsTheme.scopeRailLabel}>
                         {segment.controlLabel.trim()}
@@ -364,17 +389,9 @@ function buildSegments(params: {
   readonly territoryLabel: string
   readonly classificationLabels: ReadonlyMap<string, string>
   readonly unitLabel: string | null
-  readonly yearSpanLabel: string | null
+  readonly observedSpan: YearSpan | null
+  readonly yearWindow: YearSpan | null
   readonly onChange: (patch: DetailSearchPatch) => void
-  /**
-   * How the DESKTOP surface renders. `chips` is the inline sentence; `rail`
-   * stacks the same segments in a bordered column beside the figure, so
-   * changing one axis never pushes the chart down the page.
-   *
-   * The phone sheet is shared: six axes never become six popovers, whichever
-   * shape the desktop takes.
-   */
-  readonly layout?: 'chips' | 'rail'
 }): readonly ScopeSegment[] {
   const {
     dataset,
@@ -385,7 +402,8 @@ function buildSegments(params: {
     territoryLabel,
     classificationLabels,
     unitLabel,
-    yearSpanLabel,
+    observedSpan,
+    yearWindow,
     onChange,
   } = params
 
@@ -436,12 +454,15 @@ function buildSegments(params: {
         : territoryLabel,
     defaulted: scope.territoryDefaulted,
     controlLabel: t`Teritoriu`,
+    fills: true,
     control: territoryChoosable
-      ? () => (
+      ? (options) => (
           <DetailTerritoryControl
             search={search}
             onChange={onChange}
             levels={territoryLevels}
+            variant={options.variant}
+            onPicked={options.onPicked}
           />
         )
       : null,
@@ -521,45 +542,42 @@ function buildSegments(params: {
         : t`Alege frecvența`,
       defaulted: !search.frecventa && periodicities.length > 1,
       controlLabel: t`Frecvență`,
+      fills: true,
+      width: 'form',
       control:
-        periodicities.length > 1 ? (() => (
-          <div className="space-y-1.5">
-            <Label>{t`Frecvență`}</Label>
-            <Select
-              value={scope.periodicity ?? undefined}
-              onValueChange={(value) => {
-                const periodicity = value as InsPeriodicity
-                if (isInsChartPeriodicity(periodicity))
-                  onChange({ frecventa: periodicity })
-              }}
-            >
-              <SelectTrigger className="h-10" aria-label={t`Frecvență`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {periodicities.map((periodicity) => (
-                  <SelectItem
-                    key={periodicity}
-                    value={periodicity}
-                    disabled={!isInsChartPeriodicity(periodicity)}
-                  >
-                    {periodicityLabel(periodicity)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )) : null,
+        periodicities.length > 1
+          ? (options) => (
+              <DetailCadenceControl
+                periodicities={periodicities}
+                selected={scope.periodicity}
+                onSelect={(periodicity) => {
+                  if (isInsChartPeriodicity(periodicity))
+                    onChange({ frecventa: periodicity })
+                }}
+                variant={options.variant}
+                onPicked={options.onPicked}
+              />
+            )
+          : null,
     })
   }
 
-  if (yearSpanLabel) {
+  if (observedSpan && yearWindow) {
     segments.push({
       id: 'interval',
-      text: yearSpanLabel,
+      text: `${yearWindow.from}–${yearWindow.to}`,
       defaulted: search.din === undefined && search.pana === undefined,
       controlLabel: t`Interval de ani`,
-      control: () => <YearWindowControl search={search} onChange={onChange} />,
+      fills: true,
+      width: 'form',
+      control: (options) => (
+        <DetailYearWindowControl
+          span={observedSpan}
+          window={yearWindow}
+          onChange={(patch) => onChange(patch)}
+          variant={options.variant}
+        />
+      ),
     })
   }
 
@@ -666,74 +684,5 @@ function UnitControl({
       placeholder={t`Alege o unitate`}
       selectedLabel={selectedLabel ?? selectedCode}
     />
-  )
-}
-
-/**
- * Bounded free inputs, not selects: the observed span is data-derived and can
- * be wide. Clearing both returns to the full observed window.
- */
-function YearWindowControl({
-  search,
-  onChange,
-}: {
-  readonly search: StatisticsDatasetDetailSearch
-  readonly onChange: (patch: DetailSearchPatch) => void
-}) {
-  // Drafts commit on blur/Enter — typing "2" of "2019" must not navigate.
-  const [dinDraft, setDinDraft] = useState(search.din?.toString() ?? '')
-  const [panaDraft, setPanaDraft] = useState(search.pana?.toString() ?? '')
-  const commit = (key: 'din' | 'pana', draft: string) => {
-    const value = Number.parseInt(draft, 10)
-    onChange({ [key]: Number.isFinite(value) ? value : undefined })
-  }
-
-  return (
-    <div className="space-y-1.5">
-      <Label>{t`Interval de ani`}</Label>
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          inputMode="numeric"
-          className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
-          aria-label={t`An de început`}
-          placeholder={t`din`}
-          value={dinDraft}
-          onChange={(event) => setDinDraft(event.target.value)}
-          onBlur={() => commit('din', dinDraft)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') commit('din', dinDraft)
-          }}
-        />
-        <span aria-hidden>–</span>
-        <input
-          type="number"
-          inputMode="numeric"
-          className="h-10 w-24 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
-          aria-label={t`An de sfârșit`}
-          placeholder={t`până în`}
-          value={panaDraft}
-          onChange={(event) => setPanaDraft(event.target.value)}
-          onBlur={() => commit('pana', panaDraft)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') commit('pana', panaDraft)
-          }}
-        />
-        {search.din !== undefined || search.pana !== undefined ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-xs"
-            onClick={() => {
-              setDinDraft('')
-              setPanaDraft('')
-              onChange({ din: undefined, pana: undefined })
-            }}
-          >
-            <Trans>Resetează</Trans>
-          </Button>
-        ) : null}
-      </div>
-    </div>
   )
 }
