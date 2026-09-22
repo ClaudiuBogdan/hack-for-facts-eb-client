@@ -51,8 +51,8 @@ msgid ".csv, .tsv, .xlsx, .xls"
 msgstr ".csv, .tsv, .xlsx, .xls"
 
 #: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:74
-msgid "· seturi cu date"
-msgstr "· datasets with data"
+#~ msgid "· seturi cu date"
+#~ msgstr "· datasets with data"
 
 #: src/features/legal/components/legislation-guide.tsx:125
 msgid "„Abrogat parțial” NU înseamnă că legea nu mai e în vigoare. Este statutul firesc al unei legi modificate ani la rând: unele articole au fost abrogate, restul produc efecte în continuare. Printre cele mai citate acte din corpus, Codul de procedură penală — aplicat zi de zi în instanțe — poartă exact acest statut."
@@ -212,7 +212,7 @@ msgid "{0, plural, one {un județ fără valoare (hașurat)} few {# județe făr
 msgstr "{0, plural, one {un județ fără valoare (hașurat)} few {# județe fără valoare (hașurate)} other {# de județe fără valoare (hașurate)}}"
 
 #. placeholder {0}: row.count
-#: src/features/statistics/components/filters/dataset-explorer-theme-tree.tsx:294
+#: src/features/statistics/components/filters/dataset-explorer-theme-tree.tsx:297
 msgid "{0, plural, one {un set cu date} few {# seturi cu date} other {# de seturi cu date}}"
 msgstr "{0, plural, one {un set cu date} few {# seturi cu date} other {# de seturi cu date}}"
 
@@ -1365,7 +1365,7 @@ msgstr "Achiziții în timp"
 msgid "Achiziții publice"
 msgstr "Public procurement"
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:125
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:120
 #: src/features/statistics/lib/explorer-chips.ts:123
 #: src/features/statistics/lib/explorer-chips.ts:125
 msgid "Acoperire"
@@ -6713,11 +6713,11 @@ msgstr "Date învechite"
 msgid "Date învechite — sincronizarea este suspendată."
 msgstr "Date învechite — sincronizarea este suspendată."
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:154
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:149
 msgid "Date la nivel de județ"
 msgstr "County-level data"
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:140
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:135
 msgid "Date la nivel de localitate"
 msgstr "Locality-level data"
 
@@ -17435,7 +17435,7 @@ msgstr "Period:"
 msgid "Period: {from} – {to}"
 msgstr "Period: {from} – {to}"
 
-#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:94
+#: src/features/statistics/components/filters/dataset-explorer-filter-controls.tsx:89
 #: src/features/statistics/components/source-provenance-drawer.tsx:90
 #: src/features/statistics/lib/explorer-chips.ts:119
 msgid "Periodicitate"

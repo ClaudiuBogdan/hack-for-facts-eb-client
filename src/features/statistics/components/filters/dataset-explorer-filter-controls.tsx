@@ -56,8 +56,8 @@ export function DatasetExplorerFilterControls({
     })
   }
 
-  // The counts are of datasets with observations, while the list beside them
-  // is the whole catalog, so the legend says which population it counts.
+  // Counts datasets that actually carry observations, which is narrower than
+  // the catalog the tree lists; each row spells that out in its accessible name.
   const counts = catalog
     ? new Map(catalog.themes.map((theme) => [theme.code, theme.count]))
     : undefined
@@ -69,11 +69,6 @@ export function DatasetExplorerFilterControls({
         <fieldset>
           <legend className={cn(statisticsTheme.sectionLabel, 'mb-1.5')} id={legendId}>
             <Trans>Domeniu</Trans>
-            {counts ? (
-              <span className="ml-1.5 font-normal normal-case tracking-normal">
-                <Trans>· seturi cu date</Trans>
-              </span>
-            ) : null}
           </legend>
           {/* The tree caps its own height and scrolls inside itself. */}
           <DatasetExplorerThemeTree

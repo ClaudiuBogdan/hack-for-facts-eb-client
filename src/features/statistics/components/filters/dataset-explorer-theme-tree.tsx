@@ -274,7 +274,10 @@ function TreeRow({
         )}
         <span className="min-w-0 flex-1 leading-snug">{row.label}</span>
         {row.count !== undefined ? (
+          // The legend no longer says what the bare number counts, so the
+          // count carries the same sentence the row already announces.
           <span
+            title={rowAccessibleName(row)}
             className={cn(
               statisticsTheme.facetCount,
               row.selected && statisticsTheme.facetCountSelected,
