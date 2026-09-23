@@ -21,7 +21,7 @@ vi.mock('@tanstack/react-virtual', () => ({
   }),
 }));
 
-vi.mock('@/features/statistics/api/graphql/ins-fetchers', () => ({
+vi.mock('@/features/statistics/api/graphql/legacy/ins-fetchers', () => ({
   searchInsDatasets: (params: unknown) => mockSearchInsDatasets(params),
 }));
 

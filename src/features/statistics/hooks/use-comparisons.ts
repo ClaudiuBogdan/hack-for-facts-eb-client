@@ -212,7 +212,6 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
     issues,
     unitCode: shownResolved?.unit ?? null,
     cadence: shownResolved?.cadence ?? null,
-    representative: shownResolved?.representative ?? false,
   }
 }
 

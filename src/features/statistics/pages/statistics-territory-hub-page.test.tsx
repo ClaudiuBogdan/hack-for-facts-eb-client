@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getMockStatisticsTerritoryHub } from '../mocks/statistics-fixtures'
+import { territoryHubFixture } from '../test/territory-hub-fixtures'
 import { StatisticsTerritoryHubPage } from './statistics-territory-hub-page'
 import {
   createPartialTerritoryHub,
@@ -70,7 +70,7 @@ describe('StatisticsTerritoryHubPage', () => {
   beforeEach(() => {
     useStatisticsTerritoryHubMock.mockImplementation(({ siruta }: { siruta: string }) =>
       createTerritoryHubQueryStub({
-        data: getMockStatisticsTerritoryHub(siruta),
+        data: territoryHubFixture(siruta),
       }),
     )
   })
@@ -82,7 +82,7 @@ describe('StatisticsTerritoryHubPage', () => {
       screen.getByRole('heading', { level: 1, name: 'Municipiul Cluj-Napoca' }),
     ).toBeInTheDocument()
     expect(screen.getAllByText(/54975/).length).toBeGreaterThan(0)
-    expect(screen.getByText(/27 din 1\.898 seturi cu date disponibile/)).toBeInTheDocument()
+    expect(screen.getByText(/1\.915 din 1\.916 seturi cu date disponibile/)).toBeInTheDocument()
     expect(screen.getAllByText(/estimat/).length).toBeGreaterThan(0)
     expect(
       screen.getByText('Setul există în catalog, dar observațiile nu sunt încă încărcate.'),
@@ -97,7 +97,7 @@ describe('StatisticsTerritoryHubPage', () => {
     render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
 
     const labourTile = screen
-      .getByRole('heading', { level: 3, name: 'Câmpul muncii pe localități' })
+      .getByRole('heading', { level: 3, name: 'Numărul mediu al salariaților' })
       .closest('article')
     expect(labourTile).not.toBeNull()
     fireEvent.click(within(labourTile!).getByRole('button', { name: 'Sursă' }))

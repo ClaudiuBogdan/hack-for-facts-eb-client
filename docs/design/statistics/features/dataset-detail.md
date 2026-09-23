@@ -25,7 +25,7 @@ and an explicit "no observations yet" state with a request action.
   `getInsDatasetDimensions(code)` → `InsDatasetDimensionsResult`.
   `getInsDatasetHistory({ datasetCode, filter, pageSize, maxPages })` →
   `InsDatasetHistoryResult` (observations, paginated internally).
-- **Fact:** Series/unit selection logic exists in `src/lib/ins/series-selection.ts`
+- **Fact:** Series/unit selection logic exists in `src/components/entities/views/ins-series-selection.ts`
   (`buildSeriesGroups`, `buildDefaultSeriesSelection`, `mergeSeriesSelection`,
   `buildUnitOptions`, `filterObservationsBySeriesSelection`, `buildStableSeries`)
   and is exercised by `DatasetDetailSection`.

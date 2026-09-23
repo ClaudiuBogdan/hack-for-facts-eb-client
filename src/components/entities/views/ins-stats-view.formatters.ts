@@ -2,7 +2,7 @@ import { t } from '@lingui/core/macro';
 
 import type { InsObservation, InsPeriodicity } from '@/schemas/ins';
 import { formatNumber, formatValueWithUnit } from '@/lib/utils';
-import { getObservationClassificationSelectionMap } from '@/lib/ins/series-selection';
+import { getObservationClassificationSelectionMap } from './ins-series-selection';
 
 const PERIODICITY_LABELS: Record<InsPeriodicity, string> = {
   ANNUAL: t`Annual`,

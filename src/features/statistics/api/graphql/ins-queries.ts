@@ -240,21 +240,24 @@ export const INS_DATASET_DIMENSIONS_QUERY = `
 `
 
 /**
- * Builds an aliased multi-dataset observations query. Dataset codes are
- * interpolated into the document (they are internal INS matrix codes, never
- * user input) because `insObservations` takes `datasetCode` as a positional
- * argument rather than a list.
+ * Builds an aliased multi-dataset observations query, one alias per matrix
+ * because `insObservations` takes `datasetCode` as a positional argument
+ * rather than a list. Each code travels as its own variable (`$code0`…), so
+ * a code from a saved chart can never alter the document.
  */
 export function buildInsObservationsBatchQuery(
   datasetCodes: readonly string[],
 ) {
   const aliasMap: Record<string, string> = {}
+  const variables: Record<string, string> = {}
+  const declarations = datasetCodes.map((_, index) => `$code${index}: String!`).join(', ')
   const fields = datasetCodes
     .map((code, index) => {
       const alias = `d${index}`
       aliasMap[alias] = code
+      variables[`code${index}`] = code
       return (
-        `${alias}: insObservations(datasetCode: "${code}", filter: $filter, limit: $limit, offset: 0) {\n` +
+        `${alias}: insObservations(datasetCode: $code${index}, filter: $filter, limit: $limit, offset: 0) {\n` +
         `  nodes { ${INS_OBSERVATION_FIELDS} }\n` +
         `  pageInfo { totalCount hasNextPage hasPreviousPage }\n` +
         `}`
@@ -263,12 +266,12 @@ export function buildInsObservationsBatchQuery(
     .join('\n')
 
   const query = `
-    query InsObservationsBatch($filter: InsObservationFilterInput, $limit: Int) {
+    query InsObservationsBatch(${declarations}${declarations ? ', ' : ''}$filter: InsObservationFilterInput, $limit: Int) {
       ${fields}
     }
   `
 
-  return { query, aliasMap }
+  return { query, aliasMap, variables }
 }
 
 export const INS_LATEST_VALUE_FIELDS = `

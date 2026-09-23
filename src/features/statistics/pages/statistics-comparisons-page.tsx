@@ -121,7 +121,6 @@ export function StatisticsComparisonsPage() {
     issues,
     unitCode,
     cadence,
-    representative,
     refetchObservations,
     effectivePins,
     unresolvedDimensionLabels,
@@ -354,11 +353,6 @@ export function StatisticsComparisonsPage() {
               defaultOpen: unresolvedDimensionLabels.length > 0 || issues.length > 0,
               content: (
                 <div className="space-y-3">
-                  {representative ? (
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      <Trans>Coordonatele implicite vin de la un teritoriu reprezentativ; verifică-le.</Trans>
-                    </p>
-                  ) : null}
                   <ComparisonPins
                     datasetMeta={datasetMeta}
                     effectivePins={effectivePins}

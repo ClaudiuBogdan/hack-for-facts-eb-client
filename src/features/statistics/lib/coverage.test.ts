@@ -1,19 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  buildCoverageRibbonText,
-  buildDocsFallbackCoverage,
-} from './coverage'
-
-describe('statistics coverage helpers', () => {
-  it('builds docs fallback coverage from the 27/1898 contract', () => {
-    expect(buildDocsFallbackCoverage()).toEqual({
-      availableDatasetCount: 27,
-      totalDatasetCount: 1898,
-      catalogOnlyDatasetCount: 1871,
-      partial: false,
-    })
-  })
-})
+import { buildCoverageRibbonText } from './coverage'
 
 // Intentional copy change (M1 redesign): a PARTIAL coverage summary prints NO
 // ratio — "200 din 1.898" out of a server-clamped page was a fabricated

@@ -6,7 +6,6 @@ import {
   inspectSourceSeries,
   sourceRowSelection,
 } from '@/lib/ins/source-series'
-import { hasSourcePinIntent } from '@/lib/ins/source-pins'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useEffect, useMemo, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
@@ -884,12 +883,7 @@ function DatasetDetailBody({
                     {canDerive && latest && latest.hasData ? (
                       <DetailTier0Hero
                         latest={latest}
-                        matchChip={
-                          latest.matchStrategy === 'REPRESENTATIVE_FALLBACK' ||
-                          representativeDefaults
-                            ? 'representative'
-                            : null
-                        }
+                        matchChip={representativeDefaults ? 'representative' : null}
                       />
                     ) : null}
                     <Alert variant="destructive">
@@ -924,14 +918,7 @@ function DatasetDetailBody({
                           }
                         : null
                     }
-                    matchChip={
-                      (latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
-                        !hasSourcePinIntent(search.clasificari) &&
-                        search.unitate === undefined) ||
-                      representativeDefaults
-                        ? 'representative'
-                        : null
-                    }
+                    matchChip={representativeDefaults ? 'representative' : null}
                   />
                 ) : null}
 

@@ -1,3 +1,9 @@
+/**
+ * The legacy INS lane: unvalidated reads (`graphqlQuery<{…}>` casts, no Zod)
+ * kept for the entity page's INS view (`src/lib/hooks/use-ins-dashboard.ts`)
+ * and the chart series editor. The INS pages read through the validated
+ * fetchers in the parent folder; new code must not import from here.
+ */
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
   InsContextConnection,
@@ -15,7 +21,7 @@ import {
   INS_DATASET_DIMENSIONS_QUERY,
   INS_DATASET_HISTORY_QUERY,
   INS_DATASETS_QUERY,
-} from './ins-queries'
+} from '../ins-queries'
 
 const INS_OBSERVATION_LIMIT = 200
 
@@ -67,7 +73,7 @@ export async function searchInsDatasets(params: {
   return response.insDatasets
 }
 
-export { getInsDatasetDetails, getInsDimensionValuesPage } from './ins-bootstrap-fetchers'
+export { getInsDatasetDetails, getInsDimensionValuesPage } from '../ins-bootstrap-fetchers'
 
 export interface InsDatasetHistoryResult {
   observations: InsObservation[]
@@ -168,10 +174,11 @@ async function getInsObservationsBatch(params: {
 }): Promise<Map<string, InsObservationConnection>> {
   if (params.datasetCodes.length === 0) return new Map()
 
-  const { query, aliasMap } = buildInsObservationsBatchQuery(params.datasetCodes)
+  const { query, aliasMap, variables } = buildInsObservationsBatchQuery(params.datasetCodes)
   const response = await graphqlQuery<Record<string, InsObservationConnection>>(
     query,
     {
+      ...variables,
       filter: params.filter,
       limit: params.limit ?? INS_OBSERVATION_LIMIT,
     },

@@ -365,7 +365,6 @@ export type StatisticsLatestMatchStrategy =
   | 'AMBIGUOUS_GEOGRAPHY'
   | 'PREFERRED_CLASSIFICATION'
   | 'TOTAL_FALLBACK'
-  | 'REPRESENTATIVE_FALLBACK'
   | 'NO_DATA'
 
 /**

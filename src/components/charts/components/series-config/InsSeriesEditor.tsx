@@ -23,7 +23,7 @@ import type {
 } from '@/schemas/ins';
 import type { ReportPeriodInput, ReportPeriodType } from '@/schemas/reporting';
 import { useChartStore } from '../../hooks/useChartStore';
-import { getInsDatasetDetails, getInsDimensionValuesPage } from '@/features/statistics/api/graphql/ins-fetchers';
+import { getInsDatasetDetails, getInsDimensionValuesPage } from '@/features/statistics/api/graphql/legacy/ins-fetchers';
 import { getPeriodTags } from '@/lib/period-utils';
 import { getUserLocale } from '@/lib/utils';
 import {

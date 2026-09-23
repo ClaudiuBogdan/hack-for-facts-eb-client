@@ -39,7 +39,7 @@ moved *forward* (adds `SEMESTRIAL`/`RANGE`/`OTHER` labels, fixes non-annual peri
 labels). Nothing was de-polished.
 
 **`use-ins-dashboard.ts` on dev already points at Chronos** — it was rewired to
-`@/features/statistics/api/graphql/ins-fetchers`, which posts to `/api/v1/graphql`.
+`@/features/statistics/api/graphql/legacy/ins-fetchers`, which posts to `/api/v1/graphql`.
 
 ### The switch
 

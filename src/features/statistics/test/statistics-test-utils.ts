@@ -3,9 +3,7 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import type {
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
-import {
-  getMockStatisticsTerritoryHub,
-} from '../mocks/statistics-fixtures'
+import { territoryHubFixture } from './territory-hub-fixtures'
 
 type QueryStub<TData> = Pick<
   UseQueryResult<TData>,
@@ -29,15 +27,15 @@ function createQueryStub<TData>(
 export function createTerritoryHubQueryStub(
   overrides: Partial<QueryStub<StatisticsTerritoryHubResult | null>> = {},
 ): QueryStub<StatisticsTerritoryHubResult | null> {
-  return createQueryStub(getMockStatisticsTerritoryHub('54975'), overrides)
+  return createQueryStub(territoryHubFixture('54975'), overrides)
 }
 
 export function createPartialTerritoryHub(
   siruta = '54975',
 ): StatisticsTerritoryHubResult {
-  const hub = getMockStatisticsTerritoryHub(siruta)
+  const hub = territoryHubFixture(siruta)
   if (!hub) {
-    throw new Error(`Missing mock hub fixture for SIRUTA ${siruta}`)
+    throw new Error(`Missing hub fixture for SIRUTA ${siruta}`)
   }
 
   return {

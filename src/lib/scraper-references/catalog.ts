@@ -74,7 +74,7 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
       'docs/specs/ins-chart-series-api-requirements.md',
     ],
     apiReady: true,
-    mockDataAvailable: true,
+    mockDataAvailable: false,
     privacySensitive: false,
   },
   {

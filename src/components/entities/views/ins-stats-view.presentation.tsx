@@ -34,7 +34,7 @@ import ReactMarkdown from 'react-markdown';
 import { Link } from '@tanstack/react-router';
 
 import type { InsDataset, InsObservation } from '@/schemas/ins';
-import type { InsSeriesGroup, InsUnitOption } from '@/lib/ins/series-selection';
+import type { InsSeriesGroup, InsUnitOption } from './ins-series-selection';
 import type { ChartUrlState } from '@/components/charts/page-schema';
 import { formatNumber, formatValueWithUnit } from '@/lib/utils';
 import {

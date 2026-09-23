@@ -121,7 +121,7 @@ links, not from top-level nav.
   `InsDashboardData`).
 - API adapters + hooks: `src/lib/api/ins.ts`, `src/lib/hooks/use-ins-dashboard.ts`.
 - Registry: `src/lib/ins/ins-metric-registry.ts`.
-- Series/unit logic: `src/lib/ins/series-selection.ts`.
+- Series/unit logic: `src/components/entities/views/ins-series-selection.ts` (the entity INS view's own).
 - Presentation sections: `src/components/entities/views/ins-stats-view.presentation.tsx`
   (`SummaryMetricsSection`, `DerivedIndicatorsSection`, `DatasetExplorerSection`,
   `DatasetDetailSection`, `MarkdownDescription`, `ExpandableMarkdownField`) and

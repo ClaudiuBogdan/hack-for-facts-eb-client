@@ -17,6 +17,7 @@ import {
   getInsDatasetDimensions,
   getInsDatasetHistory,
   getInsDatasetsCatalog,
+  getInsObservationsSnapshotByDatasets,
 } from './ins-fetchers'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 
@@ -213,5 +214,25 @@ describe('ins fetchers', () => {
         },
       ],
     })
+  })
+})
+
+describe('getInsObservationsSnapshotByDatasets', () => {
+  it('sends each dataset code as its own variable, never inside the document', async () => {
+    vi.mocked(graphqlQuery).mockReset()
+    vi.mocked(graphqlQuery).mockResolvedValue({
+      d0: { nodes: [{ dataset_code: 'POP107D', value: '1' }], pageInfo: { totalCount: 1, hasNextPage: false, hasPreviousPage: false } },
+      d1: { nodes: [], pageInfo: { totalCount: 0, hasNextPage: false, hasPreviousPage: false } },
+    })
+    const hostile = 'X") { __typename }'
+    const result = await getInsObservationsSnapshotByDatasets({ datasetCodes: ['POP107D', hostile], filter: {} })
+
+    const [query, variables] = vi.mocked(graphqlQuery).mock.calls[0]!
+    expect(query).toContain('query InsObservationsBatch($code0: String!, $code1: String!, $filter: InsObservationFilterInput, $limit: Int)')
+    expect(query).toContain('d1: insObservations(datasetCode: $code1,')
+    expect(query).not.toContain(hostile)
+    expect(variables).toMatchObject({ code0: 'POP107D', code1: hostile, limit: 200 })
+    expect(result.observationsByDataset.get('POP107D')).toHaveLength(1)
+    expect(result.observationsByDataset.get(hostile)).toEqual([])
   })
 })

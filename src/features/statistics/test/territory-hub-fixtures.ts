@@ -8,7 +8,6 @@ import type {
 import type {
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
-import { buildDocsFallbackCoverage } from '../lib/coverage'
 import { getDatasetDataStatus } from '../lib/dataset-status'
 import {
   buildTerritoryRelatedLinks,
@@ -16,18 +15,17 @@ import {
 } from '../lib/territory'
 
 /**
- * Mock fixtures for the statistics surface.
+ * Territory hub fixtures for the page tests.
  *
- * These are EXAMPLES shaped like the live INS serving contract
- * (`src/schemas/ins.ts`), not claimed real facts. Numeric values are
- * illustrative placeholders. They exercise the edge cases called out in
- * `docs/ux-research/statistics.md`:
- * - an LAU territory (SIRUTA 54975, Cluj-Napoca) and a county-like fixture;
- * - available priority datasets (POP107D, FOM104D, SOM101F, LOC101B);
- * - a catalog-only dataset (TUR101C, metadata_only);
+ * Shaped like the live INS serving contract (`src/schemas/ins.ts`), with
+ * illustrative numbers — never served to a reader. They exercise the states
+ * the page has to draw:
+ * - an LAU territory (SIRUTA 54975, Cluj-Napoca) and a county-like one;
+ * - the four headline matrices (POP107D, FOM104D, SOM101F, LOC101B);
+ * - a catalog-only dataset (TUR101C) and one with no rows (SCL101C);
  * - a county-only dataset (GOS107A, has_uat_data=false);
  * - an observation carrying `value_status`;
- * - a sparkline gap (a missing period rendered as null);
+ * - a sparkline gap (2022 absent from POP107D, so the line breaks);
  * - a null-unit observation.
  */
 
@@ -58,12 +56,12 @@ const bucharestCountyTerritory: InsTerritory = {
 const pop107dDataset: InsDataset = {
   id: 'dataset:POP107D',
   code: 'POP107D',
-  name_ro: 'Populația stabilă la 1 ianuarie',
-  name_en: 'Usually resident population at 1 January',
+  name_ro: 'Populația după domiciliu la 1 ianuarie',
+  name_en: 'Population by domicile at 1 January',
   definition_ro:
-    'Populația stabilă a localităților/UAT-urilor la 1 ianuarie.',
+    'Populația după domiciliu a localităților/UAT-urilor la 1 ianuarie.',
   definition_en:
-    'Usually resident population of localities/UATs at 1 January.',
+    'Population by domicile of localities/UATs at 1 January.',
   periodicity: ['ANNUAL'],
   year_range: [2014, 2024],
   dimension_count: 4,
@@ -82,10 +80,10 @@ const pop107dDataset: InsDataset = {
 const fom104dDataset: InsDataset = {
   id: 'dataset:FOM104D',
   code: 'FOM104D',
-  name_ro: 'Câmpul muncii pe localități',
-  name_en: 'Labour force by locality',
-  definition_ro: 'Indicatori ai câmpului muncii la nivel de UAT.',
-  definition_en: 'Labour force indicators at UAT level.',
+  name_ro: 'Numărul mediu al salariaților',
+  name_en: 'Average number of employees',
+  definition_ro: 'Numărul mediu al salariaților la nivel de UAT.',
+  definition_en: 'Average number of employees at UAT level.',
   periodicity: ['ANNUAL'],
   year_range: [2014, 2023],
   dimension_count: 5,
@@ -104,10 +102,10 @@ const fom104dDataset: InsDataset = {
 const som101fDataset: InsDataset = {
   id: 'dataset:SOM101F',
   code: 'SOM101F',
-  name_ro: 'Câștigul salarial mediu lunar pe localități',
-  name_en: 'Average monthly gross earnings by locality',
-  definition_ro: 'Câștigul salarial mediu lunar brut la nivel de UAT.',
-  definition_en: 'Average monthly gross earnings at UAT level.',
+  name_ro: 'Ponderea șomerilor înregistrați în resursele de muncă',
+  name_en: 'Share of registered unemployed in labour resources',
+  definition_ro: 'Ponderea șomerilor înregistrați în totalul resurselor de muncă, la nivel de UAT.',
+  definition_en: 'Share of registered unemployed in total labour resources, at UAT level.',
   periodicity: ['ANNUAL'],
   year_range: [2014, 2023],
   dimension_count: 5,
@@ -117,8 +115,8 @@ const som101fDataset: InsDataset = {
   sync_status: 'full',
   last_sync_at: null,
   context_code: 'SOM',
-  context_name_ro: 'Salarii',
-  context_name_en: 'Wages',
+  context_name_ro: 'Șomaj',
+  context_name_en: 'Unemployment',
   context_path: 'SOM',
   metadata: null,
 }
@@ -126,10 +124,10 @@ const som101fDataset: InsDataset = {
 const loc101bDataset: InsDataset = {
   id: 'dataset:LOC101B',
   code: 'LOC101B',
-  name_ro: 'Indicatori locali',
-  name_en: 'Local indicators',
-  definition_ro: 'Indicatori economici/sociali locali.',
-  definition_en: 'Local economic/social indicators.',
+  name_ro: 'Locuințe existente la sfârșitul anului',
+  name_en: 'Existing dwellings at the end of the year',
+  definition_ro: 'Fondul de locuințe existent la sfârșitul anului.',
+  definition_en: 'The stock of dwellings at the end of the year.',
   periodicity: ['ANNUAL'],
   year_range: [2018, 2023],
   dimension_count: 3,
@@ -139,8 +137,8 @@ const loc101bDataset: InsDataset = {
   sync_status: 'full',
   last_sync_at: null,
   context_code: 'LOC',
-  context_name_ro: 'Indicatori locali',
-  context_name_en: 'Local indicators',
+  context_name_ro: 'Locuințe',
+  context_name_en: 'Dwellings',
   context_path: 'LOC',
   metadata: null,
 }
@@ -250,7 +248,7 @@ function annualPeriod(year: number): InsTimePeriod {
 }
 
 const pop107dObservations: InsObservation[] = [
-  // Note: example values, not real facts.
+  // Illustrative values, not INS's.
   {
     dataset_code: 'POP107D',
     value: '326000',
@@ -336,15 +334,15 @@ const fom104dObservations: InsObservation[] = [
 const som101fObservations: InsObservation[] = [
   {
     dataset_code: 'SOM101F',
-    value: '5840',
+    value: '1.9',
     value_status: null,
     time_period: annualPeriod(2023),
     territory: clujNapocaTerritory,
     unit: {
-      code: 'RON',
-      symbol: 'lei',
-      name_ro: 'lei',
-      name_en: 'RON',
+      code: 'PCT',
+      symbol: '%',
+      name_ro: 'procent',
+      name_en: 'percent',
     },
     classifications: [],
     dimensions: null,
@@ -352,7 +350,7 @@ const som101fObservations: InsObservation[] = [
   // Null-unit observation: the source row carries no unit symbol/name.
   {
     dataset_code: 'SOM101F',
-    value: '5680',
+    value: '2.1',
     value_status: null,
     time_period: annualPeriod(2022),
     territory: clujNapocaTerritory,
@@ -380,7 +378,7 @@ const loc101bObservations: InsObservation[] = [
   },
 ]
 
-const mockUatDashboardData: InsDashboardData = {
+const uatDashboard: InsDashboardData = {
   groups: [
     {
       dataset: pop107dDataset,
@@ -417,7 +415,7 @@ const mockUatDashboardData: InsDashboardData = {
 }
 
 /** County-level dashboard for the county-like fixture (county-only dataset). */
-const mockCountyDashboardData: InsDashboardData = {
+const countyDashboard: InsDashboardData = {
   groups: [
     {
       dataset: som103aDataset,
@@ -509,7 +507,7 @@ function pickLatestObservation(
   return latest
 }
 
-function buildMockSparkline(
+function buildSparkline(
   observations: readonly InsObservation[],
 ): readonly (readonly [InsTimePeriod, string | null])[] {
   return [...observations]
@@ -524,43 +522,39 @@ function buildMockSparkline(
 }
 
 /**
- * SIRUTA → mock territory hub result. Unknown SIRUTA codes return `null`
- * (404), matching the live adapter's not-found contract.
- *
- * Built LAZILY: `buildMockTerritoryHub` reaches translation helpers
- * (`buildTerritoryRelatedLinks` → Lingui `t`), and this module is pulled
- * into the eager route bundle through the api seam — a module-eval call would
- * run before `i18n.activate` and crash router init.
+ * SIRUTA → territory hub result. Unknown SIRUTA codes return `null`, as the
+ * live adapter's not-found contract does. Built lazily: the builder reaches
+ * translation helpers (`buildTerritoryRelatedLinks` → Lingui `t`).
  */
-let mockTerritoryHubCache: ReadonlyMap<string, StatisticsTerritoryHubResult> | null =
+let territoryHubCache: ReadonlyMap<string, StatisticsTerritoryHubResult> | null =
   null
 
-function mockTerritoryHubBySiruta(): ReadonlyMap<
+function territoryHubBySiruta(): ReadonlyMap<
   string,
   StatisticsTerritoryHubResult
 > {
-  mockTerritoryHubCache ??= new Map([
+  territoryHubCache ??= new Map([
     [
       '54975',
-      buildMockTerritoryHub({
+      buildTerritoryHub({
         siruta: '54975',
-        dashboard: mockUatDashboardData,
+        dashboard: uatDashboard,
         territory: clujNapocaTerritory,
       }),
     ],
     [
       '179132',
-      buildMockTerritoryHub({
+      buildTerritoryHub({
         siruta: '179132',
-        dashboard: mockCountyDashboardData,
+        dashboard: countyDashboard,
         territory: bucharestCountyTerritory,
       }),
     ],
   ])
-  return mockTerritoryHubCache
+  return territoryHubCache
 }
 
-function buildMockTerritoryHub(params: {
+function buildTerritoryHub(params: {
   readonly siruta: string
   readonly dashboard: InsDashboardData
   readonly territory: InsTerritory
@@ -584,7 +578,7 @@ function buildMockTerritoryHub(params: {
         : group.observations.length === 0
           ? 'no-data'
           : 'available'
-    const sparkline = buildMockSparkline(group.observations)
+    const sparkline = buildSparkline(group.observations)
 
     return {
       datasetCode: group.dataset.code,
@@ -610,7 +604,13 @@ function buildMockTerritoryHub(params: {
     .filter((group) => getDatasetDataStatus(group.dataset) === 'available')
     .map((group) => group.dataset.code)
 
-  const coverage = buildDocsFallbackCoverage()
+  // Live-like counts, with this hub's one catalog-only matrix counted.
+  const coverage = {
+    availableDatasetCount: 1915,
+    totalDatasetCount: 1916,
+    catalogOnlyDatasetCount: 1,
+    partial: false,
+  }
 
   const latestDataPeriod = pickLatestPeriodString(
     dashboard.groups.map((group) => group.latestPeriod ?? ''),
@@ -630,16 +630,12 @@ function buildMockTerritoryHub(params: {
 
 /**
  * The hub is always returned unfiltered. Period selection is a client-side
- * transform (`lib/hub-period.ts`), so the mock has nothing to filter — which
- * is exactly the property the live adapter now has too.
+ * transform (`lib/hub-period.ts`), so there is nothing to filter here — the
+ * property the live adapter has too.
  */
-export function getMockStatisticsTerritoryHub(
+export function territoryHubFixture(
   siruta: string,
 ): StatisticsTerritoryHubResult | null {
-  return mockTerritoryHubBySiruta().get(siruta.trim()) ?? null
+  return territoryHubBySiruta().get(siruta.trim()) ?? null
 }
-
-// ---------------------------------------------------------------------------
-// Landing fixtures (post-redesign shapes)
-// ---------------------------------------------------------------------------
 

@@ -1,4 +1,3 @@
-import { getInsDimensionValuesPage } from '../api/graphql/ins-bootstrap-fetchers'
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import type {
@@ -37,7 +36,6 @@ export function useDimensionValues(params: {
 
   return useQuery<InsDimensionValueConnection>({
     queryKey: statisticsKeys.dimensionValues([
-      params.nativePublicationKey === undefined ? 'legacy-or-demo-v1' : 'native-only-v1',
       params.nativePublicationKey ?? null,
       datasetCode,
       params.dimensionIndex,
@@ -46,7 +44,7 @@ export function useDimensionValues(params: {
       params.offset,
     ]),
     queryFn: ({ signal }) =>
-      (params.nativePublicationKey === undefined ? fetchDimensionValuesPage : getInsDimensionValuesPage)({
+      fetchDimensionValuesPage({
         expectedPublicationKey: params.nativePublicationKey,
         datasetCode,
         dimensionIndex: params.dimensionIndex,
@@ -87,7 +85,6 @@ export function useDimensionValuesInfinite(params: {
   return useInfiniteQuery<InsDimensionValueConnection>({
     queryKey: statisticsKeys.dimensionValues([
       'scroll-v1',
-      params.nativePublicationKey === undefined ? 'legacy-or-demo-v1' : 'native-only-v1',
       params.nativePublicationKey ?? null,
       datasetCode,
       params.dimensionIndex,
@@ -96,7 +93,7 @@ export function useDimensionValuesInfinite(params: {
     ]),
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) =>
-      (params.nativePublicationKey === undefined ? fetchDimensionValuesPage : getInsDimensionValuesPage)({
+      fetchDimensionValuesPage({
         expectedPublicationKey: params.nativePublicationKey,
         datasetCode,
         dimensionIndex: params.dimensionIndex,

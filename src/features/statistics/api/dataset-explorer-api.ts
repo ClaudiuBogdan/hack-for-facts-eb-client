@@ -5,24 +5,14 @@ import {
   explorerOffset,
   type DatasetFilterOptions,
 } from '../lib/explorer-filter'
-import { isStatisticsMockEnabled } from '../lib/mock-mode'
 import { fetchInsDatasetPage } from './graphql/statistics-fetchers'
-import { fetchDatasetPageMock } from './dataset-explorer-api.mock'
 
-/**
- * Dataset explorer seam. Both adapters consume the same pure
- * `buildDatasetFilterInput`, so the mock cannot drift from live filter
- * semantics.
- */
+/** One page of the INS catalog for an explorer URL state, through the pure `buildDatasetFilterInput`. */
 export async function fetchDatasetPage(
   search: StatisticsDatasetExplorerSearch,
   options: DatasetFilterOptions = {},
   signal?: AbortSignal,
 ): Promise<StatisticsDatasetPage> {
-  if (isStatisticsMockEnabled()) {
-    return fetchDatasetPageMock(search, options)
-  }
-
   return fetchInsDatasetPage({
     filter: buildDatasetFilterInput(search, options),
     limit: EXPLORER_PAGE_SIZE,
