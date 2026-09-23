@@ -43,6 +43,31 @@ export function ComparisonGuide({ title, children }: { readonly title: ReactNode
   )
 }
 
+/** The one-tap answers a guide offers. */
+export function ComparisonGuideChoices({
+  choices,
+  onChoose,
+}: {
+  readonly choices: readonly { readonly key: string; readonly label: string }[]
+  readonly onChoose: (key: string) => void
+}) {
+  return (
+    <ul className="mt-4 flex flex-wrap gap-2">
+      {choices.map((choice) => (
+        <li key={choice.key}>
+          <button
+            type="button"
+            onClick={() => onChoose(choice.key)}
+            className="inline-flex min-h-9 items-center rounded-md border border-border/70 bg-background px-3 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {choice.label}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 /**
  * Shown when the query ran and came back empty. The pins are the usual cause,
  * so the copy points at them rather than at the territory picker.

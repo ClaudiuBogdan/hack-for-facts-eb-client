@@ -1,8 +1,8 @@
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { InsPeriodicity, NativeInsObservation } from '@/schemas/ins'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue, StatisticsHubUnit } from '@/schemas/statistics'
-import type { ComparisonCell } from './comparison-series'
 import type { ComparisonTerritoryToken } from './dataset-selection'
+import type { ComparisonCell } from './native-comparison'
 import { hubChange, hubUnitOf, isAdditiveUnit } from './hub-format'
 import { publishedNumber } from './value-status'
 

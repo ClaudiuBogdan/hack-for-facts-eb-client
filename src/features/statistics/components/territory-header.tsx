@@ -1,15 +1,22 @@
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import { MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { StatisticsTerritoryIdentity } from '@/schemas/statistics'
+import { comparisonPlaceName } from '../lib/comparison-format'
+import { formatHubPeriod } from '../lib/hub-format'
+import { statisticsTheme } from '../lib/statistics-theme'
 
 type TerritoryHeaderProps = {
   readonly identity: StatisticsTerritoryIdentity
+  /** How many indicators carry a figure for this place. */
+  readonly indicatorCount: number
+  /** The most recent period any of them publishes. */
+  readonly latestDataPeriod: string | null
 }
 
-function getLevelLabel(level: StatisticsTerritoryIdentity['level']): string {
+function levelLabel(level: StatisticsTerritoryIdentity['level']): string {
   switch (level) {
     case 'LAU':
       return t`UAT`
@@ -26,18 +33,28 @@ function getLevelLabel(level: StatisticsTerritoryIdentity['level']): string {
   }
 }
 
-export function TerritoryHeader({ identity }: TerritoryHeaderProps) {
-  const name = identity.name || `SIRUTA ${identity.siruta}`
+/**
+ * Who the page is about: the place, in the spelling a reader uses, with
+ * its kind beside it and the county above it.
+ *
+ * INS sends „MUNICIPIUL CLUJ-NAPOCA"; the comparison page one click away
+ * already rendered the same place as „Cluj-Napoca · municipiu" through
+ * `comparisonPlaceName`, and one place should not have two spellings on
+ * two pages. The line under the title says what the page holds for this
+ * place — how many indicators, up to when — rather than a fact about the
+ * whole catalog (§6n: a band says what its numbers are).
+ */
+export function TerritoryHeader({ identity, indicatorCount, latestDataPeriod }: TerritoryHeaderProps) {
+  const place = identity.name ? comparisonPlaceName(identity.name) : null
+  const name = place?.name ?? `SIRUTA ${identity.siruta}`
+  const kind = place?.kind ?? levelLabel(identity.level)
 
   return (
     <div className="space-y-3">
       <nav aria-label={t`Ierarhie teritorială`} className="text-xs text-muted-foreground">
         <ol className="flex flex-wrap items-center gap-1">
           <li>
-            <Link
-              to="/ins"
-              className="underline-offset-2 hover:text-foreground hover:underline"
-            >
+            <Link to="/ins" className="underline-offset-2 hover:text-foreground hover:underline">
               <Trans>România</Trans>
             </Link>
           </li>
@@ -56,19 +73,24 @@ export function TerritoryHeader({ identity }: TerritoryHeaderProps) {
       <div className="flex flex-wrap items-center gap-2">
         <MapPin className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
-        <Badge variant="secondary">{getLevelLabel(identity.level)}</Badge>
+        <Badge variant="secondary">{kind}</Badge>
       </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+      <p className={statisticsTheme.metaLine}>
+        <span className={statisticsTheme.provenanceChip}>SIRUTA {identity.siruta}</span>
         <span>
-          <Trans>SIRUTA</Trans> {identity.siruta}
+          {plural(indicatorCount, { one: 'un indicator cu date', few: '# indicatori cu date', other: '# de indicatori cu date' })}
         </span>
-        {identity.countyName ? <span>{identity.countyName}</span> : null}
+        {latestDataPeriod ? (
+          <span>
+            <Trans>date până în {formatHubPeriod(latestDataPeriod)}</Trans>
+          </span>
+        ) : null}
         {identity.enrichedFallback ? (
           <span>
             <Trans>Identitate completată parțial din datele disponibile</Trans>
           </span>
         ) : null}
-      </div>
+      </p>
     </div>
   )
 }

@@ -326,10 +326,13 @@ export function detailScopeKey(search: StatisticsDatasetDetailSearch): string {
   })
 }
 
+/** A closed range of years, first to last inclusive. */
+export type YearSpan = { readonly from: number; readonly to: number }
+
 /** The observed year span of fetched rows — never the catalog `year_range`. */
 export function observedYearSpan(
   observations: readonly InsObservation[],
-): { readonly from: number; readonly to: number } | null {
+): YearSpan | null {
   let from = Number.POSITIVE_INFINITY
   let to = Number.NEGATIVE_INFINITY
   for (const observation of observations) {

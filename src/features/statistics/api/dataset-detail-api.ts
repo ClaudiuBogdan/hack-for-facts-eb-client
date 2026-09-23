@@ -6,17 +6,19 @@ import type {
 import type {
   StatisticsDatasetSeries,
   StatisticsDatasetTier0,
+  StatisticsRelatedDatasets,
 } from '@/schemas/statistics'
 import { getInsDimensionValuesPage } from './graphql/ins-bootstrap-fetchers'
 import {
   fetchStatisticsDatasetSeries,
   fetchStatisticsDatasetTier0,
+  fetchStatisticsRelatedDatasets,
 } from './graphql/statistics-fetchers'
 
 /**
  * The dataset page's reads: the certified descriptor with its resolved
- * latest cell (POST A), the source vector with the related catalog (POST B),
- * and one page of a dimension's members at a time.
+ * latest cell (POST A), the source vector of one cell (POST B), the
+ * context's related catalog, and one page of a dimension's members at a time.
  */
 
 /**
@@ -45,13 +47,20 @@ export async function fetchDatasetTier0(params: {
   return fetchStatisticsDatasetTier0(params)
 }
 
-/** Source observations and the related catalog use separate anonymous operations. */
+/** One cell's complete vector, or a bounded inspection page of a partial selection. */
 export async function fetchDatasetSeries(params: {
   readonly code: string
   readonly filter: InsObservationFilterInput
-  readonly contextCode: string | null
   readonly inspection?: boolean
   readonly signal?: AbortSignal
 }): Promise<StatisticsDatasetSeries> {
   return fetchStatisticsDatasetSeries(params)
+}
+
+/** The matrices sharing the dataset's INS context, the dataset itself included. */
+export async function fetchRelatedDatasets(params: {
+  readonly contextCode: string
+  readonly signal?: AbortSignal
+}): Promise<StatisticsRelatedDatasets> {
+  return fetchStatisticsRelatedDatasets(params)
 }

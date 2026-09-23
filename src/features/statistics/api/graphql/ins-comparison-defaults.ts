@@ -8,9 +8,9 @@ import {
 import type { InsEntitySelectorInput } from '@/schemas/ins'
 import { comparisonPublicationKey } from '../../lib/native-comparison'
 import {
+  INS_COMPARISON_DEFAULT_FIELDS,
   INS_DATASET_FIELDS,
   INS_DATASET_DIMENSION_FIELDS,
-  INS_LATEST_VALUE_FIELDS,
 } from './ins-queries'
 import {
   insDetailedDatasetRawSchema,
@@ -18,7 +18,34 @@ import {
 } from './statistics-raw-schemas'
 import { mapDatasetDetails, mapLatestValue } from './statistics-mappers'
 
-/** All defaults and their descriptor share one native operation snapshot. Values only enter variables. */
+/**
+ * The one operation that reads the dataset once and one default per compared
+ * territory. Values only enter variables. Each alias repeats the lean
+ * default selection, never the exhaustive one: the server caps a document
+ * at 500 fields, and six exhaustive aliases were refused outright.
+ */
+export function buildInsComparisonDefaultsQuery(
+  code: string,
+  entities: readonly InsEntitySelectorInput[],
+): { readonly query: string; readonly variables: Record<string, unknown> } {
+  const variables: Record<string, unknown> = { code, codes: [code] }
+  const declarations = entities.map((entity, i) => {
+    variables[`entity${i}`] = entity
+    return `$entity${i}: InsEntitySelectorInput!`
+  })
+  const fields = entities.map(
+    (_, i) => `d${i}: insLatestDatasetValues(
+    entity: $entity${i}, datasetCodes: $codes, preferredClassificationCodes: ["TOTAL"]
+  ) { ${INS_COMPARISON_DEFAULT_FIELDS} }`,
+  )
+  const query = `query InsComparisonDefaults($code: String!, $codes: [String!]!, ${declarations.join(', ')}) {
+    dataset: insDataset(code: $code) { ${INS_DATASET_FIELDS} ${INS_DATASET_DIMENSION_FIELDS} }
+    ${fields.join('\n')}
+  }`
+  return { query, variables }
+}
+
+/** All defaults and their descriptor share one native operation snapshot. */
 export async function fetchInsComparisonDefaults(input: {
   readonly datasetCode: string
   readonly entities: readonly InsEntitySelectorInput[]
@@ -27,20 +54,7 @@ export async function fetchInsComparisonDefaults(input: {
   const code = normalizeInsDatasetCode(input.datasetCode)
   if (!code || input.entities.length < 1 || input.entities.length > 6)
     throw new RangeError('Invalid INS comparison default request')
-  const variables: Record<string, unknown> = { code, codes: [code] }
-  const declarations = input.entities.map((entity, i) => {
-    variables[`entity${i}`] = entity
-    return `$entity${i}: InsEntitySelectorInput!`
-  })
-  const fields = input.entities.map(
-    (_, i) => `d${i}: insLatestDatasetValues(
-    entity: $entity${i}, datasetCodes: $codes, preferredClassificationCodes: ["TOTAL"]
-  ) { ${INS_LATEST_VALUE_FIELDS} }`,
-  )
-  const query = `query InsComparisonDefaults($code: String!, $codes: [String!]!, ${declarations.join(', ')}) {
-    dataset: insDataset(code: $code) { ${INS_DATASET_FIELDS} ${INS_DATASET_DIMENSION_FIELDS} }
-    ${fields.join('\n')}
-  }`
+  const { query, variables } = buildInsComparisonDefaultsQuery(code, input.entities)
   input.signal?.throwIfAborted()
   const response = await graphqlQuery<unknown>(query, variables, {
     auth: 'none',

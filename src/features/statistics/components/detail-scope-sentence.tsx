@@ -30,8 +30,10 @@ import {
   dimensionsOfType,
   type DetailSearchPatch,
   type EffectiveScope,
+  type YearSpan,
 } from '../lib/dataset-selection'
 import { fetchDimensionValuesPage } from '../api/dataset-detail-api'
+import { STATISTICS_STALE_TIME, statisticsKeys } from '../hooks/query-config'
 import { periodicityLabel } from '../lib/periodicity-labels'
 import {
   childAxisAfterPick,
@@ -44,12 +46,12 @@ import { statisticsTheme } from '../lib/statistics-theme'
 import { DetailCadenceControl } from './detail-cadence-control'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
 import { DetailDimensionPanel } from './detail-dimension-panel'
-import { DetailYearWindowControl, type YearSpan } from './detail-year-window-control'
+import { DetailYearWindowControl } from './detail-year-window-control'
 
 /** How a segment's control is being asked to render itself. */
-export interface ScopeControlOptions {
+interface ScopeControlOptions {
   /**
-   * `panel` paints a desktop popover edge to edge — the chip already names
+   * `panel` paints a desktop popover edge to edge — the row already names
    * the axis, so the control opens straight onto its options. `field` is the
    * labelled, closed form the phone sheet stacks six of.
    */
@@ -58,11 +60,11 @@ export interface ScopeControlOptions {
   readonly onPicked: () => void
 }
 
-export interface ScopeSegment {
+interface ScopeSegment {
   readonly id: string
-  /** The visible sentence text for this segment. */
+  /** The visible text for this segment. */
   readonly text: string
-  /** True when the value is a server-resolved default, not a URL pin. */
+  /** True when the value was chosen automatically — by the server or by this page — not by the reader. */
   readonly defaulted: boolean
   /** True when the dimension has NO effective value yet. */
   readonly unresolved?: boolean
@@ -95,28 +97,18 @@ type Props = {
   readonly observedSpan: YearSpan | null
   /** The years on screen: the span narrowed by `?din`/`?pana`, if pinned. */
   readonly yearWindow: YearSpan | null
+  /** True when the window on screen is the reader's, not the whole span. */
+  readonly yearWindowPinned?: boolean
   readonly onChange: (patch: DetailSearchPatch) => void
-  /**
-   * How the DESKTOP surface renders. `chips` is the inline sentence; `rail`
-   * stacks the same segments in a bordered column beside the figure, so
-   * changing one axis never pushes the chart down the page. The rail only
-   * has a column of its own from `lg`; between the phone sheet and that it
-   * is the same rows laid out as a grid above the figure — stacked
-   * full-width, seven rows of rail put the figure 800px down the page.
-   *
-   * The phone sheet is shared: six axes never become six popovers, whichever
-   * shape the desktop takes.
-   */
-  readonly layout?: 'chips' | 'rail'
 }
 
 /**
- * Tier 1 — the scope sentence IS the control surface.
- *
- * Reads „România · total · anual · 2016–2025"; every segment opens its own
- * popover on desktop. On mobile the sentence opens ONE bottom sheet holding
- * every control (never four stacked popovers). Server-resolved defaults are
- * visibly marked and are NOT written into the URL until the user changes one.
+ * Tier 1 — the selection IS the control surface: a standing rail of one
+ * row per axis beside the figure, so changing one axis never pushes the
+ * chart down the page. Every row opens its own popover on desktop; on a
+ * phone the whole rail opens ONE bottom sheet holding every control (never
+ * six stacked popovers). Values chosen automatically are marked and are
+ * NOT written into the URL until the reader changes one.
  */
 export function DetailScopeSentence({
   dataset,
@@ -129,11 +121,11 @@ export function DetailScopeSentence({
   unitLabel,
   observedSpan,
   yearWindow,
+  yearWindowPinned = false,
   onChange,
-  layout = 'chips',
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
-  // One open chip at a time, and controlled, so picking a value can close it.
+  // One open row at a time, and controlled, so picking a value can close it.
   const [openSegment, setOpenSegment] = useState<string | null>(null)
   // The selection a pick was made against. A pick that has to read a root
   // before it can write (`ClassificationControl`) checks this is still the
@@ -171,17 +163,16 @@ export function DetailScopeSentence({
     unitLabel,
     observedSpan,
     yearWindow,
+    yearWindowPinned,
     onChange: write,
     selectionToken,
   })
 
   if (segments.length === 0) return null
 
-  const hasDefaults = segments.some(
-    (segment) => segment.defaulted || segment.unresolved,
-  )
+  const hasDefaults = segments.some((segment) => segment.defaulted)
 
-  /** The popover every desktop shape opens, whatever its trigger looks like. */
+  /** The popover every row opens, whatever its trigger looks like. */
   const controlPopover = (segment: ScopeSegment, trigger: ReactNode) => (
     <Popover
       key={segment.id}
@@ -215,7 +206,7 @@ export function DetailScopeSentence({
 
   return (
     <div className="text-sm text-muted-foreground">
-      {/* Desktop, `rail`: one row per axis in a bordered column. An axis with
+      {/* Desktop: one row per axis in a bordered column. An axis with
           nothing to choose renders as text, not as a button — given the same
           affordance as its neighbours it read as a control that did nothing
           when pressed.
@@ -225,144 +216,85 @@ export function DetailScopeSentence({
           (children 3n+3 and 3n+4, the header being child 1). Borders, not
           gaps over a border-coloured band — a short last row would have
           shown the band through its empty cells. One DOM, two layouts: a
-          second, chip-shaped copy for that range would be a duplicate of
-          every control for a screen reader, not a style. */}
-      {layout === 'rail' ? (
-        <div className="hidden md:block">
-          <div
-            className={cn(
-              statisticsTheme.band,
-              'overflow-hidden md:grid md:grid-cols-3 lg:block',
-              '[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-border/70',
-              'md:[&>*:nth-child(3n+3)]:border-l md:[&>*:nth-child(3n+4)]:border-l lg:[&>*]:border-l-0',
-            )}
-          >
-            <div className="px-4 py-2.5 md:col-span-full">
-              <h2 className={statisticsTheme.sectionLabel}>
-                <Trans>Selecție</Trans>
-              </h2>
-            </div>
-            {segments.map((segment) =>
-              segment.control
-                ? controlPopover(
-                    segment,
-                    <button
-                      type="button"
-                      className={cn(statisticsTheme.scopeRailRow, 'h-full')}
-                      aria-label={
-                        segment.defaulted
-                          ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                          : t`${segment.controlLabel}: ${segment.text}`
-                      }
-                    >
-                      <span className="flex min-w-0 flex-col items-start">
-                        <span className={statisticsTheme.scopeRailLabel}>
-                          {segment.controlLabel.trim()}
-                        </span>
-                        <span className={statisticsTheme.scopeRailValue}>
-                          {segment.text}
-                        </span>
-                      </span>
-                      <span className="flex shrink-0 items-center gap-1.5">
-                        {segment.defaulted || segment.unresolved ? (
-                          <span className="text-xs text-muted-foreground">
-                            <Trans>implicit</Trans>
-                          </span>
-                        ) : null}
-                        <ChevronDown
-                          className="h-3.5 w-3.5 text-muted-foreground"
-                          aria-hidden
-                        />
-                      </span>
-                    </button>,
-                  )
-                : (
-                    <div
-                      key={segment.id}
-                      className={cn(statisticsTheme.scopeRailStatic, 'h-full')}
-                    >
+          second copy for that range would be a duplicate of every control
+          for a screen reader, not a style. */}
+      <div className="hidden md:block">
+        <div
+          className={cn(
+            statisticsTheme.band,
+            'overflow-hidden md:grid md:grid-cols-3 lg:block',
+            '[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-border/70',
+            'md:[&>*:nth-child(3n+3)]:border-l md:[&>*:nth-child(3n+4)]:border-l lg:[&>*]:border-l-0',
+          )}
+        >
+          <div className="px-4 py-2.5 md:col-span-full">
+            <h2 className={statisticsTheme.sectionLabel}>
+              <Trans>Selecție</Trans>
+            </h2>
+          </div>
+          {segments.map((segment) =>
+            segment.control
+              ? controlPopover(
+                  segment,
+                  <button
+                    type="button"
+                    className={cn(statisticsTheme.scopeRailRow, 'h-full')}
+                    aria-label={
+                      segment.defaulted
+                        ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                        : t`${segment.controlLabel}: ${segment.text}`
+                    }
+                  >
+                    <span className="flex min-w-0 flex-col items-start">
                       <span className={statisticsTheme.scopeRailLabel}>
                         {segment.controlLabel.trim()}
                       </span>
                       <span className={statisticsTheme.scopeRailValue}>
                         {segment.text}
                       </span>
-                    </div>
-                  ),
-            )}
-          </div>
-          {hasDefaults ? (
-            <p className="mt-3 px-1 text-xs leading-relaxed text-muted-foreground">
-              <Trans>
-                Valorile marcate „implicit" au fost alese automat. Apasă pe ele
-                ca să le schimbi.
-              </Trans>
-            </p>
-          ) : null}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      {/* Only a value that WAS chosen is marked as chosen
+                          automatically; an axis still to choose says so in
+                          its own text. */}
+                      {segment.defaulted ? (
+                        <span className="text-xs text-muted-foreground">
+                          <Trans>implicit</Trans>
+                        </span>
+                      ) : null}
+                      <ChevronDown
+                        className="h-3.5 w-3.5 text-muted-foreground"
+                        aria-hidden
+                      />
+                    </span>
+                  </button>,
+                )
+              : (
+                  <div
+                    key={segment.id}
+                    className={cn(statisticsTheme.scopeRailStatic, 'h-full')}
+                  >
+                    <span className={statisticsTheme.scopeRailLabel}>
+                      {segment.controlLabel.trim()}
+                    </span>
+                    <span className={statisticsTheme.scopeRailValue}>
+                      {segment.text}
+                    </span>
+                  </div>
+                ),
+          )}
         </div>
-      ) : null}
-
-      {/* Desktop, `chips`: one chip per axis, the dimension's name before its
-          value, so „Total" never stands alone. Each chip opens its own
-          popover. A dotted underline marks a server default; solid marks a
-          user pin (the legend line below says so once; aria carries the mark
-          per chip). */}
-      {layout === 'rail' ? null : (
-      <div className="hidden flex-wrap items-center gap-1.5 md:flex">
-        {segments.map((segment) =>
-          segment.control ? (
-            controlPopover(
-              segment,
-              <button
-                type="button"
-                className={statisticsTheme.scopeChip}
-                aria-label={
-                  segment.defaulted
-                    ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                    : t`${segment.controlLabel}: ${segment.text}`
-                }
-              >
-                <span className={statisticsTheme.scopeChipName}>
-                  {segment.controlLabel}
-                </span>
-                <span
-                  className={cn(
-                    statisticsTheme.scopeChipValue,
-                    'underline',
-                    segment.defaulted || segment.unresolved
-                      ? statisticsTheme.scopeChipValueDefault
-                      : statisticsTheme.scopeChipValuePinned,
-                  )}
-                >
-                  {segment.text}
-                </span>
-                <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />
-              </button>,
-            )
-          ) : (
-            <span key={segment.id} className={statisticsTheme.scopeChipStatic}>
-              <span className={statisticsTheme.scopeChipName}>
-                {segment.controlLabel}
-              </span>
-              <span className="font-medium text-foreground">{segment.text}</span>
-            </span>
-          ),
-        )}
+        {hasDefaults ? (
+          <p className="mt-3 px-1 text-xs leading-relaxed text-muted-foreground">
+            <Trans>
+              Valorile marcate „implicit" au fost alese automat. Apasă pe ele
+              ca să le schimbi.
+            </Trans>
+          </p>
+        ) : null}
       </div>
-      )}
-      {layout !== 'rail' && hasDefaults ? (
-        // Desktop only: it explains the dotted underline on the chips, and the
-        // phone renders the sheet trigger instead of the chips, so on a phone
-        // it was a sentence about something not on screen.
-        <p className="mt-1 hidden text-xs text-muted-foreground md:block">
-          <Trans>
-            Valorile subliniate punctat sunt implicite sau încă nealese — apasă
-            pe ele ca să le alegi sau să le schimbi.
-          </Trans>
-        </p>
-      ) : null}
 
-      {/* Mobile: the whole sentence opens ONE bottom sheet. */}
+      {/* Mobile: the whole selection opens ONE bottom sheet. */}
       <div className="md:hidden">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
@@ -423,6 +355,7 @@ function buildSegments(params: {
   readonly unitLabel: string | null
   readonly observedSpan: YearSpan | null
   readonly yearWindow: YearSpan | null
+  readonly yearWindowPinned: boolean
   readonly onChange: (patch: DetailSearchPatch) => void
   readonly selectionToken: RefObject<object>
 }): readonly ScopeSegment[] {
@@ -437,6 +370,7 @@ function buildSegments(params: {
     unitLabel,
     observedSpan,
     yearWindow,
+    yearWindowPinned,
     onChange,
     selectionToken,
   } = params
@@ -514,8 +448,8 @@ function buildSegments(params: {
     segments.push({
       id: `clasificare-${typeCode}`,
       // Labels verbatim — blanket lowercasing would mangle acronyms (CAEN…).
-      // The chip prints its axis name already; „alege Categorii de unitati
-      // administrative" inside a chip labelled „Categorii de unitati
+      // The row prints its axis name already; „alege Categorii de unitati
+      // administrative" inside a row labelled „Categorii de unitati
       // administrative" said it twice.
       text:
         value === undefined
@@ -549,6 +483,7 @@ function buildSegments(params: {
       id: 'unitate',
       text: unitLabel ?? t`Alege o unitate`,
       defaulted: scope.unitDefaulted,
+      unresolved: scope.unitCode === null,
       controlLabel:
         unitLabel && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitLabel.toLowerCase()
           ? unitAxisLabel
@@ -574,7 +509,9 @@ function buildSegments(params: {
       text: scope.periodicity
         ? periodicityLabel(scope.periodicity)
         : t`Alege frecvența`,
-      defaulted: !search.frecventa && periodicities.length > 1,
+      // A cadence nothing resolved is unresolved, not „chosen automatically".
+      defaulted: scope.periodicity !== null && !search.frecventa && periodicities.length > 1,
+      unresolved: scope.periodicity === null,
       controlLabel: t`Frecvență`,
       fills: true,
       width: 'form',
@@ -600,7 +537,7 @@ function buildSegments(params: {
     segments.push({
       id: 'interval',
       text: `${yearWindow.from}–${yearWindow.to}`,
-      defaulted: search.din === undefined && search.pana === undefined,
+      defaulted: !yearWindowPinned,
       controlLabel: t`Interval de ani`,
       fills: true,
       width: 'form',
@@ -618,8 +555,6 @@ function buildSegments(params: {
   return segments
 }
 
-/** A nested axis's root member, read once per axis and kept: INS changes it never. */
-const ROOT_STALE_TIME = 1000 * 60 * 60 * 24
 /** The root is the first member INS lists; a page this size has always held it. */
 const ROOT_PAGE_SIZE = 50
 
@@ -633,7 +568,7 @@ const ROOT_PAGE_SIZE = 50
  */
 function childRootQuery(datasetCode: string, childIndex: number) {
   return {
-    queryKey: ['statisticsDimensionRoot', datasetCode, childIndex] as const,
+    queryKey: statisticsKeys.dimensionRoot(datasetCode, childIndex),
     queryFn: () =>
       fetchDimensionValuesPage({
         datasetCode,
@@ -641,7 +576,7 @@ function childRootQuery(datasetCode: string, childIndex: number) {
         limit: ROOT_PAGE_SIZE,
         offset: 0,
       }).then((page) => rootMemberCode(page.nodes)),
-    staleTime: ROOT_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.catalog,
   }
 }
 

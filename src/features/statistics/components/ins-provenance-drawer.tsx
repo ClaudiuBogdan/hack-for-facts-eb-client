@@ -10,31 +10,37 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { getScraperDatasetById } from '@/lib/scraper-references'
 import { insTempoDatasetUrl } from '../lib/ins-tempo'
 import { buildDataThroughLabel } from '../lib/period'
 import { isInsPeriodicity, periodicityLabel } from '../lib/periodicity-labels'
 
-
-type SourceProvenanceDrawerProps = {
+type Props = {
   readonly datasetCode: string
-  readonly datasetName: string | null
+  /** The matrix's name in the reader's language — it names the trigger too. */
+  readonly datasetName: string
   readonly periodicity?: readonly string[]
   readonly unitLabel?: string | null
   readonly latestPeriod?: string | null
 }
 
-export function SourceProvenanceDrawer({
+/**
+ * Where a territory figure comes from: the matrix, its cadence and unit, how
+ * far its data reaches, and the way back to INS Tempo. Opened from a
+ * „Sursă" button that names its matrix for assistive tech — a list of
+ * seventy identical „Sursă" buttons said nothing about which was which.
+ *
+ * Not the shared data-trust `SourceProvenanceDrawer`: that one takes a
+ * `SourcePointer`; this one reads an INS matrix.
+ */
+export function InsProvenanceDrawer({
   datasetCode,
   datasetName,
   periodicity,
   unitLabel,
   latestPeriod,
-}: SourceProvenanceDrawerProps) {
+}: Props) {
   const { i18n } = useLingui()
-  const reference = getScraperDatasetById('ins-indicators')
   const dataThrough = buildDataThroughLabel(latestPeriod ?? null)
-  const fallbackSource = t`INS Tempo`
   const tempoUrl = insTempoDatasetUrl(datasetCode, i18n.locale)
   const cadences = periodicity
     ?.map((item) => (isInsPeriodicity(item) ? periodicityLabel(item) : item))
@@ -43,7 +49,12 @@ export function SourceProvenanceDrawer({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 text-xs"
+          aria-label={t`Sursă: ${datasetName}`}
+        >
           <Info className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           <Trans>Sursă</Trans>
         </Button>
@@ -63,7 +74,7 @@ export function SourceProvenanceDrawer({
               <Trans>Set de date</Trans>
             </dt>
             <dd className="mt-1 text-muted-foreground">
-              {datasetName || datasetCode} · {datasetCode}
+              {datasetName} · {datasetCode}
             </dd>
           </div>
           <div>
@@ -71,7 +82,7 @@ export function SourceProvenanceDrawer({
               <Trans>Sursă</Trans>
             </dt>
             <dd className="mt-1 text-muted-foreground">
-              {reference?.title ?? fallbackSource}
+              <Trans>INS Tempo</Trans>
             </dd>
           </div>
           {dataThrough ? (
@@ -87,9 +98,7 @@ export function SourceProvenanceDrawer({
               <dt className="font-medium text-foreground">
                 <Trans>Periodicitate</Trans>
               </dt>
-              <dd className="mt-1 text-muted-foreground">
-                {cadences}
-              </dd>
+              <dd className="mt-1 text-muted-foreground">{cadences}</dd>
             </div>
           ) : null}
           {unitLabel ? (

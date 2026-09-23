@@ -30,7 +30,8 @@ export function createTerritoryHubQueryStub(
   return createQueryStub(territoryHubFixture('54975'), overrides)
 }
 
-export function createPartialTerritoryHub(
+/** The hub as it comes back when the references' read (POST 2) failed. */
+export function createTerritoryHubWithoutBenchmarks(
   siruta = '54975',
 ): StatisticsTerritoryHubResult {
   const hub = territoryHubFixture(siruta)
@@ -40,7 +41,8 @@ export function createPartialTerritoryHub(
 
   return {
     ...hub,
-    partial: true,
+    benchmarks: {},
+    benchmarksUnavailable: true,
   }
 }
 

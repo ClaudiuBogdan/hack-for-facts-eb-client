@@ -20,6 +20,15 @@ function parsed(observations = [sourceObservation()]) {
   return { ...result, rows: csv.data }
 }
 
+describe('buildObservationsCsvFilename', () => {
+  it('names the file by the reader’s own calendar day, not UTC’s', () => {
+    // 01:00 on the 31st in the reader's zone is still the 31st, whatever UTC says.
+    expect(buildObservationsCsvFilename('POP107D', new Date(2026, 0, 31, 1, 0, 0))).toBe(
+      'POP107D-2026-01-31.csv',
+    )
+  })
+})
+
 describe('native source CSV', () => {
   it('round-trips every original field, publication and dimension declaration', () => {
     const observation = sourceObservation()

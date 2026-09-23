@@ -4,13 +4,10 @@ import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import type { YearSpan } from '../lib/dataset-selection'
 import { statisticsTheme } from '../lib/statistics-theme'
 
-/** A closed range of years, first to last inclusive. */
-export type YearSpan = {
-  readonly from: number
-  readonly to: number
-}
+export type { YearSpan }
 
 type Props = {
   /** The years the series actually covers: the bounds of every control here. */
@@ -32,8 +29,12 @@ type Props = {
 /** „Ultimii N ani" shortcuts, offered only where the span is longer than N. */
 const PRESET_YEARS = [5, 10, 20] as const
 
+/**
+ * A 16px thumb with a 24px hit area (WCAG 2.2 AA 2.5.8): the `before:` inset
+ * is what a finger lands on, the circle is what the eye sees.
+ */
 const THUMB_CLASS =
-  'block h-4 w-4 rounded-full border-2 border-primary bg-card shadow transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+  'relative block h-4 w-4 rounded-full border-2 border-primary bg-card shadow transition-colors before:absolute before:-inset-1 before:rounded-full before:content-[""] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
 
 /**
  * The years the chart shows, chosen inside the years the series has.
@@ -75,6 +76,7 @@ export function DetailYearWindowControl({ span, window, onChange, variant }: Pro
   const presets = PRESET_YEARS.filter((years) => years < spanYears)
   const pinned = window.from !== span.from || window.to !== span.to
   const count = draft[1] - draft[0] + 1
+  const boundsId = `${id}-bounds`
 
   return (
     <div className="flex flex-col">
@@ -96,7 +98,7 @@ export function DetailYearWindowControl({ span, window, onChange, variant }: Pro
             id={`${id}-from`}
             label={t`An de început`}
             value={draft[0]}
-            span={span}
+            describedBy={boundsId}
             onCommit={(year) => commit(year, draft[1])}
           />
           <span aria-hidden className="text-muted-foreground">
@@ -106,7 +108,7 @@ export function DetailYearWindowControl({ span, window, onChange, variant }: Pro
             id={`${id}-to`}
             label={t`An de sfârșit`}
             value={draft[1]}
-            span={span}
+            describedBy={boundsId}
             onCommit={(year) => commit(draft[0], year)}
           />
           <span className="ml-auto text-xs tabular-nums text-muted-foreground" aria-live="polite">
@@ -135,9 +137,12 @@ export function DetailYearWindowControl({ span, window, onChange, variant }: Pro
             <SliderPrimitive.Thumb aria-label={t`An de început`} className={THUMB_CLASS} />
             <SliderPrimitive.Thumb aria-label={t`An de sfârșit`} className={THUMB_CLASS} />
           </SliderPrimitive.Root>
-          {/* What the slider runs between: the series' own first and last year. */}
-          <div aria-hidden className="flex justify-between text-[11px] tabular-nums text-muted-foreground">
+          {/* What the slider runs between: the series' own first and last
+              year — and the description of both fields, so a screen reader
+              hears the bounds without having to find the slider. */}
+          <div id={boundsId} className="flex justify-between text-[11px] tabular-nums text-muted-foreground">
             <span>{span.from}</span>
+            <span className="sr-only">–</span>
             <span>{span.to}</span>
           </div>
         </div>
@@ -192,13 +197,14 @@ function YearField({
   id,
   label,
   value,
-  span,
+  describedBy,
   onCommit,
 }: {
   readonly id: string
   readonly label: string
   readonly value: number
-  readonly span: YearSpan
+  /** The element naming the bounds — what the field is FOR. */
+  readonly describedBy: string
   readonly onCommit: (year: number) => void
 }) {
   const [text, setText] = useState(String(value))
@@ -222,9 +228,7 @@ function YearField({
       pattern="[0-9]*"
       maxLength={4}
       aria-label={label}
-      // The bounds are what the field is FOR; a reader on a screen reader
-      // hears them without having to find the slider.
-      aria-description={t`între ${span.from} și ${span.to}`}
+      aria-describedby={describedBy}
       value={text}
       onChange={(event) => setText(event.target.value.replace(/\D/g, ''))}
       onBlur={commit}

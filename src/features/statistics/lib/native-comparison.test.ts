@@ -202,15 +202,20 @@ describe('native comparison projection', () => {
       }),
     ).toThrow('publication changed')
   })
-  it('retains an explicitly absent period and rejects an invalid one', () => {
+  it('keeps the axis to the observed span, whatever period the address asks for, and rejects an invalid one', () => {
+    // A period past the series is not put on the axis: the page names it as
+    // an end it could not use, rather than blank every figure under it.
     expect(
       project([row()], { requestedPeriod: '2020' }).periods.map(
         (p) => p.isoPeriod,
       ),
-    ).toEqual(['2020', '2024'])
+    ).toEqual(['2024'])
     expect(
       project([], { requestedPeriod: '2020' }).periods.map((p) => p.isoPeriod),
-    ).toEqual(['2020'])
+    ).toEqual([])
+    // Inside the span a gap year is on the axis and can be the window's end.
+    const gap = project([row('B', 2022), row()], { requestedPeriod: '2023' })
+    expect(gap.periods.map((p) => p.isoPeriod)).toEqual(['2022', '2023', '2024'])
     expect(() => project([row()], { requestedPeriod: '2020-Q1' })).toThrow(
       'Invalid requested',
     )

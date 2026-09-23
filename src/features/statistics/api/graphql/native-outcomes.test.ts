@@ -1,9 +1,13 @@
 vi.mock('@/config/env', () => ({ env: { VITE_APP_ENVIRONMENT: 'test' }, getApiBaseUrl: () => 'https://native.example.test', getSiteUrl: () => 'http://localhost:3000' }))
-import { applyHubPeriod, collectHubPeriodOptions } from '../../lib/hub-period'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { applyTerritoryPeriod, collectTerritoryYears } from '../../lib/territory-period'
+import { tileSparklinePoints } from '../../lib/territory-sparkline'
+import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { fetchStatisticsTerritoryHubLive } from '../statistics-api.live'
 import { fetchStatisticsDatasetSeries } from './statistics-fetchers'
-vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
+vi.mock('@/lib/graphql/graphql-client', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/graphql/graphql-client')>()),
+  graphqlQuery: vi.fn(),
+}))
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   insDashboardGroupRawSchema,
@@ -260,16 +264,15 @@ describe('native outcome consumers', () => {
       '54975',
       controller.signal,
     )
-    expect(result?.partial).toBe(true)
+    // The cap is a fact about one series, carried on its tile, not a page-level flag.
+    expect(result?.tiles.map((tile) => tile.truncated)).toEqual([true, false])
     expect(result?.tiles.map((tile) => tile.tileState)).toEqual([
       'available',
       'ambiguous',
     ])
-    expect(result?.tiles[1].sparkline).toEqual([])
+    expect(result?.tiles[1].sparklineCadence).toBeNull()
     expect(result?.tiles[1].value).toBeNull()
-    expect(result?.tiles[1].geographicWitnesses).toEqual(
-      ambiguousLatest.geographicWitnesses,
-    )
+    expect(ambiguousLatest.geographicWitnesses).toHaveLength(2)
     for (const call of vi.mocked(graphqlQuery).mock.calls) {
       expect(call[2]).toMatchObject({ auth: 'none', signal: controller.signal })
     }
@@ -289,7 +292,6 @@ describe('native outcome consumers', () => {
     const result = await fetchStatisticsDatasetSeries({
       code: 'TEST',
       filter: {},
-      contextCode: null,
     })
     expect(result.sourceDescriptor?.metadata.revision_id).toBe(
       '9007199254740993',
@@ -393,13 +395,15 @@ describe('native publication and cadence review regressions', () => {
       const hub = await fetchStatisticsTerritoryHubLive('54975')
       expect(hub?.tiles[0].latestPeriod).toBe('2024')
       expect(hub?.tiles[0].latestYear).toBe(2024)
-      expect(hub?.tiles[0].sparkline).toEqual([])
-      expect(hub?.tiles[0].sparklineUnavailable).toBe(true)
-      expect(
-        collectHubPeriodOptions(hub).map((period) => period.iso_period),
-      ).toContain(older.time_period.iso_period)
-      const selected = applyHubPeriod(hub!, older.time_period.iso_period)
-        .tiles[0]
+      // The line is drawn from the headline's own cadence alone: the older
+      // cell of another cadence is kept as a cell, never mixed into the line.
+      expect(hub?.tiles[0].sparklineCadence).toBe('ANNUAL')
+      expect(tileSparklinePoints(hub!.tiles[0]).map(([period]) => period.iso_period)).toEqual(['2024'])
+      expect(hub?.tiles[0].observations.map((row) => row.time_period.iso_period)).toContain(
+        older.time_period.iso_period,
+      )
+      expect(collectTerritoryYears(hub)).toContain(older.time_period.year)
+      const selected = applyTerritoryPeriod(hub!, older.time_period.iso_period).tiles[0]
       expect(selected.tileState).toBe('available')
       expect(selected.value).toBeNull()
       expect(selected.valueStatus).toBe('c')
@@ -444,10 +448,34 @@ it('does not pick the first of different cadences sharing a native period token'
   const hub = await fetchStatisticsTerritoryHubLive('54975')
   expect(hub?.tiles[0].tileState).toBe('period-ambiguous')
   expect(hub?.tiles[0].value).toBeNull()
-  const selected = applyHubPeriod(hub!, '2024-01-01').tiles[0]
+  const selected = applyTerritoryPeriod(hub!, '2024-01-01').tiles[0]
   expect(selected.tileState).toBe('period-ambiguous')
   expect(selected.value).toBeNull()
   expect(selected.valueStatus).toBeNull()
   expect(selected.latestPeriod).toBeNull()
-  expect(selected.sourceObservations).toHaveLength(2)
+  expect(selected.observations).toHaveLength(2)
+})
+
+it('answers null, not an error, when the server refuses the code as invalid input', async () => {
+  // An unknown SIRUTA and every Bucharest sector come back as INVALID_INPUT
+  // on the dashboard read, before any empty array could: that is not-found.
+  vi.mocked(graphqlQuery)
+    .mockReset()
+    .mockRejectedValueOnce(
+      new GraphQLRequestError('entity selectors must identify exactly one INS territory', {
+        graphQLErrors: [
+          {
+            message: 'entity selectors must identify exactly one INS territory',
+            extensions: { code: 'INVALID_INPUT', field: 'entity' },
+          },
+        ],
+      }),
+    )
+  await expect(fetchStatisticsTerritoryHubLive('999999')).resolves.toBeNull()
+  expect(vi.mocked(graphqlQuery)).toHaveBeenCalledTimes(1)
+})
+
+it('surfaces a read that failed for any other reason', async () => {
+  vi.mocked(graphqlQuery).mockReset().mockRejectedValueOnce(new Error('upstream down'))
+  await expect(fetchStatisticsTerritoryHubLive('54975')).rejects.toThrow('upstream down')
 })

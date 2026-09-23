@@ -56,7 +56,9 @@ describe('native source inspection table', () => {
         observations={[sourceObservation({ value: null, value_status: 'c' })]}
       />,
     )
-    expect(screen.getByText('c', { selector: 'sup' })).toBeInTheDocument()
+    const marker = screen.getByTitle('date confidențiale')
+    expect(marker.tagName).toBe('SUP')
+    expect(marker).toHaveTextContent('date confidențiale')
   })
   it('keeps non-HTTP source references inert', async () => {
     render(

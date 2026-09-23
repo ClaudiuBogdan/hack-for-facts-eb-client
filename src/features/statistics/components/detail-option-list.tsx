@@ -78,6 +78,16 @@ export function DetailOptionList({
   const listId = useId()
   const listRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  // The cursor opens on the row already chosen, once the rows are here: a
+  // reader who opens „Sexe" with „Feminin" chosen should hear „Feminin,
+  // selected", not the first row. Seeded once per mount, from the first
+  // page that holds any rows.
+  const [cursorSeeded, setCursorSeeded] = useState(false)
+  if (!cursorSeeded && options.length > 0) {
+    const chosenIndex = selectedKey === null ? -1 : options.findIndex((option) => option.key === selectedKey)
+    if (chosenIndex > 0) setActiveIndex(chosenIndex)
+    setCursorSeeded(true)
+  }
 
   const virtualizer = useVirtualizer({
     count: options.length,
@@ -225,7 +235,12 @@ export function DetailOptionList({
                 key={option.key}
                 id={optionId(option)}
                 role="option"
-                aria-selected={chosen}
+                // The combobox pattern: `aria-selected` follows the cursor,
+                // so a reader arrowing through 3,000 localities hears
+                // „selected" on the row they are on. The value already
+                // chosen is the current one, marked by the check beside it.
+                aria-selected={isActive}
+                aria-current={chosen || undefined}
                 data-index={row.index}
                 data-active={isActive}
                 ref={virtualizer.measureElement}

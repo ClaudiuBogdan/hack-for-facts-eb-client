@@ -642,6 +642,8 @@ interface BuildInsComparisonChartOptions {
     title: string;
     cadence: 'ANNUAL' | 'QUARTERLY' | 'MONTHLY';
     unitCode: string;
+    /** The unit as the page prints it beside its figures („persoane", „ani"); empty leaves the chart page to name it. */
+    unit?: string;
     /** The shared source coordinates, as `Dn:member`. */
     classificationPins: readonly string[];
     series: readonly {
@@ -661,7 +663,7 @@ interface BuildInsComparisonChartOptions {
  * it has without a gap. Deterministic, so the link is stable across renders.
  */
 export function buildInsComparisonChartState(options: BuildInsComparisonChartOptions): ChartUrlState {
-    const { datasetCode, title, cadence, unitCode, classificationPins, series } = options;
+    const { datasetCode, title, cadence, unitCode, classificationPins, series, unit = '' } = options;
     const classificationSelections: Record<string, string[]> = {};
     for (const pin of classificationPins) {
         const separator = pin.indexOf(':');
@@ -691,7 +693,10 @@ export function buildInsComparisonChartState(options: BuildInsComparisonChartOpt
             type: 'ins-series',
             label: entry.label,
             enabled: true,
-            unit: '',
+            // The word the comparison page prints („ani", „persoane"); left
+            // empty, the chart page falls back to the API's symbol, which
+            // for a life expectancy is its placeholder „other".
+            unit,
             datasetCode,
             aggregation: 'sum',
             hasValue: true,

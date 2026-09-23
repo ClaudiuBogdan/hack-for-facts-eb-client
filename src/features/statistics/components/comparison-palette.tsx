@@ -3,8 +3,8 @@
  *
  * Six fixed slots — one per territory, assigned by the territory's position in
  * `teritorii` and never cycled. Colour follows the ENTITY, not its rank in the
- * data: removing a chip does not repaint the territories ahead of it, because
- * the row order is the selection order (see `buildComparisonMatrix`).
+ * data: removing a territory does not repaint the ones ahead of it, because
+ * the row order is the selection order (`projectNativeComparison`).
  *
  * Both columns were validated as a set with the dataviz palette validator:
  * - light (surface #fcfcfb): lightness band PASS, chroma floor PASS,
@@ -14,8 +14,8 @@
  *   contrast PASS; worst adjacent CVD ΔE 10.3, inside the 8–12 floor band.
  *
  * Both WARNs are discharged by secondary encoding, which this page always
- * ships: a legend, direct value labels on the bars, and the comparison table
- * as a full non-colour view of the same numbers.
+ * ships: the rail as a legend, the standings' figures, and the comparison
+ * table as a full non-colour view of the same numbers.
  *
  * Values are exposed as CSS custom properties rather than raw hexes so a
  * single wrapper element carries both modes and Recharts can read
@@ -23,7 +23,7 @@
  */
 
 /** Number of colour slots. Matches `MAX_COMPARISON_TERRITORIES`. */
-export const COMPARISON_SERIES_SLOTS = 6
+const COMPARISON_SERIES_SLOTS = 6
 
 /**
  * Declares `--cmp-1..6` for both modes. Put this on an ancestor of every chart

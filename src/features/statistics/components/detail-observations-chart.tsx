@@ -14,7 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 import { activeNumberLocale, groupWireValue } from '../lib/format'
-import type { SeriesStats } from '../lib/series-stats'
+import type { SeriesPoint, SeriesStats } from '../lib/series-stats'
 import { formatChartPeriod, formatHubPeriod } from '../lib/hub-format'
 import {
   seriesAxis,
@@ -29,7 +29,6 @@ type Props = {
   /** The figure's accessible name; with the unit, it is its only caption. */
   readonly title: string
   readonly unitLabel: string | null
-  readonly wholeHistory?: boolean
   /**
    * Three opt-in treatments. Every existing caller gets today's plain line;
    * the detail page asks for all three.
@@ -74,11 +73,9 @@ const LABEL_HALO = {
  */
 const DENSE_ABOVE_POINTS = 60
 
-/** A published value on a mark, in the active locale. */
-function formatMarkValue(value: number): string {
-  return new Intl.NumberFormat(activeNumberLocale(), {
-    maximumFractionDigits: 2,
-  }).format(value)
+/** A published value on a mark: the wire value, grouped, never re-rounded. */
+function formatMarkValue(point: SeriesPoint): string {
+  return groupWireValue(point.raw, activeNumberLocale())
 }
 
 /** A COMPUTED value on a mark: no decimals past a thousand — see the mean. */
@@ -150,7 +147,6 @@ export function DetailObservationsChart({
   series,
   title,
   unitLabel,
-  wholeHistory = false,
   area = false,
   annotate = false,
   mean = false,
@@ -254,8 +250,13 @@ export function DetailObservationsChart({
     stats.mean >= domainFloor &&
     stats.mean <= domainTop
 
-  const endLabel =
-    marks?.latest != null ? formatMarkValue(marks.latest.value) : ''
+  const endLabel = marks?.latest != null ? formatMarkValue(marks.latest) : ''
+  // An extreme the plot does not contain is not marked; the note under the
+  // plot then says the facts beside the figure cover more than it shows.
+  const extremesOffChart =
+    marks !== null &&
+    ((marks.peak !== null && peakPosition === null) ||
+      (marks.trough !== null && troughPosition === null))
   /**
    * The right gutter has to hold the end label, whatever it says. A fixed
    * 44px fits „10" and truncates „21.646.220" to „21.64…" — the one number on
@@ -370,7 +371,7 @@ export function DetailObservationsChart({
                 stroke={LINE_COLOR}
                 strokeWidth={2}
                 label={{
-                  value: t`maxim ${formatMarkValue(marks.peak.value)}`,
+                  value: t`maxim ${formatMarkValue(marks.peak)}`,
                   position: peakPosition,
                   // An edge label is drawn on the dot's own baseline, which on
                   // a first-point extreme lays the text across the line.
@@ -393,7 +394,7 @@ export function DetailObservationsChart({
                 stroke={LINE_COLOR}
                 strokeWidth={2}
                 label={{
-                  value: t`minim ${formatMarkValue(marks.trough.value)}`,
+                  value: t`minim ${formatMarkValue(marks.trough)}`,
                   position: troughPosition,
                   dy:
                     troughPosition === 'left' || troughPosition === 'right'
@@ -431,10 +432,19 @@ export function DetailObservationsChart({
 
       {series.truncated ? (
         <p className="text-xs text-muted-foreground">
-          {wholeHistory ? <Trans>The chart shows the latest {series.points.length} periods. Earlier observations remain in the table and complete export.</Trans> : <Trans>
-            Graficul afișează ultimele {series.points.length} perioade. Restrânge
-            intervalul pentru a vedea perioade mai vechi.
-          </Trans>}
+          {extremesOffChart && marks ? (
+            <Trans>
+              Graficul afișează ultimele {series.points.length} perioade; minimul
+              și maximul de lângă cifră acoperă toate cele {marks.count} observații
+              ale intervalului. Restrânge intervalul pentru a vedea perioade mai
+              vechi.
+            </Trans>
+          ) : (
+            <Trans>
+              Graficul afișează ultimele {series.points.length} perioade. Restrânge
+              intervalul pentru a vedea perioade mai vechi.
+            </Trans>
+          )}
         </p>
       ) : null}
     </figure>

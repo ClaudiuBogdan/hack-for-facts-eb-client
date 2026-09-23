@@ -18,13 +18,39 @@ import type {
   NativeInsObservation,
 } from '@/schemas/ins'
 import type { ReportPeriodType } from '@/schemas/reporting'
-import type {
-  ComparisonCell,
-  ComparisonMatrix,
-  ComparisonPeriodOption,
-  ComparisonTerritoryRow,
-} from './comparison-series'
 import { periodSortKey } from './period'
+
+/** One selectable period, carrying the numeric key it was sorted by. */
+export interface ComparisonPeriodOption {
+  readonly isoPeriod: string
+  readonly sortKey: number
+  readonly period: InsTimePeriod
+}
+
+/**
+ * A single observed cell. `value` is kept as the verbatim Decimal string the
+ * server sent — table cells print it unchanged so no precision is lost to a
+ * float round-trip.
+ */
+export interface ComparisonCell {
+  readonly isoPeriod: string
+  readonly value: string | null
+  readonly valueStatus: string | null
+}
+
+/** One territory row: its identity plus the cells it actually has. */
+export interface ComparisonTerritoryRow {
+  readonly code: string
+  readonly name: string | null
+  readonly cells: Readonly<Record<string, ComparisonCell>>
+}
+
+/** The territory × period matrix the standings, the chart and the table read from. */
+export interface ComparisonMatrix {
+  readonly periods: readonly ComparisonPeriodOption[]
+  readonly rows: readonly ComparisonTerritoryRow[]
+  readonly unitSymbol: string | null
+}
 
 export type NativeComparisonAvailability =
   'SERIES' | 'EMPTY' | 'AMBIGUOUS' | 'QUALIFIED'
@@ -45,7 +71,7 @@ export interface NativeComparisonMatrix extends ComparisonMatrix {
   }
   readonly observations: readonly NativeInsObservation[]
 }
-export type ComparisonTerritory = {
+type ComparisonTerritory = {
   readonly code: string
   readonly level: string
 }
@@ -83,6 +109,13 @@ function periodOption(
   return { isoPeriod: label, sortKey: periodSortKey(period), period }
 }
 
+/**
+ * The period axis: every calendar period from the first observed to the
+ * last, so a requested period inside the span is on it, gap or not, and
+ * stays the window's end rather than silently becoming the latest. A
+ * requested period outside the span is not on it: the page says which end
+ * it could not use, the same way for one before the axis and one after.
+ */
 function calendarPeriods(
   labels: readonly string[],
   cadence: InsPeriodicity,
@@ -99,12 +132,7 @@ function calendarPeriods(
     for (let ordinal = from; ordinal <= to; ordinal += 1)
       periods.push(periodOption(periodAtOrdinal(ordinal, type), cadence))
   }
-  // A requested absent period stays selectable; it never silently becomes latest.
-  for (const period of requested) {
-    if (!periods.some((p) => p.isoPeriod === period))
-      periods.push(periodOption(period, cadence))
-  }
-  return periods.sort((a, b) => a.sortKey - b.sortKey)
+  return periods
 }
 
 /**

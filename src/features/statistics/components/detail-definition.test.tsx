@@ -44,7 +44,7 @@ describe('DetailDefinition', () => {
   it('clamps a definition that overflows three lines and opens it on request', async () => {
     stubLayout(420, 60)
     render(<DetailDefinition text={LONG} />)
-    const paragraph = screen.getByText(/Incepand cu 1 martie 2002/)
+    const paragraph = screen.getByText(/Incepand cu 1 martie 2002/).closest('p')!
     // The clamp is visual: the whole text stays in the DOM for search, copy
     // and assistive tech.
     expect(paragraph).toHaveClass('line-clamp-3')
@@ -64,5 +64,20 @@ describe('DetailDefinition', () => {
     expect(
       screen.getByRole('button', { name: /Arată mai puțin/ }),
     ).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('renders a published anchor as a link and drops any other markup', () => {
+    // CON113A's definition points at the ESA regulation on EUR-Lex; TEMPO
+    // ships it as an <a>, which used to print as text.
+    stubLayout(48, 48)
+    render(
+      <DetailDefinition text={'Vezi <a href="https://eur-lex.europa.eu/x" target="_blank">regulamentul</a> și <b>atât</b>.'} />,
+    )
+    expect(screen.getByRole('link', { name: 'regulamentul' })).toHaveAttribute(
+      'href',
+      'https://eur-lex.europa.eu/x',
+    )
+    expect(screen.queryByText(/<b>/)).not.toBeInTheDocument()
+    expect(screen.getByText(/atât/)).toBeInTheDocument()
   })
 })

@@ -2,7 +2,6 @@ import { Trans } from '@lingui/react/macro'
 import { Filter } from 'lucide-react'
 
 type Props = {
-  readonly needsTerritory: boolean
   readonly missingClassificationLabels: readonly string[]
 }
 
@@ -13,10 +12,7 @@ type Props = {
  * Source rows may remain inspectable while the chart needs a complete selection.
  * The scope controls and table row action provide explicit ways to choose it.
  */
-export function DetailScopePrompt({
-  needsTerritory,
-  missingClassificationLabels,
-}: Props) {
+export function DetailScopePrompt({ missingClassificationLabels }: Props) {
   return (
     <div
       // No border of its own: this renders inside the series band, and a
@@ -37,11 +33,6 @@ export function DetailScopePrompt({
         </Trans>
       </p>
       <ul className="space-y-1 text-sm">
-        {needsTerritory ? (
-          <li>
-            <Trans>Alege un teritoriu</Trans>
-          </li>
-        ) : null}
         {missingClassificationLabels.map((label) => (
           <li key={label}>
             <Trans>Alege o valoare pentru: {label}</Trans>

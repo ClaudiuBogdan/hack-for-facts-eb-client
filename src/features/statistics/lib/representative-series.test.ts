@@ -74,8 +74,8 @@ describe('chooseRepresentativeCell', () => {
         row({ id: 'b', year: 2024, value: '20', category: ['1', 'Total '], region: ['9', 'TOTAL'] }),
       ],
     })
-    expect(chosen?.classifications.get('D0')).toBe('1')
-    expect(chosen?.classifications.get('D1')).toBe('9')
+    expect(chosen?.classifications.D0).toBe('1')
+    expect(chosen?.classifications.D1).toBe('9')
     expect(chosen?.unitCode).toBe('1')
   })
 
@@ -89,7 +89,7 @@ describe('chooseRepresentativeCell', () => {
         row({ id: 'd', year: 2024, value: '13', category: ['3', 'Orase'], region: ['7', 'Nord'] }),
       ],
     })
-    expect(chosen?.classifications.get('D0')).toBe('3')
+    expect(chosen?.classifications.D0).toBe('3')
   })
 
   it('breaks a full tie on INS member order, not on response order', () => {
@@ -107,7 +107,7 @@ describe('chooseRepresentativeCell', () => {
         row({ id: 'a', year: 2024, value: '10', category: ['5', 'Sate'], region: ['7', 'Nord'] }),
       ],
     })
-    expect(forward?.classifications.get('D0')).toBe('2')
+    expect(forward?.classifications.D0).toBe('2')
     expect(sameRepresentativeCell(forward, reversed)).toBe(true)
   })
 
@@ -119,7 +119,7 @@ describe('chooseRepresentativeCell', () => {
         row({ id: 'b', year: 2024, value: '11', category: ['2', 'Municipii'], region: ['7', 'Nord'] }),
       ],
     })
-    expect(chosen?.classifications.get('D0')).toBe('2')
+    expect(chosen?.classifications.D0).toBe('2')
   })
 
   it('reads the cell at a cadence a chart can draw', () => {
@@ -164,7 +164,7 @@ describe('chooseRepresentativeCell', () => {
         row({ id: 'a', year: 2024, value: '1', category: ['2', 'B'], region: ['3', 'C'] }),
       ],
     })
-    expect(forward?.classifications.get('D0')).toBe('1')
+    expect(forward?.classifications.D0).toBe('1')
     expect(sameRepresentativeCell(forward, reversed)).toBe(true)
   })
 

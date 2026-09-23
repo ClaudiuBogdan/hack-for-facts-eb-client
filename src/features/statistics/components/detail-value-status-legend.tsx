@@ -6,17 +6,21 @@ type MarkerProps = {
   readonly status: string
 }
 
-/** The superscript flag rendered next to a value in the table and tooltip. */
+/**
+ * The superscript flag rendered next to a value in the table and tooltip.
+ * Its meaning is text inside it, visually hidden: an `aria-label` on a
+ * `<sup>` is dropped by assistive tech, which then read the bare letter.
+ */
 export function ValueStatusMarker({ status }: MarkerProps) {
   const description = describeValueStatus(status)
 
   return (
     <sup
       title={description}
-      aria-label={description}
       className="ml-0.5 rounded-sm bg-amber-500/15 px-1 text-[0.65rem] font-semibold text-amber-700 dark:text-amber-400"
     >
-      {status === '' ? '""' : status}
+      <span aria-hidden="true">{status === '' ? '""' : status}</span>
+      <span className="sr-only">{description}</span>
     </sup>
   )
 }

@@ -62,6 +62,28 @@ export function parsePublishedText(raw: string): PublishedTextSegment[] {
   return segments
 }
 
+/** Published text as words alone: a link is its label, a break is a space. */
+export function publishedTextPlain(raw: string): string {
+  return parsePublishedText(raw)
+    .map((segment) => (segment.kind === 'link' ? segment.label : segment.text))
+    .join('')
+    .replace(/\s+/gu, ' ')
+    .trim()
+}
+
+/**
+ * The opening of published text for a `<meta name="description">`: at most
+ * `maxLength` characters of the plain words, cut at a word and marked as cut.
+ */
+export function publishedTextExcerpt(raw: string, maxLength = 160): string {
+  const plain = publishedTextPlain(raw)
+  if (plain.length <= maxLength) return plain
+  const head = plain.slice(0, maxLength + 1)
+  const lastSpace = head.lastIndexOf(' ')
+  const cut = lastSpace > maxLength / 2 ? head.slice(0, lastSpace) : head.slice(0, maxLength)
+  return `${cut.replace(/[\s,;:.\-–]+$/u, '')}…`
+}
+
 /** A published data-source name without TEMPO's trailing `<<NNNN>>` link marker. */
 export function stripSourceMarker(name: string): string {
   return name.replace(SOURCE_MARKER, '').trim()

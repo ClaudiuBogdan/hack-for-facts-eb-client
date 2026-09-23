@@ -165,7 +165,7 @@ export function resolveDetailSelection(params: {
     }
   }
   if (representative) {
-    for (const [type, code] of representative.classifications) {
+    for (const [type, code] of Object.entries(representative.classifications)) {
       if (
         !classifications.has(type) &&
         declaredAxes.has(type) &&

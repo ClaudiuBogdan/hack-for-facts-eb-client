@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { plural, t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import {
   Accordion,
   AccordionContent,
@@ -14,6 +14,8 @@ import { DataStatusBadge } from './data-status-badge'
 import { DetailObservationsTable } from './detail-observations-table'
 import { ValueStatusLegend } from './detail-value-status-legend'
 import { DETAIL_PAGE_SIZE } from '../lib/dataset-selection'
+import type { DetailCompareSearch } from '../lib/detail-compare-link'
+import { datasetDisplayName } from '../lib/dataset-names'
 import { dimensionTypeLabel } from '../lib/dimension-labels'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { formatObservationValue } from '../lib/format'
@@ -29,11 +31,11 @@ type Props = {
   readonly page: number
   readonly onPageChange: (page: number) => void
   readonly onSelectSource?: (observation: InsObservation) => void
-  /** The compare bundle for this dataset+territory — the note points there. */
-  readonly compareSearch: {
-    readonly cod: string
-    readonly teritorii: [string, ...string[]]
-  }
+  /**
+   * The comparison page's address for this series; null for a matrix
+   * without a territory axis, which has nothing to compare between places.
+   */
+  readonly compareSearch: DetailCompareSearch | null
 }
 
 /**
@@ -58,7 +60,9 @@ export function DetailAccordion({
   onSelectSource,
   compareSearch,
 }: Props) {
+  const { i18n } = useLingui()
   const dimensions = dataset.dimensions ?? []
+  const axesCount = plural(dimensions.length, { one: 'o axă', few: '# axe', other: '# de axe' })
   const territorial = dimensions.find(
     (dimension) => dimension.type === 'TERRITORIAL',
   )
@@ -97,19 +101,26 @@ export function DetailAccordion({
           </AccordionTrigger>
           <AccordionContent className="space-y-3">
             <p className="text-xs text-muted-foreground">
-              <Trans>
-                Observațiile selecției curente păstrează coordonatele originale
-                INS. Alege seria unui rând pentru istoricul complet. Pentru alte
-                teritorii,{' '}
-                <Link
-                  to="/ins/comparatii"
-                  search={compareSearch}
-                  className="underline underline-offset-2 hover:text-foreground"
-                >
-                  compară teritorii
-                </Link>
-                .
-              </Trans>
+              {compareSearch ? (
+                <Trans>
+                  Observațiile selecției curente păstrează coordonatele originale
+                  INS. Alege seria unui rând pentru istoricul complet. Pentru alte
+                  teritorii,{' '}
+                  <Link
+                    to="/ins/comparatii"
+                    search={compareSearch}
+                    className="underline underline-offset-2 hover:text-foreground"
+                  >
+                    compară teritorii
+                  </Link>
+                  .
+                </Trans>
+              ) : (
+                <Trans>
+                  Observațiile selecției curente păstrează coordonatele originale
+                  INS. Alege seria unui rând pentru istoricul complet.
+                </Trans>
+              )}
             </p>
             {observations.length === 0 ? (
               <p className="text-sm text-muted-foreground">
@@ -139,7 +150,7 @@ export function DetailAccordion({
 
         <AccordionItem value="dimensiuni" className="px-4 last:border-b-0">
           <AccordionTrigger className="text-sm font-medium">
-            <Trans>Dimensiuni și clasificări ({dimensions.length} axe)</Trans>
+            <Trans>Dimensiuni și clasificări ({axesCount})</Trans>
           </AccordionTrigger>
           <AccordionContent>
             <ul className="divide-y divide-border/70">
@@ -156,7 +167,7 @@ export function DetailAccordion({
                   <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     {dimensionTypeLabel(dimension.type)}
                     {dimension.option_count
-                      ? ` · ${formatObservationValue(String(dimension.option_count))} ${t`opțiuni`}`
+                      ? ` · ${plural(dimension.option_count, { one: 'o opțiune', few: '# opțiuni', other: '# de opțiuni' })}`
                       : ''}
                   </span>
                 </li>
@@ -255,7 +266,7 @@ export function DetailAccordion({
                       className="flex items-center justify-between gap-3 py-2 text-sm transition-colors hover:text-primary"
                     >
                       <span className="min-w-0 truncate">
-                        {entry.nameRo ?? entry.code}
+                        {datasetDisplayName(entry, i18n.locale)}
                       </span>
                       <span className="flex shrink-0 items-center gap-2">
                         <span className={statisticsTheme.provenanceChip}>

@@ -1,5 +1,5 @@
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { INS_CHART_PERIOD_TYPE, validPeriodDate } from '@/lib/ins/source-periods'
 import { t } from '@lingui/core/macro'
@@ -16,11 +16,27 @@ import { resolveComparisonDefaults } from '../lib/comparison-defaults'
 import { resolveComparisonTerritories } from '../lib/comparison-territories'
 import { comparisonPublicationKey } from '../lib/native-comparison'
 import { fetchDatasetPage } from '../api/dataset-explorer-api'
-import type {
-  ComparisonMatrix,
-  ComparisonTerritoryToken,
-} from '../lib/comparison-series'
+import { getInsDatasetDetails } from '../api/graphql/ins-bootstrap-fetchers'
+import type { ComparisonTerritoryToken } from '../lib/dataset-selection'
+import type { ComparisonMatrix } from '../lib/native-comparison'
 import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
+
+/**
+ * The dataset an address names, on its own: what the rail prints and what
+ * gates the place picker (a county-only matrix offers no localities) — read
+ * whether or not the address names territories yet, and kept when the
+ * comparison's own read fails, so the page can still say what it is about.
+ */
+export function useComparisonDataset(code: string, options: { readonly enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: statisticsKeys.comparison.dataset(code),
+    queryFn: ({ signal }) => getInsDatasetDetails(code, signal),
+    // Not while the comparison's own read is on its way with the same dataset in it.
+    enabled: code.length > 0 && (options.enabled ?? true),
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
+  })
+}
 
 /** One complete native fetch per source selection; period and frequency are local projections. */
 export function useComparisons(search: StatisticsComparisonsSearch) {
@@ -208,6 +224,8 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
     /** The preparation the rows were read with, once they can be: the county map reads the same cell. */
     prepared: stale ? stale.prepared : ready ? prepared : null,
     tokens,
+    /** The address's dataset code, normalised; empty when it names none. */
+    datasetCode,
     hasDataset: datasetCode.length > 0,
     issues,
     unitCode: shownResolved?.unit ?? null,
@@ -221,26 +239,32 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
  * read is ready; while another period loads, the map keeps the one it has.
  */
 export function useComparisonCountyLayer(prepared: PreparedComparison | null, period: string | null) {
-  const code = prepared?.descriptor.code ?? null
-  return useQuery({
-    queryKey: statisticsKeys.comparison.counties([
-      code,
-      prepared ? comparisonPublicationKey(prepared.descriptor) : null,
-      prepared ? [...prepared.resolved.pins] : null,
-      prepared?.resolved.unit ?? null,
-      prepared?.resolved.cadence ?? null,
-      period,
-    ]),
+  // The cell the map reads: dataset, publication, coordinates, unit and
+  // cadence. Only another PERIOD of the same cell keeps the map drawn while
+  // it loads; another cell would show figures under the wrong legend.
+  const identity = prepared
+    ? JSON.stringify([
+        prepared.descriptor.code,
+        comparisonPublicationKey(prepared.descriptor),
+        [...prepared.resolved.pins],
+        prepared.resolved.unit,
+        prepared.resolved.cadence,
+      ])
+    : null
+  const shownIdentity = useRef<string | null>(null)
+  const query = useQuery({
+    queryKey: statisticsKeys.comparison.counties([identity, period]),
     queryFn: ({ signal }) => {
       if (!prepared || period === null) throw new Error('Missing comparison preparation or period')
       return fetchComparisonCountyLayer(prepared, period, signal)
     },
     enabled: prepared !== null && period !== null && prepared.dataset.has_county_data,
-    // Another period of the same dataset: keep the map drawn while it loads.
-    placeholderData: (previous) => (previous?.code === code ? previous : undefined),
+    placeholderData: (previous) => (previous && shownIdentity.current === identity ? previous : undefined),
     staleTime: STATISTICS_STALE_TIME.figures,
     retry: statisticsRetry,
   })
+  if (query.data && !query.isPlaceholderData) shownIdentity.current = identity
+  return query
 }
 
 /** Characters typed before the dataset picker searches. */
@@ -267,6 +291,8 @@ export function useComparisonDatasetSearch(term: string) {
 
   return {
     datasets: query.data?.datasets ?? [],
+    /** How many the catalog holds for the term; the page shows one page of them. */
+    totalCount: query.data?.totalCount ?? 0,
     isLoading: enabled && query.isPending,
     error: query.error,
   }
@@ -317,17 +343,18 @@ export function useComparisonPeers(
 
 /**
  * Names for territories the observations could not name — a token with ZERO
- * rows structurally never carries a name. LAU codes resolve by SIRUTA; county
- * codes resolve from the (42-row, day-cached) NUTS3 list; RO is România.
+ * rows structurally never carries a name, and with no matrix at all (the
+ * read failed, or has not run) every token is unnamed. LAU codes resolve by
+ * SIRUTA; county codes resolve from the (42-row, day-cached) NUTS3 list; RO
+ * is România.
  */
 export function useComparisonTerritoryNames(
   tokens: readonly ComparisonTerritoryToken[],
   matrix: ComparisonMatrix | null,
 ): ReadonlyMap<string, string> {
   const unresolved = useMemo(() => {
-    if (!matrix) return [] as readonly ComparisonTerritoryToken[]
     const named = new Set(
-      matrix.rows.filter((row) => row.name).map((row) => row.code),
+      (matrix?.rows ?? []).filter((row) => row.name).map((row) => row.code),
     )
     return tokens.filter((token) => !named.has(token.code))
   }, [tokens, matrix])

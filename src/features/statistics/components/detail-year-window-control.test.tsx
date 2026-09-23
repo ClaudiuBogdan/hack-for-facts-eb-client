@@ -71,6 +71,12 @@ describe('year window control', () => {
     expect(change).toHaveBeenCalledWith({ din: undefined, pana: undefined })
   })
 
+  it('describes both fields by the bounds the slider runs between', () => {
+    mount()
+    expect(screen.getByRole('textbox', { name: 'An de început' })).toHaveAccessibleDescription('2000–2020')
+    expect(screen.getByRole('textbox', { name: 'An de sfârșit' })).toHaveAccessibleDescription('2000–2020')
+  })
+
   it('bounds both thumbs by the observed span', () => {
     mount({ from: 2005, to: 2018 })
     const [from, to] = screen.getAllByRole('slider')

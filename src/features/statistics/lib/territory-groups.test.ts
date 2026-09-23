@@ -10,13 +10,16 @@ function tile(code: string, unit: Partial<Pick<StatisticsIndicatorTile, 'unitSym
     periodicity: ['ANNUAL'],
     dataStatus: 'available',
     tileState: 'available',
+    truncated: false,
+    observations: [],
     value: '1',
     valueStatus: null,
     unitSymbol: unit.unitSymbol ?? null,
     unitNameRo: unit.unitNameRo ?? null,
+    unitNameEn: null,
     latestPeriod: '2025',
     latestYear: 2025,
-    sparkline: [],
+    sparklineCadence: 'ANNUAL',
   }
 }
 

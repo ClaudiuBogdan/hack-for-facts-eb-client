@@ -49,19 +49,6 @@ export const statisticsTheme = {
    */
   note: 'space-y-2 rounded-md bg-muted/60 p-3 text-sm',
   /**
-   * One scope chip — the dimension's name, its value, a chevron. A dotted
-   * underline on the value marks a server default, a solid one a user pin;
-   * the legend under the row says so once, and `aria-label` says it per chip.
-   */
-  scopeChip:
-    'inline-flex max-w-full items-center gap-1.5 rounded-md border border-border/70 bg-card py-1 pl-2 pr-1.5 text-xs transition-colors hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-  /**
-   * A scope axis with nothing to choose — one periodicity, one unit. It wears
-   * no border and no surface: given the same chip as its neighbours it read as
-   * a control that did nothing when pressed.
-   */
-  scopeChipStatic: 'inline-flex items-center gap-1.5 px-1 py-1 text-xs',
-  /**
    * One row of the standing scope rail: the axis name over its value, with the
    * chevron and the „implicit" mark at the far edge. The rail is the desktop
    * alternative to the chip row — the same segments, stacked, so changing an
@@ -102,11 +89,6 @@ export const statisticsTheme = {
   /** The panel's closing strip: how many options there are, and the reset. */
   optionPanelFooter:
     'flex items-center justify-between gap-2 border-t border-border/70 px-3 py-1.5 text-xs tabular-nums text-muted-foreground',
-  scopeChipName: 'shrink-0 text-muted-foreground',
-  scopeChipValue: 'truncate font-medium text-foreground underline-offset-4',
-  scopeChipValueDefault: 'decoration-border decoration-dotted',
-  scopeChipValuePinned: 'decoration-foreground/50 decoration-solid',
-
   // -- Active filters (catalog list pages) ----------------------------------
 
   /**

@@ -11,6 +11,9 @@ export default tseslint.config(
     ignores: [
       '.output',
       '.vercel',
+      // Git worktrees other sessions check out under the repo: other
+      // branches, linted by their own check, and gone mid-run at times.
+      '.claude/worktrees',
       'Library',
       'dist',
       'playwright-report',

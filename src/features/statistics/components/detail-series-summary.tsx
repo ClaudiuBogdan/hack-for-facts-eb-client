@@ -1,9 +1,9 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
-import { activeNumberLocale } from '../lib/format'
+import { activeNumberLocale, groupWireValue } from '../lib/format'
 import { formatHubPeriod } from '../lib/hub-format'
-import type { SeriesStats } from '../lib/series-stats'
+import type { SeriesPoint, SeriesStats } from '../lib/series-stats'
 import { describeValueStatus } from '../lib/value-status'
 import { statisticsTheme } from '../lib/statistics-theme'
 
@@ -37,11 +37,12 @@ type Props = {
   readonly valueStatus?: string | null
 }
 
-/** A published value, in the active locale, at the precision INS published. */
-function formatValue(value: number): string {
-  return new Intl.NumberFormat(activeNumberLocale(), {
-    maximumFractionDigits: 2,
-  }).format(value)
+/**
+ * A published value, grouped in the active locale and at the precision INS
+ * published — off the wire string, so „0.125" never prints as „0,13".
+ */
+function formatValue(point: SeriesPoint): string {
+  return groupWireValue(point.raw, activeNumberLocale())
 }
 
 /**
@@ -119,7 +120,7 @@ export function DetailSeriesSummary({
             className={statisticsTheme.heroValue}
             data-testid="series-latest-value"
           >
-            {stats.latest === null ? '—' : formatValue(stats.latest.value)}
+            {stats.latest === null ? '—' : formatValue(stats.latest)}
             {unit ? (
               <>
                 {' '}
@@ -151,12 +152,12 @@ export function DetailSeriesSummary({
         <dl className="flex flex-wrap items-end gap-x-7 gap-y-3">
           <Fact
             label={t`minim`}
-            value={stats.trough ? formatValue(stats.trough.value) : '—'}
+            value={stats.trough ? formatValue(stats.trough) : '—'}
             period={stats.trough ? formatHubPeriod(stats.trough.period) : null}
           />
           <Fact
             label={t`maxim`}
-            value={stats.peak ? formatValue(stats.peak.value) : '—'}
+            value={stats.peak ? formatValue(stats.peak) : '—'}
             period={stats.peak ? formatHubPeriod(stats.peak.period) : null}
           />
           <Fact

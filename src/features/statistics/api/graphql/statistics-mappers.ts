@@ -1,4 +1,5 @@
 import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
+import { BUCHAREST_MUNICIPALITY_SIRUTA, normalizeRomanianDiacritics } from '../../lib/territory'
 import type {
   InsDatasetDetails,
 } from '@/schemas/ins'
@@ -68,7 +69,6 @@ const NUTS3_COUNTY_CODE_PATTERN = /^[A-Za-z]{1,2}$/
  * „București" (verified live 2026-08-26), NOT the municipality's
  * „MUNICIPIUL BUCUREŞTI".
  */
-const BUCHAREST_MUNICIPALITY_SIRUTA = '179132'
 const BUCHAREST_COUNTY_CODE = 'B'
 const BUCHAREST_COUNTY_NAME = 'București'
 
@@ -85,7 +85,7 @@ export function mapTerritorySearchRow(
   if (node.level === 'LAU') {
     if (isNuts3CountyCode(parentCode)) {
       countyCode = parentCode.toUpperCase()
-      countyName = node.parent_name_ro ?? null
+      countyName = node.parent_name_ro ? normalizeRomanianDiacritics(node.parent_name_ro) : null
     } else if (parentCode === BUCHAREST_MUNICIPALITY_SIRUTA) {
       countyCode = BUCHAREST_COUNTY_CODE
       countyName = BUCHAREST_COUNTY_NAME
@@ -94,7 +94,7 @@ export function mapTerritorySearchRow(
   return {
     code: node.code,
     siruta: node.siruta_code ?? null,
-    name: node.name_ro ?? null,
+    name: node.name_ro ? normalizeRomanianDiacritics(node.name_ro) : null,
     level: node.level ?? null,
     countyCode,
     countyName,
@@ -204,14 +204,12 @@ export function mapDatasetDetails(
 
 export function mapRelatedDatasets(
   related: StatisticsRelatedDatasetsRaw['related'],
-  selfCode: string,
 ): readonly StatisticsRelatedDataset[] {
   if (!related) return []
-  return related.nodes
-    .filter((node) => node.code !== selfCode)
-    .map((node) => ({
+  return related.nodes.map((node) => ({
       code: node.code,
       nameRo: node.name_ro ?? null,
+      nameEn: node.name_en ?? null,
       dataStatus: node.data_status === 'CATALOG_ONLY' ? 'catalog-only' : 'available',
     }))
 }

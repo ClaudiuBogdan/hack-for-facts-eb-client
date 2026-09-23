@@ -109,13 +109,18 @@ describe('dimension option list', () => {
     expect(fetchPage).toHaveBeenCalledTimes(2)
   })
 
-  it('marks the chosen member and offers to clear it', async () => {
+  it('marks the chosen member as current, and offers to clear it', async () => {
     serveAxis(3, 200)
     const { clear, picked } = mount('2')
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3))
-    expect(screen.getByRole('option', { name: 'Localitatea 2' })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    // The chosen value is `aria-current`, and the cursor — `aria-selected`,
+    // the combobox pattern — opens on it, so the reader hears it first.
+    expect(screen.getByRole('option', { name: 'Localitatea 2' })).toHaveAttribute('aria-current', 'true')
+    expect(screen.getByRole('option', { name: 'Localitatea 2' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('option', { name: 'Localitatea 1' })).toHaveAttribute('aria-selected', 'false')
+    expect(screen.getByRole('combobox')).toHaveAttribute(
+      'aria-activedescendant',
+      screen.getByRole('option', { name: 'Localitatea 2' }).id,
     )
     await userEvent.click(screen.getByRole('button', { name: 'Șterge' }))
     expect(clear).toHaveBeenCalledTimes(1)
@@ -133,6 +138,9 @@ describe('dimension option list', () => {
       'aria-activedescendant',
       screen.getByRole('option', { name: 'Localitatea 3' }).id,
     )
+    // The row the cursor is on is the selected one for a screen reader.
+    expect(screen.getByRole('option', { name: 'Localitatea 3' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('option', { name: 'Localitatea 1' })).toHaveAttribute('aria-selected', 'false')
     await userEvent.keyboard('{Enter}')
     expect(select).toHaveBeenCalledWith(expect.objectContaining({ nom_item_id: 3 }))
     expect(picked).toHaveBeenCalledTimes(1)

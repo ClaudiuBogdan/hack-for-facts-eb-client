@@ -1257,6 +1257,182 @@ export — so this page is the quick setup and the first reading. Now:
   („Comparații gata făcute"), after the map on a phone. Gone: the bar chart,
   the period dropdown, the preset pills and the always-open wide table.
 
+## 6s. The detail page answers before the browser asks (2026-09-23)
+
+The pre-release review (§6o) left the detail page with two structural
+faults and a dozen smaller ones. What changed:
+
+- **One resolution, run where the page is rendered.** `resolveDatasetSeries`
+  (`lib/detail-series-resolution.ts`) is the page's whole decision tree —
+  anchor a non-geographic matrix on its first unit, read the cell the server
+  resolved, or inspect a partial address, choose a cell from the rows and read
+  it in full. The route loader runs it on the server, so the HTML a crawler
+  or a shared cache receives shows the series; the page runs the same
+  function in its query, so the browser and the server cannot disagree. The
+  cell it chose travels with the series (`representative`), and the rail
+  marks it „implicit". The page's latch, effect and anchor probe are gone.
+- **The loader blocks on the server only.** In the browser it starts the
+  reads under the page's own keys (`prefetchDatasetDetail`) and returns at
+  once; the rail updates with the URL and the band draws its skeleton until
+  the read lands. The related catalog is its own query, keyed by the INS
+  context, so a scope change never re-reads it.
+- **An address is honoured inside the data.** `din`/`pana` are cut to the
+  observed span; a window wholly past the series shows the whole span with a
+  note and a way to clear it; a window inside a gap, a cadence with no rows,
+  a territory INS does not publish and a cell it never filled each get their
+  own empty state and their own way out (`deriveDetailSeriesView`,
+  `DetailEmptyState`). The „choose your axes" prompt is for a selection the
+  rows can still complete, never for a read that answered with nothing.
+- **Published text is words.** The definition goes through `PublishedText`
+  (TEMPO ships anchors in nine of them), and the meta description is an
+  excerpt of the words, cut at a word.
+- **Figures are the wire value.** The headline, the facts and the chart's
+  marks print `raw` grouped, never re-rounded to two decimals; the mean stays
+  a derived figure at a derived precision.
+- **A capped plot says what it left out.** When the extremes fall outside the
+  200 periods on screen, the note under the plot says the facts cover the
+  whole span.
+- **Smaller:** the slider's thumbs have a 24px hit area and the year fields
+  are described by the bounds; the option list's `aria-selected` follows the
+  cursor and the chosen row is `aria-current`; an unresolved cadence or unit
+  is „to choose", never „(implicit)"; axis and option counts are plurals; the
+  quality marker's meaning is text, not an `aria-label` on a `<sup>`; a
+  matrix whose published structure fails the layout schema is reported as
+  such and logged, not as a bad address; the CSV names the reader's own day.
+- **Structure.** The page is a hundred-odd lines over `DetailHeader`,
+  `DetailBody`, `DetailCatalogOnly`, the skeletons, `useScopeLabels`,
+  `buildCompareSearch` and the pure view; the chip layout of the rail and its
+  theme tokens, `wholeHistory`, `needsTerritory`, the `'total'` chip and the
+  export's never-rendered „Se exportă…" are deleted.
+
+## 6t. The territory page reads what it shows (2026-09-23)
+
+The pre-release review (§6o) found the territory page downloading 4.7 MB
+per place, stating a tautology about the whole catalog under the title, and
+answering an unknown code with „retry". What changed:
+
+- **The reads are the page's own.** `TERRITORY_DATASET_FIELDS` and
+  `TERRITORY_OBSERVATION_FIELDS` carry what the tiles show and what the
+  source certification checks (coordinates, geography, unit) and nothing
+  else — no published prose, no member names. The counts probe is gone with
+  the ribbon it fed; the second read is the county and national references
+  alone. The remaining weight is the geography object each row carries for
+  the certification; a leaner server projection is the follow-up.
+- **The coverage ribbon is gone.** „1.916 din 1.916 seturi cu date
+  disponibile" was true of every page and about none of them (§6n). The
+  header now says what the page holds for this place — how many indicators
+  have a figure, up to when — and the title spells the place as the
+  comparison page does (`comparisonPlaceName`, cedillas normalised in the
+  mapper), with its kind as the badge.
+- **The period filter is years.** Seventy of seventy-five series are annual;
+  a list of 236 raw tokens mixing three cadences applied a filter almost no
+  row could answer. A sub-annual series answers a year with its latest cell
+  of that year and says which; a series with no cell in that year says
+  „Nicio valoare pentru 2024. Seria este anual." (`period-missing`), never
+  „no observations for this territory". An older link's finer period is
+  still honoured and named as the rows name periods.
+- **A capped history is a fact about one row.** „Rezultate parțiale" showed
+  on every territory because two monthly series hit the 200-row cap; the row
+  says it now — the headline tile too, since the capped series live
+  (unemployment) is one — and the page-level note is reserved for the
+  references' read failing.
+- **The route has a loader.** Server-rendered with the place in the title
+  and the figures in the HTML; an unknown or malformed SIRUTA is a 404, a
+  failed read is served `no-store`; in the browser the read starts under the
+  page's key and the page draws its skeleton. Bucharest sectors and unknown
+  codes, which the API refuses as invalid input, are not-found (§WP-A).
+- **Rows for assistive tech.** „Sursă: {matrix}" names each provenance
+  button; „Compară {matrix}" and „Inspectează seria din sursă: {matrix}"
+  name the links, and every text link is a 24px target; the accordion says
+  „Populație, 18 indicatori", the figure says „163.582 persoane".
+- **Smaller.** The headline sparkline is drawn from the cadence the headline
+  value comes from (the unemployment tile has a line again), at render, from
+  the tile's own cells: the tile names the cadence (`sparklineCadence`)
+  rather than carrying its history a second time, which halved the hub the
+  server inlines into the document (~0,3 MB for Cluj); the unit is named in
+  the reader's language in the drawer (`unitNameEn` travels with the row);
+  the figure's value and unit are separated by a real space in the text, in
+  both sizes; „indicatori cu date" counts the tiles with a figure; the capital's
+  county reference, its own figure, is not repeated; references print
+  through `formatTileValue`, so a flagged county cell shows its flag; the
+  provenance drawer (`InsProvenanceDrawer`, renamed off the shared
+  data-trust name) says „INS Tempo", never the scraper registry's title; the
+  rail uses the router's `Link` with typed search and an arrow, and builds
+  its labels at render; the sparkline's ARIA names periods as the rows do;
+  theme tokens are imported, not copied; the statistics `ShareFilteredView`
+  copy is replaced by the shared one.
+- **Structure.** `hub-period.ts` → `territory-period.ts`; the row is
+  `TerritoryTileValue` + `TerritoryTileActions` under two layouts; the period
+  control is its own component; `lib/territory.ts` keeps identity and the
+  diacritics rule, the `cui` link kinds and the `$cui` rail branch are gone,
+  as are `availableDatasetCodes`, `coverage`, `partial`, `relatedLinks` and
+  `geographicWitnesses` on the result. Tests cover the period transform,
+  the sparkline's gaps, the rail's scoping, the loader and the not-found
+  answer of the live lane.
+
+## 6u. The comparison reads six places in one document, and says what it is about (2026-09-23)
+
+The review of the comparisons page before release (§6o's method, one reader
+per page) found the page's biggest preset broken and its rail mute at the
+wrong moments. „Cele mai mari 6 orașe" asked the server for six aliases of
+the latest-value read, each with the whole dataset and observation selection
+— past the server's cap of 500 field selections per document, so the read
+was refused and the page showed a retry that could never succeed. With
+`cod` alone in the address (the hub's „Compară" link before a place is
+chosen) the page read nothing, so the rail said „Alege un indicator" and the
+place picker offered localities for a county-only matrix; when a read failed,
+the rail's rows fell back to SIRUTA codes. Now:
+
+- **One lean document.** Each alias reads what the certification and the
+  defaults need (the match, the witnesses, the dataset's structure, the
+  observation's identity, value, period, unit and coordinates) and no prose;
+  six territories fit under the cap with room to spare, and both a unit test
+  and the integration spec count the fields.
+- **The rail says what it knows.** The dataset is read on its own whenever
+  the comparison's read cannot name it — with `cod` alone, or after a failed
+  read — so the indicator's name and „doar județe" are right before the
+  first territory; while the name loads the rail prints the matrix code;
+  territories the rows could not name are named from the identity lookups
+  whether or not a matrix arrived; an indicator with no territory axis is
+  answered as one from that read alone. „Detaliile seriei" stays folded
+  away until the comparison itself has resolved the series: a pin made
+  before the first territory would be an explicit selection that suppresses
+  the server's defaults for every other axis. Removing a territory keeps the
+  keyboard where it was: the focus moves, inside the click and before the
+  router commits the new address, to the next territory's remove button,
+  the previous one's after the last, or „Adaugă un teritoriu" when none is
+  left.
+- **An indicator without territories is a state, not an error.** A matrix
+  INS publishes for the country alone, reached from the detail page's table
+  note, said „Selecția din adresă nu este validă" and dumped the address.
+  The note no longer links there for such a matrix, and the page answers
+  „Indicator fără teritorii" with the quick indicators instead.
+- **A period the series does not have is said, never invented.** A
+  `perioada` past the last observation used to become the window's end and
+  blank every figure; the axis stays the observed span and the note names
+  the period the address asked for.
+- **Named for assistive tech, in the reader's language.** The phone sheets
+  are „Alege un indicator" and „Adaugă un teritoriu" (they were announced as
+  „Responsive Popover"), span the screen and open with the focus in the
+  search box; the full table's headers read „mai 2024", never `2024-05`; the
+  chart hand-off carries the unit word, so the chart's axis says „ani" or
+  „număr", not the API's placeholders „other" and „count"; a catalog search that exceeds one page says
+  „Și încă N — restrânge căutarea"; place names drop INS's cedillas.
+- **Structure.** The page is state routing and layout (~300 lines): the
+  URL edits are a pure `editComparisonSearch` (tested for adoption of the
+  example, the duplicate and the seventh territory, the explicit `null` that
+  survives an edit of another axis, the clean start of another dataset),
+  wrapped by `useComparisonSearch`, which alone owns the router; the
+  reading — who is compared, the lines, the window, the unit and the view —
+  is `useComparisonReading`; the member names are
+  `useComparisonMemberLabels`; the answer is `ComparisonResultBand`, which
+  owns the hovered row, so a pointer moving down the standings re-renders
+  the band and not the map or the rail. `comparison-series.ts` is gone (its
+  types live with the native comparison, the territory bound beside the
+  validator that enforces it); `ComparisonTable` takes the native matrix
+  alone; `ResponsivePopover` takes a title, a description and a popover-only
+  class.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

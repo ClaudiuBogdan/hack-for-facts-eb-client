@@ -3,25 +3,30 @@ import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type {
-  StatisticsDatasetSeries,
-  StatisticsDatasetTier0,
-} from '@/schemas/statistics'
+import type { StatisticsDatasetSeries } from '@/schemas/statistics'
+import type { ResolvedDatasetSeries } from '../lib/detail-series-resolution'
+import type { RepresentativeCell } from '../lib/representative-series'
+import {
+  detailDataset,
+  detailLatest,
+  detailObservation,
+  detailTier0,
+} from '../test/detail-fixtures'
 import { StatisticsDatasetDetailPage } from './statistics-dataset-detail-page'
 
-const { useDatasetTier0Mock, useDatasetSeriesMock } = vi.hoisted(() => ({
+const { useDatasetTier0Mock, useDatasetSeriesMock, useRelatedDatasetsMock } = vi.hoisted(() => ({
   useDatasetTier0Mock: vi.fn(),
   useDatasetSeriesMock: vi.fn(),
+  useRelatedDatasetsMock: vi.fn(),
 }))
 
 vi.mock('../hooks/use-dataset-detail', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('../hooks/use-dataset-detail')>()
+  const actual = await importOriginal<typeof import('../hooks/use-dataset-detail')>()
   return {
     ...actual,
     useDatasetTier0: (params: unknown) => useDatasetTier0Mock(params),
     useDatasetSeries: (params: unknown) => useDatasetSeriesMock(params),
-    useDimensionValues: () => ({ data: undefined, isLoading: false }),
+    useRelatedDatasets: (contextCode: unknown) => useRelatedDatasetsMock(contextCode),
   }
 })
 
@@ -30,9 +35,7 @@ vi.mock('@lingui/react/macro', () => ({
   useLingui: () => ({
     i18n: {
       locale: 'ro',
-      _: (
-        message: string | { readonly id: string; readonly message?: string },
-      ) =>
+      _: (message: string | { readonly id: string; readonly message?: string }) =>
         typeof message === 'string' ? message : (message.message ?? message.id),
     },
   }),
@@ -42,115 +45,24 @@ const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }))
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
-  Link: ({ children, ...props }: { readonly children: ReactNode }) => (
-    <a {...props}>{children}</a>
-  ),
+  Link: ({ children, ...props }: { readonly children: ReactNode }) => <a {...props}>{children}</a>,
 }))
 
-const tier0: StatisticsDatasetTier0 = {
-  dataset: {
-    id: 'dataset:POP107D',
-    code: 'POP107D',
-    name_ro: 'Populația după domiciliu',
-    name_en: null,
-    definition_ro: null,
-    definition_en: null,
-    periodicity: ['ANNUAL'],
-    year_range: [1992, 2025],
-    has_uat_data: true,
-    has_county_data: true,
-    has_siruta: true,
-    sync_status: 'SYNCED',
-    data_status: 'AVAILABLE',
-    context_code: '1012',
-    context_name_ro: null,
-    context_name_en: null,
-    context_path: null,
-    metadata: { revision_id: '1', transform_contract_sha256: 'a'.repeat(64) },
-    dimension_count: 4,
-    dimensions: [
-      {
-        index: 0,
-        type: 'TERRITORIAL',
-        label_ro: 'Județe',
-        option_count: 42,
-        classification_type: { code: 'D0' },
-      },
-      {
-        index: 1,
-        type: 'CLASSIFICATION',
-        label_ro: 'Sexe',
-        option_count: 3,
-        classification_type: { code: 'D1', name_ro: 'Sexe' },
-      },
-      { index: 2, type: 'TEMPORAL', classification_type: null },
-      { index: 3, type: 'UNIT_OF_MEASURE', classification_type: null },
-    ],
-  },
-  latest: {
-    datasetCode: 'POP107D',
-    datasetNameRo: 'Populația după domiciliu',
-    datasetNameEn: null,
-    periodicity: ['ANNUAL'],
-    matchStrategy: 'TOTAL_FALLBACK',
-    hasData: true,
-    value: '21739373',
-    valueStatus: null,
-    unitCode: '0',
-    unitSymbol: 'pers.',
-    unitNameRo: 'Numar persoane',
-    period: '2025',
-    resolvedPeriodicity: 'ANNUAL',
-    resolvedClassifications: [
-      { typeCode: 'D0', code: '931', nameRo: 'România' },
-      { typeCode: 'D1', code: '105', nameRo: 'Total' },
-    ],
-  },
-}
+const tier0 = detailTier0()
 
 // Deliberately synthetic certified fixture: one source coordinate, three annual cells.
 const series: StatisticsDatasetSeries = {
+  nativeContract: 'native-v1',
   readMode: 'complete',
   sourceDescriptor: insSourceDescriptorSchema.parse(tier0.dataset),
-  observations: [2023, 2024, 2025].map((year) => ({
-    id: `source-${year}`,
-    dataset_code: 'POP107D',
-    value: String(21_000_000 + year),
-    value_status: null,
-    time_period: {
-      iso_period: String(year),
-      year,
-      quarter: null,
-      month: null,
-      periodicity: 'ANNUAL',
-    },
-    territory: {
-      code: 'RO',
-      siruta_code: null,
-      level: 'NATIONAL',
-      name_ro: 'TOTAL',
-    },
-    unit: { code: '0', symbol: 'pers.', name_ro: 'Numar persoane' },
-    classifications: [
-      { type_code: 'D0', code: '931', name_ro: 'România' },
-      { type_code: 'D1', code: '105', name_ro: 'Total' },
-    ],
-    dimensions: {
-      geography: {
-        pairs: [[0, 931]],
-        resolution: 'EXACT',
-        flags: [],
-        resolvedTerritory: { code: 'RO', level: 'NATIONAL' },
-        contextTerritory: null,
-        applicableRules: [],
-        qualified: false,
-      },
-    },
-  })),
+  observations: [2023, 2024, 2025].map((year) => detailObservation(year)),
   totalCount: 3,
-  related: [],
-  relatedTotalCount: null,
 }
+
+const resolved = (
+  data: StatisticsDatasetSeries | null = series,
+  representative: RepresentativeCell | null = null,
+): ResolvedDatasetSeries => ({ nativeContract: 'resolved-v1', series: data, representative, issues: [] })
 
 /** Digits-only matcher so locale grouping and split nodes never break it. */
 const byDigits = (expected: string) => (content: string) =>
@@ -158,300 +70,267 @@ const byDigits = (expected: string) => (content: string) =>
 
 const queryStub = (data: unknown) => ({
   data,
-  isLoading: false,
+  isPending: false,
   isError: false,
   isSuccess: true,
   refetch: vi.fn(),
 })
 
+const idleQuery = { data: undefined, isPending: false, isError: false, isSuccess: false, refetch: vi.fn() }
+
+function mount(search: Parameters<typeof StatisticsDatasetDetailPage>[0]['search'] = {}, code = 'POP107D') {
+  const onChange = vi.fn()
+  render(<StatisticsDatasetDetailPage code={code} search={search} onSearchChange={onChange} />)
+  return onChange
+}
+
 describe('StatisticsDatasetDetailPage', () => {
   beforeEach(() => {
     navigateMock.mockReset()
     useDatasetTier0Mock.mockReturnValue(queryStub(tier0))
-    useDatasetSeriesMock.mockReturnValue(queryStub(series))
+    useDatasetSeriesMock.mockReturnValue(queryStub(resolved()))
+    useRelatedDatasetsMock.mockReturnValue({ data: undefined })
   })
 
   it('never writes the URL on a default render (defaults stay out of it)', () => {
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{}}
-        onSearchChange={vi.fn()}
-      />,
-    )
-
+    const onChange = mount()
     expect(screen.getAllByText(byDigits('21002025')).length).toBeGreaterThan(0)
     expect(navigateMock).not.toHaveBeenCalled()
+    expect(onChange).not.toHaveBeenCalled()
+    expect(document.title).toContain('Populația după domiciliu (POP107D)')
   })
 
-  it.each([false, true])(
-    'keeps the latest null cell and status (all null: %s)',
-    (allNull) => {
-      useDatasetSeriesMock.mockReturnValue(
-        queryStub({
+  it('lists the related matrices of the context without the dataset itself', () => {
+    useRelatedDatasetsMock.mockReturnValue({
+      data: {
+        datasets: [
+          { code: 'POP107D', nameRo: 'Populația după domiciliu', nameEn: null, dataStatus: 'available' },
+          { code: 'POP105A', nameRo: 'Populația rezidentă', nameEn: null, dataStatus: 'available' },
+        ],
+        totalCount: 2,
+      },
+    })
+    mount()
+    expect(useRelatedDatasetsMock).toHaveBeenCalledWith('1012')
+    expect(screen.getByRole('button', { name: /Seturi înrudite \(1\)/ })).toBeInTheDocument()
+  })
+
+  it.each([false, true])('keeps the latest null cell and status (all null: %s)', (allNull) => {
+    useDatasetSeriesMock.mockReturnValue(
+      queryStub(
+        resolved({
           ...series,
           observations: series.observations.map((row) => ({
             ...row,
             value: allNull || row.time_period.year === 2025 ? null : row.value,
-            value_status:
-              row.time_period.year === 2025 ? 'c' : row.value_status,
+            value_status: row.time_period.year === 2025 ? 'c' : row.value_status,
           })),
         }),
-      )
-      render(
-        <StatisticsDatasetDetailPage
-          code="POP107D"
-          search={{}}
-          onSearchChange={vi.fn()}
-        />,
-      )
-      expect(
-        screen.getByText('Fără o valoare recentă pentru selecția curentă.'),
-      ).toBeInTheDocument()
-      expect(screen.getByText(/date confidențiale/)).toBeInTheDocument()
-      expect(screen.getAllByText(/2025/).length).toBeGreaterThan(0)
-      expect(screen.queryByText('Nicio observație')).not.toBeInTheDocument()
-      // Scoped to the headline block. The FIGURE must not present 2024's value
-      // as the latest when INS's own latest cell is confidential; the chart
-      // below may still label the last point it plots, which is a different
-      // claim and a true one.
-      expect(
-        within(screen.getByTestId('series-summary')).queryByText(
-          byDigits('21002024'),
-        ),
-      ).not.toBeInTheDocument()
-    },
-  )
+      ),
+    )
+    mount()
+    expect(screen.getByText('Fără o valoare recentă pentru selecția curentă.')).toBeInTheDocument()
+    expect(screen.getByText(/date confidențiale/)).toBeInTheDocument()
+    expect(screen.getAllByText(/2025/).length).toBeGreaterThan(0)
+    expect(screen.queryByText('Nicio observație')).not.toBeInTheDocument()
+    // Scoped to the headline block. The FIGURE must not present 2024's value
+    // as the latest when INS's own latest cell is confidential; the chart
+    // below may still label the last point it plots, which is a different
+    // claim and a true one.
+    expect(
+      within(screen.getByTestId('series-summary')).queryByText(byDigits('21002024')),
+    ).not.toBeInTheDocument()
+  })
 
-  it('fills an unresolved axis from the observations instead of asking', () => {
+  it('shows the cell the resolution chose as a default, never as the reader’s choice', () => {
     // POST A answers NO_DATA for any matrix without a row at the requested
-    // entity, which used to leave a filter prompt sitting over perfectly good
-    // observations. The page picks a cell from them and says it did.
+    // entity; the resolution picks a cell from the rows and says it did.
     useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
     useDatasetSeriesMock.mockReturnValue(
-      queryStub({
-        ...series,
-        readMode: 'inspection',
-        inspectionTruncated: false,
-      }),
+      queryStub(
+        resolved(series, {
+          classifications: { D0: '931', D1: '105' },
+          unitCode: '0',
+          periodicity: 'ANNUAL',
+        }),
+      ),
     )
-    const onChange = vi.fn()
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{ clasificari: ['D0:931'], unitate: '0' }}
-        onSearchChange={onChange}
-      />,
-    )
+    const onChange = mount({ clasificari: ['D0:931'], unitate: '0' })
     expect(screen.getByRole('button', { name: 'Descarcă CSV' })).toBeEnabled()
     expect(screen.getAllByText(byDigits('21002025')).length).toBeGreaterThan(0)
-    // Marked as a heuristic, never as the reader's own choice…
+    // Marked as a heuristic…
     expect(screen.getByText('selecție reprezentativă')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Sexe: Total \(implicit\)/ })).toBeInTheDocument()
     expect(screen.queryByText('Alege ce vrei să vezi')).not.toBeInTheDocument()
     // …and, being a default, it stays out of the URL.
     expect(onChange).not.toHaveBeenCalled()
   })
 
+  it('keeps the header and the rail while the dataset re-reads for a newly pinned scope', () => {
+    // The first pin moves the entity from national to none — a new tier-0
+    // key. The dataset the placeholder holds is this one; its resolved cell
+    // is the previous entity's and must not seed a read.
+    useDatasetTier0Mock.mockReturnValue({ ...queryStub(tier0), isPlaceholderData: true })
+    useDatasetSeriesMock.mockReturnValue({ ...idleQuery, isPending: true })
+    mount({ clasificari: ['D1:107'] })
+    expect(screen.getByRole('heading', { level: 1, name: 'Populația după domiciliu' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Sexe: 107/ })).toBeInTheDocument()
+    expect(screen.getByTestId('series-skeleton')).toBeInTheDocument()
+    expect(screen.queryByText('Alege ce vrei să vezi')).not.toBeInTheDocument()
+    expect(useDatasetSeriesMock).toHaveBeenLastCalledWith(expect.objectContaining({ enabled: false, latest: null }))
+  })
+
   it('keeps the POST-A hero visible when the series fails, with a retry beside it', () => {
-    useDatasetSeriesMock.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: true,
-      isSuccess: false,
-      refetch: vi.fn(),
-    })
-
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{}}
-        onSearchChange={vi.fn()}
-      />,
-    )
-
+    useDatasetSeriesMock.mockReturnValue({ ...idleQuery, isError: true })
+    mount()
     expect(screen.getAllByText(byDigits('21739373')).length).toBeGreaterThan(0)
-    expect(
-      screen.getByText('Nu am putut încărca seria de date'),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Reîncearcă' }),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Nu am putut încărca seria de date')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reîncearcă' })).toBeInTheDocument()
+  })
+
+  it('draws the series skeleton while the address resolves, with the rail already usable', () => {
+    useDatasetSeriesMock.mockReturnValue({ ...idleQuery, isPending: true })
+    mount()
+    expect(screen.getByTestId('series-skeleton')).toBeInTheDocument()
+    // No rows yet to name the member, so the rail shows the pin itself.
+    expect(screen.getByRole('button', { name: /^Sexe: 105 \(implicit\)/ })).toBeInTheDocument()
   })
 
   it('keeps catalog-only datasets in the request state without a fake series', () => {
     useDatasetTier0Mock.mockReturnValue(
-      queryStub({
-        ...tier0,
-        dataset: {
-          ...tier0.dataset,
-          code: 'TUR101C',
-          data_status: 'CATALOG_ONLY',
-          sync_status: 'PENDING',
-        },
-        latest: {
-          ...tier0.latest,
-          datasetCode: 'TUR101C',
-          matchStrategy: 'NO_DATA',
-          hasData: false,
-          value: null,
-        },
-      }),
+      queryStub(
+        detailTier0({
+          dataset: detailDataset({ code: 'TUR101C', data_status: 'CATALOG_ONLY', sync_status: 'PENDING' }),
+          latest: detailLatest({ datasetCode: 'TUR101C', matchStrategy: 'NO_DATA', hasData: false, value: null }),
+        }),
+      ),
     )
-
-    render(
-      <StatisticsDatasetDetailPage
-        code="TUR101C"
-        search={{}}
-        onSearchChange={vi.fn()}
-      />,
-    )
-
+    mount({}, 'TUR101C')
     expect(screen.getByTestId('catalog-only-body')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /^Cere setul /})).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Cere setul / })).toBeInTheDocument()
     expect(screen.queryByRole('figure')).not.toBeInTheDocument()
-    expect(useDatasetSeriesMock).toHaveBeenCalledWith(
-      expect.objectContaining({ enabled: false }),
-    )
+    expect(useDatasetSeriesMock).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }))
   })
 
-  it('renders the scope sentence with the prompt when a dimension is unresolved', () => {
+  it('renders the rail with the prompt when a dimension is unresolved', () => {
     useDatasetTier0Mock.mockReturnValue(
-      queryStub({
-        ...tier0,
-        latest: {
-          ...tier0.latest,
-          resolvedClassifications: [],
-          matchStrategy: 'NO_DATA',
-          hasData: false,
-          value: null,
-        },
-      }),
+      queryStub(
+        detailTier0({
+          latest: detailLatest({
+            resolvedClassifications: [],
+            matchStrategy: 'NO_DATA',
+            hasData: false,
+            value: null,
+          }),
+        }),
+      ),
     )
-    useDatasetSeriesMock.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      isError: false,
-      isSuccess: false,
-      refetch: vi.fn(),
-    })
-
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{}}
-        onSearchChange={vi.fn()}
-      />,
-    )
-
-    // The way OUT stays on screen: the SENTENCE renders (a segment button,
-    // not just the prompt — the prompt alone would satisfy a /alege/ match),
+    useDatasetSeriesMock.mockReturnValue(idleQuery)
+    mount()
+    // The way OUT stays on screen: the RAIL renders (a segment button, not
+    // just the prompt — the prompt alone would satisfy a /alege/ match),
     // and the prompt names ONLY the unresolved dimension.
-    expect(
-      screen.getByRole('button', {
-        name: /^Sexe: alege/,
-      }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Sexe: alege/ })).toBeInTheDocument()
     expect(screen.getByText(/Alege o valoare pentru: Sexe/)).toBeInTheDocument()
-    // Unresolved non-geographic dimensions permit inspection, never a derived chart.
-    expect(useDatasetSeriesMock).toHaveBeenCalledWith(
-      expect.objectContaining({ enabled: true }),
-    )
+    expect(useDatasetSeriesMock).toHaveBeenCalledWith(expect.objectContaining({ enabled: true }))
     expect(screen.queryByRole('figure')).not.toBeInTheDocument()
   })
 
-  it('disables fact requests for malformed explicit selections despite cached defaults', () => {
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{ clasificari: ['D0:931', 'D0:932'] }}
-        onSearchChange={vi.fn()}
-      />,
+  it('names an empty read for a territory the matrix does not publish, with the way out', () => {
+    // A region into a county series: the read succeeds with no row, which
+    // used to leave every axis at „alege" and no way to clear the territory.
+    useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
+    useDatasetSeriesMock.mockReturnValue(
+      queryStub(resolved({ ...series, readMode: 'inspection', inspectionTruncated: false, observations: [] })),
     )
-    expect(useDatasetTier0Mock).toHaveBeenCalledWith(
-      expect.objectContaining({ entity: null }),
-    )
-    expect(useDatasetSeriesMock).toHaveBeenCalledWith(
-      expect.objectContaining({ enabled: false }),
-    )
-    expect(
-      screen.getByRole('button', { name: 'Șterge clasificările invalide' }),
-    ).toBeInTheDocument()
+    const onChange = mount({ teritoriu: 'cod:RO11' })
+    expect(screen.getByText('INS nu publică această serie pentru teritoriul din adresă.')).toBeInTheDocument()
+    expect(screen.queryByText('Alege ce vrei să vezi')).not.toBeInTheDocument()
+    screen.getByRole('button', { name: 'Șterge filtrul teritorial' }).click()
+    expect(onChange).toHaveBeenCalledWith({ teritoriu: undefined })
+  })
+
+  it('shows the whole span and says so when the address asks for years past the series', () => {
+    const onChange = mount({ din: 2030, pana: 2035 })
+    expect(screen.getByRole('figure')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/Anii 2030–2035 din adresă sunt în afara seriei/)
+    expect(screen.getByRole('button', { name: /^Interval de ani: 2023–2025 \(implicit\)/ })).toBeInTheDocument()
+    screen.getByRole('button', { name: 'Șterge anii din adresă' }).click()
+    expect(onChange).toHaveBeenCalledWith({ din: undefined, pana: undefined })
+  })
+
+  it('refuses a malformed explicit selection: no default in its place, and the way to clear it', () => {
+    useDatasetSeriesMock.mockReturnValue(queryStub(resolved(null)))
+    mount({ clasificari: ['D0:931', 'D0:932'] })
+    expect(useDatasetTier0Mock).toHaveBeenCalledWith(expect.objectContaining({ entity: null }))
+    expect(screen.getByText('Selecția din adresă nu poate fi aplicată')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Șterge clasificările invalide' })).toBeInTheDocument()
     expect(screen.queryByText(byDigits('21002025'))).not.toBeInTheDocument()
+  })
+
+  it('reports a matrix whose published structure cannot be verified, not the address', () => {
+    useDatasetTier0Mock.mockReturnValue(
+      queryStub(detailTier0({ dataset: detailDataset({ dimensions: [], dimension_count: 0 }), latest: null })),
+    )
+    useDatasetSeriesMock.mockReturnValue(queryStub(resolved(null)))
+    mount()
+    expect(screen.getByText('Structura acestei matrice nu poate fi verificată')).toBeInTheDocument()
+    expect(screen.queryByText('Selecția din adresă nu poate fi aplicată')).not.toBeInTheDocument()
   })
 
   it('allows choosing a complete source row while retaining the canonical filter in parent state', async () => {
     useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
-    const onChange = vi.fn()
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{ teritoriu: 'cod:RO', clasificari: ['D0:931'] }}
-        onSearchChange={onChange}
-      />,
+    useDatasetSeriesMock.mockReturnValue(
+      queryStub(resolved(series, { classifications: { D0: '931', D1: '105' }, unitCode: '0', periodicity: 'ANNUAL' })),
     )
+    const onChange = mount({ teritoriu: 'cod:RO', clasificari: ['D0:931'] })
     // The default series is on screen; picking a row from the table replaces
     // it with an explicit selection.
     expect(screen.getByRole('figure')).toBeInTheDocument()
-    await userEvent.click(
-      screen.getByRole('button', { name: /Tabelul seriei/ }),
-    )
-    await userEvent.click(
-      screen.getAllByRole('button', { name: 'Alege această serie' })[0],
-    )
+    await userEvent.click(screen.getByRole('button', { name: /Tabelul seriei/ }))
+    await userEvent.click(screen.getAllByRole('button', { name: 'Alege această serie' })[0]!)
     expect(onChange).toHaveBeenCalledWith({
       clasificari: ['D0:931', 'D1:105'],
       unitate: '0',
       pagina: undefined,
+      teritoriu: undefined,
     })
   })
 
-  it('shows what INS publishes about the matrix: methodology with its report link, sources without markers, continuity', async () => {
+  it('shows what INS publishes about the matrix: methodology with its report link, sources without markers, continuity', () => {
     useDatasetTier0Mock.mockReturnValue(
-      queryStub({
-        ...tier0,
-        dataset: {
-          ...tier0.dataset!,
-          methodology_ro:
-            'Obiectivul cercetarii statistice anuale privind costul fortei de munca.\r\n<a href="https://insse.ro/cms/files/raport.pdf" target="_blank"> Raport de metadate si calitate </a>\r\n',
-          data_sources_ro:
-            'Cercetarea statistica privind costul fortei de munca <<6263>>',
-          data_sources: [
-            {
-              name: 'Cercetarea statistica privind costul fortei de munca <<6263>>',
-              type: 'Surse statistice (INS)',
-              type_code: 1,
-              link_number: 6263,
-            },
-          ],
-          observations_ro: 'Datele sunt disponibile incepand cu anul 2008.',
-          continues_from: [
-            { dataset_code: 'FOM106A', last_period_ro: 'Anul 2008', last_period_en: 'Year 2008' },
-          ],
-          source_last_update: '2025-09-04',
-        },
-      }),
+      queryStub(
+        detailTier0({
+          dataset: detailDataset({
+            methodology_ro:
+              'Obiectivul cercetarii statistice anuale privind costul fortei de munca.\r\n<a href="https://insse.ro/cms/files/raport.pdf" target="_blank"> Raport de metadate si calitate </a>\r\n',
+            data_sources_ro: 'Cercetarea statistica privind costul fortei de munca <<6263>>',
+            data_sources: [
+              {
+                name: 'Cercetarea statistica privind costul fortei de munca <<6263>>',
+                type: 'Surse statistice (INS)',
+                type_code: 1,
+                link_number: 6263,
+              },
+            ],
+            observations_ro: 'Datele sunt disponibile incepand cu anul 2008.',
+            continues_from: [
+              { dataset_code: 'FOM106A', last_period_ro: 'Anul 2008', last_period_en: 'Year 2008' },
+            ],
+            source_last_update: '2025-09-04',
+          }),
+        }),
+      ),
     )
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{}}
-        onSearchChange={vi.fn()}
-      />,
-    )
+    mount()
     expect(screen.getByTestId('dataset-metadata')).toBeInTheDocument()
     // Numbered sections, not chevrons: what INS published is on screen without
     // a click.
-    expect(
-      screen.getByText(/Obiectivul cercetarii statistice anuale/),
-    ).toBeInTheDocument()
-    const report = screen.getByRole('link', {
-      name: 'Raport de metadate si calitate',
-    })
+    expect(screen.getByText(/Obiectivul cercetarii statistice anuale/)).toBeInTheDocument()
+    const report = screen.getByRole('link', { name: 'Raport de metadate si calitate' })
     expect(report).toHaveAttribute('href', 'https://insse.ro/cms/files/raport.pdf')
     expect(report).toHaveAttribute('rel', 'noopener noreferrer')
-    expect(
-      screen.getByText('Cercetarea statistica privind costul fortei de munca'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Cercetarea statistica privind costul fortei de munca')).toBeInTheDocument()
     expect(screen.queryByText(/<<6263>>/)).not.toBeInTheDocument()
     expect(screen.getByText('FOM106A')).toBeInTheDocument()
     expect(screen.getByText(/Anul 2008/)).toBeInTheDocument()
@@ -459,54 +338,56 @@ describe('StatisticsDatasetDetailPage', () => {
     // it reads on the provenance line under the title, next to the matrix code
     // it dates, and the source's own name is the link back to it.
     expect(screen.getByText(/actualizată/)).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: /Deschide matricea POP107D/ }),
-    ).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Deschide matricea POP107D/ })).toHaveAttribute(
       'href',
       'http://statistici.insse.ro/tempoins/index.jsp?ind=POP107D&lang=ro&page=tempo3',
     )
+  })
+
+  it('renders the definition’s published anchor as a link, never as markup', () => {
+    useDatasetTier0Mock.mockReturnValue(
+      queryStub(
+        detailTier0({
+          dataset: detailDataset({
+            definition_ro:
+              'Conturile de patrimoniu, vezi <a href="https://eur-lex.europa.eu/legal-content/RO/TXT/?uri=CELEX:02013R0549" target="_blank">Regulamentul 549/2013</a>.',
+          }),
+        }),
+      ),
+    )
+    mount()
+    expect(screen.getByRole('link', { name: 'Regulamentul 549/2013' })).toHaveAttribute(
+      'href',
+      'https://eur-lex.europa.eu/legal-content/RO/TXT/?uri=CELEX:02013R0549',
+    )
+    expect(screen.queryByText(/<a href/)).not.toBeInTheDocument()
   })
 
   it('still judges freshness when the URL pins a source coordinate', () => {
     // POST A returns `latest: null` for any pinned classification or unit, so
     // reading freshness from it alone silenced the stale badge on exactly the
     // deep-linked URLs where an abandoned series matters most.
-    useDatasetTier0Mock.mockReturnValue(
-      queryStub({ ...tier0, latest: null }),
-    )
+    useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
     useDatasetSeriesMock.mockReturnValue(
-      queryStub({
-        ...series,
-        observations: series.observations.map((observation, index) => ({
-          ...observation,
-          time_period: {
-            ...observation.time_period,
-            iso_period: String(1998 + index),
-            year: 1998 + index,
+      queryStub(
+        resolved(
+          {
+            ...series,
+            observations: series.observations.map((observation, index) => ({
+              ...observation,
+              time_period: { ...observation.time_period, iso_period: String(1998 + index), year: 1998 + index },
+            })),
           },
-        })),
-      }),
+          { classifications: { D0: '931', D1: '105' }, unitCode: '0', periodicity: 'ANNUAL' },
+        ),
+      ),
     )
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{ clasificari: ['D1:105'] }}
-        onSearchChange={vi.fn()}
-      />,
-    )
-    expect(
-      screen.getByText(/Date până în 2000 · posibil neactualizat/),
-    ).toBeInTheDocument()
+    mount({ clasificari: ['D1:105'] })
+    expect(screen.getByText(/Date până în 2000 · posibil neactualizat/)).toBeInTheDocument()
   })
 
   it('renders no metadata section when INS published none of it', () => {
-    render(
-      <StatisticsDatasetDetailPage
-        code="POP107D"
-        search={{}}
-        onSearchChange={vi.fn()}
-      />,
-    )
+    mount()
     expect(screen.queryByTestId('dataset-metadata')).not.toBeInTheDocument()
   })
 })

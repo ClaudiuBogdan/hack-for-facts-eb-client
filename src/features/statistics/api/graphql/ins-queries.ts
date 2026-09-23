@@ -92,6 +92,80 @@ export const INS_OBSERVATION_FIELDS = `
   classifications { id type_code type_name_ro type_name_en code name_ro name_en sort_order }
 `
 
+/**
+ * What the territory hub reads of a dataset: identity, cadence, status, and
+ * the layout the source certification needs. None of the published prose —
+ * the page never shows it, and across 73 matrices it weighed 0.26 MB.
+ */
+export const TERRITORY_DATASET_FIELDS = `
+  id
+  code
+  name_ro
+  name_en
+  periodicity
+  dimension_count
+  has_uat_data
+  has_county_data
+  has_siruta
+  sync_status
+  data_status
+  metadata
+  dimensions {
+    index
+    type
+    label_ro
+    classification_type { code }
+  }
+`
+
+/**
+ * What the territory hub reads of an observation: the cell's value, period
+ * and unit, plus the coordinates and geography the certification checks.
+ * Member and axis names are not read (they weighed 1.4 MB per territory).
+ */
+export const TERRITORY_OBSERVATION_FIELDS = `
+  id
+  dataset_code
+  value
+  value_status
+  time_period { iso_period year quarter month periodicity }
+  unit { code symbol name_ro name_en }
+  classifications { id type_code code }
+  dimensions
+`
+
+/**
+ * What one comparison default needs: the outcome, the layout the
+ * certification checks, and the resolved cell's coordinates. Repeated once
+ * per compared territory, so it has to stay small: with the exhaustive
+ * fragments six territories exceeded the server's 500-field cap.
+ */
+export const INS_COMPARISON_DEFAULT_FIELDS = `
+  latestPeriod
+  matchStrategy
+  hasData
+  geographicWitnesses
+  dataset {
+    id
+    code
+    data_status
+    dimension_count
+    metadata
+    dimensions { index type label_ro classification_type { code } }
+  }
+  observation {
+    id
+    dataset_code
+    value
+    value_status
+    time_period { iso_period year quarter month periodicity }
+    territory { code siruta_code level name_ro }
+    unit { code symbol name_ro }
+    classifications { id type_code code }
+    dimensions
+  }
+`
+
 export const INS_TERRITORY_FIELDS = `
   code
   siruta_code
@@ -362,8 +436,8 @@ export const STATISTICS_TERRITORY_HUB_QUERY = `
       status
       truncated
       geographicWitnesses
-      dataset { ${INS_DATASET_FIELDS} ${INS_DATASET_DIMENSION_FIELDS} }
-      observations { ${INS_OBSERVATION_FIELDS} }
+      dataset { ${TERRITORY_DATASET_FIELDS} }
+      observations { ${TERRITORY_OBSERVATION_FIELDS} }
     }
     identity: insTerritories(filter: { sirutaCodes: [$sirutaCode] }, limit: 1) {
       nodes { ${INS_TERRITORY_FIELDS} }
@@ -383,8 +457,6 @@ export const STATISTICS_TERRITORY_HUB_CONTEXT_QUERY = `
     $benchmarkCodes: [String!]!
     $withCounty: Boolean!
   ) {
-    loaded: insDatasets(limit: 1) { pageInfo { totalCount } }
-    catalog: insDatasets(filter: { dataStatus: [] }, limit: 1) { pageInfo { totalCount } }
     county: insLatestDatasetValues(
       entity: { territoryCode: $countyCode, territoryLevel: NUTS3 }
       datasetCodes: $benchmarkCodes
@@ -423,7 +495,7 @@ export const STATISTICS_RELATED_DATASETS_QUERY = `
   query StatisticsRelatedDatasets($contextCode: String!) {
     related: insDatasets(filter: { contextCode: $contextCode }, limit: 7) {
       pageInfo { totalCount }
-      nodes { code name_ro data_status }
+      nodes { code name_ro name_en data_status }
     }
   }
 `

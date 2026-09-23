@@ -182,6 +182,73 @@ describe('source scope edits', () => {
   })
 })
 
+describe('unresolved axes', () => {
+  function mountScope(overrides: {
+    readonly scope?: Partial<Parameters<typeof DetailScopeSentence>[0]['scope']>
+    readonly source?: InsDatasetDetails
+    readonly search?: Parameters<typeof DetailScopeSentence>[0]['search']
+    readonly yearWindowPinned?: boolean
+    readonly window?: { readonly from: number; readonly to: number } | null
+  } = {}) {
+    render(
+      <DetailScopeSentence
+        dataset={overrides.source ?? dataset}
+        search={overrides.search ?? {}}
+        scope={{
+          territory: null,
+          territoryMode: 'national-default',
+          territoryDefaulted: true,
+          classifications: new Map([
+            ['D0', '1'],
+            ['D1', '2'],
+            ['D2', '3'],
+          ]),
+          defaultedTypes: new Set(),
+          unitCode: '0',
+          unitDefaulted: false,
+          periodicity: 'ANNUAL',
+          ...overrides.scope,
+        }}
+        canDerive={false}
+        unresolvedDimensions={[]}
+        territoryLabel="România"
+        classificationLabels={new Map()}
+        unitLabel={overrides.scope?.unitCode === null ? null : 'Persoane'}
+        observedSpan={overrides.window === undefined ? null : { from: 2000, to: 2020 }}
+        yearWindow={overrides.window ?? null}
+        yearWindowPinned={overrides.yearWindowPinned}
+        onChange={vi.fn()}
+      />,
+    )
+  }
+
+  it('says a cadence and a unit still to choose are to choose, never „chosen automatically"', () => {
+    mountScope({
+      source: { ...dataset, periodicity: ['ANNUAL', 'QUARTERLY'] },
+      scope: { periodicity: null, unitCode: null },
+    })
+    expect(screen.getByRole('button', { name: 'Frecvență: Alege frecvența' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Unitate de măsură: Alege o unitate' })).toBeInTheDocument()
+    expect(screen.queryByText(/Valorile marcate „implicit"/)).not.toBeInTheDocument()
+  })
+
+  it('marks a cadence the matrix resolved on its own as implicit', () => {
+    mountScope({ source: { ...dataset, periodicity: ['ANNUAL', 'QUARTERLY'] } })
+    expect(screen.getByRole('button', { name: /^Frecvență: .+ \(implicit\)$/ })).toBeInTheDocument()
+    expect(screen.getByText(/Valorile marcate „implicit"/)).toBeInTheDocument()
+  })
+
+  it('marks the year window as implicit unless it is the reader’s own', () => {
+    mountScope({ window: { from: 2000, to: 2020 }, search: { din: 2030 }, yearWindowPinned: false })
+    expect(screen.getByRole('button', { name: 'Interval de ani: 2000–2020 (implicit)' })).toBeInTheDocument()
+  })
+
+  it('shows a pinned window as the reader’s, with no mark', () => {
+    mountScope({ window: { from: 2005, to: 2020 }, search: { din: 2005 }, yearWindowPinned: true })
+    expect(screen.getByRole('button', { name: 'Interval de ani: 2005–2020' })).toBeInTheDocument()
+  })
+})
+
 describe('nested source axes', () => {
   beforeEach(() => vi.mocked(fetchDimensionValuesPage).mockReset())
 

@@ -8,7 +8,7 @@ import { formatHubPeriod, hubUnitWord } from '../lib/hub-format'
 
 type Props = {
   readonly latest: StatisticsLatestValue
-  readonly matchChip: 'representative' | 'total' | null
+  readonly matchChip: 'representative' | null
 }
 
 /**

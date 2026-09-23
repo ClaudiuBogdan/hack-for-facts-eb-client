@@ -3,6 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../lib/statistics-theme'
+import { PublishedText } from './published-text'
 
 type Props = {
   readonly text: string
@@ -26,6 +27,10 @@ type Props = {
  *
  * The clamp is visual — the whole string is always in the DOM, for search,
  * copy and assistive tech.
+ *
+ * TEMPO ships anchors inside a few definitions (CON113A's points at the
+ * ESA regulation on EUR-Lex), so the text goes through `PublishedText`:
+ * the anchor becomes a link and every other tag is dropped, never printed.
  */
 export function DetailDefinition({ text }: Props) {
   const [expanded, setExpanded] = useState(false)
@@ -69,13 +74,12 @@ export function DetailDefinition({ text }: Props) {
         // its content is unreadable without a pointer.
         {...(expanded ? { tabIndex: 0 } : {})}
       >
-        <p
+        <PublishedText
           ref={paragraphRef}
           id={id}
+          text={text}
           className={cn(statisticsTheme.prose, !expanded && 'line-clamp-3')}
-        >
-          {text}
-        </p>
+        />
       </div>
       {toggleable ? (
         <button

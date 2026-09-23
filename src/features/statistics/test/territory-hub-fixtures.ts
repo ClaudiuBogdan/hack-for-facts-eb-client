@@ -8,11 +8,10 @@ import type {
 import type {
   StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { getDatasetDataStatus } from '../lib/dataset-status'
-import {
-  buildTerritoryRelatedLinks,
-  resolveTerritoryIdentity,
-} from '../lib/territory'
+import { periodSortKey } from '../lib/period'
+import { resolveTerritoryIdentity } from '../lib/territory'
 
 /**
  * Territory hub fixtures for the page tests.
@@ -507,24 +506,9 @@ function pickLatestObservation(
   return latest
 }
 
-function buildSparkline(
-  observations: readonly InsObservation[],
-): readonly (readonly [InsTimePeriod, string | null])[] {
-  return [...observations]
-    .sort((left, right) => getObservationPeriodKey(left) - getObservationPeriodKey(right))
-    .map(
-      (observation) =>
-        [
-          observation.time_period,
-          observation.value,
-        ] as readonly [InsTimePeriod, string | null],
-    )
-}
-
 /**
  * SIRUTA → territory hub result. Unknown SIRUTA codes return `null`, as the
- * live adapter's not-found contract does. Built lazily: the builder reaches
- * translation helpers (`buildTerritoryRelatedLinks` → Lingui `t`).
+ * live adapter's not-found contract does.
  */
 let territoryHubCache: ReadonlyMap<string, StatisticsTerritoryHubResult> | null =
   null
@@ -578,7 +562,6 @@ function buildTerritoryHub(params: {
         : group.observations.length === 0
           ? 'no-data'
           : 'available'
-    const sparkline = buildSparkline(group.observations)
 
     return {
       datasetCode: group.dataset.code,
@@ -587,30 +570,28 @@ function buildTerritoryHub(params: {
       periodicity: group.dataset.periodicity,
       dataStatus,
       tileState,
+      truncated: false,
+      sparklineCadence:
+        latest && isInsChartPeriodicity(latest.time_period.periodicity) ? latest.time_period.periodicity : null,
+      observations: [...group.observations]
+        .sort((left, right) => periodSortKey(left.time_period) - periodSortKey(right.time_period))
+        .map((observation) => ({
+          time_period: observation.time_period,
+          value: observation.value,
+          valueStatus: observation.value_status ?? null,
+        })),
       value: latest?.value ?? null,
       valueStatus: latest?.value_status ?? null,
       unitSymbol: latest?.unit?.symbol ?? null,
       unitNameRo: latest?.unit?.name_ro ?? null,
+      unitNameEn: latest?.unit?.name_en ?? null,
       latestPeriod:
         group.latestPeriod ??
         pickLatestObservation(group.observations)?.time_period.iso_period ??
         null,
       latestYear: latest?.time_period.year ?? null,
-      sparkline,
     }
   })
-
-  const availableDatasetCodes = dashboard.groups
-    .filter((group) => getDatasetDataStatus(group.dataset) === 'available')
-    .map((group) => group.dataset.code)
-
-  // Live-like counts, with this hub's one catalog-only matrix counted.
-  const coverage = {
-    availableDatasetCount: 1915,
-    totalDatasetCount: 1916,
-    catalogOnlyDatasetCount: 1,
-    partial: false,
-  }
 
   const latestDataPeriod = pickLatestPeriodString(
     dashboard.groups.map((group) => group.latestPeriod ?? ''),
@@ -619,19 +600,16 @@ function buildTerritoryHub(params: {
   return {
     identity,
     tiles,
-    availableDatasetCodes,
-    coverage,
-    relatedLinks: buildTerritoryRelatedLinks({ identity }),
     latestDataPeriod,
-    partial: dashboard.partial,
     benchmarks: {},
+    benchmarksUnavailable: false,
   }
 }
 
 /**
  * The hub is always returned unfiltered. Period selection is a client-side
- * transform (`lib/hub-period.ts`), so there is nothing to filter here — the
- * property the live adapter has too.
+ * transform (`lib/territory-period.ts`), so there is nothing to filter here
+ * — the property the live adapter has too.
  */
 export function territoryHubFixture(
   siruta: string,

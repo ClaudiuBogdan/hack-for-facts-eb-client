@@ -1,28 +1,37 @@
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { AlertTriangle } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { StatisticsTerritoryHubSearch } from '@/schemas/statistics'
-import { applyHubPeriod, collectHubPeriodOptions } from '../lib/hub-period'
+import { ShareFilteredView } from '@/components/shared/procurement-data/share-filtered-view'
+import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
+import { cn } from '@/lib/utils'
+import type { StatisticsTerritoryHubResult, StatisticsTerritoryHubSearch } from '@/schemas/statistics'
+import { comparisonPlaceName } from '../lib/comparison-format'
+import { statisticsTheme } from '../lib/statistics-theme'
+import { BUCHAREST_MUNICIPALITY_SIRUTA } from '../lib/territory'
 import { groupTerritoryTiles } from '../lib/territory-groups'
-import { CoverageRibbon } from '../components/coverage-ribbon'
+import {
+  applyTerritoryPeriod,
+  collectTerritoryYears,
+  territoryPeriodAvailable,
+} from '../lib/territory-period'
 import { RelatedLinksRail } from '../components/related-links-rail'
-import { ShareFilteredView } from '../components/share-filtered-view'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import { TerritoryHeader } from '../components/territory-header'
 import { TerritoryHeadlineTile, TerritoryIndicatorRow } from '../components/territory-indicator-row'
+import { TerritoryPeriodControl } from '../components/territory-period-control'
 import { useStatisticsTerritoryHub } from '../hooks/use-statistics'
 
 type StatisticsTerritoryHubPageProps = {
   readonly siruta: string
   readonly search: StatisticsTerritoryHubSearch
+  /** The hub the route loader read on the server, for the same SIRUTA. */
+  readonly initialHub?: StatisticsTerritoryHubResult
 }
 
 function TerritorySkeleton() {
@@ -39,48 +48,57 @@ function TerritorySkeleton() {
   )
 }
 
-const LATEST_PERIOD_VALUE = 'latest'
-
 /**
- * The territory hub: the four headline indicators as a band with their
+ * The territory page: the four headline indicators as a band with their
  * county and national references, then every other indicator the territory
  * has, grouped by domain in an accordion — one compact row per dataset,
  * never a wall of identical tiles. The first two groups open by default.
  */
-export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerritoryHubPageProps) {
+export function StatisticsTerritoryHubPage({ siruta, search, initialHub }: StatisticsTerritoryHubPageProps) {
   const navigate = useNavigate()
   const { i18n } = useLingui()
   // Malformed SIRUTA must never cost a request — the query is gated, and the
   // early return below (after the hooks, per the rules of hooks) renders the
   // not-found state.
   const isValidSiruta = /^\d{1,6}$/.test(siruta.trim())
-  const hubQuery = useStatisticsTerritoryHub({ siruta, enabled: isValidSiruta })
+  const hubQuery = useStatisticsTerritoryHub({
+    siruta,
+    enabled: isValidSiruta,
+    ...(initialHub ? { initialData: initialHub } : {}),
+  })
   const unfilteredHub = hubQuery.data
   // The router merges the RAW parent search over the validated child output,
   // so a key the validator dropped (e.g. ?period=2009 parsed as a NUMBER)
   // still arrives here with its raw type — read defensively, always.
   const activePeriod = typeof search.period === 'string' && search.period !== 'latest' ? search.period : null
-  const periodOptions = collectHubPeriodOptions(unfilteredHub)
-  const hub = unfilteredHub ? applyHubPeriod(unfilteredHub, activePeriod) : unfilteredHub
+  const years = collectTerritoryYears(unfilteredHub)
+  const periodAvailable = activePeriod === null || territoryPeriodAvailable(unfilteredHub, activePeriod)
+  const hub = unfilteredHub ? applyTerritoryPeriod(unfilteredHub, activePeriod) : unfilteredHub
   const shouldShowHub = Boolean(hub) && !hubQuery.isError
   const grouped = hub ? groupTerritoryTiles(hub.tiles) : null
+  // A tile with a figure: a series whose latest cell is confidential has data, but nothing to show.
+  const indicatorCount =
+    unfilteredHub?.tiles.filter((tile) => tile.tileState === 'available' && tile.value !== null).length ?? 0
+
+  const placeName = hub?.identity.name ? comparisonPlaceName(hub.identity.name).name : null
+  useClientDocumentTitle(placeName ? `${placeName} · ${t`Statistici INS`} — Transparenta.eu` : null)
 
   // Merge, never replace: a future search key must survive a period change.
-  const handlePeriodChange = (value: string) => {
+  const handlePeriodChange = (value: string | null) => {
     void navigate({
       to: '/ins/teritorii/$siruta',
       params: { siruta },
-      search: (previous) => ({
-        ...previous,
-        ...(value === LATEST_PERIOD_VALUE ? { period: undefined } : { period: value }),
-      }),
+      search: (previous) => ({ ...previous, period: value ?? undefined }),
     })
   }
 
   if (!isValidSiruta) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">
+        <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 md:px-6">
+          <StatisticsBackLink to="/ins">
+            <Trans>Înapoi la statistici</Trans>
+          </StatisticsBackLink>
           <EmptyState title={t`Teritoriu negăsit`} description={t`Adresa nu conține un cod SIRUTA valid.`} />
         </div>
       </div>
@@ -94,10 +112,10 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
           <StatisticsBackLink to="/ins">
             <Trans>Înapoi la statistici</Trans>
           </StatisticsBackLink>
-          <ShareFilteredView />
+          <ShareFilteredView label={t`Copiază link`} />
         </div>
 
-        {hubQuery.isLoading ? <TerritorySkeleton /> : null}
+        {hubQuery.isPending ? <TerritorySkeleton /> : null}
 
         {hubQuery.isError ? (
           <Alert variant="destructive">
@@ -109,7 +127,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
               <p>
                 <Trans>Adresa rămâne neschimbată. Poți încerca din nou.</Trans>
               </p>
-              <Button variant="outline" size="sm" onClick={() => hubQuery.refetch()}>
+              <Button variant="outline" size="sm" onClick={() => void hubQuery.refetch()}>
                 <Trans>Reîncearcă</Trans>
               </Button>
             </AlertDescription>
@@ -124,68 +142,22 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
           <>
             <header className="space-y-4">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                <TerritoryHeader identity={hub.identity} />
-                {periodOptions.length > 0 || activePeriod ? (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label htmlFor="statistics-hub-period" className="text-sm font-medium">
-                      <Trans>Perioadă</Trans>
-                    </label>
-                    <Select value={activePeriod ?? LATEST_PERIOD_VALUE} onValueChange={handlePeriodChange}>
-                      <SelectTrigger id="statistics-hub-period" className="w-44" aria-label={t`Filtru perioadă`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={LATEST_PERIOD_VALUE}>{t`Ultima perioadă`}</SelectItem>
-                        {periodOptions.map((period) => (
-                          <SelectItem key={period.iso_period} value={period.iso_period}>
-                            {period.iso_period}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {activePeriod ? (
-                      <>
-                        <Badge variant="outline">
-                          <Trans>Filtrat</Trans>: {activePeriod}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs"
-                          onClick={() => handlePeriodChange(LATEST_PERIOD_VALUE)}
-                        >
-                          <Trans>Șterge filtrul</Trans>
-                        </Button>
-                      </>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-              {activePeriod && !periodOptions.some((option) => option.iso_period === activePeriod) ? (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-                  <AlertTitle>
-                    <Trans>Perioada {activePeriod} nu este disponibilă în rezultatele încărcate</Trans>
-                  </AlertTitle>
-                  <AlertDescription className="space-y-3">
-                    <p>
-                      <Trans>
-                        Filtrul rămâne în adresă. Istoricul poate fi incomplet sau selecția din sursă poate necesita
-                        clarificare.
-                      </Trans>
-                    </p>
-                    <Button variant="outline" size="sm" onClick={() => handlePeriodChange(LATEST_PERIOD_VALUE)}>
-                      <Trans>Șterge filtrul de perioadă</Trans>
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              ) : null}
-              {hub.coverage ? (
-                <CoverageRibbon
-                  coverage={hub.coverage}
+                <TerritoryHeader
+                  identity={hub.identity}
+                  indicatorCount={indicatorCount}
                   latestDataPeriod={hub.latestDataPeriod}
-                  partialNote={hub.partial ? t`Rezultate parțiale — unele serii pot lipsi.` : null}
                 />
+                <TerritoryPeriodControl
+                  years={years}
+                  active={activePeriod}
+                  available={periodAvailable}
+                  onChange={handlePeriodChange}
+                />
+              </div>
+              {hub.benchmarksUnavailable ? (
+                <p role="status" className={statisticsTheme.note}>
+                  <Trans>Reperele pe județ și pe țară nu s-au încărcat de această dată; cifrele localității sunt complete.</Trans>
+                </p>
               ) : null}
             </header>
 
@@ -199,7 +171,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
             {grouped.headline.length > 0 ? (
               <section className="space-y-3" aria-labelledby="territory-headline-title">
                 <div>
-                  <h2 id="territory-headline-title" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <h2 id="territory-headline-title" className={statisticsTheme.sectionLabel}>
                     <Trans>Pe scurt</Trans>
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -220,7 +192,12 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
                       tile={tile}
                       siruta={hub.identity.siruta}
                       countyCode={hub.identity.countyCode}
-                      {...(!activePeriod && hub.benchmarks[tile.datasetCode] ? { benchmark: hub.benchmarks[tile.datasetCode] } : {})}
+                      activePeriod={activePeriod}
+                      // The capital is its own county cell: the reference would repeat the figure.
+                      showCountyReference={hub.identity.siruta !== BUCHAREST_MUNICIPALITY_SIRUTA}
+                      {...(!activePeriod && hub.benchmarks[tile.datasetCode]
+                        ? { benchmark: hub.benchmarks[tile.datasetCode] }
+                        : {})}
                     />
                   ))}
                 </div>
@@ -230,7 +207,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
             {grouped.groups.length > 0 ? (
               <section className="space-y-3" aria-labelledby="territory-groups-title">
                 <div>
-                  <h2 id="territory-groups-title" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <h2 id="territory-groups-title" className={statisticsTheme.sectionLabel}>
                     <Trans>Toți indicatorii, pe domenii</Trans>
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -243,14 +220,21 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
                 <Accordion
                   type="multiple"
                   defaultValue={grouped.groups.slice(0, 2).map((group) => group.definition.key)}
-                  className="rounded-lg border border-border/70 bg-card px-4"
+                  className={cn(statisticsTheme.band, 'px-4')}
                 >
                   {grouped.groups.map((group) => (
                     <AccordionItem key={group.definition.key} value={group.definition.key}>
                       <AccordionTrigger className="py-3 text-sm hover:no-underline">
                         <span className="flex items-baseline gap-2">
                           <span className="font-semibold">{i18n._(group.definition.label)}</span>
-                          <span className="tabular-nums text-xs font-normal text-muted-foreground">{group.tiles.length}</span>
+                          {/* The count is a word for assistive tech, a figure for the eye:
+                              „Populație18" was one word to a screen reader. */}
+                          <span className="tabular-nums text-xs font-normal text-muted-foreground" aria-hidden="true">
+                            {group.tiles.length}
+                          </span>
+                          <span className="sr-only">
+                            {plural(group.tiles.length, { one: ', un indicator', few: ', # indicatori', other: ', # de indicatori' })}
+                          </span>
                         </span>
                       </AccordionTrigger>
                       <AccordionContent className="pb-2">
@@ -261,6 +245,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
                               tile={tile}
                               siruta={hub.identity.siruta}
                               countyCode={hub.identity.countyCode}
+                              activePeriod={activePeriod}
                             />
                           ))}
                         </ul>
@@ -271,7 +256,7 @@ export function StatisticsTerritoryHubPage({ siruta, search }: StatisticsTerrito
               </section>
             ) : null}
 
-            <RelatedLinksRail links={hub.relatedLinks} originSiruta={hub.identity.siruta} />
+            <RelatedLinksRail identity={hub.identity} />
           </>
         ) : null}
       </div>

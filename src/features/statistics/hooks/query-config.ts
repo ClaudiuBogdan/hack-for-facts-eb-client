@@ -40,15 +40,26 @@ export const statisticsKeys = {
   explorerPage: (hash: string) => ['statistics', 'explorer-v1', 'page', hash] as const,
   /** The comparison picker's search over datasets with county figures. */
   datasetSearch: (term: string) => ['statistics', 'explorer-v1', 'county-search', term] as const,
+  /** The tier-0 reads of one matrix, for every entity they were resolved for. */
+  datasetTier0All: (code: string) =>
+    ['statistics', 'native-source-selection-v1', 'dataset', code, 'tier0'] as const,
   datasetTier0: (code: string, entityKey: string) =>
     ['statistics', 'native-source-selection-v1', 'dataset', code, 'tier0', entityKey] as const,
-  datasetSeries: (code: string, scopeKey: string, mode: 'inspection' | 'complete') =>
-    ['statistics', 'native-source-selection-v1', 'dataset', code, 'series', scopeKey, mode] as const,
+  /** The series resolved for one address: the read, and the cell the page chose to read. */
+  datasetSeries: (code: string, scopeKey: string) =>
+    ['statistics', 'native-source-selection-v1', 'dataset', code, 'series', scopeKey, 'resolved-v1'] as const,
+  /** The matrices of one INS context, whichever dataset asked. */
+  relatedDatasets: (contextCode: string) => ['statistics', 'native-v2', 'related-datasets', contextCode] as const,
   dimensionValues: (parts: readonly (string | number | null)[]) =>
     ['statistics', 'dimension-values-v1', ...parts] as const,
+  /** A nested axis's root member, read once per axis. */
+  dimensionRoot: (code: string, dimensionIndex: number) =>
+    ['statistics', 'dimension-root-v1', code, dimensionIndex] as const,
   memberLabel: (parts: readonly (string | number)[]) => ['statistics', 'member-label-v1', ...parts] as const,
   comparison: {
     all: () => ['statistics', 'native-v2', 'comparisons'] as const,
+    /** The dataset an address names, read whether or not it names territories yet. */
+    dataset: (code: string) => ['statistics', 'native-v2', 'comparisons', 'dataset', code] as const,
     prepare: (parts: readonly unknown[]) => ['statistics', 'native-v2', 'comparisons', 'prepare', ...parts] as const,
     vector: (code: string, parts: readonly unknown[]) =>
       ['statistics', 'native-v2', 'comparisons', 'vector', code, ...parts] as const,

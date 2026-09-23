@@ -367,5 +367,14 @@ describe('chart-links', () => {
       // A year filter over monthly points would flag every year as missing.
       expect(chart.config.yearRange).toBeUndefined();
     });
+
+    it('carries the unit word the comparison prints, so the chart never labels its axis „other"', () => {
+      const { chart } = buildInsComparisonChartState({ ...options, unit: 'ani' });
+      expect(chart.series.map((series) => series.unit)).toEqual(['ani', 'ani', 'ani']);
+      // The unit is a label, not part of the comparison's identity.
+      expect(buildInsComparisonChartLink({ ...options, unit: 'ani' }).params.chartId).toBe(
+        buildInsComparisonChartLink(options).params.chartId,
+      );
+    });
   });
 });

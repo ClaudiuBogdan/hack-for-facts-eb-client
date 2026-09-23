@@ -1,8 +1,9 @@
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, type QueryClient } from '@tanstack/react-query'
 import type {
   DatasetRequestPayload,
   StatisticsContextNode,
   StatisticsLandingCatalog,
+  StatisticsTerritoryHubResult,
 } from '@/schemas/statistics'
 import {
   fetchContextTree,
@@ -55,12 +56,14 @@ export function useStatisticsLandingCatalog(
 
 /**
  * The hub is keyed on SIRUTA alone. The `period` URL param is applied as a
- * client-side transform (`lib/hub-period.ts`), so it must not enter the query
- * key — otherwise every period switch would refetch the whole dashboard.
+ * client-side transform (`lib/territory-period.ts`), so it must not enter
+ * the query key — otherwise every period switch would refetch the whole
+ * dashboard. The route loader seeds it on the server render.
  */
 export const statisticsTerritoryHubQueryOptions = (params: {
   siruta: string
   enabled?: boolean
+  initialData?: StatisticsTerritoryHubResult
 }) => {
   const normalizedSiruta = params.siruta.trim()
 
@@ -71,14 +74,21 @@ export const statisticsTerritoryHubQueryOptions = (params: {
     enabled: (params.enabled ?? true) && normalizedSiruta.length > 0,
     staleTime: STATISTICS_STALE_TIME.figures,
     retry: statisticsRetry,
+    ...(params.initialData ? { initialData: params.initialData } : {}),
   })
 }
 
 export function useStatisticsTerritoryHub(params: {
   siruta: string
   enabled?: boolean
+  initialData?: StatisticsTerritoryHubResult
 }) {
   return useQuery(statisticsTerritoryHubQueryOptions(params))
+}
+
+/** What a client-side navigation to a territory starts reading before the page mounts. */
+export function prefetchStatisticsTerritoryHub(queryClient: QueryClient, siruta: string): Promise<void> {
+  return queryClient.prefetchQuery(statisticsTerritoryHubQueryOptions({ siruta }))
 }
 
 export function useDatasetRequest() {

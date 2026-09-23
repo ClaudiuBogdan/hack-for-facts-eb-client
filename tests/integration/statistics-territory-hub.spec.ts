@@ -40,16 +40,19 @@ test.describe('Territory hub', () => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
+    // „MUNICIPIUL CLUJ-NAPOCA" on the wire; the place, then its kind, on the page.
     await expect(
-      page.getByRole('heading', { level: 1, name: /MUNICIPIUL CLUJ-NAPOCA/i }),
+      page.getByRole('heading', { level: 1, name: 'Cluj-Napoca' }),
     ).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('municipiu', { exact: true })).toBeVisible()
 
     // Hierarchy breadcrumb: comună → județ → România.
     await expect(page.getByText(/județul Cluj/).first()).toBeVisible()
     await expect(page.getByRole('link', { name: 'România' })).toBeVisible()
 
-    // Exact counts — never a clamped-page ratio.
-    await expect(page.getByText(/1\.898 din 1\.898/)).toBeVisible()
+    // What the page holds for THIS place, never a fact about the whole catalog.
+    await expect(page.getByText(/\d+ indicatori cu date/)).toBeVisible()
+    await expect(page.getByText(/date până în/)).toBeVisible()
 
     // Benchmark line on a headline tile (county + national references).
     await expect(page.getByText(/Județ:/).first()).toBeVisible()
@@ -66,7 +69,7 @@ test.describe('Territory hub', () => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
     await expect(
-      page.getByRole('heading', { level: 1, name: /MUNICIPIUL CLUJ-NAPOCA/i }),
+      page.getByRole('heading', { level: 1, name: 'Cluj-Napoca' }),
     ).toBeVisible({ timeout: 15000 })
     await page.waitForTimeout(1500)
 
@@ -79,7 +82,7 @@ test.describe('Territory hub', () => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
     await expect(
-      page.getByRole('heading', { level: 1, name: /MUNICIPIUL CLUJ-NAPOCA/i }),
+      page.getByRole('heading', { level: 1, name: 'Cluj-Napoca' }),
     ).toBeVisible({ timeout: 15000 })
 
     await page.locator('#statistics-hub-period').click()

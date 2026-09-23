@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { formatHubPeriod } from '../lib/hub-format'
 import { territoryHubFixture } from '../test/territory-hub-fixtures'
 import { StatisticsTerritoryHubPage } from './statistics-territory-hub-page'
 import {
-  createPartialTerritoryHub,
   createTerritoryHubQueryStub,
+  createTerritoryHubWithoutBenchmarks,
 } from '../test/statistics-test-utils'
 
 const { useStatisticsTerritoryHubMock } = vi.hoisted(() => ({
@@ -16,8 +17,7 @@ vi.mock('../hooks/use-statistics', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../hooks/use-statistics')>()
   return {
     ...actual,
-    useStatisticsTerritoryHub: (params: unknown) =>
-      useStatisticsTerritoryHubMock(params),
+    useStatisticsTerritoryHub: (params: unknown) => useStatisticsTerritoryHubMock(params),
   }
 })
 
@@ -27,7 +27,7 @@ vi.mock('@lingui/react/macro', () => ({
     i18n: {
       locale: 'ro',
       _: (message: string | { readonly id: string; readonly message?: string }) =>
-        typeof message === 'string' ? message : message.message ?? message.id,
+        typeof message === 'string' ? message : (message.message ?? message.id),
     },
   }),
 }))
@@ -45,19 +45,16 @@ vi.mock('@tanstack/react-router', () => ({
   }: {
     readonly children: ReactNode
     readonly to: string
-    readonly params?: { readonly siruta?: string }
-    readonly search?: Record<string, string>
+    readonly params?: Readonly<Record<string, string>>
+    readonly search?: Readonly<Record<string, unknown>>
   }) => {
-    let href =
-      typeof to === 'string' && params?.siruta
-        ? to.replace('$siruta', params.siruta)
-        : to
-
+    let href = to
+    for (const [key, value] of Object.entries(params ?? {})) href = href.replace(`$${key}`, value)
     if (search && Object.keys(search).length > 0) {
-      const query = new URLSearchParams(search).toString()
-      href = `${href}?${query}`
+      const query = new URLSearchParams()
+      for (const [key, value] of Object.entries(search)) query.set(key, JSON.stringify(value))
+      href = `${href}?${query.toString()}`
     }
-
     return (
       <a href={href} {...props}>
         {children}
@@ -66,23 +63,28 @@ vi.mock('@tanstack/react-router', () => ({
   },
 }))
 
+function mount(search: Parameters<typeof StatisticsTerritoryHubPage>[0]['search'] = {}, siruta = '54975') {
+  return render(<StatisticsTerritoryHubPage siruta={siruta} search={search} />)
+}
+
 describe('StatisticsTerritoryHubPage', () => {
   beforeEach(() => {
+    navigateMock.mockReset()
     useStatisticsTerritoryHubMock.mockImplementation(({ siruta }: { siruta: string }) =>
-      createTerritoryHubQueryStub({
-        data: territoryHubFixture(siruta),
-      }),
+      createTerritoryHubQueryStub({ data: territoryHubFixture(siruta) }),
     )
   })
 
-  it('renders territory identity, coverage, indicator values, and related links', () => {
-    render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
+  it('names the place as a reader spells it, counts its indicators, and draws every tile state', () => {
+    mount()
 
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Municipiul Cluj-Napoca' }),
-    ).toBeInTheDocument()
-    expect(screen.getAllByText(/54975/).length).toBeGreaterThan(0)
-    expect(screen.getByText(/1\.915 din 1\.916 seturi cu date disponibile/)).toBeInTheDocument()
+    // „Municipiul Cluj-Napoca" → the place, with its kind beside it.
+    expect(screen.getByRole('heading', { level: 1, name: 'Cluj-Napoca' })).toBeInTheDocument()
+    expect(screen.getByText('municipiu')).toBeInTheDocument()
+    expect(screen.getByText('SIRUTA 54975')).toBeInTheDocument()
+    // Four of the six fixture tiles carry a figure; the line says so, and up to when.
+    expect(screen.getByText('4 indicatori cu date')).toBeInTheDocument()
+    expect(screen.getByText('date până în 2024')).toBeInTheDocument()
     expect(screen.getAllByText(/estimat/).length).toBeGreaterThan(0)
     expect(
       screen.getByText('Setul există în catalog, dar observațiile nu sunt încă încărcate.'),
@@ -91,41 +93,44 @@ describe('StatisticsTerritoryHubPage', () => {
       screen.getByText('Nu există observații pentru acest teritoriu în setul curent.'),
     ).toBeInTheDocument()
     expect(screen.getByText('Vezi și în alte domenii')).toBeInTheDocument()
+    expect(document.title).toContain('Cluj-Napoca')
   })
 
-  it('opens the source provenance drawer from a headline tile', async () => {
-    render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
+  it('opens the provenance drawer from a headline tile, named by its matrix', async () => {
+    mount()
 
     const labourTile = screen
       .getByRole('heading', { level: 3, name: 'Numărul mediu al salariaților' })
       .closest('article')
     expect(labourTile).not.toBeNull()
-    fireEvent.click(within(labourTile!).getByRole('button', { name: 'Sursă' }))
+    fireEvent.click(within(labourTile!).getByRole('button', { name: 'Sursă: Numărul mediu al salariaților' }))
 
     expect(await screen.findByText('Proveniență INS')).toBeInTheDocument()
-    expect(screen.getByText('INS statistical indicators')).toBeInTheDocument()
+    // The source is INS Tempo — never an internal registry title.
+    expect(screen.getAllByText('INS Tempo').length).toBeGreaterThan(0)
+    expect(screen.queryByText('INS statistical indicators')).not.toBeInTheDocument()
     expect(screen.getAllByText(/FOM104D/).length).toBeGreaterThan(0)
-    expect(
-      screen.getByRole('link', { name: /Deschide matricea în INS Tempo/i }),
-    ).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Deschide matricea în INS Tempo/i })).toHaveAttribute(
       'href',
       expect.stringContaining('ind=FOM104D'),
     )
   })
 
-  it('defaults the period select to the latest period', () => {
-    render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
+  it('names every row action for assistive tech', () => {
+    mount()
+    expect(screen.getByRole('button', { name: 'Sursă: Populația după domiciliu la 1 ianuarie' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Compară Populația după domiciliu la 1 ianuarie' })).toBeInTheDocument()
+  })
 
-    expect(screen.getByLabelText('Filtru perioadă')).toHaveTextContent(
-      'Ultima perioadă',
-    )
+  it('offers the years the territory has figures for, latest first, and defaults to the latest period', () => {
+    mount()
+
+    expect(screen.getByLabelText('Filtru perioadă')).toHaveTextContent('Ultima perioadă')
     expect(screen.queryByText(/^Filtrat:/)).not.toBeInTheDocument()
   })
 
   it('reflects the active period from the URL without a second fetch', () => {
-    render(
-      <StatisticsTerritoryHubPage siruta="54975" search={{ period: '2023' }} />,
-    )
+    mount({ period: '2023' })
 
     expect(screen.getByLabelText('Filtru perioadă')).toHaveTextContent('2023')
     expect(screen.getByText('Filtrat: 2023')).toBeInTheDocument()
@@ -134,52 +139,58 @@ describe('StatisticsTerritoryHubPage', () => {
     // transform, so switching periods must never refetch. If `period` ever
     // leaks back into the hook params it re-enters the query key.
     const distinctParams = new Set(
-      useStatisticsTerritoryHubMock.mock.calls.map((call: unknown[]) =>
-        JSON.stringify(call[0]),
-      ),
+      useStatisticsTerritoryHubMock.mock.calls.map((call: unknown[]) => JSON.stringify(call[0])),
     )
-    expect([...distinctParams]).toEqual([
-      JSON.stringify({ siruta: '54975', enabled: true }),
-    ])
+    expect([...distinctParams]).toEqual([JSON.stringify({ siruta: '54975', enabled: true })])
   })
 
   it('re-anchors indicator tiles to the selected period', () => {
-    render(
-      <StatisticsTerritoryHubPage siruta="54975" search={{ period: '2021' }} />,
-    )
+    mount({ period: '2021' })
 
     // POP107D has no 2022 observation in the fixture, so a 2021 selection must
     // show 2021 data rather than the latest value.
     expect(screen.getAllByText(/2021/).length).toBeGreaterThan(0)
   })
 
-  it('shows a not-found state when the hub query succeeds with null data', () => {
-    useStatisticsTerritoryHubMock.mockReturnValue(
-      createTerritoryHubQueryStub({
-        data: null,
-      }),
-    )
+  it('says which year a series has no cell for, in that series’ cadence, and keeps compare', () => {
+    // FOM104D ends in 2023 while POP107D reaches 2024.
+    mount({ period: '2024' })
 
-    render(<StatisticsTerritoryHubPage siruta="999999" search={{}} />)
-
-    expect(screen.getByText('Teritoriu negăsit')).toBeInTheDocument()
-    expect(
-      screen.getByText('Nu am găsit un teritoriu INS pentru acest SIRUTA.'),
-    ).toBeInTheDocument()
+    const labourTile = screen
+      .getByRole('heading', { level: 3, name: 'Numărul mediu al salariaților' })
+      .closest('article')!
+    expect(labourTile).toHaveTextContent('Nicio valoare pentru 2024. Seria este anual.')
+    expect(within(labourTile).getByRole('link', { name: /^Compară/ })).toBeInTheDocument()
+    expect(screen.queryByText('Nu există observații pentru acest teritoriu în setul curent.')).toBeInTheDocument()
   })
 
-  it('shows a partial coverage note when hub.partial is true', () => {
+  it('shows a not-found state when the hub query succeeds with null data', () => {
+    useStatisticsTerritoryHubMock.mockReturnValue(createTerritoryHubQueryStub({ data: null }))
+
+    mount({}, '999999')
+
+    expect(screen.getByText('Teritoriu negăsit')).toBeInTheDocument()
+    expect(screen.getByText('Nu am găsit un teritoriu INS pentru acest SIRUTA.')).toBeInTheDocument()
+  })
+
+  it('says when the county and national references could not be read, without hiding the figures', () => {
     useStatisticsTerritoryHubMock.mockReturnValue(
-      createTerritoryHubQueryStub({
-        data: createPartialTerritoryHub('54975'),
-      }),
+      createTerritoryHubQueryStub({ data: createTerritoryHubWithoutBenchmarks('54975') }),
     )
 
-    render(<StatisticsTerritoryHubPage siruta="54975" search={{}} />)
+    mount()
 
-    expect(
-      screen.getByText('Rezultate parțiale — unele serii pot lipsi.'),
-    ).toBeInTheDocument()
+    const note = screen.getByText(/Reperele pe județ și pe țară nu s-au încărcat/)
+    expect(note).toHaveAttribute('role', 'status')
+    expect(screen.getByRole('heading', { level: 3, name: 'Numărul mediu al salariaților' })).toBeInTheDocument()
+  })
+
+  it('seeds the query with the hub the loader read', () => {
+    const hub = territoryHubFixture('54975')!
+    render(<StatisticsTerritoryHubPage siruta="54975" search={{}} initialHub={hub} />)
+    expect(useStatisticsTerritoryHubMock).toHaveBeenCalledWith(
+      expect.objectContaining({ siruta: '54975', initialData: hub }),
+    )
   })
 })
 
@@ -189,25 +200,26 @@ describe('StatisticsTerritoryHubPage — search hygiene', () => {
   })
 
   it('shows the honest notice for a period no series reports', () => {
-    render(
-      <StatisticsTerritoryHubPage siruta="54975" search={{ period: '2005' }} />,
-    )
+    mount({ period: '2005' })
 
-    expect(
-      screen.getByText(/Perioada 2005 nu este disponibilă în rezultatele încărcate/),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /Șterge filtrul de perioadă/ }),
-    ).toBeInTheDocument()
+    expect(screen.getByText(/Perioada 2005 nu este disponibilă în rezultatele încărcate/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Șterge filtrul de perioadă/ })).toBeInTheDocument()
+  })
+
+  it('names a finer period from an old link as the rows name periods', () => {
+    mount({ period: '2023-05' })
+    // „mai 2023" in Romanian; the formatter follows the environment's locale here.
+    const may = formatHubPeriod('2023-05')
+    expect(may).not.toBe('2023-05')
+    expect(screen.getByText(`Filtrat: ${may}`)).toBeInTheDocument()
+    expect(screen.getByText(`Perioada ${may} nu este disponibilă în rezultatele încărcate`)).toBeInTheDocument()
   })
 
   it('gates the query OFF for a malformed SIRUTA (never a request)', () => {
-    render(<StatisticsTerritoryHubPage siruta="nu-e-siruta" search={{}} />)
+    mount({}, 'nu-e-siruta')
 
     expect(screen.getByText('Teritoriu negăsit')).toBeInTheDocument()
-    expect(useStatisticsTerritoryHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({ enabled: false }),
-    )
+    expect(useStatisticsTerritoryHubMock).toHaveBeenCalledWith(expect.objectContaining({ enabled: false }))
   })
 
   it('reads a raw-leaked NUMBER period defensively (no crash, treated absent)', () => {

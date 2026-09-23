@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parsePublishedText, stripSourceMarker } from './published-text'
+import { parsePublishedText, publishedTextExcerpt, publishedTextPlain, stripSourceMarker } from './published-text'
 
 describe('parsePublishedText', () => {
   it('keeps plain text verbatim and normalizes CRLF', () => {
@@ -46,5 +46,27 @@ describe('stripSourceMarker', () => {
     ).toBe('Cercetarea statistica privind costul fortei de munca')
     expect(stripSourceMarker('Surse administrative')).toBe('Surse administrative')
     expect(stripSourceMarker('A <<1>> si B <<2>>')).toBe('A <<1>> si B')
+  })
+})
+
+describe('publishedTextPlain and publishedTextExcerpt', () => {
+  const definition =
+    'Capitolul 7 „Conturile de patrimoniu" <a href="https://eur-lex.europa.eu/x" target="_blank"> https://eur-lex.europa.eu/x </a>\r\nși <td>restul</td> textului.'
+
+  it('reads the words alone: a link is its label, a break a space, a stray tag nothing', () => {
+    expect(publishedTextPlain(definition)).toBe(
+      'Capitolul 7 „Conturile de patrimoniu" https://eur-lex.europa.eu/x și restul textului.',
+    )
+  })
+
+  it('cuts an excerpt at a word and marks the cut, and leaves a short text whole', () => {
+    const excerpt = publishedTextExcerpt(definition, 40)
+    expect(excerpt).toBe('Capitolul 7 „Conturile de patrimoniu"…')
+    expect(excerpt.length).toBeLessThanOrEqual(41)
+    expect(publishedTextExcerpt('Scurt.', 40)).toBe('Scurt.')
+  })
+
+  it('cuts a text with no early word boundary at the length itself', () => {
+    expect(publishedTextExcerpt('a'.repeat(50), 20)).toBe(`${'a'.repeat(20)}…`)
   })
 })

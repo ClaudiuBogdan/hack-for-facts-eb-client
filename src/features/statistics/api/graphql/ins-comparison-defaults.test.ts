@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import { fetchInsComparisonDefaults } from './ins-comparison-defaults'
+import { buildInsComparisonDefaultsQuery, fetchInsComparisonDefaults } from './ins-comparison-defaults'
 const dataset = {
   id: 'TEST',
   code: 'TEST',
@@ -158,5 +158,44 @@ describe('native comparison defaults operation', () => {
       fetchInsComparisonDefaults({ ...request, signal: controller.signal }),
     ).rejects.toThrow()
     expect(graphqlQuery).not.toHaveBeenCalled()
+  })
+})
+
+/** The server's document cap: past it a read is refused with HTTP 400. */
+const SERVER_FIELD_CAP = 500
+
+/**
+ * How many field selections a document asks for, counted the way the server
+ * does: every name in a selection set, nested ones included, an alias and
+ * its field as one. Arguments and variable declarations are not fields.
+ */
+function countSelectionFields(query: string): number {
+  const withoutArguments = query
+    .replace(/^\s*query\s+\w+\s*\([^)]*\)/u, '')
+    .replace(/\([^()]*\)/gu, '')
+  const names = withoutArguments.match(/[A-Za-z_][A-Za-z0-9_]*/gu) ?? []
+  const aliases = withoutArguments.match(/[A-Za-z_][A-Za-z0-9_]*\s*:/gu) ?? []
+  return names.length - aliases.length
+}
+
+describe('buildInsComparisonDefaultsQuery', () => {
+  const six = ['179132', '54975', '155243', '95060', '60419', '69900'].map((sirutaCode) => ({ sirutaCode }))
+
+  it('asks for six territories in one document under the server’s field cap', () => {
+    // „Cele mai mari 6 orașe": the preset the exhaustive per-alias selection broke.
+    const { query, variables } = buildInsComparisonDefaultsQuery('POP107D', six)
+    expect(countSelectionFields(query)).toBeLessThanOrEqual(SERVER_FIELD_CAP)
+    expect(variables).toMatchObject({ code: 'POP107D', codes: ['POP107D'], entity0: { sirutaCode: '179132' }, entity5: { sirutaCode: '69900' } })
+    expect(query).toContain('$entity5: InsEntitySelectorInput!')
+    expect(query.match(/insLatestDatasetValues/g)).toHaveLength(6)
+  })
+
+  it('still reads what the certification and the defaults need from each alias, and no prose', () => {
+    const { query } = buildInsComparisonDefaultsQuery('POP107D', six.slice(0, 1))
+    const alias = query.split('d0:')[1] ?? ''
+    for (const field of ['matchStrategy', 'hasData', 'geographicWitnesses', 'dimension_count', 'metadata', 'classification_type { code }', 'classifications { id type_code code }', 'unit { code symbol name_ro }', 'dimensions\n'])
+      expect(alias).toContain(field)
+    expect(alias).not.toContain('definition_ro')
+    expect(alias).not.toContain('type_name_ro')
   })
 })

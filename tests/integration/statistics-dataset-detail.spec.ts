@@ -383,6 +383,46 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     ).toBeVisible()
   })
 
+  test('a window past the series shows the whole span, says so, and is cleared from the note', async ({
+    page,
+  }) => {
+    await page.goto(`${ROUTE}?din=2030&pana=2035`)
+    await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('.recharts-responsive-container')).toBeVisible()
+    const note = page.getByRole('status').filter({ hasText: /Anii 2030–2035 din adresă sunt în afara seriei/ })
+    await expect(note).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Interval de ani: \d{4}–\d{4} \(implicit\)/ })).toBeVisible()
+    await note.getByRole('button', { name: 'Șterge anii din adresă' }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.has('din')).toBe(false)
+    await expect(note).toHaveCount(0)
+  })
+
+  test('a territory the matrix does not publish gets an empty state with its own way out', async ({
+    page,
+  }) => {
+    // A region into a county series: the read succeeds with no row.
+    await page.route('**/graphql', async (route) => {
+      const body = route.request().postDataJSON()
+      if (
+        !String(body.query).includes('query InsSourceObservations') ||
+        !(body.variables?.filter?.territoryCodes ?? []).includes('RO11')
+      )
+        return route.fallback()
+      const fixture = structuredClone(sourceFixture)
+      fixture.data.insObservations.nodes = []
+      fixture.data.insObservations.pageInfo = { totalCount: 0, hasNextPage: false, hasPreviousPage: false }
+      await route.fulfill({ json: fixture })
+    })
+    await page.goto(`${ROUTE}?teritoriu=${encodeURIComponent('cod:RO11')}`)
+    await expect(
+      page.getByText('INS nu publică această serie pentru teritoriul din adresă.'),
+    ).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Alege ce vrei să vezi')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Șterge filtrul teritorial' }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.has('teritoriu')).toBe(false)
+    await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
+  })
+
   test('an unknown code renders not-found, not an error page', async ({
     page,
   }) => {

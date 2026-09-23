@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { Check, Plus } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import { countyNameRo } from '@/lib/territory-counties'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -59,11 +60,14 @@ export function ComparisonIndicatorPicker({
   const [term, setTerm] = useState<string | undefined>(undefined)
   const active = (term ?? '').trim().length >= COMPARISON_DATASET_SEARCH_MIN_LENGTH
   const search = useComparisonDatasetSearch(term ?? '')
+  // An address may carry the code in lower case; the page reads it normalised.
+  const chosen = selectedCode === undefined ? undefined : normalizeInsDatasetCode(selectedCode)
+  const beyondPage = Math.max(0, search.totalCount - search.datasets.length)
 
   const row = (code: string, title: string, meta: string) => (
     <li key={code}>
-      <button type="button" onClick={() => onSelect(code)} aria-pressed={code === selectedCode} className={ROW_CLASS}>
-        <Check className={cn('mt-0.5 size-4 shrink-0 text-primary', code === selectedCode ? 'opacity-100' : 'opacity-0')} aria-hidden="true" />
+      <button type="button" onClick={() => onSelect(code)} aria-pressed={code === chosen} className={ROW_CLASS}>
+        <Check className={cn('mt-0.5 size-4 shrink-0 text-primary', code === chosen ? 'opacity-100' : 'opacity-0')} aria-hidden="true" />
         <span className="min-w-0 flex-1">
           <span className="block text-pretty leading-snug text-foreground">{title}</span>
           <MonoLabel className="mt-1 block text-muted-foreground">{meta}</MonoLabel>
@@ -108,6 +112,15 @@ export function ComparisonIndicatorPicker({
                 row(dataset.code, datasetDisplayName(dataset, i18n.locale), meta(dataset.code, dataset.hasUatData)),
               )}
             </ul>
+            {beyondPage > 0 ? (
+              <PickerNote>
+                {plural(beyondPage, {
+                  one: 'Și încă unul — restrânge căutarea.',
+                  few: 'Și încă # — restrânge căutarea.',
+                  other: 'Și încă # — restrânge căutarea.',
+                })}
+              </PickerNote>
+            ) : null}
           </PickerList>
         )}
       </div>

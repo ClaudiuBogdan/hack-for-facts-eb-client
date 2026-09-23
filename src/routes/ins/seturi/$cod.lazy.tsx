@@ -1,5 +1,9 @@
 import { useCallback } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { EmptyState } from '@/components/ui/empty-state'
+import { StatisticsBackLink } from '@/features/statistics/components/statistics-back-link'
 import {
   detailScopeKey,
   type DetailSearchPatch,
@@ -8,6 +12,7 @@ import { StatisticsDatasetDetailPage } from '@/features/statistics/pages/statist
 
 export const Route = createLazyFileRoute('/ins/seturi/$cod')({
   component: StatisticsDatasetDetailRoutePage,
+  notFoundComponent: StatisticsDatasetNotFound,
 })
 
 function StatisticsDatasetDetailRoutePage() {
@@ -46,5 +51,22 @@ function StatisticsDatasetDetailRoutePage() {
       {...(scopeMatches && tier0 ? { initialTier0: tier0 } : {})}
       {...(scopeMatches && series ? { initialSeries: series } : {})}
     />
+  )
+}
+
+/** An unknown matrix code: the server answers 404 with the page's own frame. */
+function StatisticsDatasetNotFound() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-6">
+        <StatisticsBackLink to="/ins/seturi">
+          <Trans>Înapoi la seturi de date</Trans>
+        </StatisticsBackLink>
+        <EmptyState
+          title={t`Set de date negăsit`}
+          description={t`Nu am găsit o matrice INS cu acest cod.`}
+        />
+      </div>
+    </div>
   )
 }

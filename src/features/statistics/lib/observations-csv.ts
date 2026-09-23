@@ -54,7 +54,11 @@ export function buildObservationsCsv(params: {
     ...dimensions.flatMap((d) => {
       const member = row.classifications.find(
         (c) => c.type_code === `D${d.index}`,
-      )!
+      )
+      // `validatedSourceRows` has certified every declared axis on every
+      // row; a miss here is a broken contract, named rather than crashed on.
+      if (!member)
+        throw new Error(`Source row ${row.id} carries no member for axis D${d.index}`)
       return [JSON.stringify(member.code), JSON.stringify(member)]
     }),
     JSON.stringify(row.unit),
@@ -73,14 +77,18 @@ export function buildObservationsCsv(params: {
   }
 }
 
-/** `POP107D-2024-01-31.csv` — dataset code plus the day of export. */
-export function buildObservationsCsvFilename(datasetCode: string): string {
-  return `${datasetCode}-${new Date().toISOString().slice(0, 10)}.csv`
+/**
+ * `POP107D-2024-01-31.csv` — dataset code plus the day of export, on the
+ * reader's own calendar: an export at 01:00 in Bucharest is not yesterday's.
+ */
+export function buildObservationsCsvFilename(datasetCode: string, now = new Date()): string {
+  const pad = (part: number) => String(part).padStart(2, '0')
+  return `${datasetCode}-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.csv`
 }
 
 /** Downloads a CSV string with a UTF-8 BOM so Excel reads diacritics. */
 export function downloadObservationsCsv(csv: string, filename: string): void {
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type {
+  InsChartPeriodicity,
   InsSourceDescriptor,
   InsSourceGeoPairs,
 } from '@/lib/ins/source-contract'
@@ -250,20 +251,6 @@ export interface StatisticsDatasetSummary {
   readonly contextPath: string | null
 }
 
-/**
- * Coverage summary for the 27-available-vs-1,898-catalog ribbon.
- *
- * Counts are derived from the live catalog `pageInfo.totalCount` + per-dataset
- * data status when live, or from the centralized docs fallback constants when
- * mocking (see `src/features/statistics/lib/coverage.ts`).
- */
-export interface StatisticsCoverageSummary {
-  readonly availableDatasetCount: number
-  readonly totalDatasetCount: number
-  readonly catalogOnlyDatasetCount: number
-  readonly partial: boolean
-}
-
 /** One row of the landing territory search. */
 export interface StatisticsTerritorySearchRow {
   readonly code: string
@@ -295,8 +282,15 @@ export interface StatisticsTerritoryIdentity {
   readonly level: InsTerritoryLevel | null
   readonly countyName: string | null
   readonly countyCode: string | null
-  /** True when name/level had to be inferred from a fallback map, not the live API. */
+  /** True when the live record carried no name: the page says so rather than invent one. */
   readonly enrichedFallback: boolean
+}
+
+/** One published cell of a territory indicator: what a period filter re-anchors to. */
+export interface StatisticsTileObservation {
+  readonly time_period: InsTimePeriod
+  readonly value: string | null
+  readonly valueStatus: string | null
 }
 
 /** Single headline indicator tile on the territory dashboard. */
@@ -306,6 +300,10 @@ export interface StatisticsIndicatorTile {
   readonly datasetNameEn: string | null
   readonly periodicity: readonly string[]
   readonly dataStatus: StatisticsDatasetDataStatus
+  /**
+   * `period-missing`: the series has rows, none at the period the address
+   * asks for; `unavailable`: that period lies before the loaded history.
+   */
   readonly tileState:
     | 'available'
     | 'catalog-only'
@@ -313,33 +311,27 @@ export interface StatisticsIndicatorTile {
     | 'ambiguous'
     | 'unavailable'
     | 'period-ambiguous'
-  /** Explicit server history bound; absent only in mock fixtures. */
-  readonly truncated?: boolean
-  readonly geographicWitnesses?: readonly InsSourceGeoPairs[]
-  readonly sourceObservations?: readonly NativeInsObservation[]
-  readonly sparklineUnavailable?: boolean
+    | 'period-missing'
+  /** The server capped this series' history (200 rows); older periods exist unseen. */
+  readonly truncated: boolean
+  /**
+   * Every published cell, oldest first — what a period filter chooses from
+   * and what the sparkline is drawn from, so the history travels once.
+   */
+  readonly observations: readonly StatisticsTileObservation[]
+  /**
+   * The cadence the line is drawn at: the headline value's own, when a
+   * chart can draw it; null when it cannot (a semestrial series) or there
+   * is no headline value.
+   */
+  readonly sparklineCadence: InsChartPeriodicity | null
   readonly value: string | null
   readonly valueStatus: string | null
   readonly unitSymbol: string | null
   readonly unitNameRo: string | null
+  readonly unitNameEn: string | null
   readonly latestPeriod: string | null
   readonly latestYear: number | null
-  /**
-   * Sparse sparkline points ordered chronologically. Gaps are represented by
-   * `null` values (never interpolated) so charts can render honest breaks.
-   */
-  readonly sparkline: readonly (readonly [InsTimePeriod, string | null])[]
-}
-
-/** A cross-domain related link to an existing platform route. */
-export interface StatisticsRelatedLink {
-  readonly label: string
-  readonly to: string
-  readonly params: Readonly<Record<string, string>>
-  readonly joinBasis: 'siruta' | 'cui' | 'county'
-  readonly joinValue: string
-  readonly enabled: boolean
-  readonly disabledReason: string | null
 }
 
 /** County + national reference values for one hub tile's dataset. */
@@ -352,14 +344,12 @@ export interface StatisticsTileBenchmark {
 export interface StatisticsTerritoryHubResult {
   readonly identity: StatisticsTerritoryIdentity
   readonly tiles: readonly StatisticsIndicatorTile[]
-  readonly availableDatasetCodes: readonly string[]
-  /** Null when the counts/benchmarks POST failed — the ribbon hides. */
-  readonly coverage: StatisticsCoverageSummary | null
-  readonly relatedLinks: readonly StatisticsRelatedLink[]
+  /** The most recent period any of the tiles publishes. */
   readonly latestDataPeriod: string | null
-  readonly partial: boolean
   /** dataset code → county/national benchmark, for the headline datasets. */
   readonly benchmarks: Readonly<Record<string, StatisticsTileBenchmark>>
+  /** The references' read failed; the page says so rather than show none silently. */
+  readonly benchmarksUnavailable: boolean
 }
 
 /** How the server picked a "latest value" observation. */
@@ -512,21 +502,26 @@ export interface StatisticsDatasetTier0 {
 export interface StatisticsRelatedDataset {
   readonly code: string
   readonly nameRo: string | null
+  readonly nameEn: string | null
   readonly dataStatus: StatisticsDatasetDataStatus
 }
 
-/** Detail POST B payload: the resolved series + the related-datasets probe. */
+/** Detail POST B payload: one cell's source vector, or a bounded inspection page. */
 export interface StatisticsDatasetSeries {
   readonly readMode?: 'inspection' | 'complete'
   readonly inspectionTruncated?: boolean
   readonly nativeContract?: 'native-v1'
-  /** Present on complete native vectors; absent only in mock data. */
+  /** The publication the rows were read under. Optional only for the legacy consumers' sake. */
   readonly sourceDescriptor?: InsSourceDescriptor
   readonly observations: readonly InsObservation[]
   readonly totalCount: number
-  readonly related: readonly StatisticsRelatedDataset[]
-  /** Catalog size of the dataset's context, self included; null when unprobed. */
-  readonly relatedTotalCount: number | null
+}
+
+/** The matrices of one INS context, the dataset itself included. */
+export interface StatisticsRelatedDatasets {
+  readonly datasets: readonly StatisticsRelatedDataset[]
+  /** Catalog size of the context, self included; null when the server sent no page. */
+  readonly totalCount: number | null
 }
 
 // ---------------------------------------------------------------------------

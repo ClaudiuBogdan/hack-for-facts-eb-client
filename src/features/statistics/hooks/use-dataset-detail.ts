@@ -1,71 +1,41 @@
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
-import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useInfiniteQuery,
+  useQueries,
+  useQuery,
+  type QueryClient,
+} from '@tanstack/react-query'
 import type {
+  InsDatasetDetails,
   InsDimensionValue,
   InsDimensionValueConnection,
   InsEntitySelectorInput,
-  InsObservationFilterInput,
 } from '@/schemas/ins'
 import type {
-  StatisticsDatasetSeries,
+  StatisticsDatasetDetailSearch,
   StatisticsDatasetTier0,
+  StatisticsLatestValue,
 } from '@/schemas/statistics'
 import {
-  fetchDatasetSeries,
   fetchDatasetTier0,
   fetchDimensionValuesPage,
+  fetchRelatedDatasets,
 } from '../api/dataset-detail-api'
+import { detailScopeKey } from '../lib/dataset-selection'
+import { getDatasetDataStatus } from '../lib/dataset-status'
+import {
+  resolveDatasetSeries,
+  type ResolvedDatasetSeries,
+} from '../lib/detail-series-resolution'
+import { detailBootstrapEntity } from '../lib/source-selection'
 import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
 
 /**
- * One page of a dimension's options. Always paged and always server-searched:
- * a classification dimension can hold thousands of hierarchical values, so
- * there is no load-all path to fall back to.
- */
-export function useDimensionValues(params: {
-  readonly datasetCode: string
-  readonly dimensionIndex: number
-  readonly nativePublicationKey?: string
-  readonly search: string | undefined
-  readonly limit: number
-  readonly offset: number
-  readonly enabled: boolean
-}) {
-  const search = params.search?.trim() || undefined
-  const datasetCode = normalizeInsDatasetCode(params.datasetCode)
-
-  return useQuery<InsDimensionValueConnection>({
-    queryKey: statisticsKeys.dimensionValues([
-      params.nativePublicationKey ?? null,
-      datasetCode,
-      params.dimensionIndex,
-      search ?? '',
-      params.limit,
-      params.offset,
-    ]),
-    queryFn: ({ signal }) =>
-      fetchDimensionValuesPage({
-        expectedPublicationKey: params.nativePublicationKey,
-        datasetCode,
-        dimensionIndex: params.dimensionIndex,
-        search,
-        limit: params.limit,
-        offset: params.offset,
-        signal,
-      }),
-    enabled: params.enabled && datasetCode.length > 0,
-    staleTime: STATISTICS_STALE_TIME.members,
-    placeholderData: () => undefined,
-    // The list offers its own retry the moment a page fails.
-    retry: false,
-  })
-}
-
-/**
- * A dimension's options as one growing list: the pages `useDimensionValues`
- * reads one at a time, appended as the reader scrolls. The panel virtualises
- * the rows, so a 3,000-locality axis costs the same to draw as a 3-row one;
- * what it never does is ask for the whole axis in one read.
+ * A dimension's options as one growing list: pages read one at a time,
+ * appended as the reader scrolls. The panel virtualises the rows, so a
+ * 3,000-locality axis costs the same to draw as a 3-row one; what it never
+ * does is ask for the whole axis in one read.
  *
  * The offset of the next page is the number of rows already held, not a
  * page counter: a server that returned a short page must not be asked to
@@ -114,59 +84,166 @@ export function useDimensionValuesInfinite(params: {
 }
 
 /**
- * Tier-0 (POST A): dataset + resolved latest. Keyed by code + entity so a
- * territory deep link resolves its own cell. The route loader supplies
- * `initialData` for the CURRENT scope (loaderDeps re-run it per navigation),
- * so in the normal flow this query never fetches client-side.
+ * Tier-0 (POST A): the dataset with its server-resolved latest cell, keyed
+ * by code and entity so a territory deep link resolves its own cell. One
+ * definition for the loader and the page, so the two never read under
+ * different keys.
  */
+/** Every tier-0 read of one matrix, whatever entity it was resolved for. */
+export function datasetTier0Reads(queryClient: QueryClient, code: string): readonly StatisticsDatasetTier0[] {
+  return queryClient
+    .getQueriesData<StatisticsDatasetTier0>({ queryKey: statisticsKeys.datasetTier0All(code) })
+    .flatMap(([, data]) => (data ? [data] : []))
+}
+
+export function datasetTier0QueryOptions(params: {
+  readonly code: string
+  readonly entity: InsEntitySelectorInput | null
+}) {
+  return queryOptions({
+    queryKey: statisticsKeys.datasetTier0(params.code, JSON.stringify(params.entity)),
+    queryFn: ({ signal }) =>
+      fetchDatasetTier0({ code: params.code, entity: params.entity, signal }),
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
+  })
+}
+
 export function useDatasetTier0(params: {
   readonly code: string
   readonly entity: InsEntitySelectorInput | null
-  readonly entityKey: string
   readonly initialData?: StatisticsDatasetTier0
 }) {
-  return useQuery<StatisticsDatasetTier0>({
-    queryKey: statisticsKeys.datasetTier0(params.code, params.entityKey),
-    queryFn: ({ signal }) =>
-      fetchDatasetTier0({ code: params.code, entity: params.entity, signal }),
+  const scope = statisticsKeys.datasetTier0All(params.code)
+  return useQuery({
+    ...datasetTier0QueryOptions(params),
     enabled: params.code.trim().length > 0,
-    staleTime: STATISTICS_STALE_TIME.catalog,
-    retry: statisticsRetry,
+    // The first pin moves the entity from national to none, which is a new
+    // key: the dataset it holds is the same one, so the header and the rail
+    // keep it while the resolved cell re-reads. The caller must not read the
+    // placeholder's `latest`, which belongs to the previous entity. Another
+    // matrix (a related set opened from the accordion) is another page: its
+    // header, definition and title must not stand in for the new one.
+    placeholderData: (previous, previousQuery) =>
+      previousQuery && scope.every((part, index) => previousQuery.queryKey[index] === part)
+        ? previous
+        : undefined,
     ...(params.initialData?.nativeContract === 'native-v1'
       ? { initialData: params.initialData }
       : {}),
   })
 }
 
-/** The resolved series + related datasets (POST B), keyed by the scope key. */
-export function useDatasetSeries(params: {
+/**
+ * The series an address resolves to (POST B, and the reads that decide it),
+ * keyed by the scope alone: the cell chosen along the way travels in the
+ * result, so two addresses that differ only in the cell they resolved to
+ * cannot share an entry.
+ */
+export function datasetSeriesQueryOptions(params: {
   readonly code: string
-  readonly scopeKey: string
-  readonly filter: InsObservationFilterInput
-  readonly contextCode: string | null
-  readonly inspection?: boolean
-  readonly enabled: boolean
-  readonly initialData?: StatisticsDatasetSeries
+  readonly search: StatisticsDatasetDetailSearch
+  readonly dataset: InsDatasetDetails
+  readonly latest: StatisticsLatestValue | null
 }) {
-  return useQuery<StatisticsDatasetSeries>({
-    queryKey: statisticsKeys.datasetSeries(params.code, params.scopeKey, params.inspection ? 'inspection' : 'complete'),
+  return queryOptions({
+    queryKey: statisticsKeys.datasetSeries(params.code, detailScopeKey(params.search)),
     queryFn: ({ signal }) =>
-      fetchDatasetSeries({
+      resolveDatasetSeries({
         code: params.code,
-        filter: params.filter,
-        contextCode: params.contextCode,
-        inspection: params.inspection,
+        search: params.search,
+        dataset: params.dataset,
+        latest: params.latest,
         signal,
       }),
-    enabled: params.enabled && params.code.trim().length > 0,
     staleTime: STATISTICS_STALE_TIME.catalog,
     retry: statisticsRetry,
-    ...(params.initialData?.nativeContract === 'native-v1' &&
-    (params.initialData.readMode ?? 'complete') ===
-      (params.inspection ? 'inspection' : 'complete')
+  })
+}
+
+export function useDatasetSeries(params: {
+  readonly code: string
+  readonly search: StatisticsDatasetDetailSearch
+  readonly dataset: InsDatasetDetails | null
+  readonly latest: StatisticsLatestValue | null
+  readonly enabled: boolean
+  readonly initialData?: ResolvedDatasetSeries
+}) {
+  const dataset = params.dataset
+  return useQuery({
+    // With no dataset yet there is nothing to resolve; the key still has to
+    // be the one the read will use, so the loader's prefetch is found.
+    ...datasetSeriesQueryOptions({
+      code: params.code,
+      search: params.search,
+      dataset: dataset ?? EMPTY_DATASET,
+      latest: params.latest,
+    }),
+    enabled: params.enabled && dataset !== null && params.code.trim().length > 0,
+    ...(params.initialData?.nativeContract === 'resolved-v1'
       ? { initialData: params.initialData }
       : {}),
   })
+}
+
+/** A stand-in for the options factory while the dataset is still unknown; never read. */
+const EMPTY_DATASET: InsDatasetDetails = {
+  id: '',
+  code: '',
+  periodicity: [],
+  dimension_count: 0,
+  has_uat_data: false,
+  has_county_data: false,
+  has_siruta: false,
+  dimensions: [],
+}
+
+/** The matrices sharing one INS context: a catalog fact, read once per context. */
+export function relatedDatasetsQueryOptions(contextCode: string) {
+  return queryOptions({
+    queryKey: statisticsKeys.relatedDatasets(contextCode),
+    queryFn: ({ signal }) => fetchRelatedDatasets({ contextCode, signal }),
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
+  })
+}
+
+export function useRelatedDatasets(contextCode: string | null) {
+  return useQuery({
+    ...relatedDatasetsQueryOptions(contextCode ?? ''),
+    enabled: contextCode !== null,
+  })
+}
+
+/**
+ * What a client-side navigation to the page starts reading before the page
+ * mounts: the dataset, then — once it is known — the series and the related
+ * catalog, under the keys the page's own hooks read. A failure here is not
+ * reported; the page's queries own that verdict and their retries.
+ */
+export async function prefetchDatasetDetail(
+  queryClient: QueryClient,
+  params: { readonly code: string; readonly search: StatisticsDatasetDetailSearch },
+): Promise<void> {
+  const entity = detailBootstrapEntity(params.search)
+  const tier0 = await queryClient.ensureQueryData(
+    datasetTier0QueryOptions({ code: params.code, entity }),
+  )
+  const dataset = tier0.dataset
+  if (!dataset || getDatasetDataStatus(dataset) === 'catalog-only') return
+  await Promise.all([
+    queryClient.prefetchQuery(
+      datasetSeriesQueryOptions({
+        code: params.code,
+        search: params.search,
+        dataset,
+        latest: tier0.latest,
+      }),
+    ),
+    dataset.context_code
+      ? queryClient.prefetchQuery(relatedDatasetsQueryOptions(dataset.context_code))
+      : Promise.resolve(),
+  ])
 }
 
 /** One pinned member whose label the fetched rows could not supply. */
@@ -220,10 +297,10 @@ export function sourceMemberLabelKey(lookup: SourceMemberLookup): string {
   return `${lookup.kind}:${lookup.dimensionIndex}:${lookup.code}`
 }
 
-async function findSourceMemberLabel(params: {
+export async function findSourceMemberLabel(params: {
   readonly datasetCode: string
   readonly lookup: SourceMemberLookup
-  readonly signal: AbortSignal
+  readonly signal?: AbortSignal
 }): Promise<string | null> {
   const { datasetCode, lookup, signal } = params
   const matches = (value: InsDimensionValue) =>

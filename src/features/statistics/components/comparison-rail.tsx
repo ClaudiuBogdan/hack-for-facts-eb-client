@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -7,7 +7,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
 import { cn } from '@/lib/utils'
-import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-series'
+import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-territories'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { ComparisonIndicatorPicker, ComparisonPlacePicker, type ComparisonPlaceSuggestion } from './comparison-pickers'
 
@@ -18,14 +18,20 @@ export interface ComparisonRailTerritory {
   readonly color: string
 }
 
-const POPOVER_CLASS = 'w-[24rem] max-w-[calc(100vw-2rem)] overflow-hidden p-0'
+/** The popover's width; the phone sheet spans the screen and must not carry it. */
+const POPOVER_CLASS = 'w-[24rem] max-w-[calc(100vw-2rem)] overflow-hidden'
 
 /**
  * The comparison's selection, as the detail page's rail: what is compared
  * (the indicator), where (up to six territories, each in its chart colour,
  * so the list is also the legend) and — folded away until wanted — which of
  * the indicator's series. Every row opens its own picker; on a phone the
- * picker is a sheet.
+ * picker is a sheet, named for what it picks.
+ *
+ * Removing a territory keeps the keyboard where it was: the focus moves to
+ * the next territory's remove button, the previous one's after the last,
+ * or „Adaugă un teritoriu" when none is left — rather than falling to the
+ * page top with the button that left.
  */
 export function ComparisonRail({
   indicator,
@@ -59,6 +65,19 @@ export function ComparisonRail({
   const [picking, setPicking] = useState<'indicator' | 'place' | null>(null)
   const full = territories.length >= MAX_COMPARISON_TERRITORIES
   const selected = new Set(territories.map((territory) => territory.token))
+  const removeButtons = useRef<Map<string, HTMLButtonElement>>(new Map())
+  const addButton = useRef<HTMLButtonElement>(null)
+  // The focus moves before the row leaves, inside the click: the router
+  // commits the new address after this handler returns, and a focused button
+  // that unmounts drops the focus to the page. Rows are keyed by token, so
+  // a neighbour's button — and the add button, which a removal never hides —
+  // survives the reload.
+  const removeTerritory = (index: number, token: string) => {
+    const neighbour = territories[index + 1] ?? territories[index - 1]
+    const target = neighbour ? removeButtons.current.get(neighbour.token) : addButton.current
+    target?.focus()
+    onRemove(token)
+  }
 
   return (
     <section aria-labelledby="comparison-selection-title" className="space-y-3">
@@ -78,7 +97,10 @@ export function ComparisonRail({
           open={picking === 'indicator'}
           onOpenChange={(open) => setPicking(open ? 'indicator' : null)}
           align="start"
-          className={POPOVER_CLASS}
+          className="p-0"
+          popoverClassName={POPOVER_CLASS}
+          title={t`Alege un indicator`}
+          description={t`Caută în catalogul INS sau alege unul dintre indicatorii des comparați.`}
           trigger={
             <button type="button" className={cn(statisticsTheme.scopeRailRow, 'items-start')}>
               <span className="flex min-w-0 flex-col items-start">
@@ -86,7 +108,13 @@ export function ComparisonRail({
                   <Trans>Indicator</Trans>
                 </span>
                 <span className={cn(statisticsTheme.scopeRailValue, 'line-clamp-3')}>
-                  {indicator.name ?? <span className="font-normal text-muted-foreground">{t`Alege un indicator`}</span>}
+                  {indicator.name ??
+                    (indicator.code ? (
+                      // The address names the matrix before its name is read: the code is what is known.
+                      <span className="font-mono font-normal">{indicator.code}</span>
+                    ) : (
+                      <span className="font-normal text-muted-foreground">{t`Alege un indicator`}</span>
+                    ))}
                 </span>
                 {indicator.meta ? <MonoLabel className="mt-1 text-muted-foreground">{indicator.meta}</MonoLabel> : null}
               </span>
@@ -115,7 +143,7 @@ export function ComparisonRail({
           </div>
           {territories.length > 0 ? (
             <ul className="mt-1.5 space-y-0.5" aria-label={t`Teritorii comparate`}>
-              {territories.map((territory) => (
+              {territories.map((territory, index) => (
                 <li key={territory.token} className="group flex min-h-9 items-center gap-2.5">
                   <span className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: territory.color }} aria-hidden="true" />
                   <span className="min-w-0 flex-1 text-sm font-medium leading-snug text-foreground">
@@ -124,7 +152,11 @@ export function ComparisonRail({
                   </span>
                   <button
                     type="button"
-                    onClick={() => onRemove(territory.token)}
+                    ref={(node) => {
+                      if (node) removeButtons.current.set(territory.token, node)
+                      else removeButtons.current.delete(territory.token)
+                    }}
+                    onClick={() => removeTerritory(index, territory.token)}
                     aria-label={t`Scoate ${territory.name} din comparație`}
                     className="-mr-1.5 inline-flex size-8 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
@@ -147,9 +179,13 @@ export function ComparisonRail({
               open={picking === 'place'}
               onOpenChange={(open) => setPicking(open ? 'place' : null)}
               align="start"
-              className={POPOVER_CLASS}
+              className="p-0"
+              popoverClassName={POPOVER_CLASS}
+              title={t`Adaugă un teritoriu`}
+              description={t`Caută o localitate sau un județ, sau alege una dintre sugestii.`}
               trigger={
                 <button
+                  ref={addButton}
                   type="button"
                   className="-mx-1.5 mt-1 inline-flex min-h-9 items-center gap-1.5 rounded-sm px-1.5 text-sm font-medium text-primary transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >

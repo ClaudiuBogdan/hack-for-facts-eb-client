@@ -11,11 +11,7 @@ import { getAuthToken } from '@/lib/auth'
 import { getApiBaseUrl } from '@/config/env'
 import { isGraphQLInvalidInput } from '@/lib/graphql/graphql-client'
 import { createLogger } from '@/lib/logger'
-import type {
-  InsObservation,
-  InsTimePeriod,
-  NativeInsUatDatasetGroup,
-} from '@/schemas/ins'
+import type { InsPeriodicity, NativeInsUatDatasetGroup } from '@/schemas/ins'
 import type {
   DatasetRequestPayload,
   DatasetRequestResult,
@@ -25,11 +21,10 @@ import type {
 } from '@/schemas/statistics'
 import { getDatasetDataStatus } from '../lib/dataset-status'
 import { TERRITORY_HEADLINE_CODES } from '../lib/territory-groups'
-import { getLatestTimePeriod, resolveLatestPeriod } from '../lib/period'
-import { buildTerritoryRelatedLinks, resolveTerritoryIdentity } from '../lib/territory'
+import { getLatestTimePeriod, periodSortKey, resolveLatestPeriod } from '../lib/period'
+import { resolveTerritoryIdentity } from '../lib/territory'
 
 const logger = createLogger('statistics-api-live')
-
 
 // ---------------------------------------------------------------------------
 // Territory hub
@@ -40,12 +35,12 @@ const logger = createLogger('statistics-api-live')
  *
  *   1. `insUatDashboard` + the territory identity (the only source of the
  *      county breadcrumb) as two root fields of one operation;
- *   2. exact catalog counts + county/national benchmarks for the headline
- *      datasets, aliased into one operation.
+ *   2. the county and national references for the headline datasets,
+ *      aliased into one operation.
  *
- * The old path (county-dashboard fallback, label lookups, a clamped
- * 2000-row catalog scan for the ribbon) is retired: the hub is LAU-only and
- * counts come from `totalCount` probes, never from scanning pages.
+ * Both read only the fields the page shows and the certification checks
+ * (`TERRITORY_DATASET_FIELDS`, `TERRITORY_OBSERVATION_FIELDS`); the old
+ * exhaustive fragments cost 4.7 MB per territory.
  */
 export async function fetchStatisticsTerritoryHubLive(
   siruta: string,
@@ -82,10 +77,9 @@ export async function fetchStatisticsTerritoryHubLive(
     liveCountyCode: territoryRow?.countyCode ?? null,
   })
 
-  // POST 2 is enrichment: its failure degrades to tiles-without-benchmarks
-  // and a hidden ribbon, never a blank hub.
-  let context: Awaited<ReturnType<typeof fetchStatisticsTerritoryHubContext>> | null =
-    null
+  // POST 2 is enrichment: its failure degrades to tiles without references
+  // and a note that says so, never a blank hub.
+  let context: Awaited<ReturnType<typeof fetchStatisticsTerritoryHubContext>> | null = null
   try {
     context = await fetchStatisticsTerritoryHubContext({
       countyCode: territoryRow?.countyCode ?? null,
@@ -94,7 +88,7 @@ export async function fetchStatisticsTerritoryHubLive(
     })
   } catch (error) {
     if (signal?.aborted) throw error
-    logger.warn('Hub context (counts + benchmarks) unavailable', {
+    logger.warn('Hub references (county and national benchmarks) unavailable', {
       siruta: normalizedSiruta,
       error,
     })
@@ -102,10 +96,8 @@ export async function fetchStatisticsTerritoryHubLive(
 
   const benchmarks: Record<string, StatisticsTileBenchmark> = {}
   for (const code of TERRITORY_HEADLINE_CODES) {
-    const county =
-      context?.county.find((value) => value.datasetCode === code) ?? null
-    const national =
-      context?.national.find((value) => value.datasetCode === code) ?? null
+    const county = context?.county.find((value) => value.datasetCode === code) ?? null
+    const national = context?.national.find((value) => value.datasetCode === code) ?? null
     if (county?.hasData || national?.hasData) {
       benchmarks[code] = {
         county: county?.hasData ? county : null,
@@ -114,29 +106,12 @@ export async function fetchStatisticsTerritoryHubLive(
     }
   }
 
-  const tiles = buildIndicatorTiles(groups)
-
   return {
     identity,
-    tiles,
-    availableDatasetCodes: groups
-      .filter((group) => getDatasetDataStatus(group.dataset) === 'available')
-      .map((group) => group.dataset.code),
-    coverage: context
-      ? {
-          availableDatasetCount: context.loadedCount,
-          totalDatasetCount: context.catalogCount,
-          catalogOnlyDatasetCount: Math.max(
-            context.catalogCount - context.loadedCount,
-            0,
-          ),
-          partial: false,
-        }
-      : null,
-    relatedLinks: buildTerritoryRelatedLinks({ identity }),
+    tiles: buildIndicatorTiles(groups),
     latestDataPeriod: resolveHubLatestPeriod(groups),
-    partial: groups.some((group) => group.truncated),
     benchmarks,
+    benchmarksUnavailable: context === null,
   }
 }
 
@@ -146,9 +121,11 @@ function buildIndicatorTiles(
   return groups.map((group) => {
     const selection = selectInsPeriodObservation(group.observations, group.latestPeriod)
     const latest = selection.status === 'OBSERVATION' ? selection.observation : null
-    const cadences = new Set(group.observations.map(row => row.time_period.periodicity))
-    const sparklineUnavailable = cadences.size > 1 || (latest !== null && !isInsChartPeriodicity(latest.time_period.periodicity))
-    const sparkline = sparklineUnavailable ? [] : buildSparkline(group.observations)
+    // The history drawn is the cadence the headline value comes from: a
+    // matrix mixing monthly and annual rows keeps its monthly line rather
+    // than no line at all. Only a cadence a chart can draw is drawn.
+    const cadence: InsPeriodicity | null = latest?.time_period.periodicity ?? null
+    const sparklineCadence = cadence !== null && isInsChartPeriodicity(cadence) ? cadence : null
     const dataStatus = getDatasetDataStatus(group.dataset)
     const tileState =
       dataStatus === 'catalog-only'
@@ -158,8 +135,8 @@ function buildIndicatorTiles(
           : selection.status === 'AMBIGUOUS'
             ? 'period-ambiguous'
             : group.observations.length === 0
-          ? 'no-data'
-          : 'available'
+              ? 'no-data'
+              : 'available'
 
     return {
       datasetCode: group.dataset.code,
@@ -169,42 +146,23 @@ function buildIndicatorTiles(
       dataStatus,
       tileState,
       truncated: group.truncated,
-      geographicWitnesses: group.geographicWitnesses,
-      sourceObservations: group.observations,
-      sparklineUnavailable,
+      observations: [...group.observations]
+        .sort((left, right) => periodSortKey(left.time_period) - periodSortKey(right.time_period))
+        .map((row) => ({
+          time_period: row.time_period,
+          value: row.value,
+          valueStatus: row.value_status ?? null,
+        })),
+      sparklineCadence,
       value: latest?.value ?? null,
       valueStatus: latest?.value_status ?? null,
       unitSymbol: latest?.unit?.symbol ?? null,
       unitNameRo: latest?.unit?.name_ro ?? null,
+      unitNameEn: latest?.unit?.name_en ?? null,
       latestPeriod: latest?.time_period.iso_period ?? null,
       latestYear: latest?.time_period.year ?? null,
-      sparkline,
     }
   })
-}
-
-function buildSparkline(
-  observations: readonly InsObservation[],
-): readonly (readonly [InsTimePeriod, string | null])[] {
-  return [...observations]
-    .sort((a, b) => {
-      const keyA =
-        a.time_period.year * 10000 +
-        (a.time_period.quarter ?? 0) * 100 +
-        (a.time_period.month ?? 0)
-      const keyB =
-        b.time_period.year * 10000 +
-        (b.time_period.quarter ?? 0) * 100 +
-        (b.time_period.month ?? 0)
-      return keyA - keyB
-    })
-    .map(
-      (observation) =>
-        [
-          observation.time_period,
-          observation.value,
-        ] as readonly [InsTimePeriod, string | null],
-    )
 }
 
 function resolveHubLatestPeriod(
@@ -221,11 +179,7 @@ function resolveHubLatestPeriod(
     if (!period) continue
 
     const latestTimePeriod = getLatestTimePeriod(group.observations)
-    const key = latestTimePeriod
-      ? latestTimePeriod.year * 10000 +
-        (latestTimePeriod.quarter ?? 0) * 100 +
-        (latestTimePeriod.month ?? 0)
-      : 0
+    const key = latestTimePeriod ? periodSortKey(latestTimePeriod) : 0
 
     if (key > latestKey) {
       latestKey = key

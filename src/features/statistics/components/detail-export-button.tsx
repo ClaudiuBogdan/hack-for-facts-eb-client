@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Download } from 'lucide-react'
@@ -65,10 +64,7 @@ export function DetailExportButton({
   complete,
   showNote = true,
 }: Props) {
-  const [isExporting, setIsExporting] = useState(false)
-
   const handleExport = () => {
-    setIsExporting(true)
     try {
       const { csv, rowCount } = buildObservationsCsv({
         descriptor: sourceDescriptor,
@@ -89,8 +85,6 @@ export function DetailExportButton({
     } catch (error) {
       logger.error('CSV export failed', { datasetCode, error })
       toast.error(t`Exportul a eșuat. Încearcă din nou.`)
-    } finally {
-      setIsExporting(false)
     }
   }
 
@@ -101,11 +95,11 @@ export function DetailExportButton({
         variant="outline"
         size="sm"
         className="gap-1.5"
-        disabled={disabled || isExporting || !complete || !sourceDescriptor}
+        disabled={disabled || !complete || !sourceDescriptor}
         onClick={handleExport}
       >
         <Download aria-hidden className="h-3.5 w-3.5" />
-        {isExporting ? <Trans>Se exportă…</Trans> : <Trans>Descarcă CSV</Trans>}
+        <Trans>Descarcă CSV</Trans>
       </Button>
       {showNote ? <DetailExportNote complete={complete} /> : null}
     </div>

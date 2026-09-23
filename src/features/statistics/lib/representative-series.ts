@@ -4,7 +4,11 @@ import type { InsObservation, InsPeriodicity } from '@/schemas/ins'
 
 /** One complete INS cell: a value for every classification axis, plus a unit. */
 export interface RepresentativeCell {
-  readonly classifications: ReadonlyMap<string, string>
+  /**
+   * Axis type code → member code. A plain record, not a `Map`: the cell
+   * travels in loader data and in the query cache, and both are serialised.
+   */
+  readonly classifications: Readonly<Record<string, string>>
   readonly unitCode: string
   /**
    * The cadence to read the cell at. A matrix that declares both ANNUAL and
@@ -168,10 +172,10 @@ export function chooseRepresentativeCell(input: {
     // silently adopt as a default.
     const selection = sourceRowSelection(input.descriptor, group.rows[0])
     if (!selection) continue
-    const classifications = new Map<string, string>()
+    const classifications: Record<string, string> = {}
     for (const pin of selection.clasificari) {
       const [type, code] = pin.split(':')
-      if (type && code) classifications.set(type, code)
+      if (type && code) classifications[type] = code
     }
     // No size check: a matrix whose only axes are time and unit is a valid
     // source layout, and `sourceRowSelection` has already said so. Discarding
@@ -194,9 +198,10 @@ export function sameRepresentativeCell(
   if (left === null || right === null) return left === right
   if (left.unitCode !== right.unitCode) return false
   if (left.periodicity !== right.periodicity) return false
-  if (left.classifications.size !== right.classifications.size) return false
-  for (const [type, code] of left.classifications) {
-    if (right.classifications.get(type) !== code) return false
+  const leftEntries = Object.entries(left.classifications)
+  if (leftEntries.length !== Object.keys(right.classifications).length) return false
+  for (const [type, code] of leftEntries) {
+    if (right.classifications[type] !== code) return false
   }
   return true
 }

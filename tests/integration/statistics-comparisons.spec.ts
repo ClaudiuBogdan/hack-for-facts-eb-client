@@ -395,3 +395,24 @@ for (const scenario of [
     )
   })
 }
+
+test('reads six territories in one defaults document under the server’s field cap', async ({ page }) => {
+  const calls = await mock(page)
+  const params = new URLSearchParams({
+    cod: 'TEST',
+    teritorii: JSON.stringify(['cod:B', 'siruta:179132', 'siruta:179141', 'siruta:54975', 'siruta:155243', 'siruta:95060']),
+  })
+  await page.goto('/ins/comparatii?' + params)
+  const standings = page.getByRole('list', { name: /Rezultatul comparației|Comparison result/ })
+  await expect(standings).toContainText(/123[.,]45/, { timeout: 15000 })
+  await expect(standings.getByRole('listitem')).toHaveCount(6)
+  const defaults = calls.filter((call) => call.query.includes('InsComparisonDefaults'))
+  expect(defaults).toHaveLength(1)
+  expect(Object.keys(defaults[0].variables).filter((key) => key.startsWith('entity'))).toHaveLength(6)
+  // The server refuses a document past 500 field selections; „Cele mai mari
+  // 6 orașe" was one until the per-alias selection was trimmed.
+  const document = defaults[0].query.replace(/^\s*query\s+\w+\s*\([^)]*\)/u, '').replace(/\([^()]*\)/gu, '')
+  const names = document.match(/[A-Za-z_][A-Za-z0-9_]*/gu) ?? []
+  const aliases = document.match(/[A-Za-z_][A-Za-z0-9_]*\s*:/gu) ?? []
+  expect(names.length - aliases.length).toBeLessThanOrEqual(500)
+})

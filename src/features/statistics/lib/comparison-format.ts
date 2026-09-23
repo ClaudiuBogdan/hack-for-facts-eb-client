@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { normalizeRomanianDiacritics } from './territory'
 
 /**
  * How the comparison names what it compares: a territory's identity, its
@@ -64,7 +65,9 @@ function sentenceCase(text: string): string {
  * commune and a town of one name stay two rows.
  */
 export function comparisonPlaceName(raw: string): { readonly name: string; readonly kind: string | null } {
-  const trimmed = raw.trim().replace(/\s+/g, ' ')
+  // INS sends the cedilla letters of the old keyboard („Iaşi"); the page
+  // spells the place as Romanian does („Iași").
+  const trimmed = normalizeRomanianDiacritics(raw.trim().replace(/\s+/g, ' '))
   const shouting = trimmed === trimmed.toLocaleUpperCase('ro')
   const match = /^(MUNICIPIUL|ORAȘUL|ORASUL|ORAȘ|ORAS|COMUNA|JUDEȚUL|JUDETUL)\s+(.+)$/i.exec(trimmed)
   const body = match?.[2] ?? trimmed

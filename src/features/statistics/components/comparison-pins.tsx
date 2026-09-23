@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/select'
 import type { InsDatasetDetails } from '@/schemas/ins'
 import type { SourceMemberLookup } from '../hooks/use-dataset-detail'
-import type { ClassificationPin } from '../lib/comparison-series'
+import type { ClassificationPin } from '../lib/dataset-selection'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
 
 type PinsProps = {

@@ -1,24 +1,26 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
+import { fetchDatasetTier0 } from '@/features/statistics/api/dataset-detail-api'
 import {
-  fetchDatasetSeries,
-  fetchDatasetTier0,
-} from '@/features/statistics/api/dataset-detail-api'
+  datasetTier0Reads,
+  prefetchDatasetDetail,
+} from '@/features/statistics/hooks/use-dataset-detail'
 import { detailScopeKey } from '@/features/statistics/lib/dataset-selection'
-import {
-  detailBootstrapEntity,
-  resolveDetailSelection,
-} from '@/features/statistics/lib/source-selection'
 import { getDatasetDataStatus } from '@/features/statistics/lib/dataset-status'
+import {
+  resolveDatasetSeries,
+  type ResolvedDatasetSeries,
+} from '@/features/statistics/lib/detail-series-resolution'
+import { publishedTextExcerpt } from '@/features/statistics/lib/published-text'
+import { detailBootstrapEntity } from '@/features/statistics/lib/source-selection'
 import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
 import { isAbortError, isGraphQLTimeout } from '@/lib/graphql/graphql-client'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { createLogger } from '@/lib/logger'
+import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
+import type { InsDatasetDetails } from '@/schemas/ins'
 import { parseStatisticsDatasetDetailSearch } from '@/schemas/statistics'
-import type {
-  StatisticsDatasetSeries,
-  StatisticsDatasetTier0,
-} from '@/schemas/statistics'
+import type { StatisticsDatasetTier0 } from '@/schemas/statistics'
 
 const logger = createLogger('ins-dataset-route')
 
@@ -33,14 +35,29 @@ function loaderFailure(error: unknown, code: string, stage: 'tier0' | 'series'):
 }
 
 export type StatisticsDatasetDetailLoaderData = {
-  readonly tier0: StatisticsDatasetTier0 | null
-  readonly series: StatisticsDatasetSeries | null
+  /** Present on the server render only; the page's own query supplies it in the browser. */
+  readonly tier0?: StatisticsDatasetTier0
+  /** Present on the server render of a dataset with data; absent for a catalog-only one. */
+  readonly series?: ResolvedDatasetSeries
+  /**
+   * On a client-side navigation, the dataset as an earlier read of it holds
+   * it — for the document head alone, never as a seed: a scope change
+   * re-runs the loader, and the head would otherwise fall back to its
+   * placeholder title on a page that already knows its name.
+   */
+  readonly headDataset?: InsDatasetDetails
   readonly scopeKey: string
   /** A read threw: the page renders its retry, and that render is not cached. */
   readonly failed: boolean
 }
 
-/** Shared source selection governs both SSR reads and client hydration. */
+/**
+ * Awaited on the SSR path only, so crawlers and shared caches get a document
+ * that already shows the series. In the browser the same await kept the
+ * previous page on screen with nothing moving for every scope change; the
+ * client path starts the reads under the page's own keys and returns at
+ * once, and the page's queries draw their skeletons and retries.
+ */
 export const Route = createFileRoute('/ins/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
   // Canonical uppercase codes: insDataset(code:) is exact-match, and one URL
@@ -65,6 +82,7 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
     unitate: search.unitate,
   }),
   loader: async ({
+    context,
     params,
     deps,
     abortController,
@@ -72,67 +90,78 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
     // insDataset(code:) is exact-match, no trim, no uppercase — normalize once.
     const code = params.cod.trim().toUpperCase()
     const scopeKey = detailScopeKey(deps)
-    // One deadline for both reads on the server; past it the page serves
-    // its retry, uncached, and the browser reads without one.
+
+    if (!shouldBlockLoaderForSsr()) {
+      // Not awaited, and not reported: the page's queries own the verdict.
+      void prefetchDatasetDetail(context.queryClient, { code, search: deps }).catch(
+        () => undefined,
+      )
+      const known = datasetTier0Reads(context.queryClient, code).find((read) => read.dataset)?.dataset
+      return { scopeKey, failed: false, ...(known ? { headDataset: known } : {}) }
+    }
+
+    // Fetched directly, not through the query client: seeding the server
+    // cache dehydrates the server's `dataUpdatedAt`, which would make every
+    // CDN hit refetch on mount. One deadline for the reads; past it the page
+    // serves its retry, uncached, and the browser reads without one.
     const signal = insLoaderSignal(abortController.signal)
 
     let tier0: StatisticsDatasetTier0
     try {
-      const entity = detailBootstrapEntity(deps)
-      tier0 = await fetchDatasetTier0({
-        code,
-        entity,
-        signal,
-      })
+      tier0 = await fetchDatasetTier0({ code, entity: detailBootstrapEntity(deps), signal })
     } catch (error) {
       loaderFailure(error, code, 'tier0')
-      return { tier0: null, series: null, scopeKey, failed: true }
+      return { scopeKey, failed: true }
     }
 
-    if (!tier0.dataset) return { tier0, series: null, scopeKey, failed: false }
+    if (!tier0.dataset) throw notFound()
     if (getDatasetDataStatus(tier0.dataset) === 'catalog-only') {
-      return { tier0, series: null, scopeKey, failed: false }
+      return { tier0, scopeKey, failed: false }
     }
-
-    const selection = resolveDetailSelection({
-      search: deps,
-      dataset: tier0.dataset,
-      latest: tier0.latest,
-    })
-    if (selection.filter === null) return { tier0, series: null, scopeKey, failed: false }
 
     try {
-      const series = await fetchDatasetSeries({
+      const series = await resolveDatasetSeries({
         code,
-        filter: selection.filter,
-        inspection: !selection.canDerive,
-        contextCode: tier0.dataset.context_code ?? null,
+        search: deps,
+        dataset: tier0.dataset,
+        latest: tier0.latest,
         signal,
       })
+      // A matrix whose published structure fails the source layout is not a
+      // bad address; the server hears about it here, where the read is.
+      if (series.issues.includes('descriptor'))
+        logger.warn('INS dataset fails the source layout schema', { code })
       return { tier0, series, scopeKey, failed: false }
     } catch (error) {
       loaderFailure(error, code, 'series')
-      return { tier0, series: null, scopeKey, failed: true }
+      return { tier0, scopeKey, failed: true }
     }
   },
-  // A render after a failed read is served once, and the next request reads
-  // again — as on the hub.
+  // A render after a failed read, or one with nothing to show for the
+  // address, is served once; the next request reads again — as on the hub.
   headers: ({ loaderData }) =>
-    !loaderData || loaderData.failed
+    !loaderData ||
+    loaderData.failed ||
+    loaderData.tier0 === undefined ||
+    (loaderData.series !== undefined && loaderData.series.series === null)
       ? createNoStoreHeaders()
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 600,
           staleWhileRevalidateSeconds: 3600,
         }),
   head: ({ loaderData }) => {
-    const dataset = (
-      loaderData as StatisticsDatasetDetailLoaderData | undefined
-    )?.tier0?.dataset
+    const data = loaderData as StatisticsDatasetDetailLoaderData | undefined
+    const dataset = data?.tier0?.dataset ?? data?.headDataset
     if (!dataset) {
+      // Reached on a client-side navigation, where the dataset is still in
+      // flight — a placeholder, not "not found"; the page corrects the tab
+      // title once its query lands. The server path always has the dataset.
       return { meta: [{ title: `${t`Set de date INS`} — Transparenta.eu` }] }
     }
+    // Words only: TEMPO ships anchors inside a few definitions, and a
+    // description cut mid-tag is markup in a search snippet.
     const description =
-      dataset.definition_ro?.slice(0, 180) ??
+      (dataset.definition_ro ? publishedTextExcerpt(dataset.definition_ro) : '') ||
       t`Serie de date INS Tempo cu valori pe teritorii și perioade.`
     return {
       meta: [

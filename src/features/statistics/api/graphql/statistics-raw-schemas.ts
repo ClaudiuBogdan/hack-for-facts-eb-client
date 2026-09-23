@@ -253,6 +253,7 @@ export const insNativeObservationRawSchema = insObservationNodeRawSchema.extend(
       code: insSourceObservationSchema.shape.unit.shape.code,
       symbol: z.string().nullish(),
       name_ro: z.string().nullish(),
+      name_en: z.string().nullish(),
     }),
     classifications: z
       .array(
@@ -320,6 +321,7 @@ export const statisticsRelatedDatasetsRawSchema = z.object({
         z.object({
           code: z.string(),
           name_ro: z.string().nullish(),
+          name_en: z.string().nullish(),
           data_status: insDataStatusRawSchema.nullish(),
         }),
       ),
@@ -358,8 +360,6 @@ export const statisticsTerritoryHubResponseRawSchema = z.object({
 })
 
 export const statisticsTerritoryHubContextResponseRawSchema = z.object({
-  loaded: totalCountProbeRawSchema,
-  catalog: totalCountProbeRawSchema,
   county: z.array(insLatestValueNodeRawSchema).nullish(),
   national: z.array(insLatestValueNodeRawSchema),
 })

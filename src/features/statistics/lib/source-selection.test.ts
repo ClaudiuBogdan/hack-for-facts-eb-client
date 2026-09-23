@@ -289,7 +289,7 @@ describe('a matrix with no territorial axis', () => {
       dataset: flat,
       latest: null,
       representative: {
-        classifications: new Map(),
+        classifications: {},
         unitCode: '10225',
         periodicity: null,
       },
@@ -301,7 +301,7 @@ describe('a matrix with no territorial axis', () => {
   })
 
   it('ignores a territory carried in from a territory page: the matrix publishes the country alone', () => {
-    const anchor = { classifications: new Map(), unitCode: '10225', periodicity: null }
+    const anchor = { classifications: {}, unitCode: '10225', periodicity: null }
     for (const teritoriu of ['cod:AB', 'siruta:54975', 'cod:RO']) {
       const resolved = resolveDetailSelection({
         search: { teritoriu },
@@ -321,7 +321,7 @@ describe('a matrix with no territorial axis', () => {
       search: { teritoriu: 'siruta:54975' },
       dataset: flat,
       latest: null,
-      representative: { classifications: new Map(), unitCode: '10225', periodicity: null },
+      representative: { classifications: {}, unitCode: '10225', periodicity: null },
       territoryBesidePinnedGeography: 'intersect',
     })
     expect(resolved.scope.territory).not.toBeNull()
@@ -355,7 +355,7 @@ describe('a matrix that declares several cadences', () => {
         dataset: dual,
         latest: null,
         representative: {
-          classifications: new Map(),
+          classifications: {},
           unitCode: '0',
           periodicity: 'QUARTERLY',
         },
@@ -370,7 +370,7 @@ describe('a matrix that declares several cadences', () => {
         dataset: dual,
         latest: null,
         representative: {
-          classifications: new Map(),
+          classifications: {},
           unitCode: '0',
           periodicity: 'QUARTERLY',
         },
@@ -382,7 +382,7 @@ describe('a matrix that declares several cadences', () => {
         dataset: dual,
         latest,
         representative: {
-          classifications: new Map(),
+          classifications: {},
           unitCode: '0',
           periodicity: 'QUARTERLY',
         },

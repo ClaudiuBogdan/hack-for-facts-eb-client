@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import type { NativeComparisonMatrix } from '../lib/native-comparison'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import {
@@ -10,23 +9,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  getComparisonCell,
-  type ComparisonMatrix,
-} from '../lib/comparison-series'
-import { COMPARISON_PALETTE_CLASS } from './comparison-palette'
-import { describeUnitSymbol } from '../lib/hub-format'
+import { describeUnitSymbol, formatHubPeriod } from '../lib/hub-format'
 import {
   comparisonLevelLabel,
   hasMixedComparisonLevels,
   type ComparisonSeriesDescriptor,
 } from '../lib/comparison-format'
+import type { NativeComparisonMatrix } from '../lib/native-comparison'
 
 /** The em-dash cell for "this territory reported nothing for this period". */
 const MISSING_MARK = '—'
 
 type Props = {
-  readonly matrix: ComparisonMatrix | NativeComparisonMatrix
+  readonly matrix: NativeComparisonMatrix
   readonly series: readonly ComparisonSeriesDescriptor[]
   readonly selectedPeriod: string | null
 }
@@ -40,24 +35,22 @@ type Props = {
  *
  * Values are printed VERBATIM from the wire — they are Decimal strings, and
  * routing them through `Number()` for display would silently round the long
- * ones. Only the charts parse them.
+ * ones. Only the charts parse them. Periods read as the rest of the page
+ * reads them („mai 2024", „T1 2024"), never as the wire's tokens.
  *
  * A missing cell renders `—` and its `aria-label` names the period, so a
- * screen-reader user hears "fără date pentru 2024" rather than an unlabelled
- * dash. A value is never borrowed from an adjacent period to fill the hole.
+ * screen-reader user hears "fără date pentru mai 2024" rather than an
+ * unlabelled dash. A value is never borrowed from an adjacent period to fill
+ * the hole. The palette is the page's: the root carries it.
  */
 export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
   const mixedLevels = hasMixedComparisonLevels(series)
-  const labelBySiruta = new Map(
-    series.map((entry) => [entry.code, entry.label]),
-  )
-  const colorBySiruta = new Map(
-    series.map((entry) => [entry.code, entry.color]),
-  )
+  const labelByCode = new Map(series.map((entry) => [entry.code, entry.label]))
+  const colorByCode = new Map(series.map((entry) => [entry.code, entry.color]))
   const levelByCode = new Map(series.map((entry) => [entry.code, entry.level]))
 
   return (
-    <div className={COMPARISON_PALETTE_CLASS}>
+    <div>
       <div className="overflow-x-auto border-t border-border/70">
         <Table>
           <caption className="sr-only">
@@ -78,23 +71,16 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                       : 'text-right'
                   }
                 >
-                  {period.isoPeriod}
+                  {formatHubPeriod(period.isoPeriod)}
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {matrix.rows.map((row) => {
-              const label = labelBySiruta.get(row.code) ?? row.name ?? row.code
-              const level = levelByCode?.get(row.code)
-              const native =
-                'descriptor' in matrix
-                  ? matrix.rows.find((entry) => entry.code === row.code)
-                  : null
-              const unavailable =
-                native &&
-                native.availability !== 'SERIES' &&
-                native.availability !== 'EMPTY'
+              const label = labelByCode.get(row.code) ?? row.name ?? row.code
+              const level = levelByCode.get(row.code)
+              const unavailable = row.availability !== 'SERIES' && row.availability !== 'EMPTY'
 
               return (
                 <TableRow key={row.code}>
@@ -103,7 +89,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                       <span
                         aria-hidden
                         className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                        style={{ backgroundColor: colorBySiruta.get(row.code) }}
+                        style={{ backgroundColor: colorByCode.get(row.code) }}
                       />
                       <span>{label}</span>
                       {mixedLevels && level ? (
@@ -112,54 +98,46 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                         </span>
                       ) : null}
                     </span>
-                    {native ? (
-                      <div className="mt-1 space-y-1 text-xs font-normal text-muted-foreground">
-                        {native.availability === 'AMBIGUOUS' ? (
-                          <p>
-                            <Trans>
-                              Mai multe serii sursă. Alege coordonatele înainte
-                              de comparație.
-                            </Trans>
-                          </p>
-                        ) : null}
-                        {native.availability === 'QUALIFIED' ? (
-                          <p>
-                            <Trans>
-                              Geografie istorică sau calificată. Verifică
-                              observațiile sursă.
-                            </Trans>
-                          </p>
-                        ) : null}
-                        {native.availability === 'SERIES' &&
-                        Object.keys(native.cells).length === 0 ? (
-                          <p>
-                            <Trans>Fără date pentru frecvența aleasă.</Trans>
-                          </p>
-                        ) : null}
-                        {'descriptor' in matrix ? (
-                          <Link
-                            to="/ins/seturi/$cod"
-                            params={{ cod: matrix.descriptor.code }}
-                            search={{
-                              teritoriu:
-                                level === 'LAU'
-                                  ? `siruta:${row.code}`
-                                  : `cod:${row.code}`,
-                              ...(native.sourceSelection ??
-                                matrix.sharedSelection),
-                            }}
-                            className="underline"
-                          >
-                            <Trans>Vezi observațiile sursă</Trans>
-                          </Link>
-                        ) : null}
-                      </div>
-                    ) : null}
+                    <div className="mt-1 space-y-1 text-xs font-normal text-muted-foreground">
+                      {row.availability === 'AMBIGUOUS' ? (
+                        <p>
+                          <Trans>
+                            Mai multe serii sursă. Alege coordonatele înainte
+                            de comparație.
+                          </Trans>
+                        </p>
+                      ) : null}
+                      {row.availability === 'QUALIFIED' ? (
+                        <p>
+                          <Trans>
+                            Geografie istorică sau calificată. Verifică
+                            observațiile sursă.
+                          </Trans>
+                        </p>
+                      ) : null}
+                      {row.availability === 'SERIES' && Object.keys(row.cells).length === 0 ? (
+                        <p>
+                          <Trans>Fără date pentru frecvența aleasă.</Trans>
+                        </p>
+                      ) : null}
+                      <Link
+                        to="/ins/seturi/$cod"
+                        params={{ cod: matrix.descriptor.code }}
+                        search={{
+                          teritoriu: level === 'LAU' ? `siruta:${row.code}` : `cod:${row.code}`,
+                          ...(row.sourceSelection ?? matrix.sharedSelection),
+                        }}
+                        className="underline"
+                      >
+                        <Trans>Vezi observațiile sursă</Trans>
+                      </Link>
+                    </div>
                   </TableCell>
 
                   {matrix.periods.map((period) => {
-                    const cell = getComparisonCell(row, period.isoPeriod)
+                    const cell = row.cells[period.isoPeriod] ?? null
                     const hasValue = cell !== null && cell.value !== null
+                    const periodLabel = formatHubPeriod(period.isoPeriod)
 
                     return (
                       <TableCell
@@ -177,7 +155,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
                         ) : (
                           <span
                             className="text-muted-foreground"
-                            aria-label={t`Fără date pentru ${period.isoPeriod}`}
+                            aria-label={t`Fără date pentru ${periodLabel}`}
                           >
                             {MISSING_MARK}
                           </span>

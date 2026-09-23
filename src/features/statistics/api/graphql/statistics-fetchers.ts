@@ -23,6 +23,7 @@ import type {
   StatisticsDatasetTier0,
   StatisticsLatestValue,
   StatisticsLandingCatalog,
+  StatisticsRelatedDatasets,
   StatisticsTerritorySearchResult,
   StatisticsTerritorySearchRow,
 } from '@/schemas/statistics'
@@ -223,42 +224,28 @@ export async function fetchStatisticsDatasetTier0(params: {
   }
 }
 
-/** Detail POST B — the resolved series + the related-datasets probe. */
+/** Detail POST B — the source vector of one cell, or a bounded inspection page. */
 export async function fetchStatisticsDatasetSeries(params: {
   code: string
   filter: InsObservationFilterInput
-  contextCode: string | null
   inspection?: boolean
   limit?: number
   signal?: AbortSignal
 }): Promise<StatisticsDatasetSeries> {
-  const [vector, relatedResponse] = await Promise.all([
-    params.inspection
-      ? fetchInsSourceInspection({
-          datasetCode: params.code,
-          filter: params.filter,
-          signal: params.signal,
-        })
-      : fetchInsSourceVector({
-          datasetCode: params.code,
-          filter: params.filter,
-          pageSize: params.limit ?? SERIES_MAX_ROWS,
-          signal: params.signal,
-        }),
-    params.contextCode === null
-      ? Promise.resolve(null)
-      : graphqlQuery<unknown>(
-          STATISTICS_RELATED_DATASETS_QUERY,
-          { contextCode: params.contextCode },
-          { auth: 'none', signal: params.signal },
-        ),
-  ])
+  const vector = params.inspection
+    ? await fetchInsSourceInspection({
+        datasetCode: params.code,
+        filter: params.filter,
+        signal: params.signal,
+      })
+    : await fetchInsSourceVector({
+        datasetCode: params.code,
+        filter: params.filter,
+        pageSize: params.limit ?? SERIES_MAX_ROWS,
+        signal: params.signal,
+      })
   if (inspectSourceSeries(vector).status === 'INVALID')
     throw new InsSourcePageError('INVALID_PAGE')
-  const related =
-    relatedResponse === null
-      ? null
-      : statisticsRelatedDatasetsRawSchema.parse(relatedResponse).related
   return {
     nativeContract: 'native-v1',
     readMode: params.inspection ? 'inspection' : 'complete',
@@ -266,8 +253,26 @@ export async function fetchStatisticsDatasetSeries(params: {
     sourceDescriptor: vector.descriptor,
     observations: vector.observations,
     totalCount: vector.observations.length,
-    related: mapRelatedDatasets(related ?? null, params.code),
-    relatedTotalCount: related?.pageInfo.totalCount ?? null,
+  }
+}
+
+/**
+ * The matrices of one INS context, the current one included: a fact about
+ * the catalog, read once per context rather than once per scope change.
+ */
+export async function fetchStatisticsRelatedDatasets(params: {
+  contextCode: string
+  signal?: AbortSignal
+}): Promise<StatisticsRelatedDatasets> {
+  const response = await graphqlQuery<unknown>(
+    STATISTICS_RELATED_DATASETS_QUERY,
+    { contextCode: params.contextCode },
+    { auth: 'none', signal: params.signal },
+  )
+  const { related } = statisticsRelatedDatasetsRawSchema.parse(response)
+  return {
+    datasets: mapRelatedDatasets(related ?? null),
+    totalCount: related?.pageInfo.totalCount ?? null,
   }
 }
 
@@ -302,14 +307,12 @@ export async function fetchStatisticsTerritoryHubData(params: {
   }
 }
 
-/** Hub POST 2 — exact counts + county/national benchmarks, one operation. */
+/** Hub POST 2 — the county and national references for the headline matrices, one operation. */
 export async function fetchStatisticsTerritoryHubContext(params: {
   countyCode: string | null
   benchmarkCodes: readonly string[]
   signal?: AbortSignal
 }): Promise<{
-  readonly loadedCount: number
-  readonly catalogCount: number
   readonly county: readonly StatisticsLatestValue[]
   readonly national: readonly StatisticsLatestValue[]
 }> {
@@ -326,8 +329,6 @@ export async function fetchStatisticsTerritoryHubContext(params: {
   const parsed = statisticsTerritoryHubContextResponseRawSchema.parse(response)
 
   return {
-    loadedCount: parsed.loaded.pageInfo.totalCount,
-    catalogCount: parsed.catalog.pageInfo.totalCount,
     county: (parsed.county ?? []).map(mapLatestValue),
     national: parsed.national.map(mapLatestValue),
   }
