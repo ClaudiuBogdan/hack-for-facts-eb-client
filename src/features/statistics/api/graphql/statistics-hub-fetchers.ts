@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { graphqlQuery, isAbortError } from '@/lib/graphql/graphql-client'
+import { throwIfCancelled } from '@/lib/ssr/deadline-signal'
 import { createLogger } from '@/lib/logger'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { InsObservationFilterInput } from '@/schemas/ins'
@@ -15,7 +16,7 @@ import type {
 } from '@/schemas/statistics'
 import { hubUnitOf } from '../../lib/hub-format'
 import { hubStaticSeries } from '../../lib/hub-national-series'
-import { BLOCKING_VALUE_STATUSES } from '../../lib/value-status'
+import { publishedNumber } from '../../lib/value-status'
 import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
 import { fetchNativeLandingTiles } from './ins-landing-tiles'
 import { INS_OBSERVATIONS_QUERY } from './ins-queries'
@@ -47,12 +48,6 @@ const observationsPageResponseSchema = z.object({
 })
 
 type RawObservation = z.infer<typeof insObservationNodeRawSchema>
-
-function parseDecimal(value: string | null | undefined): number | null {
-  if (value === null || value === undefined) return null
-  const parsed = Number.parseFloat(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
 
 /** `type_code → member code` of the resolved national cell. */
 function cellMembers(latest: StatisticsLatestValue): ReadonlyMap<string, string> {
@@ -95,7 +90,7 @@ function hasGeographyAxis(latest: StatisticsLatestValue): boolean {
 
 /** A confidential or missing cell keeps its flag and has no number. */
 function unflaggedValue(latest: StatisticsLatestValue): number | null {
-  return BLOCKING_VALUE_STATUSES.has(latest.valueStatus?.trim().toLowerCase() ?? '') ? null : parseDecimal(latest.value)
+  return publishedNumber(latest.value, latest.valueStatus)
 }
 
 function toIndicator(latest: StatisticsLatestValue): StatisticsHubIndicator {
@@ -162,7 +157,7 @@ async function fetchCountyLayer(
     { datasetCode: code, filter, limit: COUNTY_ROW_LIMIT, offset: 0 },
     { auth: 'none', signal },
   )
-  signal?.throwIfAborted()
+  throwIfCancelled(signal)
   const { insObservations } = observationsPageResponseSchema.parse(response)
   if (insObservations.pageInfo.hasNextPage) throw new Error(`County layer of ${code} truncated`)
   const cell = cellMembers(latest)
@@ -186,8 +181,7 @@ async function fetchCountyLayer(
     else if (axis !== countyAxis) continue
     // The flags the national figures honour: a confidential or missing cell
     // has no number to colour a county with, whatever the value field holds.
-    if (BLOCKING_VALUE_STATUSES.has(row.value_status?.trim().toLowerCase() ?? '')) continue
-    const value = parseDecimal(row.value)
+    const value = publishedNumber(row.value, row.value_status)
     if (value === null || values.has(countyCode)) continue
     const name = ROMANIA_COUNTIES.find((county) => county.code === countyCode)?.nameRo ?? row.territory?.name_ro ?? countyCode
     values.set(countyCode, { code: countyCode, name, value })
@@ -209,7 +203,9 @@ async function settle<T>(section: StatisticsHubSection, read: Promise<T>, failur
   try {
     return await read
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    // The caller gave up: nothing to record. A read past its deadline is a
+    // failure of the section, and is recorded as one.
+    if (isAbortError(error)) throw error
     logger.warn('Statistics hub section unavailable', { section, error: error instanceof Error ? error.message : String(error) })
     failures.push(section)
     return null
@@ -223,7 +219,7 @@ export async function fetchStatisticsHub(signal?: AbortSignal): Promise<Statisti
     fetchNativeLandingTiles(signal, HUB_NATIONAL_DATASET_CODES),
     failures,
   )
-  signal?.throwIfAborted()
+  throwIfCancelled(signal)
 
   let indicators: StatisticsHubIndicator[] | null = null
   let counties: StatisticsHubCountyLayer[] | null = null

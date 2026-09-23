@@ -1,5 +1,5 @@
 import type { InsObservation } from '@/schemas/ins'
-import { toChartValue } from './time-series'
+import { parseWireDecimal } from './value-status'
 
 /**
  * The summary facts shown beside the tier-0 figure: where the series has been,
@@ -40,7 +40,7 @@ const EMPTY: SeriesStats = {
 /**
  * One point, parsed EXACTLY as the chart parses it.
  *
- * `toChartValue` is the chart's own reader, and reusing it is the point:
+ * `parseWireDecimal` is the chart's own reader, and reusing it is the point:
  * `Number.parseFloat('0oops')` is `0`, so a summary built on `parseFloat` would
  * report a new minimum for a row the figure below it draws as a gap. The
  * summary and the figure must never disagree about what a value is.
@@ -48,7 +48,7 @@ const EMPTY: SeriesStats = {
 function toPoint(row: InsObservation): SeriesPoint | null {
   const raw = row.value
   if (raw === null) return null
-  const value = toChartValue(raw)
+  const value = parseWireDecimal(raw)
   if (value === null) return null
   return { value, raw, period: row.time_period.iso_period }
 }

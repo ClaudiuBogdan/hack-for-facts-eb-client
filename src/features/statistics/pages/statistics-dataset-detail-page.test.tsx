@@ -463,7 +463,7 @@ describe('StatisticsDatasetDetailPage', () => {
       screen.getByRole('link', { name: /Deschide matricea POP107D/ }),
     ).toHaveAttribute(
       'href',
-      'https://statistici.insse.ro/tempoins/index.jsp?ind=POP107D&lang=ro&page=tempo3',
+      'http://statistici.insse.ro/tempoins/index.jsp?ind=POP107D&lang=ro&page=tempo3',
     )
   })
 

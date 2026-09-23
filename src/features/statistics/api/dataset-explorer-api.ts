@@ -17,6 +17,7 @@ import { fetchDatasetPageMock } from './dataset-explorer-api.mock'
 export async function fetchDatasetPage(
   search: StatisticsDatasetExplorerSearch,
   options: DatasetFilterOptions = {},
+  signal?: AbortSignal,
 ): Promise<StatisticsDatasetPage> {
   if (isStatisticsMockEnabled()) {
     return fetchDatasetPageMock(search, options)
@@ -26,5 +27,6 @@ export async function fetchDatasetPage(
     filter: buildDatasetFilterInput(search, options),
     limit: EXPLORER_PAGE_SIZE,
     offset: explorerOffset(search),
+    signal,
   })
 }

@@ -16,9 +16,7 @@ import {
   fetchDatasetTier0,
   fetchDimensionValuesPage,
 } from '../api/dataset-detail-api'
-
-const DATASET_STALE_TIME = 1000 * 60 * 60 * 24
-const DIMENSION_STALE_TIME = 1000 * 60 * 30
+import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
 
 /**
  * One page of a dimension's options. Always paged and always server-searched:
@@ -38,8 +36,7 @@ export function useDimensionValues(params: {
   const datasetCode = normalizeInsDatasetCode(params.datasetCode)
 
   return useQuery<InsDimensionValueConnection>({
-    queryKey: [
-      'statisticsDimensionValues',
+    queryKey: statisticsKeys.dimensionValues([
       params.nativePublicationKey === undefined ? 'legacy-or-demo-v1' : 'native-only-v1',
       params.nativePublicationKey ?? null,
       datasetCode,
@@ -47,7 +44,7 @@ export function useDimensionValues(params: {
       search ?? '',
       params.limit,
       params.offset,
-    ],
+    ]),
     queryFn: ({ signal }) =>
       (params.nativePublicationKey === undefined ? fetchDimensionValuesPage : getInsDimensionValuesPage)({
         expectedPublicationKey: params.nativePublicationKey,
@@ -59,8 +56,9 @@ export function useDimensionValues(params: {
         signal,
       }),
     enabled: params.enabled && datasetCode.length > 0,
-    staleTime: DIMENSION_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.members,
     placeholderData: () => undefined,
+    // The list offers its own retry the moment a page fails.
     retry: false,
   })
 }
@@ -87,8 +85,7 @@ export function useDimensionValuesInfinite(params: {
   const datasetCode = normalizeInsDatasetCode(params.datasetCode)
 
   return useInfiniteQuery<InsDimensionValueConnection>({
-    queryKey: [
-      'statisticsDimensionValues',
+    queryKey: statisticsKeys.dimensionValues([
       'scroll-v1',
       params.nativePublicationKey === undefined ? 'legacy-or-demo-v1' : 'native-only-v1',
       params.nativePublicationKey ?? null,
@@ -96,7 +93,7 @@ export function useDimensionValuesInfinite(params: {
       params.dimensionIndex,
       search ?? '',
       params.pageSize,
-    ],
+    ]),
     initialPageParam: 0,
     queryFn: ({ pageParam, signal }) =>
       (params.nativePublicationKey === undefined ? fetchDimensionValuesPage : getInsDimensionValuesPage)({
@@ -113,7 +110,8 @@ export function useDimensionValuesInfinite(params: {
         ? pages.reduce((count, page) => count + page.nodes.length, 0)
         : undefined,
     enabled: params.enabled && datasetCode.length > 0,
-    staleTime: DIMENSION_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.members,
+    // The list offers its own retry the moment a page fails.
     retry: false,
   })
 }
@@ -131,18 +129,12 @@ export function useDatasetTier0(params: {
   readonly initialData?: StatisticsDatasetTier0
 }) {
   return useQuery<StatisticsDatasetTier0>({
-    queryKey: [
-      'statistics',
-      'native-source-selection-v1',
-      'dataset',
-      params.code,
-      'tier0',
-      params.entityKey,
-    ] as const,
+    queryKey: statisticsKeys.datasetTier0(params.code, params.entityKey),
     queryFn: ({ signal }) =>
       fetchDatasetTier0({ code: params.code, entity: params.entity, signal }),
     enabled: params.code.trim().length > 0,
-    staleTime: DATASET_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
     ...(params.initialData?.nativeContract === 'native-v1'
       ? { initialData: params.initialData }
       : {}),
@@ -160,15 +152,7 @@ export function useDatasetSeries(params: {
   readonly initialData?: StatisticsDatasetSeries
 }) {
   return useQuery<StatisticsDatasetSeries>({
-    queryKey: [
-      'statistics',
-      'native-source-selection-v1',
-      'dataset',
-      params.code,
-      'series',
-      params.scopeKey,
-      params.inspection ? 'inspection' : 'complete',
-    ] as const,
+    queryKey: statisticsKeys.datasetSeries(params.code, params.scopeKey, params.inspection ? 'inspection' : 'complete'),
     queryFn: ({ signal }) =>
       fetchDatasetSeries({
         code: params.code,
@@ -178,7 +162,8 @@ export function useDatasetSeries(params: {
         signal,
       }),
     enabled: params.enabled && params.code.trim().length > 0,
-    staleTime: DATASET_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
     ...(params.initialData?.nativeContract === 'native-v1' &&
     (params.initialData.readMode ?? 'complete') ===
       (params.inspection ? 'inspection' : 'complete')
@@ -216,18 +201,12 @@ export function useSourceMemberLabels(params: {
   const datasetCode = normalizeInsDatasetCode(params.datasetCode)
   const results = useQueries({
     queries: params.lookups.map((lookup) => ({
-      queryKey: [
-        'statisticsSourceMemberLabel',
-        datasetCode,
-        lookup.dimensionIndex,
-        lookup.kind,
-        lookup.code,
-      ],
+      queryKey: statisticsKeys.memberLabel([datasetCode, lookup.dimensionIndex, lookup.kind, lookup.code]),
       queryFn: ({ signal }: { signal: AbortSignal }) =>
         findSourceMemberLabel({ datasetCode, lookup, signal }),
       enabled: datasetCode.length > 0,
-      staleTime: DIMENSION_STALE_TIME,
-      retry: false,
+      staleTime: STATISTICS_STALE_TIME.members,
+      retry: statisticsRetry,
     })),
   })
 

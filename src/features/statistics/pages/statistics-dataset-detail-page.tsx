@@ -77,7 +77,8 @@ import { isPeriodStale, periodSortKey } from '../lib/period'
 import { summarizeSeries } from '../lib/series-stats'
 import { tileUnit } from '../lib/territory-groups'
 import { statisticsTheme } from '../lib/statistics-theme'
-import { buildTimeSeries, hasAnyValue, toChartValue } from '../lib/time-series'
+import { buildTimeSeries, hasAnyValue } from '../lib/time-series'
+import { parseWireDecimal } from '../lib/value-status'
 
 type Props = {
   readonly code: string
@@ -916,7 +917,7 @@ function DatasetDetailBody({
                     valueStatus={latestSourceRow.value_status ?? null}
                     absent={
                       // The latest PUBLISHED cell, not the latest readable one.
-                      toChartValue(latestSourceRow.value) === null
+                      parseWireDecimal(latestSourceRow.value) === null
                         ? {
                             period: latestSourceRow.time_period.iso_period,
                             valueStatus: latestSourceRow.value_status ?? null,

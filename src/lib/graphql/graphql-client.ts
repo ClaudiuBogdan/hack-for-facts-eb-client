@@ -13,6 +13,7 @@ import { getApiBaseUrl } from '@/config/env'
 import { getAuthToken } from '@/lib/auth'
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
 import { createLogger } from '@/lib/logger'
+import { errorName, isTimeoutReason } from '@/lib/ssr/deadline-signal'
 
 const logger = createLogger('graphql-client')
 
@@ -43,6 +44,8 @@ export class GraphQLRequestError extends Error {
       readonly status?: number
       readonly graphQLErrors?: GraphQLErrorEntry[]
       readonly query?: string
+      /** The request ran past the deadline its signal carried. */
+      readonly timedOut?: boolean
     } = {},
   ) {
     super(message)
@@ -56,6 +59,39 @@ export class GraphQLRequestError extends Error {
   get status(): number | undefined {
     return this.options.status
   }
+
+  get timedOut(): boolean {
+    return this.options.timedOut === true
+  }
+}
+
+/** The server's code for a request it understood and refused: an unknown territory, a malformed selector. */
+export const GRAPHQL_INVALID_INPUT_CODE = 'INVALID_INPUT'
+
+/**
+ * The caller gave up: a query cancelled by React Query when its last observer
+ * left, a route loader abandoned on navigation. `graphqlQuery` rethrows these
+ * as they came, so a reader that settles sections can let them through.
+ */
+export function isAbortError(error: unknown): boolean {
+  return errorName(error) === 'AbortError'
+}
+
+/**
+ * The server rejected the input, not the request: it will answer the same
+ * way every time, so there is nothing to retry and nothing to alert on. The
+ * caller maps it to its own „not found".
+ */
+export function isGraphQLInvalidInput(error: unknown): error is GraphQLRequestError {
+  return (
+    error instanceof GraphQLRequestError &&
+    error.graphQLErrors.some((entry) => entry.extensions?.code === GRAPHQL_INVALID_INPUT_CODE)
+  )
+}
+
+/** The request ran past its deadline (see `withDeadline`): a failure of the read, not an abort. */
+export function isGraphQLTimeout(error: unknown): boolean {
+  return (error instanceof GraphQLRequestError && error.timedOut) || isTimeoutReason(error)
 }
 
 function formatGraphQLErrors(errors: GraphQLErrorEntry[]): string {
@@ -75,7 +111,11 @@ function parseJsonSafely(text: string): unknown {
 }
 
 export interface GraphQLQueryOptions {
-  /** AbortSignal so React Query / route loaders can cancel in-flight requests. */
+  /**
+   * AbortSignal so React Query / route loaders can cancel in-flight requests.
+   * A signal from `withDeadline` turns a request past its deadline into a
+   * `GraphQLRequestError` with `timedOut`; a plain abort is rethrown as is.
+   */
   readonly signal?: AbortSignal
   /**
    * Short label used in logs/error messages (e.g. "company", "companies").
@@ -117,6 +157,7 @@ export async function graphqlQuery<T>(
   }
 
   let response: Response
+  let rawText: string
   try {
     response = await fetch(endpoint, {
       method: 'POST',
@@ -129,18 +170,25 @@ export async function graphqlQuery<T>(
       },
       body: JSON.stringify({ query, variables }),
     })
+    // The body read can be cut short by the same signal as the request.
+    rawText = await response.text()
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : String(cause)
     if (options.signal?.aborted) {
-      // The caller gave up (a cancelled query, the SSR deadline): not a fault.
+      if (isTimeoutReason(options.signal.reason)) {
+        // The deadline the caller set passed: the read failed, and says so.
+        logger.warn('GraphQL request timed out', { label, message })
+        throw new GraphQLRequestError(`GraphQL request timed out: ${message}`, { query, timedOut: true })
+      }
+      // The caller gave up (a cancelled query, a navigation): not a fault,
+      // and the abort travels on as it came so callers can recognise it.
       logger.info('GraphQL request aborted', { label })
-    } else {
-      logger.error('GraphQL transport error', { label, message })
+      throw cause
     }
+    logger.error('GraphQL transport error', { label, message })
     throw new GraphQLRequestError(`GraphQL request failed: ${message}`, { query })
   }
 
-  const rawText = await response.text()
   const parsed = parseJsonSafely(rawText) as GraphQLResponseBody<T> | null
 
   if (!response.ok) {
@@ -158,11 +206,15 @@ export async function graphqlQuery<T>(
   }
 
   if (Array.isArray(parsed.errors) && parsed.errors.length > 0) {
-    logger.error('GraphQL errors', { label, errors: parsed.errors })
-    throw new GraphQLRequestError(`GraphQL errors: ${formatGraphQLErrors(parsed.errors)}`, {
+    const error = new GraphQLRequestError(`GraphQL errors: ${formatGraphQLErrors(parsed.errors)}`, {
       graphQLErrors: parsed.errors,
       query,
     })
+    // A refused input is the caller's to handle (a mistyped or crawled
+    // address, usually), so it leaves a breadcrumb rather than an alert.
+    if (isGraphQLInvalidInput(error)) logger.info('GraphQL input refused', { label, errors: parsed.errors })
+    else logger.error('GraphQL errors', { label, errors: parsed.errors })
+    throw error
   }
 
   if (parsed.data == null) {

@@ -163,24 +163,6 @@ export function getComparisonCell(
   return row.cells[isoPeriod] ?? null
 }
 
-/**
- * Converts a wire Decimal string into a plottable number.
- *
- * Anything that is not a finite number — `null`, an empty string, a
- * confidentiality marker like `":"` — becomes `null`, which Recharts renders
- * as a gap when the series has `connectNulls={false}`. It never becomes 0:
- * "no data" and "zero" are different claims.
- */
-export function toChartValue(value: string | null | undefined): number | null {
-  if (value === null || value === undefined) return null
-
-  const trimmed = value.trim()
-  if (trimmed.length === 0) return null
-
-  const numeric = Number(trimmed)
-  return Number.isFinite(numeric) ? numeric : null
-}
-
 // ---------------------------------------------------------------------------
 // Classification pins — ONE canonical codec, shared with the detail surface.
 // ---------------------------------------------------------------------------

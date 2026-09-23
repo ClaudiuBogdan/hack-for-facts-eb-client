@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+vi.mock('@/lib/graphql/graphql-client', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/graphql/graphql-client')>()),
+  graphqlQuery: vi.fn(),
+}))
+import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { HUB_SERIES_CAPTURED_AT, HUB_STATIC_SERIES, hubStaticSeries } from '../../lib/hub-national-series'
 import { HUB_FIGURE_CODES } from '../../lib/landing-constants'
 import { HUB_NATIONAL_SPECS, hubCountyResponse, hubTilesResponse } from '../../test/hub-fixtures'
@@ -249,6 +252,22 @@ describe('fetchStatisticsHub', () => {
       territoryLevels: ['NUTS3'],
       period: { type: 'YEAR', selection: { interval: { start: '2024', end: '2024' } } },
     })
+  })
+
+  it('lets a caller abort through rather than recording a failed section', async () => {
+    const controller = new AbortController()
+    vi.mocked(graphqlQuery).mockImplementation(async () => {
+      controller.abort()
+      throw controller.signal.reason
+    })
+    await expect(fetchStatisticsHub(controller.signal)).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('records a read past its deadline as a failed section, so the page renders and the browser reads again', async () => {
+    vi.mocked(graphqlQuery).mockRejectedValue(new GraphQLRequestError('timed out', { timedOut: true }))
+    const hub = await fetchStatisticsHub()
+    expect(hub.indicators).toBeNull()
+    expect(hub.failures).toEqual(['indicators', 'counties'])
   })
 
   it('fails sections independently and names them', async () => {

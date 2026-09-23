@@ -8,7 +8,6 @@ import {
   getComparisonCell,
   parseClassificationPin,
   removeClassificationPin,
-  toChartValue,
   upsertClassificationPin,
 } from './comparison-series'
 
@@ -192,27 +191,6 @@ describe('buildComparisonMatrix', () => {
       territoryCodes: ['54975', '54984', '54993'],
     })
     expect(matrix.periods.map((period) => period.isoPeriod)).toEqual(['2023', '2024'])
-  })
-})
-
-describe('toChartValue', () => {
-  it('parses decimal strings', () => {
-    expect(toChartValue('286598')).toBe(286598)
-    expect(toChartValue('1234.56')).toBe(1234.56)
-    expect(toChartValue('-3')).toBe(-3)
-  })
-
-  it('maps every non-numeric marker to null, never to zero', () => {
-    expect(toChartValue(null)).toBeNull()
-    expect(toChartValue(undefined)).toBeNull()
-    expect(toChartValue('')).toBeNull()
-    expect(toChartValue('   ')).toBeNull()
-    expect(toChartValue(':')).toBeNull()
-    expect(toChartValue('c')).toBeNull()
-  })
-
-  it('preserves a real zero', () => {
-    expect(toChartValue('0')).toBe(0)
   })
 })
 

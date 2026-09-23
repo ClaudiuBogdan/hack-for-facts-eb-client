@@ -5,8 +5,7 @@ import type {
   StatisticsDatasetPage,
 } from '@/schemas/statistics'
 import { fetchDatasetPage } from '../api/dataset-explorer-api'
-
-const EXPLORER_STALE_TIME = 1000 * 60 * 15
+import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
 
 /**
  * Query key source. Built explicitly rather than from the search object so that
@@ -28,12 +27,10 @@ export const datasetExplorerQueryOptions = (
   search: StatisticsDatasetExplorerSearch,
 ) =>
   queryOptions<StatisticsDatasetPage>({
-    queryKey: [
-      'statisticsDatasetExplorer',
-      generateHash(JSON.stringify(explorerHashSource(search))),
-    ],
-    queryFn: () => fetchDatasetPage(search),
-    staleTime: EXPLORER_STALE_TIME,
+    queryKey: statisticsKeys.explorerPage(generateHash(JSON.stringify(explorerHashSource(search)))),
+    queryFn: ({ signal }) => fetchDatasetPage(search, {}, signal),
+    staleTime: STATISTICS_STALE_TIME.figures,
+    retry: statisticsRetry,
   })
 
 /** A page of the INS dataset catalog for the current explorer URL state. */

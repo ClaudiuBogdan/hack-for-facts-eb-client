@@ -1,5 +1,25 @@
 import { describe, expect, it } from 'vitest'
-import { publishedNumber } from './value-status'
+import { parseWireDecimal, publishedNumber } from './value-status'
+
+describe('parseWireDecimal', () => {
+  it('reads a plain dot decimal, sign and zero included', () => {
+    expect(parseWireDecimal('286598')).toBe(286598)
+    expect(parseWireDecimal('1234.56')).toBe(1234.56)
+    expect(parseWireDecimal(' -3 ')).toBe(-3)
+    expect(parseWireDecimal('0')).toBe(0)
+  })
+
+  it.each([null, undefined, '', '   ', '..', ':', 'c'])('treats %s as no number, never zero', (value) => {
+    expect(parseWireDecimal(value)).toBeNull()
+  })
+
+  it('refuses what a float parse would silently truncate', () => {
+    expect(parseWireDecimal('1,5')).toBeNull()
+    expect(parseWireDecimal('12abc')).toBeNull()
+    expect(parseWireDecimal('1e3')).toBeNull()
+    expect(parseWireDecimal('.5')).toBeNull()
+  })
+})
 
 describe('publishedNumber', () => {
   it('reads a published decimal, a flagged-but-published one included', () => {

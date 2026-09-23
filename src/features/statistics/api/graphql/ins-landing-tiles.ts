@@ -1,6 +1,7 @@
 import { validateLandingLatest } from './landing-latest-validation'
 import { z } from 'zod'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { throwIfCancelled } from '@/lib/ssr/deadline-signal'
 import { insLatestValueNodeRawSchema } from './statistics-raw-schemas'
 import { mapLatestValue } from './statistics-mappers'
 import { INS_LATEST_VALUE_FIELDS } from './ins-queries'
@@ -15,13 +16,13 @@ export async function fetchNativeLandingTiles(
   signal?: AbortSignal,
   codes: readonly string[] = LANDING_NATIONAL_DATASET_CODES,
 ) {
-  signal?.throwIfAborted()
+  throwIfCancelled(signal)
   const response = await graphqlQuery<unknown>(
     query,
     { codes },
     { auth: 'none', signal },
   )
-  signal?.throwIfAborted()
+  throwIfCancelled(signal)
   const { latest } = z
     .object({ latest: z.array(insLatestValueNodeRawSchema) })
     .parse(response)

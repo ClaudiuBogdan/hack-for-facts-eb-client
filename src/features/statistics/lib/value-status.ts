@@ -33,14 +33,29 @@ export function describeValueStatus(status: string): string {
 /** INS flags under which a cell has no publishable number, whatever its value field holds. */
 export const BLOCKING_VALUE_STATUSES: ReadonlySet<string> = new Set([':', 'c', 'x'])
 
+const WIRE_DECIMAL = /^-?\d+(?:\.\d+)?$/
+
+/**
+ * The one reader of a wire value. The API serialises a Postgres `numeric`
+ * (scale at most 6, at most 15 integer digits) as a plain dot decimal
+ * string — never an exponent at those magnitudes, never a comma. Anything
+ * else — `null`, an empty string, a marker like `":"` or `".."`, a number
+ * with a note — is no number, and reads as `null`, never as 0 and never as
+ * the leading digits: „no figure" and „zero" are different claims, and a
+ * truncated figure is a wrong one.
+ */
+export function parseWireDecimal(value: string | null | undefined): number | null {
+  const trimmed = value?.trim()
+  if (!trimmed || !WIRE_DECIMAL.test(trimmed)) return null
+  const parsed = Number(trimmed)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 /**
  * The number a cell publishes: null when it is empty, not a number, or
  * flagged as having none. Never 0 — „no figure" and „zero" are different claims.
  */
 export function publishedNumber(value: string | null | undefined, status: string | null | undefined): number | null {
   if (BLOCKING_VALUE_STATUSES.has(status?.trim().toLowerCase() ?? '')) return null
-  const trimmed = value?.trim()
-  if (!trimmed) return null
-  const parsed = Number(trimmed)
-  return Number.isFinite(parsed) ? parsed : null
+  return parseWireDecimal(value)
 }

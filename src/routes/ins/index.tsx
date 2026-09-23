@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { t } from "@lingui/core/macro";
 import { fetchStatisticsHub } from "@/features/statistics/api/statistics-api";
+import { insLoaderSignal } from "@/features/statistics/lib/ssr-deadline";
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from "@/lib/http-cache";
 import { parseStatisticsHubSearch } from "@/schemas/statistics";
 import type { StatisticsHubData } from "@/schemas/statistics";
@@ -34,8 +35,10 @@ export const Route = createFileRoute("/ins/")({
       });
     }
   },
+  // Under the server's deadline: a section that does not answer in time
+  // fails like one that answered wrong, and the browser reads it again.
   loader: async ({ abortController }): Promise<StatisticsHubLoaderData> => ({
-    hub: await fetchStatisticsHub(abortController.signal),
+    hub: await fetchStatisticsHub(insLoaderSignal(abortController.signal)),
   }),
   // A render with a failed section is not worth caching for everyone: it is
   // served once and the next request reads again.

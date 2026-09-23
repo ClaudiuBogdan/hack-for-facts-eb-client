@@ -16,14 +16,11 @@ import { resolveComparisonDefaults } from '../lib/comparison-defaults'
 import { resolveComparisonTerritories } from '../lib/comparison-territories'
 import { comparisonPublicationKey } from '../lib/native-comparison'
 import { fetchDatasetPage } from '../api/dataset-explorer-api'
-import {
-  searchTerritories,
-  TERRITORY_SEARCH_MIN_LENGTH,
-} from '../api/territory-search-api'
 import type {
   ComparisonMatrix,
   ComparisonTerritoryToken,
 } from '../lib/comparison-series'
+import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
 
 /** One complete native fetch per source selection; period and frequency are local projections. */
 export function useComparisons(search: StatisticsComparisonsSearch) {
@@ -56,15 +53,7 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
   const enabled =
     datasetCode.length > 0 && tokens.length > 0 && inputIssues.length === 0
   const preparation = useQuery({
-    queryKey: [
-      'statistics',
-      'native-v2',
-      'comparisons',
-      'prepare',
-      datasetCode,
-      tokens,
-      explicit,
-    ],
+    queryKey: statisticsKeys.comparison.prepare([datasetCode, tokens, explicit]),
     queryFn: ({ signal }) =>
       prepareNativeComparison(
         {
@@ -77,8 +66,8 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
         signal,
       ),
     enabled,
-    staleTime: 5 * 60 * 1000,
-    retry: false,
+    staleTime: STATISTICS_STALE_TIME.figures,
+    retry: statisticsRetry,
   })
   // Preparation metadata/defaults do not depend on which explicit member is picked.
   const prepared = useMemo(() => {
@@ -111,23 +100,20 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
     resolved?.ready === true &&
     issues.length === 0
   const vector = useQuery({
-    queryKey: [
-      'statistics',
-      'native-v2',
-      'comparisons',
-      'vector',
-      datasetCode,
+    queryKey: statisticsKeys.comparison.vector(datasetCode, [
       tokens,
       prepared ? comparisonPublicationKey(prepared.descriptor) : null,
       resolved ? [...resolved.pins] : null,
       resolved?.unit ?? null,
-    ],
+    ]),
     queryFn: ({ signal }) => {
       if (!prepared) throw new Error('Missing native comparison preparation')
       return fetchNativeComparisonVector(prepared, signal)
     },
     enabled: ready,
-    retry: false,
+    // The key carries the publication: a republished matrix is another key.
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
   })
   const projection = useMemo(() => {
     if (!ready || !vector.data || !prepared)
@@ -209,13 +195,7 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
       const refreshed = await preparation.refetch()
       if (refreshed.isSuccess)
         await queryClient.invalidateQueries({
-          queryKey: [
-            'statistics',
-            'native-v2',
-            'comparisons',
-            'vector',
-            datasetCode,
-          ],
+          queryKey: statisticsKeys.comparison.vectorsOf(datasetCode),
         })
     },
     effectivePins,
@@ -244,18 +224,14 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
 export function useComparisonCountyLayer(prepared: PreparedComparison | null, period: string | null) {
   const code = prepared?.descriptor.code ?? null
   return useQuery({
-    queryKey: [
-      'statistics',
-      'native-v2',
-      'comparisons',
-      'counties',
+    queryKey: statisticsKeys.comparison.counties([
       code,
       prepared ? comparisonPublicationKey(prepared.descriptor) : null,
       prepared ? [...prepared.resolved.pins] : null,
       prepared?.resolved.unit ?? null,
       prepared?.resolved.cadence ?? null,
       period,
-    ],
+    ]),
     queryFn: ({ signal }) => {
       if (!prepared || period === null) throw new Error('Missing comparison preparation or period')
       return fetchComparisonCountyLayer(prepared, period, signal)
@@ -263,8 +239,8 @@ export function useComparisonCountyLayer(prepared: PreparedComparison | null, pe
     enabled: prepared !== null && period !== null && prepared.dataset.has_county_data,
     // Another period of the same dataset: keep the map drawn while it loads.
     placeholderData: (previous) => (previous?.code === code ? previous : undefined),
-    staleTime: 5 * 60 * 1000,
-    retry: false,
+    staleTime: STATISTICS_STALE_TIME.figures,
+    retry: statisticsRetry,
   })
 }
 
@@ -283,36 +259,17 @@ export function useComparisonDatasetSearch(term: string) {
   const enabled = trimmed.length >= COMPARISON_DATASET_SEARCH_MIN_LENGTH
 
   const query = useQuery({
-    queryKey: ['statistics', 'comparisons', 'dataset-search', 'county', trimmed],
-    queryFn: () => fetchDatasetPage({ q: trimmed, judet: true }, { onlyWithData: true }),
+    queryKey: statisticsKeys.datasetSearch(trimmed),
+    queryFn: ({ signal }) => fetchDatasetPage({ q: trimmed, judet: true }, { onlyWithData: true }, signal),
     enabled,
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
   })
 
   return {
     datasets: query.data?.datasets ?? [],
     isLoading: enabled && query.isPending,
     error: query.error,
-  }
-}
-
-/** Debounced territory search for the picker. Below the min length no request is made. */
-export function useTerritorySearch(term: string) {
-  const trimmed = term.trim()
-  const enabled = trimmed.length >= TERRITORY_SEARCH_MIN_LENGTH
-
-  const query = useQuery({
-    queryKey: ['statistics', 'comparisons', 'territory-search', trimmed],
-    queryFn: () => searchTerritories(trimmed),
-    enabled,
-  })
-
-  return {
-    // Mixed levels are first-class: LAU rows become siruta: tokens, county
-    // rows cod: tokens — one territoryCodes filter serves both.
-    rows: query.data?.rows ?? [],
-    isLoading: enabled && query.isPending,
-    error: query.error,
-    enabled,
   }
 }
 
@@ -329,7 +286,7 @@ export function useComparisonPeers(
     first && first.token.startsWith('siruta:') ? first.code : null
 
   const identityQuery = useQuery({
-    queryKey: ['statistics', 'comparisons', 'peer-identity', sirutaCode],
+    queryKey: statisticsKeys.comparison.peerIdentity(sirutaCode),
     queryFn: ({ signal }) =>
       searchInsTerritories({
         filter: { sirutaCodes: [sirutaCode ?? ''] },
@@ -337,7 +294,8 @@ export function useComparisonPeers(
         signal,
       }),
     enabled: sirutaCode !== null,
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: STATISTICS_STALE_TIME.places,
+    retry: statisticsRetry,
   })
 
   const peers: { token: string; label: string }[] = []
@@ -381,13 +339,7 @@ export function useComparisonTerritoryNames(
   const needsCounties = unresolved.some((token) => token.level === 'NUTS3')
 
   const lauQuery = useQuery({
-    queryKey: [
-      'statistics',
-      'comparisons',
-      'names',
-      'lau',
-      [...lauCodes].sort(),
-    ],
+    queryKey: statisticsKeys.comparison.lauNames([...lauCodes].sort()),
     queryFn: ({ signal }) =>
       searchInsTerritories({
         filter: { sirutaCodes: lauCodes },
@@ -395,11 +347,12 @@ export function useComparisonTerritoryNames(
         signal,
       }),
     enabled: lauCodes.length > 0,
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: STATISTICS_STALE_TIME.places,
+    retry: statisticsRetry,
   })
 
   const countyQuery = useQuery({
-    queryKey: ['statistics', 'comparisons', 'names', 'counties'],
+    queryKey: statisticsKeys.comparison.countyNames(),
     queryFn: ({ signal }) =>
       searchInsTerritories({
         filter: { levels: ['NUTS3'] },
@@ -407,7 +360,8 @@ export function useComparisonTerritoryNames(
         signal,
       }),
     enabled: needsCounties,
-    staleTime: 1000 * 60 * 60 * 24,
+    staleTime: STATISTICS_STALE_TIME.places,
+    retry: statisticsRetry,
   })
 
   return useMemo(() => {

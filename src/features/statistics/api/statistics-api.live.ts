@@ -9,6 +9,7 @@ import {
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
 import { getAuthToken } from '@/lib/auth'
 import { getApiBaseUrl } from '@/config/env'
+import { isGraphQLInvalidInput } from '@/lib/graphql/graphql-client'
 import { createLogger } from '@/lib/logger'
 import type {
   InsObservation,
@@ -57,10 +58,17 @@ export async function fetchStatisticsTerritoryHubLive(
 
   logger.info('Fetching statistics territory hub', { siruta: normalizedSiruta })
 
-  const { groups, identity: territoryRow } = await fetchStatisticsTerritoryHubData({
-    siruta: normalizedSiruta,
-    signal,
-  })
+  let read: Awaited<ReturnType<typeof fetchStatisticsTerritoryHubData>>
+  try {
+    read = await fetchStatisticsTerritoryHubData({ siruta: normalizedSiruta, signal })
+  } catch (error) {
+    // The server refuses a code that names no INS territory — a mistyped or
+    // crawled address, a Bucharest sector — as invalid input, before any
+    // `null` could come back. That is the not-found the contract promises.
+    if (isGraphQLInvalidInput(error)) return null
+    throw error
+  }
+  const { groups, identity: territoryRow } = read
 
   if (!territoryRow && groups.length === 0) {
     return null

@@ -10,12 +10,27 @@ import {
   resolveDetailSelection,
 } from '@/features/statistics/lib/source-selection'
 import { getDatasetDataStatus } from '@/features/statistics/lib/dataset-status'
+import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
+import { isAbortError, isGraphQLTimeout } from '@/lib/graphql/graphql-client'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { createLogger } from '@/lib/logger'
 import { parseStatisticsDatasetDetailSearch } from '@/schemas/statistics'
 import type {
   StatisticsDatasetSeries,
   StatisticsDatasetTier0,
 } from '@/schemas/statistics'
+
+const logger = createLogger('ins-dataset-route')
+
+/**
+ * A read the loader could not complete. The caller's own abort — a
+ * navigation that superseded this one — travels on for the router to
+ * handle; a read past its deadline was already logged by the client.
+ */
+function loaderFailure(error: unknown, code: string, stage: 'tier0' | 'series'): void {
+  if (isAbortError(error)) throw error
+  if (!isGraphQLTimeout(error)) logger.error('Dataset detail loader failed', { code, stage, error })
+}
 
 export type StatisticsDatasetDetailLoaderData = {
   readonly tier0: StatisticsDatasetTier0 | null
@@ -57,6 +72,9 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
     // insDataset(code:) is exact-match, no trim, no uppercase — normalize once.
     const code = params.cod.trim().toUpperCase()
     const scopeKey = detailScopeKey(deps)
+    // One deadline for both reads on the server; past it the page serves
+    // its retry, uncached, and the browser reads without one.
+    const signal = insLoaderSignal(abortController.signal)
 
     let tier0: StatisticsDatasetTier0
     try {
@@ -64,9 +82,10 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
       tier0 = await fetchDatasetTier0({
         code,
         entity,
-        signal: abortController.signal,
+        signal,
       })
-    } catch {
+    } catch (error) {
+      loaderFailure(error, code, 'tier0')
       return { tier0: null, series: null, scopeKey, failed: true }
     }
 
@@ -88,10 +107,11 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
         filter: selection.filter,
         inspection: !selection.canDerive,
         contextCode: tier0.dataset.context_code ?? null,
-        signal: abortController.signal,
+        signal,
       })
       return { tier0, series, scopeKey, failed: false }
-    } catch {
+    } catch (error) {
+      loaderFailure(error, code, 'series')
       return { tier0, series: null, scopeKey, failed: true }
     }
   },
