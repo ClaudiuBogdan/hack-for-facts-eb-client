@@ -65,7 +65,12 @@ export function HubLoadError({ onRetry }: { readonly onRetry: () => void }) {
   )
 }
 
+/**
+ * The height of a section head's index line and the gap under it (a 0.625rem
+ * mono line, then the title's `mt-3`): a column set beside the head starts
+ * level with the title instead of the index.
+ */
+export const HUB_BESIDE_TITLE_CLASS = 'lg:pt-[1.375rem]'
+
 export const HUB_SHORTCUT_LINK_CLASS =
   'inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline sm:min-h-0'
-
-export const HUB_TEXT_LINK_CLASS = 'font-medium text-foreground underline-offset-4 hover:text-primary hover:underline'

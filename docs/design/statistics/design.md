@@ -1153,6 +1153,39 @@ bars of almost the same length, and it showed only the top ten. Now:
   window is tall enough to hold all of it (672 px); a shorter one scrolls it
   away rather than clip the legend.
 
+## 6q. „Ce s-a schimbat": the chart reads by year, the column compares (2026-09-23)
+
+Band 03 drew births and deaths as two bare lines between 1990 and 2025 — no
+value axis, no year but the ends, nothing to point at — and beside it three
+figures (employees, life expectancy, tourist arrivals) with their change in
+the quietest type. The same three already have rows and sparklines in band
+01. Now:
+
+- **The chart has axes and a reading.** Round value ticks (50.000 apart)
+  with gridlines, the decades on the time axis, and the space between the
+  lines shaded by which runs above: grey for the years with more deaths than
+  births, blue for the two with more births. Pointing at it — a mouse, a
+  finger dragged along it, or the arrow keys once focused — picks the
+  nearest year: a vertical rule, a dot on each line and a tooltip with both
+  values and the natural change („Spor natural -93.966"), kept inside the
+  plot on a phone. A finger's reading stays until a tap elsewhere; a swipe
+  the page takes to scroll leaves none. To a screen reader the chart is a
+  slider over the years, its value the reading, so the arrow keys reach it
+  in browse mode too. The legend names the lines and the shadings; the
+  latest values moved to the table.
+- **On a wide screen the chart starts level with the section title** and
+  ends level with the table.
+- **The column compares 1990 with now**: births, deaths, life expectancy,
+  employees and dwellings — every captured series with a 1990 point — at
+  1990, at their latest year (a row whose latest year differs says so) and
+  the change, in percent for counts and in years for life expectancy.
+  Tourist arrivals, captured from 2001, stay in band 01. Each row opens the
+  series over the span it compares; pointing at births or deaths brings
+  that line forward in the chart.
+- **The lede is the one sentence the data proves**: „Din 1992, în fiecare
+  an au murit mai mulți oameni decât s-au născut." The 2025 counts it used
+  to spell out are in the table.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { plural, t } from '@lingui/core/macro'
+import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
+import { cn } from '@/lib/utils'
 import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics'
-import { HubSparkline, HubTwoLineChart } from '../components/hub/hub-charts'
-import { HUB_SHORTCUT_LINK_CLASS, HUB_TEXT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
+import { HubTwoLineChart } from '../components/hub/hub-charts'
+import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
 import { HubCountyMap } from '../components/hub/hub-county-map'
 import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank'
 import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
@@ -18,13 +19,12 @@ import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/h
 import { useIndicatorLabel } from '../components/hub/hub-labels'
 import { HubPlaceFinder } from '../components/hub/hub-place-finder'
 import { HubThemePanel } from '../components/hub/hub-theme-panel'
+import { HubThenNow } from '../components/hub/hub-then-now'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
 import {
   annualInflationRate,
   deathsExceedBirthsSince,
-  describeHubChange,
   formatHubPeriod,
-  formatHubValue,
   hubUnitWord,
   indicatorDetailSearch,
   sameMonthLastYear,
@@ -104,6 +104,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const retry = () => void query.refetch()
   const labelOf = useIndicatorLabel()
   const [activeCounty, setActiveCounty] = useState<string | undefined>(undefined)
+  const [activeSeries, setActiveSeries] = useState<string | undefined>(undefined)
 
   const indicatorKey = search.indicator ?? DEFAULT_INDICATOR
   const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0]
@@ -119,7 +120,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
 
   const lifeExpectancy = indicatorByCode(hub, 'POP217A')
   const employees = indicatorByCode(hub, 'FOM104D')
-  const tourists = indicatorByCode(hub, 'TUR104E')
+  const dwellings = indicatorByCode(hub, 'LOC101B')
   const births = indicatorByCode(hub, 'POP201D')
   const deaths = indicatorByCode(hub, 'POP206D')
   const figureRows = HUB_FIGURE_CODES.flatMap((code) => {
@@ -128,6 +129,9 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   })
   const since = lifeExpectancy?.series[0]?.period ?? '1990'
   const naturalDecreaseSince = births && deaths ? deathsExceedBirthsSince(births.series, deaths.series) : null
+  const changeRows = [births, deaths, lifeExpectancy, employees, dwellings].flatMap((indicator) =>
+    indicator && indicator.series.length > 1 ? [{ indicator, label: labelOf(indicator) }] : [],
+  )
 
   const inflation = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.inflation))
   const earnings = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.earnings))
@@ -365,63 +369,37 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                   </Trans>
                 }
                 lede={
-                  births?.value !== null && births?.value !== undefined && deaths?.value !== null && deaths?.value !== undefined ? (
-                    <>
-                      <Trans>
-                        În {births.period} s-au născut{' '}
-                        {plural(births.value, { one: 'un copil', few: '# copii', other: '# de copii' })} și au murit{' '}
-                        {plural(deaths.value, { one: 'o persoană', few: '# persoane', other: '# de persoane' })}.
-                      </Trans>
-                      {naturalDecreaseSince ? (
-                        <>
-                          {' '}
-                          <Trans>Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut.</Trans>
-                        </>
-                      ) : null}
-                    </>
+                  naturalDecreaseSince ? (
+                    <Trans>Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut.</Trans>
                   ) : null
                 }
               />
-              <dl className="mt-8 grid grid-cols-1 gap-y-4 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-1" data-reveal>
-                {[employees, lifeExpectancy, tourists].map((indicator) =>
-                  indicator && indicator.series.length > 1 ? (
-                    <ChangeItem
-                      key={indicator.code}
-                      label={labelOf(indicator)}
-                      indicator={indicator}
-                      since={indicator.series[0].period}
-                    />
-                  ) : null,
-                )}
-              </dl>
+              <div className="mt-8" data-reveal>
+                {changeRows.length > 0 ? (
+                  <HubThenNow rows={changeRows} since={since} onActiveChange={setActiveSeries} />
+                ) : query.isPending ? (
+                  <HubPending rows={5} />
+                ) : null}
+              </div>
             </div>
-            <div className="lg:col-span-6 lg:col-start-7" data-reveal>
+            <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
               {births && deaths && births.series.length > 1 && deaths.series.length > 1 ? (
                 <>
                   <MonoLabel className="block text-muted-foreground">
                     <Trans>Născuți vii și decedați, pe an</Trans>
                   </MonoLabel>
                   <div className="mt-3">
-                    <HubTwoLineChart a={{ label: labelOf(births), points: births.series }} b={{ label: labelOf(deaths), points: deaths.series }} />
+                    <HubTwoLineChart
+                      a={{ label: labelOf(births), points: births.series }}
+                      b={{ label: labelOf(deaths), points: deaths.series }}
+                      gap={{
+                        label: t`Spor natural`,
+                        aAbove: t`Nașteri peste decese`,
+                        bAbove: t`Decese peste nașteri`,
+                      }}
+                      highlight={activeSeries === births.code ? 'a' : activeSeries === deaths.code ? 'b' : undefined}
+                    />
                   </div>
-                  <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-                    <Link
-                      to="/ins/seturi/$cod"
-                      params={{ cod: births.code }}
-                      search={{ ...indicatorDetailSearch(births), din: Number(births.series[0].period), pana: Number(births.period) }}
-                      className={HUB_TEXT_LINK_CLASS}
-                    >
-                      <Trans>Seria nașterilor</Trans>
-                    </Link>
-                    <Link
-                      to="/ins/seturi/$cod"
-                      params={{ cod: deaths.code }}
-                      search={{ ...indicatorDetailSearch(deaths), din: Number(deaths.series[0].period), pana: Number(deaths.period) }}
-                      className={HUB_TEXT_LINK_CLASS}
-                    >
-                      <Trans>Seria deceselor</Trans>
-                    </Link>
-                  </p>
                 </>
               ) : query.isPending ? (
                 <HubPending rows={6} />
@@ -489,28 +467,6 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
           </div>
         </RuledFrame>
       </section>
-    </div>
-  )
-}
-
-function ChangeItem({ label, indicator, since }: { readonly label: string; readonly indicator: StatisticsHubIndicator; readonly since: string }) {
-  const last = indicator.series[indicator.series.length - 1]
-  if (!last) return null
-  const value = formatHubValue(last.value, indicator.unit, indicator.unitLabel, { compact: true })
-  const change = describeHubChange(indicator.series, indicator.unit, since)
-  return (
-    <div>
-      <dt>
-        <MonoLabel className="text-muted-foreground">
-          {label} · {formatHubPeriod(last.period)}
-        </MonoLabel>
-      </dt>
-      <dd className="mt-1 text-sm text-foreground">
-        <span className="text-base font-semibold tabular-nums tracking-tight">{value.value}</span>
-        {value.unit ? <span className="ml-1 text-muted-foreground">{value.unit}</span> : null}
-        {change ? <MonoLabel className="ml-2 tabular-nums text-muted-foreground">{change.text}</MonoLabel> : null}
-        {!change && indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={64} height={18} className="ml-2 text-primary" /> : null}
-      </dd>
     </div>
   )
 }

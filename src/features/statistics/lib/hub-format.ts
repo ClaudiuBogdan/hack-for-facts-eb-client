@@ -109,28 +109,23 @@ export function formatChartPeriod(period: string): string {
   return formatHubPeriod(period)
 }
 
-export interface HubChange {
-  readonly text: string
+/**
+ * The change from one value to another, as the table of „then and now"
+ * shows it. Counts change in percent; rates and years change in their own
+ * unit, because a percent of a percent misleads. Null when a count starts
+ * at zero, where a percent has no meaning.
+ */
+export function describeHubDelta(from: number, to: number, unit: StatisticsHubUnit): string | null {
+  const delta = to - from
+  if (unit === 'percent') return t`${formatSigned(delta, 1, true)} pp`
+  if (unit === 'years') return t`${formatSigned(delta, 1, true)} ani`
+  if (from === 0) return null
+  return `${formatSigned((delta / Math.abs(from)) * 100, 1, true)}%`
 }
 
-/**
- * Change from the first point at or after `since` to the last point. Counts
- * change in percent; rates and years change in their own unit, because a
- * percent of a percent misleads.
- */
-export function describeHubChange(
-  series: readonly StatisticsHubSeriesPoint[],
-  unit: StatisticsHubUnit,
-  since: string,
-): HubChange | null {
-  const from = series.find((point) => point.period >= since)
-  const to = series[series.length - 1]
-  if (!from || !to || from === to || from.value === 0) return null
-  const delta = to.value - from.value
-  if (unit === 'percent') return { text: t`${formatSigned(delta, 1)} pp din ${from.period}` }
-  if (unit === 'years') return { text: t`${formatSigned(delta, 1)} ani din ${from.period}` }
-  const pct = (delta / from.value) * 100
-  return { text: t`${formatSigned(pct, 1)}% din ${from.period}` }
+/** A signed whole figure („+4.560", „-93.966"), for a difference between two counts. */
+export function formatHubSigned(value: number): string {
+  return formatSigned(value, 0)
 }
 
 /**

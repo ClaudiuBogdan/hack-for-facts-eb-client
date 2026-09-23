@@ -4,7 +4,8 @@ import {
   annualInflationRate,
   deathsExceedBirthsSince,
   describeAgainstNational,
-  describeHubChange,
+  describeHubDelta,
+  formatHubSigned,
   formatHubValue,
   hubUnitWord,
   sameMonthLastYear,
@@ -43,17 +44,27 @@ describe('alignSeriesByPeriod', () => {
   })
 })
 
-describe('describeHubChange', () => {
-  it('reads counts in percent and years in years', () => {
-    const counts = describeHubChange([{ period: '1990', value: 200 }, { period: '2024', value: 100 }], 'persons', '1990')
-    expect(counts?.text).toMatch(/50/)
-    const years = describeHubChange([{ period: '1990', value: 69.5 }, { period: '2025', value: 77.4 }], 'years', '1990')
-    expect(years?.text).toMatch(/7,9|7\.9/)
-    expect(years?.text).toMatch(/ani/)
+describe('describeHubDelta', () => {
+  it('reads counts in percent, years in years and a percent in points, to one decimal', () => {
+    expect(describeHubDelta(314746, 145725, 'persons')).toBe('-53,7%')
+    expect(describeHubDelta(8006349, 10177161, 'count')).toBe('+27,1%')
+    expect(describeHubDelta(69.56, 77.45, 'years')).toBe('+7,9 ani')
+    expect(describeHubDelta(3.3, 3.3, 'percent')).toBe('0,0 pp')
   })
 
-  it('returns null when the anchor year is not in the series', () => {
-    expect(describeHubChange([{ period: '2024', value: 1 }], 'persons', '2025')).toBeNull()
+  it('signs a count’s change by its direction, whatever the sign of where it starts', () => {
+    expect(describeHubDelta(-100, -50, 'count')).toBe('+50,0%')
+  })
+
+  it('has no percent change from zero', () => {
+    expect(describeHubDelta(0, 10, 'persons')).toBeNull()
+    expect(describeHubDelta(0, 10, 'years')).toBe('+10,0 ani')
+  })
+
+  it('signs a difference', () => {
+    expect(formatHubSigned(-93966)).toBe('-93.966')
+    expect(formatHubSigned(67660)).toBe('+67.660')
+    expect(formatHubSigned(0)).toBe('0')
   })
 })
 

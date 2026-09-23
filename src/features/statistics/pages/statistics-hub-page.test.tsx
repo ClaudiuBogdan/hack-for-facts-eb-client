@@ -203,20 +203,35 @@ describe('StatisticsHubPage', () => {
     expect(within(counties).queryByRole('list')).not.toBeInTheDocument()
   })
 
-  it('draws the 35-year band from the captured series and links each series with its span', () => {
+  it('compares 1990 with now beside the births-and-deaths chart, and links each series with its span', () => {
     stub(hubData())
     render(<StatisticsHubPage search={{}} />)
 
     const change = screen.getByRole('heading', { name: /Ce s-a schimbat/ }).closest('section')!
-    expect(within(change).getByRole('img', { name: /Născuți vii și Decedați, 1990–2025/ })).toBeInTheDocument()
-    const births = within(change).getByRole('link', { name: 'Seria nașterilor' })
+    expect(within(change).getByRole('slider', { name: /Născuți vii și Decedați, 1990–2025/ })).toBeInTheDocument()
+    expect(change).toHaveTextContent('Din 1992, în fiecare an au murit mai mulți oameni decât s-au născut.')
+    expect(change).not.toHaveTextContent(/captură/i)
+
+    const births = within(change).getByRole('link', { name: /Născuți vii/ })
+    expect(births).toHaveTextContent('-53,7%')
     const params = new URL(births.getAttribute('href')!, 'http://localhost').searchParams
     expect(params.get('din')).toBe('1990')
     expect(params.get('pana')).toBe('2025')
-    expect(within(change).getByText(/-33,1% din 1990/)).toBeInTheDocument()
-    expect(change).toHaveTextContent('Din 1992, în fiecare an au murit mai mulți oameni decât s-au născut.')
-    expect(change).not.toHaveTextContent(/captură/i)
-    expect(within(change).getByText(/\+7,9 ani din 1990/)).toBeInTheDocument()
+    expect(within(change).getByRole('link', { name: /Speranța de viață/ })).toHaveTextContent('+7,9 ani')
+    expect(within(change).getByRole('link', { name: /Salariați/ })).toHaveTextContent('-33,1%')
+    // Tourist arrivals are captured from 2001: no 1990 to compare with.
+    expect(within(change).queryByRole('link', { name: /Sosiri/ })).not.toBeInTheDocument()
+  })
+
+  it('brings a series forward in the chart while its row is pointed at', () => {
+    stub(hubData())
+    render(<StatisticsHubPage search={{}} />)
+    const change = screen.getByRole('heading', { name: /Ce s-a schimbat/ }).closest('section')!
+    const lines = () => [...change.querySelectorAll('svg path[fill="none"]')].map((path) => path.getAttribute('class') ?? '')
+    expect(lines().some((line) => line.includes('opacity-30'))).toBe(false)
+    fireEvent.pointerEnter(within(change).getByRole('link', { name: /Decedați/ }), { pointerType: 'mouse' })
+    // Deaths is drawn first, births over it: births recedes.
+    expect(lines()).toEqual([expect.not.stringContaining('opacity-30'), expect.stringContaining('opacity-30')])
   })
 
   it('spells out an INS quality flag next to the period instead of showing the raw letter', () => {
