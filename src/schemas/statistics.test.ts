@@ -67,6 +67,15 @@ describe('statistics route search schemas', () => {
       expect(parseStatisticsDatasetExplorerSearch({ frecventa: 'MONTHLY' })).toEqual({ frecventa: ['MONTHLY'] })
       expect(parseStatisticsDatasetExplorerSearch({ frecventa: ['ANNUAL', 'MONTHLY'] })).toEqual({ frecventa: ['ANNUAL', 'MONTHLY'] })
       expect(parseStatisticsDatasetExplorerSearch({ frecventa: 'WEEKLY' })).toEqual({})
+      // A pasted link that repeats a cadence names it once; an empty list is no filter.
+      expect(parseStatisticsDatasetExplorerSearch({ frecventa: ['ANNUAL', 'ANNUAL'] })).toEqual({ frecventa: ['ANNUAL'] })
+      expect(parseStatisticsDatasetExplorerSearch({ frecventa: [] })).toEqual({})
+    })
+
+    it('keeps a search term the router parsed as a number', async () => {
+      const { parseStatisticsDatasetExplorerSearch } = await import('./statistics')
+      expect(parseStatisticsDatasetExplorerSearch({ q: 2024 })).toEqual({ q: '2024' })
+      expect(parseStatisticsDatasetExplorerSearch({ q: ' populatie ' })).toEqual({ q: 'populatie' })
     })
   })
 

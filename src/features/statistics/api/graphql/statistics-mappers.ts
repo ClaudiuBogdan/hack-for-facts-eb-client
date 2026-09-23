@@ -41,9 +41,9 @@ export function mapDatasetSummary(node: InsDatasetNodeRaw): StatisticsDatasetSum
     hasCountyData: node.has_county_data ?? false,
     hasSiruta: node.has_siruta ?? false,
     dataStatus: mapDataStatus(node),
-    latestPeriod: null,
     contextCode: node.context_code ?? null,
     contextNameRo: node.context_name_ro ?? null,
+    contextNameEn: node.context_name_en ?? null,
     contextPath: node.context_path ?? null,
   }
 }

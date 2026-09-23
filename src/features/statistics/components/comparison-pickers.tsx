@@ -12,6 +12,7 @@ import { TERRITORY_SEARCH_MIN_LENGTH } from '../api/territory-search-api'
 import { COMPARISON_DATASET_SEARCH_MIN_LENGTH, useComparisonDatasetSearch } from '../hooks/use-comparisons'
 import { useTerritorySearch } from '../hooks/use-territory-search'
 import { comparisonPlaceName } from '../lib/comparison-format'
+import { datasetDisplayName } from '../lib/dataset-names'
 import { COMPARISON_QUICK_INDICATORS } from '../lib/comparison-presets'
 import { StatisticsDebouncedSearchInput } from './filters/statistics-debounced-search-input'
 
@@ -104,7 +105,7 @@ export function ComparisonIndicatorPicker({
           <PickerList>
             <ul>
               {search.datasets.map((dataset) =>
-                row(dataset.code, dataset.nameRo ?? dataset.code, meta(dataset.code, dataset.hasUatData)),
+                row(dataset.code, datasetDisplayName(dataset, i18n.locale), meta(dataset.code, dataset.hasUatData)),
               )}
             </ul>
           </PickerList>

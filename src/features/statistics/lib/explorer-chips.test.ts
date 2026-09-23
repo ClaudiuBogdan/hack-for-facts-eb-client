@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildExplorerChips,
-  explorerChipLabel,
   explorerChipParts,
   explorerContextLabel,
-  explorerPeriodicityLabel,
 } from './explorer-chips'
 import {
   buildStatisticsContextTree,
@@ -71,26 +69,6 @@ describe('buildExplorerChips', () => {
   })
 })
 
-describe('explorerChipLabel', () => {
-  it('labels every chip kind in Romanian', () => {
-    const chips = buildExplorerChips({
-      q: 'turism',
-      context: '2',
-      frecventa: ['ANNUAL'],
-      uat: true,
-      judet: true,
-    })
-
-    expect(chips.map((chip) => explorerChipLabel(chip))).toEqual([
-      'Conține: turism',
-      'Domeniu: Economic',
-      'Periodicitate: Anual',
-      'Acoperire: UAT',
-      'Acoperire: județ',
-    ])
-  })
-})
-
 describe('explorerChipParts', () => {
   it('splits every chip kind into the dimension and its value', () => {
     const chips = buildExplorerChips({
@@ -110,14 +88,6 @@ describe('explorerChipParts', () => {
     ])
   })
 
-  // The chips row sets the two halves apart; the joined phrase is what the
-  // dismiss button is named, and the integration spec clicks it by that name.
-  it('joins back into the phrase the label carries', () => {
-    const [chip] = buildExplorerChips({ frecventa: ['MONTHLY'] })
-
-    expect(chip).toBeDefined()
-    expect(explorerChipLabel(chip!)).toBe('Periodicitate: Lunar')
-  })
 })
 
 describe('explorerContextLabel', () => {
@@ -142,18 +112,10 @@ describe('explorerContextLabel', () => {
     )
 
     expect(explorerContextLabel('1012', index)).toBe('2. POPULATIA DUPA DOMICILIU')
-    expect(
-      explorerChipLabel(
-        { id: 'context', kind: 'context', value: '1012', next: {} },
-        index,
-      ),
-    ).toBe('Domeniu: 2. POPULATIA DUPA DOMICILIU')
+    expect(explorerChipParts({ id: 'context', kind: 'context', value: '1012', next: {} }, index)).toEqual({
+      name: 'Domeniu',
+      value: '2. POPULATIA DUPA DOMICILIU',
+    })
   })
 })
 
-describe('explorerPeriodicityLabel', () => {
-  it('renders periodicity in words', () => {
-    expect(explorerPeriodicityLabel('QUARTERLY')).toBe('Trimestrial')
-    expect(explorerPeriodicityLabel('MONTHLY')).toBe('Lunar')
-  })
-})

@@ -31,9 +31,13 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('StatisticsLandingCatalog', 'catalog')
   await mockApi.mockGraphQL('StatisticsContextTree', 'context-tree')
 
-  // Page 2 keys on the offset, not the filter.
+  // Page 2 keys on the offset, not the filter; a page past the end answers
+  // no rows under the true count.
   await mockApi.mockGraphQL('InsDatasetsExplorer', 'page-2', {
     variables: { offset: 25 },
+  })
+  await mockApi.mockGraphQL('InsDatasetsExplorer', 'past-end', {
+    variables: { offset: 24950 },
   })
 
   // Sheet filters.
@@ -182,7 +186,10 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
       await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
 
       await page.keyboard.press('Escape')
-      await expect(page.getByRole('button', { name: 'Filtre (2 active)' })).toBeVisible({ timeout: 15000 })
+      // Closing the sheet hands the focus back to the button that opened it.
+      const trigger = page.getByRole('button', { name: 'Filtre (2 active)' })
+      await expect(trigger).toBeVisible({ timeout: 15000 })
+      await expect(trigger).toBeFocused()
       await expect(page.getByText(/^un set de date$/)).toBeVisible()
     })
   })
@@ -198,13 +205,17 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
       timeout: 15000,
     })
 
-    await page.getByRole('button', { name: 'Elimină filtrul Domeniu: Finanțe' }).click()
+    // From the keyboard: the chip leaves the page with the focus on it, so
+    // the focus moves to the search field rather than falling to the body.
+    await page.getByRole('button', { name: 'Elimină filtrul Domeniu: Finanțe' }).focus()
+    await page.keyboard.press('Enter')
 
     await expect.poll(() => searchParam(page, 'context')).toBeNull()
     await expect.poll(() => searchParam(page, 'frecventa')).toBe('["ANNUAL"]')
     await expect(page.getByText(/1[.,]412 seturi de date/)).toBeVisible({
       timeout: 15000,
     })
+    await expect(page.getByRole('searchbox', { name: 'Caută seturi de date' })).toBeFocused()
   })
 
   test('?pagina=2 requests the next offset', async ({ page }) => {
@@ -219,6 +230,18 @@ test.describe('Dataset explorer — search, filters, pagination', () => {
     await page.getByRole('button', { name: 'Anterioară' }).click()
     await expect.poll(() => searchParam(page, 'pagina')).toBeNull()
     await expect(page.getByText('POP107D')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('a page past the end says so and leads to the last page', async ({ page }) => {
+    await page.goto(`${ROUTE}?pagina=999`)
+    await waitForPageReady(page)
+
+    await expect(page.getByText('Pagina 999 nu există')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByText('Rezultatele au 76 de pagini.')).toBeVisible()
+    await expect(page.getByText(/1[.,]898 de seturi de date/)).toBeVisible()
+
+    await page.getByRole('button', { name: 'Mergi la ultima pagină' }).click()
+    await expect.poll(() => searchParam(page, 'pagina')).toBe('76')
   })
 
   test('a deep-linked URL restores every control', async ({ page }) => {

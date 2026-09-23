@@ -1,16 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { plural, t } from '@lingui/core/macro'
+import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { AlertTriangle } from 'lucide-react'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { EmptyState } from '@/components/ui/empty-state'
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
-import { DatasetExplorerPagination } from '../components/dataset-explorer-pagination'
-import { DatasetExplorerRow } from '../components/dataset-explorer-row'
+import { DatasetExplorerResults } from '../components/dataset-explorer-results'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import { DatasetExplorerFilterControls } from '../components/filters/dataset-explorer-filter-controls'
 import { DatasetExplorerFilterSheet } from '../components/filters/dataset-explorer-filter-sheet'
@@ -25,36 +18,13 @@ import {
   indexStatisticsContextTree,
 } from '../lib/context-tree'
 import { buildExplorerChips, explorerChipParts } from '../lib/explorer-chips'
-import { clearedExplorerSearch, countActiveExplorerFilters, EXPLORER_PAGE_SIZE, hasActiveExplorerFilters } from '../lib/explorer-filter'
-import { statisticsTheme } from '../lib/statistics-theme'
+import { clearedExplorerSearch, countActiveExplorerFilters } from '../lib/explorer-filter'
 
 type Props = {
   readonly search: StatisticsDatasetExplorerSearch
 }
 
-/**
- * The band's body while the read is in flight: the row anatomy the real list
- * will have — title, provenance line, meta column — so the page rebuilds into
- * the same layout rather than a different one.
- */
-function ExplorerSkeletonRows() {
-  return (
-    <div className="divide-y divide-border/70" aria-hidden>
-      {Array.from({ length: 8 }, (_, index) => (
-        <div key={index} className="flex items-baseline justify-between gap-6 px-4 py-3">
-          <div className="min-w-0 flex-1 space-y-2.5">
-            <Skeleton className="h-3.5 w-[min(28rem,80%)]" />
-            <Skeleton className="h-4 w-40" />
-          </div>
-          <div className="w-20 shrink-0 space-y-2">
-            <Skeleton className="h-3 w-full" />
-            <Skeleton className="h-3 w-3/4" />
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
+const SEARCH_INPUT_ID = 'dataset-explorer-search'
 
 /**
  * The dataset catalog: a facet rail beside the list on desktop, the same
@@ -83,16 +53,6 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
     [contextRoots],
   )
 
-  const page = search.pagina ?? 1
-  const datasets = explorerQuery.data?.datasets ?? []
-  const totalCount = explorerQuery.data?.totalCount ?? 0
-  const isFiltered = hasActiveExplorerFilters(search)
-  // A page past the end — an old link, a hand-edited URL — returns no rows
-  // while the count is not zero. It used to read as an empty catalog under
-  // „1.916 seturi de date", with no pagination to get back.
-  const lastPage = Math.max(1, Math.ceil(totalCount / EXPLORER_PAGE_SIZE))
-  const pastTheEnd = explorerQuery.isSuccess && datasets.length === 0 && totalCount > 0 && page > lastPage
-
   const applySearch = useCallback(
     (next: StatisticsDatasetExplorerSearch) => {
       void navigate({ to: '/ins/seturi', search: next })
@@ -114,18 +74,14 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
       id: chip.id,
       name: name ?? undefined,
       value,
-      onRemove: () => applySearch(chip.next),
+      // A chip removed from the keyboard takes its focus with it; the search
+      // field is the control that stays, and the next chip is a Tab away.
+      onRemove: (event) => {
+        applySearch(chip.next)
+        if (event?.detail === 0) document.getElementById(SEARCH_INPUT_ID)?.focus()
+      },
     }
   })
-
-  const pagination = explorerQuery.isSuccess && datasets.length > 0 ? (
-    <DatasetExplorerPagination
-      page={page}
-      totalCount={totalCount}
-      hasNextPage={explorerQuery.data.hasNextPage}
-      onPageChange={(next) => applySearch({ ...search, pagina: next > 1 ? next : undefined })}
-    />
-  ) : null
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,134 +122,33 @@ export function StatisticsDatasetExplorerPage({ search }: Props) {
                 <StatisticsDebouncedSearchInput
                   value={search.q}
                   onCommit={handleQueryChange}
-                  inputId="dataset-explorer-search"
+                  inputId={SEARCH_INPUT_ID}
                   placeholder={t`Caută după denumire sau cod de matrice`}
                   ariaLabel={t`Caută seturi de date`}
                   clearLabel={t`Șterge căutarea`}
                   size="lg"
                   className="sm:flex-1"
                 />
-                {/* Matches the field it stands beside — a 40px button next to a
-                    48px input reads as the smaller of two unequal controls. */}
-                <StatisticsFilterTriggerButton
-                  activeCount={countActiveExplorerFilters(search)}
-                  onClick={() => setFiltersOpen(true)}
-                  className="h-12 lg:hidden"
+                {/* The sheet renders its own trigger beside the field, so a
+                    close returns the focus to it. It matches the field it
+                    stands beside — a 40px button next to a 48px input reads
+                    as the smaller of two unequal controls. */}
+                <DatasetExplorerFilterSheet
+                  open={filtersOpen}
+                  onOpenChange={setFiltersOpen}
+                  trigger={<StatisticsFilterTriggerButton activeCount={countActiveExplorerFilters(search)} className="h-12 lg:hidden" />}
+                  search={search}
+                  onChange={applySearch}
+                  catalog={catalog}
+                  contextRoots={contextRoots}
+                  contextIndex={contextIndex}
                 />
               </div>
 
               <StatisticsActiveFilters chips={chips} onClearAll={() => applySearch(clearedExplorerSearch())} />
             </section>
 
-            <DatasetExplorerFilterSheet
-              open={filtersOpen}
-              onOpenChange={setFiltersOpen}
-              search={search}
-              onChange={applySearch}
-              catalog={catalog}
-              contextRoots={contextRoots}
-              contextIndex={contextIndex}
-            />
-
-            {explorerQuery.isError ? (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-                <AlertTitle>
-                  <Trans>Nu am putut încărca seturile de date</Trans>
-                </AlertTitle>
-                <AlertDescription className="space-y-3">
-                  <p>
-                    <Trans>Încearcă din nou fără să pierzi filtrele curente.</Trans>
-                  </p>
-                  <Button variant="outline" size="sm" onClick={() => void explorerQuery.refetch()}>
-                    <Trans>Reîncearcă</Trans>
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            ) : (
-              /*
-                One band for every answer — rows, nothing, or a read still in
-                flight. It is mounted for the page's whole life on purpose: the
-                count is a live region, and a live region that arrives with its
-                text already inside it is not announced. `overflow-hidden`
-                keeps the last row's focus ring inside the card's radius.
-              */
-              <section className={cn(statisticsTheme.band, 'overflow-hidden')}>
-                <div className={statisticsTheme.bandHeader}>
-                  <p className={statisticsTheme.sectionLabel} aria-live="polite">
-                    {explorerQuery.isSuccess
-                      ? plural(totalCount, { one: 'un set de date', few: '# seturi de date', other: '# de seturi de date' })
-                      : null}
-                  </p>
-                  {explorerQuery.isPending ? <Skeleton className="h-3.5 w-36" /> : null}
-                </div>
-
-                {explorerQuery.isPending ? <ExplorerSkeletonRows /> : null}
-
-                {explorerQuery.isSuccess && datasets.length > 0 ? (
-                  <ul className="divide-y divide-border/70" aria-label={t`Rezultate`}>
-                    {datasets.map((dataset) => (
-                      <DatasetExplorerRow
-                        key={dataset.code}
-                        dataset={dataset}
-                        filteredContextCode={search.context}
-                      />
-                    ))}
-                  </ul>
-                ) : null}
-
-                {pastTheEnd ? (
-                  <div className="space-y-3 p-4">
-                    <EmptyState
-                      className="border-0 p-2"
-                      title={t`Pagina ${page} nu există`}
-                      description={plural(lastPage, {
-                        one: 'Rezultatele încap pe o singură pagină.',
-                        few: 'Rezultatele au # pagini.',
-                        other: 'Rezultatele au # de pagini.',
-                      })}
-                    />
-                    <div className="flex justify-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => applySearch({ ...search, pagina: lastPage > 1 ? lastPage : undefined })}
-                      >
-                        <Trans>Mergi la ultima pagină</Trans>
-                      </Button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {explorerQuery.isSuccess && datasets.length === 0 && !pastTheEnd ? (
-                  <div className="space-y-3 p-4">
-                    {/* Inside the band, so the dashed frame would be a card in a card. */}
-                    {isFiltered ? (
-                      <>
-                        <EmptyState
-                          className="border-0 p-2"
-                          title={t`Niciun set nu corespunde filtrelor`}
-                          description={t`Încearcă termeni mai generali sau renunță la câteva filtre.`}
-                        />
-                        <div className="flex justify-center">
-                          <Button variant="outline" size="sm" onClick={() => applySearch(clearedExplorerSearch())}>
-                            <Trans>Șterge filtrele</Trans>
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <EmptyState
-                        className="border-0 p-2"
-                        title={t`Catalogul INS este gol`}
-                        description={t`Serverul nu a returnat niciun set de date catalogat.`}
-                      />
-                    )}
-                  </div>
-                ) : null}
-
-                {pagination}
-              </section>
-            )}
+            <DatasetExplorerResults query={explorerQuery} search={search} onSearchChange={applySearch} />
           </div>
         </div>
       </div>

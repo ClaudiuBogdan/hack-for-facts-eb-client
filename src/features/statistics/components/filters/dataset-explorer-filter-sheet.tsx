@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
 import {
@@ -7,18 +8,21 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from '@/components/ui/sheet'
 import type { StatisticsDatasetExplorerSearch, StatisticsLandingCatalog } from '@/schemas/statistics'
 import type {
   StatisticsContextIndex,
   StatisticsContextTreeNode,
 } from '../../lib/context-tree'
-import { countActiveExplorerFilters } from '../../lib/explorer-filter'
+import { clearedExplorerFilters, countActiveExplorerFilters } from '../../lib/explorer-filter'
 import { DatasetExplorerFilterControls } from './dataset-explorer-filter-controls'
 
 type Props = {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
+  /** The button that opens the sheet. Rendered inside it, so closing returns the focus to it. */
+  readonly trigger: ReactNode
   readonly search: StatisticsDatasetExplorerSearch
   readonly onChange: (next: StatisticsDatasetExplorerSearch) => void
   readonly catalog?: StatisticsLandingCatalog
@@ -34,6 +38,7 @@ type Props = {
 export function DatasetExplorerFilterSheet({
   open,
   onOpenChange,
+  trigger,
   search,
   onChange,
   catalog,
@@ -44,6 +49,7 @@ export function DatasetExplorerFilterSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent side="right" className="flex w-full flex-col gap-6 sm:max-w-md">
         <SheetHeader>
           <SheetTitle>
@@ -70,9 +76,7 @@ export function DatasetExplorerFilterSheet({
             type="button"
             variant="ghost"
             disabled={activeCount === 0}
-            onClick={() =>
-              onChange({ ...search, context: undefined, frecventa: undefined, uat: undefined, judet: undefined, pagina: undefined })
-            }
+            onClick={() => onChange(clearedExplorerFilters(search))}
           >
             <Trans>Șterge filtrele</Trans>
           </Button>

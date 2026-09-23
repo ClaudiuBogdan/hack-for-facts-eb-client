@@ -2,15 +2,8 @@ import { t } from '@lingui/core/macro'
 import { INS_ROOT_CONTEXTS } from '@/lib/ins/ins-metric-registry'
 import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 import type { StatisticsContextIndex } from './context-tree'
-
-/** Periodicity values the explorer can filter on, in display order. */
-export const EXPLORER_PERIODICITY_VALUES = [
-  'ANNUAL',
-  'QUARTERLY',
-  'MONTHLY',
-] as const
-
-export type ExplorerPeriodicity = (typeof EXPLORER_PERIODICITY_VALUES)[number]
+import type { ExplorerPeriodicity } from './explorer-filter'
+import { periodicityTitle } from './periodicity-labels'
 
 /** Which filter a chip stands for. */
 export type ExplorerChipKind = 'q' | 'context' | 'frecventa' | 'uat' | 'judet'
@@ -55,16 +48,12 @@ export function buildExplorerChips(
   }
 
   for (const value of search.frecventa ?? []) {
+    const rest = (search.frecventa ?? []).filter((entry) => entry !== value)
     chips.push({
       id: `frecventa:${value}`,
       kind: 'frecventa',
       value,
-      next: {
-        ...base,
-        frecventa: nonEmpty(
-          (search.frecventa ?? []).filter((entry) => entry !== value),
-        ),
-      },
+      next: { ...base, frecventa: rest.length > 0 ? rest : undefined },
     })
   }
 
@@ -99,8 +88,8 @@ export interface ExplorerChipParts {
 /**
  * The chip's name and its value apart, so the row can set the dimension quiet
  * and the value in weight — which is what makes a row of chips scannable
- * rather than four phrases to read. `explorerChipLabel` joins them back into
- * the one phrase assistive tech hears.
+ * rather than four phrases to read. The chip row joins them back into the
+ * one phrase assistive tech hears.
  */
 export function explorerChipParts(
   chip: ExplorerChip,
@@ -117,33 +106,13 @@ export function explorerChipParts(
     case 'frecventa':
       return {
         name: t`Periodicitate`,
-        value: explorerPeriodicityLabel(chip.value as ExplorerPeriodicity),
+        // A chip only carries a cadence the schema admits.
+        value: periodicityTitle(chip.value as ExplorerPeriodicity),
       }
     case 'uat':
       return { name: t`Acoperire`, value: t`UAT` }
     case 'judet':
       return { name: t`Acoperire`, value: t`județ` }
-  }
-}
-
-/** Localized chip label, e.g. `Periodicitate: Anual`. */
-export function explorerChipLabel(
-  chip: ExplorerChip,
-  contextIndex?: StatisticsContextIndex,
-): string {
-  const { name, value } = explorerChipParts(chip, contextIndex)
-  return name === null ? value : `${name}: ${value}`
-}
-
-/** Romanian periodicity word — never the raw enum member. */
-export function explorerPeriodicityLabel(value: ExplorerPeriodicity): string {
-  switch (value) {
-    case 'ANNUAL':
-      return t`Anual`
-    case 'QUARTERLY':
-      return t`Trimestrial`
-    case 'MONTHLY':
-      return t`Lunar`
   }
 }
 
@@ -162,13 +131,4 @@ export function explorerContextLabel(
   if (fromTree) return fromTree
   const root = INS_ROOT_CONTEXTS.find((entry) => entry.code === code)
   return root ? root.label : code
-}
-
-function nonEmpty(
-  values: readonly ExplorerPeriodicity[],
-): StatisticsDatasetExplorerSearch['frecventa'] {
-  if (values.length === 0) return undefined
-  return values as unknown as NonNullable<
-    StatisticsDatasetExplorerSearch['frecventa']
-  >
 }

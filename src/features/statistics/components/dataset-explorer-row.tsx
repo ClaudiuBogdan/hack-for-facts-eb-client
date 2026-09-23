@@ -1,11 +1,12 @@
 import { Link } from '@tanstack/react-router'
-import { Trans } from '@lingui/react/macro'
+import { t } from '@lingui/core/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import type { StatisticsDatasetSummary } from '@/schemas/statistics'
 import { DataStatusBadge } from './data-status-badge'
 import { RequestDatasetAction } from './request-dataset-action'
 import { cn } from '@/lib/utils'
-import { explorerPeriodicityLabel, type ExplorerPeriodicity } from '../lib/explorer-chips'
-import { formatHubPeriod } from '../lib/hub-format'
+import { contextDisplayName, datasetDisplayName } from '../lib/dataset-names'
+import { isInsPeriodicity, periodicityTitle } from '../lib/periodicity-labels'
 import { statisticsTheme } from '../lib/statistics-theme'
 
 type Props = {
@@ -20,7 +21,9 @@ type Props = {
 /**
  * One catalog row. The name is the link; the matrix code and the context are
  * provenance, one quiet line under it. The right column says what the reader
- * can expect to open: the cadence and the latest period with observations.
+ * can expect to open: the cadence and the span INS Tempo declares for the
+ * matrix — the catalog carries no loaded range, so the span is named as the
+ * publisher's, and the dataset page says exactly.
  *
  * A status badge appears only when the dataset is catalog-only — an
  * „available" badge on every row of an all-available catalog is noise, and
@@ -33,16 +36,16 @@ type Props = {
  * overlay would make it unselectable.
  */
 export function DatasetExplorerRow({ dataset, filteredContextCode }: Props) {
-  const name = dataset.nameRo || dataset.nameEn || dataset.code
-  const periodicity = dataset.periodicity
-    .map((value) => explorerPeriodicityLabel(value as ExplorerPeriodicity))
-    .join(', ')
+  const { i18n } = useLingui()
+  const name = datasetDisplayName(dataset, i18n.locale)
+  // A cadence this module has no word for is left out, not printed as a comma.
+  const periodicity = dataset.periodicity.filter(isInsPeriodicity).map(periodicityTitle).join(', ')
   const catalogOnly = dataset.dataStatus === 'catalog-only'
   const years = formatYearRange(dataset.yearRange)
   const context =
     dataset.contextCode && dataset.contextCode === filteredContextCode
       ? null
-      : dataset.contextNameRo
+      : contextDisplayName(dataset, i18n.locale)
 
   return (
     <li className="group relative flex flex-col gap-2 px-4 py-3 transition-colors hover:bg-muted/70 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
@@ -71,16 +74,15 @@ export function DatasetExplorerRow({ dataset, filteredContextCode }: Props) {
         {periodicity ? <span className="whitespace-nowrap">{periodicity}</span> : null}
         {catalogOnly ? (
           <span className="relative z-10">
-            <RequestDatasetAction datasetCode={dataset.code} datasetName={dataset.nameRo || dataset.nameEn} />
-          </span>
-        ) : dataset.latestPeriod ? (
-          <span className="whitespace-nowrap tabular-nums">
-            <Trans>până în {formatHubPeriod(dataset.latestPeriod)}</Trans>
+            <RequestDatasetAction datasetCode={dataset.code} datasetName={name} />
           </span>
         ) : years ? (
           // The catalog's declared span — what INS Tempo publishes, which can
           // run wider than what is loaded here. The detail page says exactly.
-          <span className="whitespace-nowrap tabular-nums">{years}</span>
+          <span className="whitespace-nowrap tabular-nums" title={t`Intervalul publicat de INS Tempo`}>
+            <span className="sr-only">{t`interval publicat de INS:`} </span>
+            {years}
+          </span>
         ) : (
           <span>
             <Trans>Interval necunoscut</Trans>

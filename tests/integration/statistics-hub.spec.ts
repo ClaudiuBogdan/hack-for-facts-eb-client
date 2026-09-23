@@ -95,15 +95,17 @@ test.describe('Statistics hub', () => {
     const counties = page.locator('section[aria-labelledby="hub-counties-title"]')
     await counties.scrollIntoViewIfNeeded()
     await expect(counties.getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
-    const teleorman = counties.getByRole('link', { name: /Teleorman/ }).first()
+    // The ranked row shows the figure; the map's path names the county with it.
+    const teleorman = counties.getByRole('listitem').filter({ hasText: 'Teleorman' }).getByRole('link')
     await expect(teleorman).toContainText('9,3%', { timeout: 20000 })
+    await expect(counties.getByRole('link', { name: 'Teleorman: 9,3%' })).toHaveCount(1)
     const teleormanHref = (await teleorman.getAttribute('href'))!
     expect(teleormanHref).toContain('/ins/seturi/SOM103A')
     expect(searchParam(teleormanHref, 'teritoriu')).toBe('cod:TR')
 
     await counties.getByRole('radio', { name: 'Speranța de viață' }).click()
     await expect(page).toHaveURL(/\/ins$/)
-    await expect(counties.getByRole('link', { name: /Vâlcea/ }).first()).toContainText('82,01')
+    await expect(counties.getByRole('listitem').filter({ hasText: 'Vâlcea' }).getByRole('link')).toContainText('82,01')
     await expect(counties.getByRole('group', { name: /Durata medie a vieții, 2025/ })).toBeVisible()
     // Counties the read did not return are hatched and counted, never zero.
     await expect(counties).toContainText('județe fără valoare')

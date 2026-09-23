@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { EXPLORER_PAGE_SIZE } from '../lib/explorer-filter'
 
 type Props = {
@@ -26,6 +27,8 @@ export function DatasetExplorerPagination({
 }: Props) {
   const totalPages = Math.max(1, Math.ceil(totalCount / EXPLORER_PAGE_SIZE))
   if (totalPages <= 1) return null
+  const atStart = page <= 1
+  const atEnd = !hasNextPage
 
   return (
     <nav
@@ -37,13 +40,21 @@ export function DatasetExplorerPagination({
           Pagina {page} din {totalPages}
         </Trans>
       </p>
+      {/* An end button is `aria-disabled`, never `disabled`: the reader who
+          pressed „Următoarea" onto the last page is still standing on it, and
+          a button that turns `disabled` under the focus drops that focus to
+          the body. It looks inert, ignores the pointer, and its click is a
+          no-op from the keyboard. */}
       <div className="flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
           size="sm"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
+          aria-disabled={atStart || undefined}
+          className={cn(atStart && 'pointer-events-none opacity-50')}
+          onClick={() => {
+            if (!atStart) onPageChange(page - 1)
+          }}
         >
           <ChevronLeft className="h-4 w-4" aria-hidden />
           <Trans>Anterioară</Trans>
@@ -52,8 +63,11 @@ export function DatasetExplorerPagination({
           type="button"
           variant="outline"
           size="sm"
-          disabled={!hasNextPage}
-          onClick={() => onPageChange(page + 1)}
+          aria-disabled={atEnd || undefined}
+          className={cn(atEnd && 'pointer-events-none opacity-50')}
+          onClick={() => {
+            if (!atEnd) onPageChange(page + 1)
+          }}
         >
           <Trans>Următoarea</Trans>
           <ChevronRight className="h-4 w-4" aria-hidden />

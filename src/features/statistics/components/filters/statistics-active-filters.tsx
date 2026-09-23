@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { X } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { cn } from '@/lib/utils'
@@ -17,7 +18,8 @@ export type StatisticsFilterChip = {
    * which is wrong on a surface where the chips are a selection.
    */
   readonly removeLabel?: string
-  readonly onRemove: () => void
+  /** Clears exactly this filter. The click is passed on: `detail === 0` is a keyboard removal. */
+  readonly onRemove: (event?: MouseEvent<HTMLButtonElement>) => void
 }
 
 type Props = {
@@ -81,7 +83,7 @@ export function StatisticsActiveFilters({
                 </span>
                 <button
                   type="button"
-                  onClick={chip.onRemove}
+                  onClick={(event) => chip.onRemove(event)}
                   aria-label={chip.removeLabel ?? t`Elimină filtrul ${label}`}
                   className={statisticsTheme.filterChipRemove}
                 >

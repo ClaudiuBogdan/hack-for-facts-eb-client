@@ -105,22 +105,24 @@ export type StatisticsTerritoryHubSearch = z.infer<
  */
 const explorerPeriodicitySchema = z.enum(['ANNUAL', 'QUARTERLY', 'MONTHLY'])
 
+/** The router JSON-parses a bare number or boolean; a search term is text whatever it looks like. */
+const asText = (value: unknown) => (typeof value === 'number' || typeof value === 'boolean' ? String(value) : value)
+
 export const statisticsDatasetExplorerSearchSchema = z
   .object({
-    q: z.string().trim().min(1).optional().catch(undefined),
-    // The router JSON-parses a bare digit (`?context=1`) into a number; every
-    // theme code is a digit, so coerce it back or every theme link drops.
-    context: z
-      .preprocess(
-        (value) => (typeof value === 'number' ? String(value) : value),
-        z.string().trim().min(1).optional(),
-      )
-      .catch(undefined),
-    // A single `?frecventa=ANNUAL` is one filter, not a malformed list.
+    // `?q=2024` arrives as a number: a year is a search term too.
+    q: z.preprocess(asText, z.string().trim().min(1).optional()).catch(undefined),
+    // Every theme code is a digit, so coerce it back or every theme link drops.
+    context: z.preprocess(asText, z.string().trim().min(1).optional()).catch(undefined),
+    // A single `?frecventa=ANNUAL` is one filter, not a malformed list; a
+    // pasted link that repeats a cadence names it once; an empty list is none.
     frecventa: z
       .preprocess(
-        (value) => (typeof value === 'string' ? [value] : value),
-        z.array(explorerPeriodicitySchema).nonempty().optional(),
+        (value) => {
+          const list = typeof value === 'string' ? [value] : value
+          return Array.isArray(list) ? Array.from(new Set(list)) : list
+        },
+        z.array(explorerPeriodicitySchema).min(1).optional(),
       )
       .catch(undefined),
     uat: z.boolean().optional().catch(undefined),
@@ -241,10 +243,10 @@ export interface StatisticsDatasetSummary {
   readonly hasCountyData: boolean
   readonly hasSiruta: boolean
   readonly dataStatus: StatisticsDatasetDataStatus
-  readonly latestPeriod: string | null
   /** The INS context the dataset hangs from — a leaf of the context tree. */
   readonly contextCode: string | null
   readonly contextNameRo: string | null
+  readonly contextNameEn: string | null
   readonly contextPath: string | null
 }
 

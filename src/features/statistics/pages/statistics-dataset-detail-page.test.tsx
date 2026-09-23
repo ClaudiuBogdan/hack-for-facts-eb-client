@@ -307,7 +307,7 @@ describe('StatisticsDatasetDetailPage', () => {
     )
 
     expect(screen.getByTestId('catalog-only-body')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Cere set' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Cere setul /})).toBeInTheDocument()
     expect(screen.queryByRole('figure')).not.toBeInTheDocument()
     expect(useDatasetSeriesMock).toHaveBeenCalledWith(
       expect.objectContaining({ enabled: false }),

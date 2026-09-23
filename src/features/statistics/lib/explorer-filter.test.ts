@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseStatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 import {
   buildDatasetFilterInput,
+  clearedExplorerFilters,
   clearedExplorerSearch,
   countActiveExplorerFilters,
   explorerOffset,
@@ -84,6 +85,13 @@ describe('hasActiveExplorerFilters', () => {
 
   it('is false for a bare page change', () => {
     expect(hasActiveExplorerFilters({ pagina: 2 })).toBe(false)
+  })
+})
+
+describe('clearedExplorerFilters', () => {
+  it('keeps the search term, which has its own field, and drops the rest', () => {
+    expect(clearedExplorerFilters({ q: 'populatie', context: '2', frecventa: ['ANNUAL'], uat: true, pagina: 3 })).toEqual({ q: 'populatie' })
+    expect(clearedExplorerFilters({ context: '2' })).toEqual({})
   })
 })
 

@@ -40,6 +40,29 @@ export const INS_DATASET_FIELDS = `
   source_last_update
 `
 
+/**
+ * What a catalog row shows: the summary a list of 25 needs, without the
+ * definition, methodology and source prose a dataset page reads once. The
+ * full selection weighs 120–260 KB a page; this one about 15 KB.
+ */
+export const INS_DATASET_SUMMARY_FIELDS = `
+  id
+  code
+  name_ro
+  name_en
+  periodicity
+  year_range
+  has_uat_data
+  has_county_data
+  has_siruta
+  sync_status
+  data_status
+  context_code
+  context_name_ro
+  context_name_en
+  context_path
+`
+
 export const INS_DATASET_DIMENSION_FIELDS = `
   dimensions {
         index
@@ -137,14 +160,14 @@ export const INS_DATASETS_QUERY = `
 `
 
 /**
- * Explorer catalog query. Same selection as `INS_DATASETS_QUERY`, but a
- * distinct operation name so the explorer's requests are separable in traces
- * and in the integration fixtures.
+ * Explorer catalog query: the summary fields only, under a distinct operation
+ * name so the explorer's requests are separable in traces and in the
+ * integration fixtures.
  */
 export const INS_DATASETS_EXPLORER_QUERY = `
   query InsDatasetsExplorer($filter: InsDatasetFilterInput, $limit: Int, $offset: Int) {
     insDatasets(filter: $filter, limit: $limit, offset: $offset) {
-      nodes { ${INS_DATASET_FIELDS} }
+      nodes { ${INS_DATASET_SUMMARY_FIELDS} }
       pageInfo { totalCount hasNextPage hasPreviousPage }
     }
   }

@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
 import { generateHash } from '@/lib/utils'
 import type {
   StatisticsDatasetExplorerSearch,
@@ -29,6 +29,9 @@ export const datasetExplorerQueryOptions = (
   queryOptions<StatisticsDatasetPage>({
     queryKey: statisticsKeys.explorerPage(generateHash(JSON.stringify(explorerHashSource(search)))),
     queryFn: ({ signal }) => fetchDatasetPage(search, {}, signal),
+    // A refine keeps the rows it has, dimmed, until the next page lands: the
+    // count, the pager and the reader's focus stay where they are.
+    placeholderData: keepPreviousData,
     staleTime: STATISTICS_STALE_TIME.figures,
     retry: statisticsRetry,
   })
