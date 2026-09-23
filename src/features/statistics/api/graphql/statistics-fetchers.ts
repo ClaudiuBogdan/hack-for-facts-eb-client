@@ -56,7 +56,7 @@ import {
 
 /**
  * Validated fetchers for the statistics product surfaces (territory search and
- * the dataset explorer). Unlike the unvalidated fetchers in `ins-fetchers.ts`, these
+ * the dataset explorer). Unlike the unvalidated fetchers in `legacy/ins-fetchers.ts`, these
  * parse the wire payload before mapping it, so a server contract change fails
  * loudly at the query boundary instead of rendering as blank cells.
  */

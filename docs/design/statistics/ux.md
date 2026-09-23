@@ -72,7 +72,7 @@ state everywhere.
   `getInsObservationsSnapshotByDatasets`, `getInsLatestDatasetValues`,
   `getInsDimensionValuesPage`, `getInsObservationsPage`, `getAllInsObservations`);
   hooks `src/lib/hooks/use-ins-dashboard.ts`; registry
-  `src/lib/ins/ins-metric-registry.ts`; series logic `src/lib/ins/series-selection.ts`;
+  `src/lib/ins/ins-metric-registry.ts`; series logic `src/components/entities/views/ins-series-selection.ts`;
   UI sections `src/components/entities/views/ins-stats-view.presentation.tsx`.
 - **Fact:** Priority matrix codes and the UAT-headline subset are encoded in the
   registry: `INS_TOP_METRICS_BY_LEVEL` (uat: POP107D, FOM104D, SOM101F, LOC101B;

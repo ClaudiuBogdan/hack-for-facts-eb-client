@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
-vi.mock('../../lib/mock-mode', () => ({ isStatisticsMockEnabled: () => true }))
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { fetchLandingCatalog } from '../statistics-api'
 import { searchTerritories } from '../territory-search-api'
@@ -18,7 +17,7 @@ const catalog = () => ({
 })
 beforeEach(() => vi.resetAllMocks())
 describe('native landing catalog, local tiles and search', () => {
-  it('always reads the native catalog even when legacy mock mode is enabled', async () => {
+  it('reads the native catalog counts and seeds the query only from its own contract', async () => {
     vi.mocked(graphqlQuery).mockResolvedValue(catalog())
     const result = await fetchLandingCatalog()
     expect(result).toMatchObject({

@@ -19,7 +19,25 @@ vi.mock('@/config/env', () => ({
 
 import { getAuthToken } from '@/lib/auth'
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options'
-import { GraphQLRequestError, graphqlQuery } from './graphql-client'
+import { withDeadline } from '@/lib/ssr/deadline-signal'
+import {
+  GraphQLRequestError,
+  graphqlQuery,
+  isAbortError,
+  isGraphQLInvalidInput,
+  isGraphQLTimeout,
+} from './graphql-client'
+
+/** A fetch that never answers and rejects with the signal's reason, as the platform's does. */
+function abortableFetch(_url: string, init: RequestInit): Promise<Response> {
+  return new Promise((_resolve, reject) => {
+    if (init.signal?.aborted) {
+      reject(init.signal.reason)
+      return
+    }
+    init.signal?.addEventListener('abort', () => reject(init.signal?.reason))
+  })
+}
 
 function jsonResponse(body: unknown, init: Partial<Response> = {}): Response {
   return {
@@ -134,5 +152,49 @@ describe('graphqlQuery', () => {
       name: 'GraphQLRequestError',
       message: expect.stringContaining('ECONNREFUSED'),
     })
+  })
+
+  it('rethrows a caller abort as it came, so callers can recognise it', async () => {
+    const controller = new AbortController()
+    fetchMock.mockImplementation(abortableFetch)
+
+    const pending = graphqlQuery('query { ok }', undefined, { signal: controller.signal })
+    controller.abort()
+
+    const error = await pending.catch((e) => e)
+    expect(isAbortError(error)).toBe(true)
+    expect(error).not.toBeInstanceOf(GraphQLRequestError)
+    expect(isGraphQLInvalidInput(error)).toBe(false)
+  })
+
+  it('reports a request past its deadline as a timed-out failure, not an abort', async () => {
+    vi.useFakeTimers()
+    try {
+      fetchMock.mockImplementation(abortableFetch)
+
+      const pending = graphqlQuery('query { ok }', undefined, { signal: withDeadline(undefined, 50) })
+      vi.advanceTimersByTime(50)
+
+      const error = await pending.catch((e) => e)
+      expect(error).toBeInstanceOf(GraphQLRequestError)
+      expect((error as GraphQLRequestError).timedOut).toBe(true)
+      expect(isGraphQLTimeout(error)).toBe(true)
+      expect(isAbortError(error)).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('marks a refused input so callers can map it to not-found', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({
+        errors: [{ message: 'entity selectors must identify exactly one INS territory', extensions: { code: 'INVALID_INPUT' } }],
+      }),
+    )
+
+    const error = await graphqlQuery('query { ok }').catch((e) => e)
+    expect(isGraphQLInvalidInput(error)).toBe(true)
+    expect(isGraphQLInvalidInput(new GraphQLRequestError('other', { graphQLErrors: [{ message: 'boom' }] }))).toBe(false)
+    expect(isGraphQLInvalidInput(new Error('boom'))).toBe(false)
   })
 })

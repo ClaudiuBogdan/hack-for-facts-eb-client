@@ -27,6 +27,13 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }))
 
+// The row names things in the reader's language; the tests pick it here.
+const locale = vi.hoisted(() => ({ current: 'ro' }))
+vi.mock('@lingui/react/macro', () => ({
+  Trans: ({ children }: { readonly children?: React.ReactNode }) => <>{children}</>,
+  useLingui: () => ({ i18n: { locale: locale.current } }),
+}))
+
 const { DatasetExplorerRow } = await import('./dataset-explorer-row')
 
 const DATASET: StatisticsDatasetSummary = {
@@ -39,9 +46,9 @@ const DATASET: StatisticsDatasetSummary = {
   hasCountyData: true,
   hasSiruta: false,
   dataStatus: 'available',
-  latestPeriod: null,
   contextCode: '1508',
   contextNameRo: '4. SOMERI INREGISTRATI',
+  contextNameEn: '4. REGISTERED UNEMPLOYED',
   contextPath: null,
 }
 
@@ -86,13 +93,39 @@ describe('DatasetExplorerRow', () => {
     expect(screen.getByText('Doar catalog')).toBeInTheDocument()
     // The overlay covers the row, so the action has to sit in a lifted layer
     // or it cannot be clicked at all.
-    const action = screen.getByRole('button', { name: 'Cere set' })
+    const action = screen.getByRole('button', { name: /^Cere setul /})
     expect(action.closest('span')).toHaveClass('relative', 'z-10')
   })
 
-  it('falls back to the declared span when nothing is loaded yet', () => {
-    render(row({ latestPeriod: null }))
+  it('shows the span INS declares, and says whose span it is', () => {
+    render(row())
 
-    expect(screen.getByText('1991–2024')).toBeInTheDocument()
+    const span = screen.getByText('1991–2024')
+    expect(span).toHaveTextContent('interval publicat de INS: 1991–2024')
+    expect(screen.queryByText('Interval necunoscut')).not.toBeInTheDocument()
+  })
+
+  it('names every cadence INS declares, and leaves out one it has no word for', () => {
+    render(row({ periodicity: ['ANNUAL', 'OTHER', 'WEEKLY'] }))
+
+    expect(screen.getByText('Anual, Altă periodicitate')).toBeInTheDocument()
+  })
+
+  it('falls back to the English name when INS published no Romanian one', () => {
+    render(row({ nameRo: null, nameEn: 'Registered unemployed by sex' }))
+
+    expect(screen.getByRole('link', { name: 'Registered unemployed by sex' })).toBeInTheDocument()
+  })
+
+  it('reads in English, context included, for an English reader', () => {
+    locale.current = 'en'
+    try {
+      render(row({ nameEn: 'Registered unemployed by sex' }))
+      expect(screen.getByRole('link', { name: 'Registered unemployed by sex' })).toBeInTheDocument()
+      expect(screen.getByText('4. REGISTERED UNEMPLOYED')).toBeInTheDocument()
+      expect(screen.queryByText('4. SOMERI INREGISTRATI')).not.toBeInTheDocument()
+    } finally {
+      locale.current = 'ro'
+    }
   })
 })

@@ -86,9 +86,6 @@ export function resolveComparisonDefaults(input: {
     cadence,
     issues,
     unresolvedAxes,
-    representative:
-      !explicit &&
-      candidates.some((v) => v.matchStrategy === 'REPRESENTATIVE_FALLBACK'),
     ready:
       issues.length === 0 &&
       unresolvedAxes.length === 0 &&

@@ -1,5 +1,6 @@
 import type { InsObservation, InsPeriodicity } from '@/schemas/ins'
 import { CHART_MAX_POINTS } from './dataset-selection'
+import { parseWireDecimal } from './value-status'
 
 /**
  * Turns INS observations into a chart-ready series.
@@ -68,21 +69,6 @@ export function enumeratePeriods(params: {
 }
 
 /**
- * Parses a wire value into a chart coordinate. Anything that isn't a finite
- * number — `null`, `''`, `'..'`, `':'` (INS's own missing-value markers) —
- * becomes `null`.
- */
-export function toChartValue(value: string | null | undefined): number | null {
-  if (value === null || value === undefined) return null
-
-  const trimmed = value.trim()
-  if (trimmed.length === 0) return null
-
-  const parsed = Number(trimmed)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-/**
  * Builds the series for `[from, to]` at `periodicity`, injecting `null` for
  * every period the observations don't cover.
  *
@@ -118,7 +104,7 @@ export function buildTimeSeries(params: {
     const observation = observed.get(period)
     return {
       period,
-      value: toChartValue(observation?.value),
+      value: parseWireDecimal(observation?.value),
       raw: observation?.value ?? null,
       valueStatus: observation?.value_status?.trim() || null,
     }

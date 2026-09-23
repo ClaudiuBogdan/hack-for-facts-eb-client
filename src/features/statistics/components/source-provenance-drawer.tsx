@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,6 +11,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { getScraperDatasetById } from '@/lib/scraper-references'
+import { insTempoDatasetUrl } from '../lib/ins-tempo'
 import { buildDataThroughLabel } from '../lib/period'
 import { isInsPeriodicity, periodicityLabel } from '../lib/periodicity-labels'
 
@@ -30,10 +31,11 @@ export function SourceProvenanceDrawer({
   unitLabel,
   latestPeriod,
 }: SourceProvenanceDrawerProps) {
+  const { i18n } = useLingui()
   const reference = getScraperDatasetById('ins-indicators')
   const dataThrough = buildDataThroughLabel(latestPeriod ?? null)
   const fallbackSource = t`INS Tempo`
-  const tempoUrl = `https://statistici.insse.ro/tempoins/index.jsp?ind=${encodeURIComponent(datasetCode)}&lang=ro&page=tempo3`
+  const tempoUrl = insTempoDatasetUrl(datasetCode, i18n.locale)
   const cadences = periodicity
     ?.map((item) => (isInsPeriodicity(item) ? periodicityLabel(item) : item))
     .join(', ')

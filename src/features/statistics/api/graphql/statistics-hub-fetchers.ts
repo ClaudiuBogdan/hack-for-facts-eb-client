@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { graphqlQuery, isAbortError } from '@/lib/graphql/graphql-client'
+import { throwIfCancelled } from '@/lib/ssr/deadline-signal'
 import { createLogger } from '@/lib/logger'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { InsObservationFilterInput } from '@/schemas/ins'
@@ -11,12 +12,13 @@ import type {
   StatisticsHubIndicator,
   StatisticsHubSection,
   StatisticsHubSeriesPoint,
-  StatisticsHubUnit,
   StatisticsLatestValue,
 } from '@/schemas/statistics'
+import { hubUnitOf } from '../../lib/hub-format'
 import { hubStaticSeries } from '../../lib/hub-national-series'
+import { publishedNumber } from '../../lib/value-status'
 import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
-import { fetchNativeLandingTiles } from './ins-landing-tiles'
+import { fetchNationalLatest } from './national-latest'
 import { INS_OBSERVATIONS_QUERY } from './ins-queries'
 import { insObservationNodeRawSchema, insPageInfoRawSchema } from './statistics-raw-schemas'
 
@@ -27,12 +29,15 @@ const logger = createLogger('statistics-hub')
  *
  * Two sections, so a slow or failed one never blanks the page: the national
  * indicators (one `insLatestDatasetValues` at RO/NATIONAL) and three county
- * layers (one `insObservations` each at the indicator's latest year). The
+ * layers (one `insObservations` each at the indicator's latest year), each
+ * layer on its own so one that fails leaves the other two on the map. The
  * annual histories behind the charts are kept in the client
  * (`lib/hub-national-series.ts`, captured from the same API) and only
  * extended with the live latest point when it is newer. The county layers
  * need the resolved national cell — its unit and classification members are
  * what "the total" means for each dataset — so they wait for the first read.
+ * A matrix the API no longer knows is one missing figure, not a failed
+ * section: the page shows what came back.
  */
 
 /** The server's page ceiling; a layer past it is refused rather than drawn short. */
@@ -46,23 +51,6 @@ const observationsPageResponseSchema = z.object({
 })
 
 type RawObservation = z.infer<typeof insObservationNodeRawSchema>
-
-/** The word after the number, from the unit the API resolved. Never guessed from the dataset name. */
-export function hubUnitOf(latest: Pick<StatisticsLatestValue, 'unitSymbol' | 'unitCode' | 'unitNameRo'>): StatisticsHubUnit {
-  const symbol = latest.unitSymbol?.toLowerCase() ?? ''
-  const name = latest.unitNameRo?.toLowerCase() ?? ''
-  if (symbol === 'persons' || name.startsWith('numar persoane')) return 'persons'
-  if (symbol === 'percent' || name.startsWith('procent')) return 'percent'
-  if (symbol === 'count' || name === 'numar') return 'count'
-  if (name === 'ani') return 'years'
-  return 'other'
-}
-
-function parseDecimal(value: string | null | undefined): number | null {
-  if (value === null || value === undefined) return null
-  const parsed = Number.parseFloat(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
 
 /** `type_code → member code` of the resolved national cell. */
 function cellMembers(latest: StatisticsLatestValue): ReadonlyMap<string, string> {
@@ -103,12 +91,9 @@ function hasGeographyAxis(latest: StatisticsLatestValue): boolean {
   return dimensions ? dimensions.some((dimension) => dimension.type === 'TERRITORIAL') : true
 }
 
-/** INS flags under which a cell has no publishable number. */
-const BLOCKING_VALUE_STATUSES = new Set([':', 'c', 'x'])
-
 /** A confidential or missing cell keeps its flag and has no number. */
 function unflaggedValue(latest: StatisticsLatestValue): number | null {
-  return BLOCKING_VALUE_STATUSES.has(latest.valueStatus?.trim().toLowerCase() ?? '') ? null : parseDecimal(latest.value)
+  return publishedNumber(latest.value, latest.valueStatus)
 }
 
 function toIndicator(latest: StatisticsLatestValue): StatisticsHubIndicator {
@@ -175,7 +160,7 @@ async function fetchCountyLayer(
     { datasetCode: code, filter, limit: COUNTY_ROW_LIMIT, offset: 0 },
     { auth: 'none', signal },
   )
-  signal?.throwIfAborted()
+  throwIfCancelled(signal)
   const { insObservations } = observationsPageResponseSchema.parse(response)
   if (insObservations.pageInfo.hasNextPage) throw new Error(`County layer of ${code} truncated`)
   const cell = cellMembers(latest)
@@ -199,8 +184,7 @@ async function fetchCountyLayer(
     else if (axis !== countyAxis) continue
     // The flags the national figures honour: a confidential or missing cell
     // has no number to colour a county with, whatever the value field holds.
-    if (BLOCKING_VALUE_STATUSES.has(row.value_status?.trim().toLowerCase() ?? '')) continue
-    const value = parseDecimal(row.value)
+    const value = publishedNumber(row.value, row.value_status)
     if (value === null || values.has(countyCode)) continue
     const name = ROMANIA_COUNTIES.find((county) => county.code === countyCode)?.nameRo ?? row.territory?.name_ro ?? countyCode
     values.set(countyCode, { code: countyCode, name, value })
@@ -218,11 +202,38 @@ async function fetchCountyLayer(
   }
 }
 
+/**
+ * The county layers that could be read. A failed layer names the section as
+ * failed — the render is not cached and the browser reads again — but the
+ * layers that answered are kept, so the map is not blank for one of three.
+ */
+async function settleLayers(
+  reads: readonly Promise<StatisticsHubCountyLayer>[],
+  failures: StatisticsHubSection[],
+): Promise<StatisticsHubCountyLayer[]> {
+  const layers: StatisticsHubCountyLayer[] = []
+  let failed = false
+  for (const result of await Promise.allSettled(reads)) {
+    if (result.status === 'fulfilled') {
+      layers.push(result.value)
+      continue
+    }
+    if (isAbortError(result.reason)) throw result.reason
+    const error = result.reason
+    logger.warn('Statistics hub county layer unavailable', { error: error instanceof Error ? error.message : String(error) })
+    failed = true
+  }
+  if (failed) failures.push('counties')
+  return layers
+}
+
 async function settle<T>(section: StatisticsHubSection, read: Promise<T>, failures: StatisticsHubSection[]): Promise<T | null> {
   try {
     return await read
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') throw error
+    // The caller gave up: nothing to record. A read past its deadline is a
+    // failure of the section, and is recorded as one.
+    if (isAbortError(error)) throw error
     logger.warn('Statistics hub section unavailable', { section, error: error instanceof Error ? error.message : String(error) })
     failures.push(section)
     return null
@@ -233,23 +244,20 @@ export async function fetchStatisticsHub(signal?: AbortSignal): Promise<Statisti
   const failures: StatisticsHubSection[] = []
   const tiles = await settle(
     'indicators',
-    fetchNativeLandingTiles(signal, HUB_NATIONAL_DATASET_CODES),
+    fetchNationalLatest(HUB_NATIONAL_DATASET_CODES, signal),
     failures,
   )
-  signal?.throwIfAborted()
+  throwIfCancelled(signal)
 
   let indicators: StatisticsHubIndicator[] | null = null
   let counties: StatisticsHubCountyLayer[] | null = null
   if (tiles) {
     const latestByCode = new Map(tiles.nationalValues.map((latest) => [latest.datasetCode, latest]))
-    const layers = await settle(
-      'counties',
-      Promise.all(
-        HUB_COUNTY_LAYERS.flatMap((layer) => {
-          const latest = latestByCode.get(layer.code)
-          return latest?.hasData ? [fetchCountyLayer(layer.code, latest, signal)] : []
-        }),
-      ),
+    const layers = await settleLayers(
+      HUB_COUNTY_LAYERS.flatMap((layer) => {
+        const latest = latestByCode.get(layer.code)
+        return latest?.hasData ? [fetchCountyLayer(layer.code, latest, signal)] : []
+      }),
       failures,
     )
     indicators = HUB_NATIONAL_DATASET_CODES.flatMap((code) => {

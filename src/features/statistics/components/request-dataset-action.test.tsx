@@ -35,7 +35,7 @@ describe('RequestDatasetAction', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cere set' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Cere setul /}))
     fireEvent.change(screen.getByLabelText('De ce ai nevoie de acest set?'), {
       target: { value: 'Am nevoie de seria lunară pentru Cluj.' },
     })
@@ -74,7 +74,7 @@ describe('RequestDatasetAction', () => {
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cere set' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Cere setul /}))
 
     expect(screen.queryByLabelText('De ce ai nevoie de acest set?')).toBeNull()
     expect(
@@ -112,7 +112,7 @@ describe('RequestDatasetAction — rejected envelope', () => {
       <RequestDatasetAction datasetCode="TUR101C" datasetName={null} />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cere set' }))
+    fireEvent.click(screen.getByRole('button', { name: /^Cere setul /}))
     fireEvent.click(screen.getByRole('button', { name: 'Trimite cererea' }))
 
     await waitFor(() => {

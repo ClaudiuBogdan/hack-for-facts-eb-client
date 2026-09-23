@@ -36,7 +36,7 @@ import {
   mergeSeriesSelection,
   mergeUnitSelection,
   type InsSeriesGroup,
-} from '@/lib/ins/series-selection';
+} from './ins-series-selection';
 import {
   areStringArraysEqual,
   buildObservationSeriesTupleSignature,

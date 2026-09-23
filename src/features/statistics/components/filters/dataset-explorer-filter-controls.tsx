@@ -8,11 +8,8 @@ import type {
   StatisticsContextIndex,
   StatisticsContextTreeNode,
 } from '../../lib/context-tree'
-import {
-  EXPLORER_PERIODICITY_VALUES,
-  explorerPeriodicityLabel,
-  type ExplorerPeriodicity,
-} from '../../lib/explorer-chips'
+import { EXPLORER_PERIODICITY_VALUES, type ExplorerPeriodicity } from '../../lib/explorer-filter'
+import { periodicityTitle } from '../../lib/periodicity-labels'
 import { DatasetExplorerThemeTree } from './dataset-explorer-theme-tree'
 
 type Props = {
@@ -50,10 +47,7 @@ export function DatasetExplorerFilterControls({
   const togglePeriodicity = (value: ExplorerPeriodicity, checked: boolean) => {
     const current = search.frecventa ?? []
     const next = checked ? [...current, value] : current.filter((entry) => entry !== value)
-    apply({
-      frecventa:
-        next.length > 0 ? (next as unknown as NonNullable<StatisticsDatasetExplorerSearch['frecventa']>) : undefined,
-    })
+    apply({ frecventa: next.length > 0 ? next : undefined })
   }
 
   // Counts datasets that actually carry observations, which is narrower than
@@ -106,7 +100,7 @@ export function DatasetExplorerFilterControls({
                     checked={checked}
                     onCheckedChange={(next) => togglePeriodicity(value, next === true)}
                   />
-                  {explorerPeriodicityLabel(value)}
+                  {periodicityTitle(value)}
                 </Label>
               )
             })}

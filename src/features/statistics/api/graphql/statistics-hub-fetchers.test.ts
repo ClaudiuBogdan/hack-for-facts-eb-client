@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+vi.mock('@/lib/graphql/graphql-client', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/graphql/graphql-client')>()),
+  graphqlQuery: vi.fn(),
+}))
+import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { HUB_SERIES_CAPTURED_AT, HUB_STATIC_SERIES, hubStaticSeries } from '../../lib/hub-national-series'
 import { HUB_FIGURE_CODES } from '../../lib/landing-constants'
 import { HUB_NATIONAL_SPECS, hubCountyResponse, hubTilesResponse } from '../../test/hub-fixtures'
-import { fetchStatisticsHub, hubUnitOf } from './statistics-hub-fetchers'
+import { hubUnitOf } from '../../lib/hub-format'
+import { fetchStatisticsHub } from './statistics-hub-fetchers'
 
 const spec = (code: string) => {
   const found = HUB_NATIONAL_SPECS.find((entry) => entry.code === code)
@@ -23,7 +27,7 @@ function answer(overrides: {
   const calls: Call[] = []
   vi.mocked(graphqlQuery).mockImplementation(async (query: string, variables?: unknown) => {
     calls.push({ query, variables: variables as Record<string, unknown> | undefined })
-    if (query.includes('query InsLandingTiles')) return overrides.tiles ?? hubTilesResponse()
+    if (query.includes('query InsNationalLatest')) return overrides.tiles ?? hubTilesResponse()
     if (query.includes('query InsObservations(')) {
       const code = String((variables as { datasetCode: string }).datasetCode)
       if (overrides.failCounty === code) throw new Error(`${code} down`)
@@ -58,7 +62,7 @@ describe('fetchStatisticsHub', () => {
     const rate = hub.indicators?.find((indicator) => indicator.code === 'SOM103B')
     expect(rate).toMatchObject({ value: 3.2, unit: 'percent', period: '2026-05', periodicity: 'MONTHLY' })
     // Only the indicators and the county layers: nothing about the catalog.
-    expect(calls.filter((call) => !call.query.includes('query InsObservations(')).map((call) => call.query.match(/query (\w+)/)?.[1])).toEqual(['InsLandingTiles'])
+    expect(calls.filter((call) => !call.query.includes('query InsObservations(')).map((call) => call.query.match(/query (\w+)/)?.[1])).toEqual(['InsNationalLatest'])
   })
 
   it('accepts a matrix with no geography axis as national, and says so on the indicator', async () => {
@@ -230,7 +234,7 @@ describe('fetchStatisticsHub', () => {
 
   it('names the counties section as failed when there is no national year to anchor it on', async () => {
     vi.mocked(graphqlQuery).mockImplementation(async (query: string) => {
-      if (query.includes('query InsLandingTiles')) throw new Error('tiles down')
+      if (query.includes('query InsNationalLatest')) throw new Error('tiles down')
       throw new Error('unexpected')
     })
     const hub = await fetchStatisticsHub()
@@ -250,10 +254,47 @@ describe('fetchStatisticsHub', () => {
     })
   })
 
-  it('fails sections independently and names them', async () => {
+  it('serves the figures that came back when the API no longer knows a matrix', async () => {
+    const tiles = hubTilesResponse()
+    tiles.latest = tiles.latest.filter((entry) => entry.dataset.code !== 'TUR104E')
+    answer({ tiles })
+    const hub = await fetchStatisticsHub()
+    expect(hub.failures).toEqual([])
+    expect(hub.indicators?.map((indicator) => indicator.code)).not.toContain('TUR104E')
+    expect(hub.indicators).toHaveLength(HUB_NATIONAL_SPECS.length - 1)
+    expect(hub.counties).toHaveLength(3)
+  })
+
+  it('reads no county layer for a matrix the API no longer knows, and records no failure', async () => {
+    const tiles = hubTilesResponse()
+    tiles.latest = tiles.latest.filter((entry) => entry.dataset.code !== 'POP217A')
+    const calls = answer({ tiles })
+    const hub = await fetchStatisticsHub()
+    expect(hub.failures).toEqual([])
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['SOM103A', 'FOM104D'])
+    expect(calls.filter((call) => call.query.includes('query InsObservations(')).map((call) => call.variables?.datasetCode)).toEqual(['SOM103A', 'FOM104D'])
+  })
+
+  it('lets a caller abort through rather than recording a failed section', async () => {
+    const controller = new AbortController()
+    vi.mocked(graphqlQuery).mockImplementation(async () => {
+      controller.abort()
+      throw controller.signal.reason
+    })
+    await expect(fetchStatisticsHub(controller.signal)).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('records a read past its deadline as a failed section, so the page renders and the browser reads again', async () => {
+    vi.mocked(graphqlQuery).mockRejectedValue(new GraphQLRequestError('timed out', { timedOut: true }))
+    const hub = await fetchStatisticsHub()
+    expect(hub.indicators).toBeNull()
+    expect(hub.failures).toEqual(['indicators', 'counties'])
+  })
+
+  it('keeps the county layers that answered when one fails, and names the section', async () => {
     answer({ failCounty: 'SOM103A' })
     const hub = await fetchStatisticsHub()
-    expect(hub.counties).toBeNull()
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'FOM104D'])
     expect(hub.indicators).toHaveLength(HUB_NATIONAL_SPECS.length)
     expect(hub.failures).toEqual(['counties'])
   })
@@ -275,7 +316,7 @@ describe('fetchStatisticsHub', () => {
   it('refuses a truncated county page rather than drawing a partial map', async () => {
     answer({ counties: { FOM104D: hubCountyResponse(spec('FOM104D'), [{ county: { code: 'CJ', name: 'Cluj' }, value: '1' }], true) } })
     const hub = await fetchStatisticsHub()
-    expect(hub.counties).toBeNull()
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'SOM103A'])
     expect(hub.failures).toContain('counties')
   })
 

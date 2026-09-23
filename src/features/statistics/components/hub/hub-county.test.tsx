@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import { hubCountyLayer } from '../../test/hub-fixtures'
 import { HubCountyMap } from './hub-county-map'
-import { HubCountyRank } from './hub-county-rank'
+import { HubCountyRank, HubIndicatorToggle } from './hub-county-rank'
 
 vi.mock('../../lib/format', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/format')>()
@@ -204,6 +204,64 @@ describe('HubCountyMap', () => {
   })
 })
 
+describe('HubCountyMap as a picker', () => {
+  function Picker({ selected = ['VL'], canAdd = true }: { readonly selected?: readonly string[]; readonly canAdd?: boolean }) {
+    const [active, setActive] = useState<string>()
+    const [codes, setCodes] = useState(selected)
+    return (
+      <HubCountyMap
+        layer={LIFE}
+        legend="Durata medie a vieții, 2025"
+        activeCode={active}
+        onActiveChange={setActive}
+        selection={{
+          colors: new Map(codes.map((code) => [code, '#2a78d6'])),
+          canAdd,
+          onToggle: (code) => setCodes((current) => (current.includes(code) ? current.filter((entry) => entry !== code) : [...current, code])),
+        }}
+      />
+    )
+  }
+
+  it('makes each county a checkbox for the selection instead of a link, the selected ones outlined in their colour', () => {
+    const { container } = render(<Picker />)
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /Vâlcea/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('checkbox', { name: /Călărași/ })).toHaveAttribute('aria-checked', 'false')
+    expect(container.querySelector('path[stroke="#2a78d6"]')).not.toBeNull()
+  })
+
+  it('adds and removes a county on a click, Enter or Space', () => {
+    render(<Picker />)
+    const calarasi = screen.getByRole('checkbox', { name: /Călărași/ })
+    fireEvent.click(calarasi)
+    expect(calarasi).toHaveAttribute('aria-checked', 'true')
+    fireEvent.keyDown(calarasi, { key: 'Enter' })
+    expect(calarasi).toHaveAttribute('aria-checked', 'false')
+    fireEvent.keyDown(calarasi, { key: ' ' })
+    expect(calarasi).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('reads out whether the county shown is compared, and what a click would do', () => {
+    render(<Picker />)
+    fireEvent.pointerEnter(screen.getByRole('checkbox', { name: /Vâlcea/ }), { pointerType: 'mouse' })
+    expect(screen.getByText('în comparație')).toBeInTheDocument()
+    fireEvent.pointerEnter(screen.getByRole('checkbox', { name: /Călărași/ }), { pointerType: 'mouse' })
+    expect(screen.getByText('apasă ca să-l adaugi')).toBeInTheDocument()
+  })
+
+  it('takes a county out of a full selection but adds none to it', () => {
+    render(<Picker canAdd={false} />)
+    const calarasi = screen.getByRole('checkbox', { name: /Călărași/ })
+    expect(calarasi).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(calarasi)
+    expect(calarasi).toHaveAttribute('aria-checked', 'false')
+    const valcea = screen.getByRole('checkbox', { name: /Vâlcea/ })
+    fireEvent.click(valcea)
+    expect(valcea).toHaveAttribute('aria-checked', 'false')
+  })
+})
+
 describe('HubCountyRank', () => {
   const many = hubCountyLayer(
     'POP217A',
@@ -273,5 +331,43 @@ describe('HubCountyRank', () => {
 
     const unanchored = render(<HubCountyRank layer={{ ...LIFE, national: null }} />)
     expect(bar(unanchored.container, 'Vâlcea').className).toContain('rounded-full')
+  })
+})
+
+describe('HubIndicatorToggle', () => {
+  const OPTIONS = [
+    { key: 'viata', label: 'Speranța de viață' },
+    { key: 'somaj', label: 'Rata șomajului' },
+    { key: 'salariati', label: 'Salariați' },
+  ] as const
+
+  it('is one tab stop whose arrows move the choice and the focus together, around the ends', () => {
+    const onChange = vi.fn()
+    const { rerender } = render(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="somaj" onChange={onChange} />)
+    const group = screen.getByRole('radiogroup', { name: 'Indicatorul de pe hartă' })
+    const radios = within(group).getAllByRole('radio')
+    expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual(['-1', '0', '-1'])
+    expect(within(group).getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
+
+    radios[1]!.focus()
+    fireEvent.keyDown(group, { key: 'ArrowRight' })
+    expect(onChange).toHaveBeenLastCalledWith('salariati')
+    expect(document.activeElement).toBe(radios[2])
+
+    fireEvent.keyDown(group, { key: 'ArrowLeft' })
+    expect(onChange).toHaveBeenLastCalledWith('viata')
+    expect(document.activeElement).toBe(radios[0])
+
+    // From the last option the arrow wraps to the first, and back; a click picks directly.
+    rerender(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="salariati" onChange={onChange} />)
+    fireEvent.keyDown(group, { key: 'ArrowRight' })
+    expect(onChange).toHaveBeenLastCalledWith('viata')
+    expect(document.activeElement).toBe(radios[0])
+    rerender(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="viata" onChange={onChange} />)
+    fireEvent.keyDown(group, { key: 'ArrowLeft' })
+    expect(onChange).toHaveBeenLastCalledWith('salariati')
+    expect(document.activeElement).toBe(radios[2])
+    fireEvent.click(radios[1]!)
+    expect(onChange).toHaveBeenLastCalledWith('somaj')
   })
 })

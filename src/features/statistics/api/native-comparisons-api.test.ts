@@ -165,7 +165,7 @@ describe('native comparison preparation and vector boundary', () => {
       observations,
     })
     const result = await fetchNativeComparisonVector(prepared)
-    const matrix = projectPreparedComparison(result, '1750')
+    const matrix = projectPreparedComparison(result, { period: '1750' })
     expect(matrix.observations).toHaveLength(501)
     expect(matrix.periods).toHaveLength(501)
     expect(matrix.rows[0].cells['2000'].value).toBe('12.340')

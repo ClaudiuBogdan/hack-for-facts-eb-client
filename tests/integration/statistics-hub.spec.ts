@@ -6,7 +6,7 @@
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-hub-flow/,
  * built with the builders in src/features/statistics/test/hub-fixtures.ts so
  * the wire shape is the one the fetcher test certifies). The hub fires
- * `InsLandingTiles` once, then one `InsObservations` per county layer; the
+ * `InsNationalLatest` once, then one `InsObservations` per county layer; the
  * annual histories are in the client. Typing in the search fires
  * `SearchEntities` scoped to INS datasets.
  *
@@ -22,7 +22,7 @@ import { waitForHydration } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  await mockApi.mockGraphQL('InsLandingTiles', 'tiles')
+  await mockApi.mockGraphQL('InsNationalLatest', 'tiles')
   await mockApi.mockGraphQL('InsObservations', 'counties-pop217a', { variables: { datasetCode: 'POP217A' } })
   await mockApi.mockGraphQL('InsObservations', 'counties-som103a', { variables: { datasetCode: 'SOM103A' } })
   await mockApi.mockGraphQL('InsObservations', 'counties-fom104d', { variables: { datasetCode: 'FOM104D' } })
@@ -95,15 +95,17 @@ test.describe('Statistics hub', () => {
     const counties = page.locator('section[aria-labelledby="hub-counties-title"]')
     await counties.scrollIntoViewIfNeeded()
     await expect(counties.getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
-    const teleorman = counties.getByRole('link', { name: /Teleorman/ }).first()
+    // The ranked row shows the figure; the map's path names the county with it.
+    const teleorman = counties.getByRole('listitem').filter({ hasText: 'Teleorman' }).getByRole('link')
     await expect(teleorman).toContainText('9,3%', { timeout: 20000 })
+    await expect(counties.getByRole('link', { name: 'Teleorman: 9,3%' })).toHaveCount(1)
     const teleormanHref = (await teleorman.getAttribute('href'))!
     expect(teleormanHref).toContain('/ins/seturi/SOM103A')
     expect(searchParam(teleormanHref, 'teritoriu')).toBe('cod:TR')
 
     await counties.getByRole('radio', { name: 'Speranța de viață' }).click()
     await expect(page).toHaveURL(/\/ins$/)
-    await expect(counties.getByRole('link', { name: /Vâlcea/ }).first()).toContainText('82,01')
+    await expect(counties.getByRole('listitem').filter({ hasText: 'Vâlcea' }).getByRole('link')).toContainText('82,01')
     await expect(counties.getByRole('group', { name: /Durata medie a vieții, 2025/ })).toBeVisible()
     // Counties the read did not return are hatched and counted, never zero.
     await expect(counties).toContainText('județe fără valoare')

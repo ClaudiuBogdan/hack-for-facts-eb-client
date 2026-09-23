@@ -5,6 +5,13 @@ import { isRootContextCode } from './context-tree'
 /** Rows per explorer page. */
 export const EXPLORER_PAGE_SIZE = 25
 
+/** The cadences the explorer can filter on, in display order: the subset INS uses for a series. */
+export const EXPLORER_PERIODICITY_VALUES = ['ANNUAL', 'QUARTERLY', 'MONTHLY'] as const satisfies readonly NonNullable<
+  StatisticsDatasetExplorerSearch['frecventa']
+>[number][]
+
+export type ExplorerPeriodicity = (typeof EXPLORER_PERIODICITY_VALUES)[number]
+
 /** Filter knobs that are not part of the shareable URL state. */
 export interface DatasetFilterOptions {
   /** Ask the server for the fact-loaded datasets only. */
@@ -87,4 +94,9 @@ export function hasActiveExplorerFilters(
  */
 export function clearedExplorerSearch(): StatisticsDatasetExplorerSearch {
   return {}
+}
+
+/** Clears the sheet's filters and keeps the search term, which has its own field. */
+export function clearedExplorerFilters(search: StatisticsDatasetExplorerSearch): StatisticsDatasetExplorerSearch {
+  return search.q ? { q: search.q } : {}
 }

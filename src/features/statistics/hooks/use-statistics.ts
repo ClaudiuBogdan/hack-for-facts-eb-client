@@ -10,13 +10,7 @@ import {
   fetchStatisticsTerritoryHub,
   submitDatasetRequest,
 } from '../api/statistics-api'
-
-const DEFAULT_STALE_TIME = 1000 * 60 * 15
-/**
- * Catalog and local snapshot queries retain their existing daily refresh window.
- * Native source selection and publication queries use their own shorter window.
- */
-const LONG_STALE_TIME = 1000 * 60 * 60 * 24
+import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
 
 /**
  * Landing catalog and snapshot keys use native-v2, isolating cached legacy data.
@@ -26,9 +20,10 @@ export const statisticsLandingCatalogQueryOptions = (
   initialData?: StatisticsLandingCatalog,
 ) =>
   queryOptions<StatisticsLandingCatalog>({
-    queryKey: ['statistics', 'native-v2', 'landing', 'catalog'] as const,
+    queryKey: statisticsKeys.landingCatalog(),
     queryFn: ({ signal }) => fetchLandingCatalog(signal),
-    staleTime: LONG_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
     ...(initialData?.nativeContract === 'native-v2' ? { initialData } : {}),
   })
 
@@ -38,9 +33,10 @@ export const statisticsLandingCatalogQueryOptions = (
  */
 export const statisticsContextTreeQueryOptions = () =>
   queryOptions<readonly StatisticsContextNode[]>({
-    queryKey: ['statistics', 'native-v2', 'context-tree'] as const,
+    queryKey: statisticsKeys.contextTree(),
     queryFn: ({ signal }) => fetchContextTree(signal),
-    staleTime: LONG_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.catalog,
+    retry: statisticsRetry,
   })
 
 export function useStatisticsContextTree() {
@@ -69,16 +65,12 @@ export const statisticsTerritoryHubQueryOptions = (params: {
   const normalizedSiruta = params.siruta.trim()
 
   return queryOptions({
-    queryKey: [
-      'statistics',
-      'native-v1',
-      'territory-hub',
-      normalizedSiruta,
-    ] as const,
+    queryKey: statisticsKeys.territoryHub(normalizedSiruta),
     queryFn: ({ signal }) =>
       fetchStatisticsTerritoryHub(normalizedSiruta, signal),
     enabled: (params.enabled ?? true) && normalizedSiruta.length > 0,
-    staleTime: DEFAULT_STALE_TIME,
+    staleTime: STATISTICS_STALE_TIME.figures,
+    retry: statisticsRetry,
   })
 }
 

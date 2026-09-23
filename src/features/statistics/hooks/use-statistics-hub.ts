@@ -1,8 +1,9 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import type { StatisticsHubData } from '@/schemas/statistics'
 import { fetchStatisticsHub } from '../api/statistics-api'
+import { STATISTICS_STALE_TIME, statisticsKeys } from './query-config'
 
-const STALE_TIME = 15 * 60 * 1000
+const STALE_TIME = STATISTICS_STALE_TIME.figures
 
 /** A payload with a failed section is stale at once, so the next mount reads again. */
 const staleTime = (query: { readonly state: { readonly data?: StatisticsHubData } }) =>
@@ -25,7 +26,7 @@ export const statisticsHubQueryOptions = (initialData?: StatisticsHubData) => {
   const seed = initialData?.nativeContract === 'hub-v1' ? initialData : undefined
   const complete = seed !== undefined && seed.failures.length === 0
   return queryOptions({
-    queryKey: ['statistics', 'hub-v1'] as const,
+    queryKey: statisticsKeys.hub(),
     queryFn: ({ signal }) => fetchStatisticsHub(signal),
     staleTime,
     retry: false,

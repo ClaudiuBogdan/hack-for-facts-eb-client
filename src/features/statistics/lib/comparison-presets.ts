@@ -89,3 +89,25 @@ export const COMPARISON_EXAMPLE_PRESET: ComparisonPreset = {
     teritorii: ['siruta:54975', 'siruta:95060', 'siruta:155243'],
   },
 }
+
+/**
+ * The indicators the picker offers before anything is typed: the figures
+ * readers compare places on, each checked live (2026-09-23) for loaded
+ * county figures; `localities` where INS publishes them per locality too.
+ * The catalog search reaches the other 400-odd.
+ */
+export const COMPARISON_QUICK_INDICATORS: readonly {
+  readonly code: string
+  readonly label: MessageDescriptor
+  readonly localities: boolean
+}[] = [
+  { code: 'POP107D', label: msg`Populația după domiciliu`, localities: true },
+  { code: 'FOM104D', label: msg`Salariați (număr mediu)`, localities: true },
+  { code: 'SOM101F', label: msg`Ponderea șomerilor înregistrați`, localities: true },
+  { code: 'LOC101B', label: msg`Locuințe existente`, localities: true },
+  { code: 'POP201D', label: msg`Născuți vii`, localities: true },
+  { code: 'POP206D', label: msg`Decedați`, localities: true },
+  { code: 'TUR104E', label: msg`Sosiri turiști`, localities: true },
+  { code: 'POP217A', label: msg`Speranța de viață`, localities: false },
+  { code: 'SOM103A', label: msg`Rata șomajului`, localities: false },
+]

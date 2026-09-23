@@ -8,7 +8,7 @@ import {
   filterObservationsBySeriesSelection,
   isTotalLikeSeriesLabel,
   mergeSeriesSelection,
-} from './series-selection';
+} from './ins-series-selection';
 
 function buildObservation(params: {
   year: number;

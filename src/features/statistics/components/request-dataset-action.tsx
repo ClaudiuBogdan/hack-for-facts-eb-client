@@ -56,7 +56,8 @@ export function RequestDatasetAction({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 gap-1.5">
+        {/* Named per dataset: a list of catalog-only rows is a list of these buttons. */}
+        <Button variant="outline" size="sm" className="h-8 gap-1.5" aria-label={t`Cere setul ${datasetName || datasetCode}`}>
           <Send className="h-3.5 w-3.5" aria-hidden="true" />
           <Trans>Cere set</Trans>
         </Button>
@@ -133,7 +134,11 @@ export function RequestDatasetAction({
             ) : null}
             {requestMutation.isError ? (
               <p className="text-sm text-destructive">
-                <Trans>Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou.</Trans>
+                {isSignedIn ? (
+                  <Trans>Cererea nu a putut fi pregătită. Verifică emailul și încearcă din nou.</Trans>
+                ) : (
+                  <Trans>Cererea nu a putut fi pregătită. Încearcă din nou.</Trans>
+                )}
               </p>
             ) : null}
           </div>

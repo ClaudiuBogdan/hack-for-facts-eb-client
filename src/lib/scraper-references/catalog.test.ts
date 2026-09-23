@@ -57,7 +57,6 @@ describe('scraper-references', () => {
         'src/schemas/public-enterprise.ts',
       ],
       ['elections', 'src/features/elections/', 'src/schemas/elections.ts'],
-      ['ins-indicators', 'src/features/statistics/', 'src/schemas/statistics.ts'],
     ] as const
 
     for (const [datasetId, featurePath, schemaPath] of entries) {

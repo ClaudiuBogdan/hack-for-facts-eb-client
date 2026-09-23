@@ -13,13 +13,13 @@ import type { StatisticsHubUnit, StatisticsIndicatorTile } from '@/schemas/stati
  * with the specialised domains.
  */
 
-export interface TerritoryGroupDefinition {
+interface TerritoryGroupDefinition {
   readonly key: string
   readonly label: MessageDescriptor
   readonly prefixes: readonly string[]
 }
 
-export const TERRITORY_GROUPS: readonly TerritoryGroupDefinition[] = [
+const TERRITORY_GROUPS: readonly TerritoryGroupDefinition[] = [
   { key: 'populatie', label: msg`Populație`, prefixes: ['POP'] },
   { key: 'munca', label: msg`Muncă și șomaj`, prefixes: ['FOM', 'SOM'] },
   { key: 'locuire', label: msg`Locuire`, prefixes: ['LOC'] },
@@ -33,13 +33,25 @@ export const TERRITORY_GROUPS: readonly TerritoryGroupDefinition[] = [
   { key: 'administratie', label: msg`Administrație`, prefixes: ['ADM'] },
 ]
 
-export const TERRITORY_OTHER_GROUP: TerritoryGroupDefinition = {
+const TERRITORY_OTHER_GROUP: TerritoryGroupDefinition = {
   key: 'altele',
   label: msg`Alte domenii`,
   prefixes: [],
 }
 
-/** The four the band leads with, in order. The hub's own registry says the same. */
+/**
+ * The four the band leads with, in order — and the four the county and
+ * national references are read for, so the two cannot drift. Verified
+ * against the live data (2026-08-26):
+ *
+ * - POP107D is the population by domicile, which keeps the emigrants who
+ *   never changed address.
+ * - FOM104D is a salaried-employee HEADCOUNT („numărul mediu al
+ *   salariaților"), never a wage.
+ * - SOM101F is the REGISTERED-unemployment share („ponderea șomerilor
+ *   înregistrați … în totalul resurselor de muncă"), never ILO unemployment.
+ * - LOC101B is the stock of existing dwellings.
+ */
 export const TERRITORY_HEADLINE_CODES: readonly string[] = ['POP107D', 'FOM104D', 'SOM101F', 'LOC101B']
 
 export interface TerritoryGroup {
@@ -47,7 +59,7 @@ export interface TerritoryGroup {
   readonly tiles: readonly StatisticsIndicatorTile[]
 }
 
-export function territoryGroupOf(code: string): TerritoryGroupDefinition {
+function territoryGroupOf(code: string): TerritoryGroupDefinition {
   const prefix = code.slice(0, 3).toUpperCase()
   return TERRITORY_GROUPS.find((group) => group.prefixes.includes(prefix)) ?? TERRITORY_OTHER_GROUP
 }

@@ -5,7 +5,6 @@ import {
   enumeratePeriods,
   hasAnyValue,
   seriesAxis,
-  toChartValue,
 } from './time-series'
 import type { TimeSeriesPoint } from './time-series'
 
@@ -49,16 +48,6 @@ describe('enumeratePeriods', () => {
 
   it('returns nothing for an inverted window', () => {
     expect(enumeratePeriods({ from: 2024, to: 2020, periodicity: 'ANNUAL' })).toEqual([])
-  })
-})
-
-describe('toChartValue', () => {
-  it('parses a decimal string', () => {
-    expect(toChartValue('324576.5')).toBe(324576.5)
-  })
-
-  it.each([null, undefined, '', '  ', '..', ':'])('treats %s as a gap, not a zero', (value) => {
-    expect(toChartValue(value)).toBeNull()
   })
 })
 

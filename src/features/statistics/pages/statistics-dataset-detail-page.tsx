@@ -6,7 +6,6 @@ import {
   inspectSourceSeries,
   sourceRowSelection,
 } from '@/lib/ins/source-series'
-import { hasSourcePinIntent } from '@/lib/ins/source-pins'
 import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { useEffect, useMemo, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
@@ -77,7 +76,8 @@ import { isPeriodStale, periodSortKey } from '../lib/period'
 import { summarizeSeries } from '../lib/series-stats'
 import { tileUnit } from '../lib/territory-groups'
 import { statisticsTheme } from '../lib/statistics-theme'
-import { buildTimeSeries, hasAnyValue, toChartValue } from '../lib/time-series'
+import { buildTimeSeries, hasAnyValue } from '../lib/time-series'
+import { parseWireDecimal } from '../lib/value-status'
 
 type Props = {
   readonly code: string
@@ -883,12 +883,7 @@ function DatasetDetailBody({
                     {canDerive && latest && latest.hasData ? (
                       <DetailTier0Hero
                         latest={latest}
-                        matchChip={
-                          latest.matchStrategy === 'REPRESENTATIVE_FALLBACK' ||
-                          representativeDefaults
-                            ? 'representative'
-                            : null
-                        }
+                        matchChip={representativeDefaults ? 'representative' : null}
                       />
                     ) : null}
                     <Alert variant="destructive">
@@ -916,21 +911,14 @@ function DatasetDetailBody({
                     valueStatus={latestSourceRow.value_status ?? null}
                     absent={
                       // The latest PUBLISHED cell, not the latest readable one.
-                      toChartValue(latestSourceRow.value) === null
+                      parseWireDecimal(latestSourceRow.value) === null
                         ? {
                             period: latestSourceRow.time_period.iso_period,
                             valueStatus: latestSourceRow.value_status ?? null,
                           }
                         : null
                     }
-                    matchChip={
-                      (latest?.matchStrategy === 'REPRESENTATIVE_FALLBACK' &&
-                        !hasSourcePinIntent(search.clasificari) &&
-                        search.unitate === undefined) ||
-                      representativeDefaults
-                        ? 'representative'
-                        : null
-                    }
+                    matchChip={representativeDefaults ? 'representative' : null}
                   />
                 ) : null}
 

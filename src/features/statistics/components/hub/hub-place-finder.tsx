@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { MapPin } from 'lucide-react'
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,9 @@ import { useTerritorySearch } from '../../hooks/use-territory-search'
 import { HUB_EXAMPLE_PLACES } from '../../lib/landing-constants'
 import { StatisticsDebouncedSearchInput } from '../filters/statistics-debounced-search-input'
 
+/** Rows shown for a term; a longer name narrows the rest. */
+const SHOWN_ROWS = 8
+
 /**
  * The territory search, compact: an input, quick tries, and the rows. LAU
  * rows link into the territory hub; a county row is shown for orientation
@@ -21,7 +24,25 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
   const [term, setTerm] = useState<string | undefined>(undefined)
   const query = useTerritorySearch(term)
   const hasTerm = (term ?? '').trim().length >= TERRITORY_SEARCH_MIN_LENGTH
-  const rows = query.data?.rows ?? []
+  const rows = (query.data?.rows ?? []).slice(0, SHOWN_ROWS)
+  const shown = rows.length
+  const total = query.data?.totalCount ?? shown
+  const more = Math.max(0, total - shown)
+  // Search happens as you type, so what it found is said, not only shown:
+  // one short line, apart from the list, so the rows are not read twice.
+  const status = !hasTerm
+    ? ''
+    : query.isLoading
+      ? t`Se caută`
+      : query.isError
+        ? t`Căutarea nu a reușit`
+        : query.isSuccess
+          ? rows.length === 0
+            ? t`Niciun teritoriu găsit`
+            : more > 0
+              ? plural(total, { few: `Primele ${shown} din # teritorii găsite`, other: `Primele ${shown} din # de teritorii găsite` })
+              : plural(rows.length, { one: 'Un teritoriu găsit', few: '# teritorii găsite', other: '# de teritorii găsite' })
+          : ''
 
   return (
     <div className={className}>
@@ -53,8 +74,12 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
         </p>
       ) : null}
 
+      <p role="status" aria-live="polite" className="sr-only">
+        {status}
+      </p>
+
       {hasTerm && query.isLoading ? (
-        <div className="mt-3 space-y-2" aria-busy="true" aria-label={t`Se caută`}>
+        <div className="mt-3 space-y-2" aria-hidden="true">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
         </div>
@@ -77,7 +102,7 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
 
       {hasTerm && rows.length > 0 ? (
         <ul className="mt-3 divide-y divide-border/70 rounded-lg border border-border/70 bg-card">
-          {rows.slice(0, 8).map((row) => {
+          {rows.map((row) => {
             const label = row.name ?? row.code
             const level = row.level === 'LAU' ? t`Localitate` : row.level === 'NUTS3' ? t`Județ` : null
             const meta = row.level === 'LAU' ? row.countyName : t`Alege o localitate din județ`
@@ -117,6 +142,12 @@ export function HubPlaceFinder({ inputId, className }: { readonly inputId: strin
             )
           })}
         </ul>
+      ) : null}
+
+      {hasTerm && more > 0 ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {plural(more, { one: 'Încă un teritoriu se potrivește; scrie mai mult din nume.', few: 'Încă # teritorii se potrivesc; scrie mai mult din nume.', other: 'Încă # de teritorii se potrivesc; scrie mai mult din nume.' })}
+        </p>
       ) : null}
     </div>
   )

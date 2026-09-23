@@ -5,12 +5,15 @@ import {
 } from '@/lib/ins/source-contract'
 import { sourcePinsFilter } from '@/lib/ins/source-pins'
 import { InsSourcePageError } from '@/lib/ins/source-pages'
+import { INS_CHART_PERIOD_TYPE } from '@/lib/ins/source-periods'
+import type { PeriodDate } from '@/schemas/reporting'
 import { resolveComparisonDefaults } from '../lib/comparison-defaults'
 import {
   comparisonPublicationKey,
   projectNativeComparison,
 } from '../lib/native-comparison'
 import { resolveComparisonTerritories } from '../lib/comparison-territories'
+import { comparisonCountyLayer } from '../lib/comparison-view'
 import { getInsDatasetDetails } from './graphql/ins-bootstrap-fetchers'
 import { fetchInsComparisonDefaults } from './graphql/ins-comparison-defaults'
 import { fetchInsSourceVector } from './graphql/ins-source-fetcher'
@@ -101,7 +104,7 @@ export async function fetchNativeComparisonVector(
 
 export function projectPreparedComparison(
   result: Awaited<ReturnType<typeof fetchNativeComparisonVector>>,
-  requestedPeriod?: string,
+  requested: { readonly period?: string; readonly from?: string } = {},
 ) {
   const { prepared, descriptor, observations } = result
   const { resolved, tokens } = prepared
@@ -118,6 +121,44 @@ export function projectPreparedComparison(
         : [...resolved.pins].map(([type, code]) => `${type}:${code}`),
     unitCode: resolved.unit,
     cadence: resolved.cadence,
-    requestedPeriod,
+    requestedPeriod: requested.period,
+    requestedFrom: requested.from,
+  })
+}
+
+export type PreparedComparison = Awaited<ReturnType<typeof prepareNativeComparison>>
+
+/**
+ * The compared cell over every county and the country at one period — the
+ * same dataset, publication, source coordinates, unit and frequency as the
+ * comparison — for the county map beside it. One request: 43 rows.
+ */
+export async function fetchComparisonCountyLayer(
+  prepared: PreparedComparison,
+  period: string,
+  signal?: AbortSignal,
+) {
+  const { resolved, descriptor } = prepared
+  if (!resolved.ready || resolved.unit === null || resolved.cadence === null)
+    throw new Error('Choose complete INS comparison source coordinates, unit and cadence')
+  const pins = sourcePinsFilter(resolved.pins)
+  const vector = await fetchInsSourceVector({
+    datasetCode: descriptor.code,
+    filter: {
+      territoryLevels: ['NUTS3', 'NATIONAL'],
+      ...(pins.length > 0 && { sourcePins: pins }),
+      unitCodes: [resolved.unit],
+      // The comparison's own period labels, which match the cadence's shape.
+      period: { type: INS_CHART_PERIOD_TYPE[resolved.cadence], selection: { dates: [period as PeriodDate] } },
+    },
+    signal,
+  })
+  if (comparisonPublicationKey(vector.descriptor) !== comparisonPublicationKey(descriptor))
+    throw new InsSourcePageError('PUBLICATION_CHANGED')
+  return comparisonCountyLayer({
+    code: descriptor.code,
+    period,
+    cadence: resolved.cadence,
+    observations: vector.observations,
   })
 }

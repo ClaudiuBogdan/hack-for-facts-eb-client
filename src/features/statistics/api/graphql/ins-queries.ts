@@ -40,6 +40,29 @@ export const INS_DATASET_FIELDS = `
   source_last_update
 `
 
+/**
+ * What a catalog row shows: the summary a list of 25 needs, without the
+ * definition, methodology and source prose a dataset page reads once. The
+ * full selection weighs 120–260 KB a page; this one about 15 KB.
+ */
+export const INS_DATASET_SUMMARY_FIELDS = `
+  id
+  code
+  name_ro
+  name_en
+  periodicity
+  year_range
+  has_uat_data
+  has_county_data
+  has_siruta
+  sync_status
+  data_status
+  context_code
+  context_name_ro
+  context_name_en
+  context_path
+`
+
 export const INS_DATASET_DIMENSION_FIELDS = `
   dimensions {
         index
@@ -137,14 +160,14 @@ export const INS_DATASETS_QUERY = `
 `
 
 /**
- * Explorer catalog query. Same selection as `INS_DATASETS_QUERY`, but a
- * distinct operation name so the explorer's requests are separable in traces
- * and in the integration fixtures.
+ * Explorer catalog query: the summary fields only, under a distinct operation
+ * name so the explorer's requests are separable in traces and in the
+ * integration fixtures.
  */
 export const INS_DATASETS_EXPLORER_QUERY = `
   query InsDatasetsExplorer($filter: InsDatasetFilterInput, $limit: Int, $offset: Int) {
     insDatasets(filter: $filter, limit: $limit, offset: $offset) {
-      nodes { ${INS_DATASET_FIELDS} }
+      nodes { ${INS_DATASET_SUMMARY_FIELDS} }
       pageInfo { totalCount hasNextPage hasPreviousPage }
     }
   }
@@ -240,21 +263,24 @@ export const INS_DATASET_DIMENSIONS_QUERY = `
 `
 
 /**
- * Builds an aliased multi-dataset observations query. Dataset codes are
- * interpolated into the document (they are internal INS matrix codes, never
- * user input) because `insObservations` takes `datasetCode` as a positional
- * argument rather than a list.
+ * Builds an aliased multi-dataset observations query, one alias per matrix
+ * because `insObservations` takes `datasetCode` as a positional argument
+ * rather than a list. Each code travels as its own variable (`$code0`…), so
+ * a code from a saved chart can never alter the document.
  */
 export function buildInsObservationsBatchQuery(
   datasetCodes: readonly string[],
 ) {
   const aliasMap: Record<string, string> = {}
+  const variables: Record<string, string> = {}
+  const declarations = datasetCodes.map((_, index) => `$code${index}: String!`).join(', ')
   const fields = datasetCodes
     .map((code, index) => {
       const alias = `d${index}`
       aliasMap[alias] = code
+      variables[`code${index}`] = code
       return (
-        `${alias}: insObservations(datasetCode: "${code}", filter: $filter, limit: $limit, offset: 0) {\n` +
+        `${alias}: insObservations(datasetCode: $code${index}, filter: $filter, limit: $limit, offset: 0) {\n` +
         `  nodes { ${INS_OBSERVATION_FIELDS} }\n` +
         `  pageInfo { totalCount hasNextPage hasPreviousPage }\n` +
         `}`
@@ -263,12 +289,12 @@ export function buildInsObservationsBatchQuery(
     .join('\n')
 
   const query = `
-    query InsObservationsBatch($filter: InsObservationFilterInput, $limit: Int) {
+    query InsObservationsBatch(${declarations}${declarations ? ', ' : ''}$filter: InsObservationFilterInput, $limit: Int) {
       ${fields}
     }
   `
 
-  return { query, aliasMap }
+  return { query, aliasMap, variables }
 }
 
 export const INS_LATEST_VALUE_FIELDS = `

@@ -5,6 +5,9 @@ import {
   deathsExceedBirthsSince,
   describeAgainstNational,
   describeHubDelta,
+  formatHubChange,
+  hubChange,
+  hubUnitOf,
   formatHubSigned,
   formatHubValue,
   hubUnitWord,
@@ -41,6 +44,26 @@ describe('alignSeriesByPeriod', () => {
     expect(aligned.periods).toEqual(['1990', '2003'])
     expect(aligned.a).toEqual([null, 5])
     expect(aligned.b).toEqual([1, 2])
+  })
+})
+
+describe('hubChange and formatHubChange', () => {
+  it('measure what describeHubDelta states, and print it with the digits asked for', () => {
+    expect(hubChange(200, 230, 'persons')).toBeCloseTo(15)
+    expect(hubChange(5, 3.5, 'percent')).toBeCloseTo(-1.5)
+    expect(hubChange(0, 3, 'count')).toBeNull()
+    expect(formatHubChange(15, 'persons')).toBe('+15,0%')
+    expect(formatHubChange(-20, 'count', 0)).toBe('-20%')
+    expect(formatHubChange(0, 'count', 0)).toBe('0%')
+    expect(formatHubChange(-1.5, 'percent')).toBe('-1,5 pp')
+    expect(formatHubChange(2, 'years', 0)).toBe('+2 ani')
+  })
+})
+
+describe('hubUnitOf', () => {
+  it('names the unit from the API’s symbol or name, never from the dataset', () => {
+    expect(hubUnitOf({ unitSymbol: 'percent', unitCode: '10225', unitNameRo: 'Procente' })).toBe('percent')
+    expect(hubUnitOf({ unitSymbol: null, unitCode: null, unitNameRo: 'Numar' })).toBe('count')
   })
 })
 

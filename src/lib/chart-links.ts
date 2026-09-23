@@ -6,6 +6,7 @@ import { t } from '@lingui/core/macro';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults';
 import { normalizeNormalizationOptions, type NormalizationOptions } from '@/lib/normalization';
 import type { ReportPeriodInput } from '@/schemas/reporting';
+import { INS_CHART_PERIOD_TYPE } from '@/lib/ins/source-periods';
 import { getSeriesColor } from '@/components/charts/components/chart-renderer/utils';
 
 interface BuildEntityIncomeExpenseChartOptions {
@@ -634,6 +635,85 @@ export function buildInsStatsChartState(
 export function buildInsStatsChartLink(options: BuildInsStatsChartStateOptions) {
     const search = buildInsStatsChartState(options);
     return buildChartRouteLink(search);
+}
+
+interface BuildInsComparisonChartOptions {
+    datasetCode: string;
+    title: string;
+    cadence: 'ANNUAL' | 'QUARTERLY' | 'MONTHLY';
+    unitCode: string;
+    /** The shared source coordinates, as `Dn:member`. */
+    classificationPins: readonly string[];
+    series: readonly {
+        code: string;
+        level: 'NATIONAL' | 'NUTS3' | 'LAU';
+        label: string;
+        color: string;
+        /** The first and last period of the stretch the chart page can draw. */
+        from: string;
+        to: string;
+    }[];
+}
+
+/**
+ * The INS comparison as a chart: one `ins-series` per territory, on the same
+ * source coordinates, unit and frequency, each over the stretch of periods
+ * it has without a gap. Deterministic, so the link is stable across renders.
+ */
+export function buildInsComparisonChartState(options: BuildInsComparisonChartOptions): ChartUrlState {
+    const { datasetCode, title, cadence, unitCode, classificationPins, series } = options;
+    const classificationSelections: Record<string, string[]> = {};
+    for (const pin of classificationPins) {
+        const separator = pin.indexOf(':');
+        if (separator > 0) classificationSelections[pin.slice(0, separator)] = [pin.slice(separator + 1)];
+    }
+    const chartId = generateHash(JSON.stringify({ kind: 'ins-comparison', datasetCode, cadence, unitCode, classificationPins, series }));
+    // The chart page's year range is a year filter over annual points: a
+    // monthly or quarterly series reads as missing every year under it.
+    const years = cadence === 'ANNUAL' ? series.flatMap((entry) => [Number(entry.from), Number(entry.to)]) : [];
+    const now = new Date().toISOString();
+
+    const chart: Chart = ChartSchema.parse({
+        id: chartId,
+        title,
+        config: {
+            chartType: 'line',
+            showGridLines: true,
+            showLegend: true,
+            showTooltip: true,
+            editAnnotations: false,
+            showAnnotations: true,
+            showDiffControl: true,
+            ...(years.length > 0 ? { yearRange: { start: Math.min(...years), end: Math.max(...years) } } : {}),
+        },
+        series: series.map((entry) => ({
+            id: generateHash(JSON.stringify({ chartId, code: entry.code })),
+            type: 'ins-series',
+            label: entry.label,
+            enabled: true,
+            unit: '',
+            datasetCode,
+            aggregation: 'sum',
+            hasValue: true,
+            period: { type: INS_CHART_PERIOD_TYPE[cadence], selection: { interval: { start: entry.from, end: entry.to } } },
+            // A locality by its SIRUTA, as the entity charts ask for one; a county or the country by its code.
+            ...(entry.level === 'LAU' ? { sirutaCodes: [entry.code] } : { territoryCodes: [entry.code] }),
+            unitCodes: [unitCode],
+            ...(Object.keys(classificationSelections).length > 0 ? { classificationSelections } : {}),
+            config: { showDataLabels: false, color: entry.color },
+            createdAt: now,
+            updatedAt: now,
+        })),
+        annotations: [],
+        createdAt: now,
+        updatedAt: now,
+    });
+
+    return { chart, view: 'overview' };
+}
+
+export function buildInsComparisonChartLink(options: BuildInsComparisonChartOptions) {
+    return buildChartRouteLink(buildInsComparisonChartState(options));
 }
 
 /**
