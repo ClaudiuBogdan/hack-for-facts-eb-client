@@ -113,7 +113,7 @@ export function nationalObservation(spec: HubNationalSpec) {
   }
 }
 
-/** The `InsLandingTiles` response for the hub's codes. */
+/** The `InsNationalLatest` response for the hub's codes. */
 export function hubTilesResponse(overrides: Partial<Record<string, Partial<HubNationalSpec>>> = {}) {
   return {
     latest: HUB_NATIONAL_SPECS.map((base) => {

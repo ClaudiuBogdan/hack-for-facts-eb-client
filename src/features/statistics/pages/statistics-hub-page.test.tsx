@@ -70,9 +70,19 @@ vi.mock('@lingui/react/macro', () => ({
   }),
 }))
 
-function stub(data: ReturnType<typeof hubData> | undefined, overrides: Partial<{ isPending: boolean }> = {}) {
+function stub(
+  data: ReturnType<typeof hubData> | undefined,
+  overrides: Partial<{ isPending: boolean; isPlaceholderData: boolean; isFetching: boolean }> = {},
+) {
   const refetch = vi.fn()
-  useStatisticsHubMock.mockReturnValue({ data, isPending: overrides.isPending ?? false, isError: false, refetch })
+  useStatisticsHubMock.mockReturnValue({
+    data,
+    isPending: overrides.isPending ?? false,
+    isPlaceholderData: overrides.isPlaceholderData ?? false,
+    isFetching: overrides.isFetching ?? false,
+    isError: false,
+    refetch,
+  })
   return { refetch }
 }
 
@@ -263,5 +273,42 @@ describe('StatisticsHubPage', () => {
     render(<StatisticsHubPage search={{}} />)
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+  })
+
+  it('keeps a partial server read pending, not failed, while the browser reads it again', () => {
+    stub(hubData({ counties: null, failures: ['counties'] }), { isPlaceholderData: true, isFetching: true })
+    render(<StatisticsHubPage search={{}} />)
+    expect(screen.getAllByText('19.043.151').length).toBeGreaterThan(0)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Încearcă din nou' })).not.toBeInTheDocument()
+  })
+
+  it('shows no retry for a county layer INS no longer publishes, only for one that failed', () => {
+    stub(hubData({ counties: [], failures: [] }))
+    const { unmount } = render(<StatisticsHubPage search={{}} />)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getByText('INS nu a publicat încă valorile pe județe ale acestui indicator.')).toBeInTheDocument()
+    unmount()
+
+    stub(hubData({ counties: [], failures: ['counties'] }))
+    render(<StatisticsHubPage search={{}} />)
+    expect(screen.getAllByRole('alert')).toHaveLength(1)
+  })
+
+  it('keeps the figures the server rendered when the browser cannot read them again', () => {
+    const initial = hubData({ counties: null, failures: ['counties'] })
+    useStatisticsHubMock.mockReturnValue({ data: undefined, isPending: false, isPlaceholderData: false, isFetching: false, isError: true, refetch: vi.fn() })
+    render(<StatisticsHubPage search={{}} initialHub={initial} />)
+    expect(screen.getAllByText('19.043.151').length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('alert')).toHaveLength(1)
+  })
+
+  it('stays quiet when the read answered with no figure for a band', () => {
+    stub(hubData({ indicators: [] }))
+    render(<StatisticsHubPage search={{}} />)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    const band = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(band).toHaveTextContent('INS nu a publicat încă aceste cifre.')
+    expect(screen.getByText('INS nu a publicat încă aceste serii.')).toBeInTheDocument()
   })
 })

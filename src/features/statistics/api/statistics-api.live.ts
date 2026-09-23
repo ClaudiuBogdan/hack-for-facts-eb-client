@@ -24,7 +24,7 @@ import type {
   StatisticsTileBenchmark,
 } from '@/schemas/statistics'
 import { getDatasetDataStatus } from '../lib/dataset-status'
-import { LANDING_NATIONAL_DATASET_CODES } from '../lib/landing-constants'
+import { TERRITORY_HEADLINE_CODES } from '../lib/territory-groups'
 import { getLatestTimePeriod, resolveLatestPeriod } from '../lib/period'
 import { buildTerritoryRelatedLinks, resolveTerritoryIdentity } from '../lib/territory'
 
@@ -89,7 +89,7 @@ export async function fetchStatisticsTerritoryHubLive(
   try {
     context = await fetchStatisticsTerritoryHubContext({
       countyCode: territoryRow?.countyCode ?? null,
-      benchmarkCodes: LANDING_NATIONAL_DATASET_CODES,
+      benchmarkCodes: TERRITORY_HEADLINE_CODES,
       signal,
     })
   } catch (error) {
@@ -101,7 +101,7 @@ export async function fetchStatisticsTerritoryHubLive(
   }
 
   const benchmarks: Record<string, StatisticsTileBenchmark> = {}
-  for (const code of LANDING_NATIONAL_DATASET_CODES) {
+  for (const code of TERRITORY_HEADLINE_CODES) {
     const county =
       context?.county.find((value) => value.datasetCode === code) ?? null
     const national =

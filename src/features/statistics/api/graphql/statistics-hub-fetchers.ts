@@ -18,7 +18,7 @@ import { hubUnitOf } from '../../lib/hub-format'
 import { hubStaticSeries } from '../../lib/hub-national-series'
 import { publishedNumber } from '../../lib/value-status'
 import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
-import { fetchNativeLandingTiles } from './ins-landing-tiles'
+import { fetchNationalLatest } from './national-latest'
 import { INS_OBSERVATIONS_QUERY } from './ins-queries'
 import { insObservationNodeRawSchema, insPageInfoRawSchema } from './statistics-raw-schemas'
 
@@ -29,12 +29,15 @@ const logger = createLogger('statistics-hub')
  *
  * Two sections, so a slow or failed one never blanks the page: the national
  * indicators (one `insLatestDatasetValues` at RO/NATIONAL) and three county
- * layers (one `insObservations` each at the indicator's latest year). The
+ * layers (one `insObservations` each at the indicator's latest year), each
+ * layer on its own so one that fails leaves the other two on the map. The
  * annual histories behind the charts are kept in the client
  * (`lib/hub-national-series.ts`, captured from the same API) and only
  * extended with the live latest point when it is newer. The county layers
  * need the resolved national cell — its unit and classification members are
  * what "the total" means for each dataset — so they wait for the first read.
+ * A matrix the API no longer knows is one missing figure, not a failed
+ * section: the page shows what came back.
  */
 
 /** The server's page ceiling; a layer past it is refused rather than drawn short. */
@@ -199,6 +202,31 @@ async function fetchCountyLayer(
   }
 }
 
+/**
+ * The county layers that could be read. A failed layer names the section as
+ * failed — the render is not cached and the browser reads again — but the
+ * layers that answered are kept, so the map is not blank for one of three.
+ */
+async function settleLayers(
+  reads: readonly Promise<StatisticsHubCountyLayer>[],
+  failures: StatisticsHubSection[],
+): Promise<StatisticsHubCountyLayer[]> {
+  const layers: StatisticsHubCountyLayer[] = []
+  let failed = false
+  for (const result of await Promise.allSettled(reads)) {
+    if (result.status === 'fulfilled') {
+      layers.push(result.value)
+      continue
+    }
+    if (isAbortError(result.reason)) throw result.reason
+    const error = result.reason
+    logger.warn('Statistics hub county layer unavailable', { error: error instanceof Error ? error.message : String(error) })
+    failed = true
+  }
+  if (failed) failures.push('counties')
+  return layers
+}
+
 async function settle<T>(section: StatisticsHubSection, read: Promise<T>, failures: StatisticsHubSection[]): Promise<T | null> {
   try {
     return await read
@@ -216,7 +244,7 @@ export async function fetchStatisticsHub(signal?: AbortSignal): Promise<Statisti
   const failures: StatisticsHubSection[] = []
   const tiles = await settle(
     'indicators',
-    fetchNativeLandingTiles(signal, HUB_NATIONAL_DATASET_CODES),
+    fetchNationalLatest(HUB_NATIONAL_DATASET_CODES, signal),
     failures,
   )
   throwIfCancelled(signal)
@@ -225,14 +253,11 @@ export async function fetchStatisticsHub(signal?: AbortSignal): Promise<Statisti
   let counties: StatisticsHubCountyLayer[] | null = null
   if (tiles) {
     const latestByCode = new Map(tiles.nationalValues.map((latest) => [latest.datasetCode, latest]))
-    const layers = await settle(
-      'counties',
-      Promise.all(
-        HUB_COUNTY_LAYERS.flatMap((layer) => {
-          const latest = latestByCode.get(layer.code)
-          return latest?.hasData ? [fetchCountyLayer(layer.code, latest, signal)] : []
-        }),
-      ),
+    const layers = await settleLayers(
+      HUB_COUNTY_LAYERS.flatMap((layer) => {
+        const latest = latestByCode.get(layer.code)
+        return latest?.hasData ? [fetchCountyLayer(layer.code, latest, signal)] : []
+      }),
       failures,
     )
     indicators = HUB_NATIONAL_DATASET_CODES.flatMap((code) => {

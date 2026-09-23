@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import { hubCountyLayer } from '../../test/hub-fixtures'
 import { HubCountyMap } from './hub-county-map'
-import { HubCountyRank } from './hub-county-rank'
+import { HubCountyRank, HubIndicatorToggle } from './hub-county-rank'
 
 vi.mock('../../lib/format', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/format')>()
@@ -331,5 +331,43 @@ describe('HubCountyRank', () => {
 
     const unanchored = render(<HubCountyRank layer={{ ...LIFE, national: null }} />)
     expect(bar(unanchored.container, 'Vâlcea').className).toContain('rounded-full')
+  })
+})
+
+describe('HubIndicatorToggle', () => {
+  const OPTIONS = [
+    { key: 'viata', label: 'Speranța de viață' },
+    { key: 'somaj', label: 'Rata șomajului' },
+    { key: 'salariati', label: 'Salariați' },
+  ] as const
+
+  it('is one tab stop whose arrows move the choice and the focus together, around the ends', () => {
+    const onChange = vi.fn()
+    const { rerender } = render(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="somaj" onChange={onChange} />)
+    const group = screen.getByRole('radiogroup', { name: 'Indicatorul de pe hartă' })
+    const radios = within(group).getAllByRole('radio')
+    expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual(['-1', '0', '-1'])
+    expect(within(group).getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
+
+    radios[1]!.focus()
+    fireEvent.keyDown(group, { key: 'ArrowRight' })
+    expect(onChange).toHaveBeenLastCalledWith('salariati')
+    expect(document.activeElement).toBe(radios[2])
+
+    fireEvent.keyDown(group, { key: 'ArrowLeft' })
+    expect(onChange).toHaveBeenLastCalledWith('viata')
+    expect(document.activeElement).toBe(radios[0])
+
+    // From the last option the arrow wraps to the first, and back; a click picks directly.
+    rerender(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="salariati" onChange={onChange} />)
+    fireEvent.keyDown(group, { key: 'ArrowRight' })
+    expect(onChange).toHaveBeenLastCalledWith('viata')
+    expect(document.activeElement).toBe(radios[0])
+    rerender(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="viata" onChange={onChange} />)
+    fireEvent.keyDown(group, { key: 'ArrowLeft' })
+    expect(onChange).toHaveBeenLastCalledWith('salariati')
+    expect(document.activeElement).toBe(radios[2])
+    fireEvent.click(radios[1]!)
+    expect(onChange).toHaveBeenLastCalledWith('somaj')
   })
 })

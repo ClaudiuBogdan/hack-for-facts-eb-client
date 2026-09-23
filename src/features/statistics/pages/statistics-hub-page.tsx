@@ -9,29 +9,21 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
-import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics'
+import type { StatisticsHubData, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics'
 import { HubTwoLineChart } from '../components/hub/hub-charts'
 import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
 import { HubCountyMap } from '../components/hub/hub-county-map'
 import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank'
 import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
-import { HubFigureRows, HubFiguresBand, type HubFact } from '../components/hub/hub-figures'
+import { buildHubFacts, indicatorByCode } from '../components/hub/hub-facts'
+import { HubFigureRows, HubFiguresBand } from '../components/hub/hub-figures'
 import { useIndicatorLabel } from '../components/hub/hub-labels'
 import { HubPlaceFinder } from '../components/hub/hub-place-finder'
 import { HubThemePanel } from '../components/hub/hub-theme-panel'
 import { HubThenNow } from '../components/hub/hub-then-now'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
-import {
-  annualInflationRate,
-  deathsExceedBirthsSince,
-  formatHubPeriod,
-  hubUnitWord,
-  indicatorDetailSearch,
-  sameMonthLastYear,
-  sourceDecimals,
-} from '../lib/hub-format'
-import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES, HUB_HEADLINE_CODES } from '../lib/landing-constants'
-import { describeValueStatus } from '../lib/value-status'
+import { deathsExceedBirthsSince } from '../lib/hub-format'
+import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
 
 /**
  * `/ins` — the statistics hub, in the landing's visual language, one
@@ -61,34 +53,9 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
-function indicatorByCode(hub: StatisticsHubData | undefined, code: string): StatisticsHubIndicator | undefined {
-  return hub?.indicators?.find((indicator) => indicator.code === code)
-}
-
-/** An indicator with a number and a period to show, or nothing — a blocked or absent cell has no figure to put in the band. */
-function withFigure(indicator: StatisticsHubIndicator | undefined) {
-  return indicator && indicator.value !== null && indicator.period ? { ...indicator, value: indicator.value, period: indicator.period } : null
-}
-
-/** The cell's INS flag, spelled out after its period: a provisional or estimated figure says so here as it does in the rows. */
-function withValueStatus(note: ReactNode, indicator: StatisticsHubIndicator): ReactNode {
-  return indicator.valueStatus ? (
-    <>
-      {note}, {describeValueStatus(indicator.valueStatus)}
-    </>
-  ) : (
-    note
-  )
-}
-
-function detailLink(indicator: StatisticsHubIndicator) {
-  return function DetailLink(label: ReactNode, className: string) {
-    return (
-      <Link to="/ins/seturi/$cod" params={{ cod: indicator.code }} search={indicatorDetailSearch(indicator)} className={className}>
-        {label}
-      </Link>
-    )
-  }
+/** A read that answered with no figure for a band: quiet, with no retry to offer. */
+function HubEmpty({ children }: { readonly children: ReactNode }) {
+  return <p className="text-sm text-muted-foreground">{children}</p>
 }
 
 export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) {
@@ -100,7 +67,12 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   // ticking against nodes that are no longer in the document.
   useEffect(() => () => stopCounting(), [])
   const query = useStatisticsHub(initialHub)
-  const hub = query.data
+  // A partial server read is shown as a placeholder while the browser reads
+  // again: the gaps it has are pending, not failed, until that read lands.
+  // Should that read fail, the figures the server did render stay, with the
+  // sections it could not read as the retries they are.
+  const hub = query.data ?? (query.isError && initialHub?.nativeContract === 'hub-v1' ? initialHub : undefined)
+  const pending = query.isPending || (query.isPlaceholderData && (query.isFetching || query.isPaused))
   const retry = () => void query.refetch()
   const labelOf = useIndicatorLabel()
   const [activeCounty, setActiveCounty] = useState<string | undefined>(undefined)
@@ -133,73 +105,11 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
     indicator && indicator.series.length > 1 ? [{ indicator, label: labelOf(indicator) }] : [],
   )
 
-  const inflation = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.inflation))
-  const earnings = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.earnings))
-  const unemployment = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.unemployment))
-  const population = withFigure(indicatorByCode(hub, HUB_HEADLINE_CODES.population))
-  const inflationBase = inflation ? sameMonthLastYear(inflation.period) : null
-  const facts: readonly HubFact[] = [
-    ...(inflation
-      ? [
-          {
-            key: 'inflation',
-            value: annualInflationRate(inflation.value, sourceDecimals(inflation.rawValue)),
-            digits: sourceDecimals(inflation.rawValue),
-            unit: '%',
-            label: <Trans>Inflația anuală</Trans>,
-            note: withValueStatus(
-              inflationBase ? (
-                <Trans>
-                  {formatHubPeriod(inflation.period)} față de {formatHubPeriod(inflationBase)}
-                </Trans>
-              ) : (
-                formatHubPeriod(inflation.period)
-              ),
-              inflation,
-            ),
-            link: detailLink(inflation),
-          } satisfies HubFact,
-        ]
-      : []),
-    ...(earnings
-      ? [
-          {
-            key: 'earnings',
-            value: earnings.value,
-            digits: sourceDecimals(earnings.rawValue),
-            unit: hubUnitWord(earnings.unit, earnings.unitLabel),
-            label: <Trans>Salariul mediu net</Trans>,
-            note: withValueStatus(formatHubPeriod(earnings.period), earnings),
-            link: detailLink(earnings),
-          } satisfies HubFact,
-        ]
-      : []),
-    ...(unemployment
-      ? [
-          {
-            key: 'unemployment',
-            value: unemployment.value,
-            digits: sourceDecimals(unemployment.rawValue),
-            unit: '%',
-            label: <Trans>Rata șomajului</Trans>,
-            note: withValueStatus(<Trans>Șomeri înregistrați, {formatHubPeriod(unemployment.period)}</Trans>, unemployment),
-            link: detailLink(unemployment),
-          } satisfies HubFact,
-        ]
-      : []),
-    ...(population
-      ? [
-          {
-            key: 'population',
-            value: population.value,
-            digits: 0,
-            label: <Trans>Locuitori</Trans>,
-            note: withValueStatus(<Trans>Populația rezidentă la 1 ianuarie {population.period}</Trans>, population),
-            link: detailLink(population),
-          } satisfies HubFact,
-        ]
-      : []),
-  ]
+  const facts = buildHubFacts(hub)
+  // The read answered, and answered with nothing: not a failure to retry.
+  const answered = !pending && hub?.indicators != null
+  // A layer INS no longer publishes was never read; only a read that failed is one to retry.
+  const countiesFailed = hub?.failures.includes('counties') ?? true
 
   return (
     <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
@@ -264,7 +174,17 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
           {facts.length > 0 ? (
             <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
           ) : (
-            <div className="px-5 py-7">{query.isPending ? <HubPending rows={2} /> : <HubLoadError onRetry={retry} />}</div>
+            <div className="px-5 py-7">
+              {pending ? (
+                <HubPending rows={2} />
+              ) : answered ? (
+                <HubEmpty>
+                  <Trans>INS nu a publicat încă aceste cifre.</Trans>
+                </HubEmpty>
+              ) : (
+                <HubLoadError onRetry={retry} />
+              )}
+            </div>
           )}
         </RuledFrame>
       </section>
@@ -288,8 +208,12 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             <div className="lg:col-span-6 lg:col-start-7" data-reveal>
               {figureRows.length > 0 ? (
                 <HubFigureRows indicators={figureRows} />
-              ) : query.isPending ? (
+              ) : pending ? (
                 <HubPending rows={6} />
+              ) : answered ? (
+                <HubEmpty>
+                  <Trans>INS nu a publicat încă aceste serii.</Trans>
+                </HubEmpty>
               ) : (
                 <HubLoadError onRetry={retry} />
               )}
@@ -324,8 +248,12 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                   activeCode={activeCounty}
                   onActiveChange={setActiveCounty}
                 />
-              ) : query.isPending ? (
+              ) : pending ? (
                 <div className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+              ) : answered && !countiesFailed ? (
+                <HubEmpty>
+                  <Trans>INS nu a publicat încă valorile pe județe ale acestui indicator.</Trans>
+                </HubEmpty>
               ) : (
                 <HubLoadError onRetry={retry} />
               )}
@@ -333,7 +261,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             <div className="lg:col-span-5 lg:col-start-8" data-reveal>
               {layer ? (
                 <HubCountyRank layer={layer} activeCode={activeCounty} onActiveChange={setActiveCounty} />
-              ) : query.isPending ? (
+              ) : pending ? (
                 <HubPending rows={10} />
               ) : null}
             </div>
@@ -377,7 +305,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               <div className="mt-8" data-reveal>
                 {changeRows.length > 0 ? (
                   <HubThenNow rows={changeRows} since={since} onActiveChange={setActiveSeries} />
-                ) : query.isPending ? (
+                ) : pending ? (
                   <HubPending rows={5} />
                 ) : null}
               </div>
@@ -401,9 +329,9 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                     />
                   </div>
                 </>
-              ) : query.isPending ? (
+              ) : pending ? (
                 <HubPending rows={6} />
-              ) : (
+              ) : answered ? null : (
                 <HubLoadError onRetry={retry} />
               )}
             </div>

@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: vi.fn() }))
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
-import { LANDING_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
-import { fetchNativeLandingTiles } from './ins-landing-tiles'
+import { fetchNationalLatest } from './national-latest'
+const CODES = ['POP107D', 'FOM104D', 'SOM101F', 'LOC101B'] as const
 const dataset = {
   id: 'TEST',
   code: 'TEST',
@@ -46,7 +46,7 @@ const observation = {
 }
 
 function outcomes() {
-  return LANDING_NATIONAL_DATASET_CODES.map((code) => ({
+  return CODES.map((code) => ({
     dataset: { ...dataset, code, id: code },
     observation: {
       ...observation,
@@ -65,7 +65,7 @@ function outcomes() {
     geographicWitnesses: [],
   }))
 }
-describe('national native landing tiles boundary', () => {
+describe('national latest cells boundary', () => {
   beforeEach(() => vi.resetAllMocks())
   it('preserves exact values and statuses, including explicit null-valued cells, over anonymous transport', async () => {
     const latest = outcomes()
@@ -74,7 +74,7 @@ describe('national native landing tiles boundary', () => {
     latest[1].observation.value = null
     vi.mocked(graphqlQuery).mockResolvedValue({ latest })
     const signal = new AbortController().signal
-    const result = await fetchNativeLandingTiles(signal)
+    const result = await fetchNationalLatest(CODES, signal)
     expect(result.nativeContract).toBe('native-v2')
     expect(result.nationalValues[1]).toMatchObject({
       value: null,
@@ -97,7 +97,6 @@ describe('national native landing tiles boundary', () => {
     'period',
     'missing-status',
     'duplicate-dataset',
-    'missing-dataset',
   ])('rejects %s instead of publishing a national tile', async (problem) => {
     const latest: unknown[] = outcomes()
     const first = latest[0] as ReturnType<typeof outcomes>[number]
@@ -115,9 +114,16 @@ describe('national native landing tiles boundary', () => {
     if (problem === 'missing-status')
       Reflect.deleteProperty(first.observation, 'value_status')
     if (problem === 'duplicate-dataset') latest[1] = latest[0]
-    if (problem === 'missing-dataset') latest.pop()
     vi.mocked(graphqlQuery).mockResolvedValue({ latest })
-    await expect(fetchNativeLandingTiles()).rejects.toThrow()
+    await expect(fetchNationalLatest(CODES)).rejects.toThrow()
+  })
+  it('serves the cells that came back and names the code the API left out', async () => {
+    const latest = outcomes()
+    latest.pop()
+    vi.mocked(graphqlQuery).mockResolvedValue({ latest })
+    const result = await fetchNationalLatest(CODES)
+    expect(result.nationalValues.map((value) => value.datasetCode)).toEqual(CODES.slice(0, 3))
+    expect(result.missingCodes).toEqual(['LOC101B'])
   })
   it.each([null, 2])(
     'accepts monthly source periods with quarter %s',
@@ -132,7 +138,7 @@ describe('national native landing tiles boundary', () => {
         periodicity: 'MONTHLY',
       })
       vi.mocked(graphqlQuery).mockResolvedValue({ latest })
-      const result = await fetchNativeLandingTiles()
+      const result = await fetchNationalLatest(CODES)
       expect(result.nationalValues[2].period).toBe('2026-05')
     },
   )
@@ -147,16 +153,16 @@ describe('national native landing tiles boundary', () => {
       periodicity: 'MONTHLY',
     })
     vi.mocked(graphqlQuery).mockResolvedValue({ latest })
-    await expect(fetchNativeLandingTiles()).rejects.toThrow(
-      'Invalid landing tile decimal or period',
+    await expect(fetchNationalLatest(CODES)).rejects.toThrow(
+      'Invalid national latest decimal or period',
     )
   })
   it('propagates cancellation and transport failure without fabricated no-data', async () => {
     const controller = new AbortController()
     controller.abort()
-    await expect(fetchNativeLandingTiles(controller.signal)).rejects.toThrow()
+    await expect(fetchNationalLatest(CODES, controller.signal)).rejects.toThrow()
     expect(graphqlQuery).not.toHaveBeenCalled()
     vi.mocked(graphqlQuery).mockRejectedValue(new Error('unavailable'))
-    await expect(fetchNativeLandingTiles()).rejects.toThrow('unavailable')
+    await expect(fetchNationalLatest(CODES)).rejects.toThrow('unavailable')
   })
 })

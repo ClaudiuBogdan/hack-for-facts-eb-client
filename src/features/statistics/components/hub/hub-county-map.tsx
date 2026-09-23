@@ -219,9 +219,7 @@ export function HubCountyMap({
                   county && STEP_FILL[scale.stepOf(county.value)],
                   activeCode && activeCode !== shape.code && 'opacity-45',
                 )}
-              >
-                <title>{title(shape.name, county)}</title>
-              </path>
+              />
             )
             if (county && selection) {
               const selected = selection.colors.has(shape.code)

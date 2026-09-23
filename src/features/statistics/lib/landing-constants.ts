@@ -2,18 +2,14 @@ import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 
 /**
- * Landing data constants. Every dataset semantic here is verified against the
- * live data (M0 probes, 2026-08-26):
+ * The INS section's dataset registries: the eight domains the catalog and
+ * the hub offer, and the matrices the `/ins` hub reads. The territory hub's
+ * own four headline matrices live in `territory-groups.ts`.
  *
- * - SOM101F is the REGISTERED-unemployment share („ponderea șomerilor
- *   înregistrați … în totalul resurselor de muncă"), never ILO unemployment.
- * - FOM104D is a salaried-employee HEADCOUNT („numărul mediu al salariaților"),
- *   never a wage.
- * - Hub labels below are short, truthful renderings of the API dataset names;
- *   the full `name_ro` from the API is carried alongside and shown on the
- *   detail surface.
+ * Every code here names a matrix verified against the live API; a label is a
+ * short, truthful rendering of the API's own `name_ro`, which travels
+ * alongside and is shown in full on the dataset page.
  */
-export const LANDING_NATIONAL_DATASET_CODES: readonly string[] = ['POP107D', 'FOM104D', 'SOM101F', 'LOC101B']
 
 /**
  * The eight INS level-0 context groups ("domains"). Codes are the

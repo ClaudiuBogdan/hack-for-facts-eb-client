@@ -6,7 +6,7 @@
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-hub-flow/,
  * built with the builders in src/features/statistics/test/hub-fixtures.ts so
  * the wire shape is the one the fetcher test certifies). The hub fires
- * `InsLandingTiles` once, then one `InsObservations` per county layer; the
+ * `InsNationalLatest` once, then one `InsObservations` per county layer; the
  * annual histories are in the client. Typing in the search fires
  * `SearchEntities` scoped to INS datasets.
  *
@@ -22,7 +22,7 @@ import { waitForHydration } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  await mockApi.mockGraphQL('InsLandingTiles', 'tiles')
+  await mockApi.mockGraphQL('InsNationalLatest', 'tiles')
   await mockApi.mockGraphQL('InsObservations', 'counties-pop217a', { variables: { datasetCode: 'POP217A' } })
   await mockApi.mockGraphQL('InsObservations', 'counties-som103a', { variables: { datasetCode: 'SOM103A' } })
   await mockApi.mockGraphQL('InsObservations', 'counties-fom104d', { variables: { datasetCode: 'FOM104D' } })

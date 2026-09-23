@@ -1038,7 +1038,7 @@ text.
   (SOM101F, a different measure from the rate) left it, which also retires the
   two unemployment numbers the page used to show side by side.
 - **Matrices with no geography axis** (IPC102E, FOM106D) are national by
-  construction. `validateLandingLatest` accepts their cell — no territory, no
+  construction. `validateNationalLatest` accepts their cell — no territory, no
   geography — for a national request only, and their links name no
   `teritoriu`: the detail page has no axis to show one on.
 - **The hero** names the source and the reach („De la Institutul Național de

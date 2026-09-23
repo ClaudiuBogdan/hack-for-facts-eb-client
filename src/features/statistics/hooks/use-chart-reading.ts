@@ -47,7 +47,12 @@ export function useChartReading(count: number) {
     setTooltipLeft(right + size <= width ? right : left >= -GUTTER ? left : Math.min(Math.max(-GUTTER, x - size / 2), width - size))
   }, [active, count])
 
-  const setActive = (index: number | null, hold = false) => setSelection(index === null ? null : { index, held: hold })
+  // A pointer moves many times per period: the same reading is the same state.
+  const setActive = (index: number | null, hold = false) =>
+    setSelection((current) => {
+      if (index === null) return current === null ? current : null
+      return current && current.index === index && current.held === hold ? current : { index, held: hold }
+    })
 
   const indexAt = (clientX: number) => {
     const rect = plotRef.current?.getBoundingClientRect()
