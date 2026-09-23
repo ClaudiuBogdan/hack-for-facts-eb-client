@@ -3,7 +3,7 @@
     "insObservations": {
       "nodes": [
         {
-          "id": "POP217A-VL",
+          "id": "POP217A-VL-0",
           "dataset_code": "POP217A",
           "value": "82.01",
           "value_status": null,
@@ -27,19 +27,19 @@
           },
           "classifications": [
             {
-              "id": "POP217A-0",
+              "id": "POP217A-VL-0",
               "type_code": "D0",
               "code": "108",
               "name_ro": "108"
             },
             {
-              "id": "POP217A-1",
+              "id": "POP217A-VL-1",
               "type_code": "D1",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "POP217A-2",
+              "id": "POP217A-VL-2",
               "type_code": "D2",
               "code": "3000",
               "name_ro": "3000"
@@ -50,7 +50,7 @@
           }
         },
         {
-          "id": "POP217A-B",
+          "id": "POP217A-B-1",
           "dataset_code": "POP217A",
           "value": "79.68",
           "value_status": null,
@@ -74,19 +74,19 @@
           },
           "classifications": [
             {
-              "id": "POP217A-0",
+              "id": "POP217A-B-0",
               "type_code": "D0",
               "code": "108",
               "name_ro": "108"
             },
             {
-              "id": "POP217A-1",
+              "id": "POP217A-B-1",
               "type_code": "D1",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "POP217A-2",
+              "id": "POP217A-B-2",
               "type_code": "D2",
               "code": "3001",
               "name_ro": "3001"
@@ -97,7 +97,7 @@
           }
         },
         {
-          "id": "POP217A-BV",
+          "id": "POP217A-BV-2",
           "dataset_code": "POP217A",
           "value": "79.16",
           "value_status": null,
@@ -121,19 +121,19 @@
           },
           "classifications": [
             {
-              "id": "POP217A-0",
+              "id": "POP217A-BV-0",
               "type_code": "D0",
               "code": "108",
               "name_ro": "108"
             },
             {
-              "id": "POP217A-1",
+              "id": "POP217A-BV-1",
               "type_code": "D1",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "POP217A-2",
+              "id": "POP217A-BV-2",
               "type_code": "D2",
               "code": "3002",
               "name_ro": "3002"
@@ -144,7 +144,7 @@
           }
         },
         {
-          "id": "POP217A-CJ",
+          "id": "POP217A-CJ-3",
           "dataset_code": "POP217A",
           "value": "78.71",
           "value_status": null,
@@ -168,19 +168,19 @@
           },
           "classifications": [
             {
-              "id": "POP217A-0",
+              "id": "POP217A-CJ-0",
               "type_code": "D0",
               "code": "108",
               "name_ro": "108"
             },
             {
-              "id": "POP217A-1",
+              "id": "POP217A-CJ-1",
               "type_code": "D1",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "POP217A-2",
+              "id": "POP217A-CJ-2",
               "type_code": "D2",
               "code": "3003",
               "name_ro": "3003"
@@ -191,7 +191,7 @@
           }
         },
         {
-          "id": "POP217A-CL",
+          "id": "POP217A-CL-4",
           "dataset_code": "POP217A",
           "value": "74.82",
           "value_status": null,
@@ -215,19 +215,19 @@
           },
           "classifications": [
             {
-              "id": "POP217A-0",
+              "id": "POP217A-CL-0",
               "type_code": "D0",
               "code": "108",
               "name_ro": "108"
             },
             {
-              "id": "POP217A-1",
+              "id": "POP217A-CL-1",
               "type_code": "D1",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "POP217A-2",
+              "id": "POP217A-CL-2",
               "type_code": "D2",
               "code": "3004",
               "name_ro": "3004"

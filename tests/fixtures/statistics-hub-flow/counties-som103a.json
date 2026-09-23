@@ -3,7 +3,7 @@
     "insObservations": {
       "nodes": [
         {
-          "id": "SOM103A-TR",
+          "id": "SOM103A-TR-0",
           "dataset_code": "SOM103A",
           "value": "9.3",
           "value_status": null,
@@ -27,13 +27,13 @@
           },
           "classifications": [
             {
-              "id": "SOM103A-0",
+              "id": "SOM103A-TR-0",
               "type_code": "D0",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "SOM103A-1",
+              "id": "SOM103A-TR-1",
               "type_code": "D1",
               "code": "3000",
               "name_ro": "3000"
@@ -44,7 +44,7 @@
           }
         },
         {
-          "id": "SOM103A-MH",
+          "id": "SOM103A-MH-1",
           "dataset_code": "SOM103A",
           "value": "9.1",
           "value_status": null,
@@ -68,13 +68,13 @@
           },
           "classifications": [
             {
-              "id": "SOM103A-0",
+              "id": "SOM103A-MH-0",
               "type_code": "D0",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "SOM103A-1",
+              "id": "SOM103A-MH-1",
               "type_code": "D1",
               "code": "3001",
               "name_ro": "3001"
@@ -85,7 +85,7 @@
           }
         },
         {
-          "id": "SOM103A-IF",
+          "id": "SOM103A-IF-2",
           "dataset_code": "SOM103A",
           "value": "0.5",
           "value_status": null,
@@ -109,13 +109,13 @@
           },
           "classifications": [
             {
-              "id": "SOM103A-0",
+              "id": "SOM103A-IF-0",
               "type_code": "D0",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "SOM103A-1",
+              "id": "SOM103A-IF-1",
               "type_code": "D1",
               "code": "3002",
               "name_ro": "3002"
@@ -126,7 +126,7 @@
           }
         },
         {
-          "id": "SOM103A-B",
+          "id": "SOM103A-B-3",
           "dataset_code": "SOM103A",
           "value": "0.5",
           "value_status": null,
@@ -150,13 +150,13 @@
           },
           "classifications": [
             {
-              "id": "SOM103A-0",
+              "id": "SOM103A-B-0",
               "type_code": "D0",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "SOM103A-1",
+              "id": "SOM103A-B-1",
               "type_code": "D1",
               "code": "3003",
               "name_ro": "3003"
@@ -167,7 +167,7 @@
           }
         },
         {
-          "id": "SOM103A-CJ",
+          "id": "SOM103A-CJ-4",
           "dataset_code": "SOM103A",
           "value": "1.5",
           "value_status": null,
@@ -191,13 +191,13 @@
           },
           "classifications": [
             {
-              "id": "SOM103A-0",
+              "id": "SOM103A-CJ-0",
               "type_code": "D0",
               "code": "105",
               "name_ro": "105"
             },
             {
-              "id": "SOM103A-1",
+              "id": "SOM103A-CJ-1",
               "type_code": "D1",
               "code": "3004",
               "name_ro": "3004"

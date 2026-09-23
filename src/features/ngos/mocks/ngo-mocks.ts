@@ -1,5 +1,4 @@
 import type {
-  DomainCoverage,
   EvidenceRecord,
   LinkReviewCase,
   NgoProfile,
@@ -167,96 +166,6 @@ export const ngoValidationIssues: Readonly<Record<string, ValidationIssue[]>> =
       },
     ],
   }
-
-// ---------------------------------------------------------------------------
-// Domain coverage matrix (landing). Reflects the source facts exactly.
-// ---------------------------------------------------------------------------
-
-export const ngoDomainCoverage: DomainCoverage = {
-  rows: [
-    {
-      sourceId: 'ANOFM_RUEIS',
-      authorityLabel: 'ANOFM (RUEIS)',
-      contentLabel: 'Membri economie socială',
-      lastSnapshotDate: '2026-06-20',
-      status: 'loaded',
-      rowCount: 9176,
-      isNameOnly: false,
-      sourceSnapshotId: 'anofm_rueis_2026_06_20',
-    },
-    {
-      sourceId: 'ANOFM_ACCRED',
-      authorityLabel: 'ANOFM (acreditare ocupare)',
-      contentLabel: 'Furnizori servicii de ocupare',
-      lastSnapshotDate: '2026-06-20',
-      status: 'loaded',
-      rowCount: 1313,
-      isNameOnly: false,
-      sourceSnapshotId: 'anofm_accred_2026_06_20',
-    },
-    {
-      sourceId: 'MMUNCII_PROV',
-      authorityLabel: 'MMuncii (furnizori)',
-      contentLabel: 'Furnizori servicii sociale',
-      lastSnapshotDate: '2024-04-10',
-      status: 'loaded_stale',
-      rowCount: 4033,
-      isNameOnly: false,
-      sourceSnapshotId: 'mmuncii_providers_2024_04_10',
-    },
-    {
-      sourceId: 'MMUNCII_SERV',
-      authorityLabel: 'MMuncii (servicii)',
-      contentLabel: 'Servicii sociale licențiate',
-      lastSnapshotDate: '2023-12-11',
-      status: 'loaded_stale',
-      rowCount: 5407,
-      isNameOnly: false,
-      sourceSnapshotId: 'mmuncii_services_2023_12_11',
-    },
-    {
-      sourceId: 'ANAF_FIN',
-      authorityLabel: 'ANAF (financiar)',
-      contentLabel: 'Indicatori financiari',
-      lastSnapshotDate: null,
-      status: 'pending',
-      rowCount: 0,
-      isNameOnly: false,
-      sourceSnapshotId: 'anaf_financial_pending',
-    },
-    {
-      sourceId: 'MJ_REGISTRY',
-      authorityLabel: 'MJ (registru ONG)',
-      contentLabel: 'Registrul național ONG',
-      lastSnapshotDate: '2024-06-03',
-      status: 'name_only',
-      rowCount: 126011,
-      isNameOnly: true,
-      sourceSnapshotId: 'mj_registry_2024_06',
-    },
-    {
-      sourceId: 'SGG_UTILITY',
-      authorityLabel: 'SGG (utilitate publică)',
-      contentLabel: 'Recunoașteri utilitate publică',
-      lastSnapshotDate: '2024-06-05',
-      status: 'name_only',
-      rowCount: 229,
-      isNameOnly: true,
-      sourceSnapshotId: 'sgg_public_utility_2024_06',
-    },
-  ],
-  lastFullLoad: {
-    runId: '4931',
-    date: '2026-06-20',
-    rowsLoaded: 19929,
-    gate: '15/15 structural checks',
-  },
-  knownGaps: [
-    'Datele financiare (ANAF) sunt în curs de actualizare.',
-    'Instantaneele pentru servicii sociale sunt din 2023–2024.',
-    'Înregistrările MJ/SGG sunt referințe neconfirmate (doar după nume).',
-  ],
-}
 
 // ---------------------------------------------------------------------------
 // Social-service providers + services (discovery mocks).
