@@ -58,7 +58,9 @@ export const Route = createFileRoute('/ins/teritorii/$siruta')({
   // A render after a failed read is served once, and the next request reads
   // again — as on the hub.
   headers: ({ loaderData }) =>
-    !loaderData || loaderData.failed || loaderData.hub === undefined
+    // The county and national references are part of the page: a render
+    // without them is a failed read too, not one to serve for ten minutes.
+    !loaderData || loaderData.failed || loaderData.hub === undefined || loaderData.hub.benchmarksUnavailable
       ? createNoStoreHeaders()
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 600,

@@ -45,12 +45,17 @@ export function DetailEmptyState({ reason, yearWindow, observedSpan, onSearchCha
     )
   }
   if (reason === 'cadence') {
+    // The rail offers no frequency control when the matrix publishes one
+    // cadence, so the way back has to be here.
     return (
-      <EmptyState
-        className="border-none px-0 py-8"
-        title={t`Nicio observație la această frecvență`}
-        description={t`Alege altă frecvență din selecție.`}
-      />
+      <div className="space-y-3">
+        <EmptyState
+          className="border-none px-0 py-8"
+          title={t`Nicio observație la această frecvență`}
+          description={t`Seria nu are observații la frecvența din adresă.`}
+        />
+        {action(t`Arată frecvența publicată`, { frecventa: undefined })}
+      </div>
     )
   }
   if (reason === 'territory') {

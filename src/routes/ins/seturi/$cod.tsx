@@ -11,6 +11,7 @@ import {
   resolveDatasetSeries,
   type ResolvedDatasetSeries,
 } from '@/features/statistics/lib/detail-series-resolution'
+import { datasetDisplayName } from '@/features/statistics/lib/dataset-names'
 import { insPageMeta } from '@/features/statistics/lib/ins-head'
 import { publishedTextExcerpt } from '@/features/statistics/lib/published-text'
 import { detailBootstrapEntity } from '@/features/statistics/lib/source-selection'
@@ -152,7 +153,7 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
           // The document is rendered in the language the locale cookie names.
           vary: ['Accept-Encoding', 'Cookie'],
         }),
-  head: ({ loaderData }) => {
+  head: ({ loaderData, match }) => {
     const data = loaderData as StatisticsDatasetDetailLoaderData | undefined
     const dataset = data?.tier0?.dataset ?? data?.headDataset
     if (!dataset) {
@@ -161,16 +162,24 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
       // title once its query lands. The server path always has the dataset.
       return { meta: insPageMeta({ title: `${t`Set de date INS`} — Transparenta.eu` }) }
     }
-    // Words only: TEMPO ships anchors inside a few definitions, and a
-    // description cut mid-tag is markup in a search snippet.
+    // The reader's language, the other one as the fallback — as the page's
+    // header and definition read. The request's own locale, from the root's
+    // context: the shared Lingui instance may hold another request's by the
+    // time a head that waited on its loader runs. Words only: TEMPO ships
+    // anchors inside a few definitions, and a description cut mid-tag is
+    // markup in a snippet.
+    const locale = match.context.locale
+    const english = locale.toLowerCase().startsWith('en')
+    const definition = (english ? dataset.definition_en : null) || dataset.definition_ro
+    const name = datasetDisplayName(
+      { code: dataset.code, nameRo: dataset.name_ro ?? null, nameEn: dataset.name_en ?? null },
+      locale,
+    )
     const description =
-      (dataset.definition_ro ? publishedTextExcerpt(dataset.definition_ro) : '') ||
+      (definition ? publishedTextExcerpt(definition) : '') ||
       t`Serie de date INS Tempo cu valori pe teritorii și perioade.`
     return {
-      meta: insPageMeta({
-        title: `${dataset.name_ro ?? dataset.code} (${dataset.code}) — Transparenta.eu`,
-        description,
-      }),
+      meta: insPageMeta({ title: `${name} (${dataset.code}) — Transparenta.eu`, description }),
     }
   },
 })

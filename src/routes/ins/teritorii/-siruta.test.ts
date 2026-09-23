@@ -107,6 +107,11 @@ describe('/ins/teritorii/$siruta loader', () => {
     expect(data).toEqual({ failed: true })
     expect(route.headers({ loaderData: data })).toEqual({ 'Cache-Control': 'no-store' })
     expect(route.headers({ loaderData: { failed: false } })).toEqual({ 'Cache-Control': 'no-store' })
+    // The county and national references failing is a failed read too.
+    const hub = territoryHubFixture('54975')
+    expect(route.headers({ loaderData: { hub: { ...hub!, benchmarksUnavailable: true }, failed: false } })).toEqual({
+      'Cache-Control': 'no-store',
+    })
     expect(route.headers({ loaderData: undefined })).toEqual({ 'Cache-Control': 'no-store' })
   })
 

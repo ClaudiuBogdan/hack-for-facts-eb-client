@@ -188,6 +188,58 @@ describe('applyTerritoryPeriod', () => {
     expect(result.truncated).toBe(true)
   })
 
+  it('calls only a period before the loaded history unavailable, never a gap inside it or a year after it', () => {
+    const capped = tile({
+      truncated: true,
+      observations: [
+        cell(period('2020', 2020), '1'),
+        cell(period('2022', 2022), '3'),
+        cell(period('2023', 2023), '4'),
+      ],
+    })
+    const at = (token: string) => applyTerritoryPeriod(hub([capped]), token).tiles[0]!.tileState
+    expect(at('2019')).toBe('unavailable')
+    expect(at('2021')).toBe('period-missing')
+    expect(at('2025')).toBe('period-missing')
+  })
+
+  it('places a missing month against the earliest loaded month, not the earliest year', () => {
+    const monthly = tile({
+      truncated: true,
+      periodicity: ['MONTHLY'],
+      sparklineCadence: 'MONTHLY',
+      observations: [
+        cell(period('2020-02', 2020, null, 2), '1'),
+        cell(period('2020-04', 2020, null, 4), '2'),
+        cell(period('2021-01', 2021, null, 1), '3'),
+      ],
+    })
+    const at = (token: string) => applyTerritoryPeriod(hub([monthly]), token).tiles[0]!.tileState
+    expect(at('2020-01')).toBe('unavailable')
+    expect(at('2020-03')).toBe('period-missing')
+    expect(at('2019-Q4')).toBe('unavailable')
+    // A quarter after the cut is a period the monthly series has no cell under, not one it may have lost.
+    expect(at('2020-Q2')).toBe('period-missing')
+  })
+
+  it('draws the line at the cadence of the cell on screen', () => {
+    const mixed = tile({
+      periodicity: ['ANNUAL', 'MONTHLY'],
+      sparklineCadence: 'MONTHLY',
+      latestPeriod: '2024-02',
+      observations: [
+        cell(period('2023', 2023), '5'),
+        cell(period('2023-12', 2023, null, 12), '6'),
+        cell(period('2024-02', 2024, null, 2), '7'),
+      ],
+    })
+    const [annual] = applyTerritoryPeriod(hub([mixed]), '2023').tiles
+    expect(annual!.latestPeriod).toBe('2023')
+    expect(annual!.sparklineCadence).toBe('ANNUAL')
+    const [monthly] = applyTerritoryPeriod(hub([mixed]), '2023-12').tiles
+    expect(monthly!.sparklineCadence).toBe('MONTHLY')
+  })
+
   it('can still display an observed period in truncated history', () => {
     const [result] = applyTerritoryPeriod(hub([tile({ truncated: true })]), '2022').tiles
     expect(result.tileState).toBe('available')

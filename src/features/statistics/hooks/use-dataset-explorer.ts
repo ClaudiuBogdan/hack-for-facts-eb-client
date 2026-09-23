@@ -1,5 +1,4 @@
 import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
-import { generateHash } from '@/lib/utils'
 import type {
   StatisticsDatasetExplorerSearch,
   StatisticsDatasetPage,
@@ -23,9 +22,14 @@ function explorerHashSource(search: StatisticsDatasetExplorerSearch) {
   }
 }
 
-/** The cache key of one catalog page: the address's filters and page, in canonical order. */
+/**
+ * The cache key of one catalog page: the address's filters and page, in
+ * canonical order, as the string itself. A 32-bit hash of it collided
+ * („populatie" and „5dRbIa" shared one), serving one search's rows for
+ * another and letting a server seed pass the guard for the wrong address.
+ */
 export function explorerPageKey(search: StatisticsDatasetExplorerSearch): string {
-  return generateHash(JSON.stringify(explorerHashSource(search)))
+  return JSON.stringify(explorerHashSource(search))
 }
 
 export const datasetExplorerQueryOptions = (

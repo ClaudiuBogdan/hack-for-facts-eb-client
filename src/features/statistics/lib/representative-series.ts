@@ -190,18 +190,3 @@ export function chooseRepresentativeCell(input: {
   return null
 }
 
-/** Whether two picks name the same cell — used to keep the choice stable. */
-export function sameRepresentativeCell(
-  left: RepresentativeCell | null,
-  right: RepresentativeCell | null,
-): boolean {
-  if (left === null || right === null) return left === right
-  if (left.unitCode !== right.unitCode) return false
-  if (left.periodicity !== right.periodicity) return false
-  const leftEntries = Object.entries(left.classifications)
-  if (leftEntries.length !== Object.keys(right.classifications).length) return false
-  for (const [type, code] of leftEntries) {
-    if (right.classifications[type] !== code) return false
-  }
-  return true
-}

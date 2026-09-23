@@ -18,6 +18,8 @@ vi.mock('../../api/dataset-detail-api', () => ({
 
 // jsdom has no layout, so the virtualiser would draw nothing; here it draws
 // every row, which also makes „the last row is in view" true at once.
+const scrollToIndex = vi.hoisted(() => vi.fn())
+
 vi.mock('@tanstack/react-virtual', () => ({
   useVirtualizer: ({ count }: { count: number }) => ({
     getVirtualItems: () =>
@@ -28,7 +30,7 @@ vi.mock('@tanstack/react-virtual', () => ({
         size: 36,
       })),
     getTotalSize: () => count * 36,
-    scrollToIndex: vi.fn(),
+    scrollToIndex,
     measureElement: () => undefined,
   }),
 }))
@@ -110,6 +112,7 @@ describe('dimension option list', () => {
   })
 
   it('marks the chosen member as current, and offers to clear it', async () => {
+    scrollToIndex.mockClear()
     serveAxis(3, 200)
     const { clear, picked } = mount('2')
     await waitFor(() => expect(screen.getAllByRole('option')).toHaveLength(3))
@@ -122,6 +125,12 @@ describe('dimension option list', () => {
       'aria-activedescendant',
       screen.getByRole('option', { name: 'Localitatea 2' }).id,
     )
+    // …and the row is shown, not only named: Enter must pick a row in view.
+    // Once — the arrows scroll as they move, and the seed never pulls back.
+    await userEvent.type(screen.getByRole('combobox'), '{ArrowDown}')
+    expect(screen.getByRole('option', { name: 'Localitatea 3' })).toHaveAttribute('aria-selected', 'true')
+    expect(scrollToIndex.mock.calls.filter(([, options]) => options !== undefined)).toEqual([[1, { align: 'center' }]])
+    expect(scrollToIndex).toHaveBeenLastCalledWith(2)
     await userEvent.click(screen.getByRole('button', { name: 'Șterge' }))
     expect(clear).toHaveBeenCalledTimes(1)
     expect(picked).toHaveBeenCalledTimes(1)

@@ -3,7 +3,6 @@ import type { InsDatasetDetails, InsObservation } from '@/schemas/ins'
 import { insSourceDescriptorSchema } from '@/lib/ins/source-contract'
 import {
   chooseRepresentativeCell,
-  sameRepresentativeCell,
 } from './representative-series'
 
 const dataset = {
@@ -108,7 +107,7 @@ describe('chooseRepresentativeCell', () => {
       ],
     })
     expect(forward?.classifications.D0).toBe('2')
-    expect(sameRepresentativeCell(forward, reversed)).toBe(true)
+    expect(reversed).toEqual(forward)
   })
 
   it('ignores cells that publish no value', () => {
@@ -165,7 +164,7 @@ describe('chooseRepresentativeCell', () => {
       ],
     })
     expect(forward?.classifications.D0).toBe('1')
-    expect(sameRepresentativeCell(forward, reversed)).toBe(true)
+    expect(reversed).toEqual(forward)
   })
 
   it('breaks a tie between two units of the same coordinate', () => {
@@ -184,7 +183,7 @@ describe('chooseRepresentativeCell', () => {
       ],
     })
     expect(forward?.unitCode).toBe('3')
-    expect(sameRepresentativeCell(forward, reversed)).toBe(true)
+    expect(reversed).toEqual(forward)
   })
 
   it('picks nothing when there is nothing safe to pick', () => {

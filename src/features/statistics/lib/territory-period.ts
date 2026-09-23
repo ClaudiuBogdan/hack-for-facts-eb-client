@@ -1,3 +1,4 @@
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
 import { selectInsPeriodObservation } from '@/lib/ins/source-period'
 import type {
   StatisticsIndicatorTile,
@@ -84,6 +85,40 @@ function observationAt(
   return latest
 }
 
+/**
+ * Whether a period lies on the capped side of a truncated history, where it
+ * may exist unseen. The server keeps the latest 200 rows, so only a period
+ * before the earliest loaded cell can have been cut; a gap inside the loaded
+ * span — a missing month in the earliest year included — or a period after
+ * it is simply a period the series has no cell for.
+ */
+function beforeLoadedHistory(tile: StatisticsIndicatorTile, period: string): boolean {
+  if (!tile.truncated) return false
+  const requested = tokenMonth(period)
+  if (requested === null || tile.observations.length === 0) return false
+  const earliest = Math.min(...tile.observations.map((row) => cellMonth(row.time_period)))
+  return requested < earliest
+}
+
+/**
+ * A period as the month it starts in, counted from year 0: one scale for
+ * years, quarters and months, whichever redundant fields a row carries.
+ */
+function cellMonth(period: { readonly year: number; readonly quarter?: number | null; readonly month?: number | null }): number {
+  if (period.month) return period.year * 12 + period.month - 1
+  if (period.quarter) return period.year * 12 + (period.quarter - 1) * 3
+  return period.year * 12
+}
+
+function tokenMonth(token: string): number | null {
+  const month = /^(\d{4})-(\d{2})$/.exec(token)
+  if (month) return cellMonth({ year: Number(month[1]), month: Number(month[2]) })
+  const quarter = /^(\d{4})-Q([1-4])$/.exec(token)
+  if (quarter) return cellMonth({ year: Number(quarter[1]), quarter: Number(quarter[2]) })
+  const year = /^(\d{4})$/.exec(token)
+  return year ? cellMonth({ year: Number(year[1]) }) : null
+}
+
 function applyTilePeriod(
   tile: StatisticsIndicatorTile,
   period: string,
@@ -105,7 +140,10 @@ function applyTilePeriod(
       latestPeriod: null,
       latestYear: null,
     }
-  if (found !== null)
+  if (found !== null) {
+    // The line is drawn at the cadence of the figure on screen: an annual
+    // cell picked from a monthly-and-annual matrix draws the annual line.
+    const cadence = found.time_period.periodicity
     return {
       ...tile,
       value: found.value,
@@ -113,15 +151,15 @@ function applyTilePeriod(
       latestPeriod: found.time_period.iso_period,
       latestYear: found.time_period.year,
       tileState: 'available',
+      sparklineCadence: isInsChartPeriodicity(cadence) ? cadence : null,
     }
-  // Before the loaded history the period may well exist unseen; inside it,
-  // the series simply has no cell there.
+  }
   return {
     ...tile,
     value: null,
     valueStatus: null,
     latestPeriod: null,
     latestYear: null,
-    tileState: tile.truncated ? 'unavailable' : 'period-missing',
+    tileState: beforeLoadedHistory(tile, period) ? 'unavailable' : 'period-missing',
   }
 }

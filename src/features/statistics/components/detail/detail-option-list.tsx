@@ -105,6 +105,16 @@ export function DetailOptionList({
   })
   const virtualRows = virtualizer.getVirtualItems()
 
+  // The chosen row is also shown: a cursor seeded on row 140 of a page that
+  // opens on row 0 would have Enter pick a row the reader cannot see. Once,
+  // when the seed lands; after that the arrows scroll as they move.
+  const scrolledToSeed = useRef(false)
+  useEffect(() => {
+    if (!cursorSeeded || scrolledToSeed.current) return
+    scrolledToSeed.current = true
+    if (activeIndex > 0) virtualizer.scrollToIndex(activeIndex, { align: 'center' })
+  }, [cursorSeeded, activeIndex, virtualizer])
+
   // The next page is asked for when the rows in view reach the end of what
   // is held. An effect, because the trigger is the scroll position — which
   // only the virtualiser sees — and not any event the list handles itself.

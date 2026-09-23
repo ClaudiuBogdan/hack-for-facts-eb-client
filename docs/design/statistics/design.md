@@ -1517,6 +1517,53 @@ pieces wore the hub's name while several pages used them. Now:
   constant, the explorer chip and territory group types, the staleness
   thresholds, the comparison line type.
 
+## 6x. What a second reviewer found after the push (2026-09-23)
+
+Codex (`gpt-6-astra`, high effort) read the three pushed commits one by one
+and found ten things the first reviews had not. Fixed:
+
+- **A territory page missing its references is not cached.** The county and
+  national references failing left `benchmarksUnavailable` set, but the page
+  was still served publicly for ten minutes; it is `no-store` now, as §6t
+  said of a failed read.
+- **A capped history says so only where the cap could have cut.** Any
+  period a truncated series lacked read „Perioada nu este inclusă în
+  istoricul încărcat", a gap inside the loaded span and a year after it
+  included; only a period that starts before the earliest loaded cell does
+  now — months, quarters and years compared on one scale — and the rest is
+  `period-missing`.
+- **The line follows the figure.** Picking an annual cell of a matrix that
+  also publishes months kept the monthly line under the annual figure; the
+  line is drawn at the cadence of the cell on screen.
+- **The chosen member is shown, not only named.** The option list opened its
+  cursor on the chosen row (§6s) without scrolling to it, so Enter could
+  pick a row off screen; it scrolls there once the row arrives.
+- **A frequency the matrix does not publish is undone from the empty
+  state.** „Alege altă frecvență" pointed at a control the rail does not
+  draw for a single-cadence matrix; the empty state offers „Arată frecvența
+  publicată".
+- **The catalog's page key is the address itself.** A 32-bit hash of it
+  collided („populatie" and „5dRbIa"), serving one search's rows for another
+  and letting a server seed pass §6v's guard for the wrong address.
+- **The detail page's head in the reader's language**, as its header and
+  definition already were: the English name and definition on an English
+  page, the Romanian ones where INS published no English. The language is
+  the request's own, passed by the root in the route context: Lingui's
+  instance is one per server process, activated by each request's
+  `beforeLoad`, so a head that runs after its loader awaited can find
+  another request's locale in it. One edge stays: a hover preload of a
+  link in the other language (`?lang=`) computes its head with the page's
+  current locale; the navigation itself recomputes it, and switching the
+  language reloads the document, so nothing wrong is rendered.
+- **Open, app-wide:** the same shared instance serves every `t` the server
+  renders, on every route. A request that awaits in its loader while another
+  request activates the other language can render in that language. The
+  fix is a Lingui instance per request (`setupI18n` in the root, handed to
+  the provider and the heads) — a change to the whole app's i18n setup,
+  outside this section, and not made here.
+- The toggle's test follows the controlled value between keys; the
+  representative-cell comparison the removed latch used is gone.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

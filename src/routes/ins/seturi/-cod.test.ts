@@ -47,12 +47,15 @@ type LoaderData = {
   readonly failed: boolean
 }
 
+/** The match context a Romanian request carries: the locale the root resolved for it. */
+const ROMANIAN = { context: { locale: 'ro' } } as const
+
 async function importRoute() {
   const { Route } = await import('./$cod')
   return Route as unknown as {
     loader: (input: LoaderInput) => Promise<LoaderData>
     headers: (input: { readonly loaderData?: LoaderData }) => Record<string, string>
-    head: (input: { readonly loaderData?: LoaderData }) => {
+    head: (input: { readonly loaderData?: LoaderData; readonly match: { readonly context: { readonly locale: string } } }) => {
       readonly meta: ReadonlyArray<Record<string, unknown>>
     }
   }
@@ -114,11 +117,25 @@ describe('/ins/seturi/$cod loader', () => {
     const route = await importRoute()
     const data = await route.loader(input())
     expect(data).toEqual({ scopeKey: expect.any(String), failed: false, headDataset: tier0.dataset })
-    expect(route.head({ loaderData: data }).meta[0]).toEqual({
+    expect(route.head({ match: ROMANIAN, loaderData: data }).meta[0]).toEqual({
       title: 'Populația după domiciliu (POP107D) — Transparenta.eu',
     })
     // The head's dataset is never a seed: the lazy route reads `tier0` alone.
     expect(data.tier0).toBeUndefined()
+  })
+
+  it('names the dataset in the request’s language, whatever the shared Lingui instance holds', async () => {
+    const route = await importRoute()
+    const english = detailDataset({ name_en: 'Population by domicile', definition_en: 'Persons with Romanian citizenship.' })
+    const head = (locale: string, dataset = english) =>
+      route.head({ match: { context: { locale } }, loaderData: { tier0: detailTier0({ dataset }), scopeKey: 'k', failed: false } }).meta
+    // The test Lingui's locale is „en" throughout: a Romanian request still
+    // gets Romanian, as it must when another request switched the instance.
+    expect(head('ro')[0]).toEqual({ title: 'Populația după domiciliu (POP107D) — Transparenta.eu' })
+    expect(head('en')[0]).toEqual({ title: 'Population by domicile (POP107D) — Transparenta.eu' })
+    expect(head('en').find((tag) => tag.property === 'og:description')?.content).toBe('Persons with Romanian citizenship.')
+    // No English name published: the Romanian one, not the code.
+    expect(head('en', detailDataset())[0]).toEqual({ title: 'Populația după domiciliu (POP107D) — Transparenta.eu' })
   })
 
   it('swallows a failed prefetch on the client: the page’s own query reports it', async () => {
@@ -196,6 +213,7 @@ describe('/ins/seturi/$cod loader', () => {
     const route = await importRoute()
     const definition = `Capitolul 7 „Conturile de patrimoniu" <a href="https://eur-lex.europa.eu/x" target="_blank">https://eur-lex.europa.eu/x</a>. ${'Metodologia urmează regulamentul european. '.repeat(6)}`
     const { meta } = route.head({
+      match: ROMANIAN,
       loaderData: {
         tier0: detailTier0({ dataset: detailDataset({ definition_ro: definition }) }),
         scopeKey: 'k',
@@ -213,6 +231,7 @@ describe('/ins/seturi/$cod loader', () => {
   it('describes a markup-only definition with the generic line, never an empty tag', async () => {
     const route = await importRoute()
     const { meta } = route.head({
+      match: ROMANIAN,
       loaderData: {
         tier0: detailTier0({ dataset: detailDataset({ definition_ro: '<br>' }) }),
         scopeKey: 'k',
@@ -226,7 +245,7 @@ describe('/ins/seturi/$cod loader', () => {
 
   it('names the page a placeholder on a client-side navigation, where the dataset is still in flight', async () => {
     const route = await importRoute()
-    expect(route.head({ loaderData: { scopeKey: 'k', failed: false } }).meta).toEqual([
+    expect(route.head({ match: ROMANIAN, loaderData: { scopeKey: 'k', failed: false } }).meta).toEqual([
       { title: 'Set de date INS — Transparenta.eu' },
       { property: 'og:title', content: 'Set de date INS — Transparenta.eu' },
       { name: 'twitter:title', content: 'Set de date INS — Transparenta.eu' },

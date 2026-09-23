@@ -11,6 +11,8 @@ describe('explorerPageKey', () => {
 
   it('tells apart addresses that ask for different pages', () => {
     expect(explorerPageKey({ q: 'somaj' })).not.toBe(explorerPageKey({ q: 'salarii' }))
+    // Two searches a 32-bit hash of the address sent to one cache entry.
+    expect(explorerPageKey({ q: 'populatie' })).not.toBe(explorerPageKey({ q: '5dRbIa' }))
     expect(explorerPageKey({ judet: true })).not.toBe(explorerPageKey({ uat: true }))
     expect(explorerPageKey({ pagina: 1 })).not.toBe(explorerPageKey({ pagina: 2 }))
   })

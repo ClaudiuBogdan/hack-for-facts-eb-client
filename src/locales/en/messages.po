@@ -2311,8 +2311,8 @@ msgid "Alege această serie"
 msgstr "Select this series"
 
 #: src/features/statistics/components/detail/detail-empty-state.tsx:52
-msgid "Alege altă frecvență din selecție."
-msgstr "Choose another cadence in the selection."
+#~ msgid "Alege altă frecvență din selecție."
+#~ msgstr "Choose another cadence in the selection."
 
 #: src/features/parliament/components/parliament-year-combobox.tsx:62
 msgid "Alege anul"
@@ -3100,6 +3100,10 @@ msgstr "arată cuprinsul"
 #: src/components/provenance/source-provenance.tsx:489
 msgid "Arată dovada"
 msgstr "Arată dovada"
+
+#: src/features/statistics/components/detail/detail-empty-state.tsx:57
+msgid "Arată frecvența publicată"
+msgstr "Show the published frequency"
 
 #: src/features/legal/components/act-plain-summary.tsx:169
 #: src/features/procurement/components/procurement-answerability-notice.tsx:90
@@ -4362,7 +4366,7 @@ msgstr "Caută firme, instituții, legi, contracte, PNRR…"
 msgid "Cauta furnizori ONG, servicii licentiate, capacitati si acoperire judeteana pe baza instantaneelor mock."
 msgstr "Cauta furnizori ONG, servicii licentiate, capacitati si acoperire judeteana pe baza instantaneelor mock."
 
-#: src/features/statistics/components/detail/detail-option-list.tsx:181
+#: src/features/statistics/components/detail/detail-option-list.tsx:191
 msgid "Caută în {label}"
 msgstr "Search {label}"
 
@@ -5556,7 +5560,7 @@ msgstr "Column"
 msgid "Columns"
 msgstr "Columns"
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:74
+#: src/features/statistics/components/detail/detail-empty-state.tsx:79
 msgid "Combinația de valori din adresă nu are observații publicate."
 msgstr "The combination of values in the address has no published observations."
 
@@ -12359,7 +12363,7 @@ msgstr "Indicatorii AMEPIP sunt afișați fără scalare în client și nu înlo
 msgid "Indicatorii financiari sunt in curs de incarcare"
 msgstr "Indicatorii financiari sunt in curs de incarcare"
 
-#: src/routes/ins/teritorii/$siruta.tsx:81
+#: src/routes/ins/teritorii/$siruta.tsx:83
 msgid "Indicatorii INS Tempo pentru {where}: populație, salariați, șomaj, locuințe și seriile lor istorice, lângă județ și țară."
 msgstr "INS Tempo indicators for {where}: population, employees, unemployment, dwellings and their series over time, beside the county and the country."
 
@@ -12625,7 +12629,7 @@ msgstr "INS has not published this indicator's county values yet."
 msgid "INS nu a publicat încă valorile pe județe pentru {period}."
 msgstr "INS has not yet published the county values for {period}."
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:62
+#: src/features/statistics/components/detail/detail-empty-state.tsx:67
 msgid "INS nu publică această serie pentru teritoriul din adresă."
 msgstr "INS does not publish this series for the territory in the address."
 
@@ -15853,9 +15857,9 @@ msgstr "Nicio modificare nu corespunde filtrelor."
 msgid "Nicio notă de parsare"
 msgstr "Nicio notă de parsare"
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:61
-#: src/features/statistics/components/detail/detail-empty-state.tsx:73
-#: src/features/statistics/components/detail/detail-empty-state.tsx:83
+#: src/features/statistics/components/detail/detail-empty-state.tsx:66
+#: src/features/statistics/components/detail/detail-empty-state.tsx:78
+#: src/features/statistics/components/detail/detail-empty-state.tsx:88
 msgid "Nicio observație"
 msgstr "No observations"
 
@@ -15865,7 +15869,7 @@ msgstr "No observations"
 msgid "Nicio observație între {0} și {1}"
 msgstr "No observation between {0} and {1}"
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:51
+#: src/features/statistics/components/detail/detail-empty-state.tsx:54
 msgid "Nicio observație la această frecvență"
 msgstr "No observation at this cadence"
 
@@ -22316,7 +22320,7 @@ msgstr "Selected UATs are already in group."
 msgid "Selecția curentă nu are observații."
 msgstr "The current selection has no observations."
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:84
+#: src/features/statistics/components/detail/detail-empty-state.tsx:89
 msgid "Selecția curentă nu returnează observații."
 msgstr "The current selection returns no observations."
 
@@ -22456,6 +22460,10 @@ msgstr "The series has observations from {0} to {1}."
 msgid "Seria necesită o selecție din sursă"
 msgstr "Choose a source series"
 
+#: src/features/statistics/components/detail/detail-empty-state.tsx:55
+msgid "Seria nu are observații la frecvența din adresă."
+msgstr "The series has no observations at the frequency in the address."
+
 #: src/features/statistics/components/detail/detail-metadata-section.tsx:124
 msgid "Seria se încheie cu perioada „{discontinuedAfter}”."
 msgstr "The series ends with the period “{discontinuedAfter}”."
@@ -22464,7 +22472,7 @@ msgstr "The series ends with the period “{discontinuedAfter}”."
 #~ msgid "Seria selectată"
 #~ msgstr "Selected series"
 
-#: src/routes/ins/seturi/$cod.tsx:168
+#: src/routes/ins/seturi/$cod.tsx:177
 msgid "Serie de date INS Tempo cu valori pe teritorii și perioade."
 msgstr "An INS Tempo data series with values by territory and period."
 
@@ -22652,7 +22660,7 @@ msgstr "Dataset"
 msgid "Set de date fără observații încărcate"
 msgstr "Dataset without loaded observations"
 
-#: src/routes/ins/seturi/$cod.tsx:162
+#: src/routes/ins/seturi/$cod.tsx:164
 msgid "Set de date INS"
 msgstr "INS dataset"
 
@@ -23646,11 +23654,11 @@ msgstr "Usage statistics"
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:84
 #: src/routes/ins/comparatii/index.tsx:10
 #: src/routes/ins/index.tsx:71
-#: src/routes/ins/teritorii/$siruta.tsx:80
+#: src/routes/ins/teritorii/$siruta.tsx:82
 msgid "Statistici INS"
 msgstr "INS statistics"
 
-#: src/routes/ins/teritorii/$siruta.tsx:75
+#: src/routes/ins/teritorii/$siruta.tsx:77
 msgid "Statistici teritoriu"
 msgstr "Territory statistics"
 
@@ -23829,11 +23837,11 @@ msgstr "Clear filter"
 msgid "Șterge filtrul de perioadă"
 msgstr "Clear period filter"
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:64
+#: src/features/statistics/components/detail/detail-empty-state.tsx:69
 msgid "Șterge filtrul teritorial"
 msgstr "Clear territory filter"
 
-#: src/features/statistics/components/detail/detail-empty-state.tsx:76
+#: src/features/statistics/components/detail/detail-empty-state.tsx:81
 msgid "Șterge selecția"
 msgstr "Clear the selection"
 
