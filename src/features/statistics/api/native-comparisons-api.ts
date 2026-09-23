@@ -18,7 +18,7 @@ import { getInsDatasetDetails } from './graphql/ins-bootstrap-fetchers'
 import { fetchInsComparisonDefaults } from './graphql/ins-comparison-defaults'
 import { fetchInsSourceVector } from './graphql/ins-source-fetcher'
 
-export interface NativeComparisonRequest {
+interface NativeComparisonRequest {
   readonly code: string
   readonly territories: unknown
   readonly classifications?: unknown

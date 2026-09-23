@@ -28,7 +28,7 @@ export const insPageInfoRawSchema = z.object({
   hasPreviousPage: z.boolean(),
 })
 
-export const insDataStatusRawSchema = z.enum(['AVAILABLE', 'CATALOG_ONLY'])
+const insDataStatusRawSchema = z.enum(['AVAILABLE', 'CATALOG_ONLY'])
 
 export const insTerritoryLevelRawSchema = z.enum([
   'NATIONAL',
@@ -43,7 +43,7 @@ export const insTerritoryLevelRawSchema = z.enum([
  * product cares about. The server names it `parent_`, not `county_`, because a
  * NUTS2 row's parent is a macroregion, not a county.
  */
-export const insTerritoryNodeRawSchema = z.object({
+const insTerritoryNodeRawSchema = z.object({
   code: z.string(),
   siruta_code: z.string().nullish(),
   level: insTerritoryLevelRawSchema.nullish(),
@@ -66,20 +66,20 @@ export const insPeriodicityRawSchema = insSourcePeriodicitySchema
  * of the server field still parses; the mapper then falls back to deriving the
  * status from `sync_status`.
  */
-export const insDataSourceRawSchema = z.object({
+const insDataSourceRawSchema = z.object({
   name: z.string(),
   type: z.string().nullish(),
   type_code: z.number().nullish(),
   link_number: z.number().nullish(),
 })
 
-export const insSeriesPredecessorRawSchema = z.object({
+const insSeriesPredecessorRawSchema = z.object({
   dataset_code: z.string(),
   last_period_ro: z.string(),
   last_period_en: z.string().nullish(),
 })
 
-export const insDatasetNodeRawSchema = z.object({
+const insDatasetNodeRawSchema = z.object({
   id: z.string(),
   code: z.string(),
   name_ro: z.string().nullish(),
@@ -127,7 +127,7 @@ export const insDatasetsExplorerResponseRawSchema = z.object({
  * SDL leaves them nullable; the mapper drops any node that arrives without the
  * level, since a node with no place in the hierarchy cannot be drawn in it.
  */
-export const insContextNodeRawSchema = z.object({
+const insContextNodeRawSchema = z.object({
   code: z.string(),
   name_ro: z.string().nullish(),
   name_en: z.string().nullish(),
@@ -152,7 +152,7 @@ export type InsDatasetNodeRaw = z.infer<typeof insDatasetNodeRawSchema>
 // Landing operations (POST 1 observations, POST 2 catalog, UAT snapshot)
 // ---------------------------------------------------------------------------
 
-export const insMatchStrategyRawSchema = z.enum([
+const insMatchStrategyRawSchema = z.enum([
   'PREFERRED_CLASSIFICATION',
   'TOTAL_FALLBACK',
   'AMBIGUOUS_GEOGRAPHY',

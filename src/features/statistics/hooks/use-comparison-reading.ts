@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { t } from '@lingui/core/macro'
 import { countyNameRo } from '@/lib/territory-counties'
 import type { StatisticsHubUnit } from '@/schemas/statistics'
-import { comparisonSeriesColor, comparisonSeriesHex } from '../components/comparison-palette'
+import { comparisonSeriesColor, comparisonSeriesHex } from '../components/comparison/comparison-palette'
 import { comparisonPlaceName } from '../lib/comparison-format'
 import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-territories'
 import {
@@ -15,7 +15,7 @@ import {
   type ComparisonWindow,
 } from '../lib/comparison-view'
 import type { ComparisonTerritoryToken } from '../lib/dataset-selection'
-import { hubUnitOf } from '../lib/hub-format'
+import { hubUnitOf } from '../lib/units'
 import type { NativeComparisonMatrix } from '../lib/native-comparison'
 import { useComparisonTerritoryNames } from './use-comparisons'
 

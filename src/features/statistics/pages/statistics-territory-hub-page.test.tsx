@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { formatHubPeriod } from '../lib/hub-format'
+import { formatHubPeriod } from '../lib/period'
 import { territoryHubFixture } from '../test/territory-hub-fixtures'
 import { StatisticsTerritoryHubPage } from './statistics-territory-hub-page'
 import {

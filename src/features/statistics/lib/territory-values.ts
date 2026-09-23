@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
-import { formatHubValue } from './hub-format'
+import { formatHubValue } from './units'
 import { tileUnit } from './territory-groups'
 
 const BLOCKING_STATUSES = new Set([':', 'c', 'x'])

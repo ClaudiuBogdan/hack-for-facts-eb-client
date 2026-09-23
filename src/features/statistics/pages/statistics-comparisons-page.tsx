@@ -5,19 +5,19 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Button } from '@/components/ui/button'
 import { countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
-import { COMPARISON_PALETTE_CLASS } from '../components/comparison-palette'
-import { ComparisonMapBand } from '../components/comparison-map-band'
-import type { ComparisonPlaceSuggestion } from '../components/comparison-pickers'
-import { ComparisonPins } from '../components/comparison-pins'
-import { ComparisonRail } from '../components/comparison-rail'
-import { ComparisonResultBand } from '../components/comparison-result-band'
+import { COMPARISON_PALETTE_CLASS } from '../components/comparison/comparison-palette'
+import { ComparisonMapBand } from '../components/comparison/comparison-map-band'
+import type { ComparisonPlaceSuggestion } from '../components/comparison/comparison-pickers'
+import { ComparisonPins } from '../components/comparison/comparison-pins'
+import { ComparisonRail } from '../components/comparison/comparison-rail'
+import { ComparisonResultBand } from '../components/comparison/comparison-result-band'
 import {
   ComparisonErrorState,
   ComparisonGuide,
   ComparisonGuideChoices,
   ComparisonNoData,
   ComparisonSkeleton,
-} from '../components/comparison-states'
+} from '../components/comparison/comparison-states'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import { useComparisonMemberLabels } from '../hooks/use-comparison-member-labels'
 import { useComparisonReading } from '../hooks/use-comparison-reading'

@@ -25,7 +25,7 @@ is one surface where two implementations now coexist.
 
 | | `main` | `dev` (redesign mode) |
 |---|---|---|
-| Component | `InsStatsView` — `src/components/entities/views/ins-stats-view.tsx` | `NativeEntityInsView` — `src/features/statistics/components/native-entity-ins-view.tsx` |
+| Component | `InsStatsView` — `src/components/entities/views/ins-stats-view.tsx` | `NativeEntityInsView` — `src/features/statistics/components/entity/native-entity-ins-view.tsx` |
 | Data layer | `use-ins-dashboard.ts` → `src/lib/api/ins.ts` (deleted on dev) | `use-entity-ins-metrics` / `use-entity-ins-source` |
 | Endpoint | legacy | `/api/v1/graphql` |
 

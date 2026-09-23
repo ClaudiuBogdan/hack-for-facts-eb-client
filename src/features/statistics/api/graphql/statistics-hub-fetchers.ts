@@ -14,7 +14,7 @@ import type {
   StatisticsHubSeriesPoint,
   StatisticsLatestValue,
 } from '@/schemas/statistics'
-import { hubUnitOf } from '../../lib/hub-format'
+import { hubUnitOf } from '../../lib/units'
 import { hubStaticSeries } from '../../lib/hub-national-series'
 import { publishedNumber } from '../../lib/value-status'
 import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'

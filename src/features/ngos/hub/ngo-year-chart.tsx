@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { niceScale, yearTickIndices } from '@/features/statistics/lib/hub-chart'
+import { niceScale, yearTickIndices } from '@/features/statistics/lib/period-chart'
 import { cn } from '@/lib/utils'
 import { formatNgoNumber } from './ngo-format'
 

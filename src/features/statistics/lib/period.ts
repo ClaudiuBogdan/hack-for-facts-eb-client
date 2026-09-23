@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { activeNumberLocale } from './format'
 import type { InsObservation, InsTimePeriod } from '@/schemas/ins'
 
 /**
@@ -124,9 +125,9 @@ export function buildDataThroughLabel(period: string | null): string | null {
  * or 2024 figure is CURRENT, not stale. Thresholds measured against the
  * 2026-08 frozen snapshot; re-validate when the corpus is reloaded.
  */
-export const ANNUAL_STALE_AFTER_YEARS = 3
-export const QUARTERLY_STALE_AFTER_MONTHS = 12
-export const MONTHLY_STALE_AFTER_MONTHS = 6
+const ANNUAL_STALE_AFTER_YEARS = 3
+const QUARTERLY_STALE_AFTER_MONTHS = 12
+const MONTHLY_STALE_AFTER_MONTHS = 6
 
 /**
  * Cadence-aware "possibly outdated" hint derived ONLY from the latest data
@@ -167,4 +168,39 @@ export function isPeriodStale(params: {
 
   // Unrecognized grammar: never invent staleness.
   return false
+}
+
+/** `2026-05` → „mai 2026"; `2026-Q2` → „T2 2026"; a bare year stays a year. */
+export function formatHubPeriod(period: string): string {
+  const month = /^(\d{4})-(\d{2})$/.exec(period)
+  if (month) {
+    return new Intl.DateTimeFormat(activeNumberLocale(), { month: 'long', year: 'numeric' }).format(
+      new Date(Number(month[1]), Number(month[2]) - 1, 1),
+    )
+  }
+  const quarter = /^(\d{4})-Q([1-4])$/.exec(period)
+  if (quarter) return t`T${quarter[2]} ${quarter[1]}`
+  return period
+}
+
+/**
+ * The same period as an axis tick. „mai 2026" is fine beside a figure and far
+ * too wide under a monthly series with 200 points, so months abbreviate
+ * („mai 2026" → „mai 2026", „iulie" → „iul."). Quarters and years are already
+ * short enough to share the long form.
+ */
+export function formatChartPeriod(period: string): string {
+  const month = /^(\d{4})-(\d{2})$/.exec(period)
+  if (month) {
+    return new Intl.DateTimeFormat(activeNumberLocale(), { month: 'short', year: 'numeric' }).format(
+      new Date(Number(month[1]), Number(month[2]) - 1, 1),
+    )
+  }
+  return formatHubPeriod(period)
+}
+
+/** `2026-05` → `2025-05`; null for anything that is not a month. */
+export function sameMonthLastYear(period: string): string | null {
+  const month = /^(\d{4})-(\d{2})$/.exec(period)
+  return month ? `${Number(month[1]) - 1}-${month[2]}` : null
 }

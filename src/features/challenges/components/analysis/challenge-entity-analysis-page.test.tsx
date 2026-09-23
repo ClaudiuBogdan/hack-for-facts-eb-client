@@ -360,7 +360,7 @@ vi.mock('@/components/entities/views/Commitments', () => ({
   ),
 }))
 
-vi.mock('@/features/statistics/components/native-entity-ins-view', () => ({
+vi.mock('@/features/statistics/components/entity/native-entity-ins-view', () => ({
   NativeEntityInsView: ({ cui, metadataReady }: { cui: string; metadataReady: boolean }) => <div data-testid="native-ins-view">{cui}:{String(metadataReady)}</div>,
 }))
 vi.mock('@/components/entities/views/ins-stats-view', () => ({

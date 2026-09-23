@@ -1,6 +1,6 @@
 import type { Feature, MultiPolygon, Polygon, Position } from 'geojson'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
-import { sharedDecimals } from './hub-format'
+import { sharedDecimals } from './numbers'
 
 /**
  * The geometry and the colour scale behind the hub's county map, as pure

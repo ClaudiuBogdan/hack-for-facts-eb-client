@@ -6,9 +6,9 @@ import type { ExplorerPeriodicity } from './explorer-filter'
 import { periodicityTitle } from './periodicity-labels'
 
 /** Which filter a chip stands for. */
-export type ExplorerChipKind = 'q' | 'context' | 'frecventa' | 'uat' | 'judet'
+type ExplorerChipKind = 'q' | 'context' | 'frecventa' | 'uat' | 'judet'
 
-export interface ExplorerChip {
+interface ExplorerChip {
   readonly id: string
   readonly kind: ExplorerChipKind
   /** The filter value the chip carries; `null` for boolean coverage flags. */
@@ -79,7 +79,7 @@ export function buildExplorerChips(
 }
 
 /** A chip's two halves: the dimension it narrows, and the value it holds. */
-export interface ExplorerChipParts {
+interface ExplorerChipParts {
   /** The dimension's name. `null` when the value names itself. */
   readonly name: string | null
   readonly value: string

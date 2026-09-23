@@ -61,7 +61,7 @@ export const statisticsPeriodSearchSchema = z
  * `indicator` is the county map's colouring — shareable, so a link can land
  * on "unemployment by county". The default view renders with no params.
  */
-export const STATISTICS_HUB_INDICATORS = ['viata', 'somaj', 'salariati'] as const
+const STATISTICS_HUB_INDICATORS = ['viata', 'somaj', 'salariati'] as const
 export type StatisticsHubIndicatorKey = (typeof STATISTICS_HUB_INDICATORS)[number]
 
 export const statisticsHubSearchSchema = z

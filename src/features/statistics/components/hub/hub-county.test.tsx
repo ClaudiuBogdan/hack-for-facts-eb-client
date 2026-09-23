@@ -5,8 +5,8 @@ import { fireEvent, render, screen, waitFor, within } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import { hubCountyLayer } from '../../test/hub-fixtures'
-import { HubCountyMap } from './hub-county-map'
-import { HubCountyRank, HubIndicatorToggle } from './hub-county-rank'
+import { CountyMap } from '../county-map/county-map'
+import { HubCountyRank } from './hub-county-rank'
 
 vi.mock('../../lib/format', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/format')>()
@@ -73,7 +73,7 @@ function Harness({ layer }: { readonly layer: StatisticsHubCountyLayer }) {
   const [active, setActive] = useState<string>()
   return (
     <>
-      <HubCountyMap layer={layer} legend="Durata medie a vieții, 2025" activeCode={active} onActiveChange={setActive} />
+      <CountyMap layer={layer} legend="Durata medie a vieții, 2025" activeCode={active} onActiveChange={setActive} />
       <HubCountyRank layer={layer} activeCode={active} onActiveChange={setActive} />
     </>
   )
@@ -82,7 +82,7 @@ function Harness({ layer }: { readonly layer: StatisticsHubCountyLayer }) {
 const figure = () => screen.getByRole('figure')
 const countyLink = (name: RegExp) => within(screen.getByRole('group', { name: /Durata medie a vieții/ })).getByRole('link', { name })
 
-describe('HubCountyMap', () => {
+describe('CountyMap', () => {
   it('shows the country at rest, and a legend of five steps with their bounds and the national value on it', () => {
     render(<Harness layer={LIFE} />)
     expect(within(figure()).getByText('România · 2025')).toBeInTheDocument()
@@ -204,12 +204,12 @@ describe('HubCountyMap', () => {
   })
 })
 
-describe('HubCountyMap as a picker', () => {
+describe('CountyMap as a picker', () => {
   function Picker({ selected = ['VL'], canAdd = true }: { readonly selected?: readonly string[]; readonly canAdd?: boolean }) {
     const [active, setActive] = useState<string>()
     const [codes, setCodes] = useState(selected)
     return (
-      <HubCountyMap
+      <CountyMap
         layer={LIFE}
         legend="Durata medie a vieții, 2025"
         activeCode={active}
@@ -331,43 +331,5 @@ describe('HubCountyRank', () => {
 
     const unanchored = render(<HubCountyRank layer={{ ...LIFE, national: null }} />)
     expect(bar(unanchored.container, 'Vâlcea').className).toContain('rounded-full')
-  })
-})
-
-describe('HubIndicatorToggle', () => {
-  const OPTIONS = [
-    { key: 'viata', label: 'Speranța de viață' },
-    { key: 'somaj', label: 'Rata șomajului' },
-    { key: 'salariati', label: 'Salariați' },
-  ] as const
-
-  it('is one tab stop whose arrows move the choice and the focus together, around the ends', () => {
-    const onChange = vi.fn()
-    const { rerender } = render(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="somaj" onChange={onChange} />)
-    const group = screen.getByRole('radiogroup', { name: 'Indicatorul de pe hartă' })
-    const radios = within(group).getAllByRole('radio')
-    expect(radios.map((radio) => radio.getAttribute('tabindex'))).toEqual(['-1', '0', '-1'])
-    expect(within(group).getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
-
-    radios[1]!.focus()
-    fireEvent.keyDown(group, { key: 'ArrowRight' })
-    expect(onChange).toHaveBeenLastCalledWith('salariati')
-    expect(document.activeElement).toBe(radios[2])
-
-    fireEvent.keyDown(group, { key: 'ArrowLeft' })
-    expect(onChange).toHaveBeenLastCalledWith('viata')
-    expect(document.activeElement).toBe(radios[0])
-
-    // From the last option the arrow wraps to the first, and back; a click picks directly.
-    rerender(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="salariati" onChange={onChange} />)
-    fireEvent.keyDown(group, { key: 'ArrowRight' })
-    expect(onChange).toHaveBeenLastCalledWith('viata')
-    expect(document.activeElement).toBe(radios[0])
-    rerender(<HubIndicatorToggle label="Indicatorul de pe hartă" options={OPTIONS} value="viata" onChange={onChange} />)
-    fireEvent.keyDown(group, { key: 'ArrowLeft' })
-    expect(onChange).toHaveBeenLastCalledWith('salariati')
-    expect(document.activeElement).toBe(radios[2])
-    fireEvent.click(radios[1]!)
-    expect(onChange).toHaveBeenLastCalledWith('somaj')
   })
 })

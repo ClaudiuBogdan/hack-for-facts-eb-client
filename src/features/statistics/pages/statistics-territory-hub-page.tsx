@@ -20,11 +20,11 @@ import {
   collectTerritoryYears,
   territoryPeriodAvailable,
 } from '../lib/territory-period'
-import { RelatedLinksRail } from '../components/related-links-rail'
+import { RelatedLinksRail } from '../components/territory/related-links-rail'
 import { StatisticsBackLink } from '../components/statistics-back-link'
-import { TerritoryHeader } from '../components/territory-header'
-import { TerritoryHeadlineTile, TerritoryIndicatorRow } from '../components/territory-indicator-row'
-import { TerritoryPeriodControl } from '../components/territory-period-control'
+import { TerritoryHeader } from '../components/territory/territory-header'
+import { TerritoryHeadlineTile, TerritoryIndicatorRow } from '../components/territory/territory-indicator-row'
+import { TerritoryPeriodControl } from '../components/territory/territory-period-control'
 import { useStatisticsTerritoryHub } from '../hooks/use-statistics'
 
 type StatisticsTerritoryHubPageProps = {

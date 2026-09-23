@@ -1,4 +1,4 @@
-import {ValueStatusMarker} from '@/features/statistics/components/detail-value-status-legend';
+import {ValueStatusMarker} from '@/features/statistics/components/value-status-legend';
 import { memo, useMemo, useState, type CSSProperties, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';

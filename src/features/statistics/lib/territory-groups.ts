@@ -54,7 +54,7 @@ const TERRITORY_OTHER_GROUP: TerritoryGroupDefinition = {
  */
 export const TERRITORY_HEADLINE_CODES: readonly string[] = ['POP107D', 'FOM104D', 'SOM101F', 'LOC101B']
 
-export interface TerritoryGroup {
+interface TerritoryGroup {
   readonly definition: TerritoryGroupDefinition
   readonly tiles: readonly StatisticsIndicatorTile[]
 }

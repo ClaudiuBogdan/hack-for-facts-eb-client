@@ -80,14 +80,14 @@ export const insSourceGeographySchema = z
     }
   })
 
-export const insSourcePublicationSchema = z
+const insSourcePublicationSchema = z
   .object({
     revision_id: z.string().regex(/^[1-9][0-9]*$/),
     transform_contract_sha256: z.string().regex(/^[a-f0-9]{64}$/),
   })
   .passthrough()
 
-export const insSourceDimensionSchema = z.object({
+const insSourceDimensionSchema = z.object({
   label_ro: z.string().nullish(),
   label_en: z.string().nullish(),
   index: z.number().int().min(0).max(8),

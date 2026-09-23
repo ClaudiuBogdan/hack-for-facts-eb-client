@@ -3,7 +3,8 @@ import type { InsPeriodicity, NativeInsObservation } from '@/schemas/ins'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue, StatisticsHubUnit } from '@/schemas/statistics'
 import type { ComparisonTerritoryToken } from './dataset-selection'
 import type { ComparisonCell } from './native-comparison'
-import { hubChange, hubUnitOf, isAdditiveUnit } from './hub-format'
+import { hubUnitOf, isAdditiveUnit } from './units'
+import { hubChange } from './change'
 import { publishedNumber } from './value-status'
 
 /**

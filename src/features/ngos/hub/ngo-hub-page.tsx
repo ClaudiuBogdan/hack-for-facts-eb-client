@@ -9,7 +9,7 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { HubIndicatorToggle } from '@/features/statistics/components/hub/hub-county-rank'
+import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import type { NgoHubLayerKey, NgoLandingSearch } from '@/schemas/ngos'
@@ -236,7 +236,7 @@ export function NgoHubPage({
             index={t`01 / Pe județe`}
             title={<Trans>Câte ONG-uri are județul tău</Trans>}
             aside={
-              <HubIndicatorToggle
+              <IndicatorToggle
                 label={t`Ce arată harta`}
                 options={(Object.keys(layers) as NgoHubLayerKey[]).map((key) => ({ key, label: layers[key].toggle }))}
                 value={layerKey}

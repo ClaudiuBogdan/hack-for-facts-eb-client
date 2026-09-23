@@ -80,7 +80,7 @@ export const INS_DATASET_DIMENSION_FIELDS = `
       }
 `
 
-export const INS_OBSERVATION_FIELDS = `
+const INS_OBSERVATION_FIELDS = `
   id
   dimensions
   dataset_code
@@ -166,7 +166,7 @@ export const INS_COMPARISON_DEFAULT_FIELDS = `
   }
 `
 
-export const INS_TERRITORY_FIELDS = `
+const INS_TERRITORY_FIELDS = `
   code
   siruta_code
   level

@@ -12,8 +12,9 @@ import { cn } from '@/lib/utils'
 import type { StatisticsHubData, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics'
 import { HubTwoLineChart } from '../components/hub/hub-charts'
 import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
-import { HubCountyMap } from '../components/hub/hub-county-map'
-import { HubCountyRank, HubIndicatorToggle } from '../components/hub/hub-county-rank'
+import { CountyMap } from '../components/county-map/county-map'
+import { HubCountyRank } from '../components/hub/hub-county-rank'
+import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
 import { buildHubFacts, indicatorByCode } from '../components/hub/hub-facts'
 import { HubFigureRows, HubFiguresBand } from '../components/hub/hub-figures'
@@ -22,7 +23,7 @@ import { HubPlaceFinder } from '../components/hub/hub-place-finder'
 import { HubThemePanel } from '../components/hub/hub-theme-panel'
 import { HubThenNow } from '../components/hub/hub-then-now'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
-import { deathsExceedBirthsSince } from '../lib/hub-format'
+import { deathsExceedBirthsSince } from '../lib/hub-indicators'
 import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
 
 /**
@@ -231,7 +232,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             index={t`02 / Pe județe`}
             title={<Trans>Unde stă județul tău</Trans>}
             aside={
-              <HubIndicatorToggle
+              <IndicatorToggle
                 label={t`Indicatorul de pe hartă`}
                 options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))}
                 value={layerDefinition.key}
@@ -243,7 +244,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             {/* The map stays in view beside the full list of 42, where the window is tall enough to hold all of it (legend included). */}
             <div className="lg:top-6 lg:col-span-7 lg:self-start lg:[@media(min-height:42rem)]:sticky" data-reveal>
               {layer ? (
-                <HubCountyMap
+                <CountyMap
                   key={layer.code}
                   layer={layer}
                   legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`}

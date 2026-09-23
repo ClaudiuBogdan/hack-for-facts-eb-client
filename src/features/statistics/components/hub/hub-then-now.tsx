@@ -4,7 +4,10 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubIndicator } from '@/schemas/statistics'
-import { describeHubDelta, formatHubNumber, formatHubValue, hubUnitWord, indicatorDetailSearch } from '../../lib/hub-format'
+import { formatHubNumber } from '../../lib/numbers'
+import { formatHubValue, hubUnitWord } from '../../lib/units'
+import { describeHubDelta } from '../../lib/change'
+import { indicatorDetailSearch } from '../../lib/hub-indicators'
 
 type ThenNowRow = { readonly indicator: StatisticsHubIndicator; readonly label: string }
 

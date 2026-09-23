@@ -25,7 +25,7 @@ import type { StatisticsHubSeriesPoint } from '@/schemas/statistics'
  */
 export const HUB_SERIES_CAPTURED_AT = '2026-09-22'
 
-export interface HubStaticSeries {
+interface HubStaticSeries {
   readonly code: string
   /** The unit the values are in; a live point in another unit is not appended. */
   readonly unitCode: string

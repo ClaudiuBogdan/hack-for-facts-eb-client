@@ -23,7 +23,7 @@ import { rankCounties, type NgoCountyLayer, type NgoCountyValue } from './regist
 
 /**
  * The counties coloured by one registry layer, drawn as plain SVG — the INS
- * hub's county map (`HubCountyMap`) in the same geometry, ramp and
+ * hub's county map (`CountyMap`) in the same geometry, ramp and
  * interaction, over the registry instead of an INS dataset.
  *
  * Above the map a readout names the county under the pointer (or the

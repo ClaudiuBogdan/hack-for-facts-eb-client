@@ -320,7 +320,7 @@ const DeferredCommitmentsView = lazy(() =>
   })),
 )
 const DeferredNativeEntityInsView = lazy(() =>
-  import('@/features/statistics/components/native-entity-ins-view').then((module) => ({ default: module.NativeEntityInsView })),
+  import('@/features/statistics/components/entity/native-entity-ins-view').then((module) => ({ default: module.NativeEntityInsView })),
 )
 const DeferredInsStatsView = lazy(() =>
   loadInsStatsView().then((module) => ({

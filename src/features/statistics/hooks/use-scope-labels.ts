@@ -5,7 +5,7 @@ import {
   dimensionsOfType,
   type EffectiveScope,
 } from '../lib/dataset-selection'
-import { describeUnitSymbol, hubUnitWord } from '../lib/hub-format'
+import { describeUnitSymbol, hubUnitWord } from '../lib/units'
 import { tileUnit } from '../lib/territory-groups'
 import {
   sourceMemberLabelKey,

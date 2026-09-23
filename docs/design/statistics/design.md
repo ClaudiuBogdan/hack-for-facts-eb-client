@@ -1478,6 +1478,45 @@ the English copy and the page would flip on hydration. Now:
   added, keying it on `user-locale` (or bypassing it when cookies are
   present) is the infrastructure decision that stays open.
 
+## 6w. The INS code reads by page (2026-09-23)
+
+The last of the review's structure proposals. `components/` was 50 flat
+component files (67 with their tests), 22 of them `detail-*`; the shared
+pieces wore the hub's name while several pages used them. Now:
+
+- **Components by surface:** `components/detail/`, `comparison/`,
+  `territory/`, `explorer/` (the results, row and pager with the filter
+  rail, sheet, theme tree and chips that only the catalog uses) and
+  `entity/`, beside the existing `hub/`. What more than one surface imports
+  stays at the root: `statistics-back-link`, `data-status-badge`,
+  `request-dataset-action`, `value-status-legend` (also the entity page's
+  INS view), the dimension combobox (detail, comparison, entity), the
+  source line (detail, comparison), the export button (detail, entity) and
+  the debounced search input (hub, comparison, catalog). `filters/` is gone.
+- **Shared pieces under neutral names.** The county map the hub and the
+  comparison draw is `CountyMap` in `components/county-map/`; the SVG chart
+  kit the hub's charts and the comparison lines draw with — and whose scale
+  and ticks the NGO hub uses — is `lib/period-chart.ts` with
+  `components/charts/period-chart-parts.tsx`; the segmented control the INS
+  hub and comparison and the NGO and companies hubs use is
+  `IndicatorToggle` in `components/landing-skin/`, tested there. The hub's
+  own chrome, figures and charts (`hub/hub-chrome`, `hub-figures`,
+  `hub-charts`) are still imported by the comparison and the NGO and
+  companies hubs; renaming them is left for when those pages next change.
+- **Formatting by concern.** `hub-format.ts` (288 lines, imported by every
+  page) is split: `numbers.ts` (figures, signed figures, shared and source
+  decimals), `units.ts` (the unit word and a figure with it), `period.ts`
+  (period words, beside the period arithmetic already there), `change.ts`
+  (a change and a county against the country) and `hub-indicators.ts` (the
+  hub's inflation, natural decrease and series links). The function names
+  are kept; `format.ts` keeps the locale and the wire-value helpers, which
+  tests mock to pin the locale — the number helpers live beside it, not in
+  it, so the mock still reaches them.
+- **Exports that nothing imports are gone:** the internal GraphQL fragments
+  and raw schemas, the source contract's inner schemas, the hub-search
+  constant, the explorer chip and territory group types, the staleness
+  thresholds, the comparison line type.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

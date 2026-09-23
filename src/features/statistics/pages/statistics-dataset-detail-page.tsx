@@ -12,11 +12,11 @@ import type {
   StatisticsDatasetDetailSearch,
   StatisticsDatasetTier0,
 } from '@/schemas/statistics'
-import { DetailBody } from '../components/detail-body'
-import { DetailCatalogOnly } from '../components/detail-catalog-only'
-import { DetailHeader } from '../components/detail-header'
-import { DetailMetadataSection } from '../components/detail-metadata-section'
-import { DetailBandSkeleton, DetailHeaderSkeleton } from '../components/detail-skeletons'
+import { DetailBody } from '../components/detail/detail-body'
+import { DetailCatalogOnly } from '../components/detail/detail-catalog-only'
+import { DetailHeader } from '../components/detail/detail-header'
+import { DetailMetadataSection } from '../components/detail/detail-metadata-section'
+import { DetailBandSkeleton, DetailHeaderSkeleton } from '../components/detail/detail-skeletons'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import {
   useDatasetSeries,

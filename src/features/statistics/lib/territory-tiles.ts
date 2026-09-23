@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
-import { formatHubPeriod } from './hub-format'
+import { formatHubPeriod } from './period'
 import { isInsPeriodicity, periodicityLabel } from './periodicity-labels'
 
 /** The matrix's name in the reader's language, the Romanian one otherwise. */

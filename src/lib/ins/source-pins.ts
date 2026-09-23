@@ -3,7 +3,6 @@ import {
   insSourceMemberCodeSchema,
 } from './source-contract'
 
-/** Parse exact source pins without dropping malformed intent or choosing defaults. */
 /**
  * Whether the reader actually pinned any classification.
  *
@@ -22,6 +21,7 @@ export function hasSourcePinIntent(input: unknown): boolean {
   return Array.isArray(input) ? input.length > 0 : true
 }
 
+/** Parse exact source pins without dropping malformed intent or choosing defaults. */
 export function parseSourcePins(
   input: unknown,
   declaredAxes: ReadonlySet<string>,

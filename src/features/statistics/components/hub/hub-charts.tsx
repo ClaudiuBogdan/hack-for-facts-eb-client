@@ -4,9 +4,11 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubSeriesPoint } from '@/schemas/statistics'
 import { useChartReading } from '../../hooks/use-chart-reading'
-import { CHART_HEIGHT, CHART_PLOT_CLASS, CHART_WIDTH, gapRegions, niceScale, yearTickIndices } from '../../lib/hub-chart'
-import { alignSeriesByPeriod, formatHubNumber, formatHubSigned } from '../../lib/hub-format'
-import { ChartGridLines, ChartPeriodAxis, ChartRule, ChartTooltip, ChartValueTicks } from './hub-chart-parts'
+import { CHART_HEIGHT, CHART_PLOT_CLASS, CHART_WIDTH, gapRegions, niceScale, yearTickIndices } from '../../lib/period-chart'
+import { formatHubNumber } from '../../lib/numbers'
+import { formatHubSigned } from '../../lib/change'
+import { alignSeriesByPeriod } from '../../lib/hub-indicators'
+import { ChartGridLines, ChartPeriodAxis, ChartRule, ChartTooltip, ChartValueTicks } from '../charts/period-chart-parts'
 
 /** One inline SVG path, no chart library. Decorative: the value beside it is the reading. */
 export function HubSparkline({

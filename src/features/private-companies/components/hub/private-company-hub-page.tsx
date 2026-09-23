@@ -10,7 +10,7 @@ import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/co
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { HubTwoLineChart } from '@/features/statistics/components/hub/hub-charts'
 import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { HubIndicatorToggle } from '@/features/statistics/components/hub/hub-county-rank'
+import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import {
@@ -216,7 +216,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                   <MonoLabel id="hub-leaders-title" className="text-primary">
                     <Trans>Cele mai mari firme, {YEAR}</Trans>
                   </MonoLabel>
-                  <HubIndicatorToggle
+                  <IndicatorToggle
                     label={t`Clasamentul după`}
                     options={[
                       { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
@@ -280,7 +280,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
             </div>
             <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
               <div className="sm:w-fit">
-                <HubIndicatorToggle
+                <IndicatorToggle
                   label={t`Domeniile după`}
                   options={[
                     { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
@@ -309,7 +309,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
             index={t`02 / Pe județe`}
             title={<Trans>Unde stă județul tău</Trans>}
             aside={
-              <HubIndicatorToggle
+              <IndicatorToggle
                 label={t`Indicatorul de pe hartă`}
                 options={COMPANY_HUB_MAP_INDICATORS.map((key) => ({ key, label: mapOptions[key].label }))}
                 value={mapIndicator}

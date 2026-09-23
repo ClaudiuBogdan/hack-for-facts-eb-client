@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { TERRITORY_SEARCH_MIN_LENGTH } from '../../api/territory-search-api'
 import { useTerritorySearch } from '../../hooks/use-territory-search'
 import { HUB_EXAMPLE_PLACES } from '../../lib/landing-constants'
-import { StatisticsDebouncedSearchInput } from '../filters/statistics-debounced-search-input'
+import { StatisticsDebouncedSearchInput } from '../statistics-debounced-search-input'
 
 /** Rows shown for a term; a longer name narrows the rest. */
 const SHOWN_ROWS = 8

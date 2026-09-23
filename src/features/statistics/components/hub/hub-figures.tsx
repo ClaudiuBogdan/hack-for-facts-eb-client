@@ -8,7 +8,9 @@ import type { StatisticsHubIndicator } from '@/schemas/statistics'
 import { describeValueStatus } from '../../lib/value-status'
 import { HubSparkline } from './hub-charts'
 import { useIndicatorLabel } from './hub-labels'
-import { formatHubPeriod, formatIndicatorValue, indicatorDetailSearch } from '../../lib/hub-format'
+import { formatIndicatorValue } from '../../lib/units'
+import { formatHubPeriod } from '../../lib/period'
+import { indicatorDetailSearch } from '../../lib/hub-indicators'
 
 // ───────────────────────────────────────────────────── figures band ──
 

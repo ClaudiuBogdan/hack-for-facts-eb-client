@@ -5,7 +5,7 @@ import { searchInsTerritories } from './graphql/statistics-fetchers'
 export const TERRITORY_SEARCH_MIN_LENGTH = 2
 
 /** Results per territory-search page. */
-export const TERRITORY_SEARCH_LIMIT = 20
+const TERRITORY_SEARCH_LIMIT = 20
 
 const EMPTY_RESULT: StatisticsTerritorySearchResult = {
   rows: [],

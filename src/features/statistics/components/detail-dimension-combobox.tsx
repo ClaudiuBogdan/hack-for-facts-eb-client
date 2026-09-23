@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import {
   DetailDimensionPanel,
   type DimensionPanelProps,
-} from './detail-dimension-panel'
+} from './detail/detail-dimension-panel'
 
 type Props = Omit<DimensionPanelProps, 'active' | 'onPicked'> & {
   readonly placeholder: string

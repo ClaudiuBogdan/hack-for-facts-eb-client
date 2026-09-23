@@ -1,0 +1,737 @@
+import { editSourcePin } from '../../lib/source-selection'
+import { isInsChartPeriodicity } from '@/lib/ins/source-contract'
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { t } from '@lingui/core/macro'
+import { Trans } from '@lingui/react/macro'
+import { ChevronDown, SlidersHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import type {
+  InsDatasetDetails,
+  InsDimension,
+  InsDimensionValue,
+} from '@/schemas/ins'
+import type { StatisticsDatasetDetailSearch } from '@/schemas/statistics'
+import {
+  classificationPinMap,
+  classificationTypeCode,
+  dimensionsOfType,
+  type DetailSearchPatch,
+  type EffectiveScope,
+  type YearSpan,
+} from '../../lib/dataset-selection'
+import { fetchDimensionValuesPage } from '../../api/dataset-detail-api'
+import { STATISTICS_STALE_TIME, statisticsKeys } from '../../hooks/query-config'
+import { periodicityLabel } from '../../lib/periodicity-labels'
+import {
+  childAxisAfterPick,
+  childSourceAxis,
+  pickSourceMember,
+  rootMemberCode,
+} from '../../lib/source-hierarchy'
+import { cn } from '@/lib/utils'
+import { statisticsTheme } from '../../lib/statistics-theme'
+import { DetailCadenceControl } from './detail-cadence-control'
+import { DetailDimensionCombobox } from '../detail-dimension-combobox'
+import { DetailDimensionPanel } from './detail-dimension-panel'
+import { DetailYearWindowControl } from './detail-year-window-control'
+
+/** How a segment's control is being asked to render itself. */
+interface ScopeControlOptions {
+  /**
+   * `panel` paints a desktop popover edge to edge — the row already names
+   * the axis, so the control opens straight onto its options. `field` is the
+   * labelled, closed form the phone sheet stacks six of.
+   */
+  readonly variant: 'panel' | 'field'
+  /** Close the surface the control is in, once a value has been chosen. */
+  readonly onPicked: () => void
+}
+
+interface ScopeSegment {
+  readonly id: string
+  /** The visible text for this segment. */
+  readonly text: string
+  /** True when the value was chosen automatically — by the server or by this page — not by the reader. */
+  readonly defaulted: boolean
+  /** True when the dimension has NO effective value yet. */
+  readonly unresolved?: boolean
+  /** The control rendered in the popover / sheet. Null = display-only. */
+  readonly control: ((options: ScopeControlOptions) => ReactNode) | null
+  /** True when the control paints the popover itself and wants no padding. */
+  readonly fills?: boolean
+  /**
+   * How wide the popover opens. `list` is the option panel, wide enough for
+   * an INS member name; `form` is a control with a fixed shape, which in a
+   * list-sized popover sat in a field of white.
+   */
+  readonly width?: 'list' | 'form'
+  readonly controlLabel: string
+}
+
+type Props = {
+  readonly dataset: InsDatasetDetails
+  readonly search: StatisticsDatasetDetailSearch
+  readonly scope: EffectiveScope
+  readonly canDerive: boolean
+  /** Classification dimensions with NO effective value — the way out of an
+   *  unresolved state lives here, so their segments always render. */
+  readonly unresolvedDimensions: readonly InsDimension[]
+  /** Display labels resolved from the fetched rows (never re-queried). */
+  readonly territoryLabel: string
+  readonly classificationLabels: ReadonlyMap<string, string>
+  readonly unitLabel: string | null
+  /** The years the series covers, from the rows fetched. Null before any. */
+  readonly observedSpan: YearSpan | null
+  /** The years on screen: the span narrowed by `?din`/`?pana`, if pinned. */
+  readonly yearWindow: YearSpan | null
+  /** True when the window on screen is the reader's, not the whole span. */
+  readonly yearWindowPinned?: boolean
+  readonly onChange: (patch: DetailSearchPatch) => void
+}
+
+/**
+ * Tier 1 — the selection IS the control surface: a standing rail of one
+ * row per axis beside the figure, so changing one axis never pushes the
+ * chart down the page. Every row opens its own popover on desktop; on a
+ * phone the whole rail opens ONE bottom sheet holding every control (never
+ * six stacked popovers). Values chosen automatically are marked and are
+ * NOT written into the URL until the reader changes one.
+ */
+export function DetailScopeSentence({
+  dataset,
+  search,
+  scope,
+  canDerive,
+  unresolvedDimensions,
+  territoryLabel,
+  classificationLabels,
+  unitLabel,
+  observedSpan,
+  yearWindow,
+  yearWindowPinned = false,
+  onChange,
+}: Props) {
+  const [sheetOpen, setSheetOpen] = useState(false)
+  // One open row at a time, and controlled, so picking a value can close it.
+  const [openSegment, setOpenSegment] = useState<string | null>(null)
+  // The selection a pick was made against. A pick that has to read a root
+  // before it can write (`ClassificationControl`) checks this is still the
+  // one it started from; any other write in the meantime supersedes it, and
+  // its stale snapshot is dropped rather than written over the newer
+  // selection. Every write from this rail moves it synchronously — the
+  // router keeps the old search until the new route has loaded, so waiting
+  // for the prop would let a second write slip under the check — and the
+  // effect covers writes from elsewhere, such as the back button, another
+  // dataset, and leaving the page. A pick that starts waiting mints its own
+  // token, so of two waiting picks the newer is the one that lands. Held
+  // here, not in the control: the control lives in a popover that unmounts
+  // the moment it closes.
+  const selectionKey = JSON.stringify(search)
+  const selectionToken = useRef<object>({})
+  useEffect(() => {
+    selectionToken.current = {}
+    return () => {
+      selectionToken.current = {}
+    }
+  }, [selectionKey, dataset.code])
+  const write = (patch: DetailSearchPatch) => {
+    selectionToken.current = {}
+    onChange(patch)
+  }
+
+  const segments = buildSegments({
+    dataset,
+    search,
+    scope,
+    canDerive,
+    unresolvedDimensions,
+    territoryLabel,
+    classificationLabels,
+    unitLabel,
+    observedSpan,
+    yearWindow,
+    yearWindowPinned,
+    onChange: write,
+    selectionToken,
+  })
+
+  if (segments.length === 0) return null
+
+  const hasDefaults = segments.some((segment) => segment.defaulted)
+
+  /** The popover every row opens, whatever its trigger looks like. */
+  const controlPopover = (segment: ScopeSegment, trigger: ReactNode) => (
+    <Popover
+      key={segment.id}
+      open={openSegment === segment.id}
+      onOpenChange={(open) => setOpenSegment(open ? segment.id : null)}
+    >
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className={cn(
+          'max-w-[calc(100vw-2rem)] p-0',
+          segment.width === 'form' ? 'w-80' : 'w-[22rem]',
+        )}
+      >
+        {segment.fills ? (
+          segment.control?.({
+            variant: 'panel',
+            onPicked: () => setOpenSegment(null),
+          })
+        ) : (
+          <div className="space-y-1.5 p-3">
+            {segment.control?.({
+              variant: 'panel',
+              onPicked: () => setOpenSegment(null),
+            })}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  )
+
+  return (
+    <div className="text-sm text-muted-foreground">
+      {/* Desktop: one row per axis in a bordered column. An axis with
+          nothing to choose renders as text, not as a button — given the same
+          affordance as its neighbours it read as a control that did nothing
+          when pressed.
+          Below `lg` the column has no room beside the figure, so the same
+          rows sit above it as a three-column grid: a rule over every cell
+          after the header, and a rule before the second and third columns
+          (children 3n+3 and 3n+4, the header being child 1). Borders, not
+          gaps over a border-coloured band — a short last row would have
+          shown the band through its empty cells. One DOM, two layouts: a
+          second copy for that range would be a duplicate of every control
+          for a screen reader, not a style. */}
+      <div className="hidden md:block">
+        <div
+          className={cn(
+            statisticsTheme.band,
+            'overflow-hidden md:grid md:grid-cols-3 lg:block',
+            '[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-border/70',
+            'md:[&>*:nth-child(3n+3)]:border-l md:[&>*:nth-child(3n+4)]:border-l lg:[&>*]:border-l-0',
+          )}
+        >
+          <div className="px-4 py-2.5 md:col-span-full">
+            <h2 className={statisticsTheme.sectionLabel}>
+              <Trans>Selecție</Trans>
+            </h2>
+          </div>
+          {segments.map((segment) =>
+            segment.control
+              ? controlPopover(
+                  segment,
+                  <button
+                    type="button"
+                    className={cn(statisticsTheme.scopeRailRow, 'h-full')}
+                    aria-label={
+                      segment.defaulted
+                        ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                        : t`${segment.controlLabel}: ${segment.text}`
+                    }
+                  >
+                    <span className="flex min-w-0 flex-col items-start">
+                      <span className={statisticsTheme.scopeRailLabel}>
+                        {segment.controlLabel.trim()}
+                      </span>
+                      <span className={statisticsTheme.scopeRailValue}>
+                        {segment.text}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5">
+                      {/* Only a value that WAS chosen is marked as chosen
+                          automatically; an axis still to choose says so in
+                          its own text. */}
+                      {segment.defaulted ? (
+                        <span className="text-xs text-muted-foreground">
+                          <Trans>implicit</Trans>
+                        </span>
+                      ) : null}
+                      <ChevronDown
+                        className="h-3.5 w-3.5 text-muted-foreground"
+                        aria-hidden
+                      />
+                    </span>
+                  </button>,
+                )
+              : (
+                  <div
+                    key={segment.id}
+                    className={cn(statisticsTheme.scopeRailStatic, 'h-full')}
+                  >
+                    <span className={statisticsTheme.scopeRailLabel}>
+                      {segment.controlLabel.trim()}
+                    </span>
+                    <span className={statisticsTheme.scopeRailValue}>
+                      {segment.text}
+                    </span>
+                  </div>
+                ),
+          )}
+        </div>
+        {hasDefaults ? (
+          <p className="mt-3 px-1 text-xs leading-relaxed text-muted-foreground">
+            <Trans>
+              Valorile marcate „implicit" au fost alese automat. Apasă pe ele
+              ca să le schimbi.
+            </Trans>
+          </p>
+        ) : null}
+      </div>
+
+      {/* Mobile: the whole selection opens ONE bottom sheet. */}
+      <div className="md:hidden">
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              aria-label={t`Alege ce arată seria`}
+              className="flex w-full items-center justify-between gap-2 rounded-md border border-border/70 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <span className="line-clamp-2 min-w-0 text-sm">
+                {/* Trimmed: INS ships labels with a trailing space, which
+                    rendered as „Localitati : TOTAL". */}
+                {segments
+                  .map(
+                    (segment) =>
+                      `${segment.controlLabel.trim()}: ${segment.text.trim()}`,
+                  )
+                  .join(' · ')}
+              </span>
+              <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>
+                <Trans>Alege ce arată seria</Trans>
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-4 space-y-4 pb-6">
+              {segments
+                .filter((segment) => segment.control)
+                .map((segment) => (
+                  <div key={segment.id} className="space-y-1.5">
+                    {segment.control?.({
+                      variant: 'field',
+                      onPicked: () => undefined,
+                    })}
+                  </div>
+                ))}
+              <Button className="w-full" onClick={() => setSheetOpen(false)}>
+                <Trans>Gata</Trans>
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    </div>
+  )
+}
+
+function buildSegments(params: {
+  readonly dataset: InsDatasetDetails
+  readonly search: StatisticsDatasetDetailSearch
+  readonly scope: EffectiveScope
+  readonly canDerive: boolean
+  readonly unresolvedDimensions: readonly InsDimension[]
+  readonly territoryLabel: string
+  readonly classificationLabels: ReadonlyMap<string, string>
+  readonly unitLabel: string | null
+  readonly observedSpan: YearSpan | null
+  readonly yearWindow: YearSpan | null
+  readonly yearWindowPinned: boolean
+  readonly onChange: (patch: DetailSearchPatch) => void
+  readonly selectionToken: RefObject<object>
+}): readonly ScopeSegment[] {
+  const {
+    dataset,
+    search,
+    scope,
+    canDerive,
+    unresolvedDimensions,
+    territoryLabel,
+    classificationLabels,
+    unitLabel,
+    observedSpan,
+    yearWindow,
+    yearWindowPinned,
+    onChange,
+    selectionToken,
+  } = params
+
+  // Editing a resolved cell materializes its complete selection atomically.
+  // Invalid or incomplete input retains the explicit recovery path instead.
+  const sourceSearch = canDerive
+    ? {
+        ...search,
+        clasificari: [...scope.classifications].map(
+          ([type, code]) => `${type}:${code}`,
+        ),
+        unitate: scope.unitCode ?? undefined,
+      }
+    : search
+  const dimensions = dataset.dimensions ?? []
+  const geographyTypes = new Set(
+    dimensions
+      .filter((d) => d.type === 'TERRITORIAL')
+      .map(classificationTypeCode),
+  )
+  const onSourceChange = (patch: DetailSearchPatch) => {
+    const next: DetailSearchPatch = canDerive
+      ? {
+          clasificari: sourceSearch.clasificari,
+          unitate: sourceSearch.unitate,
+          ...(scope.periodicity && isInsChartPeriodicity(scope.periodicity)
+            ? { frecventa: scope.periodicity }
+            : {}),
+          ...patch,
+        }
+      : patch
+    // Once a geography axis is pinned it names the territory, and the
+    // `teritoriu` that seeded it has nothing left to say.
+    const pinsGeography =
+      Array.isArray(next.clasificari) &&
+      next.clasificari.some(
+        (pin) => typeof pin === 'string' && geographyTypes.has(pin.split(':')[0]),
+      )
+    onChange(pinsGeography ? { ...next, teritoriu: undefined } : next)
+  }
+
+  const segments: ScopeSegment[] = []
+
+  /**
+   * The territory is chosen on the matrix's own geography axes — „Judete",
+   * „Localitati", „Macroregiuni, regiuni de dezvoltare si judete" — which list
+   * exactly the places the matrix publishes, regions included. A separate
+   * „Teritoriu" picker beside them chose the same thing twice: on ACC101B it
+   * read Alba while the axis read Arad, and the page filtered on both and drew
+   * nothing. A matrix with no geography axis is national, and says so.
+   */
+  const hasGeographyAxis = dimensions.some((d) => d.type === 'TERRITORIAL')
+  if (!hasGeographyAxis) {
+    segments.push({
+      id: 'teritoriu',
+      text: territoryLabel,
+      defaulted: scope.territoryDefaulted,
+      controlLabel: t`Teritoriu`,
+      control: null,
+    })
+  }
+
+  const unresolvedTypeCodes = new Set(
+    unresolvedDimensions.map(classificationTypeCode),
+  )
+  for (const dimension of dimensions.filter(
+    (d) => d.type === 'CLASSIFICATION' || d.type === 'TERRITORIAL',
+  )) {
+    const typeCode = classificationTypeCode(dimension)
+    const value = scope.classifications.get(typeCode)
+    const controlLabel =
+      dimension.label_ro ?? dimension.classification_type?.name_ro ?? typeCode
+    if (value === undefined && !unresolvedTypeCodes.has(typeCode)) continue
+    segments.push({
+      id: `clasificare-${typeCode}`,
+      // Labels verbatim — blanket lowercasing would mangle acronyms (CAEN…).
+      // The row prints its axis name already; „alege Categorii de unitati
+      // administrative" inside a row labelled „Categorii de unitati
+      // administrative" said it twice.
+      text:
+        value === undefined
+          ? t`alege`
+          : (classificationLabels.get(typeCode) ?? value),
+      defaulted: scope.defaultedTypes.has(typeCode),
+      unresolved: value === undefined,
+      controlLabel,
+      fills: true,
+      control: (options) => (
+        <ClassificationControl
+          datasetCode={dataset.code}
+          selectionToken={selectionToken}
+          dimensions={dimensions}
+          dimension={dimension}
+          search={sourceSearch}
+          pinnedValue={value ?? null}
+          selectedLabel={classificationLabels.get(typeCode) ?? value ?? null}
+          onChange={onSourceChange}
+          options={options}
+        />
+      ),
+    })
+  }
+
+  const unitDimension = dimensionsOfType(dimensions, 'UNIT_OF_MEASURE')[0]
+  if (unitDimension) {
+    // INS names this axis „UM: <unit>"; the value already says which unit.
+    const unitAxisLabel = unitDimension.label_ro?.replace(/^UM\s*:\s*/i, '').trim()
+    segments.push({
+      id: 'unitate',
+      text: unitLabel ?? t`Alege o unitate`,
+      defaulted: scope.unitDefaulted,
+      unresolved: scope.unitCode === null,
+      controlLabel:
+        unitLabel && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitLabel.toLowerCase()
+          ? unitAxisLabel
+          : t`Unitate de măsură`,
+      fills: true,
+      control: (options) => (
+        <UnitControl
+          datasetCode={dataset.code}
+          dimension={unitDimension}
+          selectedCode={scope.unitCode}
+          selectedLabel={unitLabel}
+          onChange={onSourceChange}
+          options={options}
+        />
+      ),
+    })
+  }
+
+  if (scope.periodicity || dataset.periodicity.length > 1) {
+    const periodicities = dataset.periodicity ?? []
+    segments.push({
+      id: 'frecventa',
+      text: scope.periodicity
+        ? periodicityLabel(scope.periodicity)
+        : t`Alege frecvența`,
+      // A cadence nothing resolved is unresolved, not „chosen automatically".
+      defaulted: scope.periodicity !== null && !search.frecventa && periodicities.length > 1,
+      unresolved: scope.periodicity === null,
+      controlLabel: t`Frecvență`,
+      fills: true,
+      width: 'form',
+      control:
+        periodicities.length > 1
+          ? (options) => (
+              <DetailCadenceControl
+                periodicities={periodicities}
+                selected={scope.periodicity}
+                onSelect={(periodicity) => {
+                  if (isInsChartPeriodicity(periodicity))
+                    onChange({ frecventa: periodicity })
+                }}
+                variant={options.variant}
+                onPicked={options.onPicked}
+              />
+            )
+          : null,
+    })
+  }
+
+  if (observedSpan && yearWindow) {
+    segments.push({
+      id: 'interval',
+      text: `${yearWindow.from}–${yearWindow.to}`,
+      defaulted: !yearWindowPinned,
+      controlLabel: t`Interval de ani`,
+      fills: true,
+      width: 'form',
+      control: (options) => (
+        <DetailYearWindowControl
+          span={observedSpan}
+          window={yearWindow}
+          onChange={(patch) => onChange(patch)}
+          variant={options.variant}
+        />
+      ),
+    })
+  }
+
+  return segments
+}
+
+/** The root is the first member INS lists; a page this size has always held it. */
+const ROOT_PAGE_SIZE = 50
+
+/**
+ * The read of a nested axis's root, shared by the prefetch and the pick.
+ * It takes no abort signal on purpose: the pick closes its popover, which
+ * unmounts the prefetch's observer, and a query that honours the signal is
+ * cancelled when its last observer leaves — the pick waiting on it would then
+ * fail and unpin the axis. Fifty rows, read once a day; letting it finish
+ * costs nothing.
+ */
+function childRootQuery(datasetCode: string, childIndex: number) {
+  return {
+    queryKey: statisticsKeys.dimensionRoot(datasetCode, childIndex),
+    queryFn: () =>
+      fetchDimensionValuesPage({
+        datasetCode,
+        dimensionIndex: childIndex,
+        limit: ROOT_PAGE_SIZE,
+        offset: 0,
+      }).then((page) => rootMemberCode(page.nodes)),
+    staleTime: STATISTICS_STALE_TIME.catalog,
+  }
+}
+
+function ClassificationControl({
+  datasetCode,
+  selectionToken,
+  dimensions,
+  dimension,
+  search,
+  pinnedValue,
+  selectedLabel,
+  onChange,
+  options,
+}: {
+  readonly datasetCode: string
+  readonly selectionToken: RefObject<object>
+  readonly dimensions: readonly InsDimension[]
+  readonly dimension: InsDimension
+  readonly search: StatisticsDatasetDetailSearch
+  readonly pinnedValue: string | null
+  readonly selectedLabel: string | null
+  readonly onChange: (patch: DetailSearchPatch) => void
+  readonly options: ScopeControlOptions
+}) {
+  const queryClient = useQueryClient()
+  // Opening a parent axis reads its nested axis's root at once, so a pick
+  // almost always finds it cached and writes in the same tick as the click.
+  const childAxis = childSourceAxis(dimensions, dimension)
+  useQuery({
+    ...childRootQuery(datasetCode, childAxis?.index ?? -1),
+    enabled: childAxis !== null,
+  })
+  if (search.clasificari !== undefined && !Array.isArray(search.clasificari))
+    return (
+      <p>
+        <Trans>
+          Șterge clasificările invalide înainte de a alege alte valori.
+        </Trans>
+      </p>
+    )
+  const typeCode = classificationTypeCode(dimension)
+  const label =
+    dimension.label_ro ?? dimension.classification_type?.name_ro ?? typeCode
+
+  /**
+   * A pick keeps the cell one INS publishes (`source-hierarchy.ts`): a
+   * locality brings its county with it, and a new county sends a pinned
+   * locality back to its root. The root is the nested axis's own member,
+   * read from the axis — prefetched when this panel opens, kept a day. If a
+   * pick still has to wait for it, any other write in the meantime wins and
+   * this one is dropped: its snapshot of the selection is stale by then.
+   */
+  const selectMember = (value: InsDimensionValue) => {
+    const code = value.classification_value?.code
+    if (!code) return
+    const commit = (childReset?: Parameters<typeof pickSourceMember>[0]['childReset']) =>
+      onChange({
+        clasificari: pickSourceMember({
+          pins: search.clasificari,
+          dimensions,
+          dimension,
+          value,
+          childReset,
+        }),
+      })
+
+    const after = childAxisAfterPick({
+      dimensions,
+      dimension,
+      pins: classificationPinMap(search.clasificari),
+      memberCode: code,
+    })
+    if (after.action === 'keep') {
+      commit()
+      return
+    }
+    const rootQuery = childRootQuery(datasetCode, after.child.index)
+    const cached = queryClient.getQueryData<string | null>(rootQuery.queryKey)
+    if (cached !== undefined) {
+      commit({ child: after.child, rootCode: cached })
+      return
+    }
+    const startedFrom = {}
+    selectionToken.current = startedFrom
+    const commitIfCurrent = (rootCode: string | null) => {
+      if (selectionToken.current === startedFrom)
+        commit({ child: after.child, rootCode })
+    }
+    queryClient.fetchQuery(rootQuery).then(commitIfCurrent, () => commitIfCurrent(null))
+  }
+  const clearPin = () =>
+    onChange({ clasificari: editSourcePin(search.clasificari, typeCode, null) })
+
+  const shared = {
+    datasetCode,
+    dimensionIndex: dimension.index,
+    label,
+    selectedKey: pinnedValue,
+    optionKey: (value: InsDimensionValue) =>
+      value.classification_value?.code ?? null,
+    onSelect: selectMember,
+    onClear: clearPin,
+  }
+
+  return options.variant === 'panel' ? (
+    <DetailDimensionPanel
+      {...shared}
+      active
+      onPicked={options.onPicked}
+    />
+  ) : (
+    <DetailDimensionCombobox
+      {...shared}
+      placeholder={t`Alege o valoare`}
+      selectedLabel={selectedLabel}
+    />
+  )
+}
+
+function UnitControl({
+  datasetCode,
+  dimension,
+  selectedCode,
+  selectedLabel,
+  onChange,
+  options,
+}: {
+  readonly datasetCode: string
+  readonly dimension: InsDimension
+  readonly selectedCode: string | null
+  readonly selectedLabel: string | null
+  readonly onChange: (patch: DetailSearchPatch) => void
+  readonly options: ScopeControlOptions
+}) {
+  const shared = {
+    datasetCode,
+    dimensionIndex: dimension.index,
+    label: t`Unitate de măsură`,
+    selectedKey: selectedCode,
+    optionKey: (value: InsDimensionValue) => value.unit?.code ?? null,
+    onSelect: (value: InsDimensionValue) => {
+      if (value.unit?.code !== undefined && value.unit.code !== null) {
+        onChange({ unitate: value.unit.code })
+      }
+    },
+    onClear: () => onChange({ unitate: undefined }),
+  }
+
+  return options.variant === 'panel' ? (
+    <DetailDimensionPanel {...shared} active onPicked={options.onPicked} />
+  ) : (
+    <DetailDimensionCombobox
+      {...shared}
+      placeholder={t`Alege o unitate`}
+      selectedLabel={selectedLabel ?? selectedCode}
+    />
+  )
+}
