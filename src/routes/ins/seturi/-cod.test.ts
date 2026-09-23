@@ -228,6 +228,8 @@ describe('/ins/seturi/$cod loader', () => {
     const route = await importRoute()
     expect(route.head({ loaderData: { scopeKey: 'k', failed: false } }).meta).toEqual([
       { title: 'Set de date INS — Transparenta.eu' },
+      { property: 'og:title', content: 'Set de date INS — Transparenta.eu' },
+      { name: 'twitter:title', content: 'Set de date INS — Transparenta.eu' },
     ])
   })
 })

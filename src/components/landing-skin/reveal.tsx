@@ -185,6 +185,14 @@ export function useRevealOnView(
    * want the same moment ask for it rather than observing again themselves.
    */
   onBlockShown?: (block: Element, delay: number) => void,
+  /**
+   * Whether the blocks the page is waiting for are in the document. A page
+   * that mounts on skeletons (a client-side navigation whose read is still in
+   * flight) renders its `data-reveal` blocks after the first scan; flipping
+   * this re-scans, arming the blocks that have not arrived yet and leaving
+   * the ones that have.
+   */
+  ready: boolean = true,
 ) {
   useEffect(() => {
     const root = rootRef.current
@@ -295,6 +303,8 @@ export function useRevealOnView(
     )
 
     for (const block of root.querySelectorAll(`[${REVEAL_ATTR}]`)) {
+      // A re-scan never replays an arrival: what has arrived stays.
+      if (block.getAttribute(REVEAL_ATTR) === 'shown') continue
       trigger.observe(block)
       safety.observe(block)
     }
@@ -304,5 +314,5 @@ export function useRevealOnView(
       for (const timer of waiting.values()) clearTimeout(timer)
       waiting.clear()
     }
-  }, [rootRef, onBlockShown])
+  }, [rootRef, onBlockShown, ready])
 }

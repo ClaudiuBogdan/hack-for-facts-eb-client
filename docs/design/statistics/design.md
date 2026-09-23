@@ -1433,6 +1433,51 @@ the rail's rows fell back to SIRUTA codes. Now:
   alone; `ResponsivePopover` takes a title, a description and a popover-only
   class.
 
+## 6v. The INS routes answer from the cache, under their own names, per language (2026-09-23)
+
+Four route-level faults the review found across the section, fixed as one
+pattern. The hub's loader read the API directly on every run, so every
+hover over a link to `/ins` (the router preloads on intent) cost four reads
+the click then threw away, because the page's query cache was already
+fresh; the catalog's loader prefetched the rail's tree but never the list,
+so a shared link rendered a skeleton and a client round-trip on every hard
+navigation; `/ins/seturi` and `/ins/comparatii` carried the root's English
+title and description; and the three publicly cached pages varied only on
+`Accept-Encoding` while the server renders them in the language the
+`user-locale` cookie names, so a shared cache could hand a Romanian reader
+the English copy and the page would flip on hydration. Now:
+
+- **In the browser, every INS loader reads under the page's own key and
+  returns at once** (`prefetchQuery` on the page's query options), so a
+  preload fills the cache the click draws from and a fresh cache costs
+  nothing; on the server it fetches directly and seeds the page's first
+  render, so crawlers and shared links get the figures — the hub, the
+  catalog page, the detail series and the territory hub alike. A server
+  read that fails leaves the page's own query to read again and draw its
+  retry.
+- **The catalog page is in the HTML.** `loaderDeps` is the whole address
+  (the page is the address), the server reads that page under the section's
+  deadline, and the lazy route seeds the query only when the read was for
+  the address on screen.
+- **Every INS route names itself:** „Seturi de date INS", „Compară
+  teritorii · Statistici INS", each with its description, in the reader's
+  language — in the tab, in search results and in the card a shared link
+  unfurls into (`og:*` and `twitter:*`, which the root otherwise fills
+  with the site's English defaults), through one `insPageMeta`.
+- **A client-side arrival still counts up.** In the browser the hub now
+  mounts on skeletons while its read runs, and its figures' blocks appear
+  after the reveal observer's first scan; the hook re-scans once the hub is
+  there, arming what has not arrived and never replaying what has.
+- **The public cache headers vary on `Cookie`** as well as
+  `Accept-Encoding` for the hub, the detail and the territory pages: the
+  server renders them in the language (and theme) the cookies name. It is
+  the route-level answer, and a blunt one — a cache that honours it keys on
+  the whole header, so only cookie-less requests (first visits, crawlers,
+  link unfurlers) would share a copy. Today nothing caches this HTML: the
+  edge answers `cf-cache-status: DYNAMIC`. Should an HTML cache rule be
+  added, keying it on `user-locale` (or bypassing it when cookies are
+  present) is the infrastructure decision that stays open.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

@@ -100,6 +100,26 @@ function Page() {
   )
 }
 
+/** A page whose second band renders only once its content is there, as a page mounted on skeletons does. */
+function LatePage({ ready }: { readonly ready: boolean }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useRevealOnView(ref, undefined, ready)
+  return (
+    <div ref={ref}>
+      <section data-testid="band">
+        <h2 data-reveal data-testid="heading">
+          heading
+        </h2>
+        {ready ? (
+          <p data-reveal data-testid="late">
+            figures
+          </p>
+        ) : null}
+      </section>
+    </div>
+  )
+}
+
 const blocks = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>('[data-reveal]'))
 const states = (el: HTMLElement) => blocks(el).map((b) => b.getAttribute('data-reveal'))
 const delays = (el: HTMLElement) => blocks(el).map((b) => b.style.getPropertyValue('--tpz-reveal-delay'))
@@ -260,6 +280,23 @@ describe('reveal on view', () => {
     // defence, not the only one.
     expect(observers).toEqual([])
     expect(states(getByTestId('band'))).toEqual([UNTOUCHED, UNTOUCHED, UNTOUCHED])
+  })
+
+  it('arms the blocks that arrive with late content, and never replays one that has arrived', () => {
+    const { getByTestId, rerender } = render(<LatePage ready={false} />)
+    const heading = getByTestId('heading')
+    report([[heading, true]])
+    expect(heading.getAttribute('data-reveal')).toBe('shown')
+
+    rerender(<LatePage ready />)
+    const late = getByTestId('late')
+    // A second pair of observers, watching the new block alone.
+    expect(observers).toHaveLength(4)
+    expect(observers[TRIGGER + 2].observed).toEqual([late])
+    expect(observers[SAFETY + 2].observed).toEqual([late])
+    reportTo(TRIGGER + 2, [[late, false]])
+    expect(late.getAttribute('data-reveal')).toBe('pending')
+    expect(heading.getAttribute('data-reveal')).toBe('shown')
   })
 
   it('keys the hidden state on a value the server never emits', () => {

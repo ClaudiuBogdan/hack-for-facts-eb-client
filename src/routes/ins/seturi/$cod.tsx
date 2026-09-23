@@ -11,6 +11,7 @@ import {
   resolveDatasetSeries,
   type ResolvedDatasetSeries,
 } from '@/features/statistics/lib/detail-series-resolution'
+import { insPageMeta } from '@/features/statistics/lib/ins-head'
 import { publishedTextExcerpt } from '@/features/statistics/lib/published-text'
 import { detailBootstrapEntity } from '@/features/statistics/lib/source-selection'
 import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
@@ -60,8 +61,8 @@ export type StatisticsDatasetDetailLoaderData = {
  */
 export const Route = createFileRoute('/ins/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
-  // Canonical uppercase codes: insDataset(code:) is exact-match, and one URL
-  // per dataset beats two cache entries. The selection travels with it — a
+  // Canonical uppercase codes: the API resolves either case, and one URL per
+  // dataset beats two cache entries. The selection travels with it — a
   // redirect without `search` lands on the empty one.
   beforeLoad: ({ params, search }) => {
     const canonical = params.cod.trim().toUpperCase()
@@ -87,7 +88,7 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
     deps,
     abortController,
   }): Promise<StatisticsDatasetDetailLoaderData> => {
-    // insDataset(code:) is exact-match, no trim, no uppercase — normalize once.
+    // The same canonical form as the redirect above, for a loader run it did not precede.
     const code = params.cod.trim().toUpperCase()
     const scopeKey = detailScopeKey(deps)
 
@@ -148,6 +149,8 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 600,
           staleWhileRevalidateSeconds: 3600,
+          // The document is rendered in the language the locale cookie names.
+          vary: ['Accept-Encoding', 'Cookie'],
         }),
   head: ({ loaderData }) => {
     const data = loaderData as StatisticsDatasetDetailLoaderData | undefined
@@ -156,7 +159,7 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
       // Reached on a client-side navigation, where the dataset is still in
       // flight — a placeholder, not "not found"; the page corrects the tab
       // title once its query lands. The server path always has the dataset.
-      return { meta: [{ title: `${t`Set de date INS`} — Transparenta.eu` }] }
+      return { meta: insPageMeta({ title: `${t`Set de date INS`} — Transparenta.eu` }) }
     }
     // Words only: TEMPO ships anchors inside a few definitions, and a
     // description cut mid-tag is markup in a search snippet.
@@ -164,12 +167,10 @@ export const Route = createFileRoute('/ins/seturi/$cod')({
       (dataset.definition_ro ? publishedTextExcerpt(dataset.definition_ro) : '') ||
       t`Serie de date INS Tempo cu valori pe teritorii și perioade.`
     return {
-      meta: [
-        {
-          title: `${dataset.name_ro ?? dataset.code} (${dataset.code}) — Transparenta.eu`,
-        },
-        { name: 'description', content: description },
-      ],
+      meta: insPageMeta({
+        title: `${dataset.name_ro ?? dataset.code} (${dataset.code}) — Transparenta.eu`,
+        description,
+      }),
     }
   },
 })

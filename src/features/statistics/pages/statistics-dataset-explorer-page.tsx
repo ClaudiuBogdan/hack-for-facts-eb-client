@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import type { StatisticsDatasetExplorerSearch } from '@/schemas/statistics'
+import type { StatisticsDatasetExplorerSearch, StatisticsDatasetPage } from '@/schemas/statistics'
 import { DatasetExplorerResults } from '../components/dataset-explorer-results'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import { DatasetExplorerFilterControls } from '../components/filters/dataset-explorer-filter-controls'
@@ -22,6 +22,8 @@ import { clearedExplorerSearch, countActiveExplorerFilters } from '../lib/explor
 
 type Props = {
   readonly search: StatisticsDatasetExplorerSearch
+  /** The server's read of this address's page, for the first render. */
+  readonly initialPage?: StatisticsDatasetPage
 }
 
 const SEARCH_INPUT_ID = 'dataset-explorer-search'
@@ -34,10 +36,10 @@ const SEARCH_INPUT_ID = 'dataset-explorer-search'
  * catalog-only ones side by side, each row carrying its own status badge.
  * The page opens under the INS hub, so it starts with the way back to it.
  */
-export function StatisticsDatasetExplorerPage({ search }: Props) {
+export function StatisticsDatasetExplorerPage({ search, initialPage }: Props) {
   const navigate = useNavigate()
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const explorerQuery = useDatasetExplorer(search)
+  const explorerQuery = useDatasetExplorer(search, initialPage)
   const catalogQuery = useStatisticsLandingCatalog()
   const catalog = catalogQuery.data
   // 340 nodes, two consumers, no compiler in this build: build once per read.

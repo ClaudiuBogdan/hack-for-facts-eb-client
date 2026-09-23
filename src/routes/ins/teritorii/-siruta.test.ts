@@ -114,7 +114,13 @@ describe('/ins/teritorii/$siruta loader', () => {
     const route = await importRoute()
     const { meta } = route.head({ loaderData: { hub: territoryHubFixture('54975'), failed: false } })
     expect(meta[0]).toEqual({ title: 'Cluj-Napoca · Statistici INS — Transparenta.eu' })
-    expect(String(meta[1]?.content)).toContain('Cluj-Napoca')
-    expect(route.head({ loaderData: { failed: false } }).meta).toEqual([{ title: 'Statistici teritoriu — Transparenta.eu' }])
+    // The card a shared link unfurls into names the place too, not the site.
+    expect(meta).toContainEqual({ property: 'og:title', content: 'Cluj-Napoca · Statistici INS — Transparenta.eu' })
+    expect(String(meta.find((tag) => tag.property === 'og:description')?.content)).toContain('Cluj-Napoca')
+    expect(route.head({ loaderData: { failed: false } }).meta).toEqual([
+      { title: 'Statistici teritoriu — Transparenta.eu' },
+      { property: 'og:title', content: 'Statistici teritoriu — Transparenta.eu' },
+      { name: 'twitter:title', content: 'Statistici teritoriu — Transparenta.eu' },
+    ])
   })
 })

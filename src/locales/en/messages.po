@@ -1248,7 +1248,7 @@ msgstr "01 / What you will find here"
 #~ msgid "01 / Domenii de activitate"
 #~ msgstr "01 / Fields of activity"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:198
+#: src/features/statistics/pages/statistics-hub-page.tsx:200
 msgid "01 / Indicatori naționali"
 msgstr "01 / National indicators"
 
@@ -1265,7 +1265,7 @@ msgid "02 / An de an"
 msgstr "02 / Year by year"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:309
-#: src/features/statistics/pages/statistics-hub-page.tsx:229
+#: src/features/statistics/pages/statistics-hub-page.tsx:231
 msgid "02 / Pe județe"
 msgstr "02 / By county"
 
@@ -1277,7 +1277,7 @@ msgstr "02 / Provenance"
 msgid "03 / Din {firstYear} până azi"
 msgstr "03 / From {firstYear} to today"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:291
+#: src/features/statistics/pages/statistics-hub-page.tsx:293
 msgid "03 / Din {since} până azi"
 msgstr "03 / From {since} to today"
 
@@ -1294,7 +1294,7 @@ msgstr "03 / People"
 #~ msgstr "03 / Start an investigation"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:388
-#: src/features/statistics/pages/statistics-hub-page.tsx:344
+#: src/features/statistics/pages/statistics-hub-page.tsx:346
 msgid "04 / Analize"
 msgstr "04 / Analyses"
 
@@ -4659,7 +4659,7 @@ msgstr "Ce s-a întâmplat cu acest act"
 #~ msgid "Ce s-a schimbat<0/>din {0} încoace"
 #~ msgstr "Ce s-a schimbat<0/>din {0} încoace"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:293
+#: src/features/statistics/pages/statistics-hub-page.tsx:295
 msgid "Ce s-a schimbat<0/>din {since} încoace"
 msgstr "What has changed<0/>since {since}"
 
@@ -5063,7 +5063,7 @@ msgstr "Cifre de ansamblu"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:225
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:243
-#: src/features/statistics/pages/statistics-hub-page.tsx:171
+#: src/features/statistics/pages/statistics-hub-page.tsx:173
 msgid "Cifre-cheie"
 msgstr "Key figures"
 
@@ -5080,7 +5080,7 @@ msgstr "Cifrele de mai sus sunt măsurate pe baza de date de producție la {0}."
 #~ msgid "Cifrele de mai sus vin dintr-un agregat calculat periodic pe server, nu la fiecare vizită."
 #~ msgstr "The figures above come from an aggregate computed periodically on the server, not on every visit."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:275
+#: src/features/statistics/pages/statistics-hub-page.tsx:277
 msgid "Cifrele INS ale oricărei localități, lângă cele ale județului și ale țării."
 msgstr "INS figures for any locality, beside its county's and the country's."
 
@@ -5108,7 +5108,7 @@ msgstr "The figures did not load."
 msgid "Cifrele oficiale ale României, de la Institutul Național de Statistică: inflație, salarii, șomaj, populație, locuințe și turism, pentru țară, județe și fiecare localitate."
 msgstr "Romania's official figures from the National Institute of Statistics: inflation, pay, unemployment, population, housing and tourism, for the country, its counties and every locality."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:131
+#: src/features/statistics/pages/statistics-hub-page.tsx:133
 msgid "Cifrele oficiale<0/>ale României"
 msgstr "Romania's<0/>official figures"
 
@@ -5718,8 +5718,8 @@ msgstr "Compare {name}"
 
 #: src/features/statistics/components/detail-body.tsx:307
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:336
-#: src/features/statistics/pages/statistics-hub-page.tsx:152
-#: src/routes/ins/comparatii/index.tsx:9
+#: src/features/statistics/pages/statistics-hub-page.tsx:154
+#: src/routes/ins/comparatii/index.tsx:10
 msgid "Compară teritorii"
 msgstr "Compare territories"
 
@@ -7516,7 +7516,7 @@ msgid "days"
 msgstr "days"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:388
-#: src/features/statistics/pages/statistics-hub-page.tsx:344
+#: src/features/statistics/pages/statistics-hub-page.tsx:346
 msgid "De aici poți începe"
 msgstr "Start from here"
 
@@ -7533,7 +7533,7 @@ msgstr "De la"
 msgid "De la data apariției în Monitorul Oficial, un act produce efecte."
 msgstr "De la data apariției în Monitorul Oficial, un act produce efecte."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:138
+#: src/features/statistics/pages/statistics-hub-page.tsx:140
 msgid "De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate."
 msgstr "From the National Institute of Statistics, for the country, its counties and every locality."
 
@@ -7587,7 +7587,7 @@ msgstr "December"
 msgid "decembrie"
 msgstr "December"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:326
+#: src/features/statistics/pages/statistics-hub-page.tsx:328
 msgid "Decese peste nașteri"
 msgstr "Deaths above births"
 
@@ -8131,7 +8131,7 @@ msgstr "Din {awarded} atribuiți în această selecție, {withheld} ({share}) re
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:301
+#: src/features/statistics/pages/statistics-hub-page.tsx:303
 msgid "Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut."
 msgstr "Every year since {naturalDecreaseSince}, more people have died than were born."
 
@@ -12359,7 +12359,7 @@ msgstr "Indicatorii AMEPIP sunt afișați fără scalare în client și nu înlo
 msgid "Indicatorii financiari sunt in curs de incarcare"
 msgstr "Indicatorii financiari sunt in curs de incarcare"
 
-#: src/routes/ins/teritorii/$siruta.tsx:82
+#: src/routes/ins/teritorii/$siruta.tsx:81
 msgid "Indicatorii INS Tempo pentru {where}: populație, salariați, șomaj, locuințe și seriile lor istorice, lângă județ și țară."
 msgstr "INS Tempo indicators for {where}: population, employees, unemployment, dwellings and their series over time, beside the county and the country."
 
@@ -12376,7 +12376,7 @@ msgstr "The national strategy's indicators, to 2020"
 #~ msgstr "Indicatorul a returnat mai multe observații decât putem afișa. Fixează mai multe dimensiuni sau alege mai puține teritorii."
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:313
-#: src/features/statistics/pages/statistics-hub-page.tsx:233
+#: src/features/statistics/pages/statistics-hub-page.tsx:235
 msgid "Indicatorul de pe hartă"
 msgstr "Indicator on the map"
 
@@ -12604,15 +12604,15 @@ msgstr "INS frequency"
 msgid "INS indicators are only available for UATs."
 msgstr "INS indicators are only available for UATs."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:182
+#: src/features/statistics/pages/statistics-hub-page.tsx:184
 msgid "INS nu a publicat încă aceste cifre."
 msgstr "INS has not published these figures yet."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:215
+#: src/features/statistics/pages/statistics-hub-page.tsx:217
 msgid "INS nu a publicat încă aceste serii."
 msgstr "INS has not published these series yet."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:255
+#: src/features/statistics/pages/statistics-hub-page.tsx:257
 msgid "INS nu a publicat încă valorile pe județe ale acestui indicator."
 msgstr "INS has not published this indicator's county values yet."
 
@@ -13184,7 +13184,7 @@ msgstr "Changing counties: Ilfov vs Teleorman"
 msgid "Județele"
 msgstr "Counties"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:357
+#: src/features/statistics/pages/statistics-hub-page.tsx:359
 msgid "Județele care pierd populație"
 msgstr "The counties losing people"
 
@@ -14166,7 +14166,7 @@ msgstr "Localitate {0}"
 msgid "localitate necunoscută"
 msgstr "localitate necunoscută"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:272
+#: src/features/statistics/pages/statistics-hub-page.tsx:274
 msgid "Localitatea ta"
 msgstr "Your locality"
 
@@ -15515,11 +15515,11 @@ msgstr "Narrow the paginated record list."
 msgid "Născuți vii"
 msgstr "Live births"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:317
+#: src/features/statistics/pages/statistics-hub-page.tsx:319
 msgid "Născuți vii și decedați, pe an"
 msgstr "Live births and deaths, by year"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:325
+#: src/features/statistics/pages/statistics-hub-page.tsx:327
 msgid "Nașteri peste decese"
 msgstr "Births above deaths"
 
@@ -18585,7 +18585,7 @@ msgstr "PDF oficial disponibil"
 msgid "Pe cine privește"
 msgstr "Pe cine privește"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:162
+#: src/features/statistics/pages/statistics-hub-page.tsx:164
 msgid "Pe domenii"
 msgstr "By domain"
 
@@ -20177,7 +20177,7 @@ msgstr "Unemployment rate"
 msgid "Rata șomajului înregistrat"
 msgstr "Registered unemployment rate"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:375
+#: src/features/statistics/pages/statistics-hub-page.tsx:377
 msgid "Rata șomajului înregistrat din 1992 până azi, pentru țară și pentru fiecare județ."
 msgstr "The registered unemployment rate from 1992 to today, for the country and for every county."
 
@@ -21248,7 +21248,7 @@ msgstr "Romania in figures"
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Romania spending heatmap - Transparenta.eu"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:200
+#: src/features/statistics/pages/statistics-hub-page.tsx:202
 msgid "România,<0/>an de an"
 msgstr "Romania,<0/>year by year"
 
@@ -21443,7 +21443,7 @@ msgstr "Sari la textul ședinței"
 #: src/features/landing/components/landing-page.tsx:280
 #: src/features/ngos/hub/ngo-hub-page.tsx:193
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:201
-#: src/features/statistics/pages/statistics-hub-page.tsx:145
+#: src/features/statistics/pages/statistics-hub-page.tsx:147
 msgid "Sau mergi direct la"
 msgstr "Or go straight to"
 
@@ -21575,7 +21575,7 @@ msgstr "Scrutin negasit"
 #: src/features/landing/components/landing-page.tsx:278
 #: src/features/ngos/hub/ngo-hub-page.tsx:191
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:199
-#: src/features/statistics/pages/statistics-hub-page.tsx:143
+#: src/features/statistics/pages/statistics-hub-page.tsx:145
 msgid "Scurtături"
 msgstr "Shortcuts"
 
@@ -22464,7 +22464,7 @@ msgstr "The series ends with the period “{discontinuedAfter}”."
 #~ msgid "Seria selectată"
 #~ msgstr "Selected series"
 
-#: src/routes/ins/seturi/$cod.tsx:167
+#: src/routes/ins/seturi/$cod.tsx:168
 msgid "Serie de date INS Tempo cu valori pe teritorii și perioade."
 msgstr "An INS Tempo data series with values by territory and period."
 
@@ -22652,7 +22652,7 @@ msgstr "Dataset"
 msgid "Set de date fără observații încărcate"
 msgstr "Dataset without loaded observations"
 
-#: src/routes/ins/seturi/$cod.tsx:161
+#: src/routes/ins/seturi/$cod.tsx:162
 msgid "Set de date INS"
 msgstr "INS dataset"
 
@@ -22714,7 +22714,7 @@ msgstr "datasets"
 #~ msgstr "Seturi de date cu observații"
 
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:98
-#: src/routes/ins/seturi/index.tsx:55
+#: src/routes/ins/seturi/index.tsx:57
 msgid "Seturi de date INS"
 msgstr "INS datasets"
 
@@ -23202,7 +23202,7 @@ msgstr "Solicită datele lipsă sau blocate"
 msgid "Soluționat"
 msgstr "Soluționat"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:372
+#: src/features/statistics/pages/statistics-hub-page.tsx:374
 msgid "Șomajul, lună de lună"
 msgstr "Unemployment, month by month"
 
@@ -23314,7 +23314,7 @@ msgstr "Sorted by reported call-off value for the current filters — execution 
 msgid "Sosiri turiști"
 msgstr "Tourist arrivals"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:390
+#: src/features/statistics/pages/statistics-hub-page.tsx:392
 msgid "Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate."
 msgstr "Arrivals at places to stay, 2018–2025, for the country or for a locality."
 
@@ -23441,7 +23441,7 @@ msgstr "Split VAT"
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 msgstr "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:324
+#: src/features/statistics/pages/statistics-hub-page.tsx:326
 msgid "Spor natural"
 msgstr "Natural change"
 
@@ -23627,7 +23627,7 @@ msgstr "Social statistics"
 msgid "Statistici"
 msgstr "Statistics"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:126
+#: src/features/statistics/pages/statistics-hub-page.tsx:128
 msgid "Statistici / INS"
 msgstr "Statistics / INS"
 
@@ -23644,13 +23644,13 @@ msgstr "Usage statistics"
 #: src/features/landing/lib/search-filters.ts:138
 #: src/features/statistics/components/hub/hub-dataset-search.tsx:22
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:84
-#: src/routes/ins/comparatii/index.tsx:9
-#: src/routes/ins/index.tsx:69
-#: src/routes/ins/teritorii/$siruta.tsx:79
+#: src/routes/ins/comparatii/index.tsx:10
+#: src/routes/ins/index.tsx:71
+#: src/routes/ins/teritorii/$siruta.tsx:80
 msgid "Statistici INS"
 msgstr "INS statistics"
 
-#: src/routes/ins/teritorii/$siruta.tsx:74
+#: src/routes/ins/teritorii/$siruta.tsx:75
 msgid "Statistici teritoriu"
 msgstr "Territory statistics"
 
@@ -24427,7 +24427,7 @@ msgstr "Telecomunicații și digital"
 #~ msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
 #~ msgstr "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:360
+#: src/features/statistics/pages/statistics-hub-page.tsx:362
 msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an."
 msgstr "Teleorman, Brăila, Tulcea, Olt and Hunedoara, year by year."
 
@@ -25444,7 +25444,7 @@ msgstr "All results in the registry"
 msgid "Toate setările"
 msgstr "All settings"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:149
+#: src/features/statistics/pages/statistics-hub-page.tsx:151
 msgid "Toate seturile de date"
 msgstr "All datasets"
 
@@ -25903,7 +25903,7 @@ msgstr "Try once more before moving on."
 msgid "Turism"
 msgstr "Tourism"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:387
+#: src/features/statistics/pages/statistics-hub-page.tsx:389
 msgid "Turismul înainte și după pandemie"
 msgstr "Tourism before and after the pandemic"
 
@@ -26098,7 +26098,7 @@ msgid "Un exemplu, ca să vezi cum arată. Schimbă indicatorul sau teritoriile 
 msgstr "An example, to show what it looks like. Change the indicator or the territories and the comparison becomes yours."
 
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:339
-#: src/routes/ins/comparatii/index.tsx:12
+#: src/routes/ins/comparatii/index.tsx:11
 msgid "Un indicator INS pentru până la șase locuri — localități, județe sau toată țara: cum stau acum, cum s-au schimbat și unde se află printre județe."
 msgstr "One INS indicator for up to six places — localities, counties or the whole country: where they stand now, how they changed and where they sit among the counties."
 
@@ -26142,7 +26142,7 @@ msgid "Unde a fost publicat"
 msgstr "Unde a fost publicat"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:310
-#: src/features/statistics/pages/statistics-hub-page.tsx:230
+#: src/features/statistics/pages/statistics-hub-page.tsx:232
 msgid "Unde stă județul tău"
 msgstr "Where your county stands"
 

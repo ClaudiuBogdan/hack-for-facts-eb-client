@@ -384,9 +384,9 @@ export const INS_LATEST_VALUE_FIELDS = `
  * Landing POST 2 — catalog honesty counts + per-theme counts, all as aliased
  * 1-row probes (`totalCount` is authoritative; nodes are discarded).
  *
- * `catalog` passes `dataStatus: []` — ANY value (including the empty list)
- * switches the server to the full INS Tempo catalog; omitting it counts only
- * fact-loaded datasets.
+ * `catalog` passes `dataStatus: []`, which asks for the full INS Tempo
+ * catalog; with every matrix loaded (1,916 of 1,916 on 2026-09-23) it counts
+ * the same as omitting it, and stays explicit for when that is no longer so.
  */
 export const STATISTICS_LANDING_CATALOG_QUERY = `
   query StatisticsLandingCatalog {

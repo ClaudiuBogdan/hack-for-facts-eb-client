@@ -3,6 +3,7 @@ import { t } from '@lingui/core/macro'
 import { fetchStatisticsTerritoryHub } from '@/features/statistics/api/statistics-api'
 import { prefetchStatisticsTerritoryHub } from '@/features/statistics/hooks/use-statistics'
 import { comparisonPlaceName } from '@/features/statistics/lib/comparison-format'
+import { insPageMeta } from '@/features/statistics/lib/ins-head'
 import { insLoaderSignal } from '@/features/statistics/lib/ssr-deadline'
 import { isAbortError, isGraphQLTimeout } from '@/lib/graphql/graphql-client'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
@@ -62,6 +63,8 @@ export const Route = createFileRoute('/ins/teritorii/$siruta')({
       : createPublicPageCacheHeaders({
           sharedMaxAgeSeconds: 600,
           staleWhileRevalidateSeconds: 3600,
+          // The document is rendered in the language the locale cookie names.
+          vary: ['Accept-Encoding', 'Cookie'],
         }),
   head: ({ loaderData }) => {
     const hub = (loaderData as StatisticsTerritoryLoaderData | undefined)?.hub
@@ -69,17 +72,14 @@ export const Route = createFileRoute('/ins/teritorii/$siruta')({
     if (!place) {
       // A client-side navigation, where the place is still in flight — a
       // placeholder the page corrects once its query lands.
-      return { meta: [{ title: `${t`Statistici teritoriu`} — Transparenta.eu` }] }
+      return { meta: insPageMeta({ title: `${t`Statistici teritoriu`} — Transparenta.eu` }) }
     }
     const where = hub?.identity.countyName ? `${place.name}, ${hub.identity.countyName}` : place.name
     return {
-      meta: [
-        { title: `${place.name} · ${t`Statistici INS`} — Transparenta.eu` },
-        {
-          name: 'description',
-          content: t`Indicatorii INS Tempo pentru ${where}: populație, salariați, șomaj, locuințe și seriile lor istorice, lângă județ și țară.`,
-        },
-      ],
+      meta: insPageMeta({
+        title: `${place.name} · ${t`Statistici INS`} — Transparenta.eu`,
+        description: t`Indicatorii INS Tempo pentru ${where}: populație, salariați, șomaj, locuințe și seriile lor istorice, lângă județ și țară.`,
+      }),
     }
   },
 })

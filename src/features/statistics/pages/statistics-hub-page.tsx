@@ -62,7 +62,6 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const { i18n } = useLingui()
   const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement>(null)
-  useRevealOnView(rootRef, startArrivalEffects)
   // The count-up driver is module state; an unmount mid-flight would leave it
   // ticking against nodes that are no longer in the document.
   useEffect(() => () => stopCounting(), [])
@@ -72,6 +71,9 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   // Should that read fail, the figures the server did render stay, with the
   // sections it could not read as the retries they are.
   const hub = query.data ?? (query.isError && initialHub?.nativeContract === 'hub-v1' ? initialHub : undefined)
+  // A client-side navigation mounts on skeletons; the figures' blocks arrive
+  // with the read, and are armed — and counted up — then.
+  useRevealOnView(rootRef, startArrivalEffects, hub !== undefined)
   const pending = query.isPending || (query.isPlaceholderData && (query.isFetching || query.isPaused))
   const retry = () => void query.refetch()
   const labelOf = useIndicatorLabel()

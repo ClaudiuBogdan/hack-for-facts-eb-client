@@ -23,11 +23,16 @@ function explorerHashSource(search: StatisticsDatasetExplorerSearch) {
   }
 }
 
+/** The cache key of one catalog page: the address's filters and page, in canonical order. */
+export function explorerPageKey(search: StatisticsDatasetExplorerSearch): string {
+  return generateHash(JSON.stringify(explorerHashSource(search)))
+}
+
 export const datasetExplorerQueryOptions = (
   search: StatisticsDatasetExplorerSearch,
 ) =>
   queryOptions<StatisticsDatasetPage>({
-    queryKey: statisticsKeys.explorerPage(generateHash(JSON.stringify(explorerHashSource(search)))),
+    queryKey: statisticsKeys.explorerPage(explorerPageKey(search)),
     queryFn: ({ signal }) => fetchDatasetPage(search, {}, signal),
     // A refine keeps the rows it has, dimmed, until the next page lands: the
     // count, the pager and the reader's focus stay where they are.
@@ -36,7 +41,13 @@ export const datasetExplorerQueryOptions = (
     retry: statisticsRetry,
   })
 
-/** A page of the INS dataset catalog for the current explorer URL state. */
-export function useDatasetExplorer(search: StatisticsDatasetExplorerSearch) {
-  return useQuery(datasetExplorerQueryOptions(search))
+/**
+ * A page of the INS dataset catalog for the current explorer URL state,
+ * seeded from the route loader's server read when it was for this address.
+ */
+export function useDatasetExplorer(search: StatisticsDatasetExplorerSearch, initialData?: StatisticsDatasetPage) {
+  return useQuery({
+    ...datasetExplorerQueryOptions(search),
+    ...(initialData ? { initialData } : {}),
+  })
 }
