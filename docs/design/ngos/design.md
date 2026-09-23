@@ -67,7 +67,7 @@ sources — these are advanced features named for later.
 
 | Route | Purpose | Feature file |
 | --- | --- | --- |
-| `/ong-uri` | Landing: explainer, source-coverage matrix, search, entry cards | `ngo-landing-source-coverage.md` |
+| `/ong-uri` | Landing: registry search, figures, counties, years (superseded by §12) | `ngo-landing-source-coverage.md` |
 | `/ong-uri/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
 | `/ong-uri/servicii` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
 | `/ong-uri/sursa/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
@@ -434,3 +434,89 @@ None block design or mock-first implementation. Non-blocking product decisions a
 recorded in the relevant feature files (name-only public visibility timing; ANAF
 indicator selection/sequencing; whether the link-review queue is public-expert or
 staff-only).
+
+## 12. The landing says what the registry holds, not how it was loaded (2026-09-23)
+
+The landing spent its first screen on the pipeline — the production run ID,
+rows loaded, a matrix of source snapshots, QA sample profiles, "next surfaces"
+— and searched by CUI only. None of it answers what a reader brings to NGOs:
+how many there are, where, what kind, whether a given one still exists. It
+now takes the INS hub's composition and visual language
+(`docs/design/statistics/design.md` §6, §6n, §6p, §6q), one band per idea:
+
+- **Hero** — „ONG-urile din România", one sentence naming the Ministry of
+  Justice's registry, and the **registry search**: by name (the registry's
+  own `contains` filter, diacritic-insensitive) or by registry number
+  (`3446/A/2026`, exact). Six rows, each opening the registry entry, with the
+  legal form, the place and any status other than „Înregistrat" said on the
+  row; Enter opens the registry list for the query. The site's universal index
+  is not used: its NGO documents come from other sources, and most have no
+  registry entry to open (Salvați Copiii and Crucea Roșie branches returned
+  no profile on 2026-09-23). Beside it, the **legal forms** with count, share
+  and an inline fill, each a filtered registry link.
+- **Figures band** — registered NGOs (status „Înregistrat"), those new in
+  2025 (against 2024), NGOs per 10,000 residents, and those the registry
+  marks as of public utility. Each opens the registry filtered, or its band on
+  this page; without a registry, public utility is not a link.
+- **01 / Pe județe** — the INS hub's county map and ranking (readout, equal-
+  count ramp on the `choropleth` tokens, codes at each county's pole of
+  inaccessibility, first tap shows / second opens, legend with bounds and the
+  national tick), over three layers in `?indicator=`: per 10,000 residents
+  (default: Bucharest 128.7, Cluj 114.0, Harghita 113.8 against Olt 25.2),
+  registered, new in 2025. A county opens its registered NGOs in the
+  registry; without a registry a county is still focusable and read by the
+  readout. Each layer names its entries with no county (3,795 registered,
+  30 of 2025's new ones) and says they count only in the national figure —
+  the density's 68.4 includes them, a placed-only one would be 66.4.
+- **02 / An de an** — new entries per year, 2001–2025, as columns with the
+  hub's reading (pointer, finger, arrow keys; a slider to a screen reader),
+  the lede computed from the data („În 2025 au intrat în registru 4.331 de
+  organizații noi, câte 11,9 pe zi."), and every entry by status in the order
+  the law runs them: dissolved, in liquidation, struck off.
+- **A year is the one in the registry number** (`3446/A/2026`), not the
+  registration date. The first build counted dates and called them
+  foundings; the review found 952 of the 5,040 entries dated 2025 carry
+  numbers from 1994–2024. The date moves when an entry changes (6,530 dated
+  2018 against 3,332 numbers of 2018), the number is kept: 4,088 of the 4,331
+  numbers of 2025 are dated 2025, and the 1990s organisations taken into the
+  registry in 2000 (12,067 entries on 16 August 2000 alone) kept their 1990s
+  numbers. The chart starts in 2001 and its caption says both things. No
+  claim of founding is made; „noi în registru" is what the number proves.
+  A year's numbers keep arriving for a few weeks after it ends (243 of
+  2025's are dated January–February 2026), so the latest year is read once
+  the export reaches past it and settles to within about 1%. All counts here
+  are after the 104 repeated rows are dropped.
+- **Search** — Enter opens a highlighted row only while the list answers the
+  field; otherwise it opens the registry list for what is typed. A failed
+  read stops the spinner and offers the retry.
+- **Sources** — one line: the registry and its export date, INS for the
+  population.
+
+**Data kept in the client.** The API serves the registry 100 records a page
+with no counts, so the figures are computed once from a full read
+(`scripts/capture-ngo-registry.mjs`, 1,414 pages, ~8 minutes) and INS POP105A
+at 1 January 2025 (`scripts/summarize-ngo-registry.mjs`), and kept in
+`src/features/ngos/hub/registry-summary.ts`. The route's loader imports it, so
+it travels with this page and not in the entry bundle (4.3 KB, 1.5 KB
+gzipped, measured there before the move). The page makes no API request of
+its own: on a production build it answered in ~22 ms, LCP 392 ms (the h1),
+CLS 0; it caches publicly for an hour. Counts
+are of registry entries: rows repeated field for field (104 of 141,330) are
+dropped, and nothing further is claimed about distinct organisations or
+national completeness. A unit test holds every refresh to the summary's
+arithmetic.
+
+**Registry flag.** `VITE_NGO_REGISTRY_ENABLED` still means "this deployment's
+API serves the registry": without it the page keeps its figures, map and
+chart, and drops the search and every registry link.
+
+**Removed**: the source-coverage matrix and its schema, fetchers, hook and
+mock; the pipeline tiles; the CUI-only search; the sample profiles and the
+"next surfaces" card. The mock services page is no longer linked from the
+landing.
+
+**Follow-ups, not in scope.** The county map and ranking duplicate the INS
+hub's interaction code over a different data shape; they should become one
+shared component once the INS comparisons work (`HubCountyMap` selection mode)
+lands. The INS hub's two-line headings lose their space in the heading's text
+(„Cifrele oficialeale României"); this page adds it.

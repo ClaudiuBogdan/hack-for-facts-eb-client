@@ -1,10 +1,8 @@
 import {
-  domainCoverageSchema,
   ngoProfileSchema,
   publicFundingSchema,
   serviceDiscoveryResultSchema,
   snapshotProvenanceSchema,
-  type DomainCoverage,
   type NgoProfile,
   type PublicFunding,
   type ServiceDiscoveryResult,
@@ -15,7 +13,6 @@ import {
   getMockPublicFunding,
   getMockSnapshotProvenance,
   mockServiceDiscovery,
-  ngoDomainCoverage,
 } from '../mocks/ngo-mocks'
 
 /** Simulated short network latency for mock-first realism. */
@@ -30,11 +27,6 @@ export async function fetchNgoProfileMock(
   const profile = getMockNgoProfile(cui)
   if (profile === null) return null
   return ngoProfileSchema.parse(profile)
-}
-
-export async function fetchNgoDomainCoverageMock(): Promise<DomainCoverage> {
-  await delay(90)
-  return domainCoverageSchema.parse(ngoDomainCoverage)
 }
 
 export async function fetchNgoServiceDiscoveryMock(): Promise<ServiceDiscoveryResult> {

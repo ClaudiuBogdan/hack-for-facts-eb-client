@@ -1,5 +1,4 @@
 import type {
-  DomainCoverage,
   NgoProfile,
   PublicFunding,
   ServiceDiscoveryResult,
@@ -7,14 +6,12 @@ import type {
 } from '@/schemas/ngos'
 import { isNgoMockEnabled } from '../lib/mock-mode'
 import {
-  fetchNgoDomainCoverageMock,
   fetchNgoProfileMock,
   fetchNgoServiceDiscoveryMock,
   fetchPublicFundingMock,
   fetchSnapshotProvenanceMock,
 } from './ngo-api.mock'
 import {
-  fetchNgoDomainCoverageLive,
   fetchNgoProfileLive,
   fetchNgoServiceDiscoveryLive,
   fetchPublicFundingLive,
@@ -30,11 +27,6 @@ import {
 export async function fetchNgoProfile(cui: string): Promise<NgoProfile | null> {
   if (isNgoMockEnabled()) return fetchNgoProfileMock(cui)
   return fetchNgoProfileLive(cui)
-}
-
-export async function fetchNgoDomainCoverage(): Promise<DomainCoverage | null> {
-  if (isNgoMockEnabled()) return fetchNgoDomainCoverageMock()
-  return fetchNgoDomainCoverageLive()
 }
 
 export async function fetchNgoServiceDiscovery(): Promise<ServiceDiscoveryResult | null> {

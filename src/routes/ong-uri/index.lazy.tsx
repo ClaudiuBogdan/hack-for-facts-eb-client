@@ -1,15 +1,12 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { NgoLandingPage } from '@/features/ngos/components/ngo-landing-page'
-import type { NgoLandingRouteLoaderData } from './index'
+import { isNgoRegistryEnabled } from '@/config/env'
+import { NgoHubPage } from '@/features/ngos/hub/ngo-hub-page'
 
 export const Route = createLazyFileRoute('/ong-uri/')({
-  component: NgoLandingRoutePage,
+  component: NgoHubRoutePage,
 })
 
-function NgoLandingRoutePage() {
-  const loaderData = Route.useLoaderData() as
-    | NgoLandingRouteLoaderData
-    | undefined
-
-  return <NgoLandingPage initialCoverage={loaderData?.coverage ?? null} />
+function NgoHubRoutePage() {
+  const { summary } = Route.useLoaderData()
+  return <NgoHubPage summary={summary} search={Route.useSearch()} registry={isNgoRegistryEnabled()} />
 }

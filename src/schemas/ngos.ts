@@ -278,40 +278,6 @@ export const ngoProfileSchema = z.object({
 export type NgoProfile = z.infer<typeof ngoProfileSchema>
 
 // ---------------------------------------------------------------------------
-// Landing source-coverage matrix
-// ---------------------------------------------------------------------------
-
-export const sourceCoverageRowSchema = z.object({
-  sourceId: z.string(),
-  authorityLabel: z.string(),
-  contentLabel: z.string(),
-  lastSnapshotDate: z.string().nullable(),
-  status: z.enum([
-    'loaded',
-    'loaded_stale',
-    'pending',
-    'name_only',
-    'blocked',
-  ]),
-  rowCount: z.number().int().nullable(),
-  isNameOnly: z.boolean(),
-  sourceSnapshotId: z.string().nullable(),
-})
-export type SourceCoverageRow = z.infer<typeof sourceCoverageRowSchema>
-
-export const domainCoverageSchema = z.object({
-  rows: z.array(sourceCoverageRowSchema).default([]),
-  lastFullLoad: z.object({
-    runId: z.string(),
-    date: z.string(),
-    rowsLoaded: z.number().int().nonnegative(),
-    gate: z.string(),
-  }),
-  knownGaps: z.array(z.string()).default([]),
-})
-export type DomainCoverage = z.infer<typeof domainCoverageSchema>
-
-// ---------------------------------------------------------------------------
 // Service discovery (the /ong-uri/servicii UI boundary)
 // ---------------------------------------------------------------------------
 
@@ -428,16 +394,18 @@ export type NgoProfileTab = z.infer<typeof ngoProfileTabSchema>
 
 // --- /ong-uri (landing) ----------------------------------------------------
 
+/** What the county map is coloured by: NGOs per 10,000 residents (the default), registered NGOs, or those founded in the last full year. */
+export const NGO_HUB_LAYERS = ['densitate', 'total', 'noi'] as const
+export type NgoHubLayerKey = (typeof NGO_HUB_LAYERS)[number]
+
 export const ngoLandingSearchSchema = z
   .object({
-    q: z.string().optional().catch(undefined),
-    lang: z.string().optional().catch(undefined),
+    indicator: z.enum(NGO_HUB_LAYERS).optional().catch(undefined),
   })
   .catch(() => ({}))
 
 export type NgoLandingSearch = {
-  readonly q?: string
-  readonly lang?: string
+  readonly indicator?: NgoHubLayerKey
 }
 
 export function parseNgoLandingSearch(
