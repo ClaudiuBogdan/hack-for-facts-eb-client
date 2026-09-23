@@ -486,6 +486,7 @@ export async function fetchRedesignEntityDetails(
     readonly trendPeriod?: ReportPeriodInput;
     readonly mainCreditorCui?: string;
   } & NormalizationOptions,
+  options: { readonly signal?: AbortSignal } = {},
 ): Promise<EntityDetailsData | null> {
   const metadataRaw = await graphqlQuery<unknown>(
     ENTITY_METADATA_QUERY,
@@ -493,6 +494,7 @@ export async function fetchRedesignEntityDetails(
     {
       operationName: "entity-metadata",
       auth: "none",
+      signal: options.signal,
     },
   );
   const metadata = EntityMetadataResponseSchema.parse(metadataRaw).entity;
@@ -569,6 +571,7 @@ export async function fetchRedesignEntityDetails(
     {
       operationName: "entity-budget",
       auth: "none",
+      signal: options.signal,
     },
   );
   const budget =

@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY } from '@/features/challenges/components/analysis/challenge-entity-public-maps'
@@ -33,6 +34,7 @@ let mockedLoaderData:
         }
       }
     }
+    ssrBootstrapStatus?: 'complete' | 'timed-out' | 'cancelled'
   }
   | undefined = {
     initialSettings: {
@@ -51,6 +53,8 @@ let mockedLoaderData:
     },
   }
 
+const invalidateMock = vi.fn(() => Promise.resolve())
+
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => () => ({
     useParams: () => mockedParams,
@@ -58,6 +62,7 @@ vi.mock('@tanstack/react-router', () => ({
     useLoaderData: () => mockedLoaderData,
   }),
   useNavigate: () => navigateMock,
+  useRouter: () => ({ invalidate: invalidateMock }),
 }))
 
 vi.mock('@/features/campaigns/buget/components/CampaignAccessShareCard', () => ({
@@ -717,6 +722,99 @@ it('keeps native INS router values intact instead of merging stale window values
   const next = navigateMock.mock.lastCall?.[0].search(mockedSearch)
   expect(next).toMatchObject({ insDataset: 'POP107D', insSourcePins: ['D0:5'], insSourceUnit: null })
   expect(next).not.toHaveProperty('insSeries')
+})
+
+describe('SSR deadline recovery', () => {
+  beforeEach(() => {
+    invalidateMock.mockClear()
+  })
+
+  it('re-runs the loader once when the server served the shell past its deadline', async () => {
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'timed-out' }
+
+    const view = render(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(invalidateMock).toHaveBeenCalledTimes(1))
+    // A background reload would re-run `head` with the stale payload.
+    expect(invalidateMock).toHaveBeenCalledWith({ sync: true })
+
+    // The client loader completes the payload; nothing reloads a second time.
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'complete' }
+    view.rerender(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(screen.getByTestId('analysis-page')).toBeInTheDocument())
+    expect(invalidateMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('recovers again when an earlier client reload was cancelled', async () => {
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'cancelled' }
+
+    render(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(invalidateMock).toHaveBeenCalledTimes(1))
+    expect(invalidateMock).toHaveBeenCalledWith({ sync: true })
+  })
+
+  it('retries after a recovery is cancelled by a filter change while still mounted', async () => {
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'timed-out' }
+
+    const view = render(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(invalidateMock).toHaveBeenCalledTimes(1))
+
+    // Same CUI, same component instance: the year changed, the old query's
+    // observer left, and the joined reload came back `cancelled`.
+    mockedSearch = { year: 2023 }
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'cancelled' }
+    view.rerender(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(invalidateMock).toHaveBeenCalledTimes(2))
+
+    // A re-render with the same loader result does not start a third attempt.
+    view.rerender(<EntityDetailsRoutePage />)
+    expect(invalidateMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('invalidates once under StrictMode while the reload is still pending', async () => {
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'timed-out' }
+    invalidateMock.mockImplementation(() => new Promise(() => {}))
+
+    const view = render(
+      <StrictMode>
+        <EntityDetailsRoutePage />
+      </StrictMode>,
+    )
+    await waitFor(() => expect(invalidateMock).toHaveBeenCalledTimes(1))
+    view.rerender(
+      <StrictMode>
+        <EntityDetailsRoutePage />
+      </StrictMode>,
+    )
+
+    expect(invalidateMock).toHaveBeenCalledTimes(1)
+    invalidateMock.mockImplementation(() => Promise.resolve())
+  })
+
+  it('does not reload the native INS view, whose payload never carries the entity', async () => {
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+    deployment.native = true
+    mockedSearch = { view: 'ins' }
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'timed-out' }
+
+    render(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(screen.getByTestId('analysis-page')).toBeInTheDocument())
+
+    expect(invalidateMock).not.toHaveBeenCalled()
+  })
+
+  it('leaves a completed server bootstrap alone', async () => {
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+    mockedLoaderData = { ...mockedLoaderData, ssrBootstrapStatus: 'complete' }
+
+    render(<EntityDetailsRoutePage />)
+    await waitFor(() => expect(screen.getByTestId('analysis-page')).toBeInTheDocument())
+
+    expect(invalidateMock).not.toHaveBeenCalled()
+  })
 })
 
 })

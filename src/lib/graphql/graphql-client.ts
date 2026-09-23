@@ -131,7 +131,12 @@ export async function graphqlQuery<T>(
     })
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : String(cause)
-    logger.error('GraphQL transport error', { label, message })
+    if (options.signal?.aborted) {
+      // The caller gave up (a cancelled query, the SSR deadline): not a fault.
+      logger.info('GraphQL request aborted', { label })
+    } else {
+      logger.error('GraphQL transport error', { label, message })
+    }
     throw new GraphQLRequestError(`GraphQL request failed: ${message}`, { query })
   }
 

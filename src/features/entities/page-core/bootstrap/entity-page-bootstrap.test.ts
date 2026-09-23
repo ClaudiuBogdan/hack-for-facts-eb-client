@@ -1,4 +1,4 @@
-import { QueryClient, queryOptions } from '@tanstack/react-query'
+import { QueryClient, dehydrate, queryOptions } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
 import type { EntityDetailsData } from '@/lib/api/entities'
 import { resolveEntityPageQueryInputs } from '../request/entity-page-query-inputs'
@@ -8,6 +8,7 @@ import {
   buildEntityPageSeoSnapshotBase,
   type EntityPageBootstrapDependencies,
   runEntityPageBlockingBootstrap,
+  runEntityPageBootstrapWithinDeadline,
 } from './entity-page-bootstrap'
 
 function createExecutionContext(): EntityPageExecutionContext {
@@ -206,5 +207,96 @@ describe('entity-page-bootstrap', () => {
     expect(withLineItemsResult.payload.ssrEntityExecutionLineItemsParams).toStrictEqual(
       detailsOnlyResult.payload.ssrEntityExecutionLineItemsParams,
     )
+  })
+})
+
+describe('runEntityPageBootstrapWithinDeadline', () => {
+  it('completes with the blocking bootstrap result when the queries are fast', async () => {
+    const executionContext = createExecutionContext()
+    const exactQueryInputs = resolveEntityPageQueryInputs({ context: executionContext })
+    const queryClient = new QueryClient()
+    const harness = createBootstrapDependencies({ entityDetails: createEntityDetails() })
+
+    const outcome = await runEntityPageBootstrapWithinDeadline(
+      {
+        queryClient,
+        executionContext,
+        exactQueryInputs,
+        deadline: { deadlineMs: 1_000, startedAt: Date.now(), now: Date.now },
+      },
+      harness.dependencies,
+    )
+
+    expect(outcome.status).toBe('complete')
+    if (outcome.status !== 'complete') throw new Error('unreachable')
+    expect(outcome.result.entityDetails).toStrictEqual(createEntityDetails())
+    expect(outcome.result.payload.entitySeoSnapshot.name).toBe('Consiliul Judetean Test')
+  })
+
+  it('behaves like the blocking bootstrap without a deadline', async () => {
+    const executionContext = createExecutionContext()
+    const exactQueryInputs = resolveEntityPageQueryInputs({ context: executionContext })
+    const queryClient = new QueryClient()
+    const harness = createBootstrapDependencies({ entityDetails: createEntityDetails() })
+
+    const outcome = await runEntityPageBootstrapWithinDeadline(
+      { queryClient, executionContext, exactQueryInputs },
+      harness.dependencies,
+    )
+    const direct = await runEntityPageBlockingBootstrap(
+      { queryClient, executionContext, exactQueryInputs },
+      harness.dependencies,
+    )
+
+    expect(outcome).toStrictEqual({ status: 'complete', result: direct })
+  })
+
+  it('times out, aborts the blocking fetch and drops the query from the cache', async () => {
+    const executionContext = createExecutionContext()
+    const exactQueryInputs = resolveEntityPageQueryInputs({ context: executionContext })
+    const queryClient = new QueryClient()
+    const aborted = vi.fn()
+    const entityDetailsQueryFn = vi.fn(
+      ({ signal }: { signal: AbortSignal }) =>
+        new Promise<never>((_resolve, reject) => {
+          signal.addEventListener('abort', () => {
+            aborted()
+            reject(new Error('aborted'))
+          })
+        }),
+    )
+    const dependencies = {
+      createEntityDetailsQueryOptions: (queryParams: unknown) =>
+        queryOptions({
+          queryKey: ['test', 'entityDetails', queryParams] as const,
+          queryFn: entityDetailsQueryFn,
+        }),
+    } as unknown as EntityPageBootstrapDependencies
+    const startedAt = Date.now()
+
+    const outcome = await runEntityPageBootstrapWithinDeadline(
+      {
+        queryClient,
+        executionContext,
+        exactQueryInputs,
+        deadline: { deadlineMs: 20, startedAt, now: Date.now },
+      },
+      dependencies,
+    )
+
+    expect(outcome).toStrictEqual({ status: 'timed-out' })
+    expect(Date.now() - startedAt).toBeLessThan(1_000)
+    expect(entityDetailsQueryFn).toHaveBeenCalledOnce()
+    expect(aborted).toHaveBeenCalledOnce()
+    // Not merely idle: a pending query would be dehydrated with its promise
+    // and the client would adopt that promise instead of fetching.
+    expect(
+      queryClient.getQueryState(['test', 'entityDetails', exactQueryInputs.entityDetails]),
+    ).toBeUndefined()
+    // What the router's query integration would stream to the client.
+    expect(
+      dehydrate(queryClient, { shouldDehydrateQuery: () => true }).queries,
+    ).toHaveLength(0)
+    queryClient.clear()
   })
 })

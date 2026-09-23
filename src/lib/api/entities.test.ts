@@ -121,13 +121,15 @@ describe("entities api", () => {
         .mockResolvedValueOnce(metadataResponse)
         .mockResolvedValueOnce(budgetResponse);
 
-      const result = await getEntityDetails(mockParams);
+      // The SSR deadline relies on the query's abort signal reaching both legs.
+      const signal = new AbortController().signal;
+      const result = await getEntityDetails(mockParams, { signal });
 
       expect(graphqlQuery).toHaveBeenNthCalledWith(
         1,
         expect.stringContaining("query GetEntityMetadata"),
         { cui: "123456", populationYear: 2024 },
-        expect.objectContaining({ operationName: "entity-metadata" }),
+        { operationName: "entity-metadata", auth: "none", signal },
       );
       expect(graphqlQuery).toHaveBeenNthCalledWith(
         2,
@@ -137,7 +139,7 @@ describe("entities api", () => {
           reportType: "EXECUTION_AGG_PRINCIPAL",
           normalization: "TOTAL",
         }),
-        expect.objectContaining({ operationName: "entity-budget" }),
+        { operationName: "entity-budget", auth: "none", signal },
       );
       expect(result).toMatchObject({
         cui: "123456",

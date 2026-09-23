@@ -4,9 +4,14 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
-import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  createLazyFileRoute,
+  useNavigate,
+  useRouter,
+} from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { CampaignAccessShareCard } from '@/features/campaigns/buget/components/CampaignAccessShareCard'
 import {
@@ -35,6 +40,7 @@ import {
   type ChallengeEntityAnalysisUrlState,
 } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
+import type { EntityRouteSsrBootstrapStatus } from './entities.$cui'
 import { normalizeEntitiesEntityRouteView } from '@/features/entities/page-core/route-adapters/entities-entity-route-adapter'
 import {
   hasForcedOverrides,
@@ -58,6 +64,7 @@ type EntitiesEntityRouteLoaderData = {
       | 'ssrEntityExecutionLineItemsParams'
     >
   }
+  readonly ssrBootstrapStatus?: EntityRouteSsrBootstrapStatus
 }
 
 function mapEntitiesReportTypeToChallengeReportType(
@@ -232,6 +239,42 @@ export function EntityDetailsRoutePage() {
   const navigate = useNavigate({
     from: '/entities/$cui',
   })
+  const router = useRouter()
+  const ssrBootstrapStatus = loaderData?.ssrBootstrapStatus
+  // The native INS view's payload never carries the entity (its head is the
+  // nameless base either way), so a reload there could not change anything.
+  const canRecoverHead = !(
+    isRedesignOnlyApiDeployment() &&
+    normalizeEntitiesEntityRouteView(search?.view) === 'ins'
+  )
+  // The loader result whose recovery has started. The status only changes
+  // once a reload finishes, so StrictMode's development effect replay sees
+  // the same object and does not invalidate twice; a reload that ends
+  // `cancelled` (the reader changed a filter mid-recovery) produces a new
+  // object and gets its own attempt.
+  const recoveryStartedFor = useRef<EntitiesEntityRouteLoaderData | null>(null)
+  useEffect(() => {
+    if (
+      loaderData === undefined ||
+      ssrBootstrapStatus === undefined ||
+      ssrBootstrapStatus === 'complete' ||
+      !canRecoverHead ||
+      recoveryStartedFor.current === loaderData
+    ) {
+      return
+    }
+
+    // The loader returned without entity data: the server hit its deadline
+    // and served the shell, or an earlier client reload was cancelled.
+    // Re-running the loader here completes the payload and, through `head`,
+    // the entity's title, description and structured data. `sync` matters:
+    // a background reload re-runs `head` before the loader finishes, with the
+    // stale payload. The match keeps its data while it reloads, so the page
+    // stays on screen, and the entity query is shared with the page's own
+    // hook, so nothing is fetched twice.
+    recoveryStartedFor.current = loaderData
+    void router.invalidate({ sync: true })
+  }, [canRecoverHead, loaderData, router, ssrBootstrapStatus])
   const [pendingMapEntitySelection, setPendingMapEntitySelection] =
     useState<MapEntitySelection | null>(null)
   const [isConfirmingMapEntitySelection, setIsConfirmingMapEntitySelection] =

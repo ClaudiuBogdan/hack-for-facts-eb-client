@@ -52,7 +52,8 @@ export const entityDetailsQueryOptions = (
 
   return queryOptions({
     queryKey: ['entityDetails', hash],
-    queryFn: () => getEntityDetails(normalizedParams),
+    // The signal lets a cancelled query (the SSR deadline) abort the fetch.
+    queryFn: ({ signal }) => getEntityDetails(normalizedParams, { signal }),
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!normalizedParams.cui,
   });
