@@ -79,6 +79,11 @@ import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
 import { ChallengeEntityViewNavigator } from './challenge-entity-view-navigator'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import {
+  CHALLENGE_ENTITY_ANALYSIS_ROOT_CLASS_NAME,
+  CHALLENGE_ENTITY_TREEMAP_CARD_CLASS_NAME,
+  CHALLENGE_ENTITY_VIEW_SHORTCUTS_CLASS_NAME,
+} from './challenge-entity-analysis-frames'
+import {
   buildChallengeEntityAnalysisReportPeriod,
   buildChallengeEntityAnalysisTrendPeriod,
   challengeEntitySubordinateRankingQueryOptions,
@@ -2925,7 +2930,7 @@ export function ChallengeEntityAnalysisPage({
               showChartEditorLink={false}
             />
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className={CHALLENGE_ENTITY_VIEW_SHORTCUTS_CLASS_NAME}>
               {canChangeReportType ? (
                 <Button
                   type="button"
@@ -2979,7 +2984,7 @@ export function ChallengeEntityAnalysisPage({
 
                 <div
                   id="challenge-entity-map-preview-switcher"
-                  className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
+                  className={CHALLENGE_ENTITY_VIEW_SHORTCUTS_CLASS_NAME}
                 >
                   {visibleMapPreviewDefinitions.map((mapPreviewDefinition) => (
                     <Button
@@ -3024,7 +3029,7 @@ export function ChallengeEntityAnalysisPage({
 
             {lineItemsFallback ?? (
             <div className="space-y-3">
-              <Card className="rounded-[28px] border-border/50">
+              <Card className={CHALLENGE_ENTITY_TREEMAP_CARD_CLASS_NAME}>
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
@@ -3070,7 +3075,7 @@ export function ChallengeEntityAnalysisPage({
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <div className={CHALLENGE_ENTITY_VIEW_SHORTCUTS_CLASS_NAME}>
                       <Button
                         type="button"
                         variant="outline"
@@ -3116,7 +3121,7 @@ export function ChallengeEntityAnalysisPage({
                         id={treemapSecondaryControlsId}
                         className="space-y-2"
                       >
-                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        <div className={CHALLENGE_ENTITY_VIEW_SHORTCUTS_CLASS_NAME}>
                           {allowPerCapita ? (
                             <Button
                               type="button"
@@ -3301,7 +3306,7 @@ export function ChallengeEntityAnalysisPage({
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-10">
+    <div className={CHALLENGE_ENTITY_ANALYSIS_ROOT_CLASS_NAME}>
       <ChallengeEntityAnalysisHeader
         entity={entity}
         reportControlsLabel={periodLabel}

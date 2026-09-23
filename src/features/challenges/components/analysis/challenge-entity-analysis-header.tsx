@@ -14,6 +14,11 @@ import {
 } from './challenge-entity-view-menu'
 import type { ChallengeEntityAnalysisView } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import { cn } from '@/lib/utils'
+import {
+  CHALLENGE_ENTITY_HERO_CONTENT_CLASS_NAME,
+  CHALLENGE_ENTITY_HERO_CONTROLS_CLASS_NAME,
+  CHALLENGE_ENTITY_HERO_FRAME_CLASS_NAME,
+} from './challenge-entity-analysis-frames'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
@@ -349,9 +354,9 @@ export function ChallengeEntityAnalysisHeader({
         ref={heroHeaderRef}
         aria-hidden={isCompactHeaderVisible}
         inert={isCompactHeaderVisible ? true : undefined}
-        className="rounded-[32px] border border-border/50 bg-linear-to-br from-background via-background to-primary/[0.04] px-5 py-5 shadow-sm sm:px-6 sm:py-7 md:px-8"
+        className={CHALLENGE_ENTITY_HERO_FRAME_CLASS_NAME}
       >
-        <div className="space-y-4 sm:space-y-5">
+        <div className={CHALLENGE_ENTITY_HERO_CONTENT_CLASS_NAME}>
           <h1 className="scroll-mt-24 text-balance text-[3rem] font-black leading-[0.94] tracking-tight text-foreground md:text-[2.85rem] lg:text-5xl">
             {displayName}
           </h1>
@@ -371,7 +376,7 @@ export function ChallengeEntityAnalysisHeader({
             <EntityPopulationBadge entity={entity} locale={locale} />
           </div>
 
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex">
+          <div className={CHALLENGE_ENTITY_HERO_CONTROLS_CLASS_NAME}>
             <ResponsivePopover
               open={isViewMenuOpen}
               onOpenChange={setIsViewMenuOpen}

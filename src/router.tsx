@@ -72,7 +72,7 @@ export function getRouter() {
     parseSearch,
     stringifySearch,
     // TanStack's defaults (1000ms / 500ms) meant a route's `pendingComponent`
-    // effectively never rendered: `/entities/$cui` declares `ViewLoading` yet
+    // effectively never rendered: `/entities/$cui` declares a skeleton yet
     // its ~1s blocking loader finished just under the threshold, so a click
     // froze the previous page with no feedback at all. Show the skeleton once
     // a navigation is visibly slow, and hold it long enough not to flicker.

@@ -14,7 +14,11 @@ import {
 } from 'recharts';
 import { ExternalLink } from 'lucide-react';
 import { yValueFormatter } from '../charts/components/chart-renderer/utils';
-import { EntityFinancialTrendsSkeleton } from './EntityFinancialTrendsSkeleton';
+import { EntityFinancialTrendsSkeleton } from './EntityFinancialTrendsSkeleton'
+import {
+  ENTITY_FINANCIAL_TRENDS_CARD_CLASS_NAME,
+  ENTITY_FINANCIAL_TRENDS_CHART_HEIGHT,
+} from './entity-financial-frames';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { buildEntityIncomeExpenseChartLink } from '@/lib/chart-links';
@@ -314,7 +318,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
   }
 
   return (
-    <Card className="rounded-[28px] border-border/50 shadow-sm">
+    <Card className={ENTITY_FINANCIAL_TRENDS_CARD_CLASS_NAME}>
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 w-full">
           <CardTitle className="flex items-center gap-2">
@@ -369,7 +373,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
         {!trendsAvailable ? (
           <p className="text-center text-slate-500 dark:text-slate-400 py-4"><Trans>No data available to display financial evolution.</Trans></p>
         ) : (
-          <SafeResponsiveContainer width="100%" height={400}>
+          <SafeResponsiveContainer width="100%" height={ENTITY_FINANCIAL_TRENDS_CHART_HEIGHT}>
             <ComposedChart
               data={mergedData}
               margin={isMobile

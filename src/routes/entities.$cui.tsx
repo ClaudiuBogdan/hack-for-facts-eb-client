@@ -5,7 +5,6 @@ import { isCancelledError } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { entitySearchSchema } from '@/components/entities/validation'
-import { ViewLoading } from '@/components/ui/ViewLoading'
 import {
   abandonServerQuery,
   buildEntityPageLoaderPayload,
@@ -20,6 +19,7 @@ import {
   type EntityPageExecutionContext,
   type EntityPageLoaderPayload,
 } from '@/features/entities/page-core'
+import { EntityPagePending } from '@/features/entities/components/entity-page-pending'
 import { resolveEntityPageRouteHeadContract } from '@/features/entities/page-core/seo/entity-page-route-policy'
 import { resolveEntitiesEntityRouteAdapter } from '@/features/entities/page-core/route-adapters/entities-entity-route-adapter'
 import { buildEntityRouteHead } from '@/features/entities/seo/entity-share-seo'
@@ -357,6 +357,6 @@ export const Route = createFileRoute('/entities/$cui')({
       },
     }))
   },
-  pendingComponent: ViewLoading,
+  pendingComponent: EntityPagePending,
   component: () => null,
 })

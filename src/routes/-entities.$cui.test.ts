@@ -62,8 +62,10 @@ vi.mock('@/components/entities/validation', () => ({
   },
 }))
 
-vi.mock('@/components/ui/ViewLoading', () => ({
-  ViewLoading: () => null,
+const entityPagePendingMock = vi.hoisted(() => () => null)
+
+vi.mock('@/features/entities/components/entity-page-pending', () => ({
+  EntityPagePending: entityPagePendingMock,
 }))
 
 const createPublicPageCacheHeadersMock = vi.fn(() => ({}))
@@ -115,6 +117,7 @@ async function importRoute() {
   const { Route } = await import('./entities.$cui')
 
   return Route as unknown as {
+    pendingComponent: unknown
     head: (input: Record<string, unknown>) => unknown
     headers: (input: Record<string, unknown>) => Record<string, string>
     loader: (input: Record<string, unknown>) => Promise<{
@@ -669,6 +672,15 @@ describe('entities route', () => {
     await route.loader(request)
     expect(details).toHaveBeenCalledTimes(1)
     queryClient.clear()
+  })
+
+  it('declares the entity page skeleton as its pending component', async () => {
+    const route = await importRoute()
+
+    // The router only arms the pending timer when the eager route options
+    // carry a pending component; moving it to the lazy file would silently
+    // disable the skeleton on client-side navigations.
+    expect(route.pendingComponent).toBe(entityPagePendingMock)
   })
 
   describe('SSR deadline', () => {

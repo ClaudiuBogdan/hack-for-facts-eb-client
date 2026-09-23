@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import type { ChallengeLocale } from '../../types'
+import {
+  CHALLENGE_ENTITY_EXPLAINER_CARD_CLASS_NAME,
+  CHALLENGE_ENTITY_EXPLAINER_CONTENT_CLASS_NAME,
+} from './challenge-entity-analysis-frames'
 
 type ChallengeEntityAnalysisExplainerProps = {
   readonly locale: ChallengeLocale
@@ -101,8 +105,8 @@ export function ChallengeEntityAnalysisExplainer({
       ? subjectCopy.aggregatedSecondary
       : subjectCopy.detailedSecondary
   return (
-    <Card className="rounded-[28px] border-border/50 shadow-sm">
-      <CardContent className="px-4 py-4 sm:px-6 sm:py-5 md:px-7">
+    <Card className={CHALLENGE_ENTITY_EXPLAINER_CARD_CLASS_NAME}>
+      <CardContent className={CHALLENGE_ENTITY_EXPLAINER_CONTENT_CLASS_NAME}>
         <div className="flex items-start gap-3 sm:gap-4">
           <Info
             className="mt-1 h-4 w-4 shrink-0 text-muted-foreground"

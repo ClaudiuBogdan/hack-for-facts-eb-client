@@ -29,6 +29,7 @@ import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campai
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 import { LearningProgressProvider } from '@/features/learning/hooks/use-learning-progress'
 import { useScrollToActive } from '@/features/learning/hooks/use-scroll-to-active'
+import { ChallengesContentFrame } from './challenges-content-frame'
 import { UatSwitchBadge } from '../hub/UatSwitchBadge'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import {
@@ -605,12 +606,9 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
 
       {/* Main Content */}
       <div className="flex min-h-screen min-h-[100svh] supports-[min-height:100dvh]:min-h-[100dvh] flex-1 flex-col">
-        <div
-          data-testid="challenges-main-content"
-          className="mx-auto flex min-h-full w-full max-w-3xl flex-1 flex-col px-4 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10"
-        >
+        <ChallengesContentFrame data-testid="challenges-main-content">
           {children ?? <Outlet />}
-        </div>
+        </ChallengesContentFrame>
       </div>
     </div>
   )

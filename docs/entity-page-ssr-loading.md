@@ -48,8 +48,8 @@ runs out:
    first fetch attempt;
 2. the response is a **503 with `Retry-After: 5` and `Cache-Control:
    no-store`**. Browsers render the body like any 200, so readers get the
-   shell (the page's own loading skeleton, 29 placeholders) and the client
-   fetches the same queries. Crawlers and link unfurlers, which run no
+   shell (the page's own loading skeleton, which mirrors the loaded layout
+   block for block) and the client fetches the same queries. Crawlers and link unfurlers, which run no
    JavaScript and keep whatever `<title>`/`og:` tags they see, treat a 503 as
    temporary instead of indexing or caching the placeholder head. A 200 with
    `noindex` would be worse: Google drops a page on `noindex` without
@@ -69,7 +69,13 @@ runs out:
 
 Cached data always wins the race, even at zero remaining time. Client-side
 navigations never get a deadline: the router's `defaultPendingMs: 200` already
-shows the skeleton there.
+shows the skeleton there. The route's `pendingComponent` renders that same
+skeleton inside the page's column (`EntityPagePending`), so a navigation and a
+slow query look alike; it has to stay in the eager route file, because the
+router only arms the pending timer when the eager options carry a pending
+component. The skeletons read their frame classes from
+`challenge-entity-analysis-frames.ts` and `entity-financial-frames.ts`, the
+same modules the real components use, so their geometry cannot drift.
 
 Because the entity query now consumes its abort signal, the cache cancels an
 in-flight fetch when its last observer leaves. A client-side reload joined to
