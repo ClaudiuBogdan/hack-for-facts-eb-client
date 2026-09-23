@@ -106,13 +106,16 @@ function hasGeographyAxis(latest: StatisticsLatestValue): boolean {
 /** INS flags under which a cell has no publishable number. */
 const BLOCKING_VALUE_STATUSES = new Set([':', 'c', 'x'])
 
+/** A confidential or missing cell keeps its flag and has no number. */
+function unflaggedValue(latest: StatisticsLatestValue): number | null {
+  return BLOCKING_VALUE_STATUSES.has(latest.valueStatus?.trim().toLowerCase() ?? '') ? null : parseDecimal(latest.value)
+}
+
 function toIndicator(latest: StatisticsLatestValue): StatisticsHubIndicator {
-  const blocked = BLOCKING_VALUE_STATUSES.has(latest.valueStatus?.trim().toLowerCase() ?? '')
   return {
     code: latest.datasetCode,
     nameRo: latest.datasetNameRo,
-    // A confidential or missing cell keeps its flag and shows no number.
-    value: blocked ? null : parseDecimal(latest.value),
+    value: unflaggedValue(latest),
     rawValue: latest.value,
     valueStatus: latest.valueStatus,
     unit: hubUnitOf(latest),
@@ -209,6 +212,9 @@ async function fetchCountyLayer(
     unitLabel: latest.unitNameRo ?? latest.unitSymbol,
     values: [...values.values()],
     missingCounties: ROMANIA_COUNTIES.map((county) => county.code).filter((countyCode) => !values.has(countyCode)),
+    // The reference the ranking measures each county against. A monthly
+    // latest cell anchors the year but is not that year's national figure.
+    national: latest.period === year ? unflaggedValue(latest) : null,
   }
 }
 

@@ -1,13 +1,21 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
   alignSeriesByPeriod,
   annualInflationRate,
   deathsExceedBirthsSince,
+  describeAgainstNational,
   describeHubChange,
+  formatHubValue,
   hubUnitWord,
   sameMonthLastYear,
+  sharedDecimals,
   sourceDecimals,
 } from './hub-format'
+
+vi.mock('./format', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./format')>()
+  return { ...actual, activeNumberLocale: () => 'ro-RO' }
+})
 
 describe('alignSeriesByPeriod', () => {
   it('places each point at its period, so a year one series lacks is a gap, not a shift', () => {
@@ -105,5 +113,27 @@ describe('deathsExceedBirthsSince', () => {
     const births = points([['2023', 10], ['2024', 10]])
     const deaths = points([['2023', 20], ['2024', 20], ['2025', 5]])
     expect(deathsExceedBirthsSince(births, deaths)).toBe('2023')
+  })
+})
+
+describe('a county against the country', () => {
+  it('shows every figure of a set with the decimals the set carries', () => {
+    expect(sharedDecimals([9.3, 1, 0.5])).toBe(1)
+    expect(sharedDecimals([82.01, 79.68, 77.45])).toBe(2)
+    expect(sharedDecimals([1053348, 38238])).toBe(0)
+    expect(sharedDecimals([1.23456])).toBe(2)
+    expect(formatHubValue(1, 'percent', 'Procente', { digits: 1 }).value).toBe('1,0%')
+    expect(formatHubValue(79.6, 'years', 'Ani', { digits: 2 })).toEqual({ value: '79,60', unit: 'ani' })
+  })
+
+  it('measures a rate or an average in its own unit, a percent in points', () => {
+    expect(describeAgainstNational(82.01, 77.45, 'years', 'Ani', 2)).toBe('+4,56 ani față de România')
+    expect(describeAgainstNational(75.21, 77.45, 'years', 'Ani', 2)).toBe('-2,24 ani față de România')
+    expect(describeAgainstNational(9.3, 3.3, 'percent', 'Procente', 1)).toBe('+6,0 pp față de România')
+  })
+
+  it('reads a count as its share of the country’s total, never as a difference from it', () => {
+    expect(describeAgainstNational(1053348, 5453155, 'persons', 'Numar persoane', 0)).toBe('19,3% din totalul țării')
+    expect(describeAgainstNational(10, 0, 'count', null, 0)).toBeNull()
   })
 })

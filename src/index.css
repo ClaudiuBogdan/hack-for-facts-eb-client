@@ -87,6 +87,14 @@
     --chart-4: 0 0% 65%;
     --chart-5: 0 0% 82%;
 
+    /* Choropleth - one navy hue in five lightness steps, even in OKLab.
+       Steps 1-3 carry foreground text, steps 4-5 background text (>= 4.5:1). */
+    --choropleth-1: 212 78% 89%;
+    --choropleth-2: 214 71% 75%;
+    --choropleth-3: 216 61% 62%;
+    --choropleth-4: 218 56% 49%;
+    --choropleth-5: 221 70% 35%;
+
     /* Scrollbar colors */
     --scrollbar-track: 0 0% 95% / 0.1;
     --scrollbar-thumb: 0 0% 80% / 0.4;
@@ -173,6 +181,13 @@
     --chart-3: 0 0% 60%;
     --chart-4: 0 0% 42%;
     --chart-5: 0 0% 28%;
+
+    /* Choropleth - dark to bright, even in OKLab; the same text rule as light */
+    --choropleth-1: 219 40% 19%;
+    --choropleth-2: 218 43% 33%;
+    --choropleth-3: 217 47% 48%;
+    --choropleth-4: 214 70% 62%;
+    --choropleth-5: 212 91% 76%;
 
     /* PNRR Brutalist Design Tokens */
     --pnrr-bg: #111412;

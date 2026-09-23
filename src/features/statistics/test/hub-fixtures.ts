@@ -193,7 +193,8 @@ export function hubIndicator(spec: HubNationalSpec): StatisticsHubIndicator {
 }
 
 export function hubCountyLayer(code: string, unit: StatisticsHubUnit, unitLabel: string, period: string, values: readonly { code: string; name: string; value: number }[]): StatisticsHubCountyLayer {
-  return { code, period, unit, unitLabel, values, missingCounties: [] }
+  const national = HUB_NATIONAL_SPECS.find((spec) => spec.code === code && spec.period === period)?.value
+  return { code, period, unit, unitLabel, values, missingCounties: [], national: national ? Number.parseFloat(national) : null }
 }
 
 export function hubData(overrides: Partial<StatisticsHubData> = {}): StatisticsHubData {

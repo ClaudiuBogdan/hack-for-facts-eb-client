@@ -153,6 +153,35 @@ describe('fetchStatisticsHub', () => {
     ])
     expect(layer?.missingCounties).toContain('B')
     expect(layer?.missingCounties).toHaveLength(42 - 3)
+    // The national cell the rows were matched against is the ranking's reference.
+    expect(layer?.national).toBe(77.45)
+  })
+
+  it('gives a county layer no national reference when the latest national cell is a month, not the year', async () => {
+    answer({
+      tiles: hubTilesResponse({ SOM103A: { period: '2025-12', periodicity: 'MONTHLY', value: '3.1' } }),
+      counties: { SOM103A: hubCountyResponse(spec('SOM103A'), [{ county: { code: 'TR', name: 'Teleorman' }, value: '9.3', countyAxis: 1 }]) },
+    })
+    const hub = await fetchStatisticsHub()
+    const layer = hub.counties?.find((entry) => entry.code === 'SOM103A')
+    expect(layer?.period).toBe('2025')
+    expect(layer?.values).toEqual([{ code: 'TR', name: 'Teleorman', value: 9.3 }])
+    // December's 3,1% is not 2025's rate; the ranking draws no line rather than the wrong one.
+    expect(layer?.national).toBeNull()
+  })
+
+  it('gives a county layer no national reference when INS flags the national cell', async () => {
+    const tiles = hubTilesResponse()
+    const life = tiles.latest.find((entry) => entry.dataset.code === 'POP217A')
+    if (life?.observation) (life.observation as { value_status: string | null }).value_status = 'c'
+    answer({
+      tiles,
+      counties: { POP217A: hubCountyResponse(spec('POP217A'), [{ county: { code: 'VL', name: 'Vâlcea' }, value: '82.01', countyAxis: 2 }]) },
+    })
+    const hub = await fetchStatisticsHub()
+    const layer = hub.counties?.find((entry) => entry.code === 'POP217A')
+    expect(layer?.values).toHaveLength(1)
+    expect(layer?.national).toBeNull()
   })
 
   it('refuses a sibling cell that differs on another single axis, whatever order the API returns rows in', async () => {

@@ -53,6 +53,13 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        choropleth: {
+          1: "hsl(var(--choropleth-1))",
+          2: "hsl(var(--choropleth-2))",
+          3: "hsl(var(--choropleth-3))",
+          4: "hsl(var(--choropleth-4))",
+          5: "hsl(var(--choropleth-5))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

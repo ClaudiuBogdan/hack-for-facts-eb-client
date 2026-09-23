@@ -480,6 +480,11 @@ export interface StatisticsHubCountyLayer {
   readonly values: readonly StatisticsHubCountyValue[]
   /** Counties the read did not return a total cell for — hatched on the map, never zero. */
   readonly missingCounties: readonly string[]
+  /**
+   * The national cell the counties were matched against — same dataset, cell,
+   * unit and year. Null when INS flags it or its period is not that year.
+   */
+  readonly national: number | null
 }
 
 export type StatisticsHubSection = 'indicators' | 'counties'

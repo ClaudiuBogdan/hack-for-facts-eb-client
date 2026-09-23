@@ -1107,6 +1107,52 @@ code and copy. What changed in behaviour:
 - **The section's strings are translated into English**; they rendered the
   Romanian source on the English site.
 
+## 6p. The county band reads against the country (2026-09-23)
+
+The map coloured 42 counties with five opacities of the primary, printed dark
+codes on dark fills, named two of its five steps („74,82 ani … 77,98 ani+")
+and answered hover with the browser's tooltip. The list beside it drew each
+county's bar from zero, so life expectancies between 74 and 82 years were 42
+bars of almost the same length, and it showed only the top ten. Now:
+
+- **A sequential ramp as tokens.** `--choropleth-1…5` (Tailwind
+  `choropleth-1…5`) step one navy hue through even OKLab lightness, dark to
+  bright in dark mode. Steps 1–3 carry foreground text and 4–5 background
+  text at ≥ 4.5:1 in both themes, so a county code is readable on every fill.
+  A code sits at its county's pole of inaccessibility — Ilfov's lands on its
+  ring, not in București — keeps one on-screen size at any width (11 px, 9 px
+  on a phone) with a halo in its county's colour, and is left out only where
+  the county has no room for it (București on a phone) until it is active.
+- **A readout above the map**, fixed in height: the country's value at rest;
+  on hover, focus or tap the county's value, its place („locul 6 din 42") and
+  its distance from the country („+1,26 ani față de România"; percentage
+  points for a rate; a count as its share of the national total). The active
+  county is outlined over its neighbours and the rest recede. Each county
+  link is described by the readout, so a screen reader hears the place and
+  the distance too; the keyboard walks the counties in name order.
+- **On a touch screen the first tap shows a county and the second opens it**,
+  as does the readout's „Datele județului"; a tap anywhere else puts it away.
+  A mouse click and Enter open a county at once.
+- **The legend is under the map**: five equal-width steps with all six bounds
+  printed (equal-count steps have unequal ranges), the active county as a
+  solid tick and, for a rate or an average, the national value as a dashed
+  „RO" one. The counties with no value are named, since a hatched county
+  cannot be focused or tapped. Seven-figure bounds stagger onto two lines on
+  a phone.
+- **The layer carries its national cell** (`national`): the same dataset,
+  cell, unit and year the county rows were matched against, null when INS
+  flags it or the latest national cell is not that year.
+- **The ranking is measured from the country.** A rate or an average draws
+  each county from the national value — the dashed line, labelled in the
+  header — left when below, right when above; a count draws from zero; a rate
+  with no national value is a dot on the counties' range. Each row carries
+  its map colour as a swatch, figures share the layer's decimals („1,0%"
+  under „1,5%"), and the collapsed list shows both ends — the first and last
+  five, as two lists with the other 32 in place between them on request.
+  While the full list scrolls, the map stays in view on a wide screen whose
+  window is tall enough to hold all of it (672 px); a shorter one scrolls it
+  away rather than clip the legend.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

@@ -12,21 +12,33 @@ import { activeNumberLocale } from './format'
  * carry the API's own unit name, never a guess.
  */
 
+/** `digits` fixes the decimals, so a column of figures lines up („1,0%" under „1,5%"). */
 export function formatHubNumber(
   value: number,
   options?: { readonly compact?: boolean; readonly digits?: number },
 ): string {
   return new Intl.NumberFormat(activeNumberLocale(), {
     maximumFractionDigits: options?.digits ?? (options?.compact ? 1 : 2),
+    ...(options?.digits !== undefined ? { minimumFractionDigits: options.digits } : {}),
     ...(options?.compact ? { notation: 'compact' as const } : {}),
   }).format(value)
 }
 
-function formatSigned(value: number, digits: number): string {
+function formatSigned(value: number, digits: number, fixed = false): string {
   return new Intl.NumberFormat(activeNumberLocale(), {
     maximumFractionDigits: digits,
+    ...(fixed ? { minimumFractionDigits: digits } : {}),
     signDisplay: 'exceptZero',
   }).format(value)
+}
+
+/** The decimals the figures of one set carry, at most two: a set published to one decimal shows every figure with one. */
+export function sharedDecimals(values: readonly number[]): number {
+  let decimals = 0
+  for (const value of values) {
+    while (decimals < 2 && Math.abs(Math.round(value * 10 ** decimals) - value * 10 ** decimals) > 1e-6) decimals += 1
+  }
+  return decimals
 }
 
 export function hubUnitWord(unit: StatisticsHubUnit, unitLabel: string | null): string {
@@ -50,13 +62,14 @@ export function formatHubValue(
   value: number,
   unit: StatisticsHubUnit,
   unitLabel: string | null,
-  options?: { readonly compact?: boolean },
+  options?: { readonly compact?: boolean; readonly digits?: number },
 ): { readonly value: string; readonly unit: string } {
-  if (unit === 'percent') return { value: `${formatHubNumber(value)}%`, unit: '' }
+  const digits = options?.digits
+  if (unit === 'percent') return { value: `${formatHubNumber(value, { digits })}%`, unit: '' }
   // Compact only past a million („21,6 mil."); below that the full figure is
   // shorter to read than the „145,7 K" the Romanian locale would produce.
   const compact = Boolean(options?.compact) && unit !== 'years' && Math.abs(value) >= 1_000_000
-  return { value: formatHubNumber(value, { compact }), unit: hubUnitWord(unit, unitLabel) }
+  return { value: formatHubNumber(value, compact ? { compact } : { digits }), unit: hubUnitWord(unit, unitLabel) }
 }
 
 export function formatIndicatorValue(
@@ -118,6 +131,35 @@ export function describeHubChange(
   if (unit === 'years') return { text: t`${formatSigned(delta, 1)} ani din ${from.period}` }
   const pct = (delta / from.value) * 100
   return { text: t`${formatSigned(pct, 1)}% din ${from.period}` }
+}
+
+/**
+ * Whether the national cell of a unit is the sum of the counties': a count of
+ * people or things is; a rate, an average or a life expectancy is not.
+ */
+export function isAdditiveUnit(unit: StatisticsHubUnit): boolean {
+  return unit === 'persons' || unit === 'count'
+}
+
+/**
+ * A county against the national cell of the same dataset and year. A rate or
+ * an average differs from the country's in its own unit (percentage points for
+ * a percent); a count is a share of the country's total.
+ */
+export function describeAgainstNational(
+  value: number,
+  national: number,
+  unit: StatisticsHubUnit,
+  unitLabel: string | null,
+  digits: number,
+): string | null {
+  if (isAdditiveUnit(unit)) {
+    return national > 0 ? t`${formatHubNumber((value / national) * 100, { digits: 1 })}% din totalul țării` : null
+  }
+  const delta = formatSigned(value - national, digits, true)
+  if (unit === 'percent') return t`${delta} pp față de România`
+  const word = hubUnitWord(unit, unitLabel)
+  return word ? t`${delta} ${word} față de România` : t`${delta} față de România`
 }
 
 /**

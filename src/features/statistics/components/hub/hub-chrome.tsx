@@ -32,7 +32,7 @@ export function HubSectionHead({
           </p>
         ) : null}
       </div>
-      {aside ? <div className="min-w-0 max-w-full">{aside}</div> : null}
+      {aside ? <div className="w-full min-w-0 sm:w-auto sm:max-w-full">{aside}</div> : null}
     </div>
   )
 }

@@ -245,6 +245,9 @@ a dark label so it reads at AA on any surface and never relies on hue alone:
 **Chart colors** are navy-first then neutral steps (`--chart-1…5`): one accent,
 then greys, so a series chart never becomes a rainbow. Per-series color is
 user-overridable. Maps and charts always ship an adjacent textual/tabular summary.
+A **choropleth** uses `--choropleth-1…5`: one navy hue in five even lightness
+steps (dark to bright in dark mode); text on steps 1–3 is `foreground`, on
+4–5 `background`, which keeps ≥ 4.5:1 in both themes.
 
 **Dark mode** uses the same hues at inverted lightness (`.dark` class, SSR-safe
 via theme cookie to avoid FOUC). Source of truth for all values: `src/index.css`.

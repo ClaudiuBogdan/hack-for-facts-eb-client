@@ -103,7 +103,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const hub = query.data
   const retry = () => void query.refetch()
   const labelOf = useIndicatorLabel()
-  const [hoveredCounty, setHoveredCounty] = useState<string | undefined>(undefined)
+  const [activeCounty, setActiveCounty] = useState<string | undefined>(undefined)
 
   const indicatorKey = search.indicator ?? DEFAULT_INDICATOR
   const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0]
@@ -310,24 +310,25 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             }
           />
           <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
-            <div className="lg:col-span-7" data-reveal>
+            {/* The map stays in view beside the full list of 42, where the window is tall enough to hold all of it (legend included). */}
+            <div className="lg:top-6 lg:col-span-7 lg:self-start lg:[@media(min-height:42rem)]:sticky" data-reveal>
               {layer ? (
                 <HubCountyMap
                   key={layer.code}
                   layer={layer}
                   legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`}
-                  highlightedCode={hoveredCounty}
-                  onHover={setHoveredCounty}
+                  activeCode={activeCounty}
+                  onActiveChange={setActiveCounty}
                 />
               ) : query.isPending ? (
-                <div className="aspect-[640/440] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+                <div className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
               ) : (
                 <HubLoadError onRetry={retry} />
               )}
             </div>
-            <div className="lg:col-span-4 lg:col-start-9" data-reveal>
+            <div className="lg:col-span-5 lg:col-start-8" data-reveal>
               {layer ? (
-                <HubCountyRank layer={layer} limit={10} highlightedCode={hoveredCounty} onHover={setHoveredCounty} />
+                <HubCountyRank layer={layer} activeCode={activeCounty} onActiveChange={setActiveCounty} />
               ) : query.isPending ? (
                 <HubPending rows={10} />
               ) : null}
