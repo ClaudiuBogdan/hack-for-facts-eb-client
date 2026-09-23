@@ -173,7 +173,7 @@ export type PrivateCompanySearchResultPage = {
 }
 
 // ---------------------------------------------------------------------------
-// Hub stats — companyHubStats
+// County and CAEN groupings — companyCountyProfile
 // ---------------------------------------------------------------------------
 
 /** One row of a `companyCountyProfile`-style grouping. */
@@ -183,55 +183,39 @@ export type CompanyGroupSlice = {
   readonly count: number
 }
 
-/**
- * How much of the ranked population could be placed on a territory. `topCounties`
- * ranks only the matched share, so the bars do not sum to `activeCompanies` —
- * `territoryUnmatched` is the mass that is missing, and the UI must say so.
- */
-export type CompanyCoverage = {
-  readonly territoryMatched: number | null
-  readonly territoryUnmatched: number | null
-  readonly note: string
-}
-
-/**
- * Every county the registry names, for the hub's map and its ranking.
- *
- * Separate from `CompanyHubStats.topCounties`, which is trimmed to ten: a map
- * drawn from ten counties would render the other thirty-two as no-data, which
- * is a lie. `unplaced` is the `(none)` bucket of this same answer, so the gap
- * the map cannot show is always measured against the population it draws,
- * never against a figure from another snapshot. It is not
- * `coverage.territoryUnmatched`, which counts a different thing: companies
- * whose county could not be resolved to a SIRUTA territory.
- */
-export type CompanyCountyCounts = {
-  /** Count-desc, `(none)` removed. */
-  readonly counties: ReadonlyArray<CompanyGroupSlice>
-  /** The population the groups were computed over. */
-  readonly denominator: number
-  /** Companies in that population with no county in the registry. */
-  readonly unplaced: number
-}
-
-/**
- * Aggregate powering the /companies hub, from the cached server-side
- * `companyHubStats` query (6h TTL). Assembling it client-side from three cold
- * `companyCountyProfile` calls is not an option — that is ~30s of scans.
- *
- * `topCounties` is the top 10 ACTIVE counties with the `(none)` bucket removed;
- * `caenDivisions` is ACTIVE only, keyed by 2-digit division, with the empty-CAEN
- * bucket removed. Both therefore under-count on purpose.
- */
-export type CompanyHubStats = {
-  readonly totalCompanies: number
-  readonly activeCompanies: number
-  readonly statusMix: ReadonlyArray<CompanyGroupSlice>
-  readonly topCounties: ReadonlyArray<CompanyGroupSlice>
-  readonly caenDivisions: ReadonlyArray<CompanyGroupSlice>
-  readonly coverage: CompanyCoverage
-  readonly computedAt: string
-}
-
 /** `companyCountyProfile(groupBy:)` dimensions exposed by the server SDL. */
 export type CompanyGroupByDim = 'COUNTY' | 'STATUS' | 'CAEN_DIVISION'
+
+// ---------------------------------------------------------------------------
+// Hub — /companies
+// ---------------------------------------------------------------------------
+
+/** What the county map is coloured by. */
+export const COMPANY_HUB_MAP_INDICATORS = ['densitate', 'infiintari', 'cifra-de-afaceri'] as const
+export type CompanyHubMapIndicator = (typeof COMPANY_HUB_MAP_INDICATORS)[number]
+
+/** What the sectors are ranked by. */
+export const COMPANY_HUB_SECTOR_METRICS = ['cifra-de-afaceri', 'salariati', 'firme'] as const
+export type CompanyHubSectorMetric = (typeof COMPANY_HUB_SECTOR_METRICS)[number]
+
+/** What the largest companies are ranked by. */
+export const COMPANY_HUB_RANKINGS = ['cifra-de-afaceri', 'salariati'] as const
+export type CompanyHubRanking = (typeof COMPANY_HUB_RANKINGS)[number]
+
+/**
+ * The hub's three choices, each in the URL so a view can be shared. A value
+ * the hub does not know is dropped, and the default is never written.
+ */
+export const companyHubSearchSchema = z
+  .object({
+    indicator: z.enum(COMPANY_HUB_MAP_INDICATORS).optional().catch(undefined),
+    domenii: z.enum(COMPANY_HUB_SECTOR_METRICS).optional().catch(undefined),
+    clasament: z.enum(COMPANY_HUB_RANKINGS).optional().catch(undefined),
+  })
+  .catch({})
+
+export type CompanyHubSearch = z.infer<typeof companyHubSearchSchema>
+
+export function parseCompanyHubSearch(search: Record<string, unknown>): CompanyHubSearch {
+  return companyHubSearchSchema.parse(search)
+}

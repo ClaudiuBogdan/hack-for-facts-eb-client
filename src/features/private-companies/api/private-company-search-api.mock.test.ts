@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  fetchCompanyHubStatsMock,
   fetchPrivateCompanyCountiesMock,
   fetchPrivateCompanySearchMock,
 } from './private-company-search-api.mock'
@@ -31,6 +30,16 @@ describe('fetchPrivateCompanySearchMock', () => {
       'CONSTRUCT BRASOV SA',
       'TRANSPORT OLTENIA SNC',
     ])
+  })
+
+  it('matches a county the way the server does, whatever its spelling', async () => {
+    // The hub links counties as the registry facet spells them (`Bucureşti`,
+    // `Cluj`); the fixtures carry `MUNICIPIUL BUCUREŞTI` and `CLUJ`.
+    expect(await names({ ...base, county: ['Cluj'] })).toEqual(await names({ ...base, county: ['CLUJ'] }))
+    expect(await names({ ...base, county: ['Bucureşti'] })).toHaveLength(1)
+    expect(await names({ ...base, county: ['București'] })).toEqual(await names({ ...base, county: ['Bucureşti'] }))
+    // A part of a name is not a county: the server compares whole names.
+    expect(await names({ ...base, county: ['Clu'] })).toEqual([])
   })
 
   it('matches CAEN by prefix below four digits and exactly at four', async () => {
@@ -83,37 +92,5 @@ describe('fetchPrivateCompanyCountiesMock', () => {
     expect(counties.map((county) => county.name)).toEqual(
       [...counties.map((county) => county.name)].sort((a, b) => a.localeCompare(b, 'ro')),
     )
-  })
-})
-
-describe('fetchCompanyHubStatsMock', () => {
-  it('summarises the fixtures into the hub shape', async () => {
-    const stats = await fetchCompanyHubStatsMock()
-    expect(stats.totalCompanies).toBe(7)
-    expect(stats.activeCompanies).toBe(4)
-    expect(stats.statusMix.find((slice) => slice.key === '1048')?.count).toBe(4)
-    expect(stats.statusMix.find((slice) => slice.key === '1107')?.label).toBe(
-      'insolvență',
-    )
-    expect(stats.coverage.note.length).toBeGreaterThan(0)
-    expect(stats.computedAt).toBe('2026-05-17T03:00:00.000Z')
-  })
-
-  it('ranks counties and CAEN divisions over ACTIVE companies only', async () => {
-    const stats = await fetchCompanyHubStatsMock()
-    // 47 (retail) belongs to a radiată company; only Dante's 4791 is active.
-    expect(stats.caenDivisions.map((slice) => slice.key)).toEqual(
-      expect.arrayContaining(['47', '62', '21']),
-    )
-    // TIMIŞ is radiată-only, so it must not appear among the active counties.
-    expect(stats.topCounties.map((slice) => slice.key)).not.toContain('TIMIŞ')
-    const ranked = stats.topCounties.reduce((sum, slice) => sum + slice.count, 0)
-    expect(ranked).toBeLessThanOrEqual(stats.activeCompanies)
-  })
-
-  it('ranks counties by descending count', async () => {
-    const stats = await fetchCompanyHubStatsMock()
-    const counts = stats.topCounties.map((slice) => slice.count)
-    expect(counts).toEqual([...counts].sort((a, b) => b - a))
   })
 })
