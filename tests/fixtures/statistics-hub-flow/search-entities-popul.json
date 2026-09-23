@@ -1,0 +1,31 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "popul",
+      "engine": "meili",
+      "degraded": false,
+      "estimatedTotalHits": 1,
+      "facets": [],
+      "hits": [
+        {
+          "id": "ins_dataset_POP107D",
+          "docType": "ins_dataset",
+          "title": "Populatia dupa domiciliu la 1 ianuarie",
+          "snippet": null,
+          "score": 1,
+          "docId": null,
+          "docKey": "POP107D",
+          "subtitle": "POP107D",
+          "countyName": null,
+          "url": null,
+          "cuis": null,
+          "identifiers": ["POP107D"],
+          "roles": null,
+          "isActive": null,
+          "isUat": null,
+          "entityTags": null
+        }
+      ]
+    }
+  }
+}

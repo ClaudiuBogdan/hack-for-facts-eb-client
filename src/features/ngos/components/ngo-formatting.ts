@@ -1,7 +1,6 @@
 import type {
   NgoValidityState,
   ServiceDiscoveryRow,
-  SourceCoverageRow,
   SourceSnapshot,
 } from '@/schemas/ngos'
 import type { DataStatusVariant } from '@/components/provenance/source-provenance'
@@ -48,16 +47,6 @@ export function locationLabel(
 ): string {
   if (locality && county) return `${locality}, ${county}`
   return locality ?? county ?? 'Localitate necunoscuta'
-}
-
-export function sourceStatusVariant(
-  status: SourceCoverageRow['status'],
-): DataStatusVariant {
-  if (status === 'loaded') return 'live'
-  if (status === 'loaded_stale') return 'stale'
-  if (status === 'pending') return 'partial'
-  if (status === 'name_only') return 'name_only'
-  return 'blocked'
 }
 
 export function snapshotAuthorityLabel(snapshot?: SourceSnapshot | null): string {

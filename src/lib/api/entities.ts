@@ -175,16 +175,19 @@ export async function getEntityDetails(
     trendPeriod?: ReportPeriodInput;
     mainCreditorCui?: string;
   } & NormalizationOptions,
+  options: { readonly signal?: AbortSignal } = {},
 ): Promise<EntityDetailsData | null> {
   logger.info(`Fetching entity details for CUI: ${params.cui}`);
 
   try {
-    return await fetchRedesignEntityDetails(params);
+    return await fetchRedesignEntityDetails(params, options);
   } catch (error) {
-    logger.error(`Error fetching entity details for CUI: ${params.cui}`, {
-      error,
-      cui: params.cui,
-    });
+    if (!options.signal?.aborted) {
+      logger.error(`Error fetching entity details for CUI: ${params.cui}`, {
+        error,
+        cui: params.cui,
+      });
+    }
     throw error;
   }
 }

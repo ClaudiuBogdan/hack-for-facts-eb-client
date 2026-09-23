@@ -1,16 +1,22 @@
 import { isRedesignOnlyApiDeployment } from '@/lib/api/api-mode'
 import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
 import { entityIdentityQueryOptions } from '@/lib/queries/entity-identity'
+import { isCancelledError } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { entitySearchSchema } from '@/components/entities/validation'
 import { ViewLoading } from '@/components/ui/ViewLoading'
 import {
+  abandonServerQuery,
   buildEntityPageLoaderPayload,
+  createEntityPageDegradedHeaders,
+  createEntityPageSsrDeadline,
   getEntityPageQueryPlan,
+  markEntityPageResponseDegraded,
   readEntityPageRequestOrigin,
   resolveEntityPageQueryInputs,
-  runEntityPageBlockingBootstrap,
+  runEntityPageBootstrapWithinDeadline,
+  settleWithinDeadline,
   type EntityPageExecutionContext,
   type EntityPageLoaderPayload,
 } from '@/features/entities/page-core'
@@ -22,7 +28,7 @@ import {
   parseCurrencyParam,
   resolveNormalizationSettings,
 } from '@/lib/globalSettings/params'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
+import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { readClientCurrencyPreference, readClientInflationAdjustedPreference } from '@/lib/user-preferences'
 import { toExecutionReportType } from '@/schemas/reporting'
 
@@ -37,6 +43,18 @@ type EntityPageBootstrapPayload = {
   readonly loaderPayload: EntityPageLoaderPayload
 }
 
+/**
+ * Anything but `complete` means the payload carries no entity data and the
+ * lazy route should re-run the loader on the client to complete it and the
+ * `<head>`:
+ * - `timed-out`: the server hit the SSR deadline before the blocking queries
+ *   resolved and served the shell, as a 503 with no-store;
+ * - `cancelled`: a client-side reload lost its query when the page moved on
+ *   (see the loader's catch). Returning to the page later must recover again,
+ *   which a `complete` payload without a name would never trigger.
+ */
+export type EntityRouteSsrBootstrapStatus = 'complete' | 'timed-out' | 'cancelled'
+
 type EntityRouteLoaderData = {
   readonly entityPageBootstrap: EntityPageBootstrapPayload
   readonly initialSettings: {
@@ -48,6 +66,7 @@ type EntityRouteLoaderData = {
     readonly inflationAdjusted: boolean
   }
   readonly forcedOverrides: ReturnType<typeof resolveNormalizationSettings>['forcedOverrides']
+  readonly ssrBootstrapStatus: EntityRouteSsrBootstrapStatus
 }
 
 type EntitiesEntityRouteAdapter = ReturnType<typeof resolveEntitiesEntityRouteAdapter>
@@ -156,27 +175,8 @@ function resolveAdapterWithEffectiveReportType(
 }
 
 export const Route = createFileRoute('/entities/$cui')({
-  headers: () =>
-    createPublicPageCacheHeaders({
-      sharedMaxAgeSeconds: 300,
-      staleWhileRevalidateSeconds: 86400,
-    }),
   validateSearch: entitySearchSchema,
-  head: ({ params, match }) => {
-    const loaderData = match.loaderData as EntityRouteLoaderData | undefined
-    const loaderPayload = loaderData?.entityPageBootstrap?.loaderPayload
-
-    return buildEntityRouteHead(resolveEntityPageRouteHeadContract({
-      routeId: 'entities',
-      cui: params.cui,
-      seoSnapshot: loaderPayload?.entitySeoSnapshot,
-      requestOrigin: loaderPayload?.requestSiteUrl,
-      localeSearchContext: {
-        lang: (match.search as EntitySearchSchema | undefined)?.lang,
-      },
-    }))
-  },
-  loader: async ({ context, params, location }) => {
+  loader: async ({ context, params, location }): Promise<EntityRouteLoaderData> => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
     const search = entitySearchSchema.parse(location.search)
@@ -185,30 +185,69 @@ export const Route = createFileRoute('/entities/$cui')({
     const shouldResolveDefaultReportType =
       executionContext.reportType === undefined &&
       executionContext.effectiveReportType === undefined
-    const baseLoaderPayload = buildEntityPageLoaderPayload({
-      executionContext,
-      exactQueryInputs: adapter.exactQueryInputs,
-      requestSiteUrl,
+    const settings = {
+      initialSettings: ssrSettings,
+      ssrSettings,
+      forcedOverrides,
+    }
+    // Server only. The client has no deadline: its pending component covers a
+    // slow loader, and the server's shell is what the deadline protects.
+    const deadline = createEntityPageSsrDeadline()
+    // The payload without entity data: the response when the SSR deadline
+    // wins, and the fallback when the prefetch cannot complete.
+    const withoutEntityDetails = (
+      payloadAdapter: EntitiesEntityRouteAdapter,
+      ssrBootstrapStatus: EntityRouteSsrBootstrapStatus,
+    ): EntityRouteLoaderData => ({
+      entityPageBootstrap: createEntityPageBootstrapPayload(
+        payloadAdapter,
+        buildEntityPageLoaderPayload({
+          executionContext: payloadAdapter.executionContext,
+          exactQueryInputs: payloadAdapter.exactQueryInputs,
+          requestSiteUrl,
+        }),
+      ),
+      ...settings,
+      ssrBootstrapStatus,
     })
-
-    let entityPageBootstrap = createEntityPageBootstrapPayload(
-      adapter,
-      baseLoaderPayload,
-    )
-
-    if (isRedesignOnlyApiDeployment() && adapter.normalizedSearch.view === 'ins') {
-      await queryClient.ensureQueryData(entityIdentityQueryOptions(params.cui, adapter.normalizedSearch.year))
-      return { entityPageBootstrap, initialSettings: ssrSettings, ssrSettings, forcedOverrides } satisfies EntityRouteLoaderData
+    const timedOut = async (
+      payloadAdapter: EntitiesEntityRouteAdapter,
+    ): Promise<EntityRouteLoaderData> => {
+      await markEntityPageResponseDegraded()
+      return withoutEntityDetails(payloadAdapter, 'timed-out')
     }
 
     try {
+      if (isRedesignOnlyApiDeployment() && adapter.normalizedSearch.view === 'ins') {
+        const identityOptions = entityIdentityQueryOptions(
+          params.cui,
+          adapter.normalizedSearch.year,
+        )
+        const identity = await settleWithinDeadline(
+          queryClient.ensureQueryData(identityOptions),
+          deadline,
+        )
+        if (identity.status === 'timed-out') {
+          await abandonServerQuery(queryClient, identityOptions.queryKey)
+          return timedOut(adapter)
+        }
+
+        return withoutEntityDetails(adapter, 'complete')
+      }
+
       let activeAdapter = adapter
-      let bootstrapResult = await runEntityPageBlockingBootstrap({
+      let bootstrapOutcome = await runEntityPageBootstrapWithinDeadline({
         queryClient,
         executionContext,
         exactQueryInputs: adapter.exactQueryInputs,
         requestSiteUrl,
+        deadline,
       })
+      if (bootstrapOutcome.status === 'timed-out') {
+        return timedOut(adapter)
+      }
+
+      let bootstrapResult = bootstrapOutcome.result
       const defaultExecutionReportType = toExecutionReportType(
         bootstrapResult.entityDetails?.default_report_type,
       )
@@ -241,30 +280,42 @@ export const Route = createFileRoute('/entities/$cui')({
             updatedAt: sourceState.dataUpdatedAt,
           })
         }
-        bootstrapResult = await runEntityPageBlockingBootstrap({
+        bootstrapOutcome = await runEntityPageBootstrapWithinDeadline({
           queryClient,
           executionContext: activeAdapter.executionContext,
           exactQueryInputs: activeAdapter.exactQueryInputs,
           requestSiteUrl,
+          deadline,
         })
+        if (bootstrapOutcome.status === 'timed-out') {
+          return timedOut(activeAdapter)
+        }
+        bootstrapResult = bootstrapOutcome.result
       }
-
-      entityPageBootstrap = createEntityPageBootstrapPayload(
-        activeAdapter,
-        bootstrapResult.payload,
-      )
 
       // A missing `entityDetails` is not special-cased: the page renders the
       // same payload either way and resolves the entity through its own
       // queries. (Both arms of the branch this replaces returned an identical
       // object.)
       return {
-        entityPageBootstrap,
-        initialSettings: ssrSettings,
-        ssrSettings,
-        forcedOverrides,
-      } satisfies EntityRouteLoaderData
+        entityPageBootstrap: createEntityPageBootstrapPayload(
+          activeAdapter,
+          bootstrapResult.payload,
+        ),
+        ...settings,
+        ssrBootstrapStatus: 'complete',
+      }
     } catch (error) {
+      // Now that the entity query consumes its abort signal, the cache cancels
+      // an in-flight fetch when its last observer leaves (the reader changed
+      // year or navigated while a client-side reload — the SSR recovery, or a
+      // stale-match reload — was joined to it). The page has already moved on
+      // to another query, and the next navigation runs this loader again, so
+      // the reload gives up on the payload instead of erroring the match.
+      if (isCancelledError(error)) {
+        return withoutEntityDetails(adapter, 'cancelled')
+      }
+
       if (!import.meta.env.DEV) {
         throw error
       }
@@ -274,13 +325,37 @@ export const Route = createFileRoute('/entities/$cui')({
         error,
       })
 
-      return {
-        entityPageBootstrap,
-        initialSettings: ssrSettings,
-        ssrSettings,
-        forcedOverrides,
-      } satisfies EntityRouteLoaderData
+      return withoutEntityDetails(adapter, 'complete')
     }
+  },
+  headers: ({ loaderData }) => {
+    // A shell served past the SSR deadline carries no entity data, and an
+    // errored match has no loader data at all; caching either would hand the
+    // degraded page to every reader until it expired.
+    if (loaderData?.ssrBootstrapStatus === 'timed-out') {
+      return createEntityPageDegradedHeaders()
+    }
+    if (!loaderData) {
+      return createNoStoreHeaders()
+    }
+
+    return createPublicPageCacheHeaders({
+      sharedMaxAgeSeconds: 300,
+      staleWhileRevalidateSeconds: 86400,
+    })
+  },
+  head: ({ params, match }) => {
+    const loaderPayload = match.loaderData?.entityPageBootstrap.loaderPayload
+
+    return buildEntityRouteHead(resolveEntityPageRouteHeadContract({
+      routeId: 'entities',
+      cui: params.cui,
+      seoSnapshot: loaderPayload?.entitySeoSnapshot,
+      requestOrigin: loaderPayload?.requestSiteUrl,
+      localeSearchContext: {
+        lang: match.search.lang,
+      },
+    }))
   },
   pendingComponent: ViewLoading,
   component: () => null,

@@ -3,7 +3,7 @@
     "insObservations": {
       "nodes": [
         {
-          "id": "FOM104D-B",
+          "id": "FOM104D-B-0",
           "dataset_code": "FOM104D",
           "value": "1053348",
           "value_status": null,
@@ -27,13 +27,13 @@
           },
           "classifications": [
             {
-              "id": "FOM104D-0",
+              "id": "FOM104D-B-0",
               "type_code": "D0",
-              "code": "112",
-              "name_ro": "112"
+              "code": "3000",
+              "name_ro": "3000"
             },
             {
-              "id": "FOM104D-1",
+              "id": "FOM104D-B-1",
               "type_code": "D1",
               "code": "112",
               "name_ro": "112"
@@ -44,7 +44,7 @@
           }
         },
         {
-          "id": "FOM104D-CJ",
+          "id": "FOM104D-CJ-1",
           "dataset_code": "FOM104D",
           "value": "261239",
           "value_status": null,
@@ -68,13 +68,13 @@
           },
           "classifications": [
             {
-              "id": "FOM104D-0",
+              "id": "FOM104D-CJ-0",
               "type_code": "D0",
-              "code": "112",
-              "name_ro": "112"
+              "code": "3001",
+              "name_ro": "3001"
             },
             {
-              "id": "FOM104D-1",
+              "id": "FOM104D-CJ-1",
               "type_code": "D1",
               "code": "112",
               "name_ro": "112"
@@ -85,7 +85,7 @@
           }
         },
         {
-          "id": "FOM104D-TM",
+          "id": "FOM104D-TM-2",
           "dataset_code": "FOM104D",
           "value": "255705",
           "value_status": null,
@@ -109,13 +109,13 @@
           },
           "classifications": [
             {
-              "id": "FOM104D-0",
+              "id": "FOM104D-TM-0",
               "type_code": "D0",
-              "code": "112",
-              "name_ro": "112"
+              "code": "3002",
+              "name_ro": "3002"
             },
             {
-              "id": "FOM104D-1",
+              "id": "FOM104D-TM-1",
               "type_code": "D1",
               "code": "112",
               "name_ro": "112"
@@ -126,7 +126,7 @@
           }
         },
         {
-          "id": "FOM104D-GR",
+          "id": "FOM104D-GR-3",
           "dataset_code": "FOM104D",
           "value": "38238",
           "value_status": null,
@@ -150,13 +150,13 @@
           },
           "classifications": [
             {
-              "id": "FOM104D-0",
+              "id": "FOM104D-GR-0",
               "type_code": "D0",
-              "code": "112",
-              "name_ro": "112"
+              "code": "3003",
+              "name_ro": "3003"
             },
             {
-              "id": "FOM104D-1",
+              "id": "FOM104D-GR-1",
               "type_code": "D1",
               "code": "112",
               "name_ro": "112"

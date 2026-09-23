@@ -107,10 +107,11 @@ export function registryFilter(search: RegistrySearch) {
 export async function fetchRegistryPage(
   search: RegistrySearch,
   signal?: AbortSignal,
+  first = 25,
 ): Promise<RegistryPage> {
   const data = await graphqlQuery<unknown>(
     REGISTRY_LIST_QUERY,
-    { filter: registryFilter(search), first: 25, after: search.after || null },
+    { filter: registryFilter(search), first, after: search.after || null },
     {
       operationName: "NgoRegistryRecords",
       auth: "none",

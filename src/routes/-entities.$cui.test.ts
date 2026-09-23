@@ -1,5 +1,5 @@
-import { QueryClient, dehydrate, hydrate } from '@tanstack/react-query'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { CancelledError, QueryClient, dehydrate, hydrate } from '@tanstack/react-query'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const deployment = vi.hoisted(() => ({ native: false }))
 vi.mock('@/lib/api/api-mode', () => ({ isRedesignOnlyApiDeployment: () => deployment.native }))
@@ -30,6 +30,7 @@ const createIsomorphicFnMock = vi.fn(() => {
 const getRequestUrlMock = vi.fn(
   () => new URL('https://transparenta.eu/entities/4305857'),
 )
+const setResponseStatusMock = vi.fn()
 const entityDetailsQueryOptionsMock = vi.fn()
 const entityExecutionLineItemsQueryOptionsMock = vi.fn()
 const buildEntityRouteHeadMock = vi.fn(() => ({ meta: [] }))
@@ -52,6 +53,7 @@ vi.mock('@tanstack/react-start', () => ({
 
 vi.mock('@tanstack/react-start/server', () => ({
   getRequestUrl: getRequestUrlMock,
+  setResponseStatus: setResponseStatusMock,
 }))
 
 vi.mock('@/components/entities/validation', () => ({
@@ -64,8 +66,12 @@ vi.mock('@/components/ui/ViewLoading', () => ({
   ViewLoading: () => null,
 }))
 
+const createPublicPageCacheHeadersMock = vi.fn(() => ({}))
+const createNoStoreHeadersMock = vi.fn(() => ({ 'Cache-Control': 'no-store' }))
+
 vi.mock('@/lib/http-cache', () => ({
-  createPublicPageCacheHeaders: vi.fn(() => ({})),
+  createPublicPageCacheHeaders: createPublicPageCacheHeadersMock,
+  createNoStoreHeaders: createNoStoreHeadersMock,
 }))
 
 vi.mock('@/features/entities/seo/entity-share-seo', () => ({
@@ -110,7 +116,9 @@ async function importRoute() {
 
   return Route as unknown as {
     head: (input: Record<string, unknown>) => unknown
+    headers: (input: Record<string, unknown>) => Record<string, string>
     loader: (input: Record<string, unknown>) => Promise<{
+      ssrBootstrapStatus: 'complete' | 'timed-out' | 'cancelled'
       entityPageBootstrap: {
         executionContext: Record<string, unknown>
         exactQueryInputs: {
@@ -185,6 +193,9 @@ describe('entities route', () => {
     generateHashMock.mockReset()
     readClientCurrencyPreferenceMock.mockReset()
     readClientInflationAdjustedPreferenceMock.mockReset()
+    createPublicPageCacheHeadersMock.mockClear()
+    createNoStoreHeadersMock.mockClear()
+    setResponseStatusMock.mockClear()
 
     delete (globalThis as { window?: unknown }).window
 
@@ -658,6 +669,178 @@ describe('entities route', () => {
     await route.loader(request)
     expect(details).toHaveBeenCalledTimes(1)
     queryClient.clear()
+  })
+
+  describe('SSR deadline', () => {
+    afterEach(() => {
+      vi.unstubAllEnvs()
+    })
+
+    function createRequest(queryClient: unknown) {
+      return {
+        context: { queryClient },
+        params: { cui: '4305857' },
+        location: { search: { year: 2023, report_type: 'DETAILED' } },
+      }
+    }
+
+    it('marks a completed bootstrap and keeps the public cache headers', async () => {
+      const route = await importRoute()
+      const loaderData = await route.loader(
+        createRequest({
+          ensureQueryData: vi.fn().mockResolvedValue(undefined),
+          getQueryData: vi.fn().mockReturnValue(createEntityDetailsData()),
+          getQueryState: () => undefined,
+        }),
+      )
+
+      expect(loaderData.ssrBootstrapStatus).toBe('complete')
+      expect(loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot).toMatchObject({
+        name: 'TEST ENTITY',
+      })
+      expect(setResponseStatusMock).not.toHaveBeenCalled()
+      route.headers({ loaderData })
+      expect(createPublicPageCacheHeadersMock).toHaveBeenCalled()
+      expect(createNoStoreHeadersMock).not.toHaveBeenCalled()
+    })
+
+    it('opts an errored match (no loader data) out of caching', async () => {
+      const route = await importRoute()
+
+      route.headers({ loaderData: undefined })
+
+      expect(createNoStoreHeadersMock).toHaveBeenCalled()
+      expect(createPublicPageCacheHeadersMock).not.toHaveBeenCalled()
+    })
+
+    it('gives up recoverably when the cache cancels the fetch under a client reload', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+      const route = await importRoute()
+
+      const loaderData = await route.loader(
+        createRequest({
+          ensureQueryData: vi.fn().mockRejectedValue(new CancelledError({ revert: true })),
+          getQueryData: vi.fn().mockReturnValue(undefined),
+          getQueryState: () => undefined,
+        }),
+      )
+
+      // Not `complete`: a cached nameless payload would keep the placeholder
+      // head on every return to the page.
+      expect(loaderData.ssrBootstrapStatus).toBe('cancelled')
+      expect(setResponseStatusMock).not.toHaveBeenCalled()
+      expect(loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot).not.toHaveProperty(
+        'name',
+      )
+      // Not the DEV "prefetch failed" fallback: a cancellation is not a failure.
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('serves the shell past the deadline as a 503, drops the query and opts out of caching', async () => {
+      vi.stubEnv('ENTITY_PAGE_SSR_DEADLINE_MS', '20')
+      const cancelQueries = vi.fn().mockResolvedValue(undefined)
+      const removeQueries = vi.fn()
+      const route = await importRoute()
+      const startedAt = Date.now()
+
+      const loaderData = await route.loader(
+        createRequest({
+          ensureQueryData: vi.fn(() => new Promise(() => {})),
+          getQueryData: vi.fn().mockReturnValue(undefined),
+          getQueryState: () => undefined,
+          cancelQueries,
+          removeQueries,
+        }),
+      )
+
+      expect(Date.now() - startedAt).toBeLessThan(1_000)
+      expect(loaderData.ssrBootstrapStatus).toBe('timed-out')
+      expect(loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot).toMatchObject({
+        cui: '4305857',
+        filterContext: { year: 2023 },
+      })
+      expect(loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot).not.toHaveProperty(
+        'name',
+      )
+      expect(loaderData.entityPageBootstrap.loaderPayload.ssrEntityDetailsParams).toEqual(
+        loaderData.entityPageBootstrap.exactQueryInputs.entityDetails,
+      )
+      const abandonedFilter = {
+        queryKey: [
+          'entity-details',
+          loaderData.entityPageBootstrap.exactQueryInputs.entityDetails,
+        ],
+        exact: true,
+      }
+      expect(cancelQueries).toHaveBeenCalledWith(abandonedFilter)
+      expect(removeQueries).toHaveBeenCalledWith(abandonedFilter)
+      // Crawlers and link unfurlers treat the placeholder head as temporary.
+      expect(setResponseStatusMock).toHaveBeenCalledWith(503)
+
+      createPublicPageCacheHeadersMock.mockClear()
+      expect(route.headers({ loaderData })).toEqual({
+        'Cache-Control': 'no-store',
+        'Retry-After': '5',
+      })
+      expect(createPublicPageCacheHeadersMock).not.toHaveBeenCalled()
+    })
+
+    it('waits for the query on the client, where the pending component covers it', async () => {
+      vi.stubEnv('ENTITY_PAGE_SSR_DEADLINE_MS', '20')
+      ;(globalThis as { window?: unknown }).window = {
+        location: { origin: 'https://transparenta.eu' },
+      }
+      const route = await importRoute()
+      const ensureQueryData = vi.fn(
+        () => new Promise((resolve) => setTimeout(() => resolve(undefined), 60)),
+      )
+
+      const loaderData = await route.loader(
+        createRequest({
+          ensureQueryData,
+          getQueryData: vi.fn().mockReturnValue(createEntityDetailsData()),
+          getQueryState: () => undefined,
+        }),
+      )
+
+      expect(loaderData.ssrBootstrapStatus).toBe('complete')
+      expect(loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot).toMatchObject({
+        name: 'TEST ENTITY',
+      })
+      delete (globalThis as { window?: unknown }).window
+    })
+
+    it('applies the deadline to the native INS identity prefetch', async () => {
+      vi.stubEnv('ENTITY_PAGE_SSR_DEADLINE_MS', '20')
+      deployment.native = true
+      const cancelQueries = vi.fn().mockResolvedValue(undefined)
+      const removeQueries = vi.fn()
+      const route = await importRoute()
+
+      const loaderData = await route.loader({
+        context: {
+          queryClient: {
+            ensureQueryData: vi.fn(() => new Promise(() => {})),
+            getQueryData: vi.fn(),
+            getQueryState: () => undefined,
+            cancelQueries,
+            removeQueries,
+          },
+        },
+        params: { cui: '4305857' },
+        location: { search: { view: 'ins', year: 2023 } },
+      })
+
+      expect(loaderData.ssrBootstrapStatus).toBe('timed-out')
+      const abandonedFilter = {
+        queryKey: ['entityIdentity', '4305857', 2023],
+        exact: true,
+      }
+      expect(cancelQueries).toHaveBeenCalledWith(abandonedFilter)
+      expect(removeQueries).toHaveBeenCalledWith(abandonedFilter)
+      expect(setResponseStatusMock).toHaveBeenCalledWith(503)
+    })
   })
 
 })

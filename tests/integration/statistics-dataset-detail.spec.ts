@@ -101,9 +101,9 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(page.getByText('INS Tempo').first()).toBeVisible()
     await expect(page.getByText('POP107D').first()).toBeVisible()
 
-    // The scope sentence marks server-resolved defaults: dotted underline +
-    // ONE legend line on desktop; "(implicit)" lives in the aria-label.
-    await expect(page.getByText(/Valorile subliniate punctat/)).toBeVisible()
+    // The selection rail marks server-resolved defaults: „implicit" on the
+    // row and ONE legend line under the rail; "(implicit)" lives in the aria-label.
+    await expect(page.getByText(/Valorile marcate „implicit"/)).toBeVisible()
     await expect(page.getByLabel(/\(implicit\)/).first()).toBeVisible()
 
     // Trend chart under the number.
@@ -165,8 +165,10 @@ test.describe('Dataset detail — the disclosure ladder', () => {
       )
       .toContain('D1:107')
 
-    // The hero re-resolves to the pinned cell, (implicit) drops for it.
-    await expect(page.getByText('11.136.500')).toBeVisible({ timeout: 15000 })
+    // The hero re-resolves to the pinned cell, (implicit) drops for it. The
+    // figure also appears in the facts row and as the chart's end label, so
+    // ask the hero itself.
+    await expect(heroValue(page)).toHaveText(/11\.136\.500/, { timeout: 15000 })
   })
 
   test('source picker follows short unknown-count pages and hides stale search options', async ({
@@ -220,16 +222,13 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(
       page.getByRole('option', { name: 'Synthetic age 100' }),
     ).toBeVisible()
-    await page
-      .getByRole('button', { name: 'Pagina următoare de opțiuni' })
-      .click()
+    // The list asks for the next page as soon as the rows it holds are all in
+    // view: two rows fit, so the second short page lands on its own, and the
+    // first page's rows stay in place above it.
     await expect(
       page.getByRole('option', { name: 'Synthetic age 102' }),
     ).toBeVisible()
     expect(requests.map((r) => r.offset)).toEqual([0, 2])
-    await page
-      .getByRole('button', { name: 'Pagina anterioară de opțiuni' })
-      .click()
     await expect(
       page.getByRole('option', { name: 'Synthetic age 100' }),
     ).toBeVisible()
@@ -435,8 +434,10 @@ for (const language of ['en', 'ro'] as const) {
             ? 'Fără o valoare recentă pentru selecția curentă.'
             : 'No recent value for the current selection.'
         await expect(page.getByText(unavailable)).toBeVisible()
-        // The flag is spelled out; the English catalog carries the source string.
-        await expect(page.getByText(/date confidențiale/)).toBeVisible()
+        // The flag is spelled out in the reader's language.
+        await expect(
+          page.getByText(language === 'ro' ? /date confidențiale/ : /confidential data/),
+        ).toBeVisible()
         await expect(heroValue(page)).toHaveCount(0)
         await page
           .getByText(

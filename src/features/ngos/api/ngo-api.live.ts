@@ -1,6 +1,5 @@
 import { assertLiveApiAvailable } from '@/lib/scraper-references/mock-mode'
 import type {
-  DomainCoverage,
   NgoProfile,
   PublicFunding,
   ServiceDiscoveryResult,
@@ -17,11 +16,6 @@ import type {
 export async function fetchNgoProfileLive(
   _cui: string,
 ): Promise<NgoProfile | null> {
-  assertLiveApiAvailable('ngo-core', 'NGO live API is not connected yet.')
-  return null
-}
-
-export async function fetchNgoDomainCoverageLive(): Promise<DomainCoverage | null> {
   assertLiveApiAvailable('ngo-core', 'NGO live API is not connected yet.')
   return null
 }

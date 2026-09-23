@@ -1,22 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import {
-  fetchNgoDomainCoverage,
   fetchNgoProfile,
   fetchNgoServiceDiscovery,
   fetchPublicFunding,
 } from '../api/ngo-api'
-
-export function ngoDomainCoverageQueryKey() {
-  return ['ngo', 'domain-coverage'] as const
-}
-
-export function useNgoDomainCoverage() {
-  return useQuery({
-    queryKey: ngoDomainCoverageQueryKey(),
-    queryFn: () => fetchNgoDomainCoverage(),
-    staleTime: 5 * 60 * 1000,
-  })
-}
 
 export function ngoProfileQueryKey(cui: string) {
   return ['ngo', 'profile', cui] as const

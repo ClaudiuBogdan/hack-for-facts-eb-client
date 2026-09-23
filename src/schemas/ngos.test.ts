@@ -13,15 +13,12 @@ describe('parseNgoLandingSearch', () => {
     expect(parseNgoLandingSearch({})).toEqual({})
   })
 
-  it('keeps valid q and lang', () => {
-    expect(parseNgoLandingSearch({ q: 'asociatia', lang: 'en' })).toEqual({
-      q: 'asociatia',
-      lang: 'en',
-    })
+  it('keeps a known map layer', () => {
+    expect(parseNgoLandingSearch({ indicator: 'noi' })).toEqual({ indicator: 'noi' })
   })
 
-  it('drops garbage non-string q', () => {
-    expect(parseNgoLandingSearch({ q: 123, lang: { x: 1 } })).toEqual({})
+  it('drops an unknown layer and anything else', () => {
+    expect(parseNgoLandingSearch({ indicator: 'viata', q: 'asociatia' })).toEqual({})
   })
 })
 
