@@ -3,12 +3,9 @@ import type { InsObservation, InsTimePeriod } from '@/schemas/ins'
 import { filterExactCell } from './dataset-selection'
 import {
   parseComparisonTokens,
-  buildBarSeries,
   buildComparisonMatrix,
-  buildLineSeries,
   buildPeriodOptions,
   getComparisonCell,
-  lineSeriesKey,
   parseClassificationPin,
   removeClassificationPin,
   toChartValue,
@@ -216,64 +213,6 @@ describe('toChartValue', () => {
 
   it('preserves a real zero', () => {
     expect(toChartValue('0')).toBe(0)
-  })
-})
-
-describe('buildBarSeries', () => {
-  const matrix = buildComparisonMatrix({
-    observations: [
-      observation({ code: '54975', name: 'Cluj-Napoca', period: annual(2024), value: '288104' }),
-      observation({ code: '54984', name: 'Turda', period: annual(2023), value: '43302' }),
-    ],
-    territoryCodes: ['54975', '54984'],
-  })
-
-  it('emits null (a gap) for a territory missing the selected period', () => {
-    expect(buildBarSeries(matrix, '2024')).toEqual([
-      { code: '54975', name: 'Cluj-Napoca', value: 288104 },
-      { code: '54984', name: 'Turda', value: null },
-    ])
-  })
-
-  it('emits all-null bars when no period is selected', () => {
-    expect(buildBarSeries(matrix, null).every((bar) => bar.value === null)).toBe(true)
-  })
-})
-
-describe('buildLineSeries', () => {
-  it('emits explicit nulls for gaps so connectNulls={false} can break the line', () => {
-    const matrix = buildComparisonMatrix({
-      observations: [
-        observation({ code: '54975', period: annual(2023), value: '2' }),
-        observation({ code: '54975', period: annual(2024), value: '3' }),
-        observation({ code: '54984', period: annual(2023), value: '1' }),
-      ],
-      territoryCodes: ['54975', '54984'],
-    })
-
-    expect(buildLineSeries(matrix)).toEqual([
-      { isoPeriod: '2023', [lineSeriesKey('54975')]: 2, [lineSeriesKey('54984')]: 1 },
-      { isoPeriod: '2024', [lineSeriesKey('54975')]: 3, [lineSeriesKey('54984')]: null },
-    ])
-  })
-
-  it('never collides a SIRUTA key with the axis key', () => {
-    expect(lineSeriesKey('isoPeriod')).not.toBe('isoPeriod')
-  })
-
-  it('orders points oldest-first across a year boundary', () => {
-    const matrix = buildComparisonMatrix({
-      observations: [
-        observation({ code: '1', period: quarterly(2024, 1), value: '2' }),
-        observation({ code: '1', period: quarterly(2023, 4), value: '1' }),
-      ],
-      territoryCodes: ['1'],
-    })
-
-    expect(buildLineSeries(matrix).map((point) => point.isoPeriod)).toEqual([
-      '2023-Q4',
-      '2024-Q1',
-    ])
   })
 })
 

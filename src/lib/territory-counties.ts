@@ -48,3 +48,8 @@ export const ROMANIA_COUNTIES = [
 ] as const
 
 export type CountyCode = (typeof ROMANIA_COUNTIES)[number]['code']
+
+/** A county's name with its diacritics, by its code (`CJ` → „Cluj"); INS often drops them. */
+export function countyNameRo(code: string): string | undefined {
+  return ROMANIA_COUNTIES.find((county) => county.code === code)?.nameRo
+}

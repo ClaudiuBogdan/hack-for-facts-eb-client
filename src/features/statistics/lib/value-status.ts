@@ -29,3 +29,18 @@ export function describeValueStatus(status: string): string {
       return t`marcaj INS „${status.trim()}”`
   }
 }
+
+/** INS flags under which a cell has no publishable number, whatever its value field holds. */
+export const BLOCKING_VALUE_STATUSES: ReadonlySet<string> = new Set([':', 'c', 'x'])
+
+/**
+ * The number a cell publishes: null when it is empty, not a number, or
+ * flagged as having none. Never 0 — „no figure" and „zero" are different claims.
+ */
+export function publishedNumber(value: string | null | undefined, status: string | null | undefined): number | null {
+  if (BLOCKING_VALUE_STATUSES.has(status?.trim().toLowerCase() ?? '')) return null
+  const trimmed = value?.trim()
+  if (!trimmed) return null
+  const parsed = Number(trimmed)
+  return Number.isFinite(parsed) ? parsed : null
+}

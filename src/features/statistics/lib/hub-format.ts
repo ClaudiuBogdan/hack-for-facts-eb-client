@@ -41,6 +41,21 @@ export function sharedDecimals(values: readonly number[]): number {
   return decimals
 }
 
+/** The word after the number, from the unit the API resolved. Never guessed from the dataset name. */
+export function hubUnitOf(latest: {
+  readonly unitSymbol: string | null
+  readonly unitCode: string | null
+  readonly unitNameRo: string | null
+}): StatisticsHubUnit {
+  const symbol = latest.unitSymbol?.toLowerCase() ?? ''
+  const name = latest.unitNameRo?.toLowerCase() ?? ''
+  if (symbol === 'persons' || name.startsWith('numar persoane')) return 'persons'
+  if (symbol === 'percent' || name.startsWith('procent')) return 'percent'
+  if (symbol === 'count' || name === 'numar') return 'count'
+  if (name === 'ani') return 'years'
+  return 'other'
+}
+
 export function hubUnitWord(unit: StatisticsHubUnit, unitLabel: string | null): string {
   switch (unit) {
     case 'persons':
@@ -116,11 +131,22 @@ export function formatChartPeriod(period: string): string {
  * at zero, where a percent has no meaning.
  */
 export function describeHubDelta(from: number, to: number, unit: StatisticsHubUnit): string | null {
-  const delta = to - from
-  if (unit === 'percent') return t`${formatSigned(delta, 1, true)} pp`
-  if (unit === 'years') return t`${formatSigned(delta, 1, true)} ani`
+  const change = hubChange(from, to, unit)
+  return change === null ? null : formatHubChange(change, unit)
+}
+
+/** The change {@link describeHubDelta} states, as a number: percentage points, years or percent. */
+export function hubChange(from: number, to: number, unit: StatisticsHubUnit): number | null {
+  if (unit === 'percent' || unit === 'years') return to - from
   if (from === 0) return null
-  return `${formatSigned((delta / Math.abs(from)) * 100, 1, true)}%`
+  return ((to - from) / Math.abs(from)) * 100
+}
+
+/** A change from {@link hubChange}, signed, in the unit it is measured in („+2,1 pp", „-18,9%"). */
+export function formatHubChange(change: number, unit: StatisticsHubUnit, digits = 1): string {
+  if (unit === 'percent') return t`${formatSigned(change, digits, true)} pp`
+  if (unit === 'years') return t`${formatSigned(change, digits, true)} ani`
+  return `${formatSigned(change, digits, true)}%`
 }
 
 /** A signed whole figure („+4.560", „-93.966"), for a difference between two counts. */

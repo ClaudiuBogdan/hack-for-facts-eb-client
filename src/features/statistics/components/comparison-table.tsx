@@ -58,7 +58,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
 
   return (
     <div className={COMPARISON_PALETTE_CLASS}>
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="overflow-x-auto border-t border-border/70">
         <Table>
           <caption className="sr-only">
             {t`Tabel de comparație: valorile indicatorului pentru fiecare teritoriu și perioadă.`}
@@ -198,7 +198,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
       </div>
 
       {matrix.unitSymbol ? (
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="px-4 pb-3 pt-2 text-xs text-muted-foreground md:px-5">
           <Trans>Unitate de măsură: {describeUnitSymbol(matrix.unitSymbol)}</Trans>
         </p>
       ) : null}

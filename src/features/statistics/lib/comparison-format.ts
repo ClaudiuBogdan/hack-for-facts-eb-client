@@ -1,10 +1,8 @@
 import { t } from '@lingui/core/macro'
 
 /**
- * Number formatting shared by the comparison axes, tooltips and direct labels.
- *
- * Lives outside the chart components so the chart module exports only
- * components (react-refresh) — and so the formatting is testable on its own.
+ * How the comparison names what it compares: a territory's identity, its
+ * level, and its name as the page prints it.
  */
 
 /** A territory's identity as the legend and charts see it. */
@@ -14,24 +12,6 @@ export interface ComparisonSeriesDescriptor {
   readonly color: string
   /** Deterministic from the URL token shape — present even for empty rows. */
   readonly level: 'NATIONAL' | 'NUTS3' | 'LAU'
-}
-
-const numberFormatter = new Intl.NumberFormat('ro-RO', {
-  maximumFractionDigits: 2,
-})
-
-export function formatComparisonNumber(value: number): string {
-  return numberFormatter.format(value)
-}
-
-/** Compact axis ticks so six-figure populations do not collide. */
-const compactFormatter = new Intl.NumberFormat('ro-RO', {
-  notation: 'compact',
-  maximumFractionDigits: 1,
-})
-
-export function formatComparisonAxisTick(value: number): string {
-  return compactFormatter.format(value)
 }
 
 /**
@@ -59,12 +39,50 @@ export function comparisonLevelLabel(
   }
 }
 
+/** Words a Romanian place name keeps in lower case after its first word („Baia de Arieș", „Valea lui Mihai"). */
+const LOWER_CASE_WORDS = new Set(['de', 'din', 'pe', 'la', 'sub', 'lui', 'cu'])
+
+function sentenceCase(text: string): string {
+  return text
+    .toLocaleLowerCase('ro')
+    .split(' ')
+    .map((word, index) =>
+      index > 0 && LOWER_CASE_WORDS.has(word)
+        ? word
+        : word
+            .split('-')
+            .map((part) => part.charAt(0).toLocaleUpperCase('ro') + part.slice(1))
+            .join('-'),
+    )
+    .join(' ')
+}
+
 /**
- * A bar label that fits under its bar: the legal-form prefix INS prints in
- * capitals („MUNICIPIUL ", „ORAȘ ", „COMUNA ") goes, and what is left is cut
- * at sixteen characters. The legend and the tooltip keep the full name.
+ * A territory's name as the comparison prints it: the place itself, in
+ * sentence case where INS sends capitals, with the legal form it leads with
+ * („MUNICIPIUL CLUJ-NAPOCA") set apart as its kind („municipiu"), so a
+ * commune and a town of one name stay two rows.
  */
-export function shortTerritoryName(name: string): string {
-  const bare = name.replace(/^(MUNICIPIUL|ORAȘUL|ORASUL|ORAȘ|ORAS|COMUNA|JUDEȚUL|JUDETUL)\s+/i, '')
-  return bare.length > 16 ? `${bare.slice(0, 15)}…` : bare
+export function comparisonPlaceName(raw: string): { readonly name: string; readonly kind: string | null } {
+  const trimmed = raw.trim().replace(/\s+/g, ' ')
+  const shouting = trimmed === trimmed.toLocaleUpperCase('ro')
+  const match = /^(MUNICIPIUL|ORAȘUL|ORASUL|ORAȘ|ORAS|COMUNA|JUDEȚUL|JUDETUL)\s+(.+)$/i.exec(trimmed)
+  const body = match?.[2] ?? trimmed
+  const name = shouting ? sentenceCase(body) : body
+  switch (match?.[1]?.toUpperCase()) {
+    case 'MUNICIPIUL':
+      return { name, kind: t`municipiu` }
+    case 'ORAȘUL':
+    case 'ORASUL':
+    case 'ORAȘ':
+    case 'ORAS':
+      return { name, kind: t`oraș` }
+    case 'COMUNA':
+      return { name, kind: t`comună` }
+    case 'JUDEȚUL':
+    case 'JUDETUL':
+      return { name, kind: t`județ` }
+    default:
+      return { name, kind: null }
+  }
 }

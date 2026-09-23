@@ -228,21 +228,36 @@ for (const language of ['en', 'ro'] as const)
       }, testInfo) => {
         const calls = await mock(page)
         await page.goto(link())
+        // The standings answer first: the window's end, and a gap stays a gap.
+        const standings = page.getByRole('list', { name: /Rezultatul comparației|Comparison result/ })
+        await expect(standings).toContainText(/123[.,]45/, { timeout: 15000 })
+        await expect(standings.getByRole('listitem').filter({ hasText: /municipiu|municipality/ })).toContainText('—')
+        // Every value, verbatim with its INS flag, is one disclosure away.
+        await page.getByRole('button', { name: /Toate valorile|All values/ }).click()
         const table = page.getByRole('table')
-        await expect(table).toContainText('123.450', { timeout: 15000 })
+        await expect(table).toContainText('123.450')
         await expect(table).toContainText('[c]')
         await expect(table).toContainText('2023')
-        await expect(table).toContainText('Municipiul București')
+        await expect(table).toContainText('București')
         await expect(table).toContainText('Sectorul 1')
         const before = calls.filter((c) =>
           c.query.includes('InsSourceObservations'),
         ).length
         expect(before).toBe(3)
         await page.locator('#comparison-period').click()
-        await page.getByRole('option', { name: '2022', exact: true }).click()
+        await page.getByRole('option', { name: '2023', exact: true }).click()
         await expect(page).toHaveURL(
           (url) =>
-            JSON.parse(url.searchParams.get('perioada') ?? 'null') === '2022',
+            JSON.parse(url.searchParams.get('perioada') ?? 'null') === '2023',
+        )
+        // On a phone the start's control sits in the change column's header.
+        await page
+          .locator('#comparison-from, #comparison-from-compact')
+          .locator('visible=true')
+          .click()
+        await page.getByRole('option', { name: '2022', exact: true }).click()
+        await expect(page).toHaveURL(
+          (url) => JSON.parse(url.searchParams.get('din') ?? 'null') === '2022',
         )
         expect(
           calls.filter((c) => c.query.includes('InsSourceObservations')).length,
@@ -273,18 +288,18 @@ for (const language of ['en', 'ro'] as const)
         page,
       }) => {
         await mock(page, { ambiguous: true })
-        await page.goto(link({ perioada: '2020' }))
-        const table = page.getByRole('table')
-        await expect(table).toContainText(/Mai multe serii|Multiple source/, {
-          timeout: 15000,
-        })
-        await expect(table).toContainText('2020')
-        await expect(table).not.toContainText('123.450')
+        // 2023 is a year no row has: it stays the window's end, not the latest.
+        await page.goto(link({ perioada: '2023' }))
         await expect(
-          page.getByText(
-            /Serii indisponibile pentru comparație:|Series unavailable for comparison:/,
-          ),
-        ).toContainText('București')
+          page
+            .getByRole('listitem')
+            .filter({ hasText: /Mai multe serii|Multiple source/ }),
+        ).toContainText('București', { timeout: 15000 })
+        await page.getByRole('button', { name: /Toate valorile|All values/ }).click()
+        const table = page.getByRole('table')
+        await expect(table).toContainText(/Mai multe serii|Multiple source/)
+        await expect(table).toContainText('2023')
+        await expect(table).not.toContainText('123.450')
         const sourceLink = table.getByRole('link').first()
         const href = await sourceLink.getAttribute('href')
         expect(href).not.toBeNull()
@@ -295,7 +310,7 @@ for (const language of ['en', 'ro'] as const)
         expect(
           JSON.parse(sourceUrl.searchParams.get('unitate') ?? 'null'),
         ).toBe('0')
-        await expect(page.locator('#comparison-period')).toContainText('2020')
+        await expect(page.locator('#comparison-period')).toContainText('2023')
       })
     })
   }

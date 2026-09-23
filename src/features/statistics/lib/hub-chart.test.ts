@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { gapRegions, niceScale, yearTickIndices } from './hub-chart'
+import { gapRegions, niceScale, opensYear, periodTickIndices, yearTickIndices } from './hub-chart'
 
 describe('niceScale', () => {
   it('rounds the births-and-deaths range to steps of 50.000', () => {
@@ -73,5 +73,33 @@ describe('gapRegions', () => {
     expect(regions).toHaveLength(1)
     expect(regions[0]!.polygon[0]).toEqual([0, 100])
     expect(regions[0]!.sign).toBe(1)
+  })
+})
+
+describe('periodTickIndices', () => {
+  it('labels years as the year axis does', () => {
+    const years = Array.from({ length: 36 }, (_, index) => String(1990 + index))
+    expect(periodTickIndices(years)).toEqual(yearTickIndices(years))
+  })
+
+  it('labels months at the start of a year, every few years when there are many, clear of both ends', () => {
+    const months = Array.from({ length: 197 }, (_, index) => {
+      const year = 2010 + Math.floor(index / 12)
+      return `${year}-${String((index % 12) + 1).padStart(2, '0')}`
+    })
+    const ticks = periodTickIndices(months)
+    expect(ticks[0]).toBe(0)
+    expect(ticks[ticks.length - 1]).toBe(196)
+    const inner = ticks.slice(1, -1).map((index) => months[index])
+    expect(inner).toEqual(['2015-01', '2020-01'])
+  })
+
+  it('labels quarters at the first quarter', () => {
+    const quarters = ['2022-Q3', '2022-Q4', '2023-Q1', '2023-Q2', '2023-Q3', '2023-Q4', '2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4', '2025-Q1', '2025-Q2']
+    expect(periodTickIndices(quarters).map((index) => quarters[index])).toEqual(['2022-Q3', '2023-Q1', '2024-Q1', '2025-Q2'])
+  })
+
+  it('tells a period that opens its year', () => {
+    expect([opensYear('2024'), opensYear('2024-01'), opensYear('2024-Q1'), opensYear('2024-02'), opensYear('2024-Q2')]).toEqual([true, true, true, false, false])
   })
 })

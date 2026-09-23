@@ -285,7 +285,7 @@ period; the chart is captioned „Evoluție în timp" rather than repeating the
 title, formats its axis in the active locale, and fills the column. The
 selection logic (native lane, pins, validation) is untouched.
 
-**Comparisons (`/ins/comparatii`).** Decision: the picture first —
+**Comparisons (`/ins/comparatii`).** (Superseded by §6r.) Decision: the picture first —
 the whole history, then the chosen period with its selector beside it — and
 the table under them. The indicator picker lists nothing until two
 characters are typed; an unfiltered 1,916-row list taught nothing. Bar labels
@@ -1185,6 +1185,77 @@ the quietest type. The same three already have rows and sparklines in band
 - **The lede is the one sentence the data proves**: „Din 1992, în fiecare
   an au murit mai mulți oameni decât s-au născut." The 2025 counts it used
   to spell out are in the table.
+
+## 6r. „Compară teritorii": set up in the rail, answered on the page, deepened in Grafice (2026-09-23)
+
+The comparisons page was the one INS page left from the first pass: six preset
+pills over a 20rem column of two search boxes, then a line chart, a bar chart
+with its own period dropdown beside it, and a table as wide as the history —
+three views of the same numbers, none of them the answer. A town beside its
+county and the country, the path every territory page's „Compară" link takes,
+drew the country at 5,4 million and the town as a flat line along the floor,
+with a note that the values were not normalised. The chart builder
+(`/charts/$chartId`) already does the deep work — more series, annotations,
+export — so this page is the quick setup and the first reading. Now:
+
+- **The detail page's rail is the setup.** „Selecție" holds three rows: the
+  indicator (a picker with the nine indicators readers compare places on
+  most, then a catalog search limited to datasets with county figures — a
+  national dataset has one territory to compare; 430 qualify, 84 of them per
+  locality too), the territories (up to six, each in its line colour, so the
+  list is also the legend; a picker with the first pick's county, the
+  country and five large cities before anything is typed; no localities for
+  a county-only dataset, and it says so) and, folded, „Detaliile seriei": the
+  classification pins, unit and frequency, marked „implicit" while the
+  server's defaults stand, opened on its own when the read waits on one.
+  With nothing in the URL the page runs a live example, marked „exemplu";
+  any edit — a dataset, a territory, a window, the view — adopts it.
+- **The answer first: each place at two periods and the change.** One table,
+  highest first (by the end value, or by the change while the chart shows
+  change): the window's start, its end, and the change — percent for a count
+  or an amount, percentage points for a rate, years for a life expectancy.
+  The two period headers are the window's controls (`din`, `perioada`). The
+  window opens on the first and last periods every territory has a number
+  for, so every row compares the same two years. A territory without a
+  series says why in its row („Mai multe serii sursă…", „Fără date…"). On a
+  phone the start column goes and its control moves into the change's header
+  („față de 1991"). Each row opens the territory's series on the detail page
+  over the window; pointing at it brings its line forward.
+- **The chart reads by period, like the hub's.** Round value ticks, the
+  years (or year starts, for months and quarters) under it, and a reading at
+  the period pointed at: a rule, a dot per line, a tooltip with every
+  territory's figure highest first; a slider to a screen reader. A toggle
+  switches values and change since the window's start, with 0 drawn darker.
+  **Places of different sizes counted in people or things open on change**
+  (`vedere` otherwise): the town, its county and the country are then three
+  comparable lines instead of one line and two floors. The interaction model
+  and the axis pieces are shared with `HubTwoLineChart`
+  (`useChartReading`, `hub-chart-parts`).
+- **The map is context and a picker.** The indicator over the 42 counties at
+  the window's end — one more read of the same cell, pins, unit and
+  frequency (`territoryLevels: NUTS3, NATIONAL`) — with the hub's readout,
+  ramp and legend. Compared counties are outlined in their line colours; a
+  click, a tap, Enter or Space puts a county in the comparison or takes it
+  out („comparația e plină" at six). A county with two rows for the cell is
+  hatched rather than guessed. Only for a dataset with county figures.
+- **„Deschide în Grafice" hands over the same series**: one `ins-series`
+  per territory on the shared pins, unit and frequency, each over the
+  longest unbroken stretch it has inside the window (the chart page refuses a
+  series with a gap), in the same colours, titled with the indicator.
+- **An edit never blanks the page.** Adding or removing a territory — in
+  the rail or on the map — keeps the last reading on screen, dimmed and
+  `aria-busy`, with a placeholder row for the newcomer, until the new read
+  lands; the focus a keyboard left on a county stays there. It holds only
+  while the dataset and the source selection are unchanged, so no figure is
+  shown under another selection. The map keeps its previous period the same
+  way, under that period's own heading. A frequency change clears the window
+  (another period axis), and a URL period the axis cannot use is named in a
+  note rather than swapped for the default in silence.
+- **The rest is one tap away, not on screen.** „Toate valorile, perioadă cu
+  perioadă" folds the full table (verbatim values, INS flags, the source
+  link per territory); the presets are a quiet list under the rail
+  („Comparații gata făcute"), after the map on a phone. Gone: the bar chart,
+  the period dropdown, the preset pills and the always-open wide table.
 
 ## 7. Data model expectations at the UI boundary
 

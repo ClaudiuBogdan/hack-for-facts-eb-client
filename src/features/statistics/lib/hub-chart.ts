@@ -4,6 +4,14 @@
  * the two lines where one runs above the other.
  */
 
+/** The plot's SVG coordinate space; the SVG stretches to its frame. */
+export const CHART_WIDTH = 640
+export const CHART_HEIGHT = 260
+
+/** The plot frame's classes: the slider's focus ring, and a horizontal drag that reads while a vertical swipe scrolls. */
+export const CHART_PLOT_CLASS =
+  'relative cursor-crosshair touch-pan-y touch-pinch-zoom select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background'
+
 export interface NiceScale {
   readonly from: number
   readonly to: number
@@ -54,6 +62,31 @@ export function yearTickIndices(periods: readonly string[], minGap = 5): readonl
       if (year !== null && year % 10 === 0 && year - first >= minGap && final - year >= minGap) inner.push(index)
     })
   }
+  return [0, ...inner, last]
+}
+
+/** Whether a period opens its year: January, the first quarter, or a year itself. */
+export function opensYear(period: string): boolean {
+  return /^\d{4}(?:-01|-Q1)?$/.test(period)
+}
+
+/**
+ * The periods that get a label on a time axis of any frequency. Years go
+ * through {@link yearTickIndices}; months and quarters get the first and
+ * last period and, between them, the start of every year — every second or
+ * fifth one when there are many — clear of both ends.
+ */
+export function periodTickIndices(periods: readonly string[]): readonly number[] {
+  if (periods.every((period) => /^\d{4}$/.test(period))) return yearTickIndices(periods)
+  const last = periods.length - 1
+  if (last <= 0) return last === 0 ? [0] : []
+  const starts = periods.flatMap((period, index) => (opensYear(period) ? [index] : []))
+  const step = [1, 2, 5, 10].find((candidate) => starts.length / candidate <= 5) ?? 10
+  // A label is some 6% of a narrow axis wide; the ends carry the longest ones („mai 2026").
+  const clearance = Math.max(1, Math.round(last / 6))
+  const inner = starts.filter(
+    (index) => Number(periods[index]?.slice(0, 4)) % step === 0 && index >= clearance && last - index >= clearance,
+  )
   return [0, ...inner, last]
 }
 

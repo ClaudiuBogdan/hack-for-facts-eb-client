@@ -1,6 +1,13 @@
 import type { InsTimePeriod } from '@/schemas/ins'
 import type { ReportPeriodType } from '@/schemas/reporting'
 
+/** The report-period type each chartable cadence is asked for, and labelled, by. */
+export const INS_CHART_PERIOD_TYPE = {
+  ANNUAL: 'YEAR',
+  QUARTERLY: 'QUARTER',
+  MONTHLY: 'MONTH',
+} as const satisfies Record<'ANNUAL' | 'QUARTERLY' | 'MONTHLY', ReportPeriodType>
+
 /** Only these three source cadences have chart/calendar period grammars. */
 export function validPeriodDate(date: string, type: ReportPeriodType): boolean {
   if (type === 'YEAR') return /^\d{4}$/.test(date)

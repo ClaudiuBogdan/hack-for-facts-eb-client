@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { AlertTriangle, BarChart3 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -13,40 +14,32 @@ import { Skeleton } from '@/components/ui/skeleton'
  * be rendered as an absence of data.
  */
 
-/** Honest skeleton: the shape of the table and the two charts, nothing invented. */
+/** Honest skeleton: the shape of the ranking and the chart, nothing invented. */
 export function ComparisonSkeleton() {
   return (
-    <div className="space-y-4" aria-busy="true">
-      <Skeleton className="h-48 w-full" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Skeleton className="h-80 w-full" />
-        <Skeleton className="h-80 w-full" />
+    <div className="space-y-5 rounded-lg border border-border/70 bg-card p-4 md:p-5" aria-busy="true">
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
       </div>
+      <Skeleton className="h-56 w-full sm:h-72" />
     </div>
   )
 }
 
 /**
- * Shown when no dataset is chosen. Distinct from {@link ComparisonNoData}: here
- * the user has not asked a complete question yet, so there is nothing to
- * report. Example data is selected only when every URL selection is absent.
+ * A question the page cannot answer yet: no indicator, or no territory. It
+ * says what is missing and offers the common answers one tap away — never an
+ * empty chart shell.
  */
-export function ComparisonGuidedEmptyState() {
+export function ComparisonGuide({ title, children }: { readonly title: ReactNode; readonly children: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-16 text-center">
-      <BarChart3 aria-hidden className="h-8 w-8 text-muted-foreground" />
-
-      <h2 className="text-base font-semibold text-foreground">
-        <Trans>Alege un indicator pentru a începe</Trans>
-      </h2>
-
-      <p className="max-w-md text-sm text-muted-foreground">
-        <Trans>
-          Caută un indicator INS, apoi adaugă între două și șase localități.
-          Comparația se construiește pe măsură ce alegi.
-        </Trans>
-      </p>
-    </div>
+    <section className="rounded-lg border border-dashed border-border px-5 py-8 sm:px-8">
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <div className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">{children}</div>
+    </section>
   )
 }
 

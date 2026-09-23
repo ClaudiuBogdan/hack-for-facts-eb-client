@@ -10,10 +10,7 @@ import {
 } from '@/components/ui/select'
 import type { InsDatasetDetails } from '@/schemas/ins'
 import type { SourceMemberLookup } from '../hooks/use-dataset-detail'
-import type {
-  ClassificationPin,
-  ComparisonPeriodOption,
-} from '../lib/comparison-series'
+import type { ClassificationPin } from '../lib/comparison-series'
 import { DetailDimensionCombobox } from './detail-dimension-combobox'
 
 type PinsProps = {
@@ -44,10 +41,7 @@ export function ComparisonPins({
 }: PinsProps) {
   const pins = new Map(effectivePins.map((p) => [p.typeCode, p.valueCode]))
   return (
-    <section className="space-y-3" aria-labelledby="comparison-pins-heading">
-      <h2 id="comparison-pins-heading" className="text-sm font-medium">
-        <Trans>Dimensiuni fixate</Trans>
-      </h2>
+    <div className="space-y-3">
       {datasetMeta.dimensions
         .filter((d) => d.type === 'CLASSIFICATION')
         .map((dimension) => {
@@ -115,55 +109,6 @@ export function ComparisonPins({
           </SelectContent>
         </Select>
       </div>
-    </section>
-  )
-}
-
-type PeriodProps = {
-  readonly periods: readonly ComparisonPeriodOption[]
-  readonly selectedPeriod: string | null
-  readonly onSelect: (isoPeriod: string) => void
-}
-
-/**
- * Period select, listing every period present in the FETCHED data.
- *
- * Options are derived from the single observations response, so opening this
- * select and changing its value never issues a request — the bar chart and the
- * table's emphasised column re-render from data already in memory.
- */
-export function ComparisonPeriodSelect({
-  periods,
-  selectedPeriod,
-  onSelect,
-}: PeriodProps) {
-  if (periods.length === 0) return null
-
-  return (
-    <div className="space-y-1.5">
-      <Label
-        htmlFor="comparison-period"
-        className="text-xs text-muted-foreground"
-      >
-        <Trans>Perioadă</Trans>
-      </Label>
-      <Select value={selectedPeriod ?? undefined} onValueChange={onSelect}>
-        <SelectTrigger
-          id="comparison-period"
-          className="w-48"
-          aria-label={t`Perioadă`}
-        >
-          <SelectValue placeholder={t`Alege o perioadă`} />
-        </SelectTrigger>
-        <SelectContent>
-          {/* Latest first: the freshest period is what a reader wants by default. */}
-          {[...periods].reverse().map((period) => (
-            <SelectItem key={period.isoPeriod} value={period.isoPeriod}>
-              {period.isoPeriod}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
     </div>
   )
 }

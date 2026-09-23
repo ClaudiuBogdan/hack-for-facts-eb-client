@@ -1,4 +1,4 @@
-import { periodOrdinal, validPeriodDate } from '@/lib/ins/source-periods'
+import { INS_CHART_PERIOD_TYPE, periodOrdinal, validPeriodDate } from '@/lib/ins/source-periods'
 import { t } from '@lingui/core/macro'
 import { fetchInsSourceVector } from '@/features/statistics/api/graphql/ins-source-fetcher'
 import type { DataValidationError } from '@/lib/chart-data-validation'
@@ -236,11 +236,7 @@ export async function mapInsSeriesToAnalyticsSeries(
     )
   }
 
-  const periodType = {
-    ANNUAL: 'YEAR',
-    QUARTERLY: 'QUARTER',
-    MONTHLY: 'MONTH',
-  } as const
+  const periodType = INS_CHART_PERIOD_TYPE
   const points: { x: string; y: number }[] = []
   for (const row of observations) {
     if (!validPeriodDate(row.time_period.iso_period, periodType[periodicity])) {

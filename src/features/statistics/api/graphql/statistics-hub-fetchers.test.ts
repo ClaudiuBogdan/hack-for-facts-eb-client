@@ -4,7 +4,8 @@ import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { HUB_SERIES_CAPTURED_AT, HUB_STATIC_SERIES, hubStaticSeries } from '../../lib/hub-national-series'
 import { HUB_FIGURE_CODES } from '../../lib/landing-constants'
 import { HUB_NATIONAL_SPECS, hubCountyResponse, hubTilesResponse } from '../../test/hub-fixtures'
-import { fetchStatisticsHub, hubUnitOf } from './statistics-hub-fetchers'
+import { hubUnitOf } from '../../lib/hub-format'
+import { fetchStatisticsHub } from './statistics-hub-fetchers'
 
 const spec = (code: string) => {
   const found = HUB_NATIONAL_SPECS.find((entry) => entry.code === code)

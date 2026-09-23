@@ -11,10 +11,11 @@ import type {
   StatisticsHubIndicator,
   StatisticsHubSection,
   StatisticsHubSeriesPoint,
-  StatisticsHubUnit,
   StatisticsLatestValue,
 } from '@/schemas/statistics'
+import { hubUnitOf } from '../../lib/hub-format'
 import { hubStaticSeries } from '../../lib/hub-national-series'
+import { BLOCKING_VALUE_STATUSES } from '../../lib/value-status'
 import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
 import { fetchNativeLandingTiles } from './ins-landing-tiles'
 import { INS_OBSERVATIONS_QUERY } from './ins-queries'
@@ -46,17 +47,6 @@ const observationsPageResponseSchema = z.object({
 })
 
 type RawObservation = z.infer<typeof insObservationNodeRawSchema>
-
-/** The word after the number, from the unit the API resolved. Never guessed from the dataset name. */
-export function hubUnitOf(latest: Pick<StatisticsLatestValue, 'unitSymbol' | 'unitCode' | 'unitNameRo'>): StatisticsHubUnit {
-  const symbol = latest.unitSymbol?.toLowerCase() ?? ''
-  const name = latest.unitNameRo?.toLowerCase() ?? ''
-  if (symbol === 'persons' || name.startsWith('numar persoane')) return 'persons'
-  if (symbol === 'percent' || name.startsWith('procent')) return 'percent'
-  if (symbol === 'count' || name === 'numar') return 'count'
-  if (name === 'ani') return 'years'
-  return 'other'
-}
 
 function parseDecimal(value: string | null | undefined): number | null {
   if (value === null || value === undefined) return null
@@ -102,9 +92,6 @@ function hasGeographyAxis(latest: StatisticsLatestValue): boolean {
   const dimensions = latest.source?.descriptor?.dimensions
   return dimensions ? dimensions.some((dimension) => dimension.type === 'TERRITORIAL') : true
 }
-
-/** INS flags under which a cell has no publishable number. */
-const BLOCKING_VALUE_STATUSES = new Set([':', 'c', 'x'])
 
 /** A confidential or missing cell keeps its flag and has no number. */
 function unflaggedValue(latest: StatisticsLatestValue): number | null {

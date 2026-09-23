@@ -204,6 +204,64 @@ describe('HubCountyMap', () => {
   })
 })
 
+describe('HubCountyMap as a picker', () => {
+  function Picker({ selected = ['VL'], canAdd = true }: { readonly selected?: readonly string[]; readonly canAdd?: boolean }) {
+    const [active, setActive] = useState<string>()
+    const [codes, setCodes] = useState(selected)
+    return (
+      <HubCountyMap
+        layer={LIFE}
+        legend="Durata medie a vieții, 2025"
+        activeCode={active}
+        onActiveChange={setActive}
+        selection={{
+          colors: new Map(codes.map((code) => [code, '#2a78d6'])),
+          canAdd,
+          onToggle: (code) => setCodes((current) => (current.includes(code) ? current.filter((entry) => entry !== code) : [...current, code])),
+        }}
+      />
+    )
+  }
+
+  it('makes each county a checkbox for the selection instead of a link, the selected ones outlined in their colour', () => {
+    const { container } = render(<Picker />)
+    expect(screen.queryByRole('link')).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /Vâlcea/ })).toHaveAttribute('aria-checked', 'true')
+    expect(screen.getByRole('checkbox', { name: /Călărași/ })).toHaveAttribute('aria-checked', 'false')
+    expect(container.querySelector('path[stroke="#2a78d6"]')).not.toBeNull()
+  })
+
+  it('adds and removes a county on a click, Enter or Space', () => {
+    render(<Picker />)
+    const calarasi = screen.getByRole('checkbox', { name: /Călărași/ })
+    fireEvent.click(calarasi)
+    expect(calarasi).toHaveAttribute('aria-checked', 'true')
+    fireEvent.keyDown(calarasi, { key: 'Enter' })
+    expect(calarasi).toHaveAttribute('aria-checked', 'false')
+    fireEvent.keyDown(calarasi, { key: ' ' })
+    expect(calarasi).toHaveAttribute('aria-checked', 'true')
+  })
+
+  it('reads out whether the county shown is compared, and what a click would do', () => {
+    render(<Picker />)
+    fireEvent.pointerEnter(screen.getByRole('checkbox', { name: /Vâlcea/ }), { pointerType: 'mouse' })
+    expect(screen.getByText('în comparație')).toBeInTheDocument()
+    fireEvent.pointerEnter(screen.getByRole('checkbox', { name: /Călărași/ }), { pointerType: 'mouse' })
+    expect(screen.getByText('apasă ca să-l adaugi')).toBeInTheDocument()
+  })
+
+  it('takes a county out of a full selection but adds none to it', () => {
+    render(<Picker canAdd={false} />)
+    const calarasi = screen.getByRole('checkbox', { name: /Călărași/ })
+    expect(calarasi).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(calarasi)
+    expect(calarasi).toHaveAttribute('aria-checked', 'false')
+    const valcea = screen.getByRole('checkbox', { name: /Vâlcea/ })
+    fireEvent.click(valcea)
+    expect(valcea).toHaveAttribute('aria-checked', 'false')
+  })
+})
+
 describe('HubCountyRank', () => {
   const many = hubCountyLayer(
     'POP217A',

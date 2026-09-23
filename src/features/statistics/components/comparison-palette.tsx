@@ -53,3 +53,10 @@ export function comparisonSeriesColor(index: number): string {
   const slot = (index % COMPARISON_SERIES_SLOTS) + 1
   return `var(--cmp-${slot})`
 }
+
+/** The light column as literal colours, for a chart drawn outside this page: the chart page stores one colour per series. */
+const COMPARISON_SERIES_HEX = ['#2a78d6', '#1baf7a', '#eda100', '#008300', '#4a3aa7', '#e34948'] as const
+
+export function comparisonSeriesHex(index: number): string {
+  return COMPARISON_SERIES_HEX[index % COMPARISON_SERIES_SLOTS] ?? COMPARISON_SERIES_HEX[0]
+}

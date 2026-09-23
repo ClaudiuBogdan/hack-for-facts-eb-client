@@ -4,6 +4,8 @@ import {
   buildEntityCommitmentsChartLink,
   buildEntityCommitmentsChartState,
   buildEntityIncomeExpenseChartLink,
+  buildInsComparisonChartLink,
+  buildInsComparisonChartState,
   buildInsStatsChartLink,
   buildInsStatsChartState,
   buildMapTopEntitiesEvolutionChartLink,
@@ -309,5 +311,61 @@ describe('chart-links', () => {
     expect(link.to).toBe('/charts/$chartId');
     expect(link.params.chartId).toBe(link.search.chart.id);
     expect(link.search.view).toBe('overview');
+  });
+
+  describe('buildInsComparisonChartState', () => {
+    const options = {
+      datasetCode: 'FOM104D',
+      title: 'Salariați (număr mediu)',
+      cadence: 'ANNUAL' as const,
+      unitCode: '9685',
+      classificationPins: ['D0:1', 'D1:105'],
+      series: [
+        { code: '54975', level: 'LAU' as const, label: 'Cluj-Napoca', color: '#2a78d6', from: '2010', to: '2024' },
+        { code: 'CJ', level: 'NUTS3' as const, label: 'Cluj', color: '#1baf7a', from: '2012', to: '2024' },
+        { code: 'RO', level: 'NATIONAL' as const, label: 'România', color: '#eda100', from: '2010', to: '2024' },
+      ],
+    };
+
+    it('asks for one INS series per territory, on the shared cell, unit and frequency, over its own stretch', () => {
+      const { chart, view } = buildInsComparisonChartState(options);
+      expect(view).toBe('overview');
+      expect(chart.title).toBe('Salariați (număr mediu)');
+      expect(chart.config.yearRange).toEqual({ start: 2010, end: 2024 });
+      expect(chart.series.map((series) => series.label)).toEqual(['Cluj-Napoca', 'Cluj', 'România']);
+      const [town, county, country] = chart.series;
+      if (town?.type !== 'ins-series' || county?.type !== 'ins-series' || country?.type !== 'ins-series') throw new Error('Expected INS series');
+      expect(town.sirutaCodes).toEqual(['54975']);
+      expect(town.territoryCodes).toBeUndefined();
+      expect(county.territoryCodes).toEqual(['CJ']);
+      expect(country.territoryCodes).toEqual(['RO']);
+      expect(county.period).toEqual({ type: 'YEAR', selection: { interval: { start: '2012', end: '2024' } } });
+      expect(town.unitCodes).toEqual(['9685']);
+      expect(town.classificationSelections).toEqual({ D0: ['1'], D1: ['105'] });
+      expect(town.config.color).toBe('#2a78d6');
+    });
+
+    it('is the same chart, at the same address, for the same comparison', () => {
+      const first = buildInsComparisonChartLink(options);
+      const second = buildInsComparisonChartLink(options);
+      expect(first.params.chartId).toBe(second.params.chartId);
+      expect(first.search.chart.series.map((series) => series.id)).toEqual(second.search.chart.series.map((series) => series.id));
+      expect(buildInsComparisonChartLink({ ...options, unitCode: '1' }).params.chartId).not.toBe(first.params.chartId);
+    });
+
+    it('asks for months and quarters by their own period type', () => {
+      const { chart } = buildInsComparisonChartState({
+        ...options,
+        cadence: 'MONTHLY',
+        classificationPins: [],
+        series: [{ ...options.series[0]!, from: '2020-01', to: '2026-05' }],
+      });
+      const [series] = chart.series;
+      if (series?.type !== 'ins-series') throw new Error('Expected INS series');
+      expect(series.period).toEqual({ type: 'MONTH', selection: { interval: { start: '2020-01', end: '2026-05' } } });
+      expect(series.classificationSelections).toBeUndefined();
+      // A year filter over monthly points would flag every year as missing.
+      expect(chart.config.yearRange).toBeUndefined();
+    });
   });
 });

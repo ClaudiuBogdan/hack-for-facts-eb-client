@@ -181,61 +181,6 @@ export function toChartValue(value: string | null | undefined): number | null {
   return Number.isFinite(numeric) ? numeric : null
 }
 
-/** One bar: a territory's value at the selected period. */
-export interface ComparisonBarDatum {
-  readonly code: string
-  readonly name: string | null
-  readonly value: number | null
-}
-
-/** Territories at one period, in selection order. */
-export function buildBarSeries(
-  matrix: ComparisonMatrix,
-  isoPeriod: string | null,
-): readonly ComparisonBarDatum[] {
-  return matrix.rows.map((row) => ({
-    code: row.code,
-    name: row.name,
-    value: toChartValue(getComparisonCell(row, isoPeriod)?.value),
-  }))
-}
-
-/**
- * Recharts data keys must be flat object properties. Prefixing keeps a SIRUTA
- * code from ever colliding with the `isoPeriod` axis key.
- */
-export function lineSeriesKey(siruta: string): string {
-  return `siruta_${siruta}`
-}
-
-/** One x-position of the line chart: a period and every territory's value there. */
-export type ComparisonLinePoint = {
-  readonly isoPeriod: string
-} & Record<string, string | number | null>
-
-/**
- * All periods × all territories, oldest first. Missing cells are emitted as
- * explicit `null`s rather than omitted keys, so `connectNulls={false}` breaks
- * the line exactly where the data breaks.
- */
-export function buildLineSeries(
-  matrix: ComparisonMatrix,
-): readonly ComparisonLinePoint[] {
-  return matrix.periods.map((option) => {
-    const point: Record<string, string | number | null> = {
-      isoPeriod: option.isoPeriod,
-    }
-
-    for (const row of matrix.rows) {
-      point[lineSeriesKey(row.code)] = toChartValue(
-        getComparisonCell(row, option.isoPeriod)?.value,
-      )
-    }
-
-    return point as ComparisonLinePoint
-  })
-}
-
 // ---------------------------------------------------------------------------
 // Classification pins — ONE canonical codec, shared with the detail surface.
 // ---------------------------------------------------------------------------

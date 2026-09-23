@@ -6,6 +6,7 @@ import {
 import { inspectSourceSeries } from '@/lib/ins/source-series'
 import { parseSourcePins, parseSourceUnit } from '@/lib/ins/source-pins'
 import {
+  INS_CHART_PERIOD_TYPE,
   periodAtOrdinal,
   periodOrdinal,
   validPeriodDate,
@@ -49,12 +50,6 @@ export type ComparisonTerritory = {
   readonly level: string
 }
 
-const reportType = {
-  ANNUAL: 'YEAR',
-  QUARTERLY: 'QUARTER',
-  MONTHLY: 'MONTH',
-} as const
-
 /** Publication and layout used for defaults must also describe the final vector. */
 export function comparisonPublicationKey(
   descriptor: InsSourceDescriptor,
@@ -92,9 +87,9 @@ function calendarPeriods(
   labels: readonly string[],
   cadence: InsPeriodicity,
   type: ReportPeriodType,
-  requested: string | undefined,
+  requested: readonly string[],
 ): readonly ComparisonPeriodOption[] {
-  if (requested !== undefined && !validPeriodDate(requested, type))
+  if (requested.some((period) => !validPeriodDate(period, type)))
     throw new Error('Invalid requested comparison period')
   const ordinals = labels.map((label) => periodOrdinal(label, type))
   const periods: ComparisonPeriodOption[] = []
@@ -105,11 +100,10 @@ function calendarPeriods(
       periods.push(periodOption(periodAtOrdinal(ordinal, type), cadence))
   }
   // A requested absent period stays selectable; it never silently becomes latest.
-  if (
-    requested !== undefined &&
-    !periods.some((p) => p.isoPeriod === requested)
-  )
-    periods.push(periodOption(requested, cadence))
+  for (const period of requested) {
+    if (!periods.some((p) => p.isoPeriod === period))
+      periods.push(periodOption(period, cadence))
+  }
   return periods.sort((a, b) => a.sortKey - b.sortKey)
 }
 
@@ -127,6 +121,8 @@ export function projectNativeComparison(input: {
   readonly unitCode: unknown
   readonly cadence: InsPeriodicity
   readonly requestedPeriod?: string
+  /** The start of the compared window, kept on the axis like the period. */
+  readonly requestedFrom?: string
 }): NativeComparisonMatrix {
   const descriptor = insSourceDescriptorSchema.parse(input.descriptor)
   if (
@@ -141,7 +137,7 @@ export function projectNativeComparison(input: {
     throw new Error('INS dataset is not comparable by territory')
   if (!isInsChartPeriodicity(input.cadence))
     throw new Error('Select one supported INS comparison frequency')
-  const type = reportType[input.cadence]
+  const type = INS_CHART_PERIOD_TYPE[input.cadence]
   const axes = new Set(
     descriptor.dimensions
       .filter((d) => d.type === 'CLASSIFICATION')
@@ -264,7 +260,9 @@ export function projectNativeComparison(input: {
       [...labels],
       input.cadence,
       type,
-      input.requestedPeriod,
+      [input.requestedFrom, input.requestedPeriod].filter(
+        (period): period is string => period !== undefined,
+      ),
     ),
   }
 }

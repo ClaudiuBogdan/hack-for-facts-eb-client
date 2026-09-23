@@ -171,9 +171,13 @@ export const statisticsComparisonsSearchSchema = z.object({
   cod: z.unknown().optional(),
   teritorii: z.unknown().optional(),
   perioada: z.unknown().optional(),
+  /** The start of the compared window; `perioada` is its end. */
+  din: z.unknown().optional(),
   clasificari: z.unknown().optional(),
   unitate: z.unknown().optional(),
   frecventa: z.unknown().optional(),
+  /** `valori` or `schimbare`: the chart's scale. Absent, the page picks one from the rows. */
+  vedere: z.unknown().optional(),
 })
 
 export type StatisticsComparisonsSearch = z.infer<
