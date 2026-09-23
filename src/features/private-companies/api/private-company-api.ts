@@ -1,7 +1,5 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import type {
-  CompanyCountyCounts,
-  CompanyHubStats,
   PrivateCompanyCountyFacet,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
@@ -9,8 +7,6 @@ import type {
 import { isPrivateCompanyMockEnabled } from '../lib/mock-mode'
 import { fetchPrivateCompanyProfileMock } from './private-company-api.mock'
 import {
-  fetchCompanyCountyCountsLive,
-  fetchCompanyHubStatsLive,
   fetchPrivateCompanyCountiesLive,
   fetchPrivateCompanyProfileLive,
   fetchPrivateCompanySearchLive,
@@ -18,8 +14,6 @@ import {
   type CompanyResolveHit,
 } from './private-company-api.live'
 import {
-  fetchCompanyCountyCountsMock,
-  fetchCompanyHubStatsMock,
   fetchPrivateCompanyCountiesMock,
   fetchPrivateCompanySearchMock,
   resolveCompanyByNameMock,
@@ -52,34 +46,6 @@ export async function fetchPrivateCompanyCounties(): Promise<
     return fetchPrivateCompanyCountiesMock()
   }
   return fetchPrivateCompanyCountiesLive()
-}
-
-/**
- * Every county the hub's map draws, and the active companies it cannot place.
- * Both out of one answer — see `CompanyCountyCounts`.
- */
-export async function fetchCompanyCountyCounts(
-  signal?: AbortSignal,
-): Promise<CompanyCountyCounts> {
-  if (isPrivateCompanyMockEnabled()) {
-    return fetchCompanyCountyCountsMock()
-  }
-  return fetchCompanyCountyCountsLive(signal)
-}
-
-/**
- * One cached server aggregate — never assembled client-side from three
- * `companyCountyProfile` calls (that is ~30s of scans). Resolves to `null` while
- * the server-side cache is still warming; callers must offer a retry rather than
- * render zeroes.
- */
-export async function fetchCompanyHubStats(
-  signal?: AbortSignal,
-): Promise<CompanyHubStats | null> {
-  if (isPrivateCompanyMockEnabled()) {
-    return fetchCompanyHubStatsMock()
-  }
-  return fetchCompanyHubStatsLive(signal)
 }
 
 export async function resolveCompanyByName(

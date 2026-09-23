@@ -7,10 +7,8 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
-  CompanyCountyCounts,
   CompanyGroupByDim,
   CompanyGroupSlice,
-  CompanyHubStats,
   PrivateCompanyCountyFacet,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
@@ -18,17 +16,14 @@ import type {
 import {
   COMPANIES_SEARCH_QUERY,
   COMPANY_GROUP_PROFILE_QUERY,
-  COMPANY_HUB_STATS_QUERY,
   COMPANY_PROFILE_QUERY,
   COMPANY_RESOLVE_QUERY,
   companiesSearchResponseSchema,
   companyGroupProfileResponseSchema,
-  companyHubStatsResponseSchema,
   companyProfileResponseSchema,
   companyResolveResponseSchema,
 } from './graphql/company-queries'
 import {
-  mapCompanyHubStats,
   mapCompanyListItem,
   mapCompanyProfile,
 } from './graphql/company-mappers'
@@ -102,35 +97,6 @@ export async function fetchCompanyGroupProfileLive(
   return parsed.companyCountyProfile.groups.filter((group) => group.key !== '(none)')
 }
 
-/** The `(none)` key the server uses for a group with no value. */
-const GROUP_KEY_NONE = '(none)'
-
-/**
- * Every county over the active population, plus the companies that have none.
- *
- * One request, and both figures come out of the same answer, so the gap stated
- * beside the map can never be a difference between two snapshots. Measured at
- * 2.7s on 16 September 2026, which the hub pays once an hour. The server
- * already computes this to build `topCounties`; extending `companyHubStats`
- * with the full list would retire this call.
- */
-export async function fetchCompanyCountyCountsLive(
-  signal?: AbortSignal,
-): Promise<CompanyCountyCounts> {
-  const data = await graphqlQuery<unknown>(
-    COMPANY_GROUP_PROFILE_QUERY,
-    { filter: ACTIVE_COMPANY_FILTER, groupBy: 'COUNTY' },
-    { operationName: 'CompanyGroupProfile', signal },
-  )
-  const profile = companyGroupProfileResponseSchema.parse(data).companyCountyProfile
-  const none = profile.groups.find((group) => group.key === GROUP_KEY_NONE)
-  return {
-    counties: profile.groups.filter((group) => group.key !== GROUP_KEY_NONE),
-    denominator: profile.denominator,
-    unplaced: none?.count ?? 0,
-  }
-}
-
 export async function fetchPrivateCompanyCountiesLive(): Promise<
   PrivateCompanyCountyFacet[]
 > {
@@ -140,22 +106,6 @@ export async function fetchPrivateCompanyCountiesLive(): Promise<
   return groups
     .map((group) => ({ name: group.key, count: group.count }))
     .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
-}
-
-/**
- * Cold compute is ~30s server-side and the root field is nullable, so this can
- * legitimately be slow and can legitimately resolve to `null`. Do NOT wrap it in
- * a short client timeout.
- */
-export async function fetchCompanyHubStatsLive(
-  signal?: AbortSignal,
-): Promise<CompanyHubStats | null> {
-  const data = await graphqlQuery<unknown>(
-    COMPANY_HUB_STATS_QUERY,
-    {},
-    { operationName: 'CompanyHubStats', signal },
-  )
-  return mapCompanyHubStats(companyHubStatsResponseSchema.parse(data))
 }
 
 export type CompanyResolveHit = {

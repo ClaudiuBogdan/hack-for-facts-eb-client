@@ -1,27 +1,27 @@
 /**
- * Mock implementations of the company search / resolve / group-profile / hub
- * APIs, derived from the profile fixtures so the whole /companies surface is
+ * Mock implementations of the company search / resolve / group-profile APIs,
+ * derived from the profile fixtures, so the directory and the profiles are
  * exercisable under `VITE_MOCK_DATASETS=private-companies` without a backend.
+ * The hub's figures are the real snapshot, not fixtures: its county links
+ * resolve here, but its ranked companies exist only in the live API.
  *
  * The filter semantics here mirror the server's `CompaniesFilter`: multi-value
  * facets are OR-within / AND-across, `caen` matches by prefix below 4 digits,
  * and `regFrom`/`regTo` are an inclusive range.
  */
 import type {
-  CompanyCountyCounts,
   CompanyGroupByDim,
   CompanyGroupSlice,
-  CompanyHubStats,
   PrivateCompanyCountyFacet,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
 } from '@/schemas/private-company-search'
-import { PRIVATE_COMPANY_STATUS_OPTIONS } from '@/schemas/private-company-search'
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import {
   getMockPrivateCompanyProfile,
   mockPrivateCompanyCuis,
 } from '../mocks/fixtures'
+import { foldCountyName } from '../lib/county-names'
 import type { CompanyResolveHit } from './private-company-api.live'
 
 function mockProfiles(): PrivateCompanyProfile[] {
@@ -60,6 +60,19 @@ function matchesCaen(caen: string | undefined, profile: PrivateCompanyProfile): 
   )
 }
 
+/** A county as the server compares it: no „Județul"/„Municipiul", no diacritics, any case. */
+function countyKey(name: string): string {
+  return foldCountyName(name).replace(/^(judetul|municipiul)\s+/, '')
+}
+
+/** The server folds both sides and compares them whole, so `Cluj`, `CLUJ` and `Județul Cluj` agree and `Clu` matches nothing. */
+function matchesCounty(counties: readonly string[] | undefined, county: string | null): boolean {
+  if (!counties || counties.length === 0) return true
+  if (!county) return false
+  const key = countyKey(county)
+  return counties.some((wanted) => key === countyKey(wanted))
+}
+
 function matchesDateRange(
   query: PrivateCompanySearchQuery,
   registrationDate: string | null,
@@ -79,7 +92,7 @@ function matchesProfile(
   if (q && !profile.legalName.toLowerCase().includes(q) && profile.cui !== q) {
     return false
   }
-  if (!matchesSet(query.county, profile.address.county)) return false
+  if (!matchesCounty(query.county, profile.address.county)) return false
   if (!matchesSet(query.status, profile.status?.code)) return false
   if (!matchesSet(query.legalForm, profile.legalForm)) return false
   if (!matchesCaen(query.caen, profile)) return false
@@ -129,23 +142,6 @@ export async function fetchPrivateCompanySearchMock(
   }
 }
 
-/**
- * Counties over the active fixtures, plus the ones with no county on them.
- * `groupKeyFor` drops a profile with no county, so the unplaced share is
- * counted here rather than read back out of the grouping.
- */
-export async function fetchCompanyCountyCountsMock(): Promise<CompanyCountyCounts> {
-  const active = mockProfiles().filter(
-    (profile) => profile.status?.code === ACTIVE_STATUS_CODE,
-  )
-  const counties = await fetchCompanyGroupProfileMock('COUNTY', active)
-  return {
-    counties,
-    denominator: active.length,
-    unplaced: active.filter((profile) => profile.address.county === null).length,
-  }
-}
-
 export async function fetchPrivateCompanyCountiesMock(): Promise<
   PrivateCompanyCountyFacet[]
 > {
@@ -188,53 +184,6 @@ export async function fetchCompanyGroupProfileMock(
     })
   }
   return [...byKey.values()].sort((a, b) => b.count - a.count)
-}
-
-const ACTIVE_STATUS_CODE = '1048'
-
-/**
- * `topCounties` / `caenDivisions` are computed over ACTIVE companies only, and
- * the server drops the `(none)` county bucket and the empty-CAEN bucket before
- * ranking — so neither list sums to `activeCompanies`. Mirror that here, and
- * report the dropped county mass through `coverage.territoryUnmatched`, so the
- * mock hub renders the same "bars don't add up" footnote as the live one.
- */
-export async function fetchCompanyHubStatsMock(): Promise<CompanyHubStats> {
-  const profiles = mockProfiles()
-  const active = profiles.filter(
-    (profile) => profile.status?.code === ACTIVE_STATUS_CODE,
-  )
-
-  const [statusMix, activeCounties, activeCaen] = await Promise.all([
-    fetchCompanyGroupProfileMock('STATUS', profiles),
-    fetchCompanyGroupProfileMock('COUNTY', active),
-    fetchCompanyGroupProfileMock('CAEN_DIVISION', active),
-  ])
-
-  const territoryMatched = active.filter(
-    (profile) => profile.address.county !== null,
-  ).length
-
-  return {
-    totalCompanies: profiles.length,
-    activeCompanies: active.length,
-    statusMix: statusMix.map((slice) => ({
-      ...slice,
-      label:
-        slice.label ??
-        PRIVATE_COMPANY_STATUS_OPTIONS.find((option) => option.code === slice.key)
-          ?.label ??
-        null,
-    })),
-    topCounties: activeCounties.slice(0, 10),
-    caenDivisions: activeCaen,
-    coverage: {
-      territoryMatched,
-      territoryUnmatched: active.length - territoryMatched,
-      note: 'Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament.',
-    },
-    computedAt: '2026-05-17T03:00:00.000Z',
-  }
 }
 
 export async function resolveCompanyByNameMock(

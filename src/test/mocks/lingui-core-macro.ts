@@ -1,5 +1,10 @@
-export const t = (strings: TemplateStringsArray, ...values: unknown[]) =>
-  strings.reduce((acc, str, i) => acc + str + (values[i] ?? ""), "");
+type MessageDescriptor = { readonly message?: string; readonly id?: string; readonly context?: string };
+
+/** A tagged template, or a descriptor (`t({ message, context })`), whose message is the source text. */
+export const t = (strings: TemplateStringsArray | MessageDescriptor, ...values: unknown[]): string =>
+  Array.isArray(strings)
+    ? (strings as TemplateStringsArray).reduce((acc, str, i) => acc + str + (values[i] ?? ""), "")
+    : ((strings as MessageDescriptor).message ?? (strings as MessageDescriptor).id ?? "");
 
 export const msg = t;
 
