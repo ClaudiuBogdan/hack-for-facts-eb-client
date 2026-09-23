@@ -50,7 +50,9 @@ describe('companies hub snapshot', () => {
 
   it('splits the statements into the five size classes, smallest first', () => {
     expect(SNAPSHOT.sizeClasses.map((row) => row.key)).toEqual(['0', '1-9', '10-49', '50-249', '250+'])
+    // Only statements with a headcount have a size, so the classes may hold fewer than all of them.
     expect(sum(SNAPSHOT.sizeClasses.map((row) => row.firms))).toBeLessThanOrEqual(SNAPSHOT.national.statements)
+    expect(sum(SNAPSHOT.sizeClasses.map((row) => row.turnover))).toBeLessThanOrEqual(SNAPSHOT.national.turnover)
     expect(sum(SNAPSHOT.sizeClasses.map((row) => row.employees))).toBe(SNAPSHOT.national.employees)
   })
 
@@ -62,7 +64,8 @@ describe('companies hub snapshot', () => {
     expect(SNAPSHOT.registrations[SNAPSHOT.registrations.length - 1]?.registered).toBe(SNAPSHOT.national.newFirms)
   })
 
-  it('sorts the new companies’ sectors by count, within the year’s total', () => {
+  it('sorts the new companies’ sectors by count, within the year’s total, each named from the nomenclature', () => {
+    expect(SNAPSHOT.newFirmsBySector.every((entry) => caenDivision(entry.division) !== undefined)).toBe(true)
     const counts = SNAPSHOT.newFirmsBySector.map((entry) => entry.firms)
     expect(counts).toEqual([...counts].sort((a, b) => b - a))
     expect(sum(counts)).toBeLessThanOrEqual(SNAPSHOT.national.newFirms)

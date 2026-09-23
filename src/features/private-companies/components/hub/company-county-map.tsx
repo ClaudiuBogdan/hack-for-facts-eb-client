@@ -285,7 +285,7 @@ export function CompanyCountyMap({
           layer={layer}
           scale={scale}
           title={legend}
-                    active={activeCode ? byCode.get(activeCode) : undefined}
+          active={activeCode ? byCode.get(activeCode) : undefined}
           digits={digits}
         />
       </figcaption>

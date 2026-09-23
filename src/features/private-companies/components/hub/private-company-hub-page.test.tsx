@@ -113,6 +113,12 @@ describe('PrivateCompanyHubPage', () => {
     expect(within(sectors).getAllByRole('link')[0]?.textContent).toContain('Comerț cu amănuntul')
   })
 
+  it('opens a sector as the directory prefix query on its companies in business', () => {
+    render(page())
+    const [first] = within(screen.getByTestId('company-hub-sectors')).getAllByRole('link')
+    expect(JSON.parse(first?.getAttribute('data-search') ?? '{}')).toEqual({ caen: COMPANY_HUB_SNAPSHOT.sectors[0]?.division, status: ['1048'] })
+  })
+
   it('ranks all ten companies of each list', () => {
     const { rerender } = render(page())
     expect(within(screen.getByTestId('company-hub-leaders')).getAllByRole('link')).toHaveLength(10)

@@ -50,6 +50,7 @@ export function HubSectors({
   const unit = SECTOR_METRIC_UNIT[metric]
   const shown = expanded ? ranked : ranked.slice(0, limit)
   const rest = total - ranked.reduce((sum, sector) => sum + sector[metric], 0)
+  const restFigure = formatHubValue(rest, unit)
   return (
     <div className={className} data-testid="company-hub-sectors">
       <ol className="divide-y divide-border/70 border-y border-border/70">
@@ -92,7 +93,10 @@ export function HubSectors({
               </span>
               <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{formatHubShare(rest, total)}</MonoLabel>
             </span>
-            <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">{formatHubValue(rest, unit).value}</span>
+            <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">
+              {restFigure.value}
+              {unit === 'lei' ? <span className="ml-1">{restFigure.unit}</span> : null}
+            </span>
           </li>
         ) : null}
       </ol>

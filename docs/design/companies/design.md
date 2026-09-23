@@ -12,6 +12,12 @@ with the promotion, losers included, per
 
 ## Where the code went
 
+> As promoted on 17 September. Since the 23 September rewrite, `hub-sections.tsx`,
+> `county-map.tsx` and `use-company-county-counts.ts` are gone: the hub is
+> `private-company-hub-page.tsx` over `hub-leaders`, `hub-sectors`,
+> `hub-county-band` (`company-county-map` + `company-county-rank`) and
+> `lib/hub-snapshot.ts`.
+
 | Prototype | Promoted to |
 |---|---|
 | `hub.editorial.tsx` | `src/features/private-companies/components/hub/private-company-hub-page.tsx` |
@@ -58,6 +64,10 @@ These are the places where the prototype could not decide for production.
    source locale, which becomes English the moment `en` is filled.
 
 ## Follow-ups
+
+> Retired on 23 September: the hub no longer reads `companyHubStats` or the
+> county profile, and names divisions itself. The current follow-ups are at the
+> end of this document.
 
 - Extend `companyHubStats` with all counties and their labels, and retire the
   second request.
@@ -204,9 +214,10 @@ the economy looks like, in the INS hub's composition and components.
   with the companies that have no recognised main activity as the last row of
   the full list. One quiet line says what a row counts and what its link
   opens (every company with the activity, not only the main one), and that
-  banks and insurers file elsewhere. Beside it, the size classes: the 1641
-  companies with 250+ employees make 40.7% of the turnover reported. The lede
-  is computed from the snapshot.
+  banks and insurers file elsewhere. Beside it, the size classes of the
+  statements with a headcount (84 report none and have no class): the 1641
+  companies with 250+ employees make 40.7% of all the turnover reported. The
+  lede is computed from the snapshot.
 - **02 / Pe județe:** the INS county map and ranking, over companies per 1,000
   residents (population named in the legend), companies founded in 2025, or
   reported turnover by registered office (`?indicator=`). Same readout,

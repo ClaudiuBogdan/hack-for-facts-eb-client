@@ -115,11 +115,14 @@ const MAIN_DIVISION = `
          end as division
   from companies_v2.fiscal_status fs`
 
+// The year's public statements of served companies (the population BASE
+// counts), an impossible headcount turned into an unknown one.
 const FY = `
   select f.cui, f.turnover,
          case when f.employees > ${EMPLOYEE_CEILING} then null else f.employees end as employees,
          coalesce(f.employees > ${EMPLOYEE_CEILING}, false) as employee_outlier
   from companies_v2.financials f
+  join core.organizations o on o.cui = f.cui and o.kind = 'company'
   where f.privacy_class = 'public' and length(f.cui) <= 10 and f.year = ${YEAR}`
 
 const leaders = (metric) => `
@@ -169,7 +172,8 @@ const QUERIES = {
   national: `
     with fy as (${FY})
     select count(*)::bigint as statements, sum(turnover)::text as turnover, sum(employees)::text as employees,
-           count(*) filter (where employee_outlier)::bigint as outliers
+           count(*) filter (where employee_outlier)::bigint as outliers,
+           count(*) filter (where employees is null)::bigint as unknown_headcount
     from fy`,
   sectors: `
     with fy as (${FY}), md as (${MAIN_DIVISION})
@@ -177,12 +181,14 @@ const QUERIES = {
            coalesce(sum(fy.turnover), 0)::text as turnover, coalesce(sum(fy.employees), 0)::text as employees
     from fy left join md on md.cui = fy.cui
     group by 1`,
+  // Size is known only where a headcount is: a statement with none (or an
+  // impossible one) has no class, rather than joining the ones with zero.
   sizes: `
     with fy as (${FY})
-    select case when employees is null or employees = 0 then '0' when employees < 10 then '1-9'
+    select case when employees = 0 then '0' when employees < 10 then '1-9'
                 when employees < 50 then '10-49' when employees < 250 then '50-249' else '250+' end as size_class,
            count(*)::bigint as firms, coalesce(sum(turnover), 0)::text as turnover, coalesce(sum(employees), 0)::text as employees
-    from fy where not employee_outlier group by 1`,
+    from fy where employees is not null group by 1`,
   countyFinancials: `
     with fy as (${FY})
     select r.selected_county_name as county,
@@ -284,7 +290,18 @@ function reconcile(rows, population) {
   check(sumOf(rows.countyFinancials.map((row) => row.turnover)) === int(national.turnover), 'county turnover does not add up to the national total')
   check(sumOf(rows.sectors.map((row) => row.turnover)) === int(national.turnover), 'sector turnover does not add up to the national total')
   check(sumOf(rows.sizes.map((row) => row.employees)) === int(national.employees), 'size-class employees do not add up to the national total')
-  check(rows.leadersTurnover.length === 10 && rows.leadersEmployees.length === 10, 'a ranking is short of ten')
+  check(
+    sumOf(rows.sizes.map((row) => row.firms)) + int(national.unknown_headcount) === int(national.statements),
+    'size classes and unknown headcounts do not add up to the statements',
+  )
+  const status1048 = int(rows.status.find((row) => row.status === '1048')?.n ?? 0)
+  const newFirms = int(rows.registrations.find((row) => row.reg_year === YEAR)?.registered ?? 0)
+  check(sumOf(rows.activeByDivision.map((row) => row.n)) === status1048, 'companies in business by division do not add up to their count')
+  check(sumOf(rows.newByDivision.map((row) => row.n)) === newFirms, "the year's new companies by division do not add up to their count")
+  for (const [name, leaders] of [['turnover', rows.leadersTurnover], ['employees', rows.leadersEmployees]]) {
+    check(leaders.length === 10, `the ${name} ranking is short of ten`)
+    check(new Set(leaders.map((row) => row.cui)).size === leaders.length, `a company appears twice in the ${name} ranking`)
+  }
   check(rows.registrations.length === YEAR - FIRST_REGISTRATION_YEAR + 1, 'a registration year is missing')
   check(/^\d{4}-\d{2}-\d{2}$/.test(rows.registryPublished[0]?.published ?? ''), 'no ONRC capture date')
   if (problems.length > 0) throw new Error(`The read does not reconcile:\n- ${problems.join('\n- ')}`)

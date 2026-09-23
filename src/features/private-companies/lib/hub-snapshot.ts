@@ -243,7 +243,7 @@ export const COMPANY_HUB_SNAPSHOT: CompanyHubSnapshot = {
     { division: '94', firms: 1 },
   ],
   sizeClasses: [
-    { key: '0', firms: 372905, turnover: 81451721652, employees: 0 },
+    { key: '0', firms: 372821, turnover: 81451721652, employees: 0 },
     { key: '1-9', firms: 475404, turnover: 474422727354, employees: 1000768 },
     { key: '10-49', firms: 44632, turnover: 541240389952, employees: 885637 },
     { key: '50-249', firms: 7460, turnover: 588689325634, employees: 762781 },

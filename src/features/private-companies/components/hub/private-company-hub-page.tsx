@@ -152,12 +152,9 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
   ]
 
   const largest = SNAPSHOT.sizeClasses.find((row) => row.key === '250+')
-  const largestShare = largest
-    ? formatHubShare(
-        largest.turnover,
-        SNAPSHOT.sizeClasses.reduce((sum, row) => sum + row.turnover, 0),
-      )
-    : ''
+  // Of all the turnover reported — the figures band's total — not only of the
+  // statements whose headcount places them in a class.
+  const largestShare = largest ? formatHubShare(largest.turnover, national.turnover) : ''
   const mapOptions: Record<CompanyHubMapIndicator, { readonly label: string; readonly legend: string }> = {
     densitate: {
       label: t`La 1.000 de locuitori`,
