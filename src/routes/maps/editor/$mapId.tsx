@@ -3,9 +3,14 @@ import { warmAdvancedAnalyticsMapResources } from '@/features/advanced-map-analy
 
 export const Route = createFileRoute('/maps/editor/$mapId')({
   ssr: false,
-  loader: ({ context }) => {
-    void warmAdvancedAnalyticsMapResources({
+  loader: async ({ context, preload }) => {
+    const warming = warmAdvancedAnalyticsMapResources({
       queryClient: context.queryClient,
     });
+    // A hover's preload waits for it: the map's code then arrives inside the
+    // router's quiet preload (src/lib/route-code-warmup.ts), where a failed
+    // fetch leaves the page being read alone and makes the click a page load.
+    // A visit does not wait.
+    if (preload) await warming;
   },
 });

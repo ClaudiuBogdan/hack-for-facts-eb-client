@@ -2,6 +2,7 @@ import { createRouter, parseSearchWith, stringifySearchWith } from "@tanstack/re
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
 import { createQueryClient } from "@/lib/queryClient";
+import { quietRoutePreloads } from "@/lib/route-code-warmup";
 import { normalizeHrefSearch, normalizeSearchEncoding } from "@/lib/router-search";
 import type { RouterContext } from "@/router-context";
 import { routeTree } from "./routeTree.gen";
@@ -79,6 +80,17 @@ export function getRouter() {
     // Loader-less routes still transition instantly and never see this.
     defaultPendingMs: 200,
     defaultPendingMinMs: 300,
+    // A link read on hover, focus or touch: its route's code and its
+    // loaders, so the click finds the page and its data on their way. The
+    // loaders only warm the query cache in the browser, so a hover costs the
+    // reads the click would have made, once. Made safe to run speculatively
+    // below (`quietRoutePreloads`); see `src/lib/route-code-warmup.ts`.
+    defaultPreload: "intent",
+    // A click soon after the hover uses what the hover read, instead of
+    // reading it again in the background (the router's default stale time is
+    // 0). Most loaders only warm the query cache, whose own stale times rule;
+    // the few that fetch directly serve public, read-only data.
+    defaultStaleTime: 30_000,
     // Enable automatic scroll-to-top on navigation
     scrollRestoration,
     // Use smooth scrolling for better UX
@@ -95,6 +107,8 @@ export function getRouter() {
     if (normalizedPublicHref === parsed.publicHref) return parsed;
     return { ...parsed, publicHref: normalizedPublicHref };
   };
+
+  if (typeof window !== "undefined") quietRoutePreloads(router);
 
   setupRouterSsrQueryIntegration({ router, queryClient });
 

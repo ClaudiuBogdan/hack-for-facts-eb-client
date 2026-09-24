@@ -34,6 +34,9 @@ vi.mock('@lingui/react/macro', () => ({
 
 const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }))
 
+// Warming the series page's code needs a real router; nothing here asserts it.
+vi.mock('@/hooks/use-warm-route-code', () => ({ useWarmRouteCode: () => undefined }))
+
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
   Link: ({

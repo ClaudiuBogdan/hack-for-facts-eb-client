@@ -11,6 +11,7 @@ import { ShareFilteredView } from '@/components/shared/procurement-data/share-fi
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { cn } from '@/lib/utils'
 import type { StatisticsTerritoryHubResult, StatisticsTerritoryHubSearch } from '@/schemas/statistics'
+import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { comparisonPlaceName } from '../lib/comparison-format'
 import { statisticsTheme } from '../lib/statistics-theme'
 import { BUCHAREST_MUNICIPALITY_SIRUTA } from '../lib/territory'
@@ -55,6 +56,8 @@ function TerritorySkeleton() {
  * never a wall of identical tiles. The first two groups open by default.
  */
 export function StatisticsTerritoryHubPage({ siruta, search, initialHub }: StatisticsTerritoryHubPageProps) {
+  // Most of this page's links open a series: have its code before the tap.
+  useWarmRouteCode('/ins/seturi/$cod')
   const navigate = useNavigate()
   const { i18n } = useLingui()
   // Malformed SIRUTA must never cost a request — the query is gated, and the

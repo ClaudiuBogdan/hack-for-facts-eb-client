@@ -17,6 +17,8 @@ import { Toaster } from "sonner";
 import { ErrorProvider } from "@/contexts/ErrorContext";
 import { HotkeysProvider } from "react-hotkeys-hook";
 import { AppFooter } from "@/components/footer/AppFooter";
+import { NavigationProgress } from "@/components/app/navigation-progress";
+import { useWarmRouteCodeOnIntent } from "@/hooks/use-warm-route-code";
 import { ChatFab } from "@/components/footer/ChatFab";
 import { FeedbackFab } from "@/components/feedback/FeedbackFab";
 import { ConsentCardHost } from "@/features/privacy/components/consent-card-host";
@@ -48,6 +50,7 @@ export function AppShell({
   const location = useLocation();
   const hasSentryConsent = useSentryConsent();
   const hideMobileBottomDock = shouldHideMobileBottomDock(location.pathname);
+  useWarmRouteCodeOnIntent();
 
   useEffect(() => {
     const userLocale = getUserLocale();
@@ -103,6 +106,7 @@ export function AppShell({
               <ThemeProvider defaultTheme="light" ssrTheme={ssrTheme}>
                 <HotkeysProvider>
                   <SidebarProvider>
+                    <NavigationProgress />
                     <div className="flex min-h-screen min-w-full">
                       <AppSidebar
                         initialCurrency={ssrCurrency}

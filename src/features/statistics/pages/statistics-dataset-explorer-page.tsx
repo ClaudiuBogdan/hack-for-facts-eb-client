@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import type { StatisticsDatasetExplorerSearch, StatisticsDatasetPage } from '@/schemas/statistics'
+import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { DatasetExplorerResults } from '../components/explorer/dataset-explorer-results'
 import { StatisticsBackLink } from '../components/statistics-back-link'
 import { DatasetExplorerFilterControls } from '../components/explorer/dataset-explorer-filter-controls'
@@ -37,6 +38,8 @@ const SEARCH_INPUT_ID = 'dataset-explorer-search'
  * The page opens under the INS hub, so it starts with the way back to it.
  */
 export function StatisticsDatasetExplorerPage({ search, initialPage }: Props) {
+  // Most of this page's links open a series: have its code before the tap.
+  useWarmRouteCode('/ins/seturi/$cod')
   const navigate = useNavigate()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const explorerQuery = useDatasetExplorer(search, initialPage)

@@ -1774,6 +1774,37 @@ At the product owner's request, after using the panel (§6ab, §6ac):
   strength it was lost on white and the frame read as an empty chart; it is
   a quarter at its centre now, and a little faster.
 
+## 6ae. A click answers at once; the dataset page's code is there before it (2026-09-24)
+
+Reported: a click on „Statistici INS" on the landing, then on a series,
+changed the address and left the page as it was for seconds. The loaders do
+not wait in the browser (`shouldBlockLoaderForSsr`); the wait is the
+route's lazy code, and the router showed nothing because no INS route
+declared a pending component. Measured on the deployed site, cold click:
+hub → series 0.4s (Fast 4G), 1.2s (Slow 4G), 4.1s (Slow 3G), with ~30 JS
+files (66KB) in one parallel wave; landing → hub 0.4 / 1.0 / 2.9s.
+
+- **Every navigation answers** with the app-wide bar (DESIGN.md decision
+  log, 2026-09-24): at ~150ms, whatever the network.
+- **The dataset page lands at once** on its own frame: the route's
+  `pendingComponent` (`DetailPagePending`, eager) draws the back link, the
+  header skeleton and the band skeleton the page itself shows while its
+  first read is in flight, in the shared `statisticsTheme.detailPage`
+  column — so the loaded page fills in where it stands. It costs 3.7KB
+  (brotli) on every page's first load.
+- **Its code is there before the tap**: the hub, the catalog, a territory
+  and the comparison warm `/ins/seturi/$cod` when the browser is idle.
+  Measured on the local build (Slow 4G, served over HTTP/1.1): after a few
+  seconds on the hub a series opens at +0.07s with no JS to fetch and its
+  title at 0.7s (one API round trip), against 3.6s of an unchanged page
+  before; clicked cold, the skeleton is up at 0.26s.
+- Every `<Link>` also preloads on intent (router `defaultPreload: 'intent'`):
+  hovering a series reads its first rows too, so the click finds the data on
+  its way. The INS loaders only warm the query cache in the browser, so a
+  hover costs the reads the click would have made, once per cache lifetime.
+- The hub itself has no pending skeleton: its chunk is 20KB, a hover on the
+  landing's card preloads it, and the bar covers the rest.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

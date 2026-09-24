@@ -18,6 +18,8 @@ import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE_NAME,
   dynamicActivate,
+  readBrowserLocaleCookie,
+  readBrowserStoredLocale,
   resolveLocale,
 } from "@/lib/i18n";
 import { AppShell } from "@/components/app/app-shell";
@@ -60,7 +62,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async ({ location }) => {
     // Read locale from cookie/storage
     const cookieLocale = await readLocaleCookie();
-    const storedLocale = readStoredLocale();
+    const storedLocale = readBrowserStoredLocale();
     const locale = resolveLocale({
       pathname: location.pathname,
       searchStr: location.searchStr,
@@ -267,15 +269,6 @@ function getGlobalHead() {
   };
 }
 
-function readStoredLocale(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return window.localStorage.getItem(LOCALE_COOKIE_NAME);
-  } catch {
-    return null;
-  }
-}
-
 const readRequestCookie = createIsomorphicFn()
   .client(async (_name: string): Promise<string | null> => null)
   .server(async (name: string): Promise<string | null> => {
@@ -283,14 +276,13 @@ const readRequestCookie = createIsomorphicFn()
     return getCookie(name) ?? null;
   });
 
+// In the browser, the same reading `browserLocaleFor` makes (lib/i18n): a
+// hover's preload runs this `beforeLoad` too, and is skipped when it would
+// switch the page's language.
 async function readLocaleCookie(): Promise<string | null> {
   const requestCookieValue = await readRequestCookie(LOCALE_COOKIE_NAME);
   if (requestCookieValue !== null) return requestCookieValue;
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${LOCALE_COOKIE_NAME}=([^;]*)`),
-  );
-  return match ? decodeURIComponent(match[1]) : null;
+  return readBrowserLocaleCookie();
 }
 
 async function readThemeCookie(): Promise<string | null> {

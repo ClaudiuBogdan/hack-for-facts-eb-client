@@ -35,11 +35,11 @@ export const Route = createFileRoute('/maps/public/$mapId')({
   // held the *previous* page for the whole round-trip: measured at 1.24–1.28s
   // of dead click with no feedback (the route declares no `pendingComponent`,
   // and the query client's `retry: 1` doubles a failing request).
-  loader: async ({ context, params }) => {
+  loader: async ({ context, params, preload }) => {
     const { queryClient } = context;
     const publicId = params.mapId;
 
-    void warmAdvancedAnalyticsMapResources({ queryClient });
+    const warming = warmAdvancedAnalyticsMapResources({ queryClient });
 
     const publicMapPromise = queryClient.ensureQueryData(
       advancedMapAnalyticsPublicMapQueryOptions(publicId)
@@ -51,6 +51,11 @@ export const Route = createFileRoute('/maps/public/$mapId')({
       void publicMapPromise
         .then((publicMap) => warmCountyBoundariesIfUsed(queryClient, publicMap))
         .catch(() => {});
+      // A hover's preload waits for the map's code: it then arrives inside
+      // the router's quiet preload (src/lib/route-code-warmup.ts), where a
+      // failed fetch leaves the page being read alone and makes the click a
+      // page load. A visit does not wait.
+      if (preload) await warming;
       return;
     }
 

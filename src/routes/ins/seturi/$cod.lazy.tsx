@@ -9,6 +9,7 @@ import {
   type DetailSearchPatch,
 } from '@/features/statistics/lib/dataset-selection'
 import { StatisticsDatasetDetailPage } from '@/features/statistics/pages/statistics-dataset-detail-page'
+import { statisticsTheme } from '@/features/statistics/lib/statistics-theme'
 
 export const Route = createLazyFileRoute('/ins/seturi/$cod')({
   component: StatisticsDatasetDetailRoutePage,
@@ -58,7 +59,7 @@ function StatisticsDatasetDetailRoutePage() {
 function StatisticsDatasetNotFound() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-6">
+      <div className={statisticsTheme.detailPage}>
         <StatisticsBackLink to="/ins/seturi">
           <Trans>Înapoi la seturi de date</Trans>
         </StatisticsBackLink>

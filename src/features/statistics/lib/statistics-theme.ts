@@ -6,6 +6,11 @@
 export const statisticsTheme = {
   /** Page column: bands stacked in one rhythm, no nested cards. */
   page: 'mx-auto max-w-6xl space-y-10 px-4 py-6 md:px-6',
+  /**
+   * The dataset page's column, which its pending skeleton and its not-found
+   * state share: a navigation lands in the frame it will fill.
+   */
+  detailPage: 'mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-6',
 
   /** Muted uppercase tier-1 label. */
   sectionLabel:

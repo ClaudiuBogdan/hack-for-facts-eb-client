@@ -63,6 +63,42 @@ describe('maps public route loader', () => {
     });
   });
 
+  it('waits for the base warm-up on a hover preload only, so its code arrives inside the quiet preload', async () => {
+    let settle: () => void = () => undefined;
+    warmAdvancedAnalyticsMapResourcesMock.mockReturnValue(
+      new Promise<void>((resolve) => {
+        settle = resolve;
+      }),
+    );
+    const queryClient = {
+      ensureQueryData: vi.fn().mockResolvedValue({
+        lastSnapshot: { config: { mapLayers: { countyBoundaries: false } } },
+      }),
+    };
+    const { Route } = await import('./$mapId');
+    const loader = (Route as unknown as {
+      loader: (input: Record<string, unknown>) => Promise<void>;
+    }).loader;
+
+    // A visit does not wait.
+    await loader({ context: { queryClient }, params: { mapId: 'm' }, preload: false });
+
+    let preloaded = false;
+    const preloading = loader({
+      context: { queryClient },
+      params: { mapId: 'm' },
+      preload: true,
+    }).then(() => {
+      preloaded = true;
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(preloaded).toBe(false);
+    settle();
+    await preloading;
+    expect(preloaded).toBe(true);
+  });
+
   it('warms county boundaries when the public map enables them', async () => {
     const queryClient = {
       ensureQueryData: vi.fn().mockResolvedValue({

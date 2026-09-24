@@ -12,6 +12,11 @@ type ReloadState = {
 
 let handlerRegistered = false;
 let recoveryInProgress = false;
+/**
+ * Background chunk loads in flight, each with whether a chunk error arrived
+ * while it ran. Their failures must not reload the page.
+ */
+const quietLoads = new Set<{ failed: boolean }>();
 const reloadParamSeen =
   typeof window !== "undefined" &&
   new URL(window.location.href).searchParams.has(RELOAD_QUERY_PARAM);
@@ -108,13 +113,63 @@ function extractErrorFromEvent(event: Event | PromiseRejectionEvent): unknown {
   return event;
 }
 
-export function registerChunkErrorHandler(): void {
-  if (typeof window === "undefined" || handlerRegistered) return;
+/**
+ * Load the current address as a new document, for code this document can no
+ * longer load cleanly: a background fetch of it failed, and the browser keeps
+ * that failure. Marks the recovery as under way, so the router's own error
+ * for the same code does not start a second one. Not offline, where a page
+ * load would swap the app for the browser's own error page.
+ */
+export function reloadForFreshCode(): boolean {
+  if (typeof window === "undefined") return false;
+  if (recoveryInProgress) return true;
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return false;
+  }
+  recoveryInProgress = true;
+  window.location.reload();
+  return true;
+}
+
+/**
+ * Run a chunk load the reader did not ask for — code fetched ahead of a click
+ * — without the reload a failed chunk normally triggers: reloading the page
+ * someone is reading because a background fetch failed would be the worst
+ * outcome of an optimisation. Resolves to whether it loaded cleanly.
+ *
+ * A failure is any `vite:preloadError` while the load runs, not only a
+ * rejection: Vite reports a stylesheet that failed and then goes on, and a
+ * split route component records its import's failure instead of throwing.
+ * Loads that overlap all count it, since the event does not say whose it
+ * was — a false alarm only costs the reader a full page load later. A
+ * navigation that fails meanwhile still recovers through the router's error
+ * page (`GlobalErrorPage` → `attemptChunkRecovery`).
+ */
+export async function quietChunkLoad(load: () => Promise<unknown>): Promise<boolean> {
+  const entry = { failed: false };
+  quietLoads.add(entry);
+  try {
+    await load();
+    return !entry.failed;
+  } catch {
+    return false;
+  } finally {
+    quietLoads.delete(entry);
+  }
+}
+
+/** Listens for failed chunks, app-wide; returns the way to stop (for tests). */
+export function registerChunkErrorHandler(): () => void {
+  if (typeof window === "undefined" || handlerRegistered) return () => undefined;
   handlerRegistered = true;
 
   cleanupReloadParam();
 
   const handleError = (event: Event | PromiseRejectionEvent) => {
+    if (quietLoads.size > 0 && event.type === "vite:preloadError") {
+      for (const entry of quietLoads) entry.failed = true;
+      return;
+    }
     const error = extractErrorFromEvent(event);
     if (!isUpdateAvailableError(error)) return;
 
@@ -127,4 +182,10 @@ export function registerChunkErrorHandler(): void {
   window.addEventListener("vite:preloadError", handleError as EventListener);
   window.addEventListener("error", handleError as EventListener, true);
   window.addEventListener("unhandledrejection", handleError);
+  return () => {
+    window.removeEventListener("vite:preloadError", handleError as EventListener);
+    window.removeEventListener("error", handleError as EventListener, true);
+    window.removeEventListener("unhandledrejection", handleError);
+    handlerRegistered = false;
+  };
 }

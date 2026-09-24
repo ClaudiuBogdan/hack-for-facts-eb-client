@@ -16,6 +16,8 @@ const ADMIN_CATALOG: CatalogName = "admin";
 const PNRR_CATALOG: CatalogName = "pnrr";
 const loadedCatalogs = new Map<string, Messages>();
 const loadingCatalogs = new Map<string, Promise<Messages>>();
+/** Catalogs already in Lingui's messages for their locale (`i18n.load` merges). */
+const mergedCatalogs = new Set<string>();
 
 const defaultCatalogsEager = import.meta.glob("../locales/*/messages.po", {
   eager: true,
@@ -214,14 +216,64 @@ export function resolveLocale(options: {
   return DEFAULT_LOCALE;
 }
 
+/** The locale cookie as the browser holds it; null on the server. */
+export function readBrowserLocaleCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(
+    new RegExp(`(?:^|; )${LOCALE_COOKIE_NAME}=([^;]*)`),
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+/** The locale this browser stored; null on the server or without storage. */
+export function readBrowserStoredLocale(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(LOCALE_COOKIE_NAME);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The language a load of this address activates in the browser: the root
+ * route's own resolution — the address, then the cookie, then storage.
+ */
+export function browserLocaleFor(location: {
+  readonly pathname: string;
+  readonly searchStr?: string;
+}): SupportedLocale {
+  return resolveLocale({
+    pathname: location.pathname,
+    searchStr: location.searchStr,
+    cookieLocale: readBrowserLocaleCookie(),
+    storedLocale: readBrowserStoredLocale(),
+  });
+}
+
 export async function dynamicActivate(
   locale: string,
   options?: ActivationOptions,
 ): Promise<void> {
   const catalogNames = getCatalogNamesForPathname(options?.pathname);
+  const cacheKeys = catalogNames.map((catalogName) =>
+    getCatalogCacheKey(locale, catalogName),
+  );
+  // Already the active language, with these catalogs in it. Loading and
+  // activating again changes nothing but still emits Lingui's `change`, which
+  // re-renders everything that translates — on every navigation, and on
+  // every hover that preloads a link, since the root's `beforeLoad` runs then
+  // too. (So the first hover on a `/pnrr` or `/admin` link, whose catalog is
+  // not in yet, does load it and re-render, where the click used to.)
+  if (i18n.locale === locale && cacheKeys.every((key) => mergedCatalogs.has(key))) {
+    return;
+  }
   await Promise.all(
     catalogNames.map((catalogName) => ensureCatalogLoaded(locale, catalogName)),
   );
   i18n.load(locale, buildMergedMessages(locale, catalogNames));
+  for (const key of cacheKeys) {
+    if (loadedCatalogs.has(key)) mergedCatalogs.add(key);
+  }
   i18n.activate(locale);
 }

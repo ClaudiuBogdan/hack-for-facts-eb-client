@@ -864,6 +864,49 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-24 — Every navigation answers the click; the next page's code is
+  fetched before it.** A client-side navigation changes the address at once
+  but keeps the previous page until the next one's code has arrived (loaders
+  do not block in the browser; the lazy route chunk does). Measured on the
+  deployed site with no hover: 0.4s on Fast 4G, 1–1.2s on Slow 4G, 2.9–4.1s
+  on Slow 3G of a page that did not move. Three layers, app-wide first:
+  `NavigationProgress` (`src/components/app/`), a 4px `bg-primary` bar across
+  the top from 120ms into any pending navigation, which fills and fades when
+  the page arrives and stands still under reduced motion — an indicator
+  reporting where the reader is, which [Motion](#motion) allows — with a
+  status line that tells a screen reader the same; the router's preload on
+  intent for every `<Link>` (`defaultPreload: 'intent'`: hover, focus, touch),
+  which fetches the page's code and runs its loaders, so the click finds both
+  on their way (and, within 30s, reuses what the hover read: router
+  `defaultStaleTime`), plus a code-only warm-up for plain anchors
+  (`useWarmRouteCodeOnIntent`); and, where a page mostly leads to one route,
+  that route's code fetched when the browser is idle (`useWarmRouteCode`; the
+  INS pages warm the dataset page), which is what helps a touch screen. A
+  heavy route may add a `pendingComponent` in its eager route file that draws
+  its own frame and skeletons (`/ins/seturi/$cod`, `/entities/$cui`).
+  Speculative loads are made safe in one place (`src/lib/route-code-warmup.ts`,
+  `quietRoutePreloads`): a preload fetches the page's code itself first,
+  quietly, and runs the router's preload only once it has arrived; none runs
+  for a link whose address resolves to another language (the root's
+  `beforeLoad` would switch the page's; `browserLocaleFor` is the root's own
+  resolution); a fetch that fails, the router's own preload included, never
+  reloads the page being read, and since the document cannot fetch that code
+  again (Chromium keeps a failed import, Vite a failed stylesheet), any
+  navigation to that page — a link, a search result, the back button —
+  becomes a full page load, decided at the router's `onBeforeLoad`, after
+  link handlers and blockers. Route `beforeLoad`s with
+  side effects skip them when `preload` is set (`/charts/new`), and a loader
+  that starts a detached import awaits it on a preload, so it stays inside
+  the quiet guard (the map pages). *Why:* the
+  router shows a pending UI only for a route that declares one, so most clicks
+  looked ignored. Hover preloading of data was first left out — about 20 route
+  loaders read data in the browser, so a hover now costs the reads the click
+  would have made — and adopted at the product owner's call. Rejected: a
+  generic `defaultPendingComponent` (a skeleton that does not match the page
+  is worse than none); `router.loadRouteChunk` for the warm-ups (router-core
+  keeps a rejected chunk promise, so one failed background fetch hung every
+  later click on that route).
+
 - **2026-09-24 — Sky blue reaches the rest of the INS charts.** The hub's
   two-line chart draws its first series (and the shading where it runs above)
   in `chart-sky`, and the comparison palette's first slot is `--chart-sky` in

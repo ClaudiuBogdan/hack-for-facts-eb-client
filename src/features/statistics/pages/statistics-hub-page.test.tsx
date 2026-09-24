@@ -23,6 +23,9 @@ vi.mock('@/hooks/useGeoJson', () => ({
   useGeoJsonData: () => ({ data: undefined, isError: false, refetch: vi.fn() }),
 }))
 
+// Warming the series page's code needs a real router; nothing here asserts it.
+vi.mock('@/hooks/use-warm-route-code', () => ({ useWarmRouteCode: () => undefined }))
+
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
   Link: ({

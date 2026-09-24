@@ -27,6 +27,7 @@ import type { DetailSearchPatch } from '../lib/dataset-selection'
 import { datasetDisplayName } from '../lib/dataset-names'
 import { getDatasetDataStatus } from '../lib/dataset-status'
 import type { ResolvedDatasetSeries } from '../lib/detail-series-resolution'
+import { statisticsTheme } from '../lib/statistics-theme'
 
 const logger = createLogger('ins-dataset-detail')
 
@@ -123,7 +124,7 @@ export function StatisticsDatasetDetailPage({
       {/* The same column as the catalog this page opens from
           (`max-w-6xl`): at 5xl, clicking a row and coming back shifted the
           page 64px sideways and changed the measure by 128px. */}
-      <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 md:px-6">
+      <div className={statisticsTheme.detailPage}>
         {/* The way out and the identity of the dataset, one block closed by a
             rule — the same header shape the catalog page opens with. It is
             rendered once here rather than inside each branch, so the title

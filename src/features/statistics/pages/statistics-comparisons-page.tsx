@@ -5,6 +5,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Button } from '@/components/ui/button'
 import { countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
+import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { COMPARISON_PALETTE_CLASS } from '../components/comparison/comparison-palette'
 import { ComparisonMapBand } from '../components/comparison/comparison-map-band'
 import type { ComparisonPlaceSuggestion } from '../components/comparison/comparison-pickers'
@@ -47,6 +48,8 @@ import { statisticsTheme } from '../lib/statistics-theme'
  * the states and lays the page out; the answer itself is `ComparisonResultBand`.
  */
 export function StatisticsComparisonsPage() {
+  // Most of this page's links open a series: have its code before the tap.
+  useWarmRouteCode('/ins/seturi/$cod')
   const { i18n } = useLingui()
   const { search, exampleMode, effectiveSearch, apply, reset } = useComparisonSearch()
   const comparisons = useComparisons(effectiveSearch)

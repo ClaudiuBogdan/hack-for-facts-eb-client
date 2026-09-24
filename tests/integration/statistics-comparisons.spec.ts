@@ -90,11 +90,29 @@ function link(extra: Record<string, unknown> = {}) {
     params.set(key, JSON.stringify(value))
   return '/ins/comparatii?' + params
 }
+type Call = { query: string; variables: Record<string, unknown> }
+/**
+ * The comparison's own source reads: one vector for all its territories. A
+ * hover preloads the dataset pages it links to (router `defaultPreload:
+ * 'intent'`), whose reads name one territory — those are not the
+ * comparison's, and whether the pointer crosses a link is up to the layout.
+ */
+function isComparisonRead(variables: Record<string, unknown>): boolean {
+  const filter = variables.filter as { territoryCodes?: string[] } | undefined
+  return (filter?.territoryCodes?.length ?? 0) > 1
+}
+function comparisonReads(calls: readonly Call[]): Call[] {
+  return calls.filter(
+    (call) =>
+      call.query.includes('InsSourceObservations') &&
+      isComparisonRead(call.variables),
+  )
+}
 async function mock(
   page: Page,
   opts: { ambiguous?: boolean; changed?: boolean } = {},
 ) {
-  const calls: { query: string; variables: Record<string, unknown> }[] = []
+  const calls: Call[] = []
   await page.route('**/graphql', async (route) => {
     expect(new URL(route.request().url()).pathname).toBe('/api/v1/graphql')
     expect(route.request().headers()).not.toHaveProperty('authorization')
@@ -125,7 +143,23 @@ async function mock(
       data = output
     } else if (query.includes('query InsDatasetDetails'))
       data = { insDataset: descriptor }
-    else if (query.includes('query InsSourceObservations')) {
+    else if (
+      query.includes('query InsSourceObservations') &&
+      !isComparisonRead(variables)
+    ) {
+      // A dataset page preloaded on hover: nothing to answer for here.
+      data = {
+        descriptor,
+        insObservations: {
+          nodes: [],
+          pageInfo: {
+            totalCount: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        },
+      }
+    } else if (query.includes('query InsSourceObservations')) {
       const filter = variables.filter as {
         territoryCodes: string[]
         sourcePins?: { dimensionIndex: number; memberCode: string }[]
@@ -240,9 +274,7 @@ for (const language of ['en', 'ro'] as const)
         await expect(table).toContainText('2023')
         await expect(table).toContainText('București')
         await expect(table).toContainText('Sectorul 1')
-        const before = calls.filter((c) =>
-          c.query.includes('InsSourceObservations'),
-        ).length
+        const before = comparisonReads(calls).length
         expect(before).toBe(3)
         await page.locator('#comparison-period').click()
         await page.getByRole('option', { name: '2023', exact: true }).click()
@@ -260,7 +292,7 @@ for (const language of ['en', 'ro'] as const)
           (url) => JSON.parse(url.searchParams.get('din') ?? 'null') === '2022',
         )
         expect(
-          calls.filter((c) => c.query.includes('InsSourceObservations')).length,
+          comparisonReads(calls).length,
         ).toBe(before)
         await page.screenshot({
           path: testInfo.outputPath(`ins-comparison-${language}-${width}.png`),
@@ -276,7 +308,7 @@ for (const language of ['en', 'ro'] as const)
           timeout: 15000,
         })
         expect(
-          calls.filter((c) => c.query.includes('InsSourceObservations')).length,
+          comparisonReads(calls).length,
         ).toBe(0)
         expect(
           calls.filter((c) => c.query.includes('InsComparisonDefaults')).length,
@@ -356,7 +388,7 @@ for (const [reason, dataset] of [
       page.getByRole('button', { name: /Reîncearcă|Retry|Try again/ }),
     ).toHaveCount(0)
     expect(
-      calls.filter((call) => call.query.includes('InsSourceObservations')),
+      comparisonReads(calls),
     ).toHaveLength(0)
   })
 }
@@ -390,7 +422,7 @@ for (const scenario of [
     )
     await expect(page.getByRole('alert')).toBeVisible()
     expect(
-      calls.filter((call) => call.query.includes('InsSourceObservations')),
+      comparisonReads(calls),
     ).toHaveLength(0)
     await page.reload()
     await expect(page.getByRole('alert')).toBeVisible()

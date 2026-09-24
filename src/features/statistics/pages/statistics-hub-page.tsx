@@ -15,6 +15,7 @@ import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPendi
 import { CountyMap } from '../components/county-map/county-map'
 import { HubCountyRank } from '../components/hub/hub-county-rank'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
+import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
 import { buildHubFacts, indicatorByCode } from '../components/hub/hub-facts'
 import { HubFigureRows, HubFiguresBand } from '../components/hub/hub-figures'
@@ -60,6 +61,8 @@ function HubEmpty({ children }: { readonly children: ReactNode }) {
 }
 
 export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps) {
+  // Most of this page's links open a series: have its code before the tap.
+  useWarmRouteCode('/ins/seturi/$cod')
   const { i18n } = useLingui()
   const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement>(null)

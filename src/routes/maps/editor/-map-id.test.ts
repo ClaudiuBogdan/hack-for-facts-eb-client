@@ -41,4 +41,31 @@ describe('maps editor route warmup', () => {
       queryClient,
     });
   });
+
+  it('waits for the warm-up on a hover preload only, so its code arrives inside the quiet preload', async () => {
+    let settle: () => void = () => undefined;
+    warmAdvancedAnalyticsMapResourcesMock.mockReturnValue(
+      new Promise<void>((resolve) => {
+        settle = resolve;
+      }),
+    );
+    const { Route } = await import('./$mapId');
+    const loader = (Route as unknown as {
+      loader: (input: Record<string, unknown>) => Promise<void>;
+    }).loader;
+    const queryClient = { prefetchQuery: vi.fn() };
+
+    // A visit does not wait.
+    await loader({ context: { queryClient }, preload: false });
+
+    let preloaded = false;
+    const preloading = loader({ context: { queryClient }, preload: true }).then(() => {
+      preloaded = true;
+    });
+    await Promise.resolve();
+    expect(preloaded).toBe(false);
+    settle();
+    await preloading;
+    expect(preloaded).toBe(true);
+  });
 });

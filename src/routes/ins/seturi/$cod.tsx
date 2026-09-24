@@ -1,6 +1,7 @@
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { fetchDatasetTier0 } from '@/features/statistics/api/dataset-detail-api'
+import { DetailPagePending } from '@/features/statistics/components/detail/detail-page-pending'
 import {
   datasetTier0Reads,
   prefetchDatasetDetail,
@@ -62,6 +63,10 @@ export type StatisticsDatasetDetailLoaderData = {
  */
 export const Route = createFileRoute('/ins/seturi/$cod')({
   validateSearch: parseStatisticsDatasetDetailSearch,
+  // Shown while the page's code downloads on a client-side navigation (the
+  // loader returns at once there); here, not in the lazy file, so the router
+  // holds it before the download starts.
+  pendingComponent: DetailPagePending,
   // Canonical uppercase codes: the API resolves either case, and one URL per
   // dataset beats two cache entries. The selection travels with it — a
   // redirect without `search` lands on the empty one.

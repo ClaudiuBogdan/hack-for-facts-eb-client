@@ -4,7 +4,10 @@ import { DEFAULT_CHART_CONFIG } from '@/schemas/constants'
 import type { Chart } from '@/schemas/charts'
 
 export const Route = createFileRoute('/charts/new')({
-    beforeLoad: () => {
+    // A hover preloads this route (router `defaultPreload: 'intent'`): only
+    // a real visit creates a chart and says so to analytics.
+    beforeLoad: ({ preload }) => {
+        if (preload) return
         const newChartId = crypto.randomUUID()
         const newChart: Chart = {
             id: newChartId,
