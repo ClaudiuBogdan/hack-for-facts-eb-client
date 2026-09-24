@@ -1,17 +1,23 @@
 import { InsSourcePageError } from '@/lib/ins/source-pages'
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Button } from '@/components/ui/button'
-import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
-import { cn, formatNumber } from '@/lib/utils'
+import { normalizeFilterSearchText } from '@/lib/filter-option-search'
+import { cn } from '@/lib/utils'
 import type { InsDimensionValue } from '@/schemas/ins'
-import { useDimensionValuesInfinite } from '../../hooks/use-dataset-detail'
-import { DIMENSION_PAGE_SIZE } from '../../lib/dataset-selection'
+import { dimensionOptionsQuery } from '../../hooks/use-dataset-detail'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { DetailOptionList, type DetailOption } from './detail-option-list'
 
-const SEARCH_DEBOUNCE_MS = 300
+/**
+ * Past this many options the list gets a search field. Below it every option
+ * is on screen at once (the list shows about eight rows before it scrolls),
+ * and a field above three rows is a control with nothing to do. The chart
+ * builder's INS lists draw the line at the same place.
+ */
+const SEARCH_FROM_OPTIONS = 15
 
 export type DimensionPanelProps = {
   readonly datasetCode: string
@@ -47,10 +53,13 @@ export type DimensionPanelProps = {
  * left two overlapping white panels on screen. The chip already names the
  * axis; opening it should show the options.
  *
- * Classification dimensions can hold thousands of hierarchical values — the
- * locality axis of SOM101F has 3,182 — so the list never loads the whole
- * axis and never renders a drill-down tree: `DetailOptionList` reads a page
- * at a time, filtered by the typed query, and draws only the rows in view.
+ * The whole axis is read (`dimensionOptionsQuery`) — the panels ask for it as
+ * soon as they are on screen, so it is usually there before the section
+ * opens — and the search runs on it here, as the reader types, ignoring case
+ * and diacritics („varsta" finds „Vârsta"). Classification dimensions can
+ * hold thousands of values — the locality axis of SOM101F has 3,182 — so
+ * `DetailOptionList` never renders a drill-down tree, and draws only the
+ * rows in view.
  */
 export function DetailDimensionPanel({
   datasetCode,
@@ -68,28 +77,23 @@ export function DetailDimensionPanel({
 }: DimensionPanelProps) {
   const inline = appearance === 'inline'
   const [draft, setDraft] = useState('')
-  const search = useDebouncedValue(draft, SEARCH_DEBOUNCE_MS)
 
-  const valuesQuery = useDimensionValuesInfinite({
-    datasetCode,
-    dimensionIndex,
-    nativePublicationKey,
-    search,
-    pageSize: DIMENSION_PAGE_SIZE,
-    enabled: active,
+  const valuesQuery = useQuery({
+    ...dimensionOptionsQuery({ datasetCode, dimensionIndex, nativePublicationKey }),
+    enabled: active && datasetCode.trim().length > 0,
   })
 
-  // The first page is what the reader waits for; later pages arrive under a
-  // list that is already usable, so they never blank it.
-  const loading = valuesQuery.isPending || draft !== search
-  const [options, values] =
-    loading || valuesQuery.isError
-      ? [[], new Map<string, InsDimensionValue>()]
-      : flattenOptions(valuesQuery.data?.pages, optionKey)
-  const totalCount =
-    loading || valuesQuery.isError
-      ? undefined
-      : valuesQuery.data?.pages[0]?.pageInfo.totalCount
+  const loading = valuesQuery.isPending
+  const [allOptions, values] = valuesQuery.data
+    ? flattenOptions(valuesQuery.data, optionKey)
+    : [[], new Map<string, InsDimensionValue>()]
+  // A popover always has its field: Radix focuses the first tabbable
+  // element as it opens, and before the list lands the field is the only
+  // one that is not „Șterge" — which Enter would have pressed. A section of
+  // the panels moves no focus on opening, so there a short list goes
+  // without.
+  const searchable = appearance === 'popover' || allOptions.length > SEARCH_FROM_OPTIONS
+  const options = searchable ? matching(allOptions, draft) : allOptions
   const publicationChanged =
     valuesQuery.error instanceof InsSourcePageError &&
     valuesQuery.error.code === 'PUBLICATION_CHANGED'
@@ -121,6 +125,7 @@ export function DetailDimensionPanel({
         appearance={appearance}
         label={label.trim()}
         placeholder={t`Caută…`}
+        searchable={searchable}
         draft={draft}
         onDraftChange={setDraft}
         options={options}
@@ -157,12 +162,9 @@ export function DetailDimensionPanel({
         }
         empty={valuesQuery.isSuccess && options.length === 0}
         emptyLabel={t`Niciun rezultat`}
-        hasNextPage={valuesQuery.hasNextPage}
-        isFetchingNextPage={valuesQuery.isFetchingNextPage}
-        fetchNextPage={() => void valuesQuery.fetchNextPage()}
       />
 
-      {selectedKey || totalCount !== undefined ? (
+      {selectedKey || valuesQuery.isSuccess ? (
         <div
           className={cn(
             statisticsTheme.optionPanelFooter,
@@ -172,14 +174,12 @@ export function DetailDimensionPanel({
           {/* The count is the live region: it says what a search changed,
               which the rows themselves cannot. */}
           <span role="status">
-            {totalCount !== undefined && totalCount >= 0
-              ? valuesQuery.isFetchingNextPage
-                ? t`${formatNumber(totalCount)} opțiuni · se încarcă…`
-                : plural(totalCount, {
-                    one: 'o opțiune',
-                    few: '# opțiuni',
-                    other: '# de opțiuni',
-                  })
+            {valuesQuery.isSuccess
+              ? plural(options.length, {
+                  one: 'o opțiune',
+                  few: '# opțiuni',
+                  other: '# de opțiuni',
+                })
               : null}
           </span>
           {selectedKey ? (
@@ -201,23 +201,37 @@ export function DetailDimensionPanel({
 }
 
 /**
- * The pages as one list of rows, keyed and deduplicated, with the member
- * behind each key. A server that re-sorts between two reads can hand the
- * same member on two pages, and a duplicate key would give two rows one id.
+ * The axis as a list of rows, keyed and deduplicated, with the member behind
+ * each key. A server that re-sorts between two reads can hand the same member
+ * on two pages, and a duplicate key would give two rows one id.
  */
 function flattenOptions(
-  pages: readonly { readonly nodes: readonly InsDimensionValue[] }[] | undefined,
+  nodes: readonly InsDimensionValue[],
   optionKey: (value: InsDimensionValue) => string | null,
 ): [readonly DetailOption[], ReadonlyMap<string, InsDimensionValue>] {
   const values = new Map<string, InsDimensionValue>()
   const options: DetailOption[] = []
-  for (const page of pages ?? []) {
-    for (const value of page.nodes) {
-      const key = optionKey(value)
-      if (!key || values.has(key)) continue
-      values.set(key, value)
-      options.push({ key, label: value.label_ro ?? key })
-    }
+  for (const value of nodes) {
+    const key = optionKey(value)
+    if (!key || values.has(key)) continue
+    values.set(key, value)
+    options.push({ key, label: value.label_ro ?? key })
   }
   return [options, values]
+}
+
+/**
+ * The rows where every word typed starts a word of the label, in any order,
+ * ignoring case, diacritics and punctuation: „alba iulia" finds „1017
+ * MUNICIPIUL ALBA IULIA", „4 ani" finds „0- 4 ani" and „4 ani" — not „14
+ * ani", which a match anywhere in the label also offered, sixteen rows for
+ * one year of age.
+ */
+function matching(options: readonly DetailOption[], draft: string): readonly DetailOption[] {
+  const typed = normalizeFilterSearchText(draft).split(' ').filter(Boolean)
+  if (typed.length === 0) return options
+  return options.filter((option) => {
+    const words = normalizeFilterSearchText(option.label).split(' ')
+    return typed.every((prefix) => words.some((word) => word.startsWith(prefix)))
+  })
 }

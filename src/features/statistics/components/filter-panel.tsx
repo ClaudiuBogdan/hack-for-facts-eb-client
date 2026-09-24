@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../lib/statistics-theme'
 
 /**
@@ -70,31 +71,21 @@ type HeadingProps = {
   readonly icon: LucideIcon
   readonly label: string
   readonly value: ReactNode
-  /** The value was chosen by the page, not the reader. */
-  readonly implicit?: boolean
   /** A quiet line under the value: a code, a scope. */
   readonly detail?: string | null
 }
 
 /** What a section says while closed: the axis's kind, its name, its value. */
-function SectionHeading({ icon: Icon, label, value, implicit = false, detail }: HeadingProps) {
+function SectionHeading({ icon: Icon, label, value, detail }: HeadingProps) {
   return (
     <span className="flex min-w-0 flex-1 items-start gap-2.5">
       <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
       <span className="flex min-w-0 flex-1 flex-col items-start">
         <span className={statisticsTheme.scopeRailLabel}>{label.trim()}</span>
-        <span className="mt-0.5 flex w-full min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-          <span className={statisticsTheme.scopePanelValue}>{value}</span>
-          {/* Only a value that WAS chosen is marked as chosen automatically;
-              an axis still to choose says so in its own text. Beside the
-              value, not the axis name: in a 16rem rail a tag up there
-              wrapped the name. */}
-          {implicit ? (
-            <span className={statisticsTheme.scopePanelImplicit}>
-              <Trans>implicit</Trans>
-            </span>
-          ) : null}
-        </span>
+        {/* The value on screen, whoever chose it: the page's own choice and
+            the reader's read the same. An axis still to choose says so in
+            its own text. */}
+        <span className={cn(statisticsTheme.scopePanelValue, 'mt-0.5')}>{value}</span>
         {detail ? <MonoLabel className="mt-1 text-muted-foreground">{detail}</MonoLabel> : null}
       </span>
     </span>

@@ -1,7 +1,6 @@
 import { normalizeInsDatasetCode } from '@/lib/ins/source-contract'
 import {
   queryOptions,
-  useInfiniteQuery,
   useQueries,
   useQuery,
   type QueryClient,
@@ -9,7 +8,6 @@ import {
 import type {
   InsDatasetDetails,
   InsDimensionValue,
-  InsDimensionValueConnection,
   InsEntitySelectorInput,
 } from '@/schemas/ins'
 import type {
@@ -31,56 +29,77 @@ import {
 import { detailBootstrapEntity } from '../lib/source-selection'
 import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
 
+/** The most options the API hands back in one read. */
+const DIMENSION_OPTIONS_PAGE_SIZE = 1000
+
 /**
- * A dimension's options as one growing list: pages read one at a time,
- * appended as the reader scrolls. The panel virtualises the rows, so a
- * 3,000-locality axis costs the same to draw as a 3-row one; what it never
- * does is ask for the whole axis in one read.
+ * A dimension's options, the whole axis: read 1,000 at a time until the axis
+ * is done — one read for nearly every axis, four for the 3,182 localities of
+ * SOM101F. The panels search, and count, on the client, so the list they
+ * hold must be the whole list; a search over a first page would have missed
+ * every locality past it.
  *
- * The offset of the next page is the number of rows already held, not a
- * page counter: a server that returned a short page must not be asked to
- * skip rows it never sent.
+ * The offset of the next read is the number of rows already held, not a page
+ * counter: a server that returned a short page must not be asked to skip
+ * rows it never sent.
  */
-export function useDimensionValuesInfinite(params: {
+export function dimensionOptionsQuery(params: {
   readonly datasetCode: string
   readonly dimensionIndex: number
   readonly nativePublicationKey?: string
-  readonly search: string | undefined
-  readonly pageSize: number
-  readonly enabled: boolean
 }) {
-  const search = params.search?.trim() || undefined
   const datasetCode = normalizeInsDatasetCode(params.datasetCode)
-
-  return useInfiniteQuery<InsDimensionValueConnection>({
+  return queryOptions({
     queryKey: statisticsKeys.dimensionValues([
-      'scroll-v1',
+      'all-v1',
       params.nativePublicationKey ?? null,
       datasetCode,
       params.dimensionIndex,
-      search ?? '',
-      params.pageSize,
     ]),
-    initialPageParam: 0,
-    queryFn: ({ pageParam, signal }) =>
-      fetchDimensionValuesPage({
-        expectedPublicationKey: params.nativePublicationKey,
-        datasetCode,
-        dimensionIndex: params.dimensionIndex,
-        search,
-        limit: params.pageSize,
-        offset: pageParam as number,
-        signal,
-      }),
-    getNextPageParam: (lastPage, pages) =>
-      lastPage.pageInfo.hasNextPage && lastPage.nodes.length > 0
-        ? pages.reduce((count, page) => count + page.nodes.length, 0)
-        : undefined,
-    enabled: params.enabled && datasetCode.length > 0,
+    queryFn: async ({ signal }): Promise<readonly InsDimensionValue[]> => {
+      const nodes: InsDimensionValue[] = []
+      for (;;) {
+        const page = await fetchDimensionValuesPage({
+          expectedPublicationKey: params.nativePublicationKey,
+          datasetCode,
+          dimensionIndex: params.dimensionIndex,
+          limit: DIMENSION_OPTIONS_PAGE_SIZE,
+          offset: nodes.length,
+          signal,
+        })
+        nodes.push(...page.nodes)
+        if (!page.pageInfo.hasNextPage || page.nodes.length === 0) return nodes
+      }
+    },
+    enabled: datasetCode.length > 0,
     staleTime: STATISTICS_STALE_TIME.members,
-    // The list offers its own retry the moment a page fails.
+    // The list offers its own retry the moment a read fails.
     retry: false,
   })
+}
+
+/**
+ * The option lists of the axes a selection panel shows, read as soon as the
+ * panel is on screen, so a section opens onto a list that is already there.
+ * Returns each axis's list, by dimension index, once it has arrived — the
+ * panel names a pinned member from it while the series' own rows, which
+ * name it otherwise, are still on their way.
+ */
+export function useDimensionOptionLists(params: {
+  readonly datasetCode: string
+  readonly dimensionIndexes: readonly number[]
+}): ReadonlyMap<number, readonly InsDimensionValue[]> {
+  const results = useQueries({
+    queries: params.dimensionIndexes.map((dimensionIndex) =>
+      dimensionOptionsQuery({ datasetCode: params.datasetCode, dimensionIndex }),
+    ),
+  })
+  const lists = new Map<number, readonly InsDimensionValue[]>()
+  params.dimensionIndexes.forEach((dimensionIndex, position) => {
+    const data = results[position]?.data
+    if (data) lists.set(dimensionIndex, data)
+  })
+  return lists
 }
 
 /**

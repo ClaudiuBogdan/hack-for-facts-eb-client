@@ -1743,6 +1743,37 @@ At the product owner's request, the two follow-ups of §6z and §6ab:
   the focus back on its trigger; the add button keeps it after an add, and
   the sixth territory hands it to the last remove button.
 
+## 6ad. The panel without „implicit"; the options read ahead and searched in the browser (2026-09-24)
+
+At the product owner's request, after using the panel (§6ab, §6ac):
+
+- **No „implicit".** The tag beside a value the page chose, the line under
+  the rail explaining it and the „(implicit)" in the triggers' names are
+  gone, on both pages. The panel shows the value on screen whoever chose
+  it, which is what the reader acts on, and the tag cost a line in a 16rem
+  rail. This drops the disclosure §6y leaned on when it removed „selecție
+  reprezentativă": nothing now says which values the page chose. The reset
+  still counts what the address pins.
+- **Every axis read whole, as soon as the panel is on screen.**
+  `dimensionOptionsQuery` reads an axis 1,000 options at a time until it is
+  done — one read for nearly every axis, four for the 3,182 localities of
+  SOM101F — and `useDimensionOptionLists` asks for every axis of the panel
+  as it mounts, so a section opens onto a list that is already there (about
+  a tenth of a second on POP107D, from the click). While the series' rows —
+  which name the pinned members — are still loading, the members are named
+  from these lists rather than shown as codes („105").
+- **The search runs in the browser**, on the whole list, as the reader
+  types: every word typed must start a word of the label, in any order,
+  ignoring case, diacritics and punctuation (`normalizeFilterSearchText`).
+  „4 ani" finds „0- 4 ani" and „4 ani", not „14 ani". Nothing is asked of
+  the server for it.
+- **No search field on a short list**: 15 options or fewer are all on
+  screen, as the chart builder's INS lists already do. The list then takes
+  the focus itself, with the same cursor the field would have moved.
+- **The loading sweep is visible.** At a tenth of the line colour's
+  strength it was lost on white and the frame read as an empty chart; it is
+  a quarter at its centre now, and a little faster.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

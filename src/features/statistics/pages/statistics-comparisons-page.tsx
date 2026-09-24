@@ -163,11 +163,7 @@ export function StatisticsComparisonsPage() {
               unitCode,
               unitWord,
               cadence,
-              pinned: {
-                classifications: new Set(pinnedClassifications.map((pin) => pin.split(':')[0])),
-                unit: search.unitate !== undefined,
-                cadence: search.frecventa !== undefined,
-              },
+              cadencePinned: search.frecventa !== undefined,
               memberLabel,
               onPinClassification: (typeCode, valueCode) => edit({ kind: 'pin-classification', typeCode, valueCode }),
               onPinUnit: (next) => edit({ kind: 'pin-unit', unitCode: next }),

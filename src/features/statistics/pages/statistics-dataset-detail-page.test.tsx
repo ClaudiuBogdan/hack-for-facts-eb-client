@@ -142,7 +142,7 @@ describe('StatisticsDatasetDetailPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('shows the cell the resolution chose as a default, never as the reader’s choice', () => {
+  it('shows the cell the resolution chose on the rail, and keeps it out of the URL', () => {
     // POST A answers NO_DATA for any matrix without a row at the requested
     // entity; the resolution picks a cell from the rows and says it did.
     useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
@@ -158,9 +158,9 @@ describe('StatisticsDatasetDetailPage', () => {
     const onChange = mount({ clasificari: ['D0:931'], unitate: '0' })
     expect(screen.getByRole('button', { name: 'Descarcă CSV' })).toBeEnabled()
     expect(screen.getAllByText(byDigits('21002025')).length).toBeGreaterThan(0)
-    // Marked as a default where the reader can change it — on the rail, not
-    // with a second badge beside the figure…
-    expect(screen.getByRole('button', { name: /^Sexe: Total \(implicit\)/ })).toBeInTheDocument()
+    // Named where the reader can change it — on the rail, as its plain
+    // value, not with a badge beside the figure…
+    expect(screen.getByRole('button', { name: /^Sexe: Total$/ })).toBeInTheDocument()
     expect(screen.queryByText('selecție reprezentativă')).not.toBeInTheDocument()
     expect(screen.queryByText('Alege ce vrei să vezi')).not.toBeInTheDocument()
     // …and, being a default, it stays out of the URL.
@@ -200,7 +200,7 @@ describe('StatisticsDatasetDetailPage', () => {
     expect(within(screen.getByTestId('chart-skeleton')).queryByText('1992')).not.toBeInTheDocument()
     expect(within(skeleton).getByRole('status')).toHaveTextContent('Se încarcă seria de date')
     // No rows yet to name the member, so the rail shows the pin itself.
-    expect(screen.getByRole('button', { name: /^Sexe: 105 \(implicit\)/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Sexe: 105$/ })).toBeInTheDocument()
   })
 
   it.each([
@@ -297,7 +297,7 @@ describe('StatisticsDatasetDetailPage', () => {
     const onChange = mount({ din: 2030, pana: 2035 })
     expect(screen.getByRole('figure')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(/Anii 2030–2035 din adresă sunt în afara seriei/)
-    expect(screen.getByRole('button', { name: /^Interval de ani: 2023–2025 \(implicit\)/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Interval de ani: 2023–2025$/ })).toBeInTheDocument()
     screen.getByRole('button', { name: 'Șterge anii din adresă' }).click()
     expect(onChange).toHaveBeenCalledWith({ din: undefined, pana: undefined })
   })

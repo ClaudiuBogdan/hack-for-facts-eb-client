@@ -140,7 +140,6 @@ export function DetailBody({
           unitLabel={labels.unitLabel}
           observedSpan={view.observedSpan}
           yearWindow={view.yearWindow}
-          yearWindowPinned={view.yearWindowPinned}
           onChange={onSearchChange}
         />
       </aside>

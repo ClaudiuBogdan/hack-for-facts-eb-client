@@ -101,9 +101,6 @@ export const statisticsTheme = {
   /** A section whose trigger is an action („Adaugă un teritoriu"), not an axis. */
   scopePanelAdd:
     'px-4 py-2.5 text-sm font-medium text-primary hover:bg-muted/50 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&>svg]:h-4 [&>svg]:w-4',
-  /** „implicit": a quiet tag after the value the page chose itself. */
-  scopePanelImplicit:
-    'shrink-0 rounded-sm bg-muted px-1.5 text-[11px] leading-5 text-muted-foreground',
 
   // -- Dimension option panel ------------------------------------------------
 

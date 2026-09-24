@@ -43,11 +43,10 @@ function view(params: {
 }
 
 describe('deriveDetailSeriesView', () => {
-  it('shows the whole series, unpinned, with no window in the address', () => {
+  it('shows the whole series with no window in the address', () => {
     const result = view({})
     expect(result.observedSpan).toEqual({ from: 2023, to: 2025 })
     expect(result.yearWindow).toEqual({ from: 2023, to: 2025 })
-    expect(result.yearWindowPinned).toBe(false)
     expect(result.yearWindowOutside).toBeNull()
     expect(result.windowedRows).toHaveLength(3)
     expect(result.chartSeries?.points).toHaveLength(3)
@@ -59,7 +58,6 @@ describe('deriveDetailSeriesView', () => {
   it('cuts a window to the observed span rather than emptying the chart', () => {
     const result = view({ search: { din: 1900, pana: 2024 } })
     expect(result.yearWindow).toEqual({ from: 2023, to: 2024 })
-    expect(result.yearWindowPinned).toBe(true)
     expect(result.windowedRows.map((row) => row.time_period.year)).toEqual([2023, 2024])
     expect(result.emptyReason).toBeNull()
   })
@@ -67,7 +65,6 @@ describe('deriveDetailSeriesView', () => {
   it('shows the whole span, and says which years were asked for, when the window lies past the series', () => {
     const result = view({ search: { din: 2030, pana: 2035 } })
     expect(result.yearWindow).toEqual({ from: 2023, to: 2025 })
-    expect(result.yearWindowPinned).toBe(false)
     expect(result.yearWindowOutside).toEqual({ from: 2030, to: 2035 })
     expect(result.windowedRows).toHaveLength(3)
     expect(result.emptyReason).toBeNull()
@@ -77,7 +74,6 @@ describe('deriveDetailSeriesView', () => {
     const result = view({ search: { din: 2030 } })
     expect(result.yearWindow).toEqual({ from: 2023, to: 2025 })
     expect(result.yearWindowOutside).toEqual({ from: 2030, to: 2030 })
-    expect(result.yearWindowPinned).toBe(false)
     const early = view({ search: { pana: 1900 } })
     expect(early.yearWindowOutside).toEqual({ from: 1900, to: 1900 })
   })
@@ -85,7 +81,6 @@ describe('deriveDetailSeriesView', () => {
   it('puts reversed bounds in order', () => {
     const result = view({ search: { din: 2025, pana: 2024 } })
     expect(result.yearWindow).toEqual({ from: 2024, to: 2025 })
-    expect(result.yearWindowPinned).toBe(true)
   })
 
   it('names a window that falls into a gap of the series', () => {

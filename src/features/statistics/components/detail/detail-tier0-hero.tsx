@@ -15,8 +15,7 @@ type Props = {
 /**
  * Tier 0 — the number above the chart: the latest resolved value, LARGE, with
  * its unit and period; absence renders as words, never as 0. Which cell it is
- * the rail says, each coordinate the page chose marked „implicit" — the
- * figure does not repeat it.
+ * the selection panel says, axis by axis — the figure does not repeat it.
  *
  * Three tiers and no more (DESIGN.md §Design Principles 1): the label says
  * what the figure is, the figure is the tile's one large line, and the period

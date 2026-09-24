@@ -7,8 +7,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../../lib/statistics-theme'
 
-/** Rows from the end at which the next page is asked for. */
-const PREFETCH_ROWS = 40
 /** A row of one line; taller rows are measured once drawn. */
 const ROW_ESTIMATE_PX = 36
 const PAGE_KEY_ROWS = 10
@@ -23,6 +21,11 @@ type Props = {
   /** Names the list for assistive tech — the axis being chosen. */
   readonly label: string
   readonly placeholder: string
+  /**
+   * Draw the search field. Without it — a short list, every row on screen —
+   * the list itself takes the focus and the arrow keys.
+   */
+  readonly searchable: boolean
   readonly draft: string
   readonly onDraftChange: (next: string) => void
   /** Everything held so far, deduplicated by key. */
@@ -37,9 +40,6 @@ type Props = {
   readonly empty: boolean
   /** What the list says then. */
   readonly emptyLabel: string
-  readonly hasNextPage: boolean
-  readonly isFetchingNextPage: boolean
-  readonly fetchNextPage: () => void
   /**
    * `popover` paints a floating panel edge to edge: the search is its top
    * strip. `inline` sits inside a filter section, beside other controls, so
@@ -50,25 +50,27 @@ type Props = {
 }
 
 /**
- * A searched, scrolling list of options: the one list every axis of the
- * detail rail opens onto.
+ * A scrolling list of options, searched when it is long: the one list every
+ * axis of the INS selection panels opens onto.
  *
- * It reads a page, then the next when the reader nears the end, and only
- * draws the rows in view — so a 3,000-locality axis costs the same to draw
- * as a 3-row one. The lists used to page instead, twenty rows and a
- * „1–20 din 3182" pager, which made the reader click 159 times to reach the
- * end of an axis they could have scrolled.
+ * It holds the whole axis and draws only the rows in view — so a
+ * 3,000-locality axis costs the same to draw as a 3-row one. The lists used
+ * to page instead, twenty rows and a „1–20 din 3182" pager, which made the
+ * reader click 159 times to reach the end of an axis they could have
+ * scrolled.
  *
  * Not cmdk. cmdk keeps its cursor in the DOM and walks the rendered items,
  * and a virtualised list renders only the rows in view — so the cursor would
  * have vanished with the row it sat on, and End would have stopped at the
- * overscan. This is a plain WAI-ARIA combobox: the input owns the focus,
- * `aria-activedescendant` names the row the arrows are on, and the
- * virtualiser scrolls that row into view.
+ * overscan. With a search field this is a plain WAI-ARIA combobox: the input
+ * owns the focus, `aria-activedescendant` names the row the arrows are on,
+ * and the virtualiser scrolls that row into view. Without one it is a
+ * listbox that takes the focus itself, with the same cursor.
  */
 export function DetailOptionList({
   label,
   placeholder,
+  searchable,
   draft,
   onDraftChange,
   options,
@@ -78,9 +80,6 @@ export function DetailOptionList({
   error,
   empty,
   emptyLabel,
-  hasNextPage,
-  isFetchingNextPage,
-  fetchNextPage,
   appearance = 'popover',
 }: Props) {
   const inline = appearance === 'inline'
@@ -93,7 +92,8 @@ export function DetailOptionList({
   // page that holds any rows.
   const [cursorSeeded, setCursorSeeded] = useState(false)
   if (!cursorSeeded && options.length > 0) {
-    const chosenIndex = selectedKey === null ? -1 : options.findIndex((option) => option.key === selectedKey)
+    const chosenIndex =
+      selectedKey === null ? -1 : options.findIndex((option) => option.key === selectedKey)
     if (chosenIndex > 0) setActiveIndex(chosenIndex)
     setCursorSeeded(true)
   }
@@ -124,19 +124,6 @@ export function DetailOptionList({
     if (activeIndex > 0) virtualizer.scrollToIndex(activeIndex, { align: 'center' })
   }, [cursorSeeded, activeIndex, virtualizer])
 
-  // The next page is asked for when the rows in view reach the end of what
-  // is held. An effect, because the trigger is the scroll position — which
-  // only the virtualiser sees — and not any event the list handles itself.
-  // Never while loading or failed: a failed page keeps `hasNextPage`, and
-  // with no rows held the end is always in view — the effect would ask
-  // again on every render, over the retry button's head.
-  const lastVisible = virtualRows[virtualRows.length - 1]?.index ?? -1
-  const settled = !loading && !error
-  useEffect(() => {
-    if (!settled || !hasNextPage || isFetchingNextPage) return
-    if (lastVisible >= options.length - 1 - PREFETCH_ROWS) fetchNextPage()
-  }, [settled, lastVisible, options.length, hasNextPage, isFetchingNextPage, fetchNextPage])
-
   const handleDraftChange = (next: string) => {
     onDraftChange(next)
     setActiveIndex(0)
@@ -152,7 +139,7 @@ export function DetailOptionList({
     virtualizer.scrollToIndex(clamped)
   }
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.altKey || event.ctrlKey || event.metaKey) return
     if (options.length === 0) return
 
@@ -173,7 +160,6 @@ export function DetailOptionList({
         moveTo(0)
         break
       case 'End':
-        // The end of what is held; the effect above then reads on from there.
         moveTo(options.length - 1)
         break
       case 'Enter': {
@@ -190,37 +176,41 @@ export function DetailOptionList({
   const activeOption = options[activeIndex]
   const optionId = (option: DetailOption) => `${listId}-${option.key}`
 
+  const cursor = activeOption ? optionId(activeOption) : undefined
+
   return (
     <>
-      <div
-        className={cn(
-          'flex items-center px-3',
-          inline
-            ? 'rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'
-            : 'border-b border-border/70',
-        )}
-      >
-        <Search aria-hidden className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-        <input
-          type="text"
-          role="combobox"
-          aria-label={t`Caută în ${label}`}
-          aria-expanded
-          aria-controls={listId}
-          aria-autocomplete="list"
-          aria-activedescendant={activeOption ? optionId(activeOption) : undefined}
-          autoComplete="off"
-          spellCheck={false}
-          value={draft}
-          onChange={(event) => handleDraftChange(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+      {searchable ? (
+        <div
           className={cn(
-            'flex w-full bg-transparent text-sm outline-hidden placeholder:text-muted-foreground',
-            inline ? 'h-9 py-2' : 'h-10 py-3',
+            'flex items-center px-3',
+            inline
+              ? 'rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'
+              : 'border-b border-border/70',
           )}
-        />
-      </div>
+        >
+          <Search aria-hidden className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <input
+            type="text"
+            role="combobox"
+            aria-label={t`Caută în ${label}`}
+            aria-expanded
+            aria-controls={listId}
+            aria-autocomplete="list"
+            aria-activedescendant={cursor}
+            autoComplete="off"
+            spellCheck={false}
+            value={draft}
+            onChange={(event) => handleDraftChange(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className={cn(
+              'flex w-full bg-transparent text-sm outline-hidden placeholder:text-muted-foreground',
+              inline ? 'h-9 py-2' : 'h-10 py-3',
+            )}
+          />
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="space-y-1 p-2" aria-busy="true">
@@ -244,16 +234,25 @@ export function DetailOptionList({
         id={listId}
         role="listbox"
         aria-label={label}
+        // No search field to hold the focus: the list holds it, and the
+        // arrows move the same cursor the field would have.
+        {...(searchable
+          ? {}
+          : {
+              tabIndex: options.length > 0 ? 0 : -1,
+              'aria-activedescendant': cursor,
+              onKeyDown: handleKeyDown,
+            })}
         className={cn(
           'overflow-y-auto overflow-x-hidden overscroll-contain p-1',
-          inline && 'mt-2 rounded-md border border-border/70',
+          !searchable &&
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+          inline && 'rounded-md border border-border/70',
+          inline && searchable && 'mt-2',
           options.length > 0 ? (inline ? 'max-h-64' : 'max-h-72') : 'max-h-0 border-0 p-0',
         )}
       >
-        <div
-          className="relative w-full"
-          style={{ height: `${virtualizer.getTotalSize()}px` }}
-        >
+        <div className="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
           {virtualRows.map((row) => {
             const option = options[row.index]
             if (!option) return null
@@ -269,7 +268,11 @@ export function DetailOptionList({
                 // so a reader arrowing through 3,000 localities hears
                 // „selected" on the row they are on. The value already
                 // chosen is the current one, marked by the check beside it.
-                aria-selected={isActive}
+                // With a field this is a combobox, whose selected option is
+                // the one the arrows are on; alone it is a listbox, whose
+                // selected option is the value chosen — the cursor is
+                // `aria-activedescendant`, and moving it changes nothing.
+                aria-selected={searchable ? isActive : chosen}
                 aria-current={chosen || undefined}
                 data-index={row.index}
                 data-active={isActive}

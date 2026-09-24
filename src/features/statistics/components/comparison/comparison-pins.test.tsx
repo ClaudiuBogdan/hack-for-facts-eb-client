@@ -27,7 +27,7 @@ const axes = (params: {
     unitCode: null,
     unitWord: null,
     cadence: params.cadence,
-    pinned: { classifications: new Set(), unit: false, cadence: params.pinnedCadence },
+    cadencePinned: params.pinnedCadence,
     memberLabel: (lookup) => lookup.code,
     onPinClassification: vi.fn(),
     onPinUnit: vi.fn(),
@@ -44,7 +44,6 @@ describe('comparisonAxes', () => {
   it('keeps a pinned cadence editable, even one the matrix does not list', () => {
     const axis = frequency(axes({ periodicity: ['ANNUAL'], cadence: 'MONTHLY', pinnedCadence: true }))
     expect(axis?.control).not.toBeNull()
-    expect(axis?.implicit).toBe(false)
   })
 
   it('offers a cadence still to choose, and marks it as waited on', () => {
@@ -53,9 +52,9 @@ describe('comparisonAxes', () => {
     expect(axis?.unresolved).toBe(true)
   })
 
-  it('marks a classification the address does not pin as implicit', () => {
+  it('names a classification by its member, as the page does whoever chose it', () => {
     const classification = axes({ periodicity: ['ANNUAL'], cadence: 'ANNUAL', pinnedCadence: false })[0]
     expect(classification?.label).toBe('Sexe')
-    expect(classification?.implicit).toBe(true)
+    expect(classification?.value).toBe('1')
   })
 })

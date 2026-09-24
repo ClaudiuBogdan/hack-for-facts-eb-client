@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
+import { useDimensionOptionLists } from '../../hooks/use-dataset-detail'
 import { MAX_COMPARISON_TERRITORIES } from '../../lib/comparison-territories'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import {
@@ -34,12 +35,12 @@ export interface ComparisonRailAxis {
   readonly icon: LucideIcon
   readonly label: string
   readonly value: string
-  /** The page chose the value; the address does not pin it. */
-  readonly implicit: boolean
   /** Nothing is chosen yet: the comparison waits for it. */
   readonly unresolved: boolean
   /** The axis's options, in place. Null when there is nothing to choose. */
   readonly control: ((onPicked: () => void) => ReactNode) | null
+  /** The dimension whose option list the control opens onto, read ahead. */
+  readonly optionsDimension?: number
 }
 
 const INDICATOR = 'indicator'
@@ -92,6 +93,13 @@ export function ComparisonRail({
   // Null until the reader opens or closes a section: until then an axis the
   // comparison is waiting on stands open, so the way forward is on screen.
   const [chosen, setChosen] = useState<string | null>(null)
+  // The axes' option lists, read as soon as the panel is on screen, so a
+  // section opens onto a list that is already there. The lists themselves
+  // are the sections' to read from the cache.
+  useDimensionOptionLists({
+    datasetCode: indicator.code ?? '',
+    dimensionIndexes: axes.flatMap((axis) => (axis.optionsDimension === undefined ? [] : [axis.optionsDimension])),
+  })
   const waitingOn = axes.find((axis) => axis.unresolved && axis.control)?.id ?? ''
   const open = chosen ?? waitingOn
   const full = territories.length >= MAX_COMPARISON_TERRITORIES
@@ -253,7 +261,6 @@ export function ComparisonRail({
                 icon={axis.icon}
                 label={axis.label}
                 value={axis.value}
-                implicit={axis.implicit}
                 triggerRef={triggerRef(axis.id)}
               >
                 {axis.control(() => closeAfterPick(axis.id))}

@@ -38,6 +38,7 @@ import {
   type YearSpan,
 } from '../../lib/dataset-selection'
 import { fetchDimensionValuesPage } from '../../api/dataset-detail-api'
+import { useDimensionOptionLists } from '../../hooks/use-dataset-detail'
 import { STATISTICS_STALE_TIME, statisticsKeys } from '../../hooks/query-config'
 import { periodicityLabel } from '../../lib/periodicity-labels'
 import {
@@ -68,8 +69,6 @@ interface ScopeSegment {
   readonly id: string
   /** The visible text for this segment. */
   readonly text: string
-  /** True when the value was chosen automatically — by the server or by this page — not by the reader. */
-  readonly defaulted: boolean
   /** True when the dimension has NO effective value yet. */
   readonly unresolved?: boolean
   /** The control the segment's section opens onto. Null = display-only. */
@@ -95,8 +94,6 @@ type Props = {
   readonly observedSpan: YearSpan | null
   /** The years on screen: the span narrowed by `?din`/`?pana`, if pinned. */
   readonly yearWindow: YearSpan | null
-  /** True when the window on screen is the reader's, not the whole span. */
-  readonly yearWindowPinned?: boolean
   readonly onChange: (patch: DetailSearchPatch) => void
 }
 
@@ -125,7 +122,6 @@ export function DetailScopeSentence({
   unitLabel,
   observedSpan,
   yearWindow,
-  yearWindowPinned = false,
   onChange,
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -160,6 +156,33 @@ export function DetailScopeSentence({
     onChange(patch)
   }
 
+  // Every axis's options, read as soon as the panel is on screen: a section
+  // then opens onto a list that is already there, and while the series'
+  // rows — which name the pinned members — are still on their way, the
+  // members are named from these rather than shown as codes („105").
+  const listDimensions = (dataset.dimensions ?? []).filter(
+    (dimension) =>
+      dimension.type === 'CLASSIFICATION' ||
+      dimension.type === 'TERRITORIAL' ||
+      dimension.type === 'UNIT_OF_MEASURE',
+  )
+  const optionLists = useDimensionOptionLists({
+    datasetCode: dataset.code,
+    dimensionIndexes: listDimensions.map((dimension) => dimension.index),
+  })
+  const optionLabels = new Map<number, ReadonlyMap<string, string>>()
+  for (const dimension of listDimensions) {
+    const list = optionLists.get(dimension.index)
+    if (!list) continue
+    const labels = new Map<string, string>()
+    for (const value of list) {
+      const code =
+        dimension.type === 'UNIT_OF_MEASURE' ? value.unit?.code : value.classification_value?.code
+      if (code && value.label_ro) labels.set(code, value.label_ro)
+    }
+    optionLabels.set(dimension.index, labels)
+  }
+
   const segments = buildSegments({
     dataset,
     search,
@@ -171,14 +194,13 @@ export function DetailScopeSentence({
     unitLabel,
     observedSpan,
     yearWindow,
-    yearWindowPinned,
+    optionLabels,
     onChange: write,
     selectionToken,
   })
 
   if (segments.length === 0) return null
 
-  const hasDefaults = segments.some((segment) => segment.defaulted)
   const pinCount = countPins(search)
   // The reset removes its own button, which held the focus; it goes to the
   // first section instead, which the reset leaves in place.
@@ -198,14 +220,6 @@ export function DetailScopeSentence({
     })
   }
 
-  const defaultsNote = hasDefaults ? (
-    <p className="px-1 text-xs leading-relaxed text-muted-foreground">
-      <Trans>
-        Valorile marcate „implicit" au fost alese automat. Apasă pe ele ca să
-        le schimbi.
-      </Trans>
-    </p>
-  ) : null
 
   return (
     <div className="text-sm text-muted-foreground">
@@ -224,7 +238,6 @@ export function DetailScopeSentence({
             onOpenChange={setRailSection}
           />
         </div>
-        {defaultsNote}
       </div>
 
       {/* Anything narrower: the same panel in ONE bottom sheet. */}
@@ -271,7 +284,6 @@ export function DetailScopeSentence({
                 open={sheetSection}
                 onOpenChange={setSheetSection}
               />
-              {defaultsNote ? <div className="px-4 py-3">{defaultsNote}</div> : null}
             </div>
             <div className="border-t border-border/70 p-4">
               <Button className="w-full" onClick={() => setSheetOpen(false)}>
@@ -354,12 +366,7 @@ function ScopeSections({
             key={segment.id}
             id={segment.id}
             {...heading}
-            implicit={segment.defaulted}
-            ariaLabel={
-              segment.defaulted
-                ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                : t`${segment.controlLabel}: ${segment.text}`
-            }
+            ariaLabel={t`${segment.controlLabel}: ${segment.text}`}
             triggerRef={(element) => {
               if (element) triggers.current.set(segment.id, element)
               else triggers.current.delete(segment.id)
@@ -384,7 +391,8 @@ function buildSegments(params: {
   readonly unitLabel: string | null
   readonly observedSpan: YearSpan | null
   readonly yearWindow: YearSpan | null
-  readonly yearWindowPinned: boolean
+  /** Members named from the axes' own option lists, by dimension index then code. */
+  readonly optionLabels: ReadonlyMap<number, ReadonlyMap<string, string>>
   readonly onChange: (patch: DetailSearchPatch) => void
   readonly selectionToken: RefObject<object>
 }): readonly ScopeSegment[] {
@@ -399,7 +407,7 @@ function buildSegments(params: {
     unitLabel,
     observedSpan,
     yearWindow,
-    yearWindowPinned,
+    optionLabels,
     onChange,
     selectionToken,
   } = params
@@ -457,7 +465,6 @@ function buildSegments(params: {
     segments.push({
       id: 'teritoriu',
       text: territoryLabel,
-      defaulted: scope.territoryDefaulted,
       controlLabel: t`Teritoriu`,
       icon: Globe,
       control: null,
@@ -484,8 +491,11 @@ function buildSegments(params: {
       text:
         value === undefined
           ? t`alege`
-          : (classificationLabels.get(typeCode) ?? value),
-      defaulted: scope.defaultedTypes.has(typeCode),
+          : memberName(
+              classificationLabels.get(typeCode),
+              optionLabels.get(dimension.index)?.get(value),
+              value,
+            ),
       unresolved: value === undefined,
       controlLabel,
       icon: dimension.type === 'TERRITORIAL' ? MapPin : Tags,
@@ -508,13 +518,20 @@ function buildSegments(params: {
   if (unitDimension) {
     // INS names this axis „UM: <unit>"; the value already says which unit.
     const unitAxisLabel = unitDimension.label_ro?.replace(/^UM\s*:\s*/i, '').trim()
+    const unitName =
+      scope.unitCode === null
+        ? unitLabel
+        : memberName(
+            unitLabel ?? undefined,
+            optionLabels.get(unitDimension.index)?.get(scope.unitCode),
+            scope.unitCode,
+          )
     segments.push({
       id: 'unitate',
-      text: unitLabel ?? t`Alege o unitate`,
-      defaulted: scope.unitDefaulted,
+      text: unitName ?? t`Alege o unitate`,
       unresolved: scope.unitCode === null,
       controlLabel:
-        unitLabel && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitLabel.toLowerCase()
+        unitName && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitName.toLowerCase()
           ? unitAxisLabel
           : t`Unitate de măsură`,
       icon: Ruler,
@@ -537,8 +554,6 @@ function buildSegments(params: {
       text: scope.periodicity
         ? periodicityLabel(scope.periodicity)
         : t`Alege frecvența`,
-      // A cadence nothing resolved is unresolved, not „chosen automatically".
-      defaulted: scope.periodicity !== null && !search.frecventa && periodicities.length > 1,
       unresolved: scope.periodicity === null,
       controlLabel: t`Frecvență`,
       icon: CalendarClock,
@@ -563,7 +578,6 @@ function buildSegments(params: {
     segments.push({
       id: 'interval',
       text: `${yearWindow.from}–${yearWindow.to}`,
-      defaulted: !yearWindowPinned,
       controlLabel: t`Interval de ani`,
       icon: CalendarRange,
       // The window moves with every drag of the slider, so its section stays
@@ -579,6 +593,20 @@ function buildSegments(params: {
   }
 
   return segments
+}
+
+/**
+ * A pinned member's name: the rows' name for it, else the option list's, and
+ * the code only while neither has arrived. A rows' „name" that is the code
+ * itself is no name — the labels fall back to the code before the rows land.
+ */
+function memberName(
+  fromRows: string | undefined,
+  fromOptions: string | undefined,
+  code: string,
+): string {
+  if (fromRows && fromRows !== code) return fromRows
+  return fromOptions ?? fromRows ?? code
 }
 
 /** The root is the first member INS lists; a page this size has always held it. */

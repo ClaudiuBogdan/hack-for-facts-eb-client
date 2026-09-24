@@ -98,7 +98,6 @@ describe('ComparisonRail', () => {
       icon: Tags,
       label: 'Sexe',
       value: 'Total',
-      implicit: true,
       unresolved: false,
       control: (onPicked) => (
         <button type="button" onClick={onPicked}>
@@ -139,7 +138,7 @@ describe('ComparisonRail', () => {
     })
 
     it('stands open on an axis the comparison is waiting on', () => {
-      render(rail({ axes: [axis({ value: 'alege', implicit: false, unresolved: true })] }))
+      render(rail({ axes: [axis({ value: 'alege', unresolved: true })] }))
       expect(screen.getByRole('button', { name: /Sexe/ })).toHaveAttribute('aria-expanded', 'true')
       expect(screen.getByRole('button', { name: 'Alege Feminin' })).toBeInTheDocument()
     })
@@ -163,7 +162,7 @@ describe('ComparisonRail', () => {
 
     it('resets the pinned axes and moves the focus to the indicator', async () => {
       const onReset = vi.fn()
-      render(rail({ axes: [axis({ implicit: false })], pinCount: 1, onReset }))
+      render(rail({ axes: [axis()], pinCount: 1, onReset }))
       await userEvent.click(screen.getByRole('button', { name: 'Resetează (1)' }))
       expect(onReset).toHaveBeenCalled()
       expect(screen.getByRole('button', { name: /Indicator/ })).toHaveFocus()

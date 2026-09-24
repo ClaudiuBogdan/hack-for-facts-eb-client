@@ -16,9 +16,8 @@ const COMPARISON_CADENCES: readonly InsPeriodicity[] = ['ANNUAL', 'QUARTERLY', '
  * The series' shared, non-geographic axes as sections of the comparison's
  * panel — each classification, the unit, the frequency — each opening onto
  * the same in-place option list the dataset page uses, every member
- * reachable through paged search. An axis the address does not pin reads
- * „implicit"; one with nothing chosen yet says so and is what the comparison
- * waits on.
+ * searchable in place. An axis with nothing chosen yet says so, and is what
+ * the comparison waits on.
  */
 export function comparisonAxes({
   datasetMeta,
@@ -26,7 +25,7 @@ export function comparisonAxes({
   unitCode,
   unitWord,
   cadence,
-  pinned,
+  cadencePinned,
   memberLabel,
   onPinClassification,
   onPinUnit,
@@ -38,12 +37,8 @@ export function comparisonAxes({
   /** The unit as the rest of the page says it („persoane"); null for the member's own name. */
   readonly unitWord: string | null
   readonly cadence: InsPeriodicity | null
-  /** Which axes the address pins, as opposed to the page resolving them. */
-  readonly pinned: {
-    readonly classifications: ReadonlySet<string>
-    readonly unit: boolean
-    readonly cadence: boolean
-  }
+  /** The address pins the cadence, rather than the page resolving it. */
+  readonly cadencePinned: boolean
   /** A pinned member's name; its code while the name is still unknown. */
   readonly memberLabel: (lookup: SourceMemberLookup) => string
   readonly onPinClassification: (typeCode: string, valueCode: string | null) => void
@@ -65,8 +60,8 @@ export function comparisonAxes({
         selected === null
           ? t`alege`
           : memberLabel({ dimensionIndex: dimension.index, code: selected, kind: 'classification' }),
-      implicit: selected !== null && !pinned.classifications.has(type),
       unresolved: selected === null,
+      optionsDimension: dimension.index,
       control: (onPicked) => (
         <DetailDimensionPanel
           datasetCode={datasetMeta.code}
@@ -94,8 +89,8 @@ export function comparisonAxes({
         unitCode === null
           ? t`Alege o unitate`
           : (unitWord ?? memberLabel({ dimensionIndex: unitDimension.index, code: unitCode, kind: 'unit' })),
-      implicit: unitCode !== null && !pinned.unit,
       unresolved: unitCode === null,
+      optionsDimension: unitDimension.index,
       control: (onPicked) => (
         <DetailDimensionPanel
           datasetCode={datasetMeta.code}
@@ -126,10 +121,9 @@ export function comparisonAxes({
     icon: CalendarClock,
     label: t`Frecvență`,
     value: cadence ? periodicityLabel(cadence) : t`Alege frecvența`,
-    implicit: cadence !== null && !pinned.cadence && cadences.length > 1,
     unresolved: cadence === null,
     control:
-      cadences.length > 1 || cadence === null || pinned.cadence
+      cadences.length > 1 || cadence === null || cadencePinned
         ? (onPicked) => (
             <DetailCadenceControl
               periodicities={cadences}

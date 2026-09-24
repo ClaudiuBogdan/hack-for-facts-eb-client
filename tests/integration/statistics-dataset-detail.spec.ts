@@ -65,14 +65,29 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('InsDatasetDimensionValues', 'dimension-values-sex')
 }
 
-function countGraphQLPosts(page: Page): { readonly count: () => number } {
+/**
+ * The page's GraphQL posts, split: its own reads, and the option lists the
+ * selection panel reads ahead in the background, one per axis.
+ */
+function countGraphQLPosts(page: Page): {
+  readonly count: () => number
+  readonly optionLists: () => readonly string[]
+} {
   let posts = 0
+  const optionLists: string[] = []
   page.on('request', (request) => {
-    if (request.url().includes('/graphql') && request.method() === 'POST') {
-      posts += 1
+    if (!request.url().includes('/graphql') || request.method() !== 'POST') return
+    const body = request.postDataJSON() as {
+      query?: string
+      variables?: { dimensionIndex?: number; offset?: number }
+    } | null
+    if (String(body?.query).includes('query InsDatasetDimensionValues')) {
+      optionLists.push(`${body?.variables?.dimensionIndex}@${body?.variables?.offset}`)
+      return
     }
+    posts += 1
   })
-  return { count: () => posts }
+  return { count: () => posts, optionLists: () => optionLists }
 }
 
 /**
@@ -101,10 +116,10 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(page.getByText('INS Tempo').first()).toBeVisible()
     await expect(page.getByText('POP107D').first()).toBeVisible()
 
-    // The selection rail marks server-resolved defaults: „implicit" on the
-    // row and ONE legend line under the rail; "(implicit)" lives in the aria-label.
-    await expect(page.getByText(/Valorile marcate „implicit"/)).toBeVisible()
-    await expect(page.getByLabel(/\(implicit\)/).first()).toBeVisible()
+    // The selection panel names every axis's value as it is on screen,
+    // whoever chose it: no „implicit" marks, no legend explaining them.
+    await expect(page.getByRole('button', { name: /^Sexe: / }).first()).toBeVisible()
+    await expect(page.getByText('implicit', { exact: true })).toHaveCount(0)
 
     // Trend chart under the number.
     await expect(page.locator('.recharts-responsive-container')).toBeVisible()
@@ -115,7 +130,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(page.getByText(/Proveniență și limite/)).toBeVisible()
   })
 
-  test('tier 0 stays inside the three-operation single-page budget', async ({
+  test('tier 0 stays inside the three-operation single-page budget, with the option lists read once in the background', async ({
     page,
   }) => {
     const posts = countGraphQLPosts(page)
@@ -124,7 +139,14 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
     await page.waitForTimeout(1500)
 
+    // The page's own reads: the dataset, the series, the related sets.
     expect(posts.count()).toBe(3)
+    // Beside them, the panel reads every axis's options once, in the
+    // background, so a section opens onto a list already there — no page of
+    // an axis twice, though the rail and the phone sheet both hold it.
+    const lists = posts.optionLists()
+    expect(new Set(lists).size).toBe(lists.length)
+    expect(lists.length).toBeGreaterThan(0)
   })
 
   test('the observations table mounts on accordion open and prints values verbatim', async ({
@@ -147,10 +169,9 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await waitForPageReady(page)
     await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
 
-    // Every source dimension uses the same paginated picker, including small
-    // lists. Segment order follows the dimensions: age first, then sex.
-    // The chip opens straight onto the options — it already names the axis,
-    // so there is no second trigger inside the panel.
+    // Every source dimension opens onto the same list, including small ones.
+    // Section order follows the dimensions: age first, then sex. The section
+    // opens straight onto the options — its trigger already names the axis.
     await page.getByRole('button', { name: /^Sexe: Total/ }).click()
     await page.getByRole('option', { name: /Feminin/i }).click()
 
@@ -165,19 +186,14 @@ test.describe('Dataset detail — the disclosure ladder', () => {
       )
       .toContain('D1:107')
 
-    // The hero re-resolves to the pinned cell, (implicit) drops for it. The
-    // figure also appears in the facts row and as the chart's end label, so
+    // The hero re-resolves to the pinned cell. The figure also appears in the facts row and as the chart's end label, so
     // ask the hero itself.
     await expect(heroValue(page)).toHaveText(/11\.136\.500/, { timeout: 15000 })
   })
 
-  test('source picker follows short unknown-count pages and hides stale search options', async ({
+  test('source picker reads the whole axis in the background and searches it in the browser', async ({
     page,
   }) => {
-    let releaseSearch!: () => void
-    const pendingSearch = new Promise<void>((resolve) => {
-      releaseSearch = resolve
-    })
     const requests: { offset: number; search: string }[] = []
     await page.route('**/graphql', async (route) => {
       const body = route.request().postDataJSON()
@@ -192,9 +208,8 @@ test.describe('Dataset detail — the disclosure ladder', () => {
       expect(route.request().headers()).not.toHaveProperty('authorization')
       const { offset, search } = body.variables
       requests.push({ offset, search })
-      if (search === 'searched') await pendingSearch
-      const ids =
-        search === 'searched' ? [111] : offset === 0 ? [100, 101] : [102]
+      // Twenty members in two short pages of unknown total: eighteen, then two.
+      const ids = offset === 0 ? Array.from({ length: 18 }, (_, index) => 100 + index) : [118, 119]
       await route.fulfill({
         json: {
           data: {
@@ -208,7 +223,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
               })),
               pageInfo: {
                 totalCount: -1,
-                hasNextPage: search === '' && offset === 0,
+                hasNextPage: offset === 0,
                 hasPreviousPage: offset > 0,
               },
             },
@@ -218,32 +233,20 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     })
     await page.goto(ROUTE)
     await expect(heroValue(page)).toBeVisible()
+    // The panel reads the whole axis as soon as it is on screen — before the
+    // section is opened — following the short pages by the rows it holds.
+    await expect.poll(() => requests.map((r) => r.offset)).toEqual([0, 18])
     await page.getByRole('button', { name: /^Varste si grupe de varsta: Total/ }).click()
-    await expect(
-      page.getByRole('option', { name: 'Synthetic age 100' }),
-    ).toBeVisible()
-    // The list asks for the next page as soon as the rows it holds are all in
-    // view: two rows fit, so the second short page lands on its own, and the
-    // first page's rows stay in place above it.
-    await expect(
-      page.getByRole('option', { name: 'Synthetic age 102' }),
-    ).toBeVisible()
-    expect(requests.map((r) => r.offset)).toEqual([0, 2])
-    await expect(
-      page.getByRole('option', { name: 'Synthetic age 100' }),
-    ).toBeVisible()
-    await page.getByPlaceholder('Caută…').fill('searched')
-    await expect(
-      page.getByRole('option', { name: 'Synthetic age 100' }),
-    ).not.toBeVisible()
-    await expect
-      .poll(() => requests.some((r) => r.search === 'searched'))
-      .toBe(true)
-    releaseSearch()
-    await expect(
-      page.getByRole('option', { name: 'Synthetic age 111' }),
-    ).toBeVisible()
-    expect(requests.at(-1)).toEqual({ offset: 0, search: 'searched' })
+    await expect(page.getByRole('option', { name: 'Synthetic age 100' })).toBeVisible()
+    // Past fifteen options the list has a search field, and it searches the
+    // list it holds: nothing more is asked of the server.
+    await page.getByPlaceholder('Caută…').fill('age 119')
+    await expect(page.getByRole('option', { name: 'Synthetic age 119' })).toBeVisible()
+    await expect(page.getByRole('option', { name: 'Synthetic age 100' })).toHaveCount(0)
+    expect(requests).toEqual([
+      { offset: 0, search: '' },
+      { offset: 18, search: '' },
+    ])
     await page.screenshot({
       path: test.info().outputPath('native-source-picker.png'),
       fullPage: true,
@@ -361,9 +364,8 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     // The page then completes the selection from what that page returned and
     // asks for that one cell in full, so a partial URL still draws a series.
     await expect(page.locator('.recharts-responsive-container')).toBeVisible()
-    // The chosen cell is marked on the rail, where it can be changed — not
-    // by a second badge beside the figure.
-    await expect(page.getByText(/Valorile marcate „implicit"/)).toBeVisible()
+    // The chosen cell is named on the rail, where it can be changed — not
+    // by a badge beside the figure.
     await expect(page.getByText('selecție reprezentativă')).toHaveCount(0)
     await expect.poll(() => requested.length).toBeGreaterThan(1)
     expect(requested.at(-1)).toMatchObject({
@@ -394,7 +396,7 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     await expect(page.locator('.recharts-responsive-container')).toBeVisible()
     const note = page.getByRole('status').filter({ hasText: /Anii 2030–2035 din adresă sunt în afara seriei/ })
     await expect(note).toBeVisible()
-    await expect(page.getByRole('button', { name: /^Interval de ani: \d{4}–\d{4} \(implicit\)/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Interval de ani: \d{4}–\d{4}$/ })).toBeVisible()
     await note.getByRole('button', { name: 'Șterge anii din adresă' }).click()
     await expect.poll(() => new URL(page.url()).searchParams.has('din')).toBe(false)
     await expect(note).toHaveCount(0)

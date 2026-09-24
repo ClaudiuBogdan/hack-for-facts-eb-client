@@ -47,8 +47,6 @@ export interface DetailSeriesView {
   readonly observedSpan: YearSpan | null
   /** The years on screen, always inside the observed span. Null before any row. */
   readonly yearWindow: YearSpan | null
-  /** True when the address narrows the window and the rows honour it. */
-  readonly yearWindowPinned: boolean
   /** The window the address asked for when it lies wholly outside the span; the span is shown instead. */
   readonly yearWindowOutside: YearSpan | null
   readonly windowedRows: readonly InsObservation[]
@@ -170,8 +168,8 @@ export function deriveDetailSeriesView(params: {
 function resolveYearWindow(
   span: YearSpan | null,
   search: StatisticsDatasetDetailSearch,
-): Pick<DetailSeriesView, 'yearWindow' | 'yearWindowPinned' | 'yearWindowOutside'> {
-  if (!span) return { yearWindow: null, yearWindowPinned: false, yearWindowOutside: null }
+): Pick<DetailSeriesView, 'yearWindow' | 'yearWindowOutside'> {
+  if (!span) return { yearWindow: null, yearWindowOutside: null }
   // Two reversed bounds swap rather than producing an empty window; a single
   // bound is what the address said, so a start past the series is not read
   // as an end before it.
@@ -186,7 +184,6 @@ function resolveYearWindow(
   if (from > to)
     return {
       yearWindow: span,
-      yearWindowPinned: false,
       // The years as the address gave them: a lone bound names one year.
       yearWindowOutside: {
         from: search.din ?? requested.to,
@@ -195,7 +192,6 @@ function resolveYearWindow(
     }
   return {
     yearWindow: { from, to },
-    yearWindowPinned: from !== span.from || to !== span.to,
     yearWindowOutside: null,
   }
 }

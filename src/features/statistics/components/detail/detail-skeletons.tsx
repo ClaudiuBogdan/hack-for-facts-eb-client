@@ -156,19 +156,24 @@ export function DetailSeriesSkeleton({
               ))}
             </div>
             {/* SVG's own animation, not a stylesheet keyframe: the sweep is
-                markup, and `motion-reduce:hidden` takes it away whole. */}
+                markup, and `motion-reduce:hidden` takes it away whole. A
+                band a quarter strong at its centre: at a tenth it was lost on
+                white, and the frame read as an empty chart, not a loading
+                one. */}
             <svg className="absolute inset-0 h-full w-full motion-reduce:hidden" preserveAspectRatio="none">
               <defs>
                 <linearGradient id={sweepId} x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0" stopColor="hsl(var(--chart-sky))" stopOpacity="0" />
-                  <stop offset="0.5" stopColor="hsl(var(--chart-sky))" stopOpacity="0.1" />
+                  <stop offset="0.35" stopColor="hsl(var(--chart-sky))" stopOpacity="0.08" />
+                  <stop offset="0.5" stopColor="hsl(var(--chart-sky))" stopOpacity="0.25" />
+                  <stop offset="0.65" stopColor="hsl(var(--chart-sky))" stopOpacity="0.08" />
                   <stop offset="1" stopColor="hsl(var(--chart-sky))" stopOpacity="0" />
                   <animateTransform
                     attributeName="gradientTransform"
                     type="translate"
                     from="-1 0"
                     to="1 0"
-                    dur="1.6s"
+                    dur="1.4s"
                     repeatCount="indefinite"
                   />
                 </linearGradient>
