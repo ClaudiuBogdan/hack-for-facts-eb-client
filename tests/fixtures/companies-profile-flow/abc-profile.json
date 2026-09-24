@@ -1,0 +1,965 @@
+{
+  "data": {
+    "company": {
+      "cui": "23617561",
+      "orgId": "1088776",
+      "name": "ABC-CON-INTERNAŢIONAL SRL",
+      "legalForm": "SRL",
+      "codInmatriculare": "J07/226/2008",
+      "registrationDate": "2008-03-31",
+      "registrationDatePresent": true,
+      "headlineStatus": {
+        "code": "1107",
+        "label": "insolvență"
+      },
+      "statusFlags": [
+        {
+          "code": "1107",
+          "label": "insolvență"
+        },
+        {
+          "code": "1139",
+          "label": "este sub incidența Legii nr. 85/2014"
+        }
+      ],
+      "territory": {
+        "sirutaCode": "35731",
+        "uatName": "Municipiul Botoşani",
+        "countyName": "Botoşani",
+        "matchConfidence": "SAFE"
+      },
+      "address": {
+        "display": "",
+        "county": "Botoşani",
+        "locality": "Municipiul Botoşani"
+      },
+      "fiscal": {
+        "vatPayer": true,
+        "declaredFiscallyInactive": false,
+        "mainCaenCode": "4120",
+        "mainCaenRev": null,
+        "registeredName": "ABC-CON-INTERNAŢIONAL SRL",
+        "asOf": "2026-07-04"
+      },
+      "caenActivities": [
+        {
+          "code": "1623",
+          "rev": "rev2",
+          "label": "Fabricarea altor elemente de dulgherie și tâmplărie, pentru construcții",
+          "source": "onrc"
+        },
+        {
+          "code": "2511",
+          "rev": "rev2",
+          "label": "Fabricarea de construcții metalice și părți componente ale structurilor metalice",
+          "source": "onrc"
+        },
+        {
+          "code": "4110",
+          "rev": "rev2",
+          "label": "Dezvoltare (promovare) imobiliară",
+          "source": "onrc"
+        },
+        {
+          "code": "4120",
+          "rev": null,
+          "label": null,
+          "source": "anaf"
+        },
+        {
+          "code": "4120",
+          "rev": "rev2",
+          "label": "Lucrări de construcții a clădirilor rezidențiale și nerezidențiale",
+          "source": "onrc"
+        },
+        {
+          "code": "4211",
+          "rev": "rev2",
+          "label": "Lucrări de construcții a drumurilor și autostrăzilor",
+          "source": "onrc"
+        },
+        {
+          "code": "4212",
+          "rev": "rev2",
+          "label": "Lucrări de construcții a căilor ferate de suprafață  și subterane",
+          "source": "onrc"
+        },
+        {
+          "code": "4213",
+          "rev": "rev2",
+          "label": "Construcția de poduri și tuneluri",
+          "source": "onrc"
+        },
+        {
+          "code": "4221",
+          "rev": "rev2",
+          "label": "Lucrări de construcții a proiectelor utilitare pentru fluide",
+          "source": "onrc"
+        },
+        {
+          "code": "4222",
+          "rev": "rev2",
+          "label": "Lucrări de construcții a proiectelor utilitare pentru electricitate și telecomunicații",
+          "source": "onrc"
+        },
+        {
+          "code": "4291",
+          "rev": "rev2",
+          "label": "Construcții hidrotehnice",
+          "source": "onrc"
+        },
+        {
+          "code": "4299",
+          "rev": "rev2",
+          "label": "Lucrări de construcții a altor proiecte inginerești n.c.a",
+          "source": "onrc"
+        },
+        {
+          "code": "4311",
+          "rev": "rev2",
+          "label": "Lucrări de demolare a construcțiilor",
+          "source": "onrc"
+        },
+        {
+          "code": "4312",
+          "rev": "rev2",
+          "label": "Lucrări de pregătire a terenului",
+          "source": "onrc"
+        },
+        {
+          "code": "4313",
+          "rev": "rev2",
+          "label": "Lucrări de foraj și sondaj pentru construcții",
+          "source": "onrc"
+        },
+        {
+          "code": "4321",
+          "rev": "rev2",
+          "label": "Lucrări de instalații electrice",
+          "source": "onrc"
+        },
+        {
+          "code": "4322",
+          "rev": "rev2",
+          "label": "Lucrări de instalații sanitare, de încălzire și de aer condiționat",
+          "source": "onrc"
+        },
+        {
+          "code": "4329",
+          "rev": "rev2",
+          "label": "Alte lucrări de instalații pentru construcții",
+          "source": "onrc"
+        },
+        {
+          "code": "4331",
+          "rev": "rev2",
+          "label": "Lucrări de ipsoserie",
+          "source": "onrc"
+        },
+        {
+          "code": "4333",
+          "rev": "rev2",
+          "label": "Lucrări de pardosire și placare a pereților",
+          "source": "onrc"
+        },
+        {
+          "code": "4334",
+          "rev": "rev2",
+          "label": "Lucrări de vopsitorie, zugrăveli și montări de geamuri",
+          "source": "onrc"
+        },
+        {
+          "code": "4339",
+          "rev": "rev2",
+          "label": "Alte lucrări de finisare",
+          "source": "onrc"
+        },
+        {
+          "code": "4391",
+          "rev": "rev2",
+          "label": "Lucrări de învelitori, șarpante și terase la construcții",
+          "source": "onrc"
+        },
+        {
+          "code": "4399",
+          "rev": "rev2",
+          "label": "Alte lucrări speciale de construcții n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "4647",
+          "rev": "rev2",
+          "label": "Comerț cu ridicata al mobilei, covoarelor și a articolelor de iluminat",
+          "source": "onrc"
+        },
+        {
+          "code": "4669",
+          "rev": "rev2",
+          "label": "Comerț cu ridicata al altor mașini și echipamente",
+          "source": "onrc"
+        },
+        {
+          "code": "4690",
+          "rev": "rev2",
+          "label": "Comerț cu ridicata nespecializat",
+          "source": "onrc"
+        },
+        {
+          "code": "5210",
+          "rev": "rev2",
+          "label": "Depozitări",
+          "source": "onrc"
+        },
+        {
+          "code": "5224",
+          "rev": "rev2",
+          "label": "Manipulări",
+          "source": "onrc"
+        },
+        {
+          "code": "7022",
+          "rev": "rev2",
+          "label": "Activități de consultanță pentru afaceri și management",
+          "source": "onrc"
+        },
+        {
+          "code": "7112",
+          "rev": "rev2",
+          "label": "Activități de inginerie și consultanță tehnică legate de acestea",
+          "source": "onrc"
+        },
+        {
+          "code": "7120",
+          "rev": "rev2",
+          "label": "Activități de testări și analize tehnice",
+          "source": "onrc"
+        },
+        {
+          "code": "7490",
+          "rev": "rev2",
+          "label": "Alte activități profesionale, științifice și tehnice n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "7820",
+          "rev": "rev2",
+          "label": "Activități de contractare, pe baze temporare, a personalului",
+          "source": "onrc"
+        },
+        {
+          "code": "7830",
+          "rev": "rev2",
+          "label": "Servicii de furnizare și management a forței de muncă",
+          "source": "onrc"
+        },
+        {
+          "code": "8219",
+          "rev": "rev2",
+          "label": "Activități de fotocopiere, de pregătire a documentelor și alte activități specializate de secretariat",
+          "source": "onrc"
+        },
+        {
+          "code": "8559",
+          "rev": "rev2",
+          "label": "Alte forme de învățământ n.c.a.",
+          "source": "onrc"
+        }
+      ],
+      "representatives": [],
+      "euBranches": [],
+      "publicMoney": {
+        "totalRon": "517828448.99",
+        "flowCount": 99,
+        "byFlowType": [
+          {
+            "flowType": "procurement_contract",
+            "totalRon": "514455024.39",
+            "count": 70
+          },
+          {
+            "flowType": "direct_acquisition",
+            "totalRon": "3373424.60",
+            "count": 29
+          }
+        ],
+        "byYear": [
+          {
+            "year": 2025,
+            "flowType": "procurement_contract",
+            "totalRon": "36413180.00",
+            "count": 2
+          },
+          {
+            "year": 2025,
+            "flowType": "direct_acquisition",
+            "totalRon": "262349.42",
+            "count": 1
+          },
+          {
+            "year": 2024,
+            "flowType": "procurement_contract",
+            "totalRon": "11003021.65",
+            "count": 6
+          },
+          {
+            "year": 2024,
+            "flowType": "direct_acquisition",
+            "totalRon": "1139107.67",
+            "count": 3
+          },
+          {
+            "year": 2023,
+            "flowType": "procurement_contract",
+            "totalRon": "265219868.14",
+            "count": 15
+          },
+          {
+            "year": 2023,
+            "flowType": "direct_acquisition",
+            "totalRon": "765875.29",
+            "count": 4
+          },
+          {
+            "year": 2022,
+            "flowType": "procurement_contract",
+            "totalRon": "492056.00",
+            "count": 6
+          },
+          {
+            "year": 2022,
+            "flowType": "direct_acquisition",
+            "totalRon": "145019.76",
+            "count": 2
+          },
+          {
+            "year": 2021,
+            "flowType": "procurement_contract",
+            "totalRon": "156262222.14",
+            "count": 13
+          },
+          {
+            "year": 2021,
+            "flowType": "direct_acquisition",
+            "totalRon": "165333.87",
+            "count": 9
+          },
+          {
+            "year": 2020,
+            "flowType": "direct_acquisition",
+            "totalRon": "9151.55",
+            "count": 1
+          },
+          {
+            "year": 2020,
+            "flowType": "procurement_contract",
+            "totalRon": "0",
+            "count": 2
+          },
+          {
+            "year": 2019,
+            "flowType": "procurement_contract",
+            "totalRon": "4782261.89",
+            "count": 5
+          },
+          {
+            "year": 2019,
+            "flowType": "direct_acquisition",
+            "totalRon": "594816.26",
+            "count": 5
+          },
+          {
+            "year": 2018,
+            "flowType": "procurement_contract",
+            "totalRon": "2089145.58",
+            "count": 1
+          },
+          {
+            "year": 2018,
+            "flowType": "direct_acquisition",
+            "totalRon": "11320.00",
+            "count": 1
+          },
+          {
+            "year": 2017,
+            "flowType": "procurement_contract",
+            "totalRon": "4244038.92",
+            "count": 3
+          },
+          {
+            "year": 2017,
+            "flowType": "direct_acquisition",
+            "totalRon": "225342.90",
+            "count": 2
+          },
+          {
+            "year": 2016,
+            "flowType": "procurement_contract",
+            "totalRon": "4727942.47",
+            "count": 3
+          },
+          {
+            "year": 2016,
+            "flowType": "direct_acquisition",
+            "totalRon": "55107.88",
+            "count": 1
+          },
+          {
+            "year": 2015,
+            "flowType": "procurement_contract",
+            "totalRon": "5356304.79",
+            "count": 2
+          },
+          {
+            "year": 2014,
+            "flowType": "procurement_contract",
+            "totalRon": "4621331.00",
+            "count": 2
+          },
+          {
+            "year": 2011,
+            "flowType": "procurement_contract",
+            "totalRon": "422670.81",
+            "count": 2
+          },
+          {
+            "year": 2010,
+            "flowType": "procurement_contract",
+            "totalRon": "609200.00",
+            "count": 1
+          },
+          {
+            "year": 2009,
+            "flowType": "procurement_contract",
+            "totalRon": "1021260.00",
+            "count": 1
+          },
+          {
+            "year": null,
+            "flowType": "procurement_contract",
+            "totalRon": "17190521.00",
+            "count": 6
+          }
+        ]
+      },
+      "asOf": {
+        "onrc": "2026-07-18",
+        "anaf": "2026-07-04"
+      }
+    },
+    "companyFinancials": {
+      "years": [
+        {
+          "year": 2025,
+          "turnover": "21735594",
+          "netProfit": "0",
+          "netLoss": "27758430",
+          "employees": "27",
+          "summary": {
+            "turnover": "21735594",
+            "netProfit": "0",
+            "netLoss": "27758430",
+            "totalRevenue": "4364457",
+            "totalExpenses": "32122887",
+            "grossProfit": "0",
+            "grossLoss": "27758430",
+            "receivables": "5656286",
+            "currentAssets": "10646431",
+            "fixedAssets": "8549069",
+            "cashAndBank": "2851885",
+            "prepaidExpenses": "126895",
+            "deferredIncome": "2960170",
+            "subscribedCapital": "1500000",
+            "inventories": "2138260",
+            "debts": "38925042",
+            "provisions": "0",
+            "totalEquity": "-22562817",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2024,
+          "turnover": "47252195",
+          "netProfit": "217879",
+          "netLoss": "0",
+          "employees": "117",
+          "summary": {
+            "turnover": "47252195",
+            "netProfit": "217879",
+            "netLoss": "0",
+            "totalRevenue": "50184010",
+            "totalExpenses": "49891085",
+            "grossProfit": "292925",
+            "grossLoss": "0",
+            "receivables": "7775842",
+            "currentAssets": "36580067",
+            "fixedAssets": "10339601",
+            "cashAndBank": "694860",
+            "prepaidExpenses": "380684",
+            "deferredIncome": "3582164",
+            "subscribedCapital": "1500000",
+            "inventories": "28109365",
+            "debts": "37285581",
+            "provisions": "0",
+            "totalEquity": "6432607",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2023,
+          "turnover": "54913794",
+          "netProfit": "3110283",
+          "netLoss": "0",
+          "employees": "152",
+          "summary": {
+            "turnover": "54913794",
+            "netProfit": "3110283",
+            "netLoss": "0",
+            "totalRevenue": "58979322",
+            "totalExpenses": "55535368",
+            "grossProfit": "3443954",
+            "grossLoss": "0",
+            "receivables": "10424874",
+            "currentAssets": "31509747",
+            "fixedAssets": "12324030",
+            "cashAndBank": "807106",
+            "prepaidExpenses": "634474",
+            "deferredIncome": "4204158",
+            "subscribedCapital": "1500000",
+            "inventories": "20277767",
+            "debts": "34267175",
+            "provisions": "0",
+            "totalEquity": "5996918",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2022,
+          "turnover": "42602634",
+          "netProfit": "1699761",
+          "netLoss": "0",
+          "employees": "147",
+          "summary": {
+            "turnover": "42602634",
+            "netProfit": "1699761",
+            "netLoss": "0",
+            "totalRevenue": "52515641",
+            "totalExpenses": "50573555",
+            "grossProfit": "1942086",
+            "grossLoss": "0",
+            "receivables": "20477182",
+            "currentAssets": "40122951",
+            "fixedAssets": "3627748",
+            "cashAndBank": "2311497",
+            "prepaidExpenses": "987788",
+            "deferredIncome": "4568494",
+            "subscribedCapital": "1000000",
+            "inventories": "17334272",
+            "debts": "35565966",
+            "provisions": "0",
+            "totalEquity": "4604027",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2021,
+          "turnover": "19378018",
+          "netProfit": "1050059",
+          "netLoss": "0",
+          "employees": "109",
+          "summary": {
+            "turnover": "19378018",
+            "netProfit": "1050059",
+            "netLoss": "0",
+            "totalRevenue": "22824741",
+            "totalExpenses": "21774405",
+            "grossProfit": "1050336",
+            "grossLoss": "0",
+            "receivables": "9663671",
+            "currentAssets": "17651225",
+            "fixedAssets": "4096480",
+            "cashAndBank": "-204128",
+            "prepaidExpenses": "1440627",
+            "deferredIncome": "4724374",
+            "subscribedCapital": "1000000",
+            "inventories": "8191682",
+            "debts": "15679493",
+            "provisions": "0",
+            "totalEquity": "2784465",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2020,
+          "turnover": "26418461",
+          "netProfit": "1615459",
+          "netLoss": "0",
+          "employees": "84",
+          "summary": {
+            "turnover": "26418461",
+            "netProfit": "1615459",
+            "netLoss": "0",
+            "totalRevenue": "28299765",
+            "totalExpenses": "26464922",
+            "grossProfit": "1834843",
+            "grossLoss": "0",
+            "receivables": "9653705",
+            "currentAssets": "11724506",
+            "fixedAssets": "3506954",
+            "cashAndBank": "-852420",
+            "prepaidExpenses": "0",
+            "deferredIncome": "0",
+            "subscribedCapital": "1000000",
+            "inventories": "2923221",
+            "debts": "12096832",
+            "provisions": "0",
+            "totalEquity": "3134628",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2019,
+          "turnover": "22664975",
+          "netProfit": "694232",
+          "netLoss": "0",
+          "employees": "74",
+          "summary": {
+            "turnover": "22664975",
+            "netProfit": "694232",
+            "netLoss": "0",
+            "totalRevenue": "21319938",
+            "totalExpenses": "20496740",
+            "grossProfit": "823198",
+            "grossLoss": "0",
+            "receivables": "4106804",
+            "currentAssets": "11228590",
+            "fixedAssets": "2045311",
+            "cashAndBank": "5187509",
+            "prepaidExpenses": "0",
+            "deferredIncome": "0",
+            "subscribedCapital": "1000000",
+            "inventories": "1934277",
+            "debts": "11026864",
+            "provisions": "0",
+            "totalEquity": "2247037",
+            "patrimonyRegie": "0"
+          }
+        },
+        {
+          "year": 2018,
+          "turnover": "14611113",
+          "netProfit": "548594",
+          "netLoss": "0",
+          "employees": "44",
+          "summary": {
+            "turnover": "14611113",
+            "netProfit": "548594",
+            "netLoss": "0",
+            "totalRevenue": "13325604",
+            "totalExpenses": "12681357",
+            "grossProfit": "644247",
+            "grossLoss": "0",
+            "receivables": "1780936",
+            "currentAssets": "6643487",
+            "fixedAssets": "1604046",
+            "cashAndBank": "1760761",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000000",
+            "inventories": "3101790",
+            "debts": "6152943",
+            "provisions": null,
+            "totalEquity": "2094590",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2017,
+          "turnover": "12710969",
+          "netProfit": "324782",
+          "netLoss": "0",
+          "employees": "82",
+          "summary": {
+            "turnover": "12710969",
+            "netProfit": "324782",
+            "netLoss": "0",
+            "totalRevenue": "14013236",
+            "totalExpenses": "13633301",
+            "grossProfit": "379935",
+            "grossLoss": "0",
+            "receivables": "1465573",
+            "currentAssets": "5713971",
+            "fixedAssets": "1378803",
+            "cashAndBank": "-128485",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000000",
+            "inventories": "4376883",
+            "debts": "5528362",
+            "provisions": null,
+            "totalEquity": "1564412",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2016,
+          "turnover": "11870088",
+          "netProfit": "70582",
+          "netLoss": "0",
+          "employees": "102",
+          "summary": {
+            "turnover": "11870088",
+            "netProfit": "70582",
+            "netLoss": "0",
+            "totalRevenue": "14426323",
+            "totalExpenses": "14334245",
+            "grossProfit": "92078",
+            "grossLoss": "0",
+            "receivables": "1926181",
+            "currentAssets": "4987197",
+            "fixedAssets": "1672281",
+            "cashAndBank": "296374",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000000",
+            "inventories": "2764642",
+            "debts": "5234592",
+            "provisions": null,
+            "totalEquity": "1424886",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2015,
+          "turnover": "6856440",
+          "netProfit": "2994",
+          "netLoss": "0",
+          "employees": "105",
+          "summary": {
+            "turnover": "6856440",
+            "netProfit": "2994",
+            "netLoss": "0",
+            "totalRevenue": "11213969",
+            "totalExpenses": "11209597",
+            "grossProfit": "4372",
+            "grossLoss": "0",
+            "receivables": "2053397",
+            "currentAssets": "4100351",
+            "fixedAssets": "1504160",
+            "cashAndBank": "1737992",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "308962",
+            "debts": "4570993",
+            "provisions": null,
+            "totalEquity": "1033518",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2014,
+          "turnover": "8985962",
+          "netProfit": "18717",
+          "netLoss": "0",
+          "employees": "94",
+          "summary": {
+            "turnover": "8985962",
+            "netProfit": "18717",
+            "netLoss": "0",
+            "totalRevenue": "9230644",
+            "totalExpenses": "9206806",
+            "grossProfit": "23838",
+            "grossLoss": "0",
+            "receivables": "1292649",
+            "currentAssets": "2605642",
+            "fixedAssets": "1544141",
+            "cashAndBank": "91280",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "1221713",
+            "debts": "3119259",
+            "provisions": null,
+            "totalEquity": "1030524",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2013,
+          "turnover": "5348411",
+          "netProfit": "109400",
+          "netLoss": "0",
+          "employees": "75",
+          "summary": {
+            "turnover": "5348411",
+            "netProfit": "109400",
+            "netLoss": "0",
+            "totalRevenue": "5661979",
+            "totalExpenses": "5532498",
+            "grossProfit": "129481",
+            "grossLoss": "0",
+            "receivables": "1453368",
+            "currentAssets": "3424117",
+            "fixedAssets": "1326363",
+            "cashAndBank": "34509",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "1936240",
+            "debts": "3971589",
+            "provisions": null,
+            "totalEquity": "778891",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2012,
+          "turnover": "10746591",
+          "netProfit": "128515",
+          "netLoss": "0",
+          "employees": "103",
+          "summary": {
+            "turnover": "10746591",
+            "netProfit": "128515",
+            "netLoss": "0",
+            "totalRevenue": "10819468",
+            "totalExpenses": "10670030",
+            "grossProfit": "149438",
+            "grossLoss": "0",
+            "receivables": "2227772",
+            "currentAssets": "4351612",
+            "fixedAssets": "1440354",
+            "cashAndBank": "11682",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "2112158",
+            "debts": "5122475",
+            "provisions": null,
+            "totalEquity": "669491",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2011,
+          "turnover": "8653374",
+          "netProfit": "106519",
+          "netLoss": "0",
+          "employees": "63",
+          "summary": {
+            "turnover": "8653374",
+            "netProfit": "106519",
+            "netLoss": "0",
+            "totalRevenue": "8761057",
+            "totalExpenses": "8633132",
+            "grossProfit": "127925",
+            "grossLoss": "0",
+            "receivables": "1027880",
+            "currentAssets": "2275270",
+            "fixedAssets": "1646311",
+            "cashAndBank": "12613",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "1234777",
+            "debts": "3380605",
+            "provisions": null,
+            "totalEquity": "540976",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2010,
+          "turnover": "3246457",
+          "netProfit": "51261",
+          "netLoss": null,
+          "employees": "50",
+          "summary": {
+            "turnover": "3246457",
+            "netProfit": "51261",
+            "netLoss": null,
+            "totalRevenue": "3268891",
+            "totalExpenses": "3197153",
+            "grossProfit": "71738",
+            "grossLoss": null,
+            "receivables": "1077630",
+            "currentAssets": "2138032",
+            "fixedAssets": "550924",
+            "cashAndBank": "54924",
+            "prepaidExpenses": "14986",
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "1005478",
+            "debts": "2269485",
+            "provisions": null,
+            "totalEquity": "434457",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2009,
+          "turnover": "5233798",
+          "netProfit": "53164",
+          "netLoss": null,
+          "employees": "64",
+          "summary": {
+            "turnover": "5233798",
+            "netProfit": "53164",
+            "netLoss": null,
+            "totalRevenue": "5107613",
+            "totalExpenses": "5021503",
+            "grossProfit": "86110",
+            "grossLoss": null,
+            "receivables": "604728",
+            "currentAssets": "1378062",
+            "fixedAssets": "463511",
+            "cashAndBank": "21381",
+            "prepaidExpenses": "338",
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "751953",
+            "debts": "1477883",
+            "provisions": null,
+            "totalEquity": "364028",
+            "patrimonyRegie": null
+          }
+        },
+        {
+          "year": 2008,
+          "turnover": "2434837",
+          "netProfit": "309864",
+          "netLoss": null,
+          "employees": "50",
+          "summary": {
+            "turnover": "2434837",
+            "netProfit": "309864",
+            "netLoss": null,
+            "totalRevenue": "2660108",
+            "totalExpenses": "2294665",
+            "grossProfit": "365443",
+            "grossLoss": null,
+            "receivables": "259672",
+            "currentAssets": "799571",
+            "fixedAssets": "507578",
+            "cashAndBank": "38322",
+            "prepaidExpenses": null,
+            "deferredIncome": null,
+            "subscribedCapital": "1000",
+            "inventories": "501577",
+            "debts": "996285",
+            "provisions": null,
+            "totalEquity": "310864",
+            "patrimonyRegie": null
+          }
+        }
+      ],
+      "trajectory": {
+        "fromYear": 2024,
+        "toYear": 2025,
+        "turnoverDelta": "-25516601.00",
+        "netResultDelta": "-27976309.00",
+        "employeesDelta": "-90"
+      }
+    }
+  }
+}

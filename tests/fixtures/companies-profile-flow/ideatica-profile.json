@@ -1,0 +1,430 @@
+{
+  "data": {
+    "company": {
+      "cui": "47387800",
+      "orgId": "3167065",
+      "name": "A & B IDEATICA S.R.L.",
+      "legalForm": "SRL",
+      "codInmatriculare": "J12/7541/2022",
+      "registrationDate": "2022-12-29",
+      "registrationDatePresent": true,
+      "headlineStatus": {
+        "code": "1048",
+        "label": "funcțiune"
+      },
+      "statusFlags": [
+        {
+          "code": "1048",
+          "label": "funcțiune"
+        }
+      ],
+      "territory": {
+        "sirutaCode": "54975",
+        "uatName": "Municipiul Cluj-Napoca",
+        "countyName": "Cluj",
+        "matchConfidence": "SAFE"
+      },
+      "address": {
+        "display": "",
+        "county": "Cluj",
+        "locality": "Municipiul Cluj-Napoca"
+      },
+      "fiscal": {
+        "vatPayer": false,
+        "declaredFiscallyInactive": false,
+        "mainCaenCode": "7311",
+        "mainCaenRev": null,
+        "registeredName": "A & B IDEATICA S.R.L.",
+        "asOf": "2026-07-08"
+      },
+      "caenActivities": [
+        {
+          "code": "1399",
+          "rev": "rev2",
+          "label": "Fabricarea altor articole textile n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "1812",
+          "rev": "rev2",
+          "label": "Alte activități de tipărire n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "1813",
+          "rev": "rev2",
+          "label": "Servicii pregătitoare pentru pretipărire",
+          "source": "onrc"
+        },
+        {
+          "code": "1814",
+          "rev": "rev2",
+          "label": "Legătorie și servicii conexe",
+          "source": "onrc"
+        },
+        {
+          "code": "3299",
+          "rev": "rev2",
+          "label": "Fabricarea altor produse manufacturiere n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "4311",
+          "rev": "rev2",
+          "label": "Lucrări de demolare a construcțiilor",
+          "source": "onrc"
+        },
+        {
+          "code": "4312",
+          "rev": "rev2",
+          "label": "Lucrări de pregătire a terenului",
+          "source": "onrc"
+        },
+        {
+          "code": "4322",
+          "rev": "rev2",
+          "label": "Lucrări de instalații sanitare, de încălzire și de aer condiționat",
+          "source": "onrc"
+        },
+        {
+          "code": "4329",
+          "rev": "rev2",
+          "label": "Alte lucrări de instalații pentru construcții",
+          "source": "onrc"
+        },
+        {
+          "code": "4331",
+          "rev": "rev2",
+          "label": "Lucrări de ipsoserie",
+          "source": "onrc"
+        },
+        {
+          "code": "4332",
+          "rev": "rev2",
+          "label": "Lucrări de tâmplărie și dulgherie",
+          "source": "onrc"
+        },
+        {
+          "code": "4333",
+          "rev": "rev2",
+          "label": "Lucrări de pardosire și placare a pereților",
+          "source": "onrc"
+        },
+        {
+          "code": "4334",
+          "rev": "rev2",
+          "label": "Lucrări de vopsitorie, zugrăveli și montări de geamuri",
+          "source": "onrc"
+        },
+        {
+          "code": "4339",
+          "rev": "rev2",
+          "label": "Alte lucrări de finisare",
+          "source": "onrc"
+        },
+        {
+          "code": "4399",
+          "rev": "rev2",
+          "label": "Alte lucrări speciale de construcții n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "4520",
+          "rev": "rev2",
+          "label": "Întreținerea și repararea autovehiculelor",
+          "source": "onrc"
+        },
+        {
+          "code": "4690",
+          "rev": "rev2",
+          "label": "Comerț cu ridicata nespecializat",
+          "source": "onrc"
+        },
+        {
+          "code": "4781",
+          "rev": "rev2",
+          "label": "Comerț cu amănuntul al produselor alimentare, băuturilor și produselor din tutun efectuat prin standuri, chioșcuri și piețe",
+          "source": "onrc"
+        },
+        {
+          "code": "4782",
+          "rev": "rev2",
+          "label": "Comerț cu amănuntul al textilelor, îmbrăcămintei și încălțămintei efectuat prin standuri, chioșcuri și piețe",
+          "source": "onrc"
+        },
+        {
+          "code": "4791",
+          "rev": "rev2",
+          "label": "Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet",
+          "source": "onrc"
+        },
+        {
+          "code": "4799",
+          "rev": "rev2",
+          "label": "Comerț cu amănuntul efectuat în afara  magazinelor, standurilor, chioșcurilor și piețelor",
+          "source": "onrc"
+        },
+        {
+          "code": "4932",
+          "rev": "rev2",
+          "label": "Transporturi cu taxiuri",
+          "source": "onrc"
+        },
+        {
+          "code": "4939",
+          "rev": "rev2",
+          "label": "Alte transporturi terestre de călători n.c.a",
+          "source": "onrc"
+        },
+        {
+          "code": "4941",
+          "rev": "rev2",
+          "label": "Transporturi rutiere de mărfuri",
+          "source": "onrc"
+        },
+        {
+          "code": "4942",
+          "rev": "rev2",
+          "label": "Servicii de mutare",
+          "source": "onrc"
+        },
+        {
+          "code": "5221",
+          "rev": "rev2",
+          "label": "Activități de servicii anexe pentru transporturi terestre",
+          "source": "onrc"
+        },
+        {
+          "code": "5320",
+          "rev": "rev2",
+          "label": "Alte activități poștale și de curier",
+          "source": "onrc"
+        },
+        {
+          "code": "5610",
+          "rev": "rev2",
+          "label": "Restaurante",
+          "source": "onrc"
+        },
+        {
+          "code": "5819",
+          "rev": "rev2",
+          "label": "Alte activități de editare",
+          "source": "onrc"
+        },
+        {
+          "code": "6201",
+          "rev": "rev2",
+          "label": "Activități de realizare a soft-ului la comandă (software orientat client)",
+          "source": "onrc"
+        },
+        {
+          "code": "6202",
+          "rev": "rev2",
+          "label": "Activități de consultanță în tehnologia informației",
+          "source": "onrc"
+        },
+        {
+          "code": "6311",
+          "rev": "rev2",
+          "label": "Prelucrarea datelor, administrarea paginilor web și activități conexe",
+          "source": "onrc"
+        },
+        {
+          "code": "6312",
+          "rev": "rev2",
+          "label": "Activități ale portalurilor web",
+          "source": "onrc"
+        },
+        {
+          "code": "6399",
+          "rev": "rev2",
+          "label": "Alte activități de servicii informaționale n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "6810",
+          "rev": "rev2",
+          "label": "Cumpărarea și vânzarea de bunuri imobiliare proprii",
+          "source": "onrc"
+        },
+        {
+          "code": "6820",
+          "rev": "rev2",
+          "label": "Închirierea și subînchirierea bunurilor imobiliare proprii sau închiriate",
+          "source": "onrc"
+        },
+        {
+          "code": "6831",
+          "rev": "rev2",
+          "label": "Agenții imobiliare",
+          "source": "onrc"
+        },
+        {
+          "code": "6832",
+          "rev": "rev2",
+          "label": "Administrarea imobilelor pe bază de comision sau contract",
+          "source": "onrc"
+        },
+        {
+          "code": "7022",
+          "rev": "rev2",
+          "label": "Activități de consultanță pentru afaceri și management",
+          "source": "onrc"
+        },
+        {
+          "code": "7120",
+          "rev": "rev2",
+          "label": "Activități de testări și analize tehnice",
+          "source": "onrc"
+        },
+        {
+          "code": "7311",
+          "rev": null,
+          "label": null,
+          "source": "anaf"
+        },
+        {
+          "code": "7311",
+          "rev": "rev2",
+          "label": "Activități ale agențiilor de publicitate",
+          "source": "onrc"
+        },
+        {
+          "code": "7320",
+          "rev": "rev2",
+          "label": "Activități de studiere a pieței și de sondare a opiniei publice",
+          "source": "onrc"
+        },
+        {
+          "code": "7410",
+          "rev": "rev2",
+          "label": "Activități de design specializat",
+          "source": "onrc"
+        },
+        {
+          "code": "7420",
+          "rev": "rev2",
+          "label": "Activități fotografice",
+          "source": "onrc"
+        },
+        {
+          "code": "7490",
+          "rev": "rev2",
+          "label": "Alte activități profesionale, științifice și tehnice n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "7711",
+          "rev": "rev2",
+          "label": "Activități de închiriere și leasing cu autoturisme și autovehicule rutiere ușoare",
+          "source": "onrc"
+        },
+        {
+          "code": "7830",
+          "rev": "rev2",
+          "label": "Servicii de furnizare și management a forței de muncă",
+          "source": "onrc"
+        },
+        {
+          "code": "7911",
+          "rev": "rev2",
+          "label": "Activități ale agențiilor turistice",
+          "source": "onrc"
+        },
+        {
+          "code": "7990",
+          "rev": "rev2",
+          "label": "Alte servicii de rezervare și asistență turistică",
+          "source": "onrc"
+        },
+        {
+          "code": "8121",
+          "rev": "rev2",
+          "label": "Activități generale de curățenie a clădirilor",
+          "source": "onrc"
+        },
+        {
+          "code": "8122",
+          "rev": "rev2",
+          "label": "Activități specializate de curățenie",
+          "source": "onrc"
+        },
+        {
+          "code": "8129",
+          "rev": "rev2",
+          "label": "Alte activități de curățenie",
+          "source": "onrc"
+        },
+        {
+          "code": "8130",
+          "rev": "rev2",
+          "label": "Activități de întreținere peisagistică",
+          "source": "onrc"
+        },
+        {
+          "code": "8211",
+          "rev": "rev2",
+          "label": "Activități combinate de secretariat",
+          "source": "onrc"
+        },
+        {
+          "code": "8219",
+          "rev": "rev2",
+          "label": "Activități de fotocopiere, de pregătire a documentelor și alte activități specializate de secretariat",
+          "source": "onrc"
+        },
+        {
+          "code": "8292",
+          "rev": "rev2",
+          "label": "Activități de ambalare",
+          "source": "onrc"
+        },
+        {
+          "code": "8299",
+          "rev": "rev2",
+          "label": "Alte activități de servicii suport pentru întreprinderi n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "8551",
+          "rev": "rev2",
+          "label": "Învățământ în domeniul sportiv și recreațional",
+          "source": "onrc"
+        },
+        {
+          "code": "8559",
+          "rev": "rev2",
+          "label": "Alte forme de învățământ n.c.a.",
+          "source": "onrc"
+        },
+        {
+          "code": "9602",
+          "rev": "rev2",
+          "label": "Coafură și alte activități de înfrumusețare",
+          "source": "onrc"
+        },
+        {
+          "code": "9604",
+          "rev": "rev2",
+          "label": "Activități de întreținere corporală",
+          "source": "onrc"
+        },
+        {
+          "code": "9609",
+          "rev": "rev2",
+          "label": "Alte activități de servicii n.c.a.",
+          "source": "onrc"
+        }
+      ],
+      "representatives": [],
+      "euBranches": [],
+      "publicMoney": null,
+      "asOf": {
+        "onrc": "2026-07-18",
+        "anaf": "2026-07-08"
+      }
+    },
+    "companyFinancials": null
+  }
+}

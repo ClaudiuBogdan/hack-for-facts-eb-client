@@ -1,0 +1,101 @@
+{
+  "data": {
+    "authorities": [
+      {
+        "cui": "4112945",
+        "canonicalName": "MUNICIPIUL DOROHOI",
+        "status": "named"
+      },
+      {
+        "cui": "3372173",
+        "canonicalName": "Direcţia de Asistenţă Socială",
+        "status": "named"
+      },
+      {
+        "cui": "4716763",
+        "canonicalName": "COMUNA BREBENI",
+        "status": "named"
+      },
+      {
+        "cui": "4353269",
+        "canonicalName": "Primăria Orașului Comănești - Direcția de Asistență Socială",
+        "status": "named"
+      },
+      {
+        "cui": "2612936",
+        "canonicalName": "COMUNA COSTISA",
+        "status": "named"
+      },
+      {
+        "cui": "4326833",
+        "canonicalName": "COMUNA HORODNICENI",
+        "status": "named"
+      },
+      {
+        "cui": "4327510",
+        "canonicalName": "COMUNA UDESTI",
+        "status": "named"
+      },
+      {
+        "cui": "4244180",
+        "canonicalName": "ORASUL SALCEA",
+        "status": "named"
+      },
+      {
+        "cui": "3373403",
+        "canonicalName": "Primăria Orașului Ștefănești - Direcția Asistență Socială",
+        "status": "named"
+      },
+      {
+        "cui": "4326922",
+        "canonicalName": "COMUNA TODIRESTI",
+        "status": "named"
+      },
+      {
+        "cui": "13727320",
+        "canonicalName": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+        "status": "named"
+      },
+      {
+        "cui": "3503686",
+        "canonicalName": "Primăria Comunei Văculești - Compartiment Asistenţă Socială și Autoritate Tutelară",
+        "status": "named"
+      },
+      {
+        "cui": "3433890",
+        "canonicalName": "Primăria Comunei Bălușeni - Serviciul Public de Asistență Socială",
+        "status": "named"
+      },
+      {
+        "cui": "4541068",
+        "canonicalName": "Primăria Orașului Târgu Frumos - Direcția de Asistenţă Socială",
+        "status": "named"
+      },
+      {
+        "cui": "3337613",
+        "canonicalName": "Primăria Comunei Codăeşti  - Compartiment Asistenţă Socială",
+        "status": "named"
+      },
+      {
+        "cui": "25110165",
+        "canonicalName": "SCOALA GIMNAZIALA NR. 1 GORBANESTI",
+        "status": "named"
+      },
+      {
+        "cui": "26161230",
+        "canonicalName": "NOVA APASERV SA",
+        "status": "named"
+      },
+      {
+        "cui": "25254683",
+        "canonicalName": "SCOALA GIMNAZIALA NR. 1 RACHITI",
+        "status": "named"
+      },
+      {
+        "cui": "3373527",
+        "canonicalName": "Primăria Comunei Gorbănești - Compartiment Asistență Socială",
+        "status": "named"
+      }
+    ]
+  }
+}

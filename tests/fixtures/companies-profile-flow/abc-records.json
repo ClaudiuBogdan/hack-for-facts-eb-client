@@ -1,0 +1,998 @@
+{
+  "data": {
+    "procurementSupplierRecords": {
+      "total": null,
+      "edges": [
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNS0wOS0wN3xjfDIzMTE3NTc",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "2311757",
+            "contractNo": "4312",
+            "contractDate": "2025-09-07",
+            "procedureId": "328794",
+            "noticeNo": "SCNA1122809",
+            "title": null,
+            "displayTitle": {
+              "text": "Executie lucrări pentru obiectivul „Extindere retea de canalizare in comuna Brebeni, judetul Olt”",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100560733"
+            },
+            "authority": {
+              "cui": "4716763",
+              "name": "COMUNA BREBENI",
+              "displayName": "COMUNA BREBENI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45232400",
+            "cpvDivisionCode": "45",
+            "valueRon": "16829837.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "16829837.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/e0cf7ffc-1fa0-4ffb-a82f-c83981d81f21/resource/e2ef5a81-59ec-4789-9baa-fd175b217893/download/datagov-contracte-tiii-2025.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNS0wNS0yNnxjfDIyMDE0ODc",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "2201487",
+            "contractNo": "2569/632",
+            "contractDate": "2025-05-26",
+            "procedureId": "323967",
+            "noticeNo": "SCNA1120751",
+            "title": null,
+            "displayTitle": {
+              "text": "MODERNIZARE SI EXTINDERE RETELE HIRDROEDILITARE, COMUNA SEICA MARE, JUDETUL SIBIU",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100550945"
+            },
+            "authority": {
+              "cui": "4241052",
+              "name": "COMUNA SEICA MARE (CONSILIUL LOCAL SEICA MARE)",
+              "displayName": "COMUNA SEICA MARE (CONSILIUL LOCAL SEICA MARE)"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45231300",
+            "cpvDivisionCode": "45",
+            "valueRon": "19583343.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "19583343.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/e0cf7ffc-1fa0-4ffb-a82f-c83981d81f21/resource/91947695-b315-4d72-b292-84bd57a9c72b/download/contracte-t2-2025.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNS0wNC0wM3xkfDE0NTQ3Nzk5",
+          "node": {
+            "__typename": "ProcurementDirectAcquisition",
+            "id": "14547799",
+            "uniqueCode": "DA37826937",
+            "title": "Bransamente energie instalatii si canalizare spalatorie",
+            "authority": {
+              "cui": "13727320",
+              "name": "SPITALUL MUNICIPAL DOROHOI",
+              "displayName": "SPITALUL MUNICIPAL DOROHOI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "71315000",
+            "cpvDivisionCode": "71",
+            "valueRon": "262349.42",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "262349.42",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:33:42.171567+00"
+            },
+            "status": "unknown",
+            "countyName": null,
+            "publicationDate": "2025-04-03",
+            "finalizationDate": "2025-04-03",
+            "sourceSystem": "seap_da",
+            "sourceUrl": "https://data.gov.ro/dataset/e0cf7ffc-1fa0-4ffb-a82f-c83981d81f21/resource/8e6fa9e7-62e9-4ec2-bef5-495f3d09eef3/download/achizitii-directe-t2-2025.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0xMi0xNnxjfDE5MTEwMzM",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1911033",
+            "contractNo": "267",
+            "contractDate": "2024-12-16",
+            "procedureId": "309125",
+            "noticeNo": "SCNA1115401",
+            "title": null,
+            "displayTitle": {
+              "text": "Executie lucrări de modernizare clădire la sediul CNCIR SA - Sucursala Regionala MOLDOVA- Punct de lucru Bacău",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100517825"
+            },
+            "authority": {
+              "cui": "27787860",
+              "name": "CNCIR - COMPANIA NATIONALA PENTRU CONTROLUL CAZANELOR, INSTALATIILOR DE RIDICAT SI RECIPIENTELOR SUB PRESIUNE S.A.",
+              "displayName": "CNCIR - COMPANIA NATIONALA PENTRU CONTROLUL CAZANELOR, INSTALATIILOR DE RIDICAT SI RECIPIENTELOR SUB PRESIUNE S.A."
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45262690",
+            "cpvDivisionCode": "45",
+            "valueRon": "3312419.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "3312419.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/ed84773a-06c6-4016-ad59-8f1d06b8ec1d/resource/429bccb5-055c-42d0-891d-922dc5197ca7/download/datagov-raport-contracte-t-iv_2024.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0xMS0xOXxjfDE5NTE5Mzk",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1951939",
+            "contractNo": "8939",
+            "contractDate": "2024-11-19",
+            "procedureId": "306362",
+            "noticeNo": "SCNA1114261",
+            "title": null,
+            "displayTitle": {
+              "text": "Executie lucrari \"Reabilitare camin cultiral in comuna Odoreu\"",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100511842"
+            },
+            "authority": {
+              "cui": "3897424",
+              "name": "Comuna Odoreu (Consiliul Local al comunei Odoreu)",
+              "displayName": "Comuna Odoreu (Consiliul Local al comunei Odoreu)"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "1974601.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "1974601.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/ed84773a-06c6-4016-ad59-8f1d06b8ec1d/resource/429bccb5-055c-42d0-891d-922dc5197ca7/download/datagov-raport-contracte-t-iv_2024.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wOC0yOHxkfDg4MzQ0OTM",
+          "node": {
+            "__typename": "ProcurementDirectAcquisition",
+            "id": "8834493",
+            "uniqueCode": "DA36357468",
+            "title": "Bransament instalatii termice - Pavilion Chirurgie si Pavilion Interne",
+            "authority": {
+              "cui": "13727320",
+              "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+              "displayName": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "485294.41",
+            "estimatedValueRon": "485294.41",
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "485294.41",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:30:11.308051+00"
+            },
+            "status": "finalized",
+            "countyName": null,
+            "publicationDate": "2024-08-28",
+            "finalizationDate": "2024-08-28",
+            "sourceSystem": "elicitatie_da",
+            "sourceUrl": "https://e-licitatie.ro/api-pub/PublicDirectAcquisition/getView/117832579",
+            "isCanonical": true,
+            "dupGroupId": "8834493"
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wOC0wMnxjfDE5Mzg5Njc",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1938967",
+            "contractNo": "6732",
+            "contractDate": "2024-08-02",
+            "procedureId": "304676",
+            "noticeNo": "CAN1136881",
+            "title": null,
+            "displayTitle": {
+              "text": "Servicii de proiectare faza Proiect Tehnic, asistență tehnică din partea proiectantului și execuție lucrări pentru proiectul de investiții ”INFIINTARE RETEA INTELIGENTA DE DISTRIBUTIE GAZE NATURALE IN COMUNA RACHITI, JUDETUL BOTOSANI”.",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100508208"
+            },
+            "authority": {
+              "cui": "3372106",
+              "name": "COMUNA RACHITI (PRIMARIA RACHITI)",
+              "displayName": "COMUNA RACHITI (PRIMARIA RACHITI)"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45231221",
+            "cpvDivisionCode": "45",
+            "valueRon": "37446215.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "conflicting_sources",
+              "valueStateRule": "cross_disagrees",
+              "valueAccepted": false,
+              "valueRonComparable": null,
+              "valueComparableBasis": null,
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/ed84773a-06c6-4016-ad59-8f1d06b8ec1d/resource/429bccb5-055c-42d0-891d-922dc5197ca7/download/datagov-raport-contracte-t-iv_2024.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": null,
+            "valueDisagreement": true,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wNS0yM3xkfDg1NTQ3MjI",
+          "node": {
+            "__typename": "ProcurementDirectAcquisition",
+            "id": "8554722",
+            "uniqueCode": "DA35785162",
+            "title": "Lucrări de amenajare exterioară sală de sport Văculești",
+            "authority": {
+              "cui": "3503686",
+              "name": "COMUNA VACULESTI",
+              "displayName": "COMUNA VACULESTI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45111291",
+            "cpvDivisionCode": "45",
+            "valueRon": "451292.25",
+            "estimatedValueRon": "451292.25",
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "451292.25",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:30:11.308051+00"
+            },
+            "status": "finalized",
+            "countyName": null,
+            "publicationDate": "2024-05-23",
+            "finalizationDate": "2024-05-23",
+            "sourceSystem": "elicitatie_da",
+            "sourceUrl": "https://e-licitatie.ro/api-pub/PublicDirectAcquisition/getView/117218782",
+            "isCanonical": true,
+            "dupGroupId": null
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wNC0xMHxjfDIwOTY3MjY",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "2096726",
+            "contractNo": "9166",
+            "contractDate": "2024-04-10",
+            "procedureId": "318981",
+            "noticeNo": "CAN1125892",
+            "title": null,
+            "displayTitle": {
+              "text": "Servicii de proiectare (PTh + DE și Asistență Tehnică din partea proiectantului), Execuție lucrări și Furnizare Dotări, pentru obiectivul de investiții: “Locuințe pentru tineri care provin din grupuri/comunități vulnerabile la nivelul Municipiului Botoșani“ PNRR/2022/I2, Runda 1",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100540415"
+            },
+            "authority": {
+              "cui": "3372882",
+              "name": "MUNICIPIUL BOTOSANI",
+              "displayName": "MUNICIPIUL BOTOSANI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "31615314.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "31615314.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/e0cf7ffc-1fa0-4ffb-a82f-c83981d81f21/resource/91947695-b315-4d72-b292-84bd57a9c72b/download/contracte-t2-2025.xlsx",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wNC0xMHxjfDE3OTI4Nzk",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1792879",
+            "contractNo": "9166",
+            "contractDate": "2024-04-10",
+            "procedureId": "318981",
+            "noticeNo": "CAN1125892",
+            "title": null,
+            "displayTitle": {
+              "text": "Servicii de proiectare (PTh + DE și Asistență Tehnică din partea proiectantului), Execuție lucrări și Furnizare Dotări, pentru obiectivul de investiții: “Locuințe pentru tineri care provin din grupuri/comunități vulnerabile la nivelul Municipiului Botoșani“ PNRR/2022/I2, Runda 1",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100540415"
+            },
+            "authority": {
+              "cui": "3372882",
+              "name": "MUNICIPIUL BOTOSANI",
+              "displayName": "MUNICIPIUL BOTOSANI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "28826716.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "28826716.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/ed84773a-06c6-4016-ad59-8f1d06b8ec1d/resource/c5f1fefc-7940-47ff-ac08-8783ea6484cf/download/datagov-raport-contracte-publicate-t-ii-2024.csv",
+            "isCanonical": true,
+            "dupGroupId": "1792879",
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": [
+              {
+                "id": "51440",
+                "contractId": "1792879",
+                "linkMethod": "notice_no",
+                "linkConfidence": 0.995,
+                "modificationDate": "2024-09-12",
+                "valueBeforeRon": null,
+                "valueAfterRon": null,
+                "valueDeltaRon": "28826717.00",
+                "modificationType": "In baza Actului Aditional nr. 1 la Acordul de asociere 842/09.09.2024 - se modifica liderul asocierii, acesta devenind SC BAHM CONSTRUCTII CIVILE SI INDUSTRIALE SRL, cu un procent de 93,58%."
+              },
+              {
+                "id": "51922",
+                "contractId": "1792879",
+                "linkMethod": "notice_no",
+                "linkConfidence": 0.995,
+                "modificationDate": "2024-09-30",
+                "valueBeforeRon": null,
+                "valueAfterRon": null,
+                "valueDeltaRon": "28826717.00",
+                "modificationType": "Modificare mod constituire garantie buna executie."
+              },
+              {
+                "id": "53464",
+                "contractId": "1792879",
+                "linkMethod": "notice_no",
+                "linkConfidence": 0.995,
+                "modificationDate": "2024-11-18",
+                "valueBeforeRon": "28826717.00",
+                "valueAfterRon": "28826717.00",
+                "valueDeltaRon": "0.00",
+                "modificationType": "In baza Actului Aditional nr. 3 - adresa sediului SC BAHM CONSTRUCTII CIVILE SI INDUSTRIALE SRL - Lider al Asocierii, este: str. Manolesti Deal, nr. 15A, Botosani si contul in care se vor efectua platile este: RO77TREZ1165069XXX009670, deschis la Trezoreria Botosani."
+              },
+              {
+                "id": "58219",
+                "contractId": "1792879",
+                "linkMethod": "notice_no",
+                "linkConfidence": 0.995,
+                "modificationDate": "2025-04-07",
+                "valueBeforeRon": "28826716.64",
+                "valueAfterRon": "31615314.51",
+                "valueDeltaRon": "2788597.87",
+                "modificationType": "In baza Actului Aditional nr. 4 - Majorare valoare contract."
+              }
+            ]
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wMy0xM3xjfDUxNTUyNzc5",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "51552779",
+            "contractNo": "2812",
+            "contractDate": "2024-03-13",
+            "procedureId": "277366",
+            "noticeNo": "SCNA1100597",
+            "title": "Eficienta energetica a cladirilor Liceului Stefan D. Luchian pentru reducerea consumului de resurse, orasul Stefanesti, judetul Botosani",
+            "displayTitle": {
+              "text": "Eficienta energetica a cladirilor Liceului Stefan D. Luchian pentru reducerea consumului de resurse, orasul Stefanesti, judetul Botosani",
+              "source": "native",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100450771"
+            },
+            "authority": {
+              "cui": "3373403",
+              "name": "Orasul Stefanesti",
+              "displayName": "Orasul Stefanesti"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "5716001.65",
+            "estimatedValueRon": null,
+            "currency": "RON",
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "5716001.65",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "elicitatie_ca_award",
+            "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100450771",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "elicitatie_ca_award",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyNC0wMy0wNnxkfDE3NTUzMTM2",
+          "node": {
+            "__typename": "ProcurementDirectAcquisition",
+            "id": "17553136",
+            "uniqueCode": "DA35195335",
+            "title": "Reabilitare canalizare principala",
+            "authority": {
+              "cui": "13727320",
+              "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+              "displayName": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45232400",
+            "cpvDivisionCode": "45",
+            "valueRon": "202521.01",
+            "estimatedValueRon": "202521.01",
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "202521.01",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:34:56.442736+00"
+            },
+            "status": "finalized",
+            "countyName": null,
+            "publicationDate": "2024-03-06",
+            "finalizationDate": "2024-03-06",
+            "sourceSystem": "elicitatie_da",
+            "sourceUrl": "https://e-licitatie.ro/api-pub/PublicDirectAcquisition/getView/116584245",
+            "isCanonical": true,
+            "dupGroupId": "13855471"
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMi0xNXxjfDE3MDUxODk",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1705189",
+            "contractNo": "48919",
+            "contractDate": "2023-12-15",
+            "procedureId": "268514",
+            "noticeNo": "SCNA1096789",
+            "title": null,
+            "displayTitle": {
+              "text": "Execuție lucrări pentru obiectivul de investiții, ”Eficientizarea energetică a blocurilor de locuințe din orașul Comănești, Asociația de Proprietari ”Azur” nr. 6: Str. Republicii Bl. A (sc A+B), A1 (sc A+B), bl. B1, B2, B3, B4, B5, B6, B7, B8”, C5- A 3.1-9",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100425737"
+            },
+            "authority": {
+              "cui": "4353269",
+              "name": "ORASUL COMANESTI",
+              "displayName": "ORASUL COMANESTI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45210000",
+            "cpvDivisionCode": "45",
+            "valueRon": "16123277.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "16123277.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/07234a4a-8315-4ad5-b761-813a9671a851/resource/1a2d1fff-caec-4e9d-aad8-05a6ef8b954e/download/datagov-raport-contracte-publicate-t-iv-2023.csv",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMi0xMHxjfDUxMDc4OTYy",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "51078962",
+            "contractNo": "9995",
+            "contractDate": "2023-12-10",
+            "procedureId": "273100",
+            "noticeNo": "SCNA1098704",
+            "title": "Continuare lucrari pentru finalizarea obiectivului \"Alimentare cu apa sat Todiresti, Comuna Todiresti, judetul Suceava\"",
+            "displayTitle": {
+              "text": "Continuare lucrari pentru finalizarea obiectivului \"Alimentare cu apa sat Todiresti, Comuna Todiresti, judetul Suceava\"",
+              "source": "native",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100440272"
+            },
+            "authority": {
+              "cui": "4326922",
+              "name": "COMUNA TODIRESTI",
+              "displayName": "COMUNA TODIRESTI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45232150",
+            "cpvDivisionCode": "45",
+            "valueRon": "5002298.14",
+            "estimatedValueRon": null,
+            "currency": "RON",
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "5002298.14",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "elicitatie_ca_award",
+            "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100440272",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "elicitatie_ca_award",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMS0yOXxjfDE2ODY1MjM",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1686523",
+            "contractNo": "6117/702",
+            "contractDate": "2023-11-29",
+            "procedureId": "266528",
+            "noticeNo": "CAN1116761",
+            "title": null,
+            "displayTitle": {
+              "text": "RETELE HIDROEDILITARE, COMUNA CAINENI, JUDETUL VALCEA",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100420099"
+            },
+            "authority": {
+              "cui": "2541681",
+              "name": "Comuna Caineni",
+              "displayName": "Comuna Caineni"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "21356880.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "21356880.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/07234a4a-8315-4ad5-b761-813a9671a851/resource/1a2d1fff-caec-4e9d-aad8-05a6ef8b954e/download/datagov-raport-contracte-publicate-t-iv-2023.csv",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMS0yN3xjfDE2OTM4MTU",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1693815",
+            "contractNo": "47431",
+            "contractDate": "2023-11-27",
+            "procedureId": "359501",
+            "noticeNo": "CAN1116694",
+            "title": null,
+            "displayTitle": {
+              "text": "Contract de achiziție publică - lucrări aferente obiectivului de investiții “Complex Corecțional Penitenciarul Botoșani,”",
+              "source": "matched_award",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100621942"
+            },
+            "authority": {
+              "cui": "3503538",
+              "name": "PENITENCIARUL BOTOSANI",
+              "displayName": "PENITENCIARUL BOTOSANI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45210000",
+            "cpvDivisionCode": "45",
+            "valueRon": "30801738.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "conflicting_sources",
+              "valueStateRule": "cross_disagrees",
+              "valueAccepted": false,
+              "valueRonComparable": null,
+              "valueComparableBasis": null,
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/07234a4a-8315-4ad5-b761-813a9671a851/resource/1a2d1fff-caec-4e9d-aad8-05a6ef8b954e/download/datagov-raport-contracte-publicate-t-iv-2023.csv",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": null,
+            "valueDisagreement": true,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMS0wMXxjfDE2MTk1MjA",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1619520",
+            "contractNo": "5809",
+            "contractDate": "2023-11-01",
+            "procedureId": "263663",
+            "noticeNo": "SCNA1094820",
+            "title": null,
+            "displayTitle": {
+              "text": "Extindere retea de canalizare in comuna Costisa, judetul Neamt",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100414316"
+            },
+            "authority": {
+              "cui": "2612936",
+              "name": "COMUNA COSTISA",
+              "displayName": "COMUNA COSTISA"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45231100",
+            "cpvDivisionCode": "45",
+            "valueRon": "13596909.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "13596909.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/07234a4a-8315-4ad5-b761-813a9671a851/resource/1a2d1fff-caec-4e9d-aad8-05a6ef8b954e/download/datagov-raport-contracte-publicate-t-iv-2023.csv",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMC0yN3xkfDc5MTcyNjM",
+          "node": {
+            "__typename": "ProcurementDirectAcquisition",
+            "id": "7917263",
+            "uniqueCode": "DA34375457",
+            "title": "Platforma Stocator Oxigen",
+            "authority": {
+              "cui": "13727320",
+              "name": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI",
+              "displayName": "SPITALUL MUNICIPAL ACADEMICIAN LEON DANAILA DOROHOI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45000000",
+            "cpvDivisionCode": "45",
+            "valueRon": "32700.00",
+            "estimatedValueRon": "32700.00",
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "32700.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:29:08.944735+00"
+            },
+            "status": "finalized",
+            "countyName": null,
+            "publicationDate": "2023-10-27",
+            "finalizationDate": "2023-10-27",
+            "sourceSystem": "elicitatie_da",
+            "sourceUrl": "https://e-licitatie.ro/api-pub/PublicDirectAcquisition/getView/115704230",
+            "isCanonical": true,
+            "dupGroupId": null
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMC0xMHxjfDE1NjM2NjQ",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1563664",
+            "contractNo": "2891/607",
+            "contractDate": "2023-10-10",
+            "procedureId": "260492",
+            "noticeNo": "SCNA1093541",
+            "title": null,
+            "displayTitle": {
+              "text": "Executie lucrari aferente obiectivului de investitii: \" Rețele de alimentare cu apă și canalizare în comuna Horodniceni, județul Suceava \"",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100408187"
+            },
+            "authority": {
+              "cui": "4326833",
+              "name": "COMUNA HORODNICENI",
+              "displayName": "COMUNA HORODNICENI"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45232400",
+            "cpvDivisionCode": "45",
+            "valueRon": "12538982.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "12538982.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/07234a4a-8315-4ad5-b761-813a9671a851/resource/1a2d1fff-caec-4e9d-aad8-05a6ef8b954e/download/datagov-raport-contracte-publicate-t-iv-2023.csv",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        },
+        {
+          "cursor": "MjM2MTc1NjF8MjAyMy0xMC0wNnxjfDE1NjExMDE",
+          "node": {
+            "__typename": "ProcurementContract",
+            "id": "1561101",
+            "contractNo": "6472",
+            "contractDate": "2023-10-06",
+            "procedureId": "260453",
+            "noticeNo": "SCNA1093532",
+            "title": null,
+            "displayTitle": {
+              "text": "Servicii de proiectare, asistenta tehnica din partea proiectantului, executie lucrari și dotarea cu echipamente și mobilier specific în vederea realizarii proiectului „CREȘTEREA EFICIENTEI ENERGETICE ȘI GESTIONAREA INTELIGENTĂ A ENERGIEI LA ȘCOALA GIMNAZIALĂ HĂLCENI, COMUNA ȘIPOTE, JUDEȚUL IAȘI”",
+              "source": "procedure",
+              "sourceUrl": "https://e-licitatie.ro/api-pub/C_PUBLIC_CANotice/get/100408102"
+            },
+            "authority": {
+              "cui": "4540291",
+              "name": "Comuna Sipote",
+              "displayName": "Comuna Sipote"
+            },
+            "supplier": {
+              "cui": "23617561",
+              "name": "ABC-CON INTERNATIONAL SRL",
+              "displayName": "ABC-CON INTERNATIONAL SRL"
+            },
+            "cpvCode": "45214200",
+            "cpvDivisionCode": "45",
+            "valueRon": "4581974.00",
+            "estimatedValueRon": null,
+            "currency": null,
+            "value": {
+              "valueState": "official_exact",
+              "valueStateRule": "own_value",
+              "valueAccepted": true,
+              "valueRonComparable": "4581974.00",
+              "valueComparableBasis": "official",
+              "valueRulesVersion": 5,
+              "valueResolvedAt": "2026-08-21 15:22:47.873548+00"
+            },
+            "status": "awarded",
+            "sourceSystem": "seap_contracts",
+            "sourceUrl": "https://data.gov.ro/dataset/07234a4a-8315-4ad5-b761-813a9671a851/resource/1a2d1fff-caec-4e9d-aad8-05a6ef8b954e/download/datagov-raport-contracte-publicate-t-iv-2023.csv",
+            "isCanonical": true,
+            "dupGroupId": null,
+            "canonicalValueSource": "seap_own",
+            "valueDisagreement": false,
+            "modifications": []
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "MjM2MTc1NjF8MjAyMy0xMC0wNnxjfDE1NjExMDE"
+      }
+    }
+  }
+}

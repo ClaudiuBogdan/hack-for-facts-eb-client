@@ -182,7 +182,7 @@ function CaseBackLink({ from }: { readonly from?: string }) {
     const cui = from.slice('companies:'.length)
     return (
       <Button asChild variant="ghost" size="sm" className="w-fit px-0">
-        <Link to="/companies/$cui" params={{ cui }} search={{ tab: 'litigii' }}>
+        <Link to="/companies/$cui" params={{ cui }} hash="litigii">
           <Trans>Înapoi la profilul companiei</Trans>
         </Link>
       </Button>

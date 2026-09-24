@@ -1,0 +1,1196 @@
+{
+  "data": {
+    "procurementStats": {
+      "blocks": [
+        {
+          "grain": "contract",
+          "recordCount": "62",
+          "withValueCount": "24",
+          "withEstimatedCount": "17",
+          "valueAwardedSum": "157532943.19",
+          "valueEstimatedSum": null,
+          "valueCeilingSum": null,
+          "valueModAdjustedSum": null,
+          "valueAwardedMatchedSum": null,
+          "avgValueAwarded": "6563872.63",
+          "minMonth": "2016-07",
+          "maxMonth": "2025-09",
+          "valueWithheldAssociationSum": null,
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "degraded",
+              "reason": "SPEND_SERVED_DISCLOSED",
+              "caveats": [
+                "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend"
+              ]
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained",
+              "reason": "MISSING_QUALITY_VERDICT",
+              "caveats": [
+                "no coverage verdict for estimated value on grain 'contract' — money abstains (never served unvetted)"
+              ]
+            },
+            {
+              "measure": "valueModAdjustedSum",
+              "answerability": "abstained",
+              "reason": "GENERATION_LACKS_CAPABILITY",
+              "caveats": [
+                "mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)"
+              ]
+            },
+            {
+              "measure": "valueAwardedMatchedSum",
+              "answerability": "abstained",
+              "reason": "GENERATION_LACKS_CAPABILITY",
+              "caveats": [
+                "mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)"
+              ]
+            }
+          ],
+          "meta": {
+            "answerability": "degraded",
+            "reason": "SPEND_SERVED_DISCLOSED",
+            "policyKey": "contract.valueAwardedSum",
+            "grain": "contract",
+            "valueBasis": "awarded",
+            "dateBasis": "contract_date",
+            "population": "canonical-only",
+            "buildId": "8",
+            "counts": {
+              "rows": "62",
+              "withValue": "24"
+            },
+            "undatedInScope": {
+              "count": "6",
+              "valueRon": null
+            },
+            "provisional": true,
+            "caveats": [
+              "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+              "no coverage verdict for estimated value on grain 'contract' — money abstains (never served unvetted)",
+              "mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)",
+              "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+              "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+            ],
+            "canonicalScope": "supplierCui=23617561"
+          }
+        },
+        {
+          "grain": "direct_acquisition",
+          "recordCount": "29",
+          "withValueCount": "29",
+          "withEstimatedCount": "25",
+          "valueAwardedSum": "3373424.60",
+          "valueEstimatedSum": null,
+          "valueCeilingSum": null,
+          "valueModAdjustedSum": null,
+          "valueAwardedMatchedSum": null,
+          "avgValueAwarded": "116324.99",
+          "minMonth": "2016-12",
+          "maxMonth": "2025-04",
+          "valueWithheldAssociationSum": null,
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "served",
+              "reason": null,
+              "caveats": []
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained",
+              "reason": "SPEND_COVERAGE_BELOW_GATE",
+              "caveats": [
+                "estimated value answers abstain for grain 'direct_acquisition': coverage 58.6% is below the disclosure floor 75.0% (money is omitted, not zeroed)"
+              ]
+            }
+          ],
+          "meta": {
+            "answerability": "served",
+            "reason": null,
+            "policyKey": "direct_acquisition.valueAwardedSum",
+            "grain": "direct_acquisition",
+            "valueBasis": "awarded",
+            "dateBasis": "coalesce(finalization_date, publication_date)",
+            "population": "canonical-only",
+            "buildId": "8",
+            "counts": {
+              "rows": "29",
+              "withValue": "29"
+            },
+            "undatedInScope": {
+              "count": "0",
+              "valueRon": null
+            },
+            "provisional": false,
+            "caveats": [
+              "estimated value answers abstain for grain 'direct_acquisition': coverage 58.6% is below the disclosure floor 75.0% (money is omitted, not zeroed)"
+            ],
+            "canonicalScope": "supplierCui=23617561"
+          }
+        }
+      ]
+    },
+    "authorities": [
+      {
+        "grain": "contract",
+        "dimension": "authority",
+        "rankedBy": "value",
+        "buckets": [
+          {
+            "key": "4112945",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "21177745.08",
+            "valueSum": "21177745.08",
+            "shareOfScope": "0.1344"
+          },
+          {
+            "key": "3372173",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "19875039.06",
+            "valueSum": "19875039.06",
+            "shareOfScope": "0.1262"
+          },
+          {
+            "key": "4716763",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "16829837.00",
+            "valueSum": "16829837.00",
+            "shareOfScope": "0.1068"
+          },
+          {
+            "key": "4353269",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "16123277.00",
+            "valueSum": "16123277.00",
+            "shareOfScope": "0.1023"
+          },
+          {
+            "key": "2612936",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "13596909.00",
+            "valueSum": "13596909.00",
+            "shareOfScope": "0.0863"
+          },
+          {
+            "key": "4326833",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "12538982.00",
+            "valueSum": "12538982.00",
+            "shareOfScope": "0.0796"
+          },
+          {
+            "key": "4327510",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "10708145.08",
+            "valueSum": "10708145.08",
+            "shareOfScope": "0.0680"
+          },
+          {
+            "key": "4244180",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "6718086.66",
+            "valueSum": "6718086.66",
+            "shareOfScope": "0.0426"
+          },
+          {
+            "key": "3373403",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "5716001.65",
+            "valueSum": "5716001.65",
+            "shareOfScope": "0.0363"
+          },
+          {
+            "key": "4326922",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "5002298.14",
+            "valueSum": "5002298.14",
+            "shareOfScope": "0.0318"
+          },
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "52",
+            "withValueCount": "14",
+            "valueAwardedSum": "29246622.52",
+            "valueSum": "29246622.52",
+            "shareOfScope": "0.1857"
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "degraded",
+          "reason": "SPEND_SERVED_DISCLOSED",
+          "policyKey": "contract.valueAwardedSum",
+          "grain": "contract",
+          "valueBasis": "awarded",
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "62",
+            "withValue": "24"
+          },
+          "undatedInScope": {
+            "count": "6",
+            "valueRon": null
+          },
+          "provisional": true,
+          "caveats": [
+            "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+            "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "dimension": "authority",
+        "rankedBy": "value",
+        "buckets": [
+          {
+            "key": "13727320",
+            "kind": "top",
+            "recordCount": "4",
+            "withValueCount": "4",
+            "valueAwardedSum": "982864.84",
+            "valueSum": "982864.84",
+            "shareOfScope": "0.2914"
+          },
+          {
+            "key": "4244180",
+            "kind": "top",
+            "recordCount": "3",
+            "withValueCount": "3",
+            "valueAwardedSum": "694946.24",
+            "valueSum": "694946.24",
+            "shareOfScope": "0.2060"
+          },
+          {
+            "key": "3503686",
+            "kind": "top",
+            "recordCount": "2",
+            "withValueCount": "2",
+            "valueAwardedSum": "629292.32",
+            "valueSum": "629292.32",
+            "shareOfScope": "0.1865"
+          },
+          {
+            "key": "3433890",
+            "kind": "top",
+            "recordCount": "8",
+            "withValueCount": "8",
+            "valueAwardedSum": "584827.86",
+            "valueSum": "584827.86",
+            "shareOfScope": "0.1734"
+          },
+          {
+            "key": "4541068",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "221104.65",
+            "valueSum": "221104.65",
+            "shareOfScope": "0.0655"
+          },
+          {
+            "key": "3337613",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "83014.27",
+            "valueSum": "83014.27",
+            "shareOfScope": "0.0246"
+          },
+          {
+            "key": "25110165",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "80472.60",
+            "valueSum": "80472.60",
+            "shareOfScope": "0.0239"
+          },
+          {
+            "key": "26161230",
+            "kind": "top",
+            "recordCount": "4",
+            "withValueCount": "4",
+            "valueAwardedSum": "68452.12",
+            "valueSum": "68452.12",
+            "shareOfScope": "0.0203"
+          },
+          {
+            "key": "25254683",
+            "kind": "top",
+            "recordCount": "2",
+            "withValueCount": "2",
+            "valueAwardedSum": "13389.80",
+            "valueSum": "13389.80",
+            "shareOfScope": "0.0040"
+          },
+          {
+            "key": "3373527",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "11320.00",
+            "valueSum": "11320.00",
+            "shareOfScope": "0.0034"
+          },
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "2",
+            "withValueCount": "2",
+            "valueAwardedSum": "3739.90",
+            "valueSum": "3739.90",
+            "shareOfScope": "0.0011"
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.valueAwardedSum",
+          "grain": "direct_acquisition",
+          "valueBasis": "awarded",
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "29",
+            "withValue": "29"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "grain": "contract",
+        "dimension": "cpvDivision",
+        "rankedBy": "value",
+        "buckets": [
+          {
+            "key": "45",
+            "kind": "top",
+            "recordCount": "62",
+            "withValueCount": "24",
+            "valueAwardedSum": "157532943.19",
+            "valueSum": "157532943.19",
+            "shareOfScope": "1.0000"
+          },
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "degraded",
+          "reason": "SPEND_SERVED_DISCLOSED",
+          "policyKey": "contract.valueAwardedSum",
+          "grain": "contract",
+          "valueBasis": "awarded",
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "62",
+            "withValue": "24"
+          },
+          "undatedInScope": {
+            "count": "6",
+            "valueRon": null
+          },
+          "provisional": true,
+          "caveats": [
+            "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+            "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "dimension": "cpvDivision",
+        "rankedBy": "value",
+        "buckets": [
+          {
+            "key": "45",
+            "kind": "top",
+            "recordCount": "15",
+            "withValueCount": "15",
+            "valueAwardedSum": "2241616.87",
+            "valueSum": "2241616.87",
+            "shareOfScope": "0.6645"
+          },
+          {
+            "key": "44",
+            "kind": "top",
+            "recordCount": "6",
+            "withValueCount": "6",
+            "valueAwardedSum": "720796.24",
+            "valueSum": "720796.24",
+            "shareOfScope": "0.2137"
+          },
+          {
+            "key": "71",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "262349.42",
+            "valueSum": "262349.42",
+            "shareOfScope": "0.0778"
+          },
+          {
+            "key": "39",
+            "kind": "top",
+            "recordCount": "2",
+            "withValueCount": "2",
+            "valueAwardedSum": "83019.37",
+            "valueSum": "83019.37",
+            "shareOfScope": "0.0246"
+          },
+          {
+            "key": "37",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "36344.00",
+            "valueSum": "36344.00",
+            "shareOfScope": "0.0108"
+          },
+          {
+            "key": "30",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "21300.00",
+            "valueSum": "21300.00",
+            "shareOfScope": "0.0063"
+          },
+          {
+            "key": "50",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "3213.80",
+            "valueSum": "3213.80",
+            "shareOfScope": "0.0010"
+          },
+          {
+            "key": "34",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "2739.90",
+            "valueSum": "2739.90",
+            "shareOfScope": "0.0008"
+          },
+          {
+            "key": "35",
+            "kind": "top",
+            "recordCount": "1",
+            "withValueCount": "1",
+            "valueAwardedSum": "2045.00",
+            "valueSum": "2045.00",
+            "shareOfScope": "0.0006"
+          },
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": "0.0000"
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.valueAwardedSum",
+          "grain": "direct_acquisition",
+          "valueBasis": "awarded",
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "29",
+            "withValue": "29"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      }
+    ],
+    "recordSeries": [
+      {
+        "grain": "contract",
+        "measure": "recordCount",
+        "bucket": "month",
+        "points": [
+          {
+            "bucket": "2016-07",
+            "value": "1"
+          },
+          {
+            "bucket": "2016-08",
+            "value": "1"
+          },
+          {
+            "bucket": "2016-12",
+            "value": "1"
+          },
+          {
+            "bucket": "2017-06",
+            "value": "1"
+          },
+          {
+            "bucket": "2017-07",
+            "value": "1"
+          },
+          {
+            "bucket": "2017-08",
+            "value": "1"
+          },
+          {
+            "bucket": "2018-02",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-01",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-09",
+            "value": "2"
+          },
+          {
+            "bucket": "2019-10",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-12",
+            "value": "1"
+          },
+          {
+            "bucket": "2020-03",
+            "value": "1"
+          },
+          {
+            "bucket": "2020-06",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-01",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-02",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-04",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-07",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-08",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-09",
+            "value": "4"
+          },
+          {
+            "bucket": "2021-10",
+            "value": "2"
+          },
+          {
+            "bucket": "2021-12",
+            "value": "2"
+          },
+          {
+            "bucket": "2022-04",
+            "value": "1"
+          },
+          {
+            "bucket": "2022-05",
+            "value": "1"
+          },
+          {
+            "bucket": "2022-06",
+            "value": "1"
+          },
+          {
+            "bucket": "2022-10",
+            "value": "3"
+          },
+          {
+            "bucket": "2023-08",
+            "value": "5"
+          },
+          {
+            "bucket": "2023-09",
+            "value": "2"
+          },
+          {
+            "bucket": "2023-10",
+            "value": "3"
+          },
+          {
+            "bucket": "2023-11",
+            "value": "3"
+          },
+          {
+            "bucket": "2023-12",
+            "value": "2"
+          },
+          {
+            "bucket": "2024-03",
+            "value": "1"
+          },
+          {
+            "bucket": "2024-04",
+            "value": "2"
+          },
+          {
+            "bucket": "2024-08",
+            "value": "1"
+          },
+          {
+            "bucket": "2024-11",
+            "value": "1"
+          },
+          {
+            "bucket": "2024-12",
+            "value": "1"
+          },
+          {
+            "bucket": "2025-05",
+            "value": "1"
+          },
+          {
+            "bucket": "2025-09",
+            "value": "1"
+          }
+        ],
+        "meta": {
+          "answerability": "degraded",
+          "reason": "TIME_COVERAGE_DEGRADED",
+          "policyKey": "contract.recordCount",
+          "grain": "contract",
+          "valueBasis": null,
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "62",
+            "withValue": "24"
+          },
+          "undatedInScope": {
+            "count": "6",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [
+            "time answers are degraded for grain 'contract': coverage 93.8% of records / 88.2% of awarded money (floor 50.0% of records) — interpret with the undated/unknown context",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "measure": "recordCount",
+        "bucket": "month",
+        "points": [
+          {
+            "bucket": "2016-12",
+            "value": "1"
+          },
+          {
+            "bucket": "2017-06",
+            "value": "1"
+          },
+          {
+            "bucket": "2017-09",
+            "value": "1"
+          },
+          {
+            "bucket": "2018-06",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-03",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-04",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-08",
+            "value": "1"
+          },
+          {
+            "bucket": "2019-11",
+            "value": "2"
+          },
+          {
+            "bucket": "2020-12",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-02",
+            "value": "1"
+          },
+          {
+            "bucket": "2021-10",
+            "value": "2"
+          },
+          {
+            "bucket": "2021-12",
+            "value": "6"
+          },
+          {
+            "bucket": "2022-06",
+            "value": "1"
+          },
+          {
+            "bucket": "2022-09",
+            "value": "1"
+          },
+          {
+            "bucket": "2023-05",
+            "value": "1"
+          },
+          {
+            "bucket": "2023-06",
+            "value": "2"
+          },
+          {
+            "bucket": "2023-10",
+            "value": "1"
+          },
+          {
+            "bucket": "2024-03",
+            "value": "1"
+          },
+          {
+            "bucket": "2024-05",
+            "value": "1"
+          },
+          {
+            "bucket": "2024-08",
+            "value": "1"
+          },
+          {
+            "bucket": "2025-04",
+            "value": "1"
+          }
+        ],
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.recordCount",
+          "grain": "direct_acquisition",
+          "valueBasis": null,
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "29",
+            "withValue": "29"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      }
+    ],
+    "valueSeries": [
+      {
+        "grain": "contract",
+        "measure": "valueAwardedSum",
+        "bucket": "month",
+        "points": [
+          {
+            "bucket": "2016-07",
+            "value": "867504.30"
+          },
+          {
+            "bucket": "2016-08",
+            "value": "2913018.01"
+          },
+          {
+            "bucket": "2016-12",
+            "value": "947420.16"
+          },
+          {
+            "bucket": "2017-06",
+            "value": "855106.83"
+          },
+          {
+            "bucket": "2017-07",
+            "value": "205657.77"
+          },
+          {
+            "bucket": "2017-08",
+            "value": "3183274.32"
+          },
+          {
+            "bucket": "2018-02",
+            "value": "2089145.58"
+          },
+          {
+            "bucket": "2019-01",
+            "value": "6718086.66"
+          },
+          {
+            "bucket": "2019-09",
+            "value": "15490406.97"
+          },
+          {
+            "bucket": "2019-10",
+            "value": "1823754.44"
+          },
+          {
+            "bucket": "2019-12",
+            "value": "4733334.22"
+          },
+          {
+            "bucket": "2020-03",
+            "value": null
+          },
+          {
+            "bucket": "2020-06",
+            "value": null
+          },
+          {
+            "bucket": "2021-01",
+            "value": null
+          },
+          {
+            "bucket": "2021-02",
+            "value": null
+          },
+          {
+            "bucket": "2021-04",
+            "value": "19875039.06"
+          },
+          {
+            "bucket": "2021-07",
+            "value": "1067069.00"
+          },
+          {
+            "bucket": "2021-08",
+            "value": null
+          },
+          {
+            "bucket": "2021-09",
+            "value": null
+          },
+          {
+            "bucket": "2021-10",
+            "value": "21177745.08"
+          },
+          {
+            "bucket": "2021-12",
+            "value": null
+          },
+          {
+            "bucket": "2022-04",
+            "value": "492056.00"
+          },
+          {
+            "bucket": "2022-05",
+            "value": null
+          },
+          {
+            "bucket": "2022-06",
+            "value": null
+          },
+          {
+            "bucket": "2022-10",
+            "value": null
+          },
+          {
+            "bucket": "2023-08",
+            "value": null
+          },
+          {
+            "bucket": "2023-09",
+            "value": null
+          },
+          {
+            "bucket": "2023-10",
+            "value": "12538982.00"
+          },
+          {
+            "bucket": "2023-11",
+            "value": "13596909.00"
+          },
+          {
+            "bucket": "2023-12",
+            "value": "21125575.14"
+          },
+          {
+            "bucket": "2024-03",
+            "value": "5716001.65"
+          },
+          {
+            "bucket": "2024-04",
+            "value": null
+          },
+          {
+            "bucket": "2024-08",
+            "value": null
+          },
+          {
+            "bucket": "2024-11",
+            "value": "1974601.00"
+          },
+          {
+            "bucket": "2024-12",
+            "value": "3312419.00"
+          },
+          {
+            "bucket": "2025-05",
+            "value": null
+          },
+          {
+            "bucket": "2025-09",
+            "value": "16829837.00"
+          }
+        ],
+        "meta": {
+          "answerability": "degraded",
+          "reason": "TIME_COVERAGE_DEGRADED",
+          "policyKey": "contract.valueAwardedSum",
+          "grain": "contract",
+          "valueBasis": "awarded",
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "62",
+            "withValue": "24"
+          },
+          "undatedInScope": {
+            "count": "6",
+            "valueRon": null
+          },
+          "provisional": true,
+          "caveats": [
+            "time answers are degraded for grain 'contract': coverage 93.8% of records / 88.2% of awarded money (floor 50.0% of records) — interpret with the undated/unknown context",
+            "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+            "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "measure": "valueAwardedSum",
+        "bucket": "month",
+        "points": [
+          {
+            "bucket": "2016-12",
+            "value": "55107.88"
+          },
+          {
+            "bucket": "2017-06",
+            "value": "221104.65"
+          },
+          {
+            "bucket": "2017-09",
+            "value": "4238.25"
+          },
+          {
+            "bucket": "2018-06",
+            "value": "11320.00"
+          },
+          {
+            "bucket": "2019-03",
+            "value": "3213.80"
+          },
+          {
+            "bucket": "2019-04",
+            "value": "425375.69"
+          },
+          {
+            "bucket": "2019-08",
+            "value": "80472.60"
+          },
+          {
+            "bucket": "2019-11",
+            "value": "85754.17"
+          },
+          {
+            "bucket": "2020-12",
+            "value": "9151.55"
+          },
+          {
+            "bucket": "2021-02",
+            "value": "1000.00"
+          },
+          {
+            "bucket": "2021-10",
+            "value": "8095.50"
+          },
+          {
+            "bucket": "2021-12",
+            "value": "156238.37"
+          },
+          {
+            "bucket": "2022-06",
+            "value": "139771.02"
+          },
+          {
+            "bucket": "2022-09",
+            "value": "5248.74"
+          },
+          {
+            "bucket": "2023-05",
+            "value": "178000.07"
+          },
+          {
+            "bucket": "2023-06",
+            "value": "555175.22"
+          },
+          {
+            "bucket": "2023-10",
+            "value": "32700.00"
+          },
+          {
+            "bucket": "2024-03",
+            "value": "202521.01"
+          },
+          {
+            "bucket": "2024-05",
+            "value": "451292.25"
+          },
+          {
+            "bucket": "2024-08",
+            "value": "485294.41"
+          },
+          {
+            "bucket": "2025-04",
+            "value": "262349.42"
+          }
+        ],
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.valueAwardedSum",
+          "grain": "direct_acquisition",
+          "valueBasis": "awarded",
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "29",
+            "withValue": "29"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [],
+          "canonicalScope": "supplierCui=23617561"
+        }
+      }
+    ]
+  }
+}

@@ -208,13 +208,26 @@ export function useProcurementCpvCategory(
   })
 }
 
+/**
+ * Options rather than an inlined query so the company profile's loader can
+ * start the *same* cache entry the page reads, alongside the profile.
+ */
+export function procurementSupplierSliceQueryOptions(
+  cui: string,
+  scope?: ProcurementSliceScope,
+) {
+  return queryOptions({
+    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui, scope ?? null] as const,
+    queryFn: () => fetchProcurementSupplierSlice(cui, scope),
+  })
+}
+
 export function useProcurementSupplierSlice(
   cui: string,
   scope?: ProcurementSliceScope,
 ) {
   return useQuery({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'supplier-slice', cui, scope ?? null],
-    queryFn: () => fetchProcurementSupplierSlice(cui, scope),
+    ...procurementSupplierSliceQueryOptions(cui, scope),
     enabled: Boolean(cui),
   })
 }

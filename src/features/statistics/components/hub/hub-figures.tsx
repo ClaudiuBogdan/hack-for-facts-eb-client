@@ -27,8 +27,15 @@ export type HubFact = {
   readonly link: (label: ReactNode, className: string) => ReactNode
 }
 
+/** A band of fewer than four figures spreads them over the width rather than leaving cells empty. */
+const FIGURE_COLUMNS: Readonly<Record<number, string>> = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-2',
+  3: 'grid-cols-2 lg:grid-cols-3',
+}
+
 /**
- * Four figures, a description list with the value on top. Counts up on
+ * Up to four figures, a description list with the value on top. Counts up on
  * arrival. Each cell is `div > dt + dd` — the only content the `dl` model
  * allows — with the term as the link, so the pairing survives assistive
  * technology and the whole cell still answers hover.
@@ -43,7 +50,7 @@ export function HubFiguresBand({
   readonly className?: string
 }) {
   return (
-    <dl className={cn('grid grid-cols-2 lg:grid-cols-4', className)}>
+    <dl className={cn('grid', FIGURE_COLUMNS[facts.length] ?? 'grid-cols-2 lg:grid-cols-4', className)}>
       {facts.map((fact, index) => (
         <div
           key={fact.key}
@@ -60,7 +67,7 @@ export function HubFiguresBand({
               <MonoLabel className="block leading-relaxed text-foreground">{fact.label}</MonoLabel>,
               'after:absolute after:inset-0 after:content-[""] focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring',
             )}
-            <MonoLabel className="mt-auto block pt-3 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel>
+            {fact.note ? <MonoLabel className="mt-auto block pt-3 leading-relaxed text-muted-foreground">{fact.note}</MonoLabel> : null}
           </dt>
           <dd className="order-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl">
             <CountUpValue value={fact.value} digits={fact.digits} locale={locale} />

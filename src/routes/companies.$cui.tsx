@@ -32,6 +32,17 @@ export const Route = createFileRoute('/companies/$cui')({
       void context.queryClient.prefetchQuery(
         privateCompanyProfileQueryOptions(cui),
       )
+      // The SEAP names behind the public money, started beside the profile
+      // rather than after the page mounts. Imported here, not at the top:
+      // this file is in every route's entry chunk, and the procurement reads
+      // belong to the page's.
+      void import('@/features/procurement/hooks/use-procurement-data')
+        .then(({ procurementSupplierSliceQueryOptions }) =>
+          context.queryClient.prefetchQuery(
+            procurementSupplierSliceQueryOptions(cui),
+          ),
+        )
+        .catch(() => undefined)
       return { cui } satisfies PrivateCompanyRouteLoaderData
     }
 

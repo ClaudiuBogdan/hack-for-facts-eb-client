@@ -39,16 +39,20 @@ type LitigationSliceSectionProps = {
   readonly cui: string
   readonly page: number
   readonly onPageChange: (page: number) => void
+  /** False where the host page already heads the section („Litigii") itself. */
+  readonly showTitle?: boolean
 }
 
-const PAGE_SIZE = 10
+/** The page size the slice reads with; a host that checks for litigation first reads the same page, from the same cache entry. */
+export const LITIGATION_PAGE_SIZE = 10
 
 export function LitigationSliceSection({
   cui,
   page,
   onPageChange,
+  showTitle = true,
 }: LitigationSliceSectionProps) {
-  const query = useCompanyLitigation({ cui, page, pageSize: PAGE_SIZE })
+  const query = useCompanyLitigation({ cui, page, pageSize: LITIGATION_PAGE_SIZE })
   const outcome = getJusticeQueryOutcome<CompanyLitigationResult>(query.data)
 
   if (query.isLoading && !outcome) {
@@ -87,6 +91,7 @@ export function LitigationSliceSection({
       result={outcome.data}
       page={page}
       onPageChange={onPageChange}
+      showTitle={showTitle}
     />
   )
 }
@@ -95,12 +100,14 @@ type LitigationSliceContentProps = {
   readonly result: CompanyLitigationResult
   readonly page: number
   readonly onPageChange: (page: number) => void
+  readonly showTitle: boolean
 }
 
 function LitigationSliceContent({
   result,
   page,
   onPageChange,
+  showTitle,
 }: LitigationSliceContentProps) {
   const isGated = result.laneAvailability.companyCandidates === 'gated'
   const total = result.pagination.total ?? 0
@@ -110,9 +117,11 @@ function LitigationSliceContent({
       <div className="space-y-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">
-              <Trans>Litigii</Trans>
-            </h2>
+            {showTitle ? (
+              <h2 className="text-xl font-semibold text-foreground">
+                <Trans>Litigii</Trans>
+              </h2>
+            ) : null}
             <p className="mt-1 text-sm text-muted-foreground">
               {isGated ? (
                 <Trans>Corelarea dintre CUI și dosare este în verificare.</Trans>

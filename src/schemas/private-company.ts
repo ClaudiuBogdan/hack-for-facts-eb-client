@@ -201,22 +201,34 @@ export type PrivateCompanyMoneyPayer = z.infer<
   typeof privateCompanyMoneyPayerSchema
 >
 
-export const privateCompanyViewTabSchema = z.enum([
-  'summary',
-  'activity',
-  'achizitii',
-  'governance',
-  'financials',
-  'location',
-  'litigii',
-])
+/**
+ * What the business band's chart shows: `toate`, turnover, net result and
+ * people together (the default); the others each alone, in detail.
+ */
+export const COMPANY_FINANCIAL_MEASURES = ['toate', 'cifra-de-afaceri', 'profit', 'salariati'] as const
+export type CompanyFinancialMeasure = (typeof COMPANY_FINANCIAL_MEASURES)[number]
 
-export type PrivateCompanyViewTab = z.infer<typeof privateCompanyViewTabSchema>
+/** Which SEAP records say who pays and what for: contracts or direct purchases. */
+export const COMPANY_PAYMENT_GRAINS = ['contracte', 'achizitii-directe'] as const
+export type CompanyPaymentGrain = (typeof COMPANY_PAYMENT_GRAINS)[number]
 
-export const privateCompanySearchSchema = z.object({
-  tab: privateCompanyViewTabSchema.optional().catch('summary'),
-  litPage: z.coerce.number().int().min(1).optional().catch(1),
-})
+/**
+ * The profile's choices, each in the URL so a view can be shared. A value the
+ * page does not know is dropped rather than failing the route, so an old link
+ * (`?tab=financials`) still opens the page.
+ *
+ * - `masura`: the business chart's measure (unset: `toate`);
+ * - `plati`: contracts or direct purchases (unset: whichever the company has,
+ *   contracts first);
+ * - `litPage`: the litigation list's page.
+ */
+export const privateCompanySearchSchema = z
+  .object({
+    masura: z.enum(COMPANY_FINANCIAL_MEASURES).optional().catch(undefined),
+    plati: z.enum(COMPANY_PAYMENT_GRAINS).optional().catch(undefined),
+    litPage: z.coerce.number().int().min(1).optional().catch(undefined),
+  })
+  .catch({})
 
 export type PrivateCompanySearchState = z.infer<
   typeof privateCompanySearchSchema

@@ -1,0 +1,466 @@
+{
+  "data": {
+    "procurementStats": {
+      "blocks": [
+        {
+          "grain": "contract",
+          "recordCount": "0",
+          "withValueCount": "0",
+          "withEstimatedCount": "0",
+          "valueAwardedSum": null,
+          "valueEstimatedSum": null,
+          "valueCeilingSum": null,
+          "valueModAdjustedSum": null,
+          "valueAwardedMatchedSum": null,
+          "avgValueAwarded": null,
+          "minMonth": null,
+          "maxMonth": null,
+          "valueWithheldAssociationSum": null,
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "degraded",
+              "reason": "SPEND_SERVED_DISCLOSED",
+              "caveats": [
+                "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend"
+              ]
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained",
+              "reason": "MISSING_QUALITY_VERDICT",
+              "caveats": [
+                "no coverage verdict for estimated value on grain 'contract' — money abstains (never served unvetted)"
+              ]
+            },
+            {
+              "measure": "valueModAdjustedSum",
+              "answerability": "abstained",
+              "reason": "GENERATION_LACKS_CAPABILITY",
+              "caveats": [
+                "mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)"
+              ]
+            },
+            {
+              "measure": "valueAwardedMatchedSum",
+              "answerability": "abstained",
+              "reason": "GENERATION_LACKS_CAPABILITY",
+              "caveats": [
+                "mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)"
+              ]
+            }
+          ],
+          "meta": {
+            "answerability": "degraded",
+            "reason": "SPEND_SERVED_DISCLOSED",
+            "policyKey": "contract.valueAwardedSum",
+            "grain": "contract",
+            "valueBasis": "awarded",
+            "dateBasis": "contract_date",
+            "population": "canonical-only",
+            "buildId": "8",
+            "counts": {
+              "rows": "0",
+              "withValue": "0"
+            },
+            "undatedInScope": {
+              "count": "0",
+              "valueRon": null
+            },
+            "provisional": true,
+            "caveats": [
+              "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+              "no awarded values observed in scope — the sum is null (unobserved), not zero",
+              "no coverage verdict for estimated value on grain 'contract' — money abstains (never served unvetted)",
+              "mod-adjusted money exists only for the attributed (buyer-side) population — supplier-scoped reads abstain on this basis (per-supplier adjustment splits are not published)",
+              "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+              "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+            ],
+            "canonicalScope": "supplierCui=47387800"
+          }
+        },
+        {
+          "grain": "direct_acquisition",
+          "recordCount": "0",
+          "withValueCount": "0",
+          "withEstimatedCount": "0",
+          "valueAwardedSum": null,
+          "valueEstimatedSum": null,
+          "valueCeilingSum": null,
+          "valueModAdjustedSum": null,
+          "valueAwardedMatchedSum": null,
+          "avgValueAwarded": null,
+          "minMonth": null,
+          "maxMonth": null,
+          "valueWithheldAssociationSum": null,
+          "moneyVerdicts": [
+            {
+              "measure": "valueAwardedSum",
+              "answerability": "served",
+              "reason": null,
+              "caveats": []
+            },
+            {
+              "measure": "valueEstimatedSum",
+              "answerability": "abstained",
+              "reason": "SPEND_COVERAGE_BELOW_GATE",
+              "caveats": [
+                "estimated value answers abstain for grain 'direct_acquisition': coverage 58.6% is below the disclosure floor 75.0% (money is omitted, not zeroed)"
+              ]
+            }
+          ],
+          "meta": {
+            "answerability": "served",
+            "reason": null,
+            "policyKey": "direct_acquisition.valueAwardedSum",
+            "grain": "direct_acquisition",
+            "valueBasis": "awarded",
+            "dateBasis": "coalesce(finalization_date, publication_date)",
+            "population": "canonical-only",
+            "buildId": "8",
+            "counts": {
+              "rows": "0",
+              "withValue": "0"
+            },
+            "undatedInScope": {
+              "count": "0",
+              "valueRon": null
+            },
+            "provisional": false,
+            "caveats": [
+              "no awarded values observed in scope — the sum is null (unobserved), not zero",
+              "estimated value answers abstain for grain 'direct_acquisition': coverage 58.6% is below the disclosure floor 75.0% (money is omitted, not zeroed)"
+            ],
+            "canonicalScope": "supplierCui=47387800"
+          }
+        }
+      ]
+    },
+    "authorities": [
+      {
+        "grain": "contract",
+        "dimension": "authority",
+        "rankedBy": "count",
+        "buckets": [
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "degraded",
+          "reason": "SPEND_SERVED_DISCLOSED",
+          "policyKey": "contract.recordCount",
+          "grain": "contract",
+          "valueBasis": null,
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [
+            "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+            "ranked by record count: no record in this scope carries an accepted value on this breakdown’s money basis, so a value ranking would order an all-zero tie",
+            "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "dimension": "authority",
+        "rankedBy": "count",
+        "buckets": [
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.recordCount",
+          "grain": "direct_acquisition",
+          "valueBasis": null,
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [
+            "ranked by record count: no record in this scope carries an accepted value on this breakdown’s money basis, so a value ranking would order an all-zero tie"
+          ],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      }
+    ],
+    "categories": [
+      {
+        "grain": "contract",
+        "dimension": "cpvDivision",
+        "rankedBy": "count",
+        "buckets": [
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "degraded",
+          "reason": "SPEND_SERVED_DISCLOSED",
+          "policyKey": "contract.recordCount",
+          "grain": "contract",
+          "valueBasis": null,
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [
+            "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+            "ranked by record count: no record in this scope carries an accepted value on this breakdown’s money basis, so a value ranking would order an all-zero tie",
+            "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "dimension": "cpvDivision",
+        "rankedBy": "count",
+        "buckets": [
+          {
+            "key": null,
+            "kind": "other",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          },
+          {
+            "key": null,
+            "kind": "unknown",
+            "recordCount": "0",
+            "withValueCount": "0",
+            "valueAwardedSum": null,
+            "valueSum": null,
+            "shareOfScope": null
+          }
+        ],
+        "valueWithheldAssociationSum": null,
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.recordCount",
+          "grain": "direct_acquisition",
+          "valueBasis": null,
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [
+            "ranked by record count: no record in this scope carries an accepted value on this breakdown’s money basis, so a value ranking would order an all-zero tie"
+          ],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      }
+    ],
+    "recordSeries": [
+      {
+        "grain": "contract",
+        "measure": "recordCount",
+        "bucket": "month",
+        "points": [],
+        "meta": {
+          "answerability": "degraded",
+          "reason": "TIME_COVERAGE_DEGRADED",
+          "policyKey": "contract.recordCount",
+          "grain": "contract",
+          "valueBasis": null,
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [
+            "time answers are degraded for grain 'contract': coverage 93.8% of records / 88.2% of awarded money (floor 50.0% of records) — interpret with the undated/unknown context",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "measure": "recordCount",
+        "bucket": "month",
+        "points": [],
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.recordCount",
+          "grain": "direct_acquisition",
+          "valueBasis": null,
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      }
+    ],
+    "valueSeries": [
+      {
+        "grain": "contract",
+        "measure": "valueAwardedSum",
+        "bucket": "month",
+        "points": [],
+        "meta": {
+          "answerability": "degraded",
+          "reason": "TIME_COVERAGE_DEGRADED",
+          "policyKey": "contract.valueAwardedSum",
+          "grain": "contract",
+          "valueBasis": "awarded",
+          "dateBasis": "contract_date",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": true,
+          "caveats": [
+            "time answers are degraded for grain 'contract': coverage 93.8% of records / 88.2% of awarded money (floor 50.0% of records) — interpret with the undated/unknown context",
+            "spend answers are served with DISCLOSED partial coverage for grain 'contract': accepted-value coverage 39.7% sits between the disclosure floor and the full-allow gate — totals understate the true spend",
+            "per-supplier money for this supplier excludes any multi-member consortium awards it participates in — the internal split is not published and consortium mass is never attributed to individual members, so no withheld amount is quoted per entity (it would depend on the technical carrier election)",
+            "temporary framework-role compatibility mode: contract analytics include standalone awards, framework ceilings and call-offs from the legacy build-8 population; these are legacy totals, not purchases-only spending, until the framework-role data build is published"
+          ],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      },
+      {
+        "grain": "direct_acquisition",
+        "measure": "valueAwardedSum",
+        "bucket": "month",
+        "points": [],
+        "meta": {
+          "answerability": "served",
+          "reason": null,
+          "policyKey": "direct_acquisition.valueAwardedSum",
+          "grain": "direct_acquisition",
+          "valueBasis": "awarded",
+          "dateBasis": "coalesce(finalization_date, publication_date)",
+          "population": "canonical-only",
+          "buildId": "8",
+          "counts": {
+            "rows": "0",
+            "withValue": "0"
+          },
+          "undatedInScope": {
+            "count": "0",
+            "valueRon": null
+          },
+          "provisional": false,
+          "caveats": [],
+          "canonicalScope": "supplierCui=47387800"
+        }
+      }
+    ]
+  }
+}

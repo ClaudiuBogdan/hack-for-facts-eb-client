@@ -35,16 +35,19 @@ test.describe('Companies — live profile', () => {
     await expect(page.getByText(new RegExp(DEDEMAN_CUI)).first()).toBeVisible()
   })
 
-  test('financials tab shows real ANAF bilant years', async ({ page }) => {
-    const ready = await gotoProfile(page, `${DEDEMAN_CUI}?tab=financials`)
+  test('the business band shows a real ANAF balance sheet', async ({ page }) => {
+    const ready = await gotoProfile(page, DEDEMAN_CUI)
     test.skip(!ready, 'Live company profile unavailable (API/tunnel down)')
 
-    // Scope to the (visible) financials tab panel. 2024 is the latest loaded
-    // fiscal year for DEDEMAN in prod.
-    const financialsPanel = page.locator('#company-tabpanel-financials')
-    await expect(financialsPanel.getByText(/2024/).first()).toBeVisible({
+    // The newest statement's balance sheet heads the band's table; DEDEMAN
+    // files every year, so it is a recent one.
+    const business = page.locator('#afacerea')
+    await expect(business.getByText(/^Bilanț, 20(2[4-9]|[3-9]\d)$/).first()).toBeVisible({
       timeout: 15000,
     })
+    await expect(
+      business.getByRole('radiogroup', { name: 'Graficul arată' }),
+    ).toBeVisible()
   })
 })
 

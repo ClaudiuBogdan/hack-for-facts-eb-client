@@ -150,10 +150,42 @@ describe('/companies/$cui loader', () => {
       params: { cui: 'RO2816464' },
     })
 
-    expect(queryClient.prefetchQuery).toHaveBeenCalledTimes(1)
+    // The profile first, synchronously; the procurement reads are imported on demand.
     expect(queryClient.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(
       privateCompanyProfileQueryOptions('2816464').queryKey,
     )
+  })
+
+  it('starts the SEAP read beside the profile, under the key the page reads it by', async () => {
+    const route = await importRoute()
+    const queryClient = createQueryClient()
+    const { procurementSupplierSliceQueryOptions } = await import(
+      '@/features/procurement/hooks/use-procurement-data'
+    )
+
+    await route.loader({
+      context: { queryClient },
+      params: { cui: 'RO2816464' },
+    })
+
+    await vi.waitFor(() =>
+      expect(queryClient.prefetchQuery).toHaveBeenCalledTimes(2),
+    )
+    expect(queryClient.prefetchQuery.mock.calls[1]?.[0].queryKey).toEqual(
+      procurementSupplierSliceQueryOptions('2816464').queryKey,
+    )
+  })
+
+  it('leaves the SEAP read to the page while server-rendering', async () => {
+    fetchPrivateCompanyProfileMock.mockResolvedValue(PROFILE)
+    const route = await importRoute()
+    const queryClient = createQueryClient()
+
+    await asServerRender(() =>
+      route.loader({ context: { queryClient }, params: { cui: '2816464' } }),
+    )
+
+    expect(queryClient.prefetchQuery).not.toHaveBeenCalled()
   })
 
   it('falls back to a CUI placeholder head when the client loader returned no profile', async () => {

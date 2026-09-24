@@ -1,0 +1,12 @@
+{
+  "data": {
+    "procurementSupplierRecords": {
+      "total": null,
+      "edges": [],
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": null
+      }
+    }
+  }
+}

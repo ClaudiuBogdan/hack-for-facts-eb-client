@@ -1,0 +1,231 @@
+{
+  "data": {
+    "procurementCpvDivisions": [
+      {
+        "divisionCode": "03",
+        "labelEn": "Agricultural, farming, fishing, forestry and related products",
+        "labelRo": "Produse agricole, de fermă, de pescuit, de silvicultură şi produse conexe"
+      },
+      {
+        "divisionCode": "09",
+        "labelEn": "Petroleum products, fuel, electricity and other energy sources",
+        "labelRo": "Produse petroliere, combustibil, electricitate şi alte surse de energie"
+      },
+      {
+        "divisionCode": "14",
+        "labelEn": "Mining, basic metals and related products",
+        "labelRo": "Produse de minerit, metale de bază şi produse conexe"
+      },
+      {
+        "divisionCode": "15",
+        "labelEn": "Food, beverages, tobacco and related products",
+        "labelRo": "Alimente, băuturi, tutun şi produse conexe"
+      },
+      {
+        "divisionCode": "16",
+        "labelEn": "Agricultural machinery",
+        "labelRo": "Utilaje agricole"
+      },
+      {
+        "divisionCode": "18",
+        "labelEn": "Clothing, footwear, luggage and accessories",
+        "labelRo": "Îmbrăcăminte, încălţăminte, articole de voiaj şi accesorii"
+      },
+      {
+        "divisionCode": "19",
+        "labelEn": "Leather and textile fabrics, plastic and rubber materials",
+        "labelRo": "Produse din piele, materiale textile, din plastic şi din cauciuc"
+      },
+      {
+        "divisionCode": "22",
+        "labelEn": "Printed matter and related products",
+        "labelRo": "Imprimate şi produse conexe"
+      },
+      {
+        "divisionCode": "24",
+        "labelEn": "Chemical products",
+        "labelRo": "Produse chimice"
+      },
+      {
+        "divisionCode": "30",
+        "labelEn": "Office and computing machinery, equipment and supplies",
+        "labelRo": "Echipament informatic şi accesorii de birou, cu excepţia mobilierului şi a pachetelor software"
+      },
+      {
+        "divisionCode": "31",
+        "labelEn": "Electrical machinery, apparatus, equipment and consumables",
+        "labelRo": "Maşini, aparate, echipamente şi consumabile electrice; iluminat"
+      },
+      {
+        "divisionCode": "32",
+        "labelEn": "Radio, television, communication and telecommunications equipment",
+        "labelRo": "Echipament de radio, televiziune, comunicaţii, telecomunicaţii şi articole conexe"
+      },
+      {
+        "divisionCode": "33",
+        "labelEn": "Medical equipments, pharmaceuticals and personal care products",
+        "labelRo": "Echipamente medicale, produse farmaceutice şi produse de îngrijire personală"
+      },
+      {
+        "divisionCode": "34",
+        "labelEn": "Transport equipment and auxiliary products to transportation",
+        "labelRo": "Echipament de transport şi produse auxiliare pentru transport"
+      },
+      {
+        "divisionCode": "35",
+        "labelEn": "Security, fire-fighting, police and defence equipment",
+        "labelRo": "Echipament de securitate, de luptă împotriva incendiilor, de poliţie şi de apărare"
+      },
+      {
+        "divisionCode": "37",
+        "labelEn": "Musical instruments, sport goods, games and toys",
+        "labelRo": "Instrumente muzicale, articole sportive, jocuri, jucării, obiecte de artizanat, obiecte de artă şi accesorii"
+      },
+      {
+        "divisionCode": "38",
+        "labelEn": "Laboratory, optical and precision equipments",
+        "labelRo": "Echipamente de laborator, optice şi de precizie (cu excepţia ochelarilor)"
+      },
+      {
+        "divisionCode": "39",
+        "labelEn": "Furniture, furnishings, domestic appliances and cleaning products",
+        "labelRo": "Mobilă (inclusiv mobilă de birou), accesorii de mobilier, aparate de uz casnic (exclusiv dispozitive de iluminat) şi produse de curăţat"
+      },
+      {
+        "divisionCode": "41",
+        "labelEn": "Collected and purified water",
+        "labelRo": "Apă captată şi epurată"
+      },
+      {
+        "divisionCode": "42",
+        "labelEn": "Industrial machinery",
+        "labelRo": "Echipamente industriale"
+      },
+      {
+        "divisionCode": "43",
+        "labelEn": "Mining, quarrying, construction equipment and machinery",
+        "labelRo": "Utilaje pentru minerit, cariere de piatră şi construcţii"
+      },
+      {
+        "divisionCode": "44",
+        "labelEn": "Construction structures and materials; auxiliary products",
+        "labelRo": "Structuri şi materiale de construcţii; produse auxiliare pentru construcţii (cu excepţia aparatelor electrice)"
+      },
+      {
+        "divisionCode": "45",
+        "labelEn": "Construction work",
+        "labelRo": "Lucrări de construcţii"
+      },
+      {
+        "divisionCode": "48",
+        "labelEn": "Software package and information systems",
+        "labelRo": "Pachete software şi sisteme informatice"
+      },
+      {
+        "divisionCode": "50",
+        "labelEn": "Repair and maintenance services",
+        "labelRo": "Servicii de reparare şi întreţinere"
+      },
+      {
+        "divisionCode": "51",
+        "labelEn": "Installation services",
+        "labelRo": "Servicii de instalare (cu excepţia programelor software)"
+      },
+      {
+        "divisionCode": "55",
+        "labelEn": "Hotel, restaurant and retail trade services",
+        "labelRo": "Servicii hoteliere, de restaurant şi de vânzare cu amănuntul"
+      },
+      {
+        "divisionCode": "60",
+        "labelEn": "Transport services",
+        "labelRo": "Servicii de transport (cu excepţia transportului de deşeuri)"
+      },
+      {
+        "divisionCode": "63",
+        "labelEn": "Supporting and auxiliary transport services; travel agencies",
+        "labelRo": "Servicii de transport anexe şi conexe; servicii de agenţii de turism"
+      },
+      {
+        "divisionCode": "64",
+        "labelEn": "Postal and telecommunications services",
+        "labelRo": "Servicii poştale şi de telecomunicaţii"
+      },
+      {
+        "divisionCode": "65",
+        "labelEn": "Public utilities",
+        "labelRo": "Utilităţi publice"
+      },
+      {
+        "divisionCode": "66",
+        "labelEn": "Financial and insurance services",
+        "labelRo": "Servicii financiare şi de asigurare"
+      },
+      {
+        "divisionCode": "70",
+        "labelEn": "Real estate services",
+        "labelRo": "Servicii imobiliare"
+      },
+      {
+        "divisionCode": "71",
+        "labelEn": "Architectural, construction, engineering and inspection services",
+        "labelRo": "Servicii de arhitectură, de construcţii, de inginerie şi de inspecţie"
+      },
+      {
+        "divisionCode": "72",
+        "labelEn": "IT services: consulting, software development, Internet and support",
+        "labelRo": "Servicii IT: consultanţă, dezvoltare de software, internet şi asistenţă"
+      },
+      {
+        "divisionCode": "73",
+        "labelEn": "Research and development services and related consultancy services",
+        "labelRo": "Servicii de cercetare şi de dezvoltare şi servicii conexe de consultanţă"
+      },
+      {
+        "divisionCode": "75",
+        "labelEn": "Administration, defence and social security services",
+        "labelRo": "Servicii de administraţie publică, de apărare şi de asigurări sociale"
+      },
+      {
+        "divisionCode": "76",
+        "labelEn": "Services related to the oil and gas industry",
+        "labelRo": "Servicii privind industria petrolului şi a gazului"
+      },
+      {
+        "divisionCode": "77",
+        "labelEn": "Agricultural, forestry, horticultural, aquacultural services",
+        "labelRo": "Servicii pentru agricultură, silvicultură, horticultură, acvacultură şi apicultură"
+      },
+      {
+        "divisionCode": "79",
+        "labelEn": "Business services: law, marketing, consulting, recruitment, printing",
+        "labelRo": "Servicii pentru întreprinderi: drept, marketing, consultanţă, recrutare, tipărire şi securitate"
+      },
+      {
+        "divisionCode": "80",
+        "labelEn": "Education and training services",
+        "labelRo": "Servicii de învăţământ şi formare profesională"
+      },
+      {
+        "divisionCode": "85",
+        "labelEn": "Health and social work services",
+        "labelRo": "Servicii de sănătate şi servicii de asistenţă socială"
+      },
+      {
+        "divisionCode": "90",
+        "labelEn": "Sewage, refuse, cleaning and environmental services",
+        "labelRo": "Servicii de evacuare a apelor reziduale, de eliminare a deşeurilor, de igienizare şi servicii privind mediul"
+      },
+      {
+        "divisionCode": "92",
+        "labelEn": "Recreational, cultural and sporting services",
+        "labelRo": "Servicii de recreere, culturale şi sportive"
+      },
+      {
+        "divisionCode": "98",
+        "labelEn": "Other community, social and personal services",
+        "labelRo": "Alte servicii comunitare, sociale şi personale"
+      }
+    ]
+  }
+}

@@ -304,3 +304,99 @@ Follow-ups:
   a `registrationYear` filter over the year hint would let „Firme noi" link.
 - The scrapper should record the CAEN revision of ANAF's main activity code,
   so the division mapping above can go.
+
+## The company profile (`/companies/$cui`), promoted 24 September 2026
+
+The tabbed profile (summary, activity, procurement, governance, financials,
+location, litigation) is replaced by one scroll in the hub's language. Three
+layouts were prototyped at `/development/companies/company-page` over five
+real companies frozen from the dev API (OMV Petrom, ABC-CON in insolvency,
+Profi struck off, 66 Jack with a decade of losses, A & B Ideatica with no
+statement):
+
+- **`benzi`, editorial bands — kept.** A compact head (back link by county and
+  sector, name, one computed sentence, status and identifiers) beside one chart
+  of the last five years with a statement; the figures band; one numbered band
+  per question with a pinned bar of section links.
+- `fisa`, a company sheet with a sticky identity rail beside every section in
+  full, and `intrebari`, questions answered in a sentence over four tabs of
+  detail — both dropped when the owner chose the bands and asked for one
+  editorial layout in the hubs' language (commit `f2e88268`).
+
+The owner's steer while choosing: keep the head about the company (no rank
+sentence, nothing hand-written for one company), one combined chart with the
+legend in the band labels and the values on a tooltip instead of a table or
+tabs, the figures band kept, and the company's share of its sector, county and
+country moved to its own band near the end, only when a share reaches 1%.
+
+### Where the code went
+
+| Prototype | Promoted to |
+|---|---|
+| `company-page.data.ts` | `lib/company-profile-model.ts` (profile only) + `lib/company-procurement-read.ts` (SEAP) |
+| sentences in `company-page.parts.tsx` | `lib/company-profile-text.ts` |
+| `company-page.format.ts` | `lib/company-profile-format.ts` |
+| `company-page.charts.tsx` | `components/profile/company-year-charts.tsx` |
+| `company-page.bands.tsx` + parts | `components/profile/company-profile-page.tsx` and one file per band (`company-profile-head`, `-business-`, `-money-`, `-activities-`, `-economy-`, `-litigation-`, `-registry-band`) |
+| `company-page.state.ts` | the route's search schema (`masura`, `plati`, `litPage` in `schemas/private-company.ts`) |
+| `company-page.fixtures.ts` | builders in `lib/company-profile.fixture.ts`; raw GraphQL for the integration spec in `tests/fixtures/companies-profile-flow/` |
+
+The old page's components (`layout/`, `sections/`, `charts/`, the tab files,
+`company-page.css`) and the helpers only they used (`tab-config`,
+`financial-chart-data`, `profile-display`, `company-status-display`) are
+deleted. The figures band is the hubs' `HubFiguresBand`, which now spreads
+fewer than four figures over the width and leaves out an empty note.
+
+### Decisions taken at promotion
+
+1. **The profile renders on the server in full; SEAP names arrive after.**
+   Everything drawn from the profile — head, chart, figures, money totals and
+   per-year chart, activities, economy, registry — is in the server HTML. Who
+   paid, for what, and the newest records come from the procurement supplier
+   slice (five reads, 0.3–0.8 s against the dev API), fetched in the browser
+   with a pending and a failed state of its own; the loader starts it beside
+   the profile on a client navigation, through a dynamic import so the
+   procurement code stays out of the entry chunk. The page waits for it only
+   when the profile has SEAP flows.
+2. **A record's amount is the accepted comparable value** (`describeMoney`),
+   never its raw `valueRon`: a framework agreement or an invalid source value
+   shows „—". The prototype showed the raw value.
+3. **The payers' bars follow what SEAP could rank by.** When too little money
+   is published to rank by it, the list is by number of records, the bars
+   follow the count, and a line says so.
+4. **Litigation is a band only when the justice read answers.** The live
+   litigation API is not connected, so outside mock mode the band never shows;
+   it will when the API lands, paged by `?litPage=`. The justice case page's
+   „back to the company" link now opens `#litigii`.
+5. **Old links still open the page.** `?tab=` and unknown values are dropped by
+   the search schema rather than failing the route; `?masura=` and `?plati=`
+   keep only values the page knows, and a default never enters the URL.
+6. **Numbers follow the page language** (the hub's formatters), unlike the old
+   profile's `ro-RO` pinning. Strings are Romanian source with English in `en`
+   and the source pinned in `ro`.
+7. **Public money is „contracts and payments", never a sum „received" or
+   „paid".** The profile's flows mix awarded values (SEAP contracts and direct
+   purchases) with payments (PNRR, budget execution); the prototype summed
+   them as „încasări" and wrote that institutions „paid" the company. The
+   figure is now „Contracte și plăți publice", the lede sums the *published
+   values* of the records and says that for SEAP the value is the one awarded,
+   not what was paid, and SEAP's populations are „records", not „payments"; a
+   negative amount (a reversal) stays in the sums. The band keeps its title
+   „Ce a primit de la stat" — a company receives contracts too — and „Cine
+   plătește" names the buyers, who pay under them.
+8. **Only the calendar year in progress is a part-year.** The prototype took
+   the SEAP slice's `window.to` for where the source stops, but it is the month
+   of the company's own newest record, so a company that last won a contract
+   in March 2019 read „2019 e un an incomplet". The model now marks the newest
+   money year only when it is the current calendar year, from the profile —
+   so it is in the server HTML — and the slice's months are worded as the
+   company's records, never as SEAP's coverage.
+
+Follow-ups:
+
+- The route head's description is still the old English sentence; a computed
+  one (the head's sentence) needs the profile model in the head.
+- The profile is not publicly cached; the hub's `Vary: Cookie` cache would fit
+  once the SEAP read is the only per-visit request.
+- Street addresses: the API serves an empty `address.display` for every
+  company, so the registry band shows the locality.
