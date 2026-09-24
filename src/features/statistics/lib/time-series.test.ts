@@ -4,6 +4,7 @@ import {
   buildTimeSeries,
   enumeratePeriods,
   hasAnyValue,
+  isolatedPeriods,
   seriesAxis,
 } from './time-series'
 import type { TimeSeriesPoint } from './time-series'
@@ -223,5 +224,47 @@ describe('seriesAxis', () => {
     expect(
       seriesAxis(points([21_002_023, 21_002_024, 21_002_025])).domain,
     ).toEqual([0, 'auto'])
+  })
+})
+
+describe('isolatedPeriods', () => {
+  const at = (entries: readonly [string, number | null][]): TimeSeriesPoint[] =>
+    entries.map(([period, value]) => ({
+      period,
+      value,
+      raw: value === null ? null : String(value),
+      valueStatus: null,
+    }))
+
+  it('names a value between two gaps, which draws no segment', () => {
+    const points = at([
+      ['2017', 1],
+      ['2018', 1],
+      ['2019', null],
+      ['2020', 2],
+      ['2021', null],
+      ['2022', 3],
+      ['2023', 4],
+    ])
+    expect([...isolatedPeriods(points)]).toEqual(['2020'])
+  })
+
+  it('counts the ends of the plot as gaps', () => {
+    const points = at([
+      ['2020', 1],
+      ['2021', null],
+      ['2022', 2],
+    ])
+    expect([...isolatedPeriods(points)]).toEqual(['2020', '2022'])
+    expect([...isolatedPeriods(at([['2024', 5]]))]).toEqual(['2024'])
+  })
+
+  it('names nothing on an unbroken series', () => {
+    const points = at([
+      ['2020', 1],
+      ['2021', 2],
+      ['2022', 3],
+    ])
+    expect(isolatedPeriods(points).size).toBe(0)
   })
 })

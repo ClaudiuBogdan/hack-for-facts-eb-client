@@ -119,6 +119,22 @@ export function hasAnyValue(series: TimeSeries): boolean {
 }
 
 /**
+ * The periods whose value has no plotted neighbour. `connectNulls={false}`
+ * draws a segment only between two values, so an observation between two
+ * gaps is a line of zero length — invisible unless it keeps its marker.
+ */
+export function isolatedPeriods(points: readonly TimeSeriesPoint[]): ReadonlySet<string> {
+  const isolated = new Set<string>()
+  points.forEach((point, index) => {
+    if (point.value === null) return
+    const before = points[index - 1]?.value ?? null
+    const after = points[index + 1]?.value ?? null
+    if (before === null && after === null) isolated.add(point.period)
+  })
+  return isolated
+}
+
+/**
  * Below this, the series reaches far enough toward zero that a zero baseline
  * still shows the shape, and zero is the honest floor. Above it, the series
  * varies by less than half its own magnitude and a zero baseline spends most

@@ -16,9 +16,25 @@ export const statisticsTheme = {
   provenanceChip:
     'inline-flex items-center gap-1 rounded-sm border border-border/70 bg-muted/40 px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground',
 
-  /** The tier-0 hero figure: the one LARGE number per page. */
-  heroValue: 'text-4xl font-semibold tabular-nums tracking-tight',
-  heroUnit: 'ml-1.5 text-lg font-normal text-muted-foreground',
+  /** A label over a state rather than a figure („Ultima valoare" absent). */
+  figureLabel: 'text-sm font-medium text-muted-foreground',
+  /**
+   * The detail band's figures as tinted tiles — the latest value first, then
+   * the facts that give it scale. Tinted, not outlined, the way `note` is: a
+   * bordered box in a bordered band is a card in a card. Four abreast when the
+   * band has the room (a container query: beside the rail the band is
+   * narrower than the viewport says), two by two otherwise.
+   */
+  factGrid: 'grid grid-cols-2 gap-2 @3xl:grid-cols-4',
+  factTile: 'min-w-0 rounded-xl bg-muted/70 px-4 py-3',
+  factLabel:
+    'flex items-center gap-1.5 text-xs font-medium text-muted-foreground',
+  /** The number and, on the latest value, its unit when both fit the line. */
+  factValue:
+    'mt-1 flex flex-wrap items-baseline gap-x-1 text-xl font-semibold leading-tight tracking-tight tabular-nums',
+  factUnit: 'text-sm font-medium tracking-normal text-muted-foreground',
+  factCaption:
+    'mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-1 text-xs tabular-nums text-muted-foreground',
 
   /** Flat bordered band container (single level, never nested). */
   band: 'rounded-lg border border-border/70 bg-card',

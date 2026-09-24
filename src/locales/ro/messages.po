@@ -10003,7 +10003,7 @@ msgstr ""
 msgid "fără date"
 msgstr "fără date"
 
-#: src/features/statistics/components/detail/detail-observations-chart.tsx:504
+#: src/features/statistics/components/detail/detail-observations-chart.tsx:622
 msgid "Fără date"
 msgstr "Fără date"
 
@@ -10066,8 +10066,8 @@ msgstr ""
 msgid "fără nume de persoane"
 msgstr ""
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:88
-#: src/features/statistics/components/detail/detail-tier0-hero.tsx:45
+#: src/features/statistics/components/detail/detail-series-summary.tsx:90
+#: src/features/statistics/components/detail/detail-tier0-hero.tsx:47
 msgid "Fără o valoare recentă pentru selecția curentă."
 msgstr "Fără o valoare recentă pentru selecția curentă."
 
@@ -11274,12 +11274,12 @@ msgstr "Grafice"
 
 #. placeholder {0}: series.points.length
 #. placeholder {1}: marks.count
-#: src/features/statistics/components/detail/detail-observations-chart.tsx:436
+#: src/features/statistics/components/detail/detail-observations-chart.tsx:522
 msgid "Graficul afișează ultimele {0} perioade; minimul și maximul de lângă cifră acoperă toate cele {1} observații ale intervalului. Restrânge intervalul pentru a vedea perioade mai vechi."
 msgstr "Graficul afișează ultimele {0} perioade; minimul și maximul de lângă cifră acoperă toate cele {1} observații ale intervalului. Restrânge intervalul pentru a vedea perioade mai vechi."
 
 #. placeholder {0}: series.points.length
-#: src/features/statistics/components/detail/detail-observations-chart.tsx:443
+#: src/features/statistics/components/detail/detail-observations-chart.tsx:529
 msgid "Graficul afișează ultimele {0} perioade. Restrânge intervalul pentru a vedea perioade mai vechi."
 msgstr "Graficul afișează ultimele {0} perioade. Restrânge intervalul pentru a vedea perioade mai vechi."
 
@@ -11875,8 +11875,7 @@ msgstr "în taxe de consum „invizibile”."
 #~ msgid "În {0} s-au născut {1} și au murit {2}."
 #~ msgstr "În {0} s-au născut {1} și au murit {2}."
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:168
-#: src/features/statistics/components/detail/detail-skeletons.tsx:135
+#: src/features/statistics/components/detail/fact-tile.tsx:110
 msgid "în {period}"
 msgstr "în {period}"
 
@@ -14354,7 +14353,7 @@ msgstr "Mai multe frecvențe corespund acestei perioade. Inspectează observați
 msgid "Mai multe în funcțiune decât înființate"
 msgstr "Mai multe în funcțiune decât înființate"
 
-#: src/features/statistics/components/detail/detail-tier0-hero.tsx:41
+#: src/features/statistics/components/detail/detail-tier0-hero.tsx:43
 #: src/features/statistics/lib/territory-tiles.ts:37
 msgid "Mai multe serii INS corespund selecției. Alege o serie din sursă."
 msgstr "Mai multe serii INS corespund selecției. Alege o serie din sursă."
@@ -14778,13 +14777,13 @@ msgstr "Maxim"
 msgid "Max percentile"
 msgstr "Percentilă maximă"
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:151
-#: src/features/statistics/components/detail/detail-skeletons.tsx:75
+#: src/features/statistics/components/detail/detail-series-summary.tsx:126
+#: src/features/statistics/components/detail/detail-skeletons.tsx:80
 msgid "maxim"
 msgstr "maxim"
 
 #. placeholder {0}: formatMarkValue(marks.peak)
-#: src/features/statistics/components/detail/detail-observations-chart.tsx:374
+#: src/features/statistics/components/detail/detail-observations-chart.tsx:443
 msgid "maxim {0}"
 msgstr "maxim {0}"
 
@@ -14819,13 +14818,13 @@ msgstr "Mediană"
 msgid "Median compare"
 msgstr "Comparare mediană"
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:156
-#: src/features/statistics/components/detail/detail-skeletons.tsx:76
+#: src/features/statistics/components/detail/detail-series-summary.tsx:135
+#: src/features/statistics/components/detail/detail-skeletons.tsx:81
 msgid "medie"
 msgstr "medie"
 
 #. placeholder {0}: formatDerivedMark(stats.mean)
-#: src/features/statistics/components/detail/detail-observations-chart.tsx:333
+#: src/features/statistics/components/detail/detail-observations-chart.tsx:392
 msgid "medie {0}"
 msgstr "medie {0}"
 
@@ -14973,13 +14972,13 @@ msgstr "Percentilă minimă"
 msgid "Minereuri metalifere"
 msgstr "Minereuri metalifere"
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:146
-#: src/features/statistics/components/detail/detail-skeletons.tsx:74
+#: src/features/statistics/components/detail/detail-series-summary.tsx:117
+#: src/features/statistics/components/detail/detail-skeletons.tsx:79
 msgid "minim"
 msgstr "minim"
 
 #. placeholder {0}: formatMarkValue(marks.trough)
-#: src/features/statistics/components/detail/detail-observations-chart.tsx:397
+#: src/features/statistics/components/detail/detail-observations-chart.tsx:467
 msgid "minim {0}"
 msgstr "minim {0}"
 
@@ -17521,8 +17520,8 @@ msgstr ""
 
 #: src/features/statistics/components/detail/detail-series-summary.tsx:159
 #: src/features/statistics/components/detail/detail-skeletons.tsx:77
-msgid "observații"
-msgstr "observații"
+#~ msgid "observații"
+#~ msgstr "observații"
 
 #: src/features/statistics/components/detail/detail-metadata-section.tsx:113
 msgid "Observații INS"
@@ -21740,11 +21739,11 @@ msgstr ""
 msgid "Se încarcă rezultatele"
 msgstr ""
 
-#: src/features/statistics/components/detail/detail-skeletons.tsx:113
+#: src/features/statistics/components/detail/detail-skeletons.tsx:116
 msgid "Se încarcă seria de date"
 msgstr "Se încarcă seria de date"
 
-#: src/features/statistics/components/detail/detail-skeletons.tsx:25
+#: src/features/statistics/components/detail/detail-skeletons.tsx:26
 msgid "Se încarcă setul de date"
 msgstr "Se încarcă setul de date"
 
@@ -23525,8 +23524,7 @@ msgstr ""
 msgid "Stare sistem"
 msgstr "Stare sistem"
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:137
-#: src/features/statistics/components/detail/detail-tier0-hero.tsx:82
+#: src/features/statistics/components/detail/fact-tile.tsx:153
 msgid "stare:"
 msgstr "stare:"
 
@@ -26067,11 +26065,10 @@ msgstr "Ultima perioadă"
 msgid "Ultima ședință"
 msgstr ""
 
-#: src/features/statistics/components/detail/detail-series-summary.tsx:85
-#: src/features/statistics/components/detail/detail-series-summary.tsx:109
-#: src/features/statistics/components/detail/detail-skeletons.tsx:120
-#: src/features/statistics/components/detail/detail-tier0-hero.tsx:37
-#: src/features/statistics/components/detail/detail-tier0-hero.tsx:68
+#: src/features/statistics/components/detail/detail-series-summary.tsx:87
+#: src/features/statistics/components/detail/detail-skeletons.tsx:130
+#: src/features/statistics/components/detail/detail-tier0-hero.tsx:39
+#: src/features/statistics/components/detail/fact-tile.tsx:137
 msgid "Ultima valoare"
 msgstr "Ultima valoare"
 

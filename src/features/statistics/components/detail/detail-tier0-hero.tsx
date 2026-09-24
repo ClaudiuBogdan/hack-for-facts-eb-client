@@ -6,6 +6,7 @@ import { describeValueStatus } from '../../lib/value-status'
 import { tileUnit } from '../../lib/territory-groups'
 import { hubUnitWord } from '../../lib/units'
 import { formatHubPeriod } from '../../lib/period'
+import { LatestValueTile } from './fact-tile'
 
 type Props = {
   readonly latest: StatisticsLatestValue
@@ -18,10 +19,11 @@ type Props = {
  * figure does not repeat it.
  *
  * Three tiers and no more (DESIGN.md §Design Principles 1): the label says
- * what the figure is, the figure is the only large type in the band, and the
- * period and quality flags sit in the quiet tier beside it. The label renders
- * in the absent case too — a band that opens with an apology and no heading
- * reads as a failure rather than as a state.
+ * what the figure is, the figure is the tile's one large line, and the period
+ * and quality flags sit in the quiet tier under it. It is the summary's own
+ * tile (`LatestValueTile`), so the figure keeps its shape when the series
+ * fails. The label renders in the absent case too — a band that opens with
+ * an apology and no heading reads as a failure rather than as a state.
  */
 export function DetailTier0Hero({ latest }: Props) {
   const ambiguous = latest.matchStrategy === 'AMBIGUOUS_GEOGRAPHY'
@@ -33,7 +35,7 @@ export function DetailTier0Hero({ latest }: Props) {
   if (formatted === null) {
     return (
       <div className="space-y-1">
-        <p className={statisticsTheme.sectionLabel}>
+        <p className={statisticsTheme.figureLabel}>
           <Trans>Ultima valoare</Trans>
         </p>
         <p className="text-sm text-muted-foreground">
@@ -63,26 +65,15 @@ export function DetailTier0Hero({ latest }: Props) {
   const unitWord = hubUnitWord(unit, latest.unitNameRo ?? latest.unitSymbol)
 
   return (
-    <div>
-      <p className={statisticsTheme.sectionLabel}>
-        <Trans>Ultima valoare</Trans>
-      </p>
-      <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span className={statisticsTheme.heroValue}>
-          {formatted}
-          {unitWord ? (
-            <span className={statisticsTheme.heroUnit}>{unitWord}</span>
-          ) : null}
-        </span>
-        <span className="text-sm tabular-nums text-muted-foreground">
-          {latest.period ? formatHubPeriod(latest.period) : null}
-        </span>
-        {latest.valueStatus ? (
-          <span className={statisticsTheme.provenanceChip}>
-            <Trans>stare:</Trans> {latest.valueStatus}
-          </span>
-        ) : null}
-      </p>
+    <div className="@container">
+      <dl className={statisticsTheme.factGrid}>
+        <LatestValueTile
+          value={formatted}
+          unit={unitWord}
+          period={latest.period ? formatHubPeriod(latest.period) : null}
+          valueStatus={latest.valueStatus}
+        />
+      </dl>
     </div>
   )
 }

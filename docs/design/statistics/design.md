@@ -525,7 +525,7 @@ show. Decisions:
   since at 5xl clicking a row and coming back shifted the page 64px sideways.
   Plain chart markers switch off past 60 points, where they merged into a 5px
   band on a phone and the blob rather than the line carried the shape; flagged
-  points keep their marker at any density. The tooltip groups its digits
+  points keep their marker at any density. (Superseded by §6z: past 24.) The tooltip groups its digits
   without changing one of them (`groupWireValue` works on the string —
   parsing to a float would round the long decimals the archival contract
   exists to preserve) and names its unit. A scope axis with nothing to choose
@@ -1602,6 +1602,79 @@ the series' last period is years old. The rail's year control still bounds
 the window by the observed span, and where INS records it, „Continuitatea
 seriei" says the series ended and names its successor. Removed at the
 product owner's call.
+
+## 6z. The chart, polished: sky blue, a shadowed area, a crosshair (2026-09-24)
+
+The product owner asked for the chart to look more considered, after a
+reference: a light line over an area that fades to nothing, a crosshair and a
+large ringed dot on the hovered point. What changed, and what did not:
+
+- **Sky blue.** `--chart-sky` replaces the navy `--chart-1` on this chart
+  and on the loading skeleton's sweep, so the colour does not change when the
+  series lands. In dark mode it is the reference's own line (`203 87% 72%`,
+  10:1 on the card); on white that shade holds 1,9:1, so light mode takes the
+  same hue deepened to `203 80% 42%` (4,3:1). A turquoise came first and was
+  moved toward the reference's blue at the product owner's request. Only here:
+  the hub and the comparison charts stay navy (DESIGN.md decision log).
+- **The area reads as the line's shadow.** 30% under the line's highest
+  point, 8% by 60% of the way down, nothing at the baseline. The gradient
+  is sized from the area's own box, so it is deepest under the line wherever
+  the line sits.
+- **A soft glow under the line**, 3px down at 25%. Its filter region is the
+  whole plot in user space: sized from the line's box, a flat series (every
+  value 0) has a box of zero height, and the filter would have erased the
+  line.
+- **The hovered period** gets a crosshair in the line's colour and a ringed
+  dot in a halo, in the flag's amber when the point carries an INS flag, so
+  hovering never covers the one mark that said the value was qualified. The
+  latest value carries the same halo at rest; its label moved out to clear it.
+- **Fewer plain markers.** They now show up to 24 periods, where they were
+  shown up to 60: at POP107D's 34 annual points they beaded the line and
+  competed with the three marks that matter. Hovering still finds every
+  period. Flagged points keep theirs at any length, and so does a point with
+  no plotted neighbour (`isolatedPeriods`), which draws no segment and was
+  invisible on a long series before. A period an annotation marks no longer
+  gets a plain marker too: one on top punched a dot into the peak's ring. The
+  annotations sit one layer under the line's markers (z-index 599 against
+  Recharts' 600, where the two otherwise fall in mount order), so a flagged
+  latest point's amber marker is never covered by the latest value's mark.
+- **The tooltip** leads with the value: the period in muted text over the
+  value in 14px semibold with a swatch in the line's colour, the unit after
+  it, the flag spelled out under it.
+
+Unchanged: gaps stay gaps, the value axis picks the first precision that
+tells its ticks apart, the peak, trough, mean and latest marks follow the
+same rules, and no animation plays on load.
+
+## 6aa. The figures as four tiles (2026-09-24)
+
+At the product owner's request, after the chart's polish (§6z): the summary
+row read as a large number and a line of small facts with a gap between
+them, and did not look considered. The latest value and the facts that give
+it scale are now the same tile, four abreast — **Ultima valoare, Minim,
+Maxim, Medie** — each a name, a number at 20px and a caption with what the
+number belongs to. The number of observations is gone, at the owner's call:
+the chart and the table already show how many periods there are.
+
+- **Tinted, not outlined** (`bg-muted/70`, 12px radius), the way `note` is: a
+  bordered box in a bordered band is a card in a card.
+- **The latest value leads**, with a dot in the chart's line colour before
+  its name: it is the point the chart ends on, drawn there with the same
+  colour and a halo.
+- **The unit is still said once**, on the latest value's tile. Beside the
+  number when both fit the narrowest tile the band draws — 118px, two
+  abreast on a 375px phone — („10 număr", „1,9 %"); otherwise it opens the
+  caption („21.646.220" over „persoane în 2026"). A unit wrapped under its
+  number made that one tile a line taller than its neighbours. The fit is
+  estimated from the strings, not measured, so the loading tile and the
+  loaded one always agree.
+- **Four abreast from a 48rem band** (a container query: beside the rail
+  the band is narrower than the viewport says), two by two under it: at four
+  abreast in a narrower band „23.143.860" no longer fitted its tile.
+- **One component, three places.** `FactTile` draws the summary, the first
+  read's figure when the series fails, and the loading skeleton, whose tiles
+  keep the loaded tiles' line heights to the pixel (the number's line is
+  25px), so nothing moves when the series lands.
 
 ## 7. Data model expectations at the UI boundary
 

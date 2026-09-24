@@ -245,6 +245,9 @@ a dark label so it reads at AA on any surface and never relies on hue alone:
 **Chart colors** are navy-first then neutral steps (`--chart-1…5`): one accent,
 then greys, so a series chart never becomes a rainbow. Per-series color is
 user-overridable. Maps and charts always ship an adjacent textual/tabular summary.
+One recorded exception: the INS dataset page's single-series chart draws in
+`--chart-sky` (4.3:1 on white, 10:1 on the dark card) — see the decision
+log, 2026-09-24.
 A **choropleth** uses `--choropleth-1…5`: one navy hue in five even lightness
 steps (dark to bright in dark mode); text on steps 1–3 is `foreground`, on
 4–5 `background`, which keeps ≥ 4.5:1 in both themes.
@@ -859,6 +862,18 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 ## Decision Log
 
 Append-only. Newest first. Each entry: date · decision · why.
+
+- **2026-09-24 — The INS dataset chart draws in sky blue, not navy.** One
+  token, `--chart-sky` (`203 80% 42%` light; `203 87% 72%` dark, the
+  reference's own line), used by
+  that chart and its loading skeleton only. The chart also took a deeper
+  fading area, a soft glow under the line, a crosshair in the line's colour and
+  a haloed dot on the hovered and the latest period. *Why:* the product owner's
+  call, from a reference they chose — the page's one figure should read as the
+  page's own. Scoped to the one single-series figure: the hub and the
+  comparison charts keep navy, and where several series share a chart the
+  navy-then-greys rule still holds. Detail in
+  `docs/design/statistics/design.md` §6z.
 
 - **2026-09-08 — A dense decorative field is drawn on a canvas, not as elements.**
   Past a few hundred animated elements the cost is style recalculation and

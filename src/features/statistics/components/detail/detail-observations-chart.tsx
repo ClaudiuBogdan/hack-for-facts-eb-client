@@ -17,6 +17,7 @@ import { activeNumberLocale, groupWireValue } from '../../lib/format'
 import type { SeriesPoint, SeriesStats } from '../../lib/series-stats'
 import { formatChartPeriod, formatHubPeriod } from '../../lib/period'
 import {
+  isolatedPeriods,
   seriesAxis,
   type TimeSeries,
   type TimeSeriesPoint,
@@ -30,8 +31,8 @@ type Props = {
   readonly title: string
   readonly unitLabel: string | null
   /**
-   * Three opt-in treatments. Every existing caller gets today's plain line;
-   * the detail page asks for all three.
+   * Three opt-in treatments over the line every caller gets; the detail page
+   * asks for all three.
    */
   /** Tint the area under the line — right for a quantity with a real zero. */
   readonly area?: boolean
@@ -48,9 +49,16 @@ type Props = {
   readonly height?: string
 }
 
-const LINE_COLOR = 'hsl(var(--chart-1))'
+/**
+ * Sky blue rather than the navy `--chart-1` every other chart opens with:
+ * this is the one figure on the page, and the product owner asked for it to
+ * carry its own colour. It is a token, so both themes get a shade that holds
+ * 3:1 against the band.
+ */
+const LINE_COLOR = 'hsl(var(--chart-sky))'
 const FLAG_COLOR = 'hsl(38 92% 45%)'
-const SURFACE_COLOR = 'hsl(var(--background))'
+/** The band's own surface: rings cut out of the line in it. */
+const SURFACE_COLOR = 'hsl(var(--card))'
 /**
  * A halo under every mark label: the label's own outline in the band's
  * colour, painted beneath its fill. The line runs through the extremes it
@@ -58,20 +66,30 @@ const SURFACE_COLOR = 'hsl(var(--background))'
  * one „minim 0" and „medie 1,38" were struck through.
  */
 const LABEL_HALO = {
-  stroke: 'hsl(var(--card))',
+  stroke: SURFACE_COLOR,
   strokeWidth: 4,
   strokeLinejoin: 'round',
   paintOrder: 'stroke',
 } as const
 
 /**
- * Past this many periods the plain markers stop being markers. SOM101F's 200
- * monthly points get ~470px of plot on a phone — 2,4px apart, so `r=2,5` dots
- * merge into a 5px band and the shape is carried by the blob rather than the
- * line. Flagged points keep their marker at any density: they are the ones
- * worth finding.
+ * Past this many periods the line carries the shape and plain markers only
+ * bead it: 34 annual points drew 34 dots competing with the three marks that
+ * matter — the peak, the trough and the latest value. (At SOM101F's 200
+ * monthly points they merged into a solid 5px band on a phone.) Hovering
+ * still finds every period. Flagged points keep their marker at any density:
+ * they are the ones worth finding, and so does a point with no neighbour,
+ * which draws no segment and would otherwise not be drawn at all.
  */
-const DENSE_ABOVE_POINTS = 60
+const MARKERS_UP_TO_POINTS = 24
+
+/**
+ * The annotations' layer: one under the line's own markers. Recharts 3 puts
+ * both on its `scatter` layer (600), where their order is left to mount
+ * order, and a flagged latest point's amber marker could land under the
+ * latest value's mark — hiding the one sign the value was qualified.
+ */
+const ANNOTATION_Z_INDEX = 599
 
 /** A published value on a mark: the wire value, grouped, never re-rounded. */
 function formatMarkValue(point: SeriesPoint): string {
@@ -157,7 +175,9 @@ export function DetailObservationsChart({
   const valueAxis = axisLabels(axis.ticks, activeNumberLocale())
   // Referenced by id, so two charts sharing one would make the second paint
   // with the first's fill.
-  const gradientId = `ins-series-area-${useId().replace(/:/g, '')}`
+  const chartId = useId().replace(/:/g, '')
+  const gradientId = `ins-series-area-${chartId}`
+  const glowId = `ins-series-glow-${chartId}`
   const marks = annotate && stats ? stats : null
 
   /**
@@ -250,9 +270,18 @@ export function DetailObservationsChart({
     stats.mean >= domainFloor &&
     stats.mean <= domainTop
 
+  const isolated = isolatedPeriods(series.points)
+  // A period that carries an annotation is drawn by it: a plain marker on top
+  // punched a dot into the peak's ring. A flagged one is kept, above it.
+  const annotated = new Set<string>()
+  if (marks?.peak && peakPosition) annotated.add(marks.peak.period)
+  if (marks?.trough && troughPosition && !troughIsLatest && !troughIsPeak)
+    annotated.add(marks.trough.period)
+  if (marks?.latest && latestOnChart) annotated.add(marks.latest.period)
+
   const endLabel = marks?.latest != null ? formatMarkValue(marks.latest) : ''
   // An extreme the plot does not contain is not marked; the note under the
-  // plot then says the facts beside the figure cover more than it shows.
+  // plot then says the facts over it cover more than it shows.
   const extremesOffChart =
     marks !== null &&
     ((marks.peak !== null && peakPosition === null) ||
@@ -265,7 +294,7 @@ export function DetailObservationsChart({
    * still clears the edge and capped so a pathological one cannot eat the plot.
    */
   const rightGutter = annotate
-    ? Math.min(120, Math.max(24, Math.round(endLabel.length * 7.2) + 14))
+    ? Math.min(124, Math.max(28, Math.round(endLabel.length * 7.2) + 19))
     : 16
 
   return (
@@ -288,17 +317,45 @@ export function DetailObservationsChart({
               left: 8,
             }}
           >
-            {area ? (
-              <defs>
+            <defs>
+              {/* Deepest under the line's highest point and gone before the
+                  baseline, so the tint reads as the line's own shadow rather
+                  than a filled block. */}
+              {area ? (
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={LINE_COLOR} stopOpacity={0.18} />
-                  <stop offset="100%" stopColor={LINE_COLOR} stopOpacity={0.01} />
+                  <stop offset="0%" stopColor={LINE_COLOR} stopOpacity={0.3} />
+                  <stop offset="60%" stopColor={LINE_COLOR} stopOpacity={0.08} />
+                  <stop offset="100%" stopColor={LINE_COLOR} stopOpacity={0} />
                 </linearGradient>
-              </defs>
-            ) : null}
+              ) : null}
+              {/* A soft glow under the line. The region is the whole plot in
+                  user space: sized from the line's own box, a flat series —
+                  every value 0 — has a box of zero height, and the filter
+                  would erase the line it was meant to lift. */}
+              <filter
+                id={glowId}
+                filterUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width="100%"
+                height="100%"
+              >
+                <feDropShadow
+                  dx="0"
+                  dy="3"
+                  stdDeviation="3"
+                  floodColor={LINE_COLOR}
+                  floodOpacity={0.25}
+                />
+              </filter>
+            </defs>
             {/* Solid hairline. A dashed grid reads as a projection or a
                 threshold when it is neither. */}
-            <CartesianGrid vertical={false} stroke="hsl(var(--border))" />
+            <CartesianGrid
+              vertical={false}
+              stroke="hsl(var(--border))"
+              strokeOpacity={0.7}
+            />
             <XAxis
               dataKey="period"
               tickLine={false}
@@ -317,7 +374,9 @@ export function DetailObservationsChart({
               tickFormatter={valueAxis.format}
             />
             <Tooltip
-              cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+              // A crosshair in the line's colour, from the top of the plot to
+              // the baseline: it ties the tooltip to the period it reads.
+              cursor={{ stroke: LINE_COLOR, strokeOpacity: 0.6, strokeWidth: 1 }}
               content={<SeriesTooltip unitLabel={unitLabel} />}
             />
             {meanOnChart && stats?.mean != null ? (
@@ -355,15 +414,25 @@ export function DetailObservationsChart({
               type="linear"
               dataKey="value"
               stroke={LINE_COLOR}
-              strokeWidth={2}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter={`url(#${glowId})`}
               connectNulls={false}
               isAnimationActive={false}
-              dot={<SeriesDot dense={series.points.length > DENSE_ABOVE_POINTS} />}
-              activeDot={{ r: 5, strokeWidth: 2, stroke: SURFACE_COLOR }}
+              dot={
+                <SeriesDot
+                  dense={series.points.length > MARKERS_UP_TO_POINTS}
+                  isolated={isolated}
+                  annotated={annotated}
+                />
+              }
+              activeDot={<ActiveDot />}
             />
 
             {marks?.peak && peakPosition ? (
               <ReferenceDot
+                zIndex={ANNOTATION_Z_INDEX}
                 x={marks.peak.period}
                 y={marks.peak.value}
                 r={4}
@@ -387,6 +456,7 @@ export function DetailObservationsChart({
             ) : null}
             {marks?.trough && troughPosition && !troughIsLatest && !troughIsPeak ? (
               <ReferenceDot
+                zIndex={ANNOTATION_Z_INDEX}
                 x={marks.trough.period}
                 y={marks.trough.value}
                 r={4}
@@ -408,17 +478,33 @@ export function DetailObservationsChart({
                 }}
               />
             ) : null}
+            {/* The latest value is where the reading ends, so it carries a
+                halo: the same mark the hovered period gets. */}
             {marks?.latest && latestOnChart ? (
               <ReferenceDot
+                zIndex={ANNOTATION_Z_INDEX}
                 x={marks.latest.period}
                 y={marks.latest.value}
-                r={4}
+                r={10}
+                fill={LINE_COLOR}
+                fillOpacity={0.18}
+                stroke="none"
+              />
+            ) : null}
+            {marks?.latest && latestOnChart ? (
+              <ReferenceDot
+                zIndex={ANNOTATION_Z_INDEX}
+                x={marks.latest.period}
+                y={marks.latest.value}
+                r={5}
                 fill={LINE_COLOR}
                 stroke={SURFACE_COLOR}
                 strokeWidth={2}
                 label={{
                   value: endLabel,
                   position: 'right',
+                  // Clear of the halo.
+                  offset: 10,
                   fill: 'hsl(var(--foreground))',
                   fontSize: 12,
                   ...LABEL_HALO,
@@ -455,32 +541,64 @@ type DotProps = {
   readonly cx?: number
   readonly cy?: number
   readonly payload?: TimeSeriesPoint
-  /** Set by the chart when the points are too close to read as points. */
+  /** Set by the chart when the line alone carries the series' shape. */
   readonly dense?: boolean
+  /** Periods with no plotted neighbour: see `isolatedPeriods`. */
+  readonly isolated?: ReadonlySet<string>
+  /** Periods an annotation already marks. */
+  readonly annotated?: ReadonlySet<string>
 }
 
 /**
- * Plain points stay small and recessive, and disappear entirely once the
- * series is dense enough that they would draw a band instead of a line.
- * Flagged points grow and gain a surface ring so they read as "look here".
+ * Plain points stay small and recessive, and disappear once the series is
+ * long enough that the line carries it — except a point with no neighbour,
+ * which has no line. Flagged points grow and gain a surface ring so they read
+ * as "look here".
  */
-function SeriesDot({ cx, cy, payload, dense }: DotProps) {
+function SeriesDot({ cx, cy, payload, dense, isolated, annotated }: DotProps) {
   if (cx === undefined || cy === undefined || !payload || payload.value === null) {
     return null
   }
 
   const flagged = payload.valueStatus !== null
-  if (dense && !flagged) return null
+  if (!flagged && annotated?.has(payload.period)) return null
+  const alone = isolated?.has(payload.period) ?? false
+  if (dense && !flagged && !alone) return null
 
   return (
     <circle
       cx={cx}
       cy={cy}
-      r={flagged ? 5 : 2.5}
+      r={flagged ? 5 : 3}
       fill={flagged ? FLAG_COLOR : LINE_COLOR}
       stroke={SURFACE_COLOR}
-      strokeWidth={flagged ? 2 : 0}
+      strokeWidth={flagged ? 2 : 1.5}
     />
+  )
+}
+
+/**
+ * The hovered period: a ringed dot in a soft halo, in the flag's colour when
+ * the point carries one, so hovering never paints over the only mark that
+ * said the value was qualified.
+ */
+function ActiveDot({ cx, cy, payload }: DotProps) {
+  if (cx === undefined || cy === undefined || !payload || payload.value === null) {
+    return null
+  }
+  const color = payload.valueStatus !== null ? FLAG_COLOR : LINE_COLOR
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={12} fill={color} fillOpacity={0.18} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={6}
+        fill={color}
+        stroke={SURFACE_COLOR}
+        strokeWidth={2.5}
+      />
+    </g>
   )
 }
 
@@ -495,26 +613,36 @@ function SeriesTooltip({ active, payload, unitLabel }: TooltipProps) {
   if (!active || !point) return null
 
   return (
-    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs shadow-md">
-      <p className="font-medium text-popover-foreground">
+    <div className="min-w-32 rounded-lg border border-border/60 bg-popover/95 px-3 py-2 text-xs shadow-lg backdrop-blur-sm">
+      <p className="font-medium text-muted-foreground">
         {formatHubPeriod(point.period)}
       </p>
-      <p className="mt-0.5 tabular-nums text-popover-foreground">
+      <p className="mt-1 flex items-baseline gap-1.5 tabular-nums">
         {point.raw === null ? (
-          t`Fără date`
+          <span className="text-popover-foreground">{t`Fără date`}</span>
         ) : (
           <>
-            {groupWireValue(point.raw, activeNumberLocale())}
+            {/* The point's own colour — the line's, or the flag's — so the
+                value reads as the mark it came from. */}
+            <span
+              aria-hidden="true"
+              className="size-2 shrink-0 self-center rounded-full"
+              style={{
+                backgroundColor:
+                  point.valueStatus !== null ? FLAG_COLOR : LINE_COLOR,
+              }}
+            />
+            <span className="text-sm font-semibold text-popover-foreground">
+              {groupWireValue(point.raw, activeNumberLocale())}
+            </span>
             {unitLabel ? (
-              <span className="ml-1 font-normal text-muted-foreground">
-                {unitLabel}
-              </span>
+              <span className="text-muted-foreground">{unitLabel}</span>
             ) : null}
           </>
         )}
       </p>
       {point.valueStatus !== null ? (
-        <p className="mt-0.5 text-amber-700 dark:text-amber-400">
+        <p className="mt-1 text-amber-700 dark:text-amber-400">
           {point.valueStatus === '' ? '""' : point.valueStatus} — {describeValueStatus(point.valueStatus)}
         </p>
       ) : null}

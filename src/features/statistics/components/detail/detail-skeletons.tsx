@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import type { KnownLatestFigure } from '../../lib/detail-loading'
 import { formatHubPeriod } from '../../lib/period'
 import { statisticsTheme } from '../../lib/statistics-theme'
+import { FactLabel, LatestValueTile } from './fact-tile'
 
 /**
  * The header while the read is in flight, in the header's own shape — title,
@@ -69,12 +70,15 @@ export function DetailBandSkeleton() {
   )
 }
 
-/** The facts beside the figure, in the summary's order: labels are known, values are not. */
+/**
+ * The facts after the latest value, in the summary's order and in its tiles:
+ * labels are known, values are not. `caption` where the loaded tile has a
+ * period under its number, so the tiles land at their height.
+ */
 const FACTS = [
-  { label: () => t`minim`, width: 'w-24' },
-  { label: () => t`maxim`, width: 'w-24' },
-  { label: () => t`medie`, width: 'w-20' },
-  { label: () => t`observații`, width: 'w-8' },
+  { label: () => t`minim`, width: 'w-20', caption: true },
+  { label: () => t`maxim`, width: 'w-20', caption: true },
+  { label: () => t`medie`, width: 'w-16', caption: false },
 ] as const
 
 /** The chart's hairlines, top to bottom, as its grid draws them. */
@@ -103,7 +107,6 @@ export function DetailSeriesSkeleton({
   readonly announce?: boolean
 }) {
   const sweepId = useId()
-  // Named `period` so the phrase is the summary's own message, „în {period}".
   const period = known?.period ? formatHubPeriod(known.period) : null
 
   return (
@@ -114,40 +117,25 @@ export function DetailSeriesSkeleton({
         </p>
       ) : null}
 
-      <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4" aria-hidden="true">
-        <div className="min-w-0">
-          <p className={statisticsTheme.sectionLabel}>
-            <Trans>Ultima valoare</Trans>
-          </p>
+      <div className="@container" aria-hidden="true">
+        <dl className={statisticsTheme.factGrid}>
           {known ? (
-            <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1" data-testid="skeleton-known-figure">
-              <span className={statisticsTheme.heroValue}>
-                {known.value}
-                {known.unit ? (
-                  <>
-                    {' '}
-                    <span className={cn(statisticsTheme.heroUnit, 'ml-0.5')}>{known.unit}</span>
-                  </>
-                ) : null}
-              </span>
-              {period ? (
-                <span className="text-base tabular-nums text-muted-foreground">
-                  <Trans>în {period}</Trans>
-                </span>
-              ) : null}
-            </p>
+            <LatestValueTile
+              value={known.value}
+              unit={known.unit}
+              period={period}
+              testId="skeleton-known-figure"
+            />
           ) : (
-            <Skeleton className="mt-2 h-9 w-56" />
+            <SkeletonTile label={t`Ultima valoare`} width="w-24" caption marked />
           )}
-        </div>
-        <dl className="flex flex-wrap items-end gap-x-7 gap-y-3">
           {FACTS.map((fact) => (
-            <div key={fact.width + fact.label()} className="min-w-0">
-              <dt className="text-xs text-muted-foreground">{fact.label()}</dt>
-              <dd className="mt-1.5">
-                <Skeleton className={cn('h-4', fact.width)} />
-              </dd>
-            </div>
+            <SkeletonTile
+              key={fact.label()}
+              label={fact.label()}
+              width={fact.width}
+              caption={fact.caption}
+            />
           ))}
         </dl>
       </div>
@@ -172,9 +160,9 @@ export function DetailSeriesSkeleton({
             <svg className="absolute inset-0 h-full w-full motion-reduce:hidden" preserveAspectRatio="none">
               <defs>
                 <linearGradient id={sweepId} x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0" stopColor="hsl(var(--chart-1))" stopOpacity="0" />
-                  <stop offset="0.5" stopColor="hsl(var(--chart-1))" stopOpacity="0.1" />
-                  <stop offset="1" stopColor="hsl(var(--chart-1))" stopOpacity="0" />
+                  <stop offset="0" stopColor="hsl(var(--chart-sky))" stopOpacity="0" />
+                  <stop offset="0.5" stopColor="hsl(var(--chart-sky))" stopOpacity="0.1" />
+                  <stop offset="1" stopColor="hsl(var(--chart-sky))" stopOpacity="0" />
                   <animateTransform
                     attributeName="gradientTransform"
                     type="translate"
@@ -195,6 +183,37 @@ export function DetailSeriesSkeleton({
           ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+/** A tile whose name is known and whose number is still on its way. */
+function SkeletonTile({
+  label,
+  width,
+  caption,
+  marked = false,
+}: {
+  readonly label: string
+  /** A literal class: Tailwind scans source text, not computed strings. */
+  readonly width: string
+  readonly caption: boolean
+  /** The latest value's dot, as `FactTile` draws it. */
+  readonly marked?: boolean
+}) {
+  return (
+    <div className={statisticsTheme.factTile}>
+      <FactLabel label={label} marked={marked} />
+      {/* At the loaded tile's line heights: the number's line is text-xl at
+          leading-tight (1.5625rem, 25px), the caption's 16px. */}
+      <dd className="mt-1 flex h-[1.5625rem] items-center">
+        <Skeleton className={cn('h-5', width)} />
+      </dd>
+      {caption ? (
+        <dd className="mt-0.5 py-0.5">
+          <Skeleton className="h-3 w-14" />
+        </dd>
+      ) : null}
     </div>
   )
 }

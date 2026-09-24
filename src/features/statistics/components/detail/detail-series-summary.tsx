@@ -1,11 +1,11 @@
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { cn } from '@/lib/utils'
 import { activeNumberLocale, groupWireValue } from '../../lib/format'
 import { formatHubPeriod } from '../../lib/period'
 import type { SeriesPoint, SeriesStats } from '../../lib/series-stats'
 import { describeValueStatus } from '../../lib/value-status'
 import { statisticsTheme } from '../../lib/statistics-theme'
+import { FactTile, LatestValueTile, PeriodPhrase } from './fact-tile'
 
 type Props = {
   readonly stats: SeriesStats
@@ -57,18 +57,22 @@ function formatDerived(value: number): string {
 }
 
 /**
- * Tier 0 — the latest value LARGE, and beside it the facts that give it scale.
+ * Tier 0 — the latest value first, and beside it the facts that give it
+ * scale, all four as the same tile: a name, a number, and the period the
+ * number belongs to.
  *
  * „10" alone says nothing: the same 10 is the lowest a series has ever gone or
- * an unremarkable year. The extremes, the mean and the count answer that in
- * the quiet tier, on the same baseline, so a reader never has to open anything
- * to know whether the headline number is news.
+ * an unremarkable year. The extremes and the mean answer that at the same
+ * size as the figure, so a reader never has to open anything to know whether
+ * the headline number is news. The latest value's tile leads, and carries the
+ * chart's line colour in a dot before its name: it is the point the chart
+ * ends on.
  *
- * The unit is said ONCE, beside the figure. It used to be the facts' first
- * column as well, and the chart's caption a third time in INS's own spelling
- * („6 număr … unitate număr … Numar"). Periods read as words — „6 număr în
- * 2024", „1 în 2021" — not behind a „·" that a reader has to decode and a
- * screen reader skips.
+ * The unit is said ONCE, beside the latest value. It used to be the facts'
+ * first column as well, and the chart's caption a third time in INS's own
+ * spelling („6 număr … unitate număr … Numar"). Periods read as words — „în
+ * 2024" — not behind a „·" that a reader has to decode and a screen reader
+ * skips.
  */
 export function DetailSeriesSummary({
   stats,
@@ -76,12 +80,10 @@ export function DetailSeriesSummary({
   absent,
   valueStatus,
 }: Props) {
-  const unit = unitWord.trim()
-
   if (absent) {
     return (
       <div className="space-y-1" data-testid="series-summary">
-        <p className={statisticsTheme.sectionLabel}>
+        <p className={statisticsTheme.figureLabel}>
           <Trans>Ultima valoare</Trans>
         </p>
         <p className="text-sm text-muted-foreground">
@@ -100,98 +102,42 @@ export function DetailSeriesSummary({
   }
 
   return (
-    <div
-      className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4"
-      data-testid="series-summary"
-    >
-      <div className="min-w-0">
-        <p className={statisticsTheme.sectionLabel}>
-          <Trans>Ultima valoare</Trans>
-        </p>
-        {/* The figure and its unit are ONE span: a flex gap between them lets
-            them land on different lines, and „21.646.220" over „persoane" is
-            two facts where there was one. The literal space matters too —
-            adjacent text nodes with none are spoken as „10număr". */}
-        <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
-          <span
-            className={statisticsTheme.heroValue}
-            data-testid="series-latest-value"
-          >
-            {stats.latest === null ? '—' : formatValue(stats.latest)}
-            {unit ? (
-              <>
-                {' '}
-                <span className={cn(statisticsTheme.heroUnit, 'ml-0.5')}>
-                  {unit}
-                </span>
-              </>
-            ) : null}
-          </span>
-          {stats.latest ? (
-            <span className="text-base tabular-nums text-muted-foreground">
-              <PeriodPhrase period={formatHubPeriod(stats.latest.period)} />
-            </span>
-          ) : null}
-          {valueStatus ? (
-            <span className={statisticsTheme.provenanceChip}>
-              <Trans>stare:</Trans> {valueStatus}
-            </span>
-          ) : null}
-        </p>
-      </div>
-
-      {stats.latest ? (
-        <dl className="flex flex-wrap items-end gap-x-7 gap-y-3">
-          <Fact
-            label={t`minim`}
-            value={stats.trough ? formatValue(stats.trough) : '—'}
-            period={stats.trough ? formatHubPeriod(stats.trough.period) : null}
-          />
-          <Fact
-            label={t`maxim`}
-            value={stats.peak ? formatValue(stats.peak) : '—'}
-            period={stats.peak ? formatHubPeriod(stats.peak.period) : null}
-          />
-          <Fact
-            label={t`medie`}
-            value={stats.mean === null ? '—' : formatDerived(stats.mean)}
-          />
-          <Fact label={t`observații`} value={String(stats.count)} />
-        </dl>
-      ) : null}
-    </div>
-  )
-}
-
-/** „în 2024", „în mai 2026" — the period a figure belongs to, as words. */
-function PeriodPhrase({ period }: { readonly period: string }) {
-  return <Trans>în {period}</Trans>
-}
-
-/** One fact: its name, its number, and the period that number belongs to. */
-function Fact({
-  label,
-  value,
-  period,
-}: {
-  readonly label: string
-  readonly value: string
-  readonly period?: string | null
-}) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 text-base font-semibold tabular-nums">
-        {value}
-        {period ? (
+    <div className="@container" data-testid="series-summary">
+      <dl className={statisticsTheme.factGrid}>
+        <LatestValueTile
+          value={stats.latest === null ? '—' : formatValue(stats.latest)}
+          unit={unitWord}
+          period={stats.latest ? formatHubPeriod(stats.latest.period) : null}
+          valueStatus={valueStatus ?? null}
+          valueTestId="series-latest-value"
+        />
+        {stats.latest ? (
           <>
-            {' '}
-            <span className="text-sm font-normal text-muted-foreground">
-              <PeriodPhrase period={period} />
-            </span>
+            <FactTile
+              label={t`minim`}
+              value={stats.trough ? formatValue(stats.trough) : '—'}
+              caption={
+                stats.trough ? (
+                  <PeriodPhrase period={formatHubPeriod(stats.trough.period)} />
+                ) : null
+              }
+            />
+            <FactTile
+              label={t`maxim`}
+              value={stats.peak ? formatValue(stats.peak) : '—'}
+              caption={
+                stats.peak ? (
+                  <PeriodPhrase period={formatHubPeriod(stats.peak.period)} />
+                ) : null
+              }
+            />
+            <FactTile
+              label={t`medie`}
+              value={stats.mean === null ? '—' : formatDerived(stats.mean)}
+            />
           </>
         ) : null}
-      </dd>
+      </dl>
     </div>
   )
 }
