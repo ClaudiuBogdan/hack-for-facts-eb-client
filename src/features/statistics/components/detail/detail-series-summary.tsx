@@ -11,8 +11,6 @@ type Props = {
   readonly stats: SeriesStats
   /** The unit as a word („persoane", „%", „număr"); empty renders nothing. */
   readonly unitWord: string
-  /** Rendered beside the figure when this page, not the server, chose the axes. */
-  readonly matchChip?: 'representative' | null
   /**
    * Set when the latest PUBLISHED cell carries no readable value.
    *
@@ -75,7 +73,6 @@ function formatDerived(value: number): string {
 export function DetailSeriesSummary({
   stats,
   unitWord,
-  matchChip,
   absent,
   valueStatus,
 }: Props) {
@@ -133,11 +130,6 @@ export function DetailSeriesSummary({
           {stats.latest ? (
             <span className="text-base tabular-nums text-muted-foreground">
               <PeriodPhrase period={formatHubPeriod(stats.latest.period)} />
-            </span>
-          ) : null}
-          {matchChip === 'representative' ? (
-            <span className={statisticsTheme.warningChip}>
-              <Trans>selecție reprezentativă</Trans>
             </span>
           ) : null}
           {valueStatus ? (

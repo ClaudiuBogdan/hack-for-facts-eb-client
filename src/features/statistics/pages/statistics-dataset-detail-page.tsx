@@ -27,7 +27,6 @@ import type { DetailSearchPatch } from '../lib/dataset-selection'
 import { datasetDisplayName } from '../lib/dataset-names'
 import { getDatasetDataStatus } from '../lib/dataset-status'
 import type { ResolvedDatasetSeries } from '../lib/detail-series-resolution'
-import { periodSortKey } from '../lib/period'
 
 const logger = createLogger('ins-dataset-detail')
 
@@ -98,29 +97,6 @@ export function StatisticsDatasetDetailPage({
   const { scope, unresolvedDimensions } = selection
   const relatedQuery = useRelatedDatasets(dataset?.context_code ?? null)
 
-  /**
-   * The last period this matrix publishes — what the freshness badge judges.
-   *
-   * `tier0.latest` is the server-resolved answer, but the fetcher returns
-   * `null` for it whenever the URL pins a classification or a unit, which is
-   * exactly the deep-linked case where an abandoned series matters most. The
-   * fallback reads the resolved rows instead. It reads ALL of them, not the
-   * charted window: pinning „?pana=2000" narrows what is drawn, it does not
-   * make INS stop publishing.
-   */
-  const publishedThrough = useMemo(() => {
-    if (latest?.period) return latest.period
-    let newest: string | null = null
-    let newestKey = Number.NEGATIVE_INFINITY
-    for (const observation of seriesQuery.data?.series?.observations ?? []) {
-      const key = periodSortKey(observation.time_period)
-      if (key > newestKey) {
-        newestKey = key
-        newest = observation.time_period.iso_period
-      }
-    }
-    return newest
-  }, [latest, seriesQuery.data])
 
   // A client-side navigation lands with the route's placeholder title; the
   // server render already carries the full one, so this is a no-op there.
@@ -156,7 +132,7 @@ export function StatisticsDatasetDetailPage({
           <StatisticsBackLink to="/ins/seturi">
             <Trans>Înapoi la seturi de date</Trans>
           </StatisticsBackLink>
-          {dataset ? <DetailHeader dataset={dataset} latestPeriod={publishedThrough} /> : null}
+          {dataset ? <DetailHeader dataset={dataset} /> : null}
           {tier0Query.isPending ? <DetailHeaderSkeleton /> : null}
         </div>
 
@@ -248,7 +224,6 @@ export function StatisticsDatasetDetailPage({
             latest={latest}
             seriesQuery={seriesQuery}
             canDerive={selection.canDerive}
-            representativeDefaults={representative !== null}
             unresolvedDimensions={unresolvedDimensions}
             related={(relatedQuery.data?.datasets ?? []).filter((entry) => entry.code !== dataset.code)}
             relatedTotalCount={relatedQuery.data?.totalCount ?? null}

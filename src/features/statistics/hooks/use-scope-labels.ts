@@ -5,8 +5,7 @@ import {
   dimensionsOfType,
   type EffectiveScope,
 } from '../lib/dataset-selection'
-import { describeUnitSymbol, hubUnitWord } from '../lib/units'
-import { tileUnit } from '../lib/territory-groups'
+import { figureUnitWord } from '../lib/units'
 import {
   sourceMemberLabelKey,
   useSourceMemberLabels,
@@ -95,14 +94,10 @@ export function useScopeLabels(params: {
   // guess what 10 counts, so the SYMBOL is worded instead. `unitLabel` is
   // the wrong fallback: it is `name_ro ?? symbol`, so a unit INS published
   // without a Romanian name would print the API's own „count".
-  const summaryUnitWord =
-    hubUnitWord(
-      tileUnit({
-        unitSymbol: sampleRow?.unit?.symbol ?? null,
-        unitNameRo: sampleRow?.unit?.name_ro ?? null,
-      }),
-      unitLabel ?? null,
-    ) || (sampleRow?.unit?.symbol ? describeUnitSymbol(sampleRow.unit.symbol) : '')
+  const summaryUnitWord = figureUnitWord(
+    { unitSymbol: sampleRow?.unit?.symbol ?? null, unitNameRo: sampleRow?.unit?.name_ro ?? null },
+    unitLabel ?? null,
+  )
 
   return { territoryLabel, classificationLabels, unitLabel, summaryUnitWord }
 }

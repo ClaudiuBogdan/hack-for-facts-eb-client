@@ -158,9 +158,10 @@ describe('StatisticsDatasetDetailPage', () => {
     const onChange = mount({ clasificari: ['D0:931'], unitate: '0' })
     expect(screen.getByRole('button', { name: 'Descarcă CSV' })).toBeEnabled()
     expect(screen.getAllByText(byDigits('21002025')).length).toBeGreaterThan(0)
-    // Marked as a heuristic…
-    expect(screen.getByText('selecție reprezentativă')).toBeInTheDocument()
+    // Marked as a default where the reader can change it — on the rail, not
+    // with a second badge beside the figure…
     expect(screen.getByRole('button', { name: /^Sexe: Total \(implicit\)/ })).toBeInTheDocument()
+    expect(screen.queryByText('selecție reprezentativă')).not.toBeInTheDocument()
     expect(screen.queryByText('Alege ce vrei să vezi')).not.toBeInTheDocument()
     // …and, being a default, it stays out of the URL.
     expect(onChange).not.toHaveBeenCalled()
@@ -191,9 +192,51 @@ describe('StatisticsDatasetDetailPage', () => {
   it('draws the series skeleton while the address resolves, with the rail already usable', () => {
     useDatasetSeriesMock.mockReturnValue({ ...idleQuery, isPending: true })
     mount()
-    expect(screen.getByTestId('series-skeleton')).toBeInTheDocument()
+    const skeleton = screen.getByTestId('series-skeleton')
+    // What the page already knows is shown as it will be: the figure the
+    // first read resolved, and the years the chart is about to span.
+    expect(within(skeleton).getByTestId('skeleton-known-figure').textContent?.replace(/\D/g, '')).toContain('21739373')
+    // The axes are placeholders: the loaded span is whatever the rows cover.
+    expect(within(screen.getByTestId('chart-skeleton')).queryByText('1992')).not.toBeInTheDocument()
+    expect(within(skeleton).getByRole('status')).toHaveTextContent('Se încarcă seria de date')
     // No rows yet to name the member, so the rail shows the pin itself.
     expect(screen.getByRole('button', { name: /^Sexe: 105 \(implicit\)/ })).toBeInTheDocument()
+  })
+
+  it.each([
+    { label: 'persons', unit: { code: '0', symbol: 'pers.', name_ro: 'Numar persoane' } },
+    { label: 'a bare count', unit: { code: '0', symbol: 'count', name_ro: 'Numar' } },
+  ])('keeps the figure, its unit and its year in place when the series lands ($label)', ({ unit }) => {
+    // One cell told consistently: the first read's latest is the series' last row.
+    const consistent = detailTier0({
+      latest: detailLatest({ value: '21002025', period: '2025', unitSymbol: unit.symbol, unitNameRo: unit.name_ro }),
+    })
+    const rows: StatisticsDatasetSeries = {
+      ...series,
+      observations: [2023, 2024, 2025].map((year) => detailObservation(year, { unit })),
+    }
+    useDatasetTier0Mock.mockReturnValue(queryStub(consistent))
+    useDatasetSeriesMock.mockReturnValue({ ...idleQuery, isPending: true })
+    // A fresh element each time: React skips re-rendering an identical one.
+    const page = () => <StatisticsDatasetDetailPage code="POP107D" search={{}} onSearchChange={vi.fn()} />
+    const { rerender } = render(page())
+    const line = (element: Element | null | undefined) => element?.textContent?.replace(/\s+/g, ' ').trim()
+    const loading = line(screen.getByTestId('skeleton-known-figure'))
+
+    useDatasetSeriesMock.mockReturnValue(queryStub(resolved(rows)))
+    rerender(page())
+    expect(screen.queryByTestId('series-skeleton')).not.toBeInTheDocument()
+    const loaded = line(screen.getByTestId('series-latest-value').parentElement)
+    expect(loading).toBe(loaded)
+    expect(loaded?.replace(/\D/g, '')).toBe('210020252025')
+  })
+
+  it('holds back a loading figure the pinned window would replace', () => {
+    useDatasetSeriesMock.mockReturnValue({ ...idleQuery, isPending: true })
+    mount({ din: 2010, pana: 2012 })
+    // The window shows its own last year, not the series' latest.
+    expect(screen.getByTestId('series-skeleton')).toBeInTheDocument()
+    expect(screen.queryByTestId('skeleton-known-figure')).not.toBeInTheDocument()
   })
 
   it('keeps catalog-only datasets in the request state without a fake series', () => {
@@ -363,10 +406,7 @@ describe('StatisticsDatasetDetailPage', () => {
     expect(screen.queryByText(/<a href/)).not.toBeInTheDocument()
   })
 
-  it('still judges freshness when the URL pins a source coordinate', () => {
-    // POST A returns `latest: null` for any pinned classification or unit, so
-    // reading freshness from it alone silenced the stale badge on exactly the
-    // deep-linked URLs where an abandoned series matters most.
+  it('puts no staleness badge over the title: the source line and the figure’s year say how current it is', () => {
     useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
     useDatasetSeriesMock.mockReturnValue(
       queryStub(
@@ -383,7 +423,8 @@ describe('StatisticsDatasetDetailPage', () => {
       ),
     )
     mount({ clasificari: ['D1:105'] })
-    expect(screen.getByText(/Date până în 2000 · posibil neactualizat/)).toBeInTheDocument()
+    expect(screen.queryByText(/posibil neactualizat/)).not.toBeInTheDocument()
+    expect(within(screen.getByTestId('series-summary')).getAllByText(/în 2000/).length).toBeGreaterThan(0)
   })
 
   it('renders no metadata section when INS published none of it', () => {

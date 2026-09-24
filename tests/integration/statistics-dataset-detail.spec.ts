@@ -361,7 +361,10 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     // The page then completes the selection from what that page returned and
     // asks for that one cell in full, so a partial URL still draws a series.
     await expect(page.locator('.recharts-responsive-container')).toBeVisible()
-    await expect(page.getByText('selecție reprezentativă')).toBeVisible()
+    // The chosen cell is marked on the rail, where it can be changed — not
+    // by a second badge beside the figure.
+    await expect(page.getByText(/Valorile marcate „implicit"/)).toBeVisible()
+    await expect(page.getByText('selecție reprezentativă')).toHaveCount(0)
     await expect.poll(() => requested.length).toBeGreaterThan(1)
     expect(requested.at(-1)).toMatchObject({
       filter: {

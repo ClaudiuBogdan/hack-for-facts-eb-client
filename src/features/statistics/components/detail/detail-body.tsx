@@ -36,6 +36,7 @@ import { DetailScopeSentence } from './detail-scope-sentence'
 import { DetailSeriesSummary } from './detail-series-summary'
 import { DetailSeriesSkeleton } from './detail-skeletons'
 import { DetailTier0Hero } from './detail-tier0-hero'
+import { knownLatestFigure } from '../../lib/detail-loading'
 
 /** What the body reads off the series query. */
 export type DetailSeriesQuery = {
@@ -56,7 +57,6 @@ type Props = {
   readonly seriesQuery: DetailSeriesQuery
   readonly canDerive: boolean
   /** True when this page, not the server, chose the axes the series shows. */
-  readonly representativeDefaults: boolean
   readonly unresolvedDimensions: readonly InsDimension[]
   readonly related: readonly StatisticsRelatedDataset[]
   readonly relatedTotalCount: number | null
@@ -78,7 +78,6 @@ export function DetailBody({
   latest,
   seriesQuery,
   canDerive,
-  representativeDefaults,
   unresolvedDimensions,
   related,
   relatedTotalCount,
@@ -152,17 +151,18 @@ export function DetailBody({
               <DetailScopePrompt missingClassificationLabels={missingClassificationLabels} />
             ) : null}
 
-            {seriesQuery.isPending ? <DetailSeriesSkeleton /> : null}
+            {seriesQuery.isPending ? (
+              <DetailSeriesSkeleton
+                known={knownLatestFigure({ latest, canDerive, periodicity: scope.periodicity, search })}
+              />
+            ) : null}
 
             {seriesQuery.isError ? (
               <>
                 {/* POST B failing must not discard POST A: the resolved latest
                     value stays on screen, the retry sits beside it. */}
                 {canDerive && latest && latest.hasData ? (
-                  <DetailTier0Hero
-                    latest={latest}
-                    matchChip={representativeDefaults ? 'representative' : null}
-                  />
+                  <DetailTier0Hero latest={latest} />
                 ) : null}
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" aria-hidden="true" />
@@ -192,7 +192,6 @@ export function DetailBody({
                       }
                     : null
                 }
-                matchChip={representativeDefaults ? 'representative' : null}
               />
             ) : null}
 

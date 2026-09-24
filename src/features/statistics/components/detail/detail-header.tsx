@@ -3,16 +3,12 @@ import { cn } from '@/lib/utils'
 import type { InsDatasetDetails } from '@/schemas/ins'
 import { contextDisplayName, datasetDisplayName } from '../../lib/dataset-names'
 import { getDatasetDataStatus } from '../../lib/dataset-status'
-import { isPeriodStale } from '../../lib/period'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { DataStatusBadge } from '../data-status-badge'
 import { DetailSourceLine } from '../detail-source-line'
-import { FreshnessBadge } from './freshness-badge'
 
 type Props = {
   readonly dataset: InsDatasetDetails
-  /** The last period the matrix publishes — what the freshness badge judges. */
-  readonly latestPeriod: string | null
 }
 
 /**
@@ -24,14 +20,15 @@ type Props = {
  * heaviest thing on the page the metadata about the thing rather than the
  * thing. Identity is a line of text now (DESIGN.md §Typography: codes live in
  * provenance text, never as a record's primary label), and a badge is kept
- * only for the two facts that are exceptions worth stopping on: a dataset
- * with no loaded observations, and a series INS appears to have stopped
- * refreshing. On the common page, none of them render.
+ * only for the one fact that is an exception worth stopping on: a dataset
+ * with no loaded observations. How current the series is the page already
+ * says twice — the source line's „actualizată" and the figure's own year —
+ * so a „posibil neactualizat" badge over the title repeated both, louder.
  *
  * The name and the context follow the reader's language where INS published
  * it, with the Romanian as the fallback — the same rule as the catalog row.
  */
-export function DetailHeader({ dataset, latestPeriod }: Props) {
+export function DetailHeader({ dataset }: Props) {
   const { i18n } = useLingui()
   const status = getDatasetDataStatus(dataset)
   const name = datasetDisplayName(
@@ -50,9 +47,6 @@ export function DetailHeader({ dataset, latestPeriod }: Props) {
             from ending on one orphan word. */}
         <h1 className="text-balance text-2xl font-semibold tracking-tight">{name}</h1>
         {status === 'catalog-only' ? <DataStatusBadge status={status} /> : null}
-        {latestPeriod && isPeriodStale({ latestPeriod }) ? (
-          <FreshnessBadge period={latestPeriod} />
-        ) : null}
       </div>
 
       {/*

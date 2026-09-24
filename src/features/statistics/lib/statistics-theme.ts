@@ -19,9 +19,6 @@ export const statisticsTheme = {
   /** The tier-0 hero figure: the one LARGE number per page. */
   heroValue: 'text-4xl font-semibold tabular-nums tracking-tight',
   heroUnit: 'ml-1.5 text-lg font-normal text-muted-foreground',
-  /** Amber advisory chip (heuristic pick, staleness) — tinted, never hue-only. */
-  warningChip:
-    'rounded-sm bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950 dark:text-amber-300',
 
   /** Flat bordered band container (single level, never nested). */
   band: 'rounded-lg border border-border/70 bg-card',

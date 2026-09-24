@@ -1564,6 +1564,45 @@ and found ten things the first reviews had not. Fixed:
 - The toggle's test follows the controlled value between keys; the
   representative-cell comparison the removed latch used is gone.
 
+## 6y. The figure without badges, the chart's loading in the chart's shape (2026-09-24)
+
+Two badges on the detail page said things the page already said:
+
+- **„selecție reprezentativă"** beside the figure marked a cell the page
+  chose itself when INS resolved none. The rail says the same where it can
+  be acted on: every coordinate the page chose reads „implicit", and the
+  line under the rail explains the word. The badge is gone from the figure,
+  its summary and its error state.
+- **„Date până în 2004 · posibil neactualizat"** over the title judged the
+  series stale from its last observed period, against a cadence threshold.
+  On the common page the figure already says that period („în 2004") and
+  the source line says when INS last touched the matrix („actualizată 23
+  februarie 2007", a different fact); the badge was louder than the title.
+
+While the series reads, the band no longer swaps a grey block for a
+different layout. The skeleton is the loaded band's own shape — the
+summary row, then a frame at the chart's height with its hairlines and axis
+placeholders — and it shows what the page already knows: the facts' labels,
+and the figure the first read resolved, printed as it will be, but only when
+it is exactly the figure that lands: the same cell, at the cadence the band
+shows, a readable value with no INS flag the loading state would drop, the
+unit worded by the summary's own rule (`figureUnitWord`), and no year
+window. Otherwise the figure is a placeholder too. The axes carry no years:
+neither the catalog's span (FIN101A lists 1991–2005, its revenue total covers
+2002–2004) nor a pinned window is the span the loaded chart draws, which the
+rows decide. What is still on its way pulses; a light sweep crosses the plot,
+drawn with SVG's own animation and removed for a reader who asked for less
+motion. Nothing is drawn as data that is not data. The first-load skeleton
+uses the same frame, at the rail's real width (16rem, it was 15).
+
+What the freshness badge carried that nothing else does: a staleness
+judgement from the last observed period. With a year window pinned, the
+figure dates the window, not the series, so nothing on the page then says
+the series' last period is years old. The rail's year control still bounds
+the window by the observed span, and where INS records it, „Continuitatea
+seriei" says the series ended and names its successor. Removed at the
+product owner's call.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

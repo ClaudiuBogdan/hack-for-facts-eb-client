@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro'
 import type { StatisticsHubIndicator, StatisticsHubUnit } from '@/schemas/statistics'
 import { formatHubNumber } from './numbers'
+import { tileUnit } from './territory-groups'
 
 /**
  * The unit as a Romanian word in the quiet tier. A percent folds its sign
@@ -81,4 +82,18 @@ export function describeUnitSymbol(symbol: string): string {
     default:
       return symbol
   }
+}
+
+/**
+ * The unit as a word beside a detail figure — „persoane", „%", and for a bare
+ * count the symbol worded („număr"): `hubUnitWord` is deliberately empty for
+ * a count, because „10 numar" is not a sentence, but a figure with no unit at
+ * all leaves the reader to guess what 10 counts. One rule for the summary and
+ * for the loading state that precedes it, so the word never changes on arrival.
+ */
+export function figureUnitWord(
+  unit: { readonly unitSymbol: string | null; readonly unitNameRo: string | null },
+  unitLabel: string | null,
+): string {
+  return hubUnitWord(tileUnit(unit), unitLabel) || (unit.unitSymbol ? describeUnitSymbol(unit.unitSymbol) : '')
 }
