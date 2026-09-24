@@ -11,7 +11,8 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { COMPANY_FIXTURE_KEYS, type CompanyFixtureKey } from './company-page.fixtures'
 
-export const FINANCIAL_MEASURES = ['cifra-de-afaceri', 'profit', 'salariati'] as const
+/** `toate`: the three together, the default; the others each alone, in detail. */
+export const FINANCIAL_MEASURES = ['toate', 'cifra-de-afaceri', 'profit', 'salariati'] as const
 export type FinancialMeasure = (typeof FINANCIAL_MEASURES)[number]
 
 export const PAYMENT_GRAINS = ['contracte', 'achizitii-directe'] as const
@@ -27,7 +28,7 @@ type Key = 'firma' | 'masura' | 'plati'
 
 const DEFAULTS: Record<Key, string | undefined> = {
   firma: COMPANY_FIXTURE_KEYS[0],
-  masura: 'cifra-de-afaceri',
+  masura: 'toate',
   plati: undefined,
 }
 
@@ -40,7 +41,7 @@ export function useCompanyPageState() {
   const navigate = useNavigate()
   const state: CompanyPageState = {
     company: oneOf(COMPANY_FIXTURE_KEYS, search.firma) ?? COMPANY_FIXTURE_KEYS[0],
-    measure: oneOf(FINANCIAL_MEASURES, search.masura) ?? 'cifra-de-afaceri',
+    measure: oneOf(FINANCIAL_MEASURES, search.masura) ?? 'toate',
     grain: oneOf(PAYMENT_GRAINS, search.plati) ?? null,
   }
   // One navigation per change, however many keys it sets: two in a row would

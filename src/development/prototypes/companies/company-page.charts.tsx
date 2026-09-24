@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -297,3 +297,232 @@ function TooltipRow({ swatch, label, value }: { readonly swatch: string; readonl
   )
 }
 
+/**
+ * Turnover, net result and people over every year with a statement, on one
+ * reading: the full-size sibling of the head's chart. People are a line in a
+ * band of their own above, with its low and high in the gutter in its colour;
+ * lei are bars below on their own axis — turnover wide and pale, the net
+ * result narrow and solid in front of it from the same zero, a loss red and
+ * under the line. The two bands share only the years, so no line is read
+ * against a bar's scale. A year with no statement stays shaded across both.
+ * Pointer and keyboard as on `YearBars`: a rule, and the year's three figures.
+ */
+export function CombinedYears({
+  years,
+  turnover,
+  net,
+  employees,
+  labels,
+  formatTick,
+  formatMoney,
+  formatCount,
+  emptyLabel,
+  label,
+}: {
+  readonly years: readonly number[]
+  readonly turnover: readonly (number | null)[]
+  readonly net: readonly (number | null)[]
+  readonly employees: readonly (number | null)[]
+  readonly labels: { readonly turnover: string; readonly net: string; readonly loss: string; readonly employees: string }
+  readonly formatTick: (value: number) => string
+  readonly formatMoney: (value: number) => string
+  readonly formatCount: (value: number) => string
+  /** What a year with no value at all means („Niciun bilanț publicat"). */
+  readonly emptyLabel: (index: number) => string
+  /** The chart's accessible name. */
+  readonly label: string
+}) {
+  const count = years.length
+  const { active, plotRef, tooltipRef, tooltipLeft, handlers } = useSlotReading(count)
+  const hintId = useId()
+  if (count === 0) return null
+
+  const lei = [...turnover, ...net].filter((value): value is number => value !== null)
+  const scale = niceScale(Math.min(0, ...lei), Math.max(0, ...lei), 4)
+  const yAt = (value: number) => (1 - (value - scale.from) / (scale.to - scale.from)) * 100
+  const staff = employees.filter((value): value is number => value !== null)
+  const hasStaff = staff.length > 0
+  const staffLow = Math.min(...staff)
+  const staffHigh = Math.max(...staff)
+  // The people's band shows the change, from its low to its high, padded; the gutter says both ends.
+  const staffPad = (staffHigh - staffLow) * 0.15 || Math.max(staffHigh * 0.1, 1)
+  const staffY = (value: number) => (1 - (value - (staffLow - staffPad)) / (staffHigh - staffLow + staffPad * 2)) * 100
+  const slot = CHART_WIDTH / count
+  const wide = Math.min(slot * 0.62, 34)
+  const narrow = Math.min(slot * 0.26, 14)
+  const centre = (index: number) => ((index + 0.5) / count) * 100
+  const empty = (index: number) => (turnover[index] ?? null) === null && (net[index] ?? null) === null && (employees[index] ?? null) === null
+  const losses = net.some((value) => value !== null && value < 0)
+  const dim = (index: number) => active !== null && active !== index && 'opacity-40'
+
+  let staffPath = ''
+  employees.forEach((value, index) => {
+    if (value === null) return
+    const move = staffPath === '' || (employees[index - 1] ?? null) === null
+    staffPath += `${move ? 'M' : 'L'}${((centre(index) * CHART_WIDTH) / 100).toFixed(1)},${staffY(value).toFixed(2)} `
+  })
+
+  const spoken = (index: number) => {
+    if (empty(index)) return `${years[index]}, ${emptyLabel(index)}`
+    const part = (name: string, value: number | null, format: (value: number) => string) => `${name} ${value === null ? '—' : format(value)}`
+    return [
+      String(years[index]),
+      part(labels.turnover, turnover[index] ?? null, formatMoney),
+      part(labels.net, net[index] ?? null, formatMoney),
+      part(labels.employees, employees[index] ?? null, formatCount),
+    ].join(', ')
+  }
+  const gaps = years.map((year, index) =>
+    empty(index) ? <rect key={`gap-${year}`} x={index * slot + 1} width={slot - 2} y={0} height="100%" className="fill-muted/60" /> : null,
+  )
+
+  return (
+    <figure>
+      <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-[2px] bg-primary/30" aria-hidden="true" />
+          {labels.turnover}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-[2px] bg-primary" aria-hidden="true" />
+          {labels.net}
+        </span>
+        {losses ? (
+          <span className="flex items-center gap-1.5">
+            <span className="size-2.5 rounded-[2px] bg-destructive/70" aria-hidden="true" />
+            {labels.loss}
+          </span>
+        ) : null}
+        {hasStaff ? (
+          <span className="flex items-center gap-1.5">
+            <span className="h-0.5 w-4 rounded-full bg-amber-500 dark:bg-amber-400" aria-hidden="true" />
+            {labels.employees}
+          </span>
+        ) : null}
+      </figcaption>
+      <div className="mt-4 pl-14">
+        <div
+          ref={plotRef}
+          tabIndex={0}
+          role="slider"
+          aria-label={`${label}, ${years[0] === years[count - 1] ? years[0] : `${years[0]}–${years[count - 1]}`}`}
+          aria-describedby={hintId}
+          aria-orientation="horizontal"
+          aria-valuemin={0}
+          aria-valuemax={count - 1}
+          aria-valuenow={active ?? count - 1}
+          aria-valuetext={spoken(active ?? count - 1)}
+          className={cn(CHART_PLOT_CLASS, 'flex flex-col gap-4')}
+          {...handlers}
+        >
+          <span id={hintId} className="sr-only">
+            {t`Săgețile stânga și dreapta trec de la un an la altul; Home și End duc la primul și la ultimul.`}
+          </span>
+
+          {hasStaff ? (
+            <div className="relative h-14 sm:h-16" aria-hidden="true">
+              {[staffHigh, staffLow].map((value, index) =>
+                index === 1 && staffLow === staffHigh ? null : (
+                  <span
+                    key={index}
+                    className="pointer-events-none absolute right-full -translate-y-1/2 pr-3 font-mono text-[10px] tabular-nums text-amber-600 dark:text-amber-400"
+                    style={{ top: `${staffY(value).toFixed(1)}%` }}
+                  >
+                    {formatCount(value)}
+                  </span>
+                ),
+              )}
+              <svg viewBox={`0 0 ${CHART_WIDTH} 100`} preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible">
+                {gaps}
+                <path d={staffPath} fill="none" className="stroke-amber-500 dark:stroke-amber-400" strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              </svg>
+              {employees.map((value, index) =>
+                value === null ? null : (
+                  <span
+                    key={years[index]}
+                    className={cn(
+                      'absolute -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-background transition-all',
+                      active === index ? 'size-2.5 bg-amber-600 dark:bg-amber-400' : 'size-1.5 bg-amber-500/80',
+                    )}
+                    style={{ left: `${centre(index).toFixed(2)}%`, top: `${staffY(value).toFixed(1)}%` }}
+                  />
+                ),
+              )}
+            </div>
+          ) : null}
+
+          <div className="relative h-44 sm:h-52 lg:h-60" aria-hidden="true">
+            <ChartValueTicks ticks={scale.ticks} top={yAt} format={formatTick} />
+            <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} preserveAspectRatio="none" className="block size-full overflow-visible">
+              {gaps}
+              <ChartGridLines ticks={scale.ticks} top={yAt} emphasis={scale.from < 0 ? 0 : undefined} />
+              {years.map((year, index) =>
+                [
+                  { key: 'turnover', value: turnover[index] ?? null, width: wide },
+                  { key: 'net', value: net[index] ?? null, width: narrow },
+                ].map((bar) => {
+                  if (bar.value === null || bar.value === 0) return null
+                  const from = yAt(Math.max(bar.value, 0))
+                  const to = yAt(Math.min(bar.value, 0))
+                  return (
+                    <rect
+                      key={`${bar.key}-${year}`}
+                      x={index * slot + (slot - bar.width) / 2}
+                      width={bar.width}
+                      y={(from * CHART_HEIGHT) / 100}
+                      height={Math.max(((to - from) * CHART_HEIGHT) / 100, 0.8)}
+                      className={cn(
+                        'transition-opacity',
+                        bar.key === 'turnover' ? 'fill-primary/30' : bar.value < 0 ? 'fill-destructive/70' : 'fill-primary',
+                        dim(index),
+                      )}
+                    />
+                  )
+                }),
+              )}
+            </svg>
+          </div>
+
+          {active !== null ? (
+            <>
+              <ChartRule left={centre(active)} />
+              <ChartTooltip tooltipRef={tooltipRef} left={tooltipLeft}>
+                <MonoLabel className="block text-muted-foreground">{years[active]}</MonoLabel>
+                {empty(active) ? (
+                  <p className="mt-2 text-muted-foreground">{emptyLabel(active)}</p>
+                ) : (
+                  <dl className="mt-2 grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1">
+                    {[
+                      { key: 'turnover', name: labels.turnover, swatch: 'size-2 rounded-[2px] bg-primary/30', value: turnover[active] ?? null, format: formatMoney },
+                      {
+                        key: 'net',
+                        name: (net[active] ?? 0) < 0 ? labels.loss : labels.net,
+                        swatch: cn('size-2 rounded-[2px]', (net[active] ?? 0) < 0 ? 'bg-destructive/70' : 'bg-primary'),
+                        value: net[active] ?? null,
+                        format: formatMoney,
+                      },
+                      { key: 'employees', name: labels.employees, swatch: 'h-0.5 w-3 rounded-full bg-amber-500', value: employees[active] ?? null, format: formatCount },
+                    ].map((row) => (
+                      <Fragment key={row.key}>
+                        <dt className="flex items-center gap-1.5">
+                          <span className="flex w-3 shrink-0 justify-center">
+                            <span className={row.swatch} />
+                          </span>
+                          {row.name}
+                        </dt>
+                        <dd className={cn('text-right font-medium tabular-nums', row.value !== null && row.value < 0 && 'text-destructive')}>
+                          {row.value === null ? '—' : row.format(row.value)}
+                        </dd>
+                      </Fragment>
+                    ))}
+                  </dl>
+                )}
+              </ChartTooltip>
+            </>
+          ) : null}
+        </div>
+        <ChartPeriodAxis periods={years.map(String)} ticks={yearTicks(years)} left={centre} active={active} />
+      </div>
+    </figure>
+  )
+}

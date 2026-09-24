@@ -12,7 +12,7 @@ import { countyDirectorySearch } from '@/features/private-companies/lib/hub-coun
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
 import type { PrivateCompanyFinancialSummary, PrivateCompanyFinancialYear } from '@/schemas/private-company'
-import { YearBars, type BarSeries } from './company-page.charts'
+import { CombinedYears, YearBars, type BarSeries } from './company-page.charts'
 import { netResultOf, type CompanyPageModel, type SizeClass, type StatusKind } from './company-page.data'
 import type { ProcurementGrainStats, ProcurementRecordRow } from './company-page.fixtures'
 import { count, dateText, moneyCell, moneyFigure, moneyText, moneyTick, monthText, percent, yearRanges } from './company-page.format'
@@ -627,6 +627,8 @@ export function economyLede(model: CompanyPageModel): string {
 
 export function measureLabel(measure: FinancialMeasure): string {
   switch (measure) {
+    case 'toate':
+      return t`Toate`
     case 'cifra-de-afaceri':
       return t`Cifra de afaceri`
     case 'profit':
@@ -674,8 +676,9 @@ export function FinancialChart({
   readonly chartClassName?: string
 }) {
   if (model.span.length === 0) return <NoStatements className={className} />
-  const points = measure === 'cifra-de-afaceri' ? model.series.turnover : measure === 'profit' ? model.series.netResult : model.series.employees
-  const values = points.map((point) => point.value)
+  const values = (measure === 'cifra-de-afaceri' ? model.series.turnover : measure === 'profit' ? model.series.netResult : model.series.employees).map(
+    (point) => point.value,
+  )
   const series: BarSeries[] =
     measure === 'profit'
       ? [
@@ -690,17 +693,32 @@ export function FinancialChart({
         <IndicatorToggle label={t`Graficul arată`} options={FINANCIAL_MEASURES.map((key) => ({ key, label: measureLabel(key) }))} value={measure} onChange={onMeasure} />
       </div>
       <div className="mt-6">
-        <YearBars
-          key={measure}
-          years={model.span}
-          series={series}
-          format={measure === 'salariati' ? (value) => count(value) : moneyTick}
-          label={measureLabel(measure)}
-          emptyLabel={(index) => (missing.has(model.span[index] ?? 0) ? t`Niciun bilanț publicat pentru acest an` : t`Nu apare în bilanț`)}
-          legend={measure === 'profit' && model.lossYears > 0}
-          integer={measure === 'salariati'}
-          className={chartClassName}
-        />
+        {measure === 'toate' ? (
+          <CombinedYears
+            years={model.span}
+            turnover={model.series.turnover.map((point) => point.value)}
+            net={model.series.netResult.map((point) => point.value)}
+            employees={model.series.employees.map((point) => point.value)}
+            labels={{ turnover: t`Cifra de afaceri`, net: t`Profit net`, loss: t`Pierdere netă`, employees: t`Salariați` }}
+            formatTick={moneyTick}
+            formatMoney={moneyText}
+            formatCount={(value) => count(value)}
+            emptyLabel={(index) => (missing.has(model.span[index] ?? 0) ? t`Niciun bilanț publicat pentru acest an` : t`Nu apare în bilanț`)}
+            label={t`Cifra de afaceri, rezultatul net și salariații`}
+          />
+        ) : (
+          <YearBars
+            key={measure}
+            years={model.span}
+            series={series}
+            format={measure === 'salariati' ? (value) => count(value) : moneyTick}
+            label={measureLabel(measure)}
+            emptyLabel={(index) => (missing.has(model.span[index] ?? 0) ? t`Niciun bilanț publicat pentru acest an` : t`Nu apare în bilanț`)}
+            legend={measure === 'profit' && model.lossYears > 0}
+            integer={measure === 'salariati'}
+            className={chartClassName}
+          />
+        )}
       </div>
       {model.missingYears.length > 0 ? (
         <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">
