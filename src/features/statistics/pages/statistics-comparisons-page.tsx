@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { COMPARISON_PALETTE_CLASS } from '../components/comparison/comparison-palette'
 import { ComparisonMapBand } from '../components/comparison/comparison-map-band'
 import type { ComparisonPlaceSuggestion } from '../components/comparison/comparison-pickers'
-import { ComparisonPins } from '../components/comparison/comparison-pins'
+import { comparisonAxes } from '../components/comparison/comparison-pins'
 import { ComparisonRail } from '../components/comparison/comparison-rail'
 import { ComparisonResultBand } from '../components/comparison/comparison-result-band'
 import {
@@ -83,12 +83,11 @@ export function StatisticsComparisonsPage() {
   const reading = useComparisonReading({ tokens, matrix, requestedWindow, requestedView: search.vedere })
   const { territories, periods, range, unit, unitLabel, windowTo } = reading
   const county = useComparisonCountyLayer(prepared, windowTo)
-  const { memberLabel, detailsSummary } = useComparisonMemberLabels({
+  const { memberLabel, unitWord } = useComparisonMemberLabels({
     datasetMeta,
     matrix,
     effectivePins,
     unitCode,
-    cadence,
     unit,
     unitLabel,
     observationsLoading,
@@ -138,6 +137,11 @@ export function StatisticsComparisonsPage() {
     if (!suggestions.some((entry) => entry.token === suggestion.token)) suggestions.push(suggestion)
   }
 
+  // The classification pins the address carries, as `type:code` strings.
+  const pinnedClassifications = Array.isArray(search.clasificari)
+    ? search.clasificari.filter((pin): pin is string => typeof pin === 'string')
+    : []
+
   const rail = (
     <ComparisonRail
       example={exampleMode}
@@ -151,29 +155,28 @@ export function StatisticsComparisonsPage() {
       // The series' coordinates are the comparison's own: only once its read
       // has resolved them. Pinned before the first territory, one axis would
       // be an explicit selection that suppresses every default of the others.
-      details={
+      axes={
         comparisons.datasetMeta && !exampleMode
-          ? {
-              summary: detailsSummary || t`Alege coordonatele seriei`,
-              defaulted: search.clasificari === undefined && search.unitate === undefined && search.frecventa === undefined,
-              defaultOpen: unresolvedDimensionLabels.length > 0 || issues.length > 0,
-              content: (
-                <div className="space-y-3">
-                  <ComparisonPins
-                    datasetMeta={comparisons.datasetMeta}
-                    effectivePins={effectivePins}
-                    unitCode={unitCode}
-                    cadence={cadence}
-                    memberLabel={memberLabel}
-                    onPinClassification={(typeCode, valueCode) => edit({ kind: 'pin-classification', typeCode, valueCode })}
-                    onPinUnit={(next) => edit({ kind: 'pin-unit', unitCode: next })}
-                    onPinCadence={(next) => edit({ kind: 'pin-cadence', cadence: next })}
-                  />
-                </div>
-              ),
-            }
-          : null
+          ? comparisonAxes({
+              datasetMeta: comparisons.datasetMeta,
+              effectivePins,
+              unitCode,
+              unitWord,
+              cadence,
+              pinned: {
+                classifications: new Set(pinnedClassifications.map((pin) => pin.split(':')[0])),
+                unit: search.unitate !== undefined,
+                cadence: search.frecventa !== undefined,
+              },
+              memberLabel,
+              onPinClassification: (typeCode, valueCode) => edit({ kind: 'pin-classification', typeCode, valueCode }),
+              onPinUnit: (next) => edit({ kind: 'pin-unit', unitCode: next }),
+              onPinCadence: (next) => edit({ kind: 'pin-cadence', cadence: next }),
+            })
+          : []
       }
+      pinCount={pinnedClassifications.length + (search.unitate === undefined ? 0 : 1) + (search.frecventa === undefined ? 0 : 1)}
+      onReset={() => edit({ kind: 'reset-source' })}
     />
   )
 
@@ -278,7 +281,7 @@ export function StatisticsComparisonsPage() {
       return (
         <div role="status" className="rounded-lg border border-dashed border-border/70 px-4 py-6 text-sm text-muted-foreground">
           <p>
-            <Trans>Comparația pornește după ce alegi, în „Detaliile seriei", o valoare pentru:</Trans>
+            <Trans>Comparația pornește după ce alegi, în „Selecție", o valoare pentru:</Trans>
           </p>
           <ul className="mt-2 list-inside list-disc">
             {unresolvedDimensionLabels.map((label) => (

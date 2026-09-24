@@ -20,6 +20,15 @@ import { StatisticsDebouncedSearchInput } from '../statistics-debounced-search-i
 const ROW_CLASS =
   'flex w-full items-start gap-2.5 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none'
 
+/**
+ * The pickers open in place, inside a section of the selection panel
+ * (`comparison-rail.tsx`): the search as a field, the rows in their own framed
+ * box — the shape of the dataset page's option lists and the shared filter
+ * lists. They used to be a popover's (a sheet's, on a phone) contents.
+ */
+const PICKER_CLASS = 'flex flex-col gap-2'
+const PICKER_LIST_CLASS = 'max-h-72 overflow-y-auto overscroll-contain rounded-md border border-border/70'
+
 /** The picker's list: its heading, its rows or the reason there are none. */
 function PickerList({ heading, children }: { readonly heading?: ReactNode; readonly children: ReactNode }) {
   return (
@@ -79,8 +88,8 @@ export function ComparisonIndicatorPicker({
   const meta = (code: string, localities: boolean) => (localities ? code : `${code} · ${t`doar județe`}`)
 
   return (
-    <div className="flex max-h-[min(32rem,var(--radix-popover-content-available-height,32rem))] flex-col">
-      <div className="border-b border-border/70 p-3">
+    <div className={PICKER_CLASS}>
+      <div>
         <StatisticsDebouncedSearchInput
           value={term}
           onCommit={setTerm}
@@ -90,7 +99,7 @@ export function ComparisonIndicatorPicker({
           clearLabel={t`Șterge căutarea de indicatori`}
         />
       </div>
-      <div className="min-h-0 overflow-y-auto" aria-live="polite">
+      <div className={PICKER_LIST_CLASS} aria-live="polite">
         {!active ? (
           <PickerList heading={<Trans>Des comparate</Trans>}>
             <ul>{COMPARISON_QUICK_INDICATORS.map((entry) => row(entry.code, i18n._(entry.label), meta(entry.code, entry.localities)))}</ul>
@@ -188,8 +197,8 @@ export function ComparisonPlacePicker({
   )
 
   return (
-    <div className="flex max-h-[min(30rem,var(--radix-popover-content-available-height,30rem))] flex-col">
-      <div className="border-b border-border/70 p-3">
+    <div className={PICKER_CLASS}>
+      <div>
         <StatisticsDebouncedSearchInput
           value={term}
           onCommit={setTerm}
@@ -204,7 +213,7 @@ export function ComparisonPlacePicker({
           </p>
         ) : null}
       </div>
-      <div className="min-h-0 overflow-y-auto" aria-live="polite">
+      <div className={PICKER_LIST_CLASS} aria-live="polite">
         {!enabled ? (
           offered.length > 0 ? (
             <PickerList heading={<Trans>Sugestii</Trans>}>

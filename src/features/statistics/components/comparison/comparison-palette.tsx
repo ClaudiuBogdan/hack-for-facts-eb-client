@@ -17,6 +17,15 @@
  * ships: the rail as a legend, the standings' figures, and the comparison
  * table as a full non-colour view of the same numbers.
  *
+ * Slot 1 is the INS series colour, `--chart-sky` (2026-09-24), so the first
+ * territory reads in the colour the dataset page draws it in. Checked against
+ * the five others under simulated deutan, protan and tritan vision (Machado,
+ * full severity; OKLab distance): in light it separates as the old #2a78d6
+ * did (worst 7,0 against 7,6, both on tritan); in dark it separates far
+ * better — the old #3987e5 all but merged with slot 5 for a protan reader
+ * (1,9), sky stays at 16,8 or more. It is lighter than the dark band, so the
+ * first territory reads first.
+ *
  * Values are exposed as CSS custom properties rather than raw hexes so a
  * single wrapper element carries both modes and Recharts can read
  * `var(--cmp-n)` straight off `stroke`/`fill`.
@@ -30,13 +39,12 @@ const COMPARISON_SERIES_SLOTS = 6
  * and legend swatch so the same territory reads the same colour everywhere.
  */
 export const COMPARISON_PALETTE_CLASS = [
-  '[--cmp-1:#2a78d6]',
+  '[--cmp-1:hsl(var(--chart-sky))]',
   '[--cmp-2:#1baf7a]',
   '[--cmp-3:#eda100]',
   '[--cmp-4:#008300]',
   '[--cmp-5:#4a3aa7]',
   '[--cmp-6:#e34948]',
-  'dark:[--cmp-1:#3987e5]',
   'dark:[--cmp-2:#199e70]',
   'dark:[--cmp-3:#c98500]',
   'dark:[--cmp-4:#008300]',
@@ -55,7 +63,7 @@ export function comparisonSeriesColor(index: number): string {
 }
 
 /** The light column as literal colours, for a chart drawn outside this page: the chart page stores one colour per series. */
-const COMPARISON_SERIES_HEX = ['#2a78d6', '#1baf7a', '#eda100', '#008300', '#4a3aa7', '#e34948'] as const
+const COMPARISON_SERIES_HEX = ['#157fc1', '#1baf7a', '#eda100', '#008300', '#4a3aa7', '#e34948'] as const
 
 export function comparisonSeriesHex(index: number): string {
   return COMPARISON_SERIES_HEX[index % COMPARISON_SERIES_SLOTS] ?? COMPARISON_SERIES_HEX[0]

@@ -52,6 +52,9 @@ export default {
           3: "hsl(var(--chart-3))",
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
+          // The INS series colour: the detail chart, the hub's chart and the
+          // comparison's first territory (DESIGN.md, decision log 2026-09-24).
+          sky: "hsl(var(--chart-sky))",
         },
         choropleth: {
           1: "hsl(var(--choropleth-1))",

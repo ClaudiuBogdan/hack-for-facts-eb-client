@@ -1,11 +1,10 @@
 import { useMemo } from 'react'
 import { t } from '@lingui/core/macro'
-import type { InsDatasetDetails, InsPeriodicity } from '@/schemas/ins'
+import type { InsDatasetDetails } from '@/schemas/ins'
 import type { StatisticsHubUnit } from '@/schemas/statistics'
 import type { ClassificationPin } from '../lib/dataset-selection'
 import { hubUnitWord } from '../lib/units'
 import type { NativeComparisonMatrix } from '../lib/native-comparison'
-import { periodicityLabel } from '../lib/periodicity-labels'
 import { sourceMemberLabelKey, useSourceMemberLabels, type SourceMemberLookup } from './use-dataset-detail'
 
 /**
@@ -22,12 +21,11 @@ export function useComparisonMemberLabels(params: {
   readonly matrix: NativeComparisonMatrix | null
   readonly effectivePins: readonly ClassificationPin[]
   readonly unitCode: string | null
-  readonly cadence: InsPeriodicity | null
   readonly unit: StatisticsHubUnit
   readonly unitLabel: string | null
   readonly observationsLoading: boolean
 }) {
-  const { datasetMeta, matrix, effectivePins, unitCode, cadence, unit, unitLabel, observationsLoading } = params
+  const { datasetMeta, matrix, effectivePins, unitCode, unit, unitLabel, observationsLoading } = params
   const unitDimension = datasetMeta?.dimensions.find((dimension) => dimension.type === 'UNIT_OF_MEASURE')
 
   const rowLabels = useMemo(() => {
@@ -58,16 +56,9 @@ export function useComparisonMemberLabels(params: {
   const memberLabel = (lookup: SourceMemberLookup) =>
     rowLabels.get(sourceMemberLabelKey(lookup)) ?? axisLabels.get(sourceMemberLabelKey(lookup)) ?? lookup.code
 
-  const detailsSummary = [
-    ...pinLookups.map((lookup) => {
-      // The unit as the rest of the page says it („persoane"), where it has a word for it.
-      if (lookup.kind === 'unit')
-        return unit === 'percent' ? t`procente` : unit === 'other' || !hubUnitWord(unit, unitLabel) ? memberLabel(lookup) : hubUnitWord(unit, unitLabel)
-      const dimension = datasetMeta?.dimensions.find((entry) => entry.index === lookup.dimensionIndex)
-      return `${dimension?.label_ro?.trim() || `D${lookup.dimensionIndex}`}: ${memberLabel(lookup)}`
-    }),
-    ...(cadence ? [periodicityLabel(cadence)] : []),
-  ].join(' · ')
+  // The unit as the rest of the page says it („persoane"), where it has a
+  // word for it; null leaves the member's own name.
+  const unitWord = unit === 'percent' ? t`procente` : unit === 'other' ? null : hubUnitWord(unit, unitLabel) || null
 
-  return { memberLabel, detailsSummary }
+  return { memberLabel, unitWord }
 }

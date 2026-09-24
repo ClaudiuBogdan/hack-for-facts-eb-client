@@ -53,7 +53,8 @@ type ChartSeries = { readonly label: string; readonly points: readonly Statistic
 /**
  * Two national series on one period axis, with the space between them shaded
  * by which one runs above: births and deaths, where the grey is the years of
- * natural decrease. Inline SVG stretched to the frame; every text — ticks,
+ * natural decrease. The first series is the INS series colour (`chart-sky`),
+ * the one the dataset page draws; the second is grey. Inline SVG stretched to the frame; every text — ticks,
  * legend, tooltip — is HTML over it, so it reads at any width.
  *
  * Pointing at the chart (or dragging a finger along it, or the arrow keys
@@ -119,7 +120,7 @@ export function HubTwoLineChart({
         aria-hidden="true"
         className={cn(
           'pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-background transition-opacity',
-          series === 'a' ? 'bg-primary' : 'bg-muted-foreground',
+          series === 'a' ? 'bg-chart-sky' : 'bg-muted-foreground',
           recede(series),
         )}
         style={{ left: `${xAt(index)}%`, top: `${yAt(value)}%` }}
@@ -131,7 +132,7 @@ export function HubTwoLineChart({
     <figure>
       <figcaption className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
         <span className={cn('flex items-center gap-1.5 transition-opacity', recede('a'))}>
-          <span className="h-0.5 w-4 rounded-full bg-primary" aria-hidden="true" />
+          <span className="h-0.5 w-4 rounded-full bg-chart-sky" aria-hidden="true" />
           {a.label}
         </span>
         <span className={cn('flex items-center gap-1.5 transition-opacity', recede('b'))}>
@@ -146,7 +147,7 @@ export function HubTwoLineChart({
         ) : null}
         {gap && signs.has(1) ? (
           <span className="flex items-center gap-1.5">
-            <span className="size-3 rounded-[2px] bg-primary/15 ring-1 ring-inset ring-primary/30" aria-hidden="true" />
+            <span className="size-3 rounded-[2px] bg-chart-sky/15 ring-1 ring-inset ring-chart-sky/30" aria-hidden="true" />
             {gap.aAbove}
           </span>
         ) : null}
@@ -183,7 +184,7 @@ export function HubTwoLineChart({
                     .map(([x, value], point) => `${point === 0 ? 'M' : 'L'}${toXY(x, value)}`)
                     .join(' ') + 'Z'
                 }
-                className={region.sign < 0 ? 'fill-foreground/10' : 'fill-primary/15'}
+                className={region.sign < 0 ? 'fill-foreground/10' : 'fill-chart-sky/15'}
               />
             ))}
             <path
@@ -198,7 +199,7 @@ export function HubTwoLineChart({
             <path
               d={toPath(aligned.a)}
               fill="none"
-              className={cn('stroke-primary transition-opacity', recede('a'))}
+              className={cn('stroke-chart-sky transition-opacity', recede('a'))}
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -222,7 +223,7 @@ export function HubTwoLineChart({
                   <MonoLabel className="block text-muted-foreground">{reading.period}</MonoLabel>
                   <dl className="mt-2 grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1">
                     <dt className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-full bg-primary" />
+                      <span className="size-2 rounded-full bg-chart-sky" />
                       {a.label}
                     </dt>
                     <dd className="text-right font-medium tabular-nums">{reading.a === null ? '—' : formatHubNumber(reading.a)}</dd>

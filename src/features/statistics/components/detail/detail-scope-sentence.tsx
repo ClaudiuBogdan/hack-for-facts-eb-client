@@ -9,18 +9,12 @@ import {
   CalendarRange,
   Globe,
   MapPin,
-  RotateCcw,
   Ruler,
   SlidersHorizontal,
   Tags,
   type LucideIcon,
 } from 'lucide-react'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+import { Accordion } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -57,6 +51,12 @@ import { statisticsTheme } from '../../lib/statistics-theme'
 import { DetailCadenceControl } from './detail-cadence-control'
 import { DetailDimensionPanel } from './detail-dimension-panel'
 import { DetailYearWindowControl } from './detail-year-window-control'
+import {
+  FilterPanelHeader,
+  FilterPanelReset,
+  FilterPanelSection,
+  FilterPanelStatic,
+} from '../filter-panel'
 
 /** What a segment's control is handed by the section it opens in. */
 interface ScopeControlOptions {
@@ -215,12 +215,9 @@ export function DetailScopeSentence({
           className={cn(statisticsTheme.band, 'overflow-hidden')}
           data-scope-panel
         >
-          <div className={statisticsTheme.scopePanelHeader}>
-            <h2 className="text-sm font-semibold text-foreground">
-              <Trans>Selecție</Trans>
-            </h2>
-            <ResetButton count={pinCount} onReset={reset} />
-          </div>
+          <FilterPanelHeader title={<Trans>Selecție</Trans>}>
+            <FilterPanelReset count={pinCount} onReset={reset} />
+          </FilterPanelHeader>
           <ScopeSections
             segments={segments}
             open={railSection}
@@ -266,7 +263,7 @@ export function DetailScopeSentence({
               <SheetTitle className="text-base">
                 <Trans>Alege ce arată seria</Trans>
               </SheetTitle>
-              <ResetButton count={pinCount} onReset={reset} />
+              <FilterPanelReset count={pinCount} onReset={reset} />
             </SheetHeader>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <ScopeSections
@@ -309,28 +306,6 @@ function countPins(search: StatisticsDatasetDetailSearch): number {
   )
 }
 
-/** Undo every value the reader chose: the axes go back to the implicit ones. */
-function ResetButton({
-  count,
-  onReset,
-}: {
-  readonly count: number
-  readonly onReset: (from: HTMLElement) => void
-}) {
-  if (count === 0) return null
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-auto shrink-0 gap-1.5 px-2 py-1 text-xs text-muted-foreground"
-      onClick={(event) => onReset(event.currentTarget)}
-    >
-      <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-      <Trans>Resetează ({count})</Trans>
-    </Button>
-  )
-}
-
 /**
  * One section per axis. One open at a time, and controlled, so a pick can
  * close its own section and show the new value in the trigger it came from.
@@ -367,64 +342,31 @@ function ScopeSections({
       onValueChange={onOpenChange}
     >
       {segments.map((segment) => {
-        const Icon = segment.icon
-        const heading = (
-          <span className="flex min-w-0 flex-1 items-start gap-2.5">
-            <Icon
-              className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-              aria-hidden
-            />
-            <span className="flex min-w-0 flex-1 flex-col items-start">
-              <span className={statisticsTheme.scopeRailLabel}>
-                {segment.controlLabel.trim()}
-              </span>
-              <span className="mt-0.5 flex w-full min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-                <span className={statisticsTheme.scopePanelValue}>
-                  {segment.text}
-                </span>
-                {/* Only a value that WAS chosen is marked as chosen
-                    automatically; an axis still to choose says so in its
-                    own text. Beside the value, not the axis name: in the
-                    16rem rail a tag up there wrapped the name. */}
-                {segment.defaulted && segment.control ? (
-                  <span className={statisticsTheme.scopePanelImplicit}>
-                    <Trans>implicit</Trans>
-                  </span>
-                ) : null}
-              </span>
-            </span>
-          </span>
-        )
+        const heading = {
+          icon: segment.icon,
+          label: segment.controlLabel,
+          value: segment.text,
+        }
         if (!segment.control)
-          return (
-            <div key={segment.id} className={statisticsTheme.scopePanelStatic}>
-              {heading}
-            </div>
-          )
+          return <FilterPanelStatic key={segment.id} {...heading} />
         return (
-          <AccordionItem
+          <FilterPanelSection
             key={segment.id}
-            value={segment.id}
-            className="border-b border-border/70 last:border-b-0"
+            id={segment.id}
+            {...heading}
+            implicit={segment.defaulted}
+            ariaLabel={
+              segment.defaulted
+                ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                : t`${segment.controlLabel}: ${segment.text}`
+            }
+            triggerRef={(element) => {
+              if (element) triggers.current.set(segment.id, element)
+              else triggers.current.delete(segment.id)
+            }}
           >
-            <AccordionTrigger
-              ref={(element) => {
-                if (element) triggers.current.set(segment.id, element)
-                else triggers.current.delete(segment.id)
-              }}
-              className={statisticsTheme.scopePanelTrigger}
-              aria-label={
-                segment.defaulted
-                  ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                  : t`${segment.controlLabel}: ${segment.text}`
-              }
-            >
-              {heading}
-            </AccordionTrigger>
-            <AccordionContent className="px-4 pb-4 pt-1">
-              {segment.control({ onPicked: () => closeAfterPick(segment.id) })}
-            </AccordionContent>
-          </AccordionItem>
+            {segment.control({ onPicked: () => closeAfterPick(segment.id) })}
+          </FilterPanelSection>
         )
       })}
     </Accordion>

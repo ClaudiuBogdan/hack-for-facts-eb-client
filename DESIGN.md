@@ -245,9 +245,10 @@ a dark label so it reads at AA on any surface and never relies on hue alone:
 **Chart colors** are navy-first then neutral steps (`--chart-1…5`): one accent,
 then greys, so a series chart never becomes a rainbow. Per-series color is
 user-overridable. Maps and charts always ship an adjacent textual/tabular summary.
-One recorded exception: the INS dataset page's single-series chart draws in
-`--chart-sky` (4.3:1 on white, 10:1 on the dark card) — see the decision
-log, 2026-09-24.
+One recorded exception: the INS series charts draw in `--chart-sky` (4.3:1 on
+white, 10:1 on the dark card; Tailwind `chart-sky`) — the dataset page's
+chart, the hub's two-line chart and the comparison's first territory. See the
+decision log, 2026-09-24.
 A **choropleth** uses `--choropleth-1…5`: one navy hue in five even lightness
 steps (dark to bright in dark mode); text on steps 1–3 is `foreground`, on
 4–5 `background`, which keeps ≥ 4.5:1 in both themes.
@@ -862,6 +863,16 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 ## Decision Log
 
 Append-only. Newest first. Each entry: date · decision · why.
+
+- **2026-09-24 — Sky blue reaches the rest of the INS charts.** The hub's
+  two-line chart draws its first series (and the shading where it runs above)
+  in `chart-sky`, and the comparison palette's first slot is `--chart-sky` in
+  both themes. *Why:* the product owner's call, so the INS pages read in one
+  colour. The comparison's slot was checked against the other five under
+  simulated colour blindness: as distinct as the old blue in light, far more
+  distinct in dark. The county map and the ranking beside it keep the navy
+  choropleth, whose five steps are tuned for the text on them. Supersedes the
+  entry below where it kept the hub and the comparison navy.
 
 - **2026-09-24 — The INS dataset chart draws in sky blue, not navy.** One
   token, `--chart-sky` (`203 80% 42%` light; `203 87% 72%` dark, the

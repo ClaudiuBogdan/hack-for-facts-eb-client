@@ -110,7 +110,7 @@ export function FactLabel({
       {marked ? (
         <span
           aria-hidden="true"
-          className="size-2 shrink-0 rounded-full bg-[hsl(var(--chart-sky))]"
+          className="size-2 shrink-0 rounded-full bg-chart-sky"
         />
       ) : null}
       <span className="first-letter:uppercase">{label}</span>

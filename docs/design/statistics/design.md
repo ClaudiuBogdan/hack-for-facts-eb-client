@@ -1711,6 +1711,38 @@ the sheet.
   with its count, so the focus moves to the first section; after a pick it
   goes back to the trigger the section opened from.
 
+## 6ac. Sky blue on every INS chart; the comparison's selection as the same panel (2026-09-24)
+
+At the product owner's request, the two follow-ups of §6z and §6ab:
+
+- **Sky blue beyond the dataset page.** The hub's two-line chart draws its
+  first series in `chart-sky` (the Tailwind name for `--chart-sky`), with the
+  shading where it runs above the second in the same hue; the second stays
+  grey. The comparison palette's slot 1 is `--chart-sky` in both themes, so
+  the first territory reads in the dataset page's colour; its saved-chart hex
+  is `#157fc1`. Checked against the five other slots under simulated deutan,
+  protan and tritan vision: in light it separates as the old `#2a78d6` did;
+  in dark far better — the old `#3987e5` all but merged with slot 5 for a
+  protan reader. It sits lighter than the dark band, so the first territory
+  reads first. Unchanged: the hub's sparklines (grey), and the county map
+  with the ranking beside it, which keep the navy choropleth — a county's
+  swatch and its bar share a row and must agree, and the five steps are
+  tuned for the text drawn on them.
+- **The comparison's selection is the panel.** The sections are the shared
+  pieces in `components/filter-panel.tsx`, which the dataset page's panel now
+  uses too: the indicator, then the territories — always on screen, since the
+  list is the chart's legend — with „Adaugă un teritoriu" opening the place
+  search in place, then one section per series axis (each classification, the
+  unit, the frequency). „Detaliile seriei" and its fields, each with a popover
+  of its own, are gone; an axis the comparison waits on stands open, and the
+  guidance names „Selecție". The pickers open in place, a search field over a
+  framed list, on a phone as on a desk. „Resetează (n)" counts the axes the
+  address pins and drops them (`reset-source`), with the window and the view
+  they were read for: other axes are another series, whose periods the old
+  window may not have. A pick closes its section with
+  the focus back on its trigger; the add button keeps it after an add, and
+  the sixth territory hands it to the last remove button.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):
