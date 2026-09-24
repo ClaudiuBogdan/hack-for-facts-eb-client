@@ -864,6 +864,19 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-24 — The INS dataset page's appendix is sections, not an
+  accordion.** „Explorează datele" held five closed rows under the notes; the
+  table and the related sets are now sections shaped like „Despre acest set de
+  date", and the axes, the coverage and the provenance rows are gone — the
+  rail and the line under the title already say them. The table shows only
+  what tells rows apart (a complete series is its period and its value, the
+  unit in the header), newest first, the latest five periods until the reader
+  opens the rest into a bounded scroller; the related sets are one row each,
+  with no „Date disponibile" down the list. *Why:* the product owner found the
+  accordion and the table's per-row archive (identifiers, raw coordinates,
+  JSON) heavy, and a closed row hides what it holds. Details:
+  `docs/design/statistics/design.md` §6af.
+
 - **2026-09-24 — Every navigation answers the click; the next page's code is
   fetched before it.** A client-side navigation changes the address at once
   but keeps the previous page until the next one's code has arrived (loaders

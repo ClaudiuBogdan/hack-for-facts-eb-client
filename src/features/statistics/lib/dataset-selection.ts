@@ -26,9 +26,6 @@ import type {
 /** A partial URL-state write: every control patches exactly one key. */
 export type DetailSearchPatch = Partial<StatisticsDatasetDetailSearch>
 
-/** Rows per observations table page. */
-export const DETAIL_PAGE_SIZE = 50
-
 /**
  * Options fetched per scroll of a dimension list. Never load-all: the list
  * virtualises what it holds and asks for the next page as the reader nears
@@ -312,11 +309,11 @@ export function filterExactCell(
 /**
  * The canonical scope key: ONE serialization consumed by loaderDeps, query
  * keys, and initialData matching, so they can never drift apart. `din`/`pana`
- * window client-side and `pagina` pages client-side — neither enters the key.
+ * window client-side, so they do not enter the key.
  */
 export function detailScopeKey(search: StatisticsDatasetDetailSearch): string {
-  // frecventa and din/pana window CLIENT-side; pagina pages client-side —
-  // none of them belongs in the fetch identity.
+  // frecventa and din/pana window CLIENT-side — none of them belongs in the
+  // fetch identity.
   return JSON.stringify({
     contract: 'native-source-selection-v1',
     // Undefined is omitted; explicit null is invalid input with a distinct key.

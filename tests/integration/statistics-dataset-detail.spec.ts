@@ -124,10 +124,10 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     // Trend chart under the number.
     await expect(page.locator('.recharts-responsive-container')).toBeVisible()
 
-    // Tiers 2–3 are closed accordion rows labeled with their answers.
-    await expect(page.getByText(/Tabelul seriei \(/)).toBeVisible()
-    await expect(page.getByText(/Dimensiuni și clasificări/)).toBeVisible()
-    await expect(page.getByText(/Proveniență și limite/)).toBeVisible()
+    // Tiers 2–3 are sections with headings, nothing to open.
+    await expect(page.getByRole('heading', { name: 'Tabelul seriei' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Seturi din același domeniu' })).toBeVisible()
+    await expect(page.getByText(/Dimensiuni și clasificări/)).toHaveCount(0)
   })
 
   test('tier 0 stays inside the three-operation single-page budget, with the option lists read once in the background', async ({
@@ -149,17 +149,17 @@ test.describe('Dataset detail — the disclosure ladder', () => {
     expect(lists.length).toBeGreaterThan(0)
   })
 
-  test('the observations table mounts on accordion open and prints values verbatim', async ({
+  test('the observations table is on the page, newest period first, as its period and its value', async ({
     page,
   }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
     await expect(heroValue(page)).toBeVisible({ timeout: 15000 })
 
-    await expect(page.getByRole('table')).toHaveCount(0)
-    await page.getByText(/Tabelul seriei \(/).click()
-    await expect(page.getByRole('table')).toBeVisible()
-    await expect(page.getByRole('table')).toContainText('2025')
+    const table = page.getByRole('table')
+    await expect(table).toBeVisible()
+    await expect(table.getByRole('columnheader')).toHaveText(['An', /^Valoare/])
+    await expect(table.getByRole('row').nth(1)).toContainText('2025')
   })
 
   test('changing a scope segment writes the URL and re-resolves the series', async ({
@@ -378,14 +378,10 @@ test.describe('Dataset detail — the disclosure ladder', () => {
         ],
       },
     })
-    await page.getByText(/Tabelul seriei \(/).click()
+    // One series again: the table is its period and its value, with no
+    // column for an axis every row shares.
     await expect(page.getByRole('table')).toBeVisible()
-    await expect(
-      page.getByRole('columnheader', { name: 'Judete D2' }),
-    ).toBeVisible()
-    await expect(
-      page.getByRole('columnheader', { name: 'Localitati D3' }),
-    ).toBeVisible()
+    await expect(page.getByRole('columnheader', { name: 'Judete' })).toHaveCount(0)
   })
 
   test('a window past the series shows the whole span, says so, and is cleared from the note', async ({
@@ -447,7 +443,7 @@ for (const language of ['en', 'ro'] as const) {
   ]) {
     test.describe(`${language} ${viewport.width} source detail`, () => {
       test.use({ viewport })
-      test('retains the latest null period and status with inspectable source provenance', async ({
+      test('retains the latest null period and its status, in the figure and in the table', async ({
         page,
         context,
         baseURL,
@@ -480,35 +476,21 @@ for (const language of ['en', 'ro'] as const) {
             : 'No recent value for the current selection.'
         await expect(page.getByText(unavailable)).toBeVisible()
         // The flag is spelled out in the reader's language.
+        const flag = language === 'ro' ? /date confidențiale/ : /confidential data/
         await expect(
-          page.getByText(language === 'ro' ? /date confidențiale/ : /confidential data/),
+          page.getByTestId('series-summary').getByText(flag),
         ).toBeVisible()
         await expect(heroValue(page)).toHaveCount(0)
-        await page
-          .getByText(
-            language === 'ro' ? /Tabelul seriei \(/ : /Series table \(/,
-          )
-          .click()
+        // The table keeps the null cell as a gap with its flag, and the
+        // legend under it names the flag once.
         const table = page.getByRole('table')
-        await expect(table).toContainText('2025')
-        await expect(table.getByRole('columnheader')).toHaveCount(10)
-        await table
-          .getByText(
-            language === 'ro' ? 'Detalii din sursă' : 'Source details',
-            { exact: true },
-          )
-          .first()
-          .click()
+        const latest = table.getByRole('row').nth(1)
+        await expect(latest).toContainText('2025')
+        await expect(latest).toContainText('—')
+        await expect(latest.locator('sup')).toHaveText(/^c/)
         await expect(
-          table
-            .getByText(
-              language === 'ro'
-                ? /Identificator observație/
-                : /Observation identifier/,
-            )
-            .first(),
+          page.getByText(language === 'ro' ? 'Marcaje de calitate INS' : 'INS quality flags'),
         ).toBeVisible()
-        await expect(table.getByText(/9007199254740993/).first()).toBeVisible()
         await expect(
           page.getByRole('button', {
             name: language === 'ro' ? 'Descarcă CSV' : 'Download CSV',

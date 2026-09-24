@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { sourceRowSelection } from '@/lib/ins/source-series'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -15,7 +16,6 @@ import type {
 import { useScopeLabels } from '../../hooks/use-scope-labels'
 import {
   classificationTypeCode,
-  DETAIL_PAGE_SIZE,
   type DetailSearchPatch,
   type EffectiveScope,
 } from '../../lib/dataset-selection'
@@ -25,12 +25,13 @@ import { deriveDetailSeriesView } from '../../lib/detail-series-view'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { hasAnyValue } from '../../lib/time-series'
 import { parseWireDecimal } from '../../lib/value-status'
-import { DetailAccordion } from './detail-accordion'
 import { DetailDefinition } from './detail-definition'
 import { DetailEmptyState } from './detail-empty-state'
 import { DetailExportButton, DetailExportNote } from '../detail-export-button'
 import { DetailMetadataSection } from './detail-metadata-section'
 import { DetailObservationsChart } from './detail-observations-chart'
+import { DetailObservationsTable } from './detail-observations-table'
+import { DetailRelatedDatasets } from './detail-related-datasets'
 import { DetailScopePrompt } from './detail-scope-prompt'
 import { DetailScopeSentence } from './detail-scope-sentence'
 import { DetailSeriesSummary } from './detail-series-summary'
@@ -83,6 +84,7 @@ export function DetailBody({
   relatedTotalCount,
   onSearchChange,
 }: Props) {
+  const tableHeadingId = useId()
   const answered = seriesQuery.isSuccess
   const series = seriesQuery.data?.series ?? undefined
   const view = deriveDetailSeriesView({ series, scope, canDerive, search, answered })
@@ -323,47 +325,53 @@ export function DetailBody({
             the selection is unresolved. */}
         <DetailMetadataSection dataset={dataset} />
 
-        {/* The appendix, LAST: the table, the axes, the coverage and the related
-            sets are what a reader consults once the figure and the notes have
-            told them what they are looking at. */}
-        {answered && series ? (
-          <DetailAccordion
-            dataset={dataset}
-            sourceDescriptor={series.sourceDescriptor}
-            observations={view.windowedRows}
-            observedSpan={view.observedSpan}
-            related={related}
-            relatedTotalCount={relatedTotalCount}
-            page={Math.min(
-              Math.max(1, typeof search.pagina === 'number' ? search.pagina : 1),
-              Math.max(1, Math.ceil(view.windowedRows.length / DETAIL_PAGE_SIZE)),
-            )}
-            compareSearch={hasGeographyAxis ? compareSearch : null}
-            onSelectSource={
-              series.sourceDescriptor
-                ? (observation) => {
-                    const selected = sourceRowSelection(series.sourceDescriptor, observation)
-                    if (selected)
-                      onSearchChange({
-                        // Empty means „no pins", and the canonical way to say
-                        // that is to leave the parameter out — the same
-                        // normalisation `editSourcePin` does when the last pin
-                        // is cleared. A matrix with no classification axes
-                        // would otherwise get `?clasificari=[]` in its URL.
-                        clasificari:
-                          selected.clasificari.length > 0 ? [...selected.clasificari] : undefined,
-                        unitate: selected.unitate,
-                        pagina: undefined,
-                        // The row pins every axis, its geography included,
-                        // and a pinned geography names the territory itself.
-                        ...(hasGeographyAxis ? { teritoriu: undefined } : {}),
-                      })
-                  }
-                : undefined
-            }
-            onPageChange={(next) => onSearchChange({ pagina: next > 1 ? next : undefined })}
-          />
+        {/* The appendix, LAST, in sections of the same shape as the notes
+            above — a heading and its content, nothing to open. The table and
+            the related sets are what a reader consults once the figure and
+            the notes have told them what they are looking at. The matrix's
+            axes, its territorial coverage and its provenance had rows here
+            too: the rail names every axis and its territory list is the
+            coverage, and the source, its date and the way back to INS are in
+            the line under the title. */}
+        {answered && series && view.windowedRows.length > 0 ? (
+          <section aria-labelledby={tableHeadingId} className="space-y-3">
+            <h2 id={tableHeadingId} className={statisticsTheme.sectionLabel}>
+              <Trans>Tabelul seriei</Trans>
+            </h2>
+            <DetailObservationsTable
+              labelledBy={tableHeadingId}
+              observations={view.windowedRows}
+              sourceDescriptor={series.sourceDescriptor}
+              onSelectSource={
+                series.sourceDescriptor
+                  ? (observation) => {
+                      const selected = sourceRowSelection(series.sourceDescriptor, observation)
+                      if (selected)
+                        onSearchChange({
+                          // Empty means „no pins", and the canonical way to say
+                          // that is to leave the parameter out — the same
+                          // normalisation `editSourcePin` does when the last pin
+                          // is cleared. A matrix with no classification axes
+                          // would otherwise get `?clasificari=[]` in its URL.
+                          clasificari:
+                            selected.clasificari.length > 0 ? [...selected.clasificari] : undefined,
+                          unitate: selected.unitate,
+                          // The row pins every axis, its geography included,
+                          // and a pinned geography names the territory itself.
+                          ...(hasGeographyAxis ? { teritoriu: undefined } : {}),
+                        })
+                    }
+                  : undefined
+              }
+            />
+          </section>
         ) : null}
+
+        <DetailRelatedDatasets
+          related={related}
+          totalCount={relatedTotalCount}
+          contextCode={dataset.context_code ?? null}
+        />
       </div>
     </div>
   )

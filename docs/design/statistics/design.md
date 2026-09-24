@@ -484,7 +484,8 @@ show. Decisions:
   `insTempoDatasetUrl` is the one builder, and it is locale-aware; the host is
   INS's own `statistici.insse.ro` and has nothing to do with this app's `/ins`
   routes.
-- **Two accordion stacks, each with a name.** Nine identical rows separated by
+- **Two accordion stacks, each with a name.** (Superseded by §6af: the
+  appendix is sections, not an accordion.) Nine identical rows separated by
   an unnamed gap read as one wall; „Explorează datele" and „Despre acest set de
   date" are quiet tier-1 labels, and the second heading dropped from
   `text-base font-semibold`, which competed with the h1.
@@ -713,8 +714,8 @@ is last on purpose: it is the appendix a reader consults once the figure and
 the notes have told them what they are looking at, and 197 rows sitting between
 the prose and the methodology separate two halves of one argument.
 
-„Seturi înrudite" is a list of links, with the row shape the accordion already
-uses — name, code chip, and a status badge ONLY when the set is catalog-only,
+„Seturi înrudite" (since §6af „Seturi din același domeniu", a section of its
+own) is a list of links, with the row shape the accordion already uses — name, code chip, and a status badge ONLY when the set is catalog-only,
 because „Date disponibile" down every row of an all-available list is the noise
 §6f removed from the header and the catalog. In the prototype the links carry
 `cod` back into the same variant, so a reader comparing designs can follow a
@@ -1804,6 +1805,49 @@ files (66KB) in one parallel wave; landing → hub 0.4 / 1.0 / 2.9s.
   hover costs the reads the click would have made, once per cache lifetime.
 - The hub itself has no pending skeleton: its chunk is 20KB, a hover on the
   landing's card preloads it, and the bar covers the rest.
+
+## 6af. The appendix as sections: the table and the related sets (2026-09-24)
+
+At the product owner's request. „Explorează datele" was one accordion of five
+closed rows under the notes: the table, the axes, the territorial coverage,
+the provenance and the related sets. It is gone; what stays is two sections of
+the same shape as „Despre acest set de date" — a tier-1 label and its content,
+nothing to open.
+
+- **Kept:** the table (`Tabelul seriei`) and the related sets (`Seturi din
+  același domeniu`). **Dropped:** the axes (the rail names every axis and its
+  value), the territorial coverage (the rail's territory list is the
+  coverage), and „Proveniență și limite" — tried as a section of facts and
+  dropped at the product owner's call: the source, its date and the way back
+  to INS Tempo are in the line under the title.
+- **The table is the series' exact values, nothing else.** A complete series
+  reads as its period and its value: an axis whose member is the same on
+  every row is not a column (the rail says it), the unit goes into the value's
+  header (`Valoare (persoane)`), and the per-row archive — the observation id,
+  the publication, the INS coordinates, the raw JSON — belongs to the CSV,
+  which carries all of it. Values keep every published digit and gain only
+  their grouping (`groupWireValue`); a quality flag keeps its marker, and the
+  flags present are named once under the table, as footnotes rather than a
+  boxed panel. An axis or a unit that does vary — an inspection read holding
+  several series — comes back as a column, and so does „Alege această serie",
+  which on a complete series would pin the one already on screen. A qualified
+  territory is marked `*`, with the rules' published rationale and their
+  evidence under the table.
+- **Compact, newest first, folded.** Rows `py-1.5`, full width, the latest
+  five periods (a year of quarters, half a year of months) until „Arată toate
+  cele N de valori" — by period, not by row, so an inspection read keeps every
+  series it holds in view; folding that would hide fewer than three rows does
+  not happen. Opened, the rows scroll inside a box of at most `min(60vh, 28rem)`
+  under a header that stays put, so 400 monthly rows do not push the page
+  down 12,000px. The `?pagina=` pager went with it; an old link's `pagina` is
+  dropped by the search schema.
+- **The related sets are one row each**, name and code — no „Date
+  disponibile" on every row (§6f), a „Doar catalog" badge only where it is
+  true. The heading says why they are here, and a link to the whole domain in
+  the catalog (`/ins/seturi?context=`) appears when the domain has more than
+  the rows. INS names a domain's matrices from one template, so a name cut to
+  one line left six phone rows reading „POPULATIA DUPA DOMICILIU la…": names
+  get two lines, and the whole name on hover.
 
 ## 7. Data model expectations at the UI boundary
 

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { StatisticsDatasetSeries } from '@/schemas/statistics'
+import type { StatisticsDatasetSeries, StatisticsRelatedDataset } from '@/schemas/statistics'
 import type { ResolvedDatasetSeries } from '../lib/detail-series-resolution'
 import type { RepresentativeCell } from '../lib/representative-series'
 import {
@@ -45,7 +45,12 @@ const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }))
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
-  Link: ({ children, ...props }: { readonly children: ReactNode }) => <a {...props}>{children}</a>,
+  // An anchor with an address, so a router link is a link to the queries.
+  Link: ({ children, to, ...props }: { readonly children: ReactNode; readonly to?: string }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
 }))
 
 const tier0 = detailTier0()
@@ -76,6 +81,18 @@ const queryStub = (data: unknown) => ({
   refetch: vi.fn(),
 })
 
+const related = (
+  code: string,
+  nameRo: string,
+  overrides: Partial<StatisticsRelatedDataset> = {},
+): StatisticsRelatedDataset => ({
+  code,
+  nameRo,
+  nameEn: null,
+  dataStatus: 'available',
+  ...overrides,
+})
+
 const idleQuery = { data: undefined, isPending: false, isError: false, isSuccess: false, refetch: vi.fn() }
 
 function mount(search: Parameters<typeof StatisticsDatasetDetailPage>[0]['search'] = {}, code = 'POP107D') {
@@ -104,15 +121,44 @@ describe('StatisticsDatasetDetailPage', () => {
     useRelatedDatasetsMock.mockReturnValue({
       data: {
         datasets: [
-          { code: 'POP107D', nameRo: 'Populația după domiciliu', nameEn: null, dataStatus: 'available' },
-          { code: 'POP105A', nameRo: 'Populația rezidentă', nameEn: null, dataStatus: 'available' },
+          related('POP107D', 'Populația după domiciliu'),
+          related('POP105A', 'Populația rezidentă'),
+          related('POP201A', 'Născuți vii', { dataStatus: 'catalog-only' }),
         ],
-        totalCount: 2,
+        totalCount: 3,
       },
     })
     mount()
     expect(useRelatedDatasetsMock).toHaveBeenCalledWith('1012')
-    expect(screen.getByRole('button', { name: /Seturi înrudite \(1\)/ })).toBeInTheDocument()
+    const section = screen.getByRole('region', { name: 'Seturi din același domeniu' })
+    const links = within(section).getAllByRole('link')
+    expect(links.map((link) => link.textContent)).toEqual([
+      expect.stringContaining('Populația rezidentă'),
+      expect.stringContaining('Născuți vii'),
+    ])
+    // Every tile has data but one: only that one says so.
+    expect(within(section).queryByText('Date disponibile')).not.toBeInTheDocument()
+    expect(within(links[1]!).getByText('Doar catalog')).toBeInTheDocument()
+    // All of the domain is on screen: no link to the rest of it.
+    expect(within(section).queryByText(/Vezi toate/)).not.toBeInTheDocument()
+  })
+
+  it('links to the whole domain when it holds more matrices than the tiles', () => {
+    useRelatedDatasetsMock.mockReturnValue({
+      data: { datasets: [related('POP105A', 'Populația rezidentă')], totalCount: 17 },
+    })
+    mount()
+    const section = screen.getByRole('region', { name: 'Seturi din același domeniu' })
+    expect(within(section).getByRole('link', { name: /Vezi toate cele 17 seturi/ })).toHaveAttribute('href', '/ins/seturi')
+  })
+
+  it('reads the table as a section of its own, with no accordion left to open', () => {
+    mount()
+    expect(screen.getByRole('region', { name: 'Tabelul seriei' })).toBeInTheDocument()
+    expect(screen.getByRole('table')).toBeInTheDocument()
+    expect(screen.queryByText('Explorează datele')).not.toBeInTheDocument()
+    expect(screen.queryByText('Proveniență și limite')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Dimensiuni și clasificări/)).not.toBeInTheDocument()
   })
 
   it.each([false, true])('keeps the latest null cell and status (all null: %s)', (allNull) => {
@@ -130,7 +176,7 @@ describe('StatisticsDatasetDetailPage', () => {
     )
     mount()
     expect(screen.getByText('Fără o valoare recentă pentru selecția curentă.')).toBeInTheDocument()
-    expect(screen.getByText(/date confidențiale/)).toBeInTheDocument()
+    expect(within(screen.getByTestId('series-summary')).getByText(/date confidențiale/)).toBeInTheDocument()
     expect(screen.getAllByText(/2025/).length).toBeGreaterThan(0)
     expect(screen.queryByText('Nicio observație')).not.toBeInTheDocument()
     // Scoped to the headline block. The FIGURE must not present 2024's value
@@ -321,21 +367,38 @@ describe('StatisticsDatasetDetailPage', () => {
     expect(screen.queryByText('Selecția din adresă nu poate fi aplicată')).not.toBeInTheDocument()
   })
 
-  it('allows choosing a complete source row while retaining the canonical filter in parent state', async () => {
+  it('offers no row pick on a complete series: every row would pick the one on screen', () => {
+    mount({ teritoriu: 'cod:RO', clasificari: ['D0:931'] })
+    expect(screen.getByRole('figure')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Alege această serie' })).not.toBeInTheDocument()
+  })
+
+  it('lets a row of an inspection that holds several series pin its series in the address', async () => {
+    const women = detailObservation(2025, {
+      id: 'source-2025-women',
+      classifications: [
+        { type_code: 'D0', code: '931', name_ro: 'România' },
+        { type_code: 'D1', code: '107', name_ro: 'Feminin' },
+      ],
+    })
     useDatasetTier0Mock.mockReturnValue(queryStub({ ...tier0, latest: null }))
     useDatasetSeriesMock.mockReturnValue(
-      queryStub(resolved(series, { classifications: { D0: '931', D1: '105' }, unitCode: '0', periodicity: 'ANNUAL' })),
+      queryStub(
+        resolved({
+          ...series,
+          readMode: 'inspection',
+          inspectionTruncated: false,
+          observations: [...series.observations, women],
+          totalCount: 4,
+        }),
+      ),
     )
     const onChange = mount({ teritoriu: 'cod:RO', clasificari: ['D0:931'] })
-    // The default series is on screen; picking a row from the table replaces
-    // it with an explicit selection.
-    expect(screen.getByRole('figure')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: /Tabelul seriei/ }))
-    await userEvent.click(screen.getAllByRole('button', { name: 'Alege această serie' })[0]!)
+    const row = screen.getByText('Feminin').closest('tr')!
+    await userEvent.click(within(row).getByRole('button', { name: 'Alege această serie' }))
     expect(onChange).toHaveBeenCalledWith({
-      clasificari: ['D0:931', 'D1:105'],
+      clasificari: ['D0:931', 'D1:107'],
       unitate: '0',
-      pagina: undefined,
       teritoriu: undefined,
     })
   })

@@ -25,20 +25,12 @@ function StatisticsDatasetDetailRoutePage() {
   // would serve a wrong cell for the whole 24h staleTime.
   const scopeMatches = scopeKey === detailScopeKey(search)
 
-  /**
-   * Every control writes exactly one key, so a patch merges into the URL.
-   * Changing a filter invalidates the current offset — `pagina` is dropped
-   * unless the patch is itself a page change.
-   */
+  /** Every control writes exactly one key, so a patch merges into the URL. */
   const onSearchChange = useCallback(
     (patch: DetailSearchPatch) => {
       navigate({
         replace: true,
-        search: (previous) => ({
-          ...previous,
-          ...('pagina' in patch ? {} : { pagina: undefined }),
-          ...patch,
-        }),
+        search: (previous) => ({ ...previous, ...patch }),
       })
     },
     [navigate],

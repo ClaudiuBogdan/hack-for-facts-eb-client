@@ -136,10 +136,9 @@ describe('filterExactCell', () => {
 })
 
 describe('detailScopeKey', () => {
-  it('preserves raw pins and ignores paging/window params', () => {
+  it('preserves raw pins and ignores window params', () => {
     const a = detailScopeKey({
       clasificari: ['SEX:F', 'AGE_GROUP:TOTAL'],
-      pagina: 3,
       din: 2018,
     })
     const b = detailScopeKey({

@@ -154,7 +154,6 @@ export const statisticsDatasetDetailSearchSchema = z
       .catch(undefined),
     din: z.number().int().min(1900).max(2100).optional().catch(undefined),
     pana: z.number().int().min(1900).max(2100).optional().catch(undefined),
-    pagina: z.number().int().min(1).optional().catch(undefined),
   })
   .catch({})
 

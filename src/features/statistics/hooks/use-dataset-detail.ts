@@ -141,7 +141,7 @@ export function useDatasetTier0(params: {
     // key: the dataset it holds is the same one, so the header and the rail
     // keep it while the resolved cell re-reads. The caller must not read the
     // placeholder's `latest`, which belongs to the previous entity. Another
-    // matrix (a related set opened from the accordion) is another page: its
+    // matrix (a related set opened from its tile) is another page: its
     // header, definition and title must not stand in for the new one.
     placeholderData: (previous, previousQuery) =>
       previousQuery && scope.every((part, index) => previousQuery.queryKey[index] === part)
