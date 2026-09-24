@@ -6,7 +6,6 @@
  * - `masura`: the measure the financial chart shows;
  * - `plati`: contracts or direct purchases, for who pays and what for (unset:
  *   whichever the company has, contracts first);
- * - `sectiune`: the open tab of the questions-first layout;
  * - `firma`: which fixture company — prototype only; the route has the CUI.
  */
 import { useNavigate, useSearch } from '@tanstack/react-router'
@@ -18,23 +17,18 @@ export type FinancialMeasure = (typeof FINANCIAL_MEASURES)[number]
 export const PAYMENT_GRAINS = ['contracte', 'achizitii-directe'] as const
 export type PaymentGrain = (typeof PAYMENT_GRAINS)[number]
 
-export const COMPANY_SECTIONS = ['finante', 'bani-publici', 'activitati', 'registru'] as const
-export type CompanySection = (typeof COMPANY_SECTIONS)[number]
-
 export interface CompanyPageState {
   readonly company: CompanyFixtureKey
   readonly measure: FinancialMeasure
   readonly grain: PaymentGrain | null
-  readonly section: CompanySection
 }
 
-type Key = 'firma' | 'masura' | 'plati' | 'sectiune'
+type Key = 'firma' | 'masura' | 'plati'
 
 const DEFAULTS: Record<Key, string | undefined> = {
   firma: COMPANY_FIXTURE_KEYS[0],
   masura: 'cifra-de-afaceri',
   plati: undefined,
-  sectiune: 'finante',
 }
 
 function oneOf<T extends string>(values: readonly T[], value: unknown): T | undefined {
@@ -48,7 +42,6 @@ export function useCompanyPageState() {
     company: oneOf(COMPANY_FIXTURE_KEYS, search.firma) ?? COMPANY_FIXTURE_KEYS[0],
     measure: oneOf(FINANCIAL_MEASURES, search.masura) ?? 'cifra-de-afaceri',
     grain: oneOf(PAYMENT_GRAINS, search.plati) ?? null,
-    section: oneOf(COMPANY_SECTIONS, search.sectiune) ?? 'finante',
   }
   // One navigation per change, however many keys it sets: two in a row would
   // each start from the URL before the other landed.
@@ -70,10 +63,7 @@ export function useCompanyPageState() {
     setMeasure: (value: FinancialMeasure) => set({ masura: value }),
     /** `fallback`: the company's own default grain, which stays out of the URL like any default. */
     setGrain: (value: PaymentGrain, fallback: PaymentGrain | null) => set({ plati: value === fallback ? undefined : value }),
-    setSection: (value: CompanySection) => set({ sectiune: value }),
-    /** Opens a tab, and with it the chart's measure when the answer is about one. */
-    openSection: (section: CompanySection, measure?: FinancialMeasure) => set(measure ? { sectiune: section, masura: measure } : { sectiune: section }),
     /** Another company: the per-company choices go back to their defaults. */
-    setCompany: (value: CompanyFixtureKey) => set({ firma: value, plati: undefined, masura: undefined, sectiune: undefined }),
+    setCompany: (value: CompanyFixtureKey) => set({ firma: value, plati: undefined, masura: undefined }),
   }
 }

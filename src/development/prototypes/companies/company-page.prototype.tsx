@@ -1,18 +1,18 @@
 import type { ComponentType } from 'react'
 import type { PrototypeDefinition } from '@/development/harness/entry'
 import { cn } from '@/lib/utils'
-import { CompanyPageAnswers } from './company-page.answers'
 import { CompanyPageBands } from './company-page.bands'
 import { displayCompanyName } from './company-page.data'
 import { COMPANY_FIXTURE_KEYS, COMPANY_FIXTURES } from './company-page.fixtures'
-import { CompanyPageSheet } from './company-page.sheet'
 import { useCompanyPageState } from './company-page.state'
 
 /**
  * Company page rewrite — `/companies/$cui` in the `/companies` and `/ins`
- * hubs' language, three ways of arranging the same answers.
+ * hubs' language. Of the three layouts compared on 24 September 2026 the
+ * editorial bands were kept; the company sheet (a sticky identity rail) and
+ * questions first (answer cards over tabs) were dropped.
  *
- * Every figure and sentence is computed from the record, so each layout must
+ * Every figure and sentence is computed from the record, so the layout must
  * hold for any company. Five real ones are frozen in
  * `company-page.fixtures.ts` to prove it, switched with `?firma=`: a national
  * champion with a gap in its statements, a road builder in insolvency with
@@ -22,14 +22,13 @@ import { useCompanyPageState } from './company-page.state'
  * the `/companies` snapshot.
  *
  * Deep links: `?v=benzi&firma=abc-con&masura=profit`,
- * `?v=fisa&firma=profi&plati=achizitii-directe`,
- * `?v=intrebari&firma=jack&sectiune=finante`.
+ * `?v=benzi&firma=profi&masura=salariati&plati=achizitii-directe`.
  */
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
 const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
 
-/** Prototype chrome, not part of any design: which fixture company the layout draws. */
+/** Prototype chrome, not part of the design: which fixture company the layout draws. */
 function CompanySwitcher() {
   const { state, setCompany } = useCompanyPageState()
   return (
@@ -75,18 +74,8 @@ export const prototype = {
     benzi: {
       title: 'Editorial bands',
       component: withSwitcher(CompanyPageBands),
-      note: 'The /companies rhythm for one company: a compact head (name, status, identifiers, its share of its sector, county and country when that is meaningful), the figures it has, then a numbered band per question, with a pinned bar of section links.',
-    },
-    fisa: {
-      title: 'Company sheet',
-      component: withSwitcher(CompanyPageSheet),
-      note: 'A sticky identity rail (status, identifiers, section index following the scroll, sources) beside the sections in full: the figures with their history, every year as a table, balance sheet, public money, activities, registry.',
-    },
-    intrebari: {
-      title: 'Questions first',
-      component: withSwitcher(CompanyPageAnswers),
-      note: 'The questions a reader brings, each answered in one computed sentence with its evidence (a question the record cannot answer is left out), above four tabs that hold the detail (?sectiune=).',
+      note: 'The /companies rhythm for one company: a compact head (name, status, identifiers) beside one chart of the last five years with a statement (turnover, net result and people together, values in a table under it), the figures band, then a numbered band per question, with its place in the economy near the end when it is 1% or more, and a pinned bar of section links.',
     },
   },
-  compare: ['benzi', 'fisa', 'intrebari'],
+  compare: ['benzi'],
 } satisfies PrototypeDefinition

@@ -94,10 +94,18 @@ export interface CompanyPageModel {
     readonly netResult: readonly YearValue[]
     readonly employees: readonly YearValue[]
   }
+  /**
+   * The last five years with a statement — not the last five calendar years:
+   * a company that stopped filing still shows its last five.
+   */
+  readonly recent: {
+    readonly years: readonly number[]
+    readonly turnover: readonly (number | null)[]
+    readonly netResult: readonly (number | null)[]
+    readonly employees: readonly (number | null)[]
+  }
   readonly lossYears: number
-  readonly margin: number | null
   readonly sizeClass: SizeClass | null
-  readonly peakEmployees: YearValue | null
   /** Shares of the snapshot year's totals; each null when too small to say anything (under 1%). */
   readonly context: {
     readonly year: number
@@ -351,6 +359,9 @@ function moneyModel(profile: PrivateCompanyProfile, procurement: CompanyProcurem
 
 const SHARE_FLOOR = 0.01
 
+/** How many statement years the compact trend in the head shows. */
+const RECENT_YEARS = 5
+
 export function sizeClassOf(employees: number | null): SizeClass | null {
   if (employees === null) return null
   if (employees === 0) return 'none'
@@ -374,10 +385,6 @@ export function buildCompanyPageModel(profile: PrivateCompanyProfile, procuremen
     })
   const employees = seriesOf((year) => year.employees)
   const netResult = seriesOf(netResultOf)
-  const peakEmployees = employees.reduce<YearValue | null>(
-    (best, point) => (point.value !== null && (best === null || (best.value ?? 0) < point.value) ? point : best),
-    null,
-  )
 
   const snapshot = COMPANY_HUB_SNAPSHOT
   const activity = mainActivity(profile)
@@ -392,8 +399,9 @@ export function buildCompanyPageModel(profile: PrivateCompanyProfile, procuremen
     const value = part / whole
     return value >= SHARE_FLOOR ? value : null
   }
-  const latestNet = latest ? netResultOf(latest) : null
   const founded = profile.registrationDate ? Number(profile.registrationDate.slice(0, 4)) : null
+  const money = moneyModel(profile, procurement)
+  const recentYears = years.slice(-RECENT_YEARS)
   const grains: PaymentGrain[] = [
     ...(procurement.contracts.count > 0 ? (['contracte'] as const) : []),
     ...(procurement.directAcquisitions.count > 0 ? (['achizitii-directe'] as const) : []),
@@ -418,10 +426,14 @@ export function buildCompanyPageModel(profile: PrivateCompanyProfile, procuremen
     span,
     missingYears: span.filter((year) => !byYear.has(year)),
     series: { turnover: seriesOf((year) => year.turnover), netResult, employees },
+    recent: {
+      years: recentYears.map((year) => year.fiscalYear),
+      turnover: recentYears.map((year) => year.turnover),
+      netResult: recentYears.map(netResultOf),
+      employees: recentYears.map((year) => year.employees),
+    },
     lossYears: netResult.filter((point) => point.value !== null && point.value < 0).length,
-    margin: latest?.turnover && latestNet !== null ? latestNet / latest.turnover : null,
     sizeClass: sizeClassOf(latest?.employees ?? null),
-    peakEmployees,
     context: {
       year: snapshot.fiscalYear,
       sectorTurnoverShare: share(snapshotYear?.turnover, sector?.turnover),
@@ -429,7 +441,7 @@ export function buildCompanyPageModel(profile: PrivateCompanyProfile, procuremen
       countyTurnoverShare: share(snapshotYear?.turnover, county?.turnover),
       nationalTurnoverShare: share(snapshotYear?.turnover, snapshot.national.turnover),
     },
-    money: moneyModel(profile, procurement),
+    money,
     defaultGrain: grains[0] ?? null,
     grains,
   }

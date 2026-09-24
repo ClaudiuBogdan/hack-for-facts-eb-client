@@ -297,30 +297,3 @@ function TooltipRow({ swatch, label, value }: { readonly swatch: string; readonl
   )
 }
 
-/** A year per bar, no axis, no reading: a figure's shape beside the figure. */
-export function MiniBars({
-  values,
-  className,
-  negativeClassName = 'bg-destructive/70',
-}: {
-  readonly values: readonly (number | null)[]
-  readonly className?: string
-  readonly negativeClassName?: string
-}) {
-  const magnitudes = values.map((value) => Math.abs(value ?? 0))
-  const max = Math.max(...magnitudes, 1)
-  return (
-    <span aria-hidden="true" className={cn('flex h-8 items-end gap-[2px]', className)}>
-      {values.map((value, index) => (
-        <span
-          key={index}
-          className={cn(
-            'min-w-[3px] flex-1 rounded-[1px]',
-            value === null ? 'h-px bg-border' : value < 0 ? negativeClassName : index === values.length - 1 ? 'bg-primary' : 'bg-primary/35',
-          )}
-          style={value === null ? undefined : { height: `${Math.max((Math.abs(value) / max) * 100, 4)}%` }}
-        />
-      ))}
-    </span>
-  )
-}

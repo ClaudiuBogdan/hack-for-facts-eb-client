@@ -48,17 +48,6 @@ export function percent(fraction: number, signed = false): string {
   return `${formatHubNumber(fraction * 100, { digits: 1, signed })}%`
 }
 
-/**
- * A net margin. Past ±100% it is capped: on a near-zero turnover the ratio
- * runs to „-4.284,6%", which reads as a precise figure and means only that
- * the turnover was tiny.
- */
-export function marginText(ratio: number): string {
-  if (ratio > 1) return '>100%'
-  if (ratio < -1) return `<${formatHubNumber(-100)}%`
-  return percent(ratio)
-}
-
 export function count(value: number, signed = false): string {
   return formatHubNumber(value, { signed })
 }

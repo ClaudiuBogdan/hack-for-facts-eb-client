@@ -12,10 +12,11 @@ import { useCompanyPageModel } from './company-page.data'
 import {
   ActivityGroups,
   BalanceSheet,
+  BalanceTrend,
   CategoryList,
   CompanyKicker,
-  ContextList,
   CoverageNote,
+  EconomyContext,
   FiguresBand,
   FinancialChart,
   GrainToggle,
@@ -34,10 +35,11 @@ import {
   SupplierLink,
   companyFigures,
   companySentence,
-  contextRows,
   debtSentence,
+  economyLede,
   effectiveGrain,
   financialLede,
+  hasEconomyContext,
   hasPublicMoney,
   moneyLede,
   nameLength,
@@ -46,16 +48,20 @@ import { useCompanyPageState } from './company-page.state'
 
 /**
  * Variant `benzi` — the company in the `/companies` hub's rhythm: a compact
- * head that says who it is, its status and identifiers, and — when the
- * company is big enough for it to mean something — its share of its sector,
- * county and country; the figures it has; then one numbered band per
- * question. A thin bar pins under the head with the name and the bands.
+ * head that says who it is, its status and identifiers, and beside it the
+ * last five years with a statement — turnover, net result and people on one
+ * chart, every value in the table under it; the figures band with the newest
+ * values; then one numbered band per question. Where the company stands in
+ * its sector, county and country is context, not the company: its own band
+ * sits near the end, and only when a share reaches 1%. A thin bar pins under
+ * the head with the name and the bands.
  */
 
 const SECTIONS = [
   { id: 'afacerea', label: () => t`Afacerea` },
   { id: 'bani-publici', label: () => t`Bani publici` },
   { id: 'activitati', label: () => t`Activități` },
+  { id: 'economie', label: () => t`În economie` },
   { id: 'registru', label: () => t`Registru` },
 ] as const
 
@@ -70,10 +76,13 @@ export function CompanyPageBands() {
   const model = useCompanyPageModel(state.company)
   const rootRef = useRef<HTMLDivElement>(null)
   useRevealOnView(rootRef, (block, delay) => countUpWithin(block, delay))
+  // The count-up driver is module state: an unmount mid-flight would leave it ticking.
   useEffect(() => () => stopCounting(), [])
 
-  const context = contextRows(model).length > 0
+  const trends = model.latest !== null && model.recent.years.length > 0
   const figures = companyFigures(model, { business: '#afacerea', money: '#bani-publici' })
+  const economy = hasEconomyContext(model)
+  const sections = SECTIONS.filter((section) => section.id !== 'economie' || economy)
   const grain = effectiveGrain(model, state.grain)
   const debt = debtSentence(model)
 
@@ -86,8 +95,8 @@ export function CompanyPageBands() {
         <TwoLayerLattice idPrefix="company-bands" />
         <RuledFrame className="py-10 sm:py-12 lg:py-14">
           <CornerTicks />
-          <div className={cn('grid grid-cols-1 items-end gap-8', context && 'lg:grid-cols-12')}>
-            <div className={cn('min-w-0', context && 'lg:col-span-8')}>
+          <div className={cn('grid grid-cols-1 items-center gap-10', trends && 'lg:grid-cols-12 lg:gap-8')}>
+            <div className={cn('min-w-0', trends && 'lg:col-span-7')}>
               <CompanyKicker model={model} />
               <h1 className={cn('mt-4 font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[nameLength(model.displayName)])}>{model.displayName}</h1>
               <p className="mt-4 max-w-[60ch] text-base leading-relaxed text-muted-foreground sm:text-lg">{companySentence(model)}</p>
@@ -97,14 +106,7 @@ export function CompanyPageBands() {
               </div>
               <StatusNotice model={model} className="mt-4 max-w-[60ch]" />
             </div>
-            {context ? (
-              <div className="min-w-0 lg:col-span-4 lg:border-l lg:pl-8">
-                <MonoLabel className="block text-primary">
-                  <Trans>În economia României, {model.context.year}</Trans>
-                </MonoLabel>
-                <ContextList model={model} className="mt-4" compact />
-              </div>
-            ) : null}
+            {trends ? <BalanceTrend model={model} className="min-w-0 lg:col-span-5 lg:border-l lg:pl-8" /> : null}
           </div>
         </RuledFrame>
       </section>
@@ -113,7 +115,7 @@ export function CompanyPageBands() {
         <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
           <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-72">{model.displayName}</span>
           <ol className="flex shrink-0 gap-4 sm:gap-5 md:ml-auto">
-            {SECTIONS.map((section, index) => (
+            {sections.map((section, index) => (
               <li key={section.id}>
                 <a href={`#${section.id}`} className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
                   <MonoLabel className="text-primary">{String(index + 1).padStart(2, '0')}</MonoLabel>
@@ -233,9 +235,22 @@ export function CompanyPageBands() {
         </RuledFrame>
       </section>
 
+      {economy ? (
+        <section id="economie" className="scroll-mt-14 border-b" aria-labelledby="company-bands-economy">
+          <RuledFrame className="py-12 sm:py-16">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+              <div className="min-w-0 lg:col-span-5">
+                <HubSectionHead titleId="company-bands-economy" index={t`04 / În economie`} title={<Trans>Cât cântărește în economie</Trans>} lede={economyLede(model)} />
+              </div>
+              <EconomyContext model={model} className={cn('min-w-0 lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} />
+            </div>
+          </RuledFrame>
+        </section>
+      ) : null}
+
       <section id="registru" className="scroll-mt-14" aria-labelledby="company-bands-registry">
         <RuledFrame className="py-12 sm:py-16">
-          <HubSectionHead titleId="company-bands-registry" index={t`04 / Registru`} title={<Trans>Datele din registru</Trans>} />
+          <HubSectionHead titleId="company-bands-registry" index={economy ? t`05 / Registru` : t`04 / Registru`} title={<Trans>Datele din registru</Trans>} />
           <RegistryFacts model={model} className="mt-8" />
           <SourcesLine model={model} className="mt-6" />
         </RuledFrame>
