@@ -8,6 +8,13 @@
 - Add population popup with info
 - Add last update
 
+## Open issues
+
+- [ ] Language: the server shares one Lingui instance, so concurrent ro/en requests can render in each other's language. Give each request its own instance.
+- [ ] CDN: key cached pages by locale (the INS routes send `Vary` / `no-store`; the CDN must honour it).
+- [ ] County map: the county GeoJSON is heavy. Simplify it or load it lazily.
+- [ ] Naming: `hub-chrome`, `hub-figures`, `hub-charts` are used beyond the hubs. Rename them to neutral names.
+
 ## Funky Campaign
 
 - Fix main share card and also improve campaign share cards.
