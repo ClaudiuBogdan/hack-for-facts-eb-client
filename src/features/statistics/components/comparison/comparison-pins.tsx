@@ -114,7 +114,11 @@ export function comparisonAxes({
   }
 
   // The matrix's own cadences where it lists them; the three a comparison
-  // draws otherwise. One cadence is a fact, not a choice.
+  // draws otherwise. One cadence is a fact, not a choice — unless the address
+  // pins one: it may name a cadence the matrix does not list, and the reader
+  // needs the section to take it back. A cadence still to choose keeps its
+  // section too, and keeps it once chosen, so the trigger that takes the
+  // focus back after the pick is still there.
   const listed = datasetMeta.periodicity ?? []
   const cadences = listed.length > 0 ? listed : COMPARISON_CADENCES
   axes.push({
@@ -125,7 +129,7 @@ export function comparisonAxes({
     implicit: cadence !== null && !pinned.cadence && cadences.length > 1,
     unresolved: cadence === null,
     control:
-      cadences.length > 1 || cadence === null
+      cadences.length > 1 || cadence === null || pinned.cadence
         ? (onPicked) => (
             <DetailCadenceControl
               periodicities={cadences}
