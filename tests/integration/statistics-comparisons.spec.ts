@@ -361,10 +361,14 @@ for (const [reason, dataset] of [
   })
 }
 
+// Each axis is a section of the selection panel, named for its axis: the
+// classification by its INS label, the unit by the page's own words.
+const CATEGORY_SECTION = /^Categorie/
+const UNIT_SECTION = /^(Unitate de măsură|Unit of measure)/
 for (const scenario of [
-  { field: 'unitate', dimension: 0, option: 'Categorie sursă' },
-  { field: 'clasificari', dimension: 4, option: 'Persoane' },
-  { field: 'frecventa', dimension: 4, option: 'Persoane' },
+  { field: 'unitate', section: CATEGORY_SECTION, option: 'Categorie sursă' },
+  { field: 'clasificari', section: UNIT_SECTION, option: 'Persoane' },
+  { field: 'frecventa', section: UNIT_SECTION, option: 'Persoane' },
 ] as const) {
   test(`editing another source control preserves explicit null ${scenario.field}`, async ({
     page,
@@ -379,7 +383,7 @@ for (const scenario of [
       }),
     )
     await expect(page.getByRole('alert')).toBeVisible()
-    await page.locator(`#dimension-TEST-${scenario.dimension}`).click()
+    await page.getByRole('button', { name: scenario.section }).click()
     await page.getByRole('option', { name: scenario.option }).click()
     await expect(page).toHaveURL(
       (url) => url.searchParams.get(scenario.field) === 'null',
