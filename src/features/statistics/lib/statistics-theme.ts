@@ -62,15 +62,11 @@ export const statisticsTheme = {
    */
   note: 'space-y-2 rounded-md bg-muted/60 p-3 text-sm',
   /**
-   * One row of the standing scope rail: the axis name over its value, with the
-   * chevron and the „implicit" mark at the far edge. The rail is the desktop
-   * alternative to the chip row — the same segments, stacked, so changing an
-   * axis never pushes the figure down the page.
+   * One row of the comparison page's rail: the axis name over its value, with
+   * the chevron at the far edge.
    */
   scopeRailRow:
     'flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-  /** The same row for an axis with nothing to choose: text, not a button. */
-  scopeRailStatic: 'flex min-w-0 flex-col items-start px-4 py-2.5',
   scopeRailLabel: 'text-xs text-muted-foreground',
   /**
    * The value wraps to a second line rather than truncating: it is the
@@ -79,6 +75,32 @@ export const statisticsTheme = {
    */
   scopeRailValue:
     'mt-0.5 line-clamp-2 w-full break-words text-left text-sm font-medium text-foreground',
+
+  // -- Detail selection panel -------------------------------------------------
+
+  /**
+   * The detail page's selection panel: a header strip, then one accordion
+   * section per axis — the shape of the app's filter panels
+   * (`components/filters/base-filter`), with the axis's value in the trigger
+   * because on this page the value, not a count, is what the reader needs.
+   */
+  scopePanelHeader:
+    'flex items-center justify-between gap-2 border-b border-border/70 px-4 py-2.5',
+  /** The shared trigger's 24px underline-on-hover chevron, made a rail row. */
+  scopePanelTrigger:
+    'items-start gap-2 px-4 py-3 text-sm font-normal hover:bg-muted/50 hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&>svg]:mt-0.5 [&>svg]:h-4 [&>svg]:w-4',
+  /** An axis with nothing to choose: text at the trigger's inset, no chevron. */
+  scopePanelStatic: 'border-b border-border/70 px-4 py-3 last:border-b-0',
+  /**
+   * The value wraps to a second line rather than truncating: it is the
+   * reader's own selection, and „1017 MUNICIPIUL AL…" says nothing about
+   * which town is on the chart.
+   */
+  scopePanelValue:
+    'line-clamp-2 min-w-0 break-words text-left text-sm font-medium text-foreground',
+  /** „implicit": a quiet tag after the value the page chose itself. */
+  scopePanelImplicit:
+    'shrink-0 rounded-sm bg-muted px-1.5 text-[11px] leading-5 text-muted-foreground',
 
   // -- Dimension option panel ------------------------------------------------
 

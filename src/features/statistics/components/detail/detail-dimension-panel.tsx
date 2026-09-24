@@ -28,13 +28,20 @@ export type DimensionPanelProps = {
   readonly onPicked?: () => void
   /** Load options now. A panel inside a closed popover should not fetch. */
   readonly active: boolean
+  /**
+   * `popover` is the panel as a popover's whole contents, headed by the axis
+   * it lists. `inline` is the panel inside a filter section whose trigger
+   * already names the axis: no header, a framed search and list.
+   */
+  readonly appearance?: 'popover' | 'inline'
 }
 
 /**
  * The option list for one dataset dimension: a header naming the axis, a
  * server-backed search, and the options as one scrolling list.
  *
- * This is the whole picker, meant to BE a popover's contents. It used to sit
+ * This is the whole picker: a popover's contents (`DetailDimensionCombobox`)
+ * or, `inline`, a filter section's (the detail page's panel). It used to sit
  * behind a second one — the scope chip opened a panel that held a combobox
  * button that opened the list — so changing one axis took three clicks and
  * left two overlapping white panels on screen. The chip already names the
@@ -57,7 +64,9 @@ export function DetailDimensionPanel({
   onClear,
   onPicked,
   active,
+  appearance = 'popover',
 }: DimensionPanelProps) {
+  const inline = appearance === 'inline'
   const [draft, setDraft] = useState('')
   const search = useDebouncedValue(draft, SEARCH_DEBOUNCE_MS)
 
@@ -94,19 +103,22 @@ export function DetailDimensionPanel({
           which puts the search input first in tab order.
           The label wraps rather than truncates — INS axis names run past 40
           characters, and a header ending in „…" does not say which axis is
-          open. */}
-      <div className={statisticsTheme.optionPanelHeader}>
-        <p
-          className={cn(
-            statisticsTheme.sectionLabel,
-            'min-w-0 text-pretty leading-snug',
-          )}
-        >
-          {label.trim()}
-        </p>
-      </div>
+          open. Inline, the section's trigger names the axis instead. */}
+      {inline ? null : (
+        <div className={statisticsTheme.optionPanelHeader}>
+          <p
+            className={cn(
+              statisticsTheme.sectionLabel,
+              'min-w-0 text-pretty leading-snug',
+            )}
+          >
+            {label.trim()}
+          </p>
+        </div>
+      )}
 
       <DetailOptionList
+        appearance={appearance}
         label={label.trim()}
         placeholder={t`Caută…`}
         draft={draft}
@@ -151,7 +163,12 @@ export function DetailDimensionPanel({
       />
 
       {selectedKey || totalCount !== undefined ? (
-        <div className={statisticsTheme.optionPanelFooter}>
+        <div
+          className={cn(
+            statisticsTheme.optionPanelFooter,
+            inline && 'border-t-0 px-1 pb-0 pt-2',
+          )}
+        >
           {/* The count is the live region: it says what a search changed,
               which the rows themselves cannot. */}
           <span role="status">

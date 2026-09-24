@@ -4,13 +4,24 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'rea
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  CalendarClock,
+  CalendarRange,
+  Globe,
+  MapPin,
+  RotateCcw,
+  Ruler,
+  SlidersHorizontal,
+  Tags,
+  type LucideIcon,
+} from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetContent,
@@ -44,19 +55,12 @@ import {
 import { cn } from '@/lib/utils'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { DetailCadenceControl } from './detail-cadence-control'
-import { DetailDimensionCombobox } from '../detail-dimension-combobox'
 import { DetailDimensionPanel } from './detail-dimension-panel'
 import { DetailYearWindowControl } from './detail-year-window-control'
 
-/** How a segment's control is being asked to render itself. */
+/** What a segment's control is handed by the section it opens in. */
 interface ScopeControlOptions {
-  /**
-   * `panel` paints a desktop popover edge to edge — the row already names
-   * the axis, so the control opens straight onto its options. `field` is the
-   * labelled, closed form the phone sheet stacks six of.
-   */
-  readonly variant: 'panel' | 'field'
-  /** Close the surface the control is in, once a value has been chosen. */
+  /** Close the section, once a value has been chosen. */
   readonly onPicked: () => void
 }
 
@@ -68,16 +72,10 @@ interface ScopeSegment {
   readonly defaulted: boolean
   /** True when the dimension has NO effective value yet. */
   readonly unresolved?: boolean
-  /** The control rendered in the popover / sheet. Null = display-only. */
+  /** The control the segment's section opens onto. Null = display-only. */
   readonly control: ((options: ScopeControlOptions) => ReactNode) | null
-  /** True when the control paints the popover itself and wants no padding. */
-  readonly fills?: boolean
-  /**
-   * How wide the popover opens. `list` is the option panel, wide enough for
-   * an INS member name; `form` is a control with a fixed shape, which in a
-   * list-sized popover sat in a field of white.
-   */
-  readonly width?: 'list' | 'form'
+  /** What kind of axis this is, at a glance: a place, a class, a unit, time. */
+  readonly icon: LucideIcon
   readonly controlLabel: string
 }
 
@@ -103,12 +101,18 @@ type Props = {
 }
 
 /**
- * Tier 1 — the selection IS the control surface: a standing rail of one
- * row per axis beside the figure, so changing one axis never pushes the
- * chart down the page. Every row opens its own popover on desktop; on a
- * phone the whole rail opens ONE bottom sheet holding every control (never
- * six stacked popovers). Values chosen automatically are marked and are
- * NOT written into the URL until the reader changes one.
+ * Tier 1 — the selection IS the control surface: one panel of sections, one
+ * per axis, each naming its axis and the value on screen, and opening onto
+ * that axis's options in place. The same panel is the standing rail beside
+ * the figure on a wide screen — so changing an axis never moves the chart —
+ * and the contents of one bottom sheet on a phone.
+ *
+ * It is the shape the app's other filter panels have (the entity analytics
+ * filter, the chart builder's INS series): an accordion of sections with
+ * the search and the list inside. The rail used to open a floating popover
+ * per row, and the phone sheet stacked fields that each opened another
+ * popover over the sheet; both are gone. Values chosen automatically are
+ * marked and are NOT written into the URL until the reader changes one.
  */
 export function DetailScopeSentence({
   dataset,
@@ -125,19 +129,23 @@ export function DetailScopeSentence({
   onChange,
 }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false)
-  // One open row at a time, and controlled, so picking a value can close it.
-  const [openSegment, setOpenSegment] = useState<string | null>(null)
+  // The open section, one per surface: the rail's and the sheet's are two
+  // accordions, and opening one should not open the other when the viewport
+  // crosses `lg`. Lifted here so the reset can close them — the values the
+  // open list was scrolled to are gone.
+  const [railSection, setRailSection] = useState('')
+  const [sheetSection, setSheetSection] = useState('')
   // The selection a pick was made against. A pick that has to read a root
   // before it can write (`ClassificationControl`) checks this is still the
   // one it started from; any other write in the meantime supersedes it, and
   // its stale snapshot is dropped rather than written over the newer
-  // selection. Every write from this rail moves it synchronously — the
+  // selection. Every write from this panel moves it synchronously — the
   // router keeps the old search until the new route has loaded, so waiting
   // for the prop would let a second write slip under the check — and the
   // effect covers writes from elsewhere, such as the back button, another
   // dataset, and leaving the page. A pick that starts waiting mints its own
   // token, so of two waiting picks the newer is the one that lands. Held
-  // here, not in the control: the control lives in a popover that unmounts
+  // here, not in the control: the control lives in a section that unmounts
   // the moment it closes.
   const selectionKey = JSON.stringify(search)
   const selectionToken = useRef<object>({})
@@ -171,131 +179,59 @@ export function DetailScopeSentence({
   if (segments.length === 0) return null
 
   const hasDefaults = segments.some((segment) => segment.defaulted)
+  const pinCount = countPins(search)
+  // The reset removes its own button, which held the focus; it goes to the
+  // first section instead, which the reset leaves in place.
+  const reset = (from: HTMLElement) => {
+    from
+      .closest('[data-scope-panel]')
+      ?.querySelector<HTMLButtonElement>('button[aria-expanded]')
+      ?.focus()
+    setRailSection('')
+    setSheetSection('')
+    write({
+      clasificari: undefined,
+      unitate: undefined,
+      frecventa: undefined,
+      din: undefined,
+      pana: undefined,
+    })
+  }
 
-  /** The popover every row opens, whatever its trigger looks like. */
-  const controlPopover = (segment: ScopeSegment, trigger: ReactNode) => (
-    <Popover
-      key={segment.id}
-      open={openSegment === segment.id}
-      onOpenChange={(open) => setOpenSegment(open ? segment.id : null)}
-    >
-      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className={cn(
-          'max-w-[calc(100vw-2rem)] p-0',
-          segment.width === 'form' ? 'w-80' : 'w-[22rem]',
-        )}
-      >
-        {segment.fills ? (
-          segment.control?.({
-            variant: 'panel',
-            onPicked: () => setOpenSegment(null),
-          })
-        ) : (
-          <div className="space-y-1.5 p-3">
-            {segment.control?.({
-              variant: 'panel',
-              onPicked: () => setOpenSegment(null),
-            })}
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
-  )
+  const defaultsNote = hasDefaults ? (
+    <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+      <Trans>
+        Valorile marcate „implicit" au fost alese automat. Apasă pe ele ca să
+        le schimbi.
+      </Trans>
+    </p>
+  ) : null
 
   return (
     <div className="text-sm text-muted-foreground">
-      {/* Desktop: one row per axis in a bordered column. An axis with
-          nothing to choose renders as text, not as a button — given the same
-          affordance as its neighbours it read as a control that did nothing
-          when pressed.
-          Below `lg` the column has no room beside the figure, so the same
-          rows sit above it as a three-column grid: a rule over every cell
-          after the header, and a rule before the second and third columns
-          (children 3n+3 and 3n+4, the header being child 1). Borders, not
-          gaps over a border-coloured band — a short last row would have
-          shown the band through its empty cells. One DOM, two layouts: a
-          second copy for that range would be a duplicate of every control
-          for a screen reader, not a style. */}
-      <div className="hidden md:block">
+      {/* A wide screen: the panel is the rail. */}
+      <div className="hidden space-y-3 lg:block">
         <div
-          className={cn(
-            statisticsTheme.band,
-            'overflow-hidden md:grid md:grid-cols-3 lg:block',
-            '[&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:border-border/70',
-            'md:[&>*:nth-child(3n+3)]:border-l md:[&>*:nth-child(3n+4)]:border-l lg:[&>*]:border-l-0',
-          )}
+          className={cn(statisticsTheme.band, 'overflow-hidden')}
+          data-scope-panel
         >
-          <div className="px-4 py-2.5 md:col-span-full">
-            <h2 className={statisticsTheme.sectionLabel}>
+          <div className={statisticsTheme.scopePanelHeader}>
+            <h2 className="text-sm font-semibold text-foreground">
               <Trans>Selecție</Trans>
             </h2>
+            <ResetButton count={pinCount} onReset={reset} />
           </div>
-          {segments.map((segment) =>
-            segment.control
-              ? controlPopover(
-                  segment,
-                  <button
-                    type="button"
-                    className={cn(statisticsTheme.scopeRailRow, 'h-full')}
-                    aria-label={
-                      segment.defaulted
-                        ? t`${segment.controlLabel}: ${segment.text} (implicit)`
-                        : t`${segment.controlLabel}: ${segment.text}`
-                    }
-                  >
-                    <span className="flex min-w-0 flex-col items-start">
-                      <span className={statisticsTheme.scopeRailLabel}>
-                        {segment.controlLabel.trim()}
-                      </span>
-                      <span className={statisticsTheme.scopeRailValue}>
-                        {segment.text}
-                      </span>
-                    </span>
-                    <span className="flex shrink-0 items-center gap-1.5">
-                      {/* Only a value that WAS chosen is marked as chosen
-                          automatically; an axis still to choose says so in
-                          its own text. */}
-                      {segment.defaulted ? (
-                        <span className="text-xs text-muted-foreground">
-                          <Trans>implicit</Trans>
-                        </span>
-                      ) : null}
-                      <ChevronDown
-                        className="h-3.5 w-3.5 text-muted-foreground"
-                        aria-hidden
-                      />
-                    </span>
-                  </button>,
-                )
-              : (
-                  <div
-                    key={segment.id}
-                    className={cn(statisticsTheme.scopeRailStatic, 'h-full')}
-                  >
-                    <span className={statisticsTheme.scopeRailLabel}>
-                      {segment.controlLabel.trim()}
-                    </span>
-                    <span className={statisticsTheme.scopeRailValue}>
-                      {segment.text}
-                    </span>
-                  </div>
-                ),
-          )}
+          <ScopeSections
+            segments={segments}
+            open={railSection}
+            onOpenChange={setRailSection}
+          />
         </div>
-        {hasDefaults ? (
-          <p className="mt-3 px-1 text-xs leading-relaxed text-muted-foreground">
-            <Trans>
-              Valorile marcate „implicit" au fost alese automat. Apasă pe ele
-              ca să le schimbi.
-            </Trans>
-          </p>
-        ) : null}
+        {defaultsNote}
       </div>
 
-      {/* Mobile: the whole selection opens ONE bottom sheet. */}
-      <div className="md:hidden">
+      {/* Anything narrower: the same panel in ONE bottom sheet. */}
+      <div className="lg:hidden">
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
           <SheetTrigger asChild>
             <button
@@ -316,23 +252,31 @@ export function DetailScopeSentence({
               <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden />
             </button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>
+          <SheetContent
+            side="bottom"
+            className="flex max-h-[85vh] flex-col gap-0 p-0"
+            data-scope-panel
+          >
+            {/* The sheet is the frame: its sections run edge to edge, as the
+                entity filter's do in its dialog, and the reset sits in its
+                header — a card inside the sheet was a second frame and a
+                second title for the same panel. The close button is the
+                sheet's own, top right, so the reset stops short of it. */}
+            <SheetHeader className="flex-row items-center justify-between gap-2 space-y-0 border-b border-border/70 py-3 pl-4 pr-12 text-left">
+              <SheetTitle className="text-base">
                 <Trans>Alege ce arată seria</Trans>
               </SheetTitle>
+              <ResetButton count={pinCount} onReset={reset} />
             </SheetHeader>
-            <div className="mt-4 space-y-4 pb-6">
-              {segments
-                .filter((segment) => segment.control)
-                .map((segment) => (
-                  <div key={segment.id} className="space-y-1.5">
-                    {segment.control?.({
-                      variant: 'field',
-                      onPicked: () => undefined,
-                    })}
-                  </div>
-                ))}
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              <ScopeSections
+                segments={segments}
+                open={sheetSection}
+                onOpenChange={setSheetSection}
+              />
+              {defaultsNote ? <div className="px-4 py-3">{defaultsNote}</div> : null}
+            </div>
+            <div className="border-t border-border/70 p-4">
               <Button className="w-full" onClick={() => setSheetOpen(false)}>
                 <Trans>Gata</Trans>
               </Button>
@@ -341,6 +285,149 @@ export function DetailScopeSentence({
         </Sheet>
       </div>
     </div>
+  )
+}
+
+/**
+ * How many axes the address pins: what the reset will take off. Counted from
+ * the address, not from the sections on screen — a year window pinned while
+ * the series is still loading has no section yet, and the reset must still
+ * offer to drop it. `din` and `pana` are one axis; a malformed `clasificari`
+ * is one pin to drop.
+ */
+function countPins(search: StatisticsDatasetDetailSearch): number {
+  const classifications = Array.isArray(search.clasificari)
+    ? search.clasificari.length
+    : search.clasificari === undefined
+      ? 0
+      : 1
+  return (
+    classifications +
+    (search.unitate === undefined ? 0 : 1) +
+    (search.frecventa === undefined ? 0 : 1) +
+    (search.din === undefined && search.pana === undefined ? 0 : 1)
+  )
+}
+
+/** Undo every value the reader chose: the axes go back to the implicit ones. */
+function ResetButton({
+  count,
+  onReset,
+}: {
+  readonly count: number
+  readonly onReset: (from: HTMLElement) => void
+}) {
+  if (count === 0) return null
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-auto shrink-0 gap-1.5 px-2 py-1 text-xs text-muted-foreground"
+      onClick={(event) => onReset(event.currentTarget)}
+    >
+      <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+      <Trans>Resetează ({count})</Trans>
+    </Button>
+  )
+}
+
+/**
+ * One section per axis. One open at a time, and controlled, so a pick can
+ * close its own section and show the new value in the trigger it came from.
+ * The year window's section stays open while its slider moves. An axis with
+ * nothing to choose is a row of text, not a section: given a trigger like
+ * its neighbours it read as a control that did nothing when pressed.
+ */
+function ScopeSections({
+  segments,
+  open,
+  onOpenChange,
+}: {
+  readonly segments: readonly ScopeSegment[]
+  /** The open section's id; empty when none is. */
+  readonly open: string
+  readonly onOpenChange: (id: string) => void
+}) {
+  // A pick unmounts the section it was made in — and with it the search
+  // field that held the focus, which would drop to the page. It goes back to
+  // the trigger the section opened from, which now reads the new value.
+  // Moved in the pick's own handler, not an effect: the router re-renders
+  // the page before an effect would run.
+  const triggers = useRef(new Map<string, HTMLButtonElement>())
+  const closeAfterPick = (id: string) => {
+    onOpenChange('')
+    triggers.current.get(id)?.focus()
+  }
+
+  return (
+    <Accordion
+      type="single"
+      collapsible
+      value={open}
+      onValueChange={onOpenChange}
+    >
+      {segments.map((segment) => {
+        const Icon = segment.icon
+        const heading = (
+          <span className="flex min-w-0 flex-1 items-start gap-2.5">
+            <Icon
+              className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+              aria-hidden
+            />
+            <span className="flex min-w-0 flex-1 flex-col items-start">
+              <span className={statisticsTheme.scopeRailLabel}>
+                {segment.controlLabel.trim()}
+              </span>
+              <span className="mt-0.5 flex w-full min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <span className={statisticsTheme.scopePanelValue}>
+                  {segment.text}
+                </span>
+                {/* Only a value that WAS chosen is marked as chosen
+                    automatically; an axis still to choose says so in its
+                    own text. Beside the value, not the axis name: in the
+                    16rem rail a tag up there wrapped the name. */}
+                {segment.defaulted && segment.control ? (
+                  <span className={statisticsTheme.scopePanelImplicit}>
+                    <Trans>implicit</Trans>
+                  </span>
+                ) : null}
+              </span>
+            </span>
+          </span>
+        )
+        if (!segment.control)
+          return (
+            <div key={segment.id} className={statisticsTheme.scopePanelStatic}>
+              {heading}
+            </div>
+          )
+        return (
+          <AccordionItem
+            key={segment.id}
+            value={segment.id}
+            className="border-b border-border/70 last:border-b-0"
+          >
+            <AccordionTrigger
+              ref={(element) => {
+                if (element) triggers.current.set(segment.id, element)
+                else triggers.current.delete(segment.id)
+              }}
+              className={statisticsTheme.scopePanelTrigger}
+              aria-label={
+                segment.defaulted
+                  ? t`${segment.controlLabel}: ${segment.text} (implicit)`
+                  : t`${segment.controlLabel}: ${segment.text}`
+              }
+            >
+              {heading}
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4 pt-1">
+              {segment.control({ onPicked: () => closeAfterPick(segment.id) })}
+            </AccordionContent>
+          </AccordionItem>
+        )
+      })}
+    </Accordion>
   )
 }
 
@@ -430,6 +517,7 @@ function buildSegments(params: {
       text: territoryLabel,
       defaulted: scope.territoryDefaulted,
       controlLabel: t`Teritoriu`,
+      icon: Globe,
       control: null,
     })
   }
@@ -458,7 +546,7 @@ function buildSegments(params: {
       defaulted: scope.defaultedTypes.has(typeCode),
       unresolved: value === undefined,
       controlLabel,
-      fills: true,
+      icon: dimension.type === 'TERRITORIAL' ? MapPin : Tags,
       control: (options) => (
         <ClassificationControl
           datasetCode={dataset.code}
@@ -467,7 +555,6 @@ function buildSegments(params: {
           dimension={dimension}
           search={sourceSearch}
           pinnedValue={value ?? null}
-          selectedLabel={classificationLabels.get(typeCode) ?? value ?? null}
           onChange={onSourceChange}
           options={options}
         />
@@ -488,13 +575,12 @@ function buildSegments(params: {
         unitLabel && unitAxisLabel && unitAxisLabel.toLowerCase() !== unitLabel.toLowerCase()
           ? unitAxisLabel
           : t`Unitate de măsură`,
-      fills: true,
+      icon: Ruler,
       control: (options) => (
         <UnitControl
           datasetCode={dataset.code}
           dimension={unitDimension}
           selectedCode={scope.unitCode}
-          selectedLabel={unitLabel}
           onChange={onSourceChange}
           options={options}
         />
@@ -513,8 +599,7 @@ function buildSegments(params: {
       defaulted: scope.periodicity !== null && !search.frecventa && periodicities.length > 1,
       unresolved: scope.periodicity === null,
       controlLabel: t`Frecvență`,
-      fills: true,
-      width: 'form',
+      icon: CalendarClock,
       control:
         periodicities.length > 1
           ? (options) => (
@@ -525,7 +610,6 @@ function buildSegments(params: {
                   if (isInsChartPeriodicity(periodicity))
                     onChange({ frecventa: periodicity })
                 }}
-                variant={options.variant}
                 onPicked={options.onPicked}
               />
             )
@@ -539,14 +623,14 @@ function buildSegments(params: {
       text: `${yearWindow.from}–${yearWindow.to}`,
       defaulted: !yearWindowPinned,
       controlLabel: t`Interval de ani`,
-      fills: true,
-      width: 'form',
-      control: (options) => (
+      icon: CalendarRange,
+      // The window moves with every drag of the slider, so its section stays
+      // open until the reader closes it.
+      control: () => (
         <DetailYearWindowControl
           span={observedSpan}
           window={yearWindow}
           onChange={(patch) => onChange(patch)}
-          variant={options.variant}
         />
       ),
     })
@@ -587,7 +671,6 @@ function ClassificationControl({
   dimension,
   search,
   pinnedValue,
-  selectedLabel,
   onChange,
   options,
 }: {
@@ -597,7 +680,6 @@ function ClassificationControl({
   readonly dimension: InsDimension
   readonly search: StatisticsDatasetDetailSearch
   readonly pinnedValue: string | null
-  readonly selectedLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
   readonly options: ScopeControlOptions
 }) {
@@ -681,17 +763,12 @@ function ClassificationControl({
     onClear: clearPin,
   }
 
-  return options.variant === 'panel' ? (
+  return (
     <DetailDimensionPanel
       {...shared}
       active
+      appearance="inline"
       onPicked={options.onPicked}
-    />
-  ) : (
-    <DetailDimensionCombobox
-      {...shared}
-      placeholder={t`Alege o valoare`}
-      selectedLabel={selectedLabel}
     />
   )
 }
@@ -700,14 +777,12 @@ function UnitControl({
   datasetCode,
   dimension,
   selectedCode,
-  selectedLabel,
   onChange,
   options,
 }: {
   readonly datasetCode: string
   readonly dimension: InsDimension
   readonly selectedCode: string | null
-  readonly selectedLabel: string | null
   readonly onChange: (patch: DetailSearchPatch) => void
   readonly options: ScopeControlOptions
 }) {
@@ -725,13 +800,12 @@ function UnitControl({
     onClear: () => onChange({ unitate: undefined }),
   }
 
-  return options.variant === 'panel' ? (
-    <DetailDimensionPanel {...shared} active onPicked={options.onPicked} />
-  ) : (
-    <DetailDimensionCombobox
+  return (
+    <DetailDimensionPanel
       {...shared}
-      placeholder={t`Alege o unitate`}
-      selectedLabel={selectedLabel ?? selectedCode}
+      active
+      appearance="inline"
+      onPicked={options.onPicked}
     />
   )
 }

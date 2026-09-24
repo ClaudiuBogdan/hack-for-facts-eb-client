@@ -1676,6 +1676,41 @@ the chart and the table already show how many periods there are.
   keep the loaded tiles' line heights to the pixel (the number's line is
   25px), so nothing moves when the series lands.
 
+## 6ab. The selection as a filter panel (2026-09-24)
+
+At the product owner's request: the rail should be the panel the app's other
+filters already are — the entity analytics filter and the chart builder's
+INS series — an accordion of sections that works the same on a phone and a
+desk. Before, a rail row opened a floating popover over the chart, and the
+phone's bottom sheet stacked fields that each opened another popover over
+the sheet.
+
+- **One panel, two places.** From `lg` it is the sticky rail beside the
+  figure, scrolling on its own when an open section outgrows the screen.
+  Below `lg` the same sections fill one bottom sheet, edge to edge, with the
+  sheet's own title — no card inside the sheet, no second title.
+- **A section per axis**: an icon for the kind of axis (a place, a class, a
+  unit, the cadence, the years), the axis's name, and the value on screen,
+  with „implicit" as a quiet tag beside a value the page chose. The value is
+  in the trigger because on this page the value, not a count of selections,
+  is what the reader needs. An axis with nothing to choose stays a row of
+  text.
+- **The options open in place**: the search as a field and the rows in
+  their own framed box, the shape of the shared filter lists. They are still
+  `DetailOptionList` — single choice, read a page at a time, the keyboard
+  model of a WAI-ARIA combobox — in its new `inline` appearance, so a
+  3,000-locality axis costs what it did. One section open at a time; a pick
+  closes its section, so the new value shows where the reader looked. The
+  year window's section stays open while its slider moves.
+- **„Resetează (n)"** in the panel's header whenever the address pins an
+  axis: it drops the pins (classifications, unit, cadence, years) and the
+  page falls back to the values it resolves itself. `n` is counted from the
+  address, not from the sections on screen — a year window pinned while the
+  series still loads has no section yet and still counts. `teritoriu` stays:
+  it is where the reader came from, not a choice made here. The button goes
+  with its count, so the focus moves to the first section; after a pick it
+  goes back to the trigger the section opened from.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

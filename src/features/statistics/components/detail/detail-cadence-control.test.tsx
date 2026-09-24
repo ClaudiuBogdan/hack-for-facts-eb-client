@@ -10,7 +10,6 @@ describe('cadence control', () => {
         periodicities={['ANNUAL', 'MONTHLY', 'OTHER']}
         selected="MONTHLY"
         onSelect={vi.fn()}
-        variant="panel"
       />,
     )
     expect(screen.getByRole('radio', { name: 'anual' })).not.toBeChecked()
@@ -30,7 +29,6 @@ describe('cadence control', () => {
         selected="MONTHLY"
         onSelect={select}
         onPicked={picked}
-        variant="panel"
       />,
     )
     expect(screen.queryByText(/estompate/)).not.toBeInTheDocument()

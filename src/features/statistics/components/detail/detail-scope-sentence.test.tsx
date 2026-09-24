@@ -6,22 +6,23 @@ import { fetchDimensionValuesPage } from '../../api/dataset-detail-api'
 import { DetailScopeSentence } from './detail-scope-sentence'
 
 /**
- * The picker is stubbed down to one button that reports a pick. Both forms
- * are stubbed: a desktop chip opens the panel directly, the phone sheet opens
- * the labelled field. `vi.hoisted` because `vi.mock` factories run before the
- * module body.
+ * The picker is stubbed down to buttons that report a pick and, as the real
+ * panel does, then say the pick is done. `vi.hoisted` because `vi.mock`
+ * factories run before the module body.
  */
 const { pickerStub } = vi.hoisted(() => ({
   pickerStub: ({
     dimensionIndex,
     onSelect,
+    onPicked,
   }: {
     dimensionIndex: number
     onSelect: (row: unknown) => void
+    onPicked?: () => void
   }) => (
     <>
       <button
-        onClick={() =>
+        onClick={() => {
           onSelect({
             nom_item_id: 9,
             dimension_type:
@@ -29,7 +30,8 @@ const { pickerStub } = vi.hoisted(() => ({
             classification_value: { type_code: `D${dimensionIndex}`, code: '9' },
             unit: { code: '9' },
           })
-        }
+          onPicked?.()
+        }}
       >
         Pick {dimensionIndex}
       </button>
@@ -50,9 +52,6 @@ const { pickerStub } = vi.hoisted(() => ({
   ),
 }))
 
-vi.mock('../detail-dimension-combobox', () => ({
-  DetailDimensionCombobox: pickerStub,
-}))
 vi.mock('./detail-dimension-panel', () => ({
   DetailDimensionPanel: pickerStub,
 }))
@@ -182,6 +181,81 @@ describe('source scope edits', () => {
   })
 })
 
+describe('the panel', () => {
+  it('opens an axis onto its options in place, and closes it once one is picked', async () => {
+    mount()
+    const trigger = screen.getByRole('button', { name: /Categorie: 1/ })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('button', { name: 'Pick 0' })).not.toBeInTheDocument()
+    await userEvent.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    await userEvent.click(screen.getByRole('button', { name: 'Pick 0' }))
+    // The new value shows in the trigger the pick came from, and the focus
+    // goes back to it rather than to the page.
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('button', { name: 'Pick 0' })).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
+  })
+
+  it('keeps one axis open at a time', async () => {
+    mount()
+    await userEvent.click(screen.getByRole('button', { name: /Categorie: 1/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Unitate de măsură: Persoane/ }))
+    expect(screen.queryByRole('button', { name: 'Pick 0' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pick 4' })).toBeInTheDocument()
+  })
+
+  it('offers no reset while every value is the page’s own', () => {
+    mount()
+    expect(screen.queryByRole('button', { name: /Resetează/ })).not.toBeInTheDocument()
+  })
+
+  it('counts the pins in the address and drops every one of them', async () => {
+    const change = vi.fn()
+    render(
+      <DetailScopeSentence
+        dataset={dataset}
+        search={{ clasificari: ['D0:1', 'D1:2'], unitate: '0', din: 2000, pana: 2010 }}
+        scope={{
+          territory: null,
+          territoryMode: 'national-default',
+          territoryDefaulted: true,
+          classifications: new Map([
+            ['D0', '1'],
+            ['D1', '2'],
+            ['D2', '3'],
+          ]),
+          defaultedTypes: new Set(['D2']),
+          unitCode: '0',
+          unitDefaulted: false,
+          periodicity: 'ANNUAL',
+        }}
+        canDerive
+        unresolvedDimensions={[]}
+        territoryLabel="România"
+        classificationLabels={new Map()}
+        unitLabel="Persoane"
+        // The series is still loading: the window has no section yet, and
+        // the reset still counts its pin.
+        observedSpan={null}
+        yearWindow={null}
+        onChange={change}
+      />,
+    )
+    const reset = screen.getByRole('button', { name: 'Resetează (4)' })
+    await userEvent.click(reset)
+    expect(change).toHaveBeenCalledWith({
+      clasificari: undefined,
+      unitate: undefined,
+      frecventa: undefined,
+      din: undefined,
+      pana: undefined,
+    })
+    // The button that held the focus is going; the focus goes to the panel.
+    expect(screen.getByRole('button', { name: /^Categorie: 1/ })).toHaveFocus()
+  })
+})
+
 describe('unresolved axes', () => {
   function mountScope(overrides: {
     readonly scope?: Partial<Parameters<typeof DetailScopeSentence>[0]['scope']>
@@ -304,9 +378,7 @@ describe('nested source axes', () => {
     await userEvent.click(screen.getByRole('button', { name: /Geografie unu: 2/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Pick 1' }))
     // A second pick on another axis, written while the first still waits —
-    // the `search` prop has not moved (the router is still loading). The
-    // stub does not close its popover the way a real pick does.
-    await userEvent.keyboard('{Escape}')
+    // the `search` prop has not moved (the router is still loading).
     await userEvent.click(screen.getByRole('button', { name: /Categorie: 1/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Pick 0' }))
     expect(change).toHaveBeenCalledTimes(1)
@@ -333,8 +405,11 @@ describe('nested source axes', () => {
       }),
     )
     const change = mount(true, undefined, nested)
-    await userEvent.click(screen.getByRole('button', { name: /Geografie unu: 2/ }))
+    const axis = screen.getByRole('button', { name: /Geografie unu: 2/ })
+    await userEvent.click(axis)
     await userEvent.click(screen.getByRole('button', { name: 'Pick 1' }))
+    // The pick closed the section; the reader opens it again and picks anew.
+    await userEvent.click(axis)
     await userEvent.click(screen.getByRole('button', { name: 'Pick nested 1' }))
     answer({
       nodes: [

@@ -12,7 +12,6 @@ function mount(window = span) {
       span={span}
       window={window}
       onChange={change}
-      variant="panel"
     />,
   )
   return change

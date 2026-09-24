@@ -124,10 +124,11 @@ export function DetailBody({
 
         Tier 1 renders WHENEVER the dataset is loaded: the scope controls are
         the way OUT of an unresolved state, so they can never hide behind it.
-        On a phone the rail becomes the shared bottom sheet — six axes never
-        become six popovers.
+        Below `lg` the same panel opens in one bottom sheet. An open section
+        can outgrow the screen, so the rail scrolls on its own and the page
+        never has to.
       */}
-      <aside className="lg:sticky lg:top-6 lg:self-start">
+      <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain">
         <DetailScopeSentence
           dataset={dataset}
           search={search}

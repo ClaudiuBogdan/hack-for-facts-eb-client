@@ -2,10 +2,8 @@ import * as SliderPrimitive from '@radix-ui/react-slider'
 import { useId, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type { YearSpan } from '../../lib/dataset-selection'
-import { statisticsTheme } from '../../lib/statistics-theme'
 
 export type { YearSpan }
 
@@ -19,11 +17,6 @@ type Props = {
     readonly din: number | undefined
     readonly pana: number | undefined
   }) => void
-  /**
-   * `panel` paints a popover edge to edge, with its own header; `field` is
-   * the labelled form the phone sheet stacks.
-   */
-  readonly variant: 'panel' | 'field'
 }
 
 /** „Ultimii N ani" shortcuts, offered only where the span is longer than N. */
@@ -51,7 +44,7 @@ const THUMB_CLASS =
  * blur or Enter, clamped to the span and put in order. A window equal to the
  * whole span is written as no pin at all, which is what it means.
  */
-export function DetailYearWindowControl({ span, window, onChange, variant }: Props) {
+export function DetailYearWindowControl({ span, window, onChange }: Props) {
   const id = useId()
   const [draft, setDraft] = useState<readonly [number, number]>([window.from, window.to])
   // The draft follows the URL, never the other way round: a chip removed or
@@ -80,19 +73,9 @@ export function DetailYearWindowControl({ span, window, onChange, variant }: Pro
 
   return (
     <div className="flex flex-col">
-      {variant === 'panel' ? (
-        <div className={statisticsTheme.optionPanelHeader}>
-          <p className={statisticsTheme.sectionLabel}>
-            <Trans>Interval de ani</Trans>
-          </p>
-        </div>
-      ) : (
-        <Label className="mb-1.5">
-          <Trans>Interval de ani</Trans>
-        </Label>
-      )}
-
-      <div className={cn('space-y-3', variant === 'panel' ? 'px-3 pb-3 pt-3' : 'rounded-md border border-border/70 p-3')}>
+      {/* The section's trigger names the control; the fields and the slider
+          name themselves. */}
+      <div className="space-y-3 rounded-md border border-border/70 p-3">
         <div className="flex items-center gap-2">
           <YearField
             id={`${id}-from`}

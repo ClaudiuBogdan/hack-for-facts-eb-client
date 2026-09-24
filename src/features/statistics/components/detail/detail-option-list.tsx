@@ -40,6 +40,13 @@ type Props = {
   readonly hasNextPage: boolean
   readonly isFetchingNextPage: boolean
   readonly fetchNextPage: () => void
+  /**
+   * `popover` paints a floating panel edge to edge: the search is its top
+   * strip. `inline` sits inside a filter section, beside other controls, so
+   * the search is a field and the rows sit in their own framed box — the
+   * shape of the shared filter lists (`components/filters/base-filter`).
+   */
+  readonly appearance?: 'popover' | 'inline'
 }
 
 /**
@@ -74,7 +81,9 @@ export function DetailOptionList({
   hasNextPage,
   isFetchingNextPage,
   fetchNextPage,
+  appearance = 'popover',
 }: Props) {
+  const inline = appearance === 'inline'
   const listId = useId()
   const listRef = useRef<HTMLDivElement>(null)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -183,7 +192,14 @@ export function DetailOptionList({
 
   return (
     <>
-      <div className="flex items-center border-b border-border/70 px-3">
+      <div
+        className={cn(
+          'flex items-center px-3',
+          inline
+            ? 'rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring'
+            : 'border-b border-border/70',
+        )}
+      >
         <Search aria-hidden className="mr-2 h-4 w-4 shrink-0 opacity-50" />
         <input
           type="text"
@@ -199,7 +215,10 @@ export function DetailOptionList({
           onChange={(event) => handleDraftChange(event.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex h-10 w-full bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground"
+          className={cn(
+            'flex w-full bg-transparent text-sm outline-hidden placeholder:text-muted-foreground',
+            inline ? 'h-9 py-2' : 'h-10 py-3',
+          )}
         />
       </div>
 
@@ -227,7 +246,8 @@ export function DetailOptionList({
         aria-label={label}
         className={cn(
           'overflow-y-auto overflow-x-hidden overscroll-contain p-1',
-          options.length > 0 ? 'max-h-72' : 'max-h-0 p-0',
+          inline && 'mt-2 rounded-md border border-border/70',
+          options.length > 0 ? (inline ? 'max-h-64' : 'max-h-72') : 'max-h-0 border-0 p-0',
         )}
       >
         <div
