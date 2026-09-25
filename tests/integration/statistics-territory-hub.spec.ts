@@ -17,16 +17,25 @@ const ROUTE = '/ins/teritorii/54975'
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('StatisticsTerritoryHub', 'hub-cluj')
   await mockApi.mockGraphQL('StatisticsTerritoryHubContext', 'hub-context-cluj')
+  // The place, its county and Romania: one recorded payload answers all three.
+  await mockApi.mockGraphQL('TerritoryDerivedIndicators', 'derived-cluj')
 }
 
-function countGraphQLPosts(page: Page): { readonly count: () => number } {
-  let posts = 0
+/** GraphQL POSTs by operation, so the hub's own budget is not charged for the sections below it. */
+function countGraphQLPosts(page: Page): {
+  readonly count: (operations?: readonly string[]) => number
+} {
+  const posts: string[] = []
   page.on('request', (request) => {
     if (request.url().includes('/graphql') && request.method() === 'POST') {
-      posts += 1
+      const body = request.postDataJSON() as { operationName?: string; query?: string } | null
+      posts.push(body?.operationName ?? /query\s+(\w+)/.exec(body?.query ?? '')?.[1] ?? '')
     }
   })
-  return { count: () => posts }
+  return {
+    count: (operations) =>
+      operations ? posts.filter((name) => operations.includes(name)).length : posts.length,
+  }
 }
 
 test.describe('Territory hub', () => {
@@ -54,13 +63,18 @@ test.describe('Territory hub', () => {
     await expect(page.getByText(/\d+ indicatori cu date/)).toBeVisible()
     await expect(page.getByText(/date până în/)).toBeVisible()
 
-    // Benchmark line on a headline tile (county + national references).
-    await expect(page.getByText(/Județ:/).first()).toBeVisible()
-    await expect(page.getByText(/România:/).first()).toBeVisible()
+    // The references close a headline tile as two rows: the county, then Romania.
+    const headline = page.locator('article').first()
+    await expect(headline.getByText('Județul Cluj')).toBeVisible()
+    await expect(headline.getByText('România', { exact: true })).toBeVisible()
 
-    // Per-tile compare affordance.
+    // The source is said once, in the header — no per-tile source button.
+    await expect(page.getByRole('link', { name: /INS Tempo/ }).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: /^Sursă/ })).toHaveCount(0)
+
+    // Per-tile compare affordance: an icon named for what it compares.
     await expect(
-      page.getByRole('link', { name: /Compară/ }).first(),
+      page.getByRole('link', { name: /^Compară cu/ }).first(),
     ).toBeVisible()
   })
 
@@ -73,7 +87,48 @@ test.describe('Territory hub', () => {
     ).toBeVisible({ timeout: 15000 })
     await page.waitForTimeout(1500)
 
-    expect(posts.count()).toBeLessThanOrEqual(2)
+    expect(
+      posts.count(['StatisticsTerritoryHub', 'StatisticsTerritoryHubContext']),
+    ).toBeLessThanOrEqual(2)
+  })
+
+  test('the indicators per inhabitant read the place, its county and Romania, all shown', async ({
+    page,
+  }) => {
+    const posts = countGraphQLPosts(page)
+    // Which scope each read asks for: every alias of one document shares it.
+    const scopes: string[] = []
+    page.on('request', (request) => {
+      if (!request.url().includes('/graphql') || request.method() !== 'POST') return
+      const body = request.postDataJSON() as {
+        operationName?: string
+        query?: string
+        variables?: Record<string, { sirutaCodes?: string[]; territoryCodes?: string[] }>
+      } | null
+      const operation = body?.operationName ?? /query\s+(\w+)/.exec(body?.query ?? '')?.[1]
+      if (operation !== 'TerritoryDerivedIndicators') return
+      const filters = Object.values(body?.variables ?? {})
+      const place = [...new Set(filters.map((f) => JSON.stringify(f.sirutaCodes ?? f.territoryCodes)))]
+      scopes.push(`${filters[0]?.sirutaCodes ? 'siruta' : 'territory'}:${place.join('|')}`)
+    })
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+    const section = page.getByRole('region', { name: 'Indicatori raportați la populație' })
+    await section.scrollIntoViewIfNeeded()
+
+    // Eight tiles, the first the birth rate over three years; nothing folded.
+    await expect(section.getByRole('heading', { name: 'Născuți-vii' })).toBeVisible({ timeout: 15000 })
+    await expect(section.locator('article')).toHaveCount(8)
+    expect(posts.count(['TerritoryDerivedIndicators'])).toBe(3)
+    // The place by SIRUTA, its county and Romania by code — never the place three times.
+    expect(scopes.sort()).toEqual(['siruta:["54975"]', 'territory:["CJ"]', 'territory:["RO"]'])
+
+    // Every indicator in one dropdown, open, each with how it is computed.
+    await expect(
+      section.getByRole('button', { name: /Toți indicatorii, cu județul și țara/ }),
+    ).toHaveAttribute('aria-expanded', 'true')
+    await section.getByRole('button', { name: 'Cum se calculează: Născuți-vii' }).click()
+    await expect(section.getByText('Σ POP201D / Σ POP108D × 1.000')).toBeVisible()
   })
 
   test('the period filter writes ?period=, shows Filtrat, and clears', async ({

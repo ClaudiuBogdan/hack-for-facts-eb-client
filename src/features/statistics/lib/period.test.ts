@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { InsObservation } from '@/schemas/ins'
 import {
-  buildDataThroughLabel,
   getLatestTimePeriod,
   isPeriodStale,
   periodSortKey,
@@ -77,19 +76,6 @@ describe('resolveLatestPeriod', () => {
         observations: [observation(2022)],
       }),
     ).toBe('2022')
-  })
-})
-
-describe('buildDataThroughLabel', () => {
-  it('labels annual, quarterly, and monthly periods', () => {
-    expect(buildDataThroughLabel('2024')).toContain('2024')
-    expect(buildDataThroughLabel('2024-Q1')).toContain('T1')
-    expect(buildDataThroughLabel('2024-03')).toContain('martie')
-  })
-
-  it('returns null for absent periods (no invented freshness)', () => {
-    expect(buildDataThroughLabel(null)).toBeNull()
-    expect(buildDataThroughLabel('  ')).toBeNull()
   })
 })
 

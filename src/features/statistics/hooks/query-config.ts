@@ -36,6 +36,8 @@ export const statisticsKeys = {
   contextTree: () => ['statistics', 'native-v2', 'context-tree'] as const,
   landingCatalog: () => ['statistics', 'native-v2', 'landing', 'catalog'] as const,
   territoryHub: (siruta: string) => ['statistics', 'native-v1', 'territory-hub', siruta] as const,
+  territoryDerived: (siruta: string, countyCode: string) =>
+    ['statistics', 'native-v1', 'territory-derived', siruta, countyCode] as const,
   territorySearch: (term: string) => ['statistics', 'native-v2', 'territory-search', term] as const,
   explorerPage: (hash: string) => ['statistics', 'explorer-v1', 'page', hash] as const,
   /** The comparison picker's search over datasets with county figures. */

@@ -1,99 +1,86 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
-import { ArrowRight } from 'lucide-react'
+import { ArrowLeftRight } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
-import { formatHubPeriod } from '../../lib/period'
-import { isPeriodStale } from '../../lib/period'
-import { tileCompareSearch, tileStateNote, tileUnitName } from '../../lib/territory-tiles'
+import { formatHubPeriod, isPeriodStale } from '../../lib/period'
+import { tileCompareSearch } from '../../lib/territory-tiles'
 import { formatTileValue, tileStatusLabel } from '../../lib/territory-values'
-import { InsProvenanceDrawer } from './ins-provenance-drawer'
 import { RequestDatasetAction } from '../request-dataset-action'
 
-/** A 24px hit area around a 16px text link (WCAG 2.2 AA 2.5.8), as the back link does. */
-const TEXT_LINK_CLASS =
-  '-my-1 inline-flex items-center gap-1 rounded-sm px-1.5 py-1 text-xs font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-
-type ValueProps = {
+/**
+ * A tile's figure: the value with its unit word — or a dash when there is no
+ * figure, the reason being said beside the name. The value and the unit are
+ * separated by a real space, so a screen reader says „163.582 persoane", not
+ * „163582persoane".
+ */
+export function TerritoryTileFigure({
+  tile,
+  size,
+  className,
+}: {
   readonly tile: StatisticsIndicatorTile
-  readonly activePeriod: string | null
-  /** `row` sets the figure small and right-aligned; `tile` sets it large. */
+  /** `row` sets the figure small; `tile` sets it large. */
   readonly size: 'row' | 'tile'
+  readonly className?: string
+}) {
+  const formatted = formatTileValue(tile)
+  if (!formatted) {
+    return <span className={cn('text-sm text-muted-foreground', className)}>—</span>
+  }
+  return (
+    <span
+      className={cn(
+        'tabular-nums tracking-tight text-foreground',
+        size === 'tile' ? 'text-2xl font-semibold' : 'text-sm font-semibold',
+        className,
+      )}
+    >
+      {formatted.value}
+      {formatted.unit ? (
+        <>
+          {' '}
+          <span className={cn('font-normal tracking-normal text-muted-foreground', size === 'tile' ? 'text-sm' : 'text-xs')}>
+            {formatted.unit}
+          </span>
+        </>
+      ) : null}
+    </span>
+  )
 }
 
 /**
- * A tile's figure: the value with its unit word, then the period and the
- * INS flag under it — or, when there is no figure, why. The value and the
- * unit are separated by a real space, so a screen reader says „163.582
- * persoane", not „163582persoane".
+ * The figure's period, with the INS flag and an amber „possibly not updated"
+ * when the series stopped long ago. Nothing for a tile with no figure.
  */
-export function TerritoryTileValue({ tile, activePeriod, size }: ValueProps) {
-  const formatted = formatTileValue(tile)
-  const note = tileStateNote(tile, activePeriod)
+export function TerritoryTilePeriod({
+  tile,
+  className,
+}: {
+  readonly tile: StatisticsIndicatorTile
+  readonly className?: string
+}) {
   const statusLabel = tileStatusLabel(tile.valueStatus)
   const stale = tile.tileState === 'available' && isPeriodStale({ latestPeriod: tile.latestPeriod })
-  const periodLine = (
+  if (!tile.latestPeriod && !statusLabel) return null
+  return (
     <span
       className={cn(
-        'block text-xs tabular-nums text-muted-foreground',
+        'text-xs tabular-nums text-muted-foreground',
         stale && 'text-amber-800 dark:text-amber-300',
+        className,
       )}
     >
-      {tile.latestPeriod ? formatHubPeriod(tile.latestPeriod) : '—'}
-      {statusLabel ? ` · ${statusLabel}` : null}
+      {tile.latestPeriod ? formatHubPeriod(tile.latestPeriod) : null}
+      {tile.latestPeriod && statusLabel ? ' · ' : null}
+      {statusLabel}
       {stale ? ` · ${t`posibil neactualizat`}` : null}
     </span>
   )
-
-  if (size === 'tile') {
-    return formatted ? (
-      <>
-        <p className="flex flex-wrap items-baseline gap-x-1.5">
-          <span className="text-2xl font-semibold tabular-nums tracking-tight">{formatted.value}</span>
-          {formatted.unit ? (
-            <>
-              {' '}
-              <span className="text-sm text-muted-foreground">{formatted.unit}</span>
-            </>
-          ) : null}
-        </p>
-        <p>{periodLine}</p>
-      </>
-    ) : (
-      <p className="text-sm text-muted-foreground">
-        {note ?? '—'}
-        {statusLabel ? <span className="block text-xs">{statusLabel}</span> : null}
-      </p>
-    )
-  }
-
-  return (
-    <div className={cn('text-right', tile.tileState !== 'available' && 'text-muted-foreground')}>
-      {formatted ? (
-        <>
-          <span className="block text-sm font-semibold tabular-nums tracking-tight text-foreground">
-            {formatted.value}
-            {formatted.unit ? (
-              <>
-                {' '}
-                <span className="font-normal text-muted-foreground">{formatted.unit}</span>
-              </>
-            ) : null}
-          </span>
-          {periodLine}
-        </>
-      ) : (
-        <>
-          <span className="block text-sm">—</span>
-          {statusLabel ? <span className="block text-xs">{statusLabel}</span> : null}
-        </>
-      )}
-    </div>
-  )
 }
 
-type ActionsProps = {
+type ActionProps = {
   readonly tile: StatisticsIndicatorTile
   readonly name: string
   readonly siruta: string
@@ -102,44 +89,40 @@ type ActionsProps = {
 }
 
 /**
- * What a reader can do with one tile: see where it comes from, compare it,
- * ask for its data, or inspect an ambiguous series at the source. Each
- * control names its matrix for assistive tech; each link is a 24px target.
+ * The one action a tile carries besides opening its series: compare it with
+ * the county and the country — an icon, named for assistive tech and in a
+ * tooltip, because seventy rows each ending in the word „Compară" read as a
+ * column of the same word. A matrix listed without data offers a request
+ * instead. Everything else is on the series the row opens.
  */
-export function TerritoryTileActions({ tile, name, siruta, countyCode, className }: ActionsProps) {
-  const { i18n } = useLingui()
-  return (
-    <div className={cn('flex items-center gap-3', className)}>
-      <InsProvenanceDrawer
-        datasetCode={tile.datasetCode}
-        datasetName={name}
-        periodicity={tile.periodicity}
-        unitLabel={tileUnitName(tile, i18n.locale)}
-        latestPeriod={tile.latestPeriod}
-      />
-      {tile.tileState === 'catalog-only' ? (
+export function TerritoryTileAction({ tile, name, siruta, countyCode, className }: ActionProps) {
+  if (tile.tileState === 'catalog-only') {
+    return (
+      <span className={cn('relative z-10', className)}>
         <RequestDatasetAction datasetCode={tile.datasetCode} datasetName={name} siruta={siruta} />
-      ) : tile.tileState === 'available' || tile.tileState === 'period-missing' ? (
+      </span>
+    )
+  }
+  if (tile.tileState !== 'available' && tile.tileState !== 'period-missing') return null
+  const label = countyCode ? t`Compară cu județul și țara` : t`Compară cu țara`
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
         <Link
           to="/ins/comparatii"
           search={tileCompareSearch(tile, siruta, countyCode)}
-          className={TEXT_LINK_CLASS}
-          aria-label={t`Compară ${name}`}
+          aria-label={`${label}: ${name}`}
+          // 32px: clear of the 24px floor in WCAG 2.5.8, and above the
+          // row's own link, which covers the row.
+          className={cn(
+            'relative z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            className,
+          )}
         >
-          <Trans>Compară</Trans>
-          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+          <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
         </Link>
-      ) : (
-        <Link
-          to="/ins/seturi/$cod"
-          params={{ cod: tile.datasetCode }}
-          search={{ teritoriu: `siruta:${siruta}` }}
-          className={TEXT_LINK_CLASS}
-          aria-label={t`Inspectează seria din sursă: ${name}`}
-        >
-          <Trans>Inspectează seria din sursă</Trans>
-        </Link>
-      )}
-    </div>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   )
 }

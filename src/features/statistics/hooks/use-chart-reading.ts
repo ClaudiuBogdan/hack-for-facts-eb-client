@@ -14,9 +14,16 @@ const TOOLTIP_GAP = 12
  *
  * The tooltip sits beside the rule on whichever side it fits; on a phone,
  * where it fits on neither, it is centred on the rule and kept inside the
- * plot and its gutter.
+ * plot and its gutter — the value axis's, or a tile's padding (`gutter`).
+ * A tile's chart is too short to hold it beside the rule: there it hangs
+ * under the plot, centred on the rule (`centred`).
  */
-export function useChartReading(count: number) {
+export function useChartReading(
+  count: number,
+  options: { readonly gutter?: number; readonly centred?: boolean } = {},
+) {
+  const gutter = options.gutter ?? GUTTER
+  const centred = options.centred ?? false
   // `held`: picked by a finger or a pen.
   const [selection, setSelection] = useState<{ readonly index: number; readonly held: boolean } | null>(null)
   const active = selection === null ? null : Math.min(selection.index, count - 1)
@@ -42,10 +49,14 @@ export function useChartReading(count: number) {
     const width = plot.clientWidth
     const size = tooltip.offsetWidth
     const x = (active / (count - 1)) * width
+    if (centred) {
+      setTooltipLeft(Math.min(Math.max(-gutter, x - size / 2), width + gutter - size))
+      return
+    }
     const right = x + TOOLTIP_GAP
     const left = x - TOOLTIP_GAP - size
-    setTooltipLeft(right + size <= width ? right : left >= -GUTTER ? left : Math.min(Math.max(-GUTTER, x - size / 2), width - size))
-  }, [active, count])
+    setTooltipLeft(right + size <= width ? right : left >= -gutter ? left : Math.min(Math.max(-gutter, x - size / 2), width - size))
+  }, [active, count, gutter, centred])
 
   // A pointer moves many times per period: the same reading is the same state.
   const setActive = (index: number | null, hold = false) =>

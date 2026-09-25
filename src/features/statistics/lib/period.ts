@@ -69,55 +69,6 @@ export function resolveLatestPeriod(params: {
 }
 
 /**
- * Romanian "data-through" label built from a period only.
- *
- * - Annual `"2024"` → `"Date până în 2024"`.
- * - Quarterly `"2024-Q1"` → `"Date până în T1 2024"`.
- * - Monthly `"2024-03"` → `"Date până în martie 2024"`.
- *
- * No invented sync timestamps are emitted.
- */
-export function buildDataThroughLabel(period: string | null): string | null {
-  if (!period || period.trim().length === 0) {
-    return null
-  }
-
-  const trimmed = period.trim()
-
-  const yearMatch = /^(\d{4})$/.exec(trimmed)
-  if (yearMatch) {
-    return t`Date până în ${yearMatch[1]}`
-  }
-
-  const quarterMatch = /^(\d{4})-Q([1-4])$/.exec(trimmed)
-  if (quarterMatch) {
-    return t`Date până în T${quarterMatch[2]} ${quarterMatch[1]}`
-  }
-
-  const monthMatch = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(trimmed)
-  if (monthMatch) {
-    const monthNames = [
-      t`ianuarie`,
-      t`februarie`,
-      t`martie`,
-      t`aprilie`,
-      t`mai`,
-      t`iunie`,
-      t`iulie`,
-      t`august`,
-      t`septembrie`,
-      t`octombrie`,
-      t`noiembrie`,
-      t`decembrie`,
-    ]
-    const monthIndex = Number.parseInt(monthMatch[2], 10) - 1
-    return t`Date până în ${monthNames[monthIndex]} ${monthMatch[1]}`
-  }
-
-  return t`Date până în ${trimmed}`
-}
-
-/**
  * Cadence-aware staleness thresholds. A period's own grammar carries its
  * cadence (`2024` / `2024-Q1` / `2024-03`), so no dataset metadata is needed.
  *

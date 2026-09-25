@@ -273,7 +273,8 @@ every other indicator in an accordion grouped by domain (from the matrix
 code's three-letter prefix: `POP`, `FOM`/`SOM`, `LOC`, `SCL`, `SAN`, `GOS`,
 `TUR`, `ART`, `AGR`, `JUS`, `ADM`), one compact row each — name, latest
 value with a Romanian unit word, period, sparkline, provenance, compare.
-The first two groups open by default. Replaced a 9,600-pixel wall of
+(Provenance and compare as per-row buttons superseded by §6ag.) The first
+two groups open by default. Replaced a 9,600-pixel wall of
 identical tiles that led with agriculture because it sorted by code and
 printed raw unit symbols („17.953 other").
 
@@ -1357,7 +1358,8 @@ answering an unknown code with „retry". What changed:
   county reference, its own figure, is not repeated; references print
   through `formatTileValue`, so a flagged county cell shows its flag; the
   provenance drawer (`InsProvenanceDrawer`, renamed off the shared
-  data-trust name) says „INS Tempo", never the scraper registry's title; the
+  data-trust name; removed by §6ag) says „INS Tempo", never the scraper
+  registry's title; the
   rail uses the router's `Link` with typed search and an arrow, and builds
   its labels at render; the sparkline's ARIA names periods as the rows do;
   theme tokens are imported, not copied; the statistics `ShareFilteredView`
@@ -1725,7 +1727,8 @@ At the product owner's request, the two follow-ups of §6z and §6ab:
   protan and tritan vision: in light it separates as the old `#2a78d6` did;
   in dark far better — the old `#3987e5` all but merged with slot 5 for a
   protan reader. It sits lighter than the dark band, so the first territory
-  reads first. Unchanged: the hub's sparklines (grey), and the county map
+  reads first. Unchanged: the hub's sparklines (grey; the territory page's
+  moved to sky blue in §6ag), and the county map
   with the ranking beside it, which keep the navy choropleth — a county's
   swatch and its bar share a row and must agree, and the five steps are
   tuned for the text drawn on them.
@@ -1848,6 +1851,213 @@ nothing to open.
   the rows. INS names a domain's matrices from one template, so a name cut to
   one line left six phone rows reading „POPULATIA DUPA DOMICILIU la…": names
   get two lines, and the whole name on hover.
+
+## 6ag. The territory page, said once and read across (2026-09-25)
+
+At the product owner's request: keep the page's strength — each indicator's
+latest value beside its history, a whole place at a glance — and take out
+what it repeated.
+
+- **The source is said once, for the page.** Every figure on it is an INS
+  Tempo matrix, and a „Sursă" button on each of seventy rows and four tiles
+  said the same thing seventy-four times. The line under the title carries it
+  as one statement — `Sursă: INS Tempo ↗, date până în iunie 2026`, the
+  source's name being the link (§6h), to INS Tempo's front page
+  (`insTempoHomeUrl`: `page=tempo1`, the page the bare host serves). Each
+  row keeps its matrix code, and the series it opens carries that matrix's
+  own INS Tempo link and update date, so nothing a reader could cite is more
+  than one click away. `InsProvenanceDrawer` is deleted.
+- **One action, as an icon.** A row or a tile does two things: open its
+  series — the whole row is the link (the catalog rows' `after:inset-0`
+  overlay) — and compare it with the county and the country. „Compară"
+  printed seventy times read as a column of the same word, so it is a
+  32px ⇄ icon above the overlay, named for assistive tech („Compară cu
+  județul și țara: <indicator>") and in a tooltip. A catalog-only matrix
+  offers its request instead; everything else is on the series.
+- **A name says what is counted, not how INS slices it.** INS names a matrix
+  by every axis it breaks down by — „POPULATIA DUPA DOMICILIU la 1 ianuarie
+  pe grupe de varsta si varste, sexe, judete si localitati" — and the page
+  shows one cell of it, the place's total; on a page about one place, „pe
+  judete si localitati" is the page. `shortIndicatorName` drops the
+  breakdown from its opening „pe"/„by" through „judete si localitati"
+  („counties and localities"), keeps what INS adds after it (a reference
+  date, a parenthesis), does not repeat a date already in the name, and sets
+  a name that opens in capitals in sentence case; a name with no place
+  breakdown is left as it is. The full name is the row's title and the
+  series' heading. The diacritics INS leaves out are not restored: that
+  would take names written by hand.
+- **Rows read across, two lines at every width.** Name, the line, the value
+  and its period, the icon — as named grid areas, so one set of cells serves
+  both layouts. On a phone the name shares the first line with the value and
+  the code, the line and the period the second (a row was four lines, its
+  own „Sursă · Compară" line included, and drew no line at all); from `sm`
+  the line and the value have fixed columns, so seventy lines and figures
+  stand in columns. The notes that followed a name („Istoricul încărcat este
+  limitat…", „Graficul necesită o frecvență compatibilă") are gone: a capped
+  history is said on the line itself, in its title and label („ultimele 200
+  de observații"), and a series that cannot draw a line leaves the slot
+  empty.
+- **The lines are the INS series colour.** Sparklines move from navy to
+  `chart-sky`, the colour of the chart each row opens (§6ac left them out),
+  with a dot on the latest point when that point has a value — a gap at the
+  end is not the latest value. A headline tile shades the area under its
+  line.
+- **Headline tiles lead with a readable name.** Not the uppercase tier-1
+  label cut to one line („POPULATIA DUPA DOMICILIU LA 1 I…"): the short
+  name, two lines, with the ⇄ beside it; the value large, its period; the
+  line; then the county and the country as two aligned reference rows that
+  close the tile level across the band. A reference drops the unit and the
+  period when they are the tile's own — under „160.228 persoane · 2026",
+  „468.013" says the rest. The county row reads „Județul Sibiu", and plain
+  „Județ" when the tile is too narrow for it beside a seven-digit figure (a
+  container query: two abreast on a phone).
+- **„Vezi și în alte domenii" is a section like the others** — the tier-1
+  label over a band of rows — rather than a card with a heading strip.
+
+## 6ah. Indicators per inhabitant on the territory page (2026-09-25)
+
+At the product owner's request, after research and two advisory reviews
+(methodology and indicator choice), four prototypes and a combined one
+(`/development/statistics/derived-indicators`, removed on promotion). The
+section „Indicatori raportați la populație" sits under „Toți indicatorii, pe
+domenii": the place's figures divided by its population, beside its county
+and Romania computed the same way (`lib/territory-derived.ts`).
+
+**Why it exists, and why the entity page's version was not ported.** A rate
+per 1,000 inhabitants is what lets a reader compare a city of 160,000 with a
+commune of 2,000. The entity page's „Indicatori derivați" (on `main`, deployed)
+divides figures from different years (2024 employees by the 2025
+population, 2023 dwellings by 2025), reads drinking-water plant CAPACITY
+(GOS107A, m³/day) as water supplied, divides thousand m³ by population and
+labels it m³ (1,000× small), counts only international moves as migration,
+and truncates its labels to „R…". It also shows no reference to compare with.
+
+**The method** — each rule for a reason:
+- **Population by domicile, always.** INS publishes no annual resident
+  population for localities (POP105A stops at counties); its own county rates
+  (POP202A, POP207A…) are events ÷ domicile population on 1 July × 1,000, and
+  the same arithmetic here reproduces them to the decimal (Sibiu county 2024:
+  3,513 / 467,968 × 1,000 = 7,5). The 2021 census population (Sibiu
+  134,308) is a different measure — 24% under the domicile figure for Sibiu,
+  52% for Agnita, 16% OVER for suburban Florești — and is never a divisor.
+- **The reference date matches the numerator.** Events and annual averages
+  over year t ÷ POP108D (1 July t); stocks at 31 December t ÷ POP107D (1
+  January t+1). The two never mix years; there is no fallback to an older
+  population.
+- **A three-year window for births, deaths and domicile moves, for every
+  place.** Σ events / Σ populations — a rate per year, not a mean of rates.
+  Switching method at a threshold would put two places on two methods; a
+  small commune's death rate otherwise swings 1,2‰–22,6‰ from one year to
+  the next. The breakdown gives the last year alone, because a window lags a
+  fast change (Romania's births: 7,1 for 2023–2025, 6,7 in 2025), with its
+  own small-number flag: a window of 25 births can hide a year of 5.
+- **Small numbers are flagged, not hidden.** Under 20 events in the window,
+  „Număr mic de evenimente"; under 3, the counts only. Migration is screened
+  on arrivals + departures — a zero balance of 500 in and 500 out is not a
+  rare event. (ONS thresholds; extending them to births is our choice.)
+- **The year is INS's latest release, fixed before the place is read** —
+  the latest year Romania has PUBLISHED in full over the window: Romania
+  always has births, so an absent national cell is a year not yet released,
+  never a zero. A place missing that cell says „date lipsă"; it never
+  quietly shows an older year. When the page is filtered to a year, the
+  section reads that year.
+- **An absent cell means what its table means.** INS Tempo omits cells rather
+  than publish them empty: births, deaths, moves and dwellings completed
+  never publish a zero (POP201D: none among 3,172 cells), so a locality's
+  absent year is zero and the figure says how many years were read so; no
+  water cell is „fără rețea publică raportată"; a cell published without a
+  value stays missing. Only a LOCALITY's absent cell can mean zero: a county
+  or Romania always has births and a water network, so its absent cell is a
+  year not released — missing, never a 0,0 reference.
+- **A cell reads through `publishedNumber`.** One INS flags as having no
+  number („c", „x", „:") is missing, never zero; any other flag („p", „e")
+  travels to the figure: a provisional input makes a provisional rate. The
+  place's figure says it in words („calculat din date provizorii"); a county
+  or Romania reference carries the page's superscript marker, explained by
+  the INS legend under the section. INS publishes a few negative stocks
+  (LOC103B −82 m²; scrapper `INS_NOTES.md`): no measurement, so the figure
+  is withheld („valoare INS negativă, nefolosită"). Only a balance, computed
+  here, may be negative.
+- **Same formula, window and year for the place, the county and Romania** —
+  aggregate ratios, never a mean of the localities' rates. Green space has
+  no county or national reference (they would dilute it with rural
+  population that reports none); it stands against its legal target, 26
+  m²/locuitor by 2013 (OUG 114/2007).
+- **Water per day uses the year's days** (2024 had 366).
+
+**The indicators** (twelve; tourism only where the place has it; green
+space and modernised streets for towns only): births, deaths and the net
+change of domicile per 1,000; employees at the workplace per 1,000 (FOM104D
+counts people where they WORK — a job centre can exceed 1,000, and it is
+never an employment rate); dwellings per 1,000 and living space per
+inhabitant (series recalculated after the 2021 census: the trend starts in
+2021); dwellings completed per 1,000; household drinking water in litres per
+inhabitant per day (divided by all inhabitants, not those connected); green
+space per inhabitant; modernised share of town streets; tourist bed places
+per 1,000 and overnight stays per inhabitant. Left out: infant mortality
+(too few events at locality level), plant capacity (not use), gas and
+heating (climate and coverage), network lengths per capita (settlement
+geometry), pupils and teachers (university and scope breaks), doctors and
+beds (not served to this page yet).
+
+**The design**, iterated live with the product owner:
+- **Eight tiles, in the headline band's shape**, the four headline
+  questions first — births, the domicile balance, employees at the
+  workplace, and green space against its target (a commune, which reports
+  none, gets living space) — chosen for how much they tell places apart and
+  how much a local administration answers for them. Each tile: the rate
+  large with its unit, what it counts and for when, a one-line note where the
+  figure needs one, the rate's own history (the place shaded in the INS
+  series colour, its county grey, Romania dashed; computed from the same
+  series, no new data per chart), then the county and Romania as two rows.
+  A „show more" held four back while the section was drafted under „Pe
+  scurt"; under the list of series it competes with nothing, so all eight
+  show.
+- **One dropdown, „Toți indicatorii, cu județul și țara", open by default**,
+  shaped like the domain accordion above it, with the domains as
+  sub-headings inside. Each row reads across: the name with its unit and
+  matrix codes, the rate's trend, the rate and its period, the county and
+  Romania each labelled under its figure. A row opens onto „Cum se
+  calculează": the formula, the cells for all three scopes, the population
+  it divides by, the last year alone, the caveats and a link to each INS
+  matrix.
+- **No bare dashes.** A year Romania has not published for an indicator —
+  the period filter offers every year some series has, and employees or
+  water end a year earlier — says „INS nu are {an} pentru acest indicator";
+  a last year alone with too few events gives its reason. Green space's
+  reference columns carry its legal target, not „—" under „județ" and
+  „România", which would read as missing data.
+- **A tile's chart reads year by year** — the headline tiles' and these —
+  in the idiom of the INS period charts (`useChartReading`): a mouse reads
+  while it hovers, a tap holds the reading until a tap elsewhere, and from
+  the keyboard (a `slider`) the arrows, Home and End move along it. The
+  reading is the rule, a dot on each line and a box: the period — the
+  three-year window for a window figure — then the place, its county and
+  Romania, each with its line's swatch, or the legal target for green
+  space. A tile's chart is too short to hold the box beside the rule, as
+  the full charts do, so the box hangs under the chart, centred on the
+  rule, over the references it repeats for that year: the chart stays in
+  view. The list rows' lines stay decorative — 64 px on a phone is too
+  small to point at a year, and each row prints its figures and opens
+  onto how they are computed.
+- **The capital has no county reference.** County B returns the city's own
+  figures: as in the headline band (`BUCHAREST_MUNICIPALITY_SIRUTA`), the
+  section reads only the city and Romania — two documents, not three.
+- Rejected on the way: comparison strips (a per-row scale drew a 10%
+  difference across three-quarters of the strip), a population ledger
+  (births − deaths + moves is not the observed population change: INS's
+  estimate adds an adjustment), a flat reference table (too dense once the
+  tiles carried the headline figures), and ranking among comparable
+  localities (worth building, but on a server-side precomputation: the
+  browser read of 3,181 localities took seconds, and ranking must neither
+  drop INS's omitted zeros nor screen peers on their own event counts).
+
+**Reads.** Three documents in parallel — the place by SIRUTA, its county,
+Romania — each one aliased `insObservations` per matrix (16), pinned to the
+member it reads. One document of 48 aliases took 3.5–4.7 s on the dev API,
+three of 16 took 1.6 s together. They start only when the section nears the
+screen (`react-intersection-observer`, 600 px ahead): the hub's own two
+requests stay its only reads on load.
 
 ## 7. Data model expectations at the UI boundary
 

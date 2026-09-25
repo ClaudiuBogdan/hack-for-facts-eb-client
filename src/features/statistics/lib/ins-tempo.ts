@@ -16,3 +16,13 @@ export function insTempoDatasetUrl(datasetCode: string, locale: string): string 
   })
   return `http://statistici.insse.ro/tempoins/index.jsp?${params.toString()}`
 }
+
+/**
+ * INS Tempo's own front page, for a surface whose figures come from many of
+ * its matrices: each figure's matrix is one click further, on its series.
+ * `tempo1` is the page the bare host serves (checked 2026-09-25).
+ */
+export function insTempoHomeUrl(locale: string): string {
+  const lang = locale.toLowerCase().startsWith('en') ? 'en' : 'ro'
+  return `http://statistici.insse.ro/tempoins/index.jsp?${new URLSearchParams({ page: 'tempo1', lang }).toString()}`
+}

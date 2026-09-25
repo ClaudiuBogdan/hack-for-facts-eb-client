@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen, within } from '@/test/test-utils'
+import { render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatHubPeriod } from '../lib/period'
 import { territoryHubFixture } from '../test/territory-hub-fixtures'
@@ -87,7 +87,10 @@ describe('StatisticsTerritoryHubPage', () => {
     expect(screen.getByText('SIRUTA 54975')).toBeInTheDocument()
     // Four of the six fixture tiles carry a figure; the line says so, and up to when.
     expect(screen.getByText('4 indicatori cu date')).toBeInTheDocument()
-    expect(screen.getByText('date până în 2024')).toBeInTheDocument()
+    // The source, once for the page, with how far its figures reach.
+    expect(
+      screen.getByText((_, element) => element?.textContent === 'Sursă: INS Tempo, date până în 2024' && element.tagName === 'SPAN'),
+    ).toBeInTheDocument()
     expect(screen.getAllByText(/estimat/).length).toBeGreaterThan(0)
     expect(
       screen.getByText('Setul există în catalog, dar observațiile nu sunt încă încărcate.'),
@@ -99,30 +102,31 @@ describe('StatisticsTerritoryHubPage', () => {
     expect(document.title).toContain('Cluj-Napoca')
   })
 
-  it('opens the provenance drawer from a headline tile, named by its matrix', async () => {
+  it('says the source once, in the header, and no tile carries a source button of its own', () => {
     mount()
-
-    const labourTile = screen
-      .getByRole('heading', { level: 3, name: 'Numărul mediu al salariaților' })
-      .closest('article')
-    expect(labourTile).not.toBeNull()
-    fireEvent.click(within(labourTile!).getByRole('button', { name: 'Sursă: Numărul mediu al salariaților' }))
-
-    expect(await screen.findByText('Proveniență INS')).toBeInTheDocument()
     // The source is INS Tempo — never an internal registry title.
-    expect(screen.getAllByText('INS Tempo').length).toBeGreaterThan(0)
-    expect(screen.queryByText('INS statistical indicators')).not.toBeInTheDocument()
-    expect(screen.getAllByText(/FOM104D/).length).toBeGreaterThan(0)
-    expect(screen.getByRole('link', { name: /Deschide matricea în INS Tempo/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'INS Tempo (se deschide într-un tab nou)' })).toHaveAttribute(
       'href',
-      expect.stringContaining('ind=FOM104D'),
+      expect.stringContaining('page=tempo1'),
     )
+    expect(screen.queryByText('INS statistical indicators')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Sursă/ })).not.toBeInTheDocument()
+    // Each row keeps its matrix code, one click from that matrix's own source.
+    expect(screen.getAllByText(/^[A-Z]{3}\d{3}[A-Z]$/).length).toBeGreaterThan(0)
   })
 
-  it('names every row action for assistive tech', () => {
+  it('opens each tile’s series from its name and names the compare action for assistive tech', () => {
     mount()
-    expect(screen.getByRole('button', { name: 'Sursă: Populația după domiciliu la 1 ianuarie' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Compară Populația după domiciliu la 1 ianuarie' })).toBeInTheDocument()
+    const labourTile = screen
+      .getByRole('heading', { level: 3, name: 'Numărul mediu al salariaților' })
+      .closest('article')!
+    expect(within(labourTile).getByRole('link', { name: 'Numărul mediu al salariaților' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/ins/seturi/FOM104D'),
+    )
+    expect(
+      screen.getByRole('link', { name: /^Compară cu (județul și )?țara: Populația după domiciliu la 1 ianuarie$/ }),
+    ).toHaveAttribute('href', expect.stringContaining('/ins/comparatii'))
   })
 
   it('offers the years the territory has figures for, latest first, and defaults to the latest period', () => {

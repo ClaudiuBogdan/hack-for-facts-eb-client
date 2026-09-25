@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { ShareFilteredView } from '@/components/shared/procurement-data/share-filtered-view'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { cn } from '@/lib/utils'
@@ -23,6 +24,7 @@ import {
 } from '../lib/territory-period'
 import { RelatedLinksRail } from '../components/territory/related-links-rail'
 import { StatisticsBackLink } from '../components/statistics-back-link'
+import { TerritoryDerivedSection } from '../components/territory/territory-derived-section'
 import { TerritoryHeader } from '../components/territory/territory-header'
 import { TerritoryHeadlineTile, TerritoryIndicatorRow } from '../components/territory/territory-indicator-row'
 import { TerritoryPeriodControl } from '../components/territory/territory-period-control'
@@ -142,7 +144,8 @@ export function StatisticsTerritoryHubPage({ siruta, search, initialHub }: Stati
         ) : null}
 
         {shouldShowHub && hub && grouped ? (
-          <>
+          // One provider for the seventy compare buttons' tooltips.
+          <TooltipProvider delayDuration={300}>
             <header className="space-y-4">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <TerritoryHeader
@@ -195,6 +198,7 @@ export function StatisticsTerritoryHubPage({ siruta, search, initialHub }: Stati
                       tile={tile}
                       siruta={hub.identity.siruta}
                       countyCode={hub.identity.countyCode}
+                      countyName={hub.identity.countyName}
                       activePeriod={activePeriod}
                       // The capital is its own county cell: the reference would repeat the figure.
                       showCountyReference={hub.identity.siruta !== BUCHAREST_MUNICIPALITY_SIRUTA}
@@ -215,8 +219,8 @@ export function StatisticsTerritoryHubPage({ siruta, search, initialHub }: Stati
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     <Trans>
-                      Valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă. Fiecare rând deschide
-                      seria lui; „Compară" o pune lângă județ și țară.
+                      Ultima valoare a fiecărui indicator și evoluția lui, fără interpolarea perioadelor lipsă. Fiecare
+                      rând deschide seria completă.
                     </Trans>
                   </p>
                 </div>
@@ -259,8 +263,14 @@ export function StatisticsTerritoryHubPage({ siruta, search, initialHub }: Stati
               </section>
             ) : null}
 
+            {/* Under the source figures, what they mean per inhabitant: the
+                place's rates beside its county's and Romania's. */}
+            {hub.tiles.length > 0 ? (
+              <TerritoryDerivedSection identity={hub.identity} activePeriod={activePeriod} />
+            ) : null}
+
             <RelatedLinksRail identity={hub.identity} />
-          </>
+          </TooltipProvider>
         ) : null}
       </div>
     </div>

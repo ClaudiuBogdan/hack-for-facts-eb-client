@@ -1,9 +1,9 @@
-import { render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen } from '@/test/test-utils'
 import { describe, expect, it } from 'vitest'
 import type { InsTimePeriod } from '@/schemas/ins'
 import { formatHubPeriod } from '../../lib/period'
 import { buildSparklinePaths } from '../../lib/territory-sparkline'
-import { TerritorySparkline } from './territory-sparkline'
+import { TerritorySparkline, TerritorySparklineChart } from './territory-sparkline'
 
 const year = (value: number): InsTimePeriod => ({
   iso_period: String(value),
@@ -65,8 +65,58 @@ describe('TerritorySparkline', () => {
     expect(image).toHaveAccessibleName(/1[.,]5 și 2[.,]5/)
   })
 
-  it('says in words when the series is too short to draw', () => {
-    render(<TerritorySparkline points={[[year(2024), '1']]} />)
-    expect(screen.getByText('Serie prea scurtă pentru grafic')).toBeInTheDocument()
+  it('draws nothing when the series is too short for a line', () => {
+    const { container } = render(<TerritorySparkline points={[[year(2024), '1']]} />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('marks the latest point only when it has a value, and says when the history is capped', () => {
+    const { container, unmount } = render(
+      <TerritorySparkline points={[[year(2023), '1'], [year(2024), '2']]} truncated />,
+    )
+    expect(container.querySelector('circle')).not.toBeNull()
+    expect(screen.getByRole('img')).toHaveAccessibleName(/ultimele 200 de observații/)
+    unmount()
+    const ended = render(<TerritorySparkline points={[[year(2022), '1'], [year(2023), '2'], [year(2024), null]]} />)
+    expect(ended.container.querySelector('circle')).toBeNull()
+    ended.unmount()
+    // The latest value alone after a gap: no run draws it, the dot still marks it — top right, the maximum.
+    const alone = render(
+      <TerritorySparkline points={[[year(2022), '1'], [year(2023), '2'], [year(2024), null], [year(2025), '10']]} width={100} height={20} />,
+    )
+    const dot = alone.container.querySelector('circle')!
+    expect([dot.getAttribute('cx'), dot.getAttribute('cy')]).toEqual(['98', '2'])
+  })
+})
+
+describe('TerritorySparklineChart', () => {
+  const points = [[year(2022), '1'], [year(2023), '2'], [year(2024), null], [year(2025), '10']] as const
+  const tooltip = () => document.querySelector('[data-chart-tooltip]')
+
+  it('reads from the keyboard: the latest period first, the arrows back, Escape away', () => {
+    render(<TerritorySparklineChart points={points} format={(value) => `${value} persoane`} />)
+    const slider = screen.getByRole('slider')
+    expect(tooltip()).toBeNull()
+    fireEvent.focus(slider)
+    expect(tooltip()).toHaveTextContent('2025')
+    expect(tooltip()).toHaveTextContent('10 persoane')
+    fireEvent.keyDown(slider, { key: 'ArrowLeft' })
+    // A cell published without a value reads as a dash, never a zero.
+    expect(tooltip()).toHaveTextContent('2024')
+    expect(tooltip()).toHaveTextContent('—')
+    expect(slider).toHaveAttribute('aria-valuetext', '2024: —')
+    fireEvent.keyDown(slider, { key: 'Home' })
+    expect(tooltip()).toHaveTextContent('1 persoane')
+    fireEvent.keyDown(slider, { key: 'Escape' })
+    expect(tooltip()).toBeNull()
+  })
+
+  it('reads while a mouse hovers and stops when it leaves', () => {
+    render(<TerritorySparklineChart points={points} format={String} />)
+    const slider = screen.getByRole('slider')
+    fireEvent.pointerMove(slider, { clientX: 0, pointerType: 'mouse' })
+    expect(tooltip()).not.toBeNull()
+    fireEvent.pointerLeave(slider, { pointerType: 'mouse' })
+    expect(tooltip()).toBeNull()
   })
 })

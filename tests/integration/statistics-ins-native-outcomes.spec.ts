@@ -132,11 +132,11 @@ for (const language of ['en', 'ro'] as const) {
             ? 'Multiple INS series match'
             : 'Mai multe serii INS corespund',
         )
+        // The row itself opens the series, where a source series is chosen:
+        // no separate „Inspectează" action beside it.
         await expect(
-          ambiguous.getByRole('link', {
-            name: /Inspect the source series|Inspectează seria din sursă/,
-          }),
-        ).toBeVisible()
+          ambiguous.getByRole('link', { name: 'AMBIGUOUS', exact: true }),
+        ).toHaveAttribute('href', /\/ins\/seturi\/AMBIGUOUS/)
         await page.locator('#statistics-hub-period').click()
         await page.getByRole('option', { name: '2023', exact: true }).click()
         // The status word reads inline after the period, so it is lower-case.

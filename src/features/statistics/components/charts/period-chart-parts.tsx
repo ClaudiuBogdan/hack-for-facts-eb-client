@@ -107,10 +107,13 @@ export function ChartRule({ left }: { readonly left: number }) {
 export function ChartTooltip({
   tooltipRef,
   left,
+  className,
   children,
 }: {
   readonly tooltipRef: Ref<HTMLDivElement>
   readonly left: number
+  /** A tile's reading is narrower than a chart's (`min-w-0`). */
+  readonly className?: string
   readonly children: ReactNode
 }) {
   return (
@@ -119,7 +122,10 @@ export function ChartTooltip({
       aria-hidden="true"
       data-chart-tooltip
       // Its own width: near an edge an absolute box would shrink to the space left and wrap.
-      className="pointer-events-none absolute top-0 z-10 w-max min-w-44 max-w-72 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+      className={cn(
+        'pointer-events-none absolute top-0 z-10 w-max min-w-44 max-w-72 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md',
+        className,
+      )}
       style={{ left }}
     >
       {children}

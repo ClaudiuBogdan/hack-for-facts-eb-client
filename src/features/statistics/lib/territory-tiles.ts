@@ -14,16 +14,52 @@ export function tileDisplayName(tile: StatisticsIndicatorTile, locale: string): 
   )
 }
 
-/** The unit's name in the reader's language, the Romanian one otherwise, the symbol last. */
-export function tileUnitName(tile: StatisticsIndicatorTile, locale: string): string | null {
-  const romanian = locale.toLowerCase().startsWith('ro')
-  return (
-    (romanian ? tile.unitNameRo : tile.unitNameEn) ||
-    tile.unitNameRo ||
-    tile.unitNameEn ||
-    tile.unitSymbol ||
-    null
-  )
+/** Where INS's name states the breakdown this page already is: one place among all. */
+const PLACE_BREAKDOWN = /(?:judete|counties)\s+(?:si|and)\s+(?:localitati|localities)(?:\s+(?:de|of)\s+(?:plecare|destinatie|departure|destination))?/i
+/** The last „pe"/„by" that opens a matrix's list of breakdowns. */
+const BREAKDOWN_OPENER = /[\s,]+(?:pe|by)\s+/gi
+/** A word INS sets in capitals: „POPULATIA", „DOMICILIU,". */
+const SHOUTED_WORD = /^[A-ZĂÂÎȘȚŞŢ]{2,}[,.]?$/
+
+/**
+ * A matrix's name as a row on a place's page. INS names a matrix by what it
+ * counts and every axis it breaks that down by — „POPULATIA DUPA DOMICILIU la
+ * 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati" — and
+ * this page shows one cell of it: the place's total. So the breakdown goes,
+ * from its opening „pe"/„by" through „judete si localitati"; what INS adds
+ * after it (a reference date, a parenthesis) stays; and a name that opens in
+ * capitals is set in sentence case. A name that states no place breakdown is
+ * left as it is. The full name stays on the row's title and on the series.
+ */
+export function shortIndicatorName(name: string): string {
+  const compact = name.replace(/\s+/g, ' ').trim()
+  const place = PLACE_BREAKDOWN.exec(compact)
+  if (!place) return compact
+
+  const before = compact.slice(0, place.index)
+  const openers = [...before.matchAll(BREAKDOWN_OPENER)]
+  const cut = openers.length > 0 ? openers[openers.length - 1]!.index : before.length
+  const head = before.slice(0, cut).replace(/[\s,]+$/, '')
+  if (head.length === 0) return compact
+
+  const tail = compact
+    .slice(place.index + place[0].length)
+    .replace(/^[\s,.]+|[\s,.]+$/g, '')
+  const joined =
+    tail.length > 0 && !head.toLowerCase().includes(tail.toLowerCase()) ? `${head} ${tail}` : head
+  return sentenceCaseShouting(joined)
+}
+
+/** „POPULATIA DUPA DOMICILIU la 1 ianuarie" → „Populatia dupa domiciliu la 1 ianuarie". */
+function sentenceCaseShouting(text: string): string {
+  const words = text.split(' ')
+  let run = 0
+  while (run < words.length && SHOUTED_WORD.test(words[run]!)) run += 1
+  if (run < 2) return text
+  const lowered = words.slice(0, run).join(' ').toLocaleLowerCase('ro')
+  const rest = words.slice(run).join(' ')
+  const opening = lowered.charAt(0).toLocaleUpperCase('ro') + lowered.slice(1)
+  return rest ? `${opening} ${rest}` : opening
 }
 
 /** Why a tile shows no figure, in the reader's words; null when it shows one. */

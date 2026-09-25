@@ -1,0 +1,2056 @@
+{
+  "data": {
+    "r0": {
+      "nodes": [
+        {
+          "value": "324860",
+          "value_status": null,
+          "time_period": {
+            "year": 2026
+          }
+        },
+        {
+          "value": "325408",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "327091",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "328239",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "328530",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "328108",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "327406",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "325154",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "323631",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "322567",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "322007",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "321734",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "320819",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "320400",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "320042",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "319582",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "318442",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "317575",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "316715",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r1": {
+      "nodes": [
+        {
+          "value": "324631",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "326300",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "327304",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "328569",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "328487",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "328253",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "326362",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "324455",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "323157",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "321994",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "321763",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "320547",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "320561",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "319942",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "319697",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "318889",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "317838",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "316773",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r2": {
+      "nodes": [
+        {
+          "value": "2487",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "2459",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "2683",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "3138",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "3157",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "3227",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "3530",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "3390",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "3486",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "3404",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "3336",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "3140",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "3218",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "2903",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "2933",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "3236",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "3226",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "3021",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r3": {
+      "nodes": [
+        {
+          "value": "2861",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "2932",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "2877",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "3223",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "3904",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "3470",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "2948",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "3075",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "2953",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "2840",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "3055",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "2970",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "2980",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "2869",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "2744",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "2739",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "2701",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "2670",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r4": {
+      "nodes": [
+        {
+          "value": "5342",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "5714",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "5851",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "6722",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "6288",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "6139",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "7029",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "6284",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "5977",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "5545",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "5023",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "7226",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "4870",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "4752",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "4293",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "6270",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "4283",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "4461",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r5": {
+      "nodes": [
+        {
+          "value": "5780",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "7017",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "6867",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "6963",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "5203",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "5243",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "5404",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "5135",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "5538",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "5676",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "5182",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "5187",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "4466",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "4445",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "4077",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "5697",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "4017",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "4038",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r6": {
+      "nodes": [
+        {
+          "value": "195025",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "190486",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "186456",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "181883",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "176996",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "181226",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "171637",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "168718",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "161610",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "151777",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "149078",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "136823",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "133695",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "128037",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "123510",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "128785",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "132173",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r7": {
+      "nodes": [
+        {
+          "value": "163582",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "162683",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "161078",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "159222",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "157504",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "155820",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "153212",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "149075",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "145119",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "141879",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "139305",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "138121",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "136556",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "136284",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "135419",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "122769",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "121656",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "120504",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r8": {
+      "nodes": [
+        {
+          "value": "7658299",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "7620620",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "7555717",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "7483240",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "7403659",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "8014904",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "7932516",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "7696454",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "7476838",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "7376012",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "7260025",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "7204205",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "7125300",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "7104605",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "7061019",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "4858227",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "4782199",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "4712183",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r9": {
+      "nodes": [
+        {
+          "value": "957",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "1640",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "1885",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "1755",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "1995",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "2657",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "4175",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "4169",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "3417",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "2574",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "1252",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "1641",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "333",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "939",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "889",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "1232",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "1236",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "1178",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r10": {
+      "nodes": [
+        {
+          "value": "14220",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "13974",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "13910",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "14064",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "14472",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "14536",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "14332",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "14302",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "14060",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "14101",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "14151",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "14398",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "14710",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "14923",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "23212",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "23885",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "27520",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r11": {
+      "nodes": [
+        {
+          "value": "930",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "930",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "930",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "930",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "814",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "920",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "920",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "841",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "920",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "558",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "577",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r12": {
+      "nodes": [
+        {
+          "value": "435",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "410",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "404",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "388",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "386",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "386",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "386",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "386",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "386",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "384",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "384",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "382",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "377",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "373",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "362",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "357",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "348",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r13": {
+      "nodes": [
+        {
+          "value": "500",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "441",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "429",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "403",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "389",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "389",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "389",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r14": {
+      "nodes": [
+        {
+          "value": "9216",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "8750",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "8185",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "7654",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "7535",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "6816",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "6713",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "6824",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "6216",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "4899",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "4957",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "4789",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "5065",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "5332",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "4327",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "3428",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "3696",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "3657",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    },
+    "r15": {
+      "nodes": [
+        {
+          "value": "908281",
+          "value_status": null,
+          "time_period": {
+            "year": 2025
+          }
+        },
+        {
+          "value": "872017",
+          "value_status": null,
+          "time_period": {
+            "year": 2024
+          }
+        },
+        {
+          "value": "890003",
+          "value_status": null,
+          "time_period": {
+            "year": 2023
+          }
+        },
+        {
+          "value": "815447",
+          "value_status": null,
+          "time_period": {
+            "year": 2022
+          }
+        },
+        {
+          "value": "569548",
+          "value_status": null,
+          "time_period": {
+            "year": 2021
+          }
+        },
+        {
+          "value": "307908",
+          "value_status": null,
+          "time_period": {
+            "year": 2020
+          }
+        },
+        {
+          "value": "905210",
+          "value_status": null,
+          "time_period": {
+            "year": 2019
+          }
+        },
+        {
+          "value": "887859",
+          "value_status": null,
+          "time_period": {
+            "year": 2018
+          }
+        },
+        {
+          "value": "872015",
+          "value_status": null,
+          "time_period": {
+            "year": 2017
+          }
+        },
+        {
+          "value": "704921",
+          "value_status": null,
+          "time_period": {
+            "year": 2016
+          }
+        },
+        {
+          "value": "608620",
+          "value_status": null,
+          "time_period": {
+            "year": 2015
+          }
+        },
+        {
+          "value": "493458",
+          "value_status": null,
+          "time_period": {
+            "year": 2014
+          }
+        },
+        {
+          "value": "466245",
+          "value_status": null,
+          "time_period": {
+            "year": 2013
+          }
+        },
+        {
+          "value": "420630",
+          "value_status": null,
+          "time_period": {
+            "year": 2012
+          }
+        },
+        {
+          "value": "372797",
+          "value_status": null,
+          "time_period": {
+            "year": 2011
+          }
+        },
+        {
+          "value": "317453",
+          "value_status": null,
+          "time_period": {
+            "year": 2010
+          }
+        },
+        {
+          "value": "317980",
+          "value_status": null,
+          "time_period": {
+            "year": 2009
+          }
+        },
+        {
+          "value": "449339",
+          "value_status": null,
+          "time_period": {
+            "year": 2008
+          }
+        }
+      ]
+    }
+  }
+}

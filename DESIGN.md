@@ -864,6 +864,39 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-25 — A figure the platform computes shows its method beside it,
+  on the same basis as its references.** The INS territory page divides
+  source counts by population („Indicatori raportați la populație"). Rules
+  that now hold for any derived figure: numerator and denominator come from
+  the same year and a named population; the place and every reference it is
+  compared with (county, country) use the same formula, period and basis —
+  aggregate ratios, never a mean of rates; small-number figures are flagged
+  and too-small ones withheld rather than hidden; an absent source cell is
+  read by what its table means (zero, not covered, missing), and says so; the
+  figure's breakdown gives the formula, the cells for every scope and a link
+  to each source matrix; and it is labelled as computed by Transparenta.eu.
+  *Why:* the entity page's derived block divided mixed years, misread a
+  capacity as consumption and a thousand-unit as a unit, and offered nothing
+  to compare with; a computed ratio carries our authority, not the source's.
+  Details: `docs/design/statistics/design.md` §6ah.
+
+- **2026-09-25 — A page whose figures share one source says it once; a
+  row's one action is an icon.** On the INS territory page every figure is
+  an INS Tempo matrix, and each of seventy-four rows and tiles carried its own
+  „Sursă" button and the word „Compară". The source is now one statement in
+  the line under the title (`Sursă: INS Tempo ↗, date până în …`), each row
+  keeps its matrix code and opens its series, where that matrix's own link
+  and date are; compare is a 32px icon with a tooltip and an accessible name
+  that says what it compares. The whole row is the link to the series.
+  Matrix names drop the place breakdown INS spells out („pe judete si
+  localitati"), which on a page about one place is the page itself, and a
+  name set in capitals reads in sentence case; the full name stays on hover
+  and on the series. *Why:* the product owner found the repetition noisy and
+  the phone rows four lines tall; the rule generalises — repeated provenance
+  belongs once per surface when it is the same for every figure, and next to
+  each figure when it differs (§Data Trust). Details:
+  `docs/design/statistics/design.md` §6ag.
+
 - **2026-09-24 — The INS dataset page's appendix is sections, not an
   accordion.** „Explorează datele" held five closed rows under the notes; the
   table and the related sets are now sections shaped like „Despre acest set de

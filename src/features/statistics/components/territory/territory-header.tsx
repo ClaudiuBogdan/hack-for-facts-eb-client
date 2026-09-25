@@ -1,10 +1,11 @@
 import { plural, t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
-import { MapPin } from 'lucide-react'
+import { ExternalLink, MapPin } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import type { StatisticsTerritoryIdentity } from '@/schemas/statistics'
 import { comparisonPlaceName } from '../../lib/comparison-format'
+import { insTempoHomeUrl } from '../../lib/ins-tempo'
 import { formatHubPeriod } from '../../lib/period'
 import { statisticsTheme } from '../../lib/statistics-theme'
 
@@ -43,8 +44,14 @@ function levelLabel(level: StatisticsTerritoryIdentity['level']): string {
  * two pages. The line under the title says what the page holds for this
  * place — how many indicators, up to when — rather than a fact about the
  * whole catalog (§6n: a band says what its numbers are).
+ *
+ * It is also where the source is said, once for the page: every figure below
+ * is an INS Tempo matrix, and a „Sursă" button on each of seventy rows said
+ * the same thing seventy times. Each figure's own matrix — its code, its
+ * update date, the link to it on INS Tempo — is on the series it opens.
  */
 export function TerritoryHeader({ identity, indicatorCount, latestDataPeriod }: TerritoryHeaderProps) {
+  const { i18n } = useLingui()
   const place = identity.name ? comparisonPlaceName(identity.name) : null
   const name = place?.name ?? `SIRUTA ${identity.siruta}`
   const kind = place?.kind ?? levelLabel(identity.level)
@@ -80,11 +87,22 @@ export function TerritoryHeader({ identity, indicatorCount, latestDataPeriod }: 
         <span>
           {plural(indicatorCount, { one: 'un indicator cu date', few: '# indicatori cu date', other: '# de indicatori cu date' })}
         </span>
-        {latestDataPeriod ? (
-          <span>
-            <Trans>date până în {formatHubPeriod(latestDataPeriod)}</Trans>
-          </span>
-        ) : null}
+        {/* One provenance statement, kept whole when the line wraps. */}
+        <span className="tabular-nums">
+          <Trans>Sursă:</Trans>{' '}
+          <a
+            href={insTempoHomeUrl(i18n.locale)}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={t`INS Tempo (se deschide într-un tab nou)`}
+            // `-mx-1 px-1 py-1`: the 24px hit area WCAG 2.2 AA asks for (2.5.8).
+            className="-mx-1 inline-flex items-center gap-1 rounded-sm px-1 py-1 font-medium underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            INS Tempo
+            <ExternalLink className="h-3 w-3" aria-hidden="true" />
+          </a>
+          {latestDataPeriod ? <Trans>, date până în {formatHubPeriod(latestDataPeriod)}</Trans> : null}
+        </span>
         {identity.enrichedFallback ? (
           <span>
             <Trans>Identitate completată parțial din datele disponibile</Trans>

@@ -5,3 +5,5 @@ The native latest, dashboard and source-vector payloads are **synthetic contract
 Unmodified catalog/search and legacy landing decade/example payloads retain their earlier fixture shapes. They are not evidence of native-source validation. The dataset detail vector is one complete page plus a separate related-catalog response.
 
 Dashboard histories are deliberately constructed single-classification UI examples, not selected or relabeled captured rows. Geographic member 931 denotes Romania, 932 Cluj county and 933 Cluj-Napoca within these synthetic four-dimensional datasets.
+
+`derived-cluj.json` is different: a response RECORDED from the dev API on 2026-09-25 for the `TerritoryDerivedIndicators` read of SIRUTA 54975 (the place scope) — every alias in `DERIVED_READS` order (`src/features/statistics/lib/territory-derived.ts`), from `DERIVED_FIRST_YEAR` (2008), with `value_status` (none set). The spec answers the county and Romania reads with the same payload, so the references equal the place's figures there; it asserts which scope each read asks for (the variables), and the values test the section's behaviour, not the county's or the country's rates.

@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { defaultMapFilters } from '@/schemas/map-filters'
 import type { StatisticsTerritoryIdentity } from '@/schemas/statistics'
+import { statisticsTheme } from '../../lib/statistics-theme'
 import { territoryRelatedLinks, type TerritoryRelatedLink } from '../../lib/territory-links'
 
 /** The analytics filter that scopes a destination to the territory. */
@@ -15,8 +16,8 @@ function territorialFilter(link: TerritoryRelatedLink) {
 }
 
 const LINK_CLASS = cn(
-  'flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-muted/50',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+  'flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-muted/50',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
 )
 
 /** The link as the router builds it: in-app, preloaded, with its search typed by the destination. */
@@ -37,17 +38,20 @@ function RailLink({ link, children }: { readonly link: TerritoryRelatedLink; rea
   )
 }
 
+/**
+ * The place in the app's other surfaces, joined by its SIRUTA or its county.
+ * A labelled section like the page's others — the tier-1 label over a band
+ * of rows — rather than a card with a heading strip of its own.
+ */
 export function RelatedLinksRail({ identity }: { readonly identity: StatisticsTerritoryIdentity }) {
   const links = territoryRelatedLinks(identity)
 
   return (
-    <aside className="rounded-lg border border-border/70">
-      <div className="border-b px-4 py-3">
-        <h2 className="text-sm font-semibold">
-          <Trans>Vezi și în alte domenii</Trans>
-        </h2>
-      </div>
-      <div className="divide-y">
+    <aside aria-labelledby="territory-related-title" className="space-y-2">
+      <h2 id="territory-related-title" className={statisticsTheme.sectionLabel}>
+        <Trans>Vezi și în alte domenii</Trans>
+      </h2>
+      <div className={cn(statisticsTheme.band, 'divide-y divide-border/70 overflow-hidden')}>
         {links.map((link) => {
           const content = (
             <span>
@@ -67,7 +71,7 @@ export function RelatedLinksRail({ identity }: { readonly identity: StatisticsTe
               <div
                 key={link.to}
                 aria-disabled="true"
-                className="flex items-center justify-between gap-3 px-4 py-3 text-sm opacity-60"
+                className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm opacity-60"
               >
                 {content}
               </div>
