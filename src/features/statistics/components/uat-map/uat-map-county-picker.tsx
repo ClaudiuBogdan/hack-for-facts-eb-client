@@ -1,11 +1,11 @@
-import { memo, useState } from 'react'
+import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
-import { normalizeFilterSearchText } from '@/lib/filter-option-search'
 import { cn } from '@/lib/utils'
+import { countyMatches } from './uat-map-county-search'
 
 export interface CountyOption {
   readonly code: string
@@ -15,24 +15,11 @@ export interface CountyOption {
 }
 
 /**
- * A county matches when every word typed begins one of its words, diacritics
- * aside — „bras" finds Brașov, „satu m" Satu Mare, „mures" Mureș and not
- * Maramureș — or when the code is typed whole („CJ").
- */
-export function countyMatches(name: string, code: string, search: string): boolean {
-  const typed = normalizeFilterSearchText(search)
-  if (typed === '') return true
-  if (typed === code.toLocaleLowerCase('ro-RO')) return true
-  const words = normalizeFilterSearchText(name).split(' ')
-  return typed.split(' ').every((part) => words.some((word) => word.startsWith(part)))
-}
-
-/**
  * The county the map shows: a list with a search box — under the button on
  * a wide screen, a sheet from the bottom on a phone, where the search box
- * takes the focus as it opens. Unchanged by a hover on the map.
+ * takes the focus as it opens.
  */
-export const CountyPicker = memo(function CountyPicker({
+export function CountyPicker({
   options,
   value,
   onChange,
@@ -103,4 +90,4 @@ export const CountyPicker = memo(function CountyPicker({
       }
     />
   )
-})
+}

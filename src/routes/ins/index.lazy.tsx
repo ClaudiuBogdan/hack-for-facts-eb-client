@@ -6,8 +6,10 @@ export const Route = createLazyFileRoute('/ins/')({
 })
 
 function StatisticsHubRoutePage() {
-  const search = Route.useSearch()
+  // The page reads only the counties' indicator: the localities' map reads its own
+  // params, so switching them does not render the page again.
+  const indicator = Route.useSearch({ select: (search) => search.indicator })
   const { hub } = Route.useLoaderData()
 
-  return <StatisticsHubPage search={search} initialHub={hub} />
+  return <StatisticsHubPage search={{ indicator }} initialHub={hub} />
 }

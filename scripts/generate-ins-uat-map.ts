@@ -11,9 +11,12 @@
  * the UAT boundaries change (a new dated GeoJSON under `public/geojson/`).
  *
  * Options:
- *   --api        GraphQL endpoint (default: dev-chronos-api)
+ *   --api        GraphQL endpoint (default: dev-chronos-api). A snapshot for
+ *                production reads the API production serves; the snapshot
+ *                records which one it read (`api`).
  *   --width      grid width of the shapes, in integer units (default 4000)
- *   --last-year  the newest year asked for (default: next year, as the territory page)
+ *   --last-year  the newest year asked for (default: next year, as the territory page:
+ *                the population is counted on 1 January, so next year's may be out)
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -58,7 +61,6 @@ if (args.only !== 'values') {
   sizes('source GeoJSON', readFileSync(resolve(ROOT, GEOJSON), 'utf8'))
   sizes('geometry (paths)', text)
   sizes('  paths only', JSON.stringify(geometry.paths))
-  sizes('  arcs, for comparison', built.stats.arcsJson)
   sizes('  county borders', geometry.countyBorders + geometry.outline)
   sizes('  labels', JSON.stringify(geometry.labels))
 } else {
@@ -77,10 +79,7 @@ if (args.only !== 'geometry') {
   writeFileSync(VALUES_OUT, `${text}\n`)
   for (const series of values.series) {
     const counted = series.total.values.filter((value) => value !== null).length
-    const rated = series.rate ? `${series.rate.values.filter((value) => value !== null).length} rated (${series.small.length} small), RO ${series.rate.national}` : 'no rate'
-    console.log(
-      `  ${series.id.padEnd(15)} ${series.previousYear}→${series.year}  ${counted} counted, ${rated}; change RO ${series.change.national} (${series.change.kind}), ${series.unsteady.length} unsteady`,
-    )
+    console.log(`  ${series.id.padEnd(15)} ${series.year}  ${counted} with a total, RO ${series.total.national}`)
   }
   console.log(`values: ${((performance.now() - started) / 1000).toFixed(0)} s`)
   sizes('values', text)

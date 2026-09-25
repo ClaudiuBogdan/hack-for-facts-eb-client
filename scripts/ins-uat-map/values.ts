@@ -1,14 +1,12 @@
 /**
- * The UAT map's figures, read from the public GraphQL API and computed with
- * the territory page's own arithmetic (`computeDerived`, `derivedYear`) for
- * one year — the latest Romania has — and the year before: the count, the
- * count per 1,000 inhabitants, and the change between the two years, with
- * the page's small-number screen and absent-cell rule. The county and
- * Romania are computed the same way, as aggregate ratios.
+ * The UAT map's figures, read from the public GraphQL API: each series' total
+ * for the latest year Romania has, counted with the territory page's own
+ * arithmetic (`computeDerived`, `derivedYear`, one year) — so an absent cell
+ * reads as the page reads it, a negative INS input is left out, and a UAT
+ * with no public water network says so. The county and Romania alike.
  */
 import { msg } from '@lingui/core/macro'
 import {
-  COUNTS_ONLY_EVENTS,
   DERIVED_FIRST_YEAR,
   DERIVED_INDICATORS,
   DERIVED_READS,
@@ -94,6 +92,9 @@ async function post(api: string, variables: Record<string, unknown>): Promise<re
   }
 }
 
+/** A scope's reads as they are gathered, before they are handed over as `DerivedScopeData`. */
+type Gathered = { series: Map<string, Map<number, number | null>>; flags: Map<string, Map<number, string>> }
+
 /** Every row of one read at one level, page by page; keyed by SIRUTA (localities) or code. */
 async function readAll(
   api: string,
@@ -101,8 +102,8 @@ async function readAll(
   scope: { readonly territoryLevels: readonly string[] } | { readonly territoryCodes: readonly string[] },
   years: readonly number[],
   byCode: 'siruta' | 'code',
-): Promise<Map<string, DerivedScopeData>> {
-  const out = new Map<string, { series: Map<string, Map<number, number | null>>; flags: Map<string, Map<number, string>> }>()
+): Promise<Map<string, Gathered>> {
+  const out = new Map<string, Gathered>()
   const key = derivedReadKey(r)
   for (let offset = 0; ; offset += PAGE) {
     const nodes = await post(api, {
@@ -133,10 +134,10 @@ async function readAll(
   return out
 }
 
-/** Several scopes' reads folded into one map per scope. */
-function merge(target: Map<string, DerivedScopeData>, source: Map<string, DerivedScopeData>) {
+/** Several reads folded into one map per scope. */
+function merge(target: Map<string, Gathered>, source: Map<string, Gathered>) {
   for (const [id, data] of source) {
-    const into = target.get(id) as { series: Map<string, unknown>; flags: Map<string, unknown> } | undefined
+    const into = target.get(id)
     if (!into) {
       target.set(id, data)
       continue
@@ -149,7 +150,6 @@ function merge(target: Map<string, DerivedScopeData>, source: Map<string, Derive
 const EMPTY: DerivedScopeData = { series: new Map(), flags: new Map() }
 
 function missingOf(result: DerivedResult): UatMapMissing {
-  if (result.events !== null && result.events < COUNTS_ONLY_EVENTS) return 'few'
   if (result.missing?.includes('rețea')) return 'network'
   if (result.missing?.includes('negativ')) return 'negative'
   return 'absent'
@@ -161,24 +161,11 @@ const PART_IDS: Partial<Record<UatMapSeriesId, readonly UatMapPartId[]>> = {
   'sold-domiciliu': ['arrivals', 'departures'],
 }
 
-/** A change is a difference where a percentage would read backwards (a balance) or not at all (a count often zero). */
-const DIFFERENCE: ReadonlySet<UatMapSeriesId> = new Set(['spor-natural', 'sold-domiciliu', 'locuinte-noi'])
-/** Under this many events — or this small a count — in either year, a change is too unsteady to colour. */
-const STEADY = 20
-/** Counts screened on themselves: a level of employees or dwellings, not events screened on their gross. */
-const COUNT_SCREENED: ReadonlySet<UatMapSeriesId> = new Set(['salariati', 'locuinte-noi'])
-
 /** The count a figure is made of: plus less minus, summed as `computeDerived` gives them. */
 function countOf(result: DerivedResult, def: DerivedIndicator): number | null {
   if (result.parts.length === 0) return null
   const plus = def.plus.length
   return result.parts.slice(0, plus).reduce((a, b) => a + b, 0) - result.parts.slice(plus).reduce((a, b) => a + b, 0)
-}
-
-function changeOf(id: UatMapSeriesId, now: number | null, before: number | null): number | null {
-  if (now === null || before === null) return null
-  if (DIFFERENCE.has(id)) return now - before
-  return before > 0 ? (now / before - 1) * 100 : null
 }
 
 export async function buildUatValues(options: {
@@ -199,37 +186,30 @@ export async function buildUatValues(options: {
 
   // ── Romania first: it fixes each series' year ──────────────────────
   const allYears = Array.from({ length: options.lastYear - DERIVED_FIRST_YEAR + 1 }, (_, i) => DERIVED_FIRST_YEAR + i)
-  const national = new Map<string, DerivedScopeData>()
+  const national = new Map<string, Gathered>()
   for (const r of reads) merge(national, await readAll(api, r, { territoryCodes: ['RO'] }, allYears, 'code'))
   const country = national.get('RO') ?? EMPTY
   const popSeries = country.series.get(derivedReadKey(POP_JAN))
-  const popYear = [...(popSeries?.keys() ?? [])].filter((year) => popSeries?.get(year) != null && popSeries?.get(year - 1) != null).sort().pop()
-  if (!popYear) throw new Error('Romania has no two consecutive POP107D years')
-  // The latest year Romania has in full, one year at a time — and the year before it must be there too.
-  const years = new Map(
-    DEFS.map(([id, def]) => {
-      const year = derivedYear(def, country, { window: 1, lastYear: options.lastYear })
-      return [id, year !== null && computeDerived(def, country, year - 1, 1, 'country').value !== null ? year : null] as const
-    }),
-  )
-  log(`years: populatie ${popYear - 1}→${popYear}, ${[...years].map(([id, year]) => `${id} ${year === null ? '—' : `${year - 1}→${year}`}`).join(', ')}`)
+  const popYear = [...(popSeries?.keys() ?? [])].filter((year) => popSeries?.get(year) != null).sort().pop()
+  if (!popYear) throw new Error('Romania has no POP107D year')
+  // The latest year Romania has in full: the one the territory page reads.
+  const years = new Map(DEFS.map(([id, def]) => [id, derivedYear(def, country, { window: 1, lastYear: options.lastYear })] as const))
+  log(`years: populatie ${popYear}, ${[...years].map(([id, year]) => `${id} ${year ?? '—'}`).join(', ')}`)
 
   // ── the years each read needs, then every locality and county ───────
   const need = new Map<string, Set<number>>()
   const want = (r: DerivedRead, year: number) => need.set(derivedReadKey(r), (need.get(derivedReadKey(r)) ?? new Set()).add(year))
   want(POP_JAN, popYear)
-  want(POP_JAN, popYear - 1)
   for (const [id, def] of DEFS) {
     const year = years.get(id)
     if (year == null) continue
-    for (const y of [year - 1, year]) {
-      for (const r of [...def.plus, ...(def.minus ?? [])]) want(r, y)
-      if (def.denominator.kind === 'population-jul') want(POP_JUL, y)
-      else if (def.denominator.kind === 'population-jan-next') want(POP_JAN, y + 1)
-    }
+    for (const r of [...def.plus, ...(def.minus ?? [])]) want(r, year)
+    // `computeDerived` reads a count only where the place has a population that year.
+    if (def.denominator.kind === 'population-jul') want(POP_JUL, year)
+    else if (def.denominator.kind === 'population-jan-next') want(POP_JAN, year + 1)
   }
-  const localities = new Map<string, DerivedScopeData>()
-  const counties = new Map<string, DerivedScopeData>()
+  const localities = new Map<string, Gathered>()
+  const counties = new Map<string, Gathered>()
   for (const r of reads) {
     const wanted = [...(need.get(derivedReadKey(r)) ?? [])].sort()
     if (wanted.length === 0) continue
@@ -252,58 +232,25 @@ export async function buildUatValues(options: {
 
   // ── the series ───────────────────────────────────────────────────────
   const series: UatMapSeries[] = []
-  {
-    const population = (year: number) => (data: DerivedScopeData) => data.series.get(derivedReadKey(POP_JAN))?.get(year) ?? null
-    const change = (data: DerivedScopeData) => changeOf('populatie', population(popYear)(data), population(popYear - 1)(data))
-    series.push({
-      id: 'populatie',
-      year: popYear,
-      previousYear: popYear - 1,
-      total: figures(population(popYear), 0),
-      previous: figures(population(popYear - 1), 0),
-      rate: null,
-      change: { ...figures(change), kind: 'percent' },
-      small: [],
-      missing: {},
-      unsteady: [],
-      flags: {},
-      parts: [],
-    })
-  }
+  const population = (data: DerivedScopeData) => data.series.get(derivedReadKey(POP_JAN))?.get(popYear) ?? null
+  series.push({ id: 'populatie', year: popYear, total: figures(population, 0), missing: {}, flags: {}, parts: [] })
   for (const [id, def] of DEFS) {
     const year = years.get(id)
     if (year == null) {
-      log(`${id}: Romania has no two complete years — skipped`)
+      log(`${id}: Romania has no complete year — skipped`)
       continue
     }
-    const result = (data: DerivedScopeData, scope: 'place' | 'county' | 'country', y: number) => computeDerived(def, data, y, 1, scope)
-    // Water is thousand m³, kept to one decimal; every other count is whole.
-    const digits = id === 'apa' ? 1 : 0
-    const now = options.siruta.map((siruta) => result(localities.get(siruta) ?? EMPTY, 'place', year))
-    const before = options.siruta.map((siruta) => result(localities.get(siruta) ?? EMPTY, 'place', year - 1))
-    const count = (y: number) => (data: DerivedScopeData, scope: 'place' | 'county' | 'country') => countOf(result(data, scope, y), def)
-    const steadyIn = (r: DerivedResult) =>
-      COUNT_SCREENED.has(id) ? (countOf(r, def) ?? 0) >= STEADY : r.events === null || r.events >= STEADY
+    const result = (data: DerivedScopeData, scope: 'place' | 'county' | 'country') => computeDerived(def, data, year, 1, scope)
+    const now = options.siruta.map((siruta) => result(localities.get(siruta) ?? EMPTY, 'place'))
     series.push({
       id,
       year,
-      previousYear: year - 1,
-      total: figures(count(year), digits),
-      previous: figures(count(year - 1), digits),
-      rate: figures((data, scope) => result(data, scope, year).value),
-      change: {
-        ...figures((data, scope) => changeOf(id, count(year)(data, scope), count(year - 1)(data, scope)), DIFFERENCE.has(id) ? digits : 1),
-        kind: DIFFERENCE.has(id) ? 'difference' : 'percent',
-      },
-      small: now.flatMap((r, index) => (r.value !== null && r.small ? [index] : [])),
-      missing: Object.fromEntries(now.flatMap((r, index) => (r.value === null ? [[index, missingOf(r)]] : []))),
-      unsteady: id === 'apa' ? [] : now.flatMap((r, index) => (steadyIn(r) && steadyIn(before[index]!) ? [] : [index])),
-      flags: Object.fromEntries(now.flatMap((r, index) => (r.value !== null && r.flags.length > 0 ? [[index, r.flags.join('')]] : []))),
+      // Water is thousand m³, kept to one decimal; every other count is whole.
+      total: figures((data, scope) => countOf(result(data, scope), def), id === 'apa' ? 1 : 0),
+      missing: Object.fromEntries(now.flatMap((r, index) => (countOf(r, def) === null ? [[index, missingOf(r)]] : []))),
+      flags: Object.fromEntries(now.flatMap((r, index) => (r.flags.length > 0 ? [[index, r.flags.join('')]] : []))),
       parts: (PART_IDS[id] ?? []).map(
-        (partId, k): UatMapPart => ({
-          id: partId,
-          ...figures((data, scope) => result(data, scope, year).parts[k] ?? null, 0),
-        }),
+        (partId, k): UatMapPart => ({ id: partId, values: now.map((r) => (r.parts[k] === undefined ? null : Math.round(r.parts[k]!))) }),
       ),
     })
   }

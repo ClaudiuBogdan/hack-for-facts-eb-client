@@ -1,7 +1,8 @@
 /**
  * Integration tests for the `/ins` hub — the search hero with the eight
  * domains, the four headline figures, the national rows, the county map with
- * its indicator switch and the 35-year births-and-deaths band.
+ * its indicator switch, the localities' map (loaded on the way to it) and the
+ * 35-year births-and-deaths band.
  *
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-hub-flow/,
  * built with the builders in src/features/statistics/test/hub-fixtures.ts so
@@ -134,5 +135,59 @@ test.describe('Statistics hub', () => {
     await expect(option).toBeVisible({ timeout: 10000 })
     await option.click()
     await expect(page).toHaveURL(/\/ins\/seturi\/POP107D/)
+  })
+
+  test('loads the localities’ map on the way to it, switches its series and opens a locality from its finder', async ({ page }) => {
+    // The map's code and its snapshot are bundled with the client: no GraphQL, only chunks.
+    const mapChunks: string[] = []
+    page.on('request', (request) => {
+      if (/uat-map-(band|geometry|values)/.test(request.url())) mapChunks.push(request.url())
+    })
+    // It loads a screen ahead of the reader. A short window keeps it past that
+    // while the page is still short with pending sections, as it is here.
+    await page.setViewportSize({ width: 1280, height: 400 })
+    await page.goto('/ins')
+    await waitForHydration(page)
+    const band = page.locator('section[aria-labelledby="uat-map-title"]')
+    await expect(band.getByRole('heading', { name: 'Unde se situează localitatea ta' })).toBeAttached()
+    // The observer reports asynchronously: give it two frames before saying it did not load.
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
+    expect(mapChunks).toHaveLength(0)
+
+    await band.scrollIntoViewIfNeeded()
+    // Named by its legend, which a new series renames.
+    const map = band.locator('svg[data-uat-map]')
+    await expect(map).toBeVisible({ timeout: 20000 })
+    await expect(map).toHaveAttribute('aria-label', /^Locuitori după domiciliu la 1 ianuarie \d{4}$/)
+    expect(mapChunks.length).toBeGreaterThan(0)
+    await expect(band.locator('[data-list="national"] li').first()).toContainText('București')
+
+    await band.getByRole('radio', { name: 'Spor natural' }).click()
+    await expect(map).toHaveAttribute('aria-label', /^Născuți-vii minus decedați, în \d{4}$/)
+    await expect(band.locator('[data-source-line]')).toContainText('Sursa: INS Tempo, POP201D, POP206D')
+    // The series is in the address, as the counties' indicator is.
+    await expect(page).toHaveURL(/[?&]harta=spor-natural/)
+
+    // On the whole country a click goes to the county, and names it in the address; a second opens the locality.
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await map.scrollIntoViewIfNeeded()
+    const box = (await map.boundingBox())!
+    await page.mouse.click(box.x + box.width * 0.45, box.y + box.height * 0.45)
+    await expect(band.locator('[data-list="county"]')).toBeVisible()
+    await expect(page).toHaveURL(/[?&]judet=[A-Z]{1,2}/)
+    await page.waitForTimeout(600)
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+    await expect(page).toHaveURL(/\/ins\/teritorii\/\d+/)
+    await page.goBack()
+    // Back on the hub, the map opens on the series and the county it was left on.
+    await band.scrollIntoViewIfNeeded()
+    await expect(band.locator('[data-list="county"]')).toBeVisible({ timeout: 20000 })
+    await expect(band.getByRole('radio', { name: 'Spor natural' })).toHaveAttribute('aria-checked', 'true')
+
+    const finder = band.getByRole('searchbox', { name: 'Caută o localitate' })
+    await finder.fill('sibiu')
+    await expect(band.locator('[data-uat-finder] li').first()).toContainText('Sibiu')
+    await finder.press('Enter')
+    await expect(page).toHaveURL(/\/ins\/teritorii\/143450/)
   })
 })

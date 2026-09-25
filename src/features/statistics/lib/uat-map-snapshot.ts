@@ -4,8 +4,10 @@
  * and imported lazily, as the companies hub keeps its snapshot in the client.
  *
  * Both are columnar — one array per field, aligned by index — which is what
- * keeps 3,181 UATs to ~150 KB (shapes) and ~40 KB (figures) gzipped.
+ * keeps 3,181 UATs to ~170 KB (shapes) and ~57 KB (figures) gzipped.
  */
+
+import type { StatisticsHubMapSeries } from '@/schemas/statistics'
 
 export type UatKind = 'comuna' | 'oras' | 'municipiu' | 'resedinta' | 'capitala'
 
@@ -32,10 +34,11 @@ export interface UatMapGeometry {
   readonly outline: string
 }
 
-export type UatMapSeriesId = 'populatie' | 'spor-natural' | 'sold-domiciliu' | 'salariati' | 'locuinte-noi' | 'apa'
+/** The six series, as the hub's address names them (`?harta=`). */
+export type UatMapSeriesId = StatisticsHubMapSeries
 
-/** Why a UAT has no rate: no cell, too few events, no public network, a negative INS input. */
-export type UatMapMissing = 'absent' | 'few' | 'network' | 'negative'
+/** Why a UAT has no figure: no cell, no public network, a negative INS input. */
+export type UatMapMissing = 'absent' | 'network' | 'negative'
 
 /** Which count a part is: the events a balance is made of. */
 export type UatMapPartId = 'births' | 'deaths' | 'arrivals' | 'departures'
@@ -47,41 +50,27 @@ export interface UatMapFigures {
   readonly counties: Readonly<Record<string, number | null>>
 }
 
-/** A count a balance is made of, in the latest year, for the tooltip. */
-export interface UatMapPart extends UatMapFigures {
+/** A count a balance is made of, for the tooltip: per UAT only. */
+export interface UatMapPart {
   readonly id: UatMapPartId
+  readonly values: readonly (number | null)[]
 }
 
 /**
- * One series, three ways to read it — the latest year, as Romania has it:
- * the count, the count per 1,000 inhabitants, and the change from the year
- * before. Every figure is the territory page's arithmetic for one year
- * (`computeDerived`, window 1); the county and Romania are computed alike.
+ * One series: its total for the latest period Romania has — people on
+ * 1 January, the balance of the year, the employees, the dwellings, the
+ * thousand m³ — read with the territory page's arithmetic for one year
+ * (`computeDerived`: absent cells, negative inputs). The county and Romania
+ * are summed alike.
  */
 export interface UatMapSeries {
   readonly id: UatMapSeriesId
-  /** The latest year, and the one it is compared with. Population: the two 1 January counts. */
+  /** The period: the year, or the 1 January the population is counted on. */
   readonly year: number
-  readonly previousYear: number
-  /** The count of the year: people on 1 January, a balance of the year, employees, dwellings, thousand m³. */
   readonly total: UatMapFigures
-  /** The same count, a year earlier. */
-  readonly previous: UatMapFigures
-  /** Per 1,000 inhabitants (litres per inhabitant a day, for water); none for the population itself. */
-  readonly rate: UatMapFigures | null
-  /**
-   * Year on year: a percentage for a level (population, employees, water); a
-   * difference, in the count's own unit, for a balance or a count that is
-   * often zero (dwellings), where a percentage reads backwards or not at all.
-   */
-  readonly change: UatMapFigures & { readonly kind: 'percent' | 'difference' }
-  /** Indexes of rates read from fewer than 20 events. */
-  readonly small: readonly number[]
-  /** Why a UAT has no rate, by index. */
+  /** Why a UAT has no total, by index. */
   readonly missing: Readonly<Record<number, UatMapMissing>>
-  /** Indexes of changes too small to compare: under 20 events, or a count under 20, in either year. */
-  readonly unsteady: readonly number[]
-  /** The INS flags on a figure's inputs („p"), by index. */
+  /** The INS flags on a total's inputs („p"), by index; none in the current data, kept for when INS sets them. */
   readonly flags: Readonly<Record<number, string>>
   /** The events a balance is made of; none for a level. */
   readonly parts: readonly UatMapPart[]

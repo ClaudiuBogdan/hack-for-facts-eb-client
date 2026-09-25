@@ -20,9 +20,9 @@ import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
 import { buildHubFacts, indicatorByCode } from '../components/hub/hub-facts'
 import { HubFigureRows, HubFiguresBand } from '../components/hub/hub-figures'
 import { useIndicatorLabel } from '../components/hub/hub-labels'
-import { HubPlaceFinder } from '../components/hub/hub-place-finder'
 import { HubThemePanel } from '../components/hub/hub-theme-panel'
 import { HubThenNow } from '../components/hub/hub-then-now'
+import { UatMapSection } from '../components/uat-map/uat-map-section'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
 import { deathsExceedBirthsSince } from '../lib/hub-indicators'
 import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
@@ -37,7 +37,8 @@ import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
  * earnings, unemployment, population — counting up. Then one numbered band
  * per module: the national series with their sparklines, the counties (map
  * beside list, shared highlight, one indicator at a time, the choice in the
- * URL), 35 years of births and deaths, three ready analyses. A band says
+ * URL), every locality on a map of its own (loaded as the reader nears it),
+ * 35 years of births and deaths, three ready analyses. A band says
  * what its numbers are and nothing about the database behind them.
  *
  * Every section reads independently and fails independently: a failed one
@@ -90,7 +91,8 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const setIndicator = (key: StatisticsHubIndicatorKey) => {
     void navigate({
       to: '/ins',
-      search: key === DEFAULT_INDICATOR ? {} : { indicator: key },
+      // The localities' map keeps its own params.
+      search: (previous) => ({ ...previous, indicator: key === DEFAULT_INDICATOR ? undefined : key }),
       replace: true,
       resetScroll: false,
     })
@@ -233,7 +235,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
           <HubSectionHead
             titleId="hub-counties-title"
             index={t`02 / Pe județe`}
-            title={<Trans>Unde stă județul tău</Trans>}
+            title={<Trans>Unde se situează județul tău</Trans>}
             aside={
               <IndicatorToggle
                 label={t`Indicatorul de pe hartă`}
@@ -272,21 +274,10 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               ) : null}
             </div>
           </div>
-          <div className="mt-12 grid grid-cols-1 gap-6 border-t pt-8 lg:grid-cols-12" data-reveal>
-            <div className="lg:col-span-5">
-              <MonoLabel className="block text-primary">
-                <Trans>Localitatea ta</Trans>
-              </MonoLabel>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                <Trans>Cifrele INS ale oricărei localități, lângă cele ale județului și ale țării.</Trans>
-              </p>
-            </div>
-            <div className="lg:col-span-6 lg:col-start-7">
-              <HubPlaceFinder inputId="statistics-hub-place" />
-            </div>
-          </div>
         </RuledFrame>
       </section>
+
+      <UatMapSection />
 
       <section className="border-b" aria-labelledby="hub-change-title">
         <RuledFrame className="py-14 sm:py-20">
@@ -294,7 +285,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             <div className="lg:col-span-5">
               <HubSectionHead
                 titleId="hub-change-title"
-                index={t`03 / Din ${since} până azi`}
+                index={t`04 / Din ${since} până azi`}
                 title={
                   <Trans>
                     Ce s-a schimbat
@@ -347,7 +338,7 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
 
       <section aria-labelledby="hub-analyses-title">
         <RuledFrame className="py-14 sm:py-20">
-          <HubSectionHead titleId="hub-analyses-title" index={t`04 / Analize`} title={<Trans>De aici poți începe</Trans>} />
+          <HubSectionHead titleId="hub-analyses-title" index={t`05 / Analize`} title={<Trans>De aici poți începe</Trans>} />
           <div className="mt-8" data-reveal>
             <ul className="grid gap-px border bg-border/70 sm:grid-cols-3">
               <li>

@@ -59,14 +59,22 @@ export const statisticsPeriodSearchSchema = z
  * Search state for the statistics hub route (`/ins`).
  *
  * `indicator` is the county map's colouring — shareable, so a link can land
- * on "unemployment by county". The default view renders with no params.
+ * on "unemployment by county". `harta` and `judet` are the localities' map's
+ * series and the county it shows, alike. The default view renders with no
+ * params.
  */
 const STATISTICS_HUB_INDICATORS = ['viata', 'somaj', 'salariati'] as const
 export type StatisticsHubIndicatorKey = (typeof STATISTICS_HUB_INDICATORS)[number]
 
+const STATISTICS_HUB_MAP_SERIES = ['populatie', 'spor-natural', 'sold-domiciliu', 'salariati', 'locuinte-noi', 'apa'] as const
+export type StatisticsHubMapSeries = (typeof STATISTICS_HUB_MAP_SERIES)[number]
+
 export const statisticsHubSearchSchema = z
   .object({
     indicator: z.enum(STATISTICS_HUB_INDICATORS).optional().catch(undefined),
+    harta: z.enum(STATISTICS_HUB_MAP_SERIES).optional().catch(undefined),
+    /** A county code (`CJ`, `B`); one the map does not know is ignored there. */
+    judet: z.string().regex(/^[A-Z]{1,2}$/).optional().catch(undefined),
   })
   .catch({})
 

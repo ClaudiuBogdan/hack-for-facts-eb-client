@@ -1,9 +1,15 @@
 /**
- * Lets a tsx script import the app's pure modules (`lib/territory-derived.ts`)
- * outside Vite: the Lingui macros only run inside the compiler, so a script
- * resolves them to the stubs Vitest uses, where a message is its Romanian
- * source text. `@/lib/i18n` loads its catalogs through `import.meta.glob`,
- * which only Vite provides; a script gets the few names `lib/utils` needs.
+ * Lets a tsx script import the app's arithmetic (`lib/territory-derived.ts`)
+ * outside Vite. That module carries its labels with it: it imports the Lingui
+ * macros, which only run inside the compiler, and `lib/format.ts`, which
+ * reaches `@/lib/i18n` through `@/lib/utils` — whose catalogs load through
+ * `import.meta.glob`, which only Vite provides. A script resolves the macros
+ * to the stubs Vitest uses (a message is its Romanian source text) and
+ * `@/lib/i18n` to the few names `lib/utils` needs. Splitting the arithmetic
+ * from its labels would make this unnecessary.
+ *
+ * `registerHooks` (synchronous, in-thread), not `register`: under tsx the
+ * asynchronous hooks never saw these specifiers.
  *
  *   node --import tsx --import ./scripts/lib/lingui-macro-stubs.mjs scripts/<script>.ts
  */

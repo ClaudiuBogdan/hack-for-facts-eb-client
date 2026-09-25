@@ -94,6 +94,18 @@ describe('chunk recovery', () => {
     }
   })
 
+  it('imports a section’s chunk quietly: its module when it loads, its own error and no reload when it fails', async () => {
+    const { quietImport } = await registered()
+    await expect(quietImport(() => Promise.resolve({ value: 1 }))).resolves.toEqual({ value: 1 })
+    const failure = new Error('Failed to fetch dynamically imported module: /assets/uat-map-band-X.js')
+    const load = quietImport(() => {
+      window.dispatchEvent(preloadError())
+      return Promise.reject(failure)
+    })
+    await expect(load).rejects.toBe(failure)
+    expect(replace).not.toHaveBeenCalled()
+  })
+
   it('reports a clean load as clean', async () => {
     const { quietChunkLoad } = await registered()
     await expect(quietChunkLoad(() => Promise.resolve())).resolves.toBe(true)

@@ -41,8 +41,6 @@ export interface GeometryStats {
   readonly arcs: number
   readonly arcVertices: number
   readonly junctions: number
-  /** The arcs encoding, for comparison: what shipping the topology instead of paths would weigh. */
-  readonly arcsJson: string
 }
 
 const keyOf = ([x, y]: Pt) => x * 1_000_000 + y
@@ -278,12 +276,6 @@ export function buildUatGeometry(collection: FeatureCollection<Polygon | MultiPo
     else if (new Set(sides.map((unit) => units[unit]!.county)).size > 1) countyBorders += encode(points, false)
   })
 
-  // The topology itself, delta-encoded, for the size comparison only.
-  const arcsJson = JSON.stringify({
-    arcs: arcs.map((points) => points.flatMap(([x, y], i) => (i === 0 ? [x, y] : [x - points[i - 1]![0], y - points[i - 1]![1]]))),
-    units: units.map((_, unit) => rings.map((ring, i) => (ring.unit === unit ? ringArcs[i] : null)).filter(Boolean)),
-  })
-
   return {
     geometry: {
       source: options.source,
@@ -299,6 +291,6 @@ export function buildUatGeometry(collection: FeatureCollection<Polygon | MultiPo
       countyBorders,
       outline,
     },
-    stats: { vertices, arcs: arcs.length, arcVertices: arcs.reduce((sum, a) => sum + a.length, 0), junctions, arcsJson },
+    stats: { vertices, arcs: arcs.length, arcVertices: arcs.reduce((sum, a) => sum + a.length, 0), junctions },
   }
 }

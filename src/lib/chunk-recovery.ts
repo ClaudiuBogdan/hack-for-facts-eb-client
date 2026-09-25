@@ -158,6 +158,26 @@ export async function quietChunkLoad(load: () => Promise<unknown>): Promise<bool
   }
 }
 
+/**
+ * Import a chunk the reader did not ask for — a section's code or data,
+ * loaded as it nears the screen — with `quietChunkLoad`'s silence: a failure
+ * is the section's to show, never a reload of the page being read. Resolves
+ * to the module, or rejects with the import's own error.
+ */
+export async function quietImport<T>(load: () => Promise<T>): Promise<T> {
+  const outcome: { module?: T; error?: unknown } = {};
+  await quietChunkLoad(async () => {
+    try {
+      outcome.module = await load();
+    } catch (error) {
+      outcome.error = error;
+      throw error;
+    }
+  });
+  if ("module" in outcome) return outcome.module as T;
+  throw outcome.error ?? new Error("The chunk did not load.");
+}
+
 /** Listens for failed chunks, app-wide; returns the way to stop (for tests). */
 export function registerChunkErrorHandler(): () => void {
   if (typeof window === "undefined" || handlerRegistered) return () => undefined;

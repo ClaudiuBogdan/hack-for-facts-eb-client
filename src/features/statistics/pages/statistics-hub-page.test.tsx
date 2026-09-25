@@ -28,6 +28,9 @@ vi.mock('@/hooks/use-warm-route-code', () => ({ useWarmRouteCode: () => undefine
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
+  // The address holds no params here: the localities' map opens on its defaults.
+  useRouter: () => ({ latestLocation: { pathname: '/ins' } }),
+  useSearch: ({ select }: { readonly select?: (search: object) => unknown }) => select?.({}),
   Link: ({
     children,
     to,
@@ -189,7 +192,7 @@ describe('StatisticsHubPage', () => {
     stub(hubData())
     render(<StatisticsHubPage search={{ indicator: 'somaj' }} />)
 
-    const counties = screen.getByRole('heading', { name: /Unde stă județul tău/ }).closest('section')!
+    const counties = screen.getByRole('heading', { name: /Unde se situează județul tău/ }).closest('section')!
     expect(within(counties).getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
     const first = within(counties).getAllByRole('link', { name: /Teleorman|Ilfov/ })[0]!
     expect(first).toHaveTextContent('Teleorman')
@@ -198,10 +201,13 @@ describe('StatisticsHubPage', () => {
     expect(new URL(first.getAttribute('href')!, 'http://localhost').searchParams.get('teritoriu')).toBe('cod:TR')
 
     fireEvent.click(within(counties).getByRole('radio', { name: 'Salariați' }))
-    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/ins', search: { indicator: 'salariati' }, replace: true }))
+    expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/ins', replace: true }))
+    // The indicator is merged into the address: the localities' map keeps its own params.
+    const searchOf = () => (navigateMock.mock.lastCall![0] as { search: (previous: object) => object }).search
+    expect(searchOf()({ harta: 'apa', judet: 'CJ' })).toEqual({ harta: 'apa', judet: 'CJ', indicator: 'salariati' })
 
     fireEvent.click(within(counties).getByRole('radio', { name: 'Speranța de viață' }))
-    expect(navigateMock).toHaveBeenLastCalledWith(expect.objectContaining({ search: {} }))
+    expect(searchOf()({ indicator: 'salariati', harta: 'apa' })).toEqual({ indicator: undefined, harta: 'apa' })
   })
 
   it('names an empty county layer instead of drawing a blank ranking', () => {
@@ -211,7 +217,7 @@ describe('StatisticsHubPage', () => {
     )
     stub(hubData({ counties: emptied }))
     render(<StatisticsHubPage search={{}} />)
-    const counties = screen.getByRole('heading', { name: /Unde stă județul tău/ }).closest('section')!
+    const counties = screen.getByRole('heading', { name: /Unde se situează județul tău/ }).closest('section')!
     expect(within(counties).getAllByText(/pentru 2025/).length).toBeGreaterThan(0)
     expect(within(counties).queryByRole('list')).not.toBeInTheDocument()
   })
@@ -313,5 +319,16 @@ describe('StatisticsHubPage', () => {
     const band = screen.getByRole('region', { name: 'Cifre-cheie' })
     expect(band).toHaveTextContent('INS nu a publicat încă aceste cifre.')
     expect(screen.getByText('INS nu a publicat încă aceste serii.')).toBeInTheDocument()
+  })
+
+  it('puts the localities’ map after the counties, as its head and its place until the reader nears it', () => {
+    stub(hubData())
+    render(<StatisticsHubPage search={{}} />)
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)
+    expect(headings.indexOf('Unde se situează localitatea ta')).toBe(headings.indexOf('Unde se situează județul tău') + 1)
+    const band = screen.getByRole('region', { name: 'Unde se situează localitatea ta' })
+    // jsdom's observer never fires: the map, its code and its snapshot stay unloaded.
+    expect(within(band).queryByRole('img')).not.toBeInTheDocument()
+    expect(within(band).queryByRole('searchbox')).not.toBeInTheDocument()
   })
 })

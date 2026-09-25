@@ -39,6 +39,8 @@ export const statisticsKeys = {
   territoryDerived: (siruta: string, countyCode: string) =>
     ['statistics', 'native-v1', 'territory-derived', siruta, countyCode] as const,
   territorySearch: (term: string) => ['statistics', 'native-v2', 'territory-search', term] as const,
+  /** The UAT map's snapshot: shapes and figures, bundled with the client. */
+  uatMapSnapshot: () => ['statistics', 'uat-map-snapshot-v1'] as const,
   explorerPage: (hash: string) => ['statistics', 'explorer-v1', 'page', hash] as const,
   /** The comparison picker's search over datasets with county figures. */
   datasetSearch: (term: string) => ['statistics', 'explorer-v1', 'county-search', term] as const,

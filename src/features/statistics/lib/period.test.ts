@@ -141,6 +141,13 @@ describe('B12: the router leaks raw-typed values past validateSearch', () => {
     })
   })
 
+  it('reads the localities’ map from ?harta= and ?judet=, dropping what it does not know', async () => {
+    const { parseStatisticsHubSearch } = await import('@/schemas/statistics')
+    expect(parseStatisticsHubSearch({ harta: 'apa', judet: 'CJ' })).toEqual({ harta: 'apa', judet: 'CJ' })
+    expect(parseStatisticsHubSearch({ harta: 'salariu', judet: 'cluj' })).toEqual({})
+    expect(parseStatisticsHubSearch({ indicator: 'somaj', harta: 'spor-natural' })).toEqual({ indicator: 'somaj', harta: 'spor-natural' })
+  })
+
   it('preserves numeric territory entries for strict comparison validation', async () => {
     const { parseStatisticsComparisonsSearch } =
       await import('@/schemas/statistics')

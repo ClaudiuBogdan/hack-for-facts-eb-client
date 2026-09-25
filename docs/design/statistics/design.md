@@ -2059,6 +2059,108 @@ three of 16 took 1.6 s together. They start only when the section nears the
 screen (`react-intersection-observer`, 600 px ahead): the hub's own two
 requests stay its only reads on load.
 
+## 6ai. Every locality on a map of its own (2026-09-25)
+
+At the product owner's request, iterated live on
+`/development/statistics/uat-map` (removed on promotion, variant `totaluri`),
+then promoted to `/ins` as band **03 / Pe localități**, under the counties.
+The later bands renumber (04 „Din 1990 până azi", 05 „Analize").
+
+**What it shows.** 3,181 UATs, six series switched like the county band's
+(population by domicile on 1 January, natural increase, the balance of
+domicile moves, salaried jobs, dwellings completed, household drinking
+water), each UAT coloured by its **total for the latest period** INS has
+for Romania. Hover (or a first tap) gives the tooltip: the total, its period,
+its rank among all and within its county, a balance's two counts, the
+county's and Romania's totals. A click (a second tap) opens
+`/ins/teritorii/$siruta`. Beside the map: the ten largest (and, for a
+balance, the ten smallest), or every UAT of the county chosen. Under it,
+the finder: localities only, by name.
+
+**Decisions, in the order they were taken:**
+- **Totals only.** Per 1,000 inhabitants and the change from the previous
+  year were built and dropped: rates are the territory page's job (§6ah),
+  with their windows and small-number rules; a map of single-year rates is
+  noise in small places.
+- **Colour, not circles.** A proportional-circle version was rejected.
+- **One hue, its opacity the class.** Five classes cut at 30 / 30 / 25 / 12 /
+  3% of UATs, bounds rounded to two significant figures, so full colour is
+  the largest 3% (equal classes painted two fifths of the country dark). A
+  balance is orange below zero, grey around it, blue above, full colour only
+  for the farthest 5%; dwellings make zero a grey class of its own.
+- **The legend is the map.** Each swatch is drawn at its class's colour and
+  opacity; an opacity scaled by population (the „opacitate" variant) was
+  dropped because no legend could match it.
+- **Said once.** Romania's total (and the county's) sits beside the legend's
+  title; the explanation line under the bar is gone; the source line dates
+  the snapshot as the day the figures were taken („din cifrele preluate pe
+  …"), never beside the series' own date as a bare date.
+- **Zoom by the buttons, Ctrl/⌘ + wheel, pinch and drag**, one reset; a
+  county picker (searchable; a sheet on phones) zooms to it.
+- **The finder searches the map's own names** — no county rows, no request,
+  instant; the counties band's place search („Localitatea ta") was removed
+  rather than have two searches one after the other.
+- **Titles:** „Unde se situează localitatea ta", and the county band's
+  became „Unde se situează județul tău".
+- **In the address, as the counties' indicator:** `?harta=<series>` and
+  `?judet=<code>` (validated in `statisticsHubSearchSchema`, dropped when
+  unknown). A link lands on water in Brașov, zoomed in; Back from a
+  locality returns to the map as it was left. The view is the address's
+  (`useMapView`); a choice shows at once and is written after the next
+  paint (`replace`, no scroll), standing in for the address until then: a
+  navigation renders every router link on the page again (~40 ms at 4×
+  CPU), which a switch must not wait for. A write that finds the router
+  already leaving `/ins` is dropped, so it never cancels a locality opened
+  meanwhile. The head and its series toggle render from the
+  server's first byte and work before the map has loaded; the route passes
+  the page only `indicator`, so the hub does not render again either.
+
+**The data** is a snapshot bundled with the client, written by
+`yarn ins:uat-map` (`scripts/generate-ins-uat-map.ts`) from the public API
+with the territory page's arithmetic (`computeDerived`, one year): shapes
+(`uat-map-geometry.json`, ~170 KB gzipped) and figures
+(`uat-map-values.json`, ~57 KB). Both are lazy chunks; a unit test holds
+them aligned and complete (`lib/uat-map-snapshot.test.ts`). **The current
+figures were read from the dev API** (`api` in the file), which is what the
+`dev` deployment serves; before a release to `main`, regenerate them from
+the API production serves (`--api`), or confirm the two agree.
+
+**Loading and performance** (production build, measured 2026-09-25):
+- `/ins` loads none of it: its first load gains the band's head and
+  placeholder. The code (12 KB) and the snapshot start together, in
+  parallel, a screen before the band reaches the viewport
+  (`useInView`, `100% 0px`). They load through `quietImport`: a chunk that
+  fails shows the band's retry, never the app-wide reload a failed chunk
+  otherwise triggers, which would reload the page under a reader who has
+  not reached the map.
+- **The fills are a path per class**, 5–7 elements, not a path per UAT: every
+  restyle of an SVG path runs the page's whole stylesheet (~15 µs a path, 47
+  ms for 3,181 at full speed), so the per-UAT version spent ~205 ms (4× CPU)
+  restyling on every series switch and every zoom. **The UAT under the
+  pointer is found by its coordinates** (`uat-map-hit.ts`: boxes in a 64-unit
+  grid, then `isPointInPath`), so no UAT has an element and the browser
+  hit-tests nothing drawn.
+- Before → after, 4× CPU: first render 490 → 100 ms longest task; series
+  switch 250–420 → 90–180 ms to the next paint (the address follows in its
+  own task); button zoom 51 → 17 ms a
+  frame; DOM 4,493 → 1,316 nodes. On a throttled phone (4×, Fast 4G) the map
+  is painted 650 ms after the band is reached, most of it the snapshot's
+  download.
+- Opening the county picker still costs ~30 ms at full speed: Radix's focus
+  and aria-hiding and cmdk's scroll-into-view force a layout of the page —
+  shared by every popover, left as is.
+- **Reviewed before release** (a second model and Codex): a press on the
+  zoomed map is captured at once (a release off the map left it dragging);
+  county zooms keep within the map's limits; a gesture or the wheel lets go
+  of the hovered UAT; the tooltip of a UAT out of view is hidden; zoomed-in
+  borders are drawn at full opacity (the palest classes hid them); county
+  ranks share places as national ones do; the capital has no county line;
+  the hit-test grid is built when the browser is idle.
+
+**Data found on the way** (unverified, for the scrapper notes): Vaslui
+municipality's domicile population 84,553 (2014) → 148,926 (2023) →
+131,722 (2026), and Vârfu Câmpului's jump; large swings in Vâlcea's jobs.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

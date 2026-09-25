@@ -39,16 +39,17 @@ export const I18nProvider = ({ children }: { children?: ReactNode }) => (
   <>{children}</>
 );
 
+const translate = (
+  message: string | { id: string; message?: string },
+  values?: Record<string, ReactNode> | ReactNode[]
+) => {
+  const messageString =
+    typeof message === "string" ? message : message.message ?? message.id;
+  return formatMessage(messageString, values);
+};
+
+// As the real hook: `_` beside `i18n`, the one to memoize on the language.
 export const useLingui = () => ({
-  i18n: {
-    locale: "en",
-    _: (
-      message: string | { id: string; message?: string },
-      values?: Record<string, ReactNode> | ReactNode[]
-    ) => {
-      const messageString =
-        typeof message === "string" ? message : message.message ?? message.id;
-      return formatMessage(messageString, values);
-    },
-  },
+  i18n: { locale: "en", _: translate },
+  _: translate,
 });
