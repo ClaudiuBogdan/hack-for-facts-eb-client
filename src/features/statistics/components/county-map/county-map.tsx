@@ -1,6 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
-import { Link } from '@tanstack/react-router'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -14,10 +13,11 @@ import {
   STEP_FILL,
   STEP_STROKE,
   STEP_TEXT,
+  COUNTY_MAP_WIDTH,
+  countyLabelPixels,
+  countyShapes,
   layerDecimals,
   layerScale,
-  projectCounties,
-  type CountyFeature,
   type CountyProperties,
   type CountyScale,
 } from '../../lib/county-map'
@@ -29,44 +29,16 @@ import { describeAgainstNational } from '../../lib/change'
  * A county choropleth drawn as plain SVG, keyed by the county code — the INS
  * county code (`CJ`, `B`) is the GeoJSON mnemonic, so no name folding.
  *
- * The app's maps run on MapLibre or Leaflet, the right tool for 3,000 UATs
- * and the wrong one for 42 counties on a landing page. Above the map a
- * readout names the county under the pointer (or the country, at rest):
- * its value, its place among the 42 and how it compares with Romania. Below
- * it, the legend: the five steps with their bounds, the national value and
- * the active county marked on them. A county the read did not return is
- * hatched and named as such; it is never zero.
- *
- * On a touch screen the first tap on a county shows it and the second opens
- * it — a map read by tapping would otherwise navigate away on every look.
- *
- * With `selection` the map is a picker instead: a county does not open, it
- * toggles in and out of the caller's selection — on a click, a tap, Enter or
- * Space — and each selected county is outlined in its own colour.
+ * The comparison's picker: a county toggles in and out of the caller's
+ * selection — on a click, a tap, Enter or Space — and each selected county is
+ * outlined in its own colour. Above the map a readout names the county under
+ * the pointer (or the country, at rest): its value, its place among the 42,
+ * how it compares with Romania and whether it is compared. Below it, the
+ * legend: the five steps with their bounds, the national value and the
+ * active county marked on them. A county the read did not return is hatched
+ * and named as such; it is never zero. (The hub's county map, which opens a
+ * county, is `HubCountyBand`.)
  */
-
-const WIDTH = 640
-
-/**
- * One projection per GeoJSON load: switching the indicator remounts the map,
- * and the label search is the costly part. Counties in name order, so the
- * keyboard walks the map alphabetically, not in the file's order.
- */
-const projections = new WeakMap<readonly CountyFeature[], ReturnType<typeof projectCounties>>()
-function projected(features: readonly CountyFeature[]) {
-  let projection = projections.get(features)
-  if (!projection) {
-    const { counties, height } = projectCounties(features, WIDTH)
-    projection = { counties: [...counties].sort((a, b) => a.name.localeCompare(b.name, 'ro')), height }
-    projections.set(features, projection)
-  }
-  return projection
-}
-
-/** On-screen size of a county code: legible at a phone's width, quiet at a desktop's. */
-function labelPixels(renderedWidth: number) {
-  return renderedWidth < 480 ? 9 : 11
-}
 
 /** Counties the map toggles rather than opens, each selected one in its colour. */
 export interface CountyMapSelection {
@@ -90,11 +62,11 @@ export function CountyMap({
   readonly className?: string
   readonly activeCode?: string
   readonly onActiveChange?: (code: string | undefined) => void
-  readonly selection?: CountyMapSelection
+  readonly selection: CountyMapSelection
 }) {
   const geo = useGeoJsonData('County')
   const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
-  const shapes = features ? projected(features) : undefined
+  const shapes = features ? countyShapes(features) : undefined
   const scale = useMemo(() => layerScale(layer), [layer])
   const byCode = useMemo(() => new Map(layer.values.map((county) => [county.code, county])), [layer.values])
   const ranks = useMemo(
@@ -102,7 +74,6 @@ export function CountyMap({
     [layer.values],
   )
   const [pinned, setPinned] = useState<string>()
-  const pointerType = useRef('mouse')
   const figureRef = useRef<HTMLElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const readoutId = useId()
@@ -166,7 +137,7 @@ export function CountyMap({
     return `${name}: ${formatted.unit ? `${formatted.value} ${formatted.unit}` : formatted.value}`
   }
   const active = activeCode ? shapes?.counties.find((shape) => shape.code === activeCode) : undefined
-  const fontSize = renderedWidth ? (labelPixels(renderedWidth) * WIDTH) / renderedWidth : 11
+  const fontSize = renderedWidth ? (countyLabelPixels(renderedWidth) * COUNTY_MAP_WIDTH) / renderedWidth : 11
   const hoverOnly = (event: PointerEvent, code: string | undefined) => {
     if (event.pointerType !== 'touch') onActiveChange?.(code)
   }
@@ -180,15 +151,14 @@ export function CountyMap({
         county={activeCode ? byCode.get(activeCode) : undefined}
         activeName={active?.name}
         rank={activeCode ? ranks.get(activeCode) : undefined}
-        pinned={pinned !== undefined && pinned === activeCode}
         digits={digits}
         selection={selection}
       />
       {shapes ? (
-        // A group, not an image: the counties are links and must stay in the accessibility tree.
+        // A group, not an image: the counties are checkboxes and must stay in the accessibility tree.
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${WIDTH} ${shapes.height.toFixed(0)}`}
+          viewBox={`0 0 ${COUNTY_MAP_WIDTH} ${shapes.height.toFixed(0)}`}
           className="mt-4 block h-auto w-full touch-manipulation"
           role="group"
           aria-label={legend}
@@ -223,7 +193,7 @@ export function CountyMap({
                 )}
               />
             )
-            if (county && selection) {
+            if (county) {
               const selected = selection.colors.has(shape.code)
               const toggle = () => {
                 if (selected || selection.canAdd) selection.onToggle(shape.code)
@@ -263,65 +233,27 @@ export function CountyMap({
                 </g>
               )
             }
-            return county ? (
-              <Link
-                key={shape.code}
-                to="/ins/seturi/$cod"
-                params={{ cod: layer.code }}
-                search={{ teritoriu: `cod:${county.code}`, frecventa: 'ANNUAL' }}
-                onPointerDown={(event) => {
-                  pointerType.current = event.pointerType
-                }}
-                onPointerEnter={(event) => hoverOnly(event, shape.code)}
-                onPointerLeave={(event) => hoverOnly(event, undefined)}
-                onFocus={() => onActiveChange?.(shape.code)}
-                onBlur={(event) => {
-                  // Chrome on Android focuses the readout's link on the tap
-                  // that follows it; clearing here would take the link away
-                  // before its click.
-                  if (event.relatedTarget instanceof Node && document.getElementById(readoutId)?.contains(event.relatedTarget)) return
-                  setPinned(undefined)
-                  onActiveChange?.(undefined)
-                }}
-                onClick={(event) => {
-                  // A keyboard activation (`detail` 0) or a mouse click opens
-                  // the county; a first tap only shows it, and a second tap
-                  // opens it while it is still the one shown.
-                  const type = (event.nativeEvent as Partial<globalThis.PointerEvent>).pointerType || pointerType.current
-                  if (event.detail === 0 || type !== 'touch' || (pinned === shape.code && activeCode === shape.code)) return
-                  event.preventDefault()
-                  setPinned(shape.code)
-                  onActiveChange?.(shape.code)
-                }}
-                className="cursor-pointer outline-hidden"
-                aria-label={title(shape.name, county)}
-                aria-describedby={readoutId}
-              >
-                {path}
-              </Link>
-            ) : (
+            return (
               <g key={shape.code} onPointerEnter={(event) => hoverOnly(event, shape.code)} onPointerLeave={(event) => hoverOnly(event, undefined)}>
                 {path}
               </g>
             )
           })}
-          {selection
-            ? shapes.counties.map((shape) => {
-                const color = selection.colors.get(shape.code)
-                return color ? (
-                  <path
-                    key={`${shape.code}-selected`}
-                    d={shape.d}
-                    fill="none"
-                    vectorEffect="non-scaling-stroke"
-                    strokeWidth={3}
-                    strokeLinejoin="round"
-                    stroke={color}
-                    className="pointer-events-none"
-                  />
-                ) : null
-              })
-            : null}
+          {shapes.counties.map((shape) => {
+            const color = selection.colors.get(shape.code)
+            return color ? (
+              <path
+                key={`${shape.code}-selected`}
+                d={shape.d}
+                fill="none"
+                vectorEffect="non-scaling-stroke"
+                strokeWidth={3}
+                strokeLinejoin="round"
+                stroke={color}
+                className="pointer-events-none"
+              />
+            ) : null
+          })}
           {active ? (
             // Drawn over every county, so no neighbour's edge covers the outline.
             <path
@@ -389,7 +321,6 @@ function CountyReadout({
   county,
   activeName,
   rank,
-  pinned,
   digits,
   selection,
 }: {
@@ -398,9 +329,8 @@ function CountyReadout({
   readonly county: StatisticsHubCountyValue | undefined
   readonly activeName: string | undefined
   readonly rank: number | undefined
-  readonly pinned: boolean
   readonly digits: number
-  readonly selection?: CountyMapSelection
+  readonly selection: CountyMapSelection
 }) {
   const period = layer.period ? formatHubPeriod(layer.period) : ''
   const shown = county ? county.value : activeName ? null : layer.national
@@ -431,21 +361,10 @@ function CountyReadout({
           <Trans>Fără valoare pentru {period}</Trans>
         </p>
       ) : null}
-      {note || (county && (selection || pinned)) ? (
+      {note || county ? (
         <p className="mt-1 flex flex-wrap items-baseline gap-x-3 text-sm text-muted-foreground">
           {note ? <span>{note}</span> : null}
-          {county && selection ? (
-            <SelectionState color={selection.colors.get(county.code)} canAdd={selection.canAdd} />
-          ) : pinned && county ? (
-            <Link
-              to="/ins/seturi/$cod"
-              params={{ cod: layer.code }}
-              search={{ teritoriu: `cod:${county.code}`, frecventa: 'ANNUAL' }}
-              className="font-medium text-primary underline-offset-4 hover:underline"
-            >
-              <Trans>Datele județului</Trans> →
-            </Link>
-          ) : null}
+          {county ? <SelectionState color={selection.colors.get(county.code)} canAdd={selection.canAdd} /> : null}
         </p>
       ) : null}
     </div>

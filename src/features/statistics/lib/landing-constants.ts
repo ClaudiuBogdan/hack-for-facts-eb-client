@@ -1,5 +1,6 @@
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
+import type { StatisticsHubIndicatorKey } from '@/schemas/statistics'
 
 /**
  * The INS section's dataset registries: the eight domains the catalog and
@@ -40,7 +41,8 @@ export const LANDING_THEMES: readonly {
 // ---------------------------------------------------------------------------
 
 /**
- * The national indicators the hub reads in one `insLatestDatasetValues` call.
+ * The national indicators the hub reads in one `insLatestDatasetValues` call
+ * (the county map's own anchors are a second: `HUB_COUNTY_ANCHOR_CODES`).
  * Labels are short, truthful renderings for a row; the API `name_ro` travels
  * alongside. Verified against the live data (2026-09-22): every code resolves
  * a `TOTAL_FALLBACK` cell at RO/NATIONAL. IPC102E and FOM106D have no
@@ -98,17 +100,93 @@ export const HUB_FIGURE_CODES: readonly string[] = [
   'POP206D',
 ]
 
-/** The county map's indicators, keyed by the `indicator` search param. */
-export const HUB_COUNTY_LAYERS: readonly {
-  readonly key: 'viata' | 'somaj' | 'salariati'
+/** One of the county map's indicators. */
+export interface HubCountyLayerDefinition {
+  /** In the address (`?indicator=`). */
+  readonly key: StatisticsHubIndicatorKey
   readonly code: string
+  /** On the switch. */
   readonly label: MessageDescriptor
-  readonly legend: MessageDescriptor
-}[] = [
-  { key: 'viata', code: 'POP217A', label: msg`Speranța de viață`, legend: msg`Durata medie a vieții` },
-  { key: 'somaj', code: 'SOM103A', label: msg`Rata șomajului`, legend: msg`Rata șomajului înregistrat` },
-  { key: 'salariati', code: 'FOM104D', label: msg`Salariați`, legend: msg`Numărul mediu al salariaților` },
+  /** What the colours are, and when. */
+  readonly legend: (year: string) => MessageDescriptor
+  /** The word after a figure where the API's unit name would read badly: „‰" for a rate per 1,000. */
+  readonly unit?: MessageDescriptor
+  /** Decimals where the API's are noise: money in whole lei. */
+  readonly digits?: number
+  /** Orange above the national figure and blue below: where more is the concern — unemployment, age. */
+  readonly reversed?: boolean
+  /** One line against the likeliest misreading. */
+  readonly caveat: MessageDescriptor
+}
+
+/**
+ * The county map's indicators, keyed by the `indicator` search param: each a
+ * rate or an average INS publishes for every county, so the map compares
+ * counties rather than their sizes (the number of employees it drew until
+ * 2026-09-25 was București's size, mostly). Each is read as its national
+ * cell, then the counties' cells beside it. Verified against the live data
+ * (2026-09-25): FOM116A's employment rate was left out — commuters are counted
+ * where they work, so București reads 94% — and POP209A's infant mortality, a
+ * year of which swings with a county's few births.
+ */
+export const HUB_COUNTY_LAYERS: readonly HubCountyLayerDefinition[] = [
+  {
+    key: 'viata',
+    code: 'POP217A',
+    label: msg`Speranța de viață`,
+    legend: (year) => msg`Speranța de viață la naștere, ${year}`,
+    caveat: msg`Câți ani ar trăi, în medie, un copil născut acum, la mortalitatea de azi.`,
+  },
+  {
+    key: 'salariu',
+    code: 'FOM106E',
+    label: msg`Salariul net`,
+    legend: (year) => msg`Câștigul salarial mediu net lunar, ${year}`,
+    digits: 0,
+    caveat: msg`Câștigul nominal al salariaților, nu venitul tuturor locuitorilor.`,
+  },
+  {
+    key: 'pib',
+    code: 'CON103H',
+    label: msg`PIB pe locuitor`,
+    legend: (year) => msg`Produsul intern brut pe locuitor, la prețurile anului ${year}`,
+    digits: 0,
+    caveat: msg`Valoarea produsă în județ, împărțită la locuitorii lui.`,
+  },
+  {
+    key: 'somaj',
+    code: 'SOM103A',
+    label: msg`Șomaj`,
+    legend: (year) => msg`Rata șomajului înregistrat, ${year}`,
+    reversed: true,
+    caveat: msg`Doar șomerii înregistrați: cine nu se înscrie nu apare.`,
+  },
+  {
+    key: 'spor',
+    code: 'POP215A',
+    label: msg`Spor natural`,
+    legend: (year) => msg`Sporul natural la 1.000 de locuitori, ${year}`,
+    unit: msg`‰`,
+    caveat: msg`Născuți-vii minus decedați: sub zero, mai multe decese decât nașteri.`,
+  },
+  {
+    key: 'varsta',
+    code: 'POP110A',
+    label: msg`Vârsta medie`,
+    legend: (year) => msg`Vârsta medie a populației după domiciliu, ${year}`,
+    reversed: true,
+    caveat: msg`După domiciliu: cine pleacă fără să-și schimbe domiciliul rămâne numărat.`,
+  },
 ]
+
+/**
+ * The national cells only the county map needs — each layer's anchor that is
+ * not one of the hub's own rows. Read apart from the rows: a cell of theirs
+ * that fails validation must fail the map, never the page's figures.
+ */
+export const HUB_COUNTY_ANCHOR_CODES: readonly string[] = HUB_COUNTY_LAYERS.map((layer) => layer.code).filter(
+  (code) => !HUB_NATIONAL_DATASET_CODES.includes(code),
+)
 
 /** Quick tries under the territory search. LAU rows only — a county has no SIRUTA. */
 export const HUB_EXAMPLE_PLACES: readonly { readonly siruta: string; readonly name: string }[] = [

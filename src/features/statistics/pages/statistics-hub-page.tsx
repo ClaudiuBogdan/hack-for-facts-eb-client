@@ -12,8 +12,7 @@ import { cn } from '@/lib/utils'
 import type { StatisticsHubData, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics'
 import { HubTwoLineChart } from '../components/hub/hub-charts'
 import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
-import { CountyMap } from '../components/county-map/county-map'
-import { HubCountyRank } from '../components/hub/hub-county-rank'
+import { HubCountyBand } from '../components/hub/hub-county-band'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
@@ -82,7 +81,6 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const pending = query.isPending || (query.isPlaceholderData && (query.isFetching || query.isPaused))
   const retry = () => void query.refetch()
   const labelOf = useIndicatorLabel()
-  const [activeCounty, setActiveCounty] = useState<string | undefined>(undefined)
   const [activeSeries, setActiveSeries] = useState<string | undefined>(undefined)
 
   const indicatorKey = search.indicator ?? DEFAULT_INDICATOR
@@ -238,42 +236,40 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
             title={<Trans>Unde se situează județul tău</Trans>}
             aside={
               <IndicatorToggle
-                label={t`Indicatorul de pe hartă`}
+                label={t`Indicatorul de pe harta județelor`}
                 options={HUB_COUNTY_LAYERS.map((entry) => ({ key: entry.key, label: i18n._(entry.label) }))}
                 value={layerDefinition.key}
                 onChange={setIndicator}
+                // Six indicators on a phone: two rows of three.
+                className="grid-flow-row grid-cols-3"
               />
             }
           />
-          <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
-            {/* The map stays in view beside the full list of 42, where the window is tall enough to hold all of it (legend included). */}
-            <div className="lg:top-6 lg:col-span-7 lg:self-start lg:[@media(min-height:42rem)]:sticky" data-reveal>
-              {layer ? (
-                <CountyMap
-                  key={layer.code}
-                  layer={layer}
-                  legend={`${i18n._(layerDefinition.legend)}${layer.period ? `, ${layer.period}` : ''}`}
-                  activeCode={activeCounty}
-                  onActiveChange={setActiveCounty}
-                />
-              ) : pending ? (
-                <div className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
-              ) : answered && !countiesFailed ? (
-                <HubEmpty>
-                  <Trans>INS nu a publicat încă valorile pe județe ale acestui indicator.</Trans>
-                </HubEmpty>
-              ) : (
-                <HubLoadError onRetry={retry} />
-              )}
+          {layer && layer.values.length > 0 ? (
+            // A new indicator is a new band: what was held or hovered belongs to the last one.
+            <HubCountyBand key={layer.code} layer={layer} definition={layerDefinition} />
+          ) : (
+            <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+              <div className="lg:col-span-7" data-reveal>
+                {layer?.period ? (
+                  <HubEmpty>
+                    <Trans>INS nu a publicat încă valorile pe județe pentru {layer.period}.</Trans>
+                  </HubEmpty>
+                ) : pending ? (
+                  <div className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+                ) : answered && !countiesFailed ? (
+                  <HubEmpty>
+                    <Trans>INS nu a publicat încă valorile pe județe ale acestui indicator.</Trans>
+                  </HubEmpty>
+                ) : (
+                  <HubLoadError onRetry={retry} />
+                )}
+              </div>
+              <div className="lg:col-span-5 lg:col-start-8" data-reveal>
+                {pending && !layer ? <HubPending rows={10} /> : null}
+              </div>
             </div>
-            <div className="lg:col-span-5 lg:col-start-8" data-reveal>
-              {layer ? (
-                <HubCountyRank layer={layer} activeCode={activeCounty} onActiveChange={setActiveCounty} />
-              ) : pending ? (
-                <HubPending rows={10} />
-              ) : null}
-            </div>
-          </div>
+          )}
         </RuledFrame>
       </section>
 

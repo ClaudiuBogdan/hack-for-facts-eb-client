@@ -1,0 +1,154 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "POP110A-VL-0",
+          "dataset_code": "POP110A",
+          "value": "47",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VL",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vâlcea"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP110A-VL-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP110A-VL-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP110A-VL-2",
+              "type_code": "D2",
+              "code": "3000",
+              "name_ro": "3000"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP110A-TR-1",
+          "dataset_code": "POP110A",
+          "value": "46.3",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "TR",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Teleorman"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP110A-TR-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP110A-TR-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP110A-TR-2",
+              "type_code": "D2",
+              "code": "3001",
+              "name_ro": "3001"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP110A-IF-2",
+          "dataset_code": "POP110A",
+          "value": "39.9",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "IF",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Ilfov"
+          },
+          "unit": {
+            "code": "9361",
+            "symbol": "other",
+            "name_ro": "Ani"
+          },
+          "classifications": [
+            {
+              "id": "POP110A-IF-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP110A-IF-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "POP110A-IF-2",
+              "type_code": "D2",
+              "code": "3002",
+              "name_ro": "3002"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 3,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

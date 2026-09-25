@@ -10,23 +10,29 @@ import type { ClassInterval, MapScale } from './uat-map-scales'
 import { countyLabel, type SeriesMeta } from './uat-map-series'
 
 /**
- * The legend: what the colours are — the total and its period in words, with
- * Romania's total (and the county's) beside the title, sums of many UATs,
- * never marks on a scale of one — every class's bounds, the UAT read marked
- * on them, what the hatching means; and where the figures come from.
+ * The legend: what the colours are — the figure and its period in words, with
+ * Romania's (and the county's) beside the title, sums of many UATs, never
+ * marks on a scale of one; or, on a map coloured against a reference, that
+ * reference marked on the bar with its sides named — every class's bounds,
+ * the UAT or county read marked on them, what the hatching means; and where
+ * the figures come from.
  */
 
 function intervalLabel(format: (value: number) => string, interval: ClassInterval): string {
   if (interval.zero) return '0'
   if (interval.from === null) return t`sub ${format(interval.to!)}`
   if (interval.to === null) return t`peste ${format(interval.from)}`
+  // A band around a reference reads as its half-width.
+  if (interval.from === -interval.to && interval.to > 0) return `±${format(interval.to).replace(/^\+/, '')}`
   return `${format(interval.from)} … ${format(interval.to)}`
 }
 
 function Keys({ keys }: { readonly keys: LegendKeys }) {
   return (
     <>
-      {keys.noData > 0 ? <LegendKey kind="hatch">{t`${keys.noData} fără date`}</LegendKey> : null}
+      {keys.noData > 0 ? (
+        <LegendKey kind="hatch">{keys.noDataNames?.length ? t`${keys.noData} fără date: ${keys.noDataNames.join(', ')}` : t`${keys.noData} fără date`}</LegendKey>
+      ) : null}
       {keys.noNetwork > 0 ? <LegendKey kind="muted">{t`${keys.noNetwork} fără rețea publică`}</LegendKey> : null}
     </>
   )
@@ -42,6 +48,7 @@ export function ColourLegend({
   active,
   county,
   keys,
+  reference,
 }: {
   readonly title: string
   /** After a figure: „locuitori", „persoane". */
@@ -53,25 +60,31 @@ export function ColourLegend({
   readonly active: number | null
   readonly county: string | null
   readonly keys: LegendKeys
+  /**
+   * The figure the colours part at — Romania, on a map coloured against it:
+   * marked on the bar, with which side is which, instead of beside the title.
+   */
+  readonly reference?: { readonly value: number; readonly label: string; readonly below: string; readonly above: string }
 }) {
   const countyValue = county ? (figures.counties[county] ?? null) : null
   const activeClass = active === null ? null : scale.classAt(active)
   const activeAt = activeClass === null || active === null ? null : scale.positionOf(figures.values[active]!)
   const at = (position: number) => ({ left: `${(position * 100).toFixed(2)}%` })
   const withUnit = (value: number) => `${format(value)} ${unit}`
+  const referenceAt = reference ? scale.positionOf(reference.value) : null
 
   return (
     <div className="space-y-3" data-legend="colour">
       <MonoLabel className="block leading-relaxed text-muted-foreground">
         {title}
-        {figures.national !== null ? (
+        {figures.national !== null && !reference ? (
           <>
             {' · '}
             {t`România`} <span className="text-foreground">{withUnit(figures.national)}</span>
           </>
-        ) : (
+        ) : unit ? (
           ` · ${unit}`
-        )}
+        ) : null}
         {county && countyValue !== null ? (
           <>
             {' · '}
@@ -80,6 +93,21 @@ export function ColourLegend({
         ) : null}
       </MonoLabel>
       <div className="max-w-lg">
+        {reference && referenceAt !== null ? (
+          // The two sides named at the ends, the figure between them, over the middle class it
+          // always falls in — sharing the row, so no label runs into another on a phone.
+          <div className="mb-1.5 flex items-end gap-3">
+            <MonoLabel className="shrink-0 text-muted-foreground">
+              <span aria-hidden="true">← </span>
+              {reference.below}
+            </MonoLabel>
+            <MonoLabel className="min-w-0 flex-1 text-center text-foreground">{reference.label}</MonoLabel>
+            <MonoLabel className="shrink-0 text-muted-foreground">
+              {reference.above}
+              <span aria-hidden="true"> →</span>
+            </MonoLabel>
+          </div>
+        ) : null}
         <div className="relative" aria-hidden="true">
           {/* Each class as the map draws it: the same colour, at the same opacity, over the same background. */}
           <div className="flex h-2.5 gap-px">
@@ -87,6 +115,7 @@ export function ColourLegend({
               <span key={index} className={cn('flex-1', drawn.swatch)} style={{ opacity: drawn.opacity }} />
             ))}
           </div>
+          {referenceAt !== null ? <span className="absolute -inset-y-1 border-l border-dashed border-foreground" style={at(referenceAt)} /> : null}
           {activeAt !== null ? <span className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground" style={at(activeAt)} /> : null}
         </div>
         {/* Every class named whole, the open ends included: the bounds between them alone leave the ends unread. */}

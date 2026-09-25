@@ -86,8 +86,10 @@ describe('statistics route search schemas', () => {
     })
 
     it('keeps a known indicator and drops an unknown one', () => {
-      expect(parseStatisticsHubSearch({ indicator: 'salariati' })).toEqual({ indicator: 'salariati' })
+      expect(parseStatisticsHubSearch({ indicator: 'salariu' })).toEqual({ indicator: 'salariu' })
       expect(parseStatisticsHubSearch({ indicator: 'altceva' })).toEqual({})
+      // The employees count the map drew until 2026-09-25: an old link lands on the default.
+      expect(parseStatisticsHubSearch({ indicator: 'salariati' })).toEqual({})
     })
   })
 

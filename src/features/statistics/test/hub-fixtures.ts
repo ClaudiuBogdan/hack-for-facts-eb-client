@@ -22,6 +22,7 @@ export const HUB_UNITS = {
   percent: { code: '10225', symbol: 'percent', name_ro: 'Procente', kind: 'percent' },
   years: { code: '9361', symbol: 'other', name_ro: 'Ani', kind: 'years' },
   lei: { code: '9718', symbol: 'other', name_ro: 'Lei RON', kind: 'other' },
+  rate: { code: '9502', symbol: 'other', name_ro: 'Rata la 1000 locuitori', kind: 'other' },
 } as const satisfies Record<string, UnitSpec>
 
 export interface HubNationalSpec {
@@ -113,10 +114,21 @@ export function nationalObservation(spec: HubNationalSpec) {
   }
 }
 
+/**
+ * The national cells of the county layers the hub reads for the map alone
+ * (2026-09-25): each anchors its layer, and none is a row of the hub's own.
+ */
+export const HUB_COUNTY_ONLY_SPECS: readonly HubNationalSpec[] = [
+  { code: 'FOM106E', nameRo: 'Castigul salarial nominal mediu net lunar', value: '4959', period: '2024', periodicity: 'ANNUAL', unit: HUB_UNITS.lei, members: ['9001', '105', '112'] },
+  { code: 'CON103H', nameRo: 'Produsul intern brut regional pe locuitor', value: '83437.3', period: '2023', periodicity: 'ANNUAL', unit: HUB_UNITS.lei, members: ['112'] },
+  { code: 'POP215A', nameRo: 'Rata sporului natural', value: '-4.4', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.rate, members: ['108', '112'] },
+  { code: 'POP110A', nameRo: 'Varsta medie a populatiei dupa domiciliu', value: '43.1', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.years, members: ['108', '105', '112'] },
+]
+
 /** The `InsNationalLatest` response for the hub's codes. */
 export function hubTilesResponse(overrides: Partial<Record<string, Partial<HubNationalSpec>>> = {}) {
   return {
-    latest: HUB_NATIONAL_SPECS.map((base) => {
+    latest: [...HUB_NATIONAL_SPECS, ...HUB_COUNTY_ONLY_SPECS].map((base) => {
       const spec = { ...base, ...overrides[base.code] }
       return {
         dataset: descriptor(spec),
@@ -193,7 +205,7 @@ export function hubIndicator(spec: HubNationalSpec): StatisticsHubIndicator {
 }
 
 export function hubCountyLayer(code: string, unit: StatisticsHubUnit, unitLabel: string, period: string, values: readonly { code: string; name: string; value: number }[]): StatisticsHubCountyLayer {
-  const national = HUB_NATIONAL_SPECS.find((spec) => spec.code === code && spec.period === period)?.value
+  const national = [...HUB_NATIONAL_SPECS, ...HUB_COUNTY_ONLY_SPECS].find((spec) => spec.code === code && spec.period === period)?.value
   return { code, period, unit, unitLabel, values, missingCounties: [], national: national ? Number.parseFloat(national) : null }
 }
 
@@ -211,9 +223,9 @@ export function hubData(overrides: Partial<StatisticsHubData> = {}): StatisticsH
         { code: 'TR', name: 'Teleorman', value: 9.3 },
         { code: 'IF', name: 'Ilfov', value: 0.5 },
       ]),
-      hubCountyLayer('FOM104D', 'persons', 'Numar persoane', '2024', [
-        { code: 'B', name: 'București', value: 1053348 },
-        { code: 'CJ', name: 'Cluj', value: 261239 },
+      hubCountyLayer('FOM106E', 'other', 'Lei RON', '2024', [
+        { code: 'B', name: 'București', value: 6730 },
+        { code: 'CJ', name: 'Cluj', value: 5921 },
       ]),
     ],
     failures: [],

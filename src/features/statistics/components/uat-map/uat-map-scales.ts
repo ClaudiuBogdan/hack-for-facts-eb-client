@@ -35,7 +35,8 @@ export interface MapScale {
   readonly positionOf: (value: number) => number
 }
 
-const HUE = {
+/** The hues the maps draw in: blue for a level and above a reference, orange below it, grey around it. */
+export const HUE = {
   blue: { fill: 'fill-choropleth-5 stroke-choropleth-5', swatch: 'bg-choropleth-5' },
   orange: {
     fill: 'fill-orange-600 stroke-orange-600 dark:fill-orange-400 dark:stroke-orange-400',

@@ -11,6 +11,8 @@ import type { SeriesMeta } from './uat-map-series'
 export interface LegendKeys {
   readonly noData: number
   readonly noNetwork: number
+  /** Where there are few, their names: a hatched county can be neither focused nor tapped. */
+  readonly noDataNames?: readonly string[]
 }
 
 export interface Reading {

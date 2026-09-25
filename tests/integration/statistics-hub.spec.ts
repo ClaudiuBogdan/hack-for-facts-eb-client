@@ -7,7 +7,9 @@
  * GraphQL is mocked (fixtures under tests/fixtures/statistics-hub-flow/,
  * built with the builders in src/features/statistics/test/hub-fixtures.ts so
  * the wire shape is the one the fetcher test certifies). The hub fires
- * `InsNationalLatest` once, then one `InsObservations` per county layer; the
+ * `InsNationalLatest` and `InsCountyAnchors` (the map's own anchors) once,
+ * then one `InsObservations` per county layer (six, each pinned to its
+ * national cell); the
  * annual histories are in the client. Typing in the search fires
  * `SearchEntities` scoped to INS datasets.
  *
@@ -24,9 +26,13 @@ import type { MockApiFixture } from '../utils/types'
 
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   await mockApi.mockGraphQL('InsNationalLatest', 'tiles')
+  await mockApi.mockGraphQL('InsCountyAnchors', 'county-anchors')
   await mockApi.mockGraphQL('InsObservations', 'counties-pop217a', { variables: { datasetCode: 'POP217A' } })
   await mockApi.mockGraphQL('InsObservations', 'counties-som103a', { variables: { datasetCode: 'SOM103A' } })
-  await mockApi.mockGraphQL('InsObservations', 'counties-fom104d', { variables: { datasetCode: 'FOM104D' } })
+  await mockApi.mockGraphQL('InsObservations', 'counties-fom106e', { variables: { datasetCode: 'FOM106E' } })
+  await mockApi.mockGraphQL('InsObservations', 'counties-con103h', { variables: { datasetCode: 'CON103H' } })
+  await mockApi.mockGraphQL('InsObservations', 'counties-pop215a', { variables: { datasetCode: 'POP215A' } })
+  await mockApi.mockGraphQL('InsObservations', 'counties-pop110a', { variables: { datasetCode: 'POP110A' } })
   await mockApi.mockGraphQL('SearchEntities', 'search-entities-popul')
 }
 
@@ -90,26 +96,40 @@ test.describe('Statistics hub', () => {
     await expect(national.getByText(/Locuitori|Inflația anuală/)).toHaveCount(0)
   })
 
-  test('colours the counties by the indicator in the URL and switches it without a reload', async ({ page }) => {
+  test('colours the counties against the average by the indicator in the URL, and switches it without a reload', async ({ page }) => {
     await page.goto('/ins?indicator=somaj')
     await waitForHydration(page)
     const counties = page.locator('section[aria-labelledby="hub-counties-title"]')
     await counties.scrollIntoViewIfNeeded()
-    await expect(counties.getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
-    // The ranked row shows the figure; the map's path names the county with it.
+    await expect(counties.getByRole('radio', { name: 'Șomaj' })).toHaveAttribute('aria-checked', 'true')
+    // The ranked row shows the figure; the map's link names the county with it.
     const teleorman = counties.getByRole('listitem').filter({ hasText: 'Teleorman' }).getByRole('link')
     await expect(teleorman).toContainText('9,3%', { timeout: 20000 })
-    await expect(counties.getByRole('link', { name: 'Teleorman: 9,3%' })).toHaveCount(1)
+    await expect(counties.getByRole('link', { name: /^Județul Teleorman: 9,3%, locul 1 din/ })).toHaveCount(1)
     const teleormanHref = (await teleorman.getAttribute('href'))!
     expect(teleormanHref).toContain('/ins/seturi/SOM103A')
     expect(searchParam(teleormanHref, 'teritoriu')).toBe('cod:TR')
+    // The legend: the average where the colours turn, the sides named.
+    const legend = counties.locator('[data-legend="colour"]')
+    await expect(legend).toContainText('Media națională 3,3%')
+    await expect(legend).toContainText('sub medie')
 
     await counties.getByRole('radio', { name: 'Speranța de viață' }).click()
     await expect(page).toHaveURL(/\/ins$/)
     await expect(counties.getByRole('listitem').filter({ hasText: 'Vâlcea' }).getByRole('link')).toContainText('82,01')
-    await expect(counties.getByRole('group', { name: /Durata medie a vieții, 2025/ })).toBeVisible()
+    await expect(counties.getByRole('group', { name: /Speranța de viață la naștere, 2025/ })).toBeVisible()
     // Counties the read did not return are hatched and counted, never zero.
-    await expect(counties).toContainText('județe fără valoare')
+    await expect(legend).toContainText('fără date')
+
+    // The tooltip under the pointer: the county, its figure, its place, its distance from the average.
+    await counties.getByRole('link', { name: /^Județul Vâlcea:/ }).hover()
+    await expect(counties.locator('[data-county-tooltip]')).toContainText('peste media națională')
+
+    // Earnings: read pinned to the national cell, in whole lei.
+    await counties.getByRole('radio', { name: 'Salariul net' }).click()
+    await expect(page).toHaveURL(/indicator=salariu/)
+    await expect(counties.getByRole('listitem').filter({ hasText: 'București' }).getByRole('link')).toContainText('6.730')
+    await expect(legend).toContainText('Media națională 4.959')
   })
 
   test('compares 1990 with now beside the births-and-deaths chart, and finds a dataset from the search', async ({ page }) => {

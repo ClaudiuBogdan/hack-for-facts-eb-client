@@ -63,7 +63,7 @@ export const statisticsPeriodSearchSchema = z
  * series and the county it shows, alike. The default view renders with no
  * params.
  */
-const STATISTICS_HUB_INDICATORS = ['viata', 'somaj', 'salariati'] as const
+const STATISTICS_HUB_INDICATORS = ['viata', 'salariu', 'pib', 'somaj', 'spor', 'varsta'] as const
 export type StatisticsHubIndicatorKey = (typeof STATISTICS_HUB_INDICATORS)[number]
 
 const STATISTICS_HUB_MAP_SERIES = ['populatie', 'spor-natural', 'sold-domiciliu', 'salariati', 'locuinte-noi', 'apa'] as const

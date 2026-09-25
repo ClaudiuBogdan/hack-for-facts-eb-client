@@ -281,3 +281,38 @@ export function layerDecimals(layer: StatisticsHubCountyLayer): number {
   const values = layer.values.map((county) => county.value)
   return sharedDecimals(layer.national === null ? values : [...values, layer.national])
 }
+
+/** The width the county maps draw at, in `viewBox` units. */
+export const COUNTY_MAP_WIDTH = 640
+
+/**
+ * One projection per GeoJSON load: a map remounts with every indicator, and
+ * the label search is the costly part. Counties in name order, so the
+ * keyboard walks a map alphabetically, not in the file's order.
+ */
+const projections = new WeakMap<readonly CountyFeature[], ReturnType<typeof projectCounties>>()
+export function countyShapes(features: readonly CountyFeature[]): ReturnType<typeof projectCounties> {
+  let projection = projections.get(features)
+  if (!projection) {
+    const { counties, height } = projectCounties(features, COUNTY_MAP_WIDTH)
+    projection = { counties: [...counties].sort((a, b) => a.name.localeCompare(b.name, 'ro')), height }
+    projections.set(features, projection)
+  }
+  return projection
+}
+
+/** On-screen size of a county code: legible at a phone's width, quiet at a desktop's. */
+export function countyLabelPixels(renderedWidth: number): number {
+  return renderedWidth < 480 ? 9 : 11
+}
+
+/** Each county's place, highest value first; equal values share a place. */
+export function countyRanks(values: readonly { readonly code: string; readonly value: number }[]): ReadonlyMap<string, number> {
+  const sorted = [...values].sort((a, b) => b.value - a.value)
+  const ranks = new Map<string, number>()
+  sorted.forEach((county, position) => {
+    const previous = sorted[position - 1]
+    ranks.set(county.code, previous && previous.value === county.value ? ranks.get(previous.code)! : position + 1)
+  })
+  return ranks
+}

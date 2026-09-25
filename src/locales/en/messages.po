@@ -349,7 +349,7 @@ msgstr "{0, plural, one {One sector} other {All # sectors}}"
 #. placeholder {0}: layer.missingCounties.length
 #. placeholder {0}: missing.length
 #: src/features/private-companies/components/hub/company-county-map.tsx:397
-#: src/features/statistics/components/county-map/county-map.tsx:512
+#: src/features/statistics/components/county-map/county-map.tsx:431
 msgid "{0, plural, one {un județ fără valoare} few {# județe fără valoare} other {# de județe fără valoare}}"
 msgstr "{0, plural, one {one county with no value} other {# counties with no value}}"
 
@@ -376,7 +376,7 @@ msgstr "{0} — link unavailable"
 #. placeholder {0}: county.name
 #. placeholder {0}: countyName(county.code)
 #: src/features/private-companies/components/hub/company-county-map.tsx:322
-#: src/features/statistics/components/county-map/county-map.tsx:410
+#: src/features/statistics/components/county-map/county-map.tsx:340
 msgid "{0} · locul {rank} din {total}"
 msgstr "{0} · ranked {rank} of {total}"
 
@@ -482,12 +482,18 @@ msgid "{0} enabled series"
 msgstr "{0} enabled series"
 
 #. placeholder {0}: keys.noData
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:29
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:34
 msgid "{0} fără date"
 msgstr "{0} without data"
 
+#. placeholder {0}: keys.noData
+#. placeholder {1}: keys.noDataNames.join(', ')
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:34
+msgid "{0} fără date: {1}"
+msgstr "{0} without data: {1}"
+
 #. placeholder {0}: keys.noNetwork
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:30
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:36
 msgid "{0} fără rețea publică"
 msgstr "{0} without a public network"
 
@@ -659,6 +665,11 @@ msgstr "{0} presets configured"
 #: src/features/legal/components/legislation-gazette-directory.tsx:492
 msgid "{0} publicații în cuprins"
 msgstr "{0} publicații în cuprins"
+
+#. placeholder {0}: formatHubValue(gap, 'other', null, { digits }).value
+#: src/features/statistics/components/hub/hub-county-band.tsx:72
+msgid "{0} puncte procentuale"
+msgstr "{0} percentage points"
 
 #. placeholder {0}: status.moneyPrecisionWarningRows
 #: src/features/public-investments/components/DataStatusBadge.tsx:30
@@ -909,6 +920,14 @@ msgstr "{activeCount} active filters"
 msgid "{addedPrevious} în {previousYear}"
 msgstr "{addedPrevious} in {previousYear}"
 
+#: src/features/statistics/components/hub/hub-county-band.tsx:73
+msgid "{amount} peste media națională"
+msgstr "{amount} above the national average"
+
+#: src/features/statistics/components/hub/hub-county-band.tsx:73
+msgid "{amount} sub media națională"
+msgstr "{amount} below the national average"
+
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:89
 #~ msgid "{authorisedCount} authorised activities"
 #~ msgstr "{authorisedCount} authorised activities"
@@ -1041,7 +1060,7 @@ msgstr "{groupWorkspaceCount} group workspaces configured"
 
 #: src/features/ngos/hub/ngo-county-rank.tsx:159
 #: src/features/private-companies/components/hub/company-county-rank.tsx:148
-#: src/features/statistics/components/hub/hub-county-rank.tsx:163
+#: src/features/statistics/components/hub/hub-county-rank.tsx:173
 msgid "{hidden, plural, one {Încă un județ} few {Încă # județe} other {Încă # de județe}}"
 msgstr "{hidden, plural, one {One more county} other {# more counties}}"
 
@@ -1195,7 +1214,7 @@ msgstr "{more, plural, one {One more locality matches; type more of the name.} o
 msgid "{name} · locul {place} din {total}"
 msgstr "{name} · ranked {place} of {total}"
 
-#: src/features/statistics/components/county-map/county-map.tsx:164
+#: src/features/statistics/components/county-map/county-map.tsx:135
 msgid "{name}: fără valoare"
 msgstr "{name}: no value"
 
@@ -1374,6 +1393,7 @@ msgstr "%"
 msgid "% of GDP"
 msgstr "% of GDP"
 
+#: src/features/statistics/lib/landing-constants.ts:169
 #: src/features/statistics/lib/territory-derived.ts:111
 #: src/features/statistics/lib/territory-derived.ts:126
 #: src/features/statistics/lib/territory-derived.ts:141
@@ -1453,7 +1473,7 @@ msgstr "01 / What you will find here"
 #~ msgid "01 / Domenii de activitate"
 #~ msgstr "01 / Fields of activity"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:206
+#: src/features/statistics/pages/statistics-hub-page.tsx:204
 msgid "01 / Indicatori naționali"
 msgstr "01 / National indicators"
 
@@ -1470,7 +1490,7 @@ msgid "02 / An de an"
 msgstr "02 / Year by year"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:309
-#: src/features/statistics/pages/statistics-hub-page.tsx:237
+#: src/features/statistics/pages/statistics-hub-page.tsx:235
 msgid "02 / Pe județe"
 msgstr "02 / By county"
 
@@ -1506,7 +1526,7 @@ msgstr "03 / By locality"
 msgid "04 / Analize"
 msgstr "04 / Analyses"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:288
+#: src/features/statistics/pages/statistics-hub-page.tsx:284
 msgid "04 / Din {since} până azi"
 msgstr "04 / From {since} to today"
 
@@ -1514,7 +1534,7 @@ msgstr "04 / From {since} to today"
 #~ msgid "04 / Pornește o investigație"
 #~ msgstr "04 / Pornește o investigație"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:341
+#: src/features/statistics/pages/statistics-hub-page.tsx:337
 msgid "05 / Analize"
 msgstr "05 / Analyses"
 
@@ -3284,7 +3304,7 @@ msgstr "Drinking water supplied for household use, thousand m³, {0}"
 msgid "Apă potabilă pentru uz casnic"
 msgstr "Drinking water for household use"
 
-#: src/features/statistics/lib/landing-constants.ts:33
+#: src/features/statistics/lib/landing-constants.ts:34
 msgid "Apă, canalizare, gaze, spații verzi, transport local"
 msgstr "Water, sewers, gas, green space, local transport"
 
@@ -3308,7 +3328,7 @@ msgstr "Apartenență sectorială (RUEIS)"
 msgid "Apartenente"
 msgstr "Apartenente"
 
-#: src/features/statistics/components/county-map/county-map.tsx:467
+#: src/features/statistics/components/county-map/county-map.tsx:386
 msgid "apasă ca să-l adaugi"
 msgstr "click to add it"
 
@@ -3332,7 +3352,7 @@ msgstr "Click a county to add it to the comparison or take it out."
 msgid "Ape uzate"
 msgstr "Sewerage"
 
-#: src/features/statistics/lib/landing-constants.ts:32
+#: src/features/statistics/lib/landing-constants.ts:33
 msgid "Ape, emisii, cheltuieli pentru mediu"
 msgstr "Water, emissions, environmental spending"
 
@@ -4181,7 +4201,7 @@ msgstr "Budgetary Academy"
 msgid "Buget național"
 msgstr "National budget"
 
-#: src/features/statistics/lib/landing-constants.ts:30
+#: src/features/statistics/lib/landing-constants.ts:31
 msgid "Bugetul de stat, bugetele locale, balanța de plăți"
 msgstr "State and local budgets, balance of payments"
 
@@ -4556,6 +4576,14 @@ msgstr "Captured on"
 msgid "Cardurile afișează rezumatul fiecărei luări de cuvânt; transcrierea completă apare acolo unde a fost încărcată din stenogramă. Acolo unde intervenția are o poziție dovedită în stenogramă, cardul duce la locul ei exact în textul integral al ședinței."
 msgstr "Cardurile afișează rezumatul fiecărei luări de cuvânt; transcrierea completă apare acolo unde a fost încărcată din stenogramă. Acolo unde intervenția are o poziție dovedită în stenogramă, cardul duce la locul ei exact în textul integral al ședinței."
 
+#: src/features/statistics/lib/landing-constants.ts:146
+msgid "Câștigul nominal al salariaților, nu venitul tuturor locuitorilor."
+msgstr "The nominal earnings of employees, not the income of every resident."
+
+#: src/features/statistics/lib/landing-constants.ts:144
+msgid "Câștigul salarial mediu net lunar, {year}"
+msgstr "Average net monthly earnings, {year}"
+
 #. placeholder {0}: formatHubPeriod(from)
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:173
 msgid "Cât a crescut sau a scăzut fiecare loc față de {0}."
@@ -4672,6 +4700,10 @@ msgstr "Category name"
 #: src/features/public-investments/components/HowToReadData.tsx:106
 msgid "Câteva rânduri au decontat > contractat în sursă (avertizare de precizie). Bara de absorbție se limitează vizual la 100%, textul păstrează valoarea reală."
 msgstr "Câteva rânduri au decontat > contractat în sursă (avertizare de precizie). Bara de absorbție se limitează vizual la 100%, textul păstrează valoarea reală."
+
+#: src/features/statistics/lib/landing-constants.ts:138
+msgid "Câți ani ar trăi, în medie, un copil născut acum, la mortalitatea de azi."
+msgstr "How many years a child born now would live on average, at today’s mortality."
 
 #: src/features/private-companies/lib/caen-divisions.ts:40
 msgid "Cauciuc și mase plastice"
@@ -5079,7 +5111,7 @@ msgstr "Ce s-a întâmplat cu acest act"
 #~ msgid "Ce s-a schimbat<0/>din {0} încoace"
 #~ msgstr "Ce s-a schimbat<0/>din {0} încoace"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:290
+#: src/features/statistics/pages/statistics-hub-page.tsx:286
 msgid "Ce s-a schimbat<0/>din {since} încoace"
 msgstr "What has changed<0/>since {since}"
 
@@ -5151,7 +5183,7 @@ msgstr "Cele {0} de decizii ale Curții Constituționale există ca acte, dar nu
 msgid "Cele 16 domenii pe care le acoperă corpusul."
 msgstr "Cele 16 domenii pe care le acoperă corpusul."
 
-#: src/features/statistics/lib/landing-constants.ts:35
+#: src/features/statistics/lib/landing-constants.ts:36
 msgid "Cele 17 obiective ONU, până în 2030"
 msgstr "The 17 UN goals, to 2030"
 
@@ -5515,7 +5547,7 @@ msgstr "Cifre de ansamblu"
 #: src/features/ngos/hub/ngo-hub-page.tsx:225
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:243
 #: src/features/private-companies/components/profile/company-profile-page.tsx:127
-#: src/features/statistics/pages/statistics-hub-page.tsx:179
+#: src/features/statistics/pages/statistics-hub-page.tsx:177
 msgid "Cifre-cheie"
 msgstr "Key figures"
 
@@ -5564,7 +5596,7 @@ msgstr "The figures did not load."
 msgid "Cifrele oficiale ale României, de la Institutul Național de Statistică: inflație, salarii, șomaj, populație, locuințe și turism, pentru țară, județe și fiecare localitate."
 msgstr "Romania's official figures from the National Institute of Statistics: inflation, pay, unemployment, population, housing and tourism, for the country, its counties and every locality."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:139
+#: src/features/statistics/pages/statistics-hub-page.tsx:137
 msgid "Cifrele oficiale<0/>ale României"
 msgstr "Romania's<0/>official figures"
 
@@ -6194,7 +6226,7 @@ msgstr "Compare with the country"
 
 #: src/features/statistics/components/detail/detail-body.tsx:308
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:338
-#: src/features/statistics/pages/statistics-hub-page.tsx:160
+#: src/features/statistics/pages/statistics-hub-page.tsx:158
 #: src/routes/ins/comparatii/index.tsx:10
 msgid "Compară teritorii"
 msgstr "Compare territories"
@@ -6208,7 +6240,7 @@ msgstr "Compare territories"
 #~ msgid "Compară un indicator INS Tempo între localități, județe și România. Perioadele fără date raportate rămân goale — nu sunt completate cu valori din alți ani."
 #~ msgstr "Compare an INS Tempo indicator across localities, counties and Romania. Periods without reported data stay empty; values from other years are never substituted."
 
-#: src/features/statistics/components/county-map/county-map.tsx:471
+#: src/features/statistics/components/county-map/county-map.tsx:390
 msgid "comparația e plină"
 msgstr "the comparison is full"
 
@@ -6738,7 +6770,8 @@ msgstr "Contributions recorded"
 
 #: src/features/ngos/hub/ngo-county-map.tsx:124
 #: src/features/private-companies/components/hub/company-county-map.tsx:126
-#: src/features/statistics/components/county-map/county-map.tsx:148
+#: src/features/statistics/components/county-map/county-map.tsx:119
+#: src/features/statistics/components/hub/hub-county-band.tsx:253
 msgid "Conturul județelor nu s-a încărcat."
 msgstr "The county boundaries did not load."
 
@@ -7996,8 +8029,8 @@ msgid "Datele din registru"
 msgstr "Register data"
 
 #: src/features/statistics/components/county-map/county-map.tsx:446
-msgid "Datele județului"
-msgstr "County data"
+#~ msgid "Datele județului"
+#~ msgstr "County data"
 
 #: src/features/justice/components/data-trust.tsx:241
 msgid "Datele live nu sunt conectate încă"
@@ -8088,7 +8121,7 @@ msgid "de {0} ori față de {year}"
 msgstr "{0} times the {year} figure"
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:388
-#: src/features/statistics/pages/statistics-hub-page.tsx:341
+#: src/features/statistics/pages/statistics-hub-page.tsx:337
 msgid "De aici poți începe"
 msgstr "Start from here"
 
@@ -8105,7 +8138,7 @@ msgstr "De la"
 msgid "De la data apariției în Monitorul Oficial, un act produce efecte."
 msgstr "De la data apariției în Monitorul Oficial, un act produce efecte."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:146
+#: src/features/statistics/pages/statistics-hub-page.tsx:144
 msgid "De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate."
 msgstr "From the National Institute of Statistics, for the country, its counties and every locality."
 
@@ -8150,7 +8183,7 @@ msgid "decedați"
 msgstr "deaths"
 
 #: src/features/statistics/lib/comparison-presets.ts:109
-#: src/features/statistics/lib/landing-constants.ts:62
+#: src/features/statistics/lib/landing-constants.ts:64
 msgid "Decedați"
 msgstr "Deaths"
 
@@ -8167,7 +8200,7 @@ msgstr "December"
 msgid "Decese"
 msgstr "Deaths"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:323
+#: src/features/statistics/pages/statistics-hub-page.tsx:319
 msgid "Decese peste nașteri"
 msgstr "Deaths above births"
 
@@ -8442,6 +8475,10 @@ msgstr "Open entity analytics"
 #~ msgid "Deschide comparația"
 #~ msgstr "Open comparison"
 
+#: src/features/statistics/components/hub/hub-county-band.tsx:314
+msgid "Deschide datele județului"
+msgstr "Open the county’s data"
+
 #: src/features/justice/components/case-results-table.tsx:146
 msgid "Deschide dosarul"
 msgstr "Deschide dosarul"
@@ -8665,11 +8702,11 @@ msgstr "Development regions are coloured by supplier registered-office totals. R
 msgid "Development regions are coloured by their own totals. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Development regions are coloured by their own totals. Records without known buyer geography are excluded from the map — never shown as zero."
 
-#: src/features/statistics/lib/landing-constants.ts:34
+#: src/features/statistics/lib/landing-constants.ts:35
 msgid "Dezvoltare durabilă — Orizont 2020"
 msgstr "Sustainable development — Horizon 2020"
 
-#: src/features/statistics/lib/landing-constants.ts:35
+#: src/features/statistics/lib/landing-constants.ts:36
 msgid "Dezvoltare durabilă — Ținte 2030"
 msgstr "Sustainable development — 2030 targets"
 
@@ -8746,7 +8783,7 @@ msgstr "Din {awarded} atribuiți în această selecție, {withheld} ({share}) re
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:298
+#: src/features/statistics/pages/statistics-hub-page.tsx:294
 msgid "Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut."
 msgstr "Every year since {naturalDecreaseSince}, more people have died than were born."
 
@@ -9060,7 +9097,7 @@ msgstr "Only the first {limit} sectors"
 
 #: src/features/ngos/hub/ngo-county-rank.tsx:174
 #: src/features/private-companies/components/hub/company-county-rank.tsx:162
-#: src/features/statistics/components/hub/hub-county-rank.tsx:177
+#: src/features/statistics/components/hub/hub-county-rank.tsx:187
 msgid "Doar primele și ultimele {edge}"
 msgstr "Only the top and bottom {edge}"
 
@@ -9075,6 +9112,10 @@ msgstr "Doar referință"
 #: src/features/ngos/components/ngo-landing-page.tsx:111
 #~ msgid "doar referinta dupa nume"
 #~ msgstr "doar referinta dupa nume"
+
+#: src/features/statistics/lib/landing-constants.ts:162
+msgid "Doar șomerii înregistrați: cine nu se înscrie nu apare."
+msgstr "Registered unemployed only: whoever does not register does not appear."
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1260
 msgid "Doar tabel"
@@ -9257,6 +9298,10 @@ msgstr "By the year in the registry number, which an organisation keeps. The reg
 msgid "După domiciliu, nu după cine locuiește efectiv: cine pleacă fără să-și schimbe domiciliul rămâne numărat."
 msgstr "By domicile, not by who actually lives there: whoever leaves without changing their domicile is still counted."
 
+#: src/features/statistics/lib/landing-constants.ts:178
+msgid "După domiciliu: cine pleacă fără să-și schimbe domiciliul rămâne numărat."
+msgstr "By domicile: whoever leaves without changing their domicile is still counted."
+
 #: src/features/statistics/components/territory/related-links-rail.tsx:62
 msgid "după județ"
 msgstr "by county"
@@ -9298,8 +9343,8 @@ msgid "Duplicate Series"
 msgstr "Duplicate Series"
 
 #: src/features/statistics/lib/landing-constants.ts:108
-msgid "Durata medie a vieții"
-msgstr "Life expectancy"
+#~ msgid "Durata medie a vieții"
+#~ msgstr "Life expectancy"
 
 #: src/features/learning/components/cards/LearningPathCard.tsx:159
 msgid "Duration"
@@ -10873,6 +10918,11 @@ msgctxt "county map readout"
 msgid "Fără valoare"
 msgstr "No value"
 
+#. placeholder {0}: layer.period ?? ''
+#: src/features/statistics/components/hub/hub-county-band.tsx:274
+msgid "Fără valoare în {0}"
+msgstr "No value in {0}"
+
 #. placeholder {0}: formatHubPeriod(from)
 #. placeholder {1}: withoutBase.map((row) => row.name).join(', ')
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:216
@@ -10884,7 +10934,7 @@ msgstr "No value in {0}, so no change: {1}."
 #~ msgid "Fără valoare pentru {0}"
 #~ msgstr "No value for {0}"
 
-#: src/features/statistics/components/county-map/county-map.tsx:431
+#: src/features/statistics/components/county-map/county-map.tsx:361
 msgid "Fără valoare pentru {period}"
 msgstr "No value for {period}"
 
@@ -11333,7 +11383,7 @@ msgstr "Financial Trends"
 msgid "Financiar"
 msgstr "Financiar"
 
-#: src/features/statistics/lib/landing-constants.ts:30
+#: src/features/statistics/lib/landing-constants.ts:31
 msgid "Finanțe"
 msgstr "Finance"
 
@@ -12677,7 +12727,9 @@ msgstr "Împotrivă"
 msgid "in \"invisible\" consumption taxes."
 msgstr "in \"invisible\" consumption taxes."
 
+#. placeholder {0}: layer.period ?? ''
 #. placeholder {0}: series.year
+#: src/features/statistics/components/hub/hub-county-band.tsx:293
 #: src/features/statistics/components/uat-map/uat-map-series.ts:103
 msgid "în {0}"
 msgstr "in {0}"
@@ -12737,7 +12789,7 @@ msgstr "în așteptare"
 msgid "în browserul tău"
 msgstr "in your browser"
 
-#: src/features/statistics/components/county-map/county-map.tsx:461
+#: src/features/statistics/components/county-map/county-map.tsx:380
 msgid "în comparație"
 msgstr "in the comparison"
 
@@ -13029,8 +13081,9 @@ msgstr "Încărcat"
 #: src/features/ngos/hub/ngo-registry-search.tsx:200
 #: src/features/private-companies/components/hub/company-county-map.tsx:133
 #: src/features/private-companies/components/profile/company-profile-states.tsx:123
-#: src/features/statistics/components/county-map/county-map.tsx:155
+#: src/features/statistics/components/county-map/county-map.tsx:126
 #: src/features/statistics/components/hub/hub-chrome.tsx:62
+#: src/features/statistics/components/hub/hub-county-band.tsx:260
 msgid "Încearcă din nou"
 msgstr "Try again"
 
@@ -13255,7 +13308,7 @@ msgstr "INS Tempo indicators for {where}: population, employees, unemployment, d
 msgid "Indicatorii ne-numerici rămân disponibili în tabel."
 msgstr "Indicatorii ne-numerici rămân disponibili în tabel."
 
-#: src/features/statistics/lib/landing-constants.ts:34
+#: src/features/statistics/lib/landing-constants.ts:35
 msgid "Indicatorii strategiei naționale, până în 2020"
 msgstr "The national strategy's indicators, to 2020"
 
@@ -13264,9 +13317,12 @@ msgstr "The national strategy's indicators, to 2020"
 #~ msgstr "Indicatorul a returnat mai multe observații decât putem afișa. Fixează mai multe dimensiuni sau alege mai puține teritorii."
 
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:313
-#: src/features/statistics/pages/statistics-hub-page.tsx:241
 msgid "Indicatorul de pe hartă"
 msgstr "Indicator on the map"
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:239
+msgid "Indicatorul de pe harta județelor"
+msgstr "Indicator on the counties map"
 
 #: src/features/statistics/components/uat-map/uat-map-chrome.tsx:26
 msgid "Indicatorul de pe harta localităților"
@@ -13340,7 +13396,7 @@ msgid "Înființate în {YEAR}"
 msgstr "Founded in {YEAR}"
 
 #: src/features/statistics/components/hub/hub-facts.tsx:62
-#: src/features/statistics/lib/landing-constants.ts:53
+#: src/features/statistics/lib/landing-constants.ts:55
 msgid "Inflația anuală"
 msgstr "Annual inflation"
 
@@ -13524,24 +13580,24 @@ msgstr "INS frequency"
 msgid "INS indicators are only available for UATs."
 msgstr "INS indicators are only available for UATs."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:190
+#: src/features/statistics/pages/statistics-hub-page.tsx:188
 msgid "INS nu a publicat încă aceste cifre."
 msgstr "INS has not published these figures yet."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:223
+#: src/features/statistics/pages/statistics-hub-page.tsx:221
 msgid "INS nu a publicat încă aceste serii."
 msgstr "INS has not published these series yet."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:263
+#: src/features/statistics/pages/statistics-hub-page.tsx:262
 msgid "INS nu a publicat încă valorile pe județe ale acestui indicator."
 msgstr "INS has not published this indicator's county values yet."
 
 #. placeholder {0}: layer.period
-#: src/features/statistics/components/hub/hub-county-map.tsx:122
-#~ msgid "INS nu a publicat încă valorile pe județe pentru {0}."
-#~ msgstr "INS has not yet published county values for {0}."
+#: src/features/statistics/pages/statistics-hub-page.tsx:256
+msgid "INS nu a publicat încă valorile pe județe pentru {0}."
+msgstr "INS has not yet published county values for {0}."
 
-#: src/features/statistics/components/county-map/county-map.tsx:139
+#: src/features/statistics/components/county-map/county-map.tsx:110
 msgid "INS nu a publicat încă valorile pe județe pentru {period}."
 msgstr "INS has not yet published the county values for {period}."
 
@@ -13690,7 +13746,7 @@ msgstr "Instanțe cu volum ridicat"
 msgid "Instanțe principale"
 msgstr "Main courts"
 
-#: src/features/statistics/lib/landing-constants.ts:31
+#: src/features/statistics/lib/landing-constants.ts:32
 msgid "Instanțe, condamnări, criminalitate"
 msgstr "Courts, convictions, crime"
 
@@ -14107,7 +14163,7 @@ msgstr "county"
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1112
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:108
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:163
-#: src/features/statistics/components/hub/hub-county-rank.tsx:133
+#: src/features/statistics/components/hub/hub-county-rank.tsx:143
 #: src/features/statistics/components/territory/territory-derived-list.tsx:108
 #: src/features/statistics/components/territory/territory-derived-list.tsx:257
 #: src/features/statistics/components/territory/territory-derived-section.tsx:253
@@ -14147,7 +14203,7 @@ msgstr "Changing counties: Ilfov vs Teleorman"
 msgid "Județele"
 msgstr "Counties"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:354
+#: src/features/statistics/pages/statistics-hub-page.tsx:350
 msgid "Județele care pierd populație"
 msgstr "The counties losing people"
 
@@ -14221,7 +14277,7 @@ msgstr "Justice"
 
 #: src/features/landing/lib/landing-groups.ts:131
 #: src/features/legal/lib/legal-domains.ts:39
-#: src/features/statistics/lib/landing-constants.ts:31
+#: src/features/statistics/lib/landing-constants.ts:32
 #: src/features/statistics/lib/territory-groups.ts:32
 #: src/routes/justitie.cautare.tsx:40
 #: src/routes/justitie.index.tsx:30
@@ -14327,6 +14383,10 @@ msgstr "per 10,000"
 #: src/features/private-companies/lib/company-profile-text.ts:98
 msgid "la fel ca în {year}"
 msgstr "same as in {year}"
+
+#: src/features/statistics/components/hub/hub-county-band.tsx:70
+msgid "la media națională"
+msgstr "at the national average"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:146
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:344
@@ -15291,7 +15351,7 @@ msgid "locuințe"
 msgstr "dwellings"
 
 #: src/features/statistics/lib/comparison-presets.ts:107
-#: src/features/statistics/lib/landing-constants.ts:59
+#: src/features/statistics/lib/landing-constants.ts:61
 #: src/features/statistics/lib/territory-derived.ts:170
 msgid "Locuințe existente"
 msgstr "Existing dwellings"
@@ -15349,7 +15409,12 @@ msgid "locul"
 msgstr "rank"
 
 #. placeholder {0}: formatCount(standing.rank)
+#. placeholder {0}: rank.get(activeCounty.code) ?? '—'
+#. placeholder {0}: rank.get(county.code) ?? '—'
 #. placeholder {1}: formatCount(standing.of)
+#. placeholder {1}: values.length
+#: src/features/statistics/components/hub/hub-county-band.tsx:189
+#: src/features/statistics/components/hub/hub-county-band.tsx:297
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:77
 msgid "locul {0} din {1}"
 msgstr "rank {0} of {1}"
@@ -15953,6 +16018,20 @@ msgstr "Maybe Later"
 msgid "Mean"
 msgstr "Mean"
 
+#. placeholder {0}: formatHubValue(layer.national, layer.unit, layer.unitLabel, { digits }).value
+#: src/features/statistics/components/hub/hub-county-rank.tsx:154
+msgid "Media {0}"
+msgstr "Average {0}"
+
+#: src/features/statistics/components/hub/hub-county-band.tsx:302
+msgid "Media națională"
+msgstr "National average"
+
+#. placeholder {0}: figure(layer.national)
+#: src/features/statistics/components/hub/hub-county-band.tsx:340
+msgid "Media națională {0}"
+msgstr "National average {0}"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:400
 msgid "median"
 msgstr "median"
@@ -15988,7 +16067,7 @@ msgstr "3-year averages"
 msgid "Mediu"
 msgstr "Mediu"
 
-#: src/features/statistics/lib/landing-constants.ts:32
+#: src/features/statistics/lib/landing-constants.ts:33
 msgid "Mediu înconjurător"
 msgstr "Environment"
 
@@ -16710,11 +16789,11 @@ msgid "Narrow the paginated record list."
 msgstr "Narrow the paginated record list."
 
 #: src/features/statistics/lib/comparison-presets.ts:108
-#: src/features/statistics/lib/landing-constants.ts:61
+#: src/features/statistics/lib/landing-constants.ts:63
 msgid "Născuți vii"
 msgstr "Live births"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:314
+#: src/features/statistics/pages/statistics-hub-page.tsx:310
 msgid "Născuți vii și decedați, pe an"
 msgstr "Live births and deaths, by year"
 
@@ -16731,13 +16810,17 @@ msgstr "Live births"
 msgid "Născuți-vii minus decedați, în {0}"
 msgstr "Live births minus deaths, in {0}"
 
+#: src/features/statistics/lib/landing-constants.ts:170
+msgid "Născuți-vii minus decedați: sub zero, mai multe decese decât nașteri."
+msgstr "Live births minus deaths: below zero, more deaths than births."
+
 #. placeholder {0}: count(series, 'births', index)
 #. placeholder {1}: count(series, 'deaths', index)
 #: src/features/statistics/components/uat-map/uat-map-series.ts:127
 msgid "Născuți-vii: {0} · decedați: {1}"
 msgstr "Live births: {0} · deaths: {1}"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:322
+#: src/features/statistics/pages/statistics-hub-page.tsx:318
 msgid "Nașteri peste decese"
 msgstr "Births above deaths"
 
@@ -17180,7 +17263,7 @@ msgid "Niciun indicator cu date pe județe nu se potrivește căutării."
 msgstr "No indicator with county data matches the search."
 
 #. placeholder {0}: layer.period
-#: src/features/statistics/components/hub/hub-county-rank.tsx:45
+#: src/features/statistics/components/hub/hub-county-rank.tsx:50
 msgid "Niciun județ cu valoare pentru {0}."
 msgstr "No county has a value for {0}."
 
@@ -18648,8 +18731,8 @@ msgid "Numărul de voturi pe grup poate diferi de totalul din divizare atunci c�
 msgstr "Numărul de voturi pe grup poate diferi de totalul din divizare atunci când unii membri nu au participat sau nu au votat în mod explicit."
 
 #: src/features/statistics/lib/landing-constants.ts:110
-msgid "Numărul mediu al salariaților"
-msgstr "Average number of employees"
+#~ msgid "Numărul mediu al salariaților"
+#~ msgstr "Average number of employees"
 
 #: src/features/statistics/components/landing/landing-example-card.tsx:24
 #~ msgid "Numărul mediu de salariați în România, județul Cluj și Cluj-Napoca."
@@ -19898,7 +19981,7 @@ msgstr "Per year, by the year of the contract or purchase"
 msgid "Pe cine privește"
 msgstr "Pe cine privește"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:170
+#: src/features/statistics/pages/statistics-hub-page.tsx:168
 msgid "Pe domenii"
 msgstr "By domain"
 
@@ -20159,13 +20242,17 @@ msgid "Pescuit și acvacultură"
 msgstr "Fishing and aquaculture"
 
 #. placeholder {0}: format(interval.from)
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:22
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:24
 msgid "peste {0}"
 msgstr "over {0}"
 
 #: src/features/parliament/lib/stenogram-presentation.ts:230
 msgid "peste {formatted}"
 msgstr "peste {formatted}"
+
+#: src/features/statistics/components/hub/hub-county-band.tsx:340
+msgid "peste medie"
+msgstr "above average"
 
 #: src/features/private-companies/lib/caen-divisions.ts:24
 msgid "Petrol și gaze naturale"
@@ -20191,7 +20278,11 @@ msgstr "Phase: {0}"
 msgid "Phone"
 msgstr "Phone"
 
-#: src/features/statistics/lib/landing-constants.ts:29
+#: src/features/statistics/lib/landing-constants.ts:151
+msgid "PIB pe locuitor"
+msgstr "GDP per inhabitant"
+
+#: src/features/statistics/lib/landing-constants.ts:30
 msgid "PIB, prețuri, industrie, agricultură, locuințe, turism"
 msgstr "GDP, prices, industry, farming, housing, tourism"
 
@@ -20392,7 +20483,7 @@ msgstr "the population by domicile on 1 July {to}"
 #~ msgid "populația după domiciliu, {0}"
 #~ msgstr "populația după domiciliu, {0}"
 
-#: src/features/statistics/lib/landing-constants.ts:56
+#: src/features/statistics/lib/landing-constants.ts:58
 msgid "Populația rezidentă"
 msgstr "Resident population"
 
@@ -20418,7 +20509,7 @@ msgstr "Resident population"
 msgid "populație zero"
 msgstr "zero population"
 
-#: src/features/statistics/lib/landing-constants.ts:28
+#: src/features/statistics/lib/landing-constants.ts:29
 msgid "Populație, muncă și salarii, educație, sănătate"
 msgstr "Population, jobs and pay, education, health"
 
@@ -20979,6 +21070,10 @@ msgstr "Gross domestic product"
 #: src/features/private-companies/lib/caen-divisions.ts:30
 msgid "Produse din tutun"
 msgstr "Tobacco products"
+
+#: src/features/statistics/lib/landing-constants.ts:152
+msgid "Produsul intern brut pe locuitor, la prețurile anului {year}"
+msgstr "Gross domestic product per inhabitant, at {year} prices"
 
 #: src/features/legal/lib/legal-vocabulary.ts:72
 msgid "profesii reglementate"
@@ -21576,19 +21671,22 @@ msgstr "The crude rate depends on the locality's age structure."
 
 #: src/features/statistics/components/hub/hub-facts.tsx:97
 #: src/features/statistics/lib/comparison-presets.ts:112
-#: src/features/statistics/lib/landing-constants.ts:55
-#: src/features/statistics/lib/landing-constants.ts:63
-#: src/features/statistics/lib/landing-constants.ts:109
+#: src/features/statistics/lib/landing-constants.ts:57
+#: src/features/statistics/lib/landing-constants.ts:65
 msgid "Rata șomajului"
 msgstr "Unemployment rate"
 
 #: src/features/statistics/lib/landing-constants.ts:109
-msgid "Rata șomajului înregistrat"
-msgstr "Registered unemployment rate"
+#~ msgid "Rata șomajului înregistrat"
+#~ msgstr "Registered unemployment rate"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:372
+#: src/features/statistics/pages/statistics-hub-page.tsx:368
 msgid "Rata șomajului înregistrat din 1992 până azi, pentru țară și pentru fiecare județ."
 msgstr "The registered unemployment rate from 1992 to today, for the country and for every county."
+
+#: src/features/statistics/lib/landing-constants.ts:160
+msgid "Rata șomajului înregistrat, {year}"
+msgstr "Registered unemployment rate, {year}"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:912
 msgid "Rate/KPI AMEPIP, afișate fără transformare în valori contabile."
@@ -22644,7 +22742,7 @@ msgstr "Role"
 
 #: src/features/ngos/hub/ngo-county-map.tsx:340
 #: src/features/private-companies/components/hub/company-county-map.tsx:322
-#: src/features/statistics/components/county-map/county-map.tsx:412
+#: src/features/statistics/components/county-map/county-map.tsx:342
 #: src/features/statistics/components/territory/territory-derived-list.tsx:115
 #: src/features/statistics/components/territory/territory-derived-list.tsx:257
 #: src/features/statistics/components/territory/territory-derived-section.tsx:267
@@ -22652,7 +22750,7 @@ msgstr "Role"
 #: src/features/statistics/components/territory/territory-derived-trend.tsx:330
 #: src/features/statistics/components/territory/territory-header.tsx:65
 #: src/features/statistics/components/territory/territory-indicator-row.tsx:214
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:70
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:83
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:89
 #: src/features/statistics/hooks/use-comparison-reading.ts:72
 #: src/features/statistics/hooks/use-comparisons.ts:339
@@ -22664,14 +22762,12 @@ msgid "România"
 msgstr "Romania"
 
 #. placeholder {0}: formatHubPeriod(layer.period)
-#: src/features/statistics/components/county-map/county-map.tsx:412
+#: src/features/statistics/components/county-map/county-map.tsx:342
 msgid "România · {0}"
 msgstr "Romania · {0}"
 
-#. placeholder {0}: formatHubValue(layer.national, layer.unit, layer.unitLabel, { digits }).value
 #. placeholder {0}: unit.value
 #: src/features/private-companies/components/hub/company-county-rank.tsx:129
-#: src/features/statistics/components/hub/hub-county-rank.tsx:144
 msgid "România {0}"
 msgstr "Romania {0}"
 
@@ -22695,7 +22791,7 @@ msgstr "Romania in figures"
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Romania spending heatmap - Transparenta.eu"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:208
+#: src/features/statistics/pages/statistics-hub-page.tsx:206
 msgid "România,<0/>an de an"
 msgstr "Romania,<0/>year by year"
 
@@ -22829,12 +22925,11 @@ msgstr "employees"
 #: src/features/private-companies/components/profile/company-balance-trend.tsx:96
 #: src/features/private-companies/components/profile/company-business-band.tsx:99
 #: src/features/private-companies/lib/company-profile-text.ts:120
-#: src/features/statistics/lib/landing-constants.ts:110
 msgid "Salariați"
 msgstr "Employees"
 
 #: src/features/statistics/lib/comparison-presets.ts:105
-#: src/features/statistics/lib/landing-constants.ts:57
+#: src/features/statistics/lib/landing-constants.ts:59
 msgid "Salariați (număr mediu)"
 msgstr "Employees (average count)"
 
@@ -22859,9 +22954,13 @@ msgid "Salariu, inflație, populație sau cod INS..."
 msgstr "Pay, inflation, population or INS code..."
 
 #: src/features/statistics/components/hub/hub-facts.tsx:84
-#: src/features/statistics/lib/landing-constants.ts:54
+#: src/features/statistics/lib/landing-constants.ts:56
 msgid "Salariul mediu net"
 msgstr "Average net pay"
+
+#: src/features/statistics/lib/landing-constants.ts:143
+msgid "Salariul net"
+msgstr "Net salary"
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:340
 msgid "Salary Calculation"
@@ -22907,6 +23006,10 @@ msgstr "Sari la textul actului"
 msgid "Sari la textul ședinței"
 msgstr "Sari la textul ședinței"
 
+#: src/features/statistics/components/hub/hub-county-band.tsx:316
+msgid "sau atinge-l încă o dată pe hartă"
+msgstr "or tap it once more on the map"
+
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:102
 msgid "sau atinge-o încă o dată pe hartă"
 msgstr "or tap it once more on the map"
@@ -22918,7 +23021,7 @@ msgstr "or tap it once more on the map"
 #: src/features/landing/components/landing-page.tsx:280
 #: src/features/ngos/hub/ngo-hub-page.tsx:193
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:201
-#: src/features/statistics/pages/statistics-hub-page.tsx:153
+#: src/features/statistics/pages/statistics-hub-page.tsx:151
 msgid "Sau mergi direct la"
 msgstr "Or go straight to"
 
@@ -23050,7 +23153,7 @@ msgstr "Scrutin negasit"
 #: src/features/landing/components/landing-page.tsx:278
 #: src/features/ngos/hub/ngo-hub-page.tsx:191
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:199
-#: src/features/statistics/pages/statistics-hub-page.tsx:151
+#: src/features/statistics/pages/statistics-hub-page.tsx:149
 msgid "Scurtături"
 msgstr "Shortcuts"
 
@@ -24749,7 +24852,11 @@ msgstr "Solicită datele lipsă sau blocate"
 msgid "Soluționat"
 msgstr "Soluționat"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:369
+#: src/features/statistics/lib/landing-constants.ts:159
+msgid "Șomaj"
+msgstr "Unemployment"
+
+#: src/features/statistics/pages/statistics-hub-page.tsx:365
 msgid "Șomajul, lună de lună"
 msgstr "Unemployment, month by month"
 
@@ -24857,11 +24964,11 @@ msgid "Sorted by reported call-off value for the current filters — execution u
 msgstr "Sorted by reported call-off value for the current filters — execution under frameworks, never summed with contract awards."
 
 #: src/features/statistics/lib/comparison-presets.ts:110
-#: src/features/statistics/lib/landing-constants.ts:60
+#: src/features/statistics/lib/landing-constants.ts:62
 msgid "Sosiri turiști"
 msgstr "Tourist arrivals"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:387
+#: src/features/statistics/pages/statistics-hub-page.tsx:383
 msgid "Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentru o localitate."
 msgstr "Arrivals at places to stay, 2018–2025, for the country or for a locality."
 
@@ -24974,10 +25081,14 @@ msgid "Spending categories in this territory."
 msgstr "Spending categories in this territory."
 
 #: src/features/statistics/lib/comparison-presets.ts:111
-#: src/features/statistics/lib/landing-constants.ts:58
-#: src/features/statistics/lib/landing-constants.ts:108
+#: src/features/statistics/lib/landing-constants.ts:60
+#: src/features/statistics/lib/landing-constants.ts:136
 msgid "Speranța de viață"
 msgstr "Life expectancy"
+
+#: src/features/statistics/lib/landing-constants.ts:137
+msgid "Speranța de viață la naștere, {year}"
+msgstr "Life expectancy at birth, {year}"
 
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:293
 msgid "Split"
@@ -24992,13 +25103,18 @@ msgid "Splits UATs relative to the median value. More robust than mean-based fil
 msgstr "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 
 #: src/features/statistics/components/uat-map/uat-map-series.ts:121
-#: src/features/statistics/pages/statistics-hub-page.tsx:321
+#: src/features/statistics/lib/landing-constants.ts:167
+#: src/features/statistics/pages/statistics-hub-page.tsx:317
 msgid "Spor natural"
 msgstr "Natural change"
 
 #: src/features/private-companies/lib/caen-divisions.ts:101
 msgid "Sport și recreere"
 msgstr "Sport and recreation"
+
+#: src/features/statistics/lib/landing-constants.ts:168
+msgid "Sporul natural la 1.000 de locuitori, {year}"
+msgstr "Natural change per 1,000 inhabitants, {year}"
 
 #: src/features/statistics/lib/territory-derived.ts:147
 msgid "stabiliri de domiciliu"
@@ -25185,7 +25301,7 @@ msgstr "Static Dataset Alert"
 msgid "Static Series"
 msgstr "Static Series"
 
-#: src/features/statistics/lib/landing-constants.ts:29
+#: src/features/statistics/lib/landing-constants.ts:30
 msgid "Statistică economică"
 msgstr "Economic statistics"
 
@@ -25193,7 +25309,7 @@ msgstr "Economic statistics"
 #~ msgid "Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc."
 #~ msgstr "Statistica oficială a României — populație, muncă, locuire, educație, turism — pentru țară, județe și fiecare localitate. Caută un indicator după nume sau cod de matrice, sau pornește de la un loc."
 
-#: src/features/statistics/lib/landing-constants.ts:28
+#: src/features/statistics/lib/landing-constants.ts:29
 msgid "Statistică socială"
 msgstr "Social statistics"
 
@@ -25201,7 +25317,7 @@ msgstr "Social statistics"
 msgid "Statistici"
 msgstr "Statistics"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:134
+#: src/features/statistics/pages/statistics-hub-page.tsx:132
 msgid "Statistici / INS"
 msgstr "Statistics / INS"
 
@@ -25461,9 +25577,13 @@ msgid "studenți"
 msgstr "studenți"
 
 #. placeholder {0}: format(interval.to!)
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:21
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:23
 msgid "sub {0}"
 msgstr "under {0}"
+
+#: src/features/statistics/components/hub/hub-county-band.tsx:340
+msgid "sub medie"
+msgstr "below average"
 
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:176
 msgid "sub prag"
@@ -25815,9 +25935,14 @@ msgstr "Sursa: ancorele marcate de portal în textul actelor, nu deduceri automa
 #~ msgstr "Source: INS Tempo"
 
 #. placeholder {0}: meta.sources
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:120
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:149
 msgid "Sursa: INS Tempo, {0}; calculat de Transparenta.eu din cifrele preluate pe {day}."
 msgstr "Source: INS Tempo, {0}; calculated by Transparenta.eu from the figures retrieved on {day}."
+
+#. placeholder {0}: layer.code
+#: src/features/statistics/components/hub/hub-county-band.tsx:344
+msgid "Sursa: INS Tempo, {0}."
+msgstr "Source: INS Tempo, {0}."
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:322
 msgid "Surse"
@@ -26041,7 +26166,7 @@ msgstr "Telecomunicații și digital"
 #~ msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
 #~ msgstr "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an — o comparație de pornire."
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:357
+#: src/features/statistics/pages/statistics-hub-page.tsx:353
 msgid "Teleorman, Brăila, Tulcea, Olt și Hunedoara, an de an."
 msgstr "Teleorman, Brăila, Tulcea, Olt and Hunedoara, year by year."
 
@@ -27088,7 +27213,7 @@ msgstr "All results in the registry"
 msgid "Toate setările"
 msgstr "All settings"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:157
+#: src/features/statistics/pages/statistics-hub-page.tsx:155
 msgid "Toate seturile de date"
 msgstr "All datasets"
 
@@ -27568,7 +27693,7 @@ msgstr "TUR105E / POP108D"
 msgid "Turism"
 msgstr "Tourism"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:384
+#: src/features/statistics/pages/statistics-hub-page.tsx:380
 msgid "Turismul înainte și după pandemie"
 msgstr "Tourism before and after the pandemic"
 
@@ -27823,7 +27948,7 @@ msgstr "unavailable under the current answerability policy"
 msgid "Unde a fost publicat"
 msgstr "Unde a fost publicat"
 
-#: src/features/statistics/pages/statistics-hub-page.tsx:238
+#: src/features/statistics/pages/statistics-hub-page.tsx:236
 msgid "Unde se situează județul tău"
 msgstr "Where your county stands"
 
@@ -28315,7 +28440,7 @@ msgstr "Utilitate publica mentionata de SGG"
 msgid "Utilități publice"
 msgstr "Public utilities"
 
-#: src/features/statistics/lib/landing-constants.ts:33
+#: src/features/statistics/lib/landing-constants.ts:34
 msgid "Utilități publice și administrarea teritoriului"
 msgstr "Public utilities and territorial administration"
 
@@ -28484,6 +28609,10 @@ msgstr "Valoarea pe furnizor nu include contractele încredințate unor asocieri
 msgid "Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri: repartiția între membri nu este publicată, așa că nu se poate indica o sumă pentru o singură firmă."
 msgstr "Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri: repartiția între membri nu este publicată, așa că nu se poate indica o sumă pentru o singură firmă."
 
+#: src/features/statistics/lib/landing-constants.ts:154
+msgid "Valoarea produsă în județ, împărțită la locuitorii lui."
+msgstr "The value produced in the county, divided by its inhabitants."
+
 #: src/features/public-investments/components/AbsorptionBar.tsx:30
 msgid "Valoarea sursei depășește contractatul; bara este plafonată vizual."
 msgstr "Valoarea sursei depășește contractatul; bara este plafonată vizual."
@@ -28624,6 +28753,14 @@ msgstr "Values decreased between months - possible correction or reclassificatio
 #: src/features/procurement/lib/enum-labels.ts:85
 msgid "Valută străină"
 msgstr "Valută străină"
+
+#: src/features/statistics/lib/landing-constants.ts:175
+msgid "Vârsta medie"
+msgstr "Average age"
+
+#: src/features/statistics/lib/landing-constants.ts:176
+msgid "Vârsta medie a populației după domiciliu, {year}"
+msgstr "Average age of the population by domicile, {year}"
 
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:70
 #~ msgid "VAT"

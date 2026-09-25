@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { HUB_NATIONAL_SPECS, hubTilesResponse } from '../../test/hub-fixtures'
+import { HUB_COUNTY_ONLY_SPECS, HUB_NATIONAL_SPECS, hubTilesResponse } from '../../test/hub-fixtures'
 import { validateNationalLatest } from './national-latest-validation'
 import { insLatestValueNodeRawSchema } from './statistics-raw-schemas'
 
 const NATIONAL = { code: 'RO', level: 'NATIONAL' } as const
-const codes = HUB_NATIONAL_SPECS.map((spec) => spec.code)
+// Every cell the hub reads: its own rows' and the county layers' anchors.
+const codes = [...HUB_NATIONAL_SPECS, ...HUB_COUNTY_ONLY_SPECS].map((spec) => spec.code)
 
 /** The hub's national tiles, parsed as the fetcher parses them, with one change applied to the wire first. */
 function tiles(change: (latest: ReturnType<typeof hubTilesResponse>['latest']) => void = () => {}) {

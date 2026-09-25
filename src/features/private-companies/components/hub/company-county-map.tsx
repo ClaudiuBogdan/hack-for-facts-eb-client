@@ -43,8 +43,8 @@ import { describeAgainstNational, formatHubValue, formatHubValueText, isAdditive
  * map read by tapping would otherwise leave the page on every look. A county
  * opens the directory on its companies in business.
  *
- * The geometry and the colour steps are the INS map's (`statistics/lib/
- * county-map`); the interaction is the same, so the two hubs read alike.
+ * The geometry and the colour steps are the INS maps' (`statistics/lib/
+ * county-map`).
  */
 
 const WIDTH = 640

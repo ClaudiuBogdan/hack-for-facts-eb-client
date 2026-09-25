@@ -1,0 +1,136 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "POP215A-IF-0",
+          "dataset_code": "POP215A",
+          "value": "0.2",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "IF",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Ilfov"
+          },
+          "unit": {
+            "code": "9502",
+            "symbol": "other",
+            "name_ro": "Rata la 1000 locuitori"
+          },
+          "classifications": [
+            {
+              "id": "POP215A-IF-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP215A-IF-1",
+              "type_code": "D1",
+              "code": "3000",
+              "name_ro": "3000"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP215A-SV-1",
+          "dataset_code": "POP215A",
+          "value": "-0.5",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "SV",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Suceava"
+          },
+          "unit": {
+            "code": "9502",
+            "symbol": "other",
+            "name_ro": "Rata la 1000 locuitori"
+          },
+          "classifications": [
+            {
+              "id": "POP215A-SV-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP215A-SV-1",
+              "type_code": "D1",
+              "code": "3001",
+              "name_ro": "3001"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "POP215A-TR-2",
+          "dataset_code": "POP215A",
+          "value": "-11.4",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2025",
+            "year": 2025,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "TR",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Teleorman"
+          },
+          "unit": {
+            "code": "9502",
+            "symbol": "other",
+            "name_ro": "Rata la 1000 locuitori"
+          },
+          "classifications": [
+            {
+              "id": "POP215A-TR-0",
+              "type_code": "D0",
+              "code": "108",
+              "name_ro": "108"
+            },
+            {
+              "id": "POP215A-TR-1",
+              "type_code": "D1",
+              "code": "3002",
+              "name_ro": "3002"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 3,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

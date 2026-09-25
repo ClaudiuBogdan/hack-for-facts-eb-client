@@ -6,7 +6,7 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue } from '@/schemas/statistics'
-import { STEP_BG, layerDecimals, layerScale } from '../../lib/county-map'
+import { countyRanks, layerDecimals, layerScale } from '../../lib/county-map'
 import { formatHubValue, hubUnitWord, isAdditiveUnit } from '../../lib/units'
 
 /**
@@ -26,6 +26,7 @@ export function HubCountyRank({
   edge = 5,
   activeCode,
   onActiveChange,
+  swatchOf,
   className,
 }: {
   readonly layer: StatisticsHubCountyLayer
@@ -33,12 +34,16 @@ export function HubCountyRank({
   readonly edge?: number
   readonly activeCode?: string
   readonly onActiveChange?: (code: string | undefined) => void
+  /** The county's swatch: the map's colour for it, so the list is the map's key. */
+  readonly swatchOf: (county: StatisticsHubCountyValue) => { readonly className: string; readonly opacity: number }
   readonly className?: string
 }) {
   const [expanded, setExpanded] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
   const scale = layerScale(layer)
   const ranked = [...layer.values].sort((a, b) => b.value - a.value)
+  // Equal values share a place, as the map's tooltip says.
+  const place = countyRanks(layer.values)
   if (ranked.length === 0) {
     return (
       <p className={cn('text-sm text-muted-foreground', className)}>
@@ -75,6 +80,7 @@ export function HubCountyRank({
 
   const row = (county: StatisticsHubCountyValue, rank: number) => {
     const active = activeCode === county.code
+    const swatch = swatchOf(county)
     const value = at(county.value)
     const base = reference === null ? null : at(reference)
     return (
@@ -93,7 +99,11 @@ export function HubCountyRank({
           )}
         >
           <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(rank).padStart(2, '0')}</MonoLabel>
-          <span className={cn('size-2.5 rounded-[2px] ring-1 ring-inset ring-foreground/10', STEP_BG[scale.stepOf(county.value)])} aria-hidden="true" />
+          <span
+            className={cn('size-2.5 rounded-[2px] ring-1 ring-inset ring-foreground/10', swatch.className)}
+            style={{ opacity: swatch.opacity }}
+            aria-hidden="true"
+          />
           <span className={cn('truncate text-sm text-foreground', active && 'font-medium')}>{county.name}</span>
           <span className="relative h-2" aria-hidden="true">
             {base === null ? (
@@ -141,14 +151,14 @@ export function HubCountyRank({
               )}
               style={{ left: `${nationalAt.toFixed(2)}%` }}
             >
-              <Trans>România {formatHubValue(layer.national, layer.unit, layer.unitLabel, { digits }).value}</Trans>
+              <Trans>Media {formatHubValue(layer.national, layer.unit, layer.unitLabel, { digits }).value}</Trans>
             </MonoLabel>
           ) : null}
         </span>
         <MonoLabel className="pr-1 text-right text-muted-foreground">{unitWord === '%' ? '' : unitWord}</MonoLabel>
       </div>
       <ol className="col-span-5 grid grid-cols-subgrid divide-y divide-border/70">
-        {(hidden > 0 ? ranked.slice(0, edge) : ranked).map((county, index) => row(county, index + 1))}
+        {(hidden > 0 ? ranked.slice(0, edge) : ranked).map((county) => row(county, place.get(county.code)!))}
       </ol>
       {hidden > 0 ? (
         <>
@@ -163,8 +173,8 @@ export function HubCountyRank({
             {plural(hidden, { one: 'Încă un județ', few: 'Încă # județe', other: 'Încă # de județe' })}
             <span className="h-px flex-1 border-t border-dashed border-border" aria-hidden="true" />
           </button>
-          <ol start={ranked.length - edge + 1} className="col-span-5 grid grid-cols-subgrid divide-y divide-border/70">
-            {ranked.slice(-edge).map((county, index) => row(county, ranked.length - edge + index + 1))}
+          <ol start={place.get(ranked[ranked.length - edge]!.code)} className="col-span-5 grid grid-cols-subgrid divide-y divide-border/70">
+            {ranked.slice(-edge).map((county) => row(county, place.get(county.code)!))}
           </ol>
         </>
       ) : null}

@@ -12,7 +12,8 @@ const logger = createLogger('ins-national-latest')
 /** A retired matrix is missing from every answer; the alert is worth raising once per process. */
 const reported = new Set<string>()
 
-const query = `query InsNationalLatest($codes: [String!]!) {
+/** The read, under the name its caller logs and mocks it by. */
+const queryNamed = (operation: string) => `query ${operation}($codes: [String!]!) {
   latest: insLatestDatasetValues(entity: { territoryCode: "RO", territoryLevel: NATIONAL },
     datasetCodes: $codes, preferredClassificationCodes: ["TOTAL"]) { ${INS_LATEST_VALUE_FIELDS} }
 }`
@@ -20,12 +21,12 @@ const query = `query InsNationalLatest($codes: [String!]!) {
 /**
  * The latest national cell of each matrix, in one read. A code the API
  * leaves out is named in `missingCodes` and logged; the figures that came
- * back are served.
+ * back are served. `operation` names the read where one caller makes two.
  */
-export async function fetchNationalLatest(codes: readonly string[], signal?: AbortSignal) {
+export async function fetchNationalLatest(codes: readonly string[], signal?: AbortSignal, operation = 'InsNationalLatest') {
   throwIfCancelled(signal)
   const response = await graphqlQuery<unknown>(
-    query,
+    queryNamed(operation),
     { codes },
     { auth: 'none', signal },
   )

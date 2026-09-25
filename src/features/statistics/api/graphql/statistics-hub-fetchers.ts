@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { graphqlQuery, isAbortError } from '@/lib/graphql/graphql-client'
 import { throwIfCancelled } from '@/lib/ssr/deadline-signal'
 import { createLogger } from '@/lib/logger'
+import { sourcePinsFilter } from '@/lib/ins/source-pins'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { InsObservationFilterInput } from '@/schemas/ins'
 import { makeSingleTimePeriod, type DateInput } from '@/schemas/reporting'
@@ -17,7 +18,7 @@ import type {
 import { hubUnitOf } from '../../lib/units'
 import { hubStaticSeries } from '../../lib/hub-national-series'
 import { publishedNumber } from '../../lib/value-status'
-import { HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
+import { HUB_COUNTY_ANCHOR_CODES, HUB_COUNTY_LAYERS, HUB_NATIONAL_DATASET_CODES } from '../../lib/landing-constants'
 import { fetchNationalLatest } from './national-latest'
 import { INS_OBSERVATIONS_QUERY } from './ins-queries'
 import { insObservationNodeRawSchema, insPageInfoRawSchema } from './statistics-raw-schemas'
@@ -28,9 +29,11 @@ const logger = createLogger('statistics-hub')
  * The `/ins` hub read.
  *
  * Two sections, so a slow or failed one never blanks the page: the national
- * indicators (one `insLatestDatasetValues` at RO/NATIONAL) and three county
+ * indicators (one `insLatestDatasetValues` at RO/NATIONAL) and six county
  * layers (one `insObservations` each at the indicator's latest year), each
- * layer on its own so one that fails leaves the other two on the map. The
+ * layer on its own so one that fails leaves the others on the map. The
+ * layers' anchors that are not rows of the hub's own are a second, parallel
+ * national read, failing the map alone. The
  * annual histories behind the charts are kept in the client
  * (`lib/hub-national-series.ts`, captured from the same API) and only
  * extended with the live latest point when it is newer. The county layers
@@ -151,9 +154,20 @@ async function fetchCountyLayer(
 ): Promise<StatisticsHubCountyLayer> {
   const year = latest.period ? /^(\d{4})/.exec(latest.period)?.[1] : undefined
   if (!year) throw new Error(`No national period to anchor the county layer of ${code}`)
+  // The national cell's members on every axis but the territory: the read is
+  // the counties' 42 cells, not the matrix — FOM106E holds 8,000 county cells
+  // a year, one per activity and sex. With no layout to tell the territory
+  // apart — mock data carries none — the read stays whole and the rows are
+  // matched below.
+  const dimensions = latest.source?.descriptor?.dimensions
+  const territorial = new Set((dimensions ?? []).filter((dimension) => dimension.type === 'TERRITORIAL').map((dimension) => `D${dimension.index}`))
+  const pins = dimensions
+    ? sourcePinsFilter(new Map(latest.resolvedClassifications.filter((entry) => !territorial.has(entry.typeCode)).map((entry) => [entry.typeCode, entry.code])))
+    : []
   const filter: InsObservationFilterInput = {
     territoryLevels: ['NUTS3'],
     period: makeSingleTimePeriod('YEAR', year as DateInput),
+    ...(pins.length > 0 && { sourcePins: pins }),
   }
   const response = await graphqlQuery<unknown>(
     INS_OBSERVATIONS_QUERY,
@@ -205,7 +219,7 @@ async function fetchCountyLayer(
 /**
  * The county layers that could be read. A failed layer names the section as
  * failed — the render is not cached and the browser reads again — but the
- * layers that answered are kept, so the map is not blank for one of three.
+ * layers that answered are kept, so the map is not blank for one of six.
  */
 async function settleLayers(
   reads: readonly Promise<StatisticsHubCountyLayer>[],
@@ -242,42 +256,41 @@ async function settle<T>(section: StatisticsHubSection, read: Promise<T>, failur
 
 export async function fetchStatisticsHub(signal?: AbortSignal): Promise<StatisticsHubData> {
   const failures: StatisticsHubSection[] = []
-  const tiles = await settle(
-    'indicators',
-    fetchNationalLatest(HUB_NATIONAL_DATASET_CODES, signal),
-    failures,
-  )
+  const [tiles, anchors] = await Promise.all([
+    settle('indicators', fetchNationalLatest(HUB_NATIONAL_DATASET_CODES, signal), failures),
+    // The map's own anchors, read apart: a cell of theirs that fails fails the map alone.
+    settle('counties', fetchNationalLatest(HUB_COUNTY_ANCHOR_CODES, signal, 'InsCountyAnchors'), failures),
+  ])
   throwIfCancelled(signal)
 
-  let indicators: StatisticsHubIndicator[] | null = null
-  let counties: StatisticsHubCountyLayer[] | null = null
-  if (tiles) {
-    const latestByCode = new Map(tiles.nationalValues.map((latest) => [latest.datasetCode, latest]))
-    const layers = await settleLayers(
-      HUB_COUNTY_LAYERS.flatMap((layer) => {
-        const latest = latestByCode.get(layer.code)
-        return latest?.hasData ? [fetchCountyLayer(layer.code, latest, signal)] : []
-      }),
-      failures,
-    )
-    indicators = HUB_NATIONAL_DATASET_CODES.flatMap((code) => {
-      const latest = latestByCode.get(code)
-      if (!latest) return []
-      const indicator = toIndicator(latest)
-      // The blocked value the row hides must not resurface as a chart point.
-      return [{ ...indicator, series: seriesFor(latest, indicator.value) }]
-    })
-    counties = layers
-  } else {
-    // No national year to anchor on, so the county read never ran.
-    failures.push('counties')
-  }
+  const latestByCode = new Map([...(tiles?.nationalValues ?? []), ...(anchors?.nationalValues ?? [])].map((latest) => [latest.datasetCode, latest]))
+  const indicators: StatisticsHubIndicator[] | null = tiles
+    ? HUB_NATIONAL_DATASET_CODES.flatMap((code) => {
+        const latest = latestByCode.get(code)
+        if (!latest) return []
+        const indicator = toIndicator(latest)
+        // The blocked value the row hides must not resurface as a chart point.
+        return [{ ...indicator, series: seriesFor(latest, indicator.value) }]
+      })
+    : null
+  // The layers anchored on the rows' read never run without it: no national year to anchor on.
+  if (!tiles) failures.push('counties')
+  const counties: StatisticsHubCountyLayer[] | null =
+    tiles || anchors
+      ? await settleLayers(
+          HUB_COUNTY_LAYERS.flatMap((layer) => {
+            const latest = latestByCode.get(layer.code)
+            return latest?.hasData ? [fetchCountyLayer(layer.code, latest, signal)] : []
+          }),
+          failures,
+        )
+      : null
 
   return {
     nativeContract: 'hub-v1',
     indicators,
     counties,
-    failures,
+    failures: [...new Set(failures)],
   }
 }
 

@@ -193,21 +193,22 @@ describe('StatisticsHubPage', () => {
     render(<StatisticsHubPage search={{ indicator: 'somaj' }} />)
 
     const counties = screen.getByRole('heading', { name: /Unde se situează județul tău/ }).closest('section')!
-    expect(within(counties).getByRole('radio', { name: 'Rata șomajului' })).toHaveAttribute('aria-checked', 'true')
-    const first = within(counties).getAllByRole('link', { name: /Teleorman|Ilfov/ })[0]!
+    expect(within(counties).getByRole('radio', { name: 'Șomaj' })).toHaveAttribute('aria-checked', 'true')
+    // The ranked list's first row: the map's links are named for their county, not ranked.
+    const first = within(counties).getAllByRole('link', { name: /Teleorman|Ilfov/ }).find((link) => link.closest('li'))!
     expect(first).toHaveTextContent('Teleorman')
     expect(first).toHaveTextContent('9,3%')
     expect(first.getAttribute('href')).toContain('/ins/seturi/SOM103A')
     expect(new URL(first.getAttribute('href')!, 'http://localhost').searchParams.get('teritoriu')).toBe('cod:TR')
 
-    fireEvent.click(within(counties).getByRole('radio', { name: 'Salariați' }))
+    fireEvent.click(within(counties).getByRole('radio', { name: 'Salariul net' }))
     expect(navigateMock).toHaveBeenCalledWith(expect.objectContaining({ to: '/ins', replace: true }))
     // The indicator is merged into the address: the localities' map keeps its own params.
     const searchOf = () => (navigateMock.mock.lastCall![0] as { search: (previous: object) => object }).search
-    expect(searchOf()({ harta: 'apa', judet: 'CJ' })).toEqual({ harta: 'apa', judet: 'CJ', indicator: 'salariati' })
+    expect(searchOf()({ harta: 'apa', judet: 'CJ' })).toEqual({ harta: 'apa', judet: 'CJ', indicator: 'salariu' })
 
     fireEvent.click(within(counties).getByRole('radio', { name: 'Speranța de viață' }))
-    expect(searchOf()({ indicator: 'salariati', harta: 'apa' })).toEqual({ indicator: undefined, harta: 'apa' })
+    expect(searchOf()({ indicator: 'salariu', harta: 'apa' })).toEqual({ indicator: undefined, harta: 'apa' })
   })
 
   it('names an empty county layer instead of drawing a blank ranking', () => {

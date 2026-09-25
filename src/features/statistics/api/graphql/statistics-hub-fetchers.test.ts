@@ -6,12 +6,12 @@ vi.mock('@/lib/graphql/graphql-client', async (importActual) => ({
 import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { HUB_SERIES_CAPTURED_AT, HUB_STATIC_SERIES, hubStaticSeries } from '../../lib/hub-national-series'
 import { HUB_FIGURE_CODES } from '../../lib/landing-constants'
-import { HUB_NATIONAL_SPECS, hubCountyResponse, hubTilesResponse } from '../../test/hub-fixtures'
+import { HUB_COUNTY_ONLY_SPECS, HUB_NATIONAL_SPECS, hubCountyResponse, hubTilesResponse } from '../../test/hub-fixtures'
 import { hubUnitOf } from '../../lib/units'
 import { fetchStatisticsHub } from './statistics-hub-fetchers'
 
 const spec = (code: string) => {
-  const found = HUB_NATIONAL_SPECS.find((entry) => entry.code === code)
+  const found = [...HUB_NATIONAL_SPECS, ...HUB_COUNTY_ONLY_SPECS].find((entry) => entry.code === code)
   if (!found) throw new Error(code)
   return found
 }
@@ -27,7 +27,12 @@ function answer(overrides: {
   const calls: Call[] = []
   vi.mocked(graphqlQuery).mockImplementation(async (query: string, variables?: unknown) => {
     calls.push({ query, variables: variables as Record<string, unknown> | undefined })
-    if (query.includes('query InsNationalLatest')) return overrides.tiles ?? hubTilesResponse()
+    // Each national read answers for the codes it asked for, as the API does.
+    if (query.includes('query InsNationalLatest') || query.includes('query InsCountyAnchors')) {
+      const codes = (variables as { codes: readonly string[] }).codes
+      const tiles = (overrides.tiles ?? hubTilesResponse()) as ReturnType<typeof hubTilesResponse>
+      return { latest: tiles.latest.filter((entry) => codes.includes(entry.dataset.code)) }
+    }
     if (query.includes('query InsObservations(')) {
       const code = String((variables as { datasetCode: string }).datasetCode)
       if (overrides.failCounty === code) throw new Error(`${code} down`)
@@ -61,8 +66,10 @@ describe('fetchStatisticsHub', () => {
     })
     const rate = hub.indicators?.find((indicator) => indicator.code === 'SOM103B')
     expect(rate).toMatchObject({ value: 3.2, unit: 'percent', period: '2026-05', periodicity: 'MONTHLY' })
-    // Only the indicators and the county layers: nothing about the catalog.
-    expect(calls.filter((call) => !call.query.includes('query InsObservations(')).map((call) => call.query.match(/query (\w+)/)?.[1])).toEqual(['InsNationalLatest'])
+    // Only the indicators, the map's own anchors and the county layers: nothing about the catalog.
+    const national = calls.filter((call) => !call.query.includes('query InsObservations('))
+    expect(national.map((call) => call.query.match(/query (\w+)/)?.[1])).toEqual(['InsNationalLatest', 'InsCountyAnchors'])
+    expect(national[1]?.variables?.codes).toEqual(['FOM106E', 'CON103H', 'POP215A', 'POP110A'])
   })
 
   it('accepts a matrix with no geography axis as national, and says so on the indicator', async () => {
@@ -189,25 +196,25 @@ describe('fetchStatisticsHub', () => {
   })
 
   it('refuses a sibling cell that differs on another single axis, whatever order the API returns rows in', async () => {
-    const employees = spec('FOM104D')
+    const earnings = spec('FOM106E')
     answer({
       counties: {
-        // Sector first: a county row of a sector differs on two axes and is
+        // A sex first: a county row of one sex differs on two axes and is
         // refused; a row whose single differing axis is not the layer's county
         // axis is refused too, however the API ordered them.
-        FOM104D: hubCountyResponse(employees, [
-          { county: { code: 'CJ', name: 'Cluj' }, value: '9', countyAxis: 0, memberOverrides: { 1: '77' } },
-          { county: { code: 'CJ', name: 'Cluj' }, value: '261239', countyAxis: 0 },
-          { county: { code: 'TM', name: 'Timiș' }, value: '255705', countyAxis: 0 },
-          { county: { code: 'B', name: 'București' }, value: '1', countyAxis: 1 },
+        FOM106E: hubCountyResponse(earnings, [
+          { county: { code: 'CJ', name: 'Cluj' }, value: '9', countyAxis: 2, memberOverrides: { 1: '106' } },
+          { county: { code: 'CJ', name: 'Cluj' }, value: '5921', countyAxis: 2 },
+          { county: { code: 'TM', name: 'Timiș' }, value: '5508', countyAxis: 2 },
+          { county: { code: 'B', name: 'București' }, value: '1', countyAxis: 0 },
         ]),
       },
     })
     const hub = await fetchStatisticsHub()
-    const layer = hub.counties?.find((entry) => entry.code === 'FOM104D')
+    const layer = hub.counties?.find((entry) => entry.code === 'FOM106E')
     expect(layer?.values).toEqual([
-      { code: 'CJ', name: 'Cluj', value: 261239 },
-      { code: 'TM', name: 'Timiș', value: 255705 },
+      { code: 'CJ', name: 'Cluj', value: 5921 },
+      { code: 'TM', name: 'Timiș', value: 5508 },
     ])
   })
 
@@ -243,14 +250,19 @@ describe('fetchStatisticsHub', () => {
     expect([...hub.failures].sort()).toEqual(['counties', 'indicators'])
   })
 
-  it('anchors every county read on the national indicator year and requests NUTS3 only', async () => {
+  it('anchors every county read on the national indicator year and the national cell, and requests NUTS3 only', async () => {
     const calls = answer()
     await fetchStatisticsHub()
     const countyCalls = calls.filter((call) => call.query.includes('query InsObservations('))
-    expect(countyCalls.map((call) => call.variables?.datasetCode)).toEqual(['POP217A', 'SOM103A', 'FOM104D'])
-    expect(countyCalls[2]?.variables?.filter).toEqual({
+    expect(countyCalls.map((call) => call.variables?.datasetCode)).toEqual(['POP217A', 'FOM106E', 'CON103H', 'SOM103A', 'POP215A', 'POP110A'])
+    // Every axis but the territory pinned to the national cell's member: the counties' cells, not FOM106E's 8,000.
+    expect(countyCalls[1]?.variables?.filter).toEqual({
       territoryLevels: ['NUTS3'],
       period: { type: 'YEAR', selection: { interval: { start: '2024', end: '2024' } } },
+      sourcePins: [
+        { dimensionIndex: 0, memberCode: '9001' },
+        { dimensionIndex: 1, memberCode: '105' },
+      ],
     })
   })
 
@@ -262,7 +274,7 @@ describe('fetchStatisticsHub', () => {
     expect(hub.failures).toEqual([])
     expect(hub.indicators?.map((indicator) => indicator.code)).not.toContain('TUR104E')
     expect(hub.indicators).toHaveLength(HUB_NATIONAL_SPECS.length - 1)
-    expect(hub.counties).toHaveLength(3)
+    expect(hub.counties).toHaveLength(6)
   })
 
   it('reads no county layer for a matrix the API no longer knows, and records no failure', async () => {
@@ -271,8 +283,31 @@ describe('fetchStatisticsHub', () => {
     const calls = answer({ tiles })
     const hub = await fetchStatisticsHub()
     expect(hub.failures).toEqual([])
-    expect(hub.counties?.map((layer) => layer.code)).toEqual(['SOM103A', 'FOM104D'])
-    expect(calls.filter((call) => call.query.includes('query InsObservations(')).map((call) => call.variables?.datasetCode)).toEqual(['SOM103A', 'FOM104D'])
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['FOM106E', 'CON103H', 'SOM103A', 'POP215A', 'POP110A'])
+    expect(calls.filter((call) => call.query.includes('query InsObservations(')).map((call) => call.variables?.datasetCode)).toEqual([
+      'FOM106E',
+      'CON103H',
+      'SOM103A',
+      'POP215A',
+      'POP110A',
+    ])
+  })
+
+  it('fails the map alone when its own anchors do not read, keeping the figures and the layers anchored on them', async () => {
+    const calls: string[] = []
+    vi.mocked(graphqlQuery).mockImplementation(async (query: string, variables?: unknown) => {
+      calls.push(query)
+      if (query.includes('query InsCountyAnchors')) throw new Error('anchors down')
+      if (query.includes('query InsNationalLatest')) {
+        const codes = (variables as { codes: readonly string[] }).codes
+        return { latest: hubTilesResponse().latest.filter((entry) => codes.includes(entry.dataset.code)) }
+      }
+      return hubCountyResponse(spec(String((variables as { datasetCode: string }).datasetCode)), [])
+    })
+    const hub = await fetchStatisticsHub()
+    expect(hub.indicators).toHaveLength(HUB_NATIONAL_SPECS.length)
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'SOM103A'])
+    expect(hub.failures).toEqual(['counties'])
   })
 
   it('lets a caller abort through rather than recording a failed section', async () => {
@@ -294,7 +329,7 @@ describe('fetchStatisticsHub', () => {
   it('keeps the county layers that answered when one fails, and names the section', async () => {
     answer({ failCounty: 'SOM103A' })
     const hub = await fetchStatisticsHub()
-    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'FOM104D'])
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'FOM106E', 'CON103H', 'POP215A', 'POP110A'])
     expect(hub.indicators).toHaveLength(HUB_NATIONAL_SPECS.length)
     expect(hub.failures).toEqual(['counties'])
   })
@@ -314,9 +349,9 @@ describe('fetchStatisticsHub', () => {
   })
 
   it('refuses a truncated county page rather than drawing a partial map', async () => {
-    answer({ counties: { FOM104D: hubCountyResponse(spec('FOM104D'), [{ county: { code: 'CJ', name: 'Cluj' }, value: '1' }], true) } })
+    answer({ counties: { FOM106E: hubCountyResponse(spec('FOM106E'), [{ county: { code: 'CJ', name: 'Cluj' }, value: '1' }], true) } })
     const hub = await fetchStatisticsHub()
-    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'SOM103A'])
+    expect(hub.counties?.map((layer) => layer.code)).toEqual(['POP217A', 'CON103H', 'SOM103A', 'POP215A', 'POP110A'])
     expect(hub.failures).toContain('counties')
   })
 

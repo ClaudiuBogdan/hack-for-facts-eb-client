@@ -2161,6 +2161,55 @@ the API production serves (`--api`), or confirm the two agree.
 municipality's domicile population 84,553 (2014) → 148,926 (2023) →
 131,722 (2026), and Vârfu Câmpului's jump; large swings in Vâlcea's jobs.
 
+## 6aj. The county band: against the average, six rates, a tooltip (2026-09-25)
+
+At the product owner's request, the UAT map's lessons (§6ai) applied to band
+02. Iterated on `/development/statistics/county-map` (removed on promotion);
+the owner chose the variant coloured against the national figure over five
+equal classes.
+
+**Six indicators, each a rate or an average INS publishes per county** — so
+the map compares counties, not their sizes (the employees count it drew was
+mostly București's size): life expectancy (POP217A, 2025), average net
+monthly earnings (FOM106E, 2024), GDP per inhabitant (CON103H, 2023),
+registered unemployment (SOM103A, 2025), natural change per 1,000 (POP215A,
+2025), average age by domicile (POP110A, 2025). Rejected on the data:
+FOM116A's employment rate (commuters counted where they work: București
+94%) and POP209A's infant mortality (a county's year swings with its few
+births). `?indicator=` keys: `viata`, `salariu`, `pib`, `somaj`, `spor`,
+`varsta`; an old `salariati` link falls back to the default.
+
+**Coloured against the national figure**, which is the section's question:
+orange below it, blue above, grey around it (the quarter of counties
+closest), full colour for the quarter farthest — reversed where more is the
+concern (unemployment, age: orange above). The classes are distances from
+the average, their bounds figures rounded to one order below the middle
+counties' spread (77,0 … 77,9 ani). With no national figure a layer falls
+back to five equal classes in one hue.
+
+**The legend says it in words**: „← sub medie · Media națională 77,45 ·
+peste medie →" over the bar, a dashed tick where the colours turn, every
+class named in the figure's terms under it. „Media națională" is the
+country's own figure — for a rate, the national rate, not an average of the
+42. The list's header reads „Media 77,45" over its dashed line, its swatches
+the map's colours.
+
+**A tooltip replaces the readout above the map**, as on the UAT map: the
+county, its figure and year, its place among the 42, its distance from the
+average in words („1,49 ani peste media națională"), the average. A tap
+holds it with a link; a second tap opens the county's series. Hover state
+lives in the band (`HubCountyBand`), no longer in the page: a county under
+the pointer renders the band, not the hub.
+
+**Reads**: the four anchors that are not rows of the hub's own are a second
+national read in parallel (`InsCountyAnchors`), so a cell of theirs that
+fails validation fails the map alone, never the page's figures; each county
+read pins every axis but the territory to the national cell's members
+(`sourcePins`), 42 rows instead of the matrix — FOM106E holds 8,000 county
+cells a year. A county's link names its figure, its place and its distance
+from the average, what the tooltip shows a pointer. `CountyMap` keeps only
+its picker mode, for the comparisons page.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

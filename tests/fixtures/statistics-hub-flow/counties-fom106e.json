@@ -1,0 +1,248 @@
+{
+  "data": {
+    "insObservations": {
+      "nodes": [
+        {
+          "id": "FOM106E-B-0",
+          "dataset_code": "FOM106E",
+          "value": "6730",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "B",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "București"
+          },
+          "unit": {
+            "code": "9718",
+            "symbol": "other",
+            "name_ro": "Lei RON"
+          },
+          "classifications": [
+            {
+              "id": "FOM106E-B-0",
+              "type_code": "D0",
+              "code": "9001",
+              "name_ro": "9001"
+            },
+            {
+              "id": "FOM106E-B-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "FOM106E-B-2",
+              "type_code": "D2",
+              "code": "3000",
+              "name_ro": "3000"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM106E-CJ-1",
+          "dataset_code": "FOM106E",
+          "value": "5921",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "CJ",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Cluj"
+          },
+          "unit": {
+            "code": "9718",
+            "symbol": "other",
+            "name_ro": "Lei RON"
+          },
+          "classifications": [
+            {
+              "id": "FOM106E-CJ-0",
+              "type_code": "D0",
+              "code": "9001",
+              "name_ro": "9001"
+            },
+            {
+              "id": "FOM106E-CJ-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "FOM106E-CJ-2",
+              "type_code": "D2",
+              "code": "3001",
+              "name_ro": "3001"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM106E-TM-2",
+          "dataset_code": "FOM106E",
+          "value": "5508",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "TM",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Timiș"
+          },
+          "unit": {
+            "code": "9718",
+            "symbol": "other",
+            "name_ro": "Lei RON"
+          },
+          "classifications": [
+            {
+              "id": "FOM106E-TM-0",
+              "type_code": "D0",
+              "code": "9001",
+              "name_ro": "9001"
+            },
+            {
+              "id": "FOM106E-TM-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "FOM106E-TM-2",
+              "type_code": "D2",
+              "code": "3002",
+              "name_ro": "3002"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM106E-VS-3",
+          "dataset_code": "FOM106E",
+          "value": "3890",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "VS",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Vaslui"
+          },
+          "unit": {
+            "code": "9718",
+            "symbol": "other",
+            "name_ro": "Lei RON"
+          },
+          "classifications": [
+            {
+              "id": "FOM106E-VS-0",
+              "type_code": "D0",
+              "code": "9001",
+              "name_ro": "9001"
+            },
+            {
+              "id": "FOM106E-VS-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "FOM106E-VS-2",
+              "type_code": "D2",
+              "code": "3003",
+              "name_ro": "3003"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        },
+        {
+          "id": "FOM106E-TR-4",
+          "dataset_code": "FOM106E",
+          "value": "3822",
+          "value_status": null,
+          "time_period": {
+            "iso_period": "2024",
+            "year": 2024,
+            "quarter": null,
+            "month": null,
+            "periodicity": "ANNUAL"
+          },
+          "territory": {
+            "code": "TR",
+            "siruta_code": null,
+            "level": "NUTS3",
+            "name_ro": "Teleorman"
+          },
+          "unit": {
+            "code": "9718",
+            "symbol": "other",
+            "name_ro": "Lei RON"
+          },
+          "classifications": [
+            {
+              "id": "FOM106E-TR-0",
+              "type_code": "D0",
+              "code": "9001",
+              "name_ro": "9001"
+            },
+            {
+              "id": "FOM106E-TR-1",
+              "type_code": "D1",
+              "code": "105",
+              "name_ro": "105"
+            },
+            {
+              "id": "FOM106E-TR-2",
+              "type_code": "D2",
+              "code": "3004",
+              "name_ro": "3004"
+            }
+          ],
+          "dimensions": {
+            "geography": null
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 5,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

@@ -22,9 +22,9 @@ import { formatNgoNumber } from './ngo-format'
 import { rankCounties, type NgoCountyLayer, type NgoCountyValue } from './registry-figures'
 
 /**
- * The counties coloured by one registry layer, drawn as plain SVG — the INS
- * hub's county map (`CountyMap`) in the same geometry, ramp and
- * interaction, over the registry instead of an INS dataset.
+ * The counties coloured by one registry layer, drawn as plain SVG — the
+ * geometry and ramp of the INS county maps (`statistics/lib/county-map`),
+ * with a readout above the map, over the registry instead of an INS dataset.
  *
  * Above the map a readout names the county under the pointer (or the
  * country, at rest): its value, its place among the 42 and how it compares
