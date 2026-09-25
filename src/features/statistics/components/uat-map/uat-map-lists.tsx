@@ -109,7 +109,8 @@ export const CountyList = memo(function CountyList(props: ListProps & { readonly
       </MonoLabel>
       <div className="mt-2">
         <ListHead meta={meta} />
-        <ol className="max-h-120 divide-y overflow-y-auto border-y">
+        {/* Positioned, so it clips its rows' screen-reader text too: an `sr-only` span is absolute, and one placed against an ancestor outside this scroll would lengthen the page by the list's hidden height. */}
+        <ol className="relative max-h-120 divide-y overflow-y-auto border-y">
           {[...ranked, ...rest].map((index) => (
             <UatRow key={index} {...props} index={index} showCounty={false} />
           ))}
