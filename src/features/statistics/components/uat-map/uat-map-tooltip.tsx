@@ -63,7 +63,7 @@ export function UatTooltip({
         {capital ? null : `, ${countyNameRo(county) ?? county}`}
       </p>
       {total === null ? (
-        <p className="mt-1.5 text-foreground">{missingLabel(series.missing[index])}</p>
+        <p className="mt-1.5 text-foreground">{missingLabel(series.missing[index], series.id)}</p>
       ) : (
         <p className="mt-1.5">
           <span className="text-lg font-semibold tabular-nums tracking-tight text-foreground">{formatTotal(meta, total, { unit: false })}</span>{' '}

@@ -37,8 +37,8 @@ export interface UatMapGeometry {
 /** The six series, as the hub's address names them (`?harta=`). */
 export type UatMapSeriesId = StatisticsHubMapSeries
 
-/** Why a UAT has no figure: no cell, no public network, a negative INS input. */
-export type UatMapMissing = 'absent' | 'network' | 'negative'
+/** Why a UAT has no figure: no cell or a negative INS input. Neither establishes infrastructure coverage. */
+export type UatMapMissing = 'absent' | 'negative'
 
 /** Which count a part is: the events a balance is made of. */
 export type UatMapPartId = 'births' | 'deaths' | 'arrivals' | 'departures'

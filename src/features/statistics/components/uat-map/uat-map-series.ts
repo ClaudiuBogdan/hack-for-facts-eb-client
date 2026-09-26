@@ -18,6 +18,8 @@ export interface SeriesMeta {
   readonly unit: string
   /** A balance has a sign, and its colours diverge from zero: orange below, blue above. */
   readonly signed: boolean
+  /** Keep recorded zeroes in their own class even when they are rare. */
+  readonly separateZero?: boolean
   /** Decimals: water is thousand m³, everything else whole. */
   readonly digits: number
   /** When the total is counted: „la 1 ianuarie 2026", „în 2025". */
@@ -41,13 +43,13 @@ export function countyLabel(code: string): string {
 }
 
 /** Why a UAT has no total, in the reader's words. */
-export function missingLabel(reason: UatMapMissing | undefined): string {
+export function missingLabel(reason: UatMapMissing | undefined, series: UatMapSeriesId): string {
   switch (reason) {
-    case 'network':
-      return t`fără rețea publică de apă raportată`
     case 'negative':
       return t`valoare INS negativă, nefolosită`
     default:
+      if (series === 'apa') return t`date indisponibile pentru uz casnic`
+      if (series === 'locuinte-noi') return t`date indisponibile pentru locuințe terminate`
       return t`fără date INS`
   }
 }
@@ -157,12 +159,13 @@ export function seriesMeta(translate: I18n['_']): readonly SeriesMeta[] {
       short: translate(msg`Locuințe noi`),
       unit: translate(msg`locuințe`),
       signed: false,
+      separateZero: true,
       digits: 0,
       period: inYear,
       legend: (series) => translate(msg`Locuințe terminate în ${series.year}`),
       receipt: null,
       sources: 'LOC104B',
-      caveat: translate(msg`Construcția vine în salturi: un an cu zero poate fi urmat de unul cu multe.`),
+      caveat: translate(msg`Lipsa unei valori pentru locuințe terminate nu înseamnă zero. Hașurile arată date lipsă; 0 este o valoare înregistrată.`),
     },
     {
       id: 'apa',
@@ -174,7 +177,7 @@ export function seriesMeta(translate: I18n['_']): readonly SeriesMeta[] {
       legend: (series) => translate(msg`Apă potabilă distribuită pentru uz casnic, mii m³, ${series.year}`),
       receipt: null,
       sources: 'GOS108A',
-      caveat: translate(msg`Doar apa distribuită prin rețeaua publică.`),
+      caveat: translate(msg`Apa distribuită pentru uz casnic. Lipsa unei valori nu indică absența rețelei publice.`),
     },
   ]
 }

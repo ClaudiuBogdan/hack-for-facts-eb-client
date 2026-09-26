@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
 import type { ComponentPropsWithoutRef, RefObject } from 'react'
 import { cn } from '@/lib/utils'
 import type { UatMapGeometry } from '../../lib/uat-map-snapshot'
@@ -17,7 +17,6 @@ import type { ViewBox } from './uat-map-view-box'
  */
 
 const NO_DATA_CLASS = 'stroke-transparent'
-const NO_DATA_FILL = 'url(#uat-no-data)'
 
 /** The viewport as the SVG draws it. */
 export interface SvgViewport {
@@ -55,6 +54,7 @@ export function UatMapSvg({
 } & Omit<ComponentPropsWithoutRef<'svg'>, 'viewBox' | 'className'>) {
   const { width: W, height: H, paths } = geometry
   const { svgRef, box, pxPerUnit, zoomed } = viewport
+  const hatchId = `${useId()}-no-data`
   // Hatching a constant size on screen, whatever the zoom.
   const hatch = 5 / pxPerUnit
 
@@ -74,7 +74,7 @@ export function UatMapSvg({
       {...handlers}
     >
       <defs>
-        <pattern id="uat-no-data" width={hatch} height={hatch} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <pattern id={hatchId} width={hatch} height={hatch} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <rect width={hatch} height={hatch} className="fill-muted" />
           <line x1="0" y1="0" x2="0" y2={hatch} className="stroke-muted-foreground/45" strokeWidth={hatch * 0.3} />
         </pattern>
@@ -89,7 +89,7 @@ export function UatMapSvg({
             fillRule="evenodd"
             vectorEffect="non-scaling-stroke"
             className={layer.fill ?? NO_DATA_CLASS}
-            fill={layer.fill ? undefined : NO_DATA_FILL}
+            fill={layer.fill ? undefined : `url(#${hatchId})`}
             fillOpacity={layer.opacity}
             // A border at the pale classes' opacity would not show against their fill.
             strokeOpacity={zoomed ? 1 : layer.opacity}

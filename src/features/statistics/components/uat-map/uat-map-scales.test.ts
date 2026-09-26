@@ -25,7 +25,7 @@ describe('mapScale for a level', () => {
   })
 
   it('fills each class as one path, at the class’s own colour and opacity', () => {
-    const layers = classLayers(scale, values.map((_, i) => `M${i} 0z`), new Set())
+    const layers = classLayers(scale, values.map((_, i) => `M${i} 0z`))
     expect(layers.map((layer) => [layer.fill, layer.opacity])).toEqual(scale.classes.map((drawn) => [drawn.fill, drawn.opacity]))
     expect(layers[4]!.d.startsWith('M969 0z')).toBe(true) // the UAT of 970, the class's first
     expect(layers[4]!.d.endsWith('M999 0z')).toBe(true)
@@ -61,6 +61,17 @@ describe('mapScale where zero is common', () => {
     expect([0, 1, 2, 3].map(scale.classAt)).toEqual([0, 0, 0, 0])
     expect(scale.classes[0]!.fill).toContain('stone')
     expect(scale.classAt(4)).toBe(1)
+  })
+
+  it('can keep even a rare recorded zero distinct from positive and missing values', () => {
+    const dwellings = [null, 0, ...Array.from({ length: 100 }, (_, index) => index + 1)]
+    const scale = mapScale(dwellings, { diverging: false, separateZero: true })
+    expect(scale.kind).toBe('level-zero')
+    expect(scale.classAt(0)).toBeNull()
+    expect(scale.classAt(1)).toBe(0)
+    expect(scale.classes[0]!.interval).toEqual({ from: 0, to: 0, zero: true })
+    expect(scale.classAt(2)).toBe(1)
+    expect(scale.positionOf(0)).toBeLessThan(scale.positionOf(1))
   })
 })
 

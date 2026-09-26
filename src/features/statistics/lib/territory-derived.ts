@@ -94,11 +94,11 @@ export interface DerivedIndicator {
   /**
    * What a locality's ABSENT cell means — INS Tempo omits cells rather than
    * publish them empty: `zero` for a count table that never publishes a zero
-   * (POP201D: none among 3,172 cells), `not-covered` for a service the place
-   * may not have. Unset: missing. A county or Romania always has births and
-   * a water network: its absent cell is a year not released, always missing.
+   * (POP201D: none among 3,172 cells). Unset: missing. For a county or
+   * Romania an absent cell is always missing. Missing service volumes do
+   * not establish infrastructure coverage.
    */
-  readonly absent?: 'zero' | 'not-covered'
+  readonly absent?: 'zero'
 }
 
 const daysIn = (year: number) => (new Date(Date.UTC(year, 1, 29)).getUTCMonth() === 1 ? 366 : 365)
@@ -199,7 +199,6 @@ export const DERIVED_INDICATORS: readonly DerivedIndicator[] = [
     label: msg`Locuințe terminate`,
     unit: msg`‰`,
     caption: msg`în cursul anului, la 1.000 locuitori`,
-    absent: 'zero',
     plus: [read('LOC104B', [{ dimensionIndex: 0, memberCode: '7982' }])],
     parts: [msg`locuințe terminate`],
     denominator: { kind: 'population-jul' },
@@ -213,7 +212,6 @@ export const DERIVED_INDICATORS: readonly DerivedIndicator[] = [
     label: msg`Apă potabilă pentru uz casnic`,
     unit: msg`l/locuitor/zi`,
     caption: msg`litri pe zi, pe locuitor`,
-    absent: 'not-covered',
     plus: [read('GOS108A', [{ dimensionIndex: 0, memberCode: '7416' }])],
     parts: [msg`mii m³ distribuiți pentru uz casnic`],
     denominator: { kind: 'population-jul' },
@@ -400,7 +398,6 @@ type YearInputs =
       readonly imputed: boolean
       readonly flags: readonly string[]
     }
-  | { readonly kind: 'uncovered' }
   | { readonly kind: 'negative' }
   | null
 
@@ -411,7 +408,6 @@ function yearInputs(def: DerivedIndicator, data: DerivedScopeData, year: number,
   if (d === undefined || d === null) return null
   const flags = [flagOf(data, denominator.read, denominator.year)]
   let imputed = false
-  let uncovered = false
   const cell = (r: DerivedRead) => {
     const value = cellOf(data, r, year)
     if (value !== undefined) {
@@ -423,12 +419,10 @@ function yearInputs(def: DerivedIndicator, data: DerivedScopeData, year: number,
       imputed = true
       return 0
     }
-    if (def.absent === 'not-covered') uncovered = true
     return undefined
   }
   const plus = def.plus.map(cell)
   const minus = (def.minus ?? []).map(cell)
-  if (uncovered) return { kind: 'uncovered' }
   if ([...plus, ...minus].some((value) => value === undefined || value === null)) return null
   // Every input is a count, a stock or a population: INS publishes a few
   // negative stocks (LOC103B −82 m²), which are no measurement. Only a
@@ -469,7 +463,6 @@ export function computeDerived(
     ...extra,
   })
   const inputs = span.map((y) => yearInputs(def, data, y, scope))
-  if (inputs.some((i) => i?.kind === 'uncovered')) return empty(t`fără rețea publică raportată`)
   if (inputs.some((i) => i === null)) {
     return empty(pooled ? t`date lipsă în cel puțin un an din cei trei` : t`date lipsă`)
   }

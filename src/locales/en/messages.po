@@ -238,6 +238,16 @@ msgstr "{0, plural, one {# result.} few {# results.} other {# results.}}"
 msgid "{0, plural, one {# trimitere} few {# trimiteri} other {# de trimiteri}}"
 msgstr "{0, plural, one {# trimitere} few {# trimiteri} other {# de trimiteri}}"
 
+#. placeholder {0}: keys.noData
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:32
+msgid "{0, plural, one {# UAT fără date} few {# UAT-uri fără date} other {# de UAT-uri fără date}}"
+msgstr "{0, plural, one {# UAT without data} other {# UATs without data}}"
+
+#. placeholder {0}: keys.noData
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:32
+#~ msgid "{0, plural, one {# UAT fără date} other {# UAT-uri fără date}}"
+#~ msgstr "{0, plural, one {# UAT fără date} other {# UAT-uri fără date}}"
+
 #. placeholder {0}: ranked.length + rest.length
 #: src/features/statistics/components/uat-map/uat-map-lists.tsx:108
 msgid "{0, plural, one {# UAT} few {# UAT-uri} other {# de UAT-uri}}"
@@ -482,7 +492,7 @@ msgid "{0} enabled series"
 msgstr "{0} enabled series"
 
 #. placeholder {0}: keys.noData
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:34
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:35
 msgid "{0} fără date"
 msgstr "{0} without data"
 
@@ -494,8 +504,8 @@ msgstr "{0} without data: {1}"
 
 #. placeholder {0}: keys.noNetwork
 #: src/features/statistics/components/uat-map/uat-map-legend.tsx:36
-msgid "{0} fără rețea publică"
-msgstr "{0} without a public network"
+#~ msgid "{0} fără rețea publică"
+#~ msgstr "{0} without a public network"
 
 #. placeholder {0}: formatHubPeriod(inflation.period)
 #. placeholder {1}: formatHubPeriod(inflationBase)
@@ -1380,7 +1390,7 @@ msgstr "/capita"
 msgid "#"
 msgstr "#"
 
-#: src/features/statistics/lib/territory-derived.ts:245
+#: src/features/statistics/lib/territory-derived.ts:243
 msgid "%"
 msgstr "%"
 
@@ -1400,7 +1410,7 @@ msgstr "% of GDP"
 #: src/features/statistics/lib/territory-derived.ts:157
 #: src/features/statistics/lib/territory-derived.ts:171
 #: src/features/statistics/lib/territory-derived.ts:200
-#: src/features/statistics/lib/territory-derived.ts:259
+#: src/features/statistics/lib/territory-derived.ts:257
 msgid "‰"
 msgstr "‰"
 
@@ -3062,7 +3072,7 @@ msgstr "Analiză"
 msgid "Analiză detaliată · {analysisLabel}"
 msgstr "Analiză detaliată · {analysisLabel}"
 
-#: src/components/footer/AppFooter.tsx:51
+#: src/components/footer/AppFooter.tsx:52
 #: src/features/landing/lib/landing-groups.ts:94
 msgid "Analiza entităților"
 msgstr "Entity analytics"
@@ -3287,20 +3297,24 @@ msgstr "Anyone with the public link can view this map."
 msgid "Anyone with the public link will see this saved version."
 msgstr "Anyone with the public link will see this saved version."
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:169
+#: src/features/statistics/components/uat-map/uat-map-series.ts:172
 msgid "Apă"
 msgstr "Water"
+
+#: src/features/statistics/components/uat-map/uat-map-series.ts:180
+msgid "Apa distribuită pentru uz casnic. Lipsa unei valori nu indică absența rețelei publice."
+msgstr "Water distributed for domestic use. A missing value does not mean there is no public water network."
 
 #: src/features/private-companies/lib/caen-divisions.ts:53
 msgid "Apă potabilă"
 msgstr "Water supply"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:174
+#: src/features/statistics/components/uat-map/uat-map-series.ts:177
 msgid "Apă potabilă distribuită pentru uz casnic, mii m³, {0}"
 msgstr "Drinking water supplied for household use, thousand m³, {0}"
 
-#: src/features/statistics/lib/territory-derived.ts:213
+#: src/features/statistics/lib/territory-derived.ts:212
 msgid "Apă potabilă pentru uz casnic"
 msgstr "Drinking water for household use"
 
@@ -3884,7 +3898,7 @@ msgstr "Public money"
 msgid "Banii publici"
 msgstr "Public money"
 
-#: src/components/footer/AppFooter.tsx:116
+#: src/components/footer/AppFooter.tsx:123
 msgid "Banii publici, deciziile și documentele care le însoțesc — într-un singur loc, cu sursa și data lângă fiecare cifră."
 msgstr "Public money, the decisions and the documents behind them — in one place, with the source and date beside every figure."
 
@@ -4514,7 +4528,7 @@ msgstr "Capacitate"
 msgid "Capacitate minima"
 msgstr "Capacitate minima"
 
-#: src/features/statistics/lib/territory-derived.ts:267
+#: src/features/statistics/lib/territory-derived.ts:265
 msgid "Capacitate, nu ocupare. Doar unde există structuri de primire raportate."
 msgstr "Capacity, not occupancy. Only where accommodation establishments are reported."
 
@@ -4522,7 +4536,7 @@ msgstr "Capacity, not occupancy. Only where accommodation establishments are rep
 msgid "Capital social"
 msgstr "Share capital"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:65
+#: src/features/statistics/components/uat-map/uat-map-series.ts:67
 msgid "capitala"
 msgstr "the capital"
 
@@ -5970,7 +5984,7 @@ msgstr "Code and data"
 msgid "Cod sursa"
 msgstr "Cod sursa"
 
-#: src/components/footer/AppFooter.tsx:69
+#: src/components/footer/AppFooter.tsx:70
 msgid "Cod sursă pe GitHub"
 msgstr "Source code on GitHub"
 
@@ -6325,7 +6339,7 @@ msgstr "Completed."
 msgid "Completion"
 msgstr "Completion"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:58
+#: src/features/statistics/components/uat-map/uat-map-series.ts:60
 #: src/features/statistics/lib/comparison-format.ts:84
 msgid "comună"
 msgstr "commune"
@@ -6509,13 +6523,13 @@ msgstr "Consortium awards — not attributable to individual suppliers"
 msgid "Constant Value"
 msgstr "Constant Value"
 
-#: src/features/statistics/lib/territory-derived.ts:208
+#: src/features/statistics/lib/territory-derived.ts:207
 msgid "Construcția vine în salturi și nu e, în cea mai mare parte, o lucrare a primăriei."
 msgstr "Construction comes in bursts and is mostly not the town hall's work."
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:165
-msgid "Construcția vine în salturi: un an cu zero poate fi urmat de unul cu multe."
-msgstr "Building comes in bursts: a year with none can be followed by one with many."
+#: src/features/statistics/components/uat-map/uat-map-series.ts:163
+#~ msgid "Construcția vine în salturi: un an cu zero poate fi urmat de unul cu multe."
+#~ msgstr "Building comes in bursts: a year with none can be followed by one with many."
 
 #: src/features/private-companies/lib/caen-divisions.ts:57
 msgid "Construcții de clădiri"
@@ -7849,7 +7863,7 @@ msgstr "Date demonstrative (mock)"
 msgid "date dense din 2021"
 msgstr "date dense din 2021"
 
-#: src/components/footer/AppFooter.tsx:183
+#: src/components/footer/AppFooter.tsx:190
 msgid "Date din surse oficiale · Transparență bugetară, ANAF / Ministerul Finanțelor · <0>mfinante.gov.ro</0>"
 msgstr "Data from official sources · Budget Transparency, ANAF / Ministry of Finance · <0>mfinante.gov.ro</0>"
 
@@ -7872,6 +7886,14 @@ msgstr "Date indisponibile"
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:172
 msgid "Date indisponibile încă"
 msgstr "No data yet"
+
+#: src/features/statistics/components/uat-map/uat-map-series.ts:52
+msgid "date indisponibile pentru locuințe terminate"
+msgstr "data unavailable for completed dwellings"
+
+#: src/features/statistics/components/uat-map/uat-map-series.ts:51
+msgid "date indisponibile pentru uz casnic"
+msgstr "domestic-use data unavailable"
 
 #: src/components/charts/components/series-config/ins-map-period-editor.tsx:74
 msgid "Date interval"
@@ -7898,12 +7920,12 @@ msgstr "Locality-level data"
 #~ msgid "Date la nivel de UAT"
 #~ msgstr "Date la nivel de UAT"
 
-#: src/features/statistics/lib/territory-derived.ts:474
-#: src/features/statistics/lib/territory-derived.ts:568
+#: src/features/statistics/lib/territory-derived.ts:467
+#: src/features/statistics/lib/territory-derived.ts:561
 msgid "date lipsă"
 msgstr "no data"
 
-#: src/features/statistics/lib/territory-derived.ts:474
+#: src/features/statistics/lib/territory-derived.ts:467
 msgid "date lipsă în cel puțin un an din cei trei"
 msgstr "no data for at least one of the three years"
 
@@ -7967,7 +7989,7 @@ msgstr "date până la {0}"
 msgid "Date parțiale"
 msgstr "Date parțiale"
 
-#: src/components/footer/AppFooter.tsx:171
+#: src/components/footer/AppFooter.tsx:178
 msgid "Date PNRR: Ministerul Investițiilor și Proiectelor Europene · <0>mfe.gov.ro/pnrr-dashboard</0>"
 msgstr "PNRR data: Ministry of Investments and European Projects · <0>mfe.gov.ro/pnrr-dashboard</0>"
 
@@ -8433,7 +8455,7 @@ msgstr "Zoom out"
 msgid "Dependency"
 msgstr "Dependency"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:129
+#: src/features/statistics/components/uat-map/uat-map-series.ts:131
 msgid "Depinde de mărimea localității și de vârsta locuitorilor: o localitate mare sau îmbătrânită are mai multe decese."
 msgstr "It depends on the locality’s size and its residents’ age: a large or ageing locality has more deaths."
 
@@ -8830,7 +8852,7 @@ msgstr "of the turnover reported in Romania"
 msgid "Din firmele înființate în {COHORT_YEAR}, {0} mai sunt în funcțiune."
 msgstr "Of the companies founded in {COHORT_YEAR}, {0} are still in business."
 
-#: src/features/statistics/lib/territory-derived.ts:246
+#: src/features/statistics/lib/territory-derived.ts:244
 msgid "din lungimea străzilor orășenești"
 msgstr "of the length of town streets"
 
@@ -9030,8 +9052,8 @@ msgid "Doar {0}: {1} {2}, România {3}. Fereastra de trei ani netezește anii mi
 msgstr "{0} alone: {1} {2}, Romania {3}. The three-year window smooths small years and lags a fast change."
 
 #: src/features/statistics/components/uat-map/uat-map-series.ts:177
-msgid "Doar apa distribuită prin rețeaua publică."
-msgstr "Only water supplied through the public network."
+#~ msgid "Doar apa distribuită prin rețeaua publică."
+#~ msgstr "Only water supplied through the public network."
 
 #: src/features/statistics/components/data-status-badge.tsx:20
 msgid "Doar catalog"
@@ -9079,15 +9101,15 @@ msgstr "Doar linkul oficial"
 msgid "doar metadata"
 msgstr "doar metadata"
 
-#: src/features/statistics/lib/territory-derived.ts:238
+#: src/features/statistics/lib/territory-derived.ts:236
 msgid "Doar municipii și orașe. Inventarul nu spune cât de accesibile sau îngrijite sunt."
 msgstr "Municipalities and towns only. The inventory says nothing about how accessible or well kept they are."
 
-#: src/features/statistics/lib/territory-derived.ts:253
+#: src/features/statistics/lib/territory-derived.ts:251
 msgid "Doar municipii și orașe. O pondere din rețea, nu pe locuitor."
 msgstr "Municipalities and towns only. A share of the network, not per inhabitant."
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:141
+#: src/features/statistics/components/uat-map/uat-map-series.ts:143
 msgid "Doar mutările cu domiciliul: cine pleacă fără să-și schimbe domiciliul nu apare."
 msgstr "Only changes of domicile: whoever leaves without changing their domicile does not appear."
 
@@ -9298,7 +9320,7 @@ msgstr "By the year in the registry number, which an organisation keeps. The reg
 #~ msgid "după CUI"
 #~ msgstr "by CUI"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:117
+#: src/features/statistics/components/uat-map/uat-map-series.ts:119
 msgid "După domiciliu, nu după cine locuiește efectiv: cine pleacă fără să-și schimbe domiciliul rămâne numărat."
 msgstr "By domicile, not by who actually lives there: whoever leaves without changing their domicile is still counted."
 
@@ -10756,11 +10778,11 @@ msgstr "no data"
 msgid "Fără date"
 msgstr "No data"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:51
+#: src/features/statistics/components/uat-map/uat-map-series.ts:53
 msgid "fără date INS"
 msgstr "no INS data"
 
-#: src/features/statistics/lib/territory-derived.ts:568
+#: src/features/statistics/lib/territory-derived.ts:561
 msgid "fără date INS pentru {chosen}"
 msgstr "no INS data for {chosen}"
 
@@ -10866,12 +10888,12 @@ msgid "Fara referinte neconfirmate"
 msgstr "Fara referinte neconfirmate"
 
 #: src/features/statistics/components/uat-map/uat-map-series.ts:47
-msgid "fără rețea publică de apă raportată"
-msgstr "no public water network reported"
+#~ msgid "fără rețea publică de apă raportată"
+#~ msgstr "no public water network reported"
 
 #: src/features/statistics/lib/territory-derived.ts:472
-msgid "fără rețea publică raportată"
-msgstr "no public network reported"
+#~ msgid "fără rețea publică raportată"
+#~ msgstr "no public network reported"
 
 #: src/features/elections/components/election-shared.tsx:133
 msgid "Fara rezultat publicat"
@@ -12069,15 +12091,15 @@ msgstr "Good for shortlists used in audits, reporting, or manual review."
 msgid "Goods & Services"
 msgstr "Goods & Services"
 
-#: src/features/statistics/lib/territory-derived.ts:237
+#: src/features/statistics/lib/territory-derived.ts:235
 msgid "GOS103A (ha) × 10.000 / POP107D (1 ian. anul următor)"
 msgstr "GOS103A (ha) × 10,000 / POP107D (1 Jan. of the next year)"
 
-#: src/features/statistics/lib/territory-derived.ts:252
+#: src/features/statistics/lib/territory-derived.ts:250
 msgid "GOS105A / GOS104A × 100"
 msgstr "GOS105A / GOS104A × 100"
 
-#: src/features/statistics/lib/territory-derived.ts:221
+#: src/features/statistics/lib/territory-derived.ts:219
 msgid "GOS108A „uz casnic\" (mii m³) × 10⁶ / zilele anului / POP108D"
 msgstr "GOS108A “household use” (thousand m³) × 10⁶ / days in the year / POP108D"
 
@@ -12111,7 +12133,7 @@ msgstr "Grafic și tabel"
 msgid "Grafic textual cu tabel fallback pentru accesibilitate."
 msgstr "Grafic textual cu tabel fallback pentru accesibilitate."
 
-#: src/components/footer/AppFooter.tsx:53
+#: src/components/footer/AppFooter.tsx:54
 #: src/features/landing/lib/landing-groups.ts:168
 msgid "Grafice"
 msgstr "Charts"
@@ -12293,7 +12315,7 @@ msgstr "Hartă investiții"
 msgid "Hartă teritorială"
 msgstr "Territorial map"
 
-#: src/components/footer/AppFooter.tsx:52
+#: src/components/footer/AppFooter.tsx:53
 msgid "Hărți"
 msgstr "Maps"
 
@@ -12317,7 +12339,7 @@ msgstr "Hash rand"
 msgid "Health (CASS)"
 msgstr "Health (CASS)"
 
-#: src/features/statistics/lib/territory-derived.ts:232
+#: src/features/statistics/lib/territory-derived.ts:230
 msgid "hectare de spații verzi"
 msgstr "hectares of green space"
 
@@ -12658,11 +12680,11 @@ msgstr "Immigrants − Emigrants"
 msgid "Imobiliare"
 msgstr "Real estate"
 
-#: src/features/statistics/lib/territory-derived.ts:222
+#: src/features/statistics/lib/territory-derived.ts:220
 msgid "împărțită la toți locuitorii, nu doar la cei racordați"
 msgstr "divided by all inhabitants, not only those connected"
 
-#: src/features/statistics/lib/territory-derived.ts:223
+#: src/features/statistics/lib/territory-derived.ts:221
 msgid "Împărțită la toți locuitorii, nu doar la cei racordați: amestecă acoperirea rețelei cu consumul."
 msgstr "Divided by all inhabitants, not only those connected: it mixes network coverage with consumption."
 
@@ -12734,7 +12756,7 @@ msgstr "in \"invisible\" consumption taxes."
 #. placeholder {0}: layer.period ?? ''
 #. placeholder {0}: series.year
 #: src/features/statistics/components/hub/hub-county-band.tsx:293
-#: src/features/statistics/components/uat-map/uat-map-series.ts:103
+#: src/features/statistics/components/uat-map/uat-map-series.ts:105
 msgid "în {0}"
 msgstr "in {0}"
 
@@ -13462,15 +13484,15 @@ msgstr "Inițiative legislative"
 msgid "Inițiativele legislative nu au putut fi încărcate"
 msgstr "Inițiativele legislative nu au putut fi încărcate"
 
-#: src/features/statistics/lib/territory-derived.ts:276
+#: src/features/statistics/lib/territory-derived.ts:274
 msgid "înnoptări"
 msgstr "overnight stays"
 
-#: src/features/statistics/lib/territory-derived.ts:274
+#: src/features/statistics/lib/territory-derived.ts:272
 msgid "înnoptări pe an, pe locuitor"
 msgstr "overnight stays a year, per inhabitant"
 
-#: src/features/statistics/lib/territory-derived.ts:272
+#: src/features/statistics/lib/territory-derived.ts:270
 msgid "Înnoptări turistice"
 msgstr "Tourist overnight stays"
 
@@ -14238,7 +14260,7 @@ msgstr "county"
 #. placeholder {0}: territory.countyName
 #: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:88
 #: src/features/statistics/components/territory/territory-derived-trend.tsx:215
-#: src/features/statistics/components/uat-map/uat-map-series.ts:40
+#: src/features/statistics/components/uat-map/uat-map-series.ts:42
 msgid "Județul {0}"
 msgstr "{0} County"
 
@@ -14252,7 +14274,7 @@ msgstr "{countyName} County"
 #~ msgid "Județul din registrul ONRC. Apasă un județ, pe hartă sau în listă, pentru firmele de acolo."
 #~ msgstr "The county as recorded by ONRC. Select a county, on the map or in the list, for the companies there."
 
-#: src/features/statistics/lib/territory-derived.ts:236
+#: src/features/statistics/lib/territory-derived.ts:234
 msgid "Județul și țara includ populația rurală, fără spații verzi raportate: nu sunt un reper."
 msgstr "The county and the country include the rural population, with no green space reported: they are no reference."
 
@@ -14328,11 +14350,11 @@ msgstr "Key Websites"
 msgid "Keyboard Shortcuts"
 msgstr "Keyboard Shortcuts"
 
-#: src/features/statistics/lib/territory-derived.ts:248
+#: src/features/statistics/lib/territory-derived.ts:246
 msgid "km de străzi modernizate"
 msgstr "km of modernised streets"
 
-#: src/features/statistics/lib/territory-derived.ts:249
+#: src/features/statistics/lib/territory-derived.ts:247
 msgid "km de străzi orășenești (GOS104A)"
 msgstr "km of town streets (GOS104A)"
 
@@ -14340,12 +14362,12 @@ msgstr "km of town streets (GOS104A)"
 msgid "KPI"
 msgstr "KPI"
 
-#: src/features/statistics/lib/territory-derived.ts:214
+#: src/features/statistics/lib/territory-derived.ts:213
 msgid "l/locuitor/zi"
 msgstr "l/inhabitant/day"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:113
+#: src/features/statistics/components/uat-map/uat-map-series.ts:115
 msgid "la 1 ianuarie {0}"
 msgstr "on 1 January {0}"
 
@@ -14359,7 +14381,7 @@ msgstr "Per 1,000 residents"
 
 #: src/features/statistics/lib/territory-derived.ts:158
 #: src/features/statistics/lib/territory-derived.ts:172
-#: src/features/statistics/lib/territory-derived.ts:260
+#: src/features/statistics/lib/territory-derived.ts:258
 msgid "la 1.000 locuitori"
 msgstr "per 1,000 inhabitants"
 
@@ -14522,7 +14544,7 @@ msgstr "Leave without saving"
 msgid "Leave without saving?"
 msgstr "Leave without saving?"
 
-#: src/components/footer/AppFooter.tsx:58
+#: src/components/footer/AppFooter.tsx:59
 msgid "Legal"
 msgstr "Legal"
 
@@ -14832,6 +14854,10 @@ msgstr "missing"
 msgid "Lipsă"
 msgstr "Lipsă"
 
+#: src/features/statistics/components/uat-map/uat-map-series.ts:168
+msgid "Lipsa unei valori pentru locuințe terminate nu înseamnă zero. Hașurile arată date lipsă; 0 este o valoare înregistrată."
+msgstr "A missing value for completed dwellings does not mean zero. Hatching marks missing data; 0 is a recorded value."
+
 #: src/features/statistics/components/landing/landing-source.tsx:87
 #~ msgid "Lipsesc observații comparabile"
 #~ msgstr "Comparable observations are missing"
@@ -14924,7 +14950,7 @@ msgstr "Litigii de muncă"
 msgid "Litigiile sunt în curs de corelare"
 msgstr "Litigation matching is in progress"
 
-#: src/features/statistics/lib/territory-derived.ts:215
+#: src/features/statistics/lib/territory-derived.ts:214
 msgid "litri pe zi, pe locuitor"
 msgstr "litres a day, per inhabitant"
 
@@ -15188,7 +15214,7 @@ msgstr "LOC101B (31 Dec.) / POP107D (1 Jan. of the next year) × 1,000"
 msgid "LOC103B (31 dec.) / POP107D (1 ian. anul următor)"
 msgstr "LOC103B (31 Dec.) / POP107D (1 Jan. of the next year)"
 
-#: src/features/statistics/lib/territory-derived.ts:207
+#: src/features/statistics/lib/territory-derived.ts:206
 msgid "LOC104B / POP108D × 1.000"
 msgstr "LOC104B / POP108D × 1,000"
 
@@ -15350,7 +15376,7 @@ msgstr "Lock In Prediction"
 msgid "Locked"
 msgstr "Locked"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:158
+#: src/features/statistics/components/uat-map/uat-map-series.ts:160
 msgid "locuințe"
 msgstr "dwellings"
 
@@ -15368,11 +15394,11 @@ msgstr "Housing in the big cities"
 msgid "locuințe la 31 decembrie"
 msgstr "dwellings on 31 December"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:157
+#: src/features/statistics/components/uat-map/uat-map-series.ts:159
 msgid "Locuințe noi"
 msgstr "New dwellings"
 
-#: src/features/statistics/lib/territory-derived.ts:204
+#: src/features/statistics/lib/territory-derived.ts:203
 msgid "locuințe terminate"
 msgstr "dwellings completed"
 
@@ -15381,7 +15407,7 @@ msgid "Locuințe terminate"
 msgstr "Dwellings completed"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:162
+#: src/features/statistics/components/uat-map/uat-map-series.ts:165
 msgid "Locuințe terminate în {0}"
 msgstr "Dwellings completed in {0}"
 
@@ -15390,7 +15416,7 @@ msgstr "Dwellings completed in {0}"
 msgid "Locuire"
 msgstr "Housing"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:110
+#: src/features/statistics/components/uat-map/uat-map-series.ts:112
 msgid "locuitori"
 msgstr "residents"
 
@@ -15399,7 +15425,7 @@ msgid "Locuitori"
 msgstr "Residents"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:114
+#: src/features/statistics/components/uat-map/uat-map-series.ts:116
 msgid "Locuitori după domiciliu la 1 ianuarie {0}"
 msgstr "Residents by domicile on 1 January {0}"
 
@@ -15427,15 +15453,15 @@ msgstr "rank {0} of {1}"
 #~ msgid "Locul tău în cifre"
 #~ msgstr "Your locality in figures"
 
-#: src/features/statistics/lib/territory-derived.ts:258
+#: src/features/statistics/lib/territory-derived.ts:256
 msgid "Locuri de cazare turistică"
 msgstr "Tourist bed places"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:146
+#: src/features/statistics/components/uat-map/uat-map-series.ts:148
 msgid "locuri de muncă"
 msgstr "jobs"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:145
+#: src/features/statistics/components/uat-map/uat-map-series.ts:147
 msgid "Locuri de muncă"
 msgstr "Jobs"
 
@@ -15444,11 +15470,11 @@ msgstr "Jobs"
 #~ msgstr "Salaried jobs"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:150
+#: src/features/statistics/components/uat-map/uat-map-series.ts:152
 msgid "Locuri de muncă salariate, medie anuală, {0}"
 msgstr "Salaried jobs, annual average, {0}"
 
-#: src/features/statistics/lib/territory-derived.ts:262
+#: src/features/statistics/lib/territory-derived.ts:260
 msgid "locuri la 31 iulie"
 msgstr "bed places on 31 July"
 
@@ -15524,12 +15550,12 @@ msgstr "m² of floor area per inhabitant"
 msgid "m² locuibili la 31 decembrie"
 msgstr "m² of living space on 31 December"
 
-#: src/features/statistics/lib/territory-derived.ts:230
+#: src/features/statistics/lib/territory-derived.ts:228
 msgid "m² pe locuitor"
 msgstr "m² per inhabitant"
 
 #: src/features/statistics/lib/territory-derived.ts:186
-#: src/features/statistics/lib/territory-derived.ts:229
+#: src/features/statistics/lib/territory-derived.ts:227
 msgid "m²/locuitor"
 msgstr "m²/inhabitant"
 
@@ -16196,11 +16222,11 @@ msgstr "Migrating map editor link..."
 msgid "mii"
 msgstr "k"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:170
+#: src/features/statistics/components/uat-map/uat-map-series.ts:173
 msgid "mii m³"
 msgstr "thousand m³"
 
-#: src/features/statistics/lib/territory-derived.ts:218
+#: src/features/statistics/lib/territory-derived.ts:216
 msgid "mii m³ distribuiți pentru uz casnic"
 msgstr "thousand m³ supplied for household use"
 
@@ -16704,21 +16730,21 @@ msgstr "Jobs and unemployment"
 msgid "municipii, orașe, comune și sectoare"
 msgstr "municipalities, towns, communes and sectors"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:62
+#: src/features/statistics/components/uat-map/uat-map-series.ts:64
 #: src/features/statistics/lib/comparison-format.ts:77
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:138
 msgid "municipiu"
 msgstr "municipality"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:64
+#: src/features/statistics/components/uat-map/uat-map-series.ts:66
 msgid "municipiu, reședință de județ"
 msgstr "municipality, county seat"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:40
+#: src/features/statistics/components/uat-map/uat-map-series.ts:42
 msgid "Municipiul București"
 msgstr "Bucharest Municipality"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:133
+#: src/features/statistics/components/uat-map/uat-map-series.ts:135
 msgid "Mutări"
 msgstr "Moves"
 
@@ -16810,7 +16836,7 @@ msgid "Născuți-vii"
 msgstr "Live births"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:126
+#: src/features/statistics/components/uat-map/uat-map-series.ts:128
 msgid "Născuți-vii minus decedați, în {0}"
 msgstr "Live births minus deaths, in {0}"
 
@@ -16820,7 +16846,7 @@ msgstr "Live births minus deaths: below zero, more deaths than births."
 
 #. placeholder {0}: count(series, 'births', index)
 #. placeholder {1}: count(series, 'deaths', index)
-#: src/features/statistics/components/uat-map/uat-map-series.ts:127
+#: src/features/statistics/components/uat-map/uat-map-series.ts:129
 msgid "Născuți-vii: {0} · decedați: {1}"
 msgstr "Live births: {0} · deaths: {1}"
 
@@ -16863,7 +16889,7 @@ msgstr "Natural increase rate normalizes birth-death balance for locality size s
 msgid "Natural increase shows the absolute demographic balance from births versus deaths."
 msgstr "Natural increase shows the absolute demographic balance from births versus deaths."
 
-#: src/components/footer/AppFooter.tsx:138
+#: src/components/footer/AppFooter.tsx:145
 msgid "Navigare footer"
 msgstr "Footer navigation"
 
@@ -18714,7 +18740,7 @@ msgstr "Small number of events"
 msgid "Numar registru"
 msgstr "Numar registru"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:153
+#: src/features/statistics/components/uat-map/uat-map-series.ts:155
 msgid "Numărate unde se muncește, nu unde se locuiește."
 msgstr "Counted where people work, not where they live."
 
@@ -19451,7 +19477,7 @@ msgstr "OR"
 msgid "Or a whole year"
 msgstr "Or a whole year"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:60
+#: src/features/statistics/components/uat-map/uat-map-series.ts:62
 #: src/features/statistics/lib/comparison-format.ts:82
 msgid "oraș"
 msgstr "town"
@@ -19993,11 +20019,11 @@ msgstr "By domain"
 msgid "Pe forme juridice"
 msgstr "By legal form"
 
-#: src/features/statistics/lib/territory-derived.ts:273
+#: src/features/statistics/lib/territory-derived.ts:271
 msgid "pe locuitor"
 msgstr "per inhabitant"
 
-#: src/features/statistics/lib/territory-derived.ts:281
+#: src/features/statistics/lib/territory-derived.ts:279
 msgid "Pe populația după domiciliu, nu pe cea rezidentă a indicatorului european. Fără vizitatorii de o zi. Lipsa datelor nu înseamnă lipsa turismului."
 msgstr "On the population by domicile, not the resident population of the European indicator. Day visitors are not included. Missing data does not mean there is no tourism."
 
@@ -20207,7 +20233,7 @@ msgstr "pers."
 msgid "Persoană fizică autorizată"
 msgstr "Authorised natural person"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:104
+#: src/features/statistics/components/uat-map/uat-map-series.ts:106
 #: src/features/statistics/lib/units.ts:29
 #: src/features/statistics/lib/units.ts:77
 msgid "persoane"
@@ -20343,7 +20369,7 @@ msgstr "Platform Mission"
 msgid "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
 msgstr "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
 
-#: src/components/footer/AppFooter.tsx:49
+#: src/components/footer/AppFooter.tsx:50
 msgid "Platformă"
 msgstr "Platform"
 
@@ -20435,12 +20461,12 @@ msgstr "Pointere"
 msgid "Politică"
 msgstr "Politics"
 
-#: src/components/footer/AppFooter.tsx:60
+#: src/components/footer/AppFooter.tsx:61
 #: src/features/privacy/components/cookie-settings-page.tsx:275
 msgid "Politica de confidențialitate"
 msgstr "Privacy policy"
 
-#: src/components/footer/AppFooter.tsx:62
+#: src/components/footer/AppFooter.tsx:63
 #: src/features/privacy/components/consent-card.tsx:393
 #: src/features/privacy/components/cookie-settings-page.tsx:270
 msgid "Politica de cookie-uri"
@@ -20470,7 +20496,7 @@ msgstr "Poor"
 msgid "Populația după domiciliu"
 msgstr "Domicile population"
 
-#: src/features/statistics/lib/territory-derived.ts:387
+#: src/features/statistics/lib/territory-derived.ts:385
 msgid "populația după domiciliu la 1 ianuarie {next}"
 msgstr "the population by domicile on 1 January {next}"
 
@@ -20478,7 +20504,7 @@ msgstr "the population by domicile on 1 January {next}"
 #~ msgid "Populația după domiciliu la 1 ianuarie, pe județe și municipiul București. Schimbarea procentuală între cele două capete de interval."
 #~ msgstr "Domicile population on 1 January, by county and Bucharest. Percentage change between the two endpoints."
 
-#: src/features/statistics/lib/territory-derived.ts:384
+#: src/features/statistics/lib/territory-derived.ts:382
 msgid "populația după domiciliu la 1 iulie {to}"
 msgstr "the population by domicile on 1 July {to}"
 
@@ -20500,7 +20526,7 @@ msgstr "Resident population on 1 January {0}"
 msgid "Populația rezidentă la 1 ianuarie {year}"
 msgstr "Resident population on 1 January {year}"
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:109
+#: src/features/statistics/components/uat-map/uat-map-series.ts:111
 #: src/features/statistics/lib/territory-groups.ts:23
 msgid "Populație"
 msgstr "Population"
@@ -20509,7 +20535,7 @@ msgstr "Population"
 msgid "Populație rezidentă"
 msgstr "Resident population"
 
-#: src/features/statistics/lib/territory-derived.ts:486
+#: src/features/statistics/lib/territory-derived.ts:479
 msgid "populație zero"
 msgstr "zero population"
 
@@ -20719,7 +20745,7 @@ msgstr "Pre-filled from the debate request challenge."
 msgid "Prea multe cereri într-un minut. Așteaptă puțin și încearcă din nou."
 msgstr "Too many requests in one minute. Wait a moment and try again."
 
-#: src/features/statistics/lib/territory-derived.ts:488
+#: src/features/statistics/lib/territory-derived.ts:481
 msgid "prea puține evenimente pentru comparație"
 msgstr "too few events to compare"
 
@@ -21162,7 +21188,7 @@ msgstr "Progres absorbție {0}"
 msgid "Progress"
 msgstr "Progress"
 
-#: src/components/footer/AppFooter.tsx:67
+#: src/components/footer/AppFooter.tsx:68
 msgid "Proiect"
 msgstr "Project"
 
@@ -21653,7 +21679,7 @@ msgstr "Error reports"
 msgid "Raport"
 msgstr "Raport"
 
-#: src/components/footer/AppFooter.tsx:70
+#: src/components/footer/AppFooter.tsx:71
 msgid "Raportează o problemă"
 msgstr "Report an issue"
 
@@ -22754,7 +22780,7 @@ msgstr "Role"
 #: src/features/statistics/components/territory/territory-derived-trend.tsx:330
 #: src/features/statistics/components/territory/territory-header.tsx:65
 #: src/features/statistics/components/territory/territory-indicator-row.tsx:214
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:83
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:87
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:89
 #: src/features/statistics/hooks/use-comparison-reading.ts:72
 #: src/features/statistics/hooks/use-comparisons.ts:339
@@ -24298,7 +24324,7 @@ msgstr "Set the basic properties for your chart"
 msgid "Setări"
 msgstr "Settings"
 
-#: src/components/footer/AppFooter.tsx:159
+#: src/components/footer/AppFooter.tsx:166
 msgid "Setări cookie-uri"
 msgstr "Cookie settings"
 
@@ -25051,7 +25077,7 @@ msgstr "Sources"
 msgid "Sources, coverage and honest limits of the procurement dataset."
 msgstr "Sources, coverage and honest limits of the procurement dataset."
 
-#: src/features/statistics/lib/territory-derived.ts:228
+#: src/features/statistics/lib/territory-derived.ts:226
 msgid "Spații verzi"
 msgstr "Green space"
 
@@ -25106,7 +25132,7 @@ msgstr "Split VAT"
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 msgstr "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 
-#: src/features/statistics/components/uat-map/uat-map-series.ts:121
+#: src/features/statistics/components/uat-map/uat-map-series.ts:123
 #: src/features/statistics/lib/landing-constants.ts:167
 #: src/features/statistics/pages/statistics-hub-page.tsx:323
 msgid "Spor natural"
@@ -25125,13 +25151,13 @@ msgid "stabiliri de domiciliu"
 msgstr "settlements of domicile"
 
 #. placeholder {0}: series.year
-#: src/features/statistics/components/uat-map/uat-map-series.ts:138
+#: src/features/statistics/components/uat-map/uat-map-series.ts:140
 msgid "Stabiliri minus plecări cu domiciliul, în {0}"
 msgstr "Arrivals minus departures of domicile, in {0}"
 
 #. placeholder {0}: count(series, 'arrivals', index)
 #. placeholder {1}: count(series, 'departures', index)
-#: src/features/statistics/components/uat-map/uat-map-series.ts:139
+#: src/features/statistics/components/uat-map/uat-map-series.ts:141
 msgid "Stabiliri: {0} · plecări: {1}"
 msgstr "Arrivals: {0} · departures: {1}"
 
@@ -25203,7 +25229,7 @@ msgstr "Unknown status"
 msgid "Stare revizuire"
 msgstr "Stare revizuire"
 
-#: src/components/footer/AppFooter.tsx:71
+#: src/components/footer/AppFooter.tsx:72
 msgid "Stare sistem"
 msgstr "System status"
 
@@ -25562,7 +25588,7 @@ msgstr "Local storage, not tracking cookies. If you create an account, your Cler
 msgid "Stored only in this browser on this device."
 msgstr "Stored only in this browser on this device."
 
-#: src/features/statistics/lib/territory-derived.ts:244
+#: src/features/statistics/lib/territory-derived.ts:242
 msgid "Străzi modernizate"
 msgstr "Modernised streets"
 
@@ -25718,7 +25744,7 @@ msgstr "Suma alocată din program pentru obiectiv (valoare planificată)."
 msgid "Suma nerepartizată este numărată în regiunea membrului care reprezintă asocierea."
 msgstr "Suma nerepartizată este numărată în regiunea membrului care reprezintă asocierea."
 
-#: src/features/statistics/lib/territory-derived.ts:383
+#: src/features/statistics/lib/territory-derived.ts:381
 msgid "suma populațiilor după domiciliu la 1 iulie {from}–{to}"
 msgstr "the sum of the populations by domicile on 1 July {from}–{to}"
 
@@ -25951,7 +25977,7 @@ msgstr "Sursa: ancorele marcate de portal în textul actelor, nu deduceri automa
 #~ msgstr "Source: INS Tempo"
 
 #. placeholder {0}: meta.sources
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:149
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:153
 msgid "Sursa: INS Tempo, {0}; calculat de Transparenta.eu din cifrele preluate pe {day}."
 msgstr "Source: INS Tempo, {0}; calculated by Transparenta.eu from the figures retrieved on {day}."
 
@@ -26269,7 +26295,7 @@ msgstr "Territory not found"
 msgid "Teritoriul există, dar nu avem observații INS încărcate pentru indicatorii prioritari."
 msgstr "The territory exists, but we have no INS observations loaded for the priority indicators."
 
-#: src/components/footer/AppFooter.tsx:61
+#: src/components/footer/AppFooter.tsx:62
 msgid "Termeni și condiții"
 msgstr "Terms and conditions"
 
@@ -27052,7 +27078,7 @@ msgstr "legal target"
 msgid "Ținta legală"
 msgstr "Legal target"
 
-#: src/features/statistics/lib/territory-derived.ts:239
+#: src/features/statistics/lib/territory-derived.ts:237
 msgid "ținta legală: 26 m²/locuitor, termen 2013 (OUG 114/2007)"
 msgstr "legal target: 26 m² per inhabitant, due 2013 (GEO 114/2007)"
 
@@ -27632,7 +27658,7 @@ msgstr "Quarter"
 msgid "Trimite cererea"
 msgstr "Send request"
 
-#: src/components/footer/AppFooter.tsx:127
+#: src/components/footer/AppFooter.tsx:134
 msgid "Trimite feedback"
 msgstr "Send feedback"
 
@@ -27700,11 +27726,11 @@ msgstr "Try guessing again"
 msgid "Try once more before moving on."
 msgstr "Try once more before moving on."
 
-#: src/features/statistics/lib/territory-derived.ts:266
+#: src/features/statistics/lib/territory-derived.ts:264
 msgid "TUR102C (31 iul.) / POP108D × 1.000"
 msgstr "TUR102C (31 Jul.) / POP108D × 1,000"
 
-#: src/features/statistics/lib/territory-derived.ts:280
+#: src/features/statistics/lib/territory-derived.ts:278
 msgid "TUR105E / POP108D"
 msgstr "TUR105E / POP108D"
 
@@ -28563,7 +28589,7 @@ msgid "Valoare în verificare"
 msgstr "Valoare în verificare"
 
 #: src/features/statistics/components/uat-map/uat-map-series.ts:49
-#: src/features/statistics/lib/territory-derived.ts:476
+#: src/features/statistics/lib/territory-derived.ts:469
 msgid "valoare INS negativă, nefolosită"
 msgstr "negative INS value, not used"
 

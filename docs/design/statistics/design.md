@@ -1961,14 +1961,20 @@ and truncates its labels to „R…". It also shows no reference to compare with
   never a zero. A place missing that cell says „date lipsă"; it never
   quietly shows an older year. When the page is filtered to a year, the
   section reads that year.
-- **An absent cell means what its table means.** INS Tempo omits cells rather
-  than publish them empty: births, deaths, moves and dwellings completed
-  never publish a zero (POP201D: none among 3,172 cells), so a locality's
-  absent year is zero and the figure says how many years were read so; no
-  water cell is „fără rețea publică raportată"; a cell published without a
-  value stays missing. Only a LOCALITY's absent cell can mean zero: a county
-  or Romania always has births and a water network, so its absent cell is a
-  year not released — missing, never a 0,0 reference.
+- **An absent cell means what its table means.** The current births, deaths
+  and domicile-moves calculations treat an absent locality cell as zero
+  and disclose the number of imputed years; these policies still need a
+  separate source review. Completed housing does not use that assumption:
+  LOC104B has explicit zeroes, and an absent cell stays missing. The map
+  hatches missing counts, keeps recorded zeroes in their own grey class and
+  says that a missing value does not mean zero.
+  An absent water cell is missing data, not evidence that a public network is absent.
+  The locality map hatches missing volumes in one shared SVG path, labels
+  them „fără date”, and says „date indisponibile pentru uz casnic” in the
+  tooltip. It keeps reported zeroes numeric and excludes missing values
+  from rankings. A cell published without a value stays missing. Only a
+  LOCALITY's absent cell can mean zero: county and national absent cells
+  stay missing, never a 0,0 reference.
 - **A cell reads through `publishedNumber`.** One INS flags as having no
   number („c", „x", „:") is missing, never zero; any other flag („p", „e")
   travels to the figure: a provisional input makes a provisional rate. The

@@ -117,9 +117,25 @@ describe('computeDerived', () => {
     expect(result.missing).toBe('date lipsă în cel puțin un an din cei trei')
   })
 
-  it('says a place with no water cell has no public network reported', () => {
+  it('keeps an absent domestic-water volume missing without inferring network coverage', () => {
     const result = computeDerived(def('apa'), scope({ ...population }), 2024)
-    expect(result.missing).toBe('fără rețea publică raportată')
+    expect(result.missing).toBe('date lipsă')
+    expect(result.value).toBeNull()
+    expect(result.imputedYears).toBe(0)
+  })
+
+  it.each([2024, 2025])('keeps missing completed-housing cells separate from an explicit zero in %i', (year) => {
+    for (const data of [scope({ ...population }), scope({ ...population, LOC104B: { [year]: null } })]) {
+      const result = computeDerived(def('locuinte-noi'), data, year)
+      expect(result.missing).toBe('date lipsă')
+      expect(result.value).toBeNull()
+      expect(result.parts).toEqual([])
+      expect(result.imputedYears).toBe(0)
+    }
+    const zero = computeDerived(def('locuinte-noi'), scope({ ...population, LOC104B: { [year]: 0 } }), year)
+    expect(zero.value).toBe(0)
+    expect(zero.parts).toEqual([0])
+    expect(zero.imputedYears).toBe(0)
   })
 
   it('divides a daily water rate by the days of that year: 2024 had 366', () => {

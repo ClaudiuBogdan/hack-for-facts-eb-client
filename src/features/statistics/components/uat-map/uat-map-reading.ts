@@ -10,15 +10,13 @@ import type { SeriesMeta } from './uat-map-series'
 /** What the legend's footer counts, each only when there is any. */
 export interface LegendKeys {
   readonly noData: number
-  readonly noNetwork: number
+  readonly territoryLevel: 'uat' | 'county'
   /** Where there are few, their names: a hatched county can be neither focused nor tapped. */
   readonly noDataNames?: readonly string[]
 }
 
 export interface Reading {
   readonly figures: UatMapFigures
-  /** A fact, not a gap: UATs with no public water network, muted. */
-  readonly noNetwork: ReadonlySet<number>
   readonly scale: MapScale
   /** The fills, a path per class, at the class's opacity — the legend's own. */
   readonly layers: readonly MapLayer[]
@@ -72,23 +70,21 @@ export function readingOf({
   readonly meta: SeriesMeta
 }): Reading {
   const figures = series.total
-  const noNetwork = new Set(Object.entries(series.missing).flatMap(([index, reason]) => (reason === 'network' ? [Number(index)] : [])))
-  const scale = mapScale(figures.values, { diverging: meta.signed })
+  const scale = mapScale(figures.values, { diverging: meta.signed, separateZero: meta.separateZero })
   const { rank, order } = rankOf(figures.values)
   const within = countyRanks(order, geometry.county, figures.values)
   return {
     figures,
-    noNetwork,
     scale,
-    layers: classLayers(scale, geometry.paths, noNetwork),
+    layers: classLayers(scale, geometry.paths),
     rank,
     order,
     ranked: order.length,
     countyRank: within.rank,
     countySize: within.size,
     keys: {
-      noData: figures.values.filter((value, index) => value === null && !noNetwork.has(index)).length,
-      noNetwork: noNetwork.size,
+      noData: figures.values.filter((value) => value === null).length,
+      territoryLevel: 'uat',
     },
     legendTitle: meta.legend(series),
   }

@@ -1,6 +1,6 @@
 import { memo, useId } from 'react'
 import type { ReactNode } from 'react'
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import type { UatMapFigures } from '../../lib/uat-map-snapshot'
 import { cn } from '@/lib/utils'
@@ -28,12 +28,16 @@ function intervalLabel(format: (value: number) => string, interval: ClassInterva
 }
 
 function Keys({ keys }: { readonly keys: LegendKeys }) {
+  const label = keys.territoryLevel === 'uat'
+    ? plural(keys.noData, { one: '# UAT fără date', few: '# UAT-uri fără date', other: '# de UAT-uri fără date' })
+    : keys.noDataNames?.length
+      ? t`${keys.noData} fără date: ${keys.noDataNames.join(', ')}`
+      : t`${keys.noData} fără date`
   return (
     <>
       {keys.noData > 0 ? (
-        <LegendKey kind="hatch">{keys.noDataNames?.length ? t`${keys.noData} fără date: ${keys.noDataNames.join(', ')}` : t`${keys.noData} fără date`}</LegendKey>
+        <LegendKey>{label}</LegendKey>
       ) : null}
-      {keys.noNetwork > 0 ? <LegendKey kind="muted">{t`${keys.noNetwork} fără rețea publică`}</LegendKey> : null}
     </>
   )
 }
@@ -127,7 +131,7 @@ export function ColourLegend({
           ))}
         </ol>
       </div>
-      {keys.noData > 0 || keys.noNetwork > 0 ? (
+      {keys.noData > 0 ? (
         <div className="flex flex-wrap gap-x-5 gap-y-1.5">
           <Keys keys={keys} />
         </div>
@@ -152,24 +156,18 @@ export const SourceLine = memo(function SourceLine({ meta, generatedAt }: { read
 })
 
 /** A swatch drawn as the map draws it, at the map's on-screen size. */
-function LegendKey({ kind, children }: { readonly kind: 'hatch' | 'muted'; readonly children: ReactNode }) {
+function LegendKey({ children }: { readonly children: ReactNode }) {
   const id = useId()
   return (
     <span className="flex items-center gap-2">
       <svg width="16" height="10" className="block shrink-0" aria-hidden="true">
-        {kind === 'muted' ? (
-          <rect width="16" height="10" className="fill-muted" />
-        ) : (
-          <>
-            <defs>
-              <pattern id={`${id}-hatch`} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                <rect width="5" height="5" className="fill-muted" />
-                <line x1="0" y1="0" x2="0" y2="5" className="stroke-muted-foreground/45" strokeWidth="1.5" />
-              </pattern>
-            </defs>
-            <rect width="16" height="10" fill={`url(#${id}-hatch)`} />
-          </>
-        )}
+        <defs>
+          <pattern id={`${id}-hatch`} width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="5" height="5" className="fill-muted" />
+            <line x1="0" y1="0" x2="0" y2="5" className="stroke-muted-foreground/45" strokeWidth="1.5" />
+          </pattern>
+        </defs>
+        <rect width="16" height="10" fill={`url(#${id}-hatch)`} />
       </svg>
       <MonoLabel className="leading-relaxed text-muted-foreground">{children}</MonoLabel>
     </span>

@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { describe, expect, it } from 'vitest'
 import type { UatMapGeometry, UatMapSeries } from '../../lib/uat-map-snapshot'
 import { countyRanks, rankOf, readingOf, type Reading } from './uat-map-reading'
-import { seriesMeta } from './uat-map-series'
+import { missingLabel, seriesMeta } from './uat-map-series'
 
 // Under Vitest a message is its source text.
 const metas = seriesMeta(String as unknown as I18n['_'])
@@ -42,22 +42,41 @@ describe('readingOf', () => {
     expect(layerOf(reading, 3).fill).toContain('choropleth')
   })
 
-  it('hatches a gap and mutes a UAT with no water network, and counts both', () => {
+  it('hatches missing water volumes together, excludes them from ranks, and keeps a reported zero', () => {
     const reading = readingOf({
       ...base,
-      series: series('apa', [12.5, null, null, 80], { missing: { 1: 'network', 2: 'absent' } }),
+      series: series('apa', [12.5, null, null, 0], { missing: { 1: 'absent', 2: 'absent' } }),
       meta: meta('apa'),
     })
-    expect(layerOf(reading, 1)).toMatchObject({ key: 'no-network', fill: 'fill-muted stroke-muted', d: 'Mb' })
-    expect(layerOf(reading, 2)).toMatchObject({ key: 'no-data', fill: null, d: 'Mc' })
-    expect(reading.keys).toEqual({ noData: 1, noNetwork: 1 })
+    expect(layerOf(reading, 1)).toMatchObject({ key: 'no-data', fill: null, d: 'MbMc' })
+    expect(layerOf(reading, 2)).toBe(layerOf(reading, 1))
+    expect(reading.keys).toEqual({ noData: 2, territoryLevel: 'uat' })
     expect(reading.rank.has(1)).toBe(false)
+    expect(reading.rank.has(2)).toBe(false)
+    expect(reading.rank.has(3)).toBe(true)
+    expect(layerOf(reading, 3).fill).not.toBeNull()
+    expect(missingLabel('absent', 'apa')).toBe('date indisponibile pentru uz casnic')
+    expect(missingLabel('negative', 'apa')).toBe('valoare INS negativă, nefolosită')
   })
 
   it('ranks within the county', () => {
     const reading = readingOf({ ...base, series: series('salariati', [10, 50, 30, 20]), meta: meta('salariati') })
     expect([reading.countyRank.get(1), reading.countyRank.get(0), reading.countyRank.get(2)]).toEqual([1, 2, 1])
     expect(reading.countySize.get('TM')).toBe(2)
+  })
+
+  it('hatches missing housing counts and keeps reported zeroes numeric and ranked', () => {
+    const reading = readingOf({
+      ...base,
+      series: series('locuinte-noi', [12, null, 0, 4], { missing: { 1: 'absent' } }),
+      meta: meta('locuinte-noi'),
+    })
+    expect(layerOf(reading, 1)).toMatchObject({ key: 'no-data', fill: null, d: 'Mb' })
+    expect(reading.keys).toEqual({ noData: 1, territoryLevel: 'uat' })
+    expect(reading.rank.has(1)).toBe(false)
+    expect(reading.rank.get(2)).toBe(3)
+    expect(layerOf(reading, 2).fill).toContain('stone')
+    expect(missingLabel('absent', 'locuinte-noi')).toBe('date indisponibile pentru locuințe terminate')
   })
 
   it('draws each UAT at its class’s opacity — the legend’s', () => {

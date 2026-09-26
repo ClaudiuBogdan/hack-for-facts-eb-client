@@ -864,6 +864,24 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-26 — Missing completed-housing records stay missing.** An absent
+  LOC104B cell is not a reported zero. The INS locality map hatches missing
+  counts, excludes them from rankings and retains a separate grey class for
+  recorded zeroes. The shared territory calculation follows the same rule,
+  so future snapshots cannot turn an absent housing record into zero.
+  *Why:* for 2025, Chronos has 19 zero-valued records and no records for 1,251
+  other mapped localities. Their previous identical display concealed this gap.
+
+- **2026-09-26 — Missing domestic-water volumes are missing data.** An absent
+  GOS108A domestic-use cell does not establish whether a public water network
+  exists. This corrects the water interpretation of “not covered” in the
+  2026-09-25 decision below. On the INS locality map these cells share the
+  existing hatched missing-data layer and are excluded from rankings;
+  reported zeroes remain numeric. Tooltips and the shared territory calculation
+  describe the missing value without inferring infrastructure coverage.
+  *Why:* ten localities with missing domestic-use cells have positive total
+  drinking-water distribution in INS. The two measures cannot be substituted.
+
 - **2026-09-25 — A figure the platform computes shows its method beside it,
   on the same basis as its references.** The INS territory page divides
   source counts by population („Indicatori raportați la populație"). Rules

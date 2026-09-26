@@ -2,8 +2,9 @@
  * The UAT map's figures, read from the public GraphQL API: each series' total
  * for the latest year Romania has, counted with the territory page's own
  * arithmetic (`computeDerived`, `derivedYear`, one year) — so an absent cell
- * reads as the page reads it, a negative INS input is left out, and a UAT
- * with no public water network says so. The county and Romania alike.
+ * reads as the page reads it and a negative INS input is left out.
+ * A missing water cell remains missing, without inferring network coverage.
+ * A missing completed-housing cell also remains missing, never an inferred zero.
  */
 import { msg } from '@lingui/core/macro'
 import {
@@ -150,7 +151,6 @@ function merge(target: Map<string, Gathered>, source: Map<string, Gathered>) {
 const EMPTY: DerivedScopeData = { series: new Map(), flags: new Map() }
 
 function missingOf(result: DerivedResult): UatMapMissing {
-  if (result.missing?.includes('rețea')) return 'network'
   if (result.missing?.includes('negativ')) return 'negative'
   return 'absent'
 }

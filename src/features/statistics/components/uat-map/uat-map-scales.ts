@@ -51,7 +51,7 @@ export const HUE = {
 /** Where a level's classes are cut, as shares of its UATs: 30% · 30% · 25% · 12% · 3%. */
 const LEVEL_CUTS = [0.3, 0.6, 0.85, 0.97] as const
 const LEVEL_OPACITY = [0.12, 0.26, 0.44, 0.64, 0.88] as const
-/** Where zero is common (dwellings), the rest after it: 40% · 35% · 20% · 5% of those with any. */
+/** With a separate zero class, the rest after it: 40% · 35% · 20% · 5% of positive values. */
 const ABOVE_ZERO_CUTS = [0.4, 0.75, 0.95] as const
 const ABOVE_ZERO_OPACITY = [0.2, 0.4, 0.64, 0.88] as const
 /** A balance's grey band holds the 30% closest to zero; full colour, as for a level, only the 5% farthest from it. */
@@ -86,7 +86,10 @@ function intervalsOf(bounds: readonly number[]): readonly ClassInterval[] {
 /** The last class whose lower bound a value reaches. */
 const stepIn = (bounds: readonly number[], value: number) => bounds.filter((bound) => value >= bound).length
 
-export function mapScale(values: readonly (number | null)[], options: { readonly diverging: boolean }): MapScale {
+export function mapScale(
+  values: readonly (number | null)[],
+  options: { readonly diverging: boolean; readonly separateZero?: boolean },
+): MapScale {
   const present = values.filter((value): value is number => value !== null)
   const positionIn = (edges: readonly number[], classOf: (value: number) => number, count: number) => (value: number) => {
     const step = classOf(value)
@@ -118,7 +121,7 @@ export function mapScale(values: readonly (number | null)[], options: { readonly
 
   const sorted = [...present].sort((a, b) => a - b)
   const zeros = sorted.filter((value) => value === 0).length
-  if (zeros > sorted.length * 0.1) {
+  if (zeros > 0 && (options.separateZero || zeros > sorted.length * 0.1)) {
     const bounds = boundsAt(
       sorted.filter((value) => value > 0),
       ABOVE_ZERO_CUTS,
@@ -163,23 +166,19 @@ export interface MapLayer {
 }
 
 /**
- * The map's fills: the scale's classes, then the UATs with no public water
- * network, muted — a fact, not a gap — then those with no figure, hatched.
+ * The map's fills: the scale's classes, then all UATs with no figure, hatched.
  * A class with no UAT draws nothing.
  */
-export function classLayers(scale: MapScale, paths: readonly string[], noNetwork: ReadonlySet<number>): readonly MapLayer[] {
+export function classLayers(scale: MapScale, paths: readonly string[]): readonly MapLayer[] {
   const members: string[][] = scale.classes.map(() => [])
-  const muted: string[] = []
   const hatched: string[] = []
   paths.forEach((d, index) => {
     const step = scale.classAt(index)
     if (step !== null) members[step]!.push(d)
-    else if (noNetwork.has(index)) muted.push(d)
     else hatched.push(d)
   })
   const layers: MapLayer[] = [
     ...scale.classes.map((drawn, step) => ({ key: `class-${step}`, fill: drawn.fill, opacity: drawn.opacity, d: members[step]!.join('') })),
-    { key: 'no-network', fill: 'fill-muted stroke-muted', opacity: 1, d: muted.join('') },
     { key: 'no-data', fill: null, opacity: 1, d: hatched.join('') },
   ]
   return layers.filter((layer) => layer.d !== '')

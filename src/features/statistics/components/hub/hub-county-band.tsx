@@ -330,7 +330,7 @@ export function HubCountyBand({ layer: read, definition }: { readonly layer: Sta
             county={null}
             keys={{
               noData: layer.missingCounties.length,
-              noNetwork: 0,
+              territoryLevel: 'county',
               // Named where few: a hatched county can be neither focused nor tapped. Past five, the count.
               ...(layer.missingCounties.length <= 5
                 ? { noDataNames: layer.missingCounties.map((code) => countyNameRo(code) ?? code).sort((a, b) => a.localeCompare(b, 'ro')) }
