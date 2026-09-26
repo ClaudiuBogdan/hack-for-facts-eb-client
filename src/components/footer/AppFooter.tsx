@@ -11,6 +11,7 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { useSentryConsent } from '@/hooks/useSentryConsent'
 import { openSentryFeedback } from '@/lib/sentry'
 import { FOOTER_SCENE_CLEAR_PX, FooterScene, FooterSceneStyles, useFooterScene } from './footer-scene'
+import { FooterUnderground } from './footer-underground'
 
 /**
  * The app-wide footer, on the landing's skin: the ruled frame, mono column
@@ -19,7 +20,8 @@ import { FOOTER_SCENE_CLEAR_PX, FooterScene, FooterSceneStyles, useFooterScene }
  * It lives inside `SidebarInset`, so it sits under whatever page is open and
  * mounts once for the whole session. The scene is gated until the footer is a
  * viewport away and paused when it is off screen (see `footer-scene.tsx`), so
- * a page that is never scrolled to the bottom pays nothing for it.
+ * a page that is never scrolled to the bottom pays nothing for the mountain
+ * scene. The static underground decoration adds one 4.94 KB image.
  *
  * What is here and what is not is recorded in `docs/design/landing/design.md`.
  */
@@ -92,9 +94,14 @@ export function AppFooter(): ReactElement {
        layers: the frame's hairline rules sit unlayered at the bottom, the scene
        at z-index 1 covers them, and the two content blocks carry `z-10` so the
        range rises *behind* the last rows of text rather than over them. */
-    <footer ref={footerRef} className="relative overflow-hidden border-t bg-background">
+    <footer
+      ref={footerRef}
+      // Keep the underground decoration out of scroll height.
+      className="relative border-t bg-background [contain:layout]"
+    >
       <FooterSceneStyles />
       <FooterScene />
+      <FooterUnderground />
       {/* The frame does not take pointer events and its two content blocks do.
           Its box covers the whole footer, padding included, so as a layered
           positioned element it swallowed every click meant for the sky

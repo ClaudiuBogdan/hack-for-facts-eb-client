@@ -87,6 +87,25 @@ and the `[data-reveal]` state machine cannot be expressed as utilities without
 arbitrary values that would leak literals into full-checkout CSS. Recorded here
 as the exception; do not extend the pattern to static styling.
 
+## Underground overscroll artwork — 26 September 2026
+
+`FooterUnderground` extends the mountain into earth and tree roots, rock, and
+lava with dark basalt crust. It is 216px tall and translated below the footer
+with a 1px overlap. It sits in front of the mountain (z-index 10 versus 1),
+because fully covered artwork disappeared during native Chrome overscroll.
+
+The decoration is one background using `src/assets/images/underground.webp`
+(72 × 216, 4,938 bytes), encoded with
+`cwebp -resize 72 216 -q 75 -m 6 -metadata none`. It loads once when the footer
+mounts and repeats horizontally at its native dimensions, preserving proportions.
+
+`contain: layout` keeps the artwork out of document scroll height. There are no
+added scrolling handlers, custom bounce, or animations. The decoration ignores
+pointer events and is hidden from assistive technology. Native overscroll painting
+is browser-dependent: 2px overlap was confirmed in macOS Chrome; the final 1px
+setting was requested afterward. The rendering explanation remains a hypothesis;
+see [the research note](../../research/footer-native-overscroll-2026-09-26.md).
+
 ## Follow-ups
 
 - A real `/despre` page, and the band link back once it exists.
