@@ -30,6 +30,27 @@ export function annualInflationRate(index: number, decimals: number): number {
 }
 
 /**
+ * Whether band 01's sentence — „Trăim mai mult, avem mai multe locuințe și
+ * primim mai mulți turiști, dar se nasc tot mai puțini copii." — holds on the
+ * series the band draws, live latest year included: life expectancy,
+ * dwellings and tourist arrivals above their first year; births below theirs
+ * and down in each of their last five years. A series missing is a claim
+ * with nothing under it, and the sentence goes.
+ */
+export function nationalLedeHolds(indicators: readonly StatisticsHubIndicator[]): boolean {
+  const series = (code: string) => indicators.find((indicator) => indicator.code === code)?.series ?? []
+  const grew = (code: string) => {
+    const points = series(code)
+    return points.length > 1 && points[points.length - 1].value > points[0].value
+  }
+  const births = series('POP201D')
+  const recent = births.slice(-5)
+  const fewerEachYear =
+    recent.length === 5 && recent.every((point, index) => index === 0 || point.value < recent[index - 1].value)
+  return grew('POP217A') && grew('LOC101B') && grew('TUR104E') && fewerEachYear && recent[4].value < births[0].value
+}
+
+/**
  * The first year of the unbroken run of years, ending at the latest year both
  * series have, in which deaths outnumbered births. Null when that latest year
  * does not have more deaths than births. A year either series lacks — or

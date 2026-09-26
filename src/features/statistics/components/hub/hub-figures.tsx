@@ -113,7 +113,8 @@ export function HubFigureRows({
                   {indicator.valueStatus ? ` · ${describeValueStatus(indicator.valueStatus)}` : null}
                 </MonoLabel>
               </span>
-              <span className="hidden justify-self-end text-muted-foreground sm:block">
+              {/* The INS series colour: the chart the row opens draws the same line. */}
+              <span className="hidden justify-self-end text-chart-sky sm:block">
                 {indicator.series.length > 1 ? <HubSparkline points={indicator.series} width={96} height={24} /> : null}
               </span>
               <span className="text-right">

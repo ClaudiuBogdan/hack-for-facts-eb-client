@@ -23,7 +23,7 @@ import { HubThemePanel } from '../components/hub/hub-theme-panel'
 import { HubThenNow } from '../components/hub/hub-then-now'
 import { UatMapSection } from '../components/uat-map/uat-map-section'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
-import { deathsExceedBirthsSince } from '../lib/hub-indicators'
+import { deathsExceedBirthsSince, nationalLedeHolds } from '../lib/hub-indicators'
 import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
 
 /**
@@ -131,17 +131,18 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               <MonoLabel className="text-muted-foreground">
                 <Trans>Statistici / INS</Trans>
               </MonoLabel>
-              {/* Two lines at every width: the second is the shorter, so it never
-                  leaves a word alone on a third. */}
-              <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
+              {/* Two lines at every width, never a word alone on a third: the size
+                  follows the longer line (the second, 8em) — with the phone's width
+                  below `sm`, and 72px only once the column holds it. */}
+              <h1 className="mt-5 text-[clamp(2rem,12.2vw_-_0.4rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl xl:text-7xl">
                 <Trans>
-                  Cifrele oficiale
+                  Statistica oficială,
                   <br />
-                  ale României
+                  pe înțelesul tuturor
                 </Trans>
               </h1>
               <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                <Trans>De la Institutul Național de Statistică, pentru țară, județe și fiecare localitate.</Trans>
+                <Trans>Datele Institutului Național de Statistică, pentru țară, județe și fiecare localitate.</Trans>
               </p>
               <div className="mt-6 sm:mt-7">
                 <HubDatasetSearch autoFocus />
@@ -208,6 +209,11 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
                     <br />
                     an de an
                   </Trans>
+                }
+                lede={
+                  nationalLedeHolds(figureRows) ? (
+                    <Trans>Trăim mai mult, avem mai multe locuințe și primim mai mulți turiști, dar se nasc tot mai puțini copii.</Trans>
+                  ) : null
                 }
               />
             </div>

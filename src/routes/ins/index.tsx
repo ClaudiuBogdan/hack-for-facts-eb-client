@@ -69,7 +69,7 @@ export const Route = createFileRoute("/ins/")({
   head: () => ({
     meta: insPageMeta({
       title: `${t`Statistici INS`} — Transparenta.eu`,
-      description: t`Cifrele oficiale ale României, de la Institutul Național de Statistică: inflație, salarii, șomaj, populație, locuințe și turism, pentru țară, județe și fiecare localitate.`,
+      description: t`Statistica oficială a României, pe înțelesul tuturor: salarii, inflație, șomaj și populație, pentru țară, județe și fiecare localitate, din datele INS.`,
     }),
   }),
 });

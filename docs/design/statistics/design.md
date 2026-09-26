@@ -2210,6 +2210,35 @@ cells a year. A county's link names its figure, its place and its distance
 from the average, what the tooltip shows a pointer. `CountyMap` keeps only
 its picker mode, for the comparisons page.
 
+## 6ak. The hero and band 01, in plain words (2026-09-26)
+
+At the product owner's request, the hero gets a title that says what the
+page does, and band 01 („România, an de an") the INS series colour and a
+sentence under its title.
+
+- **The hero reads „Statistica oficială, / pe înțelesul tuturor"** over
+  „Datele Institutului Național de Statistică, pentru țară, județe și fiecare
+  localitate." — chosen by the owner from five directions; it keeps §6n's
+  source and reach. The title's second line is now the longer (8em against
+  7.6em), so its size follows that line: with the phone's width below `sm`
+  (about 33px at 320 to 44px), 60px up to `xl`, 72px from there — two lines
+  at every width from 320 to 1920. „România în cifre" was ruled out: it is
+  the title of INS's own yearbook. The page's meta description follows, cut
+  to 151 characters so a search snippet keeps the reach.
+- **The sparklines are `chart-sky`**, the colour of the chart each row opens
+  and of the territory page's lines (§6ag); §6ac had left the hub's grey.
+- **The lede returns** (§6n dropped one that repeated the figures band), now
+  as the rows' overview in plain words: „Trăim mai mult, avem mai multe
+  locuințe și primim mai mulți turiști, dar se nasc tot mai puțini copii." It
+  names no year and no figure — tourism's series starts in 2001, the others
+  in 1990, and the rows carry the numbers. It is written, but shown only
+  while the series the band draws bear it out, live latest year included
+  (`nationalLedeHolds`): life expectancy, dwellings and arrivals above their
+  first year, births below theirs and down in each of the last five. A
+  contrary year, or a row missing, and the sentence goes; the tests hold it
+  against the captured histories, so a refresh that no longer bears it out
+  fails before it ships.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

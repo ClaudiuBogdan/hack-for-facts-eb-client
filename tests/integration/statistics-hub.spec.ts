@@ -54,7 +54,7 @@ test.describe('Statistics hub', () => {
   test('renders the hero, the headline figures and the national rows with exact cell links', async ({ page }) => {
     await page.goto('/ins')
     await waitForHydration(page)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Cifrele oficiale')
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Statistica oficială')
 
     // The four figures a reader comes for, each at its latest period:
     // inflation is the index less 100, at the index's own precision.

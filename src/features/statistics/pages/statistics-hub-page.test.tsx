@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { hubData } from '../test/hub-fixtures'
+import { HUB_NATIONAL_SPECS, hubData, hubIndicator } from '../test/hub-fixtures'
 import { StatisticsHubPage } from './statistics-hub-page'
 
 const { navigateMock, useStatisticsHubMock } = vi.hoisted(() => ({
@@ -102,7 +102,7 @@ describe('StatisticsHubPage', () => {
     stub(hubData())
     render(<StatisticsHubPage search={{}} />)
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cifrele oficiale')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Statistica oficială')
     const band = screen.getByRole('region', { name: 'Cifre-cheie' })
     // The count-up carries the full number for readers; inflation is the
     // index less 100, at the index's own precision.
@@ -170,6 +170,15 @@ describe('StatisticsHubPage', () => {
     expect(within(employees).getByText('persoane')).toBeInTheDocument()
     expect(within(rows).getAllByRole('listitem')).toHaveLength(6)
     expect(within(rows).queryByText(/Populația|Rata șomajului|Inflația/)).not.toBeInTheDocument()
+    expect(rows).toHaveTextContent('Trăim mai mult')
+  })
+
+  it('leaves out the national lede when a series it speaks for is missing', () => {
+    stub(hubData({ indicators: HUB_NATIONAL_SPECS.filter((spec) => spec.code !== 'TUR104E').map(hubIndicator) }))
+    render(<StatisticsHubPage search={{}} />)
+    const rows = screen.getByRole('heading', { name: /an de an/ }).closest('section')!
+    expect(within(rows).getAllByRole('listitem')).toHaveLength(5)
+    expect(rows).not.toHaveTextContent('Trăim mai mult')
   })
 
   it('offers the eight domains by what they hold, not by how many matrices they count', () => {
