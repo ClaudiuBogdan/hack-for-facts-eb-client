@@ -42,7 +42,7 @@ export function buildDatasetFilterInput(
       : ['AVAILABLE', 'CATALOG_ONLY'],
   }
 
-  if (search.q) filter.search = search.q
+  if (search.q) filter.search = catalogSearchTerm(search.q)
   // One param carries the whole hierarchy: a domain filters the subtree under
   // it, anything deeper is the exact context a dataset hangs from. The server
   // has no filter between the two, which is why the rail's middle level opens
@@ -56,6 +56,30 @@ export function buildDatasetFilterInput(
   if (search.judet) filter.hasCountyData = true
 
   return filter
+}
+
+/** A noun's „-ție"/„-ția" ending, once the diacritics are folded: what its other forms share. */
+const TIE_ENDING = /ti[ea]$/i
+/** Shorter than this, the ending is the word („tie"): nothing to stem. */
+const MIN_STEM_LENGTH = 5
+
+/**
+ * The term the catalog is asked for, from what the reader typed. The server
+ * matches a plain substring against names INS writes without diacritics and
+ * often in capitals („POPULATIA DUPA DOMICILIU"), so „populație" and
+ * „populatie" both go as `populati`: the diacritics folded, then a noun's
+ * „-ție"/„-tie"/„-ția"/„-tia" ending cut to the stem its forms share. The
+ * address keeps `q` as typed; only the request changes.
+ */
+export function catalogSearchTerm(q: string): string {
+  const folded = q
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .trim()
+  const words = folded.split(/\s+/)
+  const last = words[words.length - 1] ?? ''
+  if (last.length < MIN_STEM_LENGTH || !TIE_ENDING.test(last)) return folded
+  return folded.slice(0, -1)
 }
 
 /** Zero-based offset for the requested page. */

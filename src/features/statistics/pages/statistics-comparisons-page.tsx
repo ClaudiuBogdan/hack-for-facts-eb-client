@@ -25,7 +25,7 @@ import { useComparisonReading } from '../hooks/use-comparison-reading'
 import { useComparisonSearch } from '../hooks/use-comparison-search'
 import { useComparisonCountyLayer, useComparisonDataset, useComparisonPeers, useComparisons } from '../hooks/use-comparisons'
 import { ComparisonDatasetError } from '../lib/comparison-dataset-error'
-import { COMPARISON_EXAMPLE_PRESET, COMPARISON_PRESETS, COMPARISON_QUICK_INDICATORS } from '../lib/comparison-presets'
+import { COMPARISON_EXAMPLE_PRESET, COMPARISON_PRESETS, COMPARISON_QUICK_INDICATORS, quickIndicatorLabel } from '../lib/comparison-presets'
 import { editComparisonSearch, type ComparisonSearchEdit } from '../lib/comparison-search-edits'
 import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-territories'
 import { HUB_EXAMPLE_PLACES } from '../lib/landing-constants'
@@ -119,11 +119,14 @@ export function StatisticsComparisonsPage() {
   // ---------------------------------------------------------------------------
   // The rail.
 
-  const quick = COMPARISON_QUICK_INDICATORS.find((entry) => entry.code === datasetMeta?.code)
+  // A quick indicator is named from the address alone: the rail says
+  // „Salariați (număr mediu)" on the first paint, not „FOM104D" until the
+  // dataset is read.
+  const quick = quickIndicatorLabel(datasetCode)
   const localities = datasetMeta?.has_uat_data ?? true
   const indicator = {
     code: datasetCode || undefined,
-    name: datasetMeta ? (quick ? i18n._(quick.label) : (datasetMeta.name_ro ?? datasetMeta.code)) : null,
+    name: quick ? i18n._(quick) : datasetMeta ? (datasetMeta.name_ro ?? datasetMeta.code) : null,
     meta: datasetMeta ? (localities ? datasetMeta.code : `${datasetMeta.code} · ${t`doar județe`}`) : null,
   }
 
@@ -229,7 +232,6 @@ export function StatisticsComparisonsPage() {
           <p>
             <Trans>Selecția din adresă nu este validă. Corectează teritoriile, coordonatele, unitatea sau perioada.</Trans>
           </p>
-          <pre className="overflow-auto rounded-sm bg-muted/60 p-2 text-xs">{JSON.stringify(effectiveSearch, null, 2)}</pre>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => edit({ kind: 'reset-source' })}>
               <Trans>Resetează selecția sursei</Trans>

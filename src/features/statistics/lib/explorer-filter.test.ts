@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseStatisticsDatasetExplorerSearch } from '@/schemas/statistics'
 import {
   buildDatasetFilterInput,
+  catalogSearchTerm,
   clearedExplorerFilters,
   clearedExplorerSearch,
   countActiveExplorerFilters,
@@ -36,7 +37,8 @@ describe('buildDatasetFilterInput', () => {
 
     expect(filter).toEqual({
       dataStatus: ['AVAILABLE', 'CATALOG_ONLY'],
-      search: 'populatie',
+      // The stem: „populatie" is no substring of „POPULATIA" (see `catalogSearchTerm`).
+      search: 'populati',
       rootContextCode: '2',
       periodicity: ['ANNUAL', 'MONTHLY'],
       hasUatData: true,
@@ -48,6 +50,28 @@ describe('buildDatasetFilterInput', () => {
     const filter = buildDatasetFilterInput({ uat: false, judet: false })
     expect(filter.hasUatData).toBeUndefined()
     expect(filter.hasCountyData).toBeUndefined()
+  })
+})
+
+describe('catalogSearchTerm', () => {
+  it('folds the diacritics and cuts a „-ție" noun to the stem POPULATIA shares', () => {
+    for (const typed of ['populatie', 'populație', 'populatia', 'populația', 'POPULAȚIE']) {
+      const term = catalogSearchTerm(typed)
+      expect(term.toLowerCase()).toBe('populati')
+      expect('POPULATIA DUPA DOMICILIU'.toLowerCase()).toContain(term.toLowerCase())
+      expect('servicii prestate pentru populatie').toContain(term.toLowerCase())
+    }
+    // Only the last word is stemmed, and only that ending: the rule is small on purpose.
+    expect(catalogSearchTerm('rata inflației')).toBe('rata inflatiei')
+    expect(catalogSearchTerm('populație rezidentă')).toBe('populatie rezidenta')
+  })
+
+  it('leaves other words as typed, diacritics aside', () => {
+    expect(catalogSearchTerm('șomeri înregistrați')).toBe('someri inregistrati')
+    expect(catalogSearchTerm('Salariati')).toBe('Salariati')
+    expect(catalogSearchTerm('  natalitate ')).toBe('natalitate')
+    // A word that is only the ending is not stemmed to nothing.
+    expect(catalogSearchTerm('tie')).toBe('tie')
   })
 })
 

@@ -43,7 +43,8 @@ export function TerritoryPeriodControl({ years, active, available, onChange }: P
         </label>
         <Select value={active ?? LATEST} onValueChange={(value) => onChange(value === LATEST ? null : value)}>
           <SelectTrigger id={TERRITORY_PERIOD_CONTROL_ID} className="w-44" aria-label={t`Filtru perioadă`}>
-            <SelectValue />
+            {/* The label as children: the trigger reads on the first paint, before the item text resolves. */}
+            <SelectValue>{activeLabel ?? t`Ultima perioadă`}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={LATEST}>{t`Ultima perioadă`}</SelectItem>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { contextDisplayName, datasetDisplayName } from './dataset-names'
+import { contextDisplayName, datasetDisplayName, sentenceCaseShouting } from './dataset-names'
 
 const dataset = {
   code: 'SOM101B',
@@ -20,6 +20,32 @@ describe('datasetDisplayName', () => {
     expect(datasetDisplayName({ ...dataset, nameEn: null }, 'en')).toBe('Șomerii înregistrați pe sexe')
     expect(datasetDisplayName({ ...dataset, nameRo: ' ' }, 'ro')).toBe('Registered unemployed by sex')
     expect(datasetDisplayName({ code: 'X', nameRo: null, nameEn: null }, 'ro')).toBe('X')
+  })
+
+  it('sets a shouted opening in sentence case and keeps the breakdowns, in either language', () => {
+    const shouted = {
+      code: 'POP107D',
+      nameRo: 'POPULATIA DUPA DOMICILIU la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati',
+      nameEn: 'LEGALLY RESIDENT POPULATION, by age group and ages, sex, counties and localities at January 1st.',
+    }
+    expect(datasetDisplayName(shouted, 'ro')).toBe(
+      'Populatia dupa domiciliu la 1 ianuarie pe grupe de varsta si varste, sexe, judete si localitati',
+    )
+    expect(datasetDisplayName(shouted, 'en')).toBe(
+      'Legally resident population, by age group and ages, sex, counties and localities at January 1st.',
+    )
+  })
+})
+
+describe('sentenceCaseShouting', () => {
+  it('lowers a run of two or more capitalised words and leaves the rest', () => {
+    expect(sentenceCaseShouting('SOMERI INREGISTRATI la sfarsitul lunii')).toBe('Someri inregistrati la sfarsitul lunii')
+    expect(sentenceCaseShouting('ȘOMERI ÎNREGISTRAȚI')).toBe('Șomeri înregistrați')
+  })
+
+  it('leaves a single capitalised word, an acronym more often than a shout', () => {
+    expect(sentenceCaseShouting('UAT pe judete si localitati')).toBe('UAT pe judete si localitati')
+    expect(sentenceCaseShouting('Cifra de afaceri CAEN Rev.2')).toBe('Cifra de afaceri CAEN Rev.2')
   })
 })
 

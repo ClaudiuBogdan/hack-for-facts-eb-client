@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
+import { sentenceCaseShouting } from './dataset-names'
 import { formatHubPeriod } from './period'
 import { isInsPeriodicity, periodicityLabel } from './periodicity-labels'
 
@@ -18,8 +19,6 @@ export function tileDisplayName(tile: StatisticsIndicatorTile, locale: string): 
 const PLACE_BREAKDOWN = /(?:judete|counties)\s+(?:si|and)\s+(?:localitati|localities)(?:\s+(?:de|of)\s+(?:plecare|destinatie|departure|destination))?/i
 /** The last „pe"/„by" that opens a matrix's list of breakdowns. */
 const BREAKDOWN_OPENER = /[\s,]+(?:pe|by)\s+/gi
-/** A word INS sets in capitals: „POPULATIA", „DOMICILIU,". */
-const SHOUTED_WORD = /^[A-ZĂÂÎȘȚŞŢ]{2,}[,.]?$/
 
 /**
  * A matrix's name as a row on a place's page. INS names a matrix by what it
@@ -28,7 +27,8 @@ const SHOUTED_WORD = /^[A-ZĂÂÎȘȚŞŢ]{2,}[,.]?$/
  * this page shows one cell of it: the place's total. So the breakdown goes,
  * from its opening „pe"/„by" through „judete si localitati"; what INS adds
  * after it (a reference date, a parenthesis) stays; and a name that opens in
- * capitals is set in sentence case. A name that states no place breakdown is
+ * capitals is set in sentence case (`sentenceCaseShouting`, shared with the
+ * catalog and series titles). A name that states no place breakdown is
  * left as it is. The full name stays on the row's title and on the series.
  */
 export function shortIndicatorName(name: string): string {
@@ -48,18 +48,6 @@ export function shortIndicatorName(name: string): string {
   const joined =
     tail.length > 0 && !head.toLowerCase().includes(tail.toLowerCase()) ? `${head} ${tail}` : head
   return sentenceCaseShouting(joined)
-}
-
-/** „POPULATIA DUPA DOMICILIU la 1 ianuarie" → „Populatia dupa domiciliu la 1 ianuarie". */
-function sentenceCaseShouting(text: string): string {
-  const words = text.split(' ')
-  let run = 0
-  while (run < words.length && SHOUTED_WORD.test(words[run]!)) run += 1
-  if (run < 2) return text
-  const lowered = words.slice(0, run).join(' ').toLocaleLowerCase('ro')
-  const rest = words.slice(run).join(' ')
-  const opening = lowered.charAt(0).toLocaleUpperCase('ro') + lowered.slice(1)
-  return rest ? `${opening} ${rest}` : opening
 }
 
 /** Why a tile shows no figure, in the reader's words; null when it shows one. */

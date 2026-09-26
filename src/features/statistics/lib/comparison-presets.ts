@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 import type { StatisticsComparisonsSearch } from '@/schemas/statistics'
+import { HUB_EXAMPLE_PLACES } from './landing-constants'
 
 /**
  * Editorial comparison presets — URL search-param bundles rendered as links.
@@ -9,13 +10,36 @@ import type { StatisticsComparisonsSearch } from '@/schemas/statistics'
  * `insTerritories` API (2026-08-26): București 179132/B, Cluj-Napoca
  * 54975/CJ, Timișoara 155243/TM, Iași 95060/IS, Constanța 60419/CT,
  * Craiova 69900/DJ, Brașov 40198/BV, plus county codes TR and IF from the
- * decade-story probes. Titles are generic (translatable); territory NAMES
- * always render from the API response, never from these constants.
+ * decade-story probes. Titles are generic (translatable); a territory's
+ * NAME renders from the API response as soon as it is read —
+ * `COMPARISON_PRESET_PLACES` only names the page's first paint.
  */
 export interface ComparisonPreset {
   readonly id: string
   readonly title: MessageDescriptor
   readonly search: StatisticsComparisonsSearch
+}
+
+/**
+ * The municipalities the presets and the worked example name, each verified
+ * against the live `insTerritories` API (2026-08-26), so a preset's first
+ * paint reads „Craiova", not „69900", while the API names it. The hub's own
+ * examples (`HUB_EXAMPLE_PLACES`) are the rest of this list.
+ */
+export const COMPARISON_PRESET_PLACES: readonly { readonly siruta: string; readonly name: string }[] = [
+  { siruta: '69900', name: 'Craiova' },
+  { siruta: '40198', name: 'Brașov' },
+]
+
+/**
+ * The name this feature already documents for a SIRUTA code, or null. Every
+ * place listed is a municipality. It is the fallback before the code itself,
+ * never before a name the API has given.
+ */
+export function knownComparisonPlaceName(siruta: string): string | null {
+  return (
+    [...HUB_EXAMPLE_PLACES, ...COMPARISON_PRESET_PLACES].find((place) => place.siruta === siruta)?.name ?? null
+  )
 }
 
 export const COMPARISON_PRESETS: readonly ComparisonPreset[] = [
@@ -111,3 +135,8 @@ export const COMPARISON_QUICK_INDICATORS: readonly {
   { code: 'POP217A', label: msg`Speranța de viață`, localities: false },
   { code: 'SOM103A', label: msg`Rata șomajului`, localities: false },
 ]
+
+/** The quick indicator's short label for a matrix code, before its dataset is read; null for any other code. */
+export function quickIndicatorLabel(code: string): MessageDescriptor | null {
+  return COMPARISON_QUICK_INDICATORS.find((entry) => entry.code === code)?.label ?? null
+}

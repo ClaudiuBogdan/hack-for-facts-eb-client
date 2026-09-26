@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { render, screen, within } from '@/test/test-utils'
+import { cleanup, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatHubPeriod } from '../lib/period'
 import { territoryHubFixture } from '../test/territory-hub-fixtures'
@@ -73,6 +73,7 @@ function mount(search: Parameters<typeof StatisticsTerritoryHubPage>[0]['search'
 describe('StatisticsTerritoryHubPage', () => {
   beforeEach(() => {
     navigateMock.mockReset()
+    useStatisticsTerritoryHubMock.mockClear()
     useStatisticsTerritoryHubMock.mockImplementation(({ siruta }: { siruta: string }) =>
       createTerritoryHubQueryStub({ data: territoryHubFixture(siruta) }),
     )
@@ -100,6 +101,18 @@ describe('StatisticsTerritoryHubPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Vezi și în alte domenii')).toBeInTheDocument()
     expect(document.title).toContain('Cluj-Napoca')
+  })
+
+  it('places the town under its county, and Bucharest — its own county cell — under the country alone', () => {
+    mount()
+    expect(screen.getByRole('navigation', { name: 'Ierarhie teritorială' })).toHaveTextContent(/România.*Cluj-Napoca/)
+
+    cleanup()
+    mount({}, '179132')
+    const crumbs = screen.getByRole('navigation', { name: 'Ierarhie teritorială' })
+    expect(crumbs).not.toHaveTextContent('județul')
+    expect(crumbs).toHaveTextContent(/România.*București/)
+    expect(screen.getByRole('heading', { level: 1, name: 'București' })).toBeInTheDocument()
   })
 
   it('says the source once, in the header, and no tile carries a source button of its own', () => {

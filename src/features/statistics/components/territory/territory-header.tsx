@@ -8,6 +8,7 @@ import { comparisonPlaceName } from '../../lib/comparison-format'
 import { insTempoHomeUrl } from '../../lib/ins-tempo'
 import { formatHubPeriod } from '../../lib/period'
 import { statisticsTheme } from '../../lib/statistics-theme'
+import { BUCHAREST_MUNICIPALITY_SIRUTA } from '../../lib/territory'
 
 type TerritoryHeaderProps = {
   readonly identity: StatisticsTerritoryIdentity
@@ -55,6 +56,9 @@ export function TerritoryHeader({ identity, indicatorCount, latestDataPeriod }: 
   const place = identity.name ? comparisonPlaceName(identity.name) : null
   const name = place?.name ?? `SIRUTA ${identity.siruta}`
   const kind = place?.kind ?? levelLabel(identity.level)
+  // Bucharest is its own county cell: „județul București / București" would
+  // say the place twice.
+  const county = identity.siruta === BUCHAREST_MUNICIPALITY_SIRUTA ? null : identity.countyName
 
   return (
     <div className="space-y-3">
@@ -65,10 +69,10 @@ export function TerritoryHeader({ identity, indicatorCount, latestDataPeriod }: 
               <Trans>România</Trans>
             </Link>
           </li>
-          {identity.countyName ? (
+          {county ? (
             <li className="flex items-center gap-1">
               <span aria-hidden>/</span>
-              <Trans>județul</Trans> {identity.countyName}
+              <Trans>județul</Trans> {county}
             </li>
           ) : null}
           <li className="flex items-center gap-1" aria-current="page">

@@ -4,6 +4,7 @@ import { countyNameRo } from '@/lib/territory-counties'
 import type { StatisticsHubUnit } from '@/schemas/statistics'
 import { comparisonSeriesColor, comparisonSeriesHex } from '../components/comparison/comparison-palette'
 import { comparisonPlaceName } from '../lib/comparison-format'
+import { knownComparisonPlaceName } from '../lib/comparison-presets'
 import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-territories'
 import {
   defaultComparisonView,
@@ -49,6 +50,21 @@ export interface ComparisonReading {
 }
 
 /**
+ * A locality as the page names it: the API's name once read; before that,
+ * the name this feature already documents for the code (the presets'
+ * municipalities), so a preset's first paint reads „Craiova" rather than
+ * „69900"; and the code itself for any other place.
+ */
+function localityPlace(siruta: string, read: string | undefined): { readonly name: string; readonly kind: string } {
+  if (read !== undefined) {
+    const { name, kind } = comparisonPlaceName(read)
+    return { name, kind: kind ?? t`localitate` }
+  }
+  const known = knownComparisonPlaceName(siruta)
+  return known ? { name: known, kind: t`municipiu` } : { name: siruta, kind: t`localitate` }
+}
+
+/**
  * The reading the page makes of one comparison: who is compared (named,
  * kinded, coloured), the numbers along the period axis, the window on it,
  * the unit and the view. Every value here is a projection of the matrix
@@ -66,13 +82,13 @@ export function useComparisonReading(params: {
   const territories = useMemo(() => {
     const nameByCode = new Map((matrix?.rows ?? []).map((row) => [row.code, row.name] as const))
     return tokens.slice(0, MAX_COMPARISON_TERRITORIES).map((entry, index): ComparisonReadingTerritory => {
-      const raw = nameByCode.get(entry.code) ?? resolvedNames.get(entry.code) ?? entry.code
+      const read = nameByCode.get(entry.code) ?? resolvedNames.get(entry.code)
       const place =
         entry.level === 'NATIONAL'
           ? { name: t`România`, kind: t`țară` }
           : entry.level === 'NUTS3'
-            ? { name: countyNameRo(entry.code) ?? comparisonPlaceName(raw).name, kind: t`județ` }
-            : (({ name, kind }) => ({ name, kind: kind ?? t`localitate` }))(comparisonPlaceName(raw))
+            ? { name: countyNameRo(entry.code) ?? comparisonPlaceName(read ?? entry.code).name, kind: t`județ` }
+            : localityPlace(entry.code, read)
       return { ...entry, ...place, color: comparisonSeriesColor(index), hex: comparisonSeriesHex(index) }
     })
   }, [matrix, tokens, resolvedNames])
