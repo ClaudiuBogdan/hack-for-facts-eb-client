@@ -169,3 +169,34 @@ This list is organized so each bullet can become a standalone user story doc des
 
 - Key areas covered: routes/pages, core components, filters, data fetching, caching, persistence, analytics, SEO, accessibility, and UX on desktop/mobile.
 - If you want, I can generate the file scaffolds (one per bullet) next.
+
+
+Founder
+Claudiu Constantin Bogdan
+Transparenta.eu
+https://www.facebook.com/claudiuconstantin.bogdan
+https://www.linkedin.com/in/claudiuconstantinbogdan/
+
+Angel 1
+Florin Pop
+Geeks for Democracy | Banii noștri
+https://www.facebook.com/orlat84
+https://www.linkedin.com/in/orlat84/
+
+Angel 2
+Flavia Gheorghe
+AmpliFY ONG | How to Web
+https://www.facebook.com/flavia.obreja
+https://www.linkedin.com/in/flavia-gheorghe-49b63062/
+
+Angel 3
+Elena Calistru
+Funky Citizens | Member @EESC civil society group.
+https://www.facebook.com/ElenaCalistru
+https://www.linkedin.com/in/elena-calistru-753a0a30/
+
+Angel 4
+Vasile Crăciunescu
+Geo-Spatial
+https://www.facebook.com/vasilecraciunescu
+https://www.linkedin.com/in/vasilecraciunescu/
