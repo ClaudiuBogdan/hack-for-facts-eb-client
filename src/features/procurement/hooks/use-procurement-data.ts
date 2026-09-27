@@ -6,18 +6,15 @@ import {
   fetchProcurementLanding,
   fetchProcurementSearch,
   fetchProcurementSupplierRecords,
-  fetchProcurementInstitutionOverview,
   fetchProcurementSupplierSlice,
   fetchProcurementTerritoryOverview,
   type ProcurementAuthoritySliceScope,
   type ProcurementSliceScope,
   type ProcurementBasisOverviewRequest,
-  type ProcurementInstitutionScopes,
 } from '../api/procurement-api'
 import type {
   AuthorityProcurementSlice,
   CpvCategoryPage,
-  ProcurementInstitutionOverview,
   ProcurementRecordDetail,
 } from '@/schemas/procurement'
 import type { DetailGrainKey, DetailRecord } from '../lib/detail-config'
@@ -232,27 +229,6 @@ export function useProcurementSupplierSlice(
   })
 }
 
-/**
- * Exported as options rather than inlined in the hooks below so the route
- * loader can prefetch the *same* cache entries the page reads. Key drift
- * between loader and hook would silently double every request.
- */
-export function procurementInstitutionOverviewQueryOptions(
-  cui: string,
-  scopes: ProcurementInstitutionScopes,
-) {
-  return queryOptions({
-    queryKey: [
-      ...PROCUREMENT_QUERY_KEY,
-      'institution-overview',
-      cui,
-      scopes,
-    ] as const,
-    queryFn: () =>
-      fetchProcurementInstitutionOverview({ authorityCui: cui, scopes }),
-  })
-}
-
 export function procurementAuthoritySliceQueryOptions(
   cui: string,
   scope?: ProcurementAuthoritySliceScope,
@@ -265,23 +241,6 @@ export function procurementAuthoritySliceQueryOptions(
       scope ?? null,
     ] as const,
     queryFn: () => fetchProcurementAuthoritySlice(cui, scope),
-  })
-}
-
-/**
- * Institution profile spine — all six populations + the four signals for one
- * buyer, under the page's current scope. The scope is part of the query key,
- * so period/CPV/supplier changes refetch exactly like the hub does.
- */
-export function useProcurementInstitutionOverview(
-  cui: string,
-  scopes: ProcurementInstitutionScopes,
-  initialData?: ProcurementInstitutionOverview,
-) {
-  return useQuery({
-    ...procurementInstitutionOverviewQueryOptions(cui, scopes),
-    initialData,
-    enabled: Boolean(cui),
   })
 }
 

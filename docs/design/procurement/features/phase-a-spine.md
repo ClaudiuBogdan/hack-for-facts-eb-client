@@ -30,7 +30,7 @@ Shared hub scope (A2/B1/C1/D3/F2/F3):
 ## Key files
 
 - `src/features/procurement/components/procurement-authority-slice.tsx`
-- `src/features/procurement/components/procurement-institution-page.tsx`
+- `src/features/procurement/components/buyer/procurement-buyer-page.tsx` (the buyer page since 2026-09-27; see `../design.md` §13)
 - `src/features/procurement/components/procurement-supplier-page.tsx`
 - `src/components/entities/views/ContractsView.tsx`
 - `src/routes/procurement/institutions/$cui.{tsx,lazy.tsx}`

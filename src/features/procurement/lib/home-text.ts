@@ -2,7 +2,7 @@ import type { I18n } from '@lingui/core'
 import { plural, t } from '@lingui/core/macro'
 import type { CategoryFigure, ReaderCategory } from './home-categories'
 import { OTHER_CATEGORY, UNKNOWN_CATEGORY } from './home-categories'
-import { bigCountText, contractsCount, directPurchasesBig, moneyText, percentText } from './home-format'
+import { bigCountText, contractsCount, directPurchasesBig, lowerFirst, moneyText, percentText } from './home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, seriesSpan, type NationalRead } from './home-model'
 
 /**
@@ -11,10 +11,6 @@ import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, seriesSpan, type Nation
  * band then shows no lede, rather than a sentence that holds only for the
  * year it was written.
  */
-
-function lowerFirst(text: string): string {
-  return text.charAt(0).toLocaleLowerCase('ro-RO') + text.slice(1)
-}
 
 function isNamed(category: ReaderCategory): boolean {
   return category.key !== OTHER_CATEGORY.key && category.key !== UNKNOWN_CATEGORY.key

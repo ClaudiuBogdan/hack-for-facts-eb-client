@@ -1,23 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { homeYear } from '@/features/procurement/lib/home-model'
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
 const notFoundMock = vi.fn(() => new Error('not-found'))
-const fetchAuthoritySliceMock = vi.fn()
-const fetchInstitutionOverviewMock = vi.fn()
+const readForSsrMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
   notFound: notFoundMock,
 }))
 
-vi.mock('@/lib/http-cache', () => ({
-  createPublicPageCacheHeaders: () => ({}),
+// The global Lingui mock has no `setupI18n`: the request's translator reads a descriptor's source.
+vi.mock('@/lib/i18n', () => ({
+  translatorFor: () => ({ _: (message: string | { readonly id: string; readonly message?: string }) => (typeof message === 'string' ? message : (message.message ?? message.id)) }),
 }))
 
-vi.mock('@/features/procurement/api/procurement-api', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
-  fetchProcurementAuthoritySlice: fetchAuthoritySliceMock,
-  fetchProcurementInstitutionOverview: fetchInstitutionOverviewMock,
+vi.mock('@/features/procurement/api/procurement-buyer-ssr', () => ({
+  readProcurementBuyerForSsr: readForSsrMock,
 }))
 
 // Stubbed rather than partially mocked: `@/config/env` validates `import.meta.env`
@@ -28,51 +27,37 @@ vi.mock('@/config/env', () => ({
   getApiBaseUrl: () => 'https://api.example.com',
 }))
 
-const SLICE = { authorityName: 'Primăria X' } as const
-const OVERVIEW = { authorityName: 'Primăria X', populations: [] } as const
-
-type LoaderInput = {
-  readonly context: { readonly queryClient: unknown }
-  readonly params: { readonly cui: string }
-  readonly deps: {
-    readonly year?: number
-    readonly cpv?: string
-    readonly month?: string
-  }
-}
-
-async function importRoute() {
-  const { Route } = await import('./$cui')
-  return Route as unknown as {
-    loader: (input: LoaderInput) => Promise<{
-      readonly slice?: unknown
-      readonly overview?: unknown
-    }>
-    head: (input: {
-      readonly params: { readonly cui: string }
-      readonly loaderData?: unknown
-    }) => { readonly meta: ReadonlyArray<Record<string, unknown>> }
-  }
-}
-
 type QueryOptionsArg = { readonly queryKey: readonly unknown[] }
 
+interface RouteUnderTest {
+  readonly params: { readonly parse: (params: { readonly cui: string }) => { readonly cui: string } }
+  readonly validateSearch: (search: Record<string, unknown>) => Record<string, unknown>
+  readonly loader: (input: {
+    readonly context: { readonly queryClient: unknown }
+    readonly params: { readonly cui: string }
+    readonly deps: { readonly year?: number }
+  }) => Promise<Record<string, unknown>>
+  readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
+  readonly head: (input: {
+    readonly params: { readonly cui: string }
+    readonly loaderData?: Record<string, unknown>
+    readonly match: { readonly context: { readonly locale: string; readonly queryClient: { readonly getQueriesData: (filters: unknown) => unknown[] } } }
+  }) => { readonly meta: ReadonlyArray<Record<string, unknown>> }
+}
+
+async function importRoute(): Promise<RouteUnderTest> {
+  const { Route } = await import('./$cui')
+  return Route as unknown as RouteUnderTest
+}
+
 function createQueryClient() {
-  return {
-    ensureQueryData: vi.fn(
-      async (_options: QueryOptionsArg): Promise<unknown> => undefined,
-    ),
-    prefetchQuery: vi.fn(
-      async (_options: QueryOptionsArg): Promise<void> => undefined,
-    ),
-  }
+  return { prefetchQuery: vi.fn(async (_options: QueryOptionsArg): Promise<void> => undefined) }
 }
 
 /**
- * Runs `body` with `globalThis.window` removed — the idiom `-entities.$cui`
- * already uses for this branch. The real `shouldBlockLoaderForSsr` runs:
- * stubbing it would leave its environment sniff — the whole fix — untested and
- * let an inverted guard ship green.
+ * Runs `body` with `globalThis.window` removed, so the real
+ * `shouldBlockLoaderForSsr` takes its server branch — stubbing it would leave
+ * its environment sniff untested.
  */
 async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   const realWindow = globalThis.window
@@ -80,159 +65,107 @@ async function asServerRender<T>(body: () => Promise<T>): Promise<T> {
   try {
     return await body()
   } finally {
-    Object.defineProperty(globalThis, 'window', {
-      value: realWindow,
-      configurable: true,
-      writable: true,
-    })
+    Object.defineProperty(globalThis, 'window', { value: realWindow, configurable: true, writable: true })
   }
 }
 
-describe('/procurement/institutions/$cui loader', () => {
+const PROFILE = { identity: { cui: '4291620', name: 'Comuna Surduc' }, partial: false, directYears: [{ year: 2025, value: 2_838_842, count: 145 }], awardYears: [] }
+
+describe('/procurement/institutions/$cui', () => {
   beforeEach(() => {
     vi.resetModules()
-    routeStub.mockClear()
-    notFoundMock.mockClear()
-    fetchAuthoritySliceMock.mockReset()
-    fetchInstitutionOverviewMock.mockReset()
-    fetchAuthoritySliceMock.mockResolvedValue(SLICE)
-    fetchInstitutionOverviewMock.mockResolvedValue(OVERVIEW)
+    readForSsrMock.mockReset()
   })
 
   afterEach(() => {
     vi.resetModules()
   })
 
-  it('awaits both payloads while server-rendering, so crawlers get full data', async () => {
+  it('takes a CUI of digits only', async () => {
+    const route = await importRoute()
+    expect(route.params.parse({ cui: ' 4291620 ' })).toEqual({ cui: '4291620' })
+    expect(() => route.params.parse({ cui: 'RO4291620' })).toThrow('not-found')
+  })
+
+  it('keeps the year and the two band choices, and drops what it cannot use', async () => {
+    const route = await importRoute()
+    expect(route.validateSearch({ year: '2023', ce: 'contracte', mari: 'directe' })).toEqual({ year: 2023, ce: 'contracte', mari: 'directe' })
+    expect(route.validateSearch({ year: 'x', ce: 'all', mari: 3, cpv: '45', month: '2025-01' })).toEqual({})
+  })
+
+  it('reads the profile and the records on the server, for the year asked', async () => {
+    readForSsrMock.mockResolvedValue({ year: 2023, profile: PROFILE, records: { contracts: [], direct: [] } })
     const queryClient = createQueryClient()
     const route = await importRoute()
-
-    const data = await asServerRender(() =>
-      route.loader({
-        context: { queryClient },
-        params: { cui: '2540635' },
-        deps: {},
-      }),
-    )
-
-    expect(data.slice).toBe(SLICE)
-    expect(data.overview).toBe(OVERVIEW)
+    const data = await asServerRender(() => route.loader({ context: { queryClient }, params: { cui: '4291620' }, deps: { year: 2023 } }))
+    expect(readForSsrMock).toHaveBeenCalledWith('4291620', 2023)
+    expect(data.profile).toBe(PROFILE)
+    // Read directly, not seeded into the query client (its server clock would dehydrate stale).
     expect(queryClient.prefetchQuery).not.toHaveBeenCalled()
-    // Fetched directly, NOT seeded into the query client: dehydrating the
-    // server's `dataUpdatedAt` would make every CDN hit refetch on mount, and
-    // would put the SSR path on the client's `retry: 1` default.
-    expect(queryClient.ensureQueryData).not.toHaveBeenCalled()
   })
 
-  it('names the page in the server-rendered head', async () => {
+  it('describes the last complete year when the one asked is out of range', async () => {
+    readForSsrMock.mockResolvedValue({ year: homeYear() })
     const route = await importRoute()
-
-    const head = route.head({
-      params: { cui: '2540635' },
-      loaderData: { overview: OVERVIEW },
-    })
-
-    expect(head.meta).toContainEqual({
-      title: 'Primăria X — Achiziții publice — Transparenta.eu',
-    })
+    await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '4291620' }, deps: { year: 2015 } }))
+    expect(readForSsrMock).toHaveBeenCalledWith('4291620', homeYear())
   })
 
-  it('falls back to the CUI when the buyer has no name to show', async () => {
-    const route = await importRoute()
-
-    const head = route.head({
-      params: { cui: '2540635' },
-      loaderData: { overview: { authorityName: '   ' } },
-    })
-
-    expect(head.meta).toContainEqual({
-      title: 'Instituție CUI 2540635 — Achiziții publice — Transparenta.eu',
-    })
-  })
-
-  it('never blocks a client-side navigation — returns before the API answers', async () => {
-    const queryClient = createQueryClient()
-    // A prefetch that never settles: the loader must still resolve. Awaiting it
-    // is exactly the bug this split removes (~1.4s of frozen UI on click).
-    queryClient.prefetchQuery.mockImplementation(() => new Promise(() => {}))
-    const route = await importRoute()
-
-    const data = await route.loader({
-      context: { queryClient },
-      params: { cui: '2540635' },
-      deps: {},
-    })
-
-    expect(data.slice).toBeUndefined()
-    expect(data.overview).toBeUndefined()
-    expect(fetchAuthoritySliceMock).not.toHaveBeenCalled()
-    expect(fetchInstitutionOverviewMock).not.toHaveBeenCalled()
-    expect(queryClient.prefetchQuery).toHaveBeenCalledTimes(2)
-  })
-
-  it('prefetches the same query keys the page reads, so nothing is fetched twice', async () => {
+  it('starts both reads and returns at once on a client-side navigation', async () => {
     const queryClient = createQueryClient()
     const route = await importRoute()
-    const {
-      procurementAuthoritySliceQueryOptions,
-      procurementInstitutionOverviewQueryOptions,
-    } = await import('@/features/procurement/hooks/use-procurement-data')
-    const { buildInstitutionScopes } = await import(
-      '@/features/procurement/lib/institution-scopes'
-    )
-
-    await route.loader({
-      context: { queryClient },
-      params: { cui: '2540635' },
-      deps: { year: 2025 },
-    })
-
-    const prefetchedKeys = queryClient.prefetchQuery.mock.calls.map(
-      ([options]) => options.queryKey,
-    )
-    // Unfiltered on purpose: this one feeds the title and the quick-filter chip
-    // options, which must not change when a year is picked.
-    expect(prefetchedKeys).toContainEqual(
-      procurementAuthoritySliceQueryOptions('2540635').queryKey,
-    )
-    expect(prefetchedKeys).toContainEqual(
-      procurementInstitutionOverviewQueryOptions(
-        '2540635',
-        buildInstitutionScopes({ monthFrom: '2025-01', monthTo: '2025-12' }),
-      ).queryKey,
-    )
+    const data = await route.loader({ context: { queryClient }, params: { cui: '4291620' }, deps: {} })
+    expect(data).toEqual({ year: homeYear() })
+    expect(readForSsrMock).not.toHaveBeenCalled()
+    const keys = queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey)
+    expect(keys).toEqual([
+      ['procurement', 'buyer', 'profile', '4291620', homeYear()],
+      ['procurement', 'buyer', 'records', '4291620', homeYear(), 8],
+    ])
   })
 
-  it('warms the scope the page will read for a picked month and CPV division', async () => {
-    const queryClient = createQueryClient()
+  it('caches a whole render publicly, and never a failed or partial one', async () => {
     const route = await importRoute()
-    const { procurementInstitutionOverviewQueryOptions } = await import(
-      '@/features/procurement/hooks/use-procurement-data'
-    )
-    const { buildInstitutionScopes } = await import(
-      '@/features/procurement/lib/institution-scopes'
-    )
+    vi.stubEnv('DEV', false)
+    try {
+      const whole = route.headers({ loaderData: { year: 2025, profile: PROFILE, records: { contracts: [], direct: [] } } })
+      expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(whole.Vary).toBe('Accept-Encoding, Cookie')
+      for (const loaderData of [
+        { year: 2025, records: { contracts: [], direct: [] } },
+        { year: 2025, profile: PROFILE },
+        { year: 2025, profile: { ...PROFILE, partial: true }, records: { contracts: [], direct: [] } },
+      ]) {
+        const headers = route.headers({ loaderData })
+        expect(headers['Cache-Control']).toBe('no-store')
+        expect(headers['CDN-Cache-Control']).toBe('no-store')
+      }
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
 
-    await route.loader({
-      context: { queryClient },
-      params: { cui: '2540635' },
-      // A picked month wins over its year — the narrower selection. Warming the
-      // whole year here would leave the page to fetch the month from scratch.
-      deps: { year: 2025, month: '2025-04', cpv: '45' },
+  it('names the buyer in the head: from the loader, from any cached year after a year is picked, else by its CUI', async () => {
+    const route = await importRoute()
+    const context = (cached: unknown[] = []) => ({ locale: 'ro', queryClient: { getQueriesData: vi.fn(() => cached) } })
+    const named = route.head({ params: { cui: '4291620' }, loaderData: { year: 2025, profile: PROFILE }, match: { context: context() } })
+    expect(named.meta).toContainEqual({ title: 'Comuna Surduc — Achiziții publice — Transparenta.eu' })
+    const picked = route.head({
+      params: { cui: '4291620' },
+      loaderData: { year: 2023 },
+      match: { context: context([[['procurement', 'buyer', 'profile', '4291620', 2023], undefined], [['procurement', 'buyer', 'profile', '4291620', 2025], PROFILE]]) },
     })
+    expect(picked.meta).toContainEqual({ title: 'Comuna Surduc — Achiziții publice — Transparenta.eu' })
+    const unnamed = route.head({ params: { cui: '4291620' }, loaderData: { year: 2025 }, match: { context: context() } })
+    expect(unnamed.meta).toContainEqual({ title: 'Instituție CUI 4291620 — Achiziții publice — Transparenta.eu' })
+  })
 
-    const prefetchedKeys = queryClient.prefetchQuery.mock.calls.map(
-      ([options]) => options.queryKey,
-    )
-    expect(prefetchedKeys).toContainEqual(
-      procurementInstitutionOverviewQueryOptions(
-        '2540635',
-        buildInstitutionScopes({
-          monthFrom: '2025-04',
-          monthTo: '2025-04',
-          cpvDivision: '45',
-        }),
-      ).queryKey,
-    )
+  it('keeps a page with no record since 2019 out of search engines', async () => {
+    const route = await importRoute()
+    const context = { locale: 'ro', queryClient: { getQueriesData: () => [] } }
+    const empty = { ...PROFILE, directYears: [], awardYears: [] }
+    expect(route.head({ params: { cui: '14399840' }, loaderData: { year: 2025, profile: empty }, match: { context } }).meta).toContainEqual({ name: 'robots', content: 'noindex' })
+    const buying = { ...PROFILE, directYears: [{ year: 2025, value: 1, count: 1 }], awardYears: [] }
+    expect(route.head({ params: { cui: '4291620' }, loaderData: { year: 2025, profile: buying }, match: { context } }).meta).not.toContainEqual({ name: 'robots', content: 'noindex' })
   })
 })

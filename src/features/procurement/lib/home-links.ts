@@ -41,6 +41,25 @@ export function countyExplorerSearch(indicator: 'lei' | 'contracte', county: str
     : { view: 'list', grain: 'contracts', record_kind: ['purchases'], buyerCounty: county, year }
 }
 
+/** Every record of a buyer in one population, every year, in the explorer's list (its default would be contracts only). */
+export function buyerAllRecordsSearch(cui: string, grain: 'direct' | 'contract'): ExplorerSearch {
+  return grain === 'direct'
+    ? { view: 'list', grain: 'direct_acquisitions', authority_cui: cui }
+    : { view: 'list', grain: 'contracts', record_kind: ['purchases'], authority_cui: cui }
+}
+
+/** A buyer's records of one year in the explorer: its direct purchases, or its contract awards (framework agreements apart). */
+export function buyerRecordsSearch(cui: string, year: number, grain: 'direct' | 'contract'): ExplorerSearch {
+  return grain === 'direct'
+    ? { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, year }
+    : { view: 'list', grain: 'contracts', record_kind: ['purchases'], authority_cui: cui, year }
+}
+
+/** A buyer's direct purchases of one year from firms in one county: exactly what its county row counts. */
+export function buyerCountySearch(cui: string, county: string, year: number): ExplorerSearch {
+  return { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, supplierCounty: county, year }
+}
+
 /** The three ways in: the year's contract awards, its framework agreements, the rankings. */
 export function startSearches(year: number): { readonly awards: ExplorerSearch; readonly frameworks: ExplorerSearch; readonly rankings: ExplorerSearch } {
   return {

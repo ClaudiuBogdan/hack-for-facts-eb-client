@@ -864,6 +864,19 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-27 — A buyer's page leads with its direct purchases and names
+  every firm; its year comes from the URL.** `/procurement/institutions/$cui`
+  takes the company profile's rhythm (head with a years chart that picks the
+  year, pinned numbered bar, figures band, one band per question, context
+  last). Direct purchases lead because they are every buyer's dense, clean
+  money; contract money stays provisional. Supplier lists render names or,
+  when the name lookup fails, CUIs with a line saying so — never a list of
+  bare CUIs while names load. The firms-by-year matrix shows who keeps
+  selling to a buyer, stated and not judged; top-firm shares carry the
+  two-CUIs caveat. *Why:* the owner picked the profile-band variant over an
+  answer-first and a firms-first one; the old page led with six population
+  tabs and unnamed suppliers. Details: `docs/design/procurement/design.md`
+  §13.
 - **2026-09-27 — Who won public money is shown per contract, winners named,
   never as a firm ranking by value.** SEAP publishes one award row per
   consortium member, each with the whole contract's value, and no member's

@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProcurementInstitutionPage } from '@/features/procurement/components/procurement-institution-page'
+import { ProcurementBuyerPage } from '@/features/procurement/components/buyer/procurement-buyer-page'
 
 export const Route = createLazyFileRoute('/procurement/institutions/$cui')({
   component: InstitutionRoutePage,
@@ -7,16 +7,8 @@ export const Route = createLazyFileRoute('/procurement/institutions/$cui')({
 
 function InstitutionRoutePage() {
   const { cui } = Route.useParams()
-  // Empty on a client-side navigation — the loader only blocks while rendering
-  // HTML, so the page's own queries fill these in. See `lib/ssr/loader-blocking`.
-  const { slice, overview } = Route.useLoaderData()
-  const filters = Route.useSearch()
-  return (
-    <ProcurementInstitutionPage
-      cui={cui}
-      initialSlice={slice}
-      initialOverview={overview}
-      filters={filters}
-    />
-  )
+  const search = Route.useSearch()
+  // Only the year on a client-side navigation — the loader reads while rendering HTML only (see `lib/ssr/loader-blocking`).
+  const initial = Route.useLoaderData()
+  return <ProcurementBuyerPage cui={cui} search={search} initial={initial} />
 }

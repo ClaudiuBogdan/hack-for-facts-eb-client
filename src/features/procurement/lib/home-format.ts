@@ -11,6 +11,16 @@ import type { HomeGrain } from './home-model'
 
 const NBSP = '\u00a0'
 
+/**
+ * A label set mid-sentence: its first letter lowered, unless the first word is
+ * an acronym („IT și telecomunicații" stays; „Drumuri" becomes „drumuri").
+ */
+export function lowerFirst(text: string): string {
+  const second = text.charAt(1)
+  if (second && second === second.toLocaleUpperCase('ro-RO') && second !== second.toLocaleLowerCase('ro-RO')) return text
+  return text.charAt(0).toLocaleLowerCase('ro-RO') + text.slice(1)
+}
+
 /** „18,0 mld. lei", „93,9 mil. lei", „8.948 lei". */
 export function moneyText(value: number): string {
   const formatted = formatHubValue(value, 'lei')

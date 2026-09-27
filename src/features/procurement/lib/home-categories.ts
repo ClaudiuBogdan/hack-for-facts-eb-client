@@ -125,6 +125,8 @@ export interface CpvBucket {
   readonly count: number
   /** Null when the API published no money for the bucket: unknown, never 0. */
   readonly value: number | null
+  /** Records with a published value, where the read carries it: a remainder with none left is unknown money, not 0 lei. */
+  readonly valued?: number | null
 }
 
 export interface CpvLeaf {
@@ -168,6 +170,62 @@ export function cpvLeaves(
       unknownCount += division.count
       if (division.value !== null) unknownValue = (unknownValue ?? 0) + division.value
     } else leaves.push({ prefix: '', value: division.value, count: division.count })
+  }
+  return { leaves, unknown: unknownCount > 0 || (unknownValue !== null && unknownValue !== 0) ? { prefix: '', value: unknownValue, count: unknownCount } : null }
+}
+
+/**
+ * The leaves from one flat breakdown per CPV level — division, group, class,
+ * category — instead of a drilled tree, for one buyer. Each bucket holds the
+ * next level's buckets that share its prefix and keeps what they do not: the
+ * records coded only at its own level (a works contract filed under 45210000
+ * stays with 4521, medicines under 33600000 with 336) and, for a large buyer,
+ * the codes past the API's hundred (a little precision lost, no money). A
+ * remainder with no records and no money is dropped; one whose records carry
+ * no published value (`valued` known and none left) is unknown, never 0 lei.
+ */
+export function levelCpvLeaves(levels: readonly (readonly CpvBucket[])[]): { readonly leaves: readonly CpvLeaf[]; readonly unknown: CpvLeaf | null } {
+  const [divisions = [], ...finer] = levels
+  type Node = CpvLeaf & { readonly valued: number | null | undefined }
+  const nodeOf = (bucket: CpvBucket & { readonly key: string }): Node => ({ prefix: cpvPrefix(bucket.key), value: bucket.value, count: bucket.count, valued: bucket.valued })
+  const named = finer.map((level) => level.flatMap((bucket) => (bucket.kind === 'top' && bucket.key ? [nodeOf({ ...bucket, key: bucket.key })] : [])))
+  const leaves: CpvLeaf[] = []
+  const leaf = (node: Node): CpvLeaf => ({ prefix: node.prefix, value: node.value, count: node.count })
+  const visit = (node: Node, depth: number) => {
+    const children = (named[depth] ?? []).filter((child) => child.prefix.length > node.prefix.length && child.prefix.startsWith(node.prefix))
+    if (children.length === 0) {
+      leaves.push(leaf(node))
+      return
+    }
+    let count = 0
+    let value = 0
+    let valued: number | null = node.valued ?? null
+    for (const child of children) {
+      visit(child, depth + 1)
+      count += child.count
+      value += child.value ?? 0
+      valued = valued === null || child.valued === null || child.valued === undefined ? null : valued - child.valued
+    }
+    const restCount = node.count - count
+    // Records left with no published value hold no known money: unknown, never 0 lei.
+    const restValue = node.value === null || valued === 0 ? null : node.value - value
+    // Rounding in the API's sums can leave a cent: a remainder under a leu with no records is none.
+    if (restCount > 0 || (restValue !== null && restValue >= 1)) {
+      leaves.push({ prefix: node.prefix, value: restValue === null ? null : Math.max(restValue, 0), count: Math.max(restCount, 0) })
+    }
+  }
+  let unknownCount = 0
+  let unknownValue: number | null = null
+  for (const division of divisions) {
+    if (division.count === 0 && !division.value) continue
+    if (division.kind === 'unknown') {
+      unknownCount += division.count
+      if (division.value !== null) unknownValue = (unknownValue ?? 0) + division.value
+    } else if (division.kind === 'top' && division.key) {
+      visit(nodeOf({ ...division, key: division.key }), 0)
+    } else {
+      leaves.push({ prefix: '', value: division.value, count: division.count })
+    }
   }
   return { leaves, unknown: unknownCount > 0 || (unknownValue !== null && unknownValue !== 0) ? { prefix: '', value: unknownValue, count: unknownCount } : null }
 }

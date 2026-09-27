@@ -144,12 +144,15 @@ export function RecordRows({
   records,
   lead,
   fallbackTitle,
+  showBuyer = true,
   className,
 }: {
   readonly records: readonly RecentRecord[]
   readonly lead: 'winners' | 'title'
   /** What a record with no title is called: its category, when the caller knows it. */
   readonly fallbackTitle?: (record: RecentRecord) => string | null
+  /** Off on a buyer's own page, where every row would name it. */
+  readonly showBuyer?: boolean
   readonly className?: string
 }) {
   return (
@@ -167,10 +170,12 @@ export function RecordRows({
                 <span className="mt-1 block truncate text-xs text-muted-foreground">
                   {lead === 'winners' ? title : winners}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                  <span className="sr-only">{t`Cumpărător:`} </span>
-                  {record.buyer.name}
-                </span>
+                {showBuyer ? (
+                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                    <span className="sr-only">{t`Cumpărător:`} </span>
+                    {record.buyer.name}
+                  </span>
+                ) : null}
               </span>
               <span className="text-right">
                 <span className="block whitespace-nowrap text-sm font-semibold tabular-nums text-foreground">{moneyText(record.value)}</span>

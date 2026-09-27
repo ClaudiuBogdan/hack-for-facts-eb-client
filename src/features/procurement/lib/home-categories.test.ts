@@ -6,6 +6,7 @@ import {
   cpvPrefix,
   cpvScope,
   cpvSearch,
+  levelCpvLeaves,
   frequentWinners,
   groupContracts,
   readerCategories,
@@ -34,6 +35,61 @@ describe('categoryOfCode', () => {
 
   it('files a code no category claims under „Altele"', () => {
     expect(categoryOfCode('92').key).toBe('altele')
+  })
+})
+
+describe('levelCpvLeaves', () => {
+  it('nests each level in its parent, and each keeps what the next level does not hold', () => {
+    const { leaves, unknown } = levelCpvLeaves([
+      // Divisions: 33 (medical), 45 (works), the rest past the top, the uncoded.
+      [top('33000000', 100, 10), top('45000000', 90, 9), { key: null, kind: 'other', value: 7, count: 2 }, { key: null, kind: 'unknown', value: 3, count: 1 }],
+      // Groups: medicines (336) and medical equipment (331) under 33; building works (452) under 45.
+      [top('33600000', 40, 4), top('33100000', 50, 5), top('45200000', 90, 9)],
+      // Classes: 4521 (buildings) and 4523 (roads) under 452; nothing under 336 or 331.
+      [top('45210000', 30, 3), top('45230000', 60, 6)],
+      // Categories: 45233 (roads) under 4523; the class keeps 10 coded at its own level.
+      [top('45233000', 50, 5), { key: null, kind: 'unknown', value: 40, count: 4 }],
+    ])
+    expect(leaves).toEqual([
+      { prefix: '336', value: 40, count: 4 },
+      { prefix: '331', value: 50, count: 5 },
+      { prefix: '33', value: 10, count: 1 },
+      { prefix: '4521', value: 30, count: 3 },
+      { prefix: '45233', value: 50, count: 5 },
+      { prefix: '4523', value: 10, count: 1 },
+      { prefix: '', value: 7, count: 2 },
+    ])
+    expect(unknown).toEqual({ prefix: '', value: 3, count: 1 })
+    // A works contract filed under 45210000 is a building, medicines under 33600000 are medicines.
+    expect(readerCategories(leaves, unknown).map((row) => [row.category.key, row.value])).toEqual([
+      ['medical', 60],
+      ['drumuri', 50],
+      ['medicamente', 40],
+      ['cladiri', 30],
+      ['constructii', 10],
+      ['altele', 7],
+      ['necunoscut', 3],
+    ])
+  })
+
+  it('keeps a remainder with no valued record unknown, never 0 lei', () => {
+    // 90 is all in the listed 45233; the division's other 2 records carry no value.
+    const { leaves } = levelCpvLeaves([
+      [{ key: '45000000', kind: 'top', value: 90, count: 5, valued: 3 }],
+      [{ key: '45233000', kind: 'top', value: 90, count: 3, valued: 3 }],
+    ])
+    expect(leaves).toEqual([
+      { prefix: '45233', value: 90, count: 3 },
+      { prefix: '45', value: null, count: 2 },
+    ])
+  })
+
+  it('keeps a remainder unknown when its parent’s money is', () => {
+    const { leaves } = levelCpvLeaves([[{ key: '45000000', kind: 'top', value: null, count: 5 }], [top('45200000', 40, 2)]])
+    expect(leaves).toEqual([
+      { prefix: '452', value: 40, count: 2 },
+      { prefix: '45', value: null, count: 3 },
+    ])
   })
 })
 

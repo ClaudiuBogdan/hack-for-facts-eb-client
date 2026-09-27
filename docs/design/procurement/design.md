@@ -678,3 +678,162 @@ browser's own reads; a hover preloads them).
   contract money rank buyers (the hero ranks contracts by number until then).
 - The companies hub keeps its own county-band fork; one shared choropleth
   (with the INS band's `countyLink`) is a separate job.
+
+## 13. The buyer page, redesigned (prototyped and promoted 27 September 2026)
+
+`/procurement/institutions/$cui` — one public buyer's procurement — moves from
+the old card grid (six population tabs, a signals row, a monthly bar chart, raw
+CUIs for unnamed suppliers) to the company profile's rhythm, the way the front
+door moved to the hubs' (§12).
+
+### 13.1 What a buyer's data can say (probed on the dev API, 2026-09-27)
+
+Probed on a commune (Surduc, SJ, 3,553 residents), a town (Otopeni, IF), a
+national hospital (Fundeni), the national road company (CNAIR) and a state
+regie with no budget record (Romsilva):
+
+- **Direct purchases are the dense, clean money for every buyer** (Surduc:
+  145 in 2025, 2.84 mil. lei; Fundeni: 3,647, 66.5 mil. lei). Contract awards
+  are few and often unvalued (Otopeni: 12 in 2025, 5 with a value; Fundeni:
+  10 awards beside 36 framework agreements) and provisional (§12.1).
+- **Procedures abstain for 2025** (`TIME_COVERAGE_BELOW_FLOOR`): the page
+  counts contract awards by procedure type instead.
+- **Suppliers by county** answer "does it buy locally?" (Otopeni 51% Ilfov,
+  Surduc 61% Sălaj); **top-N shares** are servable (the scrapper's serving
+  review, §5) with one caveat said on the page: a firm under two CUIs splits.
+  HHI is left out.
+- **Each top supplier's years** (a series per supplier, one request) show
+  standing relationships: all eight of Fundeni's top sellers sold in nearly
+  every year since 2019.
+- **The budget platform's `entity`** gives the type (`uat`, `health`, …), the
+  UAT and its population (per-resident money for a town hall), the address,
+  and whether a budget page exists. It spells places with diacritics, so a
+  town hall is named from its territory („Orașul Otopeni", not „ORASUL
+  OTOPENI"). Its `CUI` scalar takes ten digits at most.
+- The identity spine answers a foreign identifier (`00041200627`) with
+  `unavailable` and **no CUI**; the lookup is positional.
+
+### 13.2 The variants (`/development/procurement/buyer`, live data)
+
+- **`dosar` — profile bands.** The company page's head (the years chart
+  beside it picks the year), a pinned numbered bar, the figures band, then
+  one band per question: what, from whom (with the firms year by year), from
+  where, when, how, the largest records, the context.
+- **`intrebari` — answer first.** A reporter's questions, each answered in a
+  sentence, the evidence beside it; a question the data cannot answer is left
+  out.
+- **`relatii` — firms first.** The firms-by-year matrix leads; four
+  two-column bands.
+
+The owner picked **`dosar`** ("I love it").
+
+### 13.3 Promoted (27 September 2026)
+
+**Where the code went.** `api/procurement-buyer-api.ts` (the profile: three
+multi-root requests and the identity side by side, then names + each top
+supplier's years + the county's total; the records beside them), `api/graphql/procurement-buyer-queries.ts`,
+`api/procurement-buyer-ssr.ts` (a bounded server memo: 500 buyer-years, ten
+minutes), `hooks/use-procurement-buyer.ts`, `lib/buyer-model.ts` (shapes,
+naming, address, year rule), `lib/buyer-text.ts` (every sentence),
+`components/buyer/` (head, charts, rows, bands, page), `schemas/procurement-buyer.ts`
+(the URL: `year`, `ce`, `mari`). The old page, its signals row and the
+institution-overview read (spine query, schemas, hook, concentration copy)
+are deleted; the authority slice stays for the entity page's contracts view.
+
+**Decisions.**
+
+- The year is the URL's `year` (the name every link already passes), from
+  2019 through the last complete year, fixed in the loader so the server and
+  the browser agree. Picking a year in the chart keeps the year shown, dimmed,
+  until the new one arrives; the year in progress is dashed and cannot be
+  picked. The part year runs through SEAP's derived cutoff month (§12).
+- Each band's choice defaults to what the year has (direct purchases for
+  „Ce cumpără" unless there were none; contracts for „Cele mai mari" when
+  there were any) and stays out of the URL when it equals that default.
+- Supplier lists never render raw CUIs while names load: names come in the
+  same read as the figures. If the follow-up fails twice the page shows CUIs,
+  says so, and the render goes out `no-store`.
+- A year with no record is said once („Nicio achiziție în 2023"), not as
+  seven empty bands.
+- Rows link only to what they count: a county row opens the buyer's direct
+  purchases from that county in the explorer; „Cele mai mari" opens the
+  year's list; the head's „Toate înregistrările" opens every record. Procedure
+  rows are not links (the explorer's list does not filter by procedure).
+- The firms-by-year cells are not tab stops: each carries its value as text
+  for assistive technology and a pointer readout; the firm's name is the link.
+  The grid fits a phone (the total column waits for `sm`).
+- The context band says only what the page has not: the county share (from
+  1%) and the seat. The CUI, the budget link and the figures stay in the head
+  and the figures band.
+- Sentences use the Romanian count grammar („21.016 locuitori", „3.553 de
+  locuitori", „21 de contracte") and are left out when the data would
+  contradict them.
+
+**Loading.** The API resolves one request's fields one after another, so the
+profile is three requests side by side (keys, figures, the CPV levels) and
+the budget platform's identity record is a fourth request, which fails soft;
+the follow-up (names, each top seller's years, the county's total) starts
+when the keys and the identity land. The reader's categories come from one flat breakdown per
+CPV level (division, group, class, category — eight reads, not the front
+door's sixteen-read drill); each level keeps what the next does not hold, so
+a works contract coded 45210000 is a building and medicines coded 33600000
+are medicines. Measured on a production build (Nitro on zeus, dev API,
+2026-09-27):
+
+| | TTFB | LCP | CLS | JS (uncompressed) |
+|---|---|---|---|---|
+| Buyer, first render (large, uncached), one request + follow-up | ~3.1 s | — | — | — |
+| Buyer, first render, three requests + flat CPV levels | 1.0–1.3 s (one outlier 2.4 s) | 0.8–1.2 s | ≤ 0.001 | 4.76 MB, 214 files |
+| Buyer, read kept (ten minutes) | 16–32 ms | — | — | — |
+| `/companies/$cui` (reference) | 0.66 s | 1.0 s | 0.001 | 4.58 MB |
+
+A client-side navigation from the front door paints the page frame in
+~110 ms and the buyer with its firms at ~1.5 s. After an SSR load the page
+reads nothing more.
+
+**Follow-ups.** An explorer filter by procedure type would let procedure rows
+open what they count; the county band could become a map once the shared
+choropleth exists; when the framework-role build is served, drop the
+provisional mark and let contract money speak.
+
+**What the pre-commit review changed** (Opus 5.5 xhigh):
+
+- 2019 has no change against 2018 (legacy SEAP rows, not comparable); the
+  year before is not read for it.
+- Below a half, the leading category is „categoria cu cei mai mulți bani",
+  never „cea mai mare parte" (a majority); the top firm's is „cea mai mare
+  sumă". Growth since 2019 is said only at ±50% and „în lei ai fiecărui an"
+  (prices rose by about a half over those years).
+- Contract money says how many contracts it covers („15,1 mil. lei la 5
+  contracte" of 12). The procedure sentences count out of every award and say
+  „toate au avut un anunț public" only when no award's procedure is unlisted
+  or unknown; unlisted ones get a row. The „Cum" band says SEAP counts a
+  consortium's contract once per member firm (every contract count here is of
+  award rows, as on the front door).
+- A year with framework agreements and no award is not „nothing" or „only
+  direct": the head says the agreements.
+- The budget platform's identity is its own request and fails soft (the CUI
+  names the buyer, the records' county places it); a partial profile is
+  neither kept in the server memo nor fresh in the browser, so names come
+  back on the next read.
+- The head links open all direct purchases and all contracts (the explorer's
+  default is contracts only). A county council, a sector town hall and a
+  state company (SA, RA) are named for what they are. Pages with no record
+  since 2019 carry `noindex`; the tab keeps the buyer's name after a year is
+  picked (the head reads any cached year).
+- The part year is reachable by keyboard (its figures are in its name) and
+  each population's part-year figure names its own cutoff; the chart
+  readouts are not live regions. The per-resident and county-share figures
+  say how they are computed, once, in the source line.
+
+**What the verification pass changed** (Opus 5.5 xhigh, second pass): a
+failed identity read makes the page `partial` too (served, never kept or
+cached) and the buyer is named by the identity spine's label before its CUI;
+a CPV remainder whose records carry no value is unknown, not „0 lei" (the
+breakdowns carry `withValueCount`); labels keep an acronym whole mid-sentence
+(„IT și telecomunicații", on the front door too); a whole share reads „Toți
+banii … au mers pe …"; a CUI with no record since 2019 is not called a buyer
+(„Nu apare ca cumpărător în SEAP…", with its supplier page linked); the buyer
+kind „Comună" has its own message context (parliament's „Comună" is a joint
+session); a sector's town hall is „Sectorul 1"; the method line names only
+the computed figures the page shows.

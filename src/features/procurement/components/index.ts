@@ -20,7 +20,6 @@ export {
   ProcurementHubFilterTrigger,
 } from './procurement-hub-filter-sheet'
 export { ProcurementInfoSheet } from './procurement-info-sheet'
-export { ProcurementInstitutionPage } from './procurement-institution-page'
 export { ProcurementMapView } from './procurement-map-view'
 export { ProcurementMonthlyChart } from './procurement-monthly-chart'
 export { ProcurementOverviewPage } from './procurement-overview-page'

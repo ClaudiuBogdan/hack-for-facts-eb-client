@@ -788,67 +788,6 @@ export type RawProcurementAnalysis = z.infer<
 >
 
 // ---------------------------------------------------------------------------
-// Institution spine — every population this buyer appears in, plus the signals
-// ---------------------------------------------------------------------------
-
-/**
- * One round trip for the buyer profile's spine. Each population gets its OWN
- * scope variable because the server rejects dimensions a population does not
- * carry (frameworks have no supplier, call-offs/modifications no fine CPV) —
- * the caller scrubs per grain with `scrubScopeForAnalysisGrain`.
- *
- * The signals are contract-grain reads:
- *  - `concentration` — supplier concentration for this buyer;
- *  - `procedureMix` — how competitively the money was awarded. This is an
- *    IN-GRAIN breakdown on purpose: a "share awarded by direct acquisition"
- *    tile would be a cross-grain ratio, which the serving contract forbids
- *    (blocks sit side by side and nothing sums them).
- */
-export const PROCUREMENT_INSTITUTION_SPINE_QUERY = /* GraphQL */ `
-  query ProcurementInstitutionSpine(
-    $procedureScope: ProcurementAnalysisScopeInput
-    $contractScope: ProcurementAnalysisScopeInput
-    $daScope: ProcurementAnalysisScopeInput
-    $modificationScope: ProcurementAnalysisScopeInput
-    $frameworkScope: ProcurementAnalysisScopeInput
-    $calloffScope: ProcurementAnalysisScopeInput
-    $procedureMixTopN: Int
-  ) {
-    procedures: procurementStats(scope: $procedureScope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    contracts: procurementStats(scope: $contractScope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    directAcquisitions: procurementStats(scope: $daScope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    modifications: procurementStats(scope: $modificationScope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    frameworks: procurementStats(scope: $frameworkScope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    calloffs: procurementStats(scope: $calloffScope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    concentration: procurementConcentration(scope: $contractScope, basis: value) {
-      ${CONCENTRATION_BLOCK_FIELDS}
-    }
-    procedureMix: procurementBreakdown(
-      scope: $contractScope
-      dimension: procedureType
-      topN: $procedureMixTopN
-      rankBy: value
-    ) { ${BREAKDOWN_BLOCK_FIELDS} }
-  }
-`
-
-const spineStatsSchema = z.object({ blocks: z.array(rawStatsBlockSchema) })
-
-export const procurementInstitutionSpineResponseSchema = z.object({
-  procedures: spineStatsSchema,
-  contracts: spineStatsSchema,
-  directAcquisitions: spineStatsSchema,
-  modifications: spineStatsSchema,
-  frameworks: spineStatsSchema,
-  calloffs: spineStatsSchema,
-  concentration: z.array(rawConcentrationBlockSchema).optional().default([]),
-  procedureMix: z.array(rawBreakdownBlockSchema).optional().default([]),
-})
-export type RawProcurementInstitutionSpine = z.infer<
-  typeof procurementInstitutionSpineResponseSchema
->
-
-// ---------------------------------------------------------------------------
 // Supplier records connection (cursor)
 // ---------------------------------------------------------------------------
 

@@ -64,7 +64,7 @@ const AWARDS = { grain: 'contract', recordKind: 'contract_award' } as const
 const DIRECT = { grain: 'direct_acquisition' } as const
 
 /** The value-model states whose money is comparable across records. */
-const ACCEPTED_VALUE_STATES = ['official_exact', 'official_ron_equivalent', 'cross_source_exact', 'official_document_recovered']
+export const ACCEPTED_VALUE_STATES = ['official_exact', 'official_ron_equivalent', 'cross_source_exact', 'official_document_recovered']
 
 function first<T>(blocks: readonly T[] | undefined): T | undefined {
   return blocks?.[0]
@@ -277,12 +277,12 @@ export async function fetchProcurementHomeCategories(year: number, signal?: Abor
 
 // ─────────────────────────────────────────────────────────── records ──
 
-function partyOf(raw: { readonly cui: string | null; readonly name: string | null; readonly displayName: string | null }): HomeParty {
+export function partyOf(raw: { readonly cui: string | null; readonly name: string | null; readonly displayName: string | null }): HomeParty {
   const cui = raw.cui?.trim() || null
   return { cui, name: tidyName(raw.displayName ?? raw.name ?? cui ?? '—') }
 }
 
-function acceptedValue(value: { readonly valueAccepted: boolean; readonly valueRonComparable: string | null }): number | null {
+export function acceptedValue(value: { readonly valueAccepted: boolean; readonly valueRonComparable: string | null }): number | null {
   if (!value.valueAccepted || value.valueRonComparable === null) return null
   const parsed = Number(value.valueRonComparable)
   return Number.isFinite(parsed) ? parsed : null
@@ -320,7 +320,7 @@ const MAX_CONTRACT_PAGES = 3
  * the next page: pages are read until `limit` contracts are whole. Past the
  * last page read it settles for fewer, and fails rather than claim none.
  */
-async function fetchGroupedContracts(filter: Record<string, unknown>, limit: number, operationName: string, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
+export async function fetchGroupedContracts(filter: Record<string, unknown>, limit: number, operationName: string, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
   const rowsPerPage = limit * ROWS_PER_CONTRACT
   const rows: ContractRow[] = []
   for (let page = 1; page <= MAX_CONTRACT_PAGES; page += 1) {

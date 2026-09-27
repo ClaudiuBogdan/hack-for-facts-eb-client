@@ -4,7 +4,6 @@ export type {
   ProcurementSliceScope,
   ProcurementBasisAnalytics,
   ProcurementBasisOverviewRequest,
-  ProcurementInstitutionScopes,
 } from './procurement-api.live'
 export {
   fetchProcurementBasisOverviewLive as fetchProcurementBasisOverview,
@@ -12,7 +11,6 @@ export {
   fetchContractDetailLive as fetchProcurementContractDetail,
   fetchCpvCategoryPageLive as fetchProcurementCpvCategoryPage,
   fetchDirectAcquisitionDetailLive as fetchProcurementDirectAcquisitionDetail,
-  fetchProcurementInstitutionOverviewLive as fetchProcurementInstitutionOverview,
   fetchProcurementLandingLive as fetchProcurementLanding,
   fetchProcurementTerritoryOverviewLive as fetchProcurementTerritoryOverview,
   fetchProcurementSearchLive as fetchProcurementSearch,
