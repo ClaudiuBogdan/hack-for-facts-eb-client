@@ -864,6 +864,22 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-27 — Who won public money is shown per contract, winners named,
+  never as a firm ranking by value.** SEAP publishes one award row per
+  consortium member, each with the whole contract's value, and no member's
+  part; the analysis API withholds that money from every firm's total. In
+  2025 consortia took 52% of contract money, 89% for roads. The procurement
+  front door (`/procurement`) therefore lists the year's largest contracts,
+  one row per contract with every winner named and the value counted once,
+  and says in its lede how much went to consortia. Rules that hold for any
+  surface: never rank firms by contract money as if it were the whole; group
+  a consortium's rows into one contract; a row links only where it opens the
+  population it counts (a reader's category that gathers several CPV codes is
+  not a link while the explorer filters by one). *Why:* the owner found the
+  value ranking irrelevant (retail chains, one ceiling-sized award), and a
+  firm ranking would hide the road builders entirely. Details:
+  `docs/design/procurement/design.md` §12.3–12.4.
+
 - **2026-09-26 — Missing completed-housing records stay missing.** An absent
   LOC104B cell is not a reported zero. The INS locality map hatches missing
   counts, excludes them from rankings and retains a separate grey class for

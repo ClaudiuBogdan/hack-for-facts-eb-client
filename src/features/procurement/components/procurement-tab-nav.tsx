@@ -23,7 +23,7 @@ function normalizeTab(tab: ProcurementTab): ProcurementHubView {
 }
 
 /**
- * Hub section tabs — Overview / List / Rankings on the same `/procurement` URL.
+ * Hub section tabs — Overview / List / Rankings on the same `/procurement/search` URL.
  * The buyer map lives on Overview (not a separate tab). Switching views must
  * never strip schema keys (A2 / F2).
  */
@@ -60,7 +60,7 @@ export function ProcurementTabNav({
       return
     }
     void navigate({
-      to: '/procurement',
+      to: '/procurement/search',
       search: cleanProcurementHubSearch({
         ...(currentSearch as Record<string, unknown>),
         view,

@@ -75,7 +75,7 @@ describe('legacy achizitii redirects', () => {
 
   it.each([
     ['index', '/procurement', undefined],
-    ['search', '/procurement', undefined],
+    ['search', '/procurement/search', undefined],
     ['category', '/procurement/categories/$code', { code: '45' }],
     ['contract', '/procurement/contracts/$id', { id: 'contract-key-001' }],
     ['procedure', '/procurement/procedures/$id', { id: 'proc-001' }],

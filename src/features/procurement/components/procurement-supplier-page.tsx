@@ -158,7 +158,7 @@ export function ProcurementSupplierPage({ cui, filters = {}, className }: Props)
             </Link>
             <ChevronRight className="h-3.5 w-3.5" aria-hidden />
             <Link
-              to="/procurement"
+              to="/procurement/search"
               search={{ view: 'rankings', rank_dim: 'supplier' }}
               className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
             >
@@ -184,7 +184,7 @@ export function ProcurementSupplierPage({ cui, filters = {}, className }: Props)
               asChild
               className={procurementCompactActionClassName}
             >
-              <Link to="/procurement" search={{ view: 'list', supplier_cui: cui }}>
+              <Link to="/procurement/search" search={{ view: 'list', supplier_cui: cui }}>
                 <Trans>Înregistrări</Trans>
               </Link>
             </Button>

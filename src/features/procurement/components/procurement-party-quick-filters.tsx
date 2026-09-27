@@ -294,7 +294,7 @@ export function ProcurementPartyQuickFilters({
       </div>
 
       <Link
-        to="/procurement"
+        to="/procurement/search"
         search={cleanProcurementHubSearch(advancedSearch)}
         className="inline-flex h-9 shrink-0 items-center gap-1 text-sm font-semibold text-[var(--pnrr-fg)] underline-offset-2 transition-colors hover:text-[var(--pnrr-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
       >

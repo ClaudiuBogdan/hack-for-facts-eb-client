@@ -1,7 +1,7 @@
 /**
  * Unified procurement hub URL schema (product A2).
  *
- * One schema for `/procurement` overview + list layouts. Period soft-default
+ * One schema for the `/procurement/search` explorer's overview + list layouts. Period soft-default
  * (E1), list-only facets preserved on overview (C1), geography honesty (B1).
  *
  * @see docs/specs/procurement-shared-hub-scope-requirements.md

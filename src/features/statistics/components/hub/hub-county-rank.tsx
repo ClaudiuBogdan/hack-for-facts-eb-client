@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, type LinkOptions } from '@tanstack/react-router'
 import { plural } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue } from '@/schemas/statistics'
+import { insCountyLink } from '../../lib/county-link'
 import { countyRanks, layerDecimals, layerScale } from '../../lib/county-map'
 import { formatHubValue, hubUnitWord, isAdditiveUnit } from '../../lib/units'
 
@@ -27,9 +28,12 @@ export function HubCountyRank({
   activeCode,
   onActiveChange,
   swatchOf,
+  countyLink,
   className,
 }: {
   readonly layer: StatisticsHubCountyLayer
+  /** Where a county's row opens; the INS series by default. */
+  readonly countyLink?: (code: string) => LinkOptions
   /** How many counties each end of the collapsed list shows. */
   readonly edge?: number
   readonly activeCode?: string
@@ -86,9 +90,7 @@ export function HubCountyRank({
     return (
       <li key={county.code} value={rank} className="col-span-5 grid grid-cols-subgrid">
         <Link
-          to="/ins/seturi/$cod"
-          params={{ cod: layer.code }}
-          search={{ teritoriu: `cod:${county.code}`, frecventa: 'ANNUAL' }}
+          {...(countyLink ?? ((code: string) => insCountyLink(layer.code, code)))(county.code)}
           onPointerEnter={(event) => hoverOnly(event, county.code)}
           onPointerLeave={(event) => hoverOnly(event, undefined)}
           onFocus={() => onActiveChange?.(county.code)}

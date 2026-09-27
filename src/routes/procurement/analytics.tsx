@@ -5,8 +5,9 @@ import {
 } from '@/schemas/procurement-hub'
 
 /**
- * Legacy analytics path — redirects into the unified hub Overview (buyer map
- * lives there). `/procurement/analytics?*` → `/procurement?*` (keeps mapGrain).
+ * Legacy analytics path — redirects into the explorer's overview (the buyer
+ * map lives there). `/procurement/analytics?*` → `/procurement/search?*`
+ * (keeps mapGrain).
  */
 export const Route = createFileRoute('/procurement/analytics')({
   ssr: true,
@@ -14,7 +15,7 @@ export const Route = createFileRoute('/procurement/analytics')({
     parseProcurementHubSearch(search),
   beforeLoad: ({ search }) => {
     throw redirect({
-      to: '/procurement',
+      to: '/procurement/search',
       search: cleanProcurementHubSearch({
         ...search,
         view: 'overview',

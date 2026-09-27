@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import type { StatisticsHubData, StatisticsHubIndicatorKey, StatisticsHubSearch } from '@/schemas/statistics'
 import { HubTwoLineChart } from '../components/hub/hub-charts'
 import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '../components/hub/hub-chrome'
-import { HubCountyBand } from '../components/hub/hub-county-band'
+import { HubCountyBand, type HubCountyBandDefinition } from '../components/hub/hub-county-band'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { HubDatasetSearch } from '../components/hub/hub-dataset-search'
@@ -86,6 +86,21 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   const indicatorKey = search.indicator ?? DEFAULT_INDICATOR
   const layerDefinition = HUB_COUNTY_LAYERS.find((layer) => layer.key === indicatorKey) ?? HUB_COUNTY_LAYERS[0]
   const layer = hub?.counties?.find((entry) => entry.code === layerDefinition.code)
+  // The band reads its words resolved; `i18n` in the deps re-renders it on a locale switch.
+  const bandDefinition = useMemo<HubCountyBandDefinition | null>(
+    () =>
+      layer
+        ? {
+            legend: i18n._(layerDefinition.legend(layer.period ?? '')),
+            unit: layerDefinition.unit ? i18n._(layerDefinition.unit) : undefined,
+            digits: layerDefinition.digits,
+            reversed: layerDefinition.reversed,
+            caveat: i18n._(layerDefinition.caveat),
+            source: t`Sursa: INS Tempo, ${layer.code}.`,
+          }
+        : null,
+    [layer, layerDefinition, i18n],
+  )
   const setIndicator = (key: StatisticsHubIndicatorKey) => {
     void navigate({
       to: '/ins',
@@ -251,9 +266,9 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
               />
             }
           />
-          {layer && layer.values.length > 0 ? (
+          {layer && layer.values.length > 0 && bandDefinition ? (
             // A new indicator is a new band: what was held or hovered belongs to the last one.
-            <HubCountyBand key={layer.code} layer={layer} definition={layerDefinition} />
+            <HubCountyBand key={layer.code} layer={layer} definition={bandDefinition} />
           ) : (
             <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
               <div className="lg:col-span-7" data-reveal>

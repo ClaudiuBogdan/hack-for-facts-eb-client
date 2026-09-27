@@ -1,15 +1,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import type { PointerEvent } from 'react'
-import { Link } from '@tanstack/react-router'
+import type { PointerEvent, ReactNode } from 'react'
+import { Link, type LinkOptions } from '@tanstack/react-router'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { t } from '@lingui/core/macro'
-import { Trans, useLingui } from '@lingui/react/macro'
+import { Trans } from '@lingui/react/macro'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
 import type { StatisticsHubCountyLayer, StatisticsHubCountyValue } from '@/schemas/statistics'
+import { insCountyLink } from '../../lib/county-link'
 import { COUNTY_MAP_WIDTH, countyLabelPixels, countyRanks, countyShapes, layerDecimals, type CountyProperties } from '../../lib/county-map'
-import type { HubCountyLayerDefinition } from '../../lib/landing-constants'
 import { formatHubValue, hubUnitWord } from '../../lib/units'
 import { ColourLegend } from '../uat-map/uat-map-legend'
 import { countyLabel } from '../uat-map/uat-map-series'
@@ -32,8 +32,28 @@ import { countyScale } from './hub-county-scale'
 
 const NO_DATA = 'url(#hub-county-no-data)'
 
+/**
+ * What the band says about its layer, resolved for the page's language. The
+ * INS hub builds it from its layer definition; another hub (procurement)
+ * builds its own.
+ */
+export interface HubCountyBandDefinition {
+  /** What the colours are, and when: the legend's title and the map's name. */
+  readonly legend: string
+  /** The word after a figure where the layer's own unit name would read badly („‰", „lei"). */
+  readonly unit?: string
+  /** Decimals where the source's are noise: money in whole lei. */
+  readonly digits?: number
+  /** Orange above the national figure and blue below: where more is the concern. */
+  readonly reversed?: boolean
+  /** One line against the likeliest misreading. */
+  readonly caveat: ReactNode
+  /** The source, after the caveat. */
+  readonly source: ReactNode
+}
+
 /** The layer as the band reads it: „‰" for a rate per 1,000, money in whole lei — in the list too. */
-function shownLayer(layer: StatisticsHubCountyLayer, definition: HubCountyLayerDefinition, unit: string | null): StatisticsHubCountyLayer {
+function shownLayer(layer: StatisticsHubCountyLayer, definition: HubCountyBandDefinition, unit: string | null): StatisticsHubCountyLayer {
   const round = (value: number) => (definition.digits === undefined ? value : Number(value.toFixed(definition.digits)))
   return {
     ...layer,
@@ -43,9 +63,18 @@ function shownLayer(layer: StatisticsHubCountyLayer, definition: HubCountyLayerD
   }
 }
 
-export function HubCountyBand({ layer: read, definition }: { readonly layer: StatisticsHubCountyLayer; readonly definition: HubCountyLayerDefinition }) {
-  const { i18n } = useLingui()
-  const layer = useMemo(() => shownLayer(read, definition, definition.unit ? i18n._(definition.unit) : null), [read, definition, i18n])
+export function HubCountyBand({
+  layer: read,
+  definition,
+  countyLink,
+}: {
+  readonly layer: StatisticsHubCountyLayer
+  readonly definition: HubCountyBandDefinition
+  /** Where a county opens, on the map, in its held tooltip and in the list; the INS series by default. */
+  readonly countyLink?: (code: string) => LinkOptions
+}) {
+  const layer = useMemo(() => shownLayer(read, definition, definition.unit ?? null), [read, definition])
+  const linkOf = countyLink ?? ((code: string) => insCountyLink(layer.code, code))
   const geo = useGeoJsonData('County')
   const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
   const shapes = features ? countyShapes(features) : null
@@ -64,7 +93,7 @@ export function HubCountyBand({ layer: read, definition }: { readonly layer: Sta
   const withUnit = (value: number) => (percent || !unit ? figure(value) : `${figure(value)} ${unit}`)
   // A bound at its rounding's decimals: 76,2, not 76,20.
   const bound = (value: number) => formatHubValue(value, layer.unit, layer.unitLabel, { digits: decimals }).value
-  const legendTitle = i18n._(definition.legend(layer.period ?? ''))
+  const legendTitle = definition.legend
   /** A county against the national figure, in the reader's words: „1,49 ani peste media națională". */
   const againstAverage = (value: number, national: number) => {
     if (value === national) return t`la media națională`
@@ -180,9 +209,7 @@ export function HubCountyBand({ layer: read, definition }: { readonly layer: Sta
                 return (
                   <Link
                     key={shape.code}
-                    to="/ins/seturi/$cod"
-                    params={{ cod: layer.code }}
-                    search={{ teritoriu: `cod:${county.code}`, frecventa: 'ANNUAL' }}
+                    {...linkOf(county.code)}
                     // What the tooltip gives a pointer, in the link's name: the place and the distance from the average.
                     aria-label={[
                       `${countyLabel(county.code)}: ${withUnit(county.value)}`,
@@ -305,12 +332,7 @@ export function HubCountyBand({ layer: read, definition }: { readonly layer: Sta
               ) : null}
               {held ? (
                 <p className="mt-2 border-t pt-2">
-                  <Link
-                    to="/ins/seturi/$cod"
-                    params={{ cod: layer.code }}
-                    search={{ teritoriu: `cod:${activeCounty.code}`, frecventa: 'ANNUAL' }}
-                    className="font-medium text-primary underline-offset-4 hover:underline"
-                  >
+                  <Link {...linkOf(activeCounty.code)} className="font-medium text-primary underline-offset-4 hover:underline">
                     {t`Deschide datele județului`} →
                   </Link>
                   <span className="block text-muted-foreground">{t`sau atinge-l încă o dată pe hartă`}</span>
@@ -341,12 +363,12 @@ export function HubCountyBand({ layer: read, definition }: { readonly layer: Sta
               : {})}
           />
           <p className="text-xs leading-relaxed text-muted-foreground" data-source-line>
-            {i18n._(definition.caveat)} {t`Sursa: INS Tempo, ${layer.code}.`}
+            {definition.caveat} {definition.source}
           </p>
         </div>
       </div>
       <div className="min-w-0 lg:col-span-5 lg:col-start-8" data-reveal>
-        <HubCountyRank layer={layer} activeCode={active ?? undefined} onActiveChange={pointAt} swatchOf={swatchOf} />
+        <HubCountyRank layer={layer} activeCode={active ?? undefined} onActiveChange={pointAt} swatchOf={swatchOf} countyLink={linkOf} />
       </div>
     </div>
   )

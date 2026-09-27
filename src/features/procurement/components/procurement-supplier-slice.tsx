@@ -278,7 +278,7 @@ function SliceContent({
 
       <div>
         <Link
-          to="/procurement"
+          to="/procurement/search"
           search={{ view: 'list', supplier_cui: slice.supplierCui }}
           className={procurementUnderlineLinkClassName}
         >

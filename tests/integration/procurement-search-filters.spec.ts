@@ -1,9 +1,9 @@
 /**
- * Integration tests for the legacy procurement search route and the unified
- * hub it redirects into: Enter-committed search, active filter chips, and grain
- * switching.
- *
- * Route: /procurement/search -> /procurement?view=list
+ * Integration tests for the procurement explorer's list — Enter-committed
+ * search, active filter chips, grain switching — and for the addresses that
+ * lead to it: the explorer lives at `/procurement/search` since the front door
+ * took `/procurement`, and an old `/procurement` link carrying an explorer
+ * choice is redirected there.
  */
 
 import { test, expect } from '../utils/integration-base'
@@ -11,6 +11,9 @@ import { waitForPageReady } from '../utils/test-helpers'
 import type { Page } from '@playwright/test'
 
 const ROUTE = '/procurement/search'
+
+/** The explorer's list view, with more of its address after it. */
+const list = (params = '') => `${ROUTE}?view=list${params ? `&${params}` : ''}`
 
 /**
  * The app defaults to Romanian. Pin `en` so the role names below match the
@@ -43,7 +46,7 @@ test.describe('Procurement search — unified hub query, filters, grain', () => 
   test('typing stays local until Enter commits ?q= to the URL', async ({
     page,
   }) => {
-    await page.goto(ROUTE)
+    await page.goto(list())
     await waitForPageReady(page)
 
     await searchBox(page).fill('spital')
@@ -52,22 +55,32 @@ test.describe('Procurement search — unified hub query, filters, grain', () => 
     await expect.poll(() => queryParam(page)).toBe('spital')
   })
 
-  test('the legacy route redirects into the unified list view', async ({
+  test('an old /procurement link carrying an explorer choice lands in the explorer', async ({
     page,
   }) => {
-    await page.goto(ROUTE)
+    await page.goto('/procurement?view=list&q=spital')
     await waitForPageReady(page)
 
     await expect
       .poll(() => new URL(page.url()).pathname)
-      .toMatch(/^\/procurement\/?$/)
+      .toBe('/procurement/search')
     await expect
       .poll(() => new URL(page.url()).searchParams.get('view'))
       .toBe('list')
+    expect(queryParam(page)).toBe('spital')
+    await expect(searchBox(page)).toHaveValue('spital')
+  })
+
+  test('/procurement is the front door', async ({ page }) => {
+    await page.goto('/procurement')
+    await expect(
+      page.getByRole('heading', { level: 1, name: /What the state buys/ }),
+    ).toBeVisible()
+    expect(new URL(page.url()).pathname).toBe('/procurement')
   })
 
   test('the search form has no submit button', async ({ page }) => {
-    await page.goto(ROUTE)
+    await page.goto(list())
     await waitForPageReady(page)
     await expect(searchBox(page)).toBeVisible()
 
@@ -80,7 +93,7 @@ test.describe('Procurement search — unified hub query, filters, grain', () => 
   test('clearing the draft and pressing Enter drops ?q= from the URL', async ({
     page,
   }) => {
-    await page.goto(`${ROUTE}?q=spital`)
+    await page.goto(list('q=spital'))
     await waitForPageReady(page)
     await expect(searchBox(page)).toHaveValue('spital')
 
@@ -92,11 +105,11 @@ test.describe('Procurement search — unified hub query, filters, grain', () => 
   })
 
   test('an externally-removed query syncs back into the box', async ({ page }) => {
-    await page.goto(`${ROUTE}?q=spital`)
+    await page.goto(list('q=spital'))
     await waitForPageReady(page)
     await expect(searchBox(page)).toHaveValue('spital')
 
-    await page.goto(ROUTE)
+    await page.goto(list())
     await waitForPageReady(page)
 
     await expect(searchBox(page)).toHaveValue('')
@@ -105,7 +118,7 @@ test.describe('Procurement search — unified hub query, filters, grain', () => 
   test('the filter trigger badges the active count, chips render and clear-all resets', async ({
     page,
   }) => {
-    await page.goto(`${ROUTE}?q=spital&source=seap&year=2024`)
+    await page.goto(list('q=spital&source=seap&year=2024'))
     await waitForPageReady(page)
 
     const trigger = page.getByRole('button', { name: /Filters/ })
@@ -155,7 +168,7 @@ test.describe('Procurement search — unified hub query, filters, grain', () => 
   })
 
   test('changing grain resets page to 1', async ({ page }) => {
-    await page.goto(`${ROUTE}?page=2`)
+    await page.goto(list('page=2'))
     await waitForPageReady(page)
     expect(pageParam(page)).toBe('2')
 

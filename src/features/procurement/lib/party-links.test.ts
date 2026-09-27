@@ -80,7 +80,7 @@ describe('party links', () => {
         grain: 'direct_acquisition',
       }),
     ).toEqual({
-      to: '/procurement',
+      to: '/procurement/search',
       search: {
         view: 'list',
         authority_cui: '111',
@@ -98,7 +98,7 @@ describe('party links', () => {
         grain: 'contract',
       }),
     ).toEqual({
-      to: '/procurement',
+      to: '/procurement/search',
       search: {
         view: 'list',
         authority_cui: '111',

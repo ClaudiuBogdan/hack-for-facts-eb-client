@@ -168,6 +168,7 @@ export function LandingSearch({
   onSelect,
   docTypes,
   fixedScope,
+  hrefOf,
 }: {
   readonly className?: string
   /**
@@ -195,6 +196,13 @@ export function LandingSearch({
   readonly autoFocus?: boolean
   readonly scrollToTopOnFocus?: boolean
   readonly onSelect?: (entity: EntitySearchHit) => void
+  /**
+   * Where a result opens, when a page about one domain wants its own page for
+   * it (the procurement front door opens an institution's procurement page,
+   * not its profile). Null keeps the result's own link. Applied before the
+   * row renders, so the link, Enter and Cmd-click all agree.
+   */
+  readonly hrefOf?: (entity: EntitySearchHit) => string | null
 }) {
   const { i18n } = useLingui()
   const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
@@ -247,7 +255,11 @@ export function LandingSearch({
 
   const isBusy = status.kind === 'loading' || (status.kind === 'results' && status.stale)
   const isDropdownOpen = isOpen && status.kind !== 'idle'
-  const visibleResults = status.kind === 'results' ? status.results : []
+  const pointed = (entity: EntitySearchHit): EntitySearchHit => {
+    const href = hrefOf?.(entity)
+    return href ? { ...entity, href, isExternal: false } : entity
+  }
+  const visibleResults = status.kind === 'results' ? status.results.map(pointed) : []
   const scope = [...(fixedScope ? [fixedScope.label] : []), ...filters.map((filter) => i18n._(filter.label))]
     .join(' · ')
   const hasContent = term.length > 0 || filters.length > 0
@@ -511,7 +523,7 @@ export function LandingSearch({
               const first = results[0]
               if (!first) return
               event.preventDefault()
-              commit(first)
+              commit(pointed(first))
               reset()
               setIsOpen(false)
             }}

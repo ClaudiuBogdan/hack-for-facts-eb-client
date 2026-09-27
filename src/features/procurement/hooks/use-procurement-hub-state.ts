@@ -1,5 +1,5 @@
 /**
- * Centralized hub URL state (A2 / F2) — PNRR-style commit for `/procurement`.
+ * Centralized hub URL state (A2 / F2) — PNRR-style commit for `/procurement/search`.
  */
 import { useCallback, useMemo } from 'react'
 import { useLingui } from '@lingui/react'
@@ -39,7 +39,7 @@ import { buildHubActiveFilterChips } from '../lib/hub-filter-chips'
 export type ProcurementHubFilterPatch = Partial<ProcurementHubState>
 
 export function useProcurementHubState(state: ProcurementHubState) {
-  const navigate = useNavigate({ from: '/procurement/' })
+  const navigate = useNavigate({ from: '/procurement/search' })
 
   const commit = useCallback(
     (

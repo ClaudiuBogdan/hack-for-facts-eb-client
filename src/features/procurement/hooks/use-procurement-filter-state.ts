@@ -29,7 +29,7 @@ import {
 } from '../lib/filter-meta'
 
 export function useProcurementFilterState(search: ProcurementSearchState) {
-  const navigate = useNavigate({ from: '/procurement/' })
+  const navigate = useNavigate({ from: '/procurement/search' })
 
   const commit = useCallback(
     (patch: ProcurementFilterPatch, options?: { readonly resetScroll?: boolean }) => {

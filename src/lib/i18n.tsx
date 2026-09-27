@@ -1,4 +1,4 @@
-import { i18n, type Messages } from "@lingui/core";
+import { i18n, setupI18n, type I18n, type Messages } from "@lingui/core";
 
 export const DEFAULT_LOCALE = "ro" as const;
 export const LOCALE_COOKIE_NAME = "user-locale";
@@ -276,4 +276,20 @@ export async function dynamicActivate(
     if (loadedCatalogs.has(key)) mergedCatalogs.add(key);
   }
   i18n.activate(locale);
+}
+
+/**
+ * A translator pinned to one locale, whatever the shared instance holds by
+ * then: for a route's `head`. On the server the shared `i18n` is activated per
+ * request by the root's `beforeLoad`, so a head that runs after its loader
+ * awaited may find another request's language there; the request's own
+ * locale is on the root's context (`match.context.locale`). Built from the
+ * catalogs already loaded for that locale (the root loaded them for this
+ * request); a message missing from them resolves to its source text.
+ */
+export function translatorFor(locale: string, pathname?: string): I18n {
+  const translator = setupI18n()
+  translator.load(locale, buildMergedMessages(locale, getCatalogNamesForPathname(pathname)))
+  translator.activate(locale)
+  return translator
 }

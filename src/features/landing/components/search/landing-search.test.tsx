@@ -101,6 +101,16 @@ describe('LandingSearch', () => {
     expect(screen.getByText('ONG · Iași')).toBeInTheDocument()
   })
 
+  it('opens where a domain page points a result, on the row and on Enter alike', async () => {
+    const user = userEvent.setup()
+    const hrefOf = (hit: EntitySearchHit) => (hit.href.startsWith('/entities/') ? hit.href.replace('/entities/', '/procurement/institutions/') : null)
+    render(<LandingSearch hrefOf={hrefOf} fixedScope={{ label: 'Achiziții', Icon: Building2 }} />, { queryClient: createTestQueryClient() })
+    const input = await typeAndWait(user, 'municipiul')
+    expect(screen.getAllByRole('option').map((row) => row.getAttribute('href'))).toEqual(['/procurement/institutions/4541580', '/procurement/institutions/4305857'])
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(navigate).toHaveBeenCalledWith({ to: '/procurement/institutions/4541580' })
+  })
+
   it('blocks highlighted stale results when the query changes', async () => {
     const chosen = vi.fn()
     const user = userEvent.setup()

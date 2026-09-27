@@ -302,7 +302,7 @@ export function ProcurementInstitutionPage({
             </Link>
             <ChevronRight className="h-3.5 w-3.5" aria-hidden />
             <Link
-              to="/procurement"
+              to="/procurement/search"
               search={{ view: 'rankings', rank_dim: 'buyer' }}
               className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
             >
@@ -329,7 +329,7 @@ export function ProcurementInstitutionPage({
               className={procurementCompactActionClassName}
             >
               <Link
-                to="/procurement"
+                to="/procurement/search"
                 search={{ view: 'list', authority_cui: cui }}
               >
                 <Trans>Înregistrări</Trans>

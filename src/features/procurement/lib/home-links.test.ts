@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest'
+import { cleanProcurementHubSearch, parseProcurementHubSearch } from '@/schemas/procurement-hub'
+import { explorerSearchOf, parseProcurementHomeSearch } from '@/schemas/procurement-home'
+import { countyExplorerSearch, procurementHrefOf, sectionIndex, startSearches } from './home-links'
+
+describe('procurementHrefOf', () => {
+  it('opens an institution’s buyer page and a company’s supplier page', () => {
+    expect(procurementHrefOf({ href: '/entities/4305857', isExternal: false })).toBe('/procurement/institutions/4305857')
+    expect(procurementHrefOf({ href: '/companies/14399840?tab=x', isExternal: false })).toBe('/procurement/suppliers/14399840')
+    // A state company buys under the procurement law.
+    expect(procurementHrefOf({ href: '/intreprinderi-publice/16054368', isExternal: false })).toBe('/procurement/institutions/16054368')
+  })
+
+  it('leaves anything else to its own link', () => {
+    expect(procurementHrefOf({ href: '/ins/seturi/POP105A', isExternal: false })).toBeNull()
+    expect(procurementHrefOf({ href: '/entities/4305857', isExternal: true })).toBeNull()
+    expect(procurementHrefOf({ href: '/entitiesx/1', isExternal: false })).toBeNull()
+  })
+})
+
+describe('sectionIndex', () => {
+  it('numbers a band by its place in the bar', () => {
+    const sections = [
+      { id: 'ce', label: 'Ce se cumpără' },
+      { id: 'cum', label: 'Cum se cumpără' },
+    ]
+    expect(sectionIndex(sections, 'cum')).toBe('02 / Cum se cumpără')
+  })
+})
+
+describe('the front door’s address', () => {
+  it('keeps its own choices, drops what it does not know and every default', () => {
+    expect(parseProcurementHomeSearch({ cumparatori: 'contracte', bani: 'directe', indicator: 'hmm', recente: 'contracte' })).toEqual({
+      cumparatori: 'contracte',
+      bani: 'directe',
+    })
+    expect(parseProcurementHomeSearch({})).toEqual({})
+  })
+
+  it('sends an old explorer link on with what it carried, less the front door’s own choices', () => {
+    expect(explorerSearchOf({ view: 'list', q: 'spital', lang: 'en', cumparatori: 'contracte' })).toEqual({ view: 'list', q: 'spital', lang: 'en' })
+    expect(explorerSearchOf({ tab: 'search' })).toEqual({ tab: 'search' })
+  })
+
+  it('keeps a front-door link on the front door, the site’s own keys included', () => {
+    expect(explorerSearchOf({})).toBeNull()
+    expect(explorerSearchOf({ lang: 'en', currency: 'EUR', firme: 'directe' })).toBeNull()
+  })
+})
+
+describe('the explorer lists the front door opens', () => {
+  /** What the explorer keeps of a search: its own schema, parsed and cleaned. */
+  const kept = (search: Record<string, unknown>) => cleanProcurementHubSearch(parseProcurementHubSearch(search))
+
+  it('keep the population filter each link names, so a list counts what its row or card counts', () => {
+    const { awards, frameworks, rankings } = startSearches(2025)
+    expect(kept(awards)).toMatchObject({ view: 'list', record_kind: ['purchases'], year: 2025 })
+    expect(kept(frameworks)).toMatchObject({ view: 'list', record_kind: ['frameworks'], year: 2025 })
+    expect(kept(rankings)).toMatchObject({ view: 'rankings' })
+    expect(kept(countyExplorerSearch('contracte', 'CJ', 2025))).toMatchObject({ view: 'list', record_kind: ['purchases'], buyerCounty: 'CJ', year: 2025 })
+    expect(kept(countyExplorerSearch('lei', 'CJ', 2025))).toMatchObject({ view: 'list', grain: 'direct_acquisitions', buyerCounty: 'CJ', year: 2025 })
+  })
+})

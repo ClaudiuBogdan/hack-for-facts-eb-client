@@ -15,7 +15,7 @@ export function ProcurementQuickLinks() {
       icon: Search,
       title: t`Search records`,
       description: t`Find procedures, contracts, and direct acquisitions.`,
-      to: '/procurement' as const,
+      to: '/procurement/search' as const,
       search: { view: 'list' as const },
     },
     {
@@ -39,7 +39,7 @@ export function ProcurementQuickLinks() {
       icon: Tag,
       title: t`Categories`,
       description: t`Browse spending by CPV from the overview rankings above.`,
-      to: '/procurement' as const,
+      to: '/procurement/search' as const,
       search: { view: 'list' as const, grain: 'direct_acquisitions' as const },
     },
   ]

@@ -17,7 +17,7 @@ export type PartyPairScope = {
 }
 
 export type PartyPairSearchLink = {
-  readonly to: '/procurement'
+  readonly to: '/procurement/search'
   readonly search: {
     readonly view: 'list'
     readonly authority_cui: string
@@ -108,7 +108,7 @@ export function partyPairSearchLink(options: {
     options.pairScope.kind === 'supplier' ? scopeCui : counterpartCui
 
   return {
-    to: '/procurement',
+    to: '/procurement/search',
     search: {
       view: 'list',
       authority_cui,

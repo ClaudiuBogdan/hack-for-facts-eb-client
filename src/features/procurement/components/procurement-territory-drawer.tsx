@@ -338,7 +338,7 @@ export function ProcurementTerritoryDrawer({
               onClick={() => {
                 onOpenChange(false)
                 void navigate({
-                  to: '/procurement',
+                  to: '/procurement/search',
                   search: appliedSearch,
                 })
               }}

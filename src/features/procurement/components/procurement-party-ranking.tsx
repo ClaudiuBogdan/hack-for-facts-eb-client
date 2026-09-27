@@ -210,7 +210,7 @@ export function ProcurementPartyRanking({
           {rows.length > 0 ? (
             rankingsDim ? (
               <Link
-                to="/procurement"
+                to="/procurement/search"
                 search={cleanProcurementHubSearch({
                   ...(rankingsSearch ??
                     (currentSearch as Record<string, unknown>)),

@@ -197,7 +197,7 @@ export function ProcurementRankingTable({
                   <td className="px-3 py-2.5 text-right sm:px-5">
                     {listSearch ? (
                       <Link
-                        to="/procurement"
+                        to="/procurement/search"
                         search={listSearch}
                         className="text-xs font-semibold text-[var(--pnrr-blue)] underline-offset-2 hover:underline"
                       >

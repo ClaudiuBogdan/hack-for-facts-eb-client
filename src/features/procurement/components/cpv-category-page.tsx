@@ -177,7 +177,7 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
 
           <div>
             <Link
-              to="/procurement"
+              to="/procurement/search"
               search={
                 page.level === 'division'
                   ? { view: 'list' as const, cpv_division: page.code }

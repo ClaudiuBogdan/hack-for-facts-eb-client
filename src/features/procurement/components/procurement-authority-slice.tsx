@@ -381,7 +381,7 @@ function SliceContent({
 
       <div className="flex flex-wrap gap-x-4 gap-y-2">
         <Link
-          to="/procurement"
+          to="/procurement/search"
           search={{ view: 'list', authority_cui: slice.authorityCui }}
           className={procurementUnderlineLinkClassName}
         >

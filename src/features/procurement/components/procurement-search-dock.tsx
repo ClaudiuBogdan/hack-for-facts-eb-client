@@ -26,7 +26,7 @@ type Props = {
 }
 
 /**
- * Hub search entry — commits into `/procurement?view=list&q=…` (F2).
+ * Hub search entry — commits into `/procurement/search?view=list&q=…` (F2).
  * Enter commits; not debounced (route change would yank the reader mid-word).
  */
 export function ProcurementSearchDock({
@@ -49,7 +49,7 @@ export function ProcurementSearchDock({
       return
     }
     void navigate({
-      to: '/procurement',
+      to: '/procurement/search',
       search: (previous) =>
         cleanProcurementHubSearch({
           ...previous,

@@ -51,7 +51,7 @@ export function ContractsView({ entity }: Readonly<Props>) {
 
       <p className="text-sm">
         <Link
-          to="/procurement"
+          to="/procurement/search"
           search={{ view: 'list', authority_cui: cui }}
           className={procurementUnderlineLinkClassName}
         >

@@ -7,7 +7,7 @@ import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import { HUB_COUNTY_LAYERS, type HubCountyLayerDefinition } from '../../lib/landing-constants'
 import { hubCountyLayer } from '../../test/hub-fixtures'
 import { CountyMap } from '../county-map/county-map'
-import { HubCountyBand } from './hub-county-band'
+import { HubCountyBand, type HubCountyBandDefinition } from './hub-county-band'
 import { HubCountyRank } from './hub-county-rank'
 
 vi.mock('../../lib/format', async (importOriginal) => {
@@ -76,8 +76,22 @@ const definition = (key: string): HubCountyLayerDefinition => HUB_COUNTY_LAYERS.
 const LIFE_DEFINITION = definition('viata')
 const swatch = () => ({ className: 'bg-choropleth-5', opacity: 1 })
 
+/** The band's words as the hub page resolves them (the macro mock gives source strings). */
+const text = (message: unknown): string =>
+  typeof message === 'string' ? message : ((message as { readonly message?: string; readonly id?: string }).message ?? '')
+function bandOf(of: HubCountyLayerDefinition, layer: StatisticsHubCountyLayer): HubCountyBandDefinition {
+  return {
+    legend: text(of.legend(layer.period ?? '')),
+    unit: of.unit ? text(of.unit) : undefined,
+    digits: of.digits,
+    reversed: of.reversed,
+    caveat: text(of.caveat),
+    source: `Sursa: INS Tempo, ${layer.code}.`,
+  }
+}
+
 function Band({ layer = LIFE, of = LIFE_DEFINITION }: { readonly layer?: StatisticsHubCountyLayer; readonly of?: HubCountyLayerDefinition }) {
-  return <HubCountyBand layer={layer} definition={of} />
+  return <HubCountyBand layer={layer} definition={bandOf(of, layer)} />
 }
 
 const map = () => screen.getByRole('group', { name: /Speranța de viață la naștere, 2025/ })
@@ -157,7 +171,7 @@ describe('HubCountyBand', () => {
       { code: 'CL', name: 'Călărași', value: 2.5 },
       { code: 'B', name: 'București', value: 0.5 },
     ])
-    render(<HubCountyBand layer={tied} definition={definition('somaj')} />)
+    render(<HubCountyBand layer={tied} definition={bandOf(definition('somaj'), tied)} />)
     const rows = screen.getAllByRole('link').filter((link) => link.closest('li') && /^\d{2}/.test(link.textContent ?? ''))
     expect(rows.map((row) => row.textContent?.slice(0, 2))).toEqual(['01', '01', '03'])
     fireEvent.pointerEnter(screen.getByRole('link', { name: /^Județul Călărași/ }), { pointerType: 'mouse' })
@@ -197,15 +211,39 @@ describe('HubCountyBand', () => {
       { code: 'VL', name: 'Vâlcea', value: 3881.4 },
       { code: 'CL', name: 'Călărași', value: 4120.6 },
     ])
-    const { unmount } = render(<HubCountyBand layer={{ ...salary, national: 4959 }} definition={definition('salariu')} />)
+    const { unmount } = render(<HubCountyBand layer={{ ...salary, national: 4959 }} definition={bandOf(definition('salariu'), salary)} />)
     expect(screen.getByRole('link', { name: /^Județul Vâlcea: 3\.881 lei,/ })).toBeInTheDocument()
     unmount()
     const births = hubCountyLayer('POP215A', 'other', 'Rata la 1000 locuitori', '2025', [
       { code: 'VL', name: 'Vâlcea', value: -6.1 },
       { code: 'CL', name: 'Călărași', value: -7.2 },
     ])
-    render(<HubCountyBand layer={{ ...births, national: -4.4 }} definition={definition('spor')} />)
+    render(<HubCountyBand layer={{ ...births, national: -4.4 }} definition={bandOf(definition('spor'), births)} />)
     expect(screen.getByRole('link', { name: /^Județul Vâlcea: -6,1 ‰,/ })).toBeInTheDocument()
+  })
+
+  it('opens the INS series by default and says its source after the caveat', () => {
+    render(<Band />)
+    expect(countyLink(/Vâlcea/).getAttribute('href')).toBe('/ins/seturi/POP217A?teritoriu=cod%3AVL&frecventa=ANNUAL')
+    expect(document.querySelector('[data-source-line]')).toHaveTextContent(/Sursa: INS Tempo, POP217A\.$/)
+  })
+
+  it('opens where another hub says a county opens: on the map, in the held tooltip and in the list', () => {
+    render(
+      <HubCountyBand
+        layer={LIFE}
+        definition={bandOf(LIFE_DEFINITION, LIFE)}
+        countyLink={(code) => ({ to: '/procurement/search', search: { buyerCounty: code, year: 2025 } })}
+      />,
+    )
+    const mapLink = countyLink(/Vâlcea/)
+    expect(mapLink.getAttribute('href')).toBe('/procurement/search?buyerCounty=VL&year=2025')
+    const row = screen.getAllByRole('link', { name: /Vâlcea/ }).find((link) => link.closest('li'))!
+    expect(row.getAttribute('href')).toBe('/procurement/search?buyerCounty=VL&year=2025')
+    // A tap holds the tooltip, whose link opens the same place.
+    fireEvent.pointerDown(mapLink, { pointerType: 'touch' })
+    fireEvent.click(mapLink, { detail: 1 })
+    expect(within(tooltip()!).getByRole('link', { name: /Deschide datele județului/ }).getAttribute('href')).toBe('/procurement/search?buyerCounty=VL&year=2025')
   })
 })
 
