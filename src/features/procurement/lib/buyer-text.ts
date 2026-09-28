@@ -4,7 +4,7 @@ import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import { hasAnyRecord, steadySellers, supplierName, type BuyerIdentity, type BuyerProfile, type SupplierYears } from './buyer-model'
 import { OTHER_CATEGORY, UNKNOWN_CATEGORY, type CategoryFigure } from './home-categories'
-import { contractsCount, directPurchasesCount, firmsCount, lowerFirst, moneyText, percentText } from './home-format'
+import { contractsCount, directPurchasesCount, firmsCount, lowerFirst, monthText, moneyText, percentText } from './home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, seriesSpan, type HomeGrain } from './home-model'
 
 /**
@@ -235,7 +235,8 @@ export function whereLede(profile: BuyerProfile): string | null {
  * smaller nominal rise may be a fall in real terms.
  */
 export function yearsLede(profile: BuyerProfile): string | null {
-  const span = seriesSpan(profile.directYears, DIRECT_COMPARABLE_FROM, profile.year)
+  // Whole years only: a year in progress is no year's total.
+  const span = seriesSpan(profile.directYears, DIRECT_COMPARABLE_FROM, Math.min(profile.year, profile.latest))
   if (!span || span.first.value === null || span.last.value === null || span.first.value <= 0) return null
   const ratio = span.last.value / span.first.value
   const from = moneyText(span.first.value)
@@ -288,9 +289,10 @@ export function balanceLede(profile: BuyerProfile): string | null {
   if (direct === 0) return null
   if (awards === 0) {
     // With framework agreements signed, it did not buy only directly.
-    return (profile.frameworks ?? 0) === 0
-      ? t`În ${profile.year} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.`
-      : null
+    if ((profile.frameworks ?? 0) > 0) return null
+    return profile.through
+      ? t`Până în ${monthText(profile.through)} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.`
+      : t`În ${profile.year} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.`
   }
   const ratio = Math.round(direct / awards)
   if (ratio >= 20) return t`Cumpără mai ales direct: la fiecare contract atribuit, ${directPurchasesCount(ratio)}.`

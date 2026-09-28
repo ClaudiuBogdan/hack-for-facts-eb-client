@@ -1,11 +1,12 @@
 import { DIRECT_COMPARABLE_FROM } from './home-model'
 
 /**
- * What a firm's page's year covers. A complete year is the calendar year. The
- * year in progress runs through SEAP's cutoff month — the earlier of the two
- * populations', so one date covers the page; the months after it are the feed
- * thinning out — and is compared with nothing: its last months may still be
- * filling, so a change would partly measure the feed.
+ * What a procurement profile's year covers (a buyer's page, a firm's). A
+ * complete year is the calendar year. The year in progress runs through
+ * SEAP's cutoff month — the earlier of the two populations', so one date
+ * covers the page; the months after it are the feed thinning out — and is
+ * compared with nothing: its last months may still be filling, so a change
+ * would partly measure the feed.
  */
 
 /** SEAP's cutoff month per population (`YYYY-MM`), derived from the national monthly counts; null when none can be told. */
@@ -45,6 +46,16 @@ export function throughMonth(year: number, cutoff: Cutoff | null): string | null
   const months = [cutoff?.direct ?? null, cutoff?.contract ?? null].filter((month): month is string => month !== null).sort()
   const [earliest] = months
   return earliest?.startsWith(`${year}-`) ? earliest : null
+}
+
+/**
+ * The newest year with data worth a page: the year in progress once SEAP's
+ * data reaches into it (the page's cutoff month — the earlier population's —
+ * falls in it), else the last complete year: in January the year in progress
+ * holds almost nothing.
+ */
+export function newestYear(latest: number, cutoff: Cutoff | null): number {
+  return throughMonth(latest + 1, cutoff) ? latest + 1 : latest
 }
 
 /**

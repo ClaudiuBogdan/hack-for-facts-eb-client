@@ -141,8 +141,8 @@ describe('ProcurementSupplierPage', () => {
     const html = renderToStaticMarkup(page({ year: 2026 }, { year: 2026, profile: supplierProfile({ year: 2026, through: '2026-05', directPrev: null }) }))
     expect(html).toContain('Date actualizate până la 31 mai 2026')
     expect(html).not.toContain('față de')
-    // An institution's page describes complete years: a client opens on the last.
-    expect(html).toContain('data-search="{&quot;year&quot;:2025}"')
+    // A client's page opens on the same year.
+    expect(html).toContain('data-search="{&quot;year&quot;:2026}"')
   })
 
   it('says a year with no sale, and names a firm the registry does not hold by its records', () => {

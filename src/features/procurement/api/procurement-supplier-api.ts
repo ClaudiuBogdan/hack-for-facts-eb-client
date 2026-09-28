@@ -21,6 +21,7 @@ import {
   supplierDirectNamesQuery,
   type SupplierDay,
 } from './graphql/procurement-supplier-queries'
+import { readCutoffOutcome, readProcurementCutoff, untilAborted } from './procurement-cutoff'
 import { ACCEPTED_VALUE_STATES, acceptedValue, partyOf } from './procurement-home-api'
 import {
   SUPPLIER_LARGEST_RECORDS,
@@ -34,9 +35,9 @@ import {
 } from './procurement-supplier-contracts'
 import { buyerName } from '../lib/buyer-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
-import { DIRECT_COMPARABLE_FROM, cutoffMonth, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
 import type { CountyFigureRow, PartyYears } from '../lib/profile-model'
-import { periodOf, throughMonth, type Cutoff, type Period } from '../lib/supplier-period'
+import { periodOf, throughMonth, type Cutoff, type Period } from '../lib/profile-period'
 import type { ClientRanking, ClientWeight, GrainFigures, SupplierProfile } from '../lib/supplier-model'
 
 export { SUPPLIER_LARGEST_RECORDS, SUPPLIER_ROWS_READ, supplierContractPicture }
@@ -134,60 +135,6 @@ async function settle<T>(read: () => Promise<T>, signal?: AbortSignal): Promise<
     return null
   }
 }
-
-/** Waits for a read the reader's signal cannot cancel (a shared one, or one without a signal), but not past the reader leaving. */
-function untilAborted<T>(read: Promise<T>, signal?: AbortSignal): Promise<T> {
-  if (!signal) return read
-  if (signal.aborted) return Promise.reject(signal.reason)
-  return new Promise<T>((resolve, reject) => {
-    const leave = () => reject(signal.reason)
-    signal.addEventListener('abort', leave, { once: true })
-    read.then(
-      (value) => {
-        signal.removeEventListener('abort', leave)
-        resolve(value)
-      },
-      (error: unknown) => {
-        signal.removeEventListener('abort', leave)
-        reject(error)
-      },
-    )
-  })
-}
-
-// ──────────────────────────────────────────────────────── the cutoff ──
-
-/** SEAP loads daily at most; the national cutoff is read once per ten minutes, for every firm. */
-const CUTOFF_KEEP_MS = 10 * 60 * 1000
-/** A shared read has no reader's deadline: it gets its own. */
-const CUTOFF_TIMEOUT_MS = 5_000
-const cutoffReads = new Map<number, { readonly at: number; readonly read: Promise<Cutoff> }>()
-
-/**
- * SEAP's cutoff month per population, from the national monthly counts: the
- * same for every firm, so kept (a failed or timed-out read is forgotten). Not
- * bound to one reader's signal — it is shared — but to a timeout of its own.
- */
-export function readSupplierCutoff(latest: number, now: number = Date.now()): Promise<Cutoff> {
-  const kept = cutoffReads.get(latest)
-  if (kept && now - kept.at < CUTOFF_KEEP_MS) return kept.read
-  const part = latest + 1
-  const fields: BuyerField[] = [
-    { alias: 'nationalDirectMonths', kind: 'series', scope: { ...DIRECT, from: `${latest}-01`, to: `${part}-12` }, args: 'bucket: month, measure: recordCount' },
-    { alias: 'nationalAwardMonths', kind: 'series', scope: { ...AWARDS, from: `${latest}-01`, to: `${part}-12` }, args: 'bucket: month, measure: recordCount' },
-  ]
-  const read = analysis('ProcurementSupplierCutoff', fields, AbortSignal.timeout(CUTOFF_TIMEOUT_MS)).then((raw): Cutoff => {
-    const months = (alias: string) => (buyerSeriesSchema.parse(raw[alias])[0]?.points ?? []).map((point) => ({ month: point.bucket, count: point.value ?? 0 }))
-    return { direct: cutoffMonth(months('nationalDirectMonths'), latest), contract: cutoffMonth(months('nationalAwardMonths'), latest) }
-  })
-  read.catch(() => {
-    if (cutoffReads.get(latest)?.read === read) cutoffReads.delete(latest)
-  })
-  cutoffReads.set(latest, { at: now, read })
-  return read
-}
-
-const NO_CUTOFF: Cutoff = { direct: null, contract: null }
 
 // ─────────────────────────────────────────────────────── the fields ──
 // Grouped by what each answer starts: the year's clients (the weights, the
@@ -443,14 +390,6 @@ export function mapSupplierProfile(cui: string, period: Period, latest: number, 
 
 // ─────────────────────────────────────────────────────────── the reads ──
 
-/** The shared cutoff, as a result rather than a failure: a failed read is no cutoff, said. */
-function readCutoffOutcome(latest: number): Promise<{ readonly cutoff: Cutoff; readonly failed: boolean }> {
-  return readSupplierCutoff(latest).then(
-    (cutoff) => ({ cutoff, failed: false }),
-    () => ({ cutoff: NO_CUTOFF, failed: true }),
-  )
-}
-
 /** The firm's page for a year: the reads side by side, the follow-ups on their keys. */
 export async function fetchProcurementSupplier(cui: string, year: number, signal?: AbortSignal): Promise<SupplierProfile> {
   const latest = homeYear()
@@ -532,7 +471,7 @@ export async function fetchProcurementSupplier(cui: string, year: number, signal
  */
 export async function fetchProcurementSupplierDirect(cui: string, year: number, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
   const latest = homeYear()
-  const period = periodOf(year, latest, year > latest ? await untilAborted(readSupplierCutoff(latest), signal) : null)
+  const period = periodOf(year, latest, year > latest ? await untilAborted(readProcurementCutoff(latest), signal) : null)
   const raw = await graphqlQuery<unknown>(
     PROCUREMENT_HOME_DIRECT_QUERY,
     // The direct-purchase filter's `publicationDate` binds to the finalization date on the server.

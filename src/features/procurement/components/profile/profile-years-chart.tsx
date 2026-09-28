@@ -22,7 +22,6 @@ export function ProfileYearsChart({
   partYear,
   cutoff,
   contractLabel,
-  pickPartYear,
   onYear,
   className,
 }: {
@@ -35,14 +34,13 @@ export function ProfileYearsChart({
   readonly cutoff: { readonly direct: string | null; readonly contract: string | null }
   /** The line's name: „Contracte atribuite" on a buyer's page, „Contracte câștigate" on a firm's. */
   readonly contractLabel: string
-  /** Whether the year in progress can be the page's; when not, its column is reachable but not pickable. */
-  readonly pickPartYear: boolean
   readonly onYear: (year: number) => void
   readonly className?: string
 }) {
   const [active, setActive] = useState<number | null>(null)
   const titleId = useId()
-  const last = partYear ?? latest
+  // The page's year always has its column: a year in progress with no record yet is still the one described.
+  const last = Math.max(partYear ?? latest, year)
   const years = Array.from({ length: Math.max(0, last - DIRECT_COMPARABLE_FROM + 1) }, (_, index) => DIRECT_COMPARABLE_FROM + index)
   const direct = new Map(directYears.map((point) => [point.year, point]))
   const contracts = new Map(contractYears.map((point) => [point.year, point]))
@@ -112,13 +110,11 @@ export function ProfileYearsChart({
           {years.map((y) => {
             const point = direct.get(y)
             const isPart = y === partYear
-            const locked = isPart && !pickPartYear
             const count = contracts.get(y)?.count ?? 0
             return (
               <button
                 key={y}
                 type="button"
-                aria-disabled={locked || undefined}
                 aria-pressed={y === year}
                 aria-label={[
                   `${y}: ${point?.value != null ? moneyText(point.value) : point?.count ? '—' : t`nicio achiziție directă`}`,
@@ -130,10 +126,8 @@ export function ProfileYearsChart({
                 onPointerEnter={() => setActive(y)}
                 onFocus={() => setActive(y)}
                 onBlur={() => setActive(null)}
-                onClick={() => {
-                  if (!locked) onYear(y)
-                }}
-                className="group relative flex h-full cursor-pointer items-end outline-hidden focus-visible:ring-2 focus-visible:ring-ring aria-disabled:cursor-default"
+                onClick={() => onYear(y)}
+                className="group relative flex h-full cursor-pointer items-end outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span
                   className={cn(
@@ -141,7 +135,7 @@ export function ProfileYearsChart({
                     isPart
                       ? y === year
                         ? 'border border-dashed border-primary bg-primary/60'
-                        : cn('border border-dashed border-primary/60 bg-primary/10', !locked && 'group-hover:bg-primary/25')
+                        : 'border border-dashed border-primary/60 bg-primary/10 group-hover:bg-primary/25'
                       : y === year
                         ? 'bg-primary'
                         : 'bg-primary/35 group-hover:bg-primary/60 group-focus-visible:bg-primary/60',

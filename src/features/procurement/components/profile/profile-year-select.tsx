@@ -24,15 +24,14 @@ function yearSummary(points: ProfileYearPoints, year: number): string | null {
 /**
  * The year a procurement profile describes (a firm's, a buyer's), as a
  * dropdown at the right end of the head's top row — above the chart on a
- * wide screen, beside the way back on a phone. The newest year comes first;
- * once the profile is read, each year in the list says what it holds, so the
- * list is also the profile's years at a glance.
+ * wide screen, beside the way back on a phone. The year in progress comes
+ * first, marked; once the profile is read, each year in the list says what
+ * it holds, so the list is also the profile's years at a glance.
  */
 export function ProfileYearSelect({
   points,
   year,
   latest,
-  partYear,
   emptyLabel,
   onYear,
   className,
@@ -43,15 +42,13 @@ export function ProfileYearSelect({
   readonly year: number
   /** The last complete year. */
   readonly latest: number
-  /** Whether the year in progress is listed, marked: a firm's page reads it; a buyer's describes complete years only. */
-  readonly partYear: boolean
   /** A year with nothing: „fără vânzări" on a firm's page, „fără achiziții" on a buyer's. */
   readonly emptyLabel: string
   readonly onYear: (year: number) => void
   readonly className?: string
 }) {
   const labelId = useId()
-  const newest = partYear ? latest + 1 : latest
+  const newest = latest + 1
   const years = Array.from({ length: newest - DIRECT_COMPARABLE_FROM + 1 }, (_, index) => newest - index)
   return (
     <div className={cn('flex shrink-0 items-center gap-2', className)}>

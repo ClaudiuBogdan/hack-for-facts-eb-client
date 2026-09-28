@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { companyProfile } from '@/features/private-companies/lib/company-profile.fixture'
 import { homeYear } from '../lib/home-model'
-import { periodOf } from '../lib/supplier-period'
+import { periodOf } from '../lib/profile-period'
 import type { SupplierDay, SupplierRow } from './graphql/procurement-supplier-queries'
 
 const graphqlQuery = vi.fn()
@@ -9,7 +9,7 @@ vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown
 const fetchPrivateCompanyProfile = vi.fn()
 vi.mock('@/features/private-companies/api/private-company-api', () => ({ fetchPrivateCompanyProfile: (...args: unknown[]) => fetchPrivateCompanyProfile(...args) }))
 
-const { fetchProcurementSupplier, fetchProcurementSupplierDirect, readSupplierCutoff, supplierContractPicture, supplierFigureFields, supplierKeyFields } = await import(
+const { fetchProcurementSupplier, fetchProcurementSupplierDirect, supplierContractPicture, supplierFigureFields, supplierKeyFields } = await import(
   './procurement-supplier-api'
 )
 
@@ -313,7 +313,7 @@ describe('fetchProcurementSupplier', () => {
     vi.setSystemTime(Date.now() + 60 * 60 * 1000)
     answer({
       analysis: {
-        ProcurementSupplierCutoff: {
+        ProcurementCutoff: {
           nationalDirectMonths: series({ ...months(LATEST, '160000'), ...months(PART, '150000', 6) }),
           nationalAwardMonths: series({ ...months(LATEST, '3000'), ...months(PART, '3000', 5) }),
         },
@@ -328,7 +328,7 @@ describe('fetchProcurementSupplier', () => {
   it('goes partial when the cutoff cannot be read, whatever the year: the chart’s year in progress hangs on it', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(Date.now() + 2 * 60 * 60 * 1000)
-    answer({ failing: ['ProcurementSupplierCutoff'] })
+    answer({ failing: ['ProcurementCutoff'] })
     expect(await fetchProcurementSupplier('103029862', PART)).toMatchObject({ through: null, partial: true, directPrev: null })
     // A complete year still reads whole, with its comparison.
     expect(await fetchProcurementSupplier('103029862', LATEST)).toMatchObject({ through: null, partial: true, cutoff: { direct: null, contract: null } })
@@ -358,20 +358,5 @@ describe('fetchProcurementSupplierDirect', () => {
     const records = await fetchProcurementSupplierDirect('9813902', LATEST, 8)
     expect(records.map((record) => [record.id, record.value, record.title])).toEqual([['d1', 899_122, 'Statie pompare ape pluviale']])
     expect(graphqlQuery.mock.calls[0]?.[1]).toMatchObject({ filter: { supplierCui: { eq: '9813902' }, publicationDate: { gte: `${LATEST}-01-01`, lte: `${LATEST}-12-31` } }, rows: 8 })
-  })
-})
-
-describe('readSupplierCutoff', () => {
-  it('reads the national months once for ten minutes, and forgets a failed read', async () => {
-    answer({ analysis: { ProcurementSupplierCutoff: { nationalDirectMonths: series(months(1990, '100')), nationalAwardMonths: series(months(1990, '10')) } } })
-    expect(await readSupplierCutoff(1990, 0)).toEqual({ direct: '1990-12', contract: '1990-12' })
-    await readSupplierCutoff(1990, 60_000)
-    expect(graphqlQuery).toHaveBeenCalledTimes(1)
-    await readSupplierCutoff(1990, 11 * 60_000)
-    expect(graphqlQuery).toHaveBeenCalledTimes(2)
-    answer({ failing: ['ProcurementSupplierCutoff'] })
-    await expect(readSupplierCutoff(1991, 0)).rejects.toThrow()
-    answer({ analysis: { ProcurementSupplierCutoff: { nationalDirectMonths: series(months(1991, '100')), nationalAwardMonths: series(months(1991, '10')) } } })
-    await expect(readSupplierCutoff(1991, 1)).resolves.toEqual({ direct: '1991-12', contract: '1991-12' })
   })
 })

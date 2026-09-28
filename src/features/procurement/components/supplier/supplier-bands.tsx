@@ -198,7 +198,7 @@ export function SupplierWhatBand({
 export function SupplierWhereBand({ profile, index }: { readonly profile: SupplierView; readonly index: string }) {
   const direct = profile.countiesOf === 'direct'
   // A row opens the explorer on what it counts: the firm's direct purchases, or its contracts, from that county.
-  const searchOf = (code: string) => supplierCountySearch(profile.cui, code, profile.year, direct ? 'direct' : 'contract')
+  const searchOf = (code: string) => supplierCountySearch(profile.cui, code, profile, direct ? 'direct' : 'contract')
   return (
     <HomeBand id="unde" labelledBy="supplier-where-title">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
@@ -386,7 +386,7 @@ export function SupplierLargestBand({
           ) : (
             <span />
           )}
-          <Link to="/procurement/search" search={supplierRecordsSearch(profile.cui, profile.year, grain)} className={OUT_LINK}>
+          <Link to="/procurement/search" search={supplierRecordsSearch(profile.cui, profile, grain)} className={OUT_LINK}>
             {grain === 'contract' ? <Trans>Toate contractele din {profile.year}</Trans> : <Trans>Toate achizițiile directe din {profile.year}</Trans>}
             <ArrowUpRight className="size-3.5" aria-hidden="true" />
           </Link>

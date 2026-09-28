@@ -1,14 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { periodOf, type Cutoff } from '../lib/profile-period'
 
 const graphqlQuery = vi.fn()
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
+// SEAP's cutoff is the shared read (tested beside it): here each test says what it is.
+const cutoffRead = vi.fn<() => Promise<Cutoff>>()
+vi.mock('./procurement-cutoff', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./procurement-cutoff')>()
+  return {
+    ...actual,
+    readProcurementCutoff: () => cutoffRead(),
+    readCutoffOutcome: () => cutoffRead().then((cutoff) => ({ cutoff, failed: false }), () => ({ cutoff: actual.NO_CUTOFF, failed: true })),
+  }
+})
 
 const { buyerProfileFields, fetchProcurementBuyer, fetchProcurementBuyerRecords } = await import('./procurement-buyer-api')
+
+const CUTOFF: Cutoff = { direct: '2026-02', contract: '2026-02' }
 
 /** Every alias of the profile answered empty, as the API answers a scope with no records; a test overrides what it reads. */
 function emptyProfile(cui: string, year: number, latest: number): Record<string, unknown> {
   const raw: Record<string, unknown> = {}
-  for (const field of buyerProfileFields(cui, year, latest)) {
+  for (const field of buyerProfileFields(cui, periodOf(year, latest, CUTOFF), latest)) {
     raw[field.alias] =
       field.kind === 'stats'
         ? { blocks: [{ recordCount: '0', withValueCount: '0', valueAwardedSum: null }] }
@@ -21,8 +34,6 @@ function emptyProfile(cui: string, year: number, latest: number): Record<string,
 
 const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
 const top = (key: string, recordCount: string, valueSum: string | null, shareOfScope: string | null = null) => ({ key, kind: 'top', recordCount, valueSum, shareOfScope })
-const months = (year: number, count: string, through = 12) =>
-  Object.fromEntries(Array.from({ length: through }, (_, index) => [`${year}-${String(index + 1).padStart(2, '0')}`, count]))
 
 function otopeni(): Record<string, unknown> {
   return {
@@ -36,8 +47,6 @@ function otopeni(): Record<string, unknown> {
     directYearsCount: series({ '2019': '270', '2025': '293', '2026': '46' }),
     directPartValue: series({ '2026-01': '1000000', '2026-02': '1000000', '2026-03': '600000' }),
     directPartCount: series({ '2026-01': '20', '2026-02': '20', '2026-03': '6' }),
-    nationalDirectMonths: series({ ...months(2025, '160000'), '2026-01': '150000', '2026-02': '150000', '2026-03': '40000' }),
-    nationalAwardMonths: series({ ...months(2025, '3000'), '2026-01': '3000' }),
     directSuppliers: [{ rankedBy: 'value', buckets: [top('30153499', '14', '4590000', '0.126'), top('00041200627', '2', '100000', '0.003'), { key: null, kind: 'other', recordCount: '240', valueSum: '15740000', shareOfScope: '0.43' }] }],
     directCounties: [{ rankedBy: 'value', buckets: [top('IF', '97', '18500000', '0.51'), top('B', '137', '12380000', '0.34')] }],
     spanSuppliers: [{ rankedBy: 'value', buckets: [top('9813902', '40', '21600000')] }],
@@ -73,6 +82,8 @@ function extras(): Record<string, unknown> {
 describe('fetchProcurementBuyer', () => {
   beforeEach(() => {
     graphqlQuery.mockReset()
+    cutoffRead.mockReset()
+    cutoffRead.mockResolvedValue(CUTOFF)
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(new Date('2026-09-27T10:00:00Z'))
   })
@@ -105,8 +116,10 @@ describe('fetchProcurementBuyer', () => {
     expect(keys?.[0]).not.toContain('entity(')
     expect(identity?.[0]).toContain('entity(cui: $entityCui)')
     expect(identity?.[1]).toEqual({ entityCui: '4364446', populationYear: 2025 })
-    expect(figures?.[1]).toHaveProperty('nationalDirectMonths')
+    // SEAP's cutoff is the shared read, not the buyer's.
+    expect(figures?.[1]).not.toHaveProperty('nationalDirectMonths')
     expect(figures?.[1]).toHaveProperty('directPrev')
+    expect(figures?.[1]).toMatchObject({ direct: { authorityCui: '4364446', year: 2025 } })
     expect(figures?.[1]).not.toHaveProperty('modifications')
     expect(figures?.[1]).not.toHaveProperty('directDivisions')
     expect(figures?.[0]).not.toContain('entity(')
@@ -126,8 +139,8 @@ describe('fetchProcurementBuyer', () => {
     expect(profile.identity.address).toBe('Orasul Otopeni, Str. 23 August, nr. 10, 75100')
     expect(profile).toMatchObject({ year: 2025, latest: 2025, county: 'IF', frameworks: 1, partial: false })
     expect(profile.direct).toEqual({ count: 293, valued: 293, value: 36_404_736.58, suppliers: 72 })
-    // The year in progress runs through SEAP's cutoff (February: March is thin), not through every month it has.
-    expect(profile.cutoff.direct).toBe('2026-02')
+    // The chart's year in progress runs through SEAP's cutoff (February), not through every month it has.
+    expect(profile).toMatchObject({ cutoff: CUTOFF, through: null })
     expect(profile.directYears.find((point) => point.year === 2026)).toEqual({ year: 2026, value: 2_000_000, count: 40 })
     expect(profile.partYear).toBe(2026)
     // „other" is not a firm; a firm the spine cannot name keeps its CUI.
@@ -178,6 +191,47 @@ describe('fetchProcurementBuyer', () => {
     expect(profile.names.get('30153499')).toBe('Upper Level SRL')
   })
 
+  it('reads the year in progress through the cutoff month, compared with nothing, its county likewise', async () => {
+    cutoffRead.mockResolvedValue({ direct: '2026-06', contract: '2026-05' })
+    answer(otopeni(), () => Promise.resolve(extras()))
+    const profile = await fetchProcurementBuyer('4364446', 2026)
+    const figures = callOf('ProcurementBuyerFigures')?.[1] ?? {}
+    expect(figures.direct).toEqual({ authorityCui: '4364446', from: '2026-01', to: '2026-05', grain: 'direct_acquisition' })
+    expect(figures).not.toHaveProperty('directPrev')
+    expect(callOf('ProcurementBuyerExtras')?.[1].county).toEqual({ buyerCounty: 'IF', from: '2026-01', to: '2026-05', grain: 'direct_acquisition' })
+    // The population of a year in progress is the last complete year's.
+    expect(callOf('ProcurementBuyerIdentity')?.[1]).toEqual({ entityCui: '4364446', populationYear: 2025 })
+    expect(profile).toMatchObject({ year: 2026, through: '2026-05', directPrev: null, partial: false })
+  })
+
+  it('cuts the chart’s year in progress where the page’s reads stop: at the earlier population’s cutoff', async () => {
+    cutoffRead.mockResolvedValue({ direct: '2026-03', contract: '2026-02' })
+    answer(otopeni(), () => Promise.resolve(extras()))
+    const profile = await fetchProcurementBuyer('4364446', 2026)
+    // March's direct purchases are past the page's month: one date, one total.
+    expect(profile).toMatchObject({ through: '2026-02', cutoff: { direct: '2026-02', contract: '2026-02' }, partYear: 2026 })
+    expect(profile.directYears.find((point) => point.year === 2026)).toEqual({ year: 2026, value: 2_000_000, count: 40 })
+  })
+
+  it('keeps a column for the year in progress with contracts and no direct purchase', async () => {
+    const raw = { ...otopeni(), directYearsValue: series({ '2025': '36404736.58' }), directYearsCount: series({ '2025': '293' }), directPartValue: series({}), directPartCount: series({}) }
+    answer({ ...raw, awardYearsCount: series({ '2025': '12', '2026': '2' }), awardPartCount: series({ '2026-01': '2' }) }, () => Promise.resolve(extras()))
+    const profile = await fetchProcurementBuyer('4364446', 2025)
+    expect(profile.partYear).toBe(2026)
+    expect(profile.awardYears.find((point) => point.year === 2026)).toMatchObject({ count: 2 })
+  })
+
+  it('goes partial when the cutoff cannot be read, whatever the year: the chart’s year in progress hangs on it', async () => {
+    cutoffRead.mockRejectedValue(new Error('down'))
+    answer(otopeni(), () => Promise.resolve(extras()))
+    expect(await fetchProcurementBuyer('4364446', 2025)).toMatchObject({ partial: true, cutoff: { direct: null, contract: null } })
+    graphqlQuery.mockClear()
+    answer(otopeni(), () => Promise.resolve(extras()))
+    // The year in progress is read so far, with no date to say.
+    expect(await fetchProcurementBuyer('4364446', 2026)).toMatchObject({ partial: true, through: null, year: 2026 })
+    expect(callOf('ProcurementBuyerFigures')?.[1].direct).toEqual({ authorityCui: '4364446', year: 2026, grain: 'direct_acquisition' })
+  })
+
   it('reads the follow-up once more, then shows CUIs rather than failing the page', async () => {
     answer(otopeni(), () => Promise.reject(new Error('down')), () => Promise.reject(new Error('down')))
     const profile = await fetchProcurementBuyer('4364446', 2025)
@@ -200,6 +254,25 @@ describe('fetchProcurementBuyerRecords', () => {
   // A block body: a hook that returns a function (mockReset returns the mock) has it called as its teardown.
   beforeEach(() => {
     graphqlQuery.mockReset()
+    cutoffRead.mockReset()
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-09-27T10:00:00Z'))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('reads the year in progress through the cutoff’s last day, and fails without the cutoff rather than run past it', async () => {
+    graphqlQuery.mockResolvedValue({ procurementContracts: { items: [] }, procurementDirectAcquisitions: { items: [] } })
+    cutoffRead.mockResolvedValue({ direct: '2026-06', contract: '2026-05' })
+    await fetchProcurementBuyerRecords('4364446', 2026, 8)
+    const filters = graphqlQuery.mock.calls.map(([, variables]) => (variables as { filter: Record<string, unknown> }).filter)
+    expect(filters).toContainEqual(expect.objectContaining({ contractDate: { gte: '2026-01-01', lte: '2026-05-31' } }))
+    expect(filters).toContainEqual(expect.objectContaining({ publicationDate: { gte: '2026-01-01', lte: '2026-05-31' } }))
+    cutoffRead.mockRejectedValue(new Error('down'))
+    await expect(fetchProcurementBuyerRecords('4364446', 2026, 8)).rejects.toThrow('down')
+    // A complete year needs no cutoff.
+    await expect(fetchProcurementBuyerRecords('4364446', 2025, 8)).resolves.toBeDefined()
   })
 
   it('reads the year’s largest awards and direct purchases for the buyer, dating a purchase by its finalization', async () => {

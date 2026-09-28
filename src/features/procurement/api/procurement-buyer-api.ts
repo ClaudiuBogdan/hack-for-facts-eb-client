@@ -14,6 +14,7 @@ import {
   type RawBuyerStats,
 } from './graphql/procurement-buyer-queries'
 import { PROCUREMENT_HOME_DIRECT_QUERY, procurementHomeDirectResponseSchema } from './graphql/procurement-home-queries'
+import { readCutoffOutcome, readProcurementCutoff, untilAborted } from './procurement-cutoff'
 import { ACCEPTED_VALUE_STATES, acceptedValue, fetchGroupedContracts, partyOf } from './procurement-home-api'
 import {
   buyerName,
@@ -28,7 +29,8 @@ import {
   type SupplierYears,
 } from '../lib/buyer-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
-import { DIRECT_COMPARABLE_FROM, cutoffMonth, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
+import { periodOf, throughMonth, type Cutoff, type Period } from '../lib/profile-period'
 
 /**
  * One buyer's page, read as:
@@ -37,10 +39,12 @@ import { DIRECT_COMPARABLE_FROM, cutoffMonth, homeYear, tidyTitle, truncatePartY
  *    request's fields one after another): the keys (the year's suppliers,
  *    the top sellers since 2019, the buyer's county on its records), the
  *    figures (the year's populations and the year before, the years since
- *    2019, the months, supplier counties, procedures, the national months
- *    that date SEAP's cutoff), and the CPV levels for the reader's
- *    categories — and beside them the budget platform's identity record,
- *    which fails soft (`partial`).
+ *    2019, the months, supplier counties, procedures), and the CPV levels
+ *    for the reader's categories — and beside them the budget platform's
+ *    identity record, which fails soft (`partial`), and SEAP's cutoff, the
+ *    shared read (`procurement-cutoff.ts`). The year in progress waits for
+ *    the cutoff, which bounds its reads (through its month, compared with
+ *    nothing); a complete year starts at once.
  * 2. The follow-up, started as soon as the keys and the identity land:
  *    supplier names (and the buyer's own label), each top seller's years, the
  *    county's direct purchases. It is read once more on a failure and then
@@ -130,40 +134,39 @@ function cpvBuckets(raw: RawBuyerBreakdown | undefined): readonly CpvBucket[] {
   }))
 }
 
-function monthCounts(series: RawBuyerSeries | undefined): readonly { readonly month: string; readonly count: number }[] {
-  return (series?.[0]?.points ?? []).map((point) => ({ month: point.bucket, count: point.value ?? 0 }))
-}
-
 export type RawBuyerProfile = Readonly<Record<string, unknown>>
 
-/** The profile's reads, one alias each; the fields are the document and the variables at once. */
-export function buyerProfileFields(cui: string, year: number, latest: number): BuyerField[] {
+/**
+ * The profile's reads, one alias each; the fields are the document and the
+ * variables at once. The year's reads are the period's: a complete year, or
+ * the year in progress through its cutoff month.
+ */
+export function buyerProfileFields(cui: string, period: Period, latest: number): BuyerField[] {
   const part = latest + 1
   const own = { authorityCui: cui }
-  const inYear = (y: number) => ({ ...own, year: y })
+  const inPeriod = { ...own, ...period.scope }
   const span = { from: `${DIRECT_COMPARABLE_FROM}-01`, to: `${part}-12` }
   const fields: BuyerField[] = [
-    { alias: 'direct', kind: 'stats', scope: { ...inYear(year), ...DIRECT } },
-    // The year before only where it compares: 2018's legacy rows cannot tell a purchase from a refused offer.
-    ...(year - 1 >= DIRECT_COMPARABLE_FROM ? [{ alias: 'directPrev', kind: 'stats' as const, scope: { ...inYear(year - 1), ...DIRECT } }] : []),
-    { alias: 'awards', kind: 'stats', scope: { ...inYear(year), ...AWARDS } },
-    { alias: 'frameworks', kind: 'stats', scope: { ...inYear(year), ...FRAMEWORKS } },
-    { alias: 'directSellers', kind: 'series', scope: { ...inYear(year), ...DIRECT }, args: 'bucket: year, measure: distinctSuppliers' },
-    { alias: 'awardSellers', kind: 'series', scope: { ...inYear(year), ...AWARDS }, args: 'bucket: year, measure: distinctSuppliers' },
+    { alias: 'direct', kind: 'stats', scope: { ...inPeriod, ...DIRECT } },
+    // The year before only where it compares: not before 2019 (legacy rows), nor for the year in progress.
+    ...(period.before ? [{ alias: 'directPrev', kind: 'stats' as const, scope: { ...own, ...period.before, ...DIRECT } }] : []),
+    { alias: 'awards', kind: 'stats', scope: { ...inPeriod, ...AWARDS } },
+    { alias: 'frameworks', kind: 'stats', scope: { ...inPeriod, ...FRAMEWORKS } },
+    { alias: 'directSellers', kind: 'series', scope: { ...inPeriod, ...DIRECT }, args: 'bucket: year, measure: distinctSuppliers' },
+    { alias: 'awardSellers', kind: 'series', scope: { ...inPeriod, ...AWARDS }, args: 'bucket: year, measure: distinctSuppliers' },
     { alias: 'directYearsValue', kind: 'series', scope: { ...own, ...DIRECT, ...span }, args: 'bucket: year, measure: valueAwardedSum' },
     { alias: 'directYearsCount', kind: 'series', scope: { ...own, ...DIRECT, ...span }, args: 'bucket: year, measure: recordCount' },
     { alias: 'awardYearsCount', kind: 'series', scope: { ...own, ...AWARDS, ...span }, args: 'bucket: year, measure: recordCount' },
-    { alias: 'directPartValue', kind: 'series', scope: { ...inYear(part), ...DIRECT }, args: 'bucket: month, measure: valueAwardedSum' },
-    { alias: 'directPartCount', kind: 'series', scope: { ...inYear(part), ...DIRECT }, args: 'bucket: month, measure: recordCount' },
-    { alias: 'awardPartCount', kind: 'series', scope: { ...inYear(part), ...AWARDS }, args: 'bucket: month, measure: recordCount' },
-    { alias: 'nationalDirectMonths', kind: 'series', scope: { ...DIRECT, from: `${latest}-01`, to: `${part}-12` }, args: 'bucket: month, measure: recordCount' },
-    { alias: 'nationalAwardMonths', kind: 'series', scope: { ...AWARDS, from: `${latest}-01`, to: `${part}-12` }, args: 'bucket: month, measure: recordCount' },
-    { alias: 'directMonthsValue', kind: 'series', scope: { ...inYear(year), ...DIRECT }, args: 'bucket: month, measure: valueAwardedSum' },
-    { alias: 'directMonthsCount', kind: 'series', scope: { ...inYear(year), ...DIRECT }, args: 'bucket: month, measure: recordCount' },
-    { alias: 'directSuppliers', kind: 'breakdown', scope: { ...inYear(year), ...DIRECT }, args: 'dimension: supplier, topN: 10, rankBy: value' },
-    { alias: 'awardSuppliers', kind: 'breakdown', scope: { ...inYear(year), ...AWARDS }, args: 'dimension: supplier, topN: 10, rankBy: count' },
-    { alias: 'directCounties', kind: 'breakdown', scope: { ...inYear(year), ...DIRECT }, args: 'dimension: supplierCounty, topN: 42, rankBy: value' },
-    { alias: 'procedures', kind: 'breakdown', scope: { ...inYear(year), ...AWARDS }, args: 'dimension: procedureType, topN: 8, rankBy: count' },
+    // The chart's column for the year in progress, by month: cut at each population's own cutoff.
+    { alias: 'directPartValue', kind: 'series', scope: { ...own, year: part, ...DIRECT }, args: 'bucket: month, measure: valueAwardedSum' },
+    { alias: 'directPartCount', kind: 'series', scope: { ...own, year: part, ...DIRECT }, args: 'bucket: month, measure: recordCount' },
+    { alias: 'awardPartCount', kind: 'series', scope: { ...own, year: part, ...AWARDS }, args: 'bucket: month, measure: recordCount' },
+    { alias: 'directMonthsValue', kind: 'series', scope: { ...inPeriod, ...DIRECT }, args: 'bucket: month, measure: valueAwardedSum' },
+    { alias: 'directMonthsCount', kind: 'series', scope: { ...inPeriod, ...DIRECT }, args: 'bucket: month, measure: recordCount' },
+    { alias: 'directSuppliers', kind: 'breakdown', scope: { ...inPeriod, ...DIRECT }, args: 'dimension: supplier, topN: 10, rankBy: value' },
+    { alias: 'awardSuppliers', kind: 'breakdown', scope: { ...inPeriod, ...AWARDS }, args: 'dimension: supplier, topN: 10, rankBy: count' },
+    { alias: 'directCounties', kind: 'breakdown', scope: { ...inPeriod, ...DIRECT }, args: 'dimension: supplierCounty, topN: 42, rankBy: value' },
+    { alias: 'procedures', kind: 'breakdown', scope: { ...inPeriod, ...AWARDS }, args: 'dimension: procedureType, topN: 8, rankBy: count' },
     { alias: 'buyerCounty', kind: 'breakdown', scope: { ...own, ...DIRECT }, args: 'dimension: buyerCounty, topN: 1, rankBy: count' },
     {
       alias: 'spanSuppliers',
@@ -180,7 +183,7 @@ export function buyerProfileFields(cui: string, year: number, latest: number): B
     // level keeps what the next does not hold (`levelCpvLeaves`), so a large buyer's codes past the API's hundred stay with
     // their parent code: a little precision lost, no money.
     for (const [level, dimension] of CPV_LEVELS) {
-      fields.push({ alias: `${grain}${level}`, kind: 'breakdown', scope: { ...inYear(year), ...base }, args: `dimension: ${dimension}, topN: 100, rankBy: value` })
+      fields.push({ alias: `${grain}${level}`, kind: 'breakdown', scope: { ...inPeriod, ...base }, args: `dimension: ${dimension}, topN: 100, rankBy: value` })
     }
   }
   return fields.map((field) => ({ ...field, group: groupOf(field.alias) }))
@@ -194,29 +197,34 @@ function groupOf(alias: string): BuyerFieldGroup {
   return 'figures'
 }
 
-/** The profile's three requests, merged and mapped; names, the matrix and the county share are the follow-up's. */
-export function mapBuyerProfile(raw: RawBuyerProfile, cui: string, year: number, latest: number): Omit<BuyerProfile, 'names' | 'supplierYears' | 'countyShare' | 'partial' | 'namesUnread'> {
+/** The profile's three requests, merged and mapped with SEAP's cutoff; names, the matrix and the county share are the follow-up's. */
+export function mapBuyerProfile(
+  raw: RawBuyerProfile,
+  cui: string,
+  period: Period,
+  latest: number,
+  cutoff: Cutoff,
+): Omit<BuyerProfile, 'names' | 'supplierYears' | 'countyShare' | 'partial' | 'namesUnread'> {
+  const { year } = period
   const part = latest + 1
   const stats = (alias: string) => buyerStatsSchema.parse(raw[alias])
   const series = (alias: string) => buyerSeriesSchema.parse(raw[alias])
   const breakdown = (alias: string) => buyerBreakdownSchema.parse(raw[alias])
   const entity = buyerEntitySchema.parse(raw.entity ?? null)
 
-  const cutoff = {
-    direct: cutoffMonth(monthCounts(series('nationalDirectMonths')), latest),
-    contract: cutoffMonth(monthCounts(series('nationalAwardMonths')), latest),
-  }
+  // One date covers the page: the chart's year in progress stops where the page's reads do, at the earlier population's cutoff.
+  const partThrough = throughMonth(part, cutoff)
   const directYears = truncatePartYear(
     yearPoints(series('directYearsValue'), series('directYearsCount'), part),
     monthFigures(series('directPartValue'), series('directPartCount'), part),
     part,
-    cutoff.direct,
+    partThrough,
   )
   const awardYears = truncatePartYear(
     yearPoints(undefined, series('awardYearsCount'), part),
     monthFigures(undefined, series('awardPartCount'), part),
     part,
-    cutoff.contract,
+    partThrough,
   )
   const tree = (grain: 'direct' | 'awards') => {
     const { leaves, unknown } = levelCpvLeaves(CPV_LEVELS.map(([level]) => cpvBuckets(breakdown(`${grain}${level}`))))
@@ -248,15 +256,16 @@ export function mapBuyerProfile(raw: RawBuyerProfile, cui: string, year: number,
     identity,
     year,
     latest,
+    through: period.through,
     county: territory?.countyCode ?? topBuckets(breakdown('buyerCounty'))[0]?.key ?? null,
     direct: figures(stats('direct'), series('directSellers')),
-    directPrev: raw.directPrev ? figures(stats('directPrev'), undefined) : null,
+    directPrev: period.before ? figures(stats('directPrev'), undefined) : null,
     awards: figures(stats('awards'), series('awardSellers')),
     frameworks: stats('frameworks').blocks[0]?.recordCount ?? null,
     directYears,
     awardYears,
-    partYear: directYears.some((point) => point.year === part && point.value !== null) ? part : null,
-    cutoff,
+    partYear: directYears.some((point) => point.year === part) || awardYears.some((point) => point.year === part) ? part : null,
+    cutoff: partThrough ? { direct: partThrough, contract: partThrough } : cutoff,
     directMonths: monthFigures(series('directMonthsValue'), series('directMonthsCount'), year),
     directSuppliers: supplierRanking(breakdown('directSuppliers')),
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
@@ -279,14 +288,15 @@ interface BuyerExtras {
   readonly countyValue: number | null
 }
 
-export function buyerExtrasFields(cui: string, year: number, latest: number, spanSuppliers: readonly string[], county: string | null): BuyerField[] {
+export function buyerExtrasFields(cui: string, period: Period, latest: number, spanSuppliers: readonly string[], county: string | null): BuyerField[] {
   const fields: BuyerField[] = spanSuppliers.map((supplier, index) => ({
     alias: `s${index}`,
     kind: 'series',
     scope: { authorityCui: cui, supplierCui: supplier, ...DIRECT, from: `${DIRECT_COMPARABLE_FROM}-01`, to: `${latest}-12` },
     args: 'bucket: year, measure: valueAwardedSum',
   }))
-  if (county) fields.push({ alias: 'county', kind: 'stats', scope: { buyerCounty: county, year, ...DIRECT } })
+  // The county over the same period as the buyer: its share compares like with like.
+  if (county) fields.push({ alias: 'county', kind: 'stats', scope: { buyerCounty: county, ...period.scope, ...DIRECT } })
   return fields
 }
 
@@ -367,23 +377,28 @@ async function readBuyerIdentity(cui: string, year: number, signal?: AbortSignal
  * the API resolves one request's fields one after another — and the
  * follow-up starts as soon as the keys land, beside the figures and the CPV
  * tree. A follow-up that fails twice leaves the page `partial` (CUIs, no
- * matrix, no county share) rather than failing it; a reader who left fails it.
+ * matrix, no county share) rather than failing it, as does a cutoff that
+ * cannot be read; a reader who left fails it.
  */
 export async function fetchProcurementBuyer(cui: string, year: number, signal?: AbortSignal): Promise<BuyerProfile> {
   const latest = homeYear()
-  const fields = buyerProfileFields(cui, year, latest)
+  const cutoffRead = untilAborted(readCutoffOutcome(latest), signal)
+  // The year in progress waits for the cutoff, which bounds its reads; a complete year starts at once.
+  const period = periodOf(year, latest, year > latest ? (await cutoffRead).cutoff : null)
+  const fields = buyerProfileFields(cui, period, latest)
   const [keysRead, figuresRead, categoriesRead] = PROFILE_REQUESTS.map(({ group, operationName }) => {
     const own = fields.filter((field) => field.group === group)
     const variables: Record<string, unknown> = Object.fromEntries(own.map((field) => [field.alias, field.scope]))
     return graphqlQuery<RawBuyerProfile>(procurementBuyerQuery(operationName, own, false), variables, { operationName, signal })
   }) as [Promise<RawBuyerProfile>, Promise<RawBuyerProfile>, Promise<RawBuyerProfile>]
-  const identityRead = readBuyerIdentity(cui, year, signal)
+  // The population of a year in progress is the last complete year's.
+  const identityRead = readBuyerIdentity(cui, Math.min(year, latest), signal)
 
   const extrasRead = Promise.all([keysRead, identityRead]).then(async ([keysRaw, identity]): Promise<BuyerExtras | null> => {
     const found = buyerKeysOf({ ...keysRaw, ...identity.raw })
     // The buyer's own label rides along: it names the page when the budget platform has no record of the buyer.
     const keys = { ...found, cuis: [cui, ...found.cuis.filter((key) => key !== cui)] }
-    const extraFields = buyerExtrasFields(cui, year, latest, keys.spanSuppliers, keys.county)
+    const extraFields = buyerExtrasFields(cui, period, latest, keys.spanSuppliers, keys.county)
     const readExtras = async () => {
       const variables: Record<string, unknown> = Object.fromEntries(extraFields.map((field) => [field.alias, field.scope]))
       variables.cuis = keys.cuis
@@ -402,8 +417,8 @@ export async function fetchProcurementBuyer(cui: string, year: number, signal?: 
     }
   })
 
-  const [keysRaw, figuresRaw, categoriesRaw, identity, extras] = await Promise.all([keysRead, figuresRead, categoriesRead, identityRead, extrasRead])
-  const profile = mapBuyerProfile({ ...keysRaw, ...figuresRaw, ...categoriesRaw, ...identity.raw }, cui, year, latest)
+  const [keysRaw, figuresRaw, categoriesRaw, identity, extras, cutoff] = await Promise.all([keysRead, figuresRead, categoriesRead, identityRead, extrasRead, cutoffRead])
+  const profile = mapBuyerProfile({ ...keysRaw, ...figuresRaw, ...categoriesRaw, ...identity.raw }, cui, period, latest, cutoff.cutoff)
   if (!extras) return { ...profile, names: new Map(), supplierYears: [], countyShare: null, partial: true, namesUnread: true }
   // No budget record: the identity spine's label names the buyer, and only then its CUI.
   const label = profile.identity.name === cui ? extras.names.get(cui) : undefined
@@ -417,14 +432,21 @@ export async function fetchProcurementBuyer(cui: string, year: number, signal?: 
       profile.county && countyValue !== null && countyValue > 0 && profile.direct.value !== null
         ? { county: profile.county, share: profile.direct.value / countyValue }
         : null,
-    partial: identity.failed,
+    // The chart's year in progress and the data's date hang on the cutoff, whichever year the page shows.
+    partial: identity.failed || cutoff.failed,
     namesUnread: false,
   }
 }
 
-/** The year's largest contract awards (a consortium on one row) and largest direct purchases. */
+/**
+ * The year's largest contract awards (a consortium on one row) and largest
+ * direct purchases, within the profile's period. The year in progress needs
+ * the cutoff: without it the read fails (and is read again) rather than keep
+ * a list that runs past it.
+ */
 export async function fetchProcurementBuyerRecords(cui: string, year: number, limit: number, signal?: AbortSignal): Promise<BuyerRecords> {
-  const range = { gte: `${year}-01-01`, lte: `${year}-12-31` }
+  const latest = homeYear()
+  const { range } = periodOf(year, latest, year > latest ? await untilAborted(readProcurementCutoff(latest), signal) : null)
   const [contracts, directRaw] = await Promise.all([
     fetchGroupedContracts(
       { authorityCui: { eq: cui }, contractDate: range, recordKind: { in: ['contract_award'] }, valueState: { in: ACCEPTED_VALUE_STATES } },

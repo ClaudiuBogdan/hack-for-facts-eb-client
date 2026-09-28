@@ -85,12 +85,14 @@ export interface BuyerProfile {
   readonly identity: BuyerIdentity
   /** The year the page describes. */
   readonly year: number
-  /** The last complete year when the read was made: the newest year a reader may pick. */
+  /** The last complete year when the read was made; the year after it is the year in progress. */
   readonly latest: number
+  /** The year in progress is read through this month (SEAP's cutoff); null for a complete year. */
+  readonly through: string | null
   /** The buyer's county: the budget platform's, else the one its procurement records carry. */
   readonly county: string | null
   readonly direct: GrainFigures
-  /** The year before, for a change; null for 2019, whose year before (legacy SEAP rows) does not compare. */
+  /** The year before, for a change; null for 2019 (the year before is legacy SEAP) and for the year in progress. */
   readonly directPrev: GrainFigures | null
   /**
    * Contract awards only; framework agreements are ceilings, counted apart.
@@ -143,12 +145,12 @@ export interface BuyerRecords {
 }
 
 /**
- * The year a page describes: the one asked for, from 2019 (the first year
- * direct purchases compare) through the last complete one; anything else,
- * the last complete year.
+ * The year asked for, when a page can describe it: from 2019 (the first year
+ * direct purchases compare) through the year in progress. Null otherwise —
+ * the page then opens on the newest year with data (`readNewestYear`).
  */
-export function buyerYear(requested: number | undefined, latest: number): number {
-  return requested !== undefined && requested >= DIRECT_COMPARABLE_FROM && requested <= latest ? requested : latest
+export function buyerYear(requested: number | undefined, latest: number): number | null {
+  return requested !== undefined && Number.isInteger(requested) && requested >= DIRECT_COMPARABLE_FROM && requested <= latest + 1 ? requested : null
 }
 
 // ───────────────────────────────────────────────────────── the buyer ──

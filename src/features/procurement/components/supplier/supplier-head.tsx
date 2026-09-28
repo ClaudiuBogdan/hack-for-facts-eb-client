@@ -12,12 +12,11 @@ import { companySentence, nameLength } from '@/features/private-companies/lib/co
 import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { countyName } from '../../lib/buyer-text'
-import { dayText } from '../../lib/home-format'
 import { supplierRecordsSearch } from '../../lib/home-links'
 import { homeYear } from '../../lib/home-model'
 import type { SupplierProfile, SupplierView } from '../../lib/supplier-model'
-import { lastDayOf } from '../../lib/supplier-period'
 import { headSentence } from '../../lib/supplier-text'
+import { ProfileTopRow } from '../profile/profile-top-row'
 import { ProfileYearSelect } from '../profile/profile-year-select'
 
 /**
@@ -62,11 +61,7 @@ function SupplierKicker({ county }: { readonly county: string | null }) {
   )
 }
 
-/**
- * The head's top row: the way back on the left, the year at the right end —
- * and, for the year in progress, the date its data runs through (SEAP's cutoff,
- * read from the API), once the read has landed.
- */
+/** The head's top row: the way back, the year — the year in progress first — and how recent its data is. */
 function SupplierTopRow({
   county,
   year,
@@ -78,32 +73,18 @@ function SupplierTopRow({
   readonly onYear: (year: number) => void
   readonly profile: SupplierProfile | null
 }) {
+  // The date shows once the read of the year asked has landed.
   const shown = profile && profile.year === year ? profile : null
-  const through = shown?.through ?? null
-  // The year in progress says how recent its data is — or, with no cutoff known, that it is incomplete.
-  const fresh = through
-    ? t`Date actualizate până la ${dayText(lastDayOf(through))} ${through.slice(0, 4)}`
-    : shown && shown.year > shown.latest
-      ? t`An în curs: date incomplete`
-      : null
   return (
-    <>
-      <div className="flex items-center justify-between gap-4">
-        <SupplierKicker county={county} />
-        <div className="flex items-center gap-4">
-          {fresh ? <span className="hidden text-xs text-muted-foreground sm:inline">{fresh}</span> : null}
-          <ProfileYearSelect
-            points={profile ? { direct: profile.directYears, contracts: profile.contractYears } : null}
-            year={year}
-            latest={profile?.latest ?? homeYear()}
-            partYear
-            emptyLabel={t`fără vânzări`}
-            onYear={onYear}
-          />
-        </div>
-      </div>
-      {fresh ? <p className="mt-2 text-right text-xs text-muted-foreground sm:hidden">{fresh}</p> : null}
-    </>
+    <ProfileTopRow kicker={<SupplierKicker county={county} />} read={shown}>
+      <ProfileYearSelect
+        points={profile ? { direct: profile.directYears, contracts: profile.contractYears } : null}
+        year={year}
+        latest={profile?.latest ?? homeYear()}
+        emptyLabel={t`fără vânzări`}
+        onYear={onYear}
+      />
+    </ProfileTopRow>
   )
 }
 

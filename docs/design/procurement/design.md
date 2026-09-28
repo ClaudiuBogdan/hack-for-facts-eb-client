@@ -747,11 +747,30 @@ are deleted; the authority slice stays for the entity page's contracts view.
   the browser agree. Picking a year in the chart keeps the year shown, dimmed,
   until the new one arrives; the year in progress is dashed and cannot be
   picked. The part year runs through SEAP's derived cutoff month (§12).
-  *28 September:* the year is also the firm page's dropdown (§14), at the
-  right end of the head's top row — complete years only, each with its
-  direct money and contracts; the kicker keeps only the way back on a phone.
-  Reading the year in progress here, as the firm page does, would need the
-  buyer reads scoped to the cutoff month; not done.
+  *Superseded 28 September — the owner wants the latest data by default:*
+  the page opens on the newest year with data — the year in progress once
+  SEAP's cutoff (the shared read, `api/procurement-cutoff.ts`, ten minutes)
+  falls in it, else the last complete year, so January does not open on an
+  empty year. The year in progress is read as on the firm page (§14): every
+  read through the cutoff month (`lib/profile-period.ts`), the records to its
+  last day, the county share over the same months, the population of the
+  last complete year; compared with nothing; the head says the date. Its
+  month strip marks the months past the cutoff („încă fără date") and drops
+  the December mark; the years sentence stops at the last complete year. The
+  year is picked from the chart or the firm page's dropdown (right end of the
+  head's top row; on a phone the kicker keeps only the way back). A year
+  picked is written to the URL — the default moves with the data. An empty
+  year links to the newest year with records („Vezi 2025"), on both profile
+  pages. A cutoff that cannot be read leaves the page partial, whatever its
+  year; a default the server opened without it is never cached. One date
+  covers the page: the chart's column for the year in progress, its line in
+  the dropdown and the source line all stop at the page's cutoff month (the
+  earlier population's), and explorer links carry those months
+  (`dateFrom`/`dateTo`), not the calendar year. A client-side navigation
+  without a year is never held for the cutoff read (the app's loader rule):
+  the page paints its frame, reads the newest year beside it, and the loader
+  starts the page's reads as it lands. Reviewed by Opus 5.5 (xhigh); the
+  findings above were its.
 - Each band's choice defaults to what the year has (direct purchases for
   „Ce cumpără" unless there were none; contracts for „Cele mai mari" when
   there were any) and stays out of the URL when it equals that default.
@@ -925,7 +944,7 @@ into the code.
 `api/graphql/procurement-supplier-queries.ts` (rows, partners, names),
 `api/procurement-supplier-ssr.ts` (500 firm-years, ten minutes, partial reads
 not kept), `hooks/use-procurement-supplier.ts`, `lib/supplier-model.ts`,
-`lib/supplier-period.ts` (the year in progress), `lib/supplier-text.ts`,
+`lib/profile-period.ts` (the year in progress, shared with the buyer page), `lib/supplier-text.ts`,
 `lib/supplier-keys.ts`, `components/supplier/` (head, rows, bands, page),
 `schemas/procurement-supplier.ts` (the URL: `year`, `ce`, `mari`). What both
 profile pages share moved to `components/profile/` (the years chart, the year
@@ -965,8 +984,9 @@ for the company profile.
   filling, so a change would partly measure the feed. The head says the date
   („Date actualizate până la 31 mai 2026"), or „An în curs: date incomplete"
   when no cutoff reaches the year; every label keeps the plain year. A
-  client's link opens the institution's page on its last complete year (the
-  buyer page describes complete years only).
+  client's link opens the institution's page on the same year; explorer
+  links for the year in progress carry its months (`dateFrom`/`dateTo`),
+  not the calendar year.
 - A registry that could not be read leaves the head without the firm's
   sentence rather than calling the firm foreign; the page goes partial
   (`no-store`, not kept). An identifier the API refuses as an organisation's

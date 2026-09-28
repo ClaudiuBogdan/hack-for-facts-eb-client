@@ -31,12 +31,13 @@ describe('tidyAddress', () => {
 })
 
 describe('buyerYear', () => {
-  it('takes a year from 2019 through the last complete one, and the last complete one otherwise', () => {
+  it('takes a year from 2019 through the year in progress, and none otherwise: the page then opens on the newest', () => {
     expect(buyerYear(2023, 2025)).toBe(2023)
     expect(buyerYear(2019, 2025)).toBe(2019)
-    expect(buyerYear(2018, 2025)).toBe(2025)
-    expect(buyerYear(2026, 2025)).toBe(2025)
-    expect(buyerYear(undefined, 2025)).toBe(2025)
+    expect(buyerYear(2026, 2025)).toBe(2026)
+    expect(buyerYear(2018, 2025)).toBeNull()
+    expect(buyerYear(2027, 2025)).toBeNull()
+    expect(buyerYear(undefined, 2025)).toBeNull()
   })
 })
 

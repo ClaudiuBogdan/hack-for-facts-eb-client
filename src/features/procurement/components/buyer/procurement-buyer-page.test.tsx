@@ -51,6 +51,9 @@ vi.mock('../../api/procurement-buyer-api', () => ({
   fetchProcurementBuyer: vi.fn(() => new Promise(() => undefined)),
   fetchProcurementBuyerRecords: vi.fn(() => new Promise(() => undefined)),
 }))
+// The newest year, on a client-side navigation without one: a test says when it lands.
+const readNewestYear = vi.fn<() => Promise<{ year: number; failed: boolean }>>(() => new Promise(() => undefined))
+vi.mock('../../api/procurement-cutoff', () => ({ readNewestYear: () => readNewestYear() }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 const INITIAL: ProcurementBuyerInitialData = { year: 2025, profile: buyerProfile(), records: buyerRecords() }
@@ -119,29 +122,61 @@ describe('ProcurementBuyerPage', () => {
     expect(lastSearch()).toEqual({ mari: 'directe' })
   })
 
-  it('makes a year from the chart the page’s, the last complete one without a parameter', () => {
+  it('makes a year from the chart the page’s, the year in progress included, and writes it out', () => {
     render(page())
     fireEvent.click(screen.getByRole('button', { name: /^2019:/ }))
     expect(lastSearch()).toEqual({ year: 2019 })
+    fireEvent.click(screen.getByRole('button', { name: /^2026:/ }))
+    expect(lastSearch({ year: 2019 })).toEqual({ year: 2026 })
+    // The page's default moves with the data, so a year picked stays in the URL.
     fireEvent.click(screen.getByRole('button', { name: /^2025:/ }))
-    expect(lastSearch({ year: 2019 })).toEqual({ year: undefined })
-    // The year in progress is reachable (its figures are in its name) but cannot be picked.
-    const partYear = screen.getByRole('button', { name: /^2026:/ })
-    expect(partYear).toHaveAttribute('aria-disabled', 'true')
-    navigate.mockClear()
-    fireEvent.click(partYear)
-    expect(navigate).not.toHaveBeenCalled()
+    expect(lastSearch({ year: 2026 })).toEqual({ year: 2025 })
   })
 
-  it('picks the year from the head’s dropdown too: the complete years, each with what it holds', async () => {
+  it('opens a navigation without a year on its frame, and on the newest year once it is read', async () => {
+    let land: (newest: { year: number; failed: boolean }) => void = () => undefined
+    readNewestYear.mockImplementation(() => new Promise((resolve) => (land = resolve)))
+    render(page({}, { year: null }))
+    // The frame at once: the way back and the CUI, no year to show yet.
+    expect(screen.getByRole('link', { name: /Achiziții publice/ })).toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Anul' })).toBeNull()
+    land({ year: 2026, failed: false })
+    expect(await screen.findByRole('combobox', { name: 'Anul' })).toHaveTextContent('2026')
+  })
+
+  it('draws the page’s year on the chart even with no record in it', () => {
+    const none = { count: 0, valued: 0, value: null, suppliers: 0 }
+    render(page({ year: 2026 }, { year: 2026, profile: buyerProfile({ year: 2026, through: '2026-05', partYear: null, directYears: buyerProfile().directYears.filter((point) => point.year < 2026), direct: none, awards: none }) }))
+    expect(screen.getByRole('button', { name: /^2026:/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('says how recent the year in progress is, and marks the months not read yet', () => {
+    const months = buyerProfile().directMonths.map((month, index) => ({ ...month, month: `2026-${month.month.slice(5)}`, value: index < 5 ? 500_000 : null }))
+    render(page({ year: 2026 }, { year: 2026, profile: buyerProfile({ year: 2026, through: '2026-05', directPrev: null, directMonths: months }) }))
+    expect(screen.getAllByText('Date actualizate până la 31 mai 2026')).not.toHaveLength(0)
+    // June through December: not read yet, not months with no purchase.
+    expect(within(document.getElementById('cand')!).getAllByRole('button', { name: /: încă fără date$/ })).toHaveLength(7)
+    expect(document.body.textContent).not.toContain('față de 2025')
+    // Months of the year over a whole year's residents: said as such.
+    expect(document.body.textContent).toContain('achiziții directe, până în mai 2026')
+    // The explorer opens on the page's months, never the calendar year.
+    const searches = screen
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '/procurement/search')
+      .map((link) => JSON.parse(link.getAttribute('data-search') ?? '{}') as Record<string, unknown>)
+    expect(searches.some((search) => search.year === 2026)).toBe(false)
+    expect(searches.filter((search) => search.dateTo === '2026-05-31').length).toBeGreaterThan(1)
+  })
+
+  it('picks the year from the head’s dropdown too: the year in progress first, marked, each year with what it holds', async () => {
     render(page())
     const select = screen.getByRole('combobox', { name: 'Anul' })
     expect(select).toHaveTextContent('2025')
     fireEvent.keyDown(select, { key: 'ArrowDown' })
     const options = await screen.findAllByRole('option')
-    // Newest first, and no year in progress: the page does not describe it.
-    expect(options.map((option) => option.textContent?.slice(0, 4))).toEqual(['2025', '2024', '2023', '2022', '2021', '2020', '2019'])
-    expect(options[0]).toHaveTextContent(/mil\. lei · 12 contracte/)
+    expect(options.map((option) => option.textContent?.slice(0, 4))).toEqual(['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019'])
+    expect(options[0]).toHaveTextContent('în curs')
+    expect(options[1]).toHaveTextContent(/mil\. lei · 12 contracte/)
     fireEvent.click(screen.getByRole('option', { name: /^2019/ }))
     expect(lastSearch()).toEqual({ year: 2019 })
   })
@@ -164,6 +199,10 @@ describe('ProcurementBuyerPage', () => {
     expect(screen.getByRole('heading', { name: 'Nicio achiziție în 2025' })).toBeInTheDocument()
     expect(document.getElementById('ce')).toBeNull()
     expect(document.getElementById('cele-mai-mari')).toBeNull()
+    // The way out is the newest year with records — here the year in progress — as a link.
+    const other = screen.getByRole('link', { name: 'Vezi 2026' })
+    expect(other).toHaveAttribute('href', '/procurement/institutions/4364446')
+    expect(JSON.parse(other.getAttribute('data-search') ?? '{}')).toEqual({ year: 2026 })
   })
 
   it('shows CUIs and says why when the names could not be read', () => {

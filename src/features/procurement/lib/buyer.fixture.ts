@@ -32,6 +32,7 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
     },
     year: 2025,
     latest: 2025,
+    through: null,
     county: 'IF',
     direct: { count: 293, valued: 293, value: 36_404_737, suppliers: 72 },
     directPrev: { count: 207, valued: 207, value: 25_300_000, suppliers: 60 },

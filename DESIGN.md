@@ -864,6 +864,15 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-28 — The institution page opens on the latest data.** Without a
+  year in the URL, `/procurement/institutions/$cui` describes the year in
+  progress once SEAP's derived cutoff falls in it (else the last complete
+  year), read through that month, dated in the head, compared with nothing;
+  2019 through the year in progress are picked from the chart or the year
+  dropdown. *Why:* the owner wants the newest contracts, direct purchases and
+  firms first; the page had described complete years only, a choice rather
+  than a limit of the data. The firm page keeps the last complete year as its
+  default, as asked. Details: `docs/design/procurement/design.md` §13.
 - **2026-09-28 — A firm's contracts are counted from its own award rows,
   consortia included; the year in progress is read to SEAP's cutoff and says
   its date.** The analysis API withholds a consortium's money from each

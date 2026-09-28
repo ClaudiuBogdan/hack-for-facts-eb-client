@@ -19,8 +19,13 @@ const cuiSchema = z
 
 /**
  * One buyer's procurement page. The year it describes comes from the URL
- * (`year`, 2019 through the last complete year; else the last complete one)
- * and is fixed here, in the loader, so the server and the browser agree.
+ * (`year`, 2019 through the year in progress); without one, or out of range,
+ * it is the newest year with data — the year in progress once SEAP's data
+ * reaches into it (the shared cutoff read, kept ten minutes), else the last
+ * complete year. The server fixes it here, in the loader, so the server and
+ * the browser agree; a client-side navigation without one is never held for
+ * that read — the page reads it beside its frame, and the loader starts the
+ * page's reads when it lands.
  *
  * The profile and the year's largest records are read on the server (kept
  * there ten minutes per buyer and year, under a deadline — see
@@ -42,23 +47,35 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
   loader: async ({ context, params, deps }): Promise<ProcurementBuyerInitialData> => {
     const { homeYear } = await import('@/features/procurement/lib/home-model')
     const { buyerYear } = await import('@/features/procurement/lib/buyer-model')
-    const year = buyerYear(deps.year, homeYear())
+    const latest = homeYear()
+    const asked = buyerYear(deps.year, latest)
     if (!shouldBlockLoaderForSsr()) {
       const hooks = await import('@/features/procurement/hooks/use-procurement-buyer')
-      void context.queryClient.prefetchQuery(hooks.procurementBuyerQueryOptions(params.cui, year)).catch(() => undefined)
-      void context.queryClient.prefetchQuery(hooks.procurementBuyerRecordsQueryOptions(params.cui, year)).catch(() => undefined)
-      return { year }
+      const start = (year: number) => {
+        void context.queryClient.prefetchQuery(hooks.procurementBuyerQueryOptions(params.cui, year)).catch(() => undefined)
+        void context.queryClient.prefetchQuery(hooks.procurementBuyerRecordsQueryOptions(params.cui, year)).catch(() => undefined)
+      }
+      if (asked !== null) {
+        start(asked)
+        return { year: asked }
+      }
+      void context.queryClient.fetchQuery(hooks.procurementNewestYearQueryOptions(latest)).then(start, () => undefined)
+      return { year: null }
     }
     // Read directly, not through the query client: a query created on the
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
     const { readProcurementBuyerForSsr } = await import('@/features/procurement/api/procurement-buyer-ssr')
-    return readProcurementBuyerForSsr(params.cui, year)
+    if (asked !== null) return readProcurementBuyerForSsr(params.cui, asked)
+    const { readNewestYear } = await import('@/features/procurement/api/procurement-cutoff')
+    const newest = await readNewestYear(latest)
+    const read = await readProcurementBuyerForSsr(params.cui, newest.year)
+    return newest.failed ? { ...read, newestUnread: true } : read
   },
   // A render with a failed or partial read is served once and read again, never
   // cached for everyone. The document follows the locale and theme cookies.
   headers: ({ loaderData }) =>
-    !loaderData?.profile || loaderData.profile.partial || !loaderData.records
+    !loaderData?.profile || loaderData.profile.partial || !loaderData.records || loaderData.newestUnread
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({

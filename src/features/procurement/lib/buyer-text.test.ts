@@ -141,6 +141,26 @@ describe('where, when and how', () => {
     expect(decemberLede(flat)).toBeNull()
   })
 
+  it('says a year in progress bought only directly so far, not for the year', () => {
+    const only = buyerProfile({ awards: { count: 0, valued: 0, value: null, suppliers: 0 }, frameworks: 0 })
+    expect(balanceLede(only)).toBe('În 2025 a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.')
+    expect(balanceLede({ ...only, year: 2026, through: '2026-05' })).toBe(
+      'Până în mai 2026 a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.',
+    )
+  })
+
+  it('reads the years to the last complete one from the year in progress: a part year is no year’s total', () => {
+    const years = [
+      { year: 2019, value: 18_000_000, count: 200 },
+      { year: 2025, value: 36_404_737, count: 293 },
+      { year: 2026, value: 2_600_000, count: 46 },
+    ]
+    expect(yearsLede(buyerProfile({ year: 2026, through: '2026-05', directYears: years }))).toContain('au crescut de la 18,0')
+    // Its months stop at the cutoff: no December to weigh.
+    const part = buyerProfile({ year: 2026, through: '2026-05', directMonths: buyerProfile().directMonths.map((month, index) => ({ ...month, month: `2026-${month.month.slice(5)}`, value: index < 5 ? 1_000_000 : null })) })
+    expect(decemberLede(part)).toBeNull()
+  })
+
   it('counts the awards negotiated without a notice, with the count grammar', () => {
     expect(procedureLede(buyerProfile())).toBe('Toate cele 12 contracte atribuite în 2025 au avut un anunț public.')
     const mixed = buyerProfile({

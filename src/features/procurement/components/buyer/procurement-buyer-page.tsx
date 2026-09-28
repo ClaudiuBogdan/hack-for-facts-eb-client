@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -11,13 +12,14 @@ import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { cn } from '@/lib/utils'
 import type { ProcurementBuyerGrain, ProcurementBuyerSearch } from '@/schemas/procurement-buyer'
-import { useProcurementBuyer, useProcurementBuyerRecords } from '../../hooks/use-procurement-buyer'
+import { procurementNewestYearQueryOptions, useProcurementBuyer, useProcurementBuyerRecords } from '../../hooks/use-procurement-buyer'
 import { hasAnyRecord, isEmptyYear, perResident, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
 import { changeText, countyShareLede, countyName } from '../../lib/buyer-text'
-import { contractsCount, directPurchasesCount, moneyText, percentText } from '../../lib/home-format'
+import { contractsCount, directPurchasesCount, monthText, moneyText, percentText } from '../../lib/home-format'
 import { buyerRecordsSearch, sectionIndex, type HomeSection } from '../../lib/home-links'
 import { DIRECT_COMPARABLE_FROM, homeYear } from '../../lib/home-model'
 import { buildInstitutionDocumentTitle } from '../../lib/procurement-page-titles'
+import { newestYearWithRecords } from '../../lib/profile-model'
 import { HomeBand, HomeSectionNav } from '../home/home-chrome'
 import { moneyFact } from '../profile/profile-facts'
 import { ProfileYearsChart } from '../profile/profile-years-chart'
@@ -40,10 +42,16 @@ import { BuyerHead, BuyerHeadPending } from './buyer-head'
  */
 
 export interface ProcurementBuyerInitialData {
-  /** The year the page describes: the loader's, so the server and the browser agree. */
-  readonly year: number
+  /**
+   * The year the page describes: the loader's, so the server and the browser
+   * agree — or, on a client-side navigation without one, null: the page reads
+   * the newest year itself, beside its frame, rather than hold the navigation.
+   */
+  readonly year: number | null
   readonly profile?: BuyerProfile
   readonly records?: BuyerRecords
+  /** The server opened the page without SEAP's cutoff: its year may not be the newest, so the render is not cached. */
+  readonly newestUnread?: true
 }
 
 function startArrivalEffects(block: Element, delay: number) {
@@ -66,7 +74,7 @@ function buyerFacts(profile: BuyerProfile): HubFact[] {
   const { identity, year } = profile
   const plain = (label: ReactNode, className: string) => <span className={className}>{label}</span>
   const records = (grain: 'direct' | 'contract') => (label: ReactNode, className: string) => (
-    <Link to="/procurement/search" search={buyerRecordsSearch(identity.cui, year, grain)} className={className}>
+    <Link to="/procurement/search" search={buyerRecordsSearch(identity.cui, profile, grain)} className={className}>
       {label}
     </Link>
   )
@@ -120,7 +128,8 @@ function buyerFacts(profile: BuyerProfile): HubFact[] {
       digits: 0,
       unit: 'lei',
       label: t`Pe locuitor`,
-      note: t`achiziții directe, ${year}`,
+      // Months of the year in progress over a whole year's residents: said, so it does not read as a year's.
+      note: profile.through ? t`achiziții directe, până în ${monthText(profile.through)}` : t`achiziții directe, ${year}`,
       link: plain,
     })
   } else if (profile.countyShare && profile.countyShare.share >= 0.01) {
@@ -138,11 +147,38 @@ function buyerFacts(profile: BuyerProfile): HubFact[] {
 }
 
 export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: string; readonly search: ProcurementBuyerSearch; readonly initial: ProcurementBuyerInitialData }) {
+  const latest = homeYear()
+  const newest = useQuery({ ...procurementNewestYearQueryOptions(latest), enabled: initial.year === null })
+  // A failed read opens the last complete year, as the server does.
+  const year = initial.year ?? newest.data ?? (newest.isError ? latest : null)
+  if (year === null) {
+    return (
+      <div className="relative w-full overflow-x-clip bg-background">
+        <BuyerHeadPending cui={cui} year={null} onYear={() => undefined} />
+        <RuledFrame className="py-14">
+          <HubPending rows={8} />
+        </RuledFrame>
+      </div>
+    )
+  }
+  return <BuyerPageOfYear cui={cui} search={search} year={year} initial={initial} />
+}
+
+function BuyerPageOfYear({
+  cui,
+  search,
+  year,
+  initial,
+}: {
+  readonly cui: string
+  readonly search: ProcurementBuyerSearch
+  readonly year: number
+  readonly initial: ProcurementBuyerInitialData
+}) {
   // The rows open firms' pages: have that route's code before the tap.
   useWarmRouteCode('/procurement/suppliers/$cui')
   const navigate = useNavigate({ from: '/procurement/institutions/$cui' })
   const rootRef = useRef<HTMLDivElement>(null)
-  const year = initial.year
   const profileQuery = useProcurementBuyer(cui, year, initial.profile)
   const recordsQuery = useProcurementBuyerRecords(cui, year, initial.records)
   const profile = profileQuery.data
@@ -156,8 +192,8 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
 
   const choose = (patch: Partial<ProcurementBuyerSearch>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true, resetScroll: false })
-  // The last complete year is the default: it stays out of the URL.
-  const onYear = (next: number) => choose({ year: next === (profile?.latest ?? homeYear()) ? undefined : next })
+  // A year picked is written out: the page's default is the newest year with data, which moves (the year in progress, from its first month).
+  const onYear = (next: number) => choose({ year: next })
 
   return (
     <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
@@ -256,7 +292,6 @@ function BuyerBody({
             partYear={profile.partYear}
             cutoff={profile.cutoff}
             contractLabel={t`Contracte atribuite`}
-            pickPartYear={false}
             onYear={onYear}
           />
         }
@@ -294,9 +329,10 @@ function BuyerBody({
   )
 }
 
-/** A year with no record: said once, with the way to one that has them. */
+/** A year with no record — often the year in progress, early on: said once, with the way to the newest year that has them. */
 function EmptyYearBand({ profile }: { readonly profile: BuyerProfile }) {
   const anyYear = hasAnyRecord(profile)
+  const other = newestYearWithRecords(profile.year, profile.directYears, profile.awardYears)
   return (
     <HomeBand id="an-fara-achizitii" labelledBy="buyer-empty-title">
       <h2 id="buyer-empty-title" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -304,7 +340,21 @@ function EmptyYearBand({ profile }: { readonly profile: BuyerProfile }) {
       </h2>
       <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
         {anyYear ? (
-          <Trans>SEAP nu are achiziții directe sau contracte ale instituției în {profile.year}. Alege alt an din meniul de sus.</Trans>
+          <>
+            <Trans>SEAP nu are achiziții directe sau contracte ale instituției în {profile.year}.</Trans>{' '}
+            {other ? (
+              <Link
+                to="/procurement/institutions/$cui"
+                params={{ cui: profile.identity.cui }}
+                search={{ year: other }}
+                className="font-medium text-foreground underline underline-offset-4"
+              >
+                <Trans>Vezi {other}</Trans>
+              </Link>
+            ) : (
+              <Trans>Alege alt an din meniul de sus.</Trans>
+            )}
+          </>
         ) : (
           <>
             <Trans>SEAP nu are achiziții directe sau contracte cu acest cod fiscal drept cumpărător din {DIRECT_COMPARABLE_FROM} încoace.</Trans>{' '}

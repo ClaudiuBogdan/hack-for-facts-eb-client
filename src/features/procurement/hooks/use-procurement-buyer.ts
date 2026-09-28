@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query'
 import { fetchProcurementBuyer, fetchProcurementBuyerRecords } from '../api/procurement-buyer-api'
+import { readNewestYear } from '../api/procurement-cutoff'
 import type { BuyerProfile, BuyerRecords } from '../lib/buyer-model'
 import { procurementBuyerKeys } from '../lib/buyer-keys'
 
@@ -35,6 +36,26 @@ export function procurementBuyerRecordsQueryOptions(cui: string, year: number, i
     queryFn: ({ signal }) => fetchProcurementBuyerRecords(cui, year, BUYER_LARGEST_RECORDS, signal),
     staleTime: STALE_TIME,
     ...(initialData ? { initialData } : {}),
+  })
+}
+
+/**
+ * The year a page opens on without one asked, on a client-side navigation
+ * (the server resolves it in the loader): read beside the page's frame, never
+ * before it. A failed read is an error — the page then shows the last
+ * complete year, as the server does — and a kept answer is not swapped for a
+ * failed one.
+ */
+export function procurementNewestYearQueryOptions(latest: number) {
+  return queryOptions({
+    queryKey: procurementBuyerKeys.newestYear(latest),
+    queryFn: async () => {
+      const newest = await readNewestYear(latest)
+      if (newest.failed) throw new Error('SEAP cutoff unread')
+      return newest.year
+    },
+    // As long as the cutoff is kept.
+    staleTime: 10 * 60 * 1000,
   })
 }
 

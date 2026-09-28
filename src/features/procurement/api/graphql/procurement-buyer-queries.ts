@@ -1,9 +1,9 @@
 /**
  * GraphQL documents + raw-response Zod schemas for one buyer's page
  * (`/procurement/institutions/$cui`). The profile is three multi-root requests
- * over the buyer's scope (keys, figures with the national months that date
- * SEAP's cutoff, the CPV levels — see `BuyerFieldGroup`) and the budget
- * platform's identity record in a fourth. The follow-up needs the keys and
+ * over the buyer's scope (keys, figures, the CPV levels — see
+ * `BuyerFieldGroup`) and the budget platform's identity record in a fourth;
+ * SEAP's cutoff is the shared read (`procurement-cutoff.ts`). The follow-up needs the keys and
  * the identity: supplier names, each top supplier's years, the county's
  * total.
  */

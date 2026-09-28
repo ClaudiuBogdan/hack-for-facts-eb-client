@@ -20,6 +20,7 @@ import { directPurchasesCount, moneyText } from '../../lib/home-format'
 import { sectionIndex, supplierRecordsSearch, type HomeSection } from '../../lib/home-links'
 import { DIRECT_COMPARABLE_FROM, homeYear, type RecentRecord } from '../../lib/home-model'
 import { buildSupplierDocumentTitle } from '../../lib/procurement-page-titles'
+import { newestYearWithRecords } from '../../lib/profile-model'
 import { clientName, contractClients, hasAnyRecord, isEmptyYear, scanIsWhole, supplierView, type SupplierProfile, type SupplierView } from '../../lib/supplier-model'
 import { HomeBand, HomeSectionNav } from '../home/home-chrome'
 import { moneyFact } from '../profile/profile-facts'
@@ -74,7 +75,7 @@ function contractsNote(profile: SupplierProfile): string {
 function supplierFacts(profile: SupplierProfile): HubFact[] {
   const { cui, year } = profile
   const records = (grain: 'direct' | 'contract') => (label: ReactNode, className: string) => (
-    <Link to="/procurement/search" search={supplierRecordsSearch(cui, year, grain)} className={className}>
+    <Link to="/procurement/search" search={supplierRecordsSearch(cui, profile, grain)} className={className}>
       {label}
     </Link>
   )
@@ -239,7 +240,6 @@ function SupplierBody({
               partYear={view.partYear}
               cutoff={view.cutoff}
               contractLabel={t`Contracte câștigate`}
-              pickPartYear
               onYear={onYear}
             />
           ) : null
@@ -283,9 +283,10 @@ function SupplierBody({
   )
 }
 
-/** A year with no sale: said once, with the way to one that has them. */
+/** A year with no sale: said once, with the way to the newest year that has them. */
 function EmptyYearBand({ profile }: { readonly profile: SupplierView }) {
   const anyYear = hasAnyRecord(profile)
+  const other = newestYearWithRecords(profile.year, profile.directYears, profile.contractYears)
   return (
     <HomeBand id="an-fara-vanzari" labelledBy="supplier-empty-title">
       <h2 id="supplier-empty-title" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -293,7 +294,16 @@ function EmptyYearBand({ profile }: { readonly profile: SupplierView }) {
       </h2>
       <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
         {anyYear ? (
-          <Trans>SEAP nu are achiziții directe sau contracte ale firmei în {profile.year}. Alege alt an din meniul de sus.</Trans>
+          <>
+            <Trans>SEAP nu are achiziții directe sau contracte ale firmei în {profile.year}.</Trans>{' '}
+            {other ? (
+              <Link to="/procurement/suppliers/$cui" params={{ cui: profile.cui }} search={{ year: other }} className="font-medium text-foreground underline underline-offset-4">
+                <Trans>Vezi {other}</Trans>
+              </Link>
+            ) : (
+              <Trans>Alege alt an din meniul de sus.</Trans>
+            )}
+          </>
         ) : (
           <>
             <Trans>SEAP nu are achiziții directe sau contracte cu acest cod fiscal drept furnizor din {DIRECT_COMPARABLE_FROM} încoace.</Trans>{' '}

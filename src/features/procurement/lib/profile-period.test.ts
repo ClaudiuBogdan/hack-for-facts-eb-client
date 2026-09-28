@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { lastDayOf, periodOf, throughMonth } from './supplier-period'
+import { lastDayOf, newestYear, periodOf, throughMonth } from './profile-period'
+
+describe('newestYear', () => {
+  it('is the year in progress once SEAP reaches into it, else the last complete one', () => {
+    expect(newestYear(2025, { direct: '2026-06', contract: '2026-05' })).toBe(2026)
+    // January: the cutoff still lies in the year before.
+    expect(newestYear(2026, { direct: '2026-12', contract: '2026-11' })).toBe(2026)
+    expect(newestYear(2025, { direct: '2026-02', contract: '2025-12' })).toBe(2025)
+    expect(newestYear(2025, null)).toBe(2025)
+  })
+})
 
 describe('lastDayOf', () => {
   it('ends a month on its last day, leap years included', () => {

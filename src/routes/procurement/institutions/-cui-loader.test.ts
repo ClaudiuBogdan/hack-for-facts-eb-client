@@ -19,6 +19,12 @@ vi.mock('@/features/procurement/api/procurement-buyer-ssr', () => ({
   readProcurementBuyerForSsr: readForSsrMock,
 }))
 
+// The newest year with data: the year in progress, as once SEAP's data reaches into it.
+const readNewestYearMock = vi.fn(async (latest: number) => ({ year: latest + 1, failed: false }))
+vi.mock('@/features/procurement/api/procurement-cutoff', () => ({
+  readNewestYear: readNewestYearMock,
+}))
+
 // Stubbed rather than partially mocked: `@/config/env` validates `import.meta.env`
 // at import time, and the query-options module pulls it in via the GraphQL client.
 vi.mock('@/config/env', () => ({
@@ -51,7 +57,10 @@ async function importRoute(): Promise<RouteUnderTest> {
 }
 
 function createQueryClient() {
-  return { prefetchQuery: vi.fn(async (_options: QueryOptionsArg): Promise<void> => undefined) }
+  return {
+    prefetchQuery: vi.fn(async (_options: QueryOptionsArg): Promise<void> => undefined),
+    fetchQuery: vi.fn(async (options: { readonly queryFn: () => Promise<unknown> }) => options.queryFn()),
+  }
 }
 
 /**
@@ -75,6 +84,7 @@ describe('/procurement/institutions/$cui', () => {
   beforeEach(() => {
     vi.resetModules()
     readForSsrMock.mockReset()
+    readNewestYearMock.mockClear()
   })
 
   afterEach(() => {
@@ -93,35 +103,63 @@ describe('/procurement/institutions/$cui', () => {
     expect(route.validateSearch({ year: 'x', ce: 'all', mari: 3, cpv: '45', month: '2025-01' })).toEqual({})
   })
 
-  it('reads the profile and the records on the server, for the year asked', async () => {
+  it('reads the profile and the records on the server, for the year asked — the year in progress included', async () => {
     readForSsrMock.mockResolvedValue({ year: 2023, profile: PROFILE, records: { contracts: [], direct: [] } })
     const queryClient = createQueryClient()
     const route = await importRoute()
     const data = await asServerRender(() => route.loader({ context: { queryClient }, params: { cui: '4291620' }, deps: { year: 2023 } }))
     expect(readForSsrMock).toHaveBeenCalledWith('4291620', 2023)
+    expect(readNewestYearMock).not.toHaveBeenCalled()
     expect(data.profile).toBe(PROFILE)
     // Read directly, not seeded into the query client (its server clock would dehydrate stale).
     expect(queryClient.prefetchQuery).not.toHaveBeenCalled()
   })
 
-  it('describes the last complete year when the one asked is out of range', async () => {
-    readForSsrMock.mockResolvedValue({ year: homeYear() })
+  it('opens on the newest year with data when none is asked, or the one asked is out of range', async () => {
+    readForSsrMock.mockResolvedValue({ year: homeYear() + 1 })
     const route = await importRoute()
     await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '4291620' }, deps: { year: 2015 } }))
-    expect(readForSsrMock).toHaveBeenCalledWith('4291620', homeYear())
+    expect(readForSsrMock).toHaveBeenCalledWith('4291620', homeYear() + 1)
+    await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '4291620' }, deps: {} }))
+    expect(readForSsrMock).toHaveBeenLastCalledWith('4291620', homeYear() + 1)
+    // In January the year in progress holds almost nothing: the last complete one.
+    readNewestYearMock.mockImplementationOnce(async (latest: number) => ({ year: latest, failed: false }))
+    await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '4291620' }, deps: {} }))
+    expect(readForSsrMock).toHaveBeenLastCalledWith('4291620', homeYear())
+  })
+
+  it('never lets a default opened without SEAP’s cutoff be cached: its year may not be the newest', async () => {
+    readForSsrMock.mockResolvedValue({ year: homeYear(), profile: PROFILE, records: { contracts: [], direct: [] } })
+    readNewestYearMock.mockImplementationOnce(async (latest: number) => ({ year: latest, failed: true }))
+    const route = await importRoute()
+    const data = await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '4291620' }, deps: {} }))
+    expect(data.newestUnread).toBe(true)
+    expect(route.headers({ loaderData: data })['CDN-Cache-Control']).toBe('no-store')
   })
 
   it('starts both reads and returns at once on a client-side navigation', async () => {
     const queryClient = createQueryClient()
     const route = await importRoute()
-    const data = await route.loader({ context: { queryClient }, params: { cui: '4291620' }, deps: {} })
-    expect(data).toEqual({ year: homeYear() })
+    const data = await route.loader({ context: { queryClient }, params: { cui: '4291620' }, deps: { year: 2023 } })
+    expect(data).toEqual({ year: 2023 })
     expect(readForSsrMock).not.toHaveBeenCalled()
-    const keys = queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey)
-    expect(keys).toEqual([
-      ['procurement', 'buyer', 'profile', '4291620', homeYear()],
-      ['procurement', 'buyer', 'records', '4291620', homeYear(), 8],
+    expect(queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey)).toEqual([
+      ['procurement', 'buyer', 'profile', '4291620', 2023],
+      ['procurement', 'buyer', 'records', '4291620', 2023, 8],
     ])
+  })
+
+  it('never holds a client-side navigation without a year for the newest one: it returns at once, and the reads start when it lands', async () => {
+    let land: (newest: { year: number; failed: boolean }) => void = () => undefined
+    readNewestYearMock.mockImplementationOnce(() => new Promise((resolve) => (land = resolve)))
+    const queryClient = createQueryClient()
+    const route = await importRoute()
+    const data = await route.loader({ context: { queryClient }, params: { cui: '4291620' }, deps: {} })
+    expect(data).toEqual({ year: null })
+    expect(queryClient.prefetchQuery).not.toHaveBeenCalled()
+    land({ year: homeYear() + 1, failed: false })
+    await vi.waitFor(() => expect(queryClient.prefetchQuery).toHaveBeenCalledTimes(2))
+    expect(queryClient.prefetchQuery.mock.calls[0]?.[0].queryKey).toEqual(['procurement', 'buyer', 'profile', '4291620', homeYear() + 1])
   })
 
   it('caches a whole render publicly, and never a failed or partial one', async () => {

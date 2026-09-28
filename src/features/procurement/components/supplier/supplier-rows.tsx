@@ -65,8 +65,7 @@ export function ClientRows({
         const measured = measure(row)
         return (
           <li key={row.cui}>
-            {/* The buyer page describes complete years only: the year in progress opens its last. */}
-            <Link to="/procurement/institutions/$cui" params={{ cui: row.cui }} search={{ year: Math.min(profile.year, profile.latest) }} className={cn(ROW, ROW_LINK, 'py-2.5')}>
+            <Link to="/procurement/institutions/$cui" params={{ cui: row.cui }} search={{ year: profile.year }} className={cn(ROW, ROW_LINK, 'py-2.5')}>
               <span className="grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
                 <MonoLabel className="pt-0.5 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
                 <span className="min-w-0">

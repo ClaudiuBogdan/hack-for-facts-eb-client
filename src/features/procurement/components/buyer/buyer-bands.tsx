@@ -204,7 +204,7 @@ export function BuyerWhereBand({ profile, index }: { readonly profile: BuyerProf
             rankedBy={profile.supplierCountiesRankedBy}
             home={profile.county}
             homeLabel={t`județul instituției`}
-            searchOf={(code) => buyerCountySearch(profile.identity.cui, code, profile.year)}
+            searchOf={(code) => buyerCountySearch(profile.identity.cui, code, profile)}
             empty={t`Nicio achiziție directă în ${profile.year}.`}
           />
         </div>
@@ -344,7 +344,7 @@ export function BuyerLargestBand({
           )}
           <Link
             to="/procurement/search"
-            search={buyerRecordsSearch(profile.identity.cui, profile.year, grain)}
+            search={buyerRecordsSearch(profile.identity.cui, profile, grain)}
             className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0"
           >
             {grain === 'contract' ? <Trans>Toate contractele din {profile.year}</Trans> : <Trans>Toate achizițiile directe din {profile.year}</Trans>}

@@ -14,7 +14,7 @@ import { acceptedValue, partyOf } from './procurement-home-api'
 import { readerCategories, type CategoryFigure } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, tidyName, tidyTitle, type HomeParty, type RecentRecord } from '../lib/home-model'
 import type { CountyFigureRow } from '../lib/profile-model'
-import { lastDayOf, type Period } from '../lib/supplier-period'
+import { lastDayOf, type Period } from '../lib/profile-period'
 import type { ContractPicture, Partner } from '../lib/supplier-model'
 
 /**

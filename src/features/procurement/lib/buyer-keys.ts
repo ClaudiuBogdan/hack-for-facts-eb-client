@@ -9,4 +9,6 @@ export const procurementBuyerKeys = {
   profiles: (cui: string) => [...procurementBuyerKeys.all, 'profile', cui] as const,
   profile: (cui: string, year: number) => [...procurementBuyerKeys.profiles(cui), year] as const,
   records: (cui: string, year: number, limit: number) => [...procurementBuyerKeys.all, 'records', cui, year, limit] as const,
+  /** The year a page opens on without one asked: national, the same for every buyer. */
+  newestYear: (latest: number) => [...procurementBuyerKeys.all, 'newest-year', latest] as const,
 }

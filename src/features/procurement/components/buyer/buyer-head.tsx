@@ -12,15 +12,16 @@ import { hasAnyRecord, type BuyerProfile } from '../../lib/buyer-model'
 import { buyerKind, countyName, headSentence } from '../../lib/buyer-text'
 import { buyerAllRecordsSearch } from '../../lib/home-links'
 import { homeYear } from '../../lib/home-model'
+import { ProfileTopRow } from '../profile/profile-top-row'
 import { ProfileYearSelect } from '../profile/profile-year-select'
 
 /**
  * The page's head, in the company profile's shape: where the buyer sits in
- * the site and the year the page describes (a dropdown, as on a firm's
- * page), its name, what it is and what it bought in the year in one
- * sentence, its CUI and the ways out (its budget, all its direct purchases,
- * all its contracts) — and beside them its years on one chart, which picks
- * the year too.
+ * the site and the year the page describes (a dropdown, as on a firm's page,
+ * with the date the year in progress runs through), its name, what it is and
+ * what it bought in the year in one sentence, its CUI and the ways out (its
+ * budget, all its direct purchases, all its contracts) — and beside them its
+ * years on one chart, which picks the year too.
  */
 
 const HEADING = {
@@ -59,24 +60,31 @@ function BuyerKicker({ profile }: { readonly profile: BuyerProfile | null }) {
   )
 }
 
-/**
- * The head's top row: the way back on the left, the year at the right end.
- * The list holds the complete years only — the page does not describe the
- * year in progress, which its chart shows but does not pick.
- */
-function BuyerTopRow({ profile, year, onYear }: { readonly profile: BuyerProfile | null; readonly year: number; readonly onYear: (year: number) => void }) {
+/** The head's top row: the way back, the year — the year in progress first — and how recent its data is. */
+function BuyerTopRow({
+  profile,
+  year,
+  onYear,
+}: {
+  readonly profile: BuyerProfile | null
+  /** Null while the newest year is read (a client-side navigation without one): no year to show yet. */
+  readonly year: number | null
+  readonly onYear: (year: number) => void
+}) {
+  // The date shows once the read of the year asked has landed.
+  const shown = profile && profile.year === year ? profile : null
   return (
-    <div className="flex items-center justify-between gap-4">
-      <BuyerKicker profile={profile} />
-      <ProfileYearSelect
-        points={profile ? { direct: profile.directYears, contracts: profile.awardYears } : null}
-        year={year}
-        latest={profile?.latest ?? homeYear()}
-        partYear={false}
-        emptyLabel={t`fără achiziții`}
-        onYear={onYear}
-      />
-    </div>
+    <ProfileTopRow kicker={<BuyerKicker profile={profile} />} read={shown}>
+      {year !== null ? (
+        <ProfileYearSelect
+          points={profile ? { direct: profile.directYears, contracts: profile.awardYears } : null}
+          year={year}
+          latest={profile?.latest ?? homeYear()}
+          emptyLabel={t`fără achiziții`}
+          onYear={onYear}
+        />
+      ) : null}
+    </ProfileTopRow>
   )
 }
 
@@ -165,7 +173,7 @@ export function BuyerHeadPending({
   children,
 }: {
   readonly cui: string
-  readonly year: number
+  readonly year: number | null
   readonly onYear: (year: number) => void
   readonly children?: ReactNode
 }) {

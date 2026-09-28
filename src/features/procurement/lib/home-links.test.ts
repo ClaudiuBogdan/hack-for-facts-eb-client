@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { cleanProcurementHubSearch, parseProcurementHubSearch } from '@/schemas/procurement-hub'
 import { explorerSearchOf, parseProcurementHomeSearch } from '@/schemas/procurement-home'
-import { countyExplorerSearch, procurementHrefOf, sectionIndex, startSearches } from './home-links'
+import { buyerCountySearch, buyerRecordsSearch, countyExplorerSearch, procurementHrefOf, sectionIndex, startSearches, supplierCountySearch, supplierRecordsSearch } from './home-links'
 
 describe('procurementHrefOf', () => {
   it('opens an institution’s buyer page and a company’s supplier page', () => {
@@ -45,6 +45,23 @@ describe('the front door’s address', () => {
   it('keeps a front-door link on the front door, the site’s own keys included', () => {
     expect(explorerSearchOf({})).toBeNull()
     expect(explorerSearchOf({ lang: 'en', currency: 'EUR', firme: 'directe' })).toBeNull()
+  })
+})
+
+describe('the explorer lists a profile page opens', () => {
+  it('opens a complete year by its year, and the year in progress over its months only', () => {
+    expect(buyerRecordsSearch('4364446', { year: 2025, through: null }, 'direct')).toEqual({ view: 'list', grain: 'direct_acquisitions', authority_cui: '4364446', year: 2025 })
+    expect(buyerCountySearch('4364446', 'IF', { year: 2026, through: '2026-05' })).toEqual({
+      view: 'list',
+      grain: 'direct_acquisitions',
+      authority_cui: '4364446',
+      supplierCounty: 'IF',
+      dateFrom: '2026-01-01',
+      dateTo: '2026-05-31',
+    })
+    expect(supplierRecordsSearch('9813902', { year: 2026, through: '2026-05' }, 'contract')).toMatchObject({ supplier_cui: '9813902', dateFrom: '2026-01-01', dateTo: '2026-05-31' })
+    expect(supplierRecordsSearch('9813902', null, 'contract')).not.toHaveProperty('year')
+    expect(supplierCountySearch('9813902', 'B', { year: 2024, through: null }, 'direct')).toMatchObject({ year: 2024, buyerCounty: 'B' })
   })
 })
 
