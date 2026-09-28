@@ -50,11 +50,13 @@ export const selectOrdinal = (
     other?: string;
   }
 ) => {
+  // As in `plural`, `#` is the value.
+  const hash = (form: string) => form.split("#").join(NUMBER_FORMAT.format(value));
   if (value === 1 && options.one !== undefined) {
-    return options.one;
+    return hash(options.one);
   }
   if (value === 2 && options.two !== undefined) {
-    return options.two;
+    return hash(options.two);
   }
-  return options.other ?? options.few ?? "";
+  return hash(options.other ?? options.few ?? "");
 };

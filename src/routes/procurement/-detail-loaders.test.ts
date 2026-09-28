@@ -5,7 +5,6 @@ const notFoundError = new Error('not-found')
 const notFoundMock = vi.fn(() => notFoundError)
 const fetchProcedureDetailMock = vi.fn()
 const fetchContractDetailMock = vi.fn()
-const fetchDirectAcquisitionDetailMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
@@ -22,7 +21,6 @@ vi.mock('@/features/procurement/api/procurement-api', async (importOriginal) => 
   ...(await importOriginal<Record<string, unknown>>()),
   fetchProcurementProcedureDetail: fetchProcedureDetailMock,
   fetchProcurementContractDetail: fetchContractDetailMock,
-  fetchProcurementDirectAcquisitionDetail: fetchDirectAcquisitionDetailMock,
 }))
 
 // Stubbed rather than partially mocked: `@/config/env` validates
@@ -94,12 +92,6 @@ const GRAINS = [
     fetchMock: fetchContractDetailMock,
     grain: 'contracts',
   },
-  {
-    name: 'direct-acquisition',
-    path: './direct-acquisitions/$id',
-    fetchMock: fetchDirectAcquisitionDetailMock,
-    grain: 'direct_acquisitions',
-  },
 ] as const
 
 describe('procurement detail route loaders', () => {
@@ -109,7 +101,6 @@ describe('procurement detail route loaders', () => {
     notFoundMock.mockClear()
     fetchProcedureDetailMock.mockReset()
     fetchContractDetailMock.mockReset()
-    fetchDirectAcquisitionDetailMock.mockReset()
   })
 
   describe.each(GRAINS)('$name', ({ path, fetchMock, grain }) => {

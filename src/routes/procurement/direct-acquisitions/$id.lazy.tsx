@@ -1,19 +1,12 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProcurementDetailRoutePage } from '@/features/procurement/components/procurement-detail-route-page'
+import { ProcurementDirectPurchasePage } from '@/features/procurement/components/direct-purchase/procurement-direct-purchase-page'
 
 export const Route = createLazyFileRoute('/procurement/direct-acquisitions/$id')({
-  component: DirectAcquisitionDetailRoutePage,
+  component: DirectPurchaseRoutePage,
 })
 
-function DirectAcquisitionDetailRoutePage() {
-  // `detail` is empty on a client-side navigation — the loader only blocks
-  // while rendering HTML. See `lib/ssr/loader-blocking`.
-  const { detail, id } = Route.useLoaderData()
-  return (
-    <ProcurementDetailRoutePage
-      grain="direct_acquisitions"
-      id={id}
-      initialDetail={detail}
-    />
-  )
+function DirectPurchaseRoutePage() {
+  // The purchase is empty on a client-side navigation: the loader only reads while rendering HTML (`lib/ssr/loader-blocking`).
+  const data = Route.useLoaderData()
+  return <ProcurementDirectPurchasePage id={data.id} initialData={data} />
 }

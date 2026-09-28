@@ -713,8 +713,6 @@ export type DaDetail = {
 
 export type ProcurementRecordDetail<T> = {
   readonly record: T
-  readonly daDetail?: DaDetail | null
-  readonly daDetailAvailability?: DaDetailAvailability
   readonly related: {
     readonly procedure: ProcedureRecordSummary | null
     readonly contracts: readonly ContractRecordSummary[]

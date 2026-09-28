@@ -1106,3 +1106,317 @@ English templates that broke with the phrase, the registry and identity reads
 now started before the cutoff lands, an unused distinct-firms read for
 contracts dropped.
 
+## 16. The direct-purchase page (prototyped 28 September 2026)
+
+`/procurement/direct-acquisitions/$id` — one direct purchase — is where every
+„Cele mai mari" row of the front door and the two profile pages lands. It
+still wears the old shared detail layout. Prototype:
+`/development/procurement/direct-purchase` (`?v=fisa-jos|fisa-jos-alaturi`,
+`&da=<record>`), on nine real records read from the production database and
+the dev API, shaped as the adapted API would answer.
+
+### 16.1 What a direct purchase's data can say (measured 2026-09-28)
+
+Prod database (read-only, owner's approval) and dev API:
+
+- **Three families, three depths.** Of 2025's canonical direct purchases,
+  66% are e-licitatie catalogue purchases (1.42 M), with their own page; 24%
+  come from SEAP's quarterly export (510 k) — catalogue purchases (they carry
+  DA codes) that our discovery never captured; 10% are award notifications
+  (207 k, DAN codes, mostly since 2023) — purchases made outside the
+  catalogue and notified in SEAP. Only the first family has items, terms and
+  decisions; the other two are a summary row (title, parties, CPV, value,
+  dates), and their source is a whole quarterly XLSX on data.gov.ro with a
+  row number.
+- **The catalogue detail is complete where it exists** (a 0.2% sample of
+  2025+, 4,101 records): description, delivery, payment and contract type
+  100%; items 100% filled (name, catalogue description, unit, CPV, quantity,
+  unit price, catalogue price); 17% have more than one line (max 60).
+  Types: supply 69%, services 29%, works 2%. EU funding 3.2% (PNRR the most).
+- **The numbers agree with themselves.** The lines sum to the value on 99.5%
+  of purchases; where they do not, the gap is often exactly one line (a line
+  dropped after the offer). The price paid differs from the firm's catalogue
+  price on 7.3% of lines. The **estimate equals the value on 98.4%** (SEAP
+  fills it from the offer): it is shown only where it differs.
+- **How it ended is told, and by whom.** ~93% „Ofertă acceptată"; the rest
+  are attempts, not purchases: the firm refused the institution's conditions
+  (with a reason: „lipsă stoc", „preț incorect"), let them lapse, or the
+  institution refused the offer („CPV incorect", „achiziție eronată") or let
+  it lapse. The firm decides first, then the institution; the median purchase
+  is published and finalised the same day.
+- **Privacy.** 5.5% of details carry a person's contact data in their free
+  text; the server then withholds all of it (description, delivery, payment,
+  reasons), though the phone is usually in one field. Items stay public
+  (98.3%).
+- **The two parties' relationship is one request away.** An analysis scope
+  takes `authorityCui` and `supplierCui` together: the pair's years, its
+  share of the institution's direct-purchase money, the firm's rank among
+  the institution's firms and the institution's among the firm's clients —
+  0.4–0.7 s for all of it.
+- **The same product, the same firm, other institutions' prices** are
+  comparable for distributors: 67% of Farmaceutica Remedia's catalogue codes
+  went to two institutions or more, and 96% of its lines are in shared codes
+  (dexametazonă: 34 hospitals, 9.88–11.76 lei). Small firms reuse codes for
+  other products (Solnet's „13" is a toner unit and a school's DJI drone set;
+  a florist's „B201" spans 125 to 178,322 lei), so a match needs code, name
+  and unit — and a generic name still misleads („Multifuncțională" matched a
+  1,200 lei printer against a 25,000 lei A3 Konica): the rule is three other
+  institutions or more, and the production read should match the catalogue
+  description too.
+
+### 16.2 What the API must change (handed to the server session, 2026-09-28)
+
+1. **The detail is not linked (blocking).** `procurement.da_details` holds
+   11,257,271 rows; 5,000 have `da_id`. The server reads the detail by
+   `da_id`, so almost every purchase answers `NOT_CAPTURED` though its detail
+   is in the database. The key it already holds works: the purchase's
+   `attrs.direct_acquisition_id` = `da_details.source_ref` with
+   `source_system = 'elicitatie_da_detail'` (unique index).
+2. **The items error (blocking).** `ProcurementDaItem.id` is `ID!`; the
+   mapper emits `daItemId` and nothing renames it, so any item fails and the
+   whole `detail` is null beside `AVAILABLE`.
+3. **Institutions lost to their name.** 0.6% of catalogue purchases have no
+   authority CUI; 58% of those carry it in the name behind a mangled prefix
+   („R 361684 Banca Nationala a Romaniei", „r1890420 RAJA S.A"). For some
+   buyers this is most of their year: 82.4% of BNR's 2026 direct purchases,
+   so its institution page misses them.
+4. **How it ended.** The purchase carries `finalized|cancelled` only; the
+   page needs SEAP's state (who refused or let it lapse) with the reasons.
+5. **The page's reads** — added to the direct-purchase detail or read beside
+   it: the parties' display names and what they are (the spine, the budget
+   platform, the registry — as the profile pages read them); the pair's
+   years and its figures for the purchase's year (the analysis scope above);
+   the records around this one between the same two (a list by date, both
+   CUIs, three either side); per line, the same product's prices at other
+   institutions (a new projection: firm × catalogue code × name × unit ×
+   month, with count, min, median, max — computed per request it is ~1 s for
+   a mid-size firm and far too slow for Dedeman's 40,000 a year), and how
+   many other times the institution bought it.
+6. Smaller: privacy by field rather than by record; export rows with no date
+   (18 of Apa Brașov's rows from Dedeman) sort first in a list by date.
+
+### 16.3 The variants
+
+**First round (28 September).** Three layouts of the same parts: `benzi`
+(the profile pages' rhythm — head with the value beside the title, a figures
+band, a pinned numbered bar, one band per question), `fisa` (a record sheet:
+the receipt in the wide column, the value, steps, terms, parties and the
+pair's years in a rail) and `relatie` (the pair's years beside the title,
+the relationship first). **The owner picked `fisa`**, with two changes: the
+value and the purchase's other details (the steps, the terms) move under
+„Ce s-a cumpărat", and the extra information — the institution and the firm
+beyond this purchase — is set apart, so it cannot be read as part of the
+record. `benzi` and `relatie` are deleted.
+
+**Second round, three sheets.** The purchase is one block in all three
+(`PurchaseBlock`): „Ce s-a cumpărat" → the value, how it ended, the date and
+the basket's size → the lines → „Cum s-a făcut" → „Condițiile" → the source.
+The context is another (`ContextBlock`), opening with a „Context" label,
+the title „Alte achiziții între ele" and one line naming the two („Ce a mai
+cumpărat Banca Națională a României de la Floraria Iris SRL, din 2019
+încoace." — the owner's pick of four; the first draft, „Instituția și
+firma" with „Nu face parte din achiziție: …", read as defensive). The
+sentences under it no longer repeat the names („Au fost 17 achiziții
+directe între ele; prima, în 2023."). They differ only in how the
+two are set apart:
+
+- **`fisa` — context beside.** The purchase in the wide column; the context
+  in a tinted, bordered panel beside it (below it on a phone), its records
+  stacked so a title keeps its width.
+- **`fisa-jos` — context after.** The purchase first, in one readable
+  column; the context in a tinted band across the page after it, the
+  sentences and years beside the records, the two parties under them.
+- **`bon` — the purchase framed.** The purchase as a bordered receipt
+  (dashed rules between the value, the lines, the steps and terms; the
+  source at its foot); the context outside the frame, plain, beside it.
+
+**Third round: `fisa-jos`, the purchase reorganised.** The owner kept the
+purchase-then-context sheet and asked for its information to be organised
+better. The facts had been scattered — status, date and basket size loose
+under the value, the institution's description as a small grey quote beside
+the lines, type and category at the foot among the terms. Now:
+
+- **The head says the status and the value.** One marked line above the
+  title („✓ Finalizată", „⊗ Refuzată de firmă", „Raportată în SEAP"), and the
+  value in bold inside the sentence („… a cumpărat direct de la … cu
+  98.448 lei fără TVA, pe 21 ianuarie 2026").
+- **The description answers the heading.** Under „Ce s-a cumpărat", plainly
+  introduced — „Instituția a descris achiziția așa:" — then its words, large,
+  folded after three lines. (A first caption, „Descrierea instituției, în
+  SEAP", read as jargon.) Left out when it repeats the title; a withheld text
+  is said in its place.
+- **The value beside one grid of facts:** Starea (with who accepted, or who
+  refused and why), Data, Coșul (named by type: produse, servicii, lucrări),
+  Categoria (CPV) and, only where they exist, Finanțarea and the
+  institution's estimate.
+- **Then the lines** (one sentence on where the money went — the count is a
+  fact above), **„Cum s-a făcut"**, and **„Livrarea și plata"** — all that is
+  left of the terms.
+
+`fisa-jos-alaturi` sets the same facts, delivery and payment included, in a
+column beside the lines. `fisa` and `bon` are deleted.
+
+Context under a line — other institutions' prices, the institution's
+repeats — carries the same tint and a „Context" label, so the one visual
+rule holds at every scale: tinted is context, plain is the record.
+
+The nine records: BNR's flowers (a ten-line basket, 30 funeral wreaths at
+1,000 lei the largest line), a kindergarten's weekly food packages (its
+first firm, 377 records since 2020), a school's PNRR IT kit, a hospital's
+medicines priced against other hospitals (and a line outside the value), a
+service under its catalogue price, an offer the firm refused („preț
+incorect") and redone the same day at 20,000 lei, text withheld for privacy,
+a quarterly-export row (Dedeman parquet — four bought the same day as four
+records) and an award notification (a 3.5 mil. lei guard contract, 62% of
+the hospital's direct-purchase money in 2025).
+
+### 16.4 Decisions in the prototype
+
+- **The record and its context never mix.** The value, the lines, the
+  steps and the terms are the purchase; the institution's and the firm's
+  years, ranks and other records are context, labelled and tinted. The
+  figures band of the first round is gone: its shares were context sitting
+  where the record was.
+- **The page says, never judges.** Neighbouring records, weekly repeats, a
+  split by product, a redo after a refusal are shown as records, not named
+  as patterns; a price comparison states the range and where this price
+  falls.
+- **Context is the purchase's own year** (the year in progress through the
+  cutoff), not the last twelve months: a 2021 purchase's page describes
+  2021, whenever it is read. Party links carry that year.
+- **The receipt is sorted by money**, numbered as SEAP lists it, with each
+  line's share; a line the value leaves out is struck and said; the total is
+  the purchase's value.
+- **A title that names one line** („Stugeron…" for six medicines) is followed
+  by „și alte 5 produse". Titles in capitals are set in reading case (known
+  acronyms, Roman numerals and words with digits kept).
+- **Price comparisons** from three other institutions, same firm, code, name
+  and unit; identical prices are said as such („Același preț la alte 5
+  instituții") — often the case for medicines.
+- **A refused offer** is struck, says who refused and why, and links its redo
+  („Refăcută în aceeași zi… 20.000 lei") when one follows within two weeks
+  with the same title.
+- **A summary-only record** says once what SEAP publishes for it and why
+  there are no lines; its dates and source close the purchase block.
+- **Shares have a floor** („sub 0,1%").
+- **The list around this record** marks it with a bar at its edge, which
+  reads on the tinted panel and on the plain page alike.
+
+### 16.5 Open for the owner
+
+The facts above the lines or beside them; whether the price comparison is
+worth the new projection (it only speaks for distributors' catalogues, but
+there it is the strongest fact on the page).
+
+### 16.6 Promoted (28 September 2026)
+
+`fisa-jos` is the page. The prototype and its fixtures are deleted; the
+fixtures live on as the feature's test fixture (`lib/direct-purchase.fixture.ts`).
+
+**Where the code went.** `lib/direct-purchase-model.ts` (the page's shape,
+and every rule that reads the record: the family, how it ended and who
+stopped it, the value a reader may take as spent, the lines, the excluded
+line, the context's period and window, the redo), `lib/direct-purchase-text.ts`
+(every sentence), `api/procurement-direct-purchase-api.ts` (the reads),
+`api/graphql/procurement-direct-purchase-queries.ts`,
+`api/procurement-direct-purchase-ssr.ts` (a bounded server memo, ten
+minutes), `hooks/use-procurement-direct-purchase.ts`,
+`lib/direct-purchase-keys.ts`, `components/direct-purchase/` (head, block,
+receipt, context band, page, the two visual rules in
+`direct-purchase-style.ts`). The shared record page (`ProcurementDetailPage`)
+now serves procedures and contracts only; its direct-purchase sections, the
+old fetcher and their test are gone.
+
+**The reads.** Two queries, so a failure stays in its part of the page:
+
+1. *The purchase* — the record with its detail, then its names (the spine's
+   labels, the budget platform's record of the institution, the CPV labels;
+   ~0.25 s each). The names fail soft (the record's own names stand, the page
+   is `partial`). When the API errors *inside* the detail — as it does today
+   for the 5,000 linked details, over the items' `id` — the record is read
+   again without it and the detail said unavailable for now; an error
+   anywhere else fails the read. A missing record is `null`: a 404 on the
+   server, the page's own verdict in the browser.
+2. *The context* — the pair's years from 2019 to the year in progress (so
+   „din 2019 încoace" holds for a purchase of any year), the pair's, the
+   institution's and the firm's year with each one's place in the other's
+   (three analysis requests side by side), and the records around this one
+   (both CUIs, newer and older than its publication day, three either side).
+   Each fails soft: a part whose read failed is `null` — never a zero — its
+   sentences and chart are left out, and the band says a part is missing. A
+   purchase has no context to read when SEAP gives no CUI for a side (BNR's),
+   no date at all (~615,000 export and notification rows), or a date before
+   2019 (the legacy rows cannot tell a purchase from a refused offer); the
+   band then shows the two parties and says which of the three it is, and
+   the server sends `context: null`, so the render is still cached.
+
+The year in progress is read through SEAP's cutoff (the shared read), or the
+purchase's own month when that is later; only a purchase in that year waits
+for the cutoff before its year's reads. A render with any partial read goes
+out `no-store` and is not kept; in the browser a partial read is read again
+after a minute, not on every return to the tab.
+
+**Decisions made while building.**
+
+- *Names.* An institution is named by the budget platform (as on its own
+  page), else the spine's label, else SEAP's name — a display name that is
+  only the CUI does not count, nor does the budget platform's entity for a
+  body it does not know (it answers the CUI as the name). A firm is named as
+  its own page names it (`displayCompanyName`). A CUI SEAP wrote before a
+  name („R 361684 …") is dropped when no CUI was read or it is the party's
+  own; any other number is the name's („2004 IMPEX SRL").
+- *Value.* A purchase shows its checked value; an attempt its offer, struck;
+  a value that did not pass the checks is said beside a dash, never shown as
+  the value.
+- *Status without the detail.* A cancelled catalogue purchase whose detail is
+  not read (or whose text is withheld, the reasons with it) is „Nefinalizată":
+  the page does not guess who stopped it.
+- *Lines not taken over yet.* The purchase block says so and links the SEAP
+  page; the facts grid says „lista nu e încă preluată". This is most of
+  today's pages until the server links the details (§16.2).
+- *Titles.* `tidyTitle` (all procurement pages) keeps known acronyms, codes
+  with digits, Roman numerals and a letter used as a label („CORP B",
+  „VITAMINA C") in a title shouted in capitals — the one-letter words (a, o,
+  e) read as words — and raises the first letter of one written in lower
+  case, unless it capitalises its second („iPad").
+- *Dates.* A purchase is dated by its end; an attempt by its request, in the
+  head, the facts and the records around alike — its second date is its
+  cancellation („anulată pe"), shown only when it follows the request (SEAP
+  has ~300 the other way round). A redo is dated plainly, or „în aceeași zi".
+- *Labels in two languages.* CPV labels are kept in both languages and picked
+  as the page renders; the institution's „what and where" is composed as it
+  renders too — the purchase is kept ten minutes and served to every
+  language.
+- *Duplicates.* Only a canonical record has a page (a duplicate's id is a
+  404). The source line says when SEAP publishes the same purchase in
+  another source too, and that the platform counts it once.
+- *Price comparisons and repeats* have their place in the model and the
+  receipt (under a line, in the context tint) and stay empty until the API
+  serves them (§16.2, item 5).
+
+**Review (Opus 5.5, 28 September 2026).** Two blockers and nine should-fix
+findings, all fixed: a failed context read printed zeros as facts; a
+withheld cancelled record showed both sides accepting; a pre-2019 purchase
+sent an inverted range and was never cached; the pair sentences read as
+all-time over a span that ended with the purchase's year; an unverified value
+was called unpublished in the head; a cancelled record's end was called its
+finalisation and dated its request; the `unknown` state bought in the head
+and was refused in the block; a record with no date got the missing-CUI
+sentence, „on on", and no cache; the institution's line was kept in one
+language and served in another; `tidyTitle` raised the Romanian „a" and
+lowered HACCP; the redo matched the latest same-title record within two
+weeks, not the nearest within one. Among the nits, also fixed: the explorer
+link counts what it opens on (the purchases, not the cancelled, from 2019);
+receipt shares need every line's money and „mai mult de jumătate" means more;
+the detail's lasting error no longer says „reload"; the rank and count
+sentences carry named placeholders and read in English („14th supplier out
+of 83", „once more"); „Data" and the contract types have their own context.
+Filling the English of „Achiziție directă" and „Cod CPV" left their empty
+Romanian falling back to English on every page that uses them; both are
+filled now.
+
+**What the server still owes the page** (handed to the server session): the
+detail link and the items' `id` (the lines, steps and terms appear by
+themselves once served), the raw state with its reasons for a record whose
+detail is not read, the CUI SEAP writes inside a name, and the per-line
+price and repeat reads.

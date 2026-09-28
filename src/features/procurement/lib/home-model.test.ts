@@ -83,6 +83,26 @@ describe('labels', () => {
     expect(tidyTitle('   ')).toBeNull()
     expect(tidyTitle(null)).toBeNull()
   })
+
+  it('keeps what capitals mean in a shouted title: acronyms, codes, Roman numerals', () => {
+    expect(tidyTitle('COROANA FUNERARA MODEL II')).toBe('Coroana funerara model II')
+    expect(tidyTitle('PARCHET 10MM C32 H2970 STEJAR NORD NATUR')).toBe('Parchet 10MM C32 H2970 stejar nord natur')
+    expect(tidyTitle('ECHIPAMENTE.IT')).toBe('Echipamente.IT')
+    expect(tidyTitle('LAPTOP')).toBe('Laptop')
+    expect(tidyTitle('ACHIZITIE ECHIPAMENTE IT PNRR')).toBe('Achizitie echipamente IT PNRR')
+    expect(tidyTitle('ANALIZE HACCP SI ISCIR')).toBe('Analize HACCP si ISCIR')
+  })
+
+  it('reads a one-letter word as a word, a letter after what it labels as a label', () => {
+    expect(tidyTitle('SERVICII DE REPARATII A AUTOVEHICULELOR')).toBe('Servicii de reparatii a autovehiculelor')
+    expect(tidyTitle('REPARATII CORP A SI CORP B')).toBe('Reparatii corp A si corp B')
+    expect(tidyTitle('VITAMINA C EFERVESCENTA')).toBe('Vitamina C efervescenta')
+  })
+
+  it('raises the first letter of a title written in lower case, not of one that capitalises its second', () => {
+    expect(tidyTitle('pachet carne castel')).toBe('Pachet carne castel')
+    expect(tidyTitle('iPad Air 11 inch')).toBe('iPad Air 11 inch')
+  })
 })
 
 describe('unknown county money', () => {

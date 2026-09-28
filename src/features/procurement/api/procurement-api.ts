@@ -10,7 +10,6 @@ export {
   fetchAuthorityProcurementSliceLive as fetchProcurementAuthoritySlice,
   fetchContractDetailLive as fetchProcurementContractDetail,
   fetchCpvCategoryPageLive as fetchProcurementCpvCategoryPage,
-  fetchDirectAcquisitionDetailLive as fetchProcurementDirectAcquisitionDetail,
   fetchProcurementLandingLive as fetchProcurementLanding,
   fetchProcurementTerritoryOverviewLive as fetchProcurementTerritoryOverview,
   fetchProcurementSearchLive as fetchProcurementSearch,

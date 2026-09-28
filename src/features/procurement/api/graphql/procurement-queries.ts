@@ -633,6 +633,21 @@ export type RawProcurementDaDetail = NonNullable<
   z.infer<typeof procurementDaDetailResponseSchema>['procurementDirectAcquisition']
 >
 
+/**
+ * The record without its detail: read when the detail's own read errors (the
+ * detail is optional, and an error inside it must not take the purchase).
+ */
+export const PROCUREMENT_DA_RECORD_QUERY = /* GraphQL */ `
+  query ProcurementDirectAcquisitionRecord($id: ID!) {
+    procurementDirectAcquisition(id: $id) {
+      directAcquisition { ${DIRECT_ACQUISITION_FIELDS} }
+    }
+  }
+`
+export const procurementDaRecordResponseSchema = z.object({
+  procurementDirectAcquisition: z.object({ directAcquisition: rawDirectAcquisitionSchema }).nullable(),
+})
+
 // ---------------------------------------------------------------------------
 // Aggregates (multi-root document reused for landing / CPV page / supplier
 // slice — only the $scope/$grain variables change)

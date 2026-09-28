@@ -262,12 +262,43 @@ export function tidyName(name: string): string {
     .join('')
 }
 
-/** A title set in capitals reads in sentence case (DESIGN.md log, 2026-09-25); anything else stays as SEAP wrote it. */
+/** Acronyms a procurement title carries; any other word in capitals is a word shouted. */
+const TITLE_ACRONYMS = new Set([
+  'IT', 'PC', 'TV', 'LED', 'LCD', 'USB', 'SSD', 'HDD', 'RAM', 'CPU', 'GPS', 'PVC', 'UPS', 'DJI', 'HDMI', 'LAN', 'GSM', 'SIM', 'NFC', 'RFID', 'CD', 'DVD', 'DSLR',
+  'PNRR', 'CPV', 'DCI', 'ATB', 'OUG', 'HG', 'UE', 'EU', 'ISU', 'PSI', 'SSM', 'CFR', 'ADR', 'GPL', 'SRL', 'SA', 'RA', 'BNR', 'CNAS', 'ANAF', 'TVA', 'ID', 'IP', 'CHE',
+  'RCA', 'CASCO', 'ITP', 'DDD', 'ISCIR', 'HACCP', 'GDPR', 'DALI', 'DTAC',
+])
+/** A model or a series numbered in Roman numerals („MODEL II") keeps them. */
+const ROMAN = /^[IVX]{1,4}$/u
+/** One-letter Romanian words („REPARATII A AUTOVEHICULELOR", „O ZI"): any other single letter is a label. */
+const LETTER_WORDS = new Set(['A', 'O', 'E', 'Ă', 'Î'])
+/** Words a letter labels („CORP A", „LOT A"): the letter after them stays a label. */
+const LABELLED = new Set(['LOT', 'LOTUL', 'CORP', 'CORPUL', 'BLOC', 'BLOCUL', 'SCARA', 'TIP', 'TIPUL', 'CLASA', 'CATEGORIA', 'ZONA', 'ANEXA', 'VARIANTA'])
+
+function titleWord(word: string, before: string | undefined): string {
+  const letters = word.replace(/[^\p{L}]/gu, '')
+  const upper = letters.toLocaleUpperCase('ro-RO')
+  const label = letters.length === 1 && (!LETTER_WORDS.has(upper) || LABELLED.has((before ?? '').replace(/[^\p{L}]/gu, '').toLocaleUpperCase('ro-RO')))
+  if (letters.length === 0 || label || /\d/u.test(word) || ROMAN.test(letters) || TITLE_ACRONYMS.has(upper)) return word
+  return word.toLocaleLowerCase('ro-RO')
+}
+
+/** The first letter raised — not in a word that capitalises its second („iPad"). */
+const raised = (text: string) => (/^\p{Ll}\p{Lu}/u.test(text) ? text : text.charAt(0).toLocaleUpperCase('ro-RO') + text.slice(1))
+
+/**
+ * A title set in capitals reads in sentence case (DESIGN.md log, 2026-09-25):
+ * every word lower case but a known acronym (IT, PNRR), a word with a digit
+ * („10MM", „H2970"), a Roman numeral and a letter used as a label („CORP B")
+ * — each part of a dotted word read on its own („ECHIPAMENTE.IT" →
+ * „Echipamente.IT"). Anything else stays as SEAP wrote it, its first letter
+ * raised.
+ */
 export function tidyTitle(title: string | null): string | null {
   if (!title) return null
   const trimmed = title.trim().replace(/\s+/g, ' ')
   if (trimmed === '') return null
-  if (!shouted(trimmed) || (trimmed.match(LETTERS)?.length ?? 0) < 8) return trimmed
-  const lower = trimmed.toLocaleLowerCase('ro-RO')
-  return lower.charAt(0).toLocaleUpperCase('ro-RO') + lower.slice(1)
+  if (!shouted(trimmed)) return raised(trimmed)
+  const words = trimmed.split(' ')
+  return raised(words.map((word, index) => word.split('.').map((part) => titleWord(part, words[index - 1])).join('.')).join(' '))
 }

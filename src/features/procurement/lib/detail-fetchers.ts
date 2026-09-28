@@ -1,6 +1,5 @@
 import {
   fetchProcurementContractDetail,
-  fetchProcurementDirectAcquisitionDetail,
   fetchProcurementProcedureDetail,
 } from '../api/procurement-api'
 import type { ProcurementRecordDetail } from '@/schemas/procurement'
@@ -25,5 +24,4 @@ export type RecordDetailFetcher = (
 export const RECORD_DETAIL_FETCHERS: Record<DetailGrainKey, RecordDetailFetcher> = {
   procedures: fetchProcurementProcedureDetail,
   contracts: fetchProcurementContractDetail,
-  direct_acquisitions: fetchProcurementDirectAcquisitionDetail,
 }

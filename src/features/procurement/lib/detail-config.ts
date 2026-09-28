@@ -1,25 +1,23 @@
 /**
- * Per-grain configuration for the shared `ProcurementDetailPage` — the three
- * detail routes differ by *fields*, not layout, so one config map replaces
- * three near-identical page implementations.
+ * Per-grain configuration for the shared `ProcurementDetailPage` — the
+ * procedure and contract routes differ by *fields*, not layout, so one config
+ * map serves both. Direct purchases have a page of their own.
  */
 import { t } from '@lingui/core/macro'
 import type {
   ContractRecord,
-  DirectAcquisitionRecord,
   ProcedureRecord,
 } from '@/schemas/procurement'
 import { contractKindLabel } from './enum-labels'
 
+/** Direct purchases have a page of their own (`components/direct-purchase/`). */
 export type DetailGrainKey =
   | 'procedures'
   | 'contracts'
-  | 'direct_acquisitions'
 
 export type DetailRecord =
   | ProcedureRecord
   | ContractRecord
-  | DirectAcquisitionRecord
 
 export type DetailRow = {
   readonly key: string
@@ -106,35 +104,5 @@ export const DETAIL_CONFIG: Record<DetailGrainKey, DetailConfig> = {
     showRelatedContracts: false,
     showSourceProcedure: true,
   },
-  direct_acquisitions: {
-    grain: 'direct_acquisitions',
-    pageLabel: () => t`Direct acquisition`,
-    primaryValueLabel: () => t`Value`,
-    secondaryValueLabel: () => t`Estimated value`,
-    identifierRows: (record) => {
-      if (record.grain !== 'direct_acquisition') return []
-      return [
-        { key: 'uniqueCode', label: t`Unique code`, value: record.uniqueCode },
-        { key: 'county', label: t`County`, value: record.countyName },
-      ]
-    },
-    lifecycleRows: (record) => {
-      if (record.grain !== 'direct_acquisition') return []
-      return [
-        {
-          key: 'publicationDate',
-          label: t`Published`,
-          value: record.publicationDate,
-        },
-        {
-          key: 'finalizationDate',
-          label: t`Finalized`,
-          value: record.finalizationDate,
-        },
-      ]
-    },
-    showModificationTrail: false,
-    showRelatedContracts: false,
-    showSourceProcedure: false,
-  },
+
 }

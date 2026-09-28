@@ -14,7 +14,6 @@ import { recordDate, recordSupplier } from '../lib/record-accessors'
 import { sourceSystemLabel } from '../lib/enum-labels'
 import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 import {
-  ProcurementDaDetailSection,
   ProcurementDetailHero,
   ProcurementKeyFactsSection,
   ProcurementModificationTrail,
@@ -43,8 +42,8 @@ function buildProvenance(record: DetailRecord): ProvenanceInfo {
 }
 
 /**
- * Shared detail page for the three record grains, driven by `DETAIL_CONFIG`
- * (replaces three near-identical page implementations). Breadcrumb → hero →
+ * Shared detail page for procedures and contracts, driven by `DETAIL_CONFIG`.
+ * Direct purchases have a page of their own (`direct-purchase/`). Breadcrumb → hero →
  * parties → key facts → per-grain sections → provenance footer.
  */
 export function ProcurementDetailPage({ grain, detail, className }: Props) {
@@ -83,14 +82,6 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
 
       {config.showModificationTrail ? (
         <ProcurementModificationTrail modifications={detail.related.modifications} />
-      ) : null}
-
-      {grain === 'direct_acquisitions' ? (
-        <ProcurementDaDetailSection
-          detail={detail.daDetail ?? null}
-          availability={detail.daDetailAvailability ?? 'NOT_CAPTURED'}
-          sourceUrl={record.sourceUrl}
-        />
       ) : null}
 
       <ProcurementRelatedRecords

@@ -15,7 +15,6 @@ import type {
   CategoryRow,
   ContractRecord,
   CpvCategoryPage,
-  DirectAcquisitionRecord,
   MonthlyPoint,
   ProcedureRecord,
   ProcurementAnswerMeta,
@@ -45,7 +44,6 @@ import {
   PROCUREMENT_CONTRACT_DETAIL_QUERY,
   PROCUREMENT_CONTRACTS_QUERY,
   PROCUREMENT_CPV_DIVISIONS_QUERY,
-  PROCUREMENT_DA_DETAIL_QUERY,
   PROCUREMENT_DIRECT_ACQUISITIONS_QUERY,
   PROCUREMENT_MODIFICATIONS_QUERY,
   PROCUREMENT_PARTY_NAMES_QUERY,
@@ -56,7 +54,6 @@ import {
   procurementContractDetailResponseSchema,
   procurementContractsResponseSchema,
   procurementCpvDivisionsResponseSchema,
-  procurementDaDetailResponseSchema,
   procurementDirectAcquisitionsResponseSchema,
   procurementModificationsResponseSchema,
   procurementPartyNamesResponseSchema,
@@ -647,32 +644,6 @@ export async function fetchContractDetailLive(
       duplicates: mapDuplicates(detail.duplicates),
       perLotWinners: null,
       ted: detail.ted,
-    },
-  }
-}
-
-export async function fetchDirectAcquisitionDetailLive(
-  id: string,
-): Promise<ProcurementRecordDetail<DirectAcquisitionRecord> | null> {
-  const data = await graphqlQuery<unknown>(
-    PROCUREMENT_DA_DETAIL_QUERY,
-    { id },
-    { operationName: 'ProcurementDirectAcquisitionDetail' },
-  )
-  const detail = procurementDaDetailResponseSchema.parse(data)
-    .procurementDirectAcquisition
-  if (detail === null) return null
-  return {
-    record: mapDirectAcquisition(detail.directAcquisition),
-    daDetail: detail.detail,
-    daDetailAvailability: detail.detailAvailability,
-    related: {
-      procedure: null,
-      contracts: [],
-      modifications: [],
-      duplicates: mapDuplicates(detail.duplicates),
-      perLotWinners: null,
-      ted: null,
     },
   }
 }

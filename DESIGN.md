@@ -864,6 +864,21 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-28 — A record's page keeps the record and its context apart.**
+  The direct-purchase page (`/procurement/direct-acquisitions/$id`) is the
+  purchase first — how it ended, what, from whom, for how much, when; the
+  institution's words; the value beside one grid of facts; the lines; the
+  steps; delivery and payment; the source — and after it, in a tinted band
+  labelled „Context", what else passed between the two parties. A note of
+  context under one line (other institutions' prices, the institution's
+  repeats) carries the same tint and label: tinted is context, plain is the
+  record. The page shows patterns (a redo after a refusal, a weekly order, a
+  basket split by product) as records, never names them. Titles set in
+  capitals keep what their capitals mean — known acronyms, codes with
+  digits, Roman numerals. *Why:* the owner picked the record sheet over
+  profile bands and asked that the extra information be clearly apart from
+  the purchase; the rule holds for the contract and procedure pages next.
+  Details: `docs/design/procurement/design.md` §16.
 - **2026-09-28 — Both profile pages open on the last twelve months.** A
   buyer's and a firm's procurement page describe, without a year in the URL,
   the twelve months ending at SEAP's derived cutoff, compared with the twelve
