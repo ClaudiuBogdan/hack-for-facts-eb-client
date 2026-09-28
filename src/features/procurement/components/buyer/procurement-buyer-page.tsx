@@ -16,7 +16,7 @@ import { hasAnyRecord, isEmptyYear, perResident, type BuyerProfile, type BuyerRe
 import { changeText, countyShareLede, countyName } from '../../lib/buyer-text'
 import { contractsCount, directPurchasesCount, moneyText, percentText } from '../../lib/home-format'
 import { buyerRecordsSearch, sectionIndex, type HomeSection } from '../../lib/home-links'
-import { DIRECT_COMPARABLE_FROM } from '../../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, homeYear } from '../../lib/home-model'
 import { buildInstitutionDocumentTitle } from '../../lib/procurement-page-titles'
 import { HomeBand, HomeSectionNav } from '../home/home-chrome'
 import { moneyFact } from '../profile/profile-facts'
@@ -156,6 +156,8 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
 
   const choose = (patch: Partial<ProcurementBuyerSearch>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true, resetScroll: false })
+  // The last complete year is the default: it stays out of the URL.
+  const onYear = (next: number) => choose({ year: next === (profile?.latest ?? homeYear()) ? undefined : next })
 
   return (
     <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
@@ -164,6 +166,7 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
       {profile ? (
         <BuyerBody
           profile={profile}
+          year={year}
           busy={profileQuery.isPlaceholderData}
           records={{
             data: recordsQuery.data,
@@ -172,10 +175,11 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
           }}
           search={search}
           choose={choose}
+          onYear={onYear}
         />
       ) : (
         <>
-          <BuyerHeadPending cui={cui}>
+          <BuyerHeadPending cui={cui} year={year} onYear={onYear}>
             {profileQuery.isError ? (
               <div className="mt-8">
                 <HubLoadError onRetry={() => void profileQuery.refetch()} />
@@ -195,17 +199,22 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
 
 function BuyerBody({
   profile,
+  year,
   busy,
   records,
   search,
   choose,
+  onYear,
 }: {
   readonly profile: BuyerProfile
+  /** The year asked for: the dropdown shows it at once. */
+  readonly year: number
   /** Another year is on its way; the one shown stays until it lands. */
   readonly busy: boolean
   readonly records: { readonly data: BuyerRecords | undefined; readonly isError: boolean; readonly retry: () => void }
   readonly search: ProcurementBuyerSearch
   readonly choose: (patch: Partial<ProcurementBuyerSearch>) => void
+  readonly onYear: (year: number) => void
 }) {
   const { i18n } = useLingui()
   const facts = buyerFacts(profile)
@@ -231,12 +240,13 @@ function BuyerBody({
         ...(hasContext ? [{ id: 'context', label: t`Context` }] : []),
       ]
   const index = (id: string) => sectionIndex(sections, id)
-  const onYear = (next: number) => choose({ year: next === profile.latest ? undefined : next })
 
   return (
     <>
       <BuyerHead
         profile={profile}
+        year={year}
+        onYear={onYear}
         aside={
           <ProfileYearsChart
             directYears={profile.directYears}
@@ -294,7 +304,7 @@ function EmptyYearBand({ profile }: { readonly profile: BuyerProfile }) {
       </h2>
       <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
         {anyYear ? (
-          <Trans>SEAP nu are achiziții directe sau contracte ale instituției în {profile.year}. Alege alt an din graficul de sus.</Trans>
+          <Trans>SEAP nu are achiziții directe sau contracte ale instituției în {profile.year}. Alege alt an din meniul de sus.</Trans>
         ) : (
           <>
             <Trans>SEAP nu are achiziții directe sau contracte cu acest cod fiscal drept cumpărător din {DIRECT_COMPARABLE_FROM} încoace.</Trans>{' '}

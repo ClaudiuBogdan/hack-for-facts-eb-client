@@ -11,13 +11,16 @@ import { cn } from '@/lib/utils'
 import { hasAnyRecord, type BuyerProfile } from '../../lib/buyer-model'
 import { buyerKind, countyName, headSentence } from '../../lib/buyer-text'
 import { buyerAllRecordsSearch } from '../../lib/home-links'
+import { homeYear } from '../../lib/home-model'
+import { ProfileYearSelect } from '../profile/profile-year-select'
 
 /**
  * The page's head, in the company profile's shape: where the buyer sits in
- * the site, its name, what it is and what it bought in the year in one
+ * the site and the year the page describes (a dropdown, as on a firm's
+ * page), its name, what it is and what it bought in the year in one
  * sentence, its CUI and the ways out (its budget, all its direct purchases,
- * all its contracts) — and beside
- * them its years on one chart, which picks the year the page describes.
+ * all its contracts) — and beside them its years on one chart, which picks
+ * the year too.
  */
 
 const HEADING = {
@@ -30,6 +33,7 @@ function headingSize(name: string): keyof typeof HEADING {
   return name.length <= 22 ? 'short' : name.length <= 44 ? 'medium' : 'long'
 }
 
+/** The way back; on a phone only it, so the year fits beside it — what the buyer is and its county are in the sentence. */
 function BuyerKicker({ profile }: { readonly profile: BuyerProfile | null }) {
   return (
     <MonoLabel className="flex flex-wrap items-center gap-2 text-muted-foreground **:[text-box:trim-both_cap_alphabetic]">
@@ -40,7 +44,7 @@ function BuyerKicker({ profile }: { readonly profile: BuyerProfile | null }) {
         </span>
       </Link>
       {profile ? (
-        <>
+        <span className="hidden items-center gap-2 sm:flex">
           <span aria-hidden="true">/</span>
           <span>{hasAnyRecord(profile) || profile.identity.entityType ? buyerKind(profile.identity) : t`Fără achiziții publice`}</span>
           {profile.county ? (
@@ -49,9 +53,30 @@ function BuyerKicker({ profile }: { readonly profile: BuyerProfile | null }) {
               <span>{countyName(profile.county)}</span>
             </>
           ) : null}
-        </>
+        </span>
       ) : null}
     </MonoLabel>
+  )
+}
+
+/**
+ * The head's top row: the way back on the left, the year at the right end.
+ * The list holds the complete years only — the page does not describe the
+ * year in progress, which its chart shows but does not pick.
+ */
+function BuyerTopRow({ profile, year, onYear }: { readonly profile: BuyerProfile | null; readonly year: number; readonly onYear: (year: number) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <BuyerKicker profile={profile} />
+      <ProfileYearSelect
+        points={profile ? { direct: profile.directYears, contracts: profile.awardYears } : null}
+        year={year}
+        latest={profile?.latest ?? homeYear()}
+        partYear={false}
+        emptyLabel={t`fără achiziții`}
+        onYear={onYear}
+      />
+    </div>
   )
 }
 
@@ -78,17 +103,28 @@ function CopyCui({ cui }: { readonly cui: string }) {
 
 const OUT_LINK = 'inline-flex min-h-11 items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0'
 
-export function BuyerHead({ profile, aside }: { readonly profile: BuyerProfile; readonly aside: ReactNode }) {
+export function BuyerHead({
+  profile,
+  year,
+  onYear,
+  aside,
+}: {
+  readonly profile: BuyerProfile
+  /** The year asked for, which the dropdown shows at once. */
+  readonly year: number
+  readonly onYear: (year: number) => void
+  readonly aside: ReactNode
+}) {
   const { identity } = profile
   return (
     <section className="relative border-b" aria-labelledby="buyer-profile-title">
       <TwoLayerLattice idPrefix="buyer-profile" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
+        <BuyerTopRow profile={profile} year={year} onYear={onYear} />
+        <div className="mt-4 grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="min-w-0 lg:col-span-7">
-            <BuyerKicker profile={profile} />
-            <h1 id="buyer-profile-title" className={cn('mt-4 font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[headingSize(identity.name)])}>
+            <h1 id="buyer-profile-title" className={cn('font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[headingSize(identity.name)])}>
               {identity.name}
             </h1>
             <p className="mt-4 max-w-[60ch] text-base leading-relaxed text-muted-foreground sm:text-lg">{headSentence(profile)}</p>
@@ -121,14 +157,24 @@ export function BuyerHead({ profile, aside }: { readonly profile: BuyerProfile; 
   )
 }
 
-/** The head before the profile arrives (a client-side navigation): the way back, the CUI, and the shape of what comes. */
-export function BuyerHeadPending({ cui, children }: { readonly cui: string; readonly children?: ReactNode }) {
+/** The head before the profile arrives (a client-side navigation): the way back, the year, the CUI, and the shape of what comes. */
+export function BuyerHeadPending({
+  cui,
+  year,
+  onYear,
+  children,
+}: {
+  readonly cui: string
+  readonly year: number
+  readonly onYear: (year: number) => void
+  readonly children?: ReactNode
+}) {
   return (
     <section className="relative border-b" aria-busy="true" aria-label={t`Se încarcă profilul de achiziții`}>
       <TwoLayerLattice idPrefix="buyer-profile" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
-        <BuyerKicker profile={null} />
+        <BuyerTopRow profile={null} year={year} onYear={onYear} />
         <div className="mt-4 h-12 w-2/3 animate-pulse bg-muted/70 sm:h-16" aria-hidden="true" />
         <HubPending className="mt-6 max-w-xl" rows={2} />
         <div className="mt-5">

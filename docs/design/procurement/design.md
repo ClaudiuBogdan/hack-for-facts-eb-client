@@ -747,6 +747,11 @@ are deleted; the authority slice stays for the entity page's contracts view.
   the browser agree. Picking a year in the chart keeps the year shown, dimmed,
   until the new one arrives; the year in progress is dashed and cannot be
   picked. The part year runs through SEAP's derived cutoff month (§12).
+  *28 September:* the year is also the firm page's dropdown (§14), at the
+  right end of the head's top row — complete years only, each with its
+  direct money and contracts; the kicker keeps only the way back on a phone.
+  Reading the year in progress here, as the firm page does, would need the
+  buyer reads scoped to the cutoff month; not done.
 - Each band's choice defaults to what the year has (direct purchases for
   „Ce cumpără" unless there were none; contracts for „Cele mai mari" when
   there were any) and stays out of the URL when it equals that default.
@@ -921,10 +926,10 @@ into the code.
 `api/procurement-supplier-ssr.ts` (500 firm-years, ten minutes, partial reads
 not kept), `hooks/use-procurement-supplier.ts`, `lib/supplier-model.ts`,
 `lib/supplier-period.ts` (the year in progress), `lib/supplier-text.ts`,
-`lib/supplier-keys.ts`, `components/supplier/` (head, year dropdown, rows,
-bands, page), `schemas/procurement-supplier.ts` (the URL: `year`, `ce`,
-`mari`). What both profile pages share moved to `components/profile/` (the
-years chart, the party-by-year grid, county and procedure rows, `moneyFact`)
+`lib/supplier-keys.ts`, `components/supplier/` (head, rows, bands, page),
+`schemas/procurement-supplier.ts` (the URL: `year`, `ce`, `mari`). What both
+profile pages share moved to `components/profile/` (the years chart, the year
+dropdown, the party-by-year grid, county and procedure rows, `moneyFact`)
 and `lib/profile-model.ts`; the buyer page now uses them, so its chart lost
 the same label and caption. The old page, its slice view, quick filters,
 population tabs and entity header are deleted; the supplier slice API stays

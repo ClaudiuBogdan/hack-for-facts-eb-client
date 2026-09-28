@@ -110,6 +110,19 @@ describe('ProcurementSupplierPage', () => {
     expect(lastSearch()).toEqual({ year: 2026 })
   })
 
+  it('lists the year in progress first in the head’s dropdown, marked, and a year with no sale says so', async () => {
+    render(page())
+    const select = screen.getByRole('combobox', { name: 'Anul' })
+    fireEvent.keyDown(select, { key: 'ArrowDown' })
+    const options = await screen.findAllByRole('option')
+    expect(options.map((option) => option.textContent?.slice(0, 4))).toEqual(['2026', '2025', '2024', '2023', '2022', '2021', '2020', '2019'])
+    expect(options[0]).toHaveTextContent('în curs')
+    expect(options[1]).toHaveTextContent(/mil\. lei · 1 contract/)
+    expect(options[3]).toHaveTextContent('fără vânzări')
+    fireEvent.click(options[0]!)
+    expect(lastSearch()).toEqual({ year: 2026 })
+  })
+
   it('writes a band’s choice to the URL, and leaves its default out', () => {
     render(page())
     fireEvent.click(within(document.getElementById('ce')!).getByRole('radio', { name: 'Contracte' }))

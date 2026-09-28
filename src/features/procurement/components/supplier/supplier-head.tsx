@@ -18,7 +18,7 @@ import { homeYear } from '../../lib/home-model'
 import type { SupplierProfile, SupplierView } from '../../lib/supplier-model'
 import { lastDayOf } from '../../lib/supplier-period'
 import { headSentence } from '../../lib/supplier-text'
-import { SupplierYearSelect } from './supplier-year-select'
+import { ProfileYearSelect } from '../profile/profile-year-select'
 
 /**
  * The page's head, in the company profile's own shape — its sentence, status
@@ -92,7 +92,14 @@ function SupplierTopRow({
         <SupplierKicker county={county} />
         <div className="flex items-center gap-4">
           {fresh ? <span className="hidden text-xs text-muted-foreground sm:inline">{fresh}</span> : null}
-          <SupplierYearSelect profile={profile} year={year} latest={profile?.latest ?? homeYear()} onYear={onYear} />
+          <ProfileYearSelect
+            points={profile ? { direct: profile.directYears, contracts: profile.contractYears } : null}
+            year={year}
+            latest={profile?.latest ?? homeYear()}
+            partYear
+            emptyLabel={t`fără vânzări`}
+            onYear={onYear}
+          />
         </div>
       </div>
       {fresh ? <p className="mt-2 text-right text-xs text-muted-foreground sm:hidden">{fresh}</p> : null}

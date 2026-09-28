@@ -133,6 +133,19 @@ describe('ProcurementBuyerPage', () => {
     expect(navigate).not.toHaveBeenCalled()
   })
 
+  it('picks the year from the head’s dropdown too: the complete years, each with what it holds', async () => {
+    render(page())
+    const select = screen.getByRole('combobox', { name: 'Anul' })
+    expect(select).toHaveTextContent('2025')
+    fireEvent.keyDown(select, { key: 'ArrowDown' })
+    const options = await screen.findAllByRole('option')
+    // Newest first, and no year in progress: the page does not describe it.
+    expect(options.map((option) => option.textContent?.slice(0, 4))).toEqual(['2025', '2024', '2023', '2022', '2021', '2020', '2019'])
+    expect(options[0]).toHaveTextContent(/mil\. lei · 12 contracte/)
+    fireEvent.click(screen.getByRole('option', { name: /^2019/ }))
+    expect(lastSearch()).toEqual({ year: 2019 })
+  })
+
   it('opens each county row on exactly the purchases it counts', () => {
     render(page())
     const county = within(document.getElementById('de-unde')!).getAllByRole('link')[0]!
@@ -159,9 +172,10 @@ describe('ProcurementBuyerPage', () => {
     expect(within(document.getElementById('de-la-cine')!).getByText('30153499')).toBeInTheDocument()
   })
 
-  it('shows the way back and the CUI while the profile is on its way', () => {
-    render(page({}, { year: 2025 }))
+  it('shows the way back, the year and the CUI while the profile is on its way', () => {
+    render(page({}, { year: 2023 }))
     expect(screen.getByRole('link', { name: /Achiziții publice/ })).toHaveAttribute('href', '/procurement')
+    expect(screen.getByRole('combobox', { name: 'Anul' })).toHaveTextContent('2023')
     expect(screen.getByText('4364446')).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Secțiunile paginii' })).toBeNull()
   })
