@@ -255,7 +255,8 @@ export function tidyName(name: string): string {
   return words
     .map((word, index) => {
       const upper = word.toLocaleUpperCase('ro-RO')
-      if (KEEP_UPPER.has(upper)) return upper
+      // Initials with their dots („C.N.I.", „I.S.P.C.F.") stay initials.
+      if (KEEP_UPPER.has(upper) || /^(?:\p{L}\.){2,}\p{L}?$/u.test(upper)) return upper
       if (index > 0 && KEEP_LOWER.has(word)) return word
       return word.charAt(0).toLocaleUpperCase('ro-RO') + word.slice(1)
     })
@@ -275,16 +276,63 @@ const LETTER_WORDS = new Set(['A', 'O', 'E', 'Ă', 'Î'])
 /** Words a letter labels („CORP A", „LOT A"): the letter after them stays a label. */
 const LABELLED = new Set(['LOT', 'LOTUL', 'CORP', 'CORPUL', 'BLOC', 'BLOCUL', 'SCARA', 'TIP', 'TIPUL', 'CLASA', 'CATEGORIA', 'ZONA', 'ANEXA', 'VARIANTA'])
 
-function titleWord(word: string, before: string | undefined): string {
+/** Words a place's name follows („MUNICIPIUL SIBIU", „STATIUNEA PALTINIS"), in comma-below spelling: the name keeps its capital. */
+const PLACE_BEFORE = new Set(['MUNICIPIUL', 'MUNICIPIULUI', 'ORASUL', 'ORAȘUL', 'ORASULUI', 'ORAȘULUI', 'COMUNA', 'COMUNEI', 'JUDETUL', 'JUDEȚUL', 'JUDETULUI', 'JUDEȚULUI', 'STATIUNEA', 'STAȚIUNEA', 'STATIUNII', 'STAȚIUNII', 'SATUL', 'SATULUI', 'SECTORUL', 'SECTORULUI'])
+/** Words that follow a place word without naming a place („COMUNEI SI", „SECTORUL DE APA"). */
+const NOT_A_PLACE = new Set(['de', 'si', 'și', 'pentru', 'al', 'a', 'din', 'la', 'cu', 'in', 'în', 'pe', 'privind', 'nr', 'prin', 'sau'])
+
+/** Cedilla letters (ş, ţ) as comma-below ones (ș, ț): SEAP writes both. */
+const commaBelow = (text: string) => text.replace(/Ş/gu, 'Ș').replace(/Ţ/gu, 'Ț').replace(/ş/gu, 'ș').replace(/ţ/gu, 'ț')
+
+function titleWord(word: string, before: string | undefined, beforeThat: string | undefined): string {
   const letters = word.replace(/[^\p{L}]/gu, '')
   const upper = letters.toLocaleUpperCase('ro-RO')
-  const label = letters.length === 1 && (!LETTER_WORDS.has(upper) || LABELLED.has((before ?? '').replace(/[^\p{L}]/gu, '').toLocaleUpperCase('ro-RO')))
+  const previous = commaBelow((before ?? '').replace(/[^\p{L}]/gu, '').toLocaleUpperCase('ro-RO'))
+  const twoBack = (beforeThat ?? '').replace(/[^\p{L}]/gu, '').toLocaleUpperCase('ro-RO')
+  // A single letter is a label after the word it labels („CORP A"), or after that word's number („LOT 2 A") — „ETAPA 2 A PROIECTULUI" keeps its „a".
+  const label = letters.length === 1 && (!LETTER_WORDS.has(upper) || LABELLED.has(previous) || (/^\d+$/u.test(before ?? '') && LABELLED.has(twoBack)))
   if (letters.length === 0 || label || /\d/u.test(word) || ROMAN.test(letters) || TITLE_ACRONYMS.has(upper)) return word
-  return word.toLocaleLowerCase('ro-RO')
+  const lower = word.toLocaleLowerCase('ro-RO')
+  // A place's name follows its place word directly: not past a comma, not a bracket, not a preposition.
+  const place = PLACE_BEFORE.has(previous) && !/\p{P}$/u.test(before ?? '') && !/^\p{P}/u.test(word) && !NOT_A_PLACE.has(letters.toLocaleLowerCase('ro-RO'))
+  if (!place) return lower
+  const at = lower.search(/\p{L}/u)
+  return lower.slice(0, at) + lower.charAt(at).toLocaleUpperCase('ro-RO') + lower.slice(at + 1)
 }
 
-/** The first letter raised — not in a word that capitalises its second („iPad"). */
-const raised = (text: string) => (/^\p{Ll}\p{Lu}/u.test(text) ? text : text.charAt(0).toLocaleUpperCase('ro-RO') + text.slice(1))
+/** The first letter raised, past quotes and spaces before it — not a title that opens with a number („2 buc."), nor a word that capitalises its second („iPad"). */
+function raised(text: string): string {
+  const at = text.search(/[^\p{P}\p{Z}]/u)
+  if (at < 0 || !/\p{L}/u.test(text.charAt(at)) || /^\p{Ll}\p{Lu}/u.test(text.slice(at))) return text
+  return text.slice(0, at) + text.charAt(at).toLocaleUpperCase('ro-RO') + text.slice(at + 1)
+}
+
+const OPENING_QUOTE = /^[„“"«]\s*/u
+const CLOSING_QUOTE = /\s*[”“"»]$/u
+const QUOTE = /[„“”"«»]/u
+
+/**
+ * A title SEAP wraps in one pair of quotes („…”) reads without them; so does
+ * one whose opening quote never closes. A title of two quoted parts („A” și
+ * „B”) keeps them: its first and last quote are not a pair.
+ */
+function unquoted(title: string): string {
+  if (!OPENING_QUOTE.test(title)) return title
+  const inner = title.replace(OPENING_QUOTE, '')
+  const core = CLOSING_QUOTE.test(inner) ? inner.replace(CLOSING_QUOTE, '') : inner
+  return QUOTE.test(core) ? title : core
+}
+
+/** Abbreviations a title may end on: their full stop stays. */
+const ABBREVIATIONS = new Set(['etc', 'buc', 'str', 'inc', 'ltd', 'jud', 'mun', 'com', 'art', 'alin', 'pct', 'lit', 'nr', 'sf', 'sos', 'bd', 'bld', 'cca', 'aprox'])
+
+/** A full stop after a word ends a sentence, not a title („…DITRAU-GRINTIES."); an abbreviation's („S.A.", „etc.") stays. */
+function withoutFullStop(title: string): string {
+  if (!title.endsWith('.')) return title
+  // The letters the title ends on — „GRINTIES" in „DITRAU-GRINTIES", „A" in „S.A".
+  const tail = title.slice(title.lastIndexOf(' ') + 1, -1).match(/\p{L}+$/u)?.[0] ?? ''
+  return tail.length >= 3 && !ABBREVIATIONS.has(tail.toLocaleLowerCase('ro-RO')) ? title.slice(0, -1) : title
+}
 
 /**
  * A title set in capitals reads in sentence case (DESIGN.md log, 2026-09-25):
@@ -292,13 +340,13 @@ const raised = (text: string) => (/^\p{Ll}\p{Lu}/u.test(text) ? text : text.char
  * („10MM", „H2970"), a Roman numeral and a letter used as a label („CORP B")
  * — each part of a dotted word read on its own („ECHIPAMENTE.IT" →
  * „Echipamente.IT"). Anything else stays as SEAP wrote it, its first letter
- * raised.
+ * raised. Quotes around the whole title are dropped.
  */
 export function tidyTitle(title: string | null): string | null {
   if (!title) return null
-  const trimmed = title.trim().replace(/\s+/g, ' ')
+  const trimmed = withoutFullStop(unquoted(title.trim().replace(/\s+/g, ' ')))
   if (trimmed === '') return null
   if (!shouted(trimmed)) return raised(trimmed)
   const words = trimmed.split(' ')
-  return raised(words.map((word, index) => word.split('.').map((part) => titleWord(part, words[index - 1])).join('.')).join(' '))
+  return raised(words.map((word, index) => word.split('.').map((part) => titleWord(part, words[index - 1], words[index - 2])).join('.')).join(' '))
 }

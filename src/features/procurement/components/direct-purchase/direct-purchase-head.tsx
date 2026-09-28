@@ -58,7 +58,8 @@ function StatusLine({ outcome, className }: { readonly outcome: DpOutcome; reado
   )
 }
 
-function CopyCode({ code }: { readonly code: string }) {
+/** A record's SEAP code, copied on a tap; `label` names it („Cod", „Anunț"). */
+export function CopyCode({ code, label }: { readonly code: string; readonly label?: string }) {
   const [copied, setCopied] = useState(false)
   useEffect(() => {
     if (!copied) return
@@ -72,7 +73,7 @@ function CopyCode({ code }: { readonly code: string }) {
       className="inline-flex min-h-11 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground sm:min-h-0"
       aria-label={copied ? t`Cod copiat` : t`Copiază codul ${code}`}
     >
-      <MonoLabel>{t`Cod`}</MonoLabel>
+      <MonoLabel>{label ?? t`Cod`}</MonoLabel>
       <span className="font-mono tabular-nums text-foreground">{code}</span>
       {copied ? <Check className="size-3" aria-hidden="true" /> : <Copy className="size-3" aria-hidden="true" />}
     </button>

@@ -1420,3 +1420,291 @@ detail link and the items' `id` (the lines, steps and terms appear by
 themselves once served), the raw state with its reasons for a record whose
 detail is not read, the CUI SEAP writes inside a name, and the per-line
 price and repeat reads.
+
+## 17. The contract page (prototyped 28 September 2026)
+
+`/procurement/contracts/$id` — one contract award — is where the profile
+pages' contract rows and the front door's largest contracts land. It still
+wears the old shared detail layout (title, „Atribuit", a value printed
+„6.626.404.001 RON RON", the parties, the numbers, „Semnat", the source
+procedure's card, a TED link). Prototype:
+`/development/procurement/contract` (`?v=fisa|anunt|cronologie`,
+`&c=<record>`), on eleven real contracts read from the dev API (build 12);
+the production database was not read.
+
+### 17.1 What a contract's data can say (dev API, 2026-09-28)
+
+- **A row is one firm's line on an award notice, not a contract.** Two
+  sources: `seap_contracts` (a row of data.gov.ro's quarterly or yearly
+  export, 2007 onward) and `elicitatie_ca_award` (a contract entry on an
+  e-licitatie award notice). 1,555,900 canonical rows: 902,309 framework
+  agreements (none with an accepted value) and 653,591 awards (355,849
+  valued). Every row's status is „awarded": nothing says a contract was
+  cancelled, completed or paid.
+- **An association is one row per member, each at the whole value.**
+  CNIR's Târgu Mureș–Târgu Neamț motorway (CAN1145385, nr. 101/1888): five
+  rows, four firms, 6,142,792,901 lei on each. Sibiu's Turnul Sfatului: two
+  firms, 7,664,195 lei each. Which member carries the money is not served.
+- **One contract number can carry several values** the source does not
+  rank. CFR's station works (CAN1080039, nr. 57): two firms × five values,
+  309.2 M to 3,253.5 M lei (the last probably a misread decimal). CNI's
+  contract nr. 1065: three firms × three values — 8.45 M at signing and two
+  values SEAP republished after amendments.
+- **A notice holds several contracts.** ANIF's CAN1096494 has three contract
+  numbers (one of them an association, one published at two values);
+  Spitalul Caracal's medicine framework notice has 110 rows of lots. The
+  notice's list is read by `authorityCui` + `q: noticeNo` (60 a page; the
+  procedure's own `contracts` stops at 50 with no total).
+- **Amendments are filed by notice, so they land on the wrong contract.**
+  All four of ANIF's nr. 23.01.001 amendments belong to nr. 22.12.227. Rows
+  with only a change carry the whole value as the change. **The reported
+  values can disagree with the act's own text**: CNI's amendment nr. 5 says
+  „prețul se majorează cu suma de 1.809.030,69 lei (exclusiv TVA)", while
+  its reported values go from 8,451,291 to 180,260,321.90 lei (8,451,291 +
+  1,809,030.69 = 10,260,321.87: a typed „180" for „10"). SEAP then
+  republished the contract at 180.26 M and 181.27 M, so the error is in the
+  contract's own rows too. (Amendment nr. 9's +2,302.40 lei is the VAT rate
+  going from 19% to 21%: the value without VAT rightly does not change — the
+  check leaves VAT-rate and guarantee acts, and texts with two amounts,
+  alone.)
+- **The procedure is sometimes another institution's.** Legacy rows join a
+  procedure by a bare notice number: a 2010 Bucharest hospital contract
+  links to Hârșova's 2008 procedure (205 of 225 sampled 2010–March 2018
+  rows; none from October 2018). e-licitatie procedures carry no
+  publication date; the award notice's estimate repeats the award; the
+  number of offers is not served.
+- **Money.** A value is checked (`valueAccepted`) only when
+  `official_exact` or `official_ron_equivalent` (the source's own RON
+  conversion: Regia Stejarul's pick-ups, contracted in EUR). A framework's
+  value is a ceiling (`framework_guard`); `ambiguous_grain` also covers
+  7,930 ordinary awards awaiting an audit; `conflicting_sources`,
+  `invalid_source_value`, `source_missing` and `foreign_currency_only`
+  (neither amount served) are the rest. VAT is undocumented for contracts;
+  the amendment texts say „exclusiv TVA".
+- **Call-offs have no kind of their own** (their title says „contract
+  subsecvent"); nothing links one to its framework.
+- **The pair is readable by count.** The analysis scope takes both CUIs for
+  contracts and frameworks (and direct purchases); money is withheld per
+  member for associations and contract money is provisional (§12.1). Counts
+  are rows, so a contract published at five values counts five times.
+- Duplicates are non-canonical rows; their ids answer null.
+
+### 17.2 What the API should change (for the server session)
+
+1. **Serve the contract, not the row:** for a contract row, its notice's
+   contract — the members and the versions under its number — and the
+   notice's other contracts, uncapped or with a total.
+2. **Amendments by contract number**, not by notice; drop delta-only
+   „changes" that are totals; serve the change the act's text states (or
+   flag the rows whose values disagree with it).
+3. **The procedure join** must match the authority too; otherwise no
+   procedure (and no TED, no title fallback through it).
+4. **The framework role** (framework / call-off / standalone) and the
+   framework a call-off draws on (`framework_role`, §12.1).
+5. **Counts by contract** (notice + number) in the pair, buyer and supplier
+   reads.
+6. The VAT basis for contracts; the foreign amount for
+   `foreign_currency_only`; a deterministic TED pick (`limit(1)` with no
+   order). Client side: `CONTRACT_CORE_FIELDS` does not request
+   `recordKind`.
+
+### 17.3 The variants
+
+All three are the direct-purchase page's record sheet (§16): the head, the
+record in one column, the context after it in a tinted band labelled
+„Context". Shared:
+
+- **The head** names the record's kind above the title („Contract",
+  „Contract, în asociere", „Acord-cadru", „Contract subsecvent") and says
+  it in one sentence: „Municipiul Sibiu a încheiat contractul cu Domino
+  Construct Expert SRL și încă o firmă, în asociere, pe 10 decembrie 2025,
+  pentru 7,7 mil. lei." A framework: „… poate cumpăra de la firmă cel mult
+  34.464 lei, prin contracte subsecvente." The notice's number is the
+  head's reference.
+- **The value beside one grid of facts:** Tipul (and „în asociere, 4
+  firme"), Data contractului, Procedura (linked to its page, with its TED
+  notice), Categoria, Numărul contractului and, only where it says
+  something, the estimate. The value's label says what it is (Valoarea
+  contractului, Valoarea maximă, Valoarea în lei); an unchecked value is a
+  dash with SEAP's figure said beside it; an association's value is said to
+  be the whole contract's.
+- **The context band** — „Alte contracte între ele", „Ce a mai atribuit
+  {instituția} firmei {firma}, din 2019 încoace." — counts, never money:
+  the pair's contracts and frameworks by year (stacked columns, to the year
+  in progress), the direct purchases between them in a sentence, the
+  institution's year („27 de contracte, niciunul acestei firme; și 421 de
+  acorduri-cadru, 41 acestei firme"), the firm's year, the contracts around
+  this one (a contract's rows collapsed; an untitled export row named by
+  its number) and the two parties.
+
+They differ in how the record's parts are laid out:
+
+- **`fisa` — section by section.** Under the value and facts: the
+  association's firms, the published values, the amendments, how it was
+  awarded (only what the facts cannot hold: a negotiation without a call
+  for competition explained, the procedure's total), the notice's other
+  contracts, the source.
+- **`anunt` — the notice as a map.** One list of every contract under the
+  notice, this one first and marked, each with its firms and every value
+  it is published at; then the amendments, the procedure, the source.
+- **`cronologie` — the contract's history.** The procedure (when it has
+  something to say), the contract, its other published values and the
+  amendments on one line, with the value step by step when the reported
+  values hold.
+
+The eleven records: Sibiu's Turnul Sfatului (a two-firm association,
+simplified procedure), CNAIR's Pașcani–Suceava motorway (open tender, TED,
+3.07 bn), Sibiu's street cleaning (46.1 M, negotiation without prior
+notice), CNIR's four-firm motorway association (6.14 bn), a lot of Spitalul
+Caracal's medicine framework (a 34,464 lei ceiling among 110 rows), the
+Transport Ministry's call-off, CNI's contract whose amendments disagree with
+their text, CFR's contract at five values, Regia Stejarul's EUR contract, a
+2010 hospital contract joined to another institution's procedure, and ANIF's
+contract with a disputed value in a three-contract notice.
+
+### 17.4 Decisions in the prototype
+
+- **A contract is read from its notice.** Rows under one contract number are
+  its firms and its versions; firms are one whether a row carries the CUI
+  or only the name. Several firms at the whole value are an association; a
+  framework's lots are not.
+- **The page says what the source does not.** An association's value „e a
+  întregului contract … nu spune cât revine fiecăreia"; several values „nu
+  spune care e în vigoare"; a published value that is an amendment's
+  reported value says so, and says when that amendment's values disagree
+  with its text.
+- **Amendments are checked against themselves.** Only the amendments under
+  this contract's number; values only with both ends; the change the act's
+  text states is read and compared, and the page leads with a disagreement
+  rather than a „from … to" sentence that would repeat a typo as a
+  twenty-fold increase.
+- **The procedure only when it is the institution's own.** A wrong join is
+  silence, not a wrong page.
+- **The route is a fact, explained once.** „Negociere fără anunț prealabil"
+  is in the facts; its sentence says what it means and when the law allows
+  it — never that it is suspect.
+- **Counts in the context**, money only for the record itself; VAT is not
+  claimed.
+- `tidyTitle` (every procurement page) now drops quotes around a whole
+  title, raises the first letter past them, and keeps a letter after a
+  number („LOT 2 A").
+
+### 17.5 Open for the owner
+
+Which layout; whether the amendments' check belongs on the page before the
+server serves it; whether to ask the scrapper for the VAT basis before
+saying „fără TVA"; whether the head's money is short („7,7 mil. lei", as
+now) or exact.
+
+### 17.6 The owner's pick: `fisa`, polished (28 September 2026)
+
+The owner picked `fisa` and asked for it to be polished; the first thing they
+saw was CNAIR's 3,068,398,862.94 lei running over the facts beside it — the
+direct-purchase sheet's value column holds a purchase, not a motorway. What
+changed:
+
+- **The value has its own row**, sized by its length (a phone takes
+  „3.068.398.862,94 lei" a size down), with its notes under it — the
+  association's, and, for a contract published at several values, that this
+  is one of them („mai jos"). The facts follow in one row of three (four with
+  the estimate).
+- **No fact is said twice.** The kind („Tipul") is gone from the facts — the
+  line above the title says it; the contract's number sits in that line
+  („Contract · nr. 31"), the notice's at the top right, copyable; the route
+  is said once in the facts, linked to the procedure's page, with its EU
+  journal notice under it.
+- **„Cum s-a atribuit" is gone.** Its two sentences found their place: a
+  negotiation without a call for competition is explained right under the
+  facts; the procedure's total closes the lede of the notice's other
+  contracts („În total, procedura a atribuit acorduri-cadru de cel mult
+  557.085,90 lei").
+- **Lists sit on the section's edge**; the published values lead with the
+  value and say a date only where it is not the contract's; „pagina aceasta"
+  marks this page's firm and value alike; a framework notice's list is titled
+  „Celelalte acorduri-cadru din anunț".
+- **Names and titles read as written by hand** (every procurement page):
+  initials keep their dots and capitals („C.N.I.", not „C.n.i."); a title's
+  closing full stop goes; the name after a place word keeps its capital
+  („în municipiul Sibiu și stațiunea Păltiniș").
+
+`anunt` and `cronologie` are deleted (owner, 28 September); the history they tried lives in the sheet (§17.7).
+
+### 17.7 The award notice's own data (28 September 2026)
+
+The owner asked for the history section in `fisa` and for anything else
+useful the source holds, pointing at a notice's page on e-licitatie. The
+page is an Angular view over public `api-pub` calls; read from Zeus with the
+scrapper's headers (`accept`, `referer` = the view's URL), all answer:
+
+| Call | Holds | Scraped? In prod? |
+|---|---|---|
+| `C_PUBLIC_CANotice/get/{caNoticeId}` | the call for competition's number and day, the award notice's day, the procedure type, the contract type, the total estimate **„(fără TVA)"**, the plan entry, the framework's value and its lowest/highest offer, **annex D — why no call for competition was published**, in the institution's words | scraped; prod projects the procedure type, legislation, plan, TED (`procedure_details`) and the offer spread (`procedures.lowest/highest_offer_value_ron`, 68.5% filled); annex D and the call's number and day are not projected |
+| `PC_PUBLIC_CANotice/GetCANoticeLots_v2` | every lot: title, estimate, criterion, financing, duration, place, status (Atribuit / Anulat) | the lots and criteria are in prod (`procedure_lots`, `procedure_award_criteria`), financing is not |
+| `C_PUBLIC_CANotice/GetCANoticeContracts` | every contract: number, day, **all its winners** (CUI, SME, city), value in its currency and in lei with the rate, how many times it was modified | scraped; the API names one firm per e-licitatie row, so an association's other members are lost (CNAIR's Pașcani–Suceava was won with SA & PE Construct and Spedition UMB) |
+| `C_PUBLIC_CANotice/GetContractView/?contractId=` | **the offers received** (and from SMEs, other EU states, outside the EU, electronically), per lot the offers admitted, unacceptable, non-conforming, withdrawn; the contract's own estimate; its start; its value today; framework or purchase contract | **not scraped** |
+| `C_PUBLIC_CANotice/GetAllVersions/{id}` | every published version of the award notice — the first made the award public, the others republish it (after modifications) | not scraped |
+
+Measured on the eleven records: CNIR's 6.14 bn lei motorway received **one
+offer**; CNAIR's Pașcani–Suceava three, two unacceptable, contracted **29%
+under the 4.30 bn estimate**; CNI's pool five, three unacceptable; Sibiu's
+street cleaning was negotiated because its open tender CN1089166 was
+contested; the Transport Ministry's call-off invokes exclusive rights (art.
+104); CNI's contract stands at 181.9 M after **8** modifications, CFR's at
+398.1 M after **12** (one of the five values SEAP publishes for it). CNI's
+award notice was first published six days after the contract and
+republished eight times since — its „date" in the API is the last.
+
+**The sheet now shows** (from these calls, as the adapted API would serve
+them — fixtures read 2026-09-28):
+
+- the value „fără TVA" wherever an award notice stands behind it, and the
+  source line says so;
+- in the facts: **Oferte primite** (with what became of them and who sent
+  them), **Criteriul de atribuire**, **Durata**, and the estimate with how
+  far the contract came from it („contractul: cu 29% sub estimare");
+- for a route without a call for competition, the institution's own
+  explanation under the facts („Instituția a explicat așa: …");
+- the association's members from the notice, with the firm's SME status;
+- **„Istoria contractului"** (in place of the amendments list): the call for
+  competition and the offers it drew, the contract, its start, the award
+  notice (first published, republished how often, last when), the
+  amendments checked against their text, and the value the notice holds
+  today after its modifications;
+- the notice's lots counted with the cancelled ones in the other-contracts
+  lede, and the notice's own page as the source.
+
+**Asks.** Scrapper: `GetContractView` per contract (the offers, the
+contract's estimate, its value today) and `GetAllVersions` per notice; keep
+all winners from `GetCANoticeContracts`. Server: serve the contract's
+winners, its offers, the lot it belongs to (estimate, criterion, duration,
+status), annex D's explanation, the call's number and day, the first and
+last publication of the award notice, and the modified count and current
+value.
+
+### 17.8 Review (Opus 5.5, 28 September 2026)
+
+Three blockers and fourteen should-fix findings, all fixed before the
+commit. **Shared, every procurement page:** a title of two quoted parts
+(„A” și „B”) lost one quote of each pair — the outer quotes now go only when
+they are the title's only ones; a title that opens with a number is not
+raised („2 buc imprimante"); a place's name keeps its capital only right
+after its place word (not a preposition, not past a comma, cedilla spellings
+included); a title's full stop stays after an abbreviation („etc.",
+„buc."); a letter after a number is a label only after a labelling word
+(„LOT 2 A", but „etapa 2 a proiectului"). **The prototype's rules:** an
+association is several firms at one value (or named winners of the
+contract), not several firms under one number; a row without a number is
+its own contract; a firm is keyed by its CUI, its name only for a row
+without one; an amendment's stated change is read only from a text with one
+amount in lei, no VAT, no rate, no guarantee, signed by the verb nearest
+it — CNI's act nr. 9 (the VAT rate) is no longer flagged; an amendment with
+no number stays only when the notice has no other contract; a published
+value is credited to the earliest act that changed the value to it; the
+list around the contract shows this page's own row; a checked value is
+`valueAccepted`, and `not_applicable` says what it is; a framework shared
+by several firms says so; the versions' lede names the notice's value today
+when it is one of them; „fără TVA" only on a value that is the notice's; no
+title taken from another institution's procedure; the context band keeps
+its chart and list for pairs with more than one contract and marks the year
+in progress.
+

@@ -74,6 +74,7 @@ describe('labels', () => {
   it('sets a name shouted in capitals the way a reader writes it, keeping legal forms', () => {
     expect(tidyName('COMPANIA DE APA OLTENIA SA')).toBe('Compania de Apa Oltenia SA')
     expect(tidyName('SPEDITION UMB S.R.L.')).toBe('Spedition Umb S.R.L.')
+    expect(tidyName('COMPANIA NATIONALA DE INVESTITII C.N.I. SA')).toBe('Compania Nationala de Investitii C.N.I. SA')
     expect(tidyName('Institutul Clinic Fundeni')).toBe('Institutul Clinic Fundeni')
   })
 
@@ -97,6 +98,38 @@ describe('labels', () => {
     expect(tidyTitle('SERVICII DE REPARATII A AUTOVEHICULELOR')).toBe('Servicii de reparatii a autovehiculelor')
     expect(tidyTitle('REPARATII CORP A SI CORP B')).toBe('Reparatii corp A si corp B')
     expect(tidyTitle('VITAMINA C EFERVESCENTA')).toBe('Vitamina C efervescenta')
+    expect(tidyTitle('AUTOSTRADA SECTIUNEA II LOT 2 A: DITRAU')).toBe('Autostrada sectiunea II lot 2 A: ditrau')
+    // Not after its number when no labelling word comes before: „etapa 2 a proiectului", „in 2024 a fost".
+    expect(tidyTitle('ETAPA 2 A PROIECTULUI DE REABILITARE')).toBe('Etapa 2 a proiectului de reabilitare')
+    expect(tidyTitle('LUCRARI IN 2024 A FOST AMANAT')).toBe('Lucrari in 2024 a fost amanat')
+    // A place's name keeps its capital after the word that names it a place.
+    expect(tidyTitle('ACTIVITĂŢI DE SALUBRIZARE ÎN MUNICIPIUL SIBIU ȘI STAȚIUNEA PĂLTINIȘ')).toBe('Activităţi de salubrizare în municipiul Sibiu și stațiunea Păltiniș')
+    // Cedilla spelling too; not a preposition, nor past a comma or into a bracket.
+    expect(tidyTitle('REPARATII ÎN ORAŞUL BRAŞOV')).toBe('Reparatii în oraşul Braşov')
+    expect(tidyTitle('SERVICII PENTRU LOCUITORII COMUNEI SI AI ORASULUI')).toBe('Servicii pentru locuitorii comunei si ai orasului')
+    expect(tidyTitle('RETEA SECTORUL DE APA')).toBe('Retea sectorul de apa')
+    expect(tidyTitle('REABILITARE SCOALA COMUNA, JUD. SIBIU')).toBe('Reabilitare scoala comuna, jud. sibiu')
+    expect(tidyTitle('LUCRARI COMUNEI (CORP A)')).toBe('Lucrari comunei (corp A)')
+    // A title's full stop goes; an abbreviation's stays.
+    expect(tidyTitle('LOT 2 A: DITRAU-GRINTIES.')).toBe('Lot 2 A: ditrau-grinties')
+    expect(tidyTitle('Servicii furnizate de Apa Nova S.A.')).toBe('Servicii furnizate de Apa Nova S.A.')
+    expect(tidyTitle('MATERIALE CURATENIE, DETERGENTI ETC.')).toBe('Materiale curatenie, detergenti etc.')
+    expect(tidyTitle('HARTIE COPIATOR 500 BUC.')).toBe('Hartie copiator 500 buc.')
+  })
+
+  it('drops the quotes around a whole title, and raises its first letter', () => {
+    expect(tidyTitle('„INTERVENTII DE REABILITARE LA TURNUL SFATULUI”')).toBe('Interventii de reabilitare la turnul sfatului')
+    // An opening quote that never closes (a title cut short) goes too.
+    expect(tidyTitle('„ACTIVITĂŢI DE SALUBRIZARE STRADALĂ')).toBe('Activităţi de salubrizare stradală')
+    // Quotes inside the title stay.
+    expect(tidyTitle('Proiectare si Executie “Autostrada Pascani-Suceava Lot 1”')).toBe('Proiectare si Executie “Autostrada Pascani-Suceava Lot 1”')
+    expect(tidyTitle('„Parc” si alee')).toBe('„Parc” si alee')
+    // Two quoted parts: the first and last quote are not a pair.
+    expect(tidyTitle('„REABILITARE SCOALA” SI „GRADINITA”')).toBe('„Reabilitare scoala” si „gradinita”')
+    expect(tidyTitle('"Servicii de proiectare" pentru obiectivul "Modernizare drum"')).toBe('"Servicii de proiectare" pentru obiectivul "Modernizare drum"')
+    // A title that opens with a number keeps its words as they are.
+    expect(tidyTitle('2 BUC IMPRIMANTE')).toBe('2 buc imprimante')
+    expect(tidyTitle('3 laptopuri')).toBe('3 laptopuri')
   })
 
   it('raises the first letter of a title written in lower case, not of one that capitalises its second', () => {
