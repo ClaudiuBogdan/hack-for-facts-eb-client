@@ -4,6 +4,7 @@ import { countyName, inCounty } from './buyer-text'
 import { OTHER_CATEGORY, UNKNOWN_CATEGORY, type CategoryFigure } from './home-categories'
 import { contractsCount, directPurchasesCount, firmsCount, institutionsCount, lowerFirst, moneyText, percentText } from './home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure } from './home-model'
+import { periodLongText, periodText } from './profile-period-text'
 import type { PartyYears } from './profile-model'
 import { contractClients, hasAnyRecord, knownClientName, scanIsWhole, steadyClients, type SupplierProfile, type SupplierView } from './supplier-model'
 
@@ -29,9 +30,9 @@ function contractsWon(value: number): string {
   return plural(value, { one: '# contract câștigat', few: '# contracte câștigate', other: '# de contracte câștigate' })
 }
 
-/** What the firm sold to the state in the year, in one sentence: the head's, after the registry's. */
+/** What the firm sold to the state in the page's period (the last twelve months said with their months), in one sentence: the head's, after the registry's. */
 export function headSentence(profile: SupplierProfile): string {
-  const { year } = profile
+  const year = periodLongText(profile.period)
   if (!hasAnyRecord(profile)) return t`Nu apare ca furnizor în achizițiile publice (SEAP) din ${DIRECT_COMPARABLE_FROM} încoace.`
   const directCount = profile.direct.count ?? 0
   const contracts = profile.contracts.count
@@ -55,7 +56,9 @@ export function headSentence(profile: SupplierProfile): string {
   const clients = profile.direct.clients
   const sold = money
     ? clients
-      ? t`a vândut direct de ${money}, fără TVA, la ${institutionsCount(clients)}`
+      ? profile.direct.clientsAtLeast
+        ? t`a vândut direct de ${money}, fără TVA, la peste ${institutionsCount(clients)}`
+        : t`a vândut direct de ${money}, fără TVA, la ${institutionsCount(clients)}`
       : t`a vândut direct de ${money}, fără TVA`
     : t`a avut ${directPurchasesCount(directCount)}`
   return won ? t`În ${year} ${sold} și ${won}.` : t`În ${year} ${sold}.`
@@ -67,7 +70,7 @@ export function headSentence(profile: SupplierProfile): string {
  * institution's own direct purchases, and whether it led them.
  */
 export function clientsLede(profile: SupplierProfile): string | null {
-  const { year } = profile
+  const year = periodText(profile.period)
   const rows = profile.directClients.rows
   const [top] = rows
   const parts: string[] = []
@@ -122,7 +125,7 @@ export function steadyLede(profile: SupplierProfile, rows: readonly PartyYears[]
 }
 
 /** What the firm sells most: by the direct purchases' money, or by the contracts' whole value. */
-export function whatLede(rows: readonly CategoryFigure[], grain: 'direct' | 'contract', year: number, i18n: I18n): string | null {
+export function whatLede(rows: readonly CategoryFigure[], grain: 'direct' | 'contract', year: string, i18n: I18n): string | null {
   const named = (row: CategoryFigure) => row.category.key !== OTHER_CATEGORY.key && row.category.key !== UNKNOWN_CATEGORY.key
   const top = rows.find(named)
   if (!top || top.share === null) return null
@@ -148,7 +151,7 @@ export function whereLede(profile: SupplierView): string | null {
   const rows = profile.counties
   const [top] = rows
   if (!top) return null
-  const { year } = profile
+  const year = periodText(profile.period)
   const direct = profile.countiesOf === 'direct'
   if (rows.length === 1 && (top.share ?? 0) >= 0.995) {
     const where = inCounty(top.code)
@@ -193,7 +196,7 @@ function unpublishedText(unpublished: number, listed: number, contracts: number)
 
 /** The two routes, in plain words, and the contracts negotiated without a public notice. */
 export function howLede(profile: SupplierProfile): string | null {
-  const { year } = profile
+  const year = periodText(profile.period)
   const direct = profile.direct.count ?? 0
   const contracts = profile.contracts.count
   const parts: string[] = []
@@ -212,7 +215,8 @@ export function howLede(profile: SupplierProfile): string | null {
 
 /** The contracts won together with other firms, and the partner seen most often. */
 export function partnersLede(profile: SupplierProfile): string | null {
-  const { contracts, year } = profile
+  const { contracts } = profile
+  const year = periodText(profile.period)
   const { count, scanned, together } = contracts
   if (together === 0) return null
   const first = contracts.partners[0]

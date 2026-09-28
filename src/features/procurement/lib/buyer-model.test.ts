@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buyerName, buyerYear, isEmptyYear, perResident, steadySellers, supplierName, tidyAddress } from './buyer-model'
+import { buyerName, isEmptyYear, perResident, steadySellers, supplierName, tidyAddress } from './buyer-model'
 import { buyerProfile } from './buyer.fixture'
 
 describe('buyerName', () => {
@@ -27,17 +27,6 @@ describe('tidyAddress', () => {
     )
     expect(tidyAddress(null)).toBeNull()
     expect(tidyAddress('Salaj')).toBeNull()
-  })
-})
-
-describe('buyerYear', () => {
-  it('takes a year from 2019 through the year in progress, and none otherwise: the page then opens on the newest', () => {
-    expect(buyerYear(2023, 2025)).toBe(2023)
-    expect(buyerYear(2019, 2025)).toBe(2019)
-    expect(buyerYear(2026, 2025)).toBe(2026)
-    expect(buyerYear(2018, 2025)).toBeNull()
-    expect(buyerYear(2027, 2025)).toBeNull()
-    expect(buyerYear(undefined, 2025)).toBeNull()
   })
 })
 

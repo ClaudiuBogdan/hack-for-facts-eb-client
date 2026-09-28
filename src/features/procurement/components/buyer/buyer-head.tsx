@@ -14,12 +14,14 @@ import { buyerAllRecordsSearch } from '../../lib/home-links'
 import { homeYear } from '../../lib/home-model'
 import { ProfileTopRow } from '../profile/profile-top-row'
 import { ProfileYearSelect } from '../profile/profile-year-select'
+import { choiceOf, type PeriodChoice } from '../../lib/profile-period'
+import { recentOptionOf } from '../../lib/profile-period-text'
 
 /**
  * The page's head, in the company profile's shape: where the buyer sits in
- * the site and the year the page describes (a dropdown, as on a firm's page,
- * with the date the year in progress runs through), its name, what it is and
- * what it bought in the year in one sentence, its CUI and the ways out (its
+ * the site and the period the page describes (a dropdown, as on a firm's
+ * page, with the date its data runs through), its name, what it is and what
+ * it bought in the period in one sentence, its CUI and the ways out (its
  * budget, all its direct purchases, all its contracts) — and beside them its
  * years on one chart, which picks the year too.
  */
@@ -60,30 +62,28 @@ function BuyerKicker({ profile }: { readonly profile: BuyerProfile | null }) {
   )
 }
 
-/** The head's top row: the way back, the year — the year in progress first — and how recent its data is. */
+/** The head's top row: the way back, the period — the last twelve months first — and how recent its data is. */
 function BuyerTopRow({
   profile,
-  year,
-  onYear,
+  choice,
+  onChoice,
 }: {
   readonly profile: BuyerProfile | null
-  /** Null while the newest year is read (a client-side navigation without one): no year to show yet. */
-  readonly year: number | null
-  readonly onYear: (year: number) => void
+  readonly choice: PeriodChoice
+  readonly onChoice: (choice: PeriodChoice) => void
 }) {
-  // The date shows once the read of the year asked has landed.
-  const shown = profile && profile.year === year ? profile : null
+  // The date shows once the read of the period asked has landed.
+  const shown = profile && choiceOf(profile.period) === choice ? profile : null
   return (
     <ProfileTopRow kicker={<BuyerKicker profile={profile} />} read={shown}>
-      {year !== null ? (
-        <ProfileYearSelect
-          points={profile ? { direct: profile.directYears, contracts: profile.awardYears } : null}
-          year={year}
-          latest={profile?.latest ?? homeYear()}
-          emptyLabel={t`fără achiziții`}
-          onYear={onYear}
-        />
-      ) : null}
+      <ProfileYearSelect
+        points={profile ? { direct: profile.directYears, contracts: profile.awardYears } : null}
+        value={choice}
+        latest={profile?.latest ?? homeYear()}
+        recent={recentOptionOf(profile ? { period: profile.period, cutoff: profile.cutoff, directValue: profile.direct.value, contracts: profile.awards.count ?? 0 } : null)}
+        emptyLabel={t`fără achiziții`}
+        onChoice={onChoice}
+      />
     </ProfileTopRow>
   )
 }
@@ -113,14 +113,14 @@ const OUT_LINK = 'inline-flex min-h-11 items-center gap-1 font-medium text-foreg
 
 export function BuyerHead({
   profile,
-  year,
-  onYear,
+  choice,
+  onChoice,
   aside,
 }: {
   readonly profile: BuyerProfile
-  /** The year asked for, which the dropdown shows at once. */
-  readonly year: number
-  readonly onYear: (year: number) => void
+  /** The period asked for, which the dropdown shows at once. */
+  readonly choice: PeriodChoice
+  readonly onChoice: (choice: PeriodChoice) => void
   readonly aside: ReactNode
 }) {
   const { identity } = profile
@@ -129,7 +129,7 @@ export function BuyerHead({
       <TwoLayerLattice idPrefix="buyer-profile" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
-        <BuyerTopRow profile={profile} year={year} onYear={onYear} />
+        <BuyerTopRow profile={profile} choice={choice} onChoice={onChoice} />
         <div className="mt-4 grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="min-w-0 lg:col-span-7">
             <h1 id="buyer-profile-title" className={cn('font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[headingSize(identity.name)])}>
@@ -168,13 +168,13 @@ export function BuyerHead({
 /** The head before the profile arrives (a client-side navigation): the way back, the year, the CUI, and the shape of what comes. */
 export function BuyerHeadPending({
   cui,
-  year,
-  onYear,
+  choice,
+  onChoice,
   children,
 }: {
   readonly cui: string
-  readonly year: number | null
-  readonly onYear: (year: number) => void
+  readonly choice: PeriodChoice
+  readonly onChoice: (choice: PeriodChoice) => void
   readonly children?: ReactNode
 }) {
   return (
@@ -182,7 +182,7 @@ export function BuyerHeadPending({
       <TwoLayerLattice idPrefix="buyer-profile" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
-        <BuyerTopRow profile={null} year={year} onYear={onYear} />
+        <BuyerTopRow profile={null} choice={choice} onChoice={onChoice} />
         <div className="mt-4 h-12 w-2/3 animate-pulse bg-muted/70 sm:h-16" aria-hidden="true" />
         <HubPending className="mt-6 max-w-xl" rows={2} />
         <div className="mt-5">

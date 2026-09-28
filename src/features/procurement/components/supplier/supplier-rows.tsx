@@ -4,6 +4,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import { contractsCount, countText, dayText, directPurchasesCount, moneyText, percentText } from '../../lib/home-format'
 import type { RecentRecord } from '../../lib/home-model'
+import { periodLinkSearch, type ProfilePeriod } from '../../lib/profile-period'
 import { clientName, type ClientRanking, type Partner, type SupplierProfile } from '../../lib/supplier-model'
 
 /**
@@ -30,10 +31,10 @@ function Bar({ fraction }: { readonly fraction: number | null }) {
 
 /**
  * The institutions that bought from the firm, each opening its page on the
- * year. A direct-purchase row also says what the firm was to the institution:
- * its share of the institution's own direct purchases in the year, and
- * whether it was the institution's largest direct supplier — the relationship
- * read from both sides.
+ * same period. A direct-purchase row also says what the firm was to the
+ * institution: its share of the institution's own direct purchases in the
+ * period, and whether it was the institution's largest direct supplier — the
+ * relationship read from both sides.
  */
 export function ClientRows({
   profile,
@@ -65,7 +66,7 @@ export function ClientRows({
         const measured = measure(row)
         return (
           <li key={row.cui}>
-            <Link to="/procurement/institutions/$cui" params={{ cui: row.cui }} search={{ year: profile.year }} className={cn(ROW, ROW_LINK, 'py-2.5')}>
+            <Link to="/procurement/institutions/$cui" params={{ cui: row.cui }} search={periodLinkSearch(profile.period)} className={cn(ROW, ROW_LINK, 'py-2.5')}>
               <span className="grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
                 <MonoLabel className="pt-0.5 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
                 <span className="min-w-0">
@@ -87,8 +88,8 @@ export function ClientRows({
   )
 }
 
-/** The firms the page's firm won contracts with, by the number of contracts together; each opens its own page on the year. */
-export function PartnerRows({ partners, year, className }: { readonly partners: readonly Partner[]; readonly year: number; readonly className?: string }) {
+/** The firms the page's firm won contracts with, by the number of contracts together; each opens its own page on the same period. */
+export function PartnerRows({ partners, period, className }: { readonly partners: readonly Partner[]; readonly period: ProfilePeriod; readonly className?: string }) {
   const top = Math.max(1, ...partners.map((partner) => partner.contracts))
   return (
     <ol className={cn(LIST, className)}>
@@ -107,7 +108,7 @@ export function PartnerRows({ partners, year, className }: { readonly partners: 
           <li key={partner.key}>
             {/* A firm with no CUI (a foreign one) has no page to open. */}
             {partner.cui ? (
-              <Link to="/procurement/suppliers/$cui" params={{ cui: partner.cui }} search={{ year }} className={cn(ROW, ROW_LINK, 'py-2.5')}>
+              <Link to="/procurement/suppliers/$cui" params={{ cui: partner.cui }} search={periodLinkSearch(period)} className={cn(ROW, ROW_LINK, 'py-2.5')}>
                 {body}
               </Link>
             ) : (

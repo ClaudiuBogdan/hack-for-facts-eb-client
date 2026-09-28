@@ -771,6 +771,9 @@ are deleted; the authority slice stays for the entity page's contracts view.
   the page paints its frame, reads the newest year beside it, and the loader
   starts the page's reads as it lands. Reviewed by Opus 5.5 (xhigh); the
   findings above were its.
+  *Superseded again, the same day — both profile pages open on the last
+  twelve months* („Ultimele 12 luni", the list's first option; the years
+  follow, 2026 kept as the year in progress). See §15.
 - Each band's choice defaults to what the year has (direct purchases for
   „Ce cumpără" unless there were none; contracts for „Cele mai mari" when
   there were any) and stays out of the URL when it equals that default.
@@ -1036,3 +1039,70 @@ by the API would replace the client-side scan; an explicit „complete through"
 month per data type would replace the derived cutoff; the fuel-card CPV
 mapping; names with diacritics for institutions (the budget platform's
 territory names, as the buyer page does for its own head).
+
+## 15. The last twelve months (28 September 2026)
+
+Both profile pages — a buyer's (`/procurement/institutions/$cui`) and a
+firm's (`/procurement/suppliers/$cui`) — open on the **last twelve months**
+SEAP has complete, the owner's call: the newest data, and a whole year's
+worth of months. The period list at the right end of the head's top row
+(„Perioada") offers „Ultimele 12 luni" first, with its months and figures
+(„iunie 2025 – mai 2026 · 28,5 mil. lei · 6 contracte"), then the years —
+2026 kept, marked „în curs" — down to 2019. No `year` in the URL is the
+last twelve months; a year picked is written.
+
+**Why it beats the year in progress as the default.** Twelve months end at
+SEAP's cutoff (the page's month, the earlier population's), so the page is
+as fresh as the data and still a year's worth: the change against the twelve
+months before is fair again („+26% față de cele 12 luni dinainte"), the
+per-resident figure is annual again, a December is always inside, and
+January does not open on an almost empty year. The window moves on its own
+as SEAP completes each month.
+
+**What the API can say (probed 2026-09-28).** Any month range reads — stats,
+breakdowns, CPV levels, records by date. Distinct counts cannot be added
+across a series' year buckets (a firm selling in both years counts twice):
+the buyer's firms come from `procurementConcentration` (`supplierCount`,
+equal to the series' `distinctSuppliers` for every year checked), for years
+and windows alike. A firm's distinct institutions over a window come from
+the authority ranking, which the API caps at a hundred: exact below it,
+„peste 100 de instituții" past it (the figure is then left out, not shown as
+100) — a whole-period distinct count in the API would lift the cap.
+
+**How the pages say it.** One period phrase everywhere a year was named
+(`lib/profile-period-text.ts`): „În ultimele 12 luni (iunie 2025 – mai 2026)
+a făcut…" in the head, „Achiziții directe, ultimele 12 luni" on a figure,
+„față de cele 12 luni dinainte" for the change, „Decembrie a adus 21% din
+banii achizițiilor directe ale ultimelor 12 luni". The years chart presses
+no column and says the window's figures on its line; the month strip runs
+June to May, each year named where it begins, December still marked. The
+records, the county share, the weights and the partner scan read the same
+months; explorer links carry them (`dateFrom`/`dateTo`); links to the other
+profile page carry no year (its default is the same window) — a year page
+links on its year.
+
+**How it is built.** A period is a choice — `recent` or a year
+(`lib/profile-period.ts`: `periodChoice`, `periodOf`, `ProfilePeriod`) — and
+every read, key, server memo and link takes it. The window waits for the
+shared cutoff read, as the year in progress does; with no cutoff known (a
+failed read, or one that tells no month) the page describes the last
+complete year instead, says so under the head („Ultimele 12 luni nu s-au
+putut citi acum; pagina arată 2025.") and goes partial (`no-store`, not
+kept, read again on mount). The largest records never fall back — they are
+read for the period asked or fail — so they are held back beside a fallen
+profile, and once they land (the cutoff reads again) the profile is read
+again. The newest-year default of the morning (a loader that first resolved
+which year to open) is gone: the choice is known from the URL alone.
+
+**One caveat, kept off the page.** The cutoff takes a month once it holds
+half a typical month's records, so the window's last month may still be
+filling: the change against the twelve months before can read a few points
+low — never a year's worth, as comparing a year in progress would.
+
+Reviewed by Opus 5.5 (xhigh). Its findings, fixed: records beside a
+fallen-back profile, a fallback that went unmarked (and so cached), the floor
+of institutions at exactly a hundred (the ranking's „other" bucket tells it),
+English templates that broke with the phrase, the registry and identity reads
+now started before the cutoff lands, an unused distinct-firms read for
+contracts dropped.
+

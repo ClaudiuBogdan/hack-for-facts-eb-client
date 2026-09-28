@@ -18,17 +18,14 @@ const cuiSchema = z
   .regex(/^\d{1,12}$/, 'CUI invalid')
 
 /**
- * One buyer's procurement page. The year it describes comes from the URL
- * (`year`, 2019 through the year in progress); without one, or out of range,
- * it is the newest year with data — the year in progress once SEAP's data
- * reaches into it (the shared cutoff read, kept ten minutes), else the last
- * complete year. The server fixes it here, in the loader, so the server and
- * the browser agree; a client-side navigation without one is never held for
- * that read — the page reads it beside its frame, and the loader starts the
- * page's reads when it lands.
+ * One buyer's procurement page. What it describes comes from the URL: a
+ * `year` from 2019 through the year in progress; without one, or out of
+ * range, the last twelve months SEAP has complete (they end at its cutoff,
+ * which the reads wait for). It is fixed here, in the loader, so the server
+ * and the browser agree.
  *
- * The profile and the year's largest records are read on the server (kept
- * there ten minutes per buyer and year, under a deadline — see
+ * The profile and the period's largest records are read on the server (kept
+ * there ten minutes per buyer and period, under a deadline — see
  * `procurement-buyer-ssr.ts`) and seed the page's queries; on a client-side
  * navigation the loader starts them and returns at once, so the page frame
  * paints and fills in.
@@ -46,36 +43,24 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
   loaderDeps: ({ search }) => ({ year: search.year }),
   loader: async ({ context, params, deps }): Promise<ProcurementBuyerInitialData> => {
     const { homeYear } = await import('@/features/procurement/lib/home-model')
-    const { buyerYear } = await import('@/features/procurement/lib/buyer-model')
-    const latest = homeYear()
-    const asked = buyerYear(deps.year, latest)
+    const { periodChoice } = await import('@/features/procurement/lib/profile-period')
+    const choice = periodChoice(deps.year, homeYear())
     if (!shouldBlockLoaderForSsr()) {
       const hooks = await import('@/features/procurement/hooks/use-procurement-buyer')
-      const start = (year: number) => {
-        void context.queryClient.prefetchQuery(hooks.procurementBuyerQueryOptions(params.cui, year)).catch(() => undefined)
-        void context.queryClient.prefetchQuery(hooks.procurementBuyerRecordsQueryOptions(params.cui, year)).catch(() => undefined)
-      }
-      if (asked !== null) {
-        start(asked)
-        return { year: asked }
-      }
-      void context.queryClient.fetchQuery(hooks.procurementNewestYearQueryOptions(latest)).then(start, () => undefined)
-      return { year: null }
+      void context.queryClient.prefetchQuery(hooks.procurementBuyerQueryOptions(params.cui, choice)).catch(() => undefined)
+      void context.queryClient.prefetchQuery(hooks.procurementBuyerRecordsQueryOptions(params.cui, choice)).catch(() => undefined)
+      return { choice }
     }
     // Read directly, not through the query client: a query created on the
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
     const { readProcurementBuyerForSsr } = await import('@/features/procurement/api/procurement-buyer-ssr')
-    if (asked !== null) return readProcurementBuyerForSsr(params.cui, asked)
-    const { readNewestYear } = await import('@/features/procurement/api/procurement-cutoff')
-    const newest = await readNewestYear(latest)
-    const read = await readProcurementBuyerForSsr(params.cui, newest.year)
-    return newest.failed ? { ...read, newestUnread: true } : read
+    return readProcurementBuyerForSsr(params.cui, choice)
   },
   // A render with a failed or partial read is served once and read again, never
   // cached for everyone. The document follows the locale and theme cookies.
   headers: ({ loaderData }) =>
-    !loaderData?.profile || loaderData.profile.partial || !loaderData.records || loaderData.newestUnread
+    !loaderData?.profile || loaderData.profile.partial || !loaderData.records
       ? // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
         { ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }
       : createPublicPageCacheHeaders({
@@ -89,7 +74,7 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
     const translator = translatorFor(match.context.locale)
     const canonical = `${getSiteUrl()}/procurement/institutions/${params.cui}`
     const profile = loaderData?.profile
-    // After a year is picked in the browser the loader returns only the year: any year's profile of the buyer names it.
+    // After a period is picked in the browser the loader returns only the choice: any period's profile of the buyer names it.
     const cached = profile
       ? null
       : match.context.queryClient

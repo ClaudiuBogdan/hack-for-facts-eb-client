@@ -1,8 +1,9 @@
 import { buildCompanyProfileModel, type CompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import type { CategoryFigure } from './home-categories'
-import { DIRECT_COMPARABLE_FROM, type RecentRecord, type YearPoint } from './home-model'
+import type { RecentRecord, YearPoint } from './home-model'
 import type { CountyFigureRow, PartyYears, ProcedureCountRow } from './profile-model'
+import type { ProfilePeriod } from './profile-period'
 
 /**
  * One firm's procurement page (`/procurement/suppliers/$cui`) as read. Two
@@ -23,7 +24,7 @@ export interface GrainFigures {
   readonly value: number | null
 }
 
-/** A ranked institution: what the firm got from it in the year. */
+/** A ranked institution: what the firm got from it in the period. */
 export interface ClientRow {
   readonly cui: string
   readonly count: number
@@ -37,7 +38,7 @@ export interface ClientRanking {
   readonly rows: readonly ClientRow[]
 }
 
-/** The other side: the firm's share of the institution's own direct purchases in the year, and whether it led them. */
+/** The other side: the firm's share of the institution's own direct purchases in the period, and whether it led them. */
 export interface ClientWeight {
   readonly share: number | null
   readonly first: boolean
@@ -54,7 +55,7 @@ export interface Partner {
   readonly buyers: readonly string[]
 }
 
-/** The year's contracts as the record list holds them, consortia included. */
+/** The period's contracts as the record list holds them, consortia included. */
 export interface ContractPicture {
   /** The award rows, as SEAP publishes them and the explorer lists them (a contract's lots are rows of their own). */
   readonly count: number
@@ -75,7 +76,7 @@ export interface ContractPicture {
   readonly clients: ClientRanking | null
   /** How many institutions those rows came from, when every row was read. */
   readonly buyers: number | null
-  /** The year's largest contracts, every winner named. */
+  /** The period's largest contracts, every winner named. */
   readonly largest: readonly RecentRecord[]
   /** The contracts' reader categories, consortia included at their whole value, when every row was read. */
   readonly categories: readonly CategoryFigure[] | null
@@ -85,19 +86,23 @@ export interface ContractPicture {
 
 export interface SupplierProfile {
   readonly cui: string
-  readonly year: number
+  /** What the page describes: the last twelve months through SEAP's cutoff, or a calendar year. */
+  readonly period: ProfilePeriod
   /** The last complete year. */
   readonly latest: number
-  /** The year in progress is read through this month (SEAP's cutoff); null for a complete year. */
-  readonly through: string | null
   /** The firm's name: the registry's, as the company page writes it; else its own records', else its CUI. */
   readonly name: string
   /** The company registry's record; null for a firm it does not hold (a foreign one) or could not read. */
   readonly registry: PrivateCompanyProfile | null
   /** The registry could not be read: the page says nothing of what the firm is, rather than calling it foreign. */
   readonly registryFailed: boolean
-  readonly direct: GrainFigures & { readonly clients: number | null }
-  /** The whole year before; null for 2019 (the year before is legacy SEAP) and for the year in progress. */
+  /**
+   * The period's direct purchases, and the institutions they came from. Over
+   * the last twelve months the API counts those only through its ranking,
+   * cut at a hundred: past it, `clients` is a floor (`clientsAtLeast`).
+   */
+  readonly direct: GrainFigures & { readonly clients: number | null; readonly clientsAtLeast: boolean }
+  /** What the change compares with — the twelve months before, the year before; null for 2019 (legacy SEAP before it) and the year in progress. */
   readonly directPrev: GrainFigures | null
   /** The analysis's figures for the contract awards: every row counted (for most firms), the money without consortium awards. */
   readonly awards: GrainFigures
@@ -108,7 +113,7 @@ export interface SupplierProfile {
   readonly partYear: number | null
   readonly cutoff: { readonly direct: string | null; readonly contract: string | null }
   readonly directClients: ClientRanking
-  /** Contract clients from the analysis, for a year with too many rows to read. */
+  /** Contract clients from the analysis, for a period with too many rows to read. */
   readonly analysisClients: ClientRanking
   readonly weights: ReadonlyMap<string, ClientWeight>
   readonly clientYears: readonly PartyYears[]
@@ -116,7 +121,7 @@ export interface SupplierProfile {
   /** The buyers' counties: by direct-purchase money, or — for a firm with none — by contracts. */
   readonly counties: readonly CountyFigureRow[]
   readonly countiesRankedBy: 'value' | 'count'
-  /** What the counties count: the year's direct purchases, or — for a firm with none — its contracts. */
+  /** What the counties count: the period's direct purchases, or — for a firm with none — its contracts. */
   readonly countiesOf: 'direct' | 'contracts'
   /** The contract awards by procedure, as the analysis counts them. */
   readonly procedures: readonly ProcedureCountRow[]
@@ -137,11 +142,6 @@ export interface SupplierView extends SupplierProfile {
 export function supplierView(profile: SupplierProfile): SupplierView {
   const company = profile.registry ? buildCompanyProfileModel(profile.registry) : null
   return { ...profile, company, county: company?.place.countyCode ?? null }
-}
-
-/** A year from 2019 through the year in progress; anything else, and no year, is the last complete one. */
-export function supplierYear(requested: number | undefined, latest: number): number {
-  return requested !== undefined && Number.isInteger(requested) && requested >= DIRECT_COMPARABLE_FROM && requested <= latest + 1 ? requested : latest
 }
 
 export function clientName(profile: Pick<SupplierProfile, 'names'>, cui: string): string {

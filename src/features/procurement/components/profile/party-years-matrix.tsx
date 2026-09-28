@@ -32,8 +32,8 @@ export function PartyYearsMatrix({
   className,
 }: {
   readonly rows: readonly PartyYears[]
-  /** The page's year, ringed in each row. */
-  readonly year: number
+  /** The page's year, ringed in each row; null for the last twelve months, which ring none. */
+  readonly year: number | null
   /** What the rows are: firms (a buyer's page) or institutions (a firm's page). */
   readonly kind: 'supplier' | 'authority'
   readonly nameOf: (cui: string) => string

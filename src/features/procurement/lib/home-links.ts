@@ -1,5 +1,5 @@
 import type { ProcurementHubState } from '@/schemas/procurement-hub'
-import { lastDayOf } from './profile-period'
+import { lastDayOf, type ProfilePeriod } from './profile-period'
 
 /** Where the front door's links and anchors point, as pure functions. */
 
@@ -49,30 +49,25 @@ export function buyerAllRecordsSearch(cui: string, grain: 'direct' | 'contract')
     : { view: 'list', grain: 'contracts', record_kind: ['purchases'], authority_cui: cui }
 }
 
-/** A profile page's period: a year, read through `through` when it is the year in progress. */
-export interface PagePeriod {
-  readonly year: number
-  readonly through: string | null
-}
-
 /**
- * A page's period in the explorer: its year — or, for the year in progress
- * read through SEAP's cutoff, January through the cutoff's last day, so the
- * list holds what the page counts, not the months after.
+ * A page's period in the explorer: a complete year by its year; the last
+ * twelve months and the year in progress by their months, first day to the
+ * cutoff's last — so the list holds what the page counts, not the months
+ * after.
  */
-function periodSearch(period: PagePeriod): ExplorerSearch {
-  return period.through ? { dateFrom: `${period.year}-01-01`, dateTo: lastDayOf(period.through) } : { year: period.year }
+function periodSearch(period: ProfilePeriod): ExplorerSearch {
+  return period.through ? { dateFrom: `${period.from}-01`, dateTo: lastDayOf(period.through) } : { year: period.year }
 }
 
 /** A buyer's records of a page's period in the explorer: its direct purchases, or its contract awards (framework agreements apart). */
-export function buyerRecordsSearch(cui: string, period: PagePeriod, grain: 'direct' | 'contract'): ExplorerSearch {
+export function buyerRecordsSearch(cui: string, period: ProfilePeriod, grain: 'direct' | 'contract'): ExplorerSearch {
   return grain === 'direct'
     ? { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, ...periodSearch(period) }
     : { view: 'list', grain: 'contracts', record_kind: ['purchases'], authority_cui: cui, ...periodSearch(period) }
 }
 
 /** A buyer's direct purchases of a page's period from firms in one county: exactly what its county row counts. */
-export function buyerCountySearch(cui: string, county: string, period: PagePeriod): ExplorerSearch {
+export function buyerCountySearch(cui: string, county: string, period: ProfilePeriod): ExplorerSearch {
   return { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, supplierCounty: county, ...periodSearch(period) }
 }
 
@@ -81,14 +76,14 @@ export function buyerCountySearch(cui: string, county: string, period: PagePerio
  * period: its direct purchases, or its contract awards (framework agreements
  * apart).
  */
-export function supplierRecordsSearch(cui: string, period: PagePeriod | null, grain: 'direct' | 'contract'): ExplorerSearch {
+export function supplierRecordsSearch(cui: string, period: ProfilePeriod | null, grain: 'direct' | 'contract'): ExplorerSearch {
   const base: ExplorerSearch =
     grain === 'direct' ? { view: 'list', grain: 'direct_acquisitions', supplier_cui: cui } : { view: 'list', grain: 'contracts', record_kind: ['purchases'], supplier_cui: cui }
   return period === null ? base : { ...base, ...periodSearch(period) }
 }
 
 /** A firm's records of a page's period from institutions in one county: exactly what its county row counts. */
-export function supplierCountySearch(cui: string, county: string, period: PagePeriod, grain: 'direct' | 'contract'): ExplorerSearch {
+export function supplierCountySearch(cui: string, county: string, period: ProfilePeriod, grain: 'direct' | 'contract'): ExplorerSearch {
   return { ...supplierRecordsSearch(cui, period, grain), buyerCounty: county }
 }
 

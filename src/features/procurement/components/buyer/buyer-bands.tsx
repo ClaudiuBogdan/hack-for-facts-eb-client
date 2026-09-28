@@ -31,6 +31,8 @@ import { PartyYearsMatrix } from '../profile/party-years-matrix'
 import { CountyRows, ProcedureRows } from '../profile/profile-rows'
 import { MonthStrip } from './buyer-charts'
 import { SupplierRows } from './buyer-rows'
+import { periodText } from '../../lib/profile-period-text'
+import { periodYear } from '../../lib/profile-period'
 
 /**
  * The buyer page's bands, one per question: what it buys, from whom, from
@@ -81,7 +83,7 @@ export function BuyerWhatBand({
   const grain = grainOf(choice)
   const rows = profile.categories[grain]
   const shown = all ? rows : rows.slice(0, CATEGORIES_SHOWN)
-  const lede = whatLede(rows, grain, profile.year, i18n)
+  const lede = whatLede(rows, grain, periodText(profile.period), i18n)
   return (
     <HomeBand id="ce" labelledBy="buyer-what-title">
       <HubSectionHead
@@ -102,7 +104,7 @@ export function BuyerWhatBand({
       <div className="mt-8" data-reveal>
         {rows.length === 0 ? (
           <p className="border-y py-4 text-sm text-muted-foreground">
-            {grain === 'direct' ? <Trans>Nicio achiziție directă în {profile.year}.</Trans> : <Trans>Niciun contract atribuit în {profile.year}.</Trans>}
+            {grain === 'direct' ? <Trans>Nicio achiziție directă în {periodText(profile.period)}.</Trans> : <Trans>Niciun contract atribuit în {periodText(profile.period)}.</Trans>}
           </p>
         ) : (
           <CategoryRows rows={shown} grain={grain} className={COLUMNS} />
@@ -141,13 +143,13 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
       <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12" data-reveal>
         <div className="min-w-0">
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Achiziții directe, după valoare, {profile.year}</Trans>
+            <Trans>Achiziții directe, după valoare, {periodText(profile.period)}</Trans>
           </MonoLabel>
           <SupplierRows className="mt-3" profile={profile} ranking={profile.directSuppliers} grain="direct" />
         </div>
         <div className="min-w-0">
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Contracte atribuite, după număr, {profile.year}</Trans>
+            <Trans>Contracte atribuite, după număr, {periodText(profile.period)}</Trans>
           </MonoLabel>
           <SupplierRows className="mt-3" profile={profile} ranking={profile.awardSuppliers} grain="contract" />
         </div>
@@ -163,7 +165,7 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
           <PartyYearsMatrix
             className="mt-4"
             rows={matrix}
-            year={profile.year}
+            year={periodYear(profile.period)}
             kind="supplier"
             nameOf={(cui) => supplierName(profile, cui)}
             caption={t`Achiziții directe de la fiecare firmă, pe ani, lei`}
@@ -193,9 +195,9 @@ export function BuyerWhereBand({ profile, index }: { readonly profile: BuyerProf
         <div className={OTHER_HALF} data-reveal>
           <MonoLabel className="block text-muted-foreground">
             {profile.supplierCountiesRankedBy === 'value' ? (
-              <Trans>Banii achizițiilor directe, după județul firmei, {profile.year}</Trans>
+              <Trans>Banii achizițiilor directe, după județul firmei, {periodText(profile.period)}</Trans>
             ) : (
-              <Trans>Achizițiile directe, după județul firmei, {profile.year}</Trans>
+              <Trans>Achizițiile directe, după județul firmei, {periodText(profile.period)}</Trans>
             )}
           </MonoLabel>
           <CountyRows
@@ -204,8 +206,8 @@ export function BuyerWhereBand({ profile, index }: { readonly profile: BuyerProf
             rankedBy={profile.supplierCountiesRankedBy}
             home={profile.county}
             homeLabel={t`județul instituției`}
-            searchOf={(code) => buyerCountySearch(profile.identity.cui, code, profile)}
-            empty={t`Nicio achiziție directă în ${profile.year}.`}
+            searchOf={(code) => buyerCountySearch(profile.identity.cui, code, profile.period)}
+            empty={t`Nicio achiziție directă în ${periodText(profile.period)}.`}
           />
         </div>
       </div>
@@ -229,7 +231,7 @@ export function BuyerWhenBand({ profile, index }: { readonly profile: BuyerProfi
             <MonthStrip profile={profile} />
           ) : (
             <p className="border-y py-4 text-sm text-muted-foreground">
-              <Trans>Nicio achiziție directă în {profile.year}.</Trans>
+              <Trans>Nicio achiziție directă în {periodText(profile.period)}.</Trans>
             </p>
           )}
         </div>
@@ -263,13 +265,13 @@ export function BuyerHowBand({ profile, index }: { readonly profile: BuyerProfil
         </div>
         <div className={OTHER_HALF} data-reveal>
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Contracte atribuite în {profile.year}, după procedură</Trans>
+            <Trans>Contracte atribuite în {periodText(profile.period)}, după procedură</Trans>
           </MonoLabel>
           <ProcedureRows
             className="mt-3"
             procedures={profile.procedures}
             unlisted={profile.proceduresUnlisted}
-            empty={t`Niciun contract atribuit în ${profile.year}.`}
+            empty={t`Niciun contract atribuit în ${periodText(profile.period)}.`}
           />
           {(profile.awards.count ?? 0) > 0 ? (
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
@@ -306,7 +308,7 @@ export function BuyerLargestBand({
       <HubSectionHead
         titleId="buyer-largest-title"
         index={index}
-        title={<Trans>Cele mai mari din {profile.year}</Trans>}
+        title={<Trans>Cele mai mari din {periodText(profile.period)}</Trans>}
         lede={
           grain === 'contract' ? (
             <Trans>Contractele atribuite cu cea mai mare valoare, fiecare cu toate firmele câștigătoare.</Trans>
@@ -325,9 +327,9 @@ export function BuyerLargestBand({
           ) : (
             <p className="border-y py-4 text-sm text-muted-foreground">
               {grain === 'contract' ? (
-                <Trans>Niciun contract atribuit în {profile.year} cu valoare publicată.</Trans>
+                <Trans>Niciun contract atribuit în {periodText(profile.period)} cu valoare publicată.</Trans>
               ) : (
-                <Trans>Nicio achiziție directă în {profile.year} cu valoare publicată.</Trans>
+                <Trans>Nicio achiziție directă în {periodText(profile.period)} cu valoare publicată.</Trans>
               )}
             </p>
           )
@@ -344,10 +346,10 @@ export function BuyerLargestBand({
           )}
           <Link
             to="/procurement/search"
-            search={buyerRecordsSearch(profile.identity.cui, profile, grain)}
+            search={buyerRecordsSearch(profile.identity.cui, profile.period, grain)}
             className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0"
           >
-            {grain === 'contract' ? <Trans>Toate contractele din {profile.year}</Trans> : <Trans>Toate achizițiile directe din {profile.year}</Trans>}
+            {grain === 'contract' ? <Trans>Toate contractele din {periodText(profile.period)}</Trans> : <Trans>Toate achizițiile directe din {periodText(profile.period)}</Trans>}
             <ArrowUpRight className="size-3.5" aria-hidden="true" />
           </Link>
         </div>

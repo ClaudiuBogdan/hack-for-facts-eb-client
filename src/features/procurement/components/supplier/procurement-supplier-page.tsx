@@ -18,11 +18,14 @@ import { useProcurementSupplier, useProcurementSupplierDirect } from '../../hook
 import { changeText } from '../../lib/buyer-text'
 import { directPurchasesCount, moneyText } from '../../lib/home-format'
 import { sectionIndex, supplierRecordsSearch, type HomeSection } from '../../lib/home-links'
-import { DIRECT_COMPARABLE_FROM, homeYear, type RecentRecord } from '../../lib/home-model'
+import { DIRECT_COMPARABLE_FROM, type RecentRecord } from '../../lib/home-model'
 import { buildSupplierDocumentTitle } from '../../lib/procurement-page-titles'
 import { newestYearWithRecords } from '../../lib/profile-model'
+import { RECENT, periodYear, type PeriodChoice } from '../../lib/profile-period'
+import { periodBeforeText, periodText } from '../../lib/profile-period-text'
 import { clientName, contractClients, hasAnyRecord, isEmptyYear, scanIsWhole, supplierView, type SupplierProfile, type SupplierView } from '../../lib/supplier-model'
 import { HomeBand, HomeSectionNav } from '../home/home-chrome'
+import { ProfileFallbackNotice } from '../profile/profile-fallback-notice'
 import { moneyFact } from '../profile/profile-facts'
 import { ProfileYearsChart } from '../profile/profile-years-chart'
 import {
@@ -40,21 +43,21 @@ import { SupplierHead, SupplierHeadPending } from './supplier-head'
  * `/procurement/suppliers/$cui` — one firm as the state's supplier, in the
  * buyer page's rhythm (promoted from the `/development` prototype
  * procurement/supplier-opus). A head in the company profile's own words says
- * what the firm is and what it sold in the year, with the year above and its
- * years on one chart beside it; the figures band; then one numbered band per
+ * what the firm is and what it sold in the period, with the period above and
+ * its years on one chart beside it; the figures band; then one numbered band per
  * question — who buys from it and what it is to them, what it sells, where
  * its buyers are, how it wins, with whom, the largest records — and the firm
  * last.
  *
  * Every figure and sentence is computed from the read. The profile and the
- * year's largest direct purchases are read on the server and seed the
- * queries; picking another year keeps the year shown until the new one
+ * period's largest direct purchases are read on the server and seed the
+ * queries; picking another period keeps the one shown until the new one
  * arrives.
  */
 
 export interface ProcurementSupplierInitialData {
-  /** The year the page describes: the loader's, so the server and the browser agree. */
-  readonly year: number
+  /** What the page describes — the last twelve months, or a year: the loader's, so the server and the browser agree. */
+  readonly choice: PeriodChoice
   readonly profile?: SupplierProfile
   readonly direct?: readonly RecentRecord[]
 }
@@ -71,11 +74,12 @@ function contractsNote(profile: SupplierProfile): string {
   return t`fără valori publicate`
 }
 
-/** Up to four figures: the year's direct sales and contracts, the institutions, the largest client's share. */
+/** Up to four figures: the period's direct sales and contracts, the institutions, the largest client's share. */
 function supplierFacts(profile: SupplierProfile): HubFact[] {
-  const { cui, year } = profile
+  const { cui, period } = profile
+  const year = periodText(period)
   const records = (grain: 'direct' | 'contract') => (label: ReactNode, className: string) => (
-    <Link to="/procurement/search" search={supplierRecordsSearch(cui, profile, grain)} className={className}>
+    <Link to="/procurement/search" search={supplierRecordsSearch(cui, period, grain)} className={className}>
       {label}
     </Link>
   )
@@ -92,7 +96,7 @@ function supplierFacts(profile: SupplierProfile): HubFact[] {
       key: 'direct',
       ...moneyFact(profile.direct.value),
       label: t`Vânzări directe, ${year}`,
-      note: [profile.direct.count !== null ? directPurchasesCount(profile.direct.count) : null, change ? t`${change} față de ${year - 1}` : null].filter(Boolean).join(' · '),
+      note: [profile.direct.count !== null ? directPurchasesCount(profile.direct.count) : null, change ? t`${change} față de ${periodBeforeText(period)}` : null].filter(Boolean).join(' · '),
       link: records('direct'),
     })
   }
@@ -100,9 +104,10 @@ function supplierFacts(profile: SupplierProfile): HubFact[] {
     facts.push({ key: 'contracts', value: profile.contracts.count, digits: 0, label: t`Contracte câștigate, ${year}`, note: contractsNote(profile), link: records('contract') })
   }
   const contractRanking = contractClients(profile)
-  if (profile.direct.clients) {
+  // Past the ranking's hundred the count is a floor: the head says „peste", a figure would not.
+  if (profile.direct.clients && !profile.direct.clientsAtLeast) {
     facts.push({ key: 'clients', value: profile.direct.clients, digits: 0, label: t`Instituții cliente`, note: t`achiziții directe, ${year}`, link: toClients })
-  } else if (profile.contracts.buyers) {
+  } else if (!profile.direct.clients && profile.contracts.buyers) {
     facts.push({ key: 'clients', value: profile.contracts.buyers, digits: 0, label: t`Instituții cliente`, note: t`contracte, ${year}`, link: toClients })
   }
   const top = profile.directClients.rows[0]
@@ -128,10 +133,17 @@ export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui
   useWarmRouteCode('/procurement/institutions/$cui')
   const navigate = useNavigate({ from: '/procurement/suppliers/$cui' })
   const rootRef = useRef<HTMLDivElement>(null)
-  const year = initial.year
-  const profileQuery = useProcurementSupplier(cui, year, initial.profile)
-  const directQuery = useProcurementSupplierDirect(cui, year, initial.direct)
+  const { choice } = initial
+  const profileQuery = useProcurementSupplier(cui, choice, initial.profile)
+  const directQuery = useProcurementSupplierDirect(cui, choice, initial.direct)
   const profile = profileQuery.data
+  // The last twelve months could not be told when the profile was read: it shows the last complete year, and says so. The largest
+  // purchases, read for the period asked, never fall back — they wait; once they land, the cutoff reads again, and so is the profile.
+  const fellBack = profile !== undefined && !profileQuery.isPlaceholderData && choice === RECENT && profile.period.kind !== 'recent'
+  const { refetch: refetchProfile } = profileQuery
+  useEffect(() => {
+    if (fellBack && directQuery.dataUpdatedAt > profileQuery.dataUpdatedAt) void refetchProfile()
+  }, [fellBack, directQuery.dataUpdatedAt, profileQuery.dataUpdatedAt, refetchProfile])
   // While the profile loads, the registry — a quick read, the company page's own cache entry — names the firm in the head.
   const registryQuery = useQuery({ ...privateCompanyProfileQueryOptions(cui), enabled: !profile })
   const pendingCompany = !profile && registryQuery.data ? buildCompanyProfileModel(registryQuery.data) : null
@@ -144,8 +156,8 @@ export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui
 
   const choose = (patch: Partial<ProcurementSupplierSearch>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true, resetScroll: false })
-  // The last complete year is the default: it stays out of the URL.
-  const onYear = (next: number) => choose({ year: next === (profile?.latest ?? homeYear()) ? undefined : next })
+  // The last twelve months are the default: they stay out of the URL; a year picked is written.
+  const onChoice = (next: PeriodChoice) => choose({ year: next === RECENT ? undefined : next })
 
   return (
     <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
@@ -154,16 +166,17 @@ export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui
       {profile ? (
         <SupplierBody
           view={supplierView(profile)}
-          year={year}
+          choice={choice}
           busy={profileQuery.isPlaceholderData}
-          direct={{ data: directQuery.data, isError: directQuery.isError, retry: () => void directQuery.refetch() }}
+          direct={{ data: fellBack ? undefined : directQuery.data, isError: directQuery.isError, retry: () => void directQuery.refetch() }}
+          fellBack={fellBack}
           search={search}
           choose={choose}
-          onYear={onYear}
+          onChoice={onChoice}
         />
       ) : (
         <>
-          <SupplierHeadPending cui={cui} company={pendingCompany} year={year} onYear={onYear}>
+          <SupplierHeadPending cui={cui} company={pendingCompany} choice={choice} onChoice={onChoice}>
             {profileQuery.isError ? (
               <div className="mt-8">
                 <HubLoadError onRetry={() => void profileQuery.refetch()} />
@@ -183,22 +196,25 @@ export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui
 
 function SupplierBody({
   view,
-  year,
+  choice,
   busy,
   direct,
   search,
   choose,
-  onYear,
+  onChoice,
+  fellBack,
 }: {
   readonly view: SupplierView
-  /** The year asked for: the dropdown shows it at once. */
-  readonly year: number
-  /** Another year is on its way; the one shown stays until it lands. */
+  /** The period asked for: the dropdown shows it at once. */
+  readonly choice: PeriodChoice
+  /** Another period is on its way; the one shown stays until it lands. */
   readonly busy: boolean
   readonly direct: { readonly data: readonly RecentRecord[] | undefined; readonly isError: boolean; readonly retry: () => void }
   readonly search: ProcurementSupplierSearch
   readonly choose: (patch: Partial<ProcurementSupplierSearch>) => void
-  readonly onYear: (year: number) => void
+  readonly onChoice: (choice: PeriodChoice) => void
+  /** The last twelve months could not be told: the page shows the last complete year. */
+  readonly fellBack: boolean
 }) {
   const { i18n } = useLingui()
   const facts = supplierFacts(view)
@@ -228,25 +244,27 @@ function SupplierBody({
     <>
       <SupplierHead
         profile={view}
-        year={year}
-        onYear={onYear}
+        choice={choice}
+        onChoice={onChoice}
         aside={
           hasAnyRecord(view) ? (
             <ProfileYearsChart
               directYears={view.directYears}
               contractYears={view.contractYears}
-              year={view.year}
+              year={periodYear(view.period)}
               latest={view.latest}
               partYear={view.partYear}
               cutoff={view.cutoff}
               contractLabel={t`Contracte câștigate`}
-              onYear={onYear}
+              readout={{ label: t`Ultimele 12 luni`, value: view.direct.value, count: view.direct.count, contracts: view.contracts.count }}
+              onYear={onChoice}
             />
           ) : null
         }
       />
       {sections.length > 1 ? <HomeSectionNav title={view.name} sections={sections} /> : null}
       <div aria-busy={busy} className={cn('transition-opacity duration-300 motion-reduce:transition-none', busy && 'opacity-50')}>
+        {fellBack ? <ProfileFallbackNotice year={view.period.year} /> : null}
         {facts.length > 0 ? (
           <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
             <RuledFrame>
@@ -286,16 +304,16 @@ function SupplierBody({
 /** A year with no sale: said once, with the way to the newest year that has them. */
 function EmptyYearBand({ profile }: { readonly profile: SupplierView }) {
   const anyYear = hasAnyRecord(profile)
-  const other = newestYearWithRecords(profile.year, profile.directYears, profile.contractYears)
+  const other = newestYearWithRecords(periodYear(profile.period), profile.directYears, profile.contractYears)
   return (
     <HomeBand id="an-fara-vanzari" labelledBy="supplier-empty-title">
       <h2 id="supplier-empty-title" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-        {anyYear ? <Trans>Nicio vânzare către stat în {profile.year}</Trans> : <Trans>Nicio vânzare către stat în SEAP</Trans>}
+        {anyYear ? <Trans>Nicio vânzare către stat în {periodText(profile.period)}</Trans> : <Trans>Nicio vânzare către stat în SEAP</Trans>}
       </h2>
       <p className="mt-3 max-w-[60ch] text-base leading-relaxed text-muted-foreground">
         {anyYear ? (
           <>
-            <Trans>SEAP nu are achiziții directe sau contracte ale firmei în {profile.year}.</Trans>{' '}
+            <Trans>SEAP nu are achiziții directe sau contracte ale firmei în {periodText(profile.period)}.</Trans>{' '}
             {other ? (
               <Link to="/procurement/suppliers/$cui" params={{ cui: profile.cui }} search={{ year: other }} className="font-medium text-foreground underline underline-offset-4">
                 <Trans>Vezi {other}</Trans>

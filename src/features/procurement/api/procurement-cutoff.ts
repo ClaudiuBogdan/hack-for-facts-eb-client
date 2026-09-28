@@ -1,7 +1,7 @@
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { buyerSeriesSchema, procurementBuyerQuery, type BuyerField } from './graphql/procurement-buyer-queries'
 import { cutoffMonth } from '../lib/home-model'
-import { newestYear, type Cutoff } from '../lib/profile-period'
+import type { Cutoff } from '../lib/profile-period'
 
 /**
  * SEAP's cutoff month per population — the newest month complete enough to
@@ -56,17 +56,6 @@ export function readCutoffOutcome(latest: number): Promise<{ readonly cutoff: Cu
     (cutoff) => ({ cutoff, failed: false }),
     () => ({ cutoff: NO_CUTOFF, failed: true }),
   )
-}
-
-/**
- * The year a profile opens on when none is asked: the newest with data (the
- * year in progress once SEAP reaches into it); the last complete one when the
- * cutoff cannot be read — said (`failed`), so that answer is never cached as
- * the page's default.
- */
-export async function readNewestYear(latest: number): Promise<{ readonly year: number; readonly failed: boolean }> {
-  const { cutoff, failed } = await readCutoffOutcome(latest)
-  return { year: newestYear(latest, cutoff), failed }
 }
 
 /** Waits for a read the reader's signal cannot cancel (a shared one, or one without a signal), but not past the reader leaving. */

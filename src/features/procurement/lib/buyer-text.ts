@@ -6,6 +6,8 @@ import { hasAnyRecord, steadySellers, supplierName, type BuyerIdentity, type Buy
 import { OTHER_CATEGORY, UNKNOWN_CATEGORY, type CategoryFigure } from './home-categories'
 import { contractsCount, directPurchasesCount, firmsCount, lowerFirst, monthText, moneyText, percentText } from './home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, seriesSpan, type HomeGrain } from './home-model'
+import { isPartYear } from './profile-period'
+import { periodLongText, periodText } from './profile-period-text'
 
 /**
  * The buyer page's sentences. Each is computed from the read and returns
@@ -83,12 +85,13 @@ export function buyerKind(identity: BuyerIdentity): string {
 }
 
 /**
- * The head's sentence: what it is, where, and what it bought in the year.
+ * The head's sentence: what it is, where, and what it bought in the page's period (the last twelve months said with their months).
  * „Comună din județul Sălaj, cu 3.553 de locuitori. În 2025 a făcut 145 de
  * achiziții directe, de 2,84 mil. lei fără TVA, și a atribuit 3 contracte."
  */
 export function headSentence(profile: BuyerProfile): string {
-  const { identity, year } = profile
+  const { identity } = profile
+  const year = periodLongText(profile.period)
   if (!hasAnyRecord(profile) && !identity.entityType) return t`Nu apare ca cumpărător în SEAP din ${DIRECT_COMPARABLE_FROM} încoace.`
   const kind = buyerKind(identity)
   const where = profile.county ? inCounty(profile.county) : null
@@ -148,7 +151,7 @@ function isNamed(row: CategoryFigure): boolean {
  * lucrări de construcții. Urmează …" — while the largest named category holds
  * a fifth of the money and no other bucket („Altele", no CPV) outweighs it.
  */
-export function whatLede(rows: readonly CategoryFigure[], grain: HomeGrain, year: number, i18n: I18n): string | null {
+export function whatLede(rows: readonly CategoryFigure[], grain: HomeGrain, year: string, i18n: I18n): string | null {
   const valued = rows.filter((row) => row.value !== null && row.value > 0 && row.share !== null)
   const named = valued.filter(isNamed)
   const restMax = Math.max(0, ...valued.filter((row) => !isNamed(row)).map((row) => row.value ?? 0))
@@ -185,7 +188,7 @@ export function sellersLede(profile: BuyerProfile): string | null {
   const top5 = rows.slice(0, 5).reduce((sum, row) => sum + (row.share ?? 0), 0)
   const first = rows[0]
   if (!first || first.share === null || top5 <= 0) return null
-  const lead = t`Cinci firme au primit ${percentText(top5, 0)} din banii achizițiilor directe din ${profile.year}; au vândut ${firmsCount(firms)} în total.`
+  const lead = t`Cinci firme au primit ${percentText(top5, 0)} din banii achizițiilor directe din ${periodText(profile.period)}; au vândut ${firmsCount(firms)} în total.`
   const biggest = first.share >= 0.1 ? t`Cea mai mare sumă, ${percentText(first.share, 0)}, a mers la ${supplierName(profile, first.cui)}.` : ''
   return [lead, biggest].filter(Boolean).join(' ')
 }
@@ -235,8 +238,8 @@ export function whereLede(profile: BuyerProfile): string | null {
  * smaller nominal rise may be a fall in real terms.
  */
 export function yearsLede(profile: BuyerProfile): string | null {
-  // Whole years only: a year in progress is no year's total.
-  const span = seriesSpan(profile.directYears, DIRECT_COMPARABLE_FROM, Math.min(profile.year, profile.latest))
+  // Whole years only: a year in progress is no year's total (the last twelve months end in it too).
+  const span = seriesSpan(profile.directYears, DIRECT_COMPARABLE_FROM, Math.min(profile.period.year, profile.latest))
   if (!span || span.first.value === null || span.last.value === null || span.first.value <= 0) return null
   const ratio = span.last.value / span.first.value
   const from = moneyText(span.first.value)
@@ -248,15 +251,17 @@ export function yearsLede(profile: BuyerProfile): string | null {
   return null
 }
 
-/** December's share of the year's direct-purchase money, while it reaches 15% — well over a month's twelfth. */
+/** December's share of the period's direct-purchase money (a year's, the last twelve months'), while it reaches 15% — well over a month's twelfth. */
 export function decemberLede(profile: BuyerProfile): string | null {
   const total = profile.directMonths.reduce((sum, month) => sum + (month.value ?? 0), 0)
-  const december = profile.directMonths[11]?.value ?? null
+  const december = profile.directMonths.find((month) => month.month.endsWith('-12'))?.value ?? null
   if (total <= 0 || december === null) return null
   const share = december / total
   if (share < 0.15) return null
   const times = formatHubNumber(share * 12, { digits: 1 })
-  return t`Decembrie a adus ${percentText(share, 0)} din banii achizițiilor directe ale anului, de ${times} ori cât o lună obișnuită.`
+  return profile.period.kind === 'recent'
+    ? t`Decembrie a adus ${percentText(share, 0)} din banii achizițiilor directe ale ultimelor 12 luni, de ${times} ori cât o lună obișnuită.`
+    : t`Decembrie a adus ${percentText(share, 0)} din banii achizițiilor directe ale anului, de ${times} ori cât o lună obișnuită.`
 }
 
 // ─────────────────────────────────────────────────────────── how ──
@@ -272,7 +277,7 @@ export function procedureLede(profile: BuyerProfile): string | null {
   if (listed === 0 || total === 0) return null
   const unpublished = profile.procedures.filter((row) => isUnpublishedProcedure(row.key)).reduce((sum, row) => sum + row.count, 0)
   const all = contractsCount(total)
-  const year = profile.year
+  const year = periodText(profile.period)
   if (unpublished === 0) {
     if (profile.proceduresUnlisted > 0 || listed < total) return null
     return total === 1 ? t`Singurul contract atribuit în ${year} a avut un anunț public.` : t`Toate cele ${all} atribuite în ${year} au avut un anunț public.`
@@ -290,9 +295,11 @@ export function balanceLede(profile: BuyerProfile): string | null {
   if (awards === 0) {
     // With framework agreements signed, it did not buy only directly.
     if ((profile.frameworks ?? 0) > 0) return null
-    return profile.through
-      ? t`Până în ${monthText(profile.through)} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.`
-      : t`În ${profile.year} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.`
+    const { period } = profile
+    // The year in progress is said so far: its procedures may still end in a contract.
+    return isPartYear(period) && period.through
+      ? t`Până în ${monthText(period.through)} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.`
+      : t`În ${periodText(period)} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.`
   }
   const ratio = Math.round(direct / awards)
   if (ratio >= 20) return t`Cumpără mai ales direct: la fiecare contract atribuit, ${directPurchasesCount(ratio)}.`
@@ -304,5 +311,5 @@ export function balanceLede(profile: BuyerProfile): string | null {
 export function countyShareLede(profile: BuyerProfile): string | null {
   const share = profile.countyShare
   if (!share || share.share < 0.01) return null
-  return t`Instituția a făcut ${percentText(share.share, 1)} din achizițiile directe ale tuturor cumpărătorilor publici din ${inCounty(share.county)} în ${profile.year}, după valoare.`
+  return t`Instituția a făcut ${percentText(share.share, 1)} din achizițiile directe ale tuturor cumpărătorilor publici din ${inCounty(share.county)} în ${periodText(profile.period)}, după valoare.`
 }

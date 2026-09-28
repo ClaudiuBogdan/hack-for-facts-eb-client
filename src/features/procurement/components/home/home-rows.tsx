@@ -47,8 +47,8 @@ export function PartyRows({
   readonly ranking: Ranking
   readonly grain: HomeGrain
   readonly kind: 'authority' | 'supplier'
-  /** The year the ranking counts: the party's page opens on it. */
-  readonly year: number
+  /** The year the ranking counts: the party's page opens on it; null for the last twelve months, the pages' default. */
+  readonly year: number | null
   readonly limit?: number
   readonly dense?: boolean
   readonly className?: string
@@ -80,11 +80,11 @@ export function PartyRows({
         return (
           <li key={row.key}>
             {kind === 'authority' ? (
-              <Link to="/procurement/institutions/$cui" params={{ cui: row.key }} search={{ year }} className={className}>
+              <Link to="/procurement/institutions/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} className={className}>
                 {body}
               </Link>
             ) : (
-              <Link to="/procurement/suppliers/$cui" params={{ cui: row.key }} search={{ year }} className={className}>
+              <Link to="/procurement/suppliers/$cui" params={{ cui: row.key }} search={year === null ? {} : { year }} className={className}>
                 {body}
               </Link>
             )}

@@ -25,8 +25,8 @@ export interface ProcedureCountRow {
   readonly count: number
 }
 
-/** The newest year with any record other than the page's, across the page's populations: where a page on an empty year points. */
-export function newestYearWithRecords(year: number, ...populations: readonly (readonly YearPoint[])[]): number | null {
+/** The newest year with any record other than the page's (none for the last twelve months), across the page's populations: where an empty page points. */
+export function newestYearWithRecords(year: number | null, ...populations: readonly (readonly YearPoint[])[]): number | null {
   const years = populations.flat().filter((point) => point.year !== year && (point.count ?? 0) > 0).map((point) => point.year)
   return years.length > 0 ? Math.max(...years) : null
 }

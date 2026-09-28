@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils'
 import { supplierName, type BuyerProfile, type SupplierRanking } from '../../lib/buyer-model'
 import type { HomeGrain, Ranking } from '../../lib/home-model'
 import { PartyRows } from '../home/home-rows'
+import { periodText } from '../../lib/profile-period-text'
+import { periodYear } from '../../lib/profile-period'
 
 /**
  * The buyer page's own list, in the front door's row rhythm; the counties and
@@ -26,7 +28,7 @@ export function SupplierRows({
   if (ranking.rows.length === 0) {
     return (
       <p className={cn(EMPTY, className)}>
-        {grain === 'direct' ? <Trans>Nicio achiziție directă în {profile.year}.</Trans> : <Trans>Niciun contract atribuit în {profile.year}.</Trans>}
+        {grain === 'direct' ? <Trans>Nicio achiziție directă în {periodText(profile.period)}.</Trans> : <Trans>Niciun contract atribuit în {periodText(profile.period)}.</Trans>}
       </p>
     )
   }
@@ -34,5 +36,5 @@ export function SupplierRows({
     rankedBy: ranking.rankedBy,
     rows: ranking.rows.map((row) => ({ key: row.cui, label: supplierName(profile, row.cui), count: row.count, value: row.value, share: row.share })),
   }
-  return <PartyRows className={className} ranking={named} grain={grain} kind="supplier" year={profile.year} limit={8} />
+  return <PartyRows className={className} ranking={named} grain={grain} kind="supplier" year={periodYear(profile.period)} limit={8} />
 }

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const graphqlQuery = vi.fn()
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: (...args: unknown[]) => graphqlQuery(...args) }))
 
-const { readCutoffOutcome, readNewestYear, readProcurementCutoff, untilAborted } = await import('./procurement-cutoff')
+const { readCutoffOutcome, readProcurementCutoff, untilAborted } = await import('./procurement-cutoff')
 
 const series = (points: Record<string, string>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
 const months = (year: number, count: string, through = 12) =>
@@ -44,15 +44,6 @@ describe('readProcurementCutoff', () => {
   it('answers a failed read as no cutoff, said', async () => {
     graphqlQuery.mockRejectedValue(new Error('down'))
     expect(await readCutoffOutcome(1995)).toEqual({ cutoff: { direct: null, contract: null }, failed: true })
-  })
-})
-
-describe('readNewestYear', () => {
-  it('opens on the year in progress once SEAP reaches into it, and says when it could not tell', async () => {
-    graphqlQuery.mockResolvedValue(national(2000, 5))
-    expect(await readNewestYear(2000)).toEqual({ year: 2001, failed: false })
-    graphqlQuery.mockRejectedValue(new Error('down'))
-    expect(await readNewestYear(2002)).toEqual({ year: 2002, failed: true })
   })
 })
 

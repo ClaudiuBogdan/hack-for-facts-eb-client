@@ -94,7 +94,7 @@ describe('/procurement/suppliers/$cui', () => {
   })
 
   it('reads the profile and the direct purchases on the server, for the year asked — the year in progress included', async () => {
-    readForSsrMock.mockResolvedValue({ year: homeYear() + 1, profile: PROFILE, direct: [] })
+    readForSsrMock.mockResolvedValue({ choice: homeYear() + 1, profile: PROFILE, direct: [] })
     const queryClient = createQueryClient()
     const route = await importRoute()
     const data = await asServerRender(() => route.loader({ context: { queryClient }, params: { cui: '9813902' }, deps: { year: homeYear() + 1 } }))
@@ -105,27 +105,29 @@ describe('/procurement/suppliers/$cui', () => {
   })
 
   it('answers 404 for an identifier the API refuses as an organisation’s', async () => {
-    readForSsrMock.mockResolvedValue({ year: homeYear(), notFound: true })
+    readForSsrMock.mockResolvedValue({ choice: 'recent', notFound: true })
     const route = await importRoute()
     await expect(asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '000000000000' }, deps: {} }))).rejects.toThrow('not-found')
   })
 
-  it('describes the last complete year when the one asked is out of range', async () => {
-    readForSsrMock.mockResolvedValue({ year: homeYear() })
+  it('describes the last twelve months when no year is asked, or the one asked is out of range', async () => {
+    readForSsrMock.mockResolvedValue({ choice: 'recent' })
     const route = await importRoute()
     await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '9813902' }, deps: { year: 2015 } }))
-    expect(readForSsrMock).toHaveBeenCalledWith('9813902', homeYear())
+    expect(readForSsrMock).toHaveBeenLastCalledWith('9813902', 'recent')
+    await asServerRender(() => route.loader({ context: { queryClient: createQueryClient() }, params: { cui: '9813902' }, deps: {} }))
+    expect(readForSsrMock).toHaveBeenLastCalledWith('9813902', 'recent')
   })
 
   it('starts both reads and returns at once on a client-side navigation', async () => {
     const queryClient = createQueryClient()
     const route = await importRoute()
     const data = await route.loader({ context: { queryClient }, params: { cui: '9813902' }, deps: {} })
-    expect(data).toEqual({ year: homeYear() })
+    expect(data).toEqual({ choice: 'recent' })
     expect(readForSsrMock).not.toHaveBeenCalled()
     expect(queryClient.prefetchQuery.mock.calls.map(([options]) => options.queryKey)).toEqual([
-      ['procurement', 'supplier', 'profile', '9813902', homeYear()],
-      ['procurement', 'supplier', 'direct', '9813902', homeYear(), 8],
+      ['procurement', 'supplier', 'profile', '9813902', 'recent'],
+      ['procurement', 'supplier', 'direct', '9813902', 'recent', 8],
     ])
   })
 
@@ -133,10 +135,10 @@ describe('/procurement/suppliers/$cui', () => {
     const route = await importRoute()
     vi.stubEnv('DEV', false)
     try {
-      const whole = route.headers({ loaderData: { year: 2025, profile: PROFILE, direct: [] } })
+      const whole = route.headers({ loaderData: { choice: 2025, profile: PROFILE, direct: [] } })
       expect(whole['CDN-Cache-Control']).toContain('s-maxage=600')
       expect(whole.Vary).toBe('Accept-Encoding, Cookie')
-      for (const loaderData of [{ year: 2025, direct: [] }, { year: 2025, profile: PROFILE }, { year: 2025, profile: { ...PROFILE, partial: true }, direct: [] }]) {
+      for (const loaderData of [{ choice: 2025, direct: [] }, { choice: 2025, profile: PROFILE }, { choice: 2025, profile: { ...PROFILE, partial: true }, direct: [] }]) {
         const headers = route.headers({ loaderData })
         expect(headers['Cache-Control']).toBe('no-store')
         expect(headers['CDN-Cache-Control']).toBe('no-store')
@@ -149,15 +151,15 @@ describe('/procurement/suppliers/$cui', () => {
   it('names the firm in the head: from the loader, from any cached year after a year is picked, else by its CUI', async () => {
     const route = await importRoute()
     const context = (cached: unknown[] = []) => ({ locale: 'ro', queryClient: { getQueriesData: vi.fn(() => cached) } })
-    const named = route.head({ params: { cui: '9813902' }, loaderData: { year: 2025, profile: PROFILE }, match: { context: context() } })
+    const named = route.head({ params: { cui: '9813902' }, loaderData: { choice: 2025, profile: PROFILE }, match: { context: context() } })
     expect(named.meta).toContainEqual({ title: 'Costalex Construct SRL — Achiziții publice — Transparenta.eu' })
     const picked = route.head({
       params: { cui: '9813902' },
-      loaderData: { year: 2023 },
+      loaderData: { choice: 2023 },
       match: { context: context([[['procurement', 'supplier', 'profile', '9813902', 2023], undefined], [['procurement', 'supplier', 'profile', '9813902', 2025], PROFILE]]) },
     })
     expect(picked.meta).toContainEqual({ title: 'Costalex Construct SRL — Achiziții publice — Transparenta.eu' })
-    const unnamed = route.head({ params: { cui: '9813902' }, loaderData: { year: 2025 }, match: { context: context() } })
+    const unnamed = route.head({ params: { cui: '9813902' }, loaderData: { choice: 2025 }, match: { context: context() } })
     expect(unnamed.meta).toContainEqual({ title: 'Furnizor CUI 9813902 — Achiziții publice — Transparenta.eu' })
   })
 
@@ -165,7 +167,7 @@ describe('/procurement/suppliers/$cui', () => {
     const route = await importRoute()
     const context = { locale: 'ro', queryClient: { getQueriesData: () => [] } }
     const empty = { ...PROFILE, directYears: [], contractYears: [{ year: 2025, value: null, count: 0 }] }
-    expect(route.head({ params: { cui: '36744060' }, loaderData: { year: 2025, profile: empty }, match: { context } }).meta).toContainEqual({ name: 'robots', content: 'noindex' })
-    expect(route.head({ params: { cui: '9813902' }, loaderData: { year: 2025, profile: PROFILE }, match: { context } }).meta).not.toContainEqual({ name: 'robots', content: 'noindex' })
+    expect(route.head({ params: { cui: '36744060' }, loaderData: { choice: 2025, profile: empty }, match: { context } }).meta).toContainEqual({ name: 'robots', content: 'noindex' })
+    expect(route.head({ params: { cui: '9813902' }, loaderData: { choice: 2025, profile: PROFILE }, match: { context } }).meta).not.toContainEqual({ name: 'robots', content: 'noindex' })
   })
 })

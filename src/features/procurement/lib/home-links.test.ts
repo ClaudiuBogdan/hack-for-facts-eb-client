@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { cleanProcurementHubSearch, parseProcurementHubSearch } from '@/schemas/procurement-hub'
 import { explorerSearchOf, parseProcurementHomeSearch } from '@/schemas/procurement-home'
 import { buyerCountySearch, buyerRecordsSearch, countyExplorerSearch, procurementHrefOf, sectionIndex, startSearches, supplierCountySearch, supplierRecordsSearch } from './home-links'
+import { recentPeriod, yearPeriod } from './profile-period.fixture'
 
 describe('procurementHrefOf', () => {
   it('opens an institution’s buyer page and a company’s supplier page', () => {
@@ -50,8 +51,8 @@ describe('the front door’s address', () => {
 
 describe('the explorer lists a profile page opens', () => {
   it('opens a complete year by its year, and the year in progress over its months only', () => {
-    expect(buyerRecordsSearch('4364446', { year: 2025, through: null }, 'direct')).toEqual({ view: 'list', grain: 'direct_acquisitions', authority_cui: '4364446', year: 2025 })
-    expect(buyerCountySearch('4364446', 'IF', { year: 2026, through: '2026-05' })).toEqual({
+    expect(buyerRecordsSearch('4364446', yearPeriod(2025, null), 'direct')).toEqual({ view: 'list', grain: 'direct_acquisitions', authority_cui: '4364446', year: 2025 })
+    expect(buyerCountySearch('4364446', 'IF', yearPeriod(2026, '2026-05'))).toEqual({
       view: 'list',
       grain: 'direct_acquisitions',
       authority_cui: '4364446',
@@ -59,9 +60,12 @@ describe('the explorer lists a profile page opens', () => {
       dateFrom: '2026-01-01',
       dateTo: '2026-05-31',
     })
-    expect(supplierRecordsSearch('9813902', { year: 2026, through: '2026-05' }, 'contract')).toMatchObject({ supplier_cui: '9813902', dateFrom: '2026-01-01', dateTo: '2026-05-31' })
+    expect(supplierRecordsSearch('9813902', yearPeriod(2026, '2026-05'), 'contract')).toMatchObject({ supplier_cui: '9813902', dateFrom: '2026-01-01', dateTo: '2026-05-31' })
     expect(supplierRecordsSearch('9813902', null, 'contract')).not.toHaveProperty('year')
-    expect(supplierCountySearch('9813902', 'B', { year: 2024, through: null }, 'direct')).toMatchObject({ year: 2024, buyerCounty: 'B' })
+    expect(supplierCountySearch('9813902', 'B', yearPeriod(2024, null), 'direct')).toMatchObject({ year: 2024, buyerCounty: 'B' })
+    // The last twelve months by their months, across the two years.
+    expect(buyerRecordsSearch('4364446', recentPeriod('2026-05'), 'contract')).toMatchObject({ dateFrom: '2025-06-01', dateTo: '2026-05-31' })
+    expect(buyerRecordsSearch('4364446', recentPeriod('2026-05'), 'contract')).not.toHaveProperty('year')
   })
 })
 

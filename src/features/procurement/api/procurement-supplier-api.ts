@@ -37,7 +37,7 @@ import { buyerName } from '../lib/buyer-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
 import type { CountyFigureRow, PartyYears } from '../lib/profile-model'
-import { periodOf, throughMonth, type Cutoff, type Period } from '../lib/profile-period'
+import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
 import type { ClientRanking, ClientWeight, GrainFigures, SupplierProfile } from '../lib/supplier-model'
 
 export { SUPPLIER_LARGEST_RECORDS, SUPPLIER_ROWS_READ, supplierContractPicture }
@@ -47,12 +47,13 @@ export { SUPPLIER_LARGEST_RECORDS, SUPPLIER_ROWS_READ, supplierContractPicture }
  * resolves one request's fields one after another) and follow-ups on the
  * first answers.
  *
- * 1. Side by side: the keys (the year's clients), the figures (populations,
- *    buyers' counties, procedures, the months since 2019, the top clients
- *    since 2019), the CPV levels, the firm's contract rows (the largest
- *    hundred, with a total per year and per month of the year in progress)
- *    and the company registry's record. The year in progress first waits for
- *    SEAP's cutoff month (kept for every firm), which bounds its reads.
+ * 1. Side by side: the keys (the period's clients), the figures
+ *    (populations, buyers' counties, procedures, the months since 2019, the
+ *    top clients since 2019), the CPV levels, the firm's contract rows (the
+ *    largest hundred, with a total per year and per month of the year in
+ *    progress) and the company registry's record. The last twelve months and
+ *    the year in progress first wait for SEAP's cutoff month (kept for every
+ *    firm), which bounds their reads; the registry does not wait.
  * 2. On the clients: what the firm was to its largest direct-purchase clients
  *    (their own totals, and who led them).
  * 3. On the top clients since 2019: their years.
@@ -65,8 +66,9 @@ export { SUPPLIER_LARGEST_RECORDS, SUPPLIER_ROWS_READ, supplierContractPicture }
  * uncached page takes ~1.0–2.2 s to first byte with three analysis requests;
  * split into six it was slower — the API queues one client's requests.
  *
- * A follow-up, the registry or the cutoff (for the year in progress) that
- * fails leaves the page `partial` (served once, never kept) rather than
+ * A follow-up, the registry or the cutoff that fails leaves the page
+ * `partial` (served once, never kept) — as does the last twelve months
+ * falling back to the last complete year for want of a cutoff — rather than
  * failing it; a reader who left fails it, and no read — shared or not — holds
  * a reader past their signal.
  */
@@ -170,7 +172,10 @@ export function supplierFigureFields(cui: string, period: Period): BuyerField[] 
     { alias: 'direct', kind: 'stats', scope: { ...inPeriod, ...DIRECT } },
     ...(period.before ? [{ alias: 'directPrev', kind: 'stats' as const, scope: { ...own, ...period.before, ...DIRECT } }] : []),
     { alias: 'awards', kind: 'stats', scope: { ...inPeriod, ...AWARDS } },
-    { alias: 'directBuyers', kind: 'series', scope: { ...inPeriod, ...DIRECT }, args: 'bucket: year, measure: distinctAuthorities' },
+    // The institutions: a year's distinct count; over the last twelve months (two calendar years, whose counts do not add up) the ranking's, cut at a hundred.
+    period.kind === 'recent'
+      ? { alias: 'directBuyers', kind: 'breakdown' as const, scope: { ...inPeriod, ...DIRECT }, args: `dimension: authority, topN: ${CLIENTS_COUNTED}, rankBy: count` }
+      : { alias: 'directBuyers', kind: 'series' as const, scope: { ...inPeriod, ...DIRECT }, args: 'bucket: year, measure: distinctAuthorities' },
     { alias: 'counties', kind: 'breakdown', scope: { ...inPeriod, ...DIRECT }, args: 'dimension: buyerCounty, topN: 42, rankBy: value' },
     { alias: 'contractCounties', kind: 'breakdown', scope: { ...inPeriod, ...AWARDS }, args: 'dimension: buyerCounty, topN: 42, rankBy: count' },
     { alias: 'procedures', kind: 'breakdown', scope: { ...inPeriod, ...AWARDS }, args: 'dimension: procedureType, topN: 8, rankBy: count' },
@@ -264,7 +269,7 @@ export interface SupplierReads {
   /** The registry's record: `null` for a firm it does not hold, `undefined` when the read failed. */
   readonly registry: PrivateCompanyProfile | null | undefined
   readonly cutoff: Cutoff
-  /** The cutoff could not be read: the year in progress is then neither bounded nor compared. */
+  /** The cutoff could not be read: the chart's year in progress is then unbounded, and the last twelve months cannot be told. */
   readonly cutoffFailed: boolean
 }
 
@@ -272,6 +277,20 @@ export interface SupplierReads {
 function sumOf(values: readonly (number | null | undefined)[]): number | null {
   const present = values.filter((value): value is number => value !== null && value !== undefined)
   return present.length > 0 ? present.reduce((sum, value) => sum + value, 0) : null
+}
+
+/** The API's ranking holds a hundred rows at most: the institutions of the last twelve months are counted through it. */
+const CLIENTS_COUNTED = 100
+
+/** The institutions the period's direct purchases came from: a year's distinct count, or the last twelve months' ranking (a floor past a hundred). */
+function clientsOf(raw: unknown, period: Period): { readonly clients: number | null; readonly clientsAtLeast: boolean } {
+  if (period.kind === 'recent') {
+    const blocks = buyerBreakdownSchema.parse(raw ?? [])
+    // The ranking's „other" bucket holds the records of the institutions it does not list: any, and the count is a floor.
+    const beyond = (blocks[0]?.buckets ?? []).some((bucket) => bucket.kind === 'other' && (bucket.recordCount ?? 0) > 0)
+    return { clients: topBuckets(blocks).length, clientsAtLeast: beyond }
+  }
+  return { clients: pointsOf(buyerSeriesSchema.parse(raw ?? [])).get(String(period.year)) ?? null, clientsAtLeast: false }
 }
 
 export function mapSupplierProfile(cui: string, period: Period, latest: number, reads: SupplierReads): SupplierProfile {
@@ -350,14 +369,13 @@ export function mapSupplierProfile(cui: string, period: Period, latest: number, 
 
   return {
     cui,
-    year: period.year,
+    period: profilePeriodOf(period),
     latest,
-    through: period.through,
     name,
     registry: reads.registry ?? null,
     registryFailed: reads.registry === undefined,
-    direct: { ...figures(stats('direct')), clients: pointsOf(series('directBuyers')).get(String(period.year)) ?? null },
-    directPrev: raw.directPrev ? figures(stats('directPrev')) : null,
+    direct: { ...figures(stats('direct')), ...clientsOf(raw.directBuyers, period) },
+    directPrev: period.before ? figures(stats('directPrev')) : null,
     awards: figures(stats('awards')),
     contracts,
     directYears,
@@ -390,20 +408,20 @@ export function mapSupplierProfile(cui: string, period: Period, latest: number, 
 
 // ─────────────────────────────────────────────────────────── the reads ──
 
-/** The firm's page for a year: the reads side by side, the follow-ups on their keys. */
-export async function fetchProcurementSupplier(cui: string, year: number, signal?: AbortSignal): Promise<SupplierProfile> {
+/** The firm's page for a period: the reads side by side, the follow-ups on their keys. */
+export async function fetchProcurementSupplier(cui: string, choice: PeriodChoice, signal?: AbortSignal): Promise<SupplierProfile> {
   const latest = homeYear()
   const cutoffRead = untilAborted(readCutoffOutcome(latest), signal)
-  // The year in progress waits for the cutoff, which bounds its reads; a complete year starts at once.
-  const period = periodOf(year, latest, year > latest ? (await cutoffRead).cutoff : null)
+  // `undefined` for a failed read: the page names the firm by its own records and says nothing of its status. No period: it starts at once.
+  const registryRead = REGISTRY_CUI.test(cui) ? untilAborted(fetchPrivateCompanyProfile(cui).catch(() => undefined), signal) : Promise.resolve(null)
+  // The last twelve months and the year in progress wait for the cutoff, which bounds their reads; a complete year starts at once.
+  const period = periodOf(choice, latest, needsCutoff(choice, latest) ? (await cutoffRead).cutoff : null)
   // Three analysis requests: more, smaller ones queue behind each other on the API and come back later (measured 2026-09-28).
   // The year's clients go alone, so the weights they start begin early; the slow span since 2019 rides with the figures.
   const keysRead = analysis('ProcurementSupplierKeys', supplierKeyFields(cui, period), signal)
   const figuresRead = analysis('ProcurementSupplierFigures', [...supplierFigureFields(cui, period), ...supplierMonthFields(cui, latest), ...supplierSpanFields(cui, latest)], signal)
   const categoriesRead = analysis('ProcurementSupplierCategories', [...supplierCategoryFields(cui, period, 'direct'), ...supplierCategoryFields(cui, period, 'awards')], signal)
   const rowsRead = readSupplierRows(cui, period, latest, signal)
-  // `undefined` for a failed read: the page names the firm by its own records and says nothing of its status.
-  const registryRead = REGISTRY_CUI.test(cui) ? untilAborted(fetchPrivateCompanyProfile(cui).catch(() => undefined), signal) : Promise.resolve(null)
 
   const weightsRead = keysRead.then(async (keys) => {
     const clients = ranking(buyerBreakdownSchema.parse(keys.directClients)).rows.slice(0, WEIGHED_CLIENTS).map((row) => row.cui)
@@ -449,7 +467,7 @@ export async function fetchProcurementSupplier(cui: string, year: number, signal
     registryRead,
     cutoffRead,
   ])
-  return mapSupplierProfile(cui, period, latest, {
+  const profile = mapSupplierProfile(cui, period, latest, {
     raw: { ...keys, ...figuresRaw, ...categoriesRaw },
     rows,
     days,
@@ -462,16 +480,19 @@ export async function fetchProcurementSupplier(cui: string, year: number, signal
     cutoff: cutoff.cutoff,
     cutoffFailed: cutoff.failed,
   })
+  // The last twelve months could not be told (no cutoff): the page describes the last complete year, served once and read again.
+  return choice === RECENT && period.kind !== 'recent' ? { ...profile, partial: true } : profile
 }
 
 /**
- * The year's largest direct purchases, within the same period as the profile.
- * The year in progress needs the cutoff: without it the read fails (and is
- * read again) rather than keep a list that runs past it.
+ * The period's largest direct purchases, within the same period as the
+ * profile. A period that ends at the cutoff needs it: without it the read
+ * fails (and is read again) rather than keep a list that runs past it — it
+ * never falls back to a year, so a list is always the period asked for.
  */
-export async function fetchProcurementSupplierDirect(cui: string, year: number, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
+export async function fetchProcurementSupplierDirect(cui: string, choice: PeriodChoice, limit: number, signal?: AbortSignal): Promise<readonly RecentRecord[]> {
   const latest = homeYear()
-  const period = periodOf(year, latest, year > latest ? await untilAborted(readProcurementCutoff(latest), signal) : null)
+  const period = periodOf(choice, latest, needsCutoff(choice, latest) ? await untilAborted(readProcurementCutoff(latest), signal) : null)
   const raw = await graphqlQuery<unknown>(
     PROCUREMENT_HOME_DIRECT_QUERY,
     // The direct-purchase filter's `publicationDate` binds to the finalization date on the server.

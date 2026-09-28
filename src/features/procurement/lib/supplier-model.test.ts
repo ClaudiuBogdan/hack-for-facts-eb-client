@@ -1,17 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { clientName, contractClients, hasAnyRecord, isEmptyYear, knownClientName, scanIsWhole, steadyClients, supplierView, supplierYear } from './supplier-model'
+import { clientName, contractClients, hasAnyRecord, isEmptyYear, knownClientName, scanIsWhole, steadyClients, supplierView } from './supplier-model'
 import { consortiumContracts, supplierProfile } from './supplier.fixture'
-
-describe('supplierYear', () => {
-  it('takes a year from 2019 through the year in progress, and the last complete one otherwise', () => {
-    expect(supplierYear(2023, 2025)).toBe(2023)
-    expect(supplierYear(2019, 2025)).toBe(2019)
-    expect(supplierYear(2026, 2025)).toBe(2026)
-    expect(supplierYear(2027, 2025)).toBe(2025)
-    expect(supplierYear(2018, 2025)).toBe(2025)
-    expect(supplierYear(undefined, 2025)).toBe(2025)
-  })
-})
 
 describe('supplierView', () => {
   it('builds the registry’s model and places the firm in its county', () => {
@@ -38,7 +27,7 @@ describe('the profile helpers', () => {
 
   it('calls a year empty only when it has no direct purchase and no contract', () => {
     expect(isEmptyYear(supplierProfile())).toBe(false)
-    const none = { count: 0, valued: 0, value: null, clients: 0 }
+    const none = { count: 0, valued: 0, value: null, clients: 0, clientsAtLeast: false }
     expect(isEmptyYear(supplierProfile({ direct: none, contracts: { ...supplierProfile().contracts, count: 0 } }))).toBe(true)
     expect(isEmptyYear(supplierProfile({ direct: none, contracts: consortiumContracts() }))).toBe(false)
   })

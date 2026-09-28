@@ -1,6 +1,7 @@
 import type { BuyerProfile, BuyerRecords, SupplierYears } from './buyer-model'
 import { READER_CATEGORIES, type CategoryFigure } from './home-categories'
 import type { RecentRecord } from './home-model'
+import { yearPeriod } from './profile-period.fixture'
 
 /**
  * Builders for a buyer page's reads, shaped like the dev API's answer for
@@ -30,9 +31,8 @@ export function buyerProfile(overrides: Partial<BuyerProfile> = {}): BuyerProfil
       address: 'Orasul Otopeni, Str. 23 August, nr. 10, 75100',
       hasBudget: true,
     },
-    year: 2025,
+    period: yearPeriod(2025),
     latest: 2025,
-    through: null,
     county: 'IF',
     direct: { count: 293, valued: 293, value: 36_404_737, suppliers: 72 },
     directPrev: { count: 207, valued: 207, value: 25_300_000, suppliers: 60 },

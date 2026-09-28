@@ -1,5 +1,6 @@
 import type { CategoryFigure } from './home-categories'
 import { DIRECT_COMPARABLE_FROM, tidyName, type RecentRecord, type YearPoint } from './home-model'
+import type { ProfilePeriod } from './profile-period'
 
 /**
  * One buyer's procurement page (`/procurement/institutions/$cui`): the shapes
@@ -83,16 +84,14 @@ export interface SupplierYears {
 
 export interface BuyerProfile {
   readonly identity: BuyerIdentity
-  /** The year the page describes. */
-  readonly year: number
+  /** What the page describes: the last twelve months through SEAP's cutoff, or a calendar year. */
+  readonly period: ProfilePeriod
   /** The last complete year when the read was made; the year after it is the year in progress. */
   readonly latest: number
-  /** The year in progress is read through this month (SEAP's cutoff); null for a complete year. */
-  readonly through: string | null
   /** The buyer's county: the budget platform's, else the one its procurement records carry. */
   readonly county: string | null
   readonly direct: GrainFigures
-  /** The year before, for a change; null for 2019 (the year before is legacy SEAP) and for the year in progress. */
+  /** What the change compares with — the twelve months before, the year before; null for 2019 (legacy SEAP before it) and the year in progress. */
   readonly directPrev: GrainFigures | null
   /**
    * Contract awards only; framework agreements are ceilings, counted apart.
@@ -125,7 +124,7 @@ export interface BuyerProfile {
   readonly names: ReadonlyMap<string, string>
   /** The top direct-purchase sellers since 2019, year by year; empty when that read failed. */
   readonly supplierYears: readonly SupplierYears[]
-  /** The buyer's direct purchases against its county's, in the year. */
+  /** The buyer's direct purchases against its county's, over the page's period. */
   readonly countyShare: { readonly county: string; readonly share: number } | null
   /**
    * A read failed — the budget platform's identity, or the follow-up — and the
@@ -138,19 +137,10 @@ export interface BuyerProfile {
 }
 
 export interface BuyerRecords {
-  /** The year's largest contract awards, a consortium on one row. */
+  /** The period's largest contract awards, a consortium on one row. */
   readonly contracts: readonly RecentRecord[]
-  /** The year's largest direct purchases. */
+  /** The period's largest direct purchases. */
   readonly direct: readonly RecentRecord[]
-}
-
-/**
- * The year asked for, when a page can describe it: from 2019 (the first year
- * direct purchases compare) through the year in progress. Null otherwise —
- * the page then opens on the newest year with data (`readNewestYear`).
- */
-export function buyerYear(requested: number | undefined, latest: number): number | null {
-  return requested !== undefined && Number.isInteger(requested) && requested >= DIRECT_COMPARABLE_FROM && requested <= latest + 1 ? requested : null
 }
 
 // ───────────────────────────────────────────────────────── the buyer ──
@@ -217,7 +207,7 @@ export function hasAnyRecord(profile: BuyerProfile): boolean {
   return [...profile.directYears, ...profile.awardYears].some((point) => (point.count ?? 0) > 0) || (profile.frameworks ?? 0) > 0
 }
 
-/** The year had no record at all: the page says so once instead of seven empty bands. */
+/** The period had no record at all: the page says so once instead of seven empty bands. */
 export function isEmptyYear(profile: BuyerProfile): boolean {
   return (profile.direct.count ?? 0) === 0 && (profile.awards.count ?? 0) === 0 && (profile.frameworks ?? 0) === 0
 }

@@ -1,3 +1,4 @@
+import type { PeriodChoice } from '../lib/profile-period'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import { BUYER_LARGEST_RECORDS } from '../hooks/use-procurement-buyer'
@@ -11,7 +12,7 @@ import { fetchProcurementBuyer, fetchProcurementBuyerRecords } from './procureme
  * them (~1.0–1.3 s against the API), the records one more beside them; SEAP
  * loads daily at most, so each is kept in the
  * server process for as long as a shared cache may keep the page. The memo is
- * keyed by buyer and year and bounded — there are tens of thousands of
+ * keyed by buyer and period and bounded — there are tens of thousands of
  * buyers. Each read has its own deadline, not the request's signal: it is
  * shared across requests. A read past its deadline fails as a read; the page
  * reads it again in the browser and the render goes out `no-store`.
@@ -28,21 +29,21 @@ const records = createServerMemo<BuyerRecords>(KEEP_MS, { maxEntries: MAX_BUYERS
 const deadline = () => withDeadline(undefined, SSR_DEADLINE_MS)
 
 export interface ProcurementBuyerServerRead {
-  /** The year the reads describe, whatever failed: the browser seeds and reads under it. */
-  readonly year: number
+  /** The period the reads were asked for, whatever failed: the browser seeds and reads under it. */
+  readonly choice: PeriodChoice
   readonly profile?: BuyerProfile
   readonly records?: BuyerRecords
 }
 
 /** The two reads side by side; a failed one is left out, and the other stands. */
-export async function readProcurementBuyerForSsr(cui: string, year: number): Promise<ProcurementBuyerServerRead> {
-  const key = `${cui}:${year}`
+export async function readProcurementBuyerForSsr(cui: string, choice: PeriodChoice): Promise<ProcurementBuyerServerRead> {
+  const key = `${cui}:${choice}`
   const [profileRead, recordsRead] = await Promise.allSettled([
-    profiles(key, () => fetchProcurementBuyer(cui, year, deadline())),
-    records(key, () => fetchProcurementBuyerRecords(cui, year, BUYER_LARGEST_RECORDS, deadline())),
+    profiles(key, () => fetchProcurementBuyer(cui, choice, deadline())),
+    records(key, () => fetchProcurementBuyerRecords(cui, choice, BUYER_LARGEST_RECORDS, deadline())),
   ])
   return {
-    year,
+    choice,
     ...(profileRead.status === 'fulfilled' ? { profile: profileRead.value } : {}),
     ...(recordsRead.status === 'fulfilled' ? { records: recordsRead.value } : {}),
   }

@@ -3,6 +3,7 @@ import { READER_CATEGORIES, type CategoryFigure } from './home-categories'
 import type { RecentRecord } from './home-model'
 import type { PartyYears } from './profile-model'
 import type { ContractPicture, SupplierProfile } from './supplier-model'
+import { yearPeriod } from './profile-period.fixture'
 
 /**
  * Builders for a firm's page's reads, shaped like the dev API's answers for
@@ -90,9 +91,8 @@ export function consortiumContracts(): ContractPicture {
 export function supplierProfile(overrides: Partial<SupplierProfile> = {}): SupplierProfile {
   return {
     cui: '9813902',
-    year: 2025,
+    period: yearPeriod(2025),
     latest: 2025,
-    through: null,
     name: 'Costalex Construct SRL',
     registryFailed: false,
     registry: companyProfile({
@@ -107,7 +107,7 @@ export function supplierProfile(overrides: Partial<SupplierProfile> = {}): Suppl
       caenActivities: [{ code: '4120', rev: 'rev2', label: 'Lucrări de construcții a clădirilor rezidențiale și nerezidențiale', source: 'onrc' }],
       financials: [financialYear(2025, { turnover: 13_400_000, employees: 44 })],
     }),
-    direct: { count: 11, valued: 11, value: 4_835_000, clients: 5 },
+    direct: { count: 11, valued: 11, value: 4_835_000, clients: 5, clientsAtLeast: false },
     directPrev: { count: 12, valued: 12, value: 4_740_000 },
     awards: { count: 1, valued: 0, value: null },
     contracts: supplierContracts(),

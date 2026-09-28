@@ -864,6 +864,17 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-28 — Both profile pages open on the last twelve months.** A
+  buyer's and a firm's procurement page describe, without a year in the URL,
+  the twelve months ending at SEAP's derived cutoff, compared with the twelve
+  before; the period list offers them first, then 2026 (in progress) and the
+  complete years. Distinct counts over a window come from the concentration
+  read (firms) or the ranking (a firm's institutions, a floor past a
+  hundred), never from adding year buckets. *Why:* the owner wanted the
+  newest data by default on both pages; twelve months are as fresh as the
+  data and still a whole year's worth, so the comparison and the
+  per-resident figure hold. Supersedes the entry below. Details:
+  `docs/design/procurement/design.md` §15.
 - **2026-09-28 — The institution page opens on the latest data.** Without a
   year in the URL, `/procurement/institutions/$cui` describes the year in
   progress once SEAP's derived cutoff falls in it (else the last complete

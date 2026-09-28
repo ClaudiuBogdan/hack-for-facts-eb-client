@@ -10,9 +10,10 @@ import { DIRECT_COMPARABLE_FROM, type YearPoint } from '../../lib/home-model'
  * A procurement profile's head chart (a buyer's, a firm's): direct purchases
  * per year as bars (lei) and contracts as a line in a band of its own (a
  * count) — two units, one set of years, each band named beside it in its
- * series' colour. The page's year is the solid bar; pointing at a year gives
- * its figures, and a column is a button that makes its year the page's. The
- * year in progress is dashed and runs through SEAP's cutoff month.
+ * series' colour. The page's year is the solid bar (none for the last twelve
+ * months, whose figures the line above says); pointing at a year gives its
+ * figures, and a column is a button that makes its year the page's. The year
+ * in progress is dashed and runs through SEAP's cutoff month.
  */
 export function ProfileYearsChart({
   directYears,
@@ -22,13 +23,16 @@ export function ProfileYearsChart({
   partYear,
   cutoff,
   contractLabel,
+  readout = null,
   onYear,
   className,
 }: {
   readonly directYears: readonly YearPoint[]
   readonly contractYears: readonly YearPoint[]
-  /** The page's year. */
-  readonly year: number
+  /** The page's year; null for the last twelve months. */
+  readonly year: number | null
+  /** What the line above says when the page is not on a year and no column is pointed at: the last twelve months' figures. */
+  readonly readout?: { readonly label: string; readonly value: number | null; readonly count: number | null; readonly contracts: number | null } | null
   readonly latest: number
   readonly partYear: number | null
   readonly cutoff: { readonly direct: string | null; readonly contract: string | null }
@@ -40,7 +44,7 @@ export function ProfileYearsChart({
   const [active, setActive] = useState<number | null>(null)
   const titleId = useId()
   // The page's year always has its column: a year in progress with no record yet is still the one described.
-  const last = Math.max(partYear ?? latest, year)
+  const last = Math.max(partYear ?? latest, year ?? 0)
   const years = Array.from({ length: Math.max(0, last - DIRECT_COMPARABLE_FROM + 1) }, (_, index) => DIRECT_COMPARABLE_FROM + index)
   const direct = new Map(directYears.map((point) => [point.year, point]))
   const contracts = new Map(contractYears.map((point) => [point.year, point]))
@@ -58,8 +62,8 @@ export function ProfileYearsChart({
     path += `${move ? 'M' : 'L'}${centre(index).toFixed(2)},${(90 - (count / countMax) * 80).toFixed(2)} `
   })
   const shown = active ?? year
-  const shownDirect = direct.get(shown)
-  const shownContracts = contracts.get(shown)
+  const shownDirect = shown === null ? undefined : direct.get(shown)
+  const shownContracts = shown === null ? undefined : contracts.get(shown)
   // The year in progress says where each population's data ends — unless it is the page's year, whose head says so.
   const isPartShown = shown === partYear && shown !== year
   const columns = { gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }
@@ -71,6 +75,19 @@ export function ProfileYearsChart({
         <Trans>Pe ani, din {DIRECT_COMPARABLE_FROM}</Trans>
       </span>
       {/* Not a live region: each column's name carries its figures, and a pointer passing over them is not news. */}
+      {shown === null ? (
+        <p className="min-h-10 text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">{readout?.label}</span>
+          {readout ? (
+            <>
+              {': '}
+              {readout.value != null ? <span className="tabular-nums text-foreground">{moneyText(readout.value)}</span> : readout.count ? '—' : t`nicio achiziție directă`}
+              {readout.count ? ` · ${directPurchasesCount(readout.count)}` : ''}
+              {readout.contracts ? ` · ${contractsCount(readout.contracts)}` : ''}
+            </>
+          ) : null}
+        </p>
+      ) : (
       <p className="min-h-10 text-sm text-muted-foreground">
         <span className="font-semibold tabular-nums text-foreground">{shown}</span>
         {': '}
@@ -87,6 +104,7 @@ export function ProfileYearsChart({
         {shownContracts?.count ? ` · ${contractsCount(shownContracts.count)}` : ''}
         {isPartShown && cutoff.contract && cutoff.contract !== cutoff.direct && shownContracts?.count ? ` ${t`până în ${monthText(cutoff.contract)}`}` : ''}
       </p>
+      )}
       <div className="mt-2 grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3">
         {hasLine ? (
           <>

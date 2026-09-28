@@ -15,6 +15,7 @@ import {
   whereLede,
   yearsLede,
 } from './buyer-text'
+import { recentPeriod, yearPeriod } from './profile-period.fixture'
 
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
@@ -82,10 +83,10 @@ describe('what it buys', () => {
   it('names the leading category while it holds a fifth of the money and leads every bucket', () => {
     const profile = buyerProfile()
     // Under a half is the largest share, never „most".
-    expect(whatLede(profile.categories.direct, 'direct', 2025, i18n)).toBe(
+    expect(whatLede(profile.categories.direct, 'direct', '2025', i18n)).toBe(
       'Categoria cu cei mai mulți bani ai achizițiilor directe din 2025: alte lucrări de construcții, cu 23%. Urmează proiectare și inginerie, cu 15%.',
     )
-    expect(whatLede(profile.categories.contract, 'contract', 2025, i18n)).toBe(
+    expect(whatLede(profile.categories.contract, 'contract', '2025', i18n)).toBe(
       'Mai mult de jumătate din valoarea contractelor atribuite în 2025 (64%) a mers pe alte lucrări de construcții.',
     )
   })
@@ -93,13 +94,13 @@ describe('what it buys', () => {
   it('keeps an acronym whole mid-sentence, and says a whole share as all of it', () => {
     const it = { category: { key: 'it', label: { id: 'IT și telecomunicații', message: 'IT și telecomunicații' }, prefixes: ['72'] }, value: 40, count: 4, share: 0.4 }
     const roads = { ...buyerProfile().categories.direct[0]!, value: 60, share: 0.6 }
-    expect(whatLede([it as never, { ...roads, share: 0.3, value: 30 }], 'direct', 2025, i18n)).toContain(': IT și telecomunicații, cu 40%.')
-    expect(whatLede([{ ...roads, share: 1, value: 100 }], 'contract', 2025, i18n)).toBe('Toată valoarea contractelor atribuite în 2025 a mers pe alte lucrări de construcții.')
+    expect(whatLede([it as never, { ...roads, share: 0.3, value: 30 }], 'direct', '2025', i18n)).toContain(': IT și telecomunicații, cu 40%.')
+    expect(whatLede([{ ...roads, share: 1, value: 100 }], 'contract', '2025', i18n)).toBe('Toată valoarea contractelor atribuite în 2025 a mers pe alte lucrări de construcții.')
   })
 
   it('says nothing when no named category reaches a fifth', () => {
     const [first] = buyerProfile().categories.direct
-    expect(whatLede([{ ...first!, share: 0.15 }], 'direct', 2025, i18n)).toBeNull()
+    expect(whatLede([{ ...first!, share: 0.15 }], 'direct', '2025', i18n)).toBeNull()
   })
 })
 
@@ -144,7 +145,7 @@ describe('where, when and how', () => {
   it('says a year in progress bought only directly so far, not for the year', () => {
     const only = buyerProfile({ awards: { count: 0, valued: 0, value: null, suppliers: 0 }, frameworks: 0 })
     expect(balanceLede(only)).toBe('În 2025 a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.')
-    expect(balanceLede({ ...only, year: 2026, through: '2026-05' })).toBe(
+    expect(balanceLede({ ...only, period: yearPeriod(2026, '2026-05') })).toBe(
       'Până în mai 2026 a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.',
     )
   })
@@ -155,9 +156,9 @@ describe('where, when and how', () => {
       { year: 2025, value: 36_404_737, count: 293 },
       { year: 2026, value: 2_600_000, count: 46 },
     ]
-    expect(yearsLede(buyerProfile({ year: 2026, through: '2026-05', directYears: years }))).toContain('au crescut de la 18,0')
+    expect(yearsLede(buyerProfile({ period: yearPeriod(2026, '2026-05'), directYears: years }))).toContain('au crescut de la 18,0')
     // Its months stop at the cutoff: no December to weigh.
-    const part = buyerProfile({ year: 2026, through: '2026-05', directMonths: buyerProfile().directMonths.map((month, index) => ({ ...month, month: `2026-${month.month.slice(5)}`, value: index < 5 ? 1_000_000 : null })) })
+    const part = buyerProfile({ period: yearPeriod(2026, '2026-05'), directMonths: buyerProfile().directMonths.map((month, index) => ({ ...month, month: `2026-${month.month.slice(5)}`, value: index < 5 ? 1_000_000 : null })) })
     expect(decemberLede(part)).toBeNull()
   })
 
@@ -190,5 +191,25 @@ describe('where, when and how', () => {
       'Instituția a făcut 6,5% din achizițiile directe ale tuturor cumpărătorilor publici din județul Ilfov în 2025, după valoare.',
     )
     expect(countyShareLede(buyerProfile({ countyShare: { county: 'IF', share: 0.004 } }))).toBeNull()
+  })
+})
+
+describe('the last twelve months', () => {
+  const recent = recentPeriod('2026-05')
+
+  it('says them with their months in the head, and plainly elsewhere', () => {
+    expect(headSentence(buyerProfile({ period: recent }))).toContain('În ultimele 12 luni (iunie 2025 – mai 2026) a făcut 293 de achiziții directe')
+    expect(procedureLede(buyerProfile({ period: recent }))).toContain('atribuite în ultimele 12 luni')
+  })
+
+  it('weighs December in them, the year’s end they hold', () => {
+    const window = ['2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05']
+    const months = window.map((month) => ({ month, value: month === '2025-12' ? 6_000_000 : 1_000_000, count: 20 }))
+    expect(decemberLede(buyerProfile({ period: recent, directMonths: months }))).toMatch(/^Decembrie a adus 35% din banii achizițiilor directe ale ultimelor 12 luni/)
+  })
+
+  it('says they bought only directly — not „so far": the twelve months are whole', () => {
+    const only = buyerProfile({ period: recent, awards: { count: 0, valued: 0, value: null, suppliers: 0 }, frameworks: 0 })
+    expect(balanceLede(only)).toBe('În ultimele 12 luni a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.')
   })
 })

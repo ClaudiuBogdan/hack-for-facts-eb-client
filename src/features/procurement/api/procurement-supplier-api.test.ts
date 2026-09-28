@@ -224,7 +224,7 @@ describe('fetchProcurementSupplier', () => {
       analysis: { ProcurementSupplierPlaces: { c0: [{ rankedBy: 'count', buckets: [top('B', '10', null)] }] } },
     })
     const profile = await fetchProcurementSupplier('103029862', LATEST)
-    expect(profile).toMatchObject({ name: 'Hydrostroy AD', partial: false, countiesOf: 'contracts', through: null })
+    expect(profile).toMatchObject({ name: 'Hydrostroy AD', partial: false, countiesOf: 'contracts', period: { kind: 'year', year: LATEST, through: null } })
     expect(profile.contracts).toMatchObject({ count: 1, together: 1, unresolved: 0 })
     expect(profile.contracts.partners.map((partner) => partner.name)).toEqual(['"Patstroy Vdh" EAD'])
     expect(profile.counties).toEqual([{ code: 'B', count: 1, value: null, share: 1 }])
@@ -320,7 +320,7 @@ describe('fetchProcurementSupplier', () => {
       },
     })
     const profile = await fetchProcurementSupplier('103029862', PART)
-    expect(profile).toMatchObject({ through: `${PART}-05`, partial: false })
+    expect(profile).toMatchObject({ period: { kind: 'year', year: PART, through: `${PART}-05` }, partial: false })
     expect((call('ProcurementSupplierRows')?.[1] as { rows: { contractDate: unknown } }).rows.contractDate).toEqual({ gte: `${PART}-01-01`, lte: `${PART}-05-31` })
     expect((call('ProcurementSupplierFigures')?.[1] as Raw).direct).toMatchObject({ from: `${PART}-01`, to: `${PART}-05` })
   })
@@ -329,10 +329,39 @@ describe('fetchProcurementSupplier', () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     vi.setSystemTime(Date.now() + 2 * 60 * 60 * 1000)
     answer({ failing: ['ProcurementCutoff'] })
-    expect(await fetchProcurementSupplier('103029862', PART)).toMatchObject({ through: null, partial: true, directPrev: null })
+    expect(await fetchProcurementSupplier('103029862', PART)).toMatchObject({ period: { through: null }, partial: true, directPrev: null })
     // A complete year still reads whole, with its comparison.
-    expect(await fetchProcurementSupplier('103029862', LATEST)).toMatchObject({ through: null, partial: true, cutoff: { direct: null, contract: null } })
+    expect(await fetchProcurementSupplier('103029862', LATEST)).toMatchObject({ period: { through: null }, partial: true, cutoff: { direct: null, contract: null } })
     expect(call('ProcurementSupplierFigures')?.[1]).toMatchObject({ direct: { year: PART } })
+  })
+
+  it('reads the last twelve months through the cutoff, against the twelve before; their institutions through the ranking, a floor at a hundred', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(Date.now() + 3 * 60 * 60 * 1000)
+    const clients = (count: number, rest = '0') => [
+      { rankedBy: 'count', buckets: [...Array.from({ length: count }, (_, index) => top(String(1000 + index), '1', null)), { key: null, kind: 'other', recordCount: rest, withValueCount: rest, valueSum: null, shareOfScope: null }] },
+    ]
+    answer({
+      analysis: {
+        ProcurementCutoff: {
+          nationalDirectMonths: series({ ...months(LATEST, '160000'), ...months(PART, '150000', 6) }),
+          nationalAwardMonths: series({ ...months(LATEST, '3000'), ...months(PART, '3000', 5) }),
+        },
+        ProcurementSupplierFigures: { directBuyers: clients(7) },
+      },
+    })
+    const profile = await fetchProcurementSupplier('9813902', 'recent')
+    expect(profile).toMatchObject({ period: { kind: 'recent', from: `${LATEST}-06`, through: `${PART}-05` }, direct: { clients: 7, clientsAtLeast: false } })
+    const figures = call('ProcurementSupplierFigures')?.[1] as Raw
+    expect(figures.direct).toMatchObject({ from: `${LATEST}-06`, to: `${PART}-05` })
+    expect(figures.directPrev).toMatchObject({ from: `${LATEST - 1}-06`, to: `${LATEST}-05` })
+    expect(call('ProcurementSupplierFigures')?.[0]).toContain('directBuyers: procurementBreakdown(scope: $directBuyers, dimension: authority, topN: 100, rankBy: count)')
+    expect((call('ProcurementSupplierRows')?.[1] as { rows: { contractDate: unknown } }).rows.contractDate).toEqual({ gte: `${LATEST}-06-01`, lte: `${PART}-05-31` })
+    // Past the ranking's hundred, the rest of the records are other institutions': a floor. Exactly a hundred is a hundred.
+    answer({ analysis: { ProcurementSupplierFigures: { directBuyers: clients(100, '629') } } })
+    expect((await fetchProcurementSupplier('8971726', 'recent')).direct).toMatchObject({ clients: 100, clientsAtLeast: true })
+    answer({ analysis: { ProcurementSupplierFigures: { directBuyers: clients(100) } } })
+    expect((await fetchProcurementSupplier('8971726', 'recent')).direct).toMatchObject({ clients: 100, clientsAtLeast: false })
   })
 
   it('fails when the reader leaves, even while a read it cannot cancel is still out', async () => {

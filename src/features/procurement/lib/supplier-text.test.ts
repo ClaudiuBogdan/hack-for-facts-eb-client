@@ -3,12 +3,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { supplierView } from './supplier-model'
 import { clientsLede, headSentence, howLede, partnersLede, steadyLede, whatLede, whereLede } from './supplier-text'
 import { consortiumContracts, supplierContracts, supplierProfile } from './supplier.fixture'
+import { recentPeriod, yearPeriod } from './profile-period.fixture'
 
 // Numbers follow the page's language: Romanian here.
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 const NBSP = '\u00a0'
-const none = { count: 0, valued: 0, value: null, clients: 0 }
+const none = { count: 0, valued: 0, value: null, clients: 0, clientsAtLeast: false }
 
 describe('headSentence', () => {
   it('says what the firm sold directly and won in the year', () => {
@@ -16,7 +17,7 @@ describe('headSentence', () => {
   })
 
   it('counts the contracts won with other firms, when every row was read', () => {
-    const profile = supplierProfile({ year: 2024, direct: none, contracts: consortiumContracts() })
+    const profile = supplierProfile({ period: yearPeriod(2024), direct: none, contracts: consortiumContracts() })
     expect(headSentence(profile)).toBe('În 2024 a câștigat 16 contracte, 14 împreună cu alte firme.')
     // Past the hundred largest rows the scan cannot tell the rest apart.
     expect(headSentence({ ...profile, contracts: { ...consortiumContracts(), count: 400, scanned: 100 } })).toBe('În 2024 a câștigat 400 de contracte.')
@@ -55,8 +56,8 @@ describe('steadyLede', () => {
 describe('whatLede', () => {
   it('names what the firm sells most, and says when it sells more than that', () => {
     const profile = supplierProfile()
-    expect(whatLede(profile.categories.direct, 'direct', 2025, i18n)).toBe('Categoria cu cei mai mulți bani din 2025 e drumuri, poduri și autostrăzi (38%); firma vinde și altceva.')
-    expect(whatLede(consortiumContracts().categories ?? [], 'contract', 2024, i18n)).toBe('Mai mult de jumătate din valoarea contractelor din 2024 e la apă, canalizare și rețele.')
+    expect(whatLede(profile.categories.direct, 'direct', '2025', i18n)).toBe('Categoria cu cei mai mulți bani din 2025 e drumuri, poduri și autostrăzi (38%); firma vinde și altceva.')
+    expect(whatLede(consortiumContracts().categories ?? [], 'contract', '2024', i18n)).toBe('Mai mult de jumătate din valoarea contractelor din 2024 e la apă, canalizare și rețele.')
   })
 })
 
@@ -64,7 +65,7 @@ describe('whatLede, guarded', () => {
   it('names no leader when „Altele" or the records with no CPV code hold more', () => {
     const [roads] = supplierProfile().categories.direct
     const other = { category: { key: 'altele', label: { id: 'Altele', message: 'Altele' }, prefixes: [] }, value: 900, count: 9, share: 0.9 }
-    expect(whatLede([{ ...roads!, share: 0.1, value: 100 }, other as never], 'direct', 2025, i18n)).toBeNull()
+    expect(whatLede([{ ...roads!, share: 0.1, value: 100 }, other as never], 'direct', '2025', i18n)).toBeNull()
   })
 })
 
@@ -121,25 +122,25 @@ describe('howLede', () => {
 
 describe('partnersLede', () => {
   it('counts the contracts won in a consortium and names the partner seen most', () => {
-    const profile = supplierProfile({ year: 2024, contracts: consortiumContracts() })
+    const profile = supplierProfile({ period: yearPeriod(2024), contracts: consortiumContracts() })
     expect(partnersLede(profile)).toBe('14 din cele 16 contracte din 2024 au fost câștigate împreună cu alte firme, în asociere. Cel mai des, cu Dexamart: 6 contracte.')
     expect(partnersLede(supplierProfile())).toBeNull()
   })
 
   it('says for how many contracts SEAP does not show whether they had partners', () => {
-    const profile = supplierProfile({ year: 2024, contracts: { ...consortiumContracts(), unresolved: 2 } })
+    const profile = supplierProfile({ period: yearPeriod(2024), contracts: { ...consortiumContracts(), unresolved: 2 } })
     expect(partnersLede(profile)).toContain('Pentru 2 contracte, datele SEAP nu arată dacă au avut parteneri.')
     // …and the head does not count the partnerships as if the rest had none.
     expect(headSentence({ ...profile, direct: none })).toBe('În 2024 a câștigat 16 contracte.')
   })
 
   it('says the scan covered only the largest contracts', () => {
-    const profile = supplierProfile({ year: 2024, contracts: { ...consortiumContracts(), count: 400, scanned: 100 } })
+    const profile = supplierProfile({ period: yearPeriod(2024), contracts: { ...consortiumContracts(), count: 400, scanned: 100 } })
     expect(partnersLede(profile)).toContain('Dintre cele mai mari 100 de contracte din 2024, 14 au fost câștigate împreună cu alte firme')
   })
 
   it('says one contract in the singular', () => {
-    const one = (overrides: Partial<ReturnType<typeof consortiumContracts>>) => partnersLede(supplierProfile({ year: 2025, contracts: { ...consortiumContracts(), together: 1, ...overrides } }))
+    const one = (overrides: Partial<ReturnType<typeof consortiumContracts>>) => partnersLede(supplierProfile({ period: yearPeriod(2025), contracts: { ...consortiumContracts(), together: 1, ...overrides } }))
     expect(one({ count: 137, scanned: 100 })).toContain('Dintre cele mai mari 100 de contracte din 2025, unul a fost câștigat împreună cu alte firme, în asociere.')
     expect(one({})).toContain('Unul din cele 16 contracte din 2025 a fost câștigat împreună cu alte firme, în asociere.')
     expect(one({ count: 1, scanned: 1 })).toContain('Singurul contract din 2025 a fost câștigat împreună cu alte firme, în asociere.')
@@ -147,8 +148,16 @@ describe('partnersLede', () => {
   })
 
   it('says in the head when every contract was won with others, or one', () => {
-    const all = supplierProfile({ year: 2024, direct: none, contracts: { ...consortiumContracts(), together: 16 } })
+    const all = supplierProfile({ period: yearPeriod(2024), direct: none, contracts: { ...consortiumContracts(), together: 16 } })
     expect(headSentence(all)).toBe('În 2024 a câștigat 16 contracte, toate împreună cu alte firme.')
     expect(headSentence({ ...all, contracts: { ...all.contracts, together: 1 } })).toBe('În 2024 a câștigat 16 contracte, unul împreună cu alte firme.')
+  })
+})
+
+describe('the last twelve months', () => {
+  it('says them with their months in the head, and a floor of institutions as one', () => {
+    const profile = supplierProfile({ period: recentPeriod('2026-05'), direct: { count: 1_496, valued: 1_496, value: 55_700_000, clients: 100, clientsAtLeast: true } })
+    expect(headSentence(profile)).toMatch(/^În ultimele 12 luni \(iunie 2025 – mai 2026\) a vândut direct de 55,7\smil\.\slei, fără TVA, la peste 100 de instituții/)
+    expect(howLede(profile)).toMatch(/^În ultimele 12 luni, 1\.496 de achiziții directe/)
   })
 })

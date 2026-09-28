@@ -18,12 +18,13 @@ const cuiSchema = z
   .regex(/^\d{1,12}$/, 'CUI invalid')
 
 /**
- * One firm's procurement page. The year it describes comes from the URL
- * (`year`, 2019 through the year in progress; else the last complete one)
- * and is fixed here, in the loader, so the server and the browser agree.
+ * One firm's procurement page. What it describes comes from the URL: a
+ * `year` from 2019 through the year in progress; without one, or out of
+ * range, the last twelve months SEAP has complete. It is fixed here, in the
+ * loader, so the server and the browser agree.
  *
- * The profile and the year's largest direct purchases are read on the server
- * (kept there ten minutes per firm and year, under a deadline — see
+ * The profile and the period's largest direct purchases are read on the server
+ * (kept there ten minutes per firm and period, under a deadline — see
  * `procurement-supplier-ssr.ts`) and seed the page's queries; on a client-side
  * navigation the loader starts them and returns at once, so the page frame
  * paints and fills in.
@@ -41,19 +42,19 @@ export const Route = createFileRoute('/procurement/suppliers/$cui')({
   loaderDeps: ({ search }) => ({ year: search.year }),
   loader: async ({ context, params, deps }): Promise<ProcurementSupplierInitialData> => {
     const { homeYear } = await import('@/features/procurement/lib/home-model')
-    const { supplierYear } = await import('@/features/procurement/lib/supplier-model')
-    const year = supplierYear(deps.year, homeYear())
+    const { periodChoice } = await import('@/features/procurement/lib/profile-period')
+    const choice = periodChoice(deps.year, homeYear())
     if (!shouldBlockLoaderForSsr()) {
       const hooks = await import('@/features/procurement/hooks/use-procurement-supplier')
-      void context.queryClient.prefetchQuery(hooks.procurementSupplierQueryOptions(params.cui, year)).catch(() => undefined)
-      void context.queryClient.prefetchQuery(hooks.procurementSupplierDirectQueryOptions(params.cui, year)).catch(() => undefined)
-      return { year }
+      void context.queryClient.prefetchQuery(hooks.procurementSupplierQueryOptions(params.cui, choice)).catch(() => undefined)
+      void context.queryClient.prefetchQuery(hooks.procurementSupplierDirectQueryOptions(params.cui, choice)).catch(() => undefined)
+      return { choice }
     }
     // Read directly, not through the query client: a query created on the
     // server is dehydrated with the server's clock, so a copy served from a
     // shared cache would look stale on mount and read again.
     const { readProcurementSupplierForSsr } = await import('@/features/procurement/api/procurement-supplier-ssr')
-    const read = await readProcurementSupplierForSsr(params.cui, year)
+    const read = await readProcurementSupplierForSsr(params.cui, choice)
     // An identifier the API refuses as an organisation's (a foreign or malformed key in a ranking) has no page.
     if (read.notFound) throw notFound()
     return read
@@ -75,7 +76,7 @@ export const Route = createFileRoute('/procurement/suppliers/$cui')({
     const translator = translatorFor(match.context.locale)
     const canonical = `${getSiteUrl()}/procurement/suppliers/${params.cui}`
     const profile = loaderData?.profile
-    // After a year is picked in the browser the loader returns only the year: any year's profile of the firm names it.
+    // After a period is picked in the browser the loader returns only the choice: any period's profile of the firm names it.
     const cached = profile
       ? null
       : match.context.queryClient

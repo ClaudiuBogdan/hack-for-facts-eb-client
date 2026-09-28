@@ -18,6 +18,8 @@ import type { SupplierProfile, SupplierView } from '../../lib/supplier-model'
 import { headSentence } from '../../lib/supplier-text'
 import { ProfileTopRow } from '../profile/profile-top-row'
 import { ProfileYearSelect } from '../profile/profile-year-select'
+import { choiceOf, type PeriodChoice } from '../../lib/profile-period'
+import { recentOptionOf } from '../../lib/profile-period-text'
 
 /**
  * The page's head, in the company profile's own shape — its sentence, status
@@ -61,28 +63,29 @@ function SupplierKicker({ county }: { readonly county: string | null }) {
   )
 }
 
-/** The head's top row: the way back, the year — the year in progress first — and how recent its data is. */
+/** The head's top row: the way back, the period — the last twelve months first — and how recent its data is. */
 function SupplierTopRow({
   county,
-  year,
-  onYear,
+  choice,
+  onChoice,
   profile,
 }: {
   readonly county: string | null
-  readonly year: number
-  readonly onYear: (year: number) => void
+  readonly choice: PeriodChoice
+  readonly onChoice: (choice: PeriodChoice) => void
   readonly profile: SupplierProfile | null
 }) {
-  // The date shows once the read of the year asked has landed.
-  const shown = profile && profile.year === year ? profile : null
+  // The date shows once the read of the period asked has landed.
+  const shown = profile && choiceOf(profile.period) === choice ? profile : null
   return (
     <ProfileTopRow kicker={<SupplierKicker county={county} />} read={shown}>
       <ProfileYearSelect
         points={profile ? { direct: profile.directYears, contracts: profile.contractYears } : null}
-        year={year}
+        value={choice}
         latest={profile?.latest ?? homeYear()}
+        recent={recentOptionOf(profile ? { period: profile.period, cutoff: profile.cutoff, directValue: profile.direct.value, contracts: profile.contracts.count } : null)}
         emptyLabel={t`fără vânzări`}
-        onYear={onYear}
+        onChoice={onChoice}
       />
     </ProfileTopRow>
   )
@@ -113,14 +116,14 @@ function firmSentence(profile: SupplierView): string | null {
 
 export function SupplierHead({
   profile,
-  year,
-  onYear,
+  choice,
+  onChoice,
   aside,
 }: {
   readonly profile: SupplierView
-  /** The year asked for, which the dropdown shows at once. */
-  readonly year: number
-  readonly onYear: (year: number) => void
+  /** The period asked for, which the dropdown shows at once. */
+  readonly choice: PeriodChoice
+  readonly onChoice: (choice: PeriodChoice) => void
   readonly aside: ReactNode
 }) {
   return (
@@ -128,7 +131,7 @@ export function SupplierHead({
       <TwoLayerLattice idPrefix="supplier-profile" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
-        <SupplierTopRow county={profile.county} year={year} onYear={onYear} profile={profile} />
+        <SupplierTopRow county={profile.county} choice={choice} onChoice={onChoice} profile={profile} />
         <div className="mt-4 grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-8">
           <div className={cn('min-w-0', aside ? 'lg:col-span-7' : 'lg:col-span-12')}>
             <h1 id="supplier-profile-title" className={cn('font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[nameLength(profile.name)])}>
@@ -175,14 +178,14 @@ export function SupplierHead({
 export function SupplierHeadPending({
   cui,
   company,
-  year,
-  onYear,
+  choice,
+  onChoice,
   children,
 }: {
   readonly cui: string
   readonly company: CompanyProfileModel | null
-  readonly year: number
-  readonly onYear: (year: number) => void
+  readonly choice: PeriodChoice
+  readonly onChoice: (choice: PeriodChoice) => void
   readonly children?: ReactNode
 }) {
   return (
@@ -190,7 +193,7 @@ export function SupplierHeadPending({
       <TwoLayerLattice idPrefix="supplier-profile" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
-        <SupplierTopRow county={company?.place.countyCode ?? null} year={year} onYear={onYear} profile={null} />
+        <SupplierTopRow county={company?.place.countyCode ?? null} choice={choice} onChoice={onChoice} profile={null} />
         {company ? (
           <>
             <h1 className={cn('mt-4 font-extrabold leading-[0.95] tracking-tighter text-foreground', HEADING[nameLength(company.displayName)])}>{company.displayName}</h1>

@@ -20,6 +20,8 @@ import { CategoryRows } from '../home/home-rows'
 import { PartyYearsMatrix } from '../profile/party-years-matrix'
 import { CountyRows, ProcedureRows } from '../profile/profile-rows'
 import { ClientRows, PartnerRows, RecordList } from './supplier-rows'
+import { periodText } from '../../lib/profile-period-text'
+import { periodYear } from '../../lib/profile-period'
 
 /**
  * A firm's page's bands, one per question: who buys from it (and what it is
@@ -68,7 +70,7 @@ export function SupplierClientsBand({ profile, index }: { readonly profile: Supp
         {hasDirect ? (
           <div className="min-w-0">
             <MonoLabel className="block text-muted-foreground">
-              <Trans>Achiziții directe, după valoare, {profile.year}</Trans>
+              <Trans>Achiziții directe, după valoare, {periodText(profile.period)}</Trans>
             </MonoLabel>
             <ClientRows className="mt-3" profile={profile} ranking={profile.directClients} grain="direct" />
           </div>
@@ -76,14 +78,14 @@ export function SupplierClientsBand({ profile, index }: { readonly profile: Supp
         {hasContracts ? (
           <div className="min-w-0">
             <MonoLabel className="block text-muted-foreground">
-              <Trans>Contracte câștigate, după număr, {profile.year}</Trans>
+              <Trans>Contracte câștigate, după număr, {periodText(profile.period)}</Trans>
             </MonoLabel>
             <ClientRows className="mt-3" profile={profile} ranking={contracts} grain="contract" />
           </div>
         ) : null}
         {!hasDirect && !hasContracts ? (
           <p className={EMPTY}>
-            <Trans>Nicio vânzare în {profile.year}.</Trans>
+            <Trans>Nicio vânzare în {periodText(profile.period)}.</Trans>
           </p>
         ) : null}
       </div>
@@ -98,7 +100,7 @@ export function SupplierClientsBand({ profile, index }: { readonly profile: Supp
           <PartyYearsMatrix
             className="mt-4"
             rows={matrix}
-            year={profile.year}
+            year={periodYear(profile.period)}
             kind="authority"
             nameOf={(cui) => clientName(profile, cui)}
             caption={t`Achiziții directe de la firmă, pe instituții și ani, lei`}
@@ -137,7 +139,7 @@ export function SupplierWhatBand({
   const fromRows = grain === 'contract' && profile.contracts.categories !== null
   const rows = grain === 'contract' ? (profile.contracts.categories ?? profile.categories.contract) : profile.categories.direct
   const shown = all ? rows : rows.slice(0, CATEGORIES_SHOWN)
-  const lede = whatLede(rows, grain, profile.year, i18n)
+  const lede = whatLede(rows, grain, periodText(profile.period), i18n)
   const both = (profile.direct.count ?? 0) > 0 && profile.contracts.count > 0
   return (
     <HomeBand id="ce" labelledBy="supplier-what-title">
@@ -159,7 +161,7 @@ export function SupplierWhatBand({
       <div className="mt-8" data-reveal>
         {rows.length === 0 ? (
           <p className={EMPTY}>
-            {grain === 'direct' ? <Trans>Nicio achiziție directă în {profile.year}.</Trans> : <Trans>Niciun contract în {profile.year}.</Trans>}
+            {grain === 'direct' ? <Trans>Nicio achiziție directă în {periodText(profile.period)}.</Trans> : <Trans>Niciun contract în {periodText(profile.period)}.</Trans>}
           </p>
         ) : (
           <CategoryRows rows={shown} grain={grain} className={COLUMNS} />
@@ -198,7 +200,7 @@ export function SupplierWhatBand({
 export function SupplierWhereBand({ profile, index }: { readonly profile: SupplierView; readonly index: string }) {
   const direct = profile.countiesOf === 'direct'
   // A row opens the explorer on what it counts: the firm's direct purchases, or its contracts, from that county.
-  const searchOf = (code: string) => supplierCountySearch(profile.cui, code, profile, direct ? 'direct' : 'contract')
+  const searchOf = (code: string) => supplierCountySearch(profile.cui, code, profile.period, direct ? 'direct' : 'contract')
   return (
     <HomeBand id="unde" labelledBy="supplier-where-title">
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
@@ -208,11 +210,11 @@ export function SupplierWhereBand({ profile, index }: { readonly profile: Suppli
         <div className={OTHER_HALF} data-reveal>
           <MonoLabel className="block text-muted-foreground">
             {!direct ? (
-              <Trans>Contractele, după județul instituției, {profile.year}</Trans>
+              <Trans>Contractele, după județul instituției, {periodText(profile.period)}</Trans>
             ) : profile.countiesRankedBy === 'value' ? (
-              <Trans>Banii achizițiilor directe, după județul instituției, {profile.year}</Trans>
+              <Trans>Banii achizițiilor directe, după județul instituției, {periodText(profile.period)}</Trans>
             ) : (
-              <Trans>Achizițiile directe, după județul instituției, {profile.year}</Trans>
+              <Trans>Achizițiile directe, după județul instituției, {periodText(profile.period)}</Trans>
             )}
           </MonoLabel>
           <CountyRows
@@ -222,7 +224,7 @@ export function SupplierWhereBand({ profile, index }: { readonly profile: Suppli
             home={profile.county}
             homeLabel={t`județul firmei`}
             searchOf={searchOf}
-            empty={t`Nicio vânzare în ${profile.year}.`}
+            empty={t`Nicio vânzare în ${periodText(profile.period)}.`}
           />
         </div>
       </div>
@@ -264,9 +266,9 @@ export function SupplierHowBand({ profile, index }: { readonly profile: Supplier
         </div>
         <div className={OTHER_HALF} data-reveal>
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Contracte câștigate în {profile.year}, după procedură</Trans>
+            <Trans>Contracte câștigate în {periodText(profile.period)}, după procedură</Trans>
           </MonoLabel>
-          <ProcedureRows className="mt-3" procedures={profile.procedures} unlisted={profile.proceduresUnlisted} empty={t`Niciun contract în ${profile.year}.`} />
+          <ProcedureRows className="mt-3" procedures={profile.procedures} unlisted={profile.proceduresUnlisted} empty={t`Niciun contract în ${periodText(profile.period)}.`} />
           {listed > 0 && listed < profile.contracts.count ? (
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{t`SEAP dă procedura pentru ${contractsCount(listed)} din ${profile.contracts.count}.`}</p>
           ) : null}
@@ -316,9 +318,9 @@ export function SupplierPartnersBand({ profile, index }: { readonly profile: Sup
         </div>
         <div className={OTHER_HALF} data-reveal>
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Partenerii de asociere, {profile.year}</Trans>
+            <Trans>Partenerii de asociere, {periodText(profile.period)}</Trans>
           </MonoLabel>
-          <PartnerRows className="mt-3" partners={contracts.partners} year={profile.year} />
+          <PartnerRows className="mt-3" partners={contracts.partners} period={profile.period} />
         </div>
       </div>
     </HomeBand>
@@ -350,7 +352,7 @@ export function SupplierLargestBand({
       <HubSectionHead
         titleId="supplier-largest-title"
         index={index}
-        title={<Trans>Cele mai mari din {profile.year}</Trans>}
+        title={<Trans>Cele mai mari din {periodText(profile.period)}</Trans>}
         lede={
           grain === 'contract' ? (
             <Trans>Contractele cu cea mai mare valoare, fiecare cu toate firmele care l-au câștigat.</Trans>
@@ -369,9 +371,9 @@ export function SupplierLargestBand({
           ) : (
             <p className={EMPTY}>
               {grain === 'contract' ? (
-                <Trans>Niciun contract cu valoare publicată în {profile.year}.</Trans>
+                <Trans>Niciun contract cu valoare publicată în {periodText(profile.period)}.</Trans>
               ) : (
-                <Trans>Nicio achiziție directă cu valoare publicată în {profile.year}.</Trans>
+                <Trans>Nicio achiziție directă cu valoare publicată în {periodText(profile.period)}.</Trans>
               )}
             </p>
           )
@@ -386,8 +388,8 @@ export function SupplierLargestBand({
           ) : (
             <span />
           )}
-          <Link to="/procurement/search" search={supplierRecordsSearch(profile.cui, profile, grain)} className={OUT_LINK}>
-            {grain === 'contract' ? <Trans>Toate contractele din {profile.year}</Trans> : <Trans>Toate achizițiile directe din {profile.year}</Trans>}
+          <Link to="/procurement/search" search={supplierRecordsSearch(profile.cui, profile.period, grain)} className={OUT_LINK}>
+            {grain === 'contract' ? <Trans>Toate contractele din {periodText(profile.period)}</Trans> : <Trans>Toate achizițiile directe din {periodText(profile.period)}</Trans>}
             <ArrowUpRight className="size-3.5" aria-hidden="true" />
           </Link>
         </div>

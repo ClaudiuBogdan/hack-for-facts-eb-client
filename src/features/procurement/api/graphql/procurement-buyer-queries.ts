@@ -21,6 +21,9 @@ export const buyerStatsSchema = z.object({
 
 export const buyerSeriesSchema = z.array(z.object({ points: z.array(z.object({ bucket: z.string(), value: decimal })).nullable() }))
 
+/** Distinct known firms in a scope, whatever its span: a series' distinct counts cannot be added across its buckets. */
+export const buyerConcentrationSchema = z.array(z.object({ supplierCount: z.number().nullable() }))
+
 export const buyerBreakdownSchema = z.array(
   z.object({
     rankedBy: z.string().nullable(),
@@ -51,6 +54,7 @@ export const buyerLabelsSchema = z.array(z.object({ cui: z.string().nullable(), 
 
 export type RawBuyerStats = z.infer<typeof buyerStatsSchema>
 export type RawBuyerSeries = z.infer<typeof buyerSeriesSchema>
+export type RawBuyerConcentration = z.infer<typeof buyerConcentrationSchema>
 export type RawBuyerBreakdown = z.infer<typeof buyerBreakdownSchema>
 
 const STATS = 'blocks { recordCount withValueCount valueAwardedSum }'
@@ -69,7 +73,7 @@ export type BuyerFieldGroup = 'keys' | 'figures' | 'categories'
 /** One aliased analysis read; the scope is its variable of the same name. */
 export interface BuyerField {
   readonly alias: string
-  readonly kind: 'stats' | 'series' | 'breakdown'
+  readonly kind: 'stats' | 'series' | 'breakdown' | 'concentration'
   readonly scope: Readonly<Record<string, unknown>>
   /** The shape's own arguments (`bucket`/`measure`, `dimension`/`topN`/`rankBy`); enum literals, never input. */
   readonly args?: string
@@ -80,6 +84,7 @@ export interface BuyerField {
 function fieldOf(field: BuyerField): string {
   if (field.kind === 'stats') return `${field.alias}: procurementStats(scope: $${field.alias}) { ${STATS} }`
   if (field.kind === 'series') return `${field.alias}: procurementSeries(scope: $${field.alias}, ${field.args ?? ''}) { ${SERIES} }`
+  if (field.kind === 'concentration') return `${field.alias}: procurementConcentration(scope: $${field.alias}, basis: count) { supplierCount }`
   return `${field.alias}: procurementBreakdown(scope: $${field.alias}, ${field.args ?? ''}) { ${BREAKDOWN} }`
 }
 

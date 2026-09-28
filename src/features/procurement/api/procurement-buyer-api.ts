@@ -1,6 +1,7 @@
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   buyerBreakdownSchema,
+  buyerConcentrationSchema,
   buyerEntitySchema,
   buyerLabelsSchema,
   buyerSeriesSchema,
@@ -10,6 +11,7 @@ import {
   type BuyerField,
   type BuyerFieldGroup,
   type RawBuyerBreakdown,
+  type RawBuyerConcentration,
   type RawBuyerSeries,
   type RawBuyerStats,
 } from './graphql/procurement-buyer-queries'
@@ -30,7 +32,7 @@ import {
 } from '../lib/buyer-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
-import { periodOf, throughMonth, type Cutoff, type Period } from '../lib/profile-period'
+import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
 
 /**
  * One buyer's page, read as:
@@ -78,13 +80,13 @@ const SPAN_SUPPLIERS = 8
 
 // ──────────────────────────────────────────────────────────── mapping ──
 
-function figures(stats: RawBuyerStats | undefined, suppliers: RawBuyerSeries | undefined): GrainFigures {
+function figures(stats: RawBuyerStats | undefined, sellers: RawBuyerConcentration | undefined): GrainFigures {
   const block = stats?.blocks[0]
   return {
     count: block?.recordCount ?? null,
     valued: block?.withValueCount ?? null,
     value: block?.valueAwardedSum ?? null,
-    suppliers: suppliers?.[0]?.points?.[0]?.value ?? null,
+    suppliers: sellers?.[0]?.supplierCount ?? null,
   }
 }
 
@@ -104,13 +106,15 @@ function yearPoints(values: RawBuyerSeries | undefined, counts: RawBuyerSeries |
   return points
 }
 
-function monthFigures(values: RawBuyerSeries | undefined, counts: RawBuyerSeries | undefined, year: number): MonthFigure[] {
+/** The months of a calendar year, `YYYY-MM`. */
+function calendarMonths(year: number): readonly string[] {
+  return Array.from({ length: 12 }, (_, index) => `${year}-${String(index + 1).padStart(2, '0')}`)
+}
+
+function monthFigures(values: RawBuyerSeries | undefined, counts: RawBuyerSeries | undefined, months: readonly string[]): MonthFigure[] {
   const valueOf = pointsOf(values)
   const countOf = pointsOf(counts)
-  return Array.from({ length: 12 }, (_, index) => {
-    const month = `${year}-${String(index + 1).padStart(2, '0')}`
-    return { month, value: valueOf.get(month) ?? null, count: countOf.get(month) ?? null }
-  })
+  return months.map((month) => ({ month, value: valueOf.get(month) ?? null, count: countOf.get(month) ?? null }))
 }
 
 function topBuckets(raw: RawBuyerBreakdown | undefined) {
@@ -152,8 +156,8 @@ export function buyerProfileFields(cui: string, period: Period, latest: number):
     ...(period.before ? [{ alias: 'directPrev', kind: 'stats' as const, scope: { ...own, ...period.before, ...DIRECT } }] : []),
     { alias: 'awards', kind: 'stats', scope: { ...inPeriod, ...AWARDS } },
     { alias: 'frameworks', kind: 'stats', scope: { ...inPeriod, ...FRAMEWORKS } },
-    { alias: 'directSellers', kind: 'series', scope: { ...inPeriod, ...DIRECT }, args: 'bucket: year, measure: distinctSuppliers' },
-    { alias: 'awardSellers', kind: 'series', scope: { ...inPeriod, ...AWARDS }, args: 'bucket: year, measure: distinctSuppliers' },
+    // Distinct firms over the whole period: the last twelve months span two calendar years, whose counts do not add up.
+    { alias: 'directSellers', kind: 'concentration', scope: { ...inPeriod, ...DIRECT } },
     { alias: 'directYearsValue', kind: 'series', scope: { ...own, ...DIRECT, ...span }, args: 'bucket: year, measure: valueAwardedSum' },
     { alias: 'directYearsCount', kind: 'series', scope: { ...own, ...DIRECT, ...span }, args: 'bucket: year, measure: recordCount' },
     { alias: 'awardYearsCount', kind: 'series', scope: { ...own, ...AWARDS, ...span }, args: 'bucket: year, measure: recordCount' },
@@ -205,9 +209,9 @@ export function mapBuyerProfile(
   latest: number,
   cutoff: Cutoff,
 ): Omit<BuyerProfile, 'names' | 'supplierYears' | 'countyShare' | 'partial' | 'namesUnread'> {
-  const { year } = period
   const part = latest + 1
   const stats = (alias: string) => buyerStatsSchema.parse(raw[alias])
+  const sellers = (alias: string) => buyerConcentrationSchema.parse(raw[alias])
   const series = (alias: string) => buyerSeriesSchema.parse(raw[alias])
   const breakdown = (alias: string) => buyerBreakdownSchema.parse(raw[alias])
   const entity = buyerEntitySchema.parse(raw.entity ?? null)
@@ -216,13 +220,13 @@ export function mapBuyerProfile(
   const partThrough = throughMonth(part, cutoff)
   const directYears = truncatePartYear(
     yearPoints(series('directYearsValue'), series('directYearsCount'), part),
-    monthFigures(series('directPartValue'), series('directPartCount'), part),
+    monthFigures(series('directPartValue'), series('directPartCount'), calendarMonths(part)),
     part,
     partThrough,
   )
   const awardYears = truncatePartYear(
     yearPoints(undefined, series('awardYearsCount'), part),
-    monthFigures(undefined, series('awardPartCount'), part),
+    monthFigures(undefined, series('awardPartCount'), calendarMonths(part)),
     part,
     partThrough,
   )
@@ -254,19 +258,18 @@ export function mapBuyerProfile(
 
   return {
     identity,
-    year,
+    period: profilePeriodOf(period),
     latest,
-    through: period.through,
     county: territory?.countyCode ?? topBuckets(breakdown('buyerCounty'))[0]?.key ?? null,
-    direct: figures(stats('direct'), series('directSellers')),
+    direct: figures(stats('direct'), sellers('directSellers')),
     directPrev: period.before ? figures(stats('directPrev'), undefined) : null,
-    awards: figures(stats('awards'), series('awardSellers')),
+    awards: figures(stats('awards'), undefined),
     frameworks: stats('frameworks').blocks[0]?.recordCount ?? null,
     directYears,
     awardYears,
     partYear: directYears.some((point) => point.year === part) || awardYears.some((point) => point.year === part) ? part : null,
     cutoff: partThrough ? { direct: partThrough, contract: partThrough } : cutoff,
-    directMonths: monthFigures(series('directMonthsValue'), series('directMonthsCount'), year),
+    directMonths: monthFigures(series('directMonthsValue'), series('directMonthsCount'), period.months),
     directSuppliers: supplierRanking(breakdown('directSuppliers')),
     awardSuppliers: supplierRanking(breakdown('awardSuppliers')),
     categories: { direct: tree('direct'), contract: tree('awards') },
@@ -373,26 +376,29 @@ async function readBuyerIdentity(cui: string, year: number, signal?: AbortSignal
 }
 
 /**
- * The buyer's page for a year. The profile is three requests side by side —
+ * The buyer's page for a period. The profile is three requests side by side —
  * the API resolves one request's fields one after another — and the
  * follow-up starts as soon as the keys land, beside the figures and the CPV
  * tree. A follow-up that fails twice leaves the page `partial` (CUIs, no
  * matrix, no county share) rather than failing it, as does a cutoff that
  * cannot be read; a reader who left fails it.
  */
-export async function fetchProcurementBuyer(cui: string, year: number, signal?: AbortSignal): Promise<BuyerProfile> {
+export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, signal?: AbortSignal): Promise<BuyerProfile> {
   const latest = homeYear()
   const cutoffRead = untilAborted(readCutoffOutcome(latest), signal)
-  // The year in progress waits for the cutoff, which bounds its reads; a complete year starts at once.
-  const period = periodOf(year, latest, year > latest ? (await cutoffRead).cutoff : null)
+  // The budget platform's record needs no period — the population is the last complete year's for any period reaching past it —
+  // so it starts at once.
+  const identityRead = readBuyerIdentity(cui, choice === RECENT ? latest : Math.min(choice, latest), signal)
+  // The last twelve months and the year in progress wait for the cutoff, which bounds their reads; a complete year starts at once.
+  const period = periodOf(choice, latest, needsCutoff(choice, latest) ? (await cutoffRead).cutoff : null)
+  // The last twelve months could not be told (no cutoff): the page describes the last complete year, served once and read again.
+  const fellBack = choice === RECENT && period.kind !== 'recent'
   const fields = buyerProfileFields(cui, period, latest)
   const [keysRead, figuresRead, categoriesRead] = PROFILE_REQUESTS.map(({ group, operationName }) => {
     const own = fields.filter((field) => field.group === group)
     const variables: Record<string, unknown> = Object.fromEntries(own.map((field) => [field.alias, field.scope]))
     return graphqlQuery<RawBuyerProfile>(procurementBuyerQuery(operationName, own, false), variables, { operationName, signal })
   }) as [Promise<RawBuyerProfile>, Promise<RawBuyerProfile>, Promise<RawBuyerProfile>]
-  // The population of a year in progress is the last complete year's.
-  const identityRead = readBuyerIdentity(cui, Math.min(year, latest), signal)
 
   const extrasRead = Promise.all([keysRead, identityRead]).then(async ([keysRaw, identity]): Promise<BuyerExtras | null> => {
     const found = buyerKeysOf({ ...keysRaw, ...identity.raw })
@@ -432,21 +438,22 @@ export async function fetchProcurementBuyer(cui: string, year: number, signal?: 
       profile.county && countyValue !== null && countyValue > 0 && profile.direct.value !== null
         ? { county: profile.county, share: profile.direct.value / countyValue }
         : null,
-    // The chart's year in progress and the data's date hang on the cutoff, whichever year the page shows.
-    partial: identity.failed || cutoff.failed,
+    // The chart's year in progress and the data's date hang on the cutoff, whichever period the page shows.
+    partial: identity.failed || cutoff.failed || fellBack,
     namesUnread: false,
   }
 }
 
 /**
- * The year's largest contract awards (a consortium on one row) and largest
- * direct purchases, within the profile's period. The year in progress needs
- * the cutoff: without it the read fails (and is read again) rather than keep
- * a list that runs past it.
+ * The period's largest contract awards (a consortium on one row) and largest
+ * direct purchases, within the profile's period. A period that ends at the
+ * cutoff needs it: without it the read fails (and is read again) rather than
+ * keep a list that runs past it — it never falls back to a year, so a list is
+ * always the period asked for.
  */
-export async function fetchProcurementBuyerRecords(cui: string, year: number, limit: number, signal?: AbortSignal): Promise<BuyerRecords> {
+export async function fetchProcurementBuyerRecords(cui: string, choice: PeriodChoice, limit: number, signal?: AbortSignal): Promise<BuyerRecords> {
   const latest = homeYear()
-  const { range } = periodOf(year, latest, year > latest ? await untilAborted(readProcurementCutoff(latest), signal) : null)
+  const { range } = periodOf(choice, latest, needsCutoff(choice, latest) ? await untilAborted(readProcurementCutoff(latest), signal) : null)
   const [contracts, directRaw] = await Promise.all([
     fetchGroupedContracts(
       { authorityCui: { eq: cui }, contractDate: range, recordKind: { in: ['contract_award'] }, valueState: { in: ACCEPTED_VALUE_STATES } },
