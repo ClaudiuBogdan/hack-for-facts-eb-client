@@ -1193,7 +1193,10 @@ Prod database (read-only, owner's approval) and dev API:
    a mid-size firm and far too slow for Dedeman's 40,000 a year), and how
    many other times the institution bought it.
 6. Smaller: privacy by field rather than by record; export rows with no date
-   (18 of Apa Brașov's rows from Dedeman) sort first in a list by date.
+   (18 of Apa Brașov's rows from Dedeman) sort first in a list by date. *Later
+   the same day the dev API sorts them last; the date sort still reads the
+   finalization date alone, so a row with only a publication date sorts with
+   the undated (§16.7).*
 
 ### 16.3 The variants
 
@@ -1420,6 +1423,81 @@ detail link and the items' `id` (the lines, steps and terms appear by
 themselves once served), the raw state with its reasons for a record whose
 detail is not read, the CUI SEAP writes inside a name, and the per-line
 price and repeat reads.
+
+### 16.7 The API prototype: today and target (28 September 2026)
+
+A second prototype of the promoted page, kept (the owner: no prototype is
+removed unless they say so): `/development/procurement/direct-purchase`
+(`yarn dev`), in `src/development/prototypes/procurement/direct-purchase.*`.
+It is not a design round. It is the server session's checklist: what the page
+looks like on the API as it answers now, what it must look like once the API
+serves §16.2, and which record still waits on which change, read live.
+
+**The views** (`?v=`, `&da=<record>` picks the record):
+
+- `azi` — the promoted page, reading the dev API as it answers now.
+- `tinta` — the promoted page's own components (`DirectPurchaseHead`,
+  `DirectPurchaseBlock`, `DirectPurchaseContextBand`) fed what the fixed API
+  must serve for the record: the institution's CUI recovered from its name,
+  the detail with its lines, steps, terms and reasons, and per line the same
+  product's prices at other institutions and the institution's repeats. The
+  names and the context are read live, as the page reads them. A closed panel
+  over the page, „API for this record", lists each field as the dev API
+  serves it now beside what it must serve, with the change that closes it.
+  Where the dev API still files the purchase without its institution's CUI,
+  a note over the context band says the live counts leave it out (BNR's
+  band says the pair never bought anything, beside a purchase between them).
+- `api` — ten records × six changes, read live: ✓ served, ✗ open, — not
+  relevant to the record, each column linked to the change's text (what is
+  wrong, measured; what to serve; where; how the view checks it). `compare`
+  puts `azi` beside `tinta`.
+
+**The records** — ten, each chosen for what it needs:
+
+| `da=` | Record | What it shows |
+|---|---|---|
+| `flori` | BNR, flowers, 10 lines | the CUI written in the name (change 3); a basket |
+| `scoala` | Școala Brătilești, IT kit | EU funding (PNRR) in the detail |
+| `serviciu` | Edilitara Târgu Jiu | a service bought under the catalogue's price |
+| `refuzata` | ADI Ipatele-Drăgușeni | the firm refused the terms, with its reason; redone the same day (change 4) |
+| `gradinita` | Grădinița nr. 16, pork | the same product at 5 other institutions; bought 25 more times (change 5) |
+| `parc` | TUIASI, park upkeep | works |
+| `spital` | Spitalul Sovata, medicines | prices at 5–12 other institutions; a line outside the value |
+| `castel` | Grădinița Castel, meat | 11 lines, each bought 11–23 more times: weekly orders |
+| `raport` | Apa Brașov, parquet | a quarterly export row; its pair's list order (change 6) |
+| `notificare` | Spitalul Brașov, guarding | an award notification (a framework, 3.5 M lei) |
+
+**The fixtures** (`direct-purchase.fixtures.ts`) hold, per record, the raw
+record as the dev API served it on 28 September, what it answered for the
+detail and the CUI, and the target: the detail joined on
+`attrs.direct_acquisition_id = da_details.source_ref` with its lines and the
+per-line comparisons, from a read-only prod query the owner approved that
+morning. The target is what `procurementDirectAcquisition(id)` must return;
+the change specs (`direct-purchase.changes.ts`) mirror §16.2 in English for the
+server session.
+
+**Read live on 28 September:** the detail link and the items' `id` open for
+all eight catalogue records; the CUI for BNR; the outcome for the refused
+purchase; the per-line reads for three records; the list order for both
+export and notification pairs. The last was re-measured while building the
+check: undated rows no longer open a list by date, but 4 of Apa Brașov's 168
+rows from Dedeman (published 3 December 2025, no finalization date) sort
+among its 18 undated ones, and 5 of the Brașov hospital's 9 notices from TMG
+Guard after its undated one — the date sort must read the finalization date,
+else the publication date, the day the page shows.
+
+**Verdicts that are not ✗.** A detail found but failing on its lines (the
+page reads it as unavailable for now) counts change 1 as served; change 2
+shows „blocked by 1" while the detail is not found, and the Open row counts
+the blocked beside the open; a failed read says „read failed", never ✗.
+
+**What turns a mark by the server alone, and what needs the client too.**
+The detail link, the items' `id`, the CUI and the list order turn ✓ as soon
+as the dev API serves them, and the refusal reason comes with the linked
+detail. SEAP's raw state and the per-line reads are new fields: the page's
+query and mapper read them once the server names them
+(`directAcquisition.stateText` or a code; `items[].peers`, `items[].repeats`
+into `DpItem`), so change 5 stays ✗ until that client change lands.
 
 ## 17. The contract page (prototyped 28 September 2026)
 
