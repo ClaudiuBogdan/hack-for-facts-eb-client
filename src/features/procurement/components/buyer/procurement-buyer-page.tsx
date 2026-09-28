@@ -19,8 +19,9 @@ import { buyerRecordsSearch, sectionIndex, type HomeSection } from '../../lib/ho
 import { DIRECT_COMPARABLE_FROM } from '../../lib/home-model'
 import { buildInstitutionDocumentTitle } from '../../lib/procurement-page-titles'
 import { HomeBand, HomeSectionNav } from '../home/home-chrome'
+import { moneyFact } from '../profile/profile-facts'
+import { ProfileYearsChart } from '../profile/profile-years-chart'
 import { BuyerContextBand, BuyerHowBand, BuyerLargestBand, BuyerWhatBand, BuyerWhenBand, BuyerWhereBand, BuyerWhoBand } from './buyer-bands'
-import { BuyerYearsChart } from './buyer-charts'
 import { BuyerHead, BuyerHeadPending } from './buyer-head'
 
 /**
@@ -47,13 +48,6 @@ export interface ProcurementBuyerInitialData {
 
 function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
-}
-
-/** Money on the scale of its magnitude, as the front door's figures: „36,4 mil. lei", „5,9 mld. lei", „799.410 lei". */
-function moneyFact(value: number): Pick<HubFact, 'value' | 'digits' | 'unit'> {
-  if (Math.abs(value) >= 1e9) return { value: Math.round(value / 1e8) / 10, digits: 1, unit: t`mld. lei` }
-  if (Math.abs(value) >= 1e6) return { value: Math.round(value / 1e5) / 10, digits: 1, unit: t`mil. lei` }
-  return { value: Math.round(value), digits: 0, unit: 'lei' }
 }
 
 /**
@@ -241,7 +235,22 @@ function BuyerBody({
 
   return (
     <>
-      <BuyerHead profile={profile} aside={<BuyerYearsChart profile={profile} onYear={onYear} />} />
+      <BuyerHead
+        profile={profile}
+        aside={
+          <ProfileYearsChart
+            directYears={profile.directYears}
+            contractYears={profile.awardYears}
+            year={profile.year}
+            latest={profile.latest}
+            partYear={profile.partYear}
+            cutoff={profile.cutoff}
+            contractLabel={t`Contracte atribuite`}
+            pickPartYear={false}
+            onYear={onYear}
+          />
+        }
+      />
       {sections.length > 1 ? <HomeSectionNav title={profile.identity.name} sections={sections} /> : null}
       <div aria-busy={busy} className={cn('transition-opacity duration-300 motion-reduce:transition-none', busy && 'opacity-50')}>
         {facts.length > 0 ? (

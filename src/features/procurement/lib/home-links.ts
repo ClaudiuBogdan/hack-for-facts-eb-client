@@ -60,6 +60,21 @@ export function buyerCountySearch(cui: string, county: string, year: number): Ex
   return { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, supplierCounty: county, year }
 }
 
+/**
+ * A firm's records in the explorer, every year (`year` null) or one: its
+ * direct purchases, or its contract awards (framework agreements apart).
+ */
+export function supplierRecordsSearch(cui: string, year: number | null, grain: 'direct' | 'contract'): ExplorerSearch {
+  const base: ExplorerSearch =
+    grain === 'direct' ? { view: 'list', grain: 'direct_acquisitions', supplier_cui: cui } : { view: 'list', grain: 'contracts', record_kind: ['purchases'], supplier_cui: cui }
+  return year === null ? base : { ...base, year }
+}
+
+/** A firm's records of one year from institutions in one county: exactly what its county row counts. */
+export function supplierCountySearch(cui: string, county: string, year: number, grain: 'direct' | 'contract'): ExplorerSearch {
+  return { ...supplierRecordsSearch(cui, year, grain), buyerCounty: county }
+}
+
 /** The three ways in: the year's contract awards, its framework agreements, the rankings. */
 export function startSearches(year: number): { readonly awards: ExplorerSearch; readonly frameworks: ExplorerSearch; readonly rankings: ExplorerSearch } {
   return {

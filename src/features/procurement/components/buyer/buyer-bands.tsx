@@ -8,7 +8,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import type { ProcurementBuyerGrain } from '@/schemas/procurement-buyer'
-import { perResident, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
+import { perResident, supplierName, type BuyerProfile, type BuyerRecords } from '../../lib/buyer-model'
 import {
   allCategoriesText,
   balanceLede,
@@ -23,12 +23,14 @@ import {
 } from '../../lib/buyer-text'
 import { categoryOfCode } from '../../lib/home-categories'
 import { countText, monthText } from '../../lib/home-format'
-import { buyerRecordsSearch } from '../../lib/home-links'
+import { buyerCountySearch, buyerRecordsSearch } from '../../lib/home-links'
 import { DIRECT_COMPARABLE_FROM } from '../../lib/home-model'
 import { HomeBand, ProvisionalMark } from '../home/home-chrome'
 import { CategoryRows, RecordRows } from '../home/home-rows'
-import { MonthStrip, SupplierYearsMatrix } from './buyer-charts'
-import { CountyRows, ProcedureRows, SupplierRows } from './buyer-rows'
+import { PartyYearsMatrix } from '../profile/party-years-matrix'
+import { CountyRows, ProcedureRows } from '../profile/profile-rows'
+import { MonthStrip } from './buyer-charts'
+import { SupplierRows } from './buyer-rows'
 
 /**
  * The buyer page's bands, one per question: what it buys, from whom, from
@@ -158,7 +160,14 @@ export function BuyerWhoBand({ profile, index }: { readonly profile: BuyerProfil
           <p className="mt-2 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
             {steadyLede(profile, matrix, profile.latest) ?? <Trans>Firmele care i-au vândut cel mai mult direct din {DIRECT_COMPARABLE_FROM} încoace, pe ani.</Trans>}
           </p>
-          <SupplierYearsMatrix className="mt-4" profile={profile} rows={matrix} />
+          <PartyYearsMatrix
+            className="mt-4"
+            rows={matrix}
+            year={profile.year}
+            kind="supplier"
+            nameOf={(cui) => supplierName(profile, cui)}
+            caption={t`Achiziții directe de la fiecare firmă, pe ani, lei`}
+          />
         </div>
       ) : null}
       <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-muted-foreground">
@@ -189,7 +198,15 @@ export function BuyerWhereBand({ profile, index }: { readonly profile: BuyerProf
               <Trans>Achizițiile directe, după județul firmei, {profile.year}</Trans>
             )}
           </MonoLabel>
-          <CountyRows className="mt-3" profile={profile} />
+          <CountyRows
+            className="mt-3"
+            rows={profile.supplierCounties}
+            rankedBy={profile.supplierCountiesRankedBy}
+            home={profile.county}
+            homeLabel={t`județul instituției`}
+            searchOf={(code) => buyerCountySearch(profile.identity.cui, code, profile.year)}
+            empty={t`Nicio achiziție directă în ${profile.year}.`}
+          />
         </div>
       </div>
     </HomeBand>
@@ -248,7 +265,12 @@ export function BuyerHowBand({ profile, index }: { readonly profile: BuyerProfil
           <MonoLabel className="block text-muted-foreground">
             <Trans>Contracte atribuite în {profile.year}, după procedură</Trans>
           </MonoLabel>
-          <ProcedureRows className="mt-3" profile={profile} />
+          <ProcedureRows
+            className="mt-3"
+            procedures={profile.procedures}
+            unlisted={profile.proceduresUnlisted}
+            empty={t`Niciun contract atribuit în ${profile.year}.`}
+          />
           {(profile.awards.count ?? 0) > 0 ? (
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
               <Trans>SEAP numără un contract câștigat de o asociere de firme o dată pentru fiecare firmă.</Trans>

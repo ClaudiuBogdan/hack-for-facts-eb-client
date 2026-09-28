@@ -864,6 +864,24 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-09-28 — A firm's contracts are counted from its own award rows,
+  consortia included; the year in progress is read to SEAP's cutoff and says
+  its date.** The analysis API withholds a consortium's money from each
+  member's figures (and, for some firms, its rows), so any per-firm surface
+  counts from the record list and finds the co-winners on the buyer's day
+  under the same notice, contract number and value. A consortium is the same
+  partners on every value under a notice and no „acord cadru" title; a
+  framework's lots are not one, and a contract published at several values is
+  never summed. A consortium contract shows at its whole value, labelled as not
+  the firm's part. The year in progress is readable: reads stop at SEAP's
+  derived cutoff (the earlier of direct purchases' and contracts'), it is
+  compared with nothing (its last months may still be filling), and the head
+  says the date, derived from the API, never written in the code. The firm's
+  head is the company profile's own (sentence, status chips, notice, CUI
+  button). *Why:* the
+  owner picked the Opus version of three independent prototypes; a
+  consortium road builder showed 2 contracts in the analysis against 16 rows.
+  Details: `docs/design/procurement/design.md` §14.
 - **2026-09-27 — A buyer's page leads with its direct purchases and names
   every firm; its year comes from the URL.** `/procurement/institutions/$cui`
   takes the company profile's rhythm (head with a years chart that picks the

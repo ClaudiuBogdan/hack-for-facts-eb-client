@@ -33,11 +33,3 @@ export function monthEndDate(month: string): string {
   return new Date(Date.UTC(year, mm, 0)).toISOString().slice(0, 10)
 }
 
-/**
- * An empty scope IS "no scope". `{}` and `undefined` hash to different query
- * keys, so returning the object either way made the unfiltered view fetch the
- * same aggregates twice.
- */
-export function definedScope<T extends object>(scope: T): T | undefined {
-  return Object.keys(scope).length === 0 ? undefined : scope
-}

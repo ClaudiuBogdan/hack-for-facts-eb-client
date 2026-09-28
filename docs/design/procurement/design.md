@@ -837,3 +837,177 @@ banii … au mers pe …"; a CUI with no record since 2019 is not called a buyer
 kind „Comună" has its own message context (parliament's „Comună" is a joint
 session); a sector's town hall is „Sectorul 1"; the method line names only
 the computed figures the page shows.
+
+
+## 14. The supplier page, redesigned (prototyped and promoted 27–28 September 2026)
+
+`/procurement/suppliers/$cui` — one firm as the state's supplier — moves from
+the old card grid (population tabs, value-basis badges on most rows, a monthly
+bar chart) to the buyer page's rhythm (§13), seen from the seller's side.
+
+### 14.1 What a firm's data can say (probed on the dev API, 2026-09-27/28)
+
+- **The company profile already answers "how much public money".** Its
+  „Bani publici" band shows the totals, a yearly chart, who pays, what for and
+  the newest records. The supplier page answers what only procurement data
+  can: who buys from the firm and what the firm is to them, how it wins, and
+  with whom.
+- **Supplier-scoped analysis reads withhold consortium money.** The
+  association design keeps a consortium's money out of each member's figures
+  (`PROCUREMENT_ASSOCIATION_DEDUP_DESIGN.md`, option C);
+  `valueWithheldAssociationSum` is null per firm. The count keeps the
+  member's rows for most firms (Dexamart: 22 in both) but not for all —
+  Hydrostroy AD, a foreign member, has 2 contracts in the analysis for 2024
+  against 16 award rows in the record list, all won with partners.
+  The record list is the truth for a firm's contracts.
+- **Partners can be found, but three shapes look alike.** A buyer's award
+  rows on the day of the firm's row (one search per buyer and day) hold every
+  other firm's row under the same notice and contract number. That can be a
+  consortium — one value, the same firms (CNAIR CAN1136776, 92/110645); a
+  multi-supplier framework — lots at their own values, each with its own
+  competing distributors, titled „Acord cadru …" (a hospital's thirty
+  medicine lots under one contract number); or one contract published at
+  several values (Dexamart and Roman Impex on SCNA1099802/121, three values).
+  So an award is a notice, a contract number and a value (to the hundred
+  lei); it is a consortium only when not framework-titled and the firm has
+  the same partners on every value under the notice. A member's row may carry
+  no value: it joins when the contract has one value, and is unresolved when
+  it has several.
+- **The API caps a request at 50 aliases and 500 fields.** Past either it
+  answers only errors, in an HTTP 200; a large firm's hundred-row partner scan
+  hit it and left the page quietly partial until the scan was split.
+- **What the firm is to an institution is readable:** the institution's own
+  direct purchases in the year (`authorityCui` stats) and its top direct
+  supplier (a one-row breakdown) — „Pentru Grădinița nr. 1 Otopeni, firma a
+  fost cel mai mare furnizor direct: 29% din achizițiile ei directe."
+- **No explicit data date.** `provenance.asOf` is null on the Postgres engine;
+  `maxMonth` names a month with a trickle of records (600 direct purchases
+  against ~135,000 in a full month). The page derives SEAP's cutoff from the
+  national monthly counts, as the front door does, and says it: „Date
+  actualizate până la 31 mai 2026". The record lists run ahead of the
+  analysis build (records dated to 2026-09-03).
+- OMV Petrom Marketing's fuel cards are CPV 30163100 (office machinery), so
+  the reader's categories file most of its sales under „Mobilier, birotică și
+  papetărie" — a mapping fix for `home-categories.ts`, not made here.
+
+### 14.2 The versions (three authors, live data)
+
+The owner asked three authors to research the data and build their own
+version independently: Fable (high effort), Codex `gpt-6-astra` (high) and
+Opus. All three reached the consortium finding.
+
+- **Fable** — closest to the buyer page; reused the company profile's head
+  pieces; counted framework agreements apart; partners inside „Cele mai mari".
+- **Astra** — evidence first and most cautious: no contract money, no
+  turnover, strict partner matching (notice number), abstaining past a
+  hundred rows.
+- **Opus** — the buyer page's bands plus the firm's weight in each client's
+  purchases, a „Cu cine câștigă" band for consortia, and „Cum câștigă" in
+  plain words.
+
+**The owner's pick: Opus**, with changes asked while polishing: the head in
+the company profile's own shape (its sentence, status chips, notice, CUI
+button — Fable's instinct, taken further); no „Pe ani, din 2019" label and no
+„Alege un an" caption on the chart; the year as a dropdown at the right end
+of the head's top row (above the chart on a wide screen, beside the way back
+on a phone); the year in progress selectable, the default staying the last
+complete year, with the data's date in the head — from the API, not written
+into the code.
+
+### 14.3 Promoted (28 September 2026)
+
+**Where the code went.** `api/procurement-supplier-api.ts` (the profile),
+`api/graphql/procurement-supplier-queries.ts` (rows, partners, names),
+`api/procurement-supplier-ssr.ts` (500 firm-years, ten minutes, partial reads
+not kept), `hooks/use-procurement-supplier.ts`, `lib/supplier-model.ts`,
+`lib/supplier-period.ts` (the year in progress), `lib/supplier-text.ts`,
+`lib/supplier-keys.ts`, `components/supplier/` (head, year dropdown, rows,
+bands, page), `schemas/procurement-supplier.ts` (the URL: `year`, `ce`,
+`mari`). What both profile pages share moved to `components/profile/` (the
+years chart, the party-by-year grid, county and procedure rows, `moneyFact`)
+and `lib/profile-model.ts`; the buyer page now uses them, so its chart lost
+the same label and caption. The old page, its slice view, quick filters,
+population tabs and entity header are deleted; the supplier slice API stays
+for the company profile.
+
+**Decisions.**
+
+- Contracts are the firm's award rows, as SEAP publishes them and the
+  explorer lists them (a contract's lots are rows of their own). An award
+  published twice counts once in the money and the largest list; a contract
+  published at several values is never summed — the largest list shows each
+  value as its own record. When every row of the year was read (≤ 100), the
+  contract clients, categories and counties come from the rows, consortia
+  included; past that, clients come from the analysis, whose count keeps the
+  member rows for most firms. Procedures are the analysis's; when it names
+  fewer contracts than the list holds, the band says for how many.
+- A consortium's contracts are shown at their whole value, labelled „valoarea
+  lor întreagă" with a sentence saying it is not what the firm got; partners
+  are named and counted once per contract; a partner with no CUI (a foreign
+  firm) is not a link. How many were won with others is a floor („cel puțin")
+  unless every row was scanned and told apart; a row the scan cannot tell (no
+  buyer, day, notice or number; a day fuller than the read) is counted and
+  said, never assumed alone.
+- A sentence names an institution only by a known name, never a bare CUI; an
+  institution the name spine holds only as a placeholder is named from the
+  firm's own direct purchase from it.
+- The weight in a client is the firm's direct money from it over the client's
+  own direct purchases in the same period, said for its five largest clients
+  and only from a tenth up; „cel mai mare furnizor direct" only when the
+  client's top supplier is the firm.
+- The year in progress is read through SEAP's cutoff — the earlier of the two
+  populations' — and compared with nothing: its last months may still be
+  filling, so a change would partly measure the feed. The head says the date
+  („Date actualizate până la 31 mai 2026"), or „An în curs: date incomplete"
+  when no cutoff reaches the year; every label keeps the plain year. A
+  client's link opens the institution's page on its last complete year (the
+  buyer page describes complete years only).
+- A registry that could not be read leaves the head without the firm's
+  sentence rather than calling the firm foreign; the page goes partial
+  (`no-store`, not kept). An identifier the API refuses as an organisation's
+  answers 404. A band choice in the URL (`ce`, `mari`) that the year cannot
+  show — its toggle hidden — is ignored, not honoured with an empty band.
+- The turnover sits in the firm band as a measure of size, with a sentence
+  saying it is never divided by the sales to the state.
+- The head and the firm band do not repeat each other: what the firm is and
+  its status are the head's; turnover, employees and the first SEAP sale the
+  band's.
+
+**Loading.** Three analysis requests side by side (the year's clients alone,
+so the weights start early; the figures with the years and the top clients
+since 2019; the CPV levels), the rows with their year and month totals, and
+the registry; follow-ups for the weights, the names (with the direct-purchase
+fallback), the top clients' years, the partners (≤ 40 buyer-days per request)
+and the buyers' counties (≤ 50 per request). Splitting the
+analysis into six requests was measured slower (the API queues one client's
+requests). Measured on a production build (Nitro on zeus, dev API,
+2026-09-28):
+
+| | TTFB |
+|---|---|
+| Large firm (Vodafone, Farmexim, OMV), uncached | 1.2–2.7 s |
+| Small firm (Costalex, Hydrostroy, Dexamart), uncached | 0.35–0.7 s |
+| Any firm, read kept (ten minutes) | ~30 ms |
+
+A client-side navigation from a buyer page paints the frame in ~120 ms, the
+firm's name, sentence and status at ~0.45 s (the registry is read on its own
+while the profile loads) and the whole page at ~1.7 s.
+
+**Reviews.** Codex `gpt-6-astra` (xhigh) and Opus 5.5 (xhigh) reviewed the
+promoted page. What they found and what changed: frameworks' lots had been
+called consortia; the partner match had hung on the value and dropped a
+value-less member; revisions had been summed; clients had been capped at ten
+in the count; a failed registry had read as a foreign firm; bare CUIs had
+reached sentences; the year in progress had been compared with a year whose
+same months were complete; a failed cutoff read had let a page be cached;
+deadlines had not bounded every read; the partner scan had broken the API's
+per-request caps for large firms. Checked live afterwards: Hydrostroy's 2024
+reads 16 of 16 contracts won in consortia (every row has partners under its
+notice and contract number, at its value or with none; two copies — one
+without a buyer CUI, one on another day — take their award's reading).
+
+**Follow-ups.** A per-firm participation count (consortia included) served
+by the API would replace the client-side scan; an explicit „complete through"
+month per data type would replace the derived cutoff; the fuel-card CPV
+mapping; names with diacritics for institutions (the budget platform's
+territory names, as the buyer page does for its own head).

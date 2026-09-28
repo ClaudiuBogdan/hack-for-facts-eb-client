@@ -9,6 +9,11 @@
  */
 const PROCUREMENT_TITLE_SUFFIX = 'Achiziții publice — Transparenta.eu'
 
+export function buildSupplierDocumentTitle(options: { readonly cui: string; readonly supplierName?: string | null }): string {
+  const name = options.supplierName?.trim()
+  return `${name || `Furnizor CUI ${options.cui}`} — ${PROCUREMENT_TITLE_SUFFIX}`
+}
+
 export function buildInstitutionDocumentTitle(options: {
   readonly cui: string
   readonly authorityName?: string | null

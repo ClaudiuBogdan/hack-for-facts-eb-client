@@ -144,13 +144,6 @@ export const procurementMarkClassName = 'bg-[#1d70b8] dark:bg-[#3b82f6]'
 export const procurementMarkTrackClassName =
   'bg-[#f3f2f1] dark:bg-[var(--pnrr-track)]'
 
-/**
- * Header utility action — quieter and smaller than the page's own controls, so
- * "open the entity profile" never reads as a filter next to the year buttons.
- */
-export const procurementCompactActionClassName =
-  'h-8 rounded-none border-2 border-[#b1b4b6] bg-white px-2.5 text-xs font-bold uppercase tracking-wide text-[#0b0c0c] shadow-none transition-colors hover:bg-[#f3f2f1] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]'
-
 // ── inline notices ──────────────────────────────────────────────────────────
 
 /**

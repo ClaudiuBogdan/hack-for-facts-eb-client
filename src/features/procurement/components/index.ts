@@ -46,7 +46,5 @@ export {
 export { ProcurementSortSelect } from './procurement-sort-select'
 export { ProcurementStatTile } from './procurement-stat-tile'
 export { ProcurementStatusBadge } from './procurement-status-badge'
-export { ProcurementSupplierPage } from './procurement-supplier-page'
-export { ProcurementSupplierSlice } from './procurement-supplier-slice'
 export { ProcurementTabNav } from './procurement-tab-nav'
 export { ValueWithCurrency } from './value-with-currency'
