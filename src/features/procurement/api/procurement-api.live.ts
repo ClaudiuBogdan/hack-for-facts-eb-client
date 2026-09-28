@@ -13,7 +13,6 @@
 import type {
   AuthorityProcurementSlice,
   CategoryRow,
-  ContractRecord,
   CpvCategoryPage,
   MonthlyPoint,
   ProcedureRecord,
@@ -41,7 +40,6 @@ import {
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import {
   PROCUREMENT_AGGREGATES_QUERY,
-  PROCUREMENT_CONTRACT_DETAIL_QUERY,
   PROCUREMENT_CONTRACTS_QUERY,
   PROCUREMENT_CPV_DIVISIONS_QUERY,
   PROCUREMENT_DIRECT_ACQUISITIONS_QUERY,
@@ -51,7 +49,6 @@ import {
   PROCUREMENT_PROCEDURES_QUERY,
   PROCUREMENT_SUPPLIER_RECORDS_QUERY,
   procurementAggregatesResponseSchema,
-  procurementContractDetailResponseSchema,
   procurementContractsResponseSchema,
   procurementCpvDivisionsResponseSchema,
   procurementDirectAcquisitionsResponseSchema,
@@ -72,7 +69,6 @@ import {
   mapDirectAcquisition,
   mapLanding,
   mapModification,
-  mapModificationTrailEntry,
   mapMonthly,
   mapPartyBucket,
   mapProcedure,
@@ -617,32 +613,6 @@ export async function fetchProcedureDetailLive(
       modifications: [],
       duplicates: mapDuplicates(detail.duplicates),
       perLotWinners: detail.perLotWinners,
-      ted: detail.ted,
-    },
-  }
-}
-
-export async function fetchContractDetailLive(
-  id: string,
-): Promise<ProcurementRecordDetail<ContractRecord> | null> {
-  const data = await graphqlQuery<unknown>(
-    PROCUREMENT_CONTRACT_DETAIL_QUERY,
-    { id },
-    { operationName: 'ProcurementContractDetail' },
-  )
-  const detail =
-    procurementContractDetailResponseSchema.parse(data).procurementContract
-  if (detail === null) return null
-  return {
-    record: mapContract(detail.contract),
-    related: {
-      procedure: detail.procedure ? mapProcedure(detail.procedure) : null,
-      contracts: [],
-      modifications: (detail.contract.modifications ?? []).map(
-        mapModificationTrailEntry,
-      ),
-      duplicates: mapDuplicates(detail.duplicates),
-      perLotWinners: null,
       ted: detail.ted,
     },
   }

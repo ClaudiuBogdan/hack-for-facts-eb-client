@@ -6,7 +6,6 @@ describe('procurement API facade', () => {
   it('exports only the live adapter functions', () => {
     expect(facade.fetchProcurementLanding).toBe(live.fetchProcurementLandingLive)
     expect(facade.fetchProcurementSearch).toBe(live.fetchProcurementSearchLive)
-    expect(facade.fetchProcurementContractDetail).toBe(live.fetchContractDetailLive)
     expect(facade.fetchProcurementAuthoritySlice).toBe(
       live.fetchAuthorityProcurementSliceLive,
     )

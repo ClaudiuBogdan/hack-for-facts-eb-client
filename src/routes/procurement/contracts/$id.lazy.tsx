@@ -1,19 +1,12 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { ProcurementDetailRoutePage } from '@/features/procurement/components/procurement-detail-route-page'
+import { ProcurementContractPage } from '@/features/procurement/components/contract/procurement-contract-page'
 
 export const Route = createLazyFileRoute('/procurement/contracts/$id')({
-  component: ContractDetailRoutePage,
+  component: ContractRoutePage,
 })
 
-function ContractDetailRoutePage() {
-  // `detail` is empty on a client-side navigation — the loader only blocks
-  // while rendering HTML. See `lib/ssr/loader-blocking`.
-  const { detail, id } = Route.useLoaderData()
-  return (
-    <ProcurementDetailRoutePage
-      grain="contracts"
-      id={id}
-      initialDetail={detail}
-    />
-  )
+function ContractRoutePage() {
+  // The contract is empty on a client-side navigation: the loader only reads while rendering HTML (`lib/ssr/loader-blocking`).
+  const data = Route.useLoaderData()
+  return <ProcurementContractPage id={data.id} initialData={data} />
 }

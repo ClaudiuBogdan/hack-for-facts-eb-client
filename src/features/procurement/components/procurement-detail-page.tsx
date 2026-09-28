@@ -16,7 +16,6 @@ import { PROCUREMENT_DATASET_ID } from '../lib/dataset'
 import {
   ProcurementDetailHero,
   ProcurementKeyFactsSection,
-  ProcurementModificationTrail,
   ProcurementPartiesSection,
   ProcurementRelatedRecords,
 } from './procurement-detail-sections'
@@ -42,8 +41,8 @@ function buildProvenance(record: DetailRecord): ProvenanceInfo {
 }
 
 /**
- * Shared detail page for procedures and contracts, driven by `DETAIL_CONFIG`.
- * Direct purchases have a page of their own (`direct-purchase/`). Breadcrumb → hero →
+ * Shared detail page for procedures, driven by `DETAIL_CONFIG`. Contracts and
+ * direct purchases have pages of their own (`contract/`, `direct-purchase/`). Breadcrumb → hero →
  * parties → key facts → per-grain sections → provenance footer.
  */
 export function ProcurementDetailPage({ grain, detail, className }: Props) {
@@ -80,13 +79,8 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
 
       <ProcurementKeyFactsSection record={record} config={config} />
 
-      {config.showModificationTrail ? (
-        <ProcurementModificationTrail modifications={detail.related.modifications} />
-      ) : null}
-
       <ProcurementRelatedRecords
         config={config}
-        procedure={detail.related.procedure}
         contracts={detail.related.contracts}
         duplicates={detail.related.duplicates}
         perLotWinners={detail.related.perLotWinners}

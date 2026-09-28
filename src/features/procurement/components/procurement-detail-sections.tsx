@@ -1,19 +1,16 @@
 /**
- * Detail-page sections: hero, parties, classification/lifecycle rows,
- * modification trail and related records — composed by
+ * Detail-page sections: hero, parties, classification/lifecycle rows and
+ * related records — composed by
  * `procurement-detail-page.tsx` per the grain's `DetailConfig`.
  */
 import { Link } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { Building2, Factory } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { EvidenceLink } from '@/components/shared/procurement-data/evidence-link'
 import type {
-  ContractModification,
   ContractRecordSummary,
   Party,
-  ProcedureRecordSummary,
   ProcurementSourceSystem,
 } from '@/schemas/procurement'
 import type { DetailConfig, DetailRecord, DetailRow } from '../lib/detail-config'
@@ -58,12 +55,6 @@ export function ProcurementDetailHero({
   const secondary = recordSecondaryMoney(record)
   const title = recordTitle(record)
   const number = recordNumberLabel(record)
-  const derivedTitleSource =
-    record.grain === 'contract' &&
-    record.displayTitle !== null &&
-    record.displayTitle.source !== 'native'
-      ? record.displayTitle.source
-      : null
 
   return (
     <section className={procurementSectionClassName}>
@@ -80,25 +71,6 @@ export function ProcurementDetailHero({
                 <Trans>Untitled record</Trans>
               ))}
           </h1>
-          {derivedTitleSource ? (
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--pnrr-muted)]">
-              <span>
-                {derivedTitleSource === 'matched_award' ? (
-                  <Trans>Title from matched award</Trans>
-                ) : (
-                  <Trans>Title from source procedure</Trans>
-                )}
-              </span>
-              {record.grain === 'contract' && record.displayTitle?.sourceUrl ? (
-                <EvidenceLink
-                  href={record.displayTitle.sourceUrl}
-                  label={t`Open title source`}
-                  kind="record"
-                  className="text-sm"
-                />
-              ) : null}
-            </div>
-          ) : null}
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <ProcurementStatusBadge status={record.status} />
             <span className="inline-flex items-center border-2 border-[var(--pnrr-border)] px-2 py-0.5 text-xs font-semibold text-[var(--pnrr-muted)]">
@@ -284,117 +256,16 @@ export function ProcurementKeyFactsSection({
   )
 }
 
-// ── modification trail ──────────────────────────────────────────────────────
-
-export function ProcurementModificationTrail({
-  modifications,
-}: {
-  readonly modifications: readonly ContractModification[]
-}) {
-  if (modifications.length === 0) return null
-
-  return (
-    <section id="modificari" className={procurementSectionClassName}>
-      <div className={procurementSectionHeaderClassName}>
-        <h2 className={procurementSectionLabelClassName}>
-          <Trans>Modification trail</Trans>
-        </h2>
-        <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-          <Trans>
-            Amendments (acte adiționale) that changed this contract's value.
-          </Trans>
-        </p>
-      </div>
-      <ol className="divide-y divide-[var(--pnrr-border)]/30">
-        {modifications.map((modification) => {
-          const delta = modification.valueDeltaRon
-          const deltaNumber = delta !== null ? Number(delta) : null
-          return (
-            <li key={modification.id} className="px-5 py-4 sm:px-6">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="text-sm font-bold text-[var(--pnrr-fg)]">
-                  {modification.modificationType ?? t`Modification`}
-                </p>
-                <p className="text-sm text-[var(--pnrr-muted)]">
-                  {modification.modificationDate
-                    ? formatDetailDate(modification.modificationDate)
-                    : t`date unavailable`}
-                </p>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-6 text-sm tabular-nums">
-                <span className="text-[var(--pnrr-muted)]">
-                  <Trans>Before:</Trans>{' '}
-                  <ValueWithCurrency
-                    value={{
-                      valueRon: modification.valueBeforeRon,
-                      currency: null,
-                      value: null,
-                    }}
-                    notation="compact"
-                  />
-                </span>
-                <span className="text-[var(--pnrr-muted)]">
-                  <Trans>After:</Trans>{' '}
-                  <ValueWithCurrency
-                    value={{
-                      valueRon: modification.valueAfterRon,
-                      currency: null,
-                      value: null,
-                    }}
-                    notation="compact"
-                  />
-                </span>
-                {deltaNumber !== null ? (
-                  <span
-                    className={cn(
-                      'font-semibold',
-                      deltaNumber > 0
-                        ? 'text-rose-700 dark:text-rose-300'
-                        : 'text-emerald-700 dark:text-emerald-300',
-                    )}
-                  >
-                    {deltaNumber > 0 ? '+' : ''}
-                    <ValueWithCurrency
-                      value={{
-                        valueRon: delta,
-                        currency: null,
-                        value: null,
-                      }}
-                      notation="compact"
-                      className="text-inherit"
-                    />
-                  </span>
-                ) : null}
-              </div>
-              {modification.linkConfidence !== null &&
-              modification.linkConfidence < 1 ? (
-                <p className="mt-1 text-xs text-[var(--pnrr-muted)]">
-                  <Trans>
-                    Linked with reduced confidence (
-                    {Math.round(modification.linkConfidence * 100)}%).
-                  </Trans>
-                </p>
-              ) : null}
-            </li>
-          )
-        })}
-      </ol>
-    </section>
-  )
-}
-
 // ── related records ─────────────────────────────────────────────────────────
 
 export function ProcurementRelatedRecords({
   config,
-  procedure,
   contracts,
   duplicates,
   perLotWinners,
   ted,
 }: {
   readonly config: DetailConfig
-  readonly procedure: ProcedureRecordSummary | null
   readonly contracts: readonly ContractRecordSummary[]
   readonly duplicates: ReadonlyArray<{
     readonly sourceSystem: ProcurementSourceSystem
@@ -409,10 +280,8 @@ export function ProcurementRelatedRecords({
   readonly ted: { readonly tedNoticeNo: string; readonly sourceUrl: string } | null
 }) {
   const showContracts = config.showRelatedContracts && contracts.length > 0
-  const showProcedure = config.showSourceProcedure && procedure !== null
   const hasAnything =
     showContracts ||
-    showProcedure ||
     duplicates.length > 0 ||
     (perLotWinners?.length ?? 0) > 0 ||
     ted !== null
@@ -421,15 +290,6 @@ export function ProcurementRelatedRecords({
 
   return (
     <div className="space-y-6">
-      {showProcedure && procedure ? (
-        <section className="space-y-2">
-          <h2 className={procurementSectionLabelClassName}>
-            <Trans>Source procedure</Trans>
-          </h2>
-          <ProcurementRecordCard record={procedure} />
-        </section>
-      ) : null}
-
       {showContracts ? (
         <section className="space-y-2">
           <h2 className={procurementSectionLabelClassName}>

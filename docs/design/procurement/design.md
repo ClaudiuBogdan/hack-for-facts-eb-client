@@ -1708,3 +1708,88 @@ title taken from another institution's procedure; the context band keeps
 its chart and list for pairs with more than one contract and marks the year
 in progress.
 
+
+### 17.9 Promoted (28 September 2026)
+
+`fisa` is the page: `/procurement/contracts/$id` no longer wears the shared
+detail layout. The prototype stays (the owner: no prototype is removed unless
+they say so) and now renders the page's own components: `fisa` on its eleven
+fixtures, the award notice's data included — the target the API has yet to
+serve — and a new `azi`, the page on the dev API as it answers today
+(`compare: azi, fisa`).
+
+**Where the code went.** `lib/contract-model.ts` (what is read, the page's
+shape, and every rule: the value, the kind, the notice's contracts, firms and
+versions, the amendments and their stated change, the procedure's check, the
+context's gap, the contracts around), `lib/contract-text.ts` (every sentence),
+`api/procurement-contract-api.ts` (the reads),
+`api/graphql/procurement-contract-queries.ts`, `api/procurement-contract-ssr.ts`
+(a bounded server memo, ten minutes), `hooks/use-procurement-contract.ts`,
+`lib/contract-keys.ts`, `components/contract/` (head, block, context band,
+page). The names read is the direct-purchase page's (`readNames`, its mapping
+now `namesOf`, shared with the prototype). The shared record page
+(`ProcurementDetailPage`) now serves procedures only; its contract config, its
+fetcher (`fetchContractDetailLive`), the modification trail and the source
+procedure section are gone.
+
+**The reads.** Two queries, so a failure stays in its part of the page:
+
+1. *The contract* — the record with its amendments (each with the contract
+   number it names), its procedure and TED notice; then the notice's rows (the
+   institution's contracts whose text holds the notice's number — the list has
+   no filter by notice — a page of 100, the ones of this notice kept; a full
+   page makes the notice's count a floor); then everyone's names. The notice
+   and the names fail soft: the contract stands on its own names and is
+   `partial`; an unread notice is said on the page (the association's firms,
+   the other values and contracts may be missing) and is never taken for a
+   notice holding nothing else — no unnumbered amendment, no notice-wide
+   estimate. A missing record is `null`: a 404 on the server, the page's own
+   verdict in the browser.
+2. *The context* — by count, never money: the pair's contracts, frameworks
+   and direct purchases by year from 2019 (the direct purchases' money too —
+   it is clean), the pair's, the institution's and the firm's year, and the
+   contracts around this one (a contract's rows collapsed, this page's own
+   kept — the lists read twelve rows a side, and a full side's farthest
+   contract, perhaps cut short, is left out). The year in progress is read by
+   month and counted through SEAP's contract cutoff month („2026 (până în
+   mai)"), as the direct-purchase page counts it; the chart runs to it when
+   SEAP has any of it, dashed. The firm's contracts from this institution in
+   the year are the pair's — no breakdown read. „Toate cele N dintre ele"
+   opens the explorer from 2019, as N counts. Each part fails soft (null, never a zero) and
+   the band says a part is missing; a contract with no CUI for a side, no
+   date, or a date before 2019 has none to read, and the band says which.
+
+**What the live page shows, and what waits for the API.** The award notice's
+own data (§17.7) is not served: the page reads `source: null`, so the offers,
+the criterion, the duration, the notice's estimate, the call for competition,
+the award notice's publications, the justification of a route without a call,
+the value today and the lots are left out — they appear where the adapted API
+serves them, without a UI change (`ContractNoticeSource` is the shape). Without
+them the live page still says the value and what it is, the facts, the
+association's firms, the published values, the amendments checked against
+their text (with „Istoria contractului" when there are any), the notice's
+other contracts and the source. „Fără TVA" is said for the award notice's own
+entries (`elicitatie_ca_award`), whose form states its values without VAT; an
+export row matched to a notice links the notice but claims no VAT basis. The
+TED notice is the API's pick (`limit(1)`, no order): a 2022 procedure can link
+a 2026 notice (§17.2).
+
+**Measured on the dev API** (28 September, `yarn dev`): the eleven records
+render with no console errors; a first render reads in ~3–4 s cold in dev
+(three requests one after the other, then the context); the phone width holds
+the largest value a size down.
+
+**Review (Opus 5.5, 28 September 2026).** No blocker; seven should-fix and
+four nits, all fixed before the commit: an unread notice was taken for one
+holding nothing else, and said nothing; the year in progress was counted
+whole beside a „(până în mai)" label; the explorer link opened a wider list
+than it counted; the notice's row count took other notices' search hits (a
+call-off citing its framework's notice); the list around cut a contract's
+values at the page's edge (CNI's nr. 132 showed two of its three); a
+framework's page could call another record „singurul contract"; the
+direct-purchase prototype read a fixed join with the lines still failing as
+open. Also: an institution that awarded only frameworks is said so, not „0
+contracte"; the export's quarter is said in the reader's language; the EU
+journal sentence is one message; a framework's description says so; a title
+that is the procedure's is marked; the shared page's contract types and
+branches are gone.

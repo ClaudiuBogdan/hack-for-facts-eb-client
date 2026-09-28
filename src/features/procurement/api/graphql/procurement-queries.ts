@@ -514,30 +514,6 @@ export type RawProcurementProcedureDetail = NonNullable<
   z.infer<typeof procurementProcedureDetailResponseSchema>['procurementProcedure']
 >
 
-export const PROCUREMENT_CONTRACT_DETAIL_QUERY = /* GraphQL */ `
-  query ProcurementContractDetail($id: ID!) {
-    procurementContract(id: $id) {
-      contract { ${CONTRACT_FIELDS} }
-      procedure { ${PROCEDURE_FIELDS} }
-      ted { tedNoticeNo sourceUrl }
-      ${DETAIL_SHARED_FIELDS}
-    }
-  }
-`
-export const procurementContractDetailResponseSchema = z.object({
-  procurementContract: z
-    .object({
-      contract: rawContractSchema,
-      procedure: rawProcedureSchema.nullable(),
-      ted: rawTedRefSchema.nullable(),
-      duplicates: z.array(rawDuplicateRefSchema),
-    })
-    .nullable(),
-})
-export type RawProcurementContractDetail = NonNullable<
-  z.infer<typeof procurementContractDetailResponseSchema>['procurementContract']
->
-
 const DA_ITEM_FIELDS = /* GraphQL */ `
   id itemIndex catalogItemCode catalogItemName catalogItemDescription
   itemMeasureUnit cpvCode cpvText

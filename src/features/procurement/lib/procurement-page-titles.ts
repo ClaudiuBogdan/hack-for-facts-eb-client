@@ -22,6 +22,14 @@ export function buildDirectPurchaseDocumentTitle(options: { readonly id: string;
   return authority ? `${title} — ${authority} — ${PROCUREMENT_TITLE_SUFFIX}` : `${title} — ${PROCUREMENT_TITLE_SUFFIX}`
 }
 
+/** A contract is named by what was awarded and who awarded it: „Pașcani–Suceava — CNAIR — …". */
+export function buildContractDocumentTitle(options: { readonly id: string; readonly title?: string | null; readonly authorityName?: string | null }): string {
+  const title = options.title?.trim()
+  const authority = options.authorityName?.trim()
+  if (!title) return `Contract ${options.id} — ${PROCUREMENT_TITLE_SUFFIX}`
+  return authority ? `${title} — ${authority} — ${PROCUREMENT_TITLE_SUFFIX}` : `${title} — ${PROCUREMENT_TITLE_SUFFIX}`
+}
+
 export function buildInstitutionDocumentTitle(options: {
   readonly cui: string
   readonly authorityName?: string | null

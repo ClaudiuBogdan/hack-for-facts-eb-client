@@ -8,7 +8,7 @@ vi.mock('@/lib/graphql/graphql-client', () => ({
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withProcurementSearchDefaults } from '@/schemas/procurement-search'
 import {
-  fetchContractDetailLive,
+  fetchProcedureDetailLive,
   fetchProcurementLandingLive,
   fetchProcurementSearchLive,
   fetchSupplierRecordsLive,
@@ -103,15 +103,22 @@ describe('live procurement adapter', () => {
 
   it('maps canonical detail without synthesizing gate metadata', async () => {
     graphqlQueryMock.mockResolvedValue({
-      procurementContract: {
-        contract,
-        procedure: null,
+      procurementProcedure: {
+        procedure: {
+          id: 'p1', noticeNo: 'CN1', noticeKind: null, procedureType: 'licitatie deschisa', contractKind: null, title: 'Live procedure',
+          authority: party, cpvCode: null, cpvDivisionCode: null, estimatedValueRon: '10.00', awardedValueRon: '10.00', currency: 'RON',
+          value: contract.value, status: 'awarded', countyName: null, publicationDate: '2025-01-01', stateDate: null,
+          sourceSystem: 'elicitatie', sourceUrl: null, isCanonical: true, dupGroupId: null,
+        },
+        contracts: [contract],
+        perLotWinners: null,
         ted: null,
         duplicates: [],
       },
     })
-    const detail = await fetchContractDetailLive('c1')
-    expect(detail?.record.id).toBe('c1')
+    const detail = await fetchProcedureDetailLive('p1')
+    expect(detail?.record.id).toBe('p1')
+    expect(detail?.related.contracts[0]?.id).toBe('c1')
     expect(detail).not.toHaveProperty('gate')
   })
 

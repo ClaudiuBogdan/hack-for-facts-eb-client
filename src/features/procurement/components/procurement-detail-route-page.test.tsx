@@ -53,7 +53,7 @@ describe('ProcurementDetailRoutePage', () => {
   it('shows a skeleton while the record is in flight on a client navigation', () => {
     mockQuery({ isPending: true })
 
-    render(<ProcurementDetailRoutePage grain="contracts" id="CT-1" />)
+    render(<ProcurementDetailRoutePage grain="procedures" id="CT-1" />)
 
     expect(
       screen.getByTestId('procurement-detail-skeleton'),
@@ -65,11 +65,11 @@ describe('ProcurementDetailRoutePage', () => {
   it('renders the record once the query lands', () => {
     mockQuery({ data: DETAIL })
 
-    render(<ProcurementDetailRoutePage grain="contracts" id="CT-1" />)
+    render(<ProcurementDetailRoutePage grain="procedures" id="CT-1" />)
 
     expect(screen.getByTestId('detail-page')).toHaveAttribute(
       'data-grain',
-      'contracts',
+      'procedures',
     )
   })
 
@@ -99,7 +99,7 @@ describe('ProcurementDetailRoutePage', () => {
     // asserts something about the data the response does not support.
     mockQuery({ isError: true, error: new Error('boom') })
 
-    render(<ProcurementDetailRoutePage grain="contracts" id="CT-1" />)
+    render(<ProcurementDetailRoutePage grain="procedures" id="CT-1" />)
 
     expect(screen.getByRole('alert')).toBeInTheDocument()
     expect(screen.queryByText(/could not be found/i)).not.toBeInTheDocument()
@@ -110,7 +110,7 @@ describe('ProcurementDetailRoutePage', () => {
     // The API answered and said there is no such record.
     mockQuery({ data: null })
 
-    render(<ProcurementDetailRoutePage grain="contracts" id="CT-999" />)
+    render(<ProcurementDetailRoutePage grain="procedures" id="CT-999" />)
 
     expect(screen.getByText(/could not be found/i)).toBeInTheDocument()
     expect(screen.getByText(/CT-999/)).toBeInTheDocument()
@@ -122,7 +122,7 @@ describe('ProcurementDetailRoutePage', () => {
     // away for it would lose good data the user is reading.
     mockQuery({ data: DETAIL, isError: true, error: new Error('boom') })
 
-    render(<ProcurementDetailRoutePage grain="contracts" id="CT-1" />)
+    render(<ProcurementDetailRoutePage grain="procedures" id="CT-1" />)
 
     expect(screen.getByTestId('detail-page')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()

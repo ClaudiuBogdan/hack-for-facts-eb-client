@@ -1,7 +1,4 @@
-import {
-  fetchProcurementContractDetail,
-  fetchProcurementProcedureDetail,
-} from '../api/procurement-api'
+import { fetchProcurementProcedureDetail } from '../api/procurement-api'
 import type { ProcurementRecordDetail } from '@/schemas/procurement'
 import type { DetailGrainKey, DetailRecord } from './detail-config'
 
@@ -23,5 +20,4 @@ export type RecordDetailFetcher = (
 // union of incompatible signatures that no single `queryFn` can satisfy.
 export const RECORD_DETAIL_FETCHERS: Record<DetailGrainKey, RecordDetailFetcher> = {
   procedures: fetchProcurementProcedureDetail,
-  contracts: fetchProcurementContractDetail,
 }

@@ -8,7 +8,6 @@ export type {
 export {
   fetchProcurementBasisOverviewLive as fetchProcurementBasisOverview,
   fetchAuthorityProcurementSliceLive as fetchProcurementAuthoritySlice,
-  fetchContractDetailLive as fetchProcurementContractDetail,
   fetchCpvCategoryPageLive as fetchProcurementCpvCategoryPage,
   fetchProcurementLandingLive as fetchProcurementLanding,
   fetchProcurementTerritoryOverviewLive as fetchProcurementTerritoryOverview,

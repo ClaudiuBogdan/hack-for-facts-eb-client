@@ -32,6 +32,7 @@ import {
   directPurchaseAroundSchema,
   directPurchaseNamesSchema,
   type RawAroundItem,
+  type RawDirectPurchaseNames,
 } from './graphql/procurement-direct-purchase-queries'
 import { readCutoffOutcome, untilAborted } from './procurement-cutoff'
 
@@ -70,8 +71,37 @@ const decimal = (value: string | null | undefined): number | null => {
 
 // ─────────────────────────────────────────────────────────── the purchase ──
 
+/** The names as the follow-up's answer gives them: the spine's named labels, the CPV labels, the budget platform's record of the institution. */
+export function namesOf(parsed: RawDirectPurchaseNames, authorityCui: string | null): DpNames {
+  const labels = new Map<string, string>()
+  for (const label of parsed.labels) if (label.cui && label.canonicalName && label.status === 'named') labels.set(label.cui, label.canonicalName)
+  const cpv = new Map<string, DpLabel>()
+  for (const code of parsed.cpv) if (code.labelRo || code.labelEn) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
+  // For a body it does not know, the budget platform names the entity by its CUI and holds no reference: no record at all.
+  const known = parsed.entity && (parsed.entity.reference !== null || !/^\d+$/u.test(parsed.entity.organization?.name ?? ''))
+  const entity = known ? (parsed.entity ?? null) : null
+  const authority = entity
+    ? (() => {
+        const townHall = entity.reference?.isTerritorialExecutive ?? false
+        const identity = {
+          cui: authorityCui ?? '',
+          name: buyerName(entity.organization?.name ?? entity.reference?.name ?? labels.get(authorityCui ?? '') ?? '', entity.territory, townHall),
+          entityType: entity.reference?.entityType ?? null,
+          isTownHall: townHall,
+          place: entity.territory,
+          population: null,
+          address: tidyAddress(entity.reference?.address ?? null),
+          hasBudget: entity.budget?.presence ?? false,
+        }
+        // What it is and where is said as the page renders, in its language: this read is kept and shared across languages.
+        return { name: identity.name, identity, hasBudget: identity.hasBudget }
+      })()
+    : null
+  return { labels, cpv, authority: authority && authority.name ? authority : null, failed: false }
+}
+
 /** The names the follow-up gives; a failed read is no names, said (`failed`), and a reader who left fails it. */
-async function readNames(cuis: readonly string[], codes: readonly string[], authorityCui: string | null, signal?: AbortSignal): Promise<DpNames> {
+export async function readNames(cuis: readonly string[], codes: readonly string[], authorityCui: string | null, signal?: AbortSignal): Promise<DpNames> {
   const withEntity = authorityCui !== null && ENTITY_CUI.test(authorityCui)
   if (cuis.length === 0 && codes.length === 0) return NO_NAMES
   try {
@@ -81,32 +111,7 @@ async function readNames(cuis: readonly string[], codes: readonly string[], auth
       { cuis, codes, entityCui: withEntity ? authorityCui : '0', withEntity },
       { operationName: 'ProcurementDirectPurchaseNames', signal },
     )
-    const parsed = directPurchaseNamesSchema.parse(raw)
-    const labels = new Map<string, string>()
-    for (const label of parsed.labels) if (label.cui && label.canonicalName && label.status === 'named') labels.set(label.cui, label.canonicalName)
-    const cpv = new Map<string, DpLabel>()
-    for (const code of parsed.cpv) if (code.labelRo || code.labelEn) cpv.set(code.cpvCode, { ro: code.labelRo, en: code.labelEn })
-    // For a body it does not know, the budget platform names the entity by its CUI and holds no reference: no record at all.
-    const known = parsed.entity && (parsed.entity.reference !== null || !/^\d+$/u.test(parsed.entity.organization?.name ?? ''))
-    const entity = known ? (parsed.entity ?? null) : null
-    const authority = entity
-      ? (() => {
-          const townHall = entity.reference?.isTerritorialExecutive ?? false
-          const identity = {
-            cui: authorityCui ?? '',
-            name: buyerName(entity.organization?.name ?? entity.reference?.name ?? labels.get(authorityCui ?? '') ?? '', entity.territory, townHall),
-            entityType: entity.reference?.entityType ?? null,
-            isTownHall: townHall,
-            place: entity.territory,
-            population: null,
-            address: tidyAddress(entity.reference?.address ?? null),
-            hasBudget: entity.budget?.presence ?? false,
-          }
-          // What it is and where is said as the page renders, in its language: this read is kept and shared across languages.
-          return { name: identity.name, identity, hasBudget: identity.hasBudget }
-        })()
-      : null
-    return { labels, cpv, authority: authority && authority.name ? authority : null, failed: false }
+    return namesOf(directPurchaseNamesSchema.parse(raw), authorityCui)
   } catch (error) {
     if (signal?.aborted) throw error
     return { ...NO_NAMES, failed: true }

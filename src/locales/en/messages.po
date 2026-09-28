@@ -158,6 +158,7 @@ msgstr "(until {0})"
 
 #: src/components/shared/procurement-data/evidence-link.tsx:53
 #: src/features/parliament/components/parliament-stenogram-session-card.tsx:180
+#: src/features/procurement/components/contract/contract-block.tsx:60
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:40
 #: src/features/procurement/components/home/home-chrome.tsx:86
 msgid "(se deschide într-o filă nouă)"
@@ -170,6 +171,10 @@ msgstr "(opens in a new tab)"
 #: src/components/entities/views/ins-stats-view.derived.ts:162
 msgid "(Sewer network length / Population) × 1,000"
 msgstr "(Sewer network length / Population) × 1,000"
+
+#: src/features/procurement/components/contract/contract-block.tsx:145
+msgid "(TED {tedNo}, se deschide într-o filă nouă)"
+msgstr "(TED {tedNo}, opens in a new tab)"
 
 #: src/features/statistics/components/territory/territory-sparkline.tsx:27
 #: src/features/statistics/components/territory/territory-sparkline.tsx:178
@@ -192,15 +197,35 @@ msgstr "{0, plural, one {The one category} other {All # categories}}"
 msgid "{0, plural, one {, un indicator} few {, # indicatori} other {, # de indicatori}}"
 msgstr "{0, plural, one {, one indicator} other {, # indicators}}"
 
+#. placeholder {0}: offers.admitted
+#: src/features/procurement/lib/contract-text.ts:58
+msgid "{0, plural, one {# admisă} few {# admise} other {# de admise}}"
+msgstr "{0, plural, one {# admitted} other {# admitted}}"
+
 #. placeholder {0}: group.totalCount
 #: src/features/legal/components/act-anchors-band.tsx:37
 msgid "{0, plural, one {# ancoră} few {# ancore} other {# de ancore}}"
 msgstr "{0, plural, one {# ancoră} few {# ancore} other {# de ancore}}"
 
+#. placeholder {0}: lots.cancelled
+#: src/features/procurement/lib/contract-text.ts:263
+msgid "{0, plural, one {# anulat} few {# anulate} other {# de anulate}}"
+msgstr "{0, plural, one {# cancelled} other {# cancelled}}"
+
 #. placeholder {0}: keyDates.length
 #: src/features/legal/components/act-key-dates.tsx:37
 msgid "{0, plural, one {# dată} few {# date} other {# de date}}"
 msgstr "{0, plural, one {# dată} few {# date} other {# de date}}"
+
+#. placeholder {0}: offers.nonEu
+#: src/features/procurement/lib/contract-text.ts:72
+msgid "{0, plural, one {# din afara UE} few {# din afara UE} other {# din afara UE}}"
+msgstr "{0, plural, one {# from outside the EU} other {# from outside the EU}}"
+
+#. placeholder {0}: offers.eu
+#: src/features/procurement/lib/contract-text.ts:71
+msgid "{0, plural, one {# dintr-un alt stat UE} few {# din alte state UE} other {# din alte state UE}}"
+msgstr "{0, plural, one {# from another EU state} other {# from other EU states}}"
 
 #. placeholder {0}: timeline.length
 #: src/features/legal/components/act-timeline-band.tsx:45
@@ -227,15 +252,30 @@ msgstr "{0, plural, one {# company in dissolution or liquidation.} other {# comp
 msgid "{0, plural, one {# firmă în insolvență, reorganizare judiciară sau faliment.} few {# firme în insolvență, reorganizare judiciară sau faliment.} other {# de firme în insolvență, reorganizare judiciară sau faliment.}}"
 msgstr "{0, plural, one {# company in insolvency, judicial reorganisation or bankruptcy.} other {# companies in insolvency, judicial reorganisation or bankruptcy.}}"
 
+#. placeholder {0}: offers.unaccepted
+#: src/features/procurement/lib/contract-text.ts:59
+msgid "{0, plural, one {# inacceptabilă} few {# inacceptabile} other {# de inacceptabile}}"
+msgstr "{0, plural, one {# unacceptable} other {# unacceptable}}"
+
 #. placeholder {0}: notes.length
 #: src/features/legal/components/act-provenance-notes.tsx:152
 msgid "{0, plural, one {# limită} few {# limite} other {# de limite}}"
 msgstr "{0, plural, one {# limită} few {# limite} other {# de limite}}"
 
+#. placeholder {0}: lots.total
+#: src/features/procurement/lib/contract-text.ts:261
+msgid "{0, plural, one {# lot} few {# loturi} other {# de loturi}}"
+msgstr "{0, plural, one {# lot} other {# lots}}"
+
 #. placeholder {0}: session.speechCount
 #: src/features/parliament/components/parliament-stenogram-session-card.tsx:130
 msgid "{0, plural, one {# luare de cuvânt} few {# luări de cuvânt} other {# de luări de cuvânt}}"
 msgstr "{0, plural, one {# luare de cuvânt} few {# luări de cuvânt} other {# de luări de cuvânt}}"
+
+#. placeholder {0}: offers.nonconformed
+#: src/features/procurement/lib/contract-text.ts:60
+msgid "{0, plural, one {# neconformă} few {# neconforme} other {# de neconforme}}"
+msgstr "{0, plural, one {# non-compliant} other {# non-compliant}}"
 
 #. placeholder {0}: day.total
 #: src/features/parliament/components/parliament-hub-bill-activity.tsx:62
@@ -246,6 +286,11 @@ msgstr "{0, plural, one {# proiect} few {# proiecte} other {# de proiecte}}"
 #: src/features/legal/components/act-publication-band.tsx:51
 msgid "{0, plural, one {# publicare} few {# publicări} other {# de publicări}}"
 msgstr "{0, plural, one {# publicare} few {# publicări} other {# de publicări}}"
+
+#. placeholder {0}: offers.withdrawn
+#: src/features/procurement/lib/contract-text.ts:61
+msgid "{0, plural, one {# retrasă} few {# retrase} other {# de retrase}}"
+msgstr "{0, plural, one {# withdrawn} other {# withdrawn}}"
 
 #. placeholder {0}: status.results.length
 #: src/features/landing/components/search/search-parts.tsx:355
@@ -271,6 +316,11 @@ msgstr "{0, plural, one {# UAT without data} other {# UATs without data}}"
 #: src/features/statistics/components/uat-map/uat-map-lists.tsx:108
 msgid "{0, plural, one {# UAT} few {# UAT-uri} other {# de UAT-uri}}"
 msgstr "{0, plural, one {# locality} other {# localities}}"
+
+#. placeholder {0}: other.rows
+#: src/features/procurement/components/contract/contract-context.tsx:111
+msgid "{0, plural, one {# valoare publicată} few {# valori publicate} other {# de valori publicate}}"
+msgstr "{0, plural, one {# published value} other {# published values}}"
 
 #. placeholder {0}: session.speakerCount
 #: src/features/parliament/components/parliament-stenogram-session-card.tsx:144
@@ -401,6 +451,11 @@ msgstr "{0, plural, one {one dataset with data} other {# datasets with data}}"
 #: src/features/statistics/components/hub/hub-place-finder.tsx:44
 #~ msgid "{0, plural, one {Un teritoriu găsit} few {# teritorii găsite} other {# de teritorii găsite}}"
 #~ msgstr "{0, plural, one {One territory found} other {# territories found}}"
+
+#. placeholder {0}: offers.sme
+#: src/features/procurement/lib/contract-text.ts:70
+msgid "{0, plural, one {una de la un IMM} few {# de la IMM-uri} other {# de la IMM-uri}}"
+msgstr "{0, plural, one {one from an SME} other {# from SMEs}}"
 
 #. placeholder {0}: seeAll.count
 #: src/features/statistics/components/detail/detail-related-datasets.tsx:55
@@ -871,6 +926,12 @@ msgstr "{0} series pasted"
 #~ msgid "{0} seturi doar în catalog — cere încărcarea lor"
 #~ msgstr "{0} catalog-only datasets — request their loading"
 
+#. placeholder {0}: parts[0]
+#. placeholder {1}: parts[1]
+#: src/features/procurement/lib/contract-text.ts:277
+msgid "{0} și {1}"
+msgstr "{0} and {1}"
+
 #. placeholder {0}: supplierName(profile, one.cui)
 #. placeholder {1}: supplierName(profile, two.cui)
 #: src/features/procurement/lib/buyer-text.ts:203
@@ -1039,7 +1100,15 @@ msgstr "{activeCount} active filters"
 msgid "{addedPrevious} în {previousYear}"
 msgstr "{addedPrevious} in {previousYear}"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:104
+#: src/features/procurement/lib/contract-text.ts:134
+msgid "{amount} (echivalentul în lei al unei valori în {currency})"
+msgstr "{amount} (the lei equivalent of a value in {currency})"
+
+#: src/features/procurement/lib/contract-text.ts:134
+msgid "{amount} (echivalentul în lei al unei valori în valută)"
+msgstr "{amount} (the lei equivalent of a value in a foreign currency)"
+
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:105
 msgid "{amount} fără TVA"
 msgstr "{amount} excluding VAT"
 
@@ -1055,19 +1124,47 @@ msgstr "{amount} below the national average"
 #~ msgid "{authorisedCount} authorised activities"
 #~ msgstr "{authorisedCount} authorised activities"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:143
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:144
 msgid "{authority} a cumpărat direct de la {supplier}, cu {money}, {when}."
 msgstr "{authority} bought directly from {supplier}, for {money}, {when}."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:137
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:138
 msgid "{authority} a cumpărat direct de la {supplier}, cu {money}, în afara catalogului electronic, și a notificat achiziția în SEAP {when}."
 msgstr "{authority} bought directly from {supplier}, for {money}, outside the electronic catalogue, and notified the purchase in SEAP {when}."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:130
+#: src/features/procurement/components/contract/contract-head.tsx:113
+msgid "{authority} a încheiat contractul cu {supplier} {when}, pentru {money}."
+msgstr "{authority} signed the contract with {supplier} {when}, for {money}."
+
+#: src/features/procurement/components/contract/contract-head.tsx:107
+msgid "{authority} a încheiat contractul cu {supplier} și {others}, în asociere, {when}, pentru {money}."
+msgstr "{authority} signed the contract with {supplier} and {others}, as an association, {when}, for {money}."
+
+#: src/features/procurement/components/contract/contract-head.tsx:100
+msgid "{authority} a încheiat cu {supplier} un contract subsecvent unui acord-cadru, {when}, pentru {money}."
+msgstr "{authority} signed a call-off contract under a framework agreement with {supplier} {when}, for {money}."
+
+#: src/features/procurement/components/contract/contract-head.tsx:93
+msgid "{authority} a încheiat un acord-cadru cu {supplier} {when}: poate cumpăra de la firmă cel mult {money}, prin contracte subsecvente."
+msgstr "{authority} concluded a framework agreement with {supplier} {when}: it may buy from the firm up to {money}, through call-off contracts."
+
+#: src/features/procurement/components/contract/contract-head.tsx:83
+msgid "{authority} a încheiat un acord-cadru cu {supplier} {when}. SEAP nu publică o valoare maximă verificată."
+msgstr "{authority} concluded a framework agreement with {supplier} {when}. SEAP publishes no checked maximum value."
+
+#: src/features/procurement/components/contract/contract-head.tsx:89
+msgid "{authority} a încheiat un acord-cadru cu {supplier} și {others} {when}: poate cumpăra de la ele cel mult {money}, prin contracte subsecvente."
+msgstr "{authority} concluded a framework agreement with {supplier} and {others} {when}: it may buy from them up to {money}, through call-off contracts."
+
+#: src/features/procurement/components/contract/contract-head.tsx:79
+msgid "{authority} a încheiat un acord-cadru cu {supplier} și {others} {when}. SEAP nu publică o valoare maximă verificată."
+msgstr "{authority} concluded a framework agreement with {supplier} and {others} {when}. SEAP publishes no checked maximum value."
+
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:131
 msgid "{authority} a pornit o achiziție directă de la {supplier}, cu {money}, {when}. SEAP nu spune cum s-a încheiat."
 msgstr "{authority} started a direct purchase from {supplier}, for {money}, {when}. SEAP does not say how it ended."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:123
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:124
 msgid "{authority} a vrut să cumpere direct de la {supplier}, cu {money}, {when}. Achiziția nu s-a făcut: {refusal}"
 msgstr "{authority} wanted to buy directly from {supplier}, for {money}, {when}. The purchase did not happen: {refusal}"
 
@@ -1090,6 +1187,10 @@ msgstr "{bought}, and awarded {awarded}."
 #: src/features/procurement/lib/buyer-text.ts:126
 msgid "{bought}, și a semnat {signed}."
 msgstr "{bought}, and signed {signed}."
+
+#: src/features/procurement/components/contract/contract-block.tsx:77
+msgid "{boxLabel}, fără TVA"
+msgstr "{boxLabel}, excluding VAT"
 
 #. placeholder {0}: periodBeforeText(period)
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:86
@@ -1148,6 +1249,14 @@ msgstr "{count} groups"
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:60
 msgid "{count} UATs assigned"
 msgstr "{count} UATs assigned"
+
+#: src/features/procurement/lib/contract-text.ts:52
+msgid "{count}, ultima dată pe {last}"
+msgstr "{count}, last on {last}"
+
+#: src/features/procurement/components/contract/contract-block.tsx:390
+msgid "{count}: {values}"
+msgstr "{count}: {values}"
 
 #: src/features/procurement/components/procurement-category-bars.tsx:166
 #: src/features/procurement/components/procurement-category-bars.tsx:180
@@ -1256,6 +1365,10 @@ msgstr "{groupWorkspaceCount} group workspace configured"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4107
 msgid "{groupWorkspaceCount} group workspaces configured"
 msgstr "{groupWorkspaceCount} group workspaces configured"
+
+#: src/features/procurement/lib/contract-text.ts:106
+msgid "{head} și {last}"
+msgstr "{head} and {last}"
 
 #: src/features/ngos/hub/ngo-county-rank.tsx:159
 #: src/features/private-companies/components/hub/company-county-rank.tsx:148
@@ -1445,9 +1558,17 @@ msgstr "{name}: no value"
 #~ msgid "{nonCompetitiveCount} contracte"
 #~ msgstr "{nonCompetitiveCount} contracte"
 
+#: src/features/procurement/components/contract/contract-block.tsx:286
+msgid "{offers} până la termen."
+msgstr "{offers} by the deadline."
+
 #: src/features/private-companies/components/profile/company-money-band.tsx:209
 msgid "{openYear} e anul în curs: bara lui nu e un an întreg."
 msgstr "{openYear} is the year in progress: its bar is not a whole year."
+
+#: src/features/procurement/components/contract/contract-head.tsx:74
+msgid "{partners, plural, one {încă o firmă} few {alte # firme} other {alte # de firme}}"
+msgstr "{partners, plural, one {one other firm} other {# other firms}}"
 
 #. placeholder {0}: monthText(read.cutoff.direct)
 #: src/features/procurement/components/home/home-context-bands.tsx:225
@@ -1538,6 +1659,14 @@ msgstr "{times, plural, one {{name} appears in one of the {of} largest contracts
 msgid "{times, plural, one {{names} apar fiecare într-unul dintre cele {of} mai mari contracte din {year}.} other {{names} apar fiecare în # dintre cele {of} mai mari contracte din {year}.}}"
 msgstr "{times, plural, one {{names} each appear in one of the {of} largest contracts of {year}.} other {{names} each appear in # of the {of} largest contracts of {year}.}}"
 
+#: src/features/procurement/lib/contract-text.ts:51
+msgid "{times, plural, one {republicat o dată} few {republicat de # ori} other {republicat de # de ori}}"
+msgstr "{times, plural, one {republished once} other {republished # times}}"
+
+#: src/features/procurement/lib/contract-text.ts:246
+msgid "{times, plural, one {SEAP îl mai publică o dată; Transparenta îl numără o singură dată.} few {SEAP îl mai publică de # ori; Transparenta îl numără o singură dată.} other {SEAP îl mai publică de # de ori; Transparenta îl numără o singură dată.}}"
+msgstr "{times, plural, one {SEAP publishes it once more; Transparenta counts it once.} other {SEAP publishes it # more times; Transparenta counts it once.}}"
+
 #. placeholder {0}: contractsCount(count)
 #: src/features/procurement/lib/supplier-text.ts:234
 msgid "{together} din cele {0} din {year} au fost câștigate împreună cu alte firme, în asociere."
@@ -1579,6 +1708,14 @@ msgstr "{total, plural, one {One locality found} other {# localities found}}"
 #: src/features/ngos/registry/registry-page.tsx:191
 msgid "{total} registry records in this snapshot. Records without a CUI are included."
 msgstr "{total} registry records in this snapshot. Records without a CUI are included."
+
+#: src/features/procurement/lib/contract-text.ts:295
+msgid "{total}, {mine} acestei firme"
+msgstr "{total}, {mine} to this firm"
+
+#: src/features/procurement/lib/contract-text.ts:295
+msgid "{total}, niciunul acestei firme"
+msgstr "{total}, none to this firm"
 
 #: src/features/statistics/components/detail/detail-dimension-panel.tsx:178
 #~ msgid "{totalCount, plural, one {o opțiune} few {# opțiuni} other {# de opțiuni}}"
@@ -1622,6 +1759,7 @@ msgid "{unpublished} dintre ele au fost negociate fără anunț public."
 msgstr "{unpublished} of them were negotiated without a public notice."
 
 #: src/features/private-companies/lib/company-profile-text.ts:223
+#: src/features/procurement/lib/contract-text.ts:25
 #: src/features/procurement/lib/home-format.ts:77
 msgid "{value, plural, one {# achiziție directă} few {# achiziții directe} other {# de achiziții directe}}"
 msgstr "{value, plural, one {# direct purchase} other {# direct purchases}}"
@@ -1632,6 +1770,7 @@ msgid "{value, plural, one {# achiziție} few {# achiziții} other {# de achizi�
 msgstr "{value, plural, one {# purchase} other {# purchases}}"
 
 #: src/features/procurement/lib/buyer-text.ts:36
+#: src/features/procurement/lib/contract-text.ts:13
 msgid "{value, plural, one {# acord-cadru} few {# acorduri-cadru} other {# de acorduri-cadru}}"
 msgstr "{value, plural, one {# framework agreement} other {# framework agreements}}"
 
@@ -1644,10 +1783,12 @@ msgid "{value, plural, one {# contract câștigat} few {# contracte câștigate}
 msgstr "{value, plural, one {# contract won} other {# contracts won}}"
 
 #: src/features/private-companies/lib/company-profile-text.ts:221
+#: src/features/procurement/lib/contract-text.ts:9
 #: src/features/procurement/lib/home-format.ts:73
 msgid "{value, plural, one {# contract} few {# contracte} other {# de contracte}}"
 msgstr "{value, plural, one {# contract} other {# contracts}}"
 
+#: src/features/procurement/lib/contract-text.ts:17
 #: src/features/procurement/lib/home-format.ts:85
 msgid "{value, plural, one {# firmă} few {# firme} other {# de firme}}"
 msgstr "{value, plural, one {# company} other {# companies}}"
@@ -1684,6 +1825,10 @@ msgstr "{value, plural, one {# service} other {# services}}"
 msgid "{value, plural, one {# subcontract PNRR} few {# subcontracte PNRR} other {# de subcontracte PNRR}}"
 msgstr "{value, plural, one {# PNRR subcontract} other {# PNRR subcontracts}}"
 
+#: src/features/procurement/lib/contract-text.ts:21
+msgid "{value, plural, one {# valoare} few {# valori} other {# de valori}}"
+msgstr "{value, plural, one {# value} other {# values}}"
+
 #: src/features/procurement/lib/direct-purchase-text.ts:164
 msgid "{value, plural, one {# vânzare directă} few {# vânzări directe} other {# de vânzări directe}}"
 msgstr "{value, plural, one {# direct sale} other {# direct sales}}"
@@ -1696,13 +1841,37 @@ msgstr "{value, plural, one {one other county} other {# other counties}}"
 msgid "{value, plural, one {încă o dată} few {de încă # ori} other {de încă # de ori}}"
 msgstr "{value, plural, one {once more} other {# more times}}"
 
+#: src/features/procurement/lib/contract-text.ts:33
+msgid "{value, plural, one {o lună} few {# luni} other {# de luni}}"
+msgstr "{value, plural, one {one month} other {# months}}"
+
+#: src/features/procurement/lib/contract-text.ts:41
+msgid "{value, plural, one {o modificare} few {# modificări} other {# de modificări}}"
+msgstr "{value, plural, one {one modification} other {# modifications}}"
+
+#: src/features/procurement/lib/contract-text.ts:29
+msgid "{value, plural, one {o singură ofertă} few {# oferte} other {# de oferte}}"
+msgstr "{value, plural, one {a single offer} other {# offers}}"
+
+#: src/features/procurement/lib/contract-text.ts:37
+msgid "{value, plural, one {o zi} few {# zile} other {# de zile}}"
+msgstr "{value, plural, one {one day} other {# days}}"
+
 #: src/features/procurement/lib/buyer-text.ts:41
 msgid "{value, plural, one {Singura categorie} few {Toate cele # categorii} other {Toate cele # de categorii}}"
 msgstr "{value, plural, one {The only category} other {All # categories}}"
 
+#: src/features/procurement/lib/contract-text.ts:45
+msgid "{value, plural, one {un act adițional} few {# acte adiționale} other {# de acte adiționale}}"
+msgstr "{value, plural, one {one amendment} other {# amendments}}"
+
 #: src/components/entities/entity-population-badge.tsx:23
 msgid "{value} inhabitants"
 msgstr "{value} inhabitants"
+
+#: src/features/procurement/components/contract/contract-block.tsx:82
+msgid "{versions, plural, one {E una dintre valorile pe care SEAP le publică pentru acest contract, mai jos.} few {E una dintre cele # valori pe care SEAP le publică pentru acest contract, mai jos.} other {E una dintre cele # de valori pe care SEAP le publică pentru acest contract, mai jos.}}"
+msgstr "{versions, plural, one {It is one of the values SEAP publishes for this contract, below.} other {It is one of the # values SEAP publishes for this contract, below.}}"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1447
 msgid "{visibleRowCount} of {totalRowCount} · {editedRowCount} edited"
@@ -1723,6 +1892,14 @@ msgstr "{warningCount} warnings"
 #: src/routes/procurement/direct-acquisitions/$id.tsx:58
 msgid "{what}: achiziția directă a instituției {buyer} de la {seller}, din SEAP — ce s-a cumpărat, cu cât și cum s-a făcut."
 msgstr "{what}: {buyer}'s direct purchase from {seller}, from SEAP — what was bought, for how much and how it was done."
+
+#: src/routes/procurement/contracts/$id.tsx:59
+msgid "{what}: acordul-cadru încheiat de {buyer} cu {seller}, din SEAP — cât se poate cheltui prin el, cu cine și cum s-a atribuit."
+msgstr "{what}: the framework agreement {buyer} concluded with {seller}, from SEAP — how much can be spent through it, with whom, and how it was awarded."
+
+#: src/routes/procurement/contracts/$id.tsx:60
+msgid "{what}: contractul atribuit de {buyer} firmei {seller}, din SEAP — ce s-a atribuit, cu cât, cum și ce s-a schimbat după."
+msgstr "{what}: the contract {buyer} awarded to {seller}, from SEAP — what was awarded, for how much, how, and what changed after."
 
 #: src/features/procurement/lib/direct-purchase-text.ts:372
 msgid "{year} (până în {month})"
@@ -2308,6 +2485,10 @@ msgstr "Acest profil afișează datele AMEPIP ca evidență de sursă. Pentru bi
 msgid "Acest profil nu are furnizor MMuncii direct."
 msgstr "Acest profil nu are furnizor MMuncii direct."
 
+#: src/features/procurement/components/contract/contract-context.tsx:111
+msgid "acesta"
+msgstr "this one"
+
 #: src/features/justice/components/litigation-slice-section.tsx:84
 msgid "Acesta este un rezultat de acoperire, nu o confirmare că profilul nu apare în instanță."
 msgstr "This is a coverage result, not a confirmation that the profile does not appear in court."
@@ -2346,7 +2527,7 @@ msgstr "Purchase not found"
 msgid "achiziție directă"
 msgstr "direct purchase"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:94
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:95
 #: src/features/procurement/components/supplier/supplier-bands.tsx:248
 #: src/features/procurement/lib/grain-labels.ts:68
 msgid "Achiziție directă"
@@ -2356,7 +2537,7 @@ msgstr "Direct purchase"
 msgid "Achiziție directă fără titlu în SEAP"
 msgstr "Direct purchase with no title in SEAP"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:94
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:95
 msgid "Achiziție directă, notificată"
 msgstr "Direct purchase, notified"
 
@@ -2433,7 +2614,8 @@ msgstr "Achiziții în timp"
 #: src/features/landing/lib/landing-groups.ts:70
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:208
 #: src/features/procurement/components/buyer/buyer-head.tsx:46
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:89
+#: src/features/procurement/components/contract/contract-head.tsx:38
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:90
 #: src/features/procurement/components/home/procurement-home-page.tsx:165
 #: src/features/procurement/components/supplier/supplier-head.tsx:47
 #: src/routes/procurement/index.tsx:66
@@ -2472,6 +2654,7 @@ msgstr "Direct purchases, by the institution’s county, {0}"
 msgid "Achizițiile directe,<0/>an de an"
 msgstr "Direct purchases,<0/>year by year"
 
+#: src/features/procurement/components/contract/contract-context.tsx:162
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:267
 msgid "Achizițiile instituției"
 msgstr "The institution's purchases"
@@ -2575,6 +2758,27 @@ msgstr "Acoperire: {0}. Actualizată la {1}."
 msgid "Acord"
 msgstr "Acord"
 
+#: src/features/procurement/components/contract/contract-context.tsx:111
+msgid "acord-cadru"
+msgstr "framework agreement"
+
+#: src/features/procurement/components/contract/contract-head.tsx:43
+#: src/features/procurement/lib/contract-text.ts:121
+msgid "Acord-cadru"
+msgstr "Framework agreement"
+
+#: src/features/procurement/components/contract/contract-context.tsx:113
+msgid "Acordul-cadru nr. {number}"
+msgstr "Framework agreement no. {number}"
+
+#: src/features/procurement/components/contract/contract-block.tsx:296
+msgid "Acordul-cadru, încheiat"
+msgstr "The framework agreement, concluded"
+
+#: src/features/procurement/components/contract/contract-context.tsx:97
+msgid "acorduri-cadru"
+msgstr "framework agreements"
+
 #: src/features/procurement/lib/enum-labels.ts:102
 #: src/features/procurement/lib/grain-labels.ts:32
 msgid "Acorduri-cadru"
@@ -2595,6 +2799,10 @@ msgstr "Acreditare (ANOFM)"
 #: src/features/ngos/components/ngo-profile-page.tsx:87
 msgid "Acreditari"
 msgstr "Acreditari"
+
+#: src/features/procurement/components/contract/contract-block.tsx:325
+msgid "Act adițional"
+msgstr "Amendment"
 
 #: src/features/legal/components/act-references-band.tsx:131
 msgid "act din afara corpusului — fără pagină la noi"
@@ -2858,6 +3066,10 @@ msgstr "Actualizat: necunoscut"
 #~ msgid "actualizată {0}"
 #~ msgstr "updated {0}"
 
+#: src/features/procurement/components/contract/contract-block.tsx:325
+msgid "Actul adițional nr. {number}"
+msgstr "Amendment no. {number}"
+
 #: src/features/legal/components/legal-act-page.tsx:75
 msgid "Actul nu există în Portal Legislativ sau identificatorul din adresă este greșit."
 msgstr "Actul nu există în Portal Legislativ sau identificatorul din adresă este greșit."
@@ -3053,6 +3265,10 @@ msgstr "Public administration"
 #~ msgid "Administrative location (API)"
 #~ msgstr "Administrative location (API)"
 
+#: src/features/procurement/lib/contract-text.ts:63
+msgid "admisă"
+msgstr "admitted"
+
 #. placeholder {0}: unusedPeriods.map(formatHubPeriod).join(', ')
 #. placeholder {1}: formatHubPeriod(from)
 #. placeholder {2}: formatHubPeriod(to)
@@ -3123,8 +3339,8 @@ msgid "After the message opens and you send it from your email client, confirm b
 msgstr "After the message opens and you send it from your email client, confirm below."
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:337
-msgid "After:"
-msgstr "After:"
+#~ msgid "After:"
+#~ msgstr "After:"
 
 #: src/features/private-companies/lib/caen-divisions.ts:89
 msgid "Agenții de turism"
@@ -3530,6 +3746,10 @@ msgstr "Other mining and quarrying"
 msgid "Alte activități industriale"
 msgstr "Other manufacturing"
 
+#: src/features/procurement/components/contract/contract-context.tsx:274
+msgid "Alte contracte între ele"
+msgstr "Other contracts between them"
+
 #: src/features/statistics/lib/territory-groups.ts:38
 msgid "Alte domenii"
 msgstr "Other domains"
@@ -3606,8 +3826,8 @@ msgid "Amendment records are analyzed as counts. Their raw money fields are qual
 msgstr "Amendment records are analyzed as counts. Their raw money fields are quality-checked in the data layer and are not reliable enough to sum here; verified amendment effects are served through the modification-adjusted contract value instead."
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:303
-msgid "Amendments (acte adiționale) that changed this contract's value."
-msgstr "Amendments (acte adiționale) that changed this contract's value."
+#~ msgid "Amendments (acte adiționale) that changed this contract's value."
+#~ msgstr "Amendments (acte adiționale) that changed this contract's value."
 
 #: src/features/procurement/lib/caveat-text.ts:192
 msgid "Amendments are events, not purchases, so this population is counted and never summed. Verified amendment money reaches the analytics only through the contracts' modification-adjusted value."
@@ -3999,6 +4219,42 @@ msgstr "cancelled on {ended}"
 #: src/features/public-investments/components/HowToReadData.tsx:100
 msgid "Anumite sume pot fi stocate înmulțite cu 1.000. Acele valori sunt afișate ca „valoare în verificare”, nu ca sumă, până la reparcurgere."
 msgstr "Anumite sume pot fi stocate înmulțite cu 1.000. Acele valori sunt afișate ca „valoare în verificare”, nu ca sumă, până la reparcurgere."
+
+#: src/features/procurement/components/contract/contract-head.tsx:125
+msgid "Anunț"
+msgstr "Notice"
+
+#: src/features/procurement/components/contract/contract-block.tsx:415
+msgid "Anunțul {notice} mai are {count}, cu {firmsText}."
+msgstr "Notice {notice} also holds {count}, with {firmsText}."
+
+#: src/features/procurement/components/contract/contract-block.tsx:415
+msgid "Anunțul {notice} mai are cel puțin {count}, cu {firmsText}."
+msgstr "Notice {notice} also holds at least {count}, with {firmsText}."
+
+#: src/features/procurement/lib/contract-text.ts:264
+msgid "Anunțul are {total}, {cancelled}."
+msgstr "The notice has {total}, {cancelled}."
+
+#: src/features/procurement/lib/contract-text.ts:262
+msgid "Anunțul are {total}."
+msgstr "The notice has {total}."
+
+#: src/features/procurement/components/contract/contract-block.tsx:469
+msgid "anunțul de atribuire din SEAP"
+msgstr "the award notice in SEAP"
+
+#: src/features/procurement/components/contract/contract-block.tsx:469
+msgid "anunțul de atribuire pe e-licitatie.ro"
+msgstr "the award notice on e-licitatie.ro"
+
+#: src/features/procurement/components/contract/contract-block.tsx:305
+msgid "Anunțul de atribuire, publicat"
+msgstr "The award notice, published"
+
+#: src/features/procurement/components/contract/contract-block.tsx:282
+msgid "Anunțul de participare"
+msgstr "The call for competition"
 
 #: src/features/ngos/registry/registry-page.tsx:314
 msgid "Any"
@@ -4511,7 +4767,7 @@ msgstr "Awarded"
 #: src/features/procurement/components/procurement-monthly-chart.tsx:66
 #: src/features/procurement/components/procurement-ranking-table.tsx:128
 #: src/features/procurement/components/procurement-territory-drawer.tsx:195
-#: src/features/procurement/lib/detail-config.ts:49
+#: src/features/procurement/lib/detail-config.ts:38
 #: src/features/procurement/lib/hub-filter-chips.ts:44
 #: src/features/procurement/lib/value-basis-meta.ts:18
 #: src/features/procurement/lib/value-basis-meta.ts:69
@@ -4543,6 +4799,10 @@ msgstr "awarded values"
 #: src/features/procurement/components/procurement-overview-page.tsx:257
 msgid "Awarded-value ranking is unavailable for this scope, so the server ranked by record count."
 msgstr "Awarded-value ranking is unavailable for this scope, so the server ranked by record count."
+
+#: src/features/procurement/components/contract/contract-block.tsx:369
+msgid "azi"
+msgstr "today"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:399
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:470
@@ -4683,8 +4943,8 @@ msgid "Before confirming, make sure you:"
 msgstr "Before confirming, make sure you:"
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:326
-msgid "Before:"
-msgstr "Before:"
+#~ msgid "Before:"
+#~ msgstr "Before:"
 
 #: src/features/public-investments/lib/display.ts:80
 msgid "Beneficiar"
@@ -4813,7 +5073,7 @@ msgid "Branch reported"
 msgstr "Branch reported"
 
 #: src/features/procurement/components/cpv-category-page.tsx:54
-#: src/features/procurement/components/procurement-detail-page.tsx:55
+#: src/features/procurement/components/procurement-detail-page.tsx:54
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:287
 msgid "Breadcrumb"
 msgstr "Breadcrumb"
@@ -4975,6 +5235,7 @@ msgstr "Budgetary Academy"
 msgid "Buget național"
 msgstr "National budget"
 
+#: src/features/procurement/components/contract/contract-context.tsx:167
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:272
 msgid "Bugetul"
 msgstr "Budget"
@@ -5449,6 +5710,7 @@ msgstr "How many NGOs <0/>appear each year"
 msgid "Câte ONG-uri are județul tău"
 msgstr "How many NGOs your county has"
 
+#: src/features/procurement/components/contract/contract-block.tsx:151
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:163
 msgid "Categoria"
 msgstr "Category"
@@ -5888,6 +6150,10 @@ msgstr "Cauze penale"
 msgid "CC"
 msgstr "CC"
 
+#: src/features/procurement/components/contract/contract-context.tsx:277
+msgid "Ce a mai atribuit {authority} firmei {supplier}, din 2019 încoace."
+msgstr "What else {authority} awarded to {supplier}, since 2019."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:307
 msgid "Ce a mai cumpărat {authority} de la {supplier}, din 2019 încoace."
 msgstr "What else {authority} bought from {supplier}, since 2019."
@@ -5970,6 +6236,10 @@ msgstr "Which pages are opened and which features are used, so we know what is w
 msgid "Ce poți căuta"
 msgstr "Ce poți căuta"
 
+#: src/features/procurement/components/contract/contract-block.tsx:500
+msgid "Ce s-a atribuit"
+msgstr "What was awarded"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:379
 msgid "Ce s-a cumpărat"
 msgstr "What was bought"
@@ -6035,6 +6305,16 @@ msgstr "Ceiling total (maximum committed)"
 #: src/features/procurement/components/procurement-value-basis-overview.tsx:269
 msgid "Ceiling totals sliced by buyer, supplier or territory can repeat the same framework's ceiling and materially mislead a ranking, so only the overall total and the monthly series are served. This unlocks once framework identities can be clustered reliably."
 msgstr "Ceiling totals sliced by buyer, supplier or territory can repeat the same framework's ceiling and materially mislead a ranking, so only the overall total and the monthly series are served. This unlocks once framework identities can be clustered reliably."
+
+#: src/features/procurement/lib/contract-text.ts:92
+msgid "cel mai bun raport calitate–cost"
+msgstr "best cost-quality ratio"
+
+#: src/features/procurement/lib/contract-text.ts:89
+#: src/features/procurement/lib/contract-text.ts:90
+#: src/features/procurement/lib/contract-text.ts:91
+msgid "cel mai bun raport calitate–preț"
+msgstr "best price-quality ratio"
 
 #. placeholder {0}: first.name
 #. placeholder {1}: contractsCount(first.contracts)
@@ -6182,6 +6462,18 @@ msgstr "The latest values, with the county and the country for reference. Each o
 #: src/routes/justitie.cautare.tsx:339
 msgid "Cele mai vechi"
 msgstr "Cele mai vechi"
+
+#: src/features/procurement/components/contract/contract-block.tsx:412
+msgid "Celelalte acorduri-cadru din anunț"
+msgstr "The notice's other framework agreements"
+
+#: src/features/procurement/components/contract/contract-block.tsx:412
+msgid "Celelalte contracte din anunț"
+msgstr "The notice's other contracts"
+
+#: src/features/procurement/components/contract/contract-block.tsx:504
+msgid "Celelalte rânduri ale anunțului nu s-au putut citi acum: firmele din asociere, celelalte valori publicate și celelalte contracte din anunț pot lipsi. Reîncarcă pagina pentru ele."
+msgstr "The notice's other rows could not be read just now: the association's firms, the other published values and the notice's other contracts may be missing. Reload the page for them."
 
 #: src/features/private-companies/lib/caen-divisions.ts:83
 msgid "Cercetare-dezvoltare"
@@ -6935,7 +7227,7 @@ msgstr "Cluj-Napoca - primar 2024"
 msgid "Cluj-Napoca vs Iași vs Timișoara"
 msgstr "Cluj-Napoca vs Iași vs Timișoara"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:75
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:76
 msgid "Cod"
 msgstr "Code"
 
@@ -6945,10 +7237,11 @@ msgstr "Code"
 msgid "cod {code}"
 msgstr "code {code}"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:73
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:74
 msgid "Cod copiat"
 msgstr "Code copied"
 
+#: src/features/procurement/components/contract/contract-block.tsx:152
 #: src/features/procurement/components/cpv-label.tsx:41
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:164
 msgid "Cod CPV"
@@ -7012,7 +7305,7 @@ msgstr "Collapse value filters panel"
 
 #. placeholder {0}: sourceSystemLabel(duplicate.sourceSystem)
 #. placeholder {1}: duplicate.id
-#: src/features/procurement/components/procurement-detail-sections.tsx:489
+#: src/features/procurement/components/procurement-detail-sections.tsx:349
 msgid "Collapsed duplicate in {0} (id {1})"
 msgstr "Collapsed duplicate in {0} (id {1})"
 
@@ -7577,6 +7870,7 @@ msgstr "Contested item"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1591
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:248
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:257
+#: src/features/procurement/components/contract/contract-context.tsx:272
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:302
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:56
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:138
@@ -7648,8 +7942,9 @@ msgstr "Continuous range"
 msgid "contract"
 msgstr "contract"
 
+#: src/features/procurement/components/contract/contract-head.tsx:43
 #: src/features/procurement/components/procurement-info-sheet.tsx:34
-#: src/features/procurement/lib/detail-config.ts:87
+#: src/features/procurement/lib/contract-text.ts:123
 #: src/features/procurement/lib/enum-labels.ts:133
 #: src/features/procurement/lib/grain-labels.ts:66
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:107
@@ -7664,11 +7959,15 @@ msgstr "Contract closed."
 msgid "Contract fără număr"
 msgstr "Contract fără număr"
 
+#: src/features/procurement/components/contract/contract-head.tsx:137
+msgid "Contract fără titlu în SEAP"
+msgstr "Contract with no title in SEAP"
+
 #: src/features/procurement/lib/status-meta.ts:80
 msgid "Contract in progress."
 msgstr "Contract in progress."
 
-#: src/features/procurement/lib/detail-config.ts:62
+#: src/features/procurement/lib/detail-config.ts:51
 msgid "Contract kind"
 msgstr "Contract kind"
 
@@ -7682,20 +7981,28 @@ msgid "Contract modifications — counts only"
 msgstr "Contract modifications — counts only"
 
 #: src/features/procurement/lib/detail-config.ts:93
-msgid "Contract number"
-msgstr "Contract number"
+#~ msgid "Contract number"
+#~ msgstr "Contract number"
 
 #: src/features/procurement/components/supplier/supplier-bands.tsx:256
 msgid "Contract prin procedură"
 msgstr "Contract through a procedure"
+
+#: src/features/procurement/lib/contract-text.ts:122
+msgid "Contract subsecvent"
+msgstr "Call-off contract"
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:602
 #~ msgid "Contract type"
 #~ msgstr "Contract type"
 
 #: src/features/procurement/lib/detail-config.ts:88
-msgid "Contract value"
-msgstr "Contract value"
+#~ msgid "Contract value"
+#~ msgstr "Contract value"
+
+#: src/features/procurement/lib/contract-text.ts:123
+msgid "Contract, în asociere"
+msgstr "Contract, as an association"
 
 #: src/features/public-investments/components/HowToReadData.tsx:58
 #: src/features/public-investments/components/ObjectiveListRow.tsx:52
@@ -7709,6 +8016,10 @@ msgstr "Contractat"
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:128
 msgid "Contractat total verificat"
 msgstr "Contractat total verificat"
+
+#: src/features/procurement/components/contract/contract-context.tsx:93
+msgid "contracte"
+msgstr "contracts"
 
 #: src/features/private-companies/lib/company-profile-text.ts:239
 #: src/features/procurement/components/buyer/buyer-bands.tsx:60
@@ -7835,7 +8146,7 @@ msgstr "The contracts with the largest value, each with every firm that won it."
 msgid "Contractele, după județul instituției, {0}"
 msgstr "Contracts, by the institution’s county, {0}"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:204
+#: src/features/procurement/components/procurement-detail-sections.tsx:176
 msgid "Contracting authority"
 msgstr "Contracting authority"
 
@@ -7859,9 +8170,41 @@ msgstr "contracts"
 msgid "Contracts"
 msgstr "Contracts"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:436
+#: src/features/procurement/components/procurement-detail-sections.tsx:296
 msgid "Contracts awarded under this procedure"
 msgstr "Contracts awarded under this procedure"
+
+#: src/features/procurement/components/contract/contract-context.tsx:247
+msgid "Contractul e dinainte de 2019; pagina adună contractele dintre ele din 2019 încoace."
+msgstr "The contract is from before 2019; the page gathers the contracts between them since 2019."
+
+#: src/features/procurement/lib/contract-text.ts:156
+msgid "Contractul e în {currency}; SEAP publică echivalentul în lei."
+msgstr "The contract is in {currency}; SEAP publishes the lei equivalent."
+
+#: src/features/procurement/lib/contract-text.ts:156
+msgid "Contractul e în valută; SEAP publică echivalentul în lei."
+msgstr "The contract is in a foreign currency; SEAP publishes the lei equivalent."
+
+#: src/features/procurement/components/contract/contract-context.tsx:113
+msgid "Contractul nr. {number}"
+msgstr "Contract no. {number}"
+
+#: src/features/procurement/components/contract/procurement-contract-page.tsx:81
+msgid "Contractul nu a fost găsit"
+msgstr "Contract not found"
+
+#: src/features/procurement/components/contract/contract-block.tsx:296
+msgid "Contractul, încheiat"
+msgstr "The contract, signed"
+
+#: src/features/procurement/lib/contract-text.ts:83
+msgid "contractul: cu {part} peste estimare"
+msgstr "the contract: {part} over the estimate"
+
+#: src/features/procurement/lib/contract-text.ts:83
+msgid "contractul: cu {part} sub estimare"
+msgstr "the contract: {part} under the estimate"
 
 #: src/routes/justitie.cautare.tsx:58
 msgid "Contravenții"
@@ -7921,7 +8264,7 @@ msgstr "Copiat"
 msgid "Copiază"
 msgstr "Copiază"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:73
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:74
 msgid "Copiază codul {code}"
 msgstr "Copy the code {code}"
 
@@ -8091,6 +8434,10 @@ msgstr "Correct!"
 msgid "Correct."
 msgstr "Correct."
 
+#: src/features/procurement/lib/contract-text.ts:88
+msgid "costul cel mai scăzut"
+msgstr "lowest cost"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:158
 msgid "Coșul"
 msgstr "Basket"
@@ -8250,7 +8597,7 @@ msgstr "Counts describe the records matching these filters, not the platform's t
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:540
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:567
 #: src/features/procurement/components/procurement-map-view.tsx:895
-#: src/features/procurement/lib/detail-config.ts:67
+#: src/features/procurement/lib/detail-config.ts:56
 #: src/routes/entity-analytics.lazy.tsx:205
 msgid "County"
 msgstr "County"
@@ -8336,7 +8683,7 @@ msgstr "CPV — Vocabularul comun privind achizițiile. Cod: {code}, diviziune: 
 msgid "CPV below division level"
 msgstr "CPV below division level"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:266
+#: src/features/procurement/components/procurement-detail-sections.tsx:238
 #: src/features/procurement/lib/hub-filter-chips.ts:252
 msgid "CPV category"
 msgstr "CPV category"
@@ -8484,6 +8831,10 @@ msgstr "Creating map..."
 msgid "Creating…"
 msgstr "Creating…"
 
+#: src/features/procurement/components/contract/contract-block.tsx:163
+msgid "Criteriul de atribuire"
+msgstr "Award criterion"
+
 #: src/routes/justitie.dosare.$caseId.tsx:133
 msgid "Cronologie"
 msgstr "Cronologie"
@@ -8537,6 +8888,10 @@ msgstr "With whom"
 #: src/features/procurement/components/supplier/supplier-bands.tsx:289
 msgid "Cu cine câștigă"
 msgstr "Who it wins with"
+
+#: src/features/procurement/components/contract/contract-block.tsx:243
+msgid "cu data {dayText}"
+msgstr "dated {dayText}"
 
 #: src/features/statistics/components/dataset-explorer-status-toggle.tsx:39
 #~ msgid "Cu date"
@@ -8615,7 +8970,7 @@ msgstr "CUI reported in source"
 msgid "CUI reținut"
 msgstr "CUI reținut"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:183
+#: src/features/procurement/components/procurement-detail-sections.tsx:155
 msgid "CUI unavailable in the source data"
 msgstr "CUI unavailable in the source data"
 
@@ -8823,6 +9178,10 @@ msgstr "Date"
 msgid "Data cererii"
 msgstr "Date of the request"
 
+#: src/features/procurement/components/contract/contract-block.tsx:130
+msgid "Data contractului"
+msgstr "Contract date"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:312
 msgid "Data din SEAP: {on}."
 msgstr "Date in SEAP: {on}."
@@ -8956,6 +9315,10 @@ msgstr "Data workbook"
 #: src/features/learning/components/interactive/EUComparisonChart.tsx:206
 msgid "Data: Eurostat 2024 (Provisional)"
 msgstr "Data: Eurostat 2024 (Provisional)"
+
+#: src/features/procurement/components/contract/contract-block.tsx:461
+msgid "data.gov.ro"
+msgstr "data.gov.ro"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:356
 msgid "data.gov.ro, XLSX"
@@ -9199,8 +9562,8 @@ msgid "Date simulative pentru dezvoltare."
 msgstr "Date simulative pentru dezvoltare."
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:321
-msgid "date unavailable"
-msgstr "date unavailable"
+#~ msgid "date unavailable"
+#~ msgstr "date unavailable"
 
 #: src/features/public-investments/components/DataStatusBadge.tsx:22
 msgid "Date validate"
@@ -9370,6 +9733,10 @@ msgstr "De la data apariției în Monitorul Oficial, un act produce efecte."
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:116
 msgid "De la primul client"
 msgstr "From the top client"
+
+#: src/features/procurement/lib/contract-text.ts:70
+msgid "de la un IMM"
+msgstr "from an SME"
 
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:253
 msgid "De unde"
@@ -10046,6 +10413,18 @@ msgstr "Since 2019, there have been {total} between them; the first in {since}."
 msgid "Din 2019 încoace, e singura achiziție directă între ele."
 msgstr "Since 2019, it is the only direct purchase between them."
 
+#: src/features/procurement/lib/contract-text.ts:274
+msgid "Din 2019 încoace, e singurul acord-cadru dintre ele."
+msgstr "Since 2019, it is the only framework agreement between them."
+
+#: src/features/procurement/lib/contract-text.ts:274
+msgid "Din 2019 încoace, e singurul contract dintre ele."
+msgstr "Since 2019, it is the only contract between them."
+
+#: src/features/procurement/lib/contract-text.ts:278
+msgid "Din 2019 încoace, instituția i-a atribuit firmei {what}; primul, în {first}."
+msgstr "Since 2019, the institution has awarded the firm {what}; the first in {first}."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:111
 msgid "Din 2019 încoace, între ele s-a finalizat o singură achiziție directă, în {since}."
 msgstr "Since 2019, a single direct purchase between them has been completed, in {since}."
@@ -10116,6 +10495,10 @@ msgstr "From the trade register and the financial statements filed with ANAF, fo
 #: src/features/private-companies/components/profile/company-economy-band.tsx:18
 msgid "din salariații domeniului"
 msgstr "of the sector's employees"
+
+#: src/features/procurement/components/contract/contract-block.tsx:251
+msgid "din valori raportate care nu se potrivesc cu textele actelor"
+msgstr "from reported values that do not match the amendments' texts"
 
 #. placeholder {0}: contractsCount(scanned)
 #: src/features/procurement/lib/supplier-text.ts:227
@@ -10590,6 +10973,14 @@ msgstr "Roads, railways and utility networks"
 msgid "Drumuri, poduri și autostrăzi"
 msgstr "Roads, bridges and motorways"
 
+#: src/features/procurement/components/contract/contract-block.tsx:342
+msgid "după {modifications} ale contractului"
+msgstr "after {modifications} of the contract"
+
+#: src/features/procurement/components/contract/contract-block.tsx:239
+msgid "după actul adițional nr. {act}"
+msgstr "after amendment no. {act}"
+
 #: src/features/ngos/hub/ngo-hub-page.tsx:308
 msgid "După anul din numărul de registru, pe care o organizație îl păstrează. Registrul există din 2000; organizațiile mai vechi au fost preluate atunci."
 msgstr "By the year in the registry number, which an organisation keeps. The registry dates from 2000; older organisations were taken into it then."
@@ -10656,6 +11047,10 @@ msgstr "Duplicate series"
 msgid "Duplicate Series"
 msgstr "Duplicate Series"
 
+#: src/features/procurement/components/contract/contract-block.tsx:164
+msgid "Durata"
+msgstr "Duration"
+
 #: src/features/statistics/lib/landing-constants.ts:108
 #~ msgid "Durata medie a vieții"
 #~ msgstr "Life expectancy"
@@ -10671,6 +11066,10 @@ msgstr "Dwellings"
 #: src/components/entities/views/ins-stats-view.derived.ts:137
 msgid "Dwellings per 1,000 inhabitants signals housing capacity relative to resident population."
 msgstr "Dwellings per 1,000 inhabitants signals housing capacity relative to resident population."
+
+#: src/features/procurement/lib/contract-text.ts:191
+msgid "E a întregului acord-cadru, cu {firms}: instituția cumpără de la oricare dintre ele."
+msgstr "It is the whole framework agreement's, with {firms}: the institution buys from any of them."
 
 #: src/features/procurement/lib/enum-labels.ts:54
 msgid "e-licitatie"
@@ -11303,6 +11702,7 @@ msgstr "The essentials stay with you, in your browser. The rest runs only if you
 msgid "Essentials"
 msgstr "Essentials"
 
+#: src/features/procurement/components/contract/contract-block.tsx:166
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:169
 msgid "Estimarea instituției"
 msgstr "Institution's estimate"
@@ -11324,8 +11724,7 @@ msgid "Estimate the <0>Shares</0>"
 msgstr "Estimate the <0>Shares</0>"
 
 #: src/features/procurement/components/procurement-info-sheet.tsx:50
-#: src/features/procurement/lib/detail-config.ts:50
-#: src/features/procurement/lib/detail-config.ts:89
+#: src/features/procurement/lib/detail-config.ts:39
 #: src/features/procurement/lib/value-basis-meta.ts:20
 #: src/features/procurement/lib/value-basis-meta.ts:71
 msgid "Estimated value"
@@ -12066,6 +12465,10 @@ msgstr "No CPV category"
 msgid "Fără cod CPV"
 msgstr "No CPV code"
 
+#: src/features/procurement/components/contract/contract-block.tsx:212
+msgid "fără CUI în SEAP"
+msgstr "no tax ID in SEAP"
+
 #: src/features/legal/components/legislation-gazette-directory.tsx:326
 msgid "fără cuprins în arhivă"
 msgstr "fără cuprins în arhivă"
@@ -12074,6 +12477,7 @@ msgstr "fără cuprins în arhivă"
 #: src/features/legal/components/act-timeline-band.tsx:70
 #: src/features/legal/components/act-versions-band.tsx:102
 #: src/features/legal/components/legislation-changes-feed.tsx:262
+#: src/features/procurement/components/contract/contract-block.tsx:369
 msgid "fără dată"
 msgstr "fără dată"
 
@@ -12088,6 +12492,10 @@ msgstr "fără dată de intrare în vigoare"
 #: src/features/legal/components/act-key-dates.tsx:69
 msgid "fără dată exactă"
 msgstr "fără dată exactă"
+
+#: src/features/procurement/components/contract/contract-block.tsx:241
+msgid "fără dată în SEAP"
+msgstr "no date in SEAP"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1423
 msgid "fără date"
@@ -12172,6 +12580,10 @@ msgstr "Fara legaturi de finantare"
 msgid "fără listă de produse în SEAP"
 msgstr "no list of products in SEAP"
 
+#: src/features/procurement/components/contract/contract-block.tsx:431
+msgid "fără număr"
+msgstr "no number"
+
 #: src/features/justice/lib/justice-format.ts:250
 msgid "fără nume de persoane"
 msgstr "fără nume de persoane"
@@ -12250,6 +12662,7 @@ msgstr "No statistics, no detailed error reports. You can change your mind any t
 msgid "fără titlu"
 msgstr "fără titlu"
 
+#: src/features/procurement/components/contract/contract-context.tsx:113
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:187
 msgid "Fără titlu în SEAP"
 msgstr "No title in SEAP"
@@ -12806,6 +13219,8 @@ msgstr "Find resources, report issues, or get in touch."
 msgid "Finish"
 msgstr "Finish"
 
+#: src/features/procurement/components/contract/contract-context.tsx:151
+#: src/features/procurement/components/contract/contract-context.tsx:179
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:240
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:251
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:255
@@ -12841,6 +13256,14 @@ msgstr "The company appears in {through} of public money, with published values 
 #: src/features/private-companies/lib/company-profile-text.ts:271
 msgid "Firma apare în {through} din bani publici, fără nicio valoare publicată."
 msgstr "The company appears in {through} of public money, with no published value."
+
+#: src/features/procurement/lib/contract-text.ts:290
+msgid "Firma i-a vândut și direct: {purchases}, {money}."
+msgstr "The firm also sold to it directly: {purchases}, {money}."
+
+#: src/features/procurement/lib/contract-text.ts:288
+msgid "Firma i-a vândut și direct: {purchases}."
+msgstr "The firm also sold to it directly: {purchases}."
 
 #: src/features/private-companies/lib/company-profile-text.ts:135
 msgid "firmă mare, 250 de salariați sau mai mulți"
@@ -12962,6 +13385,14 @@ msgstr "The firms that sold it the most directly since {DIRECT_COMPARABLE_FROM},
 #: src/features/procurement/components/home/home-money-bands.tsx:154
 msgid "Firmele care<0/>vând statului"
 msgstr "The companies<0/>selling to the state"
+
+#: src/features/procurement/components/contract/contract-block.tsx:203
+msgid "Firmele din acordul-cadru"
+msgstr "The firms in the framework agreement"
+
+#: src/features/procurement/components/contract/contract-block.tsx:203
+msgid "Firmele din asociere"
+msgstr "The firms in the association"
 
 #: src/features/private-companies/seo/private-company-hub-seo.ts:53
 #: src/features/private-companies/seo/private-company-hub-seo.ts:60
@@ -13949,7 +14380,7 @@ msgstr "ICCJ"
 msgid "ID"
 msgstr "ID"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:259
+#: src/features/procurement/components/procurement-detail-sections.tsx:231
 msgid "Identification"
 msgstr "Identification"
 
@@ -14087,6 +14518,10 @@ msgstr "Ignored extra primary UAT for group {0}."
 #: src/features/private-companies/lib/caen-divisions.ts:32
 msgid "Îmbrăcăminte"
 msgstr "Clothing"
+
+#: src/features/procurement/components/contract/contract-block.tsx:210
+msgid "IMM"
+msgstr "SME"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:121
 #: src/components/entities/views/ins-stats-view.derived.ts:127
@@ -14274,6 +14709,18 @@ msgstr "In {year}, {0}, meaning sales without a tender, and {1} through a proced
 msgid "În {year}, cifra de afaceri {0}"
 msgstr "In {year}, turnover {0}"
 
+#: src/features/procurement/lib/contract-text.ts:306
+msgid "În {year}, instituția a atribuit {contracts}; și {frameworks}."
+msgstr "In {year}, the institution awarded {contracts}; and {frameworks}."
+
+#: src/features/procurement/lib/contract-text.ts:307
+msgid "În {year}, instituția a atribuit {contracts}."
+msgstr "In {year}, the institution awarded {contracts}."
+
+#: src/features/procurement/lib/contract-text.ts:304
+msgid "În {year}, instituția nu a atribuit contracte, doar {frameworks}."
+msgstr "In {year}, the institution awarded no contracts, only {frameworks}."
+
 #. placeholder {0}: moneyText(-before)
 #: src/features/private-companies/lib/company-profile-text.ts:92
 msgid "în {year}: pierdere de {0}"
@@ -14410,6 +14857,10 @@ msgstr "In court"
 msgid "În jurul acestei achiziții"
 msgstr "Around this purchase"
 
+#: src/features/procurement/components/contract/contract-context.tsx:213
+msgid "În jurul acestui contract"
+msgstr "Around this contract"
+
 #: src/features/ngos/hub/ngo-registry-search.tsx:30
 msgid "în lichidare"
 msgstr "in liquidation"
@@ -14467,9 +14918,29 @@ msgstr "In the trade register, {month}"
 msgid "în revizuire"
 msgstr "în revizuire"
 
+#: src/features/procurement/lib/contract-text.ts:236
+msgid "În SEAP: {count}."
+msgstr "In SEAP: {count}."
+
+#: src/features/procurement/lib/contract-text.ts:234
+msgid "În SEAP: {count}. Valoarea raportată a trecut de la {from} la {to}."
+msgstr "In SEAP: {count}. The reported value went from {from} to {to}."
+
+#: src/features/procurement/lib/contract-text.ts:229
+msgid "În SEAP: {count}. Valorile raportate nu se potrivesc cu textul actelor: actul nr. {act} spune {stated}, dar valoarea raportată se schimbă cu {reported}."
+msgstr "In SEAP: {count}. The reported values do not match the amendments' text: amendment no. {act} says {stated}, but the reported value changes by {reported}."
+
 #: src/features/procurement/components/home/procurement-home-page.tsx:100
 msgid "În timp"
 msgstr "Over time"
+
+#: src/features/procurement/components/contract/contract-block.tsx:416
+msgid "În total, procedura a atribuit {total}."
+msgstr "In all, the procedure awarded {total}."
+
+#: src/features/procurement/components/contract/contract-block.tsx:416
+msgid "În total, procedura a atribuit acorduri-cadru de cel mult {total}."
+msgstr "In all, the procedure awarded framework agreements worth at most {total}."
 
 #: src/features/legal/components/legislation-shell.tsx:131
 msgid "în vigoare"
@@ -14698,6 +15169,10 @@ msgstr "început"
 #: src/features/statistics/components/comparison/comparison-standings.tsx:67
 msgid "Începutul comparației"
 msgstr "Start of the comparison"
+
+#: src/features/procurement/components/contract/contract-block.tsx:300
+msgid "Începutul contractului"
+msgstr "The contract's start"
 
 #: src/features/legal/lib/legal-vocabulary.ts:296
 msgid "încetarea suspendării"
@@ -15308,6 +15783,7 @@ msgstr "Courts, convictions, crime"
 msgid "Institut de cercetare"
 msgstr "Research institute"
 
+#: src/features/procurement/components/contract/contract-context.tsx:151
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:236
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:240
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:259
@@ -15320,6 +15796,10 @@ msgstr "Institution"
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:66
 msgid "Instituția a descris achiziția așa:"
 msgstr "The institution described the purchase as:"
+
+#: src/features/procurement/components/contract/contract-block.tsx:177
+msgid "Instituția a explicat așa:"
+msgstr "The institution explained it so:"
 
 #. placeholder {0}: percentText(share.share, 1)
 #. placeholder {1}: inCounty(share.county)
@@ -15351,6 +15831,10 @@ msgstr "The institution bought it from the firm {times} in {year}."
 #: src/features/procurement/lib/direct-purchase-text.ts:259
 msgid "instituția nu a acceptat oferta la timp."
 msgstr "the institution did not accept the offer in time."
+
+#: src/features/procurement/lib/contract-text.ts:241
+msgid "Instituția nu a publicat un anunț de participare: a negociat direct. Legea permite asta doar în anumite cazuri (urgență, un singur furnizor posibil)."
+msgstr "The institution published no call for competition: it negotiated directly. The law allows this only in certain cases (urgency, a single possible supplier)."
 
 #: src/features/entity-search/lib/doc-type-meta.ts:52
 msgid "Instituție"
@@ -15571,6 +16055,10 @@ msgstr "Between {since} and {until}, direct purchases grew from {from} to {to} a
 msgid "Între {since} și {until}, achizițiile directe au scăzut de la {from} la {to} pe an, în lei ai fiecărui an."
 msgstr "Between {since} and {until}, direct purchases fell from {from} to {to} a year, in each year's lei."
 
+#: src/features/procurement/components/contract/contract-context.tsx:206
+msgid "Între ele, pe ani"
+msgstr "Between them, by year"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:326
 msgid "Între ele, pe ani, lei"
 msgstr "Between them, by year, lei"
@@ -15715,6 +16203,10 @@ msgstr "Is undefined"
 #: src/routes/certificates.$id.tsx:68
 msgid "Issued at"
 msgstr "Issued at"
+
+#: src/features/procurement/components/contract/contract-block.tsx:357
+msgid "Istoria contractului"
+msgstr "The contract's history"
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:419
 #~ msgid "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
@@ -16135,7 +16627,7 @@ msgstr "last available"
 msgid "Last evaluated"
 msgstr "Last evaluated"
 
-#: src/features/procurement/lib/detail-config.ts:78
+#: src/features/procurement/lib/detail-config.ts:67
 msgid "Last state change"
 msgstr "Last state change"
 
@@ -16425,7 +16917,7 @@ msgstr "Accelerated restricted tender"
 msgid "Licitație, negociere<0/>sau cumpărare directă"
 msgstr "Tender, negotiation<0/>or direct purchase"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:276
+#: src/features/procurement/components/procurement-detail-sections.tsx:248
 msgid "Lifecycle"
 msgstr "Lifecycle"
 
@@ -16522,8 +17014,8 @@ msgstr "Linked CUI"
 
 #. placeholder {0}: Math.round(modification.linkConfidence * 100)
 #: src/features/procurement/components/procurement-detail-sections.tsx:372
-msgid "Linked with reduced confidence ({0}%)."
-msgstr "Linked with reduced confidence ({0}%)."
+#~ msgid "Linked with reduced confidence ({0}%)."
+#~ msgstr "Linked with reduced confidence ({0}%)."
 
 #: src/components/shared/procurement-data/share-filtered-view.tsx:29
 msgid "Linkul către această vizualizare a fost copiat."
@@ -17334,8 +17826,9 @@ msgid "mai puțin"
 msgstr "less"
 
 #: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:293
+#: src/features/procurement/components/contract/contract-block.tsx:445
 msgid "Mai puține"
-msgstr "Mai puține"
+msgstr "Fewer"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:106
 msgid "Main aggregated"
@@ -18208,15 +18701,14 @@ msgstr "Modificat"
 msgid "Modificate"
 msgstr "Modificate"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:316
 #: src/features/procurement/components/procurement-info-sheet.tsx:42
 #: src/features/procurement/lib/enum-labels.ts:137
 msgid "Modification"
 msgstr "Modification"
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:300
-msgid "Modification trail"
-msgstr "Modification trail"
+#~ msgid "Modification trail"
+#~ msgstr "Modification trail"
 
 #: src/features/procurement/components/procurement-info-sheet.tsx:62
 #: src/features/procurement/lib/value-basis-meta.ts:26
@@ -18367,6 +18859,14 @@ msgstr "Most people think they know, but the reality often surprises. Ready to t
 #: src/components/ui/shortcuts.tsx:129
 msgid "Most shortcuts work on both Windows/Linux (Ctrl) and macOS (⌘). Some shortcuts may conflict with browser defaults."
 msgstr "Most shortcuts work on both Windows/Linux (Ctrl) and macOS (⌘). Some shortcuts may conflict with browser defaults."
+
+#: src/features/procurement/components/contract/contract-block.tsx:185
+msgid "Motivul invocat: drepturi exclusive."
+msgstr "The reason given: exclusive rights."
+
+#: src/features/procurement/components/contract/contract-block.tsx:183
+msgid "Motivul invocat: urgența."
+msgstr "The reason given: urgency."
 
 #. placeholder {0}: result.engine
 #: src/features/legal/components/legislation-act-finder.tsx:194
@@ -19232,6 +19732,11 @@ msgstr "none"
 msgid "Niciunul dintre cei {known} furnizori identificați nu are {basis} în această selecție, așa că nu se poate calcula o concentrare."
 msgstr "Niciunul dintre cei {known} furnizori identificați nu are {basis} în această selecție, așa că nu se poate calcula o concentrare."
 
+#: src/features/procurement/components/contract/contract-context.tsx:51
+#: src/features/procurement/lib/contract-text.ts:336
+msgid "nimic între ele"
+msgstr "nothing between them"
+
 #: src/routes/justitie.cautare.tsx:294
 msgid "Nivel instanță"
 msgstr "Nivel instanță"
@@ -19870,7 +20375,7 @@ msgstr "Nominal RON, excluding transfers. Each row keeps its full reported inter
 msgid "Non-direct spending"
 msgstr "Non-direct spending"
 
-#: src/features/procurement/components/procurement-detail-page.tsx:38
+#: src/features/procurement/components/procurement-detail-page.tsx:37
 msgid "Non-RON values have no RON amount; the currency code is shown instead."
 msgstr "Non-RON values have no RON amount; the currency code is shown instead."
 
@@ -20043,8 +20548,7 @@ msgstr "Notes"
 msgid "Nothing to paste"
 msgstr "Nothing to paste"
 
-#: src/features/procurement/lib/detail-config.ts:54
-#: src/features/procurement/lib/detail-config.ts:94
+#: src/features/procurement/lib/detail-config.ts:43
 msgid "Notice number"
 msgstr "Notice number"
 
@@ -20088,6 +20592,11 @@ msgstr "Now"
 #: src/features/legal/components/legislation-gazette-directory.tsx:311
 msgid "nr. {0}"
 msgstr "nr. {0}"
+
+#: src/features/procurement/components/contract/contract-block.tsx:431
+#: src/features/procurement/components/contract/contract-head.tsx:59
+msgid "nr. {number}"
+msgstr "no. {number}"
 
 #: src/features/private-companies/components/profile/company-registry-band.tsx:47
 msgid "Nr. de ordine în registru"
@@ -20799,6 +21308,7 @@ msgstr "o modificare înregistrată"
 msgid "O parte a textului nu s-a încărcat"
 msgstr "O parte a textului nu s-a încărcat"
 
+#: src/features/procurement/components/contract/contract-context.tsx:231
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:340
 msgid "O parte din aceste cifre nu s-a putut citi acum; reîncarcă pagina pentru restul."
 msgstr "Some of these figures could not be read just now; reload the page for the rest."
@@ -20815,13 +21325,20 @@ msgstr "o potrivire afișată — numărul total nu este cunoscut"
 msgid "o rată anuală pe trei ani: suma evenimentelor împărțită la suma populațiilor."
 msgstr "a yearly rate over three years: the sum of the events divided by the sum of the populations."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:106
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:107
+#: src/features/procurement/lib/contract-text.ts:137
+#: src/features/procurement/lib/contract-text.ts:141
 msgid "o valoare nepublicată"
 msgstr "an unpublished value"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:106
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:107
+#: src/features/procurement/lib/contract-text.ts:139
 msgid "o valoare neverificată"
 msgstr "an unverified value"
+
+#: src/features/procurement/lib/contract-text.ts:141
+msgid "o valoare publicată doar în valută"
+msgstr "a value published only in a foreign currency"
 
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:122
 #: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:105
@@ -20898,6 +21415,10 @@ msgstr "of commitment authority"
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:156
 msgid "Oferta, fără TVA"
 msgstr "Offer, excluding VAT"
+
+#: src/features/procurement/components/contract/contract-block.tsx:157
+msgid "Oferte primite"
+msgstr "Offers received"
 
 #: src/features/procurement/lib/status-meta.ts:114
 msgid "Offer submitted."
@@ -21298,8 +21819,8 @@ msgstr "Open the campaign forum discussion."
 #~ msgstr "Open the official source"
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:95
-msgid "Open title source"
-msgstr "Open title source"
+#~ msgid "Open title source"
+#~ msgstr "Open title source"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4991
 msgid "Open UAT menu"
@@ -21529,7 +22050,7 @@ msgstr "Other source"
 msgid "Other Sources"
 msgstr "Other Sources"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:483
+#: src/features/procurement/components/procurement-detail-sections.tsx:343
 msgid "Other sources for this record"
 msgstr "Other sources for this record"
 
@@ -21624,6 +22145,11 @@ msgstr "Page {page} does not exist"
 #: src/components/ui/pagination.tsx:140
 msgid "Pagina {safeCurrent} din {totalPages}"
 msgstr "Pagina {safeCurrent} din {totalPages}"
+
+#: src/features/procurement/components/contract/contract-block.tsx:209
+#: src/features/procurement/components/contract/contract-block.tsx:249
+msgid "pagina aceasta"
+msgstr "this page"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:350
 msgid "pagina achiziției pe e-licitatie.ro"
@@ -21849,7 +22375,7 @@ msgstr "Participation"
 msgid "Participation report"
 msgstr "Participation report"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:199
+#: src/features/procurement/components/procurement-detail-sections.tsx:171
 msgid "Parties"
 msgstr "Parties"
 
@@ -21857,7 +22383,7 @@ msgstr "Parties"
 msgid "Părțile cu risc personal sunt reținute până la revizuire."
 msgstr "Părțile cu risc personal sunt reținute până la revizuire."
 
-#: src/features/procurement/components/procurement-detail-page.tsx:39
+#: src/features/procurement/components/procurement-detail-page.tsx:38
 msgid "Party names may carry source artifacts (own-CUI prefixes, separators) and are shown cleaned."
 msgstr "Party names may carry source artifacts (own-CUI prefixes, separators) and are shown cleaned."
 
@@ -22079,6 +22605,10 @@ msgstr "For contracts and direct purchases, the value is the amount awarded, not
 msgid "Pentru fiecare localitate: populația, munca și șomajul, locuințele, educația, sănătatea, utilitățile și turismul. Ultima valoare a fiecărui indicator, evoluția lui în timp și, la cifrele principale, comparația cu județul și țara."
 msgstr "For every locality: population, work and unemployment, housing, education, health, utilities and tourism. The latest value of each indicator, how it has changed over time and, for the main figures, how it compares with the county and the country."
 
+#: src/features/procurement/lib/contract-text.ts:326
+msgid "Pentru firmă, e singurul contract câștigat în {year}."
+msgstr "For the firm, it is the only contract won in {year}."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:156
 msgid "Pentru firmă, instituția e {institutionPlace} client din {clients}: {sellerPart} din vânzările ei directe."
 msgstr "For the firm, the institution is its {institutionPlace} client out of {clients}: {sellerPart} of its direct sales."
@@ -22086,6 +22616,26 @@ msgstr "For the firm, the institution is its {institutionPlace} client out of {c
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:160
 msgid "Pentru firmă, instituția e unul dintre {clients} de clienți: {sellerPart} din vânzările ei directe."
 msgstr "For the firm, the institution is one of {clients} clients: {sellerPart} of its direct sales."
+
+#: src/features/procurement/lib/contract-text.ts:328
+msgid "Pentru firmă: în {year} a câștigat {contracts}, {mine} de la această instituție."
+msgstr "For the firm: in {year} it won {contracts}, {mine} from this institution."
+
+#: src/features/procurement/lib/contract-text.ts:323
+msgid "Pentru firmă: în {year} a câștigat {contracts}, niciunul de la această instituție; de la ea are {frameworks}."
+msgstr "For the firm: in {year} it won {contracts}, none from this institution; from it, it has {frameworks}."
+
+#: src/features/procurement/lib/contract-text.ts:325
+msgid "Pentru firmă: în {year} a câștigat {contracts}, niciunul de la această instituție."
+msgstr "For the firm: in {year} it won {contracts}, none from this institution."
+
+#: src/features/procurement/lib/contract-text.ts:327
+msgid "Pentru firmă: în {year} a câștigat {contracts}, toate de la această instituție."
+msgstr "For the firm: in {year} it won {contracts}, all from this institution."
+
+#: src/features/procurement/lib/contract-text.ts:326
+msgid "Pentru firmă: în {year} a câștigat un singur contract, de la această instituție."
+msgstr "For the firm: in {year} it won a single contract, from this institution."
 
 #: src/features/procurement/lib/supplier-text.ts:246
 msgid "Pentru un contract, datele SEAP nu arată dacă a avut parteneri."
@@ -22122,7 +22672,7 @@ msgstr "Per capita"
 msgid "Per Capita"
 msgstr "Per Capita"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:452
+#: src/features/procurement/components/procurement-detail-sections.tsx:312
 msgid "Per-lot winners"
 msgstr "Per-lot winners"
 
@@ -22890,6 +23440,10 @@ msgstr "Press Enter to search"
 #~ msgid "Press Enter to search, or pick a suggestion to jump straight to that company's profile."
 #~ msgstr "Press Enter to search, or pick a suggestion to jump straight to that company's profile."
 
+#: src/features/procurement/lib/contract-text.ts:87
+msgid "prețul cel mai scăzut"
+msgstr "lowest price"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:79
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:442
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:382
@@ -23085,6 +23639,10 @@ msgstr "Pro Tip"
 msgid "Probleme de validare"
 msgstr "Probleme de validare"
 
+#: src/features/procurement/components/contract/contract-block.tsx:132
+msgid "Procedura"
+msgstr "Procedure"
+
 #: src/features/legal/lib/legal-vocabulary.ts:141
 #: src/features/procurement/lib/grain-labels.ts:64
 msgid "Procedură"
@@ -23103,7 +23661,7 @@ msgid "Procedură simplificată proprie"
 msgstr "Own simplified procedure"
 
 #: src/features/procurement/components/procurement-info-sheet.tsx:30
-#: src/features/procurement/lib/detail-config.ts:48
+#: src/features/procurement/lib/detail-config.ts:37
 #: src/features/procurement/lib/enum-labels.ts:131
 msgid "Procedure"
 msgstr "Procedure"
@@ -23116,7 +23674,7 @@ msgstr "Procedure published in SEAP."
 msgid "Procedure suspended."
 msgstr "Procedure suspended."
 
-#: src/features/procurement/lib/detail-config.ts:57
+#: src/features/procurement/lib/detail-config.ts:46
 msgid "Procedure type"
 msgstr "Procedure type"
 
@@ -23128,7 +23686,7 @@ msgstr "Procedure type"
 msgid "Procedures"
 msgstr "Procedures"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:214
+#: src/features/procurement/components/procurement-detail-sections.tsx:186
 msgid "Procedures carry no supplier until an award."
 msgstr "Procedures carry no supplier until an award."
 
@@ -23502,7 +24060,7 @@ msgid "Public maps can use only unlisted or public datasets. Update visibility f
 msgstr "Public maps can use only unlisted or public datasets. Update visibility for: {0}"
 
 #: src/features/procurement/components/cpv-category-page.tsx:61
-#: src/features/procurement/components/procurement-detail-page.tsx:60
+#: src/features/procurement/components/procurement-detail-page.tsx:59
 #: src/features/procurement/components/procurement-shell.tsx:145
 msgid "Public procurement"
 msgstr "Public procurement"
@@ -23553,6 +24111,10 @@ msgstr "Published in SEAP on {from}, cancelled on {to}."
 msgid "Publicată în SEAP pe {from}, finalizată pe {to}."
 msgstr "Published in SEAP on {from}, completed on {to}."
 
+#: src/features/procurement/components/contract/contract-block.tsx:138
+msgid "publicată și în <0>Jurnalul UE</0>"
+msgstr "also published in <0>the EU Official Journal</0>"
+
 #: src/features/statistics/components/landing/landing-read-state.tsx:40
 #~ msgid "Publicația sursă s-a schimbat în timpul citirii. Reîncarcă datele."
 #~ msgstr "The source publication changed during the read. Reload the data."
@@ -23576,7 +24138,7 @@ msgid "Publicitate și studii de piață"
 msgstr "Advertising and market research"
 
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:127
-#: src/features/procurement/lib/detail-config.ts:75
+#: src/features/procurement/lib/detail-config.ts:64
 #: src/features/procurement/lib/status-meta.ts:61
 msgid "Published"
 msgstr "Published"
@@ -23679,6 +24241,10 @@ msgstr "Radio and television"
 #: src/components/data-trust/source-provenance-drawer.tsx:71
 msgid "Rand"
 msgstr "Rand"
+
+#: src/features/procurement/components/contract/contract-block.tsx:473
+msgid "rândul din raportul SEAP al contractelor"
+msgstr "the row in SEAP's contracts report"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:104
 msgid "Rândul nu intră în valoarea achiziției."
@@ -23807,6 +24373,10 @@ msgstr "Raportează o problemă de date"
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:355
 msgid "raportul SEAP al achizițiilor directe"
 msgstr "SEAP's report of direct purchases"
+
+#: src/features/procurement/components/contract/contract-block.tsx:482
+msgid "raportul SEAP al contractelor"
+msgstr "SEAP's contracts report"
 
 #: src/features/procurement/lib/direct-purchase-text.ts:192
 msgid "raportul trimestrial al achizițiilor directe"
@@ -24052,11 +24622,11 @@ msgstr "Redo"
 msgid "Redo successful"
 msgstr "Redo successful"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:161
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:162
 msgid "Refăcută {when}: aceeași achiziție, de la aceeași firmă, finalizată cu {value}."
 msgstr "Redone {when}: the same purchase, from the same firm, completed for {value}."
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:161
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:162
 msgid "Refăcută {when}: aceeași achiziție, de la aceeași firmă, finalizată."
 msgstr "Redone {when}: the same purchase, from the same firm, completed."
 
@@ -24505,6 +25075,10 @@ msgstr "Representatives"
 #: src/features/legal/lib/legal-vocabulary.ts:298
 msgid "republicare"
 msgstr "republicare"
+
+#: src/features/procurement/lib/contract-text.ts:50
+msgid "republicat o dată, pe {last}"
+msgstr "republished once, on {last}"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:42
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:140
@@ -25451,7 +26025,7 @@ msgstr "se deschide într-o pagină nouă"
 msgid "Se încarcă"
 msgstr "Loading"
 
-#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:223
+#: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:224
 msgid "Se încarcă achiziția"
 msgstr "Loading the purchase"
 
@@ -25470,6 +26044,10 @@ msgstr "Se încarcă analiza legislației"
 #: src/features/procurement/components/home/procurement-home-page.tsx:179
 msgid "Se încarcă cifrele achizițiilor…"
 msgstr "Loading the procurement figures…"
+
+#: src/features/procurement/components/contract/contract-head.tsx:168
+msgid "Se încarcă contractul"
+msgstr "Loading the contract"
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:464
 msgid "Se încarcă cuprinsul…"
@@ -25652,13 +26230,33 @@ msgstr "SEAP has no complete month for these yet."
 msgid "SEAP nu are o achiziție directă cu identificatorul {id} în datele publicate."
 msgstr "SEAP has no direct purchase with the identifier {id} in its published data."
 
+#: src/features/procurement/components/contract/procurement-contract-page.tsx:83
+msgid "SEAP nu are un contract cu identificatorul {id} în datele publicate."
+msgstr "SEAP has no contract with the identifier {id} in its published data."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:352
 msgid "SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte achiziții dintre ele nu se pot aduna."
 msgstr "SEAP gives no tax ID for one of the two sides, so the other purchases between them cannot be gathered."
 
+#: src/features/procurement/components/contract/contract-context.tsx:243
+msgid "SEAP nu dă codul fiscal al uneia dintre părți, așa că celelalte contracte dintre ele nu se pot aduna."
+msgstr "SEAP gives no tax ID for one of the two sides, so the other contracts between them cannot be gathered."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:354
 msgid "SEAP nu publică data acestei achiziții, așa că pagina nu o poate așeza printre celelalte dintre ele."
 msgstr "SEAP does not publish the date of this purchase, so the page cannot place it among the others between them."
+
+#: src/features/procurement/components/contract/contract-context.tsx:245
+msgid "SEAP nu publică data acestui contract, așa că pagina nu îl poate așeza printre celelalte dintre ele."
+msgstr "SEAP does not publish this contract's date, so the page cannot place it among the others between them."
+
+#: src/features/procurement/lib/contract-text.ts:171
+msgid "SEAP nu publică o valoare care să se poată verifica."
+msgstr "SEAP publishes no value that can be checked."
+
+#: src/features/procurement/lib/contract-text.ts:184
+msgid "SEAP nu publică valoarea."
+msgstr "SEAP does not publish the value."
 
 #: src/features/procurement/lib/direct-purchase-text.ts:278
 msgid "SEAP nu spune cine a oprit-o."
@@ -25680,13 +26278,45 @@ msgstr "SEAP shows it as cancelled."
 msgid "SEAP o publică și în {list}; Transparenta o numără o singură dată."
 msgstr "SEAP also publishes it in {list}; Transparenta counts it once."
 
+#: src/features/procurement/lib/contract-text.ts:173
+msgid "SEAP publică {published}, dar sursele SEAP nu se potrivesc între ele."
+msgstr "SEAP publishes {published}, but SEAP's sources disagree with each other."
+
+#: src/features/procurement/lib/contract-text.ts:175
+msgid "SEAP publică {published}, o valoare care nu se poate citi corect."
+msgstr "SEAP publishes {published}, a value that cannot be read correctly."
+
+#: src/features/procurement/lib/contract-text.ts:180
+msgid "SEAP publică {published}; platforma nu a verificat încă dacă e valoarea unui singur contract."
+msgstr "SEAP publishes {published}; the platform has not yet checked whether it is a single contract's value."
+
+#: src/features/procurement/lib/contract-text.ts:179
+msgid "SEAP publică {published}; platforma nu o numără ca atribuire (o dublură, un anunț fără atribuire sau o procedură anulată)."
+msgstr "SEAP publishes {published}; the platform does not count it as an award (a duplicate, a notice with no award, or a cancelled procedure)."
+
+#: src/features/procurement/lib/contract-text.ts:177
+msgid "SEAP publică {published}; platforma o numără cu acordul-cadru."
+msgstr "SEAP publishes {published}; the platform counts it with the framework agreement."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:92
 msgid "SEAP publică {unverified}, dar valoarea nu a trecut verificările platformei."
 msgstr "SEAP publishes {unverified}, but the value did not pass the platform's checks."
 
+#: src/features/procurement/lib/contract-text.ts:206
+msgid "SEAP publică acest contract cu {values} diferite și nu spune care e în vigoare."
+msgstr "SEAP publishes this contract at {values} and does not say which is in force."
+
+#: src/features/procurement/lib/contract-text.ts:204
+msgid "SEAP publică acest contract cu {values} diferite; anunțul îl dă azi la {amount}, după {modifications}."
+msgstr "SEAP publishes this contract at {values}; the notice gives it today at {amount}, after {modifications}."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:201
 msgid "SEAP publică și lista de produse, pașii și condițiile acestei achiziții, dar Transparenta nu le-a preluat încă."
 msgstr "SEAP also publishes this purchase's list of products, steps and terms, but Transparenta has not imported them yet."
+
+#: src/features/procurement/lib/contract-text.ts:184
+msgid "SEAP publică valoarea doar în valută."
+msgstr "SEAP publishes the value only in a foreign currency."
 
 #: src/features/procurement/lib/home-text.ts:106
 msgid "SEAP publică valoarea întregului contract, nu partea fiecărei firme, așa că niciun clasament al firmelor nu o poate arăta."
@@ -27051,8 +27681,8 @@ msgid "Sign in to track your learning journey."
 msgstr "Sign in to track your learning journey."
 
 #: src/features/procurement/lib/detail-config.ts:100
-msgid "Signed"
-msgstr "Signed"
+#~ msgid "Signed"
+#~ msgstr "Signed"
 
 #: src/features/private-companies/lib/caen-divisions.ts:21
 msgid "Silvicultură"
@@ -27354,8 +27984,8 @@ msgid "Source inspection: choose all dimensions and a unit to view a single seri
 msgstr "Source inspection: choose all dimensions and a unit to view a single series."
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:427
-msgid "Source procedure"
-msgstr "Source procedure"
+#~ msgid "Source procedure"
+#~ msgstr "Source procedure"
 
 #: src/features/statistics/components/entity-ins-source-controls.tsx:52
 #~ msgid "Source selection"
@@ -28105,8 +28735,8 @@ msgstr "Sumarul pastreaza distinctia dintre rezultate de alegeri si voturi parla
 msgid "Sunt disponibile mai multe observații. Tabelul arată o pagină de explorare; restrânge selecția sau alege seria unui rând pentru istoricul complet."
 msgstr "More observations are available. The table shows an inspection page; narrow the selection or select a row's series for its complete history."
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:207
-#: src/features/procurement/components/procurement-detail-sections.tsx:211
+#: src/features/procurement/components/procurement-detail-sections.tsx:179
+#: src/features/procurement/components/procurement-detail-sections.tsx:183
 #: src/features/procurement/components/procurement-party-ranking.tsx:423
 #: src/features/procurement/components/procurement-ranking-table.tsx:116
 #: src/features/procurement/lib/export.ts:49
@@ -28285,6 +28915,7 @@ msgstr "Rule source"
 msgid "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
 msgstr "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
 
+#: src/features/procurement/components/contract/contract-block.tsx:466
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:347
 #: src/features/procurement/components/home/home-chrome.tsx:82
 msgid "Sursa:"
@@ -28458,6 +29089,10 @@ msgstr "System"
 msgid "T{0} {1}"
 msgstr "Q{0} {1}"
 
+#: src/features/procurement/lib/contract-text.ts:256
+msgid "T{quarter} {year}"
+msgstr "Q{quarter} {year}"
+
 #: src/features/elections/components/contest-result-explorer-page.tsx:127
 #: src/features/public-investments/components/SourceProvenanceDrawer.tsx:86
 msgid "Tabel"
@@ -28545,7 +29180,7 @@ msgid "Te privește dacă ești"
 msgstr "Te privește dacă ești"
 
 #. placeholder {0}: ted.tedNoticeNo
-#: src/features/procurement/components/procurement-detail-sections.tsx:499
+#: src/features/procurement/components/procurement-detail-sections.tsx:359
 msgid "TED notice {0}"
 msgstr "TED notice {0}"
 
@@ -29500,12 +30135,12 @@ msgid "Title A–Z"
 msgstr "Title A–Z"
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:87
-msgid "Title from matched award"
-msgstr "Title from matched award"
+#~ msgid "Title from matched award"
+#~ msgstr "Title from matched award"
 
 #: src/features/procurement/components/procurement-detail-sections.tsx:89
-msgid "Title from source procedure"
-msgstr "Title from source procedure"
+#~ msgid "Title from source procedure"
+#~ msgstr "Title from source procedure"
 
 #: src/routes/charts/index.lazy.tsx:221
 msgid "Title Z–A"
@@ -29518,6 +30153,10 @@ msgstr "titlu"
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:162
 msgid "Titlu"
 msgstr "Titlu"
+
+#: src/features/procurement/components/contract/contract-head.tsx:146
+msgid "Titlul procedurii: SEAP nu dă contractului un titlu al lui."
+msgstr "The procedure's title: SEAP gives the contract none of its own."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
@@ -29599,6 +30238,10 @@ msgstr "All {0} firms below sold to it in almost every year since {DIRECT_COMPAR
 #~ msgid "Toate cele {0} județe"
 #~ msgstr "All {0} counties"
 
+#: src/features/procurement/components/contract/contract-block.tsx:445
+msgid "Toate cele {all}"
+msgstr "All {all}"
+
 #: src/features/procurement/lib/buyer-text.ts:283
 msgid "Toate cele {all} atribuite în {year} au avut un anunț public."
 msgstr "All {all} awarded in {year} had a public notice."
@@ -29606,6 +30249,10 @@ msgstr "All {all} awarded in {year} had a public notice."
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:221
 msgid "Toate cele {all} dintre ele"
 msgstr "All {all} between them"
+
+#: src/features/procurement/components/contract/contract-context.tsx:224
+msgid "Toate cele {records} dintre ele"
+msgstr "All {records} between them"
 
 #: src/features/statistics/components/landing/landing-honesty-section.tsx:64
 #~ msgid "Toate cele {total} seturi din catalogul INS Tempo au observații încărcate aici."
@@ -29634,6 +30281,10 @@ msgstr "All contracts in {year} came from {firstName}."
 #: src/features/private-companies/components/profile/company-money-band.tsx:314
 msgid "Toate contractele și achizițiile →"
 msgstr "All contracts and purchases →"
+
+#: src/features/procurement/lib/contract-text.ts:70
+msgid "toate de la IMM-uri"
+msgstr "all from SMEs"
 
 #: src/features/statistics/components/explorer/dataset-explorer-theme-tree.tsx:83
 msgid "Toate domeniile"
@@ -30402,6 +31053,10 @@ msgstr "Last 5 years with a financial statement"
 msgid "Ultimul bilanț publicat este pe {0}."
 msgstr "The latest published financial statement is for {0}."
 
+#: src/features/procurement/lib/contract-text.ts:164
+msgid "Un acord-cadru fixează cât se poate cheltui, cel mult. Banii se cheltuiesc prin contractele subsecvente: aceasta nu e o cheltuială."
+msgstr "A framework agreement sets the most that can be spent. The money is spent through call-off contracts: this is not spending."
+
 #: src/features/legal/components/legislation-act-finder.tsx:340
 msgid "Un act corespunde acestei căutări:"
 msgstr "Un act corespunde acestei căutări:"
@@ -30413,6 +31068,10 @@ msgstr "Un act poate ține de mai multe domenii, așa că numerele se suprapun �
 #: src/features/privacy/components/cookie-illustration.tsx:84
 msgid "Un biscuit simplu, fără bucăți de ciocolată"
 msgstr "A plain biscuit, without chocolate chips"
+
+#: src/routes/procurement/contracts/$id.tsx:61
+msgid "Un contract de achiziție publică din SEAP: ce s-a atribuit, cui, cu cât și ce s-a schimbat după."
+msgstr "A public procurement contract from SEAP: what was awarded, to whom, for how much, and what changed after."
 
 #: src/features/procurement/lib/buyer-text.ts:286
 msgid "Un contract din cele {all} atribuite în {year} a fost negociat fără anunț prealabil."
@@ -30453,8 +31112,8 @@ msgstr "Unable to load notifications"
 
 #: src/features/procurement/components/procurement-category-bars.tsx:165
 #: src/features/procurement/components/procurement-category-bars.tsx:456
-#: src/features/procurement/components/procurement-detail-sections.tsx:121
-#: src/features/procurement/components/procurement-detail-sections.tsx:232
+#: src/features/procurement/components/procurement-detail-sections.tsx:93
+#: src/features/procurement/components/procurement-detail-sections.tsx:204
 #: src/features/procurement/components/procurement-monthly-chart.tsx:138
 #: src/features/procurement/components/procurement-monthly-chart.tsx:255
 #: src/features/procurement/components/procurement-party-ranking.tsx:303
@@ -30755,7 +31414,7 @@ msgstr "Untitled data series"
 msgid "Untitled map"
 msgstr "Untitled map"
 
-#: src/features/procurement/components/procurement-detail-sections.tsx:80
+#: src/features/procurement/components/procurement-detail-sections.tsx:71
 #: src/features/procurement/components/procurement-record-card.tsx:141
 msgid "Untitled record"
 msgstr "Untitled record"
@@ -31130,6 +31789,10 @@ msgstr "value not published"
 #~ msgid "valoare raportată și în"
 #~ msgstr "value also reported in"
 
+#: src/features/procurement/components/contract/contract-block.tsx:374
+msgid "valoare raportată; textul actului spune {stated}"
+msgstr "reported value; the amendment's text says {stated}"
+
 #: src/features/procurement/components/value-with-currency.tsx:43
 msgid "valoare RON indisponibilă"
 msgstr "valoare RON indisponibilă"
@@ -31145,6 +31808,11 @@ msgstr "Valoare-cadru"
 #: src/features/procurement/components/value-with-currency.tsx:102
 msgid "Valoare-cadru (acord-cadru) — un plafon, nu o cheltuială reală."
 msgstr "Valoare-cadru (acord-cadru) — un plafon, nu o cheltuială reală."
+
+#: src/features/procurement/lib/contract-text.ts:181
+#: src/features/procurement/lib/contract-text.ts:184
+msgid "Valoarea"
+msgstr "Value"
 
 #: src/features/procurement/components/home/home-money-bands.tsx:109
 msgid "Valoarea achizițiilor directe din {year}, fără TVA."
@@ -31174,6 +31842,18 @@ msgstr "The awarded value of the contracts of {year}."
 msgid "Valoarea contractată efectiv pentru execuția lucrării."
 msgstr "Valoarea contractată efectiv pentru execuția lucrării."
 
+#: src/features/procurement/lib/contract-text.ts:150
+msgid "Valoarea contractului"
+msgstr "Contract value"
+
+#: src/features/procurement/components/contract/contract-block.tsx:237
+msgid "valoarea de azi a anunțului"
+msgstr "the notice's value today"
+
+#: src/features/procurement/components/contract/contract-block.tsx:341
+msgid "Valoarea de azi, în anunț"
+msgstr "The value today, in the notice"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:87
 msgid "Valoarea din SEAP, fără TVA"
 msgstr "Value in SEAP, excl. VAT"
@@ -31186,6 +31866,10 @@ msgstr "The value is the whole contract's; for a consortium, SEAP does not publi
 msgid "Valoarea e a întregului contract; la o asociere, SEAP nu publică partea fiecărei firme."
 msgstr "The value is the whole contract’s; for a consortium, SEAP does not publish each firm’s part."
 
+#: src/features/procurement/lib/contract-text.ts:193
+msgid "Valoarea e a întregului contract: SEAP o publică pe numele fiecăreia dintre cele {firms} și nu spune cât revine fiecăreia."
+msgstr "The value is the whole contract's: SEAP publishes it under each of the {firms} and does not say how much falls to each."
+
 #. placeholder {0}: count(stats.withValue)
 #. placeholder {1}: grainCount(grain, stats.count)
 #: src/features/private-companies/components/profile/company-money-band.tsx:332
@@ -31195,6 +31879,10 @@ msgstr "The value is published for {0} of {1}, so the totals are a lower bound."
 #: src/features/procurement/components/supplier/supplier-bands.tsx:300
 msgid "Valoarea lor întreagă"
 msgstr "Their whole value"
+
+#: src/features/procurement/lib/contract-text.ts:162
+msgid "Valoarea maximă"
+msgstr "Maximum value"
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:322
 msgid "Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări."
@@ -31220,6 +31908,10 @@ msgstr "Valoarea sursei depășește contractatul; bara este plafonată vizual."
 msgid "Valoarea, fără TVA"
 msgstr "Value, excluding VAT"
 
+#: src/features/procurement/lib/contract-text.ts:154
+msgid "Valoarea, în lei"
+msgstr "Value, in lei"
+
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:185
 msgid "Valori"
 msgstr "Values"
@@ -31236,6 +31928,10 @@ msgstr "Values"
 #~ msgid "Valori pentru întreaga țară, la cea mai recentă perioadă raportată."
 #~ msgstr "National values for the latest reported period."
 
+#: src/features/procurement/components/contract/contract-block.tsx:487
+msgid "Valorile anunțului sunt fără TVA."
+msgstr "The notice's values exclude VAT."
+
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:217
 #~ msgid "Valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă. Fiecare rând deschide seria lui; „Compară\" o pune lângă județ și țară."
 #~ msgstr "The values available for the territory, with no interpolation of missing periods. Each row opens its series; “Compare” puts it beside the county and the country."
@@ -31247,6 +31943,10 @@ msgstr "Values"
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:185
 msgid "Valorile pentru perioada aleasă. Reperele pe județ și pe țară sunt fapte despre ultima perioadă, așa că nu apar cât timp filtrezi o perioadă anume."
 msgstr "Values for the chosen period. The county and country reference points describe the latest period, so they stay hidden while you filter a specific period."
+
+#: src/features/procurement/components/contract/contract-block.tsx:228
+msgid "Valorile publicate"
+msgstr "The published values"
 
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:177
 msgid "Valorile publicate, perioadă cu perioadă."
@@ -31271,6 +31971,10 @@ msgstr "Valorile suspecte ×1000 nu intră în totaluri."
 #: src/features/public-investments/components/PublicInvestmentsMapPanel.tsx:110
 msgid "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu intră în mărimea punctului sau totaluri."
 msgstr "Valorile suspecte ×1000 sunt păstrate ca puncte de acoperire, dar nu intră în mărimea punctului sau totaluri."
+
+#: src/features/procurement/components/contract/contract-block.tsx:360
+msgid "Valorile, așa cum le-a raportat instituția."
+msgstr "The values as the institution reported them."
 
 #: src/components/charts/components/series-config/CustomSeriesDataEditor.tsx:95
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:38
@@ -31364,6 +32068,7 @@ msgstr "Valută străină"
 msgid "Vânzări directe, {year}"
 msgstr "Direct sales, {year}"
 
+#: src/features/procurement/components/contract/contract-context.tsx:175
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:280
 msgid "Vânzările firmei"
 msgstr "The firm's sales"

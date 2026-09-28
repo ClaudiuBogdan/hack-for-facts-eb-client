@@ -1,23 +1,16 @@
 /**
- * Per-grain configuration for the shared `ProcurementDetailPage` — the
- * procedure and contract routes differ by *fields*, not layout, so one config
- * map serves both. Direct purchases have a page of their own.
+ * Configuration for the shared `ProcurementDetailPage`, which serves the
+ * procedure route. Contracts and direct purchases have pages of their own
+ * (`components/contract/`, `components/direct-purchase/`).
  */
 import { t } from '@lingui/core/macro'
-import type {
-  ContractRecord,
-  ProcedureRecord,
-} from '@/schemas/procurement'
+import type { ProcedureRecord } from '@/schemas/procurement'
 import { contractKindLabel } from './enum-labels'
 
-/** Direct purchases have a page of their own (`components/direct-purchase/`). */
-export type DetailGrainKey =
-  | 'procedures'
-  | 'contracts'
+/** Contracts and direct purchases have pages of their own. */
+export type DetailGrainKey = 'procedures'
 
-export type DetailRecord =
-  | ProcedureRecord
-  | ContractRecord
+export type DetailRecord = ProcedureRecord
 
 export type DetailRow = {
   readonly key: string
@@ -34,12 +27,8 @@ export type DetailConfig = {
   readonly secondaryValueLabel: (() => string) | null
   readonly identifierRows: (record: DetailRecord) => readonly DetailRow[]
   readonly lifecycleRows: (record: DetailRecord) => readonly DetailRow[]
-  /** Contract-only: render the modification trail (anchor `#modificari`). */
-  readonly showModificationTrail: boolean
   /** Procedure-only: render the contracts awarded under it. */
   readonly showRelatedContracts: boolean
-  /** Contract-only: render the source procedure link. */
-  readonly showSourceProcedure: boolean
 }
 
 export const DETAIL_CONFIG: Record<DetailGrainKey, DetailConfig> = {
@@ -78,31 +67,6 @@ export const DETAIL_CONFIG: Record<DetailGrainKey, DetailConfig> = {
         { key: 'stateDate', label: t`Last state change`, value: record.stateDate },
       ]
     },
-    showModificationTrail: false,
     showRelatedContracts: true,
-    showSourceProcedure: false,
   },
-  contracts: {
-    grain: 'contracts',
-    pageLabel: () => t`Contract`,
-    primaryValueLabel: () => t`Contract value`,
-    secondaryValueLabel: () => t`Estimated value`,
-    identifierRows: (record) => {
-      if (record.grain !== 'contract') return []
-      return [
-        { key: 'contractNo', label: t`Contract number`, value: record.contractNo },
-        { key: 'noticeNo', label: t`Notice number`, value: record.noticeNo },
-      ]
-    },
-    lifecycleRows: (record) => {
-      if (record.grain !== 'contract') return []
-      return [
-        { key: 'contractDate', label: t`Signed`, value: record.contractDate },
-      ]
-    },
-    showModificationTrail: true,
-    showRelatedContracts: false,
-    showSourceProcedure: true,
-  },
-
 }

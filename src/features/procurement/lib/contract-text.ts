@@ -1,7 +1,7 @@
 import { plural, t } from '@lingui/core/macro'
-import { leiExact, leiShort } from '@/features/procurement/lib/direct-purchase-text'
-import { percentText } from '@/features/procurement/lib/home-format'
-import type { ContractSheet, CtContract, CtContext, CtOffers, CtValue } from './contract.types'
+import { contractsSince, type ContractSheet, type CtContext, type CtContract, type CtOffers, type CtValue, type CtYear } from './contract-model'
+import { contextYearText, leiExact, leiShort } from './direct-purchase-text'
+import { percentText } from './home-format'
 
 /** The contract page's sentences, from the record — left out when the data would not support them. */
 
@@ -25,10 +25,6 @@ export function directCount(value: number): string {
   return plural(value, { one: '# achiziție directă', few: '# achiziții directe', other: '# de achiziții directe' })
 }
 
-export function rowsCount(value: number): string {
-  return plural(value, { one: '# rând', few: '# rânduri', other: '# de rânduri' })
-}
-
 export function offersCount(value: number): string {
   return plural(value, { one: 'o singură ofertă', few: '# oferte', other: '# de oferte' })
 }
@@ -41,16 +37,22 @@ export function daysCount(value: number): string {
   return plural(value, { one: 'o zi', few: '# zile', other: '# de zile' })
 }
 
-/** „republicat o dată, pe 1 octombrie 2025", „republicat de 8 ori, ultima dată pe 28 aprilie 2026". */
-export function republishedText(times: number, last: string): string {
-  return times === 1 ? t`republicat o dată, pe ${last}` : plural(times, { one: 'republicat o dată', few: 'republicat de # ori', other: 'republicat de # de ori' }) + t`, ultima dată pe ${last}`
-}
-
 export function modificationsCount(value: number): string {
   return plural(value, { one: 'o modificare', few: '# modificări', other: '# de modificări' })
 }
 
-/** What happened to the offers: „1 admisă · 2 inacceptabile · 1 neconformă"; none for a lone offer admitted. */
+export function amendmentsCount(value: number): string {
+  return plural(value, { one: 'un act adițional', few: '# acte adiționale', other: '# de acte adiționale' })
+}
+
+/** „republicat o dată, pe 1 octombrie 2025", „republicat de 8 ori, ultima dată pe 28 aprilie 2026". */
+export function republishedText(times: number, last: string): string {
+  if (times === 1) return t`republicat o dată, pe ${last}`
+  const count = plural(times, { one: 'republicat o dată', few: 'republicat de # ori', other: 'republicat de # de ori' })
+  return t`${count}, ultima dată pe ${last}`
+}
+
+/** What happened to the offers: „1 admisă · 2 inacceptabile · 1 neconformă"; for a lone offer admitted, „admisă". */
 export function offersFate(offers: CtOffers): string | null {
   const parts = [
     offers.admitted ? plural(offers.admitted, { one: '# admisă', few: '# admise', other: '# de admise' }) : null,
@@ -96,14 +98,12 @@ export function criterionText(criterion: string): string {
   return CRITERIA[key]?.() ?? criterion.trim()
 }
 
-export function amendmentsCount(value: number): string {
-  return plural(value, { one: 'un act adițional', few: '# acte adiționale', other: '# de acte adiționale' })
-}
-
 /** „Tehnostrade, Spedition UMB și SA & PE Construct". */
 export function namesList(names: readonly string[]): string {
   if (names.length <= 1) return names[0] ?? ''
-  return `${names.slice(0, -1).join(', ')} ${t`și`} ${names[names.length - 1]}`
+  const head = names.slice(0, -1).join(', ')
+  const last = names[names.length - 1]!
+  return t`${head} și ${last}`
 }
 
 /** An association: several firms at one value under one contract number (or named winners of it) — a framework's operators are not one. */
@@ -120,7 +120,7 @@ export function isSharedFramework(contract: CtContract): boolean {
 export function kindLabel(sheet: ContractSheet): string {
   if (sheet.kind === 'framework') return t`Acord-cadru`
   if (sheet.kind === 'call-off') return t`Contract subsecvent`
-  return sheet.contract.firms.length > 1 && !sheet.contract.framework ? t`Contract, în asociere` : t`Contract`
+  return isAssociation(sheet.contract) ? t`Contract, în asociere` : t`Contract`
 }
 
 /** The money in the head's sentence. */
@@ -150,7 +150,12 @@ export function valueBox(sheet: ContractSheet): { readonly label: string; readon
       return { label: t`Valoarea contractului`, figure: leiExact(value.value), note: null, muted: false }
     case 'converted': {
       const currency = value.currency
-      return { label: t`Valoarea, în lei`, figure: leiExact(value.value), note: currency ? t`Contractul e în ${currency}; SEAP publică echivalentul în lei.` : t`Contractul e în valută; SEAP publică echivalentul în lei.`, muted: false }
+      return {
+        label: t`Valoarea, în lei`,
+        figure: leiExact(value.value),
+        note: currency ? t`Contractul e în ${currency}; SEAP publică echivalentul în lei.` : t`Contractul e în valută; SEAP publică echivalentul în lei.`,
+        muted: false,
+      }
     }
     case 'ceiling':
       return {
@@ -231,28 +236,54 @@ export function amendmentsLede(sheet: ContractSheet): string | null {
   return t`În SEAP: ${count}.`
 }
 
-/** The procedure's route, when it is unusual enough to explain. */
+/** The procedure's route, when it is unusual enough to explain — never that it is suspect. */
 export function unpublishedText(): string {
   return t`Instituția nu a publicat un anunț de participare: a negociat direct. Legea permite asta doar în anumite cazuri (urgență, un singur furnizor posibil).`
 }
 
-// ─────────────────────────────────────────────────────────── the context ──
-
-export function historyText(context: CtContext, isFramework: boolean): string | null {
-  const awards = context.years.reduce((sum, year) => sum + year.awards, 0)
-  const frameworks = context.years.reduce((sum, year) => sum + year.frameworks, 0)
-  const first = context.years.find((year) => year.awards + year.frameworks > 0)?.year
-  if (awards + frameworks === 0 || first === undefined) return null
-  if (awards + frameworks === 1) return isFramework ? t`Din 2019 încoace, e singurul acord-cadru dintre ele.` : t`Din 2019 încoace, e singurul contract dintre ele.`
-  const parts = [awards > 0 ? contractsCount(awards) : null, frameworks > 0 ? frameworksCount(frameworks) : null].filter(Boolean).join(t` și `)
-  return t`Din 2019 încoace, instituția i-a atribuit firmei ${parts}; primul, în ${first}.`
+/** „SEAP îl mai publică o dată" / „de 2 ori". */
+export function againText(times: number): string {
+  return plural(times, {
+    one: 'SEAP îl mai publică o dată; Transparenta îl numără o singură dată.',
+    few: 'SEAP îl mai publică de # ori; Transparenta îl numără o singură dată.',
+    other: 'SEAP îl mai publică de # de ori; Transparenta îl numără o singură dată.',
+  })
 }
 
+/** The export file a row comes from: „T2 2024" (a quarterly report), „2010" (a yearly one). */
+export function fileText(file: { readonly year: string; readonly quarter: string | null }): string {
+  const { year, quarter } = file
+  return quarter ? t`T${quarter} ${year}` : year
+}
+
+/** Where a contract's other lots stand: „Anunțul are 44 de loturi, 11 anulate." */
+export function lotsText(lots: { readonly total: number; readonly cancelled: number }): string {
+  const total = plural(lots.total, { one: '# lot', few: '# loturi', other: '# de loturi' })
+  if (lots.cancelled === 0) return t`Anunțul are ${total}.`
+  const cancelled = plural(lots.cancelled, { one: '# anulat', few: '# anulate', other: '# de anulate' })
+  return t`Anunțul are ${total}, ${cancelled}.`
+}
+
+// ─────────────────────────────────────────────────────────── the context ──
+
+/** The pair since 2019 in one sentence; none when the years were not read or hold nothing. */
+export function historyText(context: CtContext, isFramework: boolean): string | null {
+  const since = contractsSince(context)
+  if (!since || since.since === null) return null
+  const { awards, frameworks } = since
+  if (awards + frameworks === 1) return isFramework ? t`Din 2019 încoace, e singurul acord-cadru dintre ele.` : t`Din 2019 încoace, e singurul contract dintre ele.`
+  const first = since.since
+  const parts = [awards > 0 ? contractsCount(awards) : null, frameworks > 0 ? frameworksCount(frameworks) : null].filter((part): part is string => part !== null)
+  const what = parts.length === 2 ? t`${parts[0]} și ${parts[1]}` : parts[0]!
+  return t`Din 2019 încoace, instituția i-a atribuit firmei ${what}; primul, în ${first}.`
+}
+
+/** The direct purchases between them, with their money — clean, checked, without VAT — when every year that has some has its money. */
 export function directText(context: CtContext): string | null {
+  if (!context.years) return null
   const count = context.years.reduce((sum, year) => sum + year.direct, 0)
   if (count === 0) return null
   const purchases = directCount(count)
-  // Direct-purchase money is clean (checked, excl. VAT) — said only when every year that has purchases has its money.
   const known = context.years.every((year) => year.direct === 0 || year.directLei !== null)
   if (!known) return t`Firma i-a vândut și direct: ${purchases}.`
   const money = leiShort(context.years.reduce((sum, year) => sum + (year.directLei ?? 0), 0))
@@ -264,46 +295,43 @@ function sharePart(total: string, mine: number): string {
   return mine === 0 ? t`${total}, niciunul acestei firme` : t`${total}, ${mine} acestei firme`
 }
 
+/** The institution's year: its contracts and frameworks, and how many of each went to this firm. */
 export function buyerYearText(context: CtContext): string | null {
-  const year = context.year
-  if (context.buyer.awards === 0 && context.buyer.frameworks === 0) return null
-  const contracts = sharePart(contractsCount(context.buyer.awards), context.pairAwards)
-  if (context.buyer.frameworks > 0) {
-    const frameworks = context.pairFrameworks > 0 ? sharePart(frameworksCount(context.buyer.frameworks), context.pairFrameworks) : frameworksCount(context.buyer.frameworks)
-    return t`În ${year}, instituția a atribuit ${contracts}; și ${frameworks}.`
-  }
+  const { buyer, pair } = context
+  if (!buyer || !pair || (buyer.awards === 0 && buyer.frameworks === 0)) return null
+  const year = contextYearText(context)
+  const frameworks = pair.frameworks > 0 ? sharePart(frameworksCount(buyer.frameworks), pair.frameworks) : frameworksCount(buyer.frameworks)
+  if (buyer.awards === 0) return t`În ${year}, instituția nu a atribuit contracte, doar ${frameworks}.`
+  const contracts = sharePart(contractsCount(buyer.awards), pair.awards)
+  if (buyer.frameworks > 0) return t`În ${year}, instituția a atribuit ${contracts}; și ${frameworks}.`
   return t`În ${year}, instituția a atribuit ${contracts}.`
 }
 
-export function sellerYearText(context: CtContext): string | null {
-  const year = context.year
-  if (context.seller.awards === 0) return null
-  const contracts = contractsCount(context.seller.awards)
-  const mine = context.seller.fromThis
-  if (mine === 0 && context.pairFrameworks > 0) {
-    const frameworks = frameworksCount(context.pairFrameworks)
+/**
+ * The firm's year: the contracts it won, and how many from this institution.
+ * The counts are contracts, not frameworks: on a framework's page, a single
+ * contract won is another record, never „this one".
+ */
+export function sellerYearText(context: CtContext, isFramework: boolean): string | null {
+  const { seller, pair } = context
+  if (!seller || !pair || seller.awards === 0) return null
+  const year = contextYearText(context)
+  const contracts = contractsCount(seller.awards)
+  const mine = pair.awards
+  if (mine === 0 && pair.frameworks > 0) {
+    const frameworks = frameworksCount(pair.frameworks)
     return t`Pentru firmă: în ${year} a câștigat ${contracts}, niciunul de la această instituție; de la ea are ${frameworks}.`
   }
   if (mine === 0) return t`Pentru firmă: în ${year} a câștigat ${contracts}, niciunul de la această instituție.`
-  if (mine === context.seller.awards) return context.seller.awards === 1 ? t`Pentru firmă, e singurul contract câștigat în ${year}.` : t`Pentru firmă: în ${year} a câștigat ${contracts}, toate de la această instituție.`
+  if (mine >= seller.awards && seller.awards === 1) return isFramework ? t`Pentru firmă: în ${year} a câștigat un singur contract, de la această instituție.` : t`Pentru firmă, e singurul contract câștigat în ${year}.`
+  if (mine >= seller.awards) return t`Pentru firmă: în ${year} a câștigat ${contracts}, toate de la această instituție.`
   return t`Pentru firmă: în ${year} a câștigat ${contracts}, ${mine} de la această instituție.`
 }
 
-/** „SEAP îl mai publică o dată" / „de 2 ori". */
-export function againText(times: number): string {
-  return plural(times, { one: 'SEAP îl mai publică o dată; Transparenta îl numără o singură dată.', few: 'SEAP îl mai publică de # ori; Transparenta îl numără o singură dată.', other: 'SEAP îl mai publică de # de ori; Transparenta îl numără o singură dată.' })
-}
-
-/** Where a contract's other lots stand: „Anunțul are 44 de loturi, 11 anulate." */
-export function lotsText(lots: { readonly total: number; readonly cancelled: number }): string {
-  const total = plural(lots.total, { one: '# lot', few: '# loturi', other: '# de loturi' })
-  if (lots.cancelled === 0) return t`Anunțul are ${total}.`
-  const cancelled = plural(lots.cancelled, { one: '# anulat', few: '# anulate', other: '# de anulate' })
-  return t`Anunțul are ${total}, ${cancelled}.`
-}
-
-/** A column's figures, for the chart's line: „2025 · 1 contract, 41 de acorduri-cadru, 14 achiziții directe". */
-export function yearFigures(year: CtContext['years'][number]): string {
-  const parts = [year.awards > 0 ? contractsCount(year.awards) : null, year.frameworks > 0 ? frameworksCount(year.frameworks) : null, year.direct > 0 ? directCount(year.direct) : null].filter(Boolean)
+/** A column's figures, for the chart's line: „1 contract, 41 de acorduri-cadru, 14 achiziții directe". */
+export function yearFigures(year: CtYear): string {
+  const parts = [year.awards > 0 ? contractsCount(year.awards) : null, year.frameworks > 0 ? frameworksCount(year.frameworks) : null, year.direct > 0 ? directCount(year.direct) : null].filter(
+    (part): part is string => part !== null,
+  )
   return parts.length > 0 ? parts.join(', ') : t`nimic între ele`
 }
