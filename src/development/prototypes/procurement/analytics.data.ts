@@ -472,28 +472,6 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
   }
 }
 
-/**
- * One ranking on its own — the linked columns and the rail rank each axis
- * under every filter but its own, so a column still shows the alternatives
- * to what it has picked.
- */
-export function useRanking(query: Query, group: { readonly axis: AxisId; readonly level: string }, topN: number, enabled = true) {
-  const cutoffRead = useCutoff()
-  const population = POPULATIONS[query.tip]
-  const cutoff = cutoffRead.data ? cutoffRead.data[population.cutoff] : null
-  const period = cutoff ? resolvePeriod(query.period, cutoff) : null
-  const now = period ? scopeOf(query, period) : null
-  const dimension = levelOf(group.axis, group.level)?.dimension ?? null
-  const rankBy: 'count' | 'value' = query.masura === 'numar' || population.money === 'none' ? 'count' : 'value'
-  return useQuery({
-    queryKey: ['prototype', 'analytics', 'ranking', now, dimension, topN, rankBy],
-    queryFn: ({ signal }) => readRanking(now!, dimension!, topN, rankBy, signal),
-    enabled: enabled && now !== null && dimension !== null && AXES[group.axis].populations.includes(query.tip),
-    staleTime: STALE,
-    placeholderData: (previous) => previous,
-  })
-}
-
 // ─────────────────────────────────────────────────────────────── records ──
 
 export interface RecordRow {

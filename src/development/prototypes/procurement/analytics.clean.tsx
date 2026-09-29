@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { monthText } from '@/features/procurement/lib/home-format'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { POPULATIONS, bucketStart, clippedBucket, drilled, type AxisId, type Query } from './analytics.model'
+import { POPULATIONS, bucketStart, clippedBucket, drilled, type Query } from './analytics.model'
 import { COUNTY_POPULATION, countyPopulationNote, type Answer, type Point, type Ranking } from './analytics.data'
 import {
   AddFilter,
@@ -55,18 +55,13 @@ function ShareIcon({ query, answer }: { readonly query: Query; readonly answer: 
   )
 }
 
-/**
- * The quick row: what, when, a new filter, the filters on — and, at the end,
- * the whole panel, the ready questions, the link. `panelled`: the panel is
- * beside the answer on a wide screen, so the row leaves it what it holds.
- */
+/** The quick row: what, when, a new filter, the filters on — and, at the end, the whole panel, the ready questions, the link. */
 export function CleanControls({
   query,
   answer,
   namer,
   onChange,
   onFilters,
-  panelled = false,
   className,
 }: {
   readonly query: Query
@@ -74,21 +69,18 @@ export function CleanControls({
   readonly namer: Namer
   readonly onChange: (query: Query) => void
   readonly onFilters: () => void
-  readonly panelled?: boolean
   readonly className?: string
 }) {
   return (
     <div className={cn('flex flex-col gap-2', className)}>
       <div className="flex flex-wrap items-center gap-2">
-        <div className={cn('w-full sm:w-auto', panelled && 'lg:hidden')}>
+        <div className="w-full sm:w-auto">
           <PopulationToggle query={query} onChange={onChange} />
         </div>
-        <div className={cn(panelled && 'lg:hidden')}>
-          <PeriodMenu query={query} answer={answer} onChange={onChange} />
-        </div>
+        <PeriodMenu query={query} answer={answer} onChange={onChange} />
         <AddFilter query={query} namer={namer} onChange={onChange} />
         <span className="ml-auto flex items-center gap-2">
-          <FiltersButton query={query} onClick={onFilters} className={cn(panelled && 'lg:hidden')} />
+          <FiltersButton query={query} onClick={onFilters} />
           <QuestionsMenu onChange={onChange} />
           <ShareIcon query={query} answer={answer} />
         </span>
@@ -233,99 +225,6 @@ function Pending({ rows, className }: { readonly rows: number; readonly classNam
         <div key={index} className="h-5 animate-pulse bg-muted/40" style={{ width: `${95 - index * 6}%` }} />
       ))}
     </div>
-  )
-}
-
-/**
- * The ranked answer as bars: rank, name, bar, value, share on one line (the
- * bar under the name on a phone). A click narrows to the row and opens its
- * next question; the arrow opens the profile; the count is in the row's title.
- */
-export function CleanRanked({
-  query,
-  answer,
-  namer,
-  onChange,
-  expanded,
-  onExpand,
-  className,
-}: {
-  readonly query: Query
-  readonly answer: Answer
-  readonly namer: Namer
-  readonly onChange: (query: Query) => void
-  readonly expanded: boolean
-  readonly onExpand: (expanded: boolean) => void
-  readonly className?: string
-}) {
-  const ranking = answer.ranking.data
-  if (query.dupa.axis === 'timp') return null
-  if (answer.ranking.isError) return (
-      <div className={className}>
-        <HubLoadError onRetry={answer.ranking.retry} />
-      </div>
-    )
-  if (!ranking) return <Pending rows={10} className={className} />
-  const group = query.dupa
-  const { rows } = rowsOf(query, ranking, namer)
-  const max = Math.max(1, ...rows.filter((row) => row.kind === 'top' || row.kind === 'withheld').map((row) => row.figure ?? 0))
-  const topCount = ranking.buckets.filter((bucket) => bucket.kind === 'top').length
-  return (
-    <div className={cn(className, answer.ranking.isFetching && 'opacity-70 transition-opacity')}>
-      {rows.length === 0 ? <p className="py-6 text-sm text-muted-foreground">{t`Nimic în această selecție.`}</p> : null}
-      <ol className="divide-y divide-border/60">
-        {rows.map((row, index) => (
-          <BarRow key={`${row.kind}-${row.key ?? index}`} row={row} rank={row.kind === 'top' ? index + 1 : null} max={max} axis={group.axis} onDrill={row.kind === 'top' && row.key ? () => onChange(drilled(query, group, row.key!)) : null} />
-        ))}
-      </ol>
-      <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2 text-xs text-muted-foreground">
-        {query.masura === 'locuitor' ? <span>{t`Populația: ${countyPopulationNote()}`}</span> : <span />}
-        {!expanded && topCount >= 25 && query.masura !== 'locuitor' ? (
-          <button type="button" onClick={() => onExpand(true)} className="font-medium text-foreground underline-offset-4 hover:underline">
-            {t`Primele 100`}
-          </button>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
-function BarRow({ row, rank, max, axis, onDrill }: { readonly row: Row; readonly rank: number | null; readonly max: number; readonly axis: AxisId; readonly onDrill: (() => void) | null }) {
-  const top = row.kind === 'top'
-  const link = top && row.key ? profileLink(axis, row.key) : null
-  const title = [row.label, row.sub, row.secondary].filter(Boolean).join(' · ')
-  const body = (
-    <>
-      <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">{rank ?? ''}</span>
-      <span className={cn('truncate text-sm', top ? 'text-foreground' : 'text-muted-foreground')}>{row.label}</span>
-      <span className="order-last col-span-2 col-start-2 block h-1.5 bg-muted/70 sm:order-none sm:col-span-1 sm:col-start-auto" aria-hidden="true">
-        {top || row.kind === 'withheld' ? <span className={cn('block h-1.5', top ? 'bg-primary/75' : 'bg-muted-foreground/35')} style={{ width: `${Math.max(((row.figure ?? 0) / max) * 100, 0.5).toFixed(1)}%` }} /> : null}
-      </span>
-      <span className={cn('text-right text-sm tabular-nums', top ? 'font-semibold text-foreground' : 'text-muted-foreground')}>{row.figureText}</span>
-      <span className="hidden text-right text-xs tabular-nums text-muted-foreground sm:block">{row.share !== null ? percentText(row.share, row.share < 0.1 ? 1 : 0) : ''}</span>
-    </>
-  )
-  const grid = 'grid w-full grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 py-2 pr-8 text-left sm:grid-cols-[1.5rem_minmax(0,2fr)_minmax(0,3fr)_7rem_3.25rem]'
-  return (
-    <li className="group relative" title={title}>
-      {onDrill ? (
-        <button type="button" onClick={onDrill} className={cn(grid, 'transition-colors hover:bg-muted/40')}>
-          {body}
-        </button>
-      ) : (
-        <div className={grid}>{body}</div>
-      )}
-      {link ? (
-        <Link
-          to={link.to}
-          params={link.params}
-          className="absolute right-0 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center text-muted-foreground opacity-60 hover:text-foreground focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-          aria-label={t`Pagina ${row.label}`}
-        >
-          <ArrowUpRight className="size-4" aria-hidden="true" />
-        </Link>
-      ) : null}
-    </li>
   )
 }
 

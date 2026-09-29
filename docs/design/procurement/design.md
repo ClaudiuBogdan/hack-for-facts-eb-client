@@ -2211,3 +2211,13 @@ clearing all; a firm from the sheet), with no console errors; the three
 versions answer the review's hard cases (contracts by year, per resident,
 frameworks, one firm's contracts, months, an unread address) without
 errors; no horizontal scroll at 390 px; `raspuns` renders as before.
+
+### 18.10 `curat` with the table (29 September 2026)
+
+The owner liked `curat`'s figures and `tabel`'s table, and asked to remove
+`lateral` and move the table into `curat`. `curat` now answers a ranking
+with the table (records, lei, the average, the share; a header ranks by its
+column) under its four large figures; a breakdown in time stays a chart.
+`lateral` is removed with what only it used — the panel's top values and
+the rail — and so are `curat`'s one-line bar rows. The filter panel is the
+sheet. `tabel` stays as it was (its figures in one line).

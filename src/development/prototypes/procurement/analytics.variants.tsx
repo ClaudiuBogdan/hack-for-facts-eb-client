@@ -20,8 +20,8 @@ import {
   useNamer,
   YearsStrip,
 } from './analytics.parts'
-import { CleanControls, CleanFigures, CleanHead, CleanRanked, CleanTable, CleanTime, CleanYears, SourceLine } from './analytics.clean'
-import { FilterRail, FilterSheet, usePanelRankings } from './analytics.filters'
+import { CleanControls, CleanFigures, CleanHead, CleanTable, CleanTime, CleanYears, SourceLine } from './analytics.clean'
+import { FilterSheet } from './analytics.filters'
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
 const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
@@ -98,9 +98,11 @@ function recordsKey(query: Query): string {
 
 /**
  * `curat` — `raspuns` with the words cut. The question as its headline, the
- * months with one marker for all the caveats, four bare numbers, one answer,
- * the years, the records, one source line. The quick row stays; „Filtre"
- * opens every filter in a sheet (from the right; from the bottom on a phone).
+ * months with one marker for all the caveats, four bare numbers, the answer
+ * as a table of every measure (a header ranks by its column) — or, in time,
+ * a chart — the years, the records, one source line. The quick row stays;
+ * „Filtre" opens every filter in a sheet (from the right; from the bottom on
+ * a phone).
  */
 export function AnalyticsCurat() {
   const [query, move] = useAnalyticsQuery()
@@ -119,52 +121,16 @@ export function AnalyticsCurat() {
         <CleanHead query={query} answer={answer} namer={namer} />
         <CleanFigures query={query} answer={answer} className="mt-8" />
         <GroupBar query={query} onChange={move} className="mt-12" />
-        <CleanRanked query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
-        <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
+        {query.dupa.axis === 'timp' ? (
+          <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
+        ) : (
+          <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
+        )}
         <CleanYears query={query} answer={answer} onChange={move} className="mt-12" />
         <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
         <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
       </RuledFrame>
       <FilterSheet query={query} answer={answer} namer={namer} onChange={move} open={filters} onOpenChange={setFilters} />
-    </Shell>
-  )
-}
-
-// ────────────────────────────────────────────────────────────── lateral ──
-
-/**
- * `lateral` — every filter beside the answer. On a wide screen the panel
- * stays open at the left, each field with the top five of its axis in the
- * selection (a click picks; a pick shows its next level); the answer is
- * `curat`'s. On a phone the panel is the same sheet as `curat`'s, values
- * included.
- */
-export function AnalyticsLateral() {
-  const [query, move] = useAnalyticsQuery()
-  const [expanded, setExpanded] = useExpanded(query)
-  const [filters, setFilters] = useState(false)
-  const answer = useAnswer(query, { topN: expanded ? 100 : 25, facets: false, years: true })
-  const rankings = usePanelRankings(query, true)
-  const namer = useNamer(query, answer, rankings.list)
-  return (
-    <Shell>
-      <RuledFrame className="py-6 sm:py-8">
-        <div className="lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-10">
-          <FilterRail query={query} answer={answer} namer={namer} onChange={move} rankings={rankings} className="hidden lg:block" />
-          <main className="min-w-0">
-            <CleanControls query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} panelled />
-            <CleanHead query={query} answer={answer} namer={namer} className="mt-8" />
-            <CleanFigures query={query} answer={answer} className="mt-8" />
-            <GroupBar query={query} onChange={move} className="mt-12" />
-            <CleanRanked query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
-            <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
-            <CleanYears query={query} answer={answer} onChange={move} className="mt-12" />
-            <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
-            <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
-          </main>
-        </div>
-      </RuledFrame>
-      <FilterSheet query={query} answer={answer} namer={namer} onChange={move} open={filters} onOpenChange={setFilters} rankings={rankings} />
     </Shell>
   )
 }

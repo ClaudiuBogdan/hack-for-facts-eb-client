@@ -9,17 +9,16 @@ import { useSearchResults } from '@/features/landing/hooks/use-landing-search'
 import { procurementHrefOf } from '@/features/procurement/lib/home-links'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
-import { AXES, POPULATIONS, cpvKey, cpvLevelOf, cpvPrefix, nextCpvLevel, repaired, withFilter, withoutFilter, type AxisId, type PopulationId, type Query } from './analytics.model'
-import { useCounties, useLocalities, useNames, useRanking, type Answer, type Ranking } from './analytics.data'
+import { POPULATIONS, cpvKey, cpvLevelOf, repaired, withFilter, withoutFilter, type AxisId, type PopulationId, type Query } from './analytics.model'
+import { useCounties, useLocalities, useNames, type Answer } from './analytics.data'
 import { PROCEDURES, useCpvSearch } from './analytics.parts'
-import { countText, cpvLabel, keyLabel, percentText, populationLabel, type Namer } from './analytics.text'
+import { countText, cpvLabel, keyLabel, populationLabel, type Namer } from './analytics.text'
 
 /**
- * Every filter the query takes, in one panel: beside the answer on a wide
- * screen, in a sheet on a phone. The quick row above the answer stays for
- * the common moves; this is the whole set, each axis at every level it has.
- * A change applies at once (the address is the state), so the answer beside
- * the panel follows every pick.
+ * Every filter the query takes, in one panel, in a sheet: from the right on a
+ * wide screen, from the bottom on a phone. The quick row above the answer
+ * stays for the common moves; this is the whole set, each axis at every level
+ * it has. A change applies at once (the address is the state).
  */
 
 const FIELD = 'h-9 w-full min-w-0 border bg-background px-2 text-sm placeholder:text-muted-foreground/70'
@@ -65,85 +64,6 @@ function Picked({ label, onClear }: { readonly label: string; readonly onClear: 
 
 function Options({ children }: { readonly children: ReactNode }) {
   return <ul className="max-h-64 overflow-y-auto border">{children}</ul>
-}
-
-// ─────────────────────────────────────────────────────── top values ──
-
-/** Each axis ranked under every filter but its own — or, once picked, the pick's own next level. */
-export interface PanelRankings {
-  readonly byAxis: Partial<Readonly<Record<AxisId, { readonly ranking: Ranking | undefined; readonly level: string; readonly query: Query }>>>
-  readonly list: readonly Ranking[]
-}
-
-function panelView(query: Query, axis: AxisId): { readonly query: Query; readonly level: string } {
-  const filter = query.filters[axis]
-  if (axis === 'cpv') {
-    const next = filter ? nextCpvLevel(filter.level) : null
-    return next ? { query, level: next } : { query: withoutFilter(query, 'cpv'), level: filter?.level ?? 'diviziune' }
-  }
-  if (axis === 'loc' || axis === 'loc_firma') {
-    if (filter?.level === 'regiune') return { query, level: 'judet' }
-    if (filter?.level === 'judet') return { query, level: 'localitate' }
-    return { query: withoutFilter(query, axis), level: 'judet' }
-  }
-  return { query: withoutFilter(query, axis), level: AXES[axis].levels[0]!.id }
-}
-
-export function usePanelRankings(query: Query, enabled: boolean): PanelRankings {
-  const views = {
-    cumparator: panelView(query, 'cumparator'),
-    furnizor: panelView(query, 'furnizor'),
-    cpv: panelView(query, 'cpv'),
-    loc: panelView(query, 'loc'),
-    loc_firma: panelView(query, 'loc_firma'),
-    procedura: panelView(query, 'procedura'),
-  }
-  // Six reads, always in this order (hooks), each off when the panel shows no values.
-  const reads = {
-    cumparator: useRanking(views.cumparator.query, { axis: 'cumparator', level: views.cumparator.level }, 5, enabled),
-    furnizor: useRanking(views.furnizor.query, { axis: 'furnizor', level: views.furnizor.level }, 5, enabled),
-    cpv: useRanking(views.cpv.query, { axis: 'cpv', level: views.cpv.level }, 5, enabled),
-    loc: useRanking(views.loc.query, { axis: 'loc', level: views.loc.level }, 5, enabled),
-    loc_firma: useRanking(views.loc_firma.query, { axis: 'loc_firma', level: views.loc_firma.level }, 5, enabled),
-    procedura: useRanking(views.procedura.query, { axis: 'procedura', level: views.procedura.level }, 5, enabled),
-  }
-  const byAxis: PanelRankings['byAxis'] = Object.fromEntries(
-    (Object.keys(views) as (keyof typeof views)[]).map((axis) => [axis, { ranking: enabled ? reads[axis].data : undefined, level: views[axis].level, query: views[axis].query }]),
-  )
-  return { byAxis, list: enabled ? Object.values(reads).flatMap((read) => (read.data ? [read.data] : [])) : [] }
-}
-
-/** The top five of an axis in the selection, each a click to pick (or to drop, when picked), with its share. */
-function TopValues({ axis, view, query, namer, onChange }: { readonly axis: AxisId; readonly view: PanelRankings['byAxis'][AxisId]; readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
-  if (!view) return null
-  const { ranking, level } = view
-  if (!ranking) return <div className="h-24 animate-pulse bg-muted/40" aria-hidden="true" />
-  const picked = query.filters[axis]
-  const top = ranking.buckets.filter((bucket) => bucket.kind === 'top' && bucket.key)
-  if (top.length === 0) return null
-  const rest = ranking.buckets.filter((bucket) => bucket.kind !== 'top').reduce((sum, bucket) => sum + (bucket.share ?? 0), 0)
-  return (
-    <ul className="-mx-2">
-      {top.map((bucket) => {
-        const value = axis === 'cpv' ? cpvPrefix(bucket.key!, level) : bucket.key!
-        const selected = picked?.level === level && picked.values[0] === value
-        return (
-          <li key={bucket.key}>
-            <button
-              type="button"
-              aria-pressed={selected}
-              onClick={() => onChange(selected ? withoutFilter(query, axis) : withFilter(query, axis, level, value))}
-              className={cn(OPTION, 'py-1', selected && 'bg-primary/10 font-semibold')}
-            >
-              <span className="min-w-0 truncate">{keyLabel(axis, level, bucket.key!, namer)}</span>
-              <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{bucket.share !== null ? percentText(bucket.share, bucket.share < 0.1 ? 1 : 0) : countText(bucket.count)}</span>
-            </button>
-          </li>
-        )
-      })}
-      {rest > 0.0005 ? <li className="px-2 pt-0.5 text-right text-xs tabular-nums text-muted-foreground/80">{t`restul ${percentText(rest, rest < 0.1 ? 1 : 0)}`}</li> : null}
-    </ul>
-  )
 }
 
 // ──────────────────────────────────────────────────────────── fields ──
@@ -472,20 +392,16 @@ export function FilterPanel({
   answer,
   namer,
   onChange,
-  rankings,
   className,
 }: {
   readonly query: Query
   readonly answer: Answer
   readonly namer: Namer
   readonly onChange: (query: Query) => void
-  /** The top values of each axis under its field (the side panel); none in the sheet. */
-  readonly rankings?: PanelRankings
   readonly className?: string
 }) {
   const clear = (axis: AxisId) => (query.filters[axis] ? () => onChange(withoutFilter(query, axis)) : null)
   const contract = POPULATIONS[query.tip].grain === 'contract'
-  const top = (axis: AxisId) => (rankings ? <TopValues axis={axis} view={rankings.byAxis[axis]} query={query} namer={namer} onChange={onChange} /> : null)
   const period = answer.period ? `${answer.period.from}..${answer.period.to}` : 'none'
   return (
     <div className={cn('divide-y divide-border/70', className)}>
@@ -503,29 +419,23 @@ export function FilterPanel({
       </Section>
       <Section title={t`Instituția`} onClear={clear('cumparator')}>
         <OrgField axis="cumparator" query={query} namer={namer} onChange={onChange} />
-        {top('cumparator')}
       </Section>
       <Section title={t`Locul instituției`} onClear={clear('loc')}>
         <PlaceField axis="loc" query={query} namer={namer} onChange={onChange} />
-        {top('loc')}
       </Section>
       <Section title={t`Firma`} onClear={clear('furnizor')}>
         <OrgField axis="furnizor" query={query} namer={namer} onChange={onChange} />
-        {top('furnizor')}
       </Section>
       <Section title={t`Locul firmei`} onClear={clear('loc_firma')}>
         <PlaceField axis="loc_firma" query={query} namer={namer} onChange={onChange} />
-        {top('loc_firma')}
       </Section>
       <Section title={t`Categoria`} onClear={clear('cpv')}>
         <CpvField query={query} namer={namer} onChange={onChange} />
-        {top('cpv')}
       </Section>
       {contract ? (
         <Section title={t`Procedura`} onClear={clear('procedura')}>
           <ProcedureField query={query} namer={namer} onChange={onChange} />
-          {top('procedura')}
-        </Section>
+          </Section>
       ) : null}
       <Section title={t`Titlul conține`} onClear={query.titlu ? () => onChange({ ...query, titlu: null }) : null}>
         <TitleField key={query.titlu ?? ''} query={query} onChange={onChange} />
@@ -557,7 +467,6 @@ export function FilterSheet({
   onChange,
   open,
   onOpenChange,
-  rankings,
 }: {
   readonly query: Query
   readonly answer: Answer
@@ -565,7 +474,6 @@ export function FilterSheet({
   readonly onChange: (query: Query) => void
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
-  readonly rankings?: PanelRankings
 }) {
   const { width } = useWindowSize()
   const phone = width > 0 && width < 640
@@ -577,7 +485,7 @@ export function FilterSheet({
           <SheetTitle className="text-base font-semibold">{t`Filtre`}</SheetTitle>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-          <FilterPanel query={query} answer={answer} namer={namer} onChange={onChange} rankings={rankings} />
+          <FilterPanel query={query} answer={answer} namer={namer} onChange={onChange} />
         </div>
         <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 border-t px-4 py-3">
           <button type="button" onClick={() => onChange(cleared(query))} disabled={filterCount(query) === 0} className="h-10 border px-3 text-sm hover:bg-muted disabled:opacity-40">
@@ -589,22 +497,5 @@ export function FilterSheet({
         </div>
       </SheetContent>
     </Sheet>
-  )
-}
-
-/** The panel beside the answer, sticky, with its own scroll and a way to clear it all. */
-export function FilterRail({ query, answer, namer, onChange, rankings, className }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly onChange: (query: Query) => void; readonly rankings: PanelRankings; readonly className?: string }) {
-  return (
-    <aside className={cn('lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-2', className)} aria-label={t`Filtre`}>
-      <div className="flex items-center justify-between gap-2 pb-4">
-        <h2 className="text-sm font-semibold">{t`Filtre`}</h2>
-        {filterCount(query) > 0 ? (
-          <button type="button" onClick={() => onChange(cleared(query))} className="text-xs text-muted-foreground hover:text-foreground">
-            {t`Șterge tot`}
-          </button>
-        ) : null}
-      </div>
-      <FilterPanel query={query} answer={answer} namer={namer} onChange={onChange} rankings={rankings} />
-    </aside>
   )
 }
