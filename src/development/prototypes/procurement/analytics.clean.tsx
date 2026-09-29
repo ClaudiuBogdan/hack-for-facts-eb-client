@@ -1,14 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import {
-  ArrowDown,
-  ArrowUpRight,
-  Check,
-  Info,
-  Link2,
-  TriangleAlert,
-} from 'lucide-react'
+import { ArrowDown, ArrowUpRight, Check, ChevronLeft, ChevronRight, Info, Link2, TriangleAlert } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Table,
@@ -18,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { monthText } from '@/features/procurement/lib/home-format'
+import { dayText, monthText } from '@/features/procurement/lib/home-format'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import {
@@ -28,13 +21,7 @@ import {
   drilled,
   type Query,
 } from './analytics.model'
-import {
-  COUNTY_POPULATION,
-  countyPopulationNote,
-  type Answer,
-  type Point,
-  type Ranking,
-} from './analytics.data'
+import { COUNTY_POPULATION, countyPopulationNote, recordsProblem, useRecords, type Answer, type Point, type Ranking, type RecordRow } from './analytics.data'
 import {
   MethodBody,
   bucketLabel,
@@ -49,6 +36,7 @@ import {
 import {
   changeText,
   countText,
+  listTotalText,
   moneyText,
   percentText,
   periodGloss,
@@ -324,7 +312,7 @@ export function CleanTable({
   const money = population.money !== 'none'
   const moneyLabel = population.money === 'provisional' ? t`Lei, provizoriu` : t`Lei`
   const rank = (masura: Query['masura']) => (query.masura === masura ? null : () => onChange({ ...query, masura }))
-  if (query.dupa.axis === 'timp') return null
+  if (query.dupa.axis === 'timp' || query.dupa.axis === 'inregistrari') return null
   if (answer.ranking.isError) return (
       <div className={className}>
         <HubLoadError onRetry={answer.ranking.retry} />
@@ -402,6 +390,115 @@ export function CleanTable({
           <button type="button" onClick={() => onExpand(true)} className="font-medium text-foreground underline-offset-4 hover:underline">
             {t`Primele 100`}
           </button>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────── records ──
+
+/** Several rows of one contract (a consortium's members, each at the whole value) as one. */
+function groupedRows(rows: readonly RecordRow[]): readonly (RecordRow & { readonly suppliers: readonly string[] })[] {
+  const groups = new Map<string, RecordRow & { suppliers: string[] }>()
+  for (const row of rows) {
+    const key = row.contractNo ? `${row.authority.cui}|${row.contractNo}|${row.value}` : row.id
+    const found = groups.get(key)
+    const name = row.supplier.name ?? '—'
+    if (found) found.suppliers.push(name)
+    else groups.set(key, { ...row, suppliers: [name] })
+  }
+  return [...groups.values()]
+}
+
+const PAGE = 25
+
+/**
+ * The records themselves, the answer's first tab: every record of the
+ * selection — a title's words included — 25 at a time, the largest or the
+ * newest first (a header orders them), each opening its own page. The list is
+ * its own read, with its own count (never the analysis count), and says when
+ * the dev API cannot list a selection rather than showing a wider one.
+ */
+export function RecordsTable({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
+  // A framework has no value to order by (a ceiling at most): its records come newest first, with no choice.
+  const valued = POPULATIONS[query.tip].money !== 'none'
+  const [sort, setSort] = useState<'value_desc' | 'date_desc'>(valued ? 'value_desc' : 'date_desc')
+  const [page, setPage] = useState(1)
+  const problem = recordsProblem(query, answer.period)
+  const records = useRecords(query, answer.period, sort, page, problem === null)
+  const party = Boolean(query.filters.cumparator || query.filters.furnizor)
+  const order = (next: 'value_desc' | 'date_desc') => () => {
+    setSort(next)
+    setPage(1)
+  }
+  if (problem) return (
+      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
+        {problem === 'supplier-place'
+          ? t`Lista nu se poate filtra încă după locul firmei. Alege o firmă pentru înregistrările ei.`
+          : problem === 'procedure'
+            ? t`Lista nu se poate filtra încă după procedură: ar arăta și contracte din alte proceduri.`
+            : t`Pentru achiziții directe, lista cere o instituție, o firmă sau cel mult 12 luni.`}
+      </p>
+    )
+  if (records.isError) return (
+      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
+        {party ? t`Lista nu s-a putut citi acum.` : t`Lista nu s-a putut citi pentru o selecție atât de largă. Restrânge la o instituție, o firmă sau o lună și încearcă din nou.`}{' '}
+        <button type="button" onClick={() => void records.refetch()} className="font-medium text-foreground underline underline-offset-4">
+          {t`Încearcă din nou`}
+        </button>
+      </p>
+    )
+  if (!records.data) return <Pending rows={10} className={className} />
+  const rows = query.tip === 'directe' ? records.data.rows.map((row) => ({ ...row, suppliers: [row.supplier.name ?? '—'] })) : groupedRows(records.data.rows)
+  const total = records.data.total
+  const first = (page - 1) * PAGE + 1
+  const more = records.data.rows.length === PAGE && page * PAGE < (total ?? 10_000)
+  if (rows.length === 0) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
+  return (
+    <div className={cn(className, records.isFetching && 'opacity-70 transition-opacity')}>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="hidden w-8 text-right sm:table-cell">#</TableHead>
+            <TableHead />
+            <SortHead label={t`Data`} active={sort === 'date_desc'} onClick={sort === 'date_desc' ? null : order('date_desc')} className="hidden sm:table-cell" />
+            <SortHead label={t`Valoare`} active={sort === 'value_desc'} onClick={!valued || sort === 'value_desc' ? null : order('value_desc')} />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row, index) => (
+            <TableRow key={row.id}>
+              <TableCell className="hidden align-top font-mono text-xs tabular-nums text-muted-foreground sm:table-cell">{first + index}</TableCell>
+              <TableCell className="max-w-[12.5rem] sm:max-w-xl">
+                <a href={row.href} className="block truncate font-medium text-foreground hover:underline" title={row.title ?? undefined}>
+                  {row.title ?? t`Fără titlu în SEAP`}
+                </a>
+                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                  {row.authority.name ?? '—'} → {row.suppliers.join(', ')}
+                  <span className="sm:hidden">{row.date ? ` · ${dayText(row.date)} ${row.date.slice(0, 4)}` : ''}</span>
+                </span>
+              </TableCell>
+              <TableCell className="hidden whitespace-nowrap text-right align-top tabular-nums text-muted-foreground sm:table-cell">{row.date ? `${dayText(row.date)} ${row.date.slice(0, 4)}` : '—'}</TableCell>
+              <TableCell className={cn('whitespace-nowrap text-right align-top tabular-nums', row.checked ? 'font-semibold text-foreground' : 'text-muted-foreground')}>{row.value !== null ? moneyText(row.value) : '—'}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+        <span className="tabular-nums">
+          {total === null ? t`${first}–${first + records.data.rows.length - 1} din peste 10.000` : page === 1 && !more ? listTotalText(total) : t`${first}–${first + records.data.rows.length - 1} din ${countText(total)}`}
+          {query.tip !== 'directe' ? ` · ${t`rândurile unei asocieri, într-unul`}` : ''}
+        </span>
+        {page > 1 || more ? (
+          <span className="flex items-center gap-1">
+            <button type="button" disabled={page === 1} onClick={() => setPage(page - 1)} className="inline-flex size-8 items-center justify-center border hover:bg-muted disabled:opacity-40" aria-label={t`Pagina anterioară`}>
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </button>
+            <button type="button" disabled={!more} onClick={() => setPage(page + 1)} className="inline-flex size-8 items-center justify-center border hover:bg-muted disabled:opacity-40" aria-label={t`Pagina următoare`}>
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </button>
+          </span>
         ) : null}
       </div>
     </div>

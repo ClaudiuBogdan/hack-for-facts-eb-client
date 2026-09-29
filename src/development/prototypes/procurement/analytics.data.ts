@@ -369,7 +369,7 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
   const moneyAllowed = population.money !== 'none'
   const rankBy: 'count' | 'value' = query.masura === 'numar' || !moneyAllowed ? 'count' : 'value'
   const perResident = query.masura === 'locuitor'
-  const dimension = group.axis === 'timp' ? null : levelOf(group.axis, group.level)?.dimension ?? null
+  const dimension = group.axis === 'timp' || group.axis === 'inregistrari' ? null : (levelOf(group.axis, group.level)?.dimension ?? null)
   // Per resident ranks all 42 counties, then divides: the top 25 by lei is not the top 25 per resident.
   const topN = perResident ? 50 : dimension === 'buyerSiruta' || dimension === 'supplierSiruta' ? Math.min(options.topN, 100) : options.topN
   const supplierFixed = Boolean(query.filters.furnizor)

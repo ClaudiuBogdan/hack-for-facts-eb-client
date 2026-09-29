@@ -12,6 +12,7 @@ import {
   resolvePeriod,
   searchOf,
   unreadParams,
+  withTitle,
   type GroupBy,
   type PopulationId,
   type Query,
@@ -77,5 +78,25 @@ describe('analytics periods', () => {
     expect(clippedBucket('2025', { from: '2025-06', to: '2026-05' })).toEqual({ from: '2025-06', to: null })
     expect(clippedBucket('2026', { from: '2025-06', to: '2026-05' })).toEqual({ from: null, to: '2026-05' })
     expect(clippedBucket('2025-Q3', { from: '2025-06', to: '2026-05' })).toBeNull()
+  })
+})
+
+describe('analytics records', () => {
+  it('reads and writes the records as a group-by', () => {
+    const query = queryOf({ dupa: 'inregistrari' })
+    expect(query.dupa).toEqual({ axis: 'inregistrari' })
+    expect(searchOf(query).dupa).toBe('inregistrari')
+    expect(roundTrip(query)).toEqual(query)
+  })
+  it('opens a title search on its records', () => {
+    expect(queryOf({ titlu: 'laptop' }).dupa).toEqual({ axis: 'inregistrari' })
+    expect(searchOf(queryOf({ titlu: 'laptop' })).dupa).toBeUndefined()
+  })
+  it('lets an unchosen group-by follow the title, and keeps a chosen one', () => {
+    const fresh = queryOf({})
+    expect(withTitle(fresh, 'laptop').dupa).toEqual({ axis: 'inregistrari' })
+    expect(withTitle(withTitle(fresh, 'laptop'), null).dupa).toEqual(fresh.dupa)
+    const chosen = queryOf({ dupa: 'firma' })
+    expect(withTitle(chosen, 'laptop').dupa).toEqual({ axis: 'furnizor', level: 'cui' })
   })
 })

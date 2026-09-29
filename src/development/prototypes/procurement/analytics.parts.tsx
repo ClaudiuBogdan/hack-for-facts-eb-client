@@ -18,9 +18,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useSearchResults } from '@/features/landing/hooks/use-landing-search'
 import { procurementHrefOf } from '@/features/procurement/lib/home-links'
-import { dayText, monthText } from '@/features/procurement/lib/home-format'
+import { monthText } from '@/features/procurement/lib/home-format'
 import { formatProcurementCountyName } from '@/features/procurement/lib/procurement-geography'
-import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { cn } from '@/lib/utils'
 import {
@@ -35,6 +34,7 @@ import {
   searchOf,
   unreadParams,
   withFilter,
+  withTitle,
   type AnalyticsSearch,
   type AxisId,
   type GroupBy,
@@ -43,16 +43,13 @@ import {
 } from './analytics.model'
 import {
   COUNTY_POPULATION,
-  recordsProblem,
   useCounties,
   useCpvDivisions,
   useLocalities,
   useNames,
-  useRecords,
   type Answer,
   type Bucket,
   type Ranking,
-  type RecordRow,
 } from './analytics.data'
 import { QUESTION_GROUPS, QUESTIONS, type Question } from './analytics.questions'
 import {
@@ -63,12 +60,12 @@ import {
   keyLabel,
   kindSplitNote,
   levelLabel,
-  listTotalText,
   measureLabel,
   moneyText,
   periodText,
   populationGloss,
   recordsCount,
+  recordsTab,
   residentsText,
   undatedText,
   unknownLabel,
@@ -341,7 +338,7 @@ export function AddFilter({
             ) : null}
             {term.length >= 3 ? (
               <CommandGroup heading={t`Altfel`}>
-                <CommandItem value="title" onSelect={() => pick({ ...query, titlu: search.term.trim() })}>
+                <CommandItem value="title" onSelect={() => pick(withTitle(query, search.term.trim()))}>
                   <Search className="size-3.5" aria-hidden="true" />
                   {t`Titlul conține „${search.term.trim()}"`}
                 </CommandItem>
@@ -438,7 +435,8 @@ export function readoutNotes(query: Query, answer: Answer, search: AnalyticsSear
 
 // ────────────────────────────────────────────────────── group-by and measure ──
 
-const TABS: readonly { readonly axis: AxisId | 'timp'; readonly levels: readonly { readonly id: string }[] }[] = [
+const TABS: readonly { readonly axis: AxisId | 'timp' | 'inregistrari'; readonly levels: readonly { readonly id: string }[] }[] = [
+  { axis: 'inregistrari', levels: [{ id: 'toate' }] },
   { axis: 'cumparator', levels: [{ id: 'cui' }] },
   { axis: 'furnizor', levels: [{ id: 'cui' }] },
   {
@@ -457,14 +455,15 @@ const TABS: readonly { readonly axis: AxisId | 'timp'; readonly levels: readonly
   { axis: 'timp', levels: [{ id: 'year' }, { id: 'quarter' }, { id: 'month' }] },
 ]
 
-function groupOf(axis: AxisId | 'timp', level: string): GroupBy {
+function groupOf(axis: AxisId | 'timp' | 'inregistrari', level: string): GroupBy {
+  if (axis === 'inregistrari') return { axis }
   return axis === 'timp' ? { axis, bucket: level as 'year' | 'quarter' | 'month' } : { axis, level }
 }
 
 /** „După": the axis the answer ranks by, its level where it has several, and the measure. */
 export function GroupBar({ query, onChange, className }: { readonly query: Query; readonly onChange: (query: Query) => void; readonly className?: string }) {
   const current = query.dupa
-  const currentLevel = current.axis === 'timp' ? current.bucket : current.level
+  const currentLevel = current.axis === 'timp' ? current.bucket : current.axis === 'inregistrari' ? 'toate' : current.level
   const tab = TABS.find((item) => item.axis === current.axis)
   const measures: Measure[] = POPULATIONS[query.tip].money === 'none' ? ['numar'] : ['numar', 'lei']
   if (perResidentAllowed(current)) measures.push('locuitor')
@@ -485,17 +484,20 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
                 onClick={() => onChange({ ...query, dupa: groupOf(item.axis, firstReadable.id) })}
                 className={cn('-mb-px border-b-2 px-0.5 pb-2 text-sm', active ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
               >
-                {groupTab(item.axis)}
+                {item.axis === 'inregistrari' ? recordsTab(query.tip) : groupTab(item.axis)}
               </button>
             )
           })}
         </div>
-        <IndicatorToggle<Measure>
-          label={t`Măsura`}
-          value={query.masura}
-          onChange={(masura) => onChange({ ...query, masura })}
-          options={measures.map((key) => ({ key, label: measureLabel(key, query.tip) }))}
-        />
+        {/* The records are ordered by their table's headers: no measure to choose. */}
+        {current.axis === 'inregistrari' ? null : (
+          <IndicatorToggle<Measure>
+            label={t`Măsura`}
+            value={query.masura}
+            onChange={(masura) => onChange({ ...query, masura })}
+            options={measures.map((key) => ({ key, label: measureLabel(key, query.tip) }))}
+          />
+        )}
       </div>
       {tab && tab.levels.length > 1 ? (
         <div className="flex flex-wrap items-center gap-1.5 text-sm">
@@ -617,101 +619,6 @@ export function bucketLabel(bucket: string): string {
 }
 
 // ─────────────────────────────────────────────────────── the selection ──
-
-// ─────────────────────────────────────────────────────────────── records ──
-
-/** Several rows of one contract (a consortium's members, each at the whole value) as one. */
-function groupedRows(rows: readonly RecordRow[]): readonly (RecordRow & { readonly suppliers: readonly string[] })[] {
-  const groups = new Map<string, RecordRow & { suppliers: string[] }>()
-  for (const row of rows) {
-    const key = row.contractNo ? `${row.authority.cui}|${row.contractNo}|${row.value}` : row.id
-    const found = groups.get(key)
-    const name = row.supplier.name ?? '—'
-    if (found) found.suppliers.push(name)
-    else groups.set(key, { ...row, suppliers: [name] })
-  }
-  return [...groups.values()]
-}
-
-/**
- * The records behind the answer, on request: the lists are slow on the dev
- * API, so they are read only when asked (or when a party is fixed and the
- * list is small), under their own deadline, with their own count.
- */
-export function RecordsBlock({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
-  const party = Boolean(query.filters.cumparator || query.filters.furnizor)
-  const [asked, setAsked] = useState(false)
-  // A framework has no value to rank by (a ceiling at most): its records open newest first, with no choice.
-  const valued = POPULATIONS[query.tip].money !== 'none'
-  const [sort, setSort] = useState<'value_desc' | 'date_desc'>(valued ? 'value_desc' : 'date_desc')
-  const problem = recordsProblem(query, answer.period)
-  const records = useRecords(query, answer.period, sort, 1, asked || party)
-  const count = answer.figures.data?.now?.records ?? null
-  const rows = records.data ? (query.tip === 'directe' ? records.data.rows.map((row) => ({ ...row, suppliers: [row.supplier.name ?? '—'] })) : groupedRows(records.data.rows)) : []
-  return (
-    <section className={className} aria-labelledby="analytics-records">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id="analytics-records" className="text-lg font-semibold tracking-tight">
-          {t`Înregistrările`}
-        </h2>
-        {(asked || party) && valued ? (
-          <IndicatorToggle<'value_desc' | 'date_desc'>
-            label={t`Ordinea`}
-            value={sort}
-            onChange={setSort}
-            options={[
-              { key: 'value_desc', label: t`Cele mai mari` },
-              { key: 'date_desc', label: t`Cele mai noi` },
-            ]}
-          />
-        ) : null}
-      </div>
-      {problem === 'supplier-place' ? (
-        <p className="mt-3 text-sm text-muted-foreground">{t`Lista înregistrărilor nu se poate filtra încă după locul firmei. Alege o firmă din listă pentru înregistrările ei.`}</p>
-      ) : problem === 'procedure' ? (
-        <p className="mt-3 text-sm text-muted-foreground">{t`Lista înregistrărilor nu se poate filtra încă după procedură: ar arăta și contracte din alte proceduri.`}</p>
-      ) : problem === 'too-wide' ? (
-        <p className="mt-3 text-sm text-muted-foreground">{t`Pentru achiziții directe, lista cere o instituție, o firmă sau cel mult 12 luni.`}</p>
-      ) : !asked && !party ? (
-        <button type="button" onClick={() => setAsked(true)} className="mt-3 border px-3 py-2 text-sm font-medium hover:bg-muted">
-          {count === null ? t`Vezi înregistrările` : valued ? t`Vezi cele mai mari 25 din ${countText(count)}` : t`Vezi cele mai noi 25 din ${countText(count)}`}
-        </button>
-      ) : records.isError ? (
-        <p className="mt-3 text-sm text-muted-foreground">
-          {party ? t`Lista nu s-a putut citi acum.` : t`Lista nu s-a putut citi pentru o selecție atât de largă. Restrânge la o instituție, o firmă sau o lună și încearcă din nou.`}{' '}
-          <button type="button" onClick={() => void records.refetch()} className="font-medium underline underline-offset-4">
-            {t`Încearcă din nou`}
-          </button>
-        </p>
-      ) : !records.data ? (
-        <HubPending className="mt-3" rows={5} />
-      ) : (
-        <>
-          <p className="mt-2 text-xs text-muted-foreground">
-            {records.data.total === null ? t`Lista are peste 10.000 de înregistrări.` : listTotalText(records.data.total)}{' '}
-            {query.tip !== 'directe' ? t`Rândurile unei asocieri sunt adunate într-unul.` : null}
-          </p>
-          <ol className="mt-3 divide-y divide-border/70 border-y border-border/70">
-            {rows.map((row) => (
-              <li key={row.id} className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] gap-x-3 py-2.5 text-sm">
-                <span className="pt-0.5 font-mono text-xs tabular-nums text-muted-foreground">{row.date ? dayText(row.date) : '—'}</span>
-                <span className="min-w-0">
-                  <a href={row.href} className="block truncate text-foreground hover:underline">
-                    {row.title ?? t`Fără titlu în SEAP`}
-                  </a>
-                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {row.authority.name ?? '—'} → {row.suppliers.join(', ')}
-                  </span>
-                </span>
-                <span className={cn('text-right tabular-nums', row.checked ? 'font-semibold' : 'text-muted-foreground')}>{row.value !== null ? moneyText(row.value) : '—'}</span>
-              </li>
-            ))}
-          </ol>
-        </>
-      )}
-    </section>
-  )
-}
 
 // ─────────────────────────────────────────────────────────── the method ──
 

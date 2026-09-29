@@ -2313,3 +2313,32 @@ filter panel (`analytics.filters.tsx`), the answer's table, chart, years
 and source line (`analytics.clean.tsx`), the head, the bar and the figures
 band (`analytics.heads.tsx`). §18.2–18.10 record the versions tried and why
 each went; §18.11–18.12 the page's head.
+
+### 18.14 The records as the answer's first tab (29 September 2026)
+
+The owner: simplify the band under the answer, and add „a first tab with
+the items based on the active tab … if I search for laptop, I want to see
+that entry in the table". The records block („Înregistrările", with its
+„Vezi cele mai mari 25 din 22" button — wrong when fewer than 25) is gone;
+the records are the group-by's first option (`dupa=inregistrari`), named
+for what they are — „Achiziții", „Contracte", „Acorduri-cadru":
+
+- **The table** (`RecordsTable`): the title (opening the record's page) with
+  who bought from whom under it, the date, the value (bold when checked); 25
+  at a time with the list's own count („26–50 din 351"); „Dată" and
+  „Valoare" order it (frameworks by date only); an association's rows as
+  one. On a phone, the title and the value (the date under the title). No
+  measure toggle and no levels for it. The three cases the dev API cannot
+  list (a firm's place, a procedure, a wide direct-purchase window) say so
+  in its place.
+- **A title's words open on their records**: `defaultGroupOf` answers a
+  query with `titlu` with the records, and setting or clearing a title
+  (`withTitle`) moves a group-by the reader did not choose with it — a
+  chosen one stays. „laptop" opens on the laptops, largest first (the
+  Autoritatea Rutieră Română's 245,000 lei on 7 September 2025).
+- The band under the answer is the years strip alone, in the answer's band.
+
+Checked on the dev API: „laptop" and one institution's records (351, two
+pages), the national list (it answers within the 9-second deadline), the
+order by date (27 May 2026 first), a tab away and back; the table fits a
+390 px phone; unit tests cover the records' round trip and the title rule.

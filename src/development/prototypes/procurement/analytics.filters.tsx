@@ -9,7 +9,7 @@ import { useSearchResults } from '@/features/landing/hooks/use-landing-search'
 import { procurementHrefOf } from '@/features/procurement/lib/home-links'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
-import { POPULATIONS, cpvKey, cpvLevelOf, repaired, withFilter, withoutFilter, type AxisId, type PopulationId, type Query } from './analytics.model'
+import { POPULATIONS, cpvKey, cpvLevelOf, repaired, withFilter, withoutFilter, withTitle, type AxisId, type PopulationId, type Query } from './analytics.model'
 import { useCounties, useLocalities, useNames, type Answer } from './analytics.data'
 import { PROCEDURES, useCpvSearch } from './analytics.parts'
 import { countText, cpvLabel, keyLabel, populationLabel, type Namer } from './analytics.text'
@@ -339,8 +339,8 @@ function TitleField({ query, onChange }: { readonly query: Query; readonly onCha
   const [value, setValue] = useState(query.titlu ?? '')
   const apply = () => {
     const words = value.trim()
-    if (words.length >= 3 && words !== query.titlu) onChange({ ...query, titlu: words.slice(0, 100) })
-    else if (words === '' && query.titlu) onChange({ ...query, titlu: null })
+    if (words.length >= 3 && words !== query.titlu) onChange(withTitle(query, words.slice(0, 100)))
+    else if (words === '' && query.titlu) onChange(withTitle(query, null))
   }
   return (
     <form
@@ -437,7 +437,7 @@ export function FilterPanel({
           <ProcedureField query={query} namer={namer} onChange={onChange} />
           </Section>
       ) : null}
-      <Section title={t`Titlul conține`} onClear={query.titlu ? () => onChange({ ...query, titlu: null }) : null}>
+      <Section title={t`Titlul conține`} onClear={query.titlu ? () => onChange(withTitle(query, null)) : null}>
         <TitleField key={query.titlu ?? ''} query={query} onChange={onChange} />
       </Section>
       <Section title={t`Valoarea, lei`} onClear={query.valoare ? () => onChange({ ...query, valoare: null }) : null}>

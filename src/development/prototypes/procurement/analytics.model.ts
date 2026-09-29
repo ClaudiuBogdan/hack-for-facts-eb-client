@@ -204,7 +204,8 @@ export interface Filter {
   readonly values: readonly string[]
 }
 
-export type GroupBy = { readonly axis: AxisId; readonly level: string } | { readonly axis: 'timp'; readonly bucket: Bucket }
+/** How the answer is laid out: ranked by an axis at a level, over time, or as the records themselves (no grouping). */
+export type GroupBy = { readonly axis: AxisId; readonly level: string } | { readonly axis: 'timp'; readonly bucket: Bucket } | { readonly axis: 'inregistrari' }
 
 export interface Query {
   readonly tip: PopulationId
@@ -232,6 +233,7 @@ export const DEFAULT_QUERY: Query = {
 export type AnalyticsSearch = Partial<Record<string, string>>
 
 const GROUP_PARAMS: Readonly<Record<string, GroupBy>> = {
+  inregistrari: { axis: 'inregistrari' },
   institutie: { axis: 'cumparator', level: 'cui' },
   firma: { axis: 'furnizor', level: 'cui' },
   categorie: { axis: 'cpv', level: 'diviziune' },
@@ -256,6 +258,7 @@ export function groupParam(group: GroupBy): string {
 }
 
 export function sameGroup(a: GroupBy, b: GroupBy): boolean {
+  if (a.axis === 'inregistrari' || b.axis === 'inregistrari') return a.axis === b.axis
   if (a.axis === 'timp' || b.axis === 'timp') return a.axis === b.axis && (a as { bucket: Bucket }).bucket === (b as { bucket: Bucket }).bucket
   return a.axis === b.axis && a.level === b.level
 }
@@ -316,7 +319,7 @@ export function queryOf(search: AnalyticsSearch): Query {
   const valoare = min != null || max != null ? { min: Number.isFinite(min) ? (min ?? null) : null, max: Number.isFinite(max) ? (max ?? null) : null } : null
   const measure = (['numar', 'lei', 'locuitor'] as const).find((item) => item === search.masura) ?? POPULATIONS[tip].defaultMeasure
   // No `dupa` means the filters' own next question — the one `searchOf` leaves out.
-  const dupa = (search.dupa && ownKey(GROUP_PARAMS, search.dupa) ? GROUP_PARAMS[search.dupa] : undefined) ?? defaultGroupOf({ tip, filters })
+  const dupa = (search.dupa && ownKey(GROUP_PARAMS, search.dupa) ? GROUP_PARAMS[search.dupa] : undefined) ?? defaultGroupOf({ tip, filters, titlu })
   return repaired({ tip, period: periodOf(search.perioada), filters, titlu, valoare: valoare && (valoare.min !== null || valoare.max !== null) ? valoare : null, dupa, masura: measure })
 }
 
@@ -385,9 +388,10 @@ export function searchOf(query: Query): AnalyticsSearch {
 
 // ────────────────────────────────────────────────────────── what works ──
 
-/** The group-by a query opens on when it names none: the next axis after the finest filter. */
-export function defaultGroupOf(query: Pick<Query, 'filters' | 'tip'>): GroupBy {
+/** The group-by a query opens on when it names none: a title's words open on the records they find; else the next axis after the finest filter. */
+export function defaultGroupOf(query: Pick<Query, 'filters' | 'tip' | 'titlu'>): GroupBy {
   const { filters } = query
+  if (query.titlu) return { axis: 'inregistrari' }
   if (filters.cumparator) return filters.furnizor ? { axis: 'cpv', level: nextCpvLevel(filters.cpv?.level) ?? 'diviziune' } : { axis: 'furnizor', level: 'cui' }
   if (filters.furnizor) return { axis: 'cumparator', level: 'cui' }
   if (filters.cpv) {
@@ -409,7 +413,7 @@ export function nextCpvLevel(level: string | undefined): string | null {
 
 /** Why a group-by cannot be read for a query, or null when it can. */
 export function groupProblem(query: Pick<Query, 'filters' | 'tip' | 'masura'>, group: GroupBy): 'fixed' | 'population' | null {
-  if (group.axis === 'timp') return null
+  if (group.axis === 'timp' || group.axis === 'inregistrari') return null
   const axis = AXES[group.axis]
   if (!axis.populations.includes(query.tip)) return 'population'
   const filter = query.filters[group.axis]
@@ -437,7 +441,7 @@ export function repaired(query: Query): Query {
     if (filter && AXES[axisId].populations.includes(query.tip)) filters[axisId] = filter
   }
   let dupa = query.dupa
-  if (groupProblem({ ...query, filters }, dupa)) dupa = defaultGroupOf({ tip: query.tip, filters })
+  if (groupProblem({ ...query, filters }, dupa)) dupa = defaultGroupOf({ tip: query.tip, filters, titlu: query.titlu })
   if (groupProblem({ ...query, filters }, dupa)) dupa = { axis: 'timp', bucket: 'year' }
   let masura = query.masura
   if (masura === 'lei' && population.money === 'none') masura = 'numar'
@@ -447,6 +451,8 @@ export function repaired(query: Query): Query {
 
 /** A row's drill: its filter added, the group-by moved to the next natural axis. */
 export function drilled(query: Query, group: GroupBy, key: string): Query {
+  // A record is not drilled: its row opens its own page.
+  if (group.axis === 'inregistrari') return query
   if (group.axis === 'timp') {
     // A year opens its months; a month or a quarter becomes the period.
     if (group.bucket === 'year') return repaired({ ...query, period: { kind: 'year', year: Number(key) }, dupa: { axis: 'timp', bucket: 'month' } })
@@ -468,7 +474,7 @@ function quarterMonths(key: string): { from?: string; to?: string } {
 
 /** Where a click leads: an institution to its firms, a firm to its institutions, a category one level down (then its firms), a place one level down (then its institutions). */
 export function nextGroupAfter(group: GroupBy, query: Query): GroupBy {
-  if (group.axis === 'timp') return group
+  if (group.axis === 'timp' || group.axis === 'inregistrari') return group
   const candidates: GroupBy[] = []
   if (group.axis === 'cumparator') candidates.push({ axis: 'furnizor', level: 'cui' }, { axis: 'cpv', level: 'diviziune' })
   if (group.axis === 'furnizor') candidates.push({ axis: 'cumparator', level: 'cui' }, { axis: 'cpv', level: 'diviziune' })
@@ -492,6 +498,16 @@ export function withoutFilter(query: Query, axis: AxisId): Query {
   const filters = { ...query.filters }
   delete filters[axis]
   return repaired({ ...query, filters })
+}
+
+/**
+ * A title's words set or cleared. A group-by the reader did not choose
+ * follows the question: the words open on the records they find, and
+ * clearing them returns to the filters' own next question.
+ */
+export function withTitle(query: Query, titlu: string | null): Query {
+  const next = { ...query, titlu }
+  return repaired(sameGroup(query.dupa, defaultGroupOf(query)) ? { ...next, dupa: defaultGroupOf(next) } : next)
 }
 
 export function withFilter(query: Query, axis: AxisId, level: string, value: string): Query {

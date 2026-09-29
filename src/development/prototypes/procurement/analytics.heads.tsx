@@ -24,6 +24,7 @@ import {
   POPULATIONS,
   repaired,
   withoutFilter,
+  withTitle,
   type AxisId,
   type PopulationId,
   type Query,
@@ -70,7 +71,7 @@ function chipLabel(query: Query, key: AxisId | 'titlu' | 'valoare', namer: Namer
 }
 
 function without(query: Query, key: AxisId | 'titlu' | 'valoare'): Query {
-  if (key === 'titlu') return { ...query, titlu: null }
+  if (key === 'titlu') return withTitle(query, null)
   if (key === 'valoare') return { ...query, valoare: null }
   return withoutFilter(query, key)
 }

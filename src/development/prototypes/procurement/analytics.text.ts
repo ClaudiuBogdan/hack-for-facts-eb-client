@@ -152,7 +152,7 @@ export function headlineParts(query: Query, namer: Namer, withGroup = true): rea
   if (filters.procedura) parts.push({ text: t`prin ${lowerFirst(keyLabel('procedura', 'tip', filters.procedura.values[0]!, namer))}`, role: 'procedura', before: ', ' })
   if (query.titlu) parts.push({ text: t`cu „${query.titlu}" în titlu`, role: 'titlu', before: ', ' })
   if (query.valoare) parts.push({ text: valueText(query.valoare), role: 'valoare', before: ', ' })
-  if (withGroup) parts.push({ text: groupPhrase(query.dupa), role: 'dupa', before: ', ' })
+  if (withGroup && groupPhrase(query.dupa)) parts.push({ text: groupPhrase(query.dupa), role: 'dupa', before: ', ' })
   return parts
 }
 
@@ -208,6 +208,8 @@ function valueText(valoare: NonNullable<Query['valoare']>): string {
 }
 
 export function groupPhrase(group: GroupBy): string {
+  // The records themselves: no „pe …" to say.
+  if (group.axis === 'inregistrari') return ''
   if (group.axis === 'timp') return group.bucket === 'year' ? t`pe ani` : group.bucket === 'quarter' ? t`pe trimestre` : t`pe luni`
   const labels: Record<string, string> = {
     'cumparator:cui': t`pe instituții`,
@@ -226,6 +228,13 @@ export function groupPhrase(group: GroupBy): string {
     'procedura:tip': t`pe proceduri`,
   }
   return labels[`${group.axis}:${group.level}`] ?? ''
+}
+
+/** The records' tab, named for what they are: „Achiziții", „Contracte", „Acorduri-cadru". */
+export function recordsTab(tip: PopulationId): string {
+  if (tip === 'directe') return t`Achiziții`
+  if (tip === 'contracte') return t`Contracte`
+  return t`Acorduri-cadru`
 }
 
 /** The group-by's name on its tab: „Instituție", „Firmă", „Categorie"… */

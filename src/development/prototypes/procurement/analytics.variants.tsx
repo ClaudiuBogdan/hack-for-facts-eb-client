@@ -3,8 +3,8 @@ import { t } from '@lingui/core/macro'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { searchOf, type Query } from './analytics.model'
 import { useAnswer } from './analytics.data'
-import { GroupBar, RecordsBlock, useAnalyticsQuery, useNamer } from './analytics.parts'
-import { CleanTable, CleanTime, CleanYears, SourceLine } from './analytics.clean'
+import { GroupBar, useAnalyticsQuery, useNamer } from './analytics.parts'
+import { CleanTable, CleanTime, CleanYears, RecordsTable, SourceLine } from './analytics.clean'
 import { FilterSheet } from './analytics.filters'
 import { GridFigures, GridHead, PopulationNav } from './analytics.heads'
 
@@ -39,8 +39,8 @@ function recordsKey(query: Query): string {
  * as the headline, a filter's phrase opening the panel, its ✕ dropping it;
  * what adds to the query and the caveats' marker; the cross on its bottom
  * rule — then the pinned bar with the three populations, the figures band,
- * the answer (a table of every measure, or a chart in time), the years and
- * the records in bands of the same frame, the source at the foot.
+ * the answer (the records themselves, a table of every measure, or a chart
+ * in time) and the years in a band of the same frame, the source at the foot.
  */
 export function AnalyticsPropozitie() {
   const [query, move] = useAnalyticsQuery()
@@ -56,17 +56,14 @@ export function AnalyticsPropozitie() {
       <section className="border-b" aria-label={t`Răspunsul`}>
         <RuledFrame className="py-12 sm:py-16">
           <GroupBar query={query} onChange={move} />
-          {query.dupa.axis === 'timp' ? (
+          {query.dupa.axis === 'inregistrari' ? (
+            <RecordsTable key={recordsKey(query)} query={query} answer={answer} className="mt-3" />
+          ) : query.dupa.axis === 'timp' ? (
             <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
           ) : (
             <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
           )}
-        </RuledFrame>
-      </section>
-      <section className="border-b" aria-label={t`Înregistrările`}>
-        <RuledFrame className="py-12 sm:py-16">
-          <CleanYears query={query} answer={answer} onChange={move} className="mb-12" />
-          <RecordsBlock key={recordsKey(query)} query={query} answer={answer} />
+          <CleanYears query={query} answer={answer} onChange={move} className="mt-14" />
         </RuledFrame>
       </section>
       <RuledFrame className="py-8">
