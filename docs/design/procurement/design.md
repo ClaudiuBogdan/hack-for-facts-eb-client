@@ -2154,7 +2154,7 @@ question and drill round-trips; the adversarial addresses; the periods).
 
 ### 18.8 Open for the owner
 
-- The layout: `raspuns` or one of its clean versions (§18.9).
+- ~~The layout~~ — `curat` (§18.10).
 - Whether contract lei are offered at all before `framework_role` lands.
 - The route: `/procurement/analytics` with `/procurement/search` redirecting
   (the old params mapped), and the explorer's list view kept as the
@@ -2220,4 +2220,8 @@ with the table (records, lei, the average, the share; a header ranks by its
 column) under its four large figures; a breakdown in time stays a chart.
 `lateral` is removed with what only it used — the panel's top values and
 the rail — and so are `curat`'s one-line bar rows. The filter panel is the
-sheet. `tabel` stays as it was (its figures in one line).
+sheet.
+
+Then the owner kept `curat` alone: `tabel` is removed, with its one-line
+figures and the table's rows in time. The prototype holds `raspuns` (as it
+was) and `curat`, the page to promote.

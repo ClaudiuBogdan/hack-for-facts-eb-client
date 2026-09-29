@@ -134,38 +134,3 @@ export function AnalyticsCurat() {
     </Shell>
   )
 }
-
-// ──────────────────────────────────────────────────────────────── tabel ──
-
-/**
- * `tabel` — the numbers at once. The figures in one line; the answer a table
- * with every measure side by side (records, lei, the average, the share), a
- * header ranking by its column; in time, a row per period. Filters as in
- * `curat`.
- */
-export function AnalyticsTabel() {
-  const [query, move] = useAnalyticsQuery()
-  const [expanded, setExpanded] = useExpanded(query)
-  const [filters, setFilters] = useState(false)
-  const answer = useAnswer(query, { topN: expanded ? 100 : 25, facets: false, years: true })
-  const namer = useNamer(query, answer)
-  return (
-    <Shell>
-      <div className={STICKY}>
-        <RuledFrame className="py-3">
-          <CleanControls query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} />
-        </RuledFrame>
-      </div>
-      <RuledFrame className="py-8 sm:py-10">
-        <CleanHead query={query} answer={answer} namer={namer} />
-        <CleanFigures query={query} answer={answer} dense className="mt-4" />
-        <GroupBar query={query} onChange={move} className="mt-8" />
-        <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
-        <CleanYears query={query} answer={answer} onChange={move} className="mt-12" />
-        <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
-        <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
-      </RuledFrame>
-      <FilterSheet query={query} answer={answer} namer={namer} onChange={move} open={filters} onOpenChange={setFilters} />
-    </Shell>
-  )
-}

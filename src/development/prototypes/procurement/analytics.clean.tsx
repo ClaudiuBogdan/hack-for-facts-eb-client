@@ -140,8 +140,6 @@ export function CleanHead({ query, answer, namer, className }: { readonly query:
 
 interface Figure {
   readonly label: string
-  /** The label in the one-line band, after its value: „95.800 achiziții", „666,0 mil. lei fără TVA". */
-  readonly short: string
   readonly value: string
   readonly change: string | null
   readonly muted?: boolean
@@ -157,22 +155,21 @@ function figuresOf(query: Query, answer: Answer): readonly Figure[] | null {
   const figures: Figure[] = [
     {
       label: population.id === 'directe' ? t`Achiziții` : population.id === 'contracte' ? t`Contracte` : t`Acorduri-cadru`,
-      short: population.id === 'directe' ? t`achiziții` : population.id === 'contracte' ? t`contracte` : t`acorduri-cadru`,
       value: countText(now.records),
       change: changeText(now.records, before?.records ?? null),
     },
   ]
-  if (population.money === 'clean') figures.push({ label: t`Lei, fără TVA`, short: t`fără TVA`, value: now.money !== null ? moneyText(now.money) : '—', change: changeText(now.money, before?.money ?? null) })
-  if (population.money === 'provisional') figures.push({ label: t`Lei, provizoriu`, short: t`provizoriu`, value: now.money !== null ? moneyText(now.money) : '—', change: null, muted: true })
+  if (population.money === 'clean') figures.push({ label: t`Lei, fără TVA`, value: now.money !== null ? moneyText(now.money) : '—', change: changeText(now.money, before?.money ?? null) })
+  if (population.money === 'provisional') figures.push({ label: t`Lei, provizoriu`, value: now.money !== null ? moneyText(now.money) : '—', change: null, muted: true })
   if (!query.filters.furnizor) {
-    figures.push({ label: t`Firme`, short: t`firme`, value: concentration?.firms != null ? countText(concentration.firms) : '…', change: null })
-    figures.push({ label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, short: byValue ? t`la primele 5 firme` : t`la primele 5 firme, din rânduri`, value: concentration?.top5 != null ? percentText(concentration.top5, 0) : '…', change: null })
+    figures.push({ label: t`Firme`, value: concentration?.firms != null ? countText(concentration.firms) : '…', change: null })
+    figures.push({ label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, value: concentration?.top5 != null ? percentText(concentration.top5, 0) : '…', change: null })
   }
   return figures
 }
 
 /** The numbers, bare: a label, a value, its change where the population compares (the months compared in its title). */
-export function CleanFigures({ query, answer, dense = false, className }: { readonly query: Query; readonly answer: Answer; readonly dense?: boolean; readonly className?: string }) {
+export function CleanFigures({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   if (answer.figures.isError) return (
       <div className={className}>
         <HubLoadError onRetry={answer.figures.retry} />
@@ -180,21 +177,7 @@ export function CleanFigures({ query, answer, dense = false, className }: { read
     )
   const figures = figuresOf(query, answer)
   const compared = answer.figures.data?.before && answer.period ? t`față de ${monthsText(answer.period.previous)}` : undefined
-  if (!figures) return <div className={cn(dense ? 'h-6' : 'h-20', 'animate-pulse bg-muted/40', className)} aria-hidden="true" />
-  if (dense) return (
-      <p className={cn('flex flex-wrap items-baseline gap-x-6 gap-y-1 text-sm', className)}>
-        {figures.map((figure) => (
-          <span key={figure.label} className="tabular-nums">
-            <span className={cn('font-semibold', figure.muted ? 'text-muted-foreground' : 'text-foreground')}>{figure.value}</span> <span className="text-muted-foreground">{figure.short}</span>
-            {figure.change ? (
-              <span className="ml-1.5 text-xs text-muted-foreground" title={compared}>
-                {figure.change}
-              </span>
-            ) : null}
-          </span>
-        ))}
-      </p>
-    )
+  if (!figures) return <div className={cn('h-20 animate-pulse bg-muted/40', className)} aria-hidden="true" />
   return (
     <dl className={cn('grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4', className)}>
       {figures.map((figure) => (
@@ -368,9 +351,9 @@ function SortHead({ label, active, onClick, className }: { readonly label: strin
 }
 
 /**
- * The answer as a table, for the reader who wants every number at once:
- * records, lei, the average, the share — a header ranks by its column (the
- * server ranks; the top 25 by lei is not the top 25 by count).
+ * The ranked answer as a table, every number at once: records, lei, the
+ * average, the share — a header ranks by its column (the server ranks; the
+ * top 25 by lei is not the top 25 by count). In time, the chart answers.
  */
 export function CleanTable({
   query,
@@ -393,46 +376,7 @@ export function CleanTable({
   const money = population.money !== 'none'
   const moneyLabel = population.money === 'provisional' ? t`Lei, provizoriu` : t`Lei`
   const rank = (masura: Query['masura']) => (query.masura === masura ? null : () => onChange({ ...query, masura }))
-  if (query.dupa.axis === 'timp') {
-    if (answer.series.isError) return (
-        <div className={className}>
-          <HubLoadError onRetry={answer.series.retry} />
-        </div>
-      )
-    const points = answer.series.data
-    if (!points) return <Pending rows={8} className={className} />
-    const group = query.dupa
-    const byValue = query.masura !== 'numar' && money
-    const max = Math.max(1, ...points.map((point) => (byValue ? (point.money ?? 0) : (point.count ?? 0))))
-    return (
-      <Table className={className}>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t`Perioada`}</TableHead>
-            <SortHead label={t`Înregistrări`} active={!byValue} onClick={money ? rank('numar') : null} className={cn(byValue && 'hidden sm:table-cell')} />
-            {money ? <SortHead label={moneyLabel} active={byValue} onClick={rank('lei')} className={cn(!byValue && 'hidden sm:table-cell')} /> : null}
-            <TableHead className="hidden w-40 sm:table-cell" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {[...points].reverse().map((point) => (
-            <TableRow key={point.bucket} className="cursor-pointer" onClick={() => onChange(drilled(query, group, point.bucket))}>
-              <TableCell className="tabular-nums">
-                {bucketLabel(point.bucket)} <span className="text-muted-foreground">{clippedText(point.bucket, answer.period) ?? ''}</span>
-              </TableCell>
-              <TableCell className={cn('text-right tabular-nums', byValue && 'hidden sm:table-cell')}>{countText(point.count ?? 0)}</TableCell>
-              {money ? <TableCell className={cn('text-right tabular-nums', !byValue && 'hidden sm:table-cell')}>{point.money !== null ? moneyText(point.money) : '—'}</TableCell> : null}
-              <TableCell className="hidden sm:table-cell">
-                <span className="block h-1.5 bg-muted/70">
-                  <span className="block h-1.5 bg-primary/75" style={{ width: `${Math.max((((byValue ? point.money : point.count) ?? 0) / max) * 100, 0.5).toFixed(1)}%` }} />
-                </span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    )
-  }
+  if (query.dupa.axis === 'timp') return null
   if (answer.ranking.isError) return (
       <div className={className}>
         <HubLoadError onRetry={answer.ranking.retry} />
