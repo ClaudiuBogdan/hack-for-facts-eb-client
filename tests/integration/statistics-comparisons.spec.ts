@@ -304,9 +304,17 @@ for (const language of ['en', 'ro'] as const)
       }) => {
         const calls = await mock(page)
         await page.goto(link({ clasificari: ['SEX:TOTAL'] }))
-        await expect(page.getByRole('alert')).toContainText('SEX:TOTAL', {
+        // The address keeps the intent; the alert only names what to fix.
+        const invalid =
+          /Selecția din adresă nu este validă|The selection in the address is not valid/
+        const keepsIntent = (url: URL) =>
+          JSON.stringify(
+            JSON.parse(url.searchParams.get('clasificari') ?? 'null'),
+          ) === JSON.stringify(['SEX:TOTAL'])
+        await expect(page.getByRole('alert')).toContainText(invalid, {
           timeout: 15000,
         })
+        await expect(page).toHaveURL(keepsIntent)
         expect(
           comparisonReads(calls).length,
         ).toBe(0)
@@ -314,7 +322,8 @@ for (const language of ['en', 'ro'] as const)
           calls.filter((c) => c.query.includes('InsComparisonDefaults')).length,
         ).toBe(0)
         await page.reload()
-        await expect(page.getByRole('alert')).toContainText('SEX:TOTAL')
+        await expect(page.getByRole('alert')).toContainText(invalid)
+        await expect(page).toHaveURL(keepsIntent)
       })
       test('keeps equal-valued disjoint source alternatives unavailable', async ({
         page,
