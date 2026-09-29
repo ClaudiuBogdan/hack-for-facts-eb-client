@@ -2225,3 +2225,39 @@ sheet.
 Then the owner kept `curat` alone: `tabel` is removed, with its one-line
 figures and the table's rows in time. The prototype holds `raspuns` (as it
 was) and `curat`, the page to promote.
+
+### 18.11 Two heads for `curat` (29 September 2026)
+
+The owner asked for two redesigns of `curat`'s head: the control bar, the
+headline, the months, the figures. Both keep the rest of `curat` (the
+group-by, the table or the chart, the records, the source line, the filter
+sheet) and read the same query; `curat` stays as it was.
+
+- **`propozitie` — the headline is the control.** No toolbar. The
+  headline's phrases are the query's parts (`headlineParts` in
+  `analytics.text.ts`; `headline` joins them, so the other versions read the
+  same sentence): „Achizițiile directe ▾" opens the population's switch; a
+  filter's phrase („ale instituțiilor din județul Cluj") opens the filter
+  sheet, its ✕ (on hover from `sm`, always on a phone) drops it; the
+  group-by's phrase is text (the tabs above the table choose it). A filter
+  the sentence folds into another (a county under a chosen institution)
+  shows as a chip under it. The months under the headline are the period's
+  picker, beside the caveats' marker; „Adaugă", „Filtre", „Întrebări" and
+  the link sit quietly at that line's end. The figures in one ruled row:
+  the value first, what it counts and its change under it.
+- **`bara` — one bar, figures with their years.** The populations as
+  tabs (three equal on a phone) and the period on the first line; on the
+  second, one search field that holds the filters as chips and opens the
+  search over institutions, firms, categories and counties — replacing
+  „+ Filtru", too close to „Filtre" — then „Filtre", „Întrebări", the link.
+  The headline with the marker on its last line; each figure with its
+  years since 2019 as small bars (the window's darker, 2026 dashed, a click
+  takes the year), so the years strip below goes. Firms and the top five
+  have no yearly read yet (the series' distinct firms per year would serve
+  the first).
+
+Checked on the dev API: the population switch, dropping a phrase, the
+period, adding a filter (the sentence); a search from the bar, dropping a
+chip, the tabs, a year from a trend (the bar) — all drive the address, no
+console errors; the review's hard cases load in both; no horizontal scroll
+at 390 px.

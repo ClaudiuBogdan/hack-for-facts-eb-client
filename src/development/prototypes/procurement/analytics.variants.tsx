@@ -20,8 +20,10 @@ import {
   useNamer,
   YearsStrip,
 } from './analytics.parts'
-import { CleanControls, CleanFigures, CleanHead, CleanTable, CleanTime, CleanYears, SourceLine } from './analytics.clean'
+import { CleanControls, NotesMarker, CleanFigures, CleanHead, CleanTable, CleanTime, CleanYears, SourceLine } from './analytics.clean'
 import { FilterSheet } from './analytics.filters'
+import { CommandBar, RuledFigures, SentenceHead, TrendFigures } from './analytics.heads'
+import { headline } from './analytics.text'
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
 const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
@@ -127,6 +129,85 @@ export function AnalyticsCurat() {
           <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
         )}
         <CleanYears query={query} answer={answer} onChange={move} className="mt-12" />
+        <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
+        <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
+      </RuledFrame>
+      <FilterSheet query={query} answer={answer} namer={namer} onChange={move} open={filters} onOpenChange={setFilters} />
+    </Shell>
+  )
+}
+
+// ─────────────────────────────────────────────────────────── propoziție ──
+
+/**
+ * `propozitie` — `curat` with the head redesigned: no toolbar. The headline
+ * is the control (the population's phrase switches it, a filter's opens the
+ * panel, its ✕ drops it); the months under it pick the period, beside the
+ * caveats' marker; what adds to the query sits quietly at that line's end.
+ * The figures in one ruled row, the value first.
+ */
+export function AnalyticsPropozitie() {
+  const [query, move] = useAnalyticsQuery()
+  const [expanded, setExpanded] = useExpanded(query)
+  const [filters, setFilters] = useState(false)
+  const answer = useAnswer(query, { topN: expanded ? 100 : 25, facets: false, years: true })
+  const namer = useNamer(query, answer)
+  return (
+    <Shell>
+      <RuledFrame className="py-8 sm:py-12">
+        <SentenceHead query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} />
+        <RuledFigures query={query} answer={answer} className="mt-8" />
+        <GroupBar query={query} onChange={move} className="mt-12" />
+        {query.dupa.axis === 'timp' ? (
+          <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
+        ) : (
+          <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
+        )}
+        <CleanYears query={query} answer={answer} onChange={move} className="mt-12" />
+        <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
+        <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
+      </RuledFrame>
+      <FilterSheet query={query} answer={answer} namer={namer} onChange={move} open={filters} onOpenChange={setFilters} />
+    </Shell>
+  )
+}
+
+// ───────────────────────────────────────────────────────────────── bară ──
+
+/**
+ * `bara` — `curat` with the head redesigned as one bar: the populations as
+ * tabs and the period, one search field holding the filters as chips, the
+ * panel, the questions, the link. The headline with its marker; the figures
+ * each with its years since 2019 (the years strip below goes).
+ */
+export function AnalyticsBara() {
+  const [query, move] = useAnalyticsQuery()
+  const [expanded, setExpanded] = useExpanded(query)
+  const [filters, setFilters] = useState(false)
+  const answer = useAnswer(query, { topN: expanded ? 100 : 25, facets: false, years: true })
+  const namer = useNamer(query, answer)
+  return (
+    <Shell>
+      <div className={STICKY}>
+        <RuledFrame className="pb-3 pt-2">
+          <CommandBar query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} />
+        </RuledFrame>
+      </div>
+      <RuledFrame className="py-8 sm:py-10">
+        {/* The marker rides the headline's last line, outside the heading: the heading says the question only. */}
+        <div className="max-w-4xl">
+          <h1 className="inline text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[2rem]">{headline(query, namer)}</h1>{' '}
+          <span className="inline-block align-middle">
+            <NotesMarker query={query} answer={answer} />
+          </span>
+        </div>
+        <TrendFigures query={query} answer={answer} onChange={move} className="mt-8" />
+        <GroupBar query={query} onChange={move} className="mt-12" />
+        {query.dupa.axis === 'timp' ? (
+          <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
+        ) : (
+          <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
+        )}
         <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
         <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
       </RuledFrame>

@@ -161,7 +161,7 @@ export function PopulationToggle({ query, onChange }: { readonly query: Query; r
   )
 }
 
-export function PeriodMenu({ query, answer, onChange }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void }) {
+export function PeriodMenu({ query, answer, onChange, triggerClassName }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly triggerClassName?: string }) {
   const [open, setOpen] = useState(false)
   const cutoff = answer.cutoff ? answer.cutoff[POPULATIONS[query.tip].cutoff] : null
   const lastYear = cutoff ? Number(cutoff.slice(0, 4)) : new Date().getFullYear()
@@ -182,7 +182,7 @@ export function PeriodMenu({ query, answer, onChange }: { readonly query: Query;
   }
   return (
     <Popover open={open} onOpenChange={toggle}>
-      <PopoverTrigger className={cn(CHIP, 'font-medium')}>
+      <PopoverTrigger className={triggerClassName ?? cn(CHIP, 'font-medium')}>
         {label}
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
@@ -223,7 +223,7 @@ export function PeriodMenu({ query, answer, onChange }: { readonly query: Query;
   )
 }
 
-function filterChipLabel(axis: AxisId, level: string, value: string, namer: Namer): string {
+export function filterChipLabel(axis: AxisId, level: string, value: string, namer: Namer): string {
   const name = keyLabel(axis, level, axis === 'cpv' ? value.padEnd(8, '0') : value, namer)
   if (axis === 'cumparator') return name
   if (axis === 'furnizor') return name
@@ -298,7 +298,20 @@ export const PROCEDURES = [
  * categories (the CPV names), counties, procedures — and, for what a name
  * cannot find, a title's words and a value.
  */
-export function AddFilter({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
+export function AddFilter({
+  query,
+  namer,
+  onChange,
+  trigger,
+  triggerClassName,
+}: {
+  readonly query: Query
+  readonly namer: Namer
+  readonly onChange: (query: Query) => void
+  /** What the trigger shows and how it looks; „+ Filtru" as a chip when not given. */
+  readonly trigger?: ReactNode
+  readonly triggerClassName?: string
+}) {
   const [open, setOpen] = useState(false)
   const search = useSearchResults({ docTypes: ['organization', 'public_enterprise', 'company'], suggestions: false })
   const cpv = useCpvSearch(search.term)
@@ -313,9 +326,13 @@ export function AddFilter({ query, namer, onChange }: { readonly query: Query; r
   }
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger className={cn(CHIP, 'text-muted-foreground')}>
-        <Plus className="size-3.5" aria-hidden="true" />
-        {t`Filtru`}
+      <PopoverTrigger className={triggerClassName ?? cn(CHIP, 'text-muted-foreground')}>
+        {trigger ?? (
+          <>
+            <Plus className="size-3.5" aria-hidden="true" />
+            {t`Filtru`}
+          </>
+        )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(92vw,26rem)] p-0">
         <Command shouldFilter={false}>
@@ -407,11 +424,11 @@ export function AddFilter({ query, namer, onChange }: { readonly query: Query; r
 }
 
 /** The ready questions, as a menu once the reader has one of their own. */
-export function QuestionsMenu({ onChange }: { readonly onChange: (query: Query) => void }) {
+export function QuestionsMenu({ onChange, triggerClassName }: { readonly onChange: (query: Query) => void; readonly triggerClassName?: string }) {
   const [open, setOpen] = useState(false)
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger className={cn(CHIP)}>
+      <PopoverTrigger className={triggerClassName ?? cn(CHIP)}>
         {t`Întrebări`}
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>

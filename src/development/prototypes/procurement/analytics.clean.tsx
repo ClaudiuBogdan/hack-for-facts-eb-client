@@ -41,7 +41,7 @@ const ICON = 'inline-flex size-9 shrink-0 items-center justify-center border tex
 
 // ─────────────────────────────────────────────────────────── controls ──
 
-function ShareIcon({ query, answer }: { readonly query: Query; readonly answer: Answer }) {
+export function ShareIcon({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   const [copied, setCopied] = useState(false)
   const copy = () =>
     void navigator.clipboard?.writeText(shareUrl(query, answer)).then(() => {
@@ -49,7 +49,7 @@ function ShareIcon({ query, answer }: { readonly query: Query; readonly answer: 
       window.setTimeout(() => setCopied(false), 1500)
     })
   return (
-    <button type="button" onClick={copy} className={ICON} aria-label={copied ? t`Copiat` : t`Copiază legătura`} title={copied ? t`Copiat` : t`Copiază legătura`}>
+    <button type="button" onClick={copy} className={className ?? ICON} aria-label={copied ? t`Copiat` : t`Copiază legătura`} title={copied ? t`Copiat` : t`Copiază legătura`}>
       {copied ? <Check className="size-4" aria-hidden="true" /> : <Link2 className="size-4" aria-hidden="true" />}
     </button>
   )
@@ -97,7 +97,7 @@ export function CleanControls({
 // ─────────────────────────────────────────────────────────────── head ──
 
 /** One marker for all a reader should know before the numbers: amber with a count when something is off, an „i" otherwise. */
-function NotesMarker({ query, answer }: { readonly query: Query; readonly answer: Answer }) {
+export function NotesMarker({ query, answer }: { readonly query: Query; readonly answer: Answer }) {
   const notes = readoutNotes(query, answer, useSearchStrings())
   const alerts = [...(notes.unread ? [notes.unread] : []), ...notes.warnings]
   const gloss = answer.period ? periodGloss(answer.period, query, answer.cutoff?.failed ?? false) : null
@@ -138,14 +138,16 @@ export function CleanHead({ query, answer, namer, className }: { readonly query:
 
 // ──────────────────────────────────────────────────────────── figures ──
 
-interface Figure {
+export interface Figure {
+  /** Which number it is: its trend reads the years' counts or money. */
+  readonly key: 'records' | 'money' | 'firms' | 'top5'
   readonly label: string
   readonly value: string
   readonly change: string | null
   readonly muted?: boolean
 }
 
-function figuresOf(query: Query, answer: Answer): readonly Figure[] | null {
+export function figuresOf(query: Query, answer: Answer): readonly Figure[] | null {
   const now = answer.figures.data?.now ?? null
   if (!now) return null
   const before = answer.figures.data?.before ?? null
@@ -154,16 +156,17 @@ function figuresOf(query: Query, answer: Answer): readonly Figure[] | null {
   const byValue = query.masura !== 'numar' && population.money !== 'none'
   const figures: Figure[] = [
     {
+      key: 'records',
       label: population.id === 'directe' ? t`Achiziții` : population.id === 'contracte' ? t`Contracte` : t`Acorduri-cadru`,
       value: countText(now.records),
       change: changeText(now.records, before?.records ?? null),
     },
   ]
-  if (population.money === 'clean') figures.push({ label: t`Lei, fără TVA`, value: now.money !== null ? moneyText(now.money) : '—', change: changeText(now.money, before?.money ?? null) })
-  if (population.money === 'provisional') figures.push({ label: t`Lei, provizoriu`, value: now.money !== null ? moneyText(now.money) : '—', change: null, muted: true })
+  if (population.money === 'clean') figures.push({ key: 'money', label: t`Lei, fără TVA`, value: now.money !== null ? moneyText(now.money) : '—', change: changeText(now.money, before?.money ?? null) })
+  if (population.money === 'provisional') figures.push({ key: 'money', label: t`Lei, provizoriu`, value: now.money !== null ? moneyText(now.money) : '—', change: null, muted: true })
   if (!query.filters.furnizor) {
-    figures.push({ label: t`Firme`, value: concentration?.firms != null ? countText(concentration.firms) : '…', change: null })
-    figures.push({ label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, value: concentration?.top5 != null ? percentText(concentration.top5, 0) : '…', change: null })
+    figures.push({ key: 'firms', label: t`Firme`, value: concentration?.firms != null ? countText(concentration.firms) : '…', change: null })
+    figures.push({ key: 'top5', label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, value: concentration?.top5 != null ? percentText(concentration.top5, 0) : '…', change: null })
   }
   return figures
 }

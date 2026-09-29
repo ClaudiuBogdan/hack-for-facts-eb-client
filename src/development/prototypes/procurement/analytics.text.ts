@@ -132,20 +132,35 @@ export function kindSplitNote(tip: PopulationId): string {
 
 // ───────────────────────────────────────────────────────────── headline ──
 
+/** A phrase of the headline and what it says: the population, a filter (by its axis, the title, the value) or the group-by. */
+export interface HeadlinePart {
+  readonly text: string
+  readonly role: 'tip' | AxisId | 'titlu' | 'valoare' | 'dupa'
+  /** What joins it to the phrase before: the subject's own phrases by a space, the rest by a comma. */
+  readonly before: '' | ' ' | ', '
+}
+
+/** The headline as its phrases, for a page that makes each one a control. */
+export function headlineParts(query: Query, namer: Namer, withGroup = true): readonly HeadlinePart[] {
+  const { tip, filters } = query
+  const parts: HeadlinePart[] = [{ text: tip === 'directe' ? t`Achizițiile directe` : tip === 'contracte' ? t`Contractele atribuite` : t`Acordurile-cadru`, role: 'tip', before: '' }]
+  const buyer = buyerPhrase(query, namer)
+  if (buyer) parts.push({ text: buyer, role: filters.cumparator ? 'cumparator' : 'loc', before: ' ' })
+  const seller = sellerPhrase(query, namer)
+  if (seller) parts.push({ text: seller, role: filters.furnizor ? 'furnizor' : 'loc_firma', before: ' ' })
+  if (filters.cpv) parts.push({ text: t`pentru ${lowerFirst(cpvLabel(filters.cpv.values[0]!, namer))}`, role: 'cpv', before: ', ' })
+  if (filters.procedura) parts.push({ text: t`prin ${lowerFirst(keyLabel('procedura', 'tip', filters.procedura.values[0]!, namer))}`, role: 'procedura', before: ', ' })
+  if (query.titlu) parts.push({ text: t`cu „${query.titlu}" în titlu`, role: 'titlu', before: ', ' })
+  if (query.valoare) parts.push({ text: valueText(query.valoare), role: 'valoare', before: ', ' })
+  if (withGroup) parts.push({ text: groupPhrase(query.dupa), role: 'dupa', before: ', ' })
+  return parts
+}
+
 /** „Achizițiile directe ale instituțiilor din județul Cluj, pentru lucrări de construcții, pe firme". */
 export function headline(query: Query, namer: Namer, withGroup = true): string {
-  const { tip, filters } = query
-  const parts: string[] = []
-  const subject = tip === 'directe' ? t`Achizițiile directe` : tip === 'contracte' ? t`Contractele atribuite` : t`Acordurile-cadru`
-  const buyer = buyerPhrase(query, namer)
-  const seller = sellerPhrase(query, namer)
-  parts.push([subject, buyer, seller].filter(Boolean).join(' '))
-  if (filters.cpv) parts.push(t`pentru ${lowerFirst(cpvLabel(filters.cpv.values[0]!, namer))}`)
-  if (filters.procedura) parts.push(t`prin ${lowerFirst(keyLabel('procedura', 'tip', filters.procedura.values[0]!, namer))}`)
-  if (query.titlu) parts.push(t`cu „${query.titlu}" în titlu`)
-  if (query.valoare) parts.push(valueText(query.valoare))
-  if (withGroup) parts.push(groupPhrase(query.dupa))
-  return parts.join(', ')
+  return headlineParts(query, namer, withGroup)
+    .map((part) => part.before + part.text)
+    .join('')
 }
 
 function buyerPhrase(query: Query, namer: Namer): string | null {
