@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { cleanProcurementHubSearch, parseProcurementHubSearch } from '@/schemas/procurement-hub'
+import { queryOf, searchOf } from './analytics-model'
 import { explorerSearchOf, parseProcurementHomeSearch } from '@/schemas/procurement-home'
-import { buyerCountySearch, buyerRecordsSearch, countyExplorerSearch, procurementHrefOf, sectionIndex, startSearches, supplierCountySearch, supplierRecordsSearch } from './home-links'
+import {
+  allYears,
+  buyerAllRecordsSearch,
+  buyerCountySearch,
+  buyerRecordsSearch,
+  countyRecordsSearch,
+  procurementHrefOf,
+  sectionIndex,
+  startSearches,
+  supplierCountySearch,
+  supplierRecordsSearch,
+} from './home-links'
 import { recentPeriod, yearPeriod } from './profile-period.fixture'
 
 describe('procurementHrefOf', () => {
@@ -49,36 +60,37 @@ describe('the front door’s address', () => {
   })
 })
 
-describe('the explorer lists a profile page opens', () => {
+describe('the analytics answers a profile page opens', () => {
   it('opens a complete year by its year, and the year in progress over its months only', () => {
-    expect(buyerRecordsSearch('4364446', yearPeriod(2025, null), 'direct')).toEqual({ view: 'list', grain: 'direct_acquisitions', authority_cui: '4364446', year: 2025 })
-    expect(buyerCountySearch('4364446', 'IF', yearPeriod(2026, '2026-05'))).toEqual({
-      view: 'list',
-      grain: 'direct_acquisitions',
-      authority_cui: '4364446',
-      supplierCounty: 'IF',
-      dateFrom: '2026-01-01',
-      dateTo: '2026-05-31',
-    })
-    expect(supplierRecordsSearch('9813902', yearPeriod(2026, '2026-05'), 'contract')).toMatchObject({ supplier_cui: '9813902', dateFrom: '2026-01-01', dateTo: '2026-05-31' })
-    expect(supplierRecordsSearch('9813902', null, 'contract')).not.toHaveProperty('year')
-    expect(supplierCountySearch('9813902', 'B', yearPeriod(2024, null), 'direct')).toMatchObject({ year: 2024, buyerCounty: 'B' })
+    expect(buyerRecordsSearch('4364446', yearPeriod(2025, null), 'direct')).toEqual({ cumparator: 4364446, perioada: 2025, dupa: 'inregistrari' })
+    expect(supplierRecordsSearch('9813902', yearPeriod(2026, '2026-05'), 'contract')).toEqual({ tip: 'contracte', furnizor: 9813902, perioada: '2026-01..2026-05', dupa: 'inregistrari' })
+    expect(supplierCountySearch('9813902', 'B', yearPeriod(2024, null), 'direct')).toEqual({ furnizor: 9813902, judet: 'B', perioada: 2024, dupa: 'inregistrari' })
     // The last twelve months by their months, across the two years.
-    expect(buyerRecordsSearch('4364446', recentPeriod('2026-05'), 'contract')).toMatchObject({ dateFrom: '2025-06-01', dateTo: '2026-05-31' })
-    expect(buyerRecordsSearch('4364446', recentPeriod('2026-05'), 'contract')).not.toHaveProperty('year')
+    expect(buyerRecordsSearch('4364446', recentPeriod('2026-05'), 'contract')).toMatchObject({ perioada: '2025-06..2026-05' })
+  })
+
+  it('answers a county row by firm (a buyer’s own default), not by its records: a list cannot filter on the firm’s place', () => {
+    expect(buyerCountySearch('4364446', 'IF', yearPeriod(2026, '2026-05'))).toEqual({ cumparator: 4364446, judet_firma: 'IF', perioada: '2026-01..2026-05' })
+  })
+
+  it('opens every year of a party from 2019', () => {
+    const now = new Date('2026-09-29T12:00:00Z')
+    expect(allYears(now)).toBe('2019-01..2026-12')
+    expect(buyerAllRecordsSearch('4364446', 'contract', now)).toEqual({ tip: 'contracte', cumparator: 4364446, perioada: '2019-01..2026-12', dupa: 'inregistrari' })
+    expect(supplierRecordsSearch('9813902', null, 'direct', now)).toMatchObject({ perioada: '2019-01..2026-12' })
   })
 })
 
-describe('the explorer lists the front door opens', () => {
-  /** What the explorer keeps of a search: its own schema, parsed and cleaned. */
-  const kept = (search: Record<string, unknown>) => cleanProcurementHubSearch(parseProcurementHubSearch(search))
+describe('the analytics answers the front door opens', () => {
+  /** What the analytics page reads back of an address: every link is one it writes itself. */
+  const read = (search: Record<string, unknown>) => searchOf(queryOf(Object.fromEntries(Object.entries(search).map(([key, value]) => [key, String(value)]))))
 
-  it('keep the population filter each link names, so a list counts what its row or card counts', () => {
+  it('keep the population each link names, so an answer counts what its row or card counts', () => {
     const { awards, frameworks, rankings } = startSearches(2025)
-    expect(kept(awards)).toMatchObject({ view: 'list', record_kind: ['purchases'], year: 2025 })
-    expect(kept(frameworks)).toMatchObject({ view: 'list', record_kind: ['frameworks'], year: 2025 })
-    expect(kept(rankings)).toMatchObject({ view: 'rankings' })
-    expect(kept(countyExplorerSearch('contracte', 'CJ', 2025))).toMatchObject({ view: 'list', record_kind: ['purchases'], buyerCounty: 'CJ', year: 2025 })
-    expect(kept(countyExplorerSearch('lei', 'CJ', 2025))).toMatchObject({ view: 'list', grain: 'direct_acquisitions', buyerCounty: 'CJ', year: 2025 })
+    expect(read(awards)).toEqual({ tip: 'contracte', perioada: '2025', dupa: 'inregistrari' })
+    expect(read(frameworks)).toEqual({ tip: 'acorduri', perioada: '2025', dupa: 'inregistrari' })
+    expect(rankings).toEqual({})
+    expect(read(countyRecordsSearch('contracte', 'CJ', 2025))).toEqual({ tip: 'contracte', judet: 'CJ', perioada: '2025', dupa: 'inregistrari' })
+    expect(read(countyRecordsSearch('lei', 'CJ', 2025))).toEqual({ judet: 'CJ', perioada: '2025', dupa: 'inregistrari' })
   })
 })

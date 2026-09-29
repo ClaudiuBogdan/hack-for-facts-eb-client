@@ -4,7 +4,7 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import { countyName } from '../../lib/buyer-text'
 import { contractsCount, percentText } from '../../lib/home-format'
-import type { ExplorerSearch } from '../../lib/home-links'
+import type { AnalyticsUrlSearch } from '../../lib/analytics-model'
 import { isUnpublishedProcedure, procedureLabel } from '../../lib/home-model'
 import type { CountyFigureRow, ProcedureCountRow } from '../../lib/profile-model'
 
@@ -40,8 +40,8 @@ export function CountyRows({
   /** The page's own county, marked. */
   readonly home: string | null
   readonly homeLabel: string
-  /** The explorer's list of exactly what a row counts; rows are not links without it. */
-  readonly searchOf?: (code: string) => ExplorerSearch
+  /** The analytics page's answer for exactly what a row counts; rows are not links without it. */
+  readonly searchOf?: (code: string) => AnalyticsUrlSearch
   readonly empty: string
   readonly limit?: number
   readonly className?: string
@@ -76,7 +76,7 @@ export function CountyRows({
         return (
           <li key={row.code}>
             {searchOf ? (
-              <Link to="/procurement/search" search={searchOf(row.code)} className={cn(ROW, 'py-2.5 transition-colors hover:bg-muted/40 focus-visible:bg-muted/40')}>
+              <Link to="/procurement/analytics" search={searchOf(row.code)} className={cn(ROW, 'py-2.5 transition-colors hover:bg-muted/40 focus-visible:bg-muted/40')}>
                 {body}
               </Link>
             ) : (

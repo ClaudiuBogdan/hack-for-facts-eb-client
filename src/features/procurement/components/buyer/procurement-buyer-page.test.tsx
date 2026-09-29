@@ -146,13 +146,13 @@ describe('ProcurementBuyerPage', () => {
     expect(document.body.textContent).not.toContain('față de 2025')
     // Months of the year over a whole year's residents: said as such.
     expect(document.body.textContent).toContain('achiziții directe, până în mai 2026')
-    // The explorer opens on the page's months, never the calendar year.
+    // The analytics page opens on the page's months, never the calendar year.
     const searches = screen
       .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/procurement/search')
+      .filter((link) => link.getAttribute('href') === '/procurement/analytics')
       .map((link) => JSON.parse(link.getAttribute('data-search') ?? '{}') as Record<string, unknown>)
-    expect(searches.some((search) => search.year === 2026)).toBe(false)
-    expect(searches.filter((search) => search.dateTo === '2026-05-31').length).toBeGreaterThan(1)
+    expect(searches.some((search) => search.perioada === 2026)).toBe(false)
+    expect(searches.filter((search) => search.perioada === '2026-01..2026-05').length).toBeGreaterThan(1)
   })
 
   it('picks the period from the head’s list: the last twelve months first, then the years, the year in progress marked', async () => {
@@ -194,26 +194,21 @@ describe('ProcurementBuyerPage', () => {
     expect(strip.getAllByRole('button').map((button) => button.getAttribute('aria-label')?.split(':')[0])).toHaveLength(12)
     expect(document.getElementById('cand')?.textContent).toContain('20252026')
     expect(document.getElementById('cand')?.textContent).toContain('Decembrie a adus')
-    // The explorer and the other pages open on the same months.
+    // The analytics page and the other pages open on the same months.
     const searches = screen
       .getAllByRole('link')
-      .filter((link) => link.getAttribute('href') === '/procurement/search')
+      .filter((link) => link.getAttribute('href') === '/procurement/analytics')
       .map((link) => JSON.parse(link.getAttribute('data-search') ?? '{}') as Record<string, unknown>)
-    expect(searches.filter((search) => search.dateFrom === '2025-06-01' && search.dateTo === '2026-05-31').length).toBeGreaterThan(1)
+    expect(searches.filter((search) => search.perioada === '2025-06..2026-05').length).toBeGreaterThan(1)
     const firm = screen.getAllByRole('link').find((link) => link.getAttribute('href')?.startsWith('/procurement/suppliers/'))!
     expect(JSON.parse(firm.getAttribute('data-search') ?? '{}')).toEqual({})
   })
 
-  it('opens each county row on exactly the purchases it counts', () => {
+  it('opens each county row on exactly the purchases it counts, by firm', () => {
     render(page())
     const county = within(document.getElementById('de-unde')!).getAllByRole('link')[0]!
-    expect(JSON.parse(county.getAttribute('data-search') ?? '{}')).toEqual({
-      view: 'list',
-      grain: 'direct_acquisitions',
-      authority_cui: '4364446',
-      supplierCounty: 'IF',
-      year: 2025,
-    })
+    expect(county.getAttribute('href')).toBe('/procurement/analytics')
+    expect(JSON.parse(county.getAttribute('data-search') ?? '{}')).toEqual({ cumparator: 4364446, judet_firma: 'IF', perioada: 2025 })
   })
 
   it('says a year with no record once, instead of seven empty bands', () => {

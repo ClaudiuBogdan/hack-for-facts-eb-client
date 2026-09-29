@@ -177,12 +177,9 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
 
           <div>
             <Link
-              to="/procurement/search"
-              search={
-                page.level === 'division'
-                  ? { view: 'list' as const, cpv_division: page.code }
-                  : { view: 'list' as const, cpv: page.code }
-              }
+              to="/procurement/analytics"
+              // Its prefix is the category's level: two digits a division, eight the code.
+              search={analyticsSearch({ tip: 'contracte', cpv: page.code, perioada: allYears(), dupa: 'inregistrari' })}
               className={procurementUnderlineLinkClassName}
             >
               <Trans>Search all records in this category</Trans>
@@ -209,3 +206,4 @@ export function CpvCategoryPage({ code, initialPage, className }: Props) {
   )
 }
 import { useState } from 'react'
+import { allYears, analyticsSearch } from '../lib/home-links'

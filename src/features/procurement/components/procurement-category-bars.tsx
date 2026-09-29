@@ -13,7 +13,6 @@ import {
 import { cn } from '@/lib/utils'
 import type { CategoryRow } from '@/schemas/procurement'
 import {
-  cleanProcurementHubSearch,
   type ProcurementHubMeasure,
   type ProcurementRankDim,
   type ProcurementRankBy,
@@ -28,6 +27,7 @@ import {
   procurementSectionHeaderClassName,
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
+import { analyticsSearchFromExplorer } from '../lib/analytics-legacy'
 
 /**
  * Overview CPV glance deep-links to Rankings. Other surfaces keep a local sheet.
@@ -335,8 +335,9 @@ export function ProcurementCategoryBars({
           {rows.length > 0 ? (
             rankingsDim ? (
               <Link
-                to="/procurement/search"
-                search={cleanProcurementHubSearch({
+                to="/procurement/analytics"
+                // The ranking in the analytics page's words: its scope, by the same axis and measure.
+                search={analyticsSearchFromExplorer({
                   ...(rankingsSearch ??
                     (currentSearch as Record<string, unknown>)),
                   view: 'rankings',

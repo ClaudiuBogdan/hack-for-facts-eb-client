@@ -17,7 +17,8 @@ import { categoryOfCode } from '../../lib/home-categories'
 import { contractsCount, countText, moneyFigure, moneyText, monthText, percentText } from '../../lib/home-format'
 import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, perResidents, procedureLabel, type NationalRead, type RecentRecord } from '../../lib/home-model'
 import { countyLede, directAverageLede, growthLede, unpublishedLede } from '../../lib/home-text'
-import { countyExplorerSearch, startSearches, type ExplorerSearch } from '../../lib/home-links'
+import type { AnalyticsUrlSearch } from '../../lib/analytics-model'
+import { countyRecordsSearch, startSearches } from '../../lib/home-links'
 import { HomeBand, ProvisionalMark } from './home-chrome'
 import { RecordRows } from './home-rows'
 
@@ -90,7 +91,7 @@ export function HomeCountiesBand({
     [indicator, year, i18n],
   )
   // A county opens exactly the population it counts: its direct purchases, or its contract awards (frameworks apart).
-  const countyLink = (code: string): LinkOptions => ({ to: '/procurement/search', search: countyExplorerSearch(indicator, code, year) })
+  const countyLink = (code: string): LinkOptions => ({ to: '/procurement/analytics', search: countyRecordsSearch(indicator, code, year) })
   // A rate needs its denominator from the same year (DESIGN.md log, 2026-09-25): until the population read catches up, no map.
   const sameYear = POPULATION_YEAR === year
   return (
@@ -385,7 +386,7 @@ export function HomeRecentBand({
 
 // ─────────────────────────────────────────────────────── ways in ──
 
-/** Three ways into the explorer; each card opens exactly the list it names. */
+/** Three ways into the analytics page; each card opens exactly the answer it names. */
 export function HomeStartBand({ year }: { readonly year: number }) {
   const searches = startSearches(year)
   return (
@@ -416,10 +417,10 @@ export function HomeStartBand({ year }: { readonly year: number }) {
   )
 }
 
-function StartCard({ search, title, body }: { readonly search: ExplorerSearch; readonly title: ReactNode; readonly body: ReactNode }) {
+function StartCard({ search, title, body }: { readonly search: AnalyticsUrlSearch; readonly title: ReactNode; readonly body: ReactNode }) {
   return (
     <li>
-      <Link to="/procurement/search" search={search} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
+      <Link to="/procurement/analytics" search={search} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
         <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
         <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
       </Link>

@@ -39,8 +39,8 @@ import { PartyRows } from './home-rows'
  * language, with the company profile's pinned bar of numbered bands. Search
  * in the hero with the largest buyers beside it, the four figures, then one
  * band per question a reader brings: what the money buys, who gets it, where,
- * since when, how, the newest large records, and three ways into the explorer
- * (`/procurement/search`).
+ * since when, how, the newest large records, and three ways into the
+ * analytics page (`/procurement/analytics`).
  *
  * The national picture, the categories and the year's largest contracts are
  * read on the server and seed the page's queries; the newest month's records
@@ -66,7 +66,7 @@ function startArrivalEffects(block: Element, delay: number) {
 
 export function ProcurementHomePage({ search, initial }: { readonly search: ProcurementHomeSearch; readonly initial: ProcurementHomeInitialData }) {
   // Most of this page's links open the explorer: have its code before the tap.
-  useWarmRouteCode('/procurement/search')
+  useWarmRouteCode('/procurement/analytics')
   const { i18n } = useLingui()
   const navigate = useNavigate({ from: '/procurement/' })
   const rootRef = useRef<HTMLDivElement>(null)
@@ -138,10 +138,10 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
                   <Trans>Sau mergi direct la</Trans>
                 </MonoLabel>
                 <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                  <Link to="/procurement/search" search={{ view: 'list', grain: 'contracts' }} className={HUB_SHORTCUT_LINK_CLASS}>
+                  <Link to="/procurement/analytics" search={{ tip: 'contracte', dupa: 'inregistrari' }} className={HUB_SHORTCUT_LINK_CLASS}>
                     <Trans>Toate contractele</Trans>
                   </Link>
-                  <Link to="/procurement/search" search={{ view: 'rankings' }} className={HUB_SHORTCUT_LINK_CLASS}>
+                  <Link to="/procurement/analytics" className={HUB_SHORTCUT_LINK_CLASS}>
                     <Trans>Clasamente</Trans>
                   </Link>
                 </span>

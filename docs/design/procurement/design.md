@@ -2376,3 +2376,96 @@ The router resets the scroll on every navigation, and every change of
 question is one. `useAnalyticsQuery`'s move now keeps the scroll
 (`resetScroll: false`): the measure, a year, a tab, a filter or a drill all
 change the answer in place.
+
+### 18.16 Promoted to `/procurement/analytics` (29 September 2026)
+
+The owner: „We have a good prototype … go ahead with the implementation."
+The `propozitie` page is the real page at `/procurement/analytics`. The
+prototype stays at `/development/procurement/analytics` as the record of the
+design.
+
+- **Where the code lives.** It follows the profile pages' split:
+  - `lib/analytics-model.ts` (the query, its address), `analytics-text.ts`,
+    `analytics-questions.ts`, `analytics-keys.ts` (query keys) and
+    `analytics-legacy.ts` (the explorer's addresses);
+  - `api/procurement-analytics-api.ts` (the reads, and the plan that names
+    them) and `api/procurement-analytics-ssr.ts` (the server's reads);
+  - `hooks/use-procurement-analytics.ts`;
+  - `components/analytics/`: the page, head, answer, years, filters and
+    controls, with the pure helpers in `analytics-view.ts`.
+- **Read on the server.** The route's loader reads the cutoff, then the
+  question's reads side by side: the figures, the concentration, the
+  ranking, the series or the records' first page, the years, and the names.
+  Each read has a 3-second deadline and is kept ten minutes per question.
+  The reads seed the page's queries under the keys the browser plans
+  (`planAnswer`), so the document carries the answer and the browser reads
+  nothing more on load. A read past its deadline is left to the browser,
+  and that render goes out `no-store`. A slow list is better read under the
+  painted page than held against the whole document.
+- **A clean address.** The router quotes a string that parses as JSON
+  (`perioada=%222024%22`), so a digits-only value travels as a number:
+  `perioada=2024`, `cumparator=4305857`. A CPV code with a leading zero stays
+  a string, which is not JSON and so stays bare.
+- **The explorer's addresses** (`/procurement/search`, the old
+  `/procurement/analytics`, `/procurement?view=…`, `/achizitii/cautare`)
+  redirect with the same question in this page's words:
+  - the grain and the record kind give the population (the explorer's
+    default was the contracts);
+  - the list gives the records, a ranking its axis;
+  - it keeps the parties, the category at its level, the places, the
+    period (a year, or two days' months), the title's words and the value
+    range.
+  - What the page has no filter for stays behind: the status, the value's
+    quality, the source, the value basis, the map, the order and the page.
+  - The redirect is permanent and carries the site's own keys (the
+    language, the currency).
+- **The links into it.** The profile pages, the front door (the shortcuts,
+  the county map, the three ways in), the contract and direct-purchase pages'
+  pair links, the category page, the procedure breadcrumb, the methodology
+  page, the entity page and the authority slice now write this page's
+  address. A profile's county row opens by firm, the institution's own
+  default, not by records: a list cannot filter on the firm's place.
+- **In both languages.** The page's 256 strings have English in `en` and
+  their own words in `ro` (an empty `ro` renders the English).
+
+The old explorer's components (the overview with the buyer map, the list,
+the rankings) are unreachable now and still in the tree. Deleting them, and
+the map with them, is the owner's call.
+
+**Review** (Opus 5.5, xhigh), with its fixes:
+
+- **The pair links.** The contract and direct-purchase pages said „Toate
+  cele N dintre ele", but N counts every record kind and status, with no
+  upper month. The list the link opens is one population, three statuses,
+  and stops at the cutoff. The links now open the sheet's own population
+  (awards, or frameworks) and say „Toate contractele / acordurile-cadru /
+  achizițiile dintre ele", with no count.
+- **A value the page cannot read is kept.** A link or a redirect used to
+  drop such a value (a foreign fiscal code for a firm, a month before 2007),
+  so the page answered wider in silence. `linkSearchOf` keeps it as it came,
+  and the page's ⚠ says it could not use it.
+- **Explorer detection.** One stray explorer key (`page=2`) on the page's
+  own address rebuilt the question from the explorer's keys, with a 301. An
+  address with any of the page's own keys is now answered as it is.
+- **The legacy mapping.** `period=all` is every year. The legacy
+  `county`/`region`, which the explorer read and ignored, stay behind.
+  `vbasis=ceiling` is the framework agreements.
+- **The server read.** It has one 3.5-second budget for all its reads,
+  where it had a deadline per read, sequential stages that could reach about
+  11 s, and a counties read with no deadline at all. The records' first page
+  no longer decides whether a render may be kept: a wide list is often
+  slower than the budget.
+- **The year of the keys.** The server's year goes to the browser, so its
+  keys hold around a new year.
+- **Smaller fixes:**
+  - the category page's „all records" link runs every year;
+  - the procedure breadcrumb no longer links to a list that is gone;
+  - the multi-year ready questions run to the current year's end;
+  - the records' „Data" header uses the `day` context;
+  - the share link no longer carries the prototype's parameters.
+- **Left as is.** A seeded query counts as fresh when it mounts, even when
+  Back returns to a server-rendered question later. The data changes daily
+  at most, and the front door makes the same choice.
+- **Not this change's.** Server rendering with the shared Lingui instance
+  can mix languages under concurrent requests. `head` is protected; the
+  body is not, on every page with a blocking loader.

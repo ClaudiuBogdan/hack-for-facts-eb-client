@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { contractContextGapOf, linkYearOf, type ContractSheet, type CtContext } from '../../lib/contract-model'
 import { buyerYearText, directText, historyText, sellerYearText, yearFigures } from '../../lib/contract-text'
 import { aboutText, contextYearText, dayShort, leiShort } from '../../lib/direct-purchase-text'
-import { DIRECT_COMPARABLE_FROM } from '../../lib/home-model'
+import { allYears, analyticsSearch } from '../../lib/home-links'
 import { PartyName } from '../direct-purchase/direct-purchase-head'
 import { CONTEXT_TINT } from '../direct-purchase/direct-purchase-style'
 
@@ -216,12 +216,12 @@ function ContextBody({ sheet, context }: { readonly sheet: ContractSheet; readon
             </div>
             {sheet.authority.cui && sheet.supplier.cui && records !== null && records > context.around.length ? (
               <Link
-                to="/procurement/search"
-                // From 2019, as `records` counts them: the list opens on what the link says.
-                search={{ view: 'list', grain: 'contracts', authority_cui: sheet.authority.cui, supplier_cui: sheet.supplier.cui, dateFrom: `${DIRECT_COMPARABLE_FROM}-01-01` }}
+                to="/procurement/analytics"
+                // The sheet's own population, from 2019: the list above mixes the awards and the frameworks, the page answers one at a time.
+                search={analyticsSearch({ tip: isFramework ? 'acorduri' : 'contracte', cumparator: sheet.authority.cui, furnizor: sheet.supplier.cui, perioada: allYears(), dupa: 'inregistrari' })}
                 className={cn(OUT_LINK, 'mt-3 text-sm')}
               >
-                <Trans>Toate cele {records} dintre ele</Trans>
+                {isFramework ? <Trans>Toate acordurile-cadru dintre ele</Trans> : <Trans>Toate contractele dintre ele</Trans>}
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
               </Link>
             ) : null}

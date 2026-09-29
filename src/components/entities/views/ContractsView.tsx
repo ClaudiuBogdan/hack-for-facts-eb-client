@@ -8,6 +8,7 @@ import {
   procurementUnderlineLinkClassName,
 } from '@/features/procurement/lib/procurement-theme'
 import { cn } from '@/lib/utils'
+import { allYears, analyticsSearch } from '@/features/procurement/lib/home-links'
 
 type Props = {
   readonly entity: EntityDetailsData | null | undefined
@@ -51,8 +52,8 @@ export function ContractsView({ entity }: Readonly<Props>) {
 
       <p className="text-sm">
         <Link
-          to="/procurement/search"
-          search={{ view: 'list', authority_cui: cui }}
+          to="/procurement/analytics"
+          search={analyticsSearch({ tip: 'contracte', cumparator: cui, perioada: allYears(), dupa: 'inregistrari' })}
           className={procurementUnderlineLinkClassName}
         >
           <Trans>Search all records for this institution</Trans>

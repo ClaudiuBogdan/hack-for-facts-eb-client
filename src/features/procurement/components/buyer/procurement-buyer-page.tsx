@@ -71,7 +71,7 @@ function buyerFacts(profile: BuyerProfile): HubFact[] {
   const year = periodText(period)
   const plain = (label: ReactNode, className: string) => <span className={className}>{label}</span>
   const records = (grain: 'direct' | 'contract') => (label: ReactNode, className: string) => (
-    <Link to="/procurement/search" search={buyerRecordsSearch(identity.cui, period, grain)} className={className}>
+    <Link to="/procurement/analytics" search={buyerRecordsSearch(identity.cui, period, grain)} className={className}>
       {label}
     </Link>
   )

@@ -35,6 +35,7 @@ import {
   ProcurementAnalysisGrainToggle,
   type FlowAnalysisGrain,
 } from './procurement-analysis-grain-toggle'
+import { allYears, analyticsSearch } from '../lib/home-links'
 
 type Props = {
   readonly authorityCui: string
@@ -381,8 +382,8 @@ function SliceContent({
 
       <div className="flex flex-wrap gap-x-4 gap-y-2">
         <Link
-          to="/procurement/search"
-          search={{ view: 'list', authority_cui: slice.authorityCui }}
+          to="/procurement/analytics"
+          search={analyticsSearch({ tip: 'contracte', cumparator: slice.authorityCui, perioada: allYears(), dupa: 'inregistrari' })}
           className={procurementUnderlineLinkClassName}
         >
           <Trans>Search all records for this institution</Trans>

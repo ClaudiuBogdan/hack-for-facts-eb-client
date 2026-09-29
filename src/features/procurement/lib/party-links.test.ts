@@ -8,6 +8,7 @@ import {
   partyProfileLink,
   partyRoute,
 } from './party-links'
+import { allYears } from './home-links'
 
 describe('party links', () => {
   it('labels fall back displayName → name → cui → unknown', () => {
@@ -71,7 +72,7 @@ describe('party links', () => {
     )
   })
 
-  it('builds pair search links sorted by value', () => {
+  it('opens the pair’s records on the analytics page, every year', () => {
     expect(
       partyPairSearchLink({
         pairScope: { kind: 'authority', cui: ' 111 ' },
@@ -80,14 +81,8 @@ describe('party links', () => {
         grain: 'direct_acquisition',
       }),
     ).toEqual({
-      to: '/procurement/search',
-      search: {
-        view: 'list',
-        authority_cui: '111',
-        supplier_cui: '222',
-        grain: 'direct_acquisitions',
-        sort: 'value_desc',
-      },
+      to: '/procurement/analytics',
+      search: { cumparator: 111, furnizor: 222, perioada: allYears(), dupa: 'inregistrari' },
     })
 
     expect(
@@ -98,14 +93,8 @@ describe('party links', () => {
         grain: 'contract',
       }),
     ).toEqual({
-      to: '/procurement/search',
-      search: {
-        view: 'list',
-        authority_cui: '111',
-        supplier_cui: '222',
-        grain: 'contracts',
-        sort: 'value_desc',
-      },
+      to: '/procurement/analytics',
+      search: { tip: 'contracte', cumparator: 111, furnizor: 222, perioada: allYears(), dupa: 'inregistrari' },
     })
   })
 

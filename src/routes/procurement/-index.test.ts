@@ -15,7 +15,7 @@ const route = Route as unknown as {
 }
 
 describe('/procurement', () => {
-  it('sends an old explorer link to /procurement/search with what it carried, less its own choices', () => {
+  it('sends an old explorer link to /procurement/analytics, its question in the page’s words, with what else it carried, less its own choices', () => {
     let thrown: unknown
     try {
       route.beforeLoad({ location: { search: { view: 'list', q: 'spital', lang: 'en', cumparatori: 'contracte' } } })
@@ -24,7 +24,7 @@ describe('/procurement', () => {
     }
     expect(thrown).toEqual({
       kind: 'redirect',
-      options: { to: '/procurement/search', search: { view: 'list', q: 'spital', lang: 'en' }, replace: true },
+      options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte', titlu: 'spital' }, replace: true },
     })
   })
 

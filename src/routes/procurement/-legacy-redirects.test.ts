@@ -75,7 +75,7 @@ describe('legacy achizitii redirects', () => {
 
   it.each([
     ['index', '/procurement', undefined],
-    ['search', '/procurement/search', undefined],
+    ['search', '/procurement/analytics', undefined],
     ['category', '/procurement/categories/$code', { code: '45' }],
     ['contract', '/procurement/contracts/$id', { id: 'contract-key-001' }],
     ['procedure', '/procurement/procedures/$id', { id: 'proc-001' }],
@@ -95,6 +95,7 @@ describe('legacy achizitii redirects', () => {
         route.beforeLoad({
           params: params ?? {},
           search,
+          location: { search },
         } as never)
       } catch (error) {
         thrown = error
@@ -103,10 +104,8 @@ describe('legacy achizitii redirects', () => {
       expect(redirectMock).toHaveBeenCalledWith({
         to: expectedTo,
         ...(params ? { params } : {}),
-        search:
-          legacyRoute === 'search'
-            ? expect.objectContaining({ view: 'list', q: 'spital', page: 2 })
-            : search,
+        // The explorer's list is the analytics page's records: the title's words open on them, the page number stays behind.
+        search: legacyRoute === 'search' ? { tip: 'contracte', titlu: 'spital' } : search,
         replace: true,
         statusCode: 301,
       })
@@ -115,10 +114,7 @@ describe('legacy achizitii redirects', () => {
         options: {
           to: expectedTo,
           ...(params ? { params } : {}),
-          search:
-            legacyRoute === 'search'
-              ? expect.objectContaining({ view: 'list', q: 'spital', page: 2 })
-              : search,
+          search: legacyRoute === 'search' ? { tip: 'contracte', titlu: 'spital' } : search,
           replace: true,
           statusCode: 301,
         },

@@ -345,7 +345,7 @@ export function BuyerLargestBand({
             <span />
           )}
           <Link
-            to="/procurement/search"
+            to="/procurement/analytics"
             search={buyerRecordsSearch(profile.identity.cui, profile.period, grain)}
             className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0"
           >

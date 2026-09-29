@@ -13,7 +13,6 @@ import {
 import { cn } from '@/lib/utils'
 import type { TopPartyRow } from '@/schemas/procurement'
 import {
-  cleanProcurementHubSearch,
   type ProcurementHubMeasure,
   type ProcurementRankDim,
   type ProcurementRankBy,
@@ -35,6 +34,7 @@ import {
   procurementSectionHeaderClassName,
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
+import { analyticsSearchFromExplorer } from '../lib/analytics-legacy'
 
 /**
  * Overview glance card deep-links to Rankings. Slice / territory / CPV pages
@@ -210,8 +210,9 @@ export function ProcurementPartyRanking({
           {rows.length > 0 ? (
             rankingsDim ? (
               <Link
-                to="/procurement/search"
-                search={cleanProcurementHubSearch({
+                to="/procurement/analytics"
+                // The ranking in the analytics page's words: its scope, by the same axis and measure.
+                search={analyticsSearchFromExplorer({
                   ...(rankingsSearch ??
                     (currentSearch as Record<string, unknown>)),
                   view: 'rankings',
