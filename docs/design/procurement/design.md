@@ -2279,10 +2279,14 @@ geometry, part for part:
   marker, as the profile's ways out; the crux where the head's bottom rule
   meets the frame.
 - **The pinned bar** (`PopulationNav`, in `HomeSectionNav`'s shape): the
-  question on the left from `md`, and the three populations numbered at the
-  right — „01 Achiziții directe · 02 Contracte atribuite · 03 Acorduri-cadru"
-  — the one read underlined; on a phone it scrolls, as the profiles' bar
-  does.
+  question on the left from `md`, and the three populations at the right —
+  „Achiziții directe · Contracte atribuite · Acorduri-cadru" — the one read
+  underlined; on a phone it scrolls, as the profiles' bar does. Not
+  numbered (the owner: „the numbers don't make sense here"): the profiles
+  number a sequence of bands, these are three choices — each carries an
+  icon instead (the owner's suggestion): a cart for direct purchases, and
+  the contract page's own marks, `FileSignature` for contracts and `Layers`
+  for frameworks; the active one's in the navy accent.
 - **The figures band** (`HubFiguresBand`, as the profiles use it): the value
   large with its unit apart („15,3 mld. lei"), the mono term under it, the
   change as the cell's note.

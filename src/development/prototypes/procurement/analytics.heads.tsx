@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { ArrowLeft, Plus, Search, X } from 'lucide-react'
+import { ArrowLeft, FileSignature, Layers, Plus, Search, ShoppingCart, X, type LucideIcon } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
@@ -24,7 +24,7 @@ import { countText, headline, headlineParts, moneyText, monthsText, populationLa
  *
  * - the sentence, on the profiles' grid: the head band (the period at the
  *   top right, the question as the headline — a filter's phrase opens the
- *   panel, its ✕ drops it), the populations numbered in the pinned bar
+ *   panel, its ✕ drops it), the populations in the pinned bar
  *   under it, the figures in the profiles' band.
  * - the bar: one quiet bar — the populations as tabs, the period, one search
  *   field holding the filters as chips — and figures that carry their own
@@ -32,6 +32,8 @@ import { countText, headline, headlineParts, moneyText, monthsText, populationLa
  */
 const PHRASE = 'text-left underline decoration-muted-foreground/35 decoration-dotted decoration-2 underline-offset-[0.18em] transition-colors hover:decoration-foreground'
 const POPULATION_ORDER: readonly PopulationId[] = ['directe', 'contracte', 'acorduri']
+/** Each population's mark: a purchase from the catalogue, a signed contract, a framework's layers (the contract page's own two). */
+const POPULATION_ICON: Readonly<Record<PopulationId, LucideIcon>> = { directe: ShoppingCart, contracte: FileSignature, acorduri: Layers }
 
 function withPopulation(query: Query, tip: PopulationId): Query {
   return repaired({ ...query, tip, masura: POPULATIONS[tip].defaultMeasure })
@@ -199,7 +201,8 @@ export function GridHead({
 /**
  * The records the page reads, as the profiles' pinned bar lays out their
  * bands: the question on the left (from a wide screen), the three
- * populations numbered at the right; the one read is marked.
+ * populations at the right, each with its mark instead of a number (they
+ * are choices, not a sequence); the one read is underlined.
  */
 export function PopulationNav({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   return (
@@ -207,8 +210,9 @@ export function PopulationNav({ query, namer, onChange }: { readonly query: Quer
       <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
         <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-md">{headline(query, namer)}</span>
         <ol className="flex shrink-0 gap-4 sm:gap-6 md:ml-auto">
-          {POPULATION_ORDER.map((tip, position) => {
+          {POPULATION_ORDER.map((tip) => {
             const active = query.tip === tip
+            const Icon = POPULATION_ICON[tip]
             return (
               <li key={tip}>
                 <button
@@ -216,13 +220,11 @@ export function PopulationNav({ query, namer, onChange }: { readonly query: Quer
                   aria-pressed={active}
                   onClick={() => onChange(withPopulation(query, tip))}
                   className={cn(
-                    '-mb-px inline-flex min-h-11 items-center gap-1.5 border-b-2 text-sm transition-colors',
+                    '-mb-px inline-flex min-h-11 items-center gap-2 border-b-2 text-sm transition-colors',
                     active ? 'border-primary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
-                  <MonoLabel className="text-primary" aria-hidden="true">
-                    {String(position + 1).padStart(2, '0')}
-                  </MonoLabel>
+                  <Icon className={cn('size-4 shrink-0', active && 'text-primary')} aria-hidden="true" />
                   {populationLabel(tip)}
                 </button>
               </li>

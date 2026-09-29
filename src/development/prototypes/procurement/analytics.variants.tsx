@@ -144,8 +144,8 @@ export function AnalyticsCurat() {
  * grid: the head band (the way back, the period and how recent its data is;
  * the question as the headline, a filter's phrase opening the panel, its ✕
  * dropping it; what adds to the query and the caveats' marker), the cross on
- * its bottom rule, the pinned bar with the three populations numbered as the
- * profiles number their bands, the figures band; then the answer, the years
+ * its bottom rule, the pinned bar with the three populations (the profiles'
+ * bar, without its numbers: these are choices, not bands), the figures band; then the answer, the years
  * and the records in bands of the same frame, the source at the foot.
  */
 export function AnalyticsPropozitie() {
