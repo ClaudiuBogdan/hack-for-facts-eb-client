@@ -226,49 +226,6 @@ export function CleanTime({ query, answer, onChange, className }: { readonly que
   )
 }
 
-/** The selection's years since 2019, small, the window's marked; a click takes the year. */
-export function CleanYears({ query, answer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly className?: string }) {
-  const points = answer.years.data
-  if (!points || points.length === 0 || (query.dupa.axis === 'timp' && query.dupa.bucket === 'year')) return null
-  const population = POPULATIONS[query.tip]
-  const byValue = query.masura !== 'numar' && population.money !== 'none'
-  const figure = (point: Point) => (byValue ? point.money : point.count) ?? 0
-  const max = Math.max(1, ...points.map(figure))
-  const cutoff = answer.cutoff?.[population.cutoff] ?? null
-  const split = population.kindSplitUntil
-  const inWindow = (year: string) => answer.period !== null && answer.period.from.slice(0, 4) <= year && answer.period.to.slice(0, 4) >= year
-  return (
-    <figure className={cn('max-w-xl', className)}>
-      <ol className="flex h-14 items-end gap-1.5">
-        {points.map((point) => {
-          const dashed = (cutoff !== null && point.bucket === cutoff.slice(0, 4) && !cutoff.endsWith('-12')) || (split !== undefined && bucketStart(point.bucket) > split)
-          return (
-            <li key={point.bucket} className="flex h-full min-w-0 flex-1 flex-col justify-end">
-              <button
-                type="button"
-                onClick={() => onChange({ ...query, period: { kind: 'year', year: Number(point.bucket) } })}
-                className="flex h-full w-full flex-col justify-end"
-                aria-label={`${point.bucket}: ${byValue ? moneyText(point.money ?? 0) : countText(point.count ?? 0)}`}
-                title={`${point.bucket}: ${byValue ? moneyText(point.money ?? 0) : countText(point.count ?? 0)}`}
-              >
-                <span
-                  className={cn('block w-full', inWindow(point.bucket) ? 'bg-primary/80' : 'bg-primary/25', dashed && 'outline-dashed outline-1 -outline-offset-1 outline-primary/70')}
-                  style={{ height: `${Math.max((figure(point) / max) * 100, 3)}%` }}
-                />
-              </button>
-            </li>
-          )
-        })}
-      </ol>
-      <div className="mt-1 flex gap-1.5" aria-hidden="true">
-        {points.map((point) => (
-          <span key={point.bucket} className="min-w-0 flex-1 text-center font-mono text-[0.65rem] tabular-nums text-muted-foreground">{`'${point.bucket.slice(2)}`}</span>
-        ))}
-      </div>
-    </figure>
-  )
-}
-
 // ───────────────────────────────────────────────────────────── table ──
 
 function SortHead({ label, active, onClick, className }: { readonly label: string; readonly active: boolean; readonly onClick: (() => void) | null; readonly className?: string }) {

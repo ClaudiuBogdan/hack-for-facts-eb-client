@@ -2342,3 +2342,31 @@ Checked on the dev API: „laptop" and one institution's records (351, two
 pages), the national list (it answers within the 9-second deadline), the
 order by date (27 May 2026 first), a tab away and back; the table fits a
 390 px phone; unit tests cover the records' round trip and the title rule.
+
+### 18.15 The years in a band of their own (29 September 2026)
+
+The owner, on the years strip under the answer: polish it, „maybe add it in
+its own section, add tooltip". The strip (`CleanYears`, 56 px of unlabelled
+bars) is replaced by `YearsBand` (`analytics.years.tsx`), a band after the
+answer's, before the source line:
+
+- **Its head** on the grid: the span („2019–2026") as the kicker, „Pe ani",
+  and the page's measure toggle (Număr / Lei; none for frameworks), which
+  sets `masura` for the whole page.
+- **A bar a year with its figure on it**, in one unit said once above
+  („MLD. LEI, FĂRĂ TVA", „MII DE CONTRACTE ATRIBUITE"), so the bars read
+  without pointing. The years the page's window covers are solid, the rest
+  light. A year the data does not finish is dashed and says „până în mai"
+  under its label. So is a year whose sources mix, e.g. contracts from 2026.
+- **The tooltip**, on pointing or focus, gives the year's count, its lei
+  („fără TVA" or „provizoriu"), the change on the year before (only for
+  whole years of a population that compares), the kind-split note for mixed
+  years, and what a click does („Clic: doar 2024", or „Anul ales"). It sits
+  beside the column, at the top of the plot, and never covers its bar.
+- **A click takes the year** as the page's period. On a touch screen the
+  first tap shows the tooltip and the second takes the year.
+- Not shown when the answer is itself by year.
+
+The prototype's wrapper now clips its horizontal overflow (`overflow-x-clip`),
+as the profile pages' wrappers do. The crux marks overhang the frame by
+6 px, which scrolled a phone sideways.

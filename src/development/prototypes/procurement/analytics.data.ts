@@ -347,7 +347,7 @@ export interface Answer {
   readonly concentration: { readonly data: Concentration | null | undefined; readonly isError: boolean }
   readonly ranking: { readonly data: Ranking | undefined; readonly isError: boolean; readonly isFetching: boolean; readonly retry: () => void }
   readonly series: { readonly data: readonly Point[] | undefined; readonly isError: boolean; readonly retry: () => void }
-  readonly years: { readonly data: readonly Point[] | undefined; readonly isError: boolean }
+  readonly years: { readonly data: readonly Point[] | undefined; readonly isError: boolean; readonly retry: () => void }
   /** The reads it made, for „Cum am calculat". */
   readonly scopes: { readonly now: Scope | null; readonly years: Scope | null }
 }
@@ -411,7 +411,7 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
     concentration: { data: supplierFixed ? null : (concentration.data as Concentration | null | undefined), isError: concentration.isError },
     ranking: { data: ranking.data as Ranking | undefined, isError: ranking.isError, isFetching: ranking.isFetching, retry: () => void ranking.refetch() },
     series: { data: series.data as readonly Point[] | undefined, isError: series.isError, retry: () => void series.refetch() },
-    years: { data: years.data as readonly Point[] | undefined, isError: years.isError },
+    years: { data: years.data as readonly Point[] | undefined, isError: years.isError, retry: () => void years.refetch() },
     scopes: { now, years: yearsScope },
   }
 }

@@ -4,7 +4,8 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { searchOf, type Query } from './analytics.model'
 import { useAnswer } from './analytics.data'
 import { GroupBar, useAnalyticsQuery, useNamer } from './analytics.parts'
-import { CleanTable, CleanTime, CleanYears, RecordsTable, SourceLine } from './analytics.clean'
+import { CleanTable, CleanTime, RecordsTable, SourceLine } from './analytics.clean'
+import { YearsBand } from './analytics.years'
 import { FilterSheet } from './analytics.filters'
 import { GridFigures, GridHead, PopulationNav } from './analytics.heads'
 
@@ -13,7 +14,8 @@ const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
 
 function Shell({ children }: { readonly children: ReactNode }) {
   return (
-    <div className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+    // Clip, not hide: the crux marks overhang the frame, and a hidden overflow would unstick the bar.
+    <div className="relative w-full overflow-x-clip bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       {children}
     </div>
   )
@@ -63,9 +65,9 @@ export function AnalyticsPropozitie() {
           ) : (
             <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
           )}
-          <CleanYears query={query} answer={answer} onChange={move} className="mt-14" />
         </RuledFrame>
       </section>
+      <YearsBand query={query} answer={answer} onChange={move} />
       <RuledFrame className="py-8">
         <SourceLine query={query} answer={answer} />
       </RuledFrame>
