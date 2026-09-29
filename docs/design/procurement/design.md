@@ -1871,3 +1871,294 @@ contracte"; the export's quarter is said in the reader's language; the EU
 journal sentence is one message; a framework's description says so; a title
 that is the procedure's is marked; the shared page's contract types and
 branches are gone.
+
+## 18. The analytics page (prototyped 29 September 2026)
+
+`/procurement/search` becomes „Analize" at `/procurement/analytics`. The
+explorer it replaces has three tabs (overview, list, rankings), a filter
+sheet whose filters apply differently per tab („doar în listă", „nu în
+clasamente"), a grain toggle and a value-basis radio: powerful, but the
+reader must know the model first. The new page answers a question: one query
+in the URL, one answer, every part of the answer a way to the next question.
+Prototype: `/development/procurement/analytics` (`?v=raspuns|traseu|panou`),
+live on the dev API (build 12); the production database was not read. The
+brief was critiqued by Codex `gpt-6-astra` (xhigh) before the build.
+
+### 18.1 What the analysis API can answer (dev API, 2026-09-29)
+
+- **Six reads, 120–460 ms each, on ClickHouse:** `procurementStats`,
+  `procurementSeries` (month / quarter / year; sparse — a month with nothing
+  is missing, not zero), `procurementBreakdown` (17 dimensions, top ≤ 100 —
+  SIRUTA ≤ 3,300 — plus `other` and `unknown` buckets that add up to the
+  stats), `procurementFacets` (1–3 dimensions, explicit grain),
+  `procurementConcentration` (firms, top-1 and top-5 share, HHI) and
+  `procurementShare`. Names are separate: `organizationLabels` (≤ 250 CUIs),
+  `procurementCpvCodes` (≤ 200), `procurementCpvDivisions`; localities have
+  none (the page reads them from the map's UAT file, a county's own SIRUTA
+  from the County file).
+- **A scope is single values, ANDed:** grain, record kind, buyer, firm, one
+  CPV level (a division is 2 digits; a group, class, category or code is the
+  8-digit code), buyer and firm region / county / locality, procedure type
+  (contracts), `from`/`to` months or a `year`, a title substring (3–100
+  characters, diacritics not folded) and a value range (which keeps only the
+  valued rows). No multi-select, no exclusion, no offset past the top 100,
+  no two-dimensional breakdown, no median.
+- **Failure is all-or-nothing per request:** a breakdown on a dimension the
+  scope fixes errors, one invalid root nulls the whole response, and an
+  unused declared variable is a 400. The page sends each read as its own
+  request, so one failure leaves the rest of the answer.
+- **Populations.** Direct purchases: clean money without VAT, comparable
+  from 2019. Contracts: award rows and framework rows together; money
+  provisional (framework ceilings and call-offs; ~25.7% of rows valued);
+  counts are rows (an association member or a lot is a row); a firm's money
+  withholds association money (`valueWithheldAssociationSum`). Frameworks:
+  ceilings, not spend. Both populations are complete through May 2026
+  (`readCutoffOutcome`).
+- **The record kind splits only SEAP's export.** e-licitatie's award
+  notices carry no kind, so their frameworks and call-offs are awards
+  (scrapper `PROCUREMENT_SERVING_REVIEW_2026-08-05.md`), and from January
+  2026 the rows come mostly from e-licitatie: framework rows fall from
+  7–12k a month to 187 (January), 957, 1,987, 4,054, 2,085 (May), while award
+  rows rise to 6,875 (March) and 7,357 (April). The last 12 months showed
+  frameworks −46% and awards +15% against the 12 before — the sources
+  moving, not the buying. Contract coverage moves by year anyway (SEAP's
+  2019 bulk year missed; awards at 1.5–1.8k in January–February and
+  July–August 2025 against ~4.5k; `PUBLIC_CONTRACTS_TIME_COVERAGE_AUDIT.md`).
+- **Lists stay slow** (Postgres on dev, 0.1–15 s; no search engine):
+  `eq` filters, a direct-purchase list needs a party or a window of at most
+  366 days, firm-geography list filters fail (BAD_GATEWAY), `total` is null
+  past 10,000.
+
+### 18.2 The page
+
+**The query** (`analytics.model.ts`) is the page's whole state, in readable
+URL keys:
+
+| Part | URL | Values |
+|---|---|---|
+| Population | `tip` | `directe` (default) · `contracte` · `acorduri` |
+| Period | `perioada` | the last 12 months to the cutoff (default) · `2025` · `2024-01..2025-06` |
+| Who buys | `cumparator` · `regiune` · `judet` · `localitate` | a CUI · a region · a county code · a SIRUTA |
+| Who sells | `firma` · `regiune_firma` · `judet_firma` · `localitate_firma` | the same, for the firm's seat |
+| What | `cpv` | a digit prefix: 2 = division … 8 = code |
+| How | `procedura` | a SEAP procedure label (contracts, frameworks) |
+| Narrowers | `titlu` · `valoare` | a title substring · `min..max` lei |
+| Divided by | `dupa` | `institutie` `firma` `categorie` `grup` `clasa` `categorie5` `cod` `regiune` `judet` `localitate` `*_firma` `procedura` `an` `trimestru` `luna` |
+| Measure | `masura` | `numar` · `lei` · `locuitor` |
+
+A URL that asks for something the population cannot give is repaired, not
+refused: `dupa` on an axis the filters fix becomes the filters' natural
+next question (a county's institutions, an institution's firms, a
+category's next level); a procedure on direct purchases is dropped; lei on
+frameworks become a count; per resident outside buyer counties becomes lei.
+
+**The answer, in reading order:**
+
+1. **The controls:** population, period, the filters as removable chips,
+   „+ Filtru" (one omnibox: institutions and firms from the site search,
+   CPV by name or code, counties for either side, procedures, „titlul
+   conține", value from/to), „Întrebări", „Legătură" (the link with the
+   months frozen, so a shared answer does not move).
+2. **The readout:** the query as a Romanian sentence — „Achizițiile
+   directe ale instituțiilor din județul Cluj, pentru lucrări de
+   construcții, pe firme" — the months, and one gloss of the population
+   („Cumpărături din catalogul SEAP, fără licitație. Bani verificați, fără
+   TVA."). A gallery question's trap follows it.
+3. **Four figures:** records, lei (direct purchases; contracts only as a
+   marked provisional figure), firms, the top five firms' share of the
+   money. Direct purchases add the change against the same months a whole
+   number of years before (January–May 2026 against January–May 2025; the
+   last 12 months against the 12 before; none when that window reaches
+   before 2019), the months said („față de ianuarie 2025 – mai 2025");
+   contracts and frameworks show none (§18.1).
+4. **The answer:** tabs for the axis (Instituție · Firmă · Categorie · Unde
+   cumpără · De unde vând · În timp), the level (diviziuni → coduri;
+   regiuni → localități; ani → luni) and the measure. A ranked list with
+   fill bars, share, value and count, then „Restul" and the unknown, so it
+   adds up. A row click narrows to that row and opens the next level (a
+   firm → its categories, a year → its months); the arrow opens the
+   profile. By time: bars, the year or quarter still filling dashed and
+   said so („2026 (până în mai)").
+5. **Context:** „În această selecție" (the top of the other axes, each a
+   chip that narrows), the years since 2019, the records, the method.
+6. **Records on request** („Vezi înregistrările"): 25, the largest
+   first or the newest, in their own request with a 9-second deadline;
+   loaded at once when an institution or a firm is picked. A wide
+   direct-purchase selection says why it cannot list („lista cere o
+   instituție, o firmă sau cel mult 12 luni") instead of narrowing
+   silently; a firm-county selection says the list cannot filter by it.
+7. **The gallery:** 25 questions in six groups (Cine cumpără · Cine vinde ·
+   Ce se cumpără · Unde · Când · Cum), six of them under the default answer,
+   each a URL and each with the trap its data sets where there is one („Un
+   acord-cadru fixează un plafon, nu o cheltuială"; „Sediul firmei nu e
+   locul lucrării"; „Caută «laptop» în titlu: un coș numit altfel nu
+   apare").
+
+Measured (last 12 months, June 2025 – May 2026, buyers in Cluj): 95,800
+direct purchases, 666.0 M lei, 7,775 firms, the top five firms 3% of the
+money; Cluj firms take 59% of it; Cluj-Napoca's institutions 49%, the county
+council 8.2%. Per resident, București's institutions buy 1,203 lei (they
+hold the central state). Every analysis read answers in under half a
+second; a page reaches network idle in 3.5–5 s in `yarn dev` (the names and
+the map files after the figures).
+
+### 18.3 The variants
+
+- **`raspuns` — the answer is the page.** The controls stick above (from
+  `sm`; on a phone they scroll away), the readout, the figures, one answer,
+  the context below. Closest to Astra's `intrebare`: conventional controls
+  under the sentence, not a sentence to edit word by word (Romanian
+  agreement would decide the interaction).
+- **`traseu` — who buys, what, from whom.** No group-by: three linked
+  columns, each ranked under every pick but its own; a pick in one narrows
+  the other two; where and when follow, shorter. The quickest way to follow
+  money from a buyer to its firms to what they sell.
+- **`panou` — the workbench (control).** A rail with the top six of every
+  axis (each under every filter but its own), the answer beside it. The old
+  explorer's reader will look for this.
+
+### 18.4 Decisions in the prototype
+
+- **Default: direct purchases, the last 12 months, categories by lei** —
+  what the state buys, the front door's first question. The money there is
+  clean; the profile pages open on the same window (§15).
+- **Contracts are counted.** Lei are offered, marked provisional, never
+  beside a count; a firm's lei end with „În asociere — neîmpărțit pe firme"
+  (the withheld association money), never spread over the members.
+- **Per resident only for the buyer's county,** over INS POP105A (1
+  January 2025), said under the ranking; counted at the institutions'
+  seat, not where the money is spent.
+- **The cutoff is national**, from the population's monthly counts; never
+  from a narrow selection.
+- **Contracts and frameworks past 2025 are said to be mixed:** a note under
+  the headline when the period reaches 2026, the 2026 bars dashed („fără
+  deosebirea acordurilor-cadru"), and no change figure for either
+  population in any window (`kindSplitUntil`, `changes: false` in the
+  registry). Framework records open newest first — there is no value to
+  rank them by.
+- **Facets are one band below the answer**, not a permanent side panel
+  (Astra: three facet dimensions cannot feed four panels, and they compete
+  with the answer). `panou` keeps the rail as the control.
+- **No map yet.** Geography ranks first; a map is a second view of the same
+  ranking, later.
+- **Cut from the population picker:** procedures (all-time only),
+  modifications (counts only, half undated), call-offs (2016–2018). Their
+  old links need a compatibility state when the route is promoted.
+
+### 18.5 Extending it
+
+The registry in `analytics.model.ts` holds what the page knows:
+`POPULATIONS` (grain, record kind, money policy, comparable-from, cutoff,
+default measure) and `AXES` (per axis: its levels, each with the API
+dimension, the scope key, the URL param and its validation; the names
+source; `maxValues`; the populations it works for). The query compiles to a
+scope (`scopeOf`), and each read (`analytics.data.ts`) is its own request.
+
+- **A new dimension or filter the API serves** (buyer type, framework role)
+  is an entry in `AXES` plus its name source.
+- **Multi-select** is `maxValues > 1`: the filter's `values` is already an
+  array, the chips already list them; the scope then needs an `in` field.
+  Summing single-value queries is wrong (distinct counts overlap).
+- **A two-dimensional answer** (institution × category) is a new `dupa`
+  shape and an answer component; it needs a server breakdown with marginal
+  totals.
+- **Comparing two selections** is a second `Query` and a second `useAnswer`;
+  the figures band already takes a before.
+- **What would resist** (the review counted it): a new dimension is about a
+  dozen hand edits, not an entry — `defaultGroupOf`, `nextGroupAfter`,
+  `facetAxesOf`, the group-by tabs and URL keys, the headline's phrases,
+  `groupTab` / `unknownLabel` / `keyLabel`, `profileLink`, `useNamer`; a
+  new population means the `tip` branches in the text, the figure labels and
+  the records; multi-select touches every `values[0]`; and what the list
+  endpoints can filter by has no place in the registry (the contracts list
+  has no procedure filter). Promotion should move these into the registry
+  (per level: its phrase, its unknown label, its link, its list filter key)
+  and version the URL (`v=1`), migrating the old explorer's params before
+  parsing.
+- **The headline is built from fragments** (subject, buyer, seller,
+  category…), each translated on its own: a translator cannot reorder them.
+  Promotion needs whole-sentence messages per population with the slots as
+  variables.
+
+### 18.6 What the API should add (for the server session)
+
+1. **`in` filters** (several buyers, counties, CPV prefixes, procedures) and
+   **exclusion** (all but București).
+2. **A two-dimensional breakdown** with marginal totals.
+3. **An offset** past the top 100 (rankings to page through).
+4. **Distinct firms and institutions in `procurementStats`** for the whole
+   period (the series' monthly distincts do not add).
+5. **Value bands** (a histogram) and the **median**.
+6. **The buyer's type** (ministry, county council, hospital, school…): the
+   question readers ask most after „who".
+7. **`framework_role`** (framework / call-off / standalone) on every
+   channel, e-licitatie included, so contract lei stop being provisional and
+   2026's awards and frameworks separate (§17.2, §18.1).
+8. **A diacritic-folded title search** („deszăpezire" = „deszapezire").
+9. **The data's as-of date served** (the cutoff per population), instead of
+   deriving it from counts.
+10. **Locality names** in the API (the page reads them from a map file).
+11. **A procedure filter on the contracts list** (`ProcurementContractsFilter`
+    has none: a procedure-scoped answer cannot show its records).
+
+### 18.7 Review (Opus 5.5, 29 September 2026)
+
+Two blockers, ten major, ten minor; all fixed, and the query's contract with
+its address is now under unit test (`analytics.model.test.ts`: every
+question and drill round-trips; the adversarial addresses; the periods).
+
+- **Blockers.** `?dupa=constructor` crashed the page and `?tip=constructor`
+  hung it (the lookups reached `Object.prototype`); an address the page
+  could not read (`cumparator=RO4305857`, `cpv=45000000-7`, `judet=cj`,
+  `titlu=ab`, a procedure on direct purchases) was dropped silently and the
+  answer turned national — under the default question's trap. Now the
+  common forms are read (the „RO", the check digit, the case), and what is
+  still unread is said above the figures („Din adresă n-am putut folosi:
+  …"), with no trap.
+- **Money said for what it is.** The association money now has its row on
+  every axis that ranks by firm or by the firm's place (on „De unde vând"
+  the rows added up to about 69% and 28.7 bn lei were invisible); a firm's
+  contracts say they leave out the ones won in an association; contract lei
+  are marked provisional in the time answer, the top-five figure and the
+  years strip.
+- **Time.** The series is filled (an institution's 12 months drew as 9
+  bars); a bucket the window cuts is dashed and said at either end („2025
+  (din iunie)"); the change compares the same months (January–May 2026 had
+  been set against August–December 2025, December included); direct
+  purchases before 2019 carry their note; a period after the data or out of
+  range answers the last 12 months and says so; a failed cutoff read is said
+  instead of claiming „date complete".
+- **The API's own verdict** is shown: every contract answer is `degraded`
+  („Răspuns parțial: 33.836 de rânduri fără dată (94,1 mld. lei) nu intră
+  în nicio perioadă"); an `abstained` one says the figures are missing, not
+  zero. The API's English caveats stay in „Cum am calculat", labelled.
+- **Two traps were false** and are rewritten from the data: the county
+  council is filed under the county's own SIRUTA („Județul Cluj", 8.2%),
+  not in Cluj-Napoca; the top direct-purchase sellers are telecoms,
+  wholesale and DIY stores and pharmacies (Vodafone, Selgros, Dedeman,
+  Sensiblu, Poșta, Metro), none above 0.44% — fuel is tenth.
+- **Records.** A procedure filter now says the list cannot filter by it (the
+  contracts list has no such field — it answered 400), and a failed list
+  with a party fixed no longer tells the reader to pick a party.
+- Also: Romanian plurals („1.709.191 de locuitori"); empty „Restul" rows
+  gone; per-resident unknown rows no longer print lei among rates; facet
+  localities named; the link copies this page's address and freezes a year
+  in progress; the list deadline uses `withDeadline` (Safari < 17.4 has no
+  `AbortSignal.any`); questions, traps, tabs and the population note are
+  translatable (`msg`); the period menu opens on the period's months; „Arată
+  primele 100" belongs to its question (Back opens at 25); `traseu` no
+  longer reads a ranking it does not show; the rail and the columns say
+  what the rest holds.
+- Found while fixing: direct purchases spiked in April–June 2025 (≈255k,
+  254k, 222k a month against ≈135k in 2026), so January–May 2026 reads −29%
+  against January–May 2025; the arithmetic is right, the cause is not
+  known.
+
+### 18.8 Open for the owner
+
+- The layout: `raspuns`, `traseu`, `panou` — or `raspuns` with a „Traseu"
+  view.
+- Whether contract lei are offered at all before `framework_role` lands.
+- The route: `/procurement/analytics` with `/procurement/search` redirecting
+  (the old params mapped), and the explorer's list view kept as the
+  records layer or dropped.
