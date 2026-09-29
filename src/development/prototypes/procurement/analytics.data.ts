@@ -9,7 +9,6 @@ import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import {
-  AXES,
   AXIS_ORDER,
   POPULATIONS,
   bucketsBetween,
@@ -17,9 +16,7 @@ import {
   monthsBetween,
   resolvePeriod,
   scopeValue,
-  type AxisId,
   type Dimension,
-  type GroupBy,
   type Query,
   type ResolvedPeriod,
 } from './analytics.model'
@@ -32,8 +29,7 @@ import {
  *
  * - tier 0, the answer: the figures (the window and the one before it) and
  *   the ranked list or the series the group-by asks for;
- * - tier 1, the context: the firms' concentration, the selection's other
- *   axes (one facets read), the years since 2019;
+ * - tier 1, the context: the firms' concentration, the years since 2019;
  * - tier 2, the names: the spine's labels and the CPV labels for the keys
  *   the answer holds; the counties from the reference read, the localities
  *   from the map's own file.
@@ -244,49 +240,6 @@ async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'month', wi
   return keys.map((key) => ({ bucket: key, count: counts.get(key) ?? 0, money: withMoney ? (money.get(key) ?? (counts.has(key) ? null : 0)) : null }))
 }
 
-// ─────────────────────────────────────────────────────────── the facets ──
-
-const facetsSchema = z.object({ blocks: z.array(z.object({ dimension: z.string(), buckets: breakdownSchema.element.shape.buckets })) })
-
-export interface Facet {
-  readonly axis: AxisId
-  readonly level: string
-  readonly dimension: Dimension
-  readonly buckets: readonly Bucket[]
-}
-
-/** The selection's other axes, top three each (one read, at most three axes): where the reader can go next without a form. */
-function facetAxesOf(query: Query, group: GroupBy): readonly { readonly axis: AxisId; readonly level: string }[] {
-  const candidates: { readonly axis: AxisId; readonly level: string }[] = [
-    { axis: 'cumparator', level: 'cui' },
-    { axis: 'furnizor', level: 'cui' },
-    { axis: 'cpv', level: query.filters.cpv ? (AXES.cpv.levels[AXES.cpv.levels.findIndex((level) => level.id === query.filters.cpv?.level) + 1]?.id ?? '') : 'diviziune' },
-    { axis: 'loc', level: query.filters.loc ? (query.filters.loc.level === 'regiune' ? 'judet' : query.filters.loc.level === 'judet' ? 'localitate' : '') : 'judet' },
-    { axis: 'procedura', level: 'tip' },
-  ]
-  return candidates
-    .filter((candidate) => candidate.level !== '')
-    .filter((candidate) => AXES[candidate.axis].populations.includes(query.tip))
-    .filter((candidate) => !(group.axis === candidate.axis))
-    .filter((candidate) => !query.filters[candidate.axis] || candidate.axis === 'cpv' || candidate.axis === 'loc')
-    .slice(0, 3)
-}
-
-async function readFacets(scope: Scope, axes: readonly { readonly axis: AxisId; readonly level: string }[], rankBy: 'count' | 'value', signal: AbortSignal): Promise<readonly Facet[]> {
-  const levels = axes.map((item) => ({ ...item, dimension: levelOf(item.axis, item.level)!.dimension }))
-  if (levels.length === 0) return []
-  const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsFacets($s: ProcurementAnalysisScopeInput!) { f: procurementFacets(scope: $s, dimensions: [${levels.map((item) => item.dimension).join(', ')}], topN: 3, rankBy: ${rankBy}) { blocks { dimension buckets { key kind recordCount withValueCount valueSum shareOfScope } } } }`,
-    { s: scope },
-    { operationName: 'AnalyticsFacets', signal },
-  )
-  const parsed = facetsSchema.parse(raw.f)
-  return levels.map((item) => {
-    const block = parsed.blocks.find((candidate) => candidate.dimension === item.dimension)
-    return { ...item, buckets: block ? bucketsOf({ rankedBy: null, valueWithheldAssociationSum: null, buckets: block.buckets }) : [] }
-  })
-}
-
 // ───────────────────────────────────────────────────────────────── names ──
 
 const namesSchema = z.object({
@@ -316,7 +269,7 @@ async function readNames(cuis: readonly string[], codes: readonly string[], sign
   return { orgs, cpv }
 }
 
-/** The names of what the page shows — keys from the answer and the facets, plus the filters' own values. */
+/** The names of what the page shows — the answer's keys, plus the filters' own values. */
 export function useNames(keys: { readonly orgs: readonly string[]; readonly cpv: readonly string[] }) {
   const orgs = [...new Set(keys.orgs)].sort()
   const cpv = [...new Set(keys.cpv)].sort()
@@ -394,7 +347,6 @@ export interface Answer {
   readonly concentration: { readonly data: Concentration | null | undefined; readonly isError: boolean }
   readonly ranking: { readonly data: Ranking | undefined; readonly isError: boolean; readonly isFetching: boolean; readonly retry: () => void }
   readonly series: { readonly data: readonly Point[] | undefined; readonly isError: boolean; readonly retry: () => void }
-  readonly facets: { readonly data: readonly Facet[] | undefined; readonly isError: boolean }
   readonly years: { readonly data: readonly Point[] | undefined; readonly isError: boolean }
   /** The reads it made, for „Cum am calculat". */
   readonly scopes: { readonly now: Scope | null; readonly years: Scope | null }
@@ -403,7 +355,7 @@ export interface Answer {
 const STALE = 10 * 60 * 1000
 
 /** Everything the page reads for a query, each read on its own. */
-export function useAnswer(query: Query, options: { readonly topN: number; readonly facets: boolean; readonly years: boolean; readonly ranking?: boolean }): Answer {
+export function useAnswer(query: Query, options: { readonly topN: number; readonly years: boolean }): Answer {
   const cutoffRead = useCutoff()
   const population = POPULATIONS[query.tip]
   const cutoff = cutoffRead.data ? cutoffRead.data[population.cutoff] : null
@@ -421,9 +373,8 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
   // Per resident ranks all 42 counties, then divides: the top 25 by lei is not the top 25 per resident.
   const topN = perResident ? 50 : dimension === 'buyerSiruta' || dimension === 'supplierSiruta' ? Math.min(options.topN, 100) : options.topN
   const supplierFixed = Boolean(query.filters.furnizor)
-  const facetAxes = facetAxesOf(query, group)
 
-  const [figures, concentration, ranking, series, facets, years] = useQueries({
+  const [figures, concentration, ranking, series, years] = useQueries({
     queries: [
       { queryKey: ['prototype', 'analytics', 'figures', now, before], queryFn: ({ signal }: { signal: AbortSignal }) => readFigures(now!, before, signal), enabled: now !== null, staleTime: STALE },
       {
@@ -435,7 +386,7 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
       {
         queryKey: ['prototype', 'analytics', 'ranking', now, dimension, topN, rankBy],
         queryFn: ({ signal }: { signal: AbortSignal }) => readRanking(now!, dimension!, topN, rankBy, signal),
-        enabled: now !== null && dimension !== null && options.ranking !== false,
+        enabled: now !== null && dimension !== null,
         staleTime: STALE,
         placeholderData: (previous: Ranking | undefined) => (previous && previous.dimension === dimension ? previous : undefined),
       },
@@ -443,12 +394,6 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
         queryKey: ['prototype', 'analytics', 'series', now, group.axis === 'timp' ? group.bucket : null, moneyAllowed],
         queryFn: ({ signal }: { signal: AbortSignal }) => readSeries(now!, group.axis === 'timp' ? group.bucket : 'month', moneyAllowed, signal),
         enabled: now !== null && group.axis === 'timp',
-        staleTime: STALE,
-      },
-      {
-        queryKey: ['prototype', 'analytics', 'facets', now, facetAxes, rankBy],
-        queryFn: ({ signal }: { signal: AbortSignal }) => readFacets(now!, facetAxes, rankBy, signal),
-        enabled: now !== null && options.facets && facetAxes.length > 0,
         staleTime: STALE,
       },
       {
@@ -466,7 +411,6 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
     concentration: { data: supplierFixed ? null : (concentration.data as Concentration | null | undefined), isError: concentration.isError },
     ranking: { data: ranking.data as Ranking | undefined, isError: ranking.isError, isFetching: ranking.isFetching, retry: () => void ranking.refetch() },
     series: { data: series.data as readonly Point[] | undefined, isError: series.isError, retry: () => void series.refetch() },
-    facets: { data: facets.data as readonly Facet[] | undefined, isError: facets.isError },
     years: { data: years.data as readonly Point[] | undefined, isError: years.isError },
     scopes: { now, years: yearsScope },
   }

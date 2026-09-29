@@ -2,7 +2,15 @@ import { Fragment, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { ArrowLeft, FileSignature, Layers, Plus, Search, ShoppingCart, X, type LucideIcon } from 'lucide-react'
+import {
+  ArrowLeft,
+  FileSignature,
+  Layers,
+  Plus,
+  ShoppingCart,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
@@ -11,24 +19,34 @@ import { lastDayOf } from '@/features/procurement/lib/profile-period'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import { AXIS_ORDER, POPULATIONS, bucketStart, repaired, withoutFilter, type AxisId, type PopulationId, type Query } from './analytics.model'
-import type { Answer, Point } from './analytics.data'
+import {
+  AXIS_ORDER,
+  POPULATIONS,
+  repaired,
+  withoutFilter,
+  type AxisId,
+  type PopulationId,
+  type Query,
+} from './analytics.model'
+import type { Answer } from './analytics.data'
 import { AddFilter, PeriodMenu, QuestionsMenu, filterChipLabel } from './analytics.parts'
 import { NotesMarker, ShareIcon, figuresOf, type Figure } from './analytics.clean'
 import { FiltersButton } from './analytics.filters'
-import { countText, headline, headlineParts, moneyText, monthsText, populationLabel, type HeadlinePart, type Namer } from './analytics.text'
+import {
+  headline,
+  headlineParts,
+  moneyText,
+  monthsText,
+  populationLabel,
+  type HeadlinePart,
+  type Namer,
+} from './analytics.text'
 
 /**
- * Two redesigns of `curat`'s head — the controls, the headline, the months,
- * the figures — over the same query and the same reads:
- *
- * - the sentence, on the profiles' grid: the head band (the period at the
- *   top right, the question as the headline — a filter's phrase opens the
- *   panel, its ✕ drops it), the populations in the pinned bar
- *   under it, the figures in the profiles' band.
- * - the bar: one quiet bar — the populations as tabs, the period, one search
- *   field holding the filters as chips — and figures that carry their own
- *   years, so the years strip below them goes.
+ * The page's head, on the procurement profiles' grid: the head band (the
+ * period at the top right, the question as the headline — a filter's phrase
+ * opens the panel, its ✕ drops it), the populations in the pinned bar under
+ * it, the figures in the profiles' band.
  */
 const PHRASE = 'text-left underline decoration-muted-foreground/35 decoration-dotted decoration-2 underline-offset-[0.18em] transition-colors hover:decoration-foreground'
 const POPULATION_ORDER: readonly PopulationId[] = ['directe', 'contracte', 'acorduri']
@@ -207,9 +225,10 @@ export function GridHead({
 export function PopulationNav({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   return (
     <nav aria-label={t`Ce înregistrări`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
-      <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
+      {/* Nothing scrolls: on a phone the three share the width; from a small screen up they sit at the right. */}
+      <RuledFrame className="flex items-center gap-6 py-0">
         <span className="hidden min-w-0 truncate py-3 text-sm font-semibold text-foreground md:block md:max-w-md">{headline(query, namer)}</span>
-        <ol className="flex shrink-0 gap-4 sm:gap-6 md:ml-auto">
+        <ol className="grid w-full grid-cols-3 gap-3 sm:flex sm:w-auto sm:shrink-0 sm:gap-6 md:ml-auto">
           {POPULATION_ORDER.map((tip) => {
             const active = query.tip === tip
             const Icon = POPULATION_ICON[tip]
@@ -220,7 +239,7 @@ export function PopulationNav({ query, namer, onChange }: { readonly query: Quer
                   aria-pressed={active}
                   onClick={() => onChange(withPopulation(query, tip))}
                   className={cn(
-                    '-mb-px inline-flex min-h-11 items-center gap-2 border-b-2 text-sm transition-colors',
+                    'flex h-full min-h-11 w-full items-center gap-2 border-b-2 py-2 text-left text-sm leading-tight transition-colors sm:w-auto sm:py-0',
                     active ? 'border-primary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
                   )}
                 >
@@ -283,145 +302,3 @@ export function GridFigures({ query, answer }: { readonly query: Query; readonly
 
 // ─────────────────────────────────────────────────────────────── the bar ──
 
-/**
- * One bar for the whole query: the populations as tabs and the period on the
- * first line; on the second, one search field holding the filters as chips
- * (a click in it opens the search over institutions, firms, categories,
- * counties), then the panel, the questions, the link.
- */
-export function CommandBar({
-  query,
-  answer,
-  namer,
-  onChange,
-  onFilters,
-  className,
-}: {
-  readonly query: Query
-  readonly answer: Answer
-  readonly namer: Namer
-  readonly onChange: (query: Query) => void
-  readonly onFilters: () => void
-  readonly className?: string
-}) {
-  const keys = activeKeys(query)
-  return (
-    <div className={cn('flex flex-col gap-3', className)}>
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b">
-        <div className="grid w-full grid-cols-3 gap-3 sm:flex sm:w-auto sm:gap-5" aria-label={t`Ce înregistrări`}>
-          {POPULATION_ORDER.map((tip) => (
-            <button
-              key={tip}
-              type="button"
-              aria-pressed={query.tip === tip}
-              onClick={() => onChange(withPopulation(query, tip))}
-              className={cn('-mb-px border-b-2 pb-2 text-left text-sm leading-snug transition-colors', query.tip === tip ? 'border-foreground font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
-            >
-              {populationLabel(tip)}
-            </button>
-          ))}
-        </div>
-        <div className="pb-1">
-          <PeriodMenu query={query} answer={answer} onChange={onChange} triggerClassName="inline-flex min-h-8 items-center gap-1 text-sm font-medium tabular-nums text-foreground hover:text-primary" />
-        </div>
-      </div>
-      <div className="flex flex-wrap items-stretch gap-2">
-        <div className="flex min-h-10 min-w-0 flex-1 basis-80 flex-wrap items-center gap-1.5 border bg-background px-2.5 py-1 transition-colors focus-within:border-primary">
-          <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          {keys.map((key) => (
-            <span key={key} className="inline-flex max-w-[16rem] items-center gap-1 bg-primary/10 px-2 py-0.5 text-sm">
-              <span className="truncate">{chipLabel(query, key, namer)}</span>
-              <button type="button" onClick={() => onChange(without(query, key))} aria-label={t`Scoate ${chipLabel(query, key, namer)}`} className="shrink-0 text-muted-foreground hover:text-foreground">
-                <X className="size-3.5" aria-hidden="true" />
-              </button>
-            </span>
-          ))}
-          <AddFilter
-            query={query}
-            namer={namer}
-            onChange={onChange}
-            triggerClassName="min-h-8 min-w-[9rem] flex-1 text-left text-sm text-muted-foreground"
-            trigger={keys.length > 0 ? t`Adaugă un filtru…` : t`Caută o instituție, o firmă, o categorie sau un județ`}
-          />
-        </div>
-        <FiltersButton query={query} onClick={onFilters} className="min-h-10" />
-        <QuestionsMenu onChange={onChange} triggerClassName="inline-flex min-h-10 items-center gap-1.5 border px-2.5 text-sm transition-colors hover:bg-muted/60" />
-        <ShareIcon query={query} answer={answer} className="inline-flex size-10 shrink-0 items-center justify-center border text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground" />
-      </div>
-    </div>
-  )
-}
-
-/** A figure's years since 2019, as small bars: the window's darker, a year still filling (or mixed) dashed; a click takes the year. */
-function Trend({ figure, query, answer, onChange }: { readonly figure: Figure; readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void }) {
-  const points = answer.years.data
-  if (!points || points.length < 2 || (figure.key !== 'records' && figure.key !== 'money')) return null
-  const pick = (point: Point) => (figure.key === 'money' ? point.money : point.count) ?? 0
-  const text = (point: Point) => (figure.key === 'money' ? moneyText(point.money ?? 0) : countText(point.count ?? 0))
-  const max = Math.max(1, ...points.map(pick))
-  const population = POPULATIONS[query.tip]
-  const cutoff = answer.cutoff?.[population.cutoff] ?? null
-  const split = population.kindSplitUntil
-  const inWindow = (year: string) => answer.period !== null && answer.period.from.slice(0, 4) <= year && answer.period.to.slice(0, 4) >= year
-  return (
-    <div className="mt-3 max-w-[12rem]">
-      <ol className="flex h-9 items-end gap-[3px]">
-        {points.map((point) => {
-          const dashed = (cutoff !== null && point.bucket === cutoff.slice(0, 4) && !cutoff.endsWith('-12')) || (split !== undefined && bucketStart(point.bucket) > split)
-          return (
-            <li key={point.bucket} className="flex h-full min-w-0 flex-1 items-end">
-              <button
-                type="button"
-                onClick={() => onChange({ ...query, period: { kind: 'year', year: Number(point.bucket) } })}
-                className="flex h-full w-full items-end"
-                aria-label={`${point.bucket}: ${text(point)}`}
-                title={`${point.bucket}: ${text(point)}`}
-              >
-                <span
-                  className={cn('block w-full', inWindow(point.bucket) ? 'bg-primary/80' : 'bg-primary/25', dashed && 'outline-dashed outline-1 -outline-offset-1 outline-primary/70')}
-                  style={{ height: `${Math.max((pick(point) / max) * 100, 4)}%` }}
-                />
-              </button>
-            </li>
-          )
-        })}
-      </ol>
-      <div className="mt-1 flex justify-between font-mono text-[0.65rem] tabular-nums text-muted-foreground" aria-hidden="true">
-        <span>{points[0]!.bucket}</span>
-        <span>{points[points.length - 1]!.bucket}</span>
-      </div>
-    </div>
-  )
-}
-
-/** The figures with their years: the label, the value and its change, and under the counts and the money, their trend since 2019. */
-export function TrendFigures({ query, answer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly className?: string }) {
-  if (answer.figures.isError) return (
-      <div className={className}>
-        <HubLoadError onRetry={answer.figures.retry} />
-      </div>
-    )
-  const figures = figuresOf(query, answer)
-  if (!figures) return <div className={cn('h-32 animate-pulse bg-muted/30', className)} aria-hidden="true" />
-  const compared = answer.figures.data?.before && answer.period ? t`față de ${monthsText(answer.period.previous)}` : undefined
-  return (
-    <dl className={cn('grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4', className)}>
-      {figures.map((figure) => (
-        <div key={figure.key} className="min-w-0">
-          <dt className="text-sm text-muted-foreground">{figure.label}</dt>
-          <dd className="mt-1">
-            <span className="flex flex-wrap items-baseline gap-x-2">
-              <span className={cn('text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl', figure.muted ? 'text-muted-foreground' : 'text-foreground')}>{figure.value}</span>
-              {figure.change ? (
-                <span className="text-xs tabular-nums text-muted-foreground" title={compared}>
-                  {figure.change}
-                </span>
-              ) : null}
-            </span>
-            <Trend figure={figure} query={query} answer={answer} onChange={onChange} />
-          </dd>
-        </div>
-      ))}
-    </dl>
-  )
-}

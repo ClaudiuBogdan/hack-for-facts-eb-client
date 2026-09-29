@@ -1,29 +1,33 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
-import { ArrowUpRight, Check, ChevronDown, Link2, Plus, Search, X } from 'lucide-react'
+import { Check, ChevronDown, Plus, Search } from 'lucide-react'
 import { z } from 'zod'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useSearchResults } from '@/features/landing/hooks/use-landing-search'
 import { procurementHrefOf } from '@/features/procurement/lib/home-links'
 import { dayText, monthText } from '@/features/procurement/lib/home-format'
 import { formatProcurementCountyName } from '@/features/procurement/lib/procurement-geography'
-import { HubLoadError, HubPending } from '@/features/statistics/components/hub/hub-chrome'
+import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { cn } from '@/lib/utils'
 import {
-  AXIS_ORDER,
-  bucketStart,
   clippedBucket,
   POPULATIONS,
   cpvLevelOf,
   cpvPrefix,
-  drilled,
   groupProblem,
   perResidentAllowed,
   queryOf,
@@ -31,17 +35,14 @@ import {
   searchOf,
   unreadParams,
   withFilter,
-  withoutFilter,
   type AnalyticsSearch,
   type AxisId,
   type GroupBy,
   type Measure,
-  type PopulationId,
   type Query,
 } from './analytics.model'
 import {
   COUNTY_POPULATION,
-  countyPopulationNote,
   recordsProblem,
   useCounties,
   useCpvDivisions,
@@ -50,31 +51,23 @@ import {
   useRecords,
   type Answer,
   type Bucket,
-  type Facet,
-  type Point,
   type Ranking,
   type RecordRow,
 } from './analytics.data'
 import { QUESTION_GROUPS, QUESTIONS, type Question } from './analytics.questions'
 import {
   beforeComparableNote,
-  changeText,
   countText,
   degradedNote,
   groupTab,
-  headline,
   keyLabel,
   kindSplitNote,
   levelLabel,
   listTotalText,
   measureLabel,
   moneyText,
-  monthsText,
-  percentText,
-  periodGloss,
   periodText,
   populationGloss,
-  populationLabel,
   recordsCount,
   residentsText,
   undatedText,
@@ -82,7 +75,7 @@ import {
   type Namer,
 } from './analytics.text'
 
-/** The analytics page's parts, shared by the layouts: controls, the readout, the figures, the answers, the context, the records. */
+/** The analytics page's shared parts: the address's query and its names, the period, the quick filter, the questions, the link, the caveats, the group-by, the rows, the records, the method. */
 
 const LABEL = 'block text-muted-foreground'
 const CHIP = 'inline-flex min-h-9 items-center gap-1.5 border px-2.5 text-sm transition-colors hover:bg-muted/60'
@@ -107,13 +100,8 @@ export function useAnalyticsQuery(): readonly [Query, (next: Query) => void, Ana
   return [query, move, strings] as const
 }
 
-/** Whether the URL names any question at all: without one, the page opens with its gallery above the default answer. */
-export function hasQuestion(search: AnalyticsSearch): boolean {
-  return Object.keys(search).some((key) => key !== 'v' && key !== 'layout' && search[key] !== undefined)
-}
-
-/** Names for everything on screen: the filters' values, the answer's keys, the facets' keys. */
-export function useNamer(query: Query, answer: Pick<Answer, 'ranking' | 'facets'>, extra: readonly Ranking[] = []): Namer {
+/** Names for everything on screen: the filters' values, the answer's keys. */
+export function useNamer(query: Query, answer: Pick<Answer, 'ranking'>, extra: readonly Ranking[] = []): Namer {
   const orgs: string[] = []
   const cpv: string[] = []
   if (query.filters.cumparator) orgs.push(...query.filters.cumparator.values)
@@ -127,15 +115,13 @@ export function useNamer(query: Query, answer: Pick<Answer, 'ranking' | 'facets'
     }
   }
   for (const ranking of [answer.ranking.data, ...extra]) if (ranking) collect(ranking.dimension, ranking.buckets)
-  for (const facet of answer.facets.data ?? []) collect(facet.dimension, facet.buckets)
   const names = useNames({ orgs, cpv })
   const counties = useCounties()
   const divisions = useCpvDivisions()
   const needLocalities =
     query.filters.loc?.level === 'localitate' ||
     query.filters.loc_firma?.level === 'localitate' ||
-    ((query.dupa.axis === 'loc' || query.dupa.axis === 'loc_firma') && query.dupa.level === 'localitate') ||
-    (answer.facets.data ?? []).some((facet) => facet.level === 'localitate')
+    ((query.dupa.axis === 'loc' || query.dupa.axis === 'loc_firma') && query.dupa.level === 'localitate')
   const localities = useLocalities(needLocalities)
   return useMemo(
     () => ({
@@ -149,17 +135,6 @@ export function useNamer(query: Query, answer: Pick<Answer, 'ranking' | 'facets'
 }
 
 // ────────────────────────────────────────────────────────────── controls ──
-
-export function PopulationToggle({ query, onChange }: { readonly query: Query; readonly onChange: (query: Query) => void }) {
-  return (
-    <IndicatorToggle<PopulationId>
-      label={t`Ce înregistrări`}
-      value={query.tip}
-      onChange={(tip) => onChange(repaired({ ...query, tip, masura: POPULATIONS[tip].defaultMeasure }))}
-      options={(['directe', 'contracte', 'acorduri'] as const).map((key) => ({ key, label: populationLabel(key) }))}
-    />
-  )
-}
 
 export function PeriodMenu({ query, answer, onChange, triggerClassName }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly triggerClassName?: string }) {
   const [open, setOpen] = useState(false)
@@ -231,40 +206,6 @@ export function filterChipLabel(axis: AxisId, level: string, value: string, name
   if (axis === 'loc') return level === 'judet' ? t`instituții din ${name}` : t`instituții din ${name}`
   if (axis === 'loc_firma') return t`firme din ${name}`
   return name
-}
-
-export function FilterChips({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
-  return (
-    <>
-      {AXIS_ORDER.map((axis) => {
-        const filter = query.filters[axis]
-        if (!filter) return null
-        const label = filterChipLabel(axis, filter.level, filter.values[0]!, namer)
-        return (
-          <button key={axis} type="button" className={cn(CHIP, 'max-w-[18rem] border-primary/50 bg-primary/5')} onClick={() => onChange(withoutFilter(query, axis))} aria-label={t`Scoate filtrul ${label}`}>
-            <span className="truncate">{label}</span>
-            <X className="size-3.5 shrink-0" aria-hidden="true" />
-          </button>
-        )
-      })}
-      {query.titlu ? (
-        <button type="button" className={cn(CHIP, 'border-primary/50 bg-primary/5')} onClick={() => onChange({ ...query, titlu: null })}>
-          {t`titlu: „${query.titlu}"`}
-          <X className="size-3.5" aria-hidden="true" />
-        </button>
-      ) : null}
-      {query.valoare ? (
-        <button type="button" className={cn(CHIP, 'border-primary/50 bg-primary/5')} onClick={() => onChange({ ...query, valoare: null })}>
-          {query.valoare.min != null && query.valoare.max != null
-            ? t`${moneyText(query.valoare.min)}–${moneyText(query.valoare.max)}`
-            : query.valoare.min != null
-              ? t`≥ ${moneyText(query.valoare.min)}`
-              : t`≤ ${moneyText(query.valoare.max ?? 0)}`}
-          <X className="size-3.5" aria-hidden="true" />
-        </button>
-      ) : null}
-    </>
-  )
 }
 
 const resolveSchema = z.object({ procurementResolve: z.array(z.object({ value: z.string(), label: z.string() })) })
@@ -457,45 +398,7 @@ export function shareUrl(query: Query, answer: Answer): string {
   return `${window.location.origin}${window.location.pathname}${params.size > 0 ? `?${params.toString()}` : ''}`
 }
 
-export function ShareButton({ query, answer }: { readonly query: Query; readonly answer: Answer }) {
-  const [copied, setCopied] = useState(false)
-  const copy = () => {
-    const url = shareUrl(query, answer)
-    void navigator.clipboard?.writeText(url).then(() => {
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1500)
-    })
-  }
-  return (
-    <button type="button" onClick={copy} className={cn(CHIP)}>
-      {copied ? <Check className="size-3.5" aria-hidden="true" /> : <Link2 className="size-3.5" aria-hidden="true" />}
-      {copied ? t`Copiat` : t`Link`}
-    </button>
-  )
-}
-
-/** The one row of controls: what records, when, the filters, a new filter, the questions, the link. */
-export function ControlRow({ query, answer, namer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly onChange: (query: Query) => void; readonly className?: string }) {
-  return (
-    <div className={cn('flex flex-col gap-3', className)}>
-      <PopulationToggle query={query} onChange={onChange} />
-      <div className="flex flex-wrap items-center gap-2">
-        <PeriodMenu query={query} answer={answer} onChange={onChange} />
-        <FilterChips query={query} namer={namer} onChange={onChange} />
-        <AddFilter query={query} namer={namer} onChange={onChange} />
-        <span className="ml-auto flex items-center gap-2">
-          <QuestionsMenu onChange={onChange} />
-          <ShareButton query={query} answer={answer} />
-        </span>
-      </div>
-    </div>
-  )
-}
-
 // ───────────────────────────────────────────────────────────── readout ──
-
-/** The query as one sentence (generated, never edited), its months, what the records are, and the question's own warning. */
-const NOTE = 'mt-2 max-w-[70ch] border-l-2 border-amber-600/60 pl-3 text-sm text-foreground'
 
 /**
  * The query as one sentence (generated, never edited), its months, what the
@@ -531,99 +434,7 @@ export function readoutNotes(query: Query, answer: Answer, search: AnalyticsSear
   }
 }
 
-export function Readout({ query, answer, namer, withGroup = true }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly withGroup?: boolean }) {
-  const notes = readoutNotes(query, answer, useSearchStrings())
-  return (
-    <div>
-      <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">{headline(query, namer, withGroup)}</h1>
-      <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-muted-foreground">
-        {answer.period ? <span className="font-medium text-foreground">{periodText(answer.period, query)}</span> : null}
-        {answer.period ? <span>{periodGloss(answer.period, query, answer.cutoff?.failed ?? false)}</span> : null}
-      </p>
-      <p className="mt-1 max-w-[70ch] text-sm text-muted-foreground">{populationGloss(query.tip)}</p>
-      {notes.unread ? <p className={NOTE}>{notes.unread}</p> : null}
-      {notes.warnings.map((warning) => (
-        <p key={warning} className={NOTE}>
-          {warning}
-        </p>
-      ))}
-      {notes.trap ? <p className={NOTE}>{notes.trap}</p> : null}
-    </div>
-  )
-}
-
 // ─────────────────────────────────────────────────────────────── figures ──
-
-function Figure({ label, value, change, note, muted }: { readonly label: string; readonly value: string; readonly change?: string | null; readonly note?: ReactNode; readonly muted?: boolean }) {
-  return (
-    <div className="min-w-0 border-t pt-3">
-      <MonoLabel className={LABEL}>{label}</MonoLabel>
-      <p className={cn('mt-2 flex flex-wrap items-baseline gap-x-2 text-xl font-semibold tabular-nums tracking-tight sm:text-2xl', muted ? 'text-muted-foreground' : 'text-foreground')}>
-        <span>{value}</span>
-        {change ? <span className="text-sm font-normal text-muted-foreground">{change}</span> : null}
-      </p>
-      {note ? <p className="mt-1 text-xs leading-snug text-muted-foreground">{note}</p> : null}
-    </div>
-  )
-}
-
-/**
- * Four figures, each with its change against the same number of months
- * before: the records; the money (said for what it is — clean, provisional,
- * or not a spend at all); the firms; the top five's share.
- */
-export function FiguresBand({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
-  const now = answer.figures.data?.now ?? null
-  const before = answer.figures.data?.before ?? null
-  const population = POPULATIONS[query.tip]
-  if (answer.figures.isError) return (
-      <div className={className}>
-        <HubLoadError onRetry={answer.figures.retry} />
-      </div>
-    )
-  if (!now) return <HubPending className={className} rows={2} />
-  const previousNote = before && answer.period ? t`față de ${monthsText(answer.period.previous)}` : null
-  const coverage = now.records > 0 ? now.valued / now.records : null
-  const concentration = answer.concentration.data
-  const byValue = query.masura !== 'numar' && population.money !== 'none'
-  // A firm's contracts leave out the ones it won in an association: SEAP gives the association's value, not the firm's part.
-  const firmContracts = population.grain === 'contract' && Boolean(query.filters.furnizor)
-  const rowsNote = firmContracts ? t`fără contractele câștigate în asociere` : t`rânduri SEAP: o asociere are un rând pe firmă`
-  return (
-    <div className={cn('grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4', className)}>
-      <Figure label={population.id === 'directe' ? t`Achiziții` : population.id === 'contracte' ? t`Contracte atribuite` : t`Acorduri-cadru`} value={countText(now.records)} change={changeText(now.records, before?.records ?? null)} note={population.id === 'directe' ? previousNote : rowsNote} />
-      {population.money === 'clean' ? (
-        <Figure label={t`Valoare, fără TVA`} value={now.money !== null ? moneyText(now.money) : '—'} change={changeText(now.money, before?.money ?? null)} note={now.average !== null ? t`în medie ${moneyText(now.average)} pe achiziție` : null} />
-      ) : population.money === 'provisional' ? (
-        <Figure
-          label={t`Valoare publicată, provizoriu`}
-          value={now.money !== null ? moneyText(now.money) : '—'}
-          muted
-          note={
-            firmContracts
-              ? t`fără banii asocierilor, pe care SEAP nu-i împarte pe firme; include plafoane de acorduri-cadru`
-              : coverage !== null
-                ? t`bani publicați pentru ${percentText(coverage, 0)} din rânduri; include plafoane de acorduri-cadru și contracte subsecvente`
-                : null
-          }
-        />
-      ) : (
-        <Figure label={t`Valoare`} value="—" muted note={t`Un acord-cadru fixează cât se poate cheltui, cel mult: nu e o cheltuială.`} />
-      )}
-      {concentration && concentration.firms !== null ? (
-        <Figure label={t`Firme`} value={countText(concentration.firms)} note={t`care au vândut în această selecție`} />
-      ) : (
-        <Figure label={t`Firme`} value={query.filters.furnizor ? '1' : '—'} muted note={query.filters.furnizor ? t`firma aleasă` : null} />
-      )}
-      {concentration && concentration.top5 !== null ? (
-        <Figure label={!byValue ? t`Primele 5 firme, din rânduri` : population.money === 'provisional' ? t`Primele 5 firme, din lei provizorii` : t`Primele 5 firme, din bani`} value={percentText(concentration.top5, 0)} note={concentration.top1 !== null ? t`prima: ${percentText(concentration.top1, 1)}` : null} />
-      ) : (
-        <Figure label={t`Primele 5 firme`} value="—" muted note={query.filters.furnizor ? t`nu are sens pentru o singură firmă` : null} />
-      )}
-    </div>
-  )
-}
-
 
 // ────────────────────────────────────────────────────── group-by and measure ──
 
@@ -787,99 +598,6 @@ export function profileLink(axis: AxisId, key: string): { readonly to: string; r
   return null
 }
 
-/**
- * The page's answer: the ranked list. A row's click narrows to it and ranks
- * by the next axis (an institution → its firms); its profile is the arrow
- * beside it. „Restul" and the unknown rows make the list add up and are not
- * clicked.
- */
-export function RankedAnswer({
-  query,
-  answer,
-  namer,
-  onChange,
-  expanded,
-  onExpand,
-  className,
-}: {
-  readonly query: Query
-  readonly answer: Answer
-  readonly namer: Namer
-  readonly onChange: (query: Query) => void
-  readonly expanded: boolean
-  readonly onExpand: (expanded: boolean) => void
-  readonly className?: string
-}) {
-  const ranking = answer.ranking.data
-  if (query.dupa.axis === 'timp') return null
-  if (answer.ranking.isError) return (
-      <div className={className}>
-        <HubLoadError onRetry={answer.ranking.retry} />
-      </div>
-    )
-  if (!ranking) return <HubPending className={className} rows={10} />
-  const { rows } = rowsOf(query, ranking, namer)
-  const group = query.dupa
-  const max = Math.max(1, ...rows.filter((row) => row.kind === 'top' || row.kind === 'withheld').map((row) => row.figure ?? 0))
-  const topCount = ranking.buckets.filter((bucket) => bucket.kind === 'top').length
-  return (
-    <div className={cn(className, answer.ranking.isFetching && 'opacity-70 transition-opacity')}>
-      {rows.length === 0 ? <p className="py-6 text-sm text-muted-foreground">{t`Nicio înregistrare în această selecție.`}</p> : null}
-      <ol className="divide-y divide-border/70 border-y border-border/70">
-        {rows.map((row, index) => {
-          const drillable = row.kind === 'top' && row.key !== null
-          const link = drillable ? profileLink(group.axis, row.key!) : null
-          const body = (
-            <>
-              <span className="w-7 shrink-0 pt-0.5 text-right font-mono text-xs tabular-nums text-muted-foreground">{row.kind === 'top' ? index + 1 : ''}</span>
-              <span className="min-w-0 flex-1">
-                <span className={cn('block truncate text-sm', row.kind === 'top' ? 'text-foreground' : 'text-muted-foreground')}>{row.label}</span>
-                <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted-foreground">
-                  {row.sub ? <span className="font-mono tabular-nums">{row.sub}</span> : null}
-                  {row.secondary ? <span>{row.secondary}</span> : null}
-                </span>
-                {row.kind === 'top' || row.kind === 'withheld' ? (
-                  <span className="mt-1.5 block h-1 bg-muted" aria-hidden="true">
-                    <span className={cn('block h-1', row.kind === 'withheld' ? 'bg-muted-foreground/40' : 'bg-primary/70')} style={{ width: `${Math.max(((row.figure ?? 0) / max) * 100, 0.5).toFixed(1)}%` }} />
-                  </span>
-                ) : null}
-              </span>
-              <span className="shrink-0 text-right">
-                <span className={cn('block text-sm tabular-nums', row.kind === 'top' ? 'font-semibold text-foreground' : 'text-muted-foreground')}>{row.figureText}</span>
-                {row.share !== null ? <span className="block text-xs tabular-nums text-muted-foreground">{percentText(row.share, row.share < 0.1 ? 1 : 0)}</span> : null}
-              </span>
-            </>
-          )
-          return (
-            <li key={`${row.kind}-${row.key ?? index}`} className="flex items-stretch">
-              {drillable ? (
-                <button type="button" onClick={() => onChange(drilled(query, group, row.key!))} className="flex min-w-0 flex-1 items-start gap-3 py-2.5 pr-2 text-left transition-colors hover:bg-muted/50" title={t`Restrânge la „${row.label}"`}>
-                  {body}
-                </button>
-              ) : (
-                <div className="flex min-w-0 flex-1 items-start gap-3 py-2.5 pr-2">{body}</div>
-              )}
-              {link ? (
-                <Link to={link.to} params={link.params} className="flex w-9 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground" aria-label={t`Pagina ${row.label}`}>
-                  <ArrowUpRight className="size-4" aria-hidden="true" />
-                </Link>
-              ) : (
-                <span className="w-9 shrink-0" />
-              )}
-            </li>
-          )
-        })}
-      </ol>
-      {query.masura === 'locuitor' ? <p className="mt-2 text-xs text-muted-foreground">{t`Împărțit la populația județului (${countyPopulationNote()}). Instituțiile centrale au sediul în București.`}</p> : null}
-      {!expanded && topCount >= 25 && query.masura !== 'locuitor' ? (
-        <button type="button" onClick={() => onExpand(true)} className="mt-3 text-sm font-medium underline-offset-4 hover:underline">
-          {t`Arată primele 100`}
-        </button>
-      ) : null}
-    </div>
-  )
-}
-
 // ────────────────────────────────────────────────────────── time answer ──
 
 /** What of a bucket a window holds, when not all of it: „(din iunie)", „(până în mai)", „(iunie–august)". */
@@ -898,155 +616,7 @@ export function bucketLabel(bucket: string): string {
   return monthText(bucket)
 }
 
-/** The answer in time: bars by year, quarter or month, a click opening the bucket. */
-export function TimeAnswer({ query, answer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly className?: string }) {
-  const [active, setActive] = useState<string | null>(null)
-  if (query.dupa.axis !== 'timp') return null
-  if (answer.series.isError) return (
-      <div className={className}>
-        <HubLoadError onRetry={answer.series.retry} />
-      </div>
-    )
-  const points = answer.series.data
-  if (!points) return <HubPending className={className} rows={6} />
-  const byValue = query.masura !== 'numar' && POPULATIONS[query.tip].money !== 'none'
-  const figure = (point: Point) => (byValue ? point.money : point.count) ?? 0
-  const max = Math.max(1, ...points.map(figure))
-  const shown = points.find((point) => point.bucket === active) ?? points[points.length - 1]
-  const group = query.dupa
-  const population = POPULATIONS[query.tip]
-  const split = population.kindSplitUntil
-  const mixed = (bucket: string) => split !== undefined && bucketStart(bucket) > split
-  const cut = (bucket: string) => answer.period !== null && clippedBucket(bucket, answer.period) !== null
-  return (
-    <figure className={className}>
-      <p className="min-h-6 text-sm text-muted-foreground">
-        {shown ? (
-          <>
-            <span className="font-semibold text-foreground">
-              {bucketLabel(shown.bucket)}
-              {clippedText(shown.bucket, answer.period) ? ` ${clippedText(shown.bucket, answer.period)}` : ''}
-              {mixed(shown.bucket) ? ` ${t`(fără deosebirea acordurilor-cadru)`}` : ''}
-            </span>{' '}
-            · {recordsCount(query.tip, shown.count ?? 0)}
-            {/* Contract money only when asked for, and said provisional: beside a count it would read as spend. */}
-            {shown.money !== null && (population.money === 'clean' || (population.money === 'provisional' && byValue)) ? ` · ${moneyText(shown.money)}${population.money === 'provisional' ? ` ${t`(provizoriu)`}` : ''}` : ''}
-          </>
-        ) : (
-          t`Nicio înregistrare în această selecție.`
-        )}
-      </p>
-      <ol className="mt-3 flex h-48 items-end gap-1" onPointerLeave={() => setActive(null)}>
-        {points.map((point) => (
-          <li key={point.bucket} className="flex h-full min-w-0 flex-1 flex-col justify-end">
-            <button
-              type="button"
-              onPointerEnter={() => setActive(point.bucket)}
-              onFocus={() => setActive(point.bucket)}
-              onClick={() => onChange(drilled(query, group, point.bucket))}
-              className="flex h-full w-full flex-col justify-end"
-              aria-label={`${bucketLabel(point.bucket)}: ${byValue ? moneyText(point.money ?? 0) : countText(point.count ?? 0)}`}
-            >
-              <span
-                className={cn('block w-full', active === point.bucket ? 'bg-primary' : 'bg-primary/70', (cut(point.bucket) || mixed(point.bucket)) && 'bg-primary/35 outline-dashed outline-1 outline-offset-1 outline-primary')}
-                style={{ height: `${Math.max((figure(point) / max) * 100, 1)}%` }}
-              />
-            </button>
-          </li>
-        ))}
-      </ol>
-      <div className="mt-1 flex justify-between text-xs tabular-nums text-muted-foreground" aria-hidden="true">
-        <span>{points[0] ? bucketLabel(points[0].bucket) : ''}</span>
-        <span>{points.length > 1 ? bucketLabel(points[points.length - 1]!.bucket) : ''}</span>
-      </div>
-      {points.some((point) => cut(point.bucket)) ? <figcaption className="mt-2 text-xs text-muted-foreground">{t`Punctat: o perioadă pe care intervalul ales o cuprinde doar în parte.`}</figcaption> : null}
-      {points.some((point) => mixed(point.bucket)) ? <figcaption className="mt-2 text-xs text-muted-foreground">{t`Punctat: ${kindSplitNote(query.tip)}`}</figcaption> : null}
-      {population.grain === 'contract' && group.axis === 'timp' && group.bucket !== 'month' ? <figcaption className="mt-2 text-xs text-muted-foreground">{t`Sursele contractelor acoperă diferit fiecare an: o diferență între ani nu măsoară doar cumpărăturile.`}</figcaption> : null}
-      {POPULATIONS[query.tip].money === 'provisional' && byValue ? <figcaption className="mt-2 text-xs text-muted-foreground">{t`Lei publicați, provizoriu: includ plafoane de acorduri-cadru și contracte subsecvente.`}</figcaption> : null}
-    </figure>
-  )
-}
-
 // ─────────────────────────────────────────────────────── the selection ──
-
-/** „În această selecție": the top three of the other axes, each a click to narrow — where to go next, without a form. */
-export function SelectionFacets({ query, answer, namer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly onChange: (query: Query) => void; readonly className?: string }) {
-  const facets = answer.facets.data
-  if (!facets || facets.length === 0) return null
-  const byValue = query.masura !== 'numar' && POPULATIONS[query.tip].money !== 'none'
-  return (
-    <div className={cn('grid gap-4 sm:grid-cols-3', className)}>
-      {facets.map((facet: Facet) => (
-        <div key={facet.dimension} className="min-w-0">
-          <MonoLabel className={LABEL}>{groupTab(facet.axis)}</MonoLabel>
-          <ul className="mt-2 space-y-1">
-            {facet.buckets
-              .filter((bucket) => bucket.kind === 'top' && bucket.key)
-              .map((bucket) => {
-                const label = keyLabel(facet.axis, facet.level, bucket.key!, namer)
-                const value = facet.axis === 'cpv' ? cpvPrefix(bucket.key!, facet.level) : bucket.key!
-                return (
-                  <li key={bucket.key}>
-                    <button type="button" onClick={() => onChange(withFilter(query, facet.axis, facet.level, value))} className="flex w-full items-baseline justify-between gap-2 text-left text-sm hover:text-primary">
-                      <span className="min-w-0 truncate">{label}</span>
-                      <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{bucket.share !== null ? percentText(bucket.share, bucket.share < 0.1 ? 1 : 0) : byValue ? moneyText(bucket.money ?? 0) : countText(bucket.count)}</span>
-                    </button>
-                  </li>
-                )
-              })}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-/** The selection's years since 2019, the period's marked; a click takes the year. */
-export function YearsStrip({ query, answer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly className?: string }) {
-  const points = answer.years.data
-  // Ranked by years already, the answer is this strip.
-  if (!points || points.length === 0 || (query.dupa.axis === 'timp' && query.dupa.bucket === 'year')) return null
-  const byValue = query.masura !== 'numar' && POPULATIONS[query.tip].money !== 'none'
-  const figure = (point: Point) => (byValue ? point.money : point.count) ?? 0
-  const max = Math.max(1, ...points.map(figure))
-  const population = POPULATIONS[query.tip]
-  const cutoff = answer.cutoff?.[population.cutoff] ?? null
-  const split = population.kindSplitUntil
-  const inYear = (year: string) => answer.period !== null && answer.period.from.slice(0, 4) <= year && answer.period.to.slice(0, 4) >= year
-  const anyMixed = split !== undefined && points.some((point) => bucketStart(point.bucket) > split)
-  return (
-    <figure className={className}>
-      <MonoLabel className={LABEL}>{!byValue ? t`Selecția, pe ani` : population.money === 'provisional' ? t`Selecția, pe ani, lei provizorii` : t`Selecția, pe ani, lei`}</MonoLabel>
-      <ol className="mt-3 flex h-20 items-end gap-1.5">
-        {points.map((point) => {
-          const filling = cutoff !== null && point.bucket === cutoff.slice(0, 4) && !cutoff.endsWith('-12') ? monthText(cutoff).split(' ')[0] : null
-          const mixed = split !== undefined && bucketStart(point.bucket) > split
-          return (
-            <li key={point.bucket} className="flex h-full min-w-0 flex-1 flex-col justify-end">
-              <button
-                type="button"
-                onClick={() => onChange({ ...query, period: { kind: 'year', year: Number(point.bucket) } })}
-                className="flex h-full w-full flex-col justify-end"
-                aria-label={`${point.bucket}${filling ? ` (${t`până în ${filling}`})` : ''}${mixed ? ` ${t`(fără deosebirea acordurilor-cadru)`}` : ''}: ${byValue ? moneyText(point.money ?? 0) : countText(point.count ?? 0)}`}
-              >
-                <span
-                  className={cn('block w-full', inYear(point.bucket) ? 'bg-primary' : 'bg-primary/35', (filling !== null || mixed) && 'outline-dashed outline-1 outline-offset-1 outline-primary')}
-                  style={{ height: `${Math.max((figure(point) / max) * 100, 2)}%` }}
-                />
-              </button>
-            </li>
-          )
-        })}
-      </ol>
-      <div className="mt-1 flex gap-1.5" aria-hidden="true">
-        {points.map((point) => (
-          <MonoLabel key={point.bucket} className="min-w-0 flex-1 text-center tabular-nums text-muted-foreground">{`'${point.bucket.slice(2)}`}</MonoLabel>
-        ))}
-      </div>
-      {anyMixed ? <figcaption className="mt-2 text-xs text-muted-foreground">{t`Punctat: ${kindSplitNote(query.tip)}`}</figcaption> : null}
-    </figure>
-  )
-}
 
 // ─────────────────────────────────────────────────────────────── records ──
 
@@ -1145,16 +715,6 @@ export function RecordsBlock({ query, answer, className }: { readonly query: Que
 
 // ─────────────────────────────────────────────────────────── the method ──
 
-/** „Cum am calculat": the population's rules, the months, the scope sent, the API's own notes, and whether the list adds up. */
-export function MethodNote({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
-  return (
-    <details className={cn('text-sm text-muted-foreground', className)}>
-      <summary className="cursor-pointer font-medium text-foreground">{t`Cum am calculat`}</summary>
-      <MethodBody query={query} answer={answer} className="mt-3" />
-    </details>
-  )
-}
-
 export function MethodBody({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   const now = answer.figures.data?.now ?? null
   const ranking = answer.ranking.data
@@ -1207,40 +767,6 @@ export function QuestionList({ onPick, columns = false }: { readonly onPick: (qu
         </div>
       ))}
     </div>
-  )
-}
-
-const STARTERS = ['cheltuie-direct', 'vand-direct', 'pe-locuitor', 'constructii', 'negociere', 'din-2019']
-
-/** The gallery above the default answer, for a reader who arrives with no question: six to start, all on request. */
-export function QuestionGallery({ onChange, className }: { readonly onChange: (query: Query) => void; readonly className?: string }) {
-  const [all, setAll] = useState(false)
-  return (
-    <section className={className} aria-labelledby="analytics-questions">
-      <h2 id="analytics-questions" className="text-sm font-semibold tracking-tight">
-        {t`Pornește de la o întrebare`}
-      </h2>
-      {all ? (
-        <div className="mt-4">
-          <QuestionList columns onPick={(question) => onChange(question.query)} />
-        </div>
-      ) : (
-        <ul className="mt-3 flex flex-wrap gap-2">
-          {STARTERS.map((id) => QUESTIONS.find((item) => item.id === id))
-            .filter((item): item is Question => Boolean(item))
-            .map((item) => (
-              <li key={item.id}>
-                <button type="button" onClick={() => onChange(item.query)} className="border px-3 py-1.5 text-left text-sm hover:bg-muted">
-                  {i18n._(item.text)}
-                </button>
-              </li>
-            ))}
-        </ul>
-      )}
-      <button type="button" onClick={() => setAll((value) => !value)} className="mt-3 text-sm font-medium underline-offset-4 hover:underline">
-        {all ? t`Mai puține întrebări` : t`Toate cele ${QUESTIONS.length} de întrebări`}
-      </button>
-    </section>
   )
 }
 

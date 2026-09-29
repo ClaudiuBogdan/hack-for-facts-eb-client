@@ -2281,7 +2281,9 @@ geometry, part for part:
 - **The pinned bar** (`PopulationNav`, in `HomeSectionNav`'s shape): the
   question on the left from `md`, and the three populations at the right —
   „Achiziții directe · Contracte atribuite · Acorduri-cadru" — the one read
-  underlined; on a phone it scrolls, as the profiles' bar does. Not
+  underlined; nothing scrolls (the owner: „there is a scroll" — the
+  underline reached a pixel past the bar, and the bar scrolled): on a phone
+  the three share the width, their names wrapping. Not
   numbered (the owner: „the numbers don't make sense here"): the profiles
   number a sequence of bands, these are three choices — each carries an
   icon instead (the owner's suggestion): a cart for direct purchases, and
@@ -2296,3 +2298,18 @@ geometry, part for part:
 The group-by stays above the table. A variant for later: the group-by's
 axes as the pinned bar's numbered items („01 Ce · 02 Cine cumpără · 03 De
 la cine · …"), the profiles' own bands, with the populations as a toggle.
+
+### 18.13 The page (29 September 2026)
+
+The owner made `propozitie` the analytics page and removed the other
+versions; `/development/procurement/analytics` opens it. Removed with them,
+the code only they used: `raspuns`'s readout, figures, ranked list, time
+answer, facets band (and the facets read), years strip and gallery;
+`curat`'s control row, head and figures; `bara`'s command bar and trends.
+Kept, and used by the page: the query and its address
+(`analytics.model.ts`, with its tests), the reads (`analytics.data.ts`), the
+words (`analytics.text.ts`), the ready questions (in „Întrebări"), the
+filter panel (`analytics.filters.tsx`), the answer's table, chart, years
+and source line (`analytics.clean.tsx`), the head, the bar and the figures
+band (`analytics.heads.tsx`). §18.2–18.10 record the versions tried and why
+each went; §18.11–18.12 the page's head.

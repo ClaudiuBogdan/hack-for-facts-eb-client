@@ -1,22 +1,42 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowDown, ArrowUpRight, Check, Info, Link2, TriangleAlert } from 'lucide-react'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Check,
+  Info,
+  Link2,
+  TriangleAlert,
+} from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { monthText } from '@/features/procurement/lib/home-format'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { POPULATIONS, bucketStart, clippedBucket, drilled, type Query } from './analytics.model'
-import { COUNTY_POPULATION, countyPopulationNote, type Answer, type Point, type Ranking } from './analytics.data'
 import {
-  AddFilter,
-  FilterChips,
+  POPULATIONS,
+  bucketStart,
+  clippedBucket,
+  drilled,
+  type Query,
+} from './analytics.model'
+import {
+  COUNTY_POPULATION,
+  countyPopulationNote,
+  type Answer,
+  type Point,
+  type Ranking,
+} from './analytics.data'
+import {
   MethodBody,
-  PeriodMenu,
-  PopulationToggle,
-  QuestionsMenu,
   bucketLabel,
   clippedText,
   profileLink,
@@ -26,15 +46,22 @@ import {
   useSearchStrings,
   type Row,
 } from './analytics.parts'
-import { FiltersButton } from './analytics.filters'
-import { changeText, countText, headline, monthsText, moneyText, percentText, periodGloss, periodText, populationGloss, recordsCount, type Namer } from './analytics.text'
+import {
+  changeText,
+  countText,
+  moneyText,
+  percentText,
+  periodGloss,
+  populationGloss,
+  recordsCount,
+  type Namer,
+} from './analytics.text'
 
 /**
- * The answer with the words cut: the question as its headline, the months,
- * four numbers, one ranked list or one chart. Everything the numbers need
- * said — the population's rules, the gaps the API reports, the question's
- * trap — sits behind one marker by the months, amber when there is
- * something to beware of; how it was counted, behind the source line.
+ * The answer, with the words cut: the table of every measure (or the chart in
+ * time), the years, the source line; the caveats behind one marker, amber
+ * when there is something to beware of; how it was counted behind the source
+ * line.
  */
 
 const ICON = 'inline-flex size-9 shrink-0 items-center justify-center border text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground'
@@ -52,45 +79,6 @@ export function ShareIcon({ query, answer, className }: { readonly query: Query;
     <button type="button" onClick={copy} className={className ?? ICON} aria-label={copied ? t`Copiat` : t`Copiază legătura`} title={copied ? t`Copiat` : t`Copiază legătura`}>
       {copied ? <Check className="size-4" aria-hidden="true" /> : <Link2 className="size-4" aria-hidden="true" />}
     </button>
-  )
-}
-
-/** The quick row: what, when, a new filter, the filters on — and, at the end, the whole panel, the ready questions, the link. */
-export function CleanControls({
-  query,
-  answer,
-  namer,
-  onChange,
-  onFilters,
-  className,
-}: {
-  readonly query: Query
-  readonly answer: Answer
-  readonly namer: Namer
-  readonly onChange: (query: Query) => void
-  readonly onFilters: () => void
-  readonly className?: string
-}) {
-  return (
-    <div className={cn('flex flex-col gap-2', className)}>
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="w-full sm:w-auto">
-          <PopulationToggle query={query} onChange={onChange} />
-        </div>
-        <PeriodMenu query={query} answer={answer} onChange={onChange} />
-        <AddFilter query={query} namer={namer} onChange={onChange} />
-        <span className="ml-auto flex items-center gap-2">
-          <FiltersButton query={query} onClick={onFilters} />
-          <QuestionsMenu onChange={onChange} />
-          <ShareIcon query={query} answer={answer} />
-        </span>
-      </div>
-      {Object.keys(query.filters).length > 0 || query.titlu || query.valoare ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterChips query={query} namer={namer} onChange={onChange} />
-        </div>
-      ) : null}
-    </div>
   )
 }
 
@@ -121,18 +109,6 @@ export function NotesMarker({ query, answer }: { readonly query: Query; readonly
         {gloss ? <p className="text-muted-foreground">{gloss}</p> : null}
       </PopoverContent>
     </Popover>
-  )
-}
-
-export function CleanHead({ query, answer, namer, className }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly className?: string }) {
-  return (
-    <div className={className}>
-      <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-[2rem]">{headline(query, namer)}</h1>
-      <p className="mt-2 flex items-center gap-1.5 text-sm tabular-nums text-muted-foreground">
-        {answer.period ? periodText(answer.period, query) : '…'}
-        <NotesMarker query={query} answer={answer} />
-      </p>
-    </div>
   )
 }
 
@@ -169,37 +145,6 @@ export function figuresOf(query: Query, answer: Answer): readonly Figure[] | nul
     figures.push({ key: 'top5', label: byValue ? t`Top 5 firme, din lei` : t`Top 5 firme`, value: concentration?.top5 != null ? percentText(concentration.top5, 0) : '…', change: null })
   }
   return figures
-}
-
-/** The numbers, bare: a label, a value, its change where the population compares (the months compared in its title). */
-export function CleanFigures({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
-  if (answer.figures.isError) return (
-      <div className={className}>
-        <HubLoadError onRetry={answer.figures.retry} />
-      </div>
-    )
-  const figures = figuresOf(query, answer)
-  const compared = answer.figures.data?.before && answer.period ? t`față de ${monthsText(answer.period.previous)}` : undefined
-  if (!figures) return <div className={cn('h-20 animate-pulse bg-muted/40', className)} aria-hidden="true" />
-  return (
-    <dl className={cn('grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4', className)}>
-      {figures.map((figure) => (
-        <div key={figure.label} className="min-w-0">
-          <dt>
-            <MonoLabel className="block text-muted-foreground">{figure.label}</MonoLabel>
-          </dt>
-          <dd className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
-            <span className={cn('text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl', figure.muted ? 'text-muted-foreground' : 'text-foreground')}>{figure.value}</span>
-            {figure.change ? (
-              <span className="text-xs tabular-nums text-muted-foreground" title={compared}>
-                {figure.change}
-              </span>
-            ) : null}
-          </dd>
-        </div>
-      ))}
-    </dl>
-  )
 }
 
 // ────────────────────────────────────────────────────────────── rows ──
