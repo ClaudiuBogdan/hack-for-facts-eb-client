@@ -15,7 +15,7 @@ export const prototype = {
   variants: {
     raspuns: { title: 'Răspuns — the answer is the page', component: AnalyticsRaspuns, note: 'One column: controls in one row, the query as a sentence, four figures, the ranked list (a row click narrows and ranks the next axis), the selection, the years, records on request.' },
     curat: { title: 'Curat — the words cut', component: AnalyticsCurat, note: "Răspuns with the text gone: headline, months and one caveat marker, bare figures, the answer as a table of every measure (a chart in time), the years. Every filter in a sheet (right; bottom on a phone)." },
-    propozitie: { title: 'Propoziție — the headline is the control', component: AnalyticsPropozitie, note: "Curat with its head redesigned: no toolbar; the headline's phrases are the controls (population ▾, a filter opens the panel, ✕ drops it), the months pick the period; figures in one ruled row." },
+    propozitie: { title: 'Propoziție — the head on the profiles\' grid', component: AnalyticsPropozitie, note: "Curat's answer under a head on the procurement profiles' grid: the period at the top right, the question as the headline (a filter's phrase opens the panel, ✕ drops it), the populations numbered in the pinned bar, the figures band." },
     bara: { title: 'Bară — one bar, figures with their years', component: AnalyticsBara, note: 'Curat with its head redesigned: population tabs and the period, one search field holding the filters as chips; each figure with its years since 2019.' },
   },
   compare: ['curat', 'propozitie', 'bara'],

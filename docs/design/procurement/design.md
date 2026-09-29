@@ -2261,3 +2261,34 @@ period, adding a filter (the sentence); a search from the bar, dropping a
 chip, the tabs, a year from a trend (the bar) — all drive the address, no
 console errors; the review's hard cases load in both; no horizontal scroll
 at 390 px.
+
+### 18.12 `propozitie` on the profiles' grid (29 September 2026)
+
+The owner kept `propozitie`'s head and asked for it polished onto the new
+design grid, with the title no longer a dropdown and the options laid out as
+on the procurement profile pages. It now stands on the buyer page's
+geometry, part for part:
+
+- **The head band** (`GridHead`): the lattice, the corner ticks, the ruled
+  frame; the top row with the way back („Achiziții publice / Analize") and,
+  at the right end, how recent the data is („Date actualizate până la 31 mai
+  2026") beside the „Perioada" control; the question as an extrabold
+  headline sized by its length, the population and the group-by as words,
+  each filter's phrase opening the panel with its ✕ to drop it; under it
+  „Adaugă un filtru", „Filtre", „Întrebări", the link and the caveats'
+  marker, as the profile's ways out; the crux where the head's bottom rule
+  meets the frame.
+- **The pinned bar** (`PopulationNav`, in `HomeSectionNav`'s shape): the
+  question on the left from `md`, and the three populations numbered at the
+  right — „01 Achiziții directe · 02 Contracte atribuite · 03 Acorduri-cadru"
+  — the one read underlined; on a phone it scrolls, as the profiles' bar
+  does.
+- **The figures band** (`HubFiguresBand`, as the profiles use it): the value
+  large with its unit apart („15,3 mld. lei"), the mono term under it, the
+  change as the cell's note.
+- The answer, then the years and the records, each in a band of the same
+  frame; the source line at the foot.
+
+The group-by stays above the table. A variant for later: the group-by's
+axes as the pinned bar's numbered items („01 Ce · 02 Cine cumpără · 03 De
+la cine · …"), the profiles' own bands, with the populations as a toggle.

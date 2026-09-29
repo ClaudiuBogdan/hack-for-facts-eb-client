@@ -22,7 +22,7 @@ import {
 } from './analytics.parts'
 import { CleanControls, NotesMarker, CleanFigures, CleanHead, CleanTable, CleanTime, CleanYears, SourceLine } from './analytics.clean'
 import { FilterSheet } from './analytics.filters'
-import { CommandBar, RuledFigures, SentenceHead, TrendFigures } from './analytics.heads'
+import { CommandBar, GridFigures, GridHead, PopulationNav, TrendFigures } from './analytics.heads'
 import { headline } from './analytics.text'
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
@@ -140,11 +140,13 @@ export function AnalyticsCurat() {
 // ─────────────────────────────────────────────────────────── propoziție ──
 
 /**
- * `propozitie` — `curat` with the head redesigned: no toolbar. The headline
- * is the control (the population's phrase switches it, a filter's opens the
- * panel, its ✕ drops it); the months under it pick the period, beside the
- * caveats' marker; what adds to the query sits quietly at that line's end.
- * The figures in one ruled row, the value first.
+ * `propozitie` — `curat`'s answer under a head on the procurement profiles'
+ * grid: the head band (the way back, the period and how recent its data is;
+ * the question as the headline, a filter's phrase opening the panel, its ✕
+ * dropping it; what adds to the query and the caveats' marker), the cross on
+ * its bottom rule, the pinned bar with the three populations numbered as the
+ * profiles number their bands, the figures band; then the answer, the years
+ * and the records in bands of the same frame, the source at the foot.
  */
 export function AnalyticsPropozitie() {
   const [query, move] = useAnalyticsQuery()
@@ -154,18 +156,27 @@ export function AnalyticsPropozitie() {
   const namer = useNamer(query, answer)
   return (
     <Shell>
-      <RuledFrame className="py-8 sm:py-12">
-        <SentenceHead query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} />
-        <RuledFigures query={query} answer={answer} className="mt-8" />
-        <GroupBar query={query} onChange={move} className="mt-12" />
-        {query.dupa.axis === 'timp' ? (
-          <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
-        ) : (
-          <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
-        )}
-        <CleanYears query={query} answer={answer} onChange={move} className="mt-12" />
-        <RecordsBlock key={recordsKey(query)} query={query} answer={answer} className="mt-12" />
-        <SourceLine query={query} answer={answer} className="mt-12 border-t pt-4" />
+      <GridHead query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} />
+      <PopulationNav query={query} namer={namer} onChange={move} />
+      <GridFigures query={query} answer={answer} />
+      <section className="border-b" aria-label={t`Răspunsul`}>
+        <RuledFrame className="py-12 sm:py-16">
+          <GroupBar query={query} onChange={move} />
+          {query.dupa.axis === 'timp' ? (
+            <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
+          ) : (
+            <CleanTable query={query} answer={answer} namer={namer} onChange={move} expanded={expanded} onExpand={setExpanded} className="mt-3" />
+          )}
+        </RuledFrame>
+      </section>
+      <section className="border-b" aria-label={t`Înregistrările`}>
+        <RuledFrame className="py-12 sm:py-16">
+          <CleanYears query={query} answer={answer} onChange={move} className="mb-12" />
+          <RecordsBlock key={recordsKey(query)} query={query} answer={answer} />
+        </RuledFrame>
+      </section>
+      <RuledFrame className="py-8">
+        <SourceLine query={query} answer={answer} />
       </RuledFrame>
       <FilterSheet query={query} answer={answer} namer={namer} onChange={move} open={filters} onOpenChange={setFilters} />
     </Shell>
