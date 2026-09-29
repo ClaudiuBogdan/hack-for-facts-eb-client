@@ -2370,3 +2370,9 @@ answer's, before the source line:
 The prototype's wrapper now clips its horizontal overflow (`overflow-x-clip`),
 as the profile pages' wrappers do. The crux marks overhang the frame by
 6 px, which scrolled a phone sideways.
+
+Then (the owner): „When I click Număr / Lei it jumps to the top of the page."
+The router resets the scroll on every navigation, and every change of
+question is one. `useAnalyticsQuery`'s move now keeps the scroll
+(`resetScroll: false`): the measure, a year, a tab, a filter or a drill all
+change the answer in place.

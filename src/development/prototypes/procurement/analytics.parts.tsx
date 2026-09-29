@@ -89,10 +89,12 @@ export function useAnalyticsQuery(): readonly [Query, (next: Query) => void, Ana
   const strings = useSearchStrings()
   const query = queryOf(strings)
   const navigate = useNavigate()
+  // A change of question stays where the reader is: the page answers in place, it is not a new page.
   const move = (next: Query) =>
     void navigate({
       to: '.',
       search: (previous: Record<string, unknown>) => ({ ...(previous.v !== undefined ? { v: previous.v } : {}), ...(previous.layout !== undefined ? { layout: previous.layout } : {}), ...searchOf(repaired(next)) }),
+      resetScroll: false,
     })
   return [query, move, strings] as const
 }
