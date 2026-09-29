@@ -90,7 +90,7 @@ const CHIP = 'inline-flex min-h-9 items-center gap-1.5 border px-2.5 text-sm tra
 // ───────────────────────────────────────────────────────────────── state ──
 
 /** The query the URL holds, and a way to move to another (pushed: Back undoes a drill). The harness's own keys are kept. */
-function useSearchStrings(): AnalyticsSearch {
+export function useSearchStrings(): AnalyticsSearch {
   const search = useSearch({ strict: false }) as Record<string, unknown>
   return Object.fromEntries(Object.entries(search).map(([key, value]) => [key, typeof value === 'string' || typeof value === 'number' ? String(value) : undefined]))
 }
@@ -161,7 +161,7 @@ export function PopulationToggle({ query, onChange }: { readonly query: Query; r
   )
 }
 
-function PeriodMenu({ query, answer, onChange }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void }) {
+export function PeriodMenu({ query, answer, onChange }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void }) {
   const [open, setOpen] = useState(false)
   const cutoff = answer.cutoff ? answer.cutoff[POPULATIONS[query.tip].cutoff] : null
   const lastYear = cutoff ? Number(cutoff.slice(0, 4)) : new Date().getFullYear()
@@ -269,7 +269,7 @@ export function FilterChips({ query, namer, onChange }: { readonly query: Query;
 
 const resolveSchema = z.object({ procurementResolve: z.array(z.object({ value: z.string(), label: z.string() })) })
 
-function useCpvSearch(term: string) {
+export function useCpvSearch(term: string) {
   const trimmed = term.trim()
   return useQuery({
     queryKey: ['prototype', 'analytics', 'cpv-search', trimmed],
@@ -283,7 +283,7 @@ function useCpvSearch(term: string) {
 }
 
 /** „Procedures" a contract row carries, by SEAP's own words (the scope takes them as they are). */
-const PROCEDURES = [
+export const PROCEDURES = [
   'Licitatie deschisa',
   'Procedura simplificata',
   'Negociere fara publicare prealabila',
@@ -428,17 +428,22 @@ export function QuestionsMenu({ onChange }: { readonly onChange: (query: Query) 
 }
 
 /** Copies the address with the period written out: a link a journalist cites must not move with the next month. */
+/** This page's address for a query, the months frozen where they would move: a link a journalist cites must not move with the next month. */
+export function shareUrl(query: Query, answer: Answer): string {
+  // The last twelve months and a year in progress move with the next month; the link carries the months they are today.
+  const moving = query.period.kind === 'recent' || (query.period.kind === 'year' && answer.period !== null && !answer.period.to.endsWith('-12'))
+  const period = answer.period && moving ? { kind: 'months' as const, from: answer.period.from, to: answer.period.to } : query.period
+  const current = new URLSearchParams(window.location.search)
+  const params = new URLSearchParams(
+    [...['v', 'layout'].flatMap((key) => (current.get(key) ? [[key, current.get(key)!] as [string, string]] : [])), ...Object.entries(searchOf({ ...query, period }))].filter((entry): entry is [string, string] => entry[1] !== undefined),
+  )
+  return `${window.location.origin}${window.location.pathname}${params.size > 0 ? `?${params.toString()}` : ''}`
+}
+
 export function ShareButton({ query, answer }: { readonly query: Query; readonly answer: Answer }) {
   const [copied, setCopied] = useState(false)
   const copy = () => {
-    // The last twelve months and a year in progress move with the next month; the link carries the months they are today.
-    const moving = query.period.kind === 'recent' || (query.period.kind === 'year' && answer.period !== null && !answer.period.to.endsWith('-12'))
-    const period = answer.period && moving ? { kind: 'months' as const, from: answer.period.from, to: answer.period.to } : query.period
-    const current = new URLSearchParams(window.location.search)
-    const params = new URLSearchParams(
-      [...['v', 'layout'].flatMap((key) => (current.get(key) ? [[key, current.get(key)!] as [string, string]] : [])), ...Object.entries(searchOf({ ...query, period }))].filter((entry): entry is [string, string] => entry[1] !== undefined),
-    )
-    const url = `${window.location.origin}${window.location.pathname}${params.size > 0 ? `?${params.toString()}` : ''}`
+    const url = shareUrl(query, answer)
     void navigator.clipboard?.writeText(url).then(() => {
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1500)
@@ -481,13 +486,36 @@ const NOTE = 'mt-2 max-w-[70ch] border-l-2 border-amber-600/60 pl-3 text-sm text
  * address held that the page could not use, a window the population does not
  * compare across, the API's own partial verdict, the question's warning.
  */
-export function Readout({ query, answer, namer, withGroup = true }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly withGroup?: boolean }) {
-  const unread = unreadParams(useSearchStrings())
+export interface ReadoutNotes {
+  /** What the address held that the page could not use. */
+  readonly unread: string | null
+  /** What the numbers cannot say for this window: before 2019, past the kind split, the API's partial verdict. */
+  readonly warnings: readonly string[]
+  /** The ready question's own warning, when the address is one. */
+  readonly trap: string | null
+}
+
+export function readoutNotes(query: Query, answer: Answer, search: AnalyticsSearch): ReadoutNotes {
+  const unread = unreadParams(search)
   const population = POPULATIONS[query.tip]
   // A question's warning belongs to its own address, never to a default an unread address fell back to.
   const question = unread.length === 0 ? QUESTIONS.find((item) => JSON.stringify(searchOf(item.query)) === JSON.stringify(searchOf(query))) : undefined
   const split = population.kindSplitUntil
   const now = answer.figures.data?.now ?? null
+  const warnings: string[] = []
+  if (answer.period && answer.period.from < `${population.comparableFrom}-01`) warnings.push(beforeComparableNote(query.tip))
+  if (split && answer.period && answer.period.to > split) warnings.push(kindSplitNote(query.tip))
+  if (now?.answerability === 'degraded') warnings.push(degradedNote(now.undated, now.undatedMoney))
+  if (now?.answerability === 'abstained') warnings.push(t`Sursa nu răspunde pentru această selecție: cifrele lipsesc, nu sunt zero.`)
+  return {
+    unread: unread.length > 0 ? t`Din adresă n-am putut folosi: ${unread.map((item) => `${item.param}=${item.value}`).join(', ')}. Răspunsul de mai jos nu ține seama de ele.` : null,
+    warnings,
+    trap: question?.trap ? i18n._(question.trap) : null,
+  }
+}
+
+export function Readout({ query, answer, namer, withGroup = true }: { readonly query: Query; readonly answer: Answer; readonly namer: Namer; readonly withGroup?: boolean }) {
+  const notes = readoutNotes(query, answer, useSearchStrings())
   return (
     <div>
       <h1 className="max-w-4xl text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-3xl">{headline(query, namer, withGroup)}</h1>
@@ -496,16 +524,13 @@ export function Readout({ query, answer, namer, withGroup = true }: { readonly q
         {answer.period ? <span>{periodGloss(answer.period, query, answer.cutoff?.failed ?? false)}</span> : null}
       </p>
       <p className="mt-1 max-w-[70ch] text-sm text-muted-foreground">{populationGloss(query.tip)}</p>
-      {unread.length > 0 ? (
-        <p className={NOTE}>
-          {t`Din adresă n-am putut folosi: ${unread.map((item) => `${item.param}=${item.value}`).join(', ')}. Răspunsul de mai jos nu ține seama de ele.`}
+      {notes.unread ? <p className={NOTE}>{notes.unread}</p> : null}
+      {notes.warnings.map((warning) => (
+        <p key={warning} className={NOTE}>
+          {warning}
         </p>
-      ) : null}
-      {answer.period && answer.period.from < `${population.comparableFrom}-01` ? <p className={NOTE}>{beforeComparableNote(query.tip)}</p> : null}
-      {split && answer.period && answer.period.to > split ? <p className={NOTE}>{kindSplitNote(query.tip)}</p> : null}
-      {now?.answerability === 'degraded' ? <p className={NOTE}>{degradedNote(now.undated, now.undatedMoney)}</p> : null}
-      {now?.answerability === 'abstained' ? <p className={NOTE}>{t`Sursa nu răspunde pentru această selecție: cifrele lipsesc, nu sunt zero.`}</p> : null}
-      {question?.trap ? <p className={NOTE}>{i18n._(question.trap)}</p> : null}
+      ))}
+      {notes.trap ? <p className={NOTE}>{notes.trap}</p> : null}
     </div>
   )
 }
@@ -670,7 +695,7 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
 
 // ──────────────────────────────────────────────────────── ranked answer ──
 
-interface Row {
+export interface Row {
   readonly key: string | null
   readonly kind: 'top' | 'other' | 'unknown' | 'withheld'
   readonly label: string
@@ -682,7 +707,7 @@ interface Row {
   readonly secondary: string | null
 }
 
-function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly rows: readonly Row[]; readonly total: number | null } {
+export function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly rows: readonly Row[]; readonly total: number | null } {
   const group = query.dupa as { axis: AxisId; level: string }
   const perResident = query.masura === 'locuitor'
   const byValue = ranking.rankedBy === 'value'
@@ -739,7 +764,7 @@ function rowsOf(query: Query, ranking: Ranking, namer: Namer): { readonly rows: 
   return { rows: [...top, ...rest.sort((a, b) => (b.figure ?? 0) - (a.figure ?? 0))], total }
 }
 
-function profileLink(axis: AxisId, key: string): { readonly to: string; readonly params: Record<string, string> } | null {
+export function profileLink(axis: AxisId, key: string): { readonly to: string; readonly params: Record<string, string> } | null {
   if (axis === 'cumparator') return { to: '/procurement/institutions/$cui', params: { cui: key } }
   if (axis === 'furnizor') return { to: '/procurement/suppliers/$cui', params: { cui: key } }
   return null
@@ -841,7 +866,7 @@ export function RankedAnswer({
 // ────────────────────────────────────────────────────────── time answer ──
 
 /** What of a bucket a window holds, when not all of it: „(din iunie)", „(până în mai)", „(iunie–august)". */
-function clippedText(bucket: string, window: { readonly from: string; readonly to: string } | null): string | null {
+export function clippedText(bucket: string, window: { readonly from: string; readonly to: string } | null): string | null {
   const clipped = window ? clippedBucket(bucket, window) : null
   if (!clipped) return null
   const month = (value: string) => monthText(value).split(' ')[0]
@@ -850,7 +875,7 @@ function clippedText(bucket: string, window: { readonly from: string; readonly t
   return t`(până în ${month(clipped.to!)})`
 }
 
-function bucketLabel(bucket: string): string {
+export function bucketLabel(bucket: string): string {
   if (/^\d{4}$/u.test(bucket)) return bucket
   if (/^\d{4}-Q[1-4]$/u.test(bucket)) return bucket.replace('-Q', ' T')
   return monthText(bucket)
@@ -1105,14 +1130,21 @@ export function RecordsBlock({ query, answer, className }: { readonly query: Que
 
 /** „Cum am calculat": the population's rules, the months, the scope sent, the API's own notes, and whether the list adds up. */
 export function MethodNote({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
+  return (
+    <details className={cn('text-sm text-muted-foreground', className)}>
+      <summary className="cursor-pointer font-medium text-foreground">{t`Cum am calculat`}</summary>
+      <MethodBody query={query} answer={answer} className="mt-3" />
+    </details>
+  )
+}
+
+export function MethodBody({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   const now = answer.figures.data?.now ?? null
   const ranking = answer.ranking.data
   const sum = ranking ? ranking.buckets.reduce((total, bucket) => total + bucket.count, 0) : null
   const adds = now && sum !== null ? sum === now.records : null
   return (
-    <details className={cn('text-sm text-muted-foreground', className)}>
-      <summary className="cursor-pointer font-medium text-foreground">{t`Cum am calculat`}</summary>
-      <div className="mt-3 space-y-2">
+    <div className={cn('space-y-2', className)}>
         <p>{populationGloss(query.tip)}</p>
         {answer.period ? (
           <p>
@@ -1134,8 +1166,7 @@ export function MethodNote({ query, answer, className }: { readonly query: Query
           </ul>
         ) : null}
         {answer.scopes.now ? <pre className="overflow-x-auto bg-muted/60 p-2 font-mono text-xs">{JSON.stringify(answer.scopes.now)}</pre> : null}
-      </div>
-    </details>
+    </div>
   )
 }
 

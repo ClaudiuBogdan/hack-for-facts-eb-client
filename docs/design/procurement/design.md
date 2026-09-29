@@ -2009,13 +2009,11 @@ the map files after the figures).
   the context below. Closest to Astra's `intrebare`: conventional controls
   under the sentence, not a sentence to edit word by word (Romanian
   agreement would decide the interaction).
-- **`traseu` — who buys, what, from whom.** No group-by: three linked
-  columns, each ranked under every pick but its own; a pick in one narrows
-  the other two; where and when follow, shorter. The quickest way to follow
-  money from a buyer to its firms to what they sell.
-- **`panou` — the workbench (control).** A rail with the top six of every
-  axis (each under every filter but its own), the answer beside it. The old
-  explorer's reader will look for this.
+- **`traseu` — who buys, what, from whom** (removed 29 September, §18.9).
+  No group-by: three linked columns, each ranked under every pick but its
+  own; a pick in one narrows the other two.
+- **`panou` — the workbench** (removed 29 September, §18.9). A rail with the
+  top six of every axis, the answer beside it.
 
 ### 18.4 Decisions in the prototype
 
@@ -2156,9 +2154,60 @@ question and drill round-trips; the adversarial addresses; the periods).
 
 ### 18.8 Open for the owner
 
-- The layout: `raspuns`, `traseu`, `panou` — or `raspuns` with a „Traseu"
-  view.
+- The layout: `raspuns` or one of its clean versions (§18.9).
 - Whether contract lei are offered at all before `framework_role` lands.
 - The route: `/procurement/analytics` with `/procurement/search` redirecting
   (the old params mapped), and the explorer's list view kept as the
   records layer or dropped.
+
+### 18.9 The owner's pick and the clean versions (29 September 2026)
+
+The owner kept `raspuns` only and asked for a much cleaner interface — „no
+need for extra text, let the data speak" — and for every filter in a side
+panel (a responsive sheet on a phone) beside the quick filters, for the
+power user. `traseu` and `panou` are removed at the owner's word; `raspuns`
+stays as it was; three versions of it are added:
+
+- **`curat` — the words cut.** The question as the headline; under it the
+  months and one marker (an „i", or amber with a count when something is
+  off) whose popover holds everything that was prose — what the address held
+  that the page could not use, the window before 2019, the record-kind
+  split, the API's partial verdict, the question's trap, the population's
+  rules. Four bare figures (the change's months in its title); the ranked
+  answer on one line per row (rank, name, bar, value, share; the bar under
+  the name on a phone; the count in the row's title; the profile arrow on
+  hover); the chart with its buckets labelled; the years as a small strip;
+  one source line at the foot („Sursa: SEAP, complet până în mai 2026 · Cum
+  am calculat", the method in a popover). No facets and no gallery on the
+  page: the questions stay in „Întrebări".
+- **`lateral` — filters beside the answer.** `curat`'s answer, the panel
+  open at the left from `lg` (sticky, its own scroll); each field shows its
+  axis's top five in the selection with their shares, and „restul". A pick
+  shows its own next level (a county → its localities, a category → its
+  groups). The quick row gives the panel what it holds (population, period).
+- **`tabel` — every number at once.** The figures in one line; the answer a
+  table — records, lei, the average, the share with a bar — whose headers
+  rank by their column (the server ranks: the top 25 by lei is not the top
+  25 by count); in time, a row per period. On a phone the table keeps the
+  name and the column it ranks by.
+
+**The filter panel** (`analytics.filters.tsx`) holds the whole query:
+population; period (the last 12 months, a year, two months applied when the
+focus leaves the pair); institution and firm (the site's search, or a CUI
+typed as it is — „RO" read); the buyer's and the firm's place (region and
+county selects, then the county's localities from the map's file); the
+category (search by name or code, the pick shown as its path — division ›
+group › class — each step a click back up); the procedure (contracts and
+frameworks); the title's words; the value range. A change applies at once:
+the address is the state. In `curat` and `tabel` it opens as a sheet — from
+the right, from the bottom on a phone — with „Șterge tot" and „Arată 95.800"
+to close on; in `lateral` it is the rail (and the same sheet, values
+included, on a phone).
+
+**Checked on the dev API:** every panel field drives the address (an
+institution, a county and its top locality, a category and a step back up
+its path, the title, the value, the months, a year, contracts, a procedure,
+clearing all; a firm from the sheet), with no console errors; the three
+versions answer the review's hard cases (contracts by year, per resident,
+frameworks, one firm's contracts, months, an unread address) without
+errors; no horizontal scroll at 390 px; `raspuns` renders as before.
