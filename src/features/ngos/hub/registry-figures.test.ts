@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   categoryShares,
-  countyLayer,
-  densityOf,
-  nationalDensity,
   perDay,
-  rankCounties,
+  registryCountyLayer,
   registryQuery,
   registrySearch,
   statusShares,
@@ -14,45 +11,30 @@ import { summaryFixture } from './test/summary-fixture'
 
 const SUMMARY = summaryFixture()
 
-describe('densities', () => {
-  it('counts registered NGOs per 10,000 residents, to one decimal', () => {
-    expect(densityOf(500, 50_000)).toBe(100)
-    expect(densityOf(200, 30_000)).toBe(66.7)
-    expect(densityOf(10, 0)).toBe(0)
-  })
-
-  it('divides every registered NGO, those with no county included, by the country', () => {
-    expect(nationalDensity(SUMMARY)).toBe(75)
-  })
-})
-
-describe('countyLayer', () => {
-  it('draws the density as a rate against the country, with the registered NGOs no county holds', () => {
-    const layer = countyLayer(SUMMARY, 'densitate')
-    expect(layer).toMatchObject({ kind: 'rate', national: 75, digits: 1, unplaced: 50 })
+describe('registryCountyLayer', () => {
+  it('draws the registered NGOs per 10,000 residents, the country’s own rate counting the ones no county holds', () => {
+    const layer = registryCountyLayer(SUMMARY, 'densitate')
+    // A count at the capture (20 September 2026), not a figure of the population's year.
+    expect(layer).toMatchObject({ code: 'ngo-registry-densitate', period: '2026', unit: 'other', unitLabel: null, missingCounties: [], national: 75 })
     expect(layer.values).toEqual([
-      { code: 'CJ', source: 'CLUJ', value: 100 },
-      { code: 'DB', source: 'DÂMBOVITA', value: 50 },
-      { code: 'AB', source: 'ALBA', value: 50 },
+      { code: 'CJ', name: 'Cluj', value: 100 },
+      { code: 'DB', name: 'Dâmbovița', value: 50 },
+      { code: 'AB', name: 'Alba', value: 50 },
     ])
   })
 
-  it('draws the registered NGOs as counts out of the national total', () => {
-    expect(countyLayer(SUMMARY, 'total')).toMatchObject({ kind: 'count', national: 900, digits: 0, unplaced: 50 })
+  it('draws the year’s new NGOs per 100,000 residents, over all of the year’s registrations', () => {
+    const layer = registryCountyLayer(SUMMARY, 'noi')
+    expect(layer.period).toBe('2025')
+    expect(layer.national).toBe(100)
+    expect(layer.values.map((county) => county.value)).toEqual([140, 75, 50])
   })
 
-  it('draws the year’s new NGOs out of that year’s registrations, the unplaced ones being the difference', () => {
-    const layer = countyLayer(SUMMARY, 'noi')
-    expect(layer).toMatchObject({ kind: 'count', national: 120, unplaced: 5 })
-    expect(layer.values.map((county) => county.value)).toEqual([70, 30, 15])
-  })
-})
-
-describe('rankCounties', () => {
-  it('ranks highest first and breaks a tie by name', () => {
-    const names: Record<string, string> = { CJ: 'Cluj', DB: 'Dâmbovița', AB: 'Alba' }
-    const ranked = rankCounties(countyLayer(SUMMARY, 'densitate').values, (code) => names[code] ?? code)
-    expect(ranked.map((county) => county.code)).toEqual(['CJ', 'AB', 'DB'])
+  it('hatches a county with no population instead of drawing it as zero', () => {
+    const counties = SUMMARY.counties.map((county) => (county.code === 'AB' ? { ...county, residents: 0 } : county))
+    const layer = registryCountyLayer({ ...SUMMARY, counties }, 'densitate')
+    expect(layer.values.map((county) => county.code)).toEqual(['CJ', 'DB'])
+    expect(layer.missingCounties).toEqual(['AB'])
   })
 })
 

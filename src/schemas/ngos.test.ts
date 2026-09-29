@@ -13,12 +13,12 @@ describe('parseNgoLandingSearch', () => {
     expect(parseNgoLandingSearch({})).toEqual({})
   })
 
-  it('keeps a known map layer', () => {
-    expect(parseNgoLandingSearch({ indicator: 'noi' })).toEqual({ indicator: 'noi' })
+  it('keeps a known map layer and domain measure', () => {
+    expect(parseNgoLandingSearch({ indicator: 'noi', domenii: 'venituri' })).toEqual({ indicator: 'noi', domenii: 'venituri' })
   })
 
-  it('drops an unknown layer and anything else', () => {
-    expect(parseNgoLandingSearch({ indicator: 'viata', q: 'asociatia' })).toEqual({})
+  it('drops an unknown value, the retired `total` layer included, and anything else', () => {
+    expect(parseNgoLandingSearch({ indicator: 'total', domenii: 'angajati', q: 'asociatia' })).toEqual({})
   })
 })
 

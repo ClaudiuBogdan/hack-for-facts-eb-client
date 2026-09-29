@@ -11,11 +11,12 @@ const GUTTER = 56
 const TOOLTIP_GAP = 12
 
 /**
- * Registrations per year as columns, the latest year in full colour. Inline
+ * One figure per year as columns — the registry's new entries, the
+ * statements' revenue — the latest year in full colour. Inline
  * HTML over a stretched plot: ticks, years and the tooltip read at any width.
  *
  * Pointing at the chart (or dragging a finger along it, or the arrow keys
- * once it has focus) picks the nearest year and reads its count, as the
+ * once it has focus) picks the nearest year and reads its figure, as the
  * INS hub's chart does. To a screen reader the chart is a slider over the
  * years whose value is that reading.
  */
@@ -23,15 +24,24 @@ export function NgoYearChart({
   points,
   label,
   unit,
+  format = formatNgoNumber,
+  formatTick = format,
+  provisional,
 }: {
-  readonly points: readonly { readonly year: number; readonly count: number }[]
+  readonly points: readonly { readonly year: number; readonly value: number }[]
   /** What the columns count, for the slider's name. */
   readonly label: string
-  /** The word under a year's count in the tooltip („organizații înscrise"). */
+  /** The words after a year's figure in the tooltip („organizații noi"); empty where the figure carries its unit. */
   readonly unit: string
+  /** A year's figure, in the tooltip and the slider's value („4.331", „33,5 mld. lei"). */
+  readonly format?: (value: number) => string
+  /** A value-axis tick („6.000", „30 mld."). */
+  readonly formatTick?: (value: number) => string
+  /** Years whose figure is not final, drawn dashed and named so in the reading („prima publicare"). */
+  readonly provisional?: { readonly years: ReadonlySet<number>; readonly label: string }
 }) {
   const count = points.length
-  const scale = niceScale(0, Math.max(...points.map((point) => point.count), 1))
+  const scale = niceScale(0, Math.max(...points.map((point) => point.value), 1))
   // `held`: picked by a finger or a pen, which have no hover to end the reading.
   const [selection, setSelection] = useState<{ readonly index: number; readonly held: boolean } | null>(null)
   const active = selection?.index ?? null
@@ -96,7 +106,9 @@ export function NgoYearChart({
   const reading = active === null ? null : points[active]
   const spoken = (index: number) => {
     const point = points[index]
-    return point ? `${point.year}: ${formatNgoNumber(point.count)} ${unit}` : ''
+    if (!point) return ''
+    const note = provisional?.years.has(point.year) ? `(${provisional.label})` : ''
+    return [`${point.year}:`, format(point.value), unit, note].filter(Boolean).join(' ')
   }
 
   return (
@@ -136,7 +148,7 @@ export function NgoYearChart({
 
         {scale.ticks.map((tick) => (
           <span key={tick} aria-hidden="true" className="pointer-events-none absolute inset-x-0 border-t border-border" style={{ top: `${yAt(tick)}%` }}>
-            <span className="absolute right-full -translate-y-1/2 pr-3 font-mono text-[10px] tabular-nums text-muted-foreground">{formatNgoNumber(tick)}</span>
+            <span className="absolute right-full -translate-y-1/2 pr-3 font-mono text-[10px] tabular-nums text-muted-foreground">{formatTick(tick)}</span>
           </span>
         ))}
 
@@ -150,8 +162,11 @@ export function NgoYearChart({
               index === count - 1 ? 'bg-primary' : 'bg-primary/45',
               active !== null && active !== index && 'bg-primary/25',
               active === index && 'bg-primary',
+              // Not final: an outline over a lighter fill, which still darkens when it is the year read.
+              provisional?.years.has(point.year) && cn('border border-dashed border-primary', active === index ? 'bg-primary/60' : 'bg-primary/15'),
             )}
-            style={{ left: `${xAt(index)}%`, width: `${(64 / count).toFixed(3)}%`, height: `${(100 - yAt(point.count)).toFixed(2)}%` }}
+            data-provisional={provisional?.years.has(point.year) ? '' : undefined}
+            style={{ left: `${xAt(index)}%`, width: `${(64 / count).toFixed(3)}%`, height: `${(100 - yAt(point.value)).toFixed(2)}%` }}
           />
         ))}
 
@@ -166,8 +181,10 @@ export function NgoYearChart({
           >
             <MonoLabel className="block text-muted-foreground">{reading.year}</MonoLabel>
             <p className="mt-1.5">
-              <span className="text-sm font-semibold tabular-nums">{formatNgoNumber(reading.count)}</span> {unit}
+              <span className="text-sm font-semibold tabular-nums">{format(reading.value)}</span>
+              {unit ? ` ${unit}` : null}
             </p>
+            {provisional?.years.has(reading.year) ? <p className="mt-0.5 text-muted-foreground">{provisional.label}</p> : null}
           </div>
         ) : null}
       </div>

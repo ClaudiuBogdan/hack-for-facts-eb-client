@@ -32,8 +32,8 @@ export function HubCountyRank({
   className,
 }: {
   readonly layer: StatisticsHubCountyLayer
-  /** Where a county's row opens; the INS series by default. */
-  readonly countyLink?: (code: string) => LinkOptions
+  /** Where a county's row opens; the INS series by default; `null`, a plain row. */
+  readonly countyLink?: ((code: string) => LinkOptions) | null
   /** How many counties each end of the collapsed list shows. */
   readonly edge?: number
   readonly activeCode?: string
@@ -43,6 +43,7 @@ export function HubCountyRank({
   readonly className?: string
 }) {
   const [expanded, setExpanded] = useState(false)
+  const linkOf = countyLink === null ? null : (countyLink ?? ((code: string) => insCountyLink(layer.code, code)))
   const listRef = useRef<HTMLDivElement>(null)
   const scale = layerScale(layer)
   const ranked = [...layer.values].sort((a, b) => b.value - a.value)
@@ -75,8 +76,9 @@ export function HubCountyRank({
     setExpanded(next)
     if (!keyboard) return
     requestAnimationFrame(() => {
+      // Plain rows take no focus: the collapse control does.
       const target = next
-        ? listRef.current?.querySelectorAll<HTMLElement>('ol a')[edge]
+        ? (listRef.current?.querySelectorAll<HTMLElement>('ol a')[edge] ?? listRef.current?.querySelector<HTMLElement>('[data-county-collapse]'))
         : listRef.current?.querySelector<HTMLElement>('[data-county-expander]')
       target?.focus()
     })
@@ -87,46 +89,58 @@ export function HubCountyRank({
     const swatch = swatchOf(county)
     const value = at(county.value)
     const base = reference === null ? null : at(reference)
+    const rowClass = cn('group col-span-5 grid min-h-11 grid-cols-subgrid items-center transition-colors hover:bg-muted/50', active && 'bg-muted/50')
+    const cells = (
+      <>
+        <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(rank).padStart(2, '0')}</MonoLabel>
+        <span
+          className={cn('size-2.5 rounded-[2px] ring-1 ring-inset ring-foreground/10', swatch.className)}
+          style={{ opacity: swatch.opacity }}
+          aria-hidden="true"
+        />
+        <span className={cn('truncate text-sm text-foreground', active && 'font-medium')}>{county.name}</span>
+        <span className="relative h-2" aria-hidden="true">
+          {base === null ? (
+            <span
+              className={cn(
+                'absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/70 group-hover:bg-primary',
+                active && 'bg-primary',
+              )}
+              style={{ left: `${value.toFixed(2)}%` }}
+            />
+          ) : (
+            <span
+              className={cn('absolute inset-y-0 bg-primary/70 transition-colors group-hover:bg-primary', active && 'bg-primary')}
+              style={{ left: `${Math.min(base, value).toFixed(2)}%`, width: `${Math.max(Math.abs(value - base), 0.6).toFixed(2)}%` }}
+            />
+          )}
+          {base !== null && !additive ? (
+            <span className="absolute -inset-y-1.5 border-l border-dashed border-foreground/60" style={{ left: `${base.toFixed(2)}%` }} />
+          ) : null}
+        </span>
+        <span className="pr-1 text-right text-sm tabular-nums text-foreground">
+          {formatHubValue(county.value, layer.unit, layer.unitLabel, { digits }).value}
+        </span>
+      </>
+    )
     return (
       <li key={county.code} value={rank} className="col-span-5 grid grid-cols-subgrid">
-        <Link
-          {...(countyLink ?? ((code: string) => insCountyLink(layer.code, code)))(county.code)}
-          onPointerEnter={(event) => hoverOnly(event, county.code)}
-          onPointerLeave={(event) => hoverOnly(event, undefined)}
-          onFocus={() => onActiveChange?.(county.code)}
-          onBlur={() => onActiveChange?.(undefined)}
-          className={cn(
-            'group col-span-5 grid min-h-11 grid-cols-subgrid items-center transition-colors hover:bg-muted/50',
-            active && 'bg-muted/50',
-          )}
-        >
-          <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(rank).padStart(2, '0')}</MonoLabel>
-          <span
-            className={cn('size-2.5 rounded-[2px] ring-1 ring-inset ring-foreground/10', swatch.className)}
-            style={{ opacity: swatch.opacity }}
-            aria-hidden="true"
-          />
-          <span className={cn('truncate text-sm text-foreground', active && 'font-medium')}>{county.name}</span>
-          <span className="relative h-2" aria-hidden="true">
-            {base === null ? (
-              <span
-                className={cn('absolute top-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/70 group-hover:bg-primary', active && 'bg-primary')}
-                style={{ left: `${value.toFixed(2)}%` }}
-              />
-            ) : (
-              <span
-                className={cn('absolute inset-y-0 bg-primary/70 transition-colors group-hover:bg-primary', active && 'bg-primary')}
-                style={{ left: `${Math.min(base, value).toFixed(2)}%`, width: `${Math.max(Math.abs(value - base), 0.6).toFixed(2)}%` }}
-              />
-            )}
-            {base !== null && !additive ? (
-              <span className="absolute -inset-y-1.5 border-l border-dashed border-foreground/60" style={{ left: `${base.toFixed(2)}%` }} />
-            ) : null}
-          </span>
-          <span className="pr-1 text-right text-sm tabular-nums text-foreground">
-            {formatHubValue(county.value, layer.unit, layer.unitLabel, { digits }).value}
-          </span>
-        </Link>
+        {linkOf ? (
+          <Link
+            {...linkOf(county.code)}
+            onPointerEnter={(event) => hoverOnly(event, county.code)}
+            onPointerLeave={(event) => hoverOnly(event, undefined)}
+            onFocus={() => onActiveChange?.(county.code)}
+            onBlur={() => onActiveChange?.(undefined)}
+            className={rowClass}
+          >
+            {cells}
+          </Link>
+        ) : (
+          <div onPointerEnter={(event) => hoverOnly(event, county.code)} onPointerLeave={(event) => hoverOnly(event, undefined)} className={rowClass}>
+            {cells}
+          </div>
+        )}
       </li>
     )
   }
@@ -183,6 +197,7 @@ export function HubCountyRank({
       {collapsible && expanded ? (
         <button
           type="button"
+          data-county-collapse
           onClick={(event) => toggle(false, event.detail === 0)}
           className="col-span-5 mt-3 inline-flex min-h-9 items-center justify-self-start text-sm font-medium text-foreground underline-offset-4 hover:underline"
         >

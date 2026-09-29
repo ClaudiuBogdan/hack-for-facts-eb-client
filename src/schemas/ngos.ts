@@ -394,18 +394,25 @@ export type NgoProfileTab = z.infer<typeof ngoProfileTabSchema>
 
 // --- /ong-uri (landing) ----------------------------------------------------
 
-/** What the county map is coloured by: NGOs per 10,000 residents (the default), registered NGOs, or those founded in the last full year. */
-export const NGO_HUB_LAYERS = ['densitate', 'total', 'noi'] as const
+/** What the county map colours: registered NGOs per 10,000 residents, or the year's new ones per 100,000. */
+export const NGO_HUB_LAYERS = ['densitate', 'noi'] as const
 export type NgoHubLayerKey = (typeof NGO_HUB_LAYERS)[number]
 
+/** What ranks the domains: how many organisations, or how much revenue. */
+export const NGO_HUB_DOMAIN_METRICS = ['organizatii', 'venituri'] as const
+export type NgoHubDomainMetric = (typeof NGO_HUB_DOMAIN_METRICS)[number]
+
+/** An unknown or retired value (the old `indicator=total`) falls back to the default instead of failing the page. */
 export const ngoLandingSearchSchema = z
   .object({
     indicator: z.enum(NGO_HUB_LAYERS).optional().catch(undefined),
+    domenii: z.enum(NGO_HUB_DOMAIN_METRICS).optional().catch(undefined),
   })
   .catch(() => ({}))
 
 export type NgoLandingSearch = {
   readonly indicator?: NgoHubLayerKey
+  readonly domenii?: NgoHubDomainMetric
 }
 
 export function parseNgoLandingSearch(

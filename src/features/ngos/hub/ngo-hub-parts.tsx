@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { useLingui } from '@lingui/react/macro'
+import { Plural, Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import { CATEGORY_LABEL, STATUS_LABEL } from './ngo-hub-labels'
 import { formatNgoNumber, formatNgoShare } from './ngo-format'
@@ -96,5 +96,55 @@ export function NgoStatusRows({ summary, registry }: { readonly summary: NgoRegi
         ))}
       </ul>
     </div>
+  )
+}
+
+/** Three ways into the registry; each count is exactly the query its card opens. */
+export function NgoStartCards({ summary }: { readonly summary: NgoRegistrySummary }) {
+  const publicUtility = summary.publicUtility
+  const inLiquidation = summary.status.inLiquidation
+  return (
+    <ul className="grid gap-px border bg-border/70 sm:grid-cols-3">
+      <StartCard
+        search={registrySearch({ publicUtility: 'yes', status: REGISTRY_STATUS_VALUE.registered })}
+        title={<Trans>De utilitate publică</Trans>}
+        body={
+          <Plural
+            value={publicUtility}
+            one="# ONG pe care registrul îl trece ca fiind de utilitate publică."
+            few="# ONG-uri pe care registrul le trece ca fiind de utilitate publică."
+            other="# de ONG-uri pe care registrul le trece ca fiind de utilitate publică."
+          />
+        }
+      />
+      <StartCard
+        search={registrySearch({ status: REGISTRY_STATUS_VALUE.inLiquidation })}
+        title={<Trans>În lichidare</Trans>}
+        body={
+          <Plural
+            value={inLiquidation}
+            one="# organizație în lichidare, încă în registru."
+            few="# organizații în lichidare, încă în registru."
+            other="# de organizații în lichidare, încă în registru."
+          />
+        }
+      />
+      <StartCard
+        search={registrySearch()}
+        title={<Trans>Tot registrul</Trans>}
+        body={<Trans>Fiecare ONG, după nume, județ, formă juridică și stare.</Trans>}
+      />
+    </ul>
+  )
+}
+
+function StartCard({ search, title, body }: { readonly search: ReturnType<typeof registrySearch>; readonly title: ReactNode; readonly body: ReactNode }) {
+  return (
+    <li>
+      <Link to="/ong-uri/registru" search={search} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
+        <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
+        <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
+      </Link>
+    </li>
   )
 }

@@ -1,4 +1,6 @@
+import { countyNameRo } from '@/lib/territory-counties'
 import type { NgoHubLayerKey } from '@/schemas/ngos'
+import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import type { RegistrySearch } from '../registry/api'
 import type {
   NgoRegistryCategoryKey,
@@ -13,66 +15,41 @@ import type {
  * statuses with their shares, and the registry searches each figure opens.
  */
 
-/** Registered NGOs per this many residents. */
-export const DENSITY_PER = 10_000
-
-export interface NgoCountyValue {
-  readonly code: string
-  /** The county as the registry spells it, for the registry filter. */
-  readonly source: string
-  readonly value: number
-}
-
-export interface NgoCountyLayer {
-  readonly key: NgoHubLayerKey
-  /** `rate` draws against the national value; `count` from zero, as a share of the total. */
-  readonly kind: 'rate' | 'count'
-  readonly values: readonly NgoCountyValue[]
-  /** The country's own value: the rate for all of Romania, or the national total for a count. */
-  readonly national: number
-  /** Decimals every figure of the layer is shown with. */
-  readonly digits: number
-  /** Entries the layer counts nationally but the registry places in no county. */
-  readonly unplaced: number
-}
-
-/** Registered NGOs per 10,000 residents, to one decimal. */
-export function densityOf(registered: number, residents: number): number {
-  return residents > 0 ? Math.round((registered / residents) * DENSITY_PER * 10) / 10 : 0
-}
-
 export function totalResidents(summary: Pick<NgoRegistrySummary, 'counties'>): number {
   return summary.counties.reduce((sum, county) => sum + county.residents, 0)
 }
 
-/** The national density counts every registered NGO, those with no county included. */
-export function nationalDensity(summary: Pick<NgoRegistrySummary, 'counties' | 'status'>): number {
-  return densityOf(summary.status.registered, totalResidents(summary))
-}
+/** Residents per step of each layer: registered NGOs per 10,000, the year's new ones per 100,000. */
+const LAYER_PER: Readonly<Record<NgoHubLayerKey, number>> = { densitate: 10_000, noi: 100_000 }
 
-function countyValue(county: NgoRegistryCountySummary, key: NgoHubLayerKey): number {
-  switch (key) {
-    case 'densitate':
-      return densityOf(county.registered, county.residents)
-    case 'total':
-      return county.registered
-    case 'noi':
-      return county.added
+/**
+ * A registry layer over the counties' residents, in the shape the INS and
+ * procurement hubs' county band reads. The national figure is the country's
+ * own ratio — every entry, the ones with no county included, over the
+ * national population — never a mean of the county rates. The unit words are
+ * the band's to say; the layer carries none.
+ */
+export function registryCountyLayer(summary: NgoRegistrySummary, key: NgoHubLayerKey): StatisticsHubCountyLayer {
+  const per = LAYER_PER[key]
+  const count = (county: NgoRegistryCountySummary) => (key === 'densitate' ? county.registered : county.added)
+  const national = key === 'densitate' ? summary.status.registered : registrationsIn(summary, summary.year)
+  const residents = totalResidents(summary)
+  // A county with no population to divide by is hatched as missing, never drawn as zero.
+  const placed = summary.counties.filter((county) => county.residents > 0)
+  return {
+    code: `ngo-registry-${key}`,
+    // The registered NGOs are a count at the capture; the new ones, the year's registry numbers.
+    period: key === 'densitate' ? summary.capturedAt.slice(0, 4) : String(summary.year),
+    unit: 'other',
+    unitLabel: null,
+    values: placed.map((county) => ({
+      code: county.code,
+      name: countyNameRo(county.code) ?? county.code,
+      value: (count(county) / county.residents) * per,
+    })),
+    missingCounties: summary.counties.filter((county) => county.residents <= 0).map((county) => county.code),
+    national: residents > 0 ? (national / residents) * per : null,
   }
-}
-
-export function countyLayer(summary: NgoRegistrySummary, key: NgoHubLayerKey): NgoCountyLayer {
-  const values = summary.counties.map((county) => ({ code: county.code, source: county.source, value: countyValue(county, key) }))
-  // A rate's unplaced entries are the registered ones it divides, as for the count of registered NGOs.
-  if (key === 'densitate') return { key, kind: 'rate', values, national: nationalDensity(summary), digits: 1, unplaced: summary.noCounty }
-  const national = key === 'total' ? summary.status.registered : registrationsIn(summary, summary.year)
-  const placed = values.reduce((sum, county) => sum + county.value, 0)
-  return { key, kind: 'count', values, national, digits: 0, unplaced: Math.max(0, national - placed) }
-}
-
-/** Counties highest first; a tie keeps name order, so the ranking is stable. */
-export function rankCounties(values: readonly NgoCountyValue[], nameOf: (code: string) => string): readonly NgoCountyValue[] {
-  return [...values].sort((a, b) => b.value - a.value || nameOf(a.code).localeCompare(nameOf(b.code), 'ro'))
 }
 
 /** New entries in a year: registry numbers given that year. */

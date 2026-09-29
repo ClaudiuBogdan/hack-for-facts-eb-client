@@ -245,6 +245,30 @@ describe('HubCountyBand', () => {
     fireEvent.click(mapLink, { detail: 1 })
     expect(within(tooltip()!).getByRole('link', { name: /Deschide datele județului/ }).getAttribute('href')).toBe('/procurement/search?buyerCounty=VL&year=2025')
   })
+
+  it('with nowhere to open, names each county as a shape and a plain row, and a tap holds the tooltip without a link', () => {
+    render(<HubCountyBand layer={LIFE} definition={bandOf(LIFE_DEFINITION, LIFE)} countyLink={null} />)
+    expect(screen.queryAllByRole('link')).toHaveLength(0)
+    const vl = within(map()).getByRole('img', { name: 'Județul Vâlcea: 82,01 ani, locul 1 din 3, 4,56 ani peste media națională' })
+    // A mouse has the hover; a click holds nothing.
+    fireEvent.pointerDown(vl, { pointerType: 'mouse' })
+    fireEvent.click(vl, { detail: 1 })
+    expect(tooltip()).toBeNull()
+    fireEvent.pointerDown(vl, { pointerType: 'touch' })
+    fireEvent.click(vl, { detail: 1 })
+    expect(tooltip()).toHaveAttribute('data-county-tooltip', 'pinned')
+    expect(tooltip()).toHaveTextContent(/Județul Vâlcea.*82,01/)
+    expect(within(tooltip()!).queryByRole('link')).toBeNull()
+    // A second tap lets it go.
+    fireEvent.pointerDown(vl, { pointerType: 'touch' })
+    fireEvent.click(vl, { detail: 1 })
+    expect(tooltip()).toBeNull()
+    // The keyboard still reaches every county and reads it as a pointer does.
+    const cl = within(map()).getByRole('img', { name: /Județul Călărași/ })
+    expect(cl).toHaveAttribute('tabindex', '0')
+    const ranking = screen.getAllByRole('list').find((list) => list.textContent?.startsWith('01'))!
+    expect(within(ranking).getAllByRole('listitem').map((row) => row.textContent)).toEqual(['01Vâlcea82,01', '02București79,68', '03Călărași74,82'])
+  })
 })
 
 describe('CountyMap as a picker', () => {
@@ -357,6 +381,13 @@ describe('HubCountyRank', () => {
     await waitFor(() => expect(document.activeElement).toHaveTextContent('Încă 4 județe'))
     fireEvent.click(screen.getByRole('button', { name: 'Încă 4 județe' }), { detail: 0 })
     await waitFor(() => expect(document.activeElement).toHaveTextContent('Județul 8'))
+  })
+
+  it('with plain rows, moves focus from the expander to its collapse control', async () => {
+    render(<HubCountyRank layer={many} swatchOf={swatch} countyLink={null} />)
+    expect(screen.queryAllByRole('link')).toHaveLength(0)
+    fireEvent.click(screen.getByRole('button', { name: 'Încă 4 județe' }), { detail: 0 })
+    await waitFor(() => expect(document.activeElement).toHaveTextContent('Doar primele și ultimele 5'))
   })
 
   it('draws a rate from the national line, a count from zero, and a rate with no national value as a dot', () => {

@@ -70,11 +70,15 @@ export function HubCountyBand({
 }: {
   readonly layer: StatisticsHubCountyLayer
   readonly definition: HubCountyBandDefinition
-  /** Where a county opens, on the map, in its held tooltip and in the list; the INS series by default. */
-  readonly countyLink?: (code: string) => LinkOptions
+  /**
+   * Where a county opens, on the map, in its held tooltip and in the list; the
+   * INS series by default. `null` where there is nowhere to go: the counties
+   * are then named shapes and plain rows, and a tap still holds the tooltip.
+   */
+  readonly countyLink?: ((code: string) => LinkOptions) | null
 }) {
   const layer = useMemo(() => shownLayer(read, definition, definition.unit ?? null), [read, definition])
-  const linkOf = countyLink ?? ((code: string) => insCountyLink(layer.code, code))
+  const linkOf = countyLink === null ? null : (countyLink ?? ((code: string) => insCountyLink(layer.code, code)))
   const geo = useGeoJsonData('County')
   const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
   const shapes = features ? countyShapes(features) : null
@@ -206,16 +210,46 @@ export function HubCountyBand({
                   )
                 }
                 const county = values[index]!
+                // What the tooltip gives a pointer, in the county's name: the place and the distance from the average.
+                const name = [
+                  `${countyLabel(county.code)}: ${withUnit(county.value)}`,
+                  t`locul ${rank.get(county.code) ?? '—'} din ${values.length}`,
+                  ...(layer.national !== null ? [againstAverage(county.value, layer.national)] : []),
+                ].join(', ')
+                if (linkOf === null) {
+                  return (
+                    <g
+                      key={shape.code}
+                      role="img"
+                      aria-label={name}
+                      // Still a stop for the keyboard, which reads the county as a pointer does.
+                      tabIndex={0}
+                      onFocus={(event) => {
+                        if (event.currentTarget.matches(':focus-visible')) pointAt(shape.code)
+                      }}
+                      onBlur={() => setHovered(null)}
+                      className="outline-hidden"
+                      onPointerDown={(event) => {
+                        pointerType.current = event.pointerType
+                      }}
+                      onPointerEnter={(event) => hover(event, shape.code)}
+                      onPointerLeave={(event) => hover(event, null)}
+                      onClick={() => {
+                        // Nowhere to open: a tap holds the county, a second lets it go; a pointer has the hover.
+                        if (pointerType.current !== 'touch') return
+                        tooltip.followUat()
+                        setPinned((current) => (current === shape.code ? null : shape.code))
+                      }}
+                    >
+                      {path}
+                    </g>
+                  )
+                }
                 return (
                   <Link
                     key={shape.code}
                     {...linkOf(county.code)}
-                    // What the tooltip gives a pointer, in the link's name: the place and the distance from the average.
-                    aria-label={[
-                      `${countyLabel(county.code)}: ${withUnit(county.value)}`,
-                      t`locul ${rank.get(county.code) ?? '—'} din ${values.length}`,
-                      ...(layer.national !== null ? [againstAverage(county.value, layer.national)] : []),
-                    ].join(', ')}
+                    aria-label={name}
                     onPointerDown={(event) => {
                       pointerType.current = event.pointerType
                     }}
@@ -330,7 +364,7 @@ export function HubCountyBand({
                   <dd className="text-right tabular-nums text-foreground">{withUnit(layer.national)}</dd>
                 </dl>
               ) : null}
-              {held ? (
+              {held && linkOf ? (
                 <p className="mt-2 border-t pt-2">
                   <Link {...linkOf(activeCounty.code)} className="font-medium text-primary underline-offset-4 hover:underline">
                     {t`Deschide datele județului`} →

@@ -1,6 +1,7 @@
 import { render, screen } from '@/test/test-utils'
 import type { ComponentType } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { NGO_FINANCE_SUMMARY } from '@/features/ngos/hub/finance-summary'
 import { NGO_REGISTRY_SUMMARY } from '@/features/ngos/hub/registry-summary'
 import type { NgoLandingSearch } from '@/schemas/ngos'
 
@@ -13,7 +14,6 @@ vi.mock('@tanstack/react-router', () => ({
     ...options,
     options,
     useSearch: () => search,
-    useLoaderData: () => ({ summary: NGO_REGISTRY_SUMMARY }),
   }),
 }))
 
@@ -41,11 +41,16 @@ describe('/ong-uri route page', () => {
     pageProps.mockReset()
   })
 
-  it('renders the hub from the summary the loader brings, with the URL layer', async () => {
-    search = { indicator: 'noi' }
+  it('renders the hub from the summaries kept in the client, with the URL state', async () => {
+    search = { indicator: 'noi', domenii: 'venituri' }
     await renderRoute()
     expect(screen.getByTestId('ngo-hub-page')).toBeInTheDocument()
-    expect(pageProps).toHaveBeenCalledWith({ summary: NGO_REGISTRY_SUMMARY, search: { indicator: 'noi' }, registry: true })
+    expect(pageProps).toHaveBeenCalledWith({
+      summary: NGO_REGISTRY_SUMMARY,
+      finance: NGO_FINANCE_SUMMARY,
+      search: { indicator: 'noi', domenii: 'venituri' },
+      registry: true,
+    })
   })
 
   it('passes the registry flag through, so the page can leave its links out', async () => {

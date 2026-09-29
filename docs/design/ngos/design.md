@@ -520,3 +520,104 @@ hub's interaction code over a different data shape; they should become one
 shared component once the INS comparisons work (`HubCountyMap` selection mode)
 lands. The INS hub's two-line headings lose their space in the heading's text
 („Cifrele oficialeale României"); this page adds it.
+
+## 13. The landing in the hubs' language, with the non-profit sector's money (2026-09-29)
+
+Promoted from the `/development` prototype `ngos/hub`, variant **lideri** (the
+year's largest NGOs beside the search, as `/companies` and `/procurement`
+open). The rejected variant, **domenii**, put what NGOs do beside the search
+(the `/ins` hero) and gave the largest a band of their own; it read well but
+broke with the two newest hubs, and the domains need their toggle.
+
+The registry says how many NGOs there are and where; it says nothing of
+money. The page now also reads the **Ministry of Finance's non-profit
+financial statements** — the files the NGO profile API serves
+(`ngoOrganizationProfile.financials`), one per year on data.gov.ro
+(`web_ong_an<YEAR>.txt`, 46 indicators by CUI) — summarised in the client by
+`scripts/summarize-ngo-finances.mjs` into `finance-summary.ts`. Those
+statements cover **every non-profit that files**: associations and
+foundations, and also unions, religious bodies, parties and mutual-aid funds,
+which are not in the NGO registry. The page calls that money the non-profit
+sector's, never the registry's.
+
+- **Hero** — the registry search, and **the registry's ten largest NGOs of
+  2025 by revenue** (five on a phone), each with its domain, county and
+  change vs 2024 (named for a screen reader too); a closed entry says so. The
+  ranking is of the organisations the NGO profile resolves (a
+  registry-declared CUI, or an exact ANAF name-and-county match) — ten among
+  the 49 largest filers. A row opens `/ong-uri/$cui` only where the legacy
+  overview resolves the CUI (`linked`; nine of ten): the inferred matches have
+  no page until the client moves to `ngoOrganizationProfile`.
+- **Pinned bar** of the four numbered bands, as on `/procurement`.
+- **Figures** — registered NGOs (status „Înregistrat"; the 2,355 in
+  liquidation are in the registry too, so not „în registru"), non-profit
+  revenue in 2025 (33.5 bn lei), statements filed for 2025 (61,367; 47,160
+  with revenue), new registry entries in 2025.
+- **01 / Ce fac organizațiile non-profit** — twelve reader domains from the non-profit activity
+  (CAENO) each statement declares, by organisations or by revenue
+  (`?domenii=venituri`): sport has the most (9,155), education the most money
+  (5.1 bn lei). The catch-all code 9499 (46% of filers) is shown last and
+  unranked as „Fără domeniu precis". Division 64 is „Creditare și ajutor
+  reciproc", not mutual-aid funds alone: 6492 and 6499 are broader.
+- **02 / Banii** — revenue classes (the 8.1% above 1 mil. lei hold 83% of the
+  money; 14,184 had none, 23 reported negative revenue and hold no share),
+  revenue by source (non-profit 82%, economic 17%, special-purpose 1.5%) and
+  revenue per year 2016–2025 on the registrations chart's columns, in each
+  year's lei.
+- **03 / Pe județe** — the INS and procurement hubs' county band itself
+  (`HubCountyBand`), over the registry per 10,000 residents (a count at the
+  capture, so „în 2026") or the year's new entries per 100,000
+  (`?indicator=noi`; the old `total` layer is retired and falls back). The
+  NGO map and ranking components are gone. The band gained `countyLink={null}`
+  for deployments without the registry: counties are named, focusable shapes
+  and plain rows; a tap holds the tooltip.
+- **04 / În registru** — registrations per year, status and legal forms.
+- **Start cards** into the registry (public utility, in liquidation, all),
+  each count the query it opens; only where the registry is on.
+
+**Vintages.** MFP publishes a year about six months after it ends, then
+republishes it about a year later with the late filers (2023's revision added
+7% of statements and 4% of revenue), often inside a later year's package: the
+2021 package holds the revised 2016–2020 files. The generator takes each
+year's newest file from any package, by the year in the file's name, and
+records its date and whether it is still a **first release** (2021, 2022 and
+2025 are; the rest are revised). The chart draws first releases dashed and
+names them; the headline figure gives no change against 2024, because 2025 is
+a first release and 2024 a revision — it says „Prima publicare" and the date
+instead („Revizuită" when the latest year is a revision with no year of its
+own vintage before it). A change is printed only between two years of the
+same vintage. The leaders are ranked on the first release too: a late filer
+could be missing from them. The
+leaders' own changes stand: a filer's statement does not move when others
+file late.
+
+**What the finance data cannot say, and the page therefore does not.** Staff
+counts are not shown: filers type activity codes into them (9,499 or 9,329
+„employees"). One 2019 statement reports 6.2 bn lei of revenue with no
+expenses, repeating its fixed assets: statements above 1 bn lei are left out
+of every sum, and of the leaders' bases, and named under the chart. The
+indicators read (I14, I22, I30, I38) keep their meaning in every dictionary
+from 2016; 2018's file carries unquoted activity names after I44, which the
+generator refuses to read past, and a row shorter than the header is dropped,
+never read as zeros. A CUI filed twice must be the same statement twice. The
+cache is keyed by resource and modification, so a republished year is read
+again. Money is never adjusted for inflation.
+
+**Head.** Built in the request's language with `translatorFor`; each language
+has its canonical (`?lang=en`) and names the other; the `Dataset` names the
+registry, the statements and INS. The loader hands the head nine figures and
+the page chunk imports both summaries (1.4 and 1.9 KB gzipped), so neither
+travels in the hydration payload. On a production build: TTFB 27–70 ms warm,
+LCP 320 ms desktop and 300 ms on a phone, CLS 0, no API request. Cached
+publicly for an hour, `Vary: Cookie`.
+
+**Reviews.** Codex (gpt-6-astra, xhigh) and an Opus 5.5 xhigh agent reviewed
+the promotion, then verified the fixes in a second round; the vintage
+handling, the sector wording, the registered-NGO label, the negative-revenue
+class, the density's year, keyboard access in the no-link band, the domain
+label for division 64 and the generator's parsing, cache and malformed-row
+threshold all come from their findings.
+
+**Follow-ups.** Move `/ong-uri/$cui` to `ngoOrganizationProfile` (every leader
+then links); move the pinned bar and band (`HomeSectionNav`, `HomeBand`) out
+of the procurement feature into shared landing chrome.
