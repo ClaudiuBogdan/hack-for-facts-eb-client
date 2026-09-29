@@ -8,6 +8,7 @@ import {
   type EntityPageRouteHeadContract,
 } from "@/features/entities/page-core/seo/entity-page-route-policy";
 import type { EntityPageRouteId } from "@/features/entities/page-core/types";
+import { serializeForInlineScript } from "@/lib/inline-script-json";
 
 export type ShareLocale = "ro" | "en";
 
@@ -299,6 +300,6 @@ export function buildEntityRouteHead(
       { name: "twitter:image:alt", content: imageAlt },
     ],
     links: [{ rel: "canonical", href: canonical }],
-    scripts: [{ type: "application/ld+json", children: JSON.stringify(thing) }],
+    scripts: [{ type: "application/ld+json", children: serializeForInlineScript(thing) }],
   };
 }

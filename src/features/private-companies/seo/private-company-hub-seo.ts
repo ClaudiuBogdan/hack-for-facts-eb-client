@@ -1,6 +1,7 @@
 import { plural, t } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
 import { getUserLocale } from '@/lib/utils'
+import { serializeForInlineScript } from '@/lib/inline-script-json'
 import { formatHubNumber } from '../lib/hub-format'
 import type { CompanyHubSnapshot } from '../lib/hub-snapshot-types'
 
@@ -103,8 +104,8 @@ export function buildCompanyHubHead(figures: CompanyHubSeoFigures | undefined, s
       { rel: 'alternate', hrefLang: 'x-default', href: romanianUrl },
     ],
     scripts: [
-      { type: 'application/ld+json', children: JSON.stringify(dataset) },
-      { type: 'application/ld+json', children: JSON.stringify(webPage) },
+      { type: 'application/ld+json', children: serializeForInlineScript(dataset) },
+      { type: 'application/ld+json', children: serializeForInlineScript(webPage) },
     ],
   }
 }

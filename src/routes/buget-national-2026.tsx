@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { getSiteUrl } from '@/config/env'
 import { Currency } from '@/schemas/charts'
+import { serializeForInlineScript } from '@/lib/inline-script-json'
 
 const BudgetNational2026SearchSchema = z.object({
   section: z.string().optional(),
@@ -54,7 +55,7 @@ export const Route = createFileRoute('/buget-national-2026')({
       scripts: [
         {
           type: 'application/ld+json',
-          children: JSON.stringify({
+          children: serializeForInlineScript({
             '@context': 'https://schema.org',
             '@type': 'Dataset',
             name: 'Bugetul de Stat al Romaniei 2026',

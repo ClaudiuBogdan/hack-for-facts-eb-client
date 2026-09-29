@@ -80,6 +80,33 @@ describe('entity-share-seo', () => {
     expect(head).toEqual(legacyHead)
   })
 
+  it('keeps a name from the source data inside its JSON-LD script', () => {
+    const name = 'PRIMARIA X</script><script>alert(1)</script>'
+    const head = buildEntityRouteHead(createEntityRouteHeadContract({
+      cui: '4305857',
+      snapshot: {
+        cui: '4305857',
+        name,
+        entityType: 'city_hall',
+        countyName: 'Cluj',
+        filterContext: {
+          year: 2025,
+          period: 'YEAR',
+          normalization: 'total',
+          currency: 'RON',
+          inflationAdjusted: false,
+          showPeriodGrowth: false,
+          lang: 'ro',
+        },
+      },
+      searchLang: 'ro',
+    }))
+
+    const [jsonLd] = head.scripts
+    expect(jsonLd?.children).not.toContain('<')
+    expect(JSON.parse(jsonLd?.children ?? '{}')).toMatchObject({ name })
+  })
+
   it('builds dynamic image URL with preserved context query', () => {
     const imageUrl = buildEntityShareImageUrl({
       siteUrl: 'https://transparenta.eu',

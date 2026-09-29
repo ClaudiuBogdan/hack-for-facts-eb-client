@@ -6,6 +6,7 @@ import {
   type PnrrSearchState,
 } from '@/schemas/pnrr'
 import type { SupportedLocale } from '@/lib/i18n'
+import { serializeForInlineScript } from '@/lib/inline-script-json'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
   computeAggregates,
@@ -461,8 +462,8 @@ export function buildPnrrRouteHead(params: {
     ] satisfies readonly HeadMetaEntry[],
     links: [{ rel: 'canonical', href: canonical }],
     scripts: [
-      { type: 'application/ld+json', children: JSON.stringify(dataset) },
-      { type: 'application/ld+json', children: JSON.stringify(webPage) },
+      { type: 'application/ld+json', children: serializeForInlineScript(dataset) },
+      { type: 'application/ld+json', children: serializeForInlineScript(webPage) },
     ],
   }
 }

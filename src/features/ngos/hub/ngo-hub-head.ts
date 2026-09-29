@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
+import { serializeForInlineScript } from '@/lib/inline-script-json'
 import { formatNgoNumber } from './ngo-format'
 import { nationalDensity, registrationsIn } from './registry-figures'
 import type { NgoRegistrySummary } from './registry-summary-types'
@@ -46,7 +47,7 @@ export function buildNgoHubHead(summary: NgoRegistrySummary) {
     scripts: [
       {
         type: 'application/ld+json',
-        children: JSON.stringify({
+        children: serializeForInlineScript({
           '@context': 'https://schema.org',
           '@type': 'Dataset',
           name: t`ONG-urile din România`,

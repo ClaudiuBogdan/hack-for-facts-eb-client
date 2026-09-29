@@ -1,4 +1,5 @@
 import { getSiteUrl } from '@/config/env'
+import { serializeForInlineScript } from '@/lib/inline-script-json'
 import {
   buildCampaignBudgetPath,
   buildCampaignCalendarPath,
@@ -295,7 +296,7 @@ export function buildCampaignRouteHead(params: {
     ],
     scripts: metadata.jsonLd.map((item) => ({
       type: 'application/ld+json',
-      children: JSON.stringify(item),
+      children: serializeForInlineScript(item),
     })),
   }
 }

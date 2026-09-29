@@ -49,6 +49,7 @@ import {
 } from '@/features/national-budget/national-budget-total-merge'
 import type { NationalBudgetAccountCategory, NationalBudgetSectorDefinition, NationalBudgetTransferFilter } from '@/features/national-budget/national-budget-types'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
+import { serializeForInlineScript } from '@/lib/inline-script-json'
 
 export const Route = createLazyFileRoute('/budget-explorer')({
   component: BudgetExplorerPage,
@@ -237,7 +238,7 @@ export function head({ search }: { search: BudgetExplorerState }) {
       { name: 'canonical', content: canonical },
     ],
     scripts: [
-      { type: 'application/ld+json', children: JSON.stringify(dataset) },
+      { type: 'application/ld+json', children: serializeForInlineScript(dataset) },
     ],
   }
 }

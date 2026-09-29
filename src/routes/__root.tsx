@@ -32,6 +32,7 @@ import {
   readUserCurrencyPreference,
   readUserInflationAdjustedPreference,
 } from "@/lib/user-preferences";
+import { serializeForInlineScript } from "@/lib/inline-script-json";
 
 const ANONYMOUS_CROSS_ORIGIN = "anonymous" as const;
 const DEFAULT_THEME: ResolvedTheme = "light";
@@ -233,7 +234,7 @@ function getGlobalHead() {
       // Global WebSite & FAQ JSON-LD for AI agents
       {
         type: "application/ld+json",
-        children: JSON.stringify({
+        children: serializeForInlineScript({
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "Transparenta.eu",
@@ -248,7 +249,7 @@ function getGlobalHead() {
       // Organization entity to improve entity recognition and citations
       {
         type: "application/ld+json",
-        children: JSON.stringify({
+        children: serializeForInlineScript({
           "@context": "https://schema.org",
           "@type": "Organization",
           "@id": `${site}#organization`,
