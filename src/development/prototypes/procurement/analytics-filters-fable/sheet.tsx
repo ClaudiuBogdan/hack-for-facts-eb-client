@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type FocusEvent, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { ChevronRight, Loader2, X } from 'lucide-react'
@@ -70,7 +70,7 @@ function Chip({ label, onClear, children }: { readonly label: string; readonly o
           {label}
         </span>
       )}
-      <button type="button" onClick={onClear} aria-label={t`Scoate ${label}`} className="flex size-10 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground">
+      <button type="button" onClick={onClear} aria-label={t`Scoate ${label}`} className="flex size-11 shrink-0 items-center justify-center text-muted-foreground hover:text-foreground sm:size-10">
         <X className="size-3.5" aria-hidden="true" />
       </button>
     </div>
@@ -163,11 +163,6 @@ function Notice({ kind, onRetry, children }: { readonly kind: 'loading' | 'faile
   )
 }
 
-/** On a phone the keyboard covers the sheet's lower half: a search input focused moves to the top, its list under it. */
-function scrollUp(event: FocusEvent<HTMLInputElement>, phone: boolean) {
-  if (phone) event.currentTarget.scrollIntoView({ block: 'start', behavior: 'smooth' })
-}
-
 // ───────────────────────────────────────────────────────────── period ──
 
 /** The years shown before „Arată mai multe". */
@@ -203,7 +198,7 @@ function PeriodRows({ query, answer, onChange }: { readonly query: Query; readon
           ))}
         </div>
         {years.length > RECENT_YEARS ? (
-          <button type="button" aria-expanded={open} onClick={() => setMore(!open)} className={cn(SHOW_MORE_CLASS, 'mt-0 min-h-10 font-normal text-muted-foreground hover:text-foreground')}>
+          <button type="button" aria-expanded={open} onClick={() => setMore(!open)} className={cn(SHOW_MORE_CLASS, TALL, 'mt-0 font-normal text-muted-foreground hover:text-foreground')}>
             {open ? t`Arată mai puține` : t`Arată mai multe`}
           </button>
         ) : null}
@@ -221,7 +216,7 @@ function PeriodRows({ query, answer, onChange }: { readonly query: Query; readon
 // ───────────────────────────────────────────────────────────── parties ──
 
 /** An institution or a firm: its name from the site's search, or a CUI typed as it is. */
-function OrgRow({ axis, label, query, namer, phone, onChange }: { readonly axis: 'cumparator' | 'furnizor'; readonly label: string; readonly query: Query; readonly namer: Namer; readonly phone: boolean; readonly onChange: (query: Query) => void }) {
+function OrgRow({ axis, label, query, namer, onChange }: { readonly axis: 'cumparator' | 'furnizor'; readonly label: string; readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const filter = query.filters[axis]
   const search = useSearchResults({ docTypes: ['organization', 'public_enterprise', 'company'], suggestions: false })
   const term = search.term.trim()
@@ -265,7 +260,6 @@ function OrgRow({ axis, label, query, namer, phone, onChange }: { readonly axis:
             {...keys.input(open)}
             value={search.term}
             onChange={(event) => search.setTerm(event.target.value)}
-            onFocus={(event) => scrollUp(event, phone)}
             onKeyDown={(event) => keys.onKeyDown(event, (index) => pick(choices[index]!))}
             placeholder={t`Nume sau CUI`}
             aria-label={axis === 'furnizor' ? t`Caută o firmă` : t`Caută o instituție`}
@@ -382,7 +376,7 @@ function PathChip({ path, onWiden, onClear }: { readonly path: readonly Place[];
       <span className="flex min-w-0 flex-1 flex-wrap items-center text-sm" title={path.map((crumb) => crumb.label).join(' › ')}>
         {path.slice(0, -1).map((crumb) => (
           <span key={crumb.value} className="flex shrink-0 items-center">
-            <button type="button" onClick={() => onWiden(crumb)} title={t`Doar ${crumb.label}`} className="min-h-10 text-muted-foreground hover:text-foreground">
+            <button type="button" onClick={() => onWiden(crumb)} title={t`Doar ${crumb.label}`} className={cn(TALL, 'text-muted-foreground hover:text-foreground')}>
               {crumb.label}
             </button>
             <ChevronRight className="mx-1 size-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
@@ -400,7 +394,7 @@ function PathChip({ path, onWiden, onClear }: { readonly path: readonly Place[];
  * county's largest places; a pick keeps the list open on the next level
  * down.
  */
-function PlaceRow({ axis, query, phone, onChange }: { readonly axis: 'loc' | 'loc_firma'; readonly query: Query; readonly phone: boolean; readonly onChange: (query: Query) => void }) {
+function PlaceRow({ axis, query, onChange }: { readonly axis: 'loc' | 'loc_firma'; readonly query: Query; readonly onChange: (query: Query) => void }) {
   const filter = query.filters[axis]
   const [term, setTerm] = useState('')
   const [focused, setFocused] = useState(false)
@@ -445,10 +439,7 @@ function PlaceRow({ axis, query, phone, onChange }: { readonly axis: 'loc' | 'lo
             {...keys.input(open)}
             value={term}
             onChange={(event) => setTerm(event.target.value)}
-            onFocus={(event) => {
-              setFocused(true)
-              scrollUp(event, phone)
-            }}
+            onFocus={() => setFocused(true)}
             onKeyDown={(event) => {
               if (event.key === 'Escape') event.currentTarget.blur()
               else keys.onKeyDown(event, (position) => pick(choices[position]!))
@@ -530,7 +521,7 @@ function cpvFilterOf(code: string): { readonly level: string; readonly value: st
   return level ? { level: level.id, value } : null
 }
 
-function CpvRow({ query, namer, phone, onChange }: { readonly query: Query; readonly namer: Namer; readonly phone: boolean; readonly onChange: (query: Query) => void }) {
+function CpvRow({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const filter = query.filters.cpv
   const [term, setTerm] = useState('')
   const found = useCpvSearch(term)
@@ -590,7 +581,6 @@ function CpvRow({ query, namer, phone, onChange }: { readonly query: Query; read
             {...keys.input(asked)}
             value={term}
             onChange={(event) => setTerm(event.target.value)}
-            onFocus={(event) => scrollUp(event, phone)}
             onKeyDown={(event) => keys.onKeyDown(event, (position) => pick(hits[position]!))}
             placeholder={t`„drumuri", „medicamente", 45233120`}
             aria-label={t`Caută o categorie`}
@@ -739,8 +729,23 @@ export function FableFilterPanel({
   readonly className?: string
 }) {
   const contract = POPULATIONS[query.tip].grain === 'contract'
+  // On a phone the keyboard covers the sheet's lower half: a search focused
+  // moves to the top of the sheet, its list under it, with room below the
+  // panel to scroll that far even for the last field.
+  const [lifted, setLifted] = useState<HTMLElement | null>(null)
+  useEffect(() => {
+    lifted?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [lifted])
   return (
-    <div className={cn('divide-y divide-border/70', className)}>
+    <div
+      className={cn('divide-y divide-border/70', lifted && 'pb-[70vh]', className)}
+      onFocus={(event) => {
+        if (phone && event.target instanceof HTMLInputElement && event.target.getAttribute('role') === 'combobox') setLifted(event.target)
+      }}
+      onBlur={(event) => {
+        if (event.target === lifted) setLifted(null)
+      }}
+    >
       <Group title={t`Înregistrări`}>
         <IndicatorToggle<PopulationId>
           label={t`Ce înregistrări`}
@@ -755,15 +760,15 @@ export function FableFilterPanel({
         <PeriodRows query={query} answer={answer} onChange={onChange} />
       </Group>
       <Group title={t`Cine cumpără`}>
-        <OrgRow axis="cumparator" label={t`Instituția`} query={query} namer={namer} phone={phone} onChange={onChange} />
-        <PlaceRow axis="loc" query={query} phone={phone} onChange={onChange} />
+        <OrgRow axis="cumparator" label={t`Instituția`} query={query} namer={namer} onChange={onChange} />
+        <PlaceRow axis="loc" query={query} onChange={onChange} />
       </Group>
       <Group title={t`Cine vinde`}>
-        <OrgRow axis="furnizor" label={t`Firma`} query={query} namer={namer} phone={phone} onChange={onChange} />
-        <PlaceRow axis="loc_firma" query={query} phone={phone} onChange={onChange} />
+        <OrgRow axis="furnizor" label={t`Firma`} query={query} namer={namer} onChange={onChange} />
+        <PlaceRow axis="loc_firma" query={query} onChange={onChange} />
       </Group>
       <Group title={t`Ce cumpără`}>
-        <CpvRow query={query} namer={namer} phone={phone} onChange={onChange} />
+        <CpvRow query={query} namer={namer} onChange={onChange} />
         {contract ? <ProcedureRow query={query} namer={namer} onChange={onChange} /> : null}
         <TitleRow query={query} onChange={onChange} />
         <ValueRow query={query} namer={namer} onChange={onChange} />
@@ -794,7 +799,13 @@ export function FableFilterSheet({
   const count = filterCount(query)
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side={phone ? 'bottom' : 'right'} onOverlayClick={() => onOpenChange(false)} className={cn('flex flex-col gap-0 p-0', phone ? 'max-h-[90vh] rounded-t-2xl' : 'w-full sm:max-w-sm')}>
+      <SheetContent
+        side={phone ? 'bottom' : 'right'}
+        onOverlayClick={() => onOpenChange(false)}
+        // The close as tall as the header, a whole tap target on a phone.
+        closeClassName="right-2 top-1 flex size-11 items-center justify-center focus:ring-0 focus-visible:ring-2 data-[state=open]:bg-transparent sm:top-1.5 sm:size-10"
+        className={cn('flex flex-col gap-0 p-0', phone ? 'max-h-[90vh] rounded-t-2xl' : 'w-full sm:max-w-sm')}
+      >
         <div className="flex items-baseline gap-2 border-b px-4 py-3">
           <SheetTitle className="text-base font-semibold">{t`Filtre`}</SheetTitle>
           {count > 0 ? <span className="bg-primary px-1.5 text-xs tabular-nums text-primary-foreground">{count}</span> : null}

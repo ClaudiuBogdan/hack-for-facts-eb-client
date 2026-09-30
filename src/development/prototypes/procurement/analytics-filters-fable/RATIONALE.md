@@ -103,8 +103,11 @@ Ranked by what it buys the reader.
    is read (the search hook keeps its stale results; the category read is kept in
    the row), so typing does not flicker.
 8. **The UAT file loads on focus**, not on a county pick. On a phone a focused search
-   input scrolls to the top of the sheet's scroll area so its list sits above the
-   keyboard.
+   field moves to the top of the sheet's scroll area so its list sits above the
+   keyboard. The panel adds room below itself while a search is focused (measured: the
+   firm's field could only scroll 207 px of the 535 it needed, and its list fell under
+   the keyboard). The sheet's own close is a 44 px target on a phone, its focus ring
+   for the keyboard only (`closeClassName`, new on `SheetContent`).
 
 Kept as they were: the MonoLabel heads, the square borders, the IndicatorToggle, the
 sheet (right at `sm:max-w-sm`, bottom at 90vh on a phone), the footer with „Șterge

@@ -47,6 +47,7 @@ export function MonthField({
   const names = monthNames()
   const first = Number(min.slice(0, 4))
   const last = Number(max.slice(0, 4))
+  const shown = value ? shortMonthText(value) : '…'
   return (
     <Popover
       open={open}
@@ -56,8 +57,9 @@ export function MonthField({
       }}
     >
       <PopoverTrigger asChild>
-        <button type="button" aria-label={label} className={cn('flex w-full min-w-0 items-center justify-between gap-1 border bg-background px-2 text-sm', active ? 'border-primary font-medium' : 'text-muted-foreground', className)}>
-          <span className="truncate">{value ? shortMonthText(value) : '…'}</span>
+        {/* Named with its month: „De la" alone would leave a screen reader's listener without the value. */}
+        <button type="button" aria-label={t`${label}: ${shown}`} className={cn('flex w-full min-w-0 items-center justify-between gap-1 border bg-background px-2 text-sm', active ? 'border-primary font-medium' : 'text-muted-foreground', className)}>
+          <span className="truncate">{shown}</span>
           <ChevronDown className="size-3.5 shrink-0 opacity-60" aria-hidden="true" />
         </button>
       </PopoverTrigger>
