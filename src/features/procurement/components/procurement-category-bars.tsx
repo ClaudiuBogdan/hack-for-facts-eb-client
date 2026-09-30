@@ -30,8 +30,8 @@ import {
 import { analyticsSearchFromExplorer } from '../lib/analytics-legacy'
 
 /**
- * Overview CPV glance deep-links to Rankings. Other surfaces keep a local sheet.
- * CPV code labels + top-100 depth are live on the Rankings hub (cpvLevel=code).
+ * A glance card of the top categories; with `rankingsDim` it links to the
+ * full ranking on the analytics page, else it keeps a local sheet.
  */
 
 const CARD_LIMIT = 5
@@ -66,11 +66,11 @@ type Props = {
   readonly title?: string
   readonly description?: string
   readonly className?: string
-  /** Tighter card gutters for constrained surfaces such as map drawers. */
+  /** Tighter card gutters for constrained surfaces. */
   readonly compact?: boolean
-  /** Deep-link to hub Rankings for CPV. */
+  /** Link to the full category ranking on the analytics page. */
   readonly rankingsDim?: ProcurementRankDim
-  /** Exact hub search for that deep-link (see party ranking). */
+  /** The link's scope, in the old explorer's words (see party ranking). */
   readonly rankingsSearch?: Record<string, unknown>
   readonly measure?: ProcurementHubMeasure
   readonly rankedBy?: ProcurementRankBy | null

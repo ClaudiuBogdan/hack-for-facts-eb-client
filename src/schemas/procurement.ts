@@ -468,10 +468,6 @@ export const procurementStatsBlockSchema = z.object({
   meta: procurementAnswerMetaSchema,
 })
 
-export type ProcurementStatsBlock = z.infer<
-  typeof procurementStatsBlockSchema
->
-
 const procurementGrainAnalyticsSchema = z.object({
   grain: procurementAnalysisGrainSchema,
   stats: procurementStatsBlockSchema,
@@ -527,28 +523,6 @@ export const reviewSignalKindSchema = z.enum(['same_day', 'repeated_pairs'])
 
 export type ReviewSignalKind = z.infer<typeof reviewSignalKindSchema>
 
-// ---------------------------------------------------------------------------
-// Aggregated page bundles
-// ---------------------------------------------------------------------------
-
-export const procurementLandingSchema = z.object({
-  headline: z.object({
-    /** RON sum decimal string, or null when not summable. */
-    totalValueRon: decimalStringSchema.nullable(),
-    // Counts are nullable so an unknown count stays representable ("—"),
-    // never fabricated as 0.
-    proceduresCount: bigintStringSchema.nullable(),
-    directAcquisitionsCount: bigintStringSchema.nullable(),
-    contractsCount: bigintStringSchema.nullable(),
-    buyersCount: bigintStringSchema.nullable(),
-    suppliersCount: bigintStringSchema.nullable(),
-    recordsCount: bigintStringSchema.nullable(),
-  }),
-  analysisByGrain: procurementAnalysisByGrainSchema,
-})
-
-export type ProcurementLanding = z.infer<typeof procurementLandingSchema>
-
 /**
  * Which surface answered the record list and how fresh it is. The search
  * engine serves membership, order and counts as of an index build; Postgres
@@ -561,10 +535,6 @@ export const procurementSearchProvenanceSchema = z.object({
   asOf: z.string().nullable(),
 })
 
-export type ProcurementSearchProvenance = z.infer<
-  typeof procurementSearchProvenanceSchema
->
-
 /**
  * How the CURRENT result set distributes over one dimension. Result-set
  * counts — never authoritative analytics (those come from the analysis
@@ -576,8 +546,6 @@ export const procurementSearchFacetSchema = z.object({
   /** Records outside the returned buckets — disclosed, never dropped. */
   otherCount: z.number(),
 })
-
-export type ProcurementSearchFacet = z.infer<typeof procurementSearchFacetSchema>
 
 /**
  * Where the text query matched in one record. The strings are the ORIGINAL text

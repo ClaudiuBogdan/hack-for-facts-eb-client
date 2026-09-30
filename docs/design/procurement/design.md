@@ -2492,3 +2492,59 @@ defects, fixed in a follow-up commit:
 - **A half-read range.** A range with one end the page cannot read
   (`1000..oops`) is reported, and the end it can read is kept.
 - **The average.** The average is over the records that have a value.
+
+### 18.17 The explorer deleted (30 September 2026)
+
+The owner, asked whether to delete the old explorer now that nothing reached
+it: „yes, delete".
+
+- **What went.** The overview with the buyer map, the record list and the
+  rankings, and their filter sheets, shell, tab bar, search dock, pagination,
+  value-basis notices and territory drawer (41 modules, with their tests).
+  So did what only they used:
+  - the analysis and leaderboard reads;
+  - the landing read and its mappers;
+  - the explorer's hooks in `use-procurement-data.ts`;
+  - its skeletons, labels and theme classes;
+  - the URL cleaner, the value-basis plans and the territory scopes in
+    `schemas/procurement-hub.ts`.
+
+  The explorer's own tests went with its code. Where a removed test also
+  covered live code, its cases moved to a live reader:
+  - `mapLanding`'s cases (the awarded-value sum, null when either block
+    abstains; names in ranking rows; the served ranking basis) now go
+    through `mapAuthoritySlice`;
+  - the batched party names through `fetchCpvCategoryPageLive`;
+  - the money-order request through the institution slice;
+  - the explorer parser's defaults, which the redirects read, have their
+    own test.
+- **What stays.**
+  - The explorer's URL parser (`parseProcurementHubSearch`), which the
+    redirects read old links with.
+  - The shared pieces the category page, the entity page's authority slice,
+    the detail pages and the company profile still use.
+  - The record search (`useProcurementSearch`), the ranking cards and the
+    monthly chart.
+- **Found no longer anywhere.** The buyer map (the region, county and
+  locality choropleth, with its territory drawer), the full-text search over
+  every record field, and the status, value-quality, source and review-signal
+  filters. The front door's county map (`HomeCountiesBand`) is a different
+  map and stays.
+- **Unlinked.** The value-model methodology page (`/achizitii/metodologie`)
+  is still served, but no page links to it any more: its links were in the
+  explorer's filter sheet, info sheet and value-basis notice. Its text
+  describes the maps, the panel under them and the five value logics the
+  explorer offered. Whether to link it from the analytics page's caveats,
+  rewrite it, or retire it is open.
+- **Reviewed** by Opus 5.5 (xhigh) and Codex `gpt-6.1-sol` (xhigh). Nothing
+  live depended on what went. Their findings are fixed:
+  - lost test coverage, moved to live readers as above;
+  - the scope scrubber's type, which leaned on a removed builder and now
+    has its own;
+  - helpers kept alive only by their own tests: the explorer's
+    state-to-query builders, the capability registry, the list-capability
+    drops;
+  - comments describing the removed views.
+- **The catalogs.** The explorer's 296 strings are marked obsolete by
+  `lingui extract`, as the project keeps obsolete entries. A
+  `yarn i18n:clean` would drop them, along with the 762 already obsolete.

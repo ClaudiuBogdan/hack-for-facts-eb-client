@@ -15,7 +15,7 @@ type Props = {
   /** Compact padding for smaller surfaces. */
   readonly compact?: boolean
   /**
-   * Nest inside an already-bordered parent (e.g. territory drawer card).
+   * Nest inside an already-bordered parent.
    * Drops the outer section border and heavy nested chrome.
    */
   readonly embedded?: boolean

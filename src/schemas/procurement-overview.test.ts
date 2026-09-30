@@ -10,7 +10,6 @@ import {
   normalizeProcurementMonthStart,
   parseProcurementOverviewSearch,
   resolveProcurementOverviewPeriod,
-  selectedCalendarYearFromPeriod,
   toProcurementLandingQueryFilters,
 } from './procurement-overview'
 
@@ -93,11 +92,6 @@ describe('procurement overview period', () => {
         2025,
       ),
     ).toBe(true)
-    expect(
-      selectedCalendarYearFromPeriod(
-        resolveProcurementOverviewPeriod({}, now),
-      ),
-    ).toBe(2025)
     expect(
       matchesCalendarYearPeriod(
         resolveProcurementOverviewPeriod({}, now),

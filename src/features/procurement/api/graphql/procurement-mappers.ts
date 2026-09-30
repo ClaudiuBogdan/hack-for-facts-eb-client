@@ -32,7 +32,6 @@ import {
   type ProcedureRecord,
   type ProcurementGrain,
   type ProcurementGrainAnalytics,
-  type ProcurementLanding,
   type ProcurementRecordSummary,
   type ProcurementSearchPage,
   type SupplierProcurementSlice,
@@ -251,11 +250,6 @@ export function mapAnswerMeta(raw: RawProcurementAnswerMeta) {
 function requiredCount(value: string | null, context: string): string {
   if (value === null) throw new Error(`${context} is unexpectedly null`)
   return value
-}
-
-function addIntegerStrings(left: string | null, right: string | null) {
-  if (left === null || right === null) return null
-  return (BigInt(left) + BigInt(right)).toString()
 }
 
 function subtractIntegerStrings(total: string, present: string): string {
@@ -501,49 +495,6 @@ export function mapSearchPage(options: {
         ...(highlight.supplierName != null && { supplierName: highlight.supplierName }),
       })),
     }),
-  }
-}
-
-export function mapLanding(parts: {
-  aggregates: RawProcurementAggregates
-  divisions: readonly RawProcurementCpvDivision[]
-  partyNames?: ReadonlyMap<string, string>
-}): ProcurementLanding {
-  const procedure = mapGrainAnalytics(
-    parts.aggregates,
-    parts.divisions,
-    'procedure',
-    parts.partyNames,
-  )
-  const contract = mapGrainAnalytics(
-    parts.aggregates,
-    parts.divisions,
-    'contract',
-    parts.partyNames,
-  )
-  const directAcquisition = mapGrainAnalytics(
-    parts.aggregates,
-    parts.divisions,
-    'direct_acquisition',
-    parts.partyNames,
-  )
-  return {
-    headline: {
-      totalValueRon: addDecimalStrings(
-        contract.stats.valueAwardedSum,
-        directAcquisition.stats.valueAwardedSum,
-      ),
-      proceduresCount: procedure.stats.recordCount,
-      directAcquisitionsCount: directAcquisition.stats.recordCount,
-      contractsCount: contract.stats.recordCount,
-      buyersCount: null,
-      suppliersCount: null,
-      recordsCount: addIntegerStrings(
-        contract.stats.recordCount,
-        directAcquisition.stats.recordCount,
-      ),
-    },
-    analysisByGrain: { procedure, contract, directAcquisition },
   }
 }
 

@@ -253,9 +253,8 @@ function buildSourceSystems(
 }
 
 /**
- * Resolve the status constraint for a grain, together with what that constraint
- * silently hides. ONE function on purpose: the query and its disclosure must
- * never disagree, and two copies of the same guard is exactly how they drift.
+ * The status constraint for a grain: the reader's own choice, else the
+ * grain's vocabulary less its default-hidden statuses.
  *
  * Note the ordering — validation happens BEFORE the "did the user choose?"
  * test. `procurementStatusSchema` is the union across all three grains, so a
@@ -265,67 +264,23 @@ function buildSourceSystems(
  * to *no constraint at all*, handing back every refused DA with no notice. An
  * empty-after-validation selection is not a choice; it takes the default.
  */
-function resolveStatuses(
+function buildStatuses(
   search: ProcurementSearchState,
   grain: FlowGrainKey,
-): {
-  readonly applied: string[] | undefined
-  readonly hiddenByDefault: readonly ProcurementStatus[]
-} {
+): string[] | undefined {
   const vocabulary = STATUSES_BY_GRAIN[grain]
   const chosen = (search.status ?? []).filter((status) =>
     vocabulary.includes(status),
   )
   // A real selection is authoritative — including one that asks for a
   // default-hidden status, which is how the user opts back in.
-  if (chosen.length > 0) return { applied: chosen, hiddenByDefault: [] }
+  if (chosen.length > 0) return chosen
 
-  const hidden = DEFAULT_HIDDEN_STATUSES_BY_GRAIN[grain]
-  if (hidden.length === 0) return { applied: undefined, hiddenByDefault: [] }
+  const hidden: readonly ProcurementStatus[] = DEFAULT_HIDDEN_STATUSES_BY_GRAIN[grain]
+  if (hidden.length === 0) return undefined
   // The server has no `notIn` op on `status`, so the exclusion is sent as its
   // complement — the grain's vocabulary minus the hidden tokens.
-  return {
-    applied: vocabulary.filter((status) => !hidden.includes(status)),
-    hiddenByDefault: hidden,
-  }
-}
-
-function buildStatuses(
-  search: ProcurementSearchState,
-  grain: FlowGrainKey,
-): string[] | undefined {
-  return resolveStatuses(search, grain).applied
-}
-
-/**
- * The statuses this search is silently dropping, for disclosure in the UI.
- * A hidden slice the reader cannot see is a silent cap —
- * `ProcurementDaWindowNotice` surfaces this.
- */
-export function statusesHiddenByDefault(
-  search: ProcurementSearchState,
-  grain: FlowGrainKey,
-): readonly ProcurementStatus[] {
-  return resolveStatuses(search, grain).hiddenByDefault
-}
-
-/**
- * The default-hidden statuses the user has explicitly asked back in. Non-empty
- * only on the opt-in path, which needs its own disclosure: the server's
- * aggregates (flows, rollups, analysis facts) exclude `cancelled` at the data
- * layer, so a list that includes refused DAs cannot be reconciled with the
- * totals and charts around it. Saying so is the difference between a reader
- * seeing 262B of refusals and a reader believing it was spent.
- */
-export function statusesIncludedByRequest(
-  search: ProcurementSearchState,
-  grain: FlowGrainKey,
-): readonly ProcurementStatus[] {
-  const { applied, hiddenByDefault } = resolveStatuses(search, grain)
-  if (applied === undefined || hiddenByDefault.length > 0) return []
-  return DEFAULT_HIDDEN_STATUSES_BY_GRAIN[grain].filter((status) =>
-    applied.includes(status),
-  )
+  return vocabulary.filter((status) => !hidden.includes(status))
 }
 
 function trimmedOrUndefined(value: string | undefined): string | undefined {
@@ -554,7 +509,7 @@ export function buildProcurementSort(
   }
 }
 
-/** Scope filter for the shared aggregate queries (landing/CPV/supplier/map drawer). */
+/** Scope filter for the shared aggregate queries (the category page, the institution and firm slices). */
 export function buildScopeFilter(scope: {
   authorityCui?: string
   supplierCui?: string

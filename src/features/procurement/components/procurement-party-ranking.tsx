@@ -37,11 +37,10 @@ import {
 import { analyticsSearchFromExplorer } from '../lib/analytics-legacy'
 
 /**
- * Overview glance card deep-links to Rankings. Slice / territory / CPV pages
- * keep a local sheet table (no hub Rankings context).
- *
- * Value-sorted, top-100 leaderboards are live on the Rankings hub (rankBy).
- * Server offset pagination beyond that is not served yet — stays API-honest.
+ * A glance card of the top parties; with `rankingsDim` it links to the full
+ * ranking on the analytics page, else it keeps a local sheet table.
+ * Server offset pagination beyond the top 100 is not served yet — stays
+ * API-honest.
  */
 
 const CARD_LIMIT = 5
@@ -73,11 +72,12 @@ type Props = {
   readonly pairScope?: PartyPairScope
   /** Analysis grain for pair Search when `pairScope` is set. */
   readonly grain?: AnalysisFlowGrain
-  /** Deep-link to hub Rankings for this dimension (Overview cards). */
+  /** Link to the full ranking on the analytics page, by this dimension. */
   readonly rankingsDim?: ProcurementRankDim
   /**
-   * Exact hub search for that deep-link. Surfaces whose own URL params are not
-   * hub params (the institution profile uses `year`/`cpv`) must translate them
+   * The link's scope, in the old explorer's words (the analytics page reads
+   * them, `analyticsSearchFromExplorer`). Surfaces whose own URL params are
+   * not those (the institution profile uses `year`/`cpv`) must translate them
    * rather than let the current search leak through unmapped.
    */
   readonly rankingsSearch?: Record<string, unknown>

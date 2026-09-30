@@ -1,26 +1,13 @@
 /**
- * Value-basis (vbasis) URL axis — design v1.1. The plan resolver and the
- * scope scrub are the single derivation every view reads; these tests pin the
- * normalization laws, the population mapping and the never-silently-sent
- * filter drops.
+ * Value-basis (vbasis) URL axis — design v1.1: the explorer's old links are
+ * still parsed (the analytics page's redirects read them), and the scope
+ * scrub per population still serves the institution scopes. These tests pin
+ * the normalization laws and the never-silently-sent filter drops.
  */
 import { describe, expect, it } from 'vitest'
-import {
-  cleanProcurementHubSearch,
-  hubStateToRankingScopeInput,
-  parseProcurementHubSearch,
-  resolveProcurementValueBasisPlan,
-  scrubScopeForAnalysisGrain,
-} from './procurement-hub'
+import { parseProcurementHubSearch, scrubScopeForAnalysisGrain } from './procurement-hub'
 
 describe('vbasis URL parsing + normalization', () => {
-  it('defaults to awarded and cleans the default away', () => {
-    expect(parseProcurementHubSearch({}).vbasis).toBe('awarded')
-    expect(cleanProcurementHubSearch({ vbasis: 'awarded' })).toEqual({})
-    expect(cleanProcurementHubSearch({ vbasis: 'ceiling' })).toEqual({
-      vbasis: 'ceiling',
-    })
-  })
 
   it('drops unknown tokens instead of failing the whole URL', () => {
     expect(parseProcurementHubSearch({ vbasis: 'bogus' }).vbasis).toBe('awarded')
@@ -45,100 +32,21 @@ describe('vbasis URL parsing + normalization', () => {
   })
 })
 
-describe('value-basis plan resolution', () => {
-  it('maps each logic to its server population and measure', () => {
-    expect(
-      resolveProcurementValueBasisPlan({ vbasis: 'awarded', grain: 'contracts' }),
-    ).toMatchObject({
-      analysisGrain: 'contract',
-      valueMeasure: 'valueAwardedSum',
-      usesLandingPipeline: true,
-      breakdowns: 'anchor',
-    })
-    expect(
-      resolveProcurementValueBasisPlan({ vbasis: 'ceiling', grain: 'contracts' }),
-    ).toMatchObject({
-      analysisGrain: 'framework',
-      valueMeasure: 'valueCeilingSum',
-      breakdowns: 'withheld',
-      supplierDimension: false,
-      concentration: false,
-      grainOptions: [],
-    })
-    expect(
-      resolveProcurementValueBasisPlan({ vbasis: 'calloff', grain: 'contracts' }),
-    ).toMatchObject({
-      analysisGrain: 'calloff',
-      valueMeasure: 'valueAwardedSum',
-      breakdowns: 'anchor',
-      cpvBeyondDivision: false,
-      concentration: true,
-    })
-    expect(
-      resolveProcurementValueBasisPlan({
-        vbasis: 'mod_adjusted',
-        grain: 'contracts',
-      }),
-    ).toMatchObject({
-      analysisGrain: 'contract',
-      valueMeasure: 'valueModAdjustedSum',
-      grainOptions: ['contracts'],
-    })
-    expect(
-      resolveProcurementValueBasisPlan({
-        vbasis: 'awarded',
-        grain: 'modifications',
-      }),
-    ).toMatchObject({
-      analysisGrain: 'modification',
-      valueMeasure: null,
-      breakdowns: 'counts-only',
-      cpvBeyondDivision: false,
-      concentration: false,
-    })
-  })
-
-  it('estimated follows the hub grain and admits procedures', () => {
-    expect(
-      resolveProcurementValueBasisPlan({ vbasis: 'estimated', grain: 'procedures' }),
-    ).toMatchObject({
-      analysisGrain: 'procedure',
-      valueMeasure: 'valueEstimatedSum',
-      supplierDimension: false,
-      concentration: false,
-      grainOptions: ['contracts', 'direct_acquisitions', 'procedures'],
-    })
-    expect(
-      resolveProcurementValueBasisPlan({ vbasis: 'estimated', grain: 'contracts' })
-        .analysisGrain,
-    ).toBe('contract')
-  })
-
-  it('every non-default plan leaves the landing pipeline', () => {
-    for (const vbasis of ['estimated', 'ceiling', 'calloff', 'mod_adjusted'] as const) {
-      expect(
-        resolveProcurementValueBasisPlan({ vbasis, grain: 'contracts' })
-          .usesLandingPipeline,
-      ).toBe(false)
-    }
-  })
-})
-
 describe('scope scrub per population (server design v1.1)', () => {
-  const fullScope = hubStateToRankingScopeInput(
-    parseProcurementHubSearch({
-      q: 'drum',
-      authority_cui: '111',
-      supplier_cui: '222',
-      cpv_group: '45200000',
-      supplierCounty: 'CJ',
-      buyerCounty: 'AB',
-      status: 'awarded',
-      record_kind: 'purchases',
-      valueMin: 100,
-      valueMax: 200,
-    }),
-  )
+  // A contracts scope carrying every filter a population may have to drop.
+  const fullScope = {
+    grain: 'contract' as const,
+    q: 'drum',
+    authorityCui: '111',
+    supplierCui: '222',
+    cpvGroup: '45200000',
+    supplierCounty: 'CJ',
+    buyerCounty: 'AB',
+    status: 'awarded',
+    recordKind: 'contract_award',
+    valueMin: 100,
+    valueMax: 200,
+  }
 
   it('framework drops supplier/status/recordKind/q, keeps CPV + buyer geo + bounds', () => {
     const { scope, dropped } = scrubScopeForAnalysisGrain(fullScope, 'framework')
@@ -184,32 +92,5 @@ describe('scope scrub per population (server design v1.1)', () => {
     const { scope } = scrubScopeForAnalysisGrain(fullScope, 'procedure')
     expect(scope.supplierCui).toBeUndefined()
     expect(scope.supplierCounty).toBeUndefined()
-  })
-
-  it('a REAL modifications state forwards record_kind to the population scope (review F2)', () => {
-    const modificationsScope = hubStateToRankingScopeInput(
-      parseProcurementHubSearch({
-        grain: 'modifications',
-        record_kind: 'purchases',
-        valueMin: 100,
-      }),
-    )
-    expect(modificationsScope.recordKind).toBe('contract_award')
-    const { scope } = scrubScopeForAnalysisGrain(
-      modificationsScope,
-      'modification',
-    )
-    expect(scope.recordKind).toBe('contract_award')
-    expect(scope.valueMin).toBeUndefined()
-  })
-
-  it('record_kind still never reaches DA/procedure scopes', () => {
-    const daScope = hubStateToRankingScopeInput(
-      parseProcurementHubSearch({
-        grain: 'direct_acquisitions',
-        record_kind: 'purchases',
-      }),
-    )
-    expect(daScope.recordKind).toBeUndefined()
   })
 })

@@ -214,8 +214,8 @@ function SliceContent({
     }),
     { enabled: needsOwnRecords },
   )
-  // The full-table affordance is the hub's Rankings view carrying this page's
-  // filters — not a side sheet that dead-ends in a second copy of the list.
+  // The full-table affordance is the analytics page's ranking carrying this
+  // page's filters — not a side sheet that dead-ends in a second copy of the list.
   const rankingsSearch = analysis
     ? {
         authority_cui: slice.authorityCui,

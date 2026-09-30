@@ -310,7 +310,7 @@ export const rawBreakdownBlockSchema = z.object({
   /**
    * Supplier-money breakdowns only: consortium money withheld from EVERY
    * bucket in this scope (buckets + this = the attributed total). The
-   * under-map reconciliation panel renders it; null on buyer breakdowns.
+   * slices can say it; null on buyer breakdowns.
    * `.nullish()`: tolerated as absent so pre-wave servers/fixtures parse.
    */
   valueWithheldAssociationSum: z.string().nullish(),
@@ -340,12 +340,6 @@ export type RawProcurementSeriesBlock = z.infer<typeof rawSeriesBlockSchema>
 
 const SERIES_BLOCK_FIELDS = /* GraphQL */ `
   grain measure bucket points { bucket value }
-  meta { ${ANSWER_META_FIELDS} }
-`
-
-const CONCENTRATION_BLOCK_FIELDS = /* GraphQL */ `
-  grain basis supplierCount top1Share top5Share hhi totalRon
-  valueWithheldAssociationSum
   meta { ${ANSWER_META_FIELDS} }
 `
 
@@ -625,7 +619,7 @@ export const procurementDaRecordResponseSchema = z.object({
 })
 
 // ---------------------------------------------------------------------------
-// Aggregates (multi-root document reused for landing / CPV page / supplier
+// Aggregates (multi-root document reused for the CPV page / supplier
 // slice — only the $scope/$grain variables change)
 // ---------------------------------------------------------------------------
 
@@ -719,65 +713,6 @@ export const procurementPartyNamesResponseSchema = z.object({
   suppliers: z.array(rawPartyLabelSchema).optional(),
 })
 
-
-// ---------------------------------------------------------------------------
-// Matrix-v2 analysis workspace
-// ---------------------------------------------------------------------------
-
-export const PROCUREMENT_ANALYSIS_QUERY = /* GraphQL */ `
-  query ProcurementAnalysis(
-    $scope: ProcurementAnalysisScopeInput!
-    $dimensions: [ProcurementBreakdownDimension!]!
-    $topN: Int
-    $rankBy: ProcurementRankBy
-    $bucket: ProcurementSeriesBucket!
-    $measure: ProcurementAnalysisMeasure!
-    $basis: ProcurementConcentrationBasis
-    $includeConcentration: Boolean! = true
-  ) {
-    stats: procurementStats(scope: $scope) { blocks { ${STATS_BLOCK_FIELDS} } }
-    facets: procurementFacets(scope: $scope, dimensions: $dimensions, topN: $topN, rankBy: $rankBy) {
-      blocks { ${BREAKDOWN_BLOCK_FIELDS} }
-    }
-    series: procurementSeries(scope: $scope, bucket: $bucket, measure: $measure) {
-      ${SERIES_BLOCK_FIELDS}
-    }
-    concentration: procurementConcentration(scope: $scope, basis: $basis) @include(if: $includeConcentration) {
-      ${CONCENTRATION_BLOCK_FIELDS}
-    }
-  }
-`
-
-export const rawConcentrationBlockSchema = z.object({
-  grain: z.string(),
-  basis: z.string(),
-  supplierCount: z.number().nullable(),
-  top1Share: z.string().nullable(),
-  top5Share: z.string().nullable(),
-  hhi: z.string().nullable(),
-  totalRon: z.string().nullable(),
-  /**
-   * Consortium money in scope that belongs to NO single supplier (the internal
-   * split is unpublished), so `totalRon` + this + the unknown-supplier weight
-   * reconcile to the attributed total. Without it the UI has to guess what the
-   * uncovered remainder is — and calling it "supplier unidentified" is false.
-   * `.nullish()`: tolerated as absent so pre-wave servers/fixtures parse.
-   */
-  valueWithheldAssociationSum: z.string().nullish(),
-  meta: rawAnswerMetaSchema,
-})
-
-export const procurementAnalysisResponseSchema = z.object({
-  stats: z.object({ blocks: z.array(rawStatsBlockSchema) }),
-  facets: z.object({ blocks: z.array(rawBreakdownBlockSchema) }),
-  series: z.array(rawSeriesBlockSchema),
-  // Absent when $includeConcentration=false (populations without supplier money).
-  concentration: z.array(rawConcentrationBlockSchema).optional().default([]),
-})
-export type RawProcurementAnalysis = z.infer<
-  typeof procurementAnalysisResponseSchema
->
-
 // ---------------------------------------------------------------------------
 // Supplier records connection (cursor)
 // ---------------------------------------------------------------------------
@@ -838,19 +773,4 @@ export const rawCpvDivisionSchema = z.object({
 export type RawProcurementCpvDivision = z.infer<typeof rawCpvDivisionSchema>
 export const procurementCpvDivisionsResponseSchema = z.object({
   procurementCpvDivisions: z.array(rawCpvDivisionSchema),
-})
-
-export const PROCUREMENT_CPV_CODES_QUERY = /* GraphQL */ `
-  query ProcurementCpvCodes($codes: [String!]!) {
-    procurementCpvCodes(codes: $codes) { cpvCode labelRo labelEn }
-  }
-`
-export const rawCpvCodeSchema = z.object({
-  cpvCode: z.string(),
-  labelRo: z.string().nullable(),
-  labelEn: z.string().nullable(),
-})
-export type RawProcurementCpvCode = z.infer<typeof rawCpvCodeSchema>
-export const procurementCpvCodesResponseSchema = z.object({
-  procurementCpvCodes: z.array(rawCpvCodeSchema),
 })
