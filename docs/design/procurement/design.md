@@ -688,10 +688,13 @@ The owner's polish of the front door, after the analytics page was promoted.
   them (the categories band's control). Before this, the hero showed ten on
   a wide screen and five on a phone. The hero is now 667 px tall at
   1440×900 (906 before), so the pinned bar sits above the fold.
-- **The source closes the hero.** On a wide screen the source line is level
-  with the foot of the buyers panel, whether the panel is open or closed.
-  On a phone it comes after the panel. Until the read says which month the
-  records are complete to, the month's place is held.
+- **The source closes the hero.** On a wide screen the source line sits at
+  the hero's foot, 24 px above its bottom rule, in the hero's bottom
+  padding. It stays there however tall the buyers panel is, open or
+  closed. (A first version set it level with the panel's foot, which left
+  80 px of hero under it.) On a phone it comes after the panel. Until the
+  read says which month the records are complete to, the month's place is
+  held.
 - **The cross over the pinned bar.** The blue cross sits on the hero's
   bottom rule, where the pinned bar begins, and is drawn above the bar. It
   used to sit at the bar's foot, in the figures band, and the bar covered

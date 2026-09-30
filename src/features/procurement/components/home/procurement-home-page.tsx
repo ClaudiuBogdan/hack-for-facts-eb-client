@@ -130,8 +130,8 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
         <TwoLayerLattice idPrefix="procurement-home" />
         <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20">
           <CornerTicks />
-          {/* The source closes the hero: under the buyers on a phone, level with their panel's foot from a wide screen. */}
-          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-6">
+          {/* The source closes the hero: under the buyers on a phone; from a wide screen, at the hero's foot, just above its bottom rule, however tall the buyers panel is. */}
+          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-7">
               <MonoLabel className="text-muted-foreground">
                 <Trans>Achiziții publice / SEAP</Trans>
@@ -164,7 +164,7 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
                 </span>
               </nav>
             </div>
-            <div className="min-w-0 lg:col-span-5 lg:row-span-2">
+            <div className="min-w-0 lg:col-span-5">
               <HeroBuyers
                 read={read}
                 year={year}
@@ -173,7 +173,7 @@ export function ProcurementHomePage({ search, initial }: { readonly search: Proc
                 onBuyers={(value) => choose('cumparatori', value)}
               />
             </div>
-            <HomeSourceLine month={sourceMonth} className="min-w-0 lg:col-span-7 lg:self-end" />
+            <HomeSourceLine month={sourceMonth} className="min-w-0 lg:absolute lg:inset-x-8 lg:bottom-6" />
           </div>
           {/* The crux on the hero's bottom rule, where the pinned bar begins; above the bar, which would cover its lower half. */}
           <span className="absolute inset-x-0 top-full z-30 mt-px">
