@@ -679,6 +679,64 @@ browser's own reads; a hover preloads them).
 - The companies hub keeps its own county-band fork; one shared choropleth
   (with the INS band's `countyLink`) is a separate job.
 
+### 12.5 The hero, and the page before its reads (30 September 2026)
+
+The owner's polish of the front door, after the analytics page was promoted.
+
+- **Five buyers, then ten.** The hero names the five largest buyers.
+  „Arată mai multe" („Show more") opens the next five, and „Arată mai puține" closes
+  them (the categories band's control). Before this, the hero showed ten on
+  a wide screen and five on a phone. The hero is now 667 px tall at
+  1440×900 (906 before), so the pinned bar sits above the fold.
+- **The source closes the hero.** On a wide screen the source line is level
+  with the foot of the buyers panel, whether the panel is open or closed.
+  On a phone it comes after the panel. Until the read says which month the
+  records are complete to, the month's place is held.
+- **The cross over the pinned bar.** The blue cross sits on the hero's
+  bottom rule, where the pinned bar begins, and is drawn above the bar. It
+  used to sit at the bar's foot, in the figures band, and the bar covered
+  its top half. This is the pattern the buyer head and the analytics head
+  already follow.
+- **The map first.** The bands now run: 01 Pe județe, 02 Ce se cumpără,
+  03 Cine vinde, 04 În timp, 05 Cum se cumpără, 06 Cele mai noi. The
+  figures band stays between the pinned bar and the map.
+- **The page before its reads.** A client-side navigation mounts before the
+  reads. Every band now renders what it knows without them: its number,
+  title and toggle, its captions, the figures' terms, and the map's caveat.
+  The rest holds its place in the shape of what replaces it:
+  - rows with the real rows' lines, at their sizes, with a ranking's places
+    shown;
+  - ledes with the lines they take;
+  - the map's frame, the legend's height, and the county ranking's two ends;
+  - the year columns' frame.
+
+  The old skeletons (grey bars, titles missing) grew the page by 2,700 px
+  when the data landed. Measured with the API held back (Playwright, dev
+  server):
+
+  | band | 1440 px: pending → loaded | 390 px: pending → loaded |
+  |---|---|---|
+  | hero | 667 → 667 | 1084 → 1084 |
+  | figures | same height | 16 px short |
+  | map | 942 → 943 | 1369 → 1377 |
+  | categories | 847 → 847 | 1063 → 1082 |
+  | sellers | 990 → 990 | 1444 → 1444 |
+  | years | 483 → 483 | 701 → 701 |
+  | procedures | 640 → 640 | 951 → 951 |
+  | newest | 1013 → 993 | 1152 → 1152 |
+
+  What remains depends on the data: how many titles or notes take two lines.
+- **Reviewed** by Codex `gpt-6.1-sol` (xhigh; no defects) and Opus 5.5
+  (xhigh). Opus found no serious defects; its findings are fixed:
+  - Opening the list from the keyboard now moves focus to the sixth buyer,
+    as the county ranking's control does. Before, the next Tab skipped the
+    five new rows.
+  - A pending paragraph now shortens only its own last line, at each width.
+  - The contract ranking's caption („După numărul de contracte
+    atribuite.") shows before the read, because it doesn't depend on it.
+  - One ruled-note class, one show-more class and its placeholder, and
+    the national read's state type are now shared from `home-chrome.tsx`.
+
 ## 13. The buyer page, redesigned (prototyped and promoted 27 September 2026)
 
 `/procurement/institutions/$cui` — one public buyer's procurement — moves from

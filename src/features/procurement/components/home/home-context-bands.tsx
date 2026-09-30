@@ -7,7 +7,7 @@ import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { COMPANY_HUB_SNAPSHOT } from '@/features/private-companies/lib/hub-snapshot'
-import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { HubCountyBand, type HubCountyBandDefinition } from '@/features/statistics/components/hub/hub-county-band'
 import { ROMANIA_COUNTIES, countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
@@ -19,8 +19,17 @@ import { DIRECT_COMPARABLE_FROM, isUnpublishedProcedure, perResidents, procedure
 import { countyLede, directAverageLede, growthLede, unpublishedLede } from '../../lib/home-text'
 import type { AnalyticsUrlSearch } from '../../lib/analytics-model'
 import { countyRecordsSearch, startSearches } from '../../lib/home-links'
-import { HomeBand, ProvisionalMark } from './home-chrome'
-import { RecordRows } from './home-rows'
+import { HOME_RECENT_RECORDS } from '../../hooks/use-procurement-home'
+import { Bone, HomeBand, ProvisionalMark, RULED_NOTE_CLASS, TextPending, type NationalState } from './home-chrome'
+import { PendingRows, RecordRows } from './home-rows'
+
+/** A lede the national read writes, until it lands: two lines, three on a phone. */
+const NATIONAL_LEDE_PENDING = <TextPending lines={2} narrow={3} />
+
+function ledeOf(read: NationalRead | undefined, national: NationalState, lede: (read: NationalRead) => ReactNode): ReactNode {
+  if (read) return lede(read)
+  return national.isError ? null : NATIONAL_LEDE_PENDING
+}
 
 // ───────────────────────────────────────────────────────── the counties ──
 
@@ -54,18 +63,21 @@ function countyLayer(read: NationalRead, indicator: ProcurementHomeMap): Statist
 
 export function HomeCountiesBand({
   read,
+  year,
+  national,
   index,
   indicator,
   onIndicator,
 }: {
-  readonly read: NationalRead
+  readonly read: NationalRead | undefined
+  readonly year: number
+  readonly national: NationalState
   readonly index: string
   readonly indicator: ProcurementHomeMap
   readonly onIndicator: (indicator: ProcurementHomeMap) => void
 }) {
-  const layer = useMemo(() => countyLayer(read, indicator), [read, indicator])
+  const layer = useMemo(() => (read ? countyLayer(read, indicator) : null), [read, indicator])
   const { i18n } = useLingui()
-  const year = read.year
   // Resolved here, through `i18n`, so a locale switch re-renders the band.
   const definition = useMemo<HubCountyBandDefinition>(
     () =>
@@ -100,7 +112,15 @@ export function HomeCountiesBand({
         titleId="procurement-home-counties-title"
         index={index}
         title={<Trans>Cât cumpără județul tău</Trans>}
-        lede={sameYear && indicator === 'lei' ? countyLede(layer.values, layer.national, (code) => countyNameRo(code) ?? code) : null}
+        lede={
+          sameYear && indicator === 'lei'
+            ? layer
+              ? countyLede(layer.values, layer.national, (code) => countyNameRo(code) ?? code)
+              : national.isError
+                ? null
+                : NATIONAL_LEDE_PENDING
+            : null
+        }
         aside={
           <IndicatorToggle
             label={t`Indicatorul de pe hartă`}
@@ -114,7 +134,15 @@ export function HomeCountiesBand({
         }
       />
       {sameYear ? (
-        <HubCountyBand key={layer.code} layer={layer} definition={definition} countyLink={countyLink} />
+        layer ? (
+          <HubCountyBand key={layer.code} layer={layer} definition={definition} countyLink={countyLink} />
+        ) : national.isError ? (
+          <div className="mt-10">
+            <HubLoadError onRetry={national.retry} />
+          </div>
+        ) : (
+          <CountyBandPending caveat={definition.caveat} source={definition.source} />
+        )
       ) : (
         <p className="mt-8 max-w-[56ch] border-y py-4 text-sm text-muted-foreground">
           <Trans>
@@ -124,6 +152,49 @@ export function HomeCountiesBand({
         </p>
       )}
     </HomeBand>
+  )
+}
+
+/**
+ * The county band before its read, in `HubCountyBand`'s geometry: the map's
+ * frame, the legend's height, the caveat itself (it says nothing the read
+ * decides), and the ranking's two ends with the control between them.
+ */
+function CountyBandPending({ caveat, source }: { readonly caveat: ReactNode; readonly source: ReactNode }) {
+  const ranks = (from: number) => (
+    <ol className="divide-y divide-border/70">
+      {Array.from({ length: 5 }, (_, index) => (
+        <li key={index} className="flex min-h-11 items-center gap-3 px-1 text-sm">
+          <MonoLabel className="tabular-nums text-muted-foreground/60">{String(from + index).padStart(2, '0')}</MonoLabel>
+          <Bone className={index % 2 === 0 ? 'w-24' : 'w-20'} />
+          <span className="h-2 flex-1 animate-pulse bg-muted/70" />
+          <Bone className="w-12" />
+        </li>
+      ))}
+    </ol>
+  )
+  return (
+    <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+      <div className="min-w-0 lg:col-span-7">
+        <div className="aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
+        <div className="mt-6 space-y-6">
+          <div className="h-28 animate-pulse rounded-sm bg-muted/60 sm:h-[4.5rem]" aria-hidden="true" />
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {caveat} {source}
+          </p>
+        </div>
+      </div>
+      <div className="min-w-0 lg:col-span-5 lg:col-start-8" aria-hidden="true">
+        <div className="border-b border-border/70 pb-2">
+          <MonoLabel className="block pl-1 text-muted-foreground">
+            <Trans>Județ</Trans>
+          </MonoLabel>
+        </div>
+        {ranks(1)}
+        <div className="min-h-11 border-y border-border/70" />
+        {ranks(38)}
+      </div>
+    </div>
   )
 }
 
@@ -203,8 +274,34 @@ function YearColumns({ read }: { readonly read: NationalRead }) {
   )
 }
 
-export function HomeYearsBand({ read, index }: { readonly read: NationalRead; readonly index: string }) {
-  const partYear = partYearOf(read)
+/** Heights, in percent, of the columns drawn before the read: rising, the part year last. */
+const PENDING_COLUMNS = [42, 50, 56, 63, 72, 84, 92, 36]
+
+/** The columns before their read: the readout's line, the chart's frame and the labels' row, at the chart's height. */
+function YearColumnsPending() {
+  return (
+    <div aria-hidden="true">
+      <p className="h-10" />
+      <div className="flex h-56 items-end gap-1.5 border-b border-foreground/30 sm:gap-2">
+        {PENDING_COLUMNS.map((height, index) => (
+          <span key={index} className="block flex-1 animate-pulse bg-muted" style={{ height: `${height}%` }} />
+        ))}
+      </div>
+      <MonoLabel className="mt-2 block">&nbsp;</MonoLabel>
+    </div>
+  )
+}
+
+export function HomeYearsBand({
+  read,
+  national,
+  index,
+}: {
+  readonly read: NationalRead | undefined
+  readonly national: NationalState
+  readonly index: string
+}) {
+  const partYear = read ? partYearOf(read) : null
   return (
     <HomeBand id="in-timp" labelledBy="procurement-home-years-title">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -219,13 +316,17 @@ export function HomeYearsBand({ read, index }: { readonly read: NationalRead; re
                 an de an
               </Trans>
             }
-            lede={growthLede(read)}
+            lede={ledeOf(read, national, growthLede)}
           />
-          {partYear && read.cutoff.direct ? (
+          {partYear && read?.cutoff.direct ? (
             <p className="mt-6 max-w-[56ch] text-sm leading-relaxed text-muted-foreground" data-reveal>
               <Trans>
                 {partYear} e în curs: coloana ei are datele până în {monthText(read.cutoff.direct)}.
               </Trans>
+            </p>
+          ) : !read && !national.isError ? (
+            <p className="mt-6 max-w-[56ch] text-sm leading-relaxed">
+              <TextPending lines={1} narrow={2} />
             </p>
           ) : null}
         </div>
@@ -234,7 +335,7 @@ export function HomeYearsBand({ read, index }: { readonly read: NationalRead; re
             <Trans>Valoarea achizițiilor directe pe an, lei, fără TVA</Trans>
           </MonoLabel>
           <div className="mt-2">
-            <YearColumns read={read} />
+            {read ? <YearColumns read={read} /> : national.isError ? <HubLoadError onRetry={national.retry} /> : <YearColumnsPending />}
           </div>
         </div>
       </div>
@@ -244,10 +345,26 @@ export function HomeYearsBand({ read, index }: { readonly read: NationalRead; re
 
 // ──────────────────────────────────────────────────────── how it's bought ──
 
-export function HomeHowBand({ read, index }: { readonly read: NationalRead; readonly index: string }) {
+const PROCEDURE_ROW_CLASS = 'grid grid-cols-[minmax(0,1fr)_auto_3.5rem] items-center gap-x-4 px-1 py-2.5 text-sm'
+
+/** The procedures SEAP names in a year's awards: the rows the list holds before its read. */
+const PENDING_PROCEDURES = 9
+
+export function HomeHowBand({
+  read,
+  year,
+  national,
+  index,
+}: {
+  readonly read: NationalRead | undefined
+  readonly year: number
+  readonly national: NationalState
+  readonly index: string
+}) {
   const { i18n } = useLingui()
-  const total = read.contract.count
-  const direct = directAverageLede(read)
+  const total = read?.contract.count ?? null
+  const direct = read ? directAverageLede(read) : null
+  const waiting = !read && !national.isError
   return (
     <HomeBand id="cum" labelledBy="procurement-home-how-title">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -262,26 +379,53 @@ export function HomeHowBand({ read, index }: { readonly read: NationalRead; read
                 sau cumpărare directă
               </Trans>
             }
-            lede={unpublishedLede(read)}
+            lede={ledeOf(read, national, unpublishedLede)}
           />
           {direct ? (
-            <p className="mt-6 max-w-[56ch] border-l-2 border-primary/60 pl-4 text-sm leading-relaxed text-muted-foreground" data-reveal>
+            <p className={RULED_NOTE_CLASS} data-reveal>
               {direct}
+            </p>
+          ) : waiting ? (
+            <p className={RULED_NOTE_CLASS}>
+              <TextPending lines={3} narrow={4} />
             </p>
           ) : null}
         </div>
         <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Contractele atribuite în {read.year}, după procedură</Trans>
+            <Trans>Contractele atribuite în {year}, după procedură</Trans>
           </MonoLabel>
-          {total !== null && total > 0 && read.procedures.rows.length > 0 ? (
+          {!read ? (
+            national.isError ? (
+              <div className="mt-3">
+                <HubLoadError onRetry={national.retry} />
+              </div>
+            ) : (
+              <ol className="mt-3 divide-y divide-border/70 border-y border-border/70" aria-hidden="true">
+                {Array.from({ length: PENDING_PROCEDURES }, (_, row) => (
+                  <li key={row} className={PROCEDURE_ROW_CLASS}>
+                    <span className="min-w-0">
+                      {/* The longer procedure names take two lines on a phone: one row in three here. */}
+                      <span className="block leading-snug">
+                        <Bone className={row % 2 === 0 ? 'w-2/3' : 'w-3/5'} />
+                        {row % 3 === 2 ? <Bone className="w-1/2 sm:hidden" /> : null}
+                      </span>
+                      <span className="mt-1 block h-1 bg-muted" />
+                    </span>
+                    <Bone className="w-10" />
+                    <Bone />
+                  </li>
+                ))}
+              </ol>
+            )
+          ) : total !== null && total > 0 && read.procedures.rows.length > 0 ? (
             <ol className="mt-3 divide-y divide-border/70 border-y border-border/70">
               {read.procedures.rows.map((row) => {
                 const share = row.count / total
                 const unpublished = isUnpublishedProcedure(row.key)
                 const label = procedureLabel(row.key)
                 return (
-                  <li key={row.key} className="grid grid-cols-[minmax(0,1fr)_auto_3.5rem] items-center gap-x-4 px-1 py-2.5 text-sm">
+                  <li key={row.key} className={PROCEDURE_ROW_CLASS}>
                     <span className="min-w-0">
                       <span className={cn('block leading-snug text-foreground', unpublished && 'font-semibold')}>{label ? i18n._(label) : row.key}</span>
                       <span className="mt-1 block h-1 bg-muted" aria-hidden="true">
@@ -316,13 +460,15 @@ export function HomeHowBand({ read, index }: { readonly read: NationalRead; read
 
 export function HomeRecentBand({
   month,
+  national,
   index,
   recent,
   kind,
   onKind,
 }: {
-  /** The shown population's own newest complete month; null when the source has none yet. */
-  readonly month: string | null
+  /** The shown population's own newest complete month; null when the source has none yet, undefined until the national read says. */
+  readonly month: string | null | undefined
+  readonly national: NationalState
   readonly index: string
   readonly recent: { readonly data: readonly RecentRecord[] | undefined; readonly isError: boolean; readonly retry: () => void }
   readonly kind: ProcurementHomeRecent
@@ -347,6 +493,8 @@ export function HomeRecentBand({
             ) : (
               <Trans>Achizițiile directe cu cea mai mare valoare finalizate în {monthText(month)}, cea mai nouă lună completă din SEAP, fără TVA.</Trans>
             )
+          ) : month === undefined && !national.isError ? (
+            NATIONAL_LEDE_PENDING
           ) : null
         }
         aside={
@@ -362,7 +510,13 @@ export function HomeRecentBand({
         }
       />
       <div className="mt-8" data-reveal>
-        {month === null ? (
+        {month === undefined ? (
+          national.isError ? (
+            <HubLoadError onRetry={national.retry} />
+          ) : (
+            <PendingRows shape="record" rows={HOME_RECENT_RECORDS} />
+          )
+        ) : month === null ? (
           <p className="border-y py-4 text-sm text-muted-foreground">
             <Trans>SEAP nu are încă o lună completă pentru acestea.</Trans>
           </p>
@@ -377,7 +531,7 @@ export function HomeRecentBand({
             </p>
           )
         ) : (
-          <HubPending rows={8} />
+          <PendingRows shape="record" rows={HOME_RECENT_RECORDS} />
         )}
       </div>
     </HomeBand>

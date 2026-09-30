@@ -75,8 +75,62 @@ export function ProvisionalMark({ className }: { readonly className?: string }) 
   )
 }
 
-/** The source, said once for the page, with the month its records are complete to. */
-export function HomeSourceLine({ month, className }: { readonly month: string | null; readonly className?: string }) {
+/**
+ * The national read, as a band that stands on it sees it. Until it arrives
+ * a band shows everything it knows without it — its head, its toggle, its
+ * captions — and holds the place of the rest in its shape; if it fails, the
+ * band says so where the figures would be.
+ */
+export interface NationalState {
+  readonly isError: boolean
+  readonly retry: () => void
+}
+
+/** A note beside a band's lede, set off by a rule at its left. */
+export const RULED_NOTE_CLASS = 'mt-6 max-w-[56ch] border-l-2 border-primary/60 pl-4 text-sm leading-relaxed text-muted-foreground'
+
+/** The control under a list that opens the rest of it. */
+export const SHOW_MORE_CLASS = 'mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline'
+
+/**
+ * A word not read yet, in the line it will take: an inline block keeps the
+ * line's own height, so a pending row or lede is as tall as the one that
+ * replaces it.
+ */
+export function Bone({ className }: { readonly className?: string }) {
+  return <span className={cn('inline-block h-[0.8em] w-full animate-pulse rounded-sm bg-muted align-middle', className)} aria-hidden="true" />
+}
+
+/**
+ * Lines of text not read yet, in the parent's font and leading, the last
+ * shorter, as prose ends: `lines` from a small screen up, `narrow` on a
+ * phone, where the same words wrap more. As wide as prose runs (56ch), or
+ * its column: a lede beside a short title would otherwise take the title's
+ * width.
+ */
+export function TextPending({ lines = 2, narrow = lines, className }: { readonly lines?: number; readonly narrow?: number; readonly className?: string }) {
+  return (
+    <span className={cn('block w-[56ch] max-w-full', className)} aria-hidden="true">
+      {Array.from({ length: Math.max(lines, narrow) }, (_, line) => (
+        <span key={line} className={cn('block', line >= lines && 'sm:hidden', line >= narrow && 'max-sm:hidden')}>
+          <Bone className={cn(line === lines - 1 && 'sm:w-2/3', line === narrow - 1 && 'max-sm:w-2/3')} />
+        </span>
+      ))}
+    </span>
+  )
+}
+
+/** Where a list's show-more control will be, before the read says how long the list is. `className` sizes its word. */
+export function ShowMorePending({ className }: { readonly className?: string }) {
+  return (
+    <span className={cn(SHOW_MORE_CLASS, 'flex')} aria-hidden="true">
+      <Bone className={className} />
+    </span>
+  )
+}
+
+/** The source, said once for the page, with the month its records are complete to; its place held (undefined) until the read says. */
+export function HomeSourceLine({ month, className }: { readonly month: string | null | undefined; readonly className?: string }) {
   return (
     <p className={cn('text-sm text-muted-foreground', className)}>
       <Trans>Sursa:</Trans>{' '}
@@ -85,7 +139,7 @@ export function HomeSourceLine({ month, className }: { readonly month: string | 
         <span aria-hidden="true"> ↗</span>
         <span className="sr-only"> {t`(se deschide într-o filă nouă)`}</span>
       </a>
-      {month ? <>, {t`date până în ${monthText(month)}`}</> : null}
+      {month ? <>, {t`date până în ${monthText(month)}`}</> : month === undefined ? <Bone className="ml-1.5 w-40" /> : null}
     </p>
   )
 }
