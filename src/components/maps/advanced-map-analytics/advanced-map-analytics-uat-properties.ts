@@ -69,16 +69,3 @@ export function resolveUatDisplayTitle(
 
   return natLevelPrefix.length > 0 ? `${natLevelPrefix} ${rawName}`.trim() : rawName;
 }
-
-/**
- * Escapes a value before it is interpolated into HTML. Used when assembling
- * tooltip strings that are passed to Leaflet bindings.
- */
-export function escapeHtmlValue(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}

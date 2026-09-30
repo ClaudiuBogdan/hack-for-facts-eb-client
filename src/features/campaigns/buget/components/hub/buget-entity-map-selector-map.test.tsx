@@ -206,6 +206,29 @@ describe('BugetEntityMapSelectorMap', () => {
     })
   })
 
+  it.each([true, false])('shows a locality name from the map data as text (participants shown: %s)', (highlightSubscriptions) => {
+    const hostile = '<img src=x onerror="alert(1)">'
+    const [feature] = uatGeoJson.features
+    const hostileGeoJson = { ...uatGeoJson, features: [{ ...feature, properties: { ...feature.properties, name: hostile } }] }
+    render(
+      <BugetEntityMapSelectorMap
+        uatGeoJson={hostileGeoJson}
+        countyGeoJson={countyGeoJson}
+        locale="ro"
+        onUatSelect={vi.fn()}
+        highlightSubscriptions={highlightSubscriptions}
+        totalParticipants={3}
+        subscriptionCountsByNatcode={new Map([['055274', 3]])}
+        subscriptionLegendBins={buildSubscriptionLegendBins([3])}
+      />,
+    )
+
+    const tooltip = document.createElement('div')
+    tooltip.innerHTML = tooltipContents[tooltipContents.length - 1] ?? ''
+    expect(tooltip.querySelector('img')).toBeNull()
+    expect(tooltip.textContent).toContain(hostile)
+  })
+
   it('does not bind participant tooltips on mobile', () => {
     useIsMobileMock.mockReturnValue(true)
 

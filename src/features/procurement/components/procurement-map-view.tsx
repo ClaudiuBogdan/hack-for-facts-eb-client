@@ -19,6 +19,7 @@ import { ClientOnly } from '@/components/ssr/ClientOnly'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { escapeHtml } from '@/lib/html'
 import {
   buildMapDataCsv,
   buildUatMapMetadataBySiruta,
@@ -471,7 +472,7 @@ export function ProcurementMapView({
             : measure === 'value_awarded'
               ? formatRon(String(point.amount), 'compact')
               : formatFlowCount(point.amount)
-        return `<div style="font-weight:700">${name}</div><div style="margin-top:4px">${value}</div>`
+        return `<div style="font-weight:700">${escapeHtml(name)}</div><div style="margin-top:4px">${escapeHtml(value)}</div>`
       }
 
       if (paintIsUat) {
@@ -490,7 +491,7 @@ export function ProcurementMapView({
             : measure === 'value_awarded'
               ? formatRon(String(uatPoint.amount), 'compact')
               : formatFlowCount(uatPoint.amount)
-        return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${county}</div><div style="margin-top:4px">${uatValue}</div>`
+        return `<div style="font-weight:700">${escapeHtml(name)}</div><div style="opacity:.8">${escapeHtml(county)}</div><div style="margin-top:4px">${escapeHtml(uatValue)}</div>`
       }
 
       const point = countyCode
@@ -506,7 +507,7 @@ export function ProcurementMapView({
           : measure === 'value_awarded'
             ? formatRon(String(point.amount), 'compact')
             : formatFlowCount(point.amount)
-      return `<div style="font-weight:700">${name}</div><div style="opacity:.8">${region}</div><div style="margin-top:4px">${value}</div>`
+      return `<div style="font-weight:700">${escapeHtml(name)}</div><div style="opacity:.8">${escapeHtml(region)}</div><div style="margin-top:4px">${escapeHtml(value)}</div>`
     },
     [geographyQuery.data, heatmapData, measure, paintIsRegion, paintIsUat],
   )

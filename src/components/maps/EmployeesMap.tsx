@@ -3,6 +3,7 @@ import { MapContainer, GeoJSON, useMap } from 'react-leaflet'
 import L, { Layer, PathOptions } from 'leaflet'
 import { Feature, Geometry } from 'geojson'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
+import { escapeHtml } from '@/lib/html'
 import { EnrichedEmployeeData } from '@/schemas/employeeData'
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, DEFAULT_FEATURE_STYLE, HIGHLIGHT_FEATURE_STYLE } from './constants'
 import { UatFeature } from './interfaces'
@@ -67,7 +68,7 @@ export function EmployeesMap({ data, metric = 'employeesPer1000Capita' }: Employ
     if (!row) return `<div>No data</div>`
     return `
       <div style="font-family: 'Inter', sans-serif; font-size: 14px; max-width: 320px; padding: 8px; color: #333;">
-        <div style="font-weight: 700; margin-bottom: 4px;">${row.uatName}</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">${escapeHtml(row.uatName)}</div>
         <div style="display: grid; grid-template-columns: auto 1fr; gap: 4px 12px;">
           <div style="font-weight:600;">Population</div><div style="text-align:right;">${(row.uatPopulation ?? 0).toLocaleString('ro-RO')}</div>
           <div style="font-weight:600;">Occupied posts</div><div style="text-align:right;">${(row.occupiedPosts ?? 0).toLocaleString('ro-RO')}</div>

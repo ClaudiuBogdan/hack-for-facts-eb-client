@@ -1,16 +1,9 @@
+import { escapeHtml } from '@/lib/html'
+
 type PnrrMapTooltipOptions = {
   readonly title: string
   readonly value: string
   readonly meta?: string
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 export function buildPnrrMapTooltipHtml({
