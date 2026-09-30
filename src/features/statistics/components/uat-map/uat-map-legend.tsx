@@ -13,7 +13,8 @@ import { countyLabel, type SeriesMeta } from './uat-map-series'
  * The legend: what the colours are — the figure and its period in words, with
  * Romania's (and the county's) beside the title, sums of many UATs, never
  * marks on a scale of one; or, on a map coloured against a reference, that
- * reference marked on the bar with its sides named — every class's bounds,
+ * reference marked on the bar with its sides named (on a ramp that is not
+ * parted at it, the mark alone, its figure over it) — every class's bounds,
  * the UAT or county read marked on them, what the hatching means; and where
  * the figures come from.
  */
@@ -68,7 +69,8 @@ export function ColourLegend({
    * The figure the colours part at — Romania, on a map coloured against it:
    * marked on the bar, with which side is which, instead of beside the title.
    */
-  readonly reference?: { readonly value: number; readonly label: string; readonly below: string; readonly above: string }
+  /** The reference marked on the bar; with `sides`, the colours part at it and each side is named. */
+  readonly reference?: { readonly value: number; readonly label: string; readonly sides?: { readonly below: string; readonly above: string } }
 }) {
   const countyValue = county ? (figures.counties[county] ?? null) : null
   const activeClass = active === null ? null : scale.classAt(active)
@@ -97,18 +99,30 @@ export function ColourLegend({
         ) : null}
       </MonoLabel>
       <div className="max-w-lg">
-        {reference && referenceAt !== null ? (
+        {reference?.sides && referenceAt !== null ? (
           // The two sides named at the ends, the figure between them, over the middle class it
           // always falls in — sharing the row, so no label runs into another on a phone.
           <div className="mb-1.5 flex items-end gap-3">
             <MonoLabel className="shrink-0 text-muted-foreground">
               <span aria-hidden="true">← </span>
-              {reference.below}
+              {reference.sides.below}
             </MonoLabel>
             <MonoLabel className="min-w-0 flex-1 text-center text-foreground">{reference.label}</MonoLabel>
             <MonoLabel className="shrink-0 text-muted-foreground">
-              {reference.above}
+              {reference.sides.above}
               <span aria-hidden="true"> →</span>
+            </MonoLabel>
+          </div>
+        ) : reference && referenceAt !== null ? (
+          <div className="relative mb-1.5 h-3">
+            <MonoLabel
+              className={cn(
+                'absolute top-0 whitespace-nowrap text-foreground',
+                referenceAt < 0.25 ? 'translate-x-0' : referenceAt > 0.75 ? '-translate-x-full' : '-translate-x-1/2',
+              )}
+              style={at(referenceAt)}
+            >
+              {reference.label}
             </MonoLabel>
           </div>
         ) : null}

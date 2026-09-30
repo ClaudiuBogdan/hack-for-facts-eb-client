@@ -30,6 +30,12 @@ describe('registryCountyLayer', () => {
     expect(layer.values.map((county) => county.value)).toEqual([140, 75, 50])
   })
 
+  it('counts each county’s registered NGOs as they are, with no national rate to stand them against', () => {
+    const layer = registryCountyLayer(SUMMARY, 'total')
+    expect(layer).toMatchObject({ code: 'ngo-registry-total', period: '2026', unit: 'count', missingCounties: [], national: null })
+    expect(layer.values.map((county) => [county.code, county.value])).toEqual(SUMMARY.counties.map((county) => [county.code, county.registered]))
+  })
+
   it('hatches a county with no population instead of drawing it as zero', () => {
     const counties = SUMMARY.counties.map((county) => (county.code === 'AB' ? { ...county, residents: 0 } : county))
     const layer = registryCountyLayer({ ...SUMMARY, counties }, 'densitate')

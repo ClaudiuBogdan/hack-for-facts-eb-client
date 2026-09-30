@@ -24,6 +24,7 @@ import { formatHubValue, hubUnitWord, isAdditiveUnit } from '../../lib/units'
  */
 export function HubCountyRank({
   layer,
+  unit,
   edge = 5,
   activeCode,
   onActiveChange,
@@ -32,6 +33,8 @@ export function HubCountyRank({
   className,
 }: {
   readonly layer: StatisticsHubCountyLayer
+  /** The column's unit as the band resolved it (a count's from the band's definition); by default, the layer's own. */
+  readonly unit?: string
   /** Where a county's row opens; the INS series by default; `null`, a plain row. */
   readonly countyLink?: ((code: string) => LinkOptions) | null
   /** How many counties each end of the collapsed list shows. */
@@ -65,7 +68,7 @@ export function HubCountyRank({
   const at = (value: number) => (to > from ? ((value - from) / (to - from)) * 100 : 50)
   const collapsible = ranked.length > edge * 2 + 1
   const hidden = collapsible && !expanded ? ranked.length - edge * 2 : 0
-  const unitWord = hubUnitWord(layer.unit, layer.unitLabel)
+  const unitWord = unit ?? hubUnitWord(layer.unit, layer.unitLabel)
   const hoverOnly = (event: PointerEvent, code: string | undefined) => {
     if (event.pointerType !== 'touch') onActiveChange?.(code)
   }

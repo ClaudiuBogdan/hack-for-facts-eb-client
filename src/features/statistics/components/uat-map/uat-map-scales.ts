@@ -24,6 +24,8 @@ export interface MapClass {
   readonly swatch: string
   /** Drawn at this opacity on the map and in the legend alike. */
   readonly opacity: number
+  /** Whether a label on it reads in the background's colour; by default, from its opacity. */
+  readonly onDark?: boolean
 }
 
 export interface MapScale {

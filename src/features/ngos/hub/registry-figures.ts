@@ -19,17 +19,30 @@ export function totalResidents(summary: Pick<NgoRegistrySummary, 'counties'>): n
   return summary.counties.reduce((sum, county) => sum + county.residents, 0)
 }
 
-/** Residents per step of each layer: registered NGOs per 10,000, the year's new ones per 100,000. */
-const LAYER_PER: Readonly<Record<NgoHubLayerKey, number>> = { densitate: 10_000, noi: 100_000 }
+/** Residents per step of each rate: registered NGOs per 10,000, the year's new ones per 100,000. */
+const LAYER_PER: Readonly<Record<Exclude<NgoHubLayerKey, 'total'>, number>> = { densitate: 10_000, noi: 100_000 }
 
 /**
- * A registry layer over the counties' residents, in the shape the INS and
- * procurement hubs' county band reads. The national figure is the country's
- * own ratio — every entry, the ones with no county included, over the
- * national population — never a mean of the county rates. The unit words are
- * the band's to say; the layer carries none.
+ * A registry layer in the shape the INS and procurement hubs' county band
+ * reads. A rate is over the counties' residents, its national figure the
+ * country's own ratio — every entry, the ones with no county included, over
+ * the national population — never a mean of the county rates. The total is
+ * each county's registered NGOs, a count: no national figure to stand a
+ * county against, the ranking's bars from zero. The unit words are the
+ * band's to say; the layer carries none.
  */
 export function registryCountyLayer(summary: NgoRegistrySummary, key: NgoHubLayerKey): StatisticsHubCountyLayer {
+  if (key === 'total') {
+    return {
+      code: 'ngo-registry-total',
+      period: summary.capturedAt.slice(0, 4),
+      unit: 'count',
+      unitLabel: null,
+      values: summary.counties.map((county) => ({ code: county.code, name: countyNameRo(county.code) ?? county.code, value: county.registered })),
+      missingCounties: [],
+      national: null,
+    }
+  }
   const per = LAYER_PER[key]
   const count = (county: NgoRegistryCountySummary) => (key === 'densitate' ? county.registered : county.added)
   const national = key === 'densitate' ? summary.status.registered : registrationsIn(summary, summary.year)

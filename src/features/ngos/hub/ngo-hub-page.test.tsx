@@ -66,16 +66,29 @@ describe('NgoHubPage', () => {
     expect(within(leaders).getByRole('link', { name: /ASOCIATIA A/ })).toHaveAttribute('href', '/ong-uri/100')
     // Matched but undeclared: no profile page to open yet.
     expect(within(leaders).queryByRole('link', { name: /FUNDATIA B/ })).not.toBeInTheDocument()
-    const utility = href(screen.getByRole('link', { name: 'De utilitate publică' }))
+    const utility = href(within(screen.getByRole('navigation', { name: 'Scurtături' })).getByRole('link', { name: 'De utilitate publică' }))
     expect(utility.pathname).toBe('/ong-uri/registru')
     expect(utility.searchParams.get('publicUtility')).toBe('yes')
+  })
+
+  it('shows the five largest NGOs, the rest behind „Arată mai multe"', () => {
+    const [first] = FINANCE.leaders
+    const leaders = Array.from({ length: 7 }, (_, index) => ({ ...first!, cui: String(900 + index), name: `ASOCIATIA ${index + 1}` }))
+    renderPage({ finance: { ...FINANCE, leaders } })
+    const card = screen.getByRole('region', { name: /Cele mai mari ONG-uri din registru/ })
+    expect(within(card).getAllByRole('listitem')).toHaveLength(5)
+    const more = within(card).getByRole('button', { name: 'Arată mai multe' })
+    expect(more).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(more)
+    expect(within(card).getAllByRole('listitem')).toHaveLength(7)
+    expect(within(card).getByRole('button', { name: 'Arată mai puține' })).toHaveAttribute('aria-expanded', 'true')
   })
 
   it('pins a bar of the numbered bands, each landing on its band', () => {
     renderPage()
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     const links = within(bar).getAllByRole('link')
-    expect(links.map((link) => link.getAttribute('href'))).toEqual(['#ce-fac', '#bani', '#judete', '#registru'])
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['#judete', '#ce-fac', '#bani', '#registru'])
     for (const link of links) expect(document.querySelector(link.getAttribute('href')!)).not.toBeNull()
   })
 
@@ -151,6 +164,17 @@ describe('NgoHubPage', () => {
     expect(band(/Câte ONG-uri are județul tău/)).toHaveTextContent('După anul din numărul de registru')
   })
 
+  it('counts each county’s registered NGOs on the total layer, the ranking from zero under the word „ONG-uri"', () => {
+    renderPage({ search: { indicator: 'total' } })
+    const counties = band(/Câte ONG-uri are județul tău/)
+    expect(within(within(counties).getByRole('radiogroup', { name: 'Ce arată harta' })).getByRole('radio', { name: 'Înregistrate' })).toHaveAttribute('aria-checked', 'true')
+    expect(counties).toHaveTextContent('900 de ONG-uri înregistrate în țară, dintre care 50 fără județ în registru.')
+    // The column says what the figures are; the legend's title already does.
+    expect(counties).toHaveTextContent(/Județ\s*ONG-uri/)
+    const cluj = within(counties).getAllByRole('link', { name: /Cluj/ })[0]!
+    expect(href(cluj).searchParams.get('status')).toBe('Inregistrat')
+  })
+
   it('keeps the map layer in the URL, the default one out of it', () => {
     renderPage({ search: { indicator: 'noi' } })
     fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Ce arată harta' })).getByRole('radio', { name: 'La 10.000 de locuitori' }))
@@ -179,8 +203,12 @@ describe('NgoHubPage', () => {
     expect(href(cards[1]!).searchParams.get('status')).toBe('In Lichidare')
   })
 
-  it('names both sources with their dates', () => {
+  it('names both sources in the head, short, and in full at the foot', () => {
     renderPage()
+    const head = screen.getByText((_, element) => element?.tagName === 'P' && (element.textContent ?? '').startsWith('Surse:'))
+    expect(within(head).getByRole('link', { name: /Registrul ONG, just\.ro/ })).toHaveAttribute('href', 'https://rnong.just.ro/registru-ong')
+    expect(within(head).getByRole('link', { name: /situațiile financiare, data\.gov\.ro/ })).toHaveAttribute('href', FINANCE.source.dataset)
+    expect(head).toHaveTextContent('la 20 septembrie 2026')
     expect(screen.getByRole('link', { name: 'Registrul național ONG' })).toHaveAttribute('href', 'https://rnong.just.ro/registru-ong')
     expect(screen.getByRole('link', { name: 'Situațiile financiare ale organizațiilor non-profit' })).toHaveAttribute('href', FINANCE.source.dataset)
     expect(screen.getByRole('contentinfo')).toHaveTextContent(

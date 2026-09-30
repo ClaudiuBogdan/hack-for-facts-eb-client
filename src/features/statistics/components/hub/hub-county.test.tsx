@@ -112,6 +112,37 @@ describe('HubCountyBand', () => {
     expect(classes[4]).toMatch(/^peste \d{2},\d$/)
   })
 
+  it('draws a layer asked for steps in the ramp’s blues, the average a mark without sides, labels solid on every blue', () => {
+    render(<HubCountyBand layer={LIFE} definition={{ ...bandOf(LIFE_DEFINITION, LIFE), ramp: 'steps' }} />)
+    expect(countyLink(/Vâlcea/).querySelector('path')!.getAttribute('class')).toContain('fill-choropleth-')
+    expect(countyLink(/Călărași/).querySelector('path')!.getAttribute('class')).not.toContain('orange')
+    expect(legend()).toHaveTextContent('Media națională 77,45')
+    expect(legend()).not.toHaveTextContent(/sub medie|peste medie/)
+    // A label is the background's colour on the dark blues, the foreground at full strength on the rest;
+    // only Satu Mare, with no value (hatched), keeps the softened label.
+    const labels = [...document.querySelectorAll<SVGTextElement>('[data-county-map] text')].map((label) => [label.textContent, label.getAttribute('class') ?? ''])
+    for (const [code, label] of labels) expect(label).toMatch(code === 'SM' ? /fill-foreground\/80/ : /fill-background|fill-foreground(?!\/)/)
+  })
+
+  it('agrees a count’s unit with each figure where the definition says how, and keeps the legend’s title free of it', () => {
+    const count: StatisticsHubCountyLayer = { ...LIFE, unit: 'count', unitLabel: null, national: null, values: LIFE.values.map((county, index) => ({ ...county, value: [1, 12, 2653][index]! })) }
+    const of: HubCountyBandDefinition = {
+      legend: 'ONG-uri înregistrate',
+      unit: 'ONG-uri',
+      countUnit: (value) => (value === 1 ? 'ONG' : value < 20 ? 'ONG-uri' : 'de ONG-uri'),
+      digits: 0,
+      ramp: 'steps',
+      caveat: '',
+      source: '',
+    }
+    render(<HubCountyBand layer={count} definition={of} countyLink={null} />)
+    const group = screen.getByRole('group', { name: 'ONG-uri înregistrate' })
+    expect(within(group).getByRole('img', { name: /^Județul Vâlcea: 1 ONG,/ })).toBeInTheDocument()
+    expect(within(group).getByRole('img', { name: /^Municipiul București: 12 ONG-uri,/ })).toBeInTheDocument()
+    expect(within(group).getByRole('img', { name: /^Județul Călărași: 2\.653 de ONG-uri,/ })).toBeInTheDocument()
+    expect(legend()).not.toHaveTextContent('ONG-uri înregistrate · ONG-uri')
+  })
+
   it('turns the hues round where more is the concern', () => {
     render(<Band of={{ ...LIFE_DEFINITION, reversed: true }} />)
     expect(countyLink(/Vâlcea/).querySelector('path')!.getAttribute('class')).toContain('fill-orange-600')

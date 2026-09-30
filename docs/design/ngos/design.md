@@ -541,36 +541,55 @@ which are not in the NGO registry. The page calls that money the non-profit
 sector's, never the registry's.
 
 - **Hero** — the registry search, and **the registry's ten largest NGOs of
-  2025 by revenue** (five on a phone), each with its domain, county and
+  2025 by revenue** (five shown, „Arată mai multe" for the rest — 2026-09-30),
+  each with its domain, county and
   change vs 2024 (named for a screen reader too); a closed entry says so. The
   ranking is of the organisations the NGO profile resolves (a
   registry-declared CUI, or an exact ANAF name-and-county match) — ten among
   the 49 largest filers. A row opens `/ong-uri/$cui` only where the legacy
   overview resolves the CUI (`linked`; nine of ten): the inferred matches have
   no page until the client moves to `ngoOrganizationProfile`.
-- **Pinned bar** of the four numbered bands, as on `/procurement`.
+- **Sources in the head**, short, as `/procurement` says its own: the
+  registry (just.ro) with its capture date and the statements (data.gov.ro)
+  with their last year; the full line, with publishers and the population
+  year, closes the page (2026-09-30).
+- **Pinned bar** of the four numbered bands, as on `/procurement`, carrying
+  the crux marks at its lower corners (`HomeSectionNav crux`): drawn in the
+  band below, the bar covered them; on the bar, they sit on the frame's
+  rules whether it is pinned or not.
 - **Figures** — registered NGOs (status „Înregistrat"; the 2,355 in
   liquidation are in the registry too, so not „în registru"), non-profit
   revenue in 2025 (33.5 bn lei), statements filed for 2025 (61,367; 47,160
   with revenue), new registry entries in 2025.
-- **01 / Ce fac organizațiile non-profit** — twelve reader domains from the non-profit activity
+- **01 / Pe județe** — first since 2026-09-30, the owner's call: where a
+  reader starts. The INS and procurement hubs' county band itself
+  (`HubCountyBand`), over the registry per 10,000 residents (a count at the
+  capture, so „în 2026"), **how many are registered** (`?indicator=total`,
+  back on 2026-09-30: a count, so no national figure to stand a county
+  against and the ranking's bars run from zero; the caveat gives the
+  country's total and the entries with no county), or the year's new entries
+  per 100,000 (`?indicator=noi`). Drawn in the **choropleth ramp's five
+  blues by quintile** (`ramp: 'steps'`), as the first NGO map was, not
+  against the national figure in orange and blue: a density reads as more or
+  fewer; the national figure is a mark on the legend, without the „sub/peste
+  medie" sides. County codes are the background's colour on the two darkest
+  blues and the full foreground on the rest (the softened label fell below
+  4.5:1 on the middle blue). A count's unit agrees with its figure („1 ONG",
+  „12 ONG-uri", „2.653 de ONG-uri"). The band gained `countyLink={null}` for
+  deployments without the registry: counties are named, focusable shapes and
+  plain rows; a tap holds the tooltip. Other hubs are unchanged: every one
+  of these is opt-in.
+- **02 / Ce fac organizațiile non-profit** — twelve reader domains from the non-profit activity
   (CAENO) each statement declares, by organisations or by revenue
   (`?domenii=venituri`): sport has the most (9,155), education the most money
   (5.1 bn lei). The catch-all code 9499 (46% of filers) is shown last and
   unranked as „Fără domeniu precis". Division 64 is „Creditare și ajutor
   reciproc", not mutual-aid funds alone: 6492 and 6499 are broader.
-- **02 / Banii** — revenue classes (the 8.1% above 1 mil. lei hold 83% of the
+- **03 / Banii** — revenue classes (the 8.1% above 1 mil. lei hold 83% of the
   money; 14,184 had none, 23 reported negative revenue and hold no share),
   revenue by source (non-profit 82%, economic 17%, special-purpose 1.5%) and
   revenue per year 2016–2025 on the registrations chart's columns, in each
   year's lei.
-- **03 / Pe județe** — the INS and procurement hubs' county band itself
-  (`HubCountyBand`), over the registry per 10,000 residents (a count at the
-  capture, so „în 2026") or the year's new entries per 100,000
-  (`?indicator=noi`; the old `total` layer is retired and falls back). The
-  NGO map and ranking components are gone. The band gained `countyLink={null}`
-  for deployments without the registry: counties are named, focusable shapes
-  and plain rows; a tap holds the tooltip.
 - **04 / În registru** — registrations per year, status and legal forms.
 - **Start cards** into the registry (public utility, in liquidation, all),
   each count the query it opens; only where the registry is on.
@@ -603,6 +622,20 @@ never read as zeros. A CUI filed twice must be the same statement twice. The
 cache is keyed by resource and modification, so a republished year is read
 again. Money is never adjusted for inflation.
 
+**Loading.** The page's chunk (the charts, the map, both summaries) loads
+on a client navigation; until it does, the route's `pendingComponent`
+(`ngo-hub-pending.tsx`) draws the page's own head from the same data-free
+components (`ngo-hub-hero.tsx`: title, lede, a search-box shell, shortcuts,
+the short sources line, the leaders' card), the pinned bar and the first
+band's title, with a pulse the size of each figure. Measured against the page
+at 390, 768, 1024, 1280 and 1440 px: nothing moves when the page lands. The
+leaders' names keep two lines on a phone, long or short, so the placeholder
+rows can be their height. The lede's width is in rem, not `ch`: `ch` is the
+font's own, and the fallback font's narrower box broke the lede a line longer
+until Inter arrived (a 33 px shift on desktop). `HomeSectionNav` and
+`HomeBand` moved to `home-section-nav.tsx` so the eager route file does not
+pull the site search in.
+
 **Head.** Built in the request's language with `translatorFor`; each language
 has its canonical (`?lang=en`) and names the other; the `Dataset` names the
 registry, the statements and INS. The loader hands the head nine figures and
@@ -617,7 +650,14 @@ handling, the sector wording, the registered-NGO label, the negative-revenue
 class, the density's year, keyboard access in the no-link band, the domain
 label for division 64 and the generator's parsing, cache and malformed-row
 threshold all come from their findings.
+The 2026-09-30 polish was reviewed by Codex (gpt-6.1-sol, xhigh) and an
+Opus 5.5 xhigh agent: the head sources in one message (they were missing
+from both catalogs), the placeholder's line counts per width, the count's
+unit left out of the legend's title and agreed with its figure, the label
+contrast on the middle blue, and the placeholder parts kept out of the
+leaders' module (the eager route would have pulled in its formatters).
 
 **Follow-ups.** Move `/ong-uri/$cui` to `ngoOrganizationProfile` (every leader
-then links); move the pinned bar and band (`HomeSectionNav`, `HomeBand`) out
-of the procurement feature into shared landing chrome.
+then links); move the pinned bar and band (`HomeSectionNav`, `HomeBand`, now
+in `home-section-nav.tsx`) out of the procurement feature into shared landing
+chrome.

@@ -22,7 +22,9 @@ import { countyScale } from './hub-county-scale'
  * The county band: the map beside the ranked list, both coloured against the
  * national figure — orange below it, blue above, grey around it (the other way
  * round where more is the concern: unemployment, age) — which is
- * what the section asks: where the county stands. As the UAT map does it: a
+ * what the section asks: where the county stands. A layer read as more or
+ * fewer (`ramp: 'steps'`, the NGO hub's) is drawn in the choropleth ramp's
+ * five blues instead, the national figure a mark on the legend. As the UAT map does it: a
  * tooltip under the pointer (a tap holds it, with its link; a second tap
  * opens), the legend's swatches the map's colours with every class named in
  * the figure's own terms and the national figure marked where the colours
@@ -46,6 +48,10 @@ export interface HubCountyBandDefinition {
   readonly digits?: number
   /** Orange above the national figure and blue below: where more is the concern. */
   readonly reversed?: boolean
+  /** `steps`: the choropleth ramp's five blues by quintile, the national figure only marked on the legend. */
+  readonly ramp?: 'national' | 'steps'
+  /** A count's unit agreed with its figure, where the language wants it („1 ONG", „2.653 de ONG-uri"); `unit` otherwise. */
+  readonly countUnit?: (value: number) => string
   /** One line against the likeliest misreading. */
   readonly caveat: ReactNode
   /** The source, after the caveat. */
@@ -86,15 +92,19 @@ export function HubCountyBand({
   const indexOf = useMemo(() => new Map(values.map((county, index) => [county.code, index])), [values])
   const digits = layerDecimals(layer)
   const { scale, decimals } = useMemo(
-    () => countyScale(values.map((county) => county.value), layer.national, { reversed: definition.reversed, digits }),
-    [values, layer.national, definition.reversed, digits],
+    () => countyScale(values.map((county) => county.value), layer.national, { reversed: definition.reversed, digits, ramp: definition.ramp }),
+    [values, layer.national, definition.reversed, digits, definition.ramp],
   )
   const rank = useMemo(() => countyRanks(values), [values])
 
-  const unit = hubUnitWord(layer.unit, layer.unitLabel)
+  // The legend's title names the figure already; a count's unit has no word of its own, so the definition's
+  // names it for the tooltip and the ranking („ONG-uri"), agreed with each figure where it says how („de ONG-uri").
+  const ownUnit = hubUnitWord(layer.unit, layer.unitLabel)
+  const unit = ownUnit || (definition.unit ?? '')
+  const unitFor = (value: number) => definition.countUnit?.(value) ?? unit
   const percent = layer.unit === 'percent'
   const figure = (value: number) => formatHubValue(value, layer.unit, layer.unitLabel, { digits }).value
-  const withUnit = (value: number) => (percent || !unit ? figure(value) : `${figure(value)} ${unit}`)
+  const withUnit = (value: number) => (percent || !unit ? figure(value) : `${figure(value)} ${unitFor(value)}`)
   // A bound at its rounding's decimals: 76,2, not 76,20.
   const bound = (value: number) => formatHubValue(value, layer.unit, layer.unitLabel, { digits: decimals }).value
   const legendTitle = definition.legend
@@ -289,7 +299,8 @@ export function HubCountyBand({
                 {shapes.counties.map((shape) => {
                   const index = indexOf.get(shape.code)
                   const step = index === undefined ? null : scale.classAt(index)
-                  const dark = step !== null && scale.classes[step]!.opacity >= 0.6
+                  const drawn = step === null ? null : scale.classes[step]!
+                  const dark = drawn !== null && (drawn.onDark ?? drawn.opacity >= 0.6)
                   // A county with no room for its code (București on a phone) is named by the tooltip instead.
                   if (shape.room < fontSize * 0.4 && active !== shape.code) return null
                   return (
@@ -300,7 +311,12 @@ export function HubCountyBand({
                       fontSize={fontSize}
                       textAnchor="middle"
                       dominantBaseline="central"
-                      className={cn('font-mono font-medium tracking-wide', dark ? 'fill-background' : 'fill-foreground/80', active === shape.code && 'font-bold')}
+                      className={cn(
+                        'font-mono font-medium tracking-wide',
+                        // On the ramp's solid mid blues a softened label falls below 4.5:1: full strength there.
+                        dark ? 'fill-background' : drawn?.onDark === false ? 'fill-foreground' : 'fill-foreground/80',
+                        active === shape.code && 'font-bold',
+                      )}
                     >
                       {shape.code}
                     </text>
@@ -350,7 +366,7 @@ export function HubCountyBand({
               <p className="mt-1.5">
                 <span className="text-lg font-semibold tabular-nums tracking-tight text-foreground">{figure(activeCounty.value)}</span>{' '}
                 <span className="text-muted-foreground">
-                  {percent || !unit ? '' : `${unit} `}
+                  {percent || !unit ? '' : `${unitFor(activeCounty.value)} `}
                   {t`în ${layer.period ?? ''}`}
                 </span>
               </p>
@@ -378,7 +394,7 @@ export function HubCountyBand({
         <div className="mt-6 space-y-6">
           <ColourLegend
             title={legendTitle}
-            unit={percent ? '' : unit}
+            unit={percent ? '' : ownUnit}
             format={bound}
             scale={scale}
             figures={{ values: values.map((county) => county.value), national: layer.national, counties: {} }}
@@ -393,7 +409,14 @@ export function HubCountyBand({
                 : {}),
             }}
             {...(layer.national !== null
-              ? { reference: { value: layer.national, label: t`Media națională ${figure(layer.national)}`, below: t`sub medie`, above: t`peste medie` } }
+              ? {
+                  reference: {
+                    value: layer.national,
+                    label: t`Media națională ${figure(layer.national)}`,
+                    // Sides only where the colours part at the average; on the ramp it is a mark among the steps.
+                    ...(definition.ramp === 'steps' ? {} : { sides: { below: t`sub medie`, above: t`peste medie` } }),
+                  },
+                }
               : {})}
           />
           <p className="text-xs leading-relaxed text-muted-foreground" data-source-line>
@@ -402,7 +425,7 @@ export function HubCountyBand({
         </div>
       </div>
       <div className="min-w-0 lg:col-span-5 lg:col-start-8" data-reveal>
-        <HubCountyRank layer={layer} activeCode={active ?? undefined} onActiveChange={pointAt} swatchOf={swatchOf} countyLink={linkOf} />
+        <HubCountyRank layer={layer} unit={unit} activeCode={active ?? undefined} onActiveChange={pointAt} swatchOf={swatchOf} countyLink={linkOf} />
       </div>
     </div>
   )

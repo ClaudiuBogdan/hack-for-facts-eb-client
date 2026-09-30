@@ -1,4 +1,5 @@
-import { HUE, type ClassInterval, type MapScale } from '../uat-map/uat-map-scales'
+import { STEP_BG, STEP_FILL, STEP_STROKE, STEP_TEXT } from '../../lib/county-map'
+import { HUE, type ClassInterval, type MapClass, type MapScale } from '../uat-map/uat-map-scales'
 
 /**
  * The county map's colours, drawn as the UAT map draws them — one hue whose
@@ -7,7 +8,10 @@ import { HUE, type ClassInterval, type MapScale } from '../uat-map/uat-map-scale
  * `reversed` where more is the concern (unemployment, age): orange above.
  * The classes are distances from the national figure, their bounds figures in
  * their own right (77,0 … 77,9 ani, not ±0,4). A layer with no national figure
- * to part at is drawn in five classes of about eight counties each.
+ * to part at is drawn in five classes of about eight counties each — and so
+ * is a layer asked for `steps`, in the choropleth ramp's five blues (light to
+ * dark, each its own colour, as the NGO hub has always drawn its counties):
+ * more or fewer, the national figure only marked on the legend.
  *
  * Bounds are rounded to a step a reader can hold, one order below the spread
  * of the middle counties: București's GDP must not coarsen everyone else's.
@@ -48,11 +52,29 @@ function positionIn(edges: readonly number[], step: number, value: number, count
 export function countyScale(
   values: readonly number[],
   national: number | null,
-  options: { readonly reversed?: boolean; /** The figures' own decimals. */ readonly digits?: number } = {},
+  options: {
+    readonly reversed?: boolean
+    /** The figures' own decimals. */
+    readonly digits?: number
+    /** `steps`: five classes in the choropleth ramp, whatever the national figure. */
+    readonly ramp?: 'national' | 'steps'
+  } = {},
 ): { readonly scale: MapScale; readonly decimals: number } {
   const digits = options.digits ?? 2
-  return national === null ? inQuintiles(values, digits) : againstNational(values, national, options.reversed === true, digits)
+  if (options.ramp === 'steps') return inQuintiles(values, digits, STEPS)
+  return national === null ? inQuintiles(values, digits, LEVELS) : againstNational(values, national, options.reversed === true, digits)
 }
+
+type Palette = readonly Omit<MapClass, 'interval'>[]
+/** One blue at five opacities. */
+const LEVELS: Palette = LEVEL_OPACITY.map((opacity) => ({ ...HUE.blue, opacity }))
+/** The ramp's five blues, a label light on the two darkest (in either theme: the ramp turns with it). */
+const STEPS: Palette = STEP_FILL.map((fill, i) => ({
+  fill: `${fill} ${STEP_STROKE[i]!}`,
+  swatch: STEP_BG[i]!,
+  opacity: 1,
+  onDark: STEP_TEXT[i] === 'fill-background',
+}))
 
 function againstNational(values: readonly number[], national: number, reversed: boolean, digits: number) {
   const [below, above] = reversed ? [HUE.blue, HUE.orange] : [HUE.orange, HUE.blue]
@@ -83,7 +105,7 @@ function againstNational(values: readonly number[], national: number, reversed: 
   return { scale, decimals: decimalsOf(step) }
 }
 
-function inQuintiles(values: readonly number[], digits: number) {
+function inQuintiles(values: readonly number[], digits: number, palette: Palette) {
   const sorted = [...values].sort((a, b) => a - b)
   const step = stepFor(sorted, digits)
   const bounds: number[] = []
@@ -92,12 +114,13 @@ function inQuintiles(values: readonly number[], digits: number) {
     if (bounds.length === 0 || bound > bounds[bounds.length - 1]!) bounds.push(bound)
   }
   const intervals: ClassInterval[] = [...bounds, null].map((to, i) => ({ from: i === 0 ? null : bounds[i - 1]!, to }))
-  const opacities = LEVEL_OPACITY.slice(LEVEL_OPACITY.length - intervals.length)
+  // Fewer classes where counties tie at a bound: the darker end of the palette, so the top class is always its darkest.
+  const colours = palette.slice(palette.length - intervals.length)
   const classOf = (value: number) => bounds.filter((bound) => value >= bound).length
   const edges = [sorted[0] ?? 0, ...bounds, sorted[sorted.length - 1] ?? 0]
   const scale: MapScale = {
     kind: 'level',
-    classes: intervals.map((interval, i) => ({ interval, ...HUE.blue, opacity: opacities[i]! })),
+    classes: intervals.map((interval, i) => ({ interval, ...colours[i]! })),
     classAt: (index) => (values[index] === undefined ? null : classOf(values[index]!)),
     positionOf: (value) => positionIn(edges, classOf(value), value, intervals.length),
   }

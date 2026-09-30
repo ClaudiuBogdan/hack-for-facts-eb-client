@@ -15,10 +15,11 @@ describe('parseNgoLandingSearch', () => {
 
   it('keeps a known map layer and domain measure', () => {
     expect(parseNgoLandingSearch({ indicator: 'noi', domenii: 'venituri' })).toEqual({ indicator: 'noi', domenii: 'venituri' })
+    expect(parseNgoLandingSearch({ indicator: 'total' })).toEqual({ indicator: 'total' })
   })
 
-  it('drops an unknown value, the retired `total` layer included, and anything else', () => {
-    expect(parseNgoLandingSearch({ indicator: 'total', domenii: 'angajati', q: 'asociatia' })).toEqual({})
+  it('drops an unknown value and anything else', () => {
+    expect(parseNgoLandingSearch({ indicator: 'judete', domenii: 'angajati', q: 'asociatia' })).toEqual({})
   })
 })
 

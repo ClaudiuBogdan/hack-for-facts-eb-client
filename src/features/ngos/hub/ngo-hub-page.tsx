@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -8,9 +8,8 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
-import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { HomeBand, HomeSectionNav } from '@/features/procurement/components/home/home-chrome'
-import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import type { NgoHubDomainMetric, NgoHubLayerKey, NgoLandingSearch } from '@/schemas/ngos'
@@ -21,6 +20,8 @@ import { NgoDomainRows } from './ngo-domains'
 import { formatNgoChange, formatNgoDate, formatNgoMoneyText, formatNgoMoneyTick, formatNgoNumber, formatNgoShare } from './ngo-format'
 import { DOMAIN_LABEL } from './ngo-hub-labels'
 import { NgoFormRows, NgoStartCards, NgoStatusRows } from './ngo-hub-parts'
+import { NgoHubHero, NgoLeadersFrame } from './ngo-hub-hero'
+import { NGO_HUB_LEADERS_SHOWN, ngoHubSections } from './ngo-hub-sections'
 import { NgoLeaderRows } from './ngo-leaders'
 import { NgoSizeTable, NgoSourceSplit } from './ngo-money'
 import { NgoRegistrySearch } from './ngo-registry-search'
@@ -32,7 +33,7 @@ import type { NgoRegistrySummary } from './registry-summary-types'
  * `/ong-uri` — the NGOs of Romania in the companies, INS and procurement
  * hubs' language (`docs/design/ngos/design.md` §13): the registry search
  * beside the year's largest NGOs, the pinned bar of numbered bands, four
- * figures, then what NGOs do, their money, the counties and the registry.
+ * figures, then the counties, what NGOs do, their money and the registry.
  *
  * Two summaries kept in the client, so the page asks the API for nothing
  * but the search: the Ministry of Justice's registry (`registry-summary.ts`)
@@ -43,11 +44,6 @@ import type { NgoRegistrySummary } from './registry-summary-types'
 
 const DEFAULT_LAYER: NgoHubLayerKey = 'densitate'
 const DEFAULT_METRIC: NgoHubDomainMetric = 'organizatii'
-
-interface Section {
-  readonly id: string
-  readonly label: string
-}
 
 export function NgoHubPage({
   summary,
@@ -77,12 +73,7 @@ export function NgoHubPage({
     })
 
   const year = summary.year
-  const sections: readonly Section[] = [
-    { id: 'ce-fac', label: t`Ce fac` },
-    { id: 'bani', label: t`Banii` },
-    { id: 'judete', label: t`Pe județe` },
-    { id: 'registru', label: t`În registru` },
-  ]
+  const sections = ngoHubSections()
   const indexOf = (id: string) => {
     const position = sections.findIndex((section) => section.id === id)
     return `${String(position + 1).padStart(2, '0')} / ${sections[position]?.label ?? ''}`
@@ -93,69 +84,20 @@ export function NgoHubPage({
       <RevealStyles />
       <SmearFilters />
 
-      <section className="relative border-b">
-        <TwoLayerLattice idPrefix="ngo-hub" />
-        <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20">
-          <CornerTicks />
-          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
-            <div className="min-w-0 lg:col-span-7">
-              <MonoLabel className="text-muted-foreground">
-                <Trans>ONG-uri / România</Trans>
-              </MonoLabel>
-              <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
-                {/* The space keeps the heading's text „ONG-urile din România" for search engines and screen readers. */}
-                <Trans>
-                  ONG-urile{' '}
-                  <br />
-                  din România
-                </Trans>
-              </h1>
-              <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                <Trans>Asociațiile și fundațiile din registrul Ministerului Justiției, și banii sectorului non-profit din situațiile financiare.</Trans>
-              </p>
-              {registry ? (
-                <>
-                  <div className="mt-6 sm:mt-7">
-                    <NgoRegistrySearch />
-                  </div>
-                  <nav aria-label={t`Scurtături`} className="mt-4">
-                    <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
-                      <Trans>Sau mergi direct la</Trans>
-                    </MonoLabel>
-                    <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                      <Link to="/ong-uri/registru" search={registrySearch()} className={HUB_SHORTCUT_LINK_CLASS}>
-                        <Trans>Tot registrul</Trans>
-                      </Link>
-                      <Link
-                        to="/ong-uri/registru"
-                        search={registrySearch({ publicUtility: 'yes', status: REGISTRY_STATUS_VALUE.registered })}
-                        className={HUB_SHORTCUT_LINK_CLASS}
-                      >
-                        <Trans>De utilitate publică</Trans>
-                      </Link>
-                    </span>
-                  </nav>
-                </>
-              ) : null}
-            </div>
-            <div className="min-w-0 lg:col-span-5">
-              <HeroLeaders finance={finance} registry={registry} />
-            </div>
-          </div>
-        </RuledFrame>
-      </section>
+      <NgoHubHero
+        registry={registry}
+        search={<NgoRegistrySearch />}
+        leaders={<HeroLeaders finance={finance} registry={registry} />}
+        source={<HeadSources summary={summary} finance={finance} />}
+      />
 
-      <HomeSectionNav title={t`ONG-urile din România`} sections={sections} />
+      <HomeSectionNav title={t`ONG-urile din România`} sections={sections} crux />
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>
-          <CruxMarks />
           <HubFiguresBand facts={hubFacts(summary, finance, registry)} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
         </RuledFrame>
       </section>
-
-      <DomainsBand finance={finance} index={indexOf('ce-fac')} metric={metric} onMetric={(value) => choose('domenii', value, DEFAULT_METRIC)} />
-      <MoneyBand finance={finance} index={indexOf('bani')} />
 
       <HomeBand id="judete" labelledBy="ngo-hub-counties-title">
         <HubSectionHead
@@ -167,6 +109,7 @@ export function NgoHubPage({
               label={t`Ce arată harta`}
               options={[
                 { key: 'densitate', label: t`La 10.000 de locuitori` },
+                { key: 'total', label: t`Înregistrate` },
                 { key: 'noi', label: t`Noi în ${year}` },
               ]}
               value={layer}
@@ -176,6 +119,9 @@ export function NgoHubPage({
         />
         <NgoCountyBand summary={summary} layerKey={layer} registry={registry} />
       </HomeBand>
+
+      <DomainsBand finance={finance} index={indexOf('ce-fac')} metric={metric} onMetric={(value) => choose('domenii', value, DEFAULT_METRIC)} />
+      <MoneyBand finance={finance} index={indexOf('bani')} />
 
       <RegistryBand summary={summary} index={indexOf('registru')} registry={registry} />
 
@@ -198,25 +144,36 @@ export function NgoHubPage({
 // ──────────────────────────────────────────────────────────── the hero ──
 
 function HeroLeaders({ finance, registry }: { readonly finance: NgoFinanceSummary; readonly registry: boolean }) {
+  const [expanded, setExpanded] = useState(false)
   const year = finance.year
   const previousYear = year - 1
+  const more = finance.leaders.length - NGO_HUB_LEADERS_SHOWN
   return (
-    <section className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6" aria-labelledby="ngo-hub-leaders-title">
-      <MonoLabel id="ngo-hub-leaders-title" className="text-primary">
-        <Trans>Cele mai mari ONG-uri din registru, {year}</Trans>
-      </MonoLabel>
-      {/* Ten rows; five on a phone, where the figures should not be pushed a screen down. */}
+    <NgoLeadersFrame title={<Trans>Cele mai mari ONG-uri din registru, {year}</Trans>}>
+      {/* Five, so the head stays a screen's height and the figures follow it; the rest a click away. */}
       <NgoLeaderRows
         leaders={finance.leaders}
         registry={registry}
         previousYear={previousYear}
-        limit={10}
-        className="mt-4 max-sm:[&>li:nth-child(n+6)]:hidden"
+        limit={expanded ? finance.leaders.length : NGO_HUB_LEADERS_SHOWN}
+        id="ngo-hub-leaders"
+        className="mt-4"
       />
-      <p className="mt-3 text-xs text-muted-foreground">
+      {more > 0 ? (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          aria-controls="ngo-hub-leaders"
+          onClick={() => setExpanded((open) => !open)}
+          className="mt-3 inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          {expanded ? <Trans>Arată mai puține</Trans> : <Trans>Arată mai multe</Trans>}
+        </button>
+      ) : null}
+      <p className="mt-2 text-xs text-muted-foreground">
         <Trans>După veniturile din situațiile financiare și variația față de {previousYear}, dintre ONG-urile din registru legate de un CUI.</Trans>
       </p>
-    </section>
+    </NgoLeadersFrame>
   )
 }
 
@@ -517,6 +474,37 @@ function RegistryBand({ summary, index, registry }: { readonly summary: NgoRegis
   )
 }
 
+/**
+ * The sources in the head, short, as the procurement hub says its own: each
+ * source by its site, and how fresh it is. The full line closes the page.
+ */
+function HeadSources({ summary, finance }: { readonly summary: NgoRegistrySummary; readonly finance: NgoFinanceSummary }) {
+  // A link's words and its arrow on one line.
+  const link = 'whitespace-nowrap font-medium text-foreground underline-offset-4 hover:underline'
+  const captured = formatNgoDate(summary.capturedAt)
+  const financeYear = finance.year
+  const registryUrl = summary.sourceUrl
+  const financeUrl = finance.source.dataset
+  return (
+    <p className="text-sm text-muted-foreground">
+      <Trans>
+        Surse:{' '}
+        <a href={registryUrl} target="_blank" rel="noreferrer" className={link}>
+          Registrul ONG, just.ro<span aria-hidden="true"> ↗</span>
+          <span className="sr-only"> (se deschide într-o filă nouă)</span>
+        </a>
+        , la {captured} ·{' '}
+        <a href={financeUrl} target="_blank" rel="noreferrer" className={link}>
+          situațiile financiare, data.gov.ro<span aria-hidden="true"> ↗</span>
+          <span className="sr-only"> (se deschide într-o filă nouă)</span>
+        </a>
+        , până în {financeYear}
+      </Trans>
+    </p>
+  )
+}
+
+/** The page's full sources line, closing it: each source, its publisher and its dates. */
 function SourcesLine({ summary, finance }: { readonly summary: NgoRegistrySummary; readonly finance: NgoFinanceSummary }) {
   const link = 'text-foreground underline underline-offset-4 hover:text-primary'
   const registryUrl = summary.sourceUrl

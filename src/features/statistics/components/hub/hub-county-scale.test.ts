@@ -98,3 +98,19 @@ describe('countyScale with no national figure', () => {
     expect(new Set(scale.classes.map((drawn) => drawn.fill)).size).toBe(1)
   })
 })
+
+describe('countyScale in steps', () => {
+  it('draws the ramp’s five blues by quintile even with a national figure, labels light on the two darkest', () => {
+    const { scale } = countyScale(LIFE, 77.45, { ramp: 'steps' })
+    expect(scale.kind).toBe('level')
+    expect(scale.classes.map((drawn) => drawn.swatch)).toEqual(['bg-choropleth-1', 'bg-choropleth-2', 'bg-choropleth-3', 'bg-choropleth-4', 'bg-choropleth-5'])
+    expect(scale.classes.map((drawn) => drawn.onDark)).toEqual([false, false, false, true, true])
+    expect(scale.classes.every((drawn) => drawn.opacity === 1)).toBe(true)
+  })
+
+  it('keeps the darkest blue for the top class where ties merge classes', () => {
+    const { scale } = countyScale([1, 1, 1, 1, 1, 1, 1, 1, 2, 3], null, { ramp: 'steps', digits: 0 })
+    expect(scale.classes.length).toBeLessThan(5)
+    expect(scale.classes[scale.classes.length - 1]?.swatch).toBe('bg-choropleth-5')
+  })
+})
