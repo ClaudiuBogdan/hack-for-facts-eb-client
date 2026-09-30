@@ -271,7 +271,7 @@ function ownKey(record: object, key: string): boolean {
 }
 
 /** The first month any source holds (SEAP opened in 2007); a later bound is the cutoff's to set. */
-const FIRST_MONTH = '2007-01'
+export const FIRST_MONTH = '2007-01'
 
 function periodOf(value: string | undefined): Period {
   if (!value) return { kind: 'recent' }

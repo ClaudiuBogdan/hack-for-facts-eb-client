@@ -51,6 +51,21 @@ export function monthText(month: string): string {
   return formatHubMonth(month)
 }
 
+const shortMonthFormatters = new Map<string, Intl.DateTimeFormat>()
+
+/** `2025-06` → „iun. 2025", in the page's language: a month where the room is a button's; an unreadable month as written. */
+export function shortMonthText(month: string): string {
+  const match = /^(\d{4})-(\d{2})$/u.exec(month)
+  if (!match) return month
+  const locale = hubNumberLocale()
+  let formatter = shortMonthFormatters.get(locale)
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' })
+    shortMonthFormatters.set(locale, formatter)
+  }
+  return formatter.format(new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, 1)))
+}
+
 const dayFormatters = new Map<string, Intl.DateTimeFormat>()
 
 /** `2026-05-28` → „28 mai", in the page's language; an unreadable date as written. */

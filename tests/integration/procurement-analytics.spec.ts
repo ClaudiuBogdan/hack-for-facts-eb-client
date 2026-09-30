@@ -59,4 +59,50 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await page.getByRole('button', { name: /Scoate „.*laptop/ }).first().click()
     await expect.poll(() => params(page).titlu).toBeUndefined()
   })
+
+  test('the filters sheet picks a place from its region down, and a step of its path widens it', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    await page.getByRole('button', { name: /^Filtre/ }).first().click()
+    const sheet = page.getByRole('dialog')
+    await sheet.getByRole('combobox', { name: 'Caută locul instituției' }).click()
+    await sheet.getByRole('option', { name: 'Centru', exact: true }).click()
+    await expect.poll(() => params(page).regiune).toBe('Centru')
+    await sheet.getByRole('option', { name: 'Sibiu', exact: true }).click()
+    await expect.poll(() => params(page).judet).toBe('SB')
+    // The county's largest localities, from the map's file.
+    await sheet.getByRole('option', { name: /^Sibiu/ }).first().click()
+    await expect.poll(() => params(page).localitate).toBe('143450')
+    await expect(sheet.getByText('Municipiul Sibiu', { exact: true })).toBeVisible()
+
+    await sheet.getByRole('button', { name: 'Jud. Sibiu', exact: true }).click()
+    await expect.poll(() => params(page).judet).toBe('SB')
+    expect(params(page).localitate).toBeUndefined()
+  })
+
+  test('the filters sheet’s place search takes the keys', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    await page.getByRole('button', { name: /^Filtre/ }).first().click()
+    const sheet = page.getByRole('dialog')
+    const field = sheet.getByRole('combobox', { name: 'Caută locul firmei' })
+    await field.click()
+    await field.pressSequentially('cluj napoca')
+    await expect(sheet.getByRole('option', { name: /^Cluj-Napoca/ })).toBeVisible()
+    // Escape closes the list, not the sheet.
+    await field.press('Escape')
+    await expect(sheet).toBeVisible()
+    await expect(sheet.getByRole('option', { name: /^Cluj-Napoca/ })).toHaveCount(0)
+
+    await field.click()
+    await field.pressSequentially('cluj napoca')
+    await field.press('ArrowDown')
+    await expect(field).toHaveAttribute('aria-activedescendant', /option-0$/)
+    await field.press('Enter')
+    await expect.poll(() => params(page).localitate_firma).toBe('54975')
+    // The field gave way to the chip: the focus goes to its ✕, not to the top of the sheet.
+    await expect(sheet.getByRole('button', { name: 'Scoate Municipiul Cluj-Napoca' })).toBeFocused()
+  })
 })

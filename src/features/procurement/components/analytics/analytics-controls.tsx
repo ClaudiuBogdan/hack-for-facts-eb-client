@@ -10,7 +10,6 @@ import { useSearchResults } from '@/features/landing/hooks/use-landing-search'
 import { procurementHrefOf } from '../../lib/home-links'
 import { cn } from '@/lib/utils'
 import {
-  cpvLevelOf,
   groupProblem,
   perResidentAllowed,
   POPULATIONS,
@@ -35,7 +34,7 @@ import {
   undatedText,
   type Namer,
 } from '../../lib/analytics-text'
-import { PROCEDURES } from './analytics-view'
+import { cpvFilterOf, PROCEDURES } from './analytics-view'
 
 /** The analytics page's controls and shared parts: the period, the quick filter, the questions, the link, the caveats, the group-by, the rows, the method. */
 
@@ -172,15 +171,14 @@ export function AddFilter({
                 })}
               </CommandGroup>
             ) : null}
-            {(cpv.data ?? []).length > 0 ? (
+            {/* Only the answer for what is typed now: the last term's rows, kept while the next is read, must not be picked for it. */}
+            {cpv.settled && (cpv.data ?? []).length > 0 ? (
               <CommandGroup heading={t`Categorii`}>
                 {(cpv.data ?? []).map((hit) => {
-                  const prefix = hit.value.replace(/0+$/u, '')
-                  const level = cpvLevelOf(prefix.length < 2 ? hit.value.slice(0, 2) : prefix.length === 6 || prefix.length === 7 ? hit.value : prefix)
-                  if (!level) return null
-                  const value = level.id === 'cod' ? hit.value : prefix.length < 2 ? hit.value.slice(0, 2) : prefix
+                  const next = cpvFilterOf(hit.value)
+                  if (!next) return null
                   return (
-                    <CommandItem key={hit.value} value={`cpv-${hit.value}`} onSelect={() => pick(withFilter(query, 'cpv', level.id, value))}>
+                    <CommandItem key={hit.value} value={`cpv-${hit.value}`} onSelect={() => pick(withFilter(query, 'cpv', next.level, next.value))}>
                       <span className="min-w-0 flex-1 truncate">{hit.label}</span>
                       <MonoLabel className="tabular-nums text-muted-foreground">{hit.value}</MonoLabel>
                     </CommandItem>

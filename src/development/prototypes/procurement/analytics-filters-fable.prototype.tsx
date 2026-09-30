@@ -6,8 +6,12 @@ import { FableFilterSheet } from './analytics-filters-fable/sheet'
 /**
  * The analytics page's filters sheet, improved rather than rewritten (the
  * owner, 30 September 2026): the same visual language, regrouped, with one
- * place picker for region, county and locality. `actual` is the page's own
- * sheet, unchanged. See `analytics-filters-fable/RATIONALE.md`.
+ * place picker for region, county and locality. See
+ * `analytics-filters-fable/RATIONALE.md`.
+ *
+ * Promoted the same day (design.md §18.18): `actual` is the page's own
+ * sheet, now `grupat`'s promoted version; `grupat` stays as the design's
+ * record.
  */
 
 function Actual() {
@@ -22,7 +26,7 @@ export const prototype = {
   title: 'Procurement analytics — the filters sheet',
   spec: 'docs/design/procurement/design.md',
   variants: {
-    actual: { title: 'Actual — the page’s sheet', component: Actual, note: 'The sheet as it is on /procurement/analytics, imported unchanged.' },
+    actual: { title: 'Actual — the page’s sheet', component: Actual, note: 'The sheet as it is on /procurement/analytics (grupat, promoted), imported unchanged.' },
     grupat: {
       title: 'Grupat — five questions, one place picker',
       component: Grupat,

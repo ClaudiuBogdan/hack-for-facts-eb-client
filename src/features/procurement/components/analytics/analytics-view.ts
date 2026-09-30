@@ -1,7 +1,7 @@
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { monthText } from '../../lib/home-format'
-import { clippedBucket, cpvPrefix, POPULATIONS, searchOf, unreadParams, type AnalyticsSearch, type AxisId, type Query } from '../../lib/analytics-model'
+import { clippedBucket, cpvLevelOf, cpvPrefix, POPULATIONS, searchOf, unreadParams, type AnalyticsSearch, type AxisId, type Query } from '../../lib/analytics-model'
 import type { Ranking } from '../../api/procurement-analytics-api'
 import { QUESTIONS } from '../../lib/analytics-questions'
 import { COUNTY_POPULATION, type Answer } from '../../hooks/use-procurement-analytics'
@@ -220,6 +220,18 @@ export function bucketLabel(bucket: string): string {
   if (/^\d{4}$/u.test(bucket)) return bucket
   if (/^\d{4}-Q[1-4]$/u.test(bucket)) return bucket.replace('-Q', ' T')
   return monthText(bucket)
+}
+
+/**
+ * A CPV code from the category search as the filter it means: its trailing
+ * zeros mark its level („45200000" is the group „452"), a code finer than a
+ * category is itself. Null for a code the levels do not know.
+ */
+export function cpvFilterOf(code: string): { readonly level: string; readonly value: string } | null {
+  const prefix = code.replace(/0+$/u, '')
+  const value = prefix.length < 2 ? code.slice(0, 2) : prefix.length >= 6 ? code : prefix
+  const level = cpvLevelOf(value)
+  return level ? { level: level.id, value } : null
 }
 
 /** How many filters a query holds: its axes, its title words, its value range. */

@@ -3,6 +3,8 @@ import { hashKey, useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
+import { SEARCH_DEBOUNCE_MS } from '@/features/landing/hooks/use-landing-search'
+import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import { COMPANY_HUB_SNAPSHOT } from '@/features/private-companies/lib/hub-snapshot'
 import {
   nameKeys,
@@ -24,6 +26,7 @@ import { fetchProcurementGeographyOptions } from '../api/procurement-reference-a
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
 import { analyticsSearchOf, queryOf, repaired, urlSearchOf, type AnalyticsSearch, type Query, type ResolvedPeriod } from '../lib/analytics-model'
 import type { Namer } from '../lib/analytics-text'
+import { placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
 import { homeYear } from '../lib/home-model'
 import { formatProcurementCountyName } from '../lib/procurement-geography'
 
@@ -151,27 +154,81 @@ export function useCounties() {
 export function useLocalities(enabled: boolean) {
   const geo = useGeoJsonData('UAT', { enabled })
   const counties = useGeoJsonData('County', { enabled })
-  const features = (geo.data as { features?: readonly { properties?: Record<string, unknown> }[] } | undefined)?.features
-  if (!features) return null
-  const names = new Map<string, { name: string; kind: string | null; county: string | null; population: number | null }>()
-  for (const feature of (counties.data as { features?: readonly { properties?: Record<string, unknown> }[] } | undefined)?.features ?? []) {
-    const props = feature.properties ?? {}
-    if (props.countyCode === undefined || props.countyCode === null) continue
-    const county = String(props.name ?? '')
-    names.set(String(props.countyCode), { name: t`Județul ${county}`, kind: 'judet', county: typeof props.mnemonic === 'string' ? props.mnemonic : null, population: null })
+  // Built once per read of the files: a map built on every render would give the namer a new identity each time.
+  return useMemo(() => {
+    const features = (geo.data as PlaceFeatures)?.features
+    if (!features) return null
+    const names = new Map<string, { name: string; kind: string | null; county: string | null; population: number | null }>()
+    for (const feature of (counties.data as PlaceFeatures)?.features ?? []) {
+      const props = feature.properties ?? {}
+      if (props.countyCode === undefined || props.countyCode === null) continue
+      const county = String(props.name ?? '')
+      names.set(String(props.countyCode), { name: t`Județul ${county}`, kind: 'judet', county: typeof props.mnemonic === 'string' ? props.mnemonic : null, population: null })
+    }
+    for (const feature of features) {
+      const props = feature.properties ?? {}
+      const code = props.natcode
+      if (code === undefined || code === null) continue
+      names.set(String(code), {
+        name: String(props.name ?? code),
+        kind: typeof props.natLevName === 'string' ? props.natLevName : null,
+        county: typeof props.countyMn === 'string' ? props.countyMn : null,
+        population: typeof props.insPop2021 === 'number' ? props.insPop2021 : null,
+      })
+    }
+    return names
+  }, [geo.data, counties.data])
+}
+
+/** The place index's reads, each with its state: the API's regions and counties, and the map's files. */
+export interface PlaceReads {
+  readonly index: PlaceIndex
+  /** The map's files are being read. */
+  readonly loading: boolean
+  /** The map's files could not be read: the regions and the counties still stand, from the API. */
+  readonly failed: boolean
+  readonly retry: () => void
+  readonly countiesLoading: boolean
+  /** The API's regions and counties could not be read. */
+  readonly countiesFailed: boolean
+  readonly retryCounties: () => void
+}
+
+/** The last index built, by its reads: the institution's and the firm's pickers share one (3,186 UATs each time otherwise). */
+let lastPlaceIndex: { readonly reads: readonly unknown[]; readonly index: PlaceIndex } | null = null
+
+function sharedPlaceIndex(geography: Parameters<typeof placeIndexOf>[0], uat: unknown, counties: unknown): PlaceIndex {
+  const reads = [geography, uat, counties]
+  if (lastPlaceIndex && lastPlaceIndex.reads.every((read, position) => read === reads[position])) return lastPlaceIndex.index
+  const index = placeIndexOf(geography, uat as PlaceFeatures, counties as PlaceFeatures)
+  lastPlaceIndex = { reads, index }
+  return index
+}
+
+/**
+ * Every region, county and locality a location filter can name, for the
+ * filters' place picker (`analytics-places.ts`). The map's files (3 MB) are
+ * read only once a place is being looked for, or a locality is on screen.
+ */
+export function usePlaceIndex(enabled: boolean): PlaceReads {
+  const geography = useCounties()
+  const uat = useGeoJsonData('UAT', { enabled })
+  const counties = useGeoJsonData('County', { enabled })
+  const index = useMemo(() => sharedPlaceIndex(geography.data, uat.data, counties.data), [geography.data, uat.data, counties.data])
+  const failed = enabled && (uat.isError || counties.isError)
+  return {
+    index,
+    // From the files' own reads, not the index: a failed read of the API's counties must not pass for localities loading.
+    loading: enabled && !failed && (uat.data === undefined || counties.data === undefined),
+    failed,
+    retry: () => {
+      if (uat.isError) void uat.refetch()
+      if (counties.isError) void counties.refetch()
+    },
+    countiesLoading: geography.isPending,
+    countiesFailed: geography.isError,
+    retryCounties: () => void geography.refetch(),
   }
-  for (const feature of features) {
-    const props = feature.properties ?? {}
-    const code = props.natcode
-    if (code === undefined || code === null) continue
-    names.set(String(code), {
-      name: String(props.name ?? code),
-      kind: typeof props.natLevName === 'string' ? props.natLevName : null,
-      county: typeof props.countyMn === 'string' ? props.countyMn : null,
-      population: typeof props.insPop2021 === 'number' ? props.insPop2021 : null,
-    })
-  }
-  return names
 }
 
 /** Residents on 1 January 2025 by county (INS POP105A, the companies hub's snapshot), for lei per resident. */
@@ -180,15 +237,33 @@ export function countyPopulationNote(): string {
   return t`INS POP105A, 1 ianuarie 2025`
 }
 
-/** Categories whose name holds a reader's words, for the quick filter. */
+/** The shortest term a category search asks about. */
+export const CPV_SEARCH_MIN = 3
+
+/**
+ * Categories whose name holds a reader's words, for the quick filter and
+ * the filters' category field. Read once the typing pauses (as the site's
+ * search does); the last answer stays on screen while the next is read, so a
+ * list does not flicker between keystrokes. `settled` says the answer on
+ * screen is the one for what is typed now.
+ */
 export function useCpvSearch(term: string) {
   const trimmed = term.trim()
-  return useQuery({
-    queryKey: procurementAnalyticsKeys.cpvSearch(trimmed),
-    queryFn: ({ signal }) => readCpvMatches(trimmed, signal),
-    enabled: trimmed.length >= 3,
+  const asked = useDebouncedValue(trimmed, SEARCH_DEBOUNCE_MS)
+  const read = useQuery({
+    queryKey: procurementAnalyticsKeys.cpvSearch(asked),
+    queryFn: ({ signal }) => readCpvMatches(asked, signal),
+    enabled: asked.length >= CPV_SEARCH_MIN,
     staleTime: 60 * 60 * 1000,
+    placeholderData: (previous) => previous,
   })
+  const current = asked === trimmed && trimmed.length >= CPV_SEARCH_MIN
+  return {
+    data: trimmed.length >= CPV_SEARCH_MIN ? read.data : undefined,
+    isError: current && read.isError,
+    settled: current && read.isSuccess && !read.isPlaceholderData && !read.isFetching,
+    retry: () => void read.refetch(),
+  }
 }
 
 // ────────────────────────────────────────────────────────── the answer ──

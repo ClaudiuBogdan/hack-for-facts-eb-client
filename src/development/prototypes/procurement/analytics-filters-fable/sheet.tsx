@@ -530,20 +530,13 @@ function CpvRow({ query, namer, onChange }: { readonly query: Query; readonly na
   const names = useNames({ orgs: [], cpv: path.map(cpvKey) })
   const local: Namer = { ...namer, names: names.data ?? namer.names }
   const asked = term.trim().length >= 3
-  const fresh = (found.data ?? []).flatMap((hit) => {
+  // The read keeps its last answer on screen while the next is read (`useCpvSearch`), so typing does not flicker.
+  const hits = (found.data ?? []).flatMap((hit) => {
     const next = cpvFilterOf(hit.value)
     return next ? [{ label: hit.label, ...next }] : []
   })
-  // The last answer stays on screen while the next one is read (the read has no placeholder of its own), so typing does not flicker.
-  const [kept, setKept] = useState(fresh)
-  useEffect(() => {
-    if (found.data) setKept(fresh)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `fresh` is derived from `found.data`.
-  }, [found.data])
-  const hits = found.data ? fresh : kept
   const pick = (hit: { readonly level: string; readonly value: string }) => {
     setTerm('')
-    setKept([])
     onChange(withFilter(query, 'cpv', hit.level, hit.value))
   }
   const keys = useActiveOption(asked ? hits.length : 0, term)
@@ -592,13 +585,13 @@ function CpvRow({ query, namer, onChange }: { readonly query: Query; readonly na
               label={t`Categorii`}
               notices={
                 found.isError ? (
-                  <Notice kind="failed" onRetry={() => void found.refetch()}>
+                  <Notice kind="failed" onRetry={found.retry}>
                     {t`Căutarea nu a mers.`}
                   </Notice>
-                ) : found.isPending && hits.length === 0 ? (
-                  <Notice kind="loading">{t`Se caută…`}</Notice>
-                ) : found.data && fresh.length === 0 ? (
+                ) : found.settled && hits.length === 0 ? (
                   <Notice kind="empty">{t`Nimic pentru „${term.trim()}".`}</Notice>
+                ) : !found.settled && hits.length === 0 ? (
+                  <Notice kind="loading">{t`Se caută…`}</Notice>
                 ) : null
               }
             >
@@ -803,7 +796,7 @@ export function FableFilterSheet({
         side={phone ? 'bottom' : 'right'}
         onOverlayClick={() => onOpenChange(false)}
         // The close as tall as the header, a whole tap target on a phone.
-        closeClassName="right-2 top-1 flex size-11 items-center justify-center focus:ring-0 focus-visible:ring-2 data-[state=open]:bg-transparent sm:top-1.5 sm:size-10"
+        closeClassName="right-2 top-1 flex size-11 items-center justify-center focus:ring-0 focus:ring-offset-0 focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=open]:bg-transparent sm:top-1.5 sm:size-10"
         className={cn('flex flex-col gap-0 p-0', phone ? 'max-h-[90vh] rounded-t-2xl' : 'w-full sm:max-w-sm')}
       >
         <div className="flex items-baseline gap-2 border-b px-4 py-3">

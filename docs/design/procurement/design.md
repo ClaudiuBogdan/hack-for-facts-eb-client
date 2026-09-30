@@ -2609,3 +2609,109 @@ it: „yes, delete".
 - **The catalogs.** The explorer's 296 strings are marked obsolete by
   `lingui extract`, as the project keeps obsolete entries. A
   `yarn i18n:clean` would drop them, along with the 762 already obsolete.
+
+### 18.18 The filters sheet, regrouped (30 September 2026)
+
+The owner asked for a Fable design session on the „Filtre" sheet: an
+improvement, not a rewrite. It should be better grouped, simpler, and handle
+region, county and UAT in one easy picker. Fable prototyped it at
+`/development/procurement/analytics-filters-fable` (`actual` beside
+`grupat`) over four rounds of the owner's feedback. Claude then took over,
+fitted it to a phone and promoted it. Rationale, rejected options and every
+decision: `src/development/prototypes/procurement/analytics-filters-fable/RATIONALE.md`.
+
+- **Five groups instead of ten sections:** Înregistrări, Perioada, Cine
+  cumpără (institution, its place), Cine vinde (firm, its place), Ce cumpără
+  (category, procedure, title, value). Each row has a label and one control.
+  A value that is set is a chip with its own ✕; the per-section „Șterge"
+  links are gone, and the sheet's header counts the filters.
+- **One place picker per party**
+  (`components/analytics/analytics-place-field.tsx`, index in
+  `lib/analytics-places.ts`).
+  - One field searches the regions, the counties (by name or code) and the
+    3,186 UATs. It matches with or without diacritics, and cedilla or comma
+    forms alike.
+  - Before a word is typed it browses: region → the region's counties → the
+    county's ten largest localities.
+  - The pick is its path, each name with its kind: „Reg. Centru › Jud. Sibiu
+    › Municipiul Sibiu". A locality carries its official kind (Municipiul,
+    Orașul, Comuna, Sectorul). București at the county level is „Municipiul
+    București".
+  - Lists under a level's head drop the prefix, because the head names the
+    level.
+  - A county's own code (the county council) is offered in no list; a link
+    that carries it still reads as a chip.
+- **Years and months.** The four recent years are shown, the rest behind
+  „Arată mai multe"; a picked older year keeps them open. Months are picked
+  from a Romanian month grid („iun. 2025") instead of the browser's own
+  month input, which read in English. The grid opens on the picked month's
+  year.
+- **No small controls.** Everything is 44 px on a phone and 40 px from
+  `sm`, including the sheet's close (a new `closeClassName` on
+  `SheetContent`, its ring for the keyboard only).
+- **The keyboard.** Every search is a combobox (`hooks/use-active-option.ts`):
+  - the arrows walk the rows, the region and county grids included;
+  - Enter picks the active row, or the first when none is active;
+  - Space, Home and End stay the text's. The site's
+    `useListKeyboardNavigation` takes Space as a pick, which would break
+    „sector 3".
+- **Loading, failed, empty in words.** Each list that waits on a read says
+  so („Se caută…", „Se încarcă localitățile…"). A failure says so with
+  „Încearcă din nou", and a search that finds nothing says „Nimic pentru …".
+  A failed map file leaves the regions and counties working.
+- **On a phone** a focused search moves to the top of the sheet, with room
+  below it so its list sits above the keyboard. Measured before the fix: the
+  firm's field could scroll only 207 px of the 535 it needed.
+- **Reads.**
+  - `useCpvSearch` now waits for the typing to pause (250 ms, as the site's
+    search does), keeps its last answer while the next is read, and says
+    when its answer is settled.
+  - `useSearchResults` exposes `retry`.
+  - `useLocalities` builds its map once per read of the files. It used to
+    build it on every render, which gave the page's namer a new identity
+    each time.
+- **Unchanged:** the URL model and grouping after a pick (the owner kept
+  the current behaviour). The map's 3 MB UAT file is still what names
+  localities; a `referenceLocalities` read from the API would replace it
+  (§18.6).
+- **Reviewed** by Codex `gpt-6.1-sol` (xhigh; three defects) and Opus 5.5
+  (xhigh; ten defects, no blockers). All are fixed:
+  - **Categories.** The last term's categories could be picked for the
+    new one: in the quick filter by cmdk's highlight, in the sheet by Enter.
+    They now show only when settled; the sheet shows them dimmed and
+    disabled while it reads.
+  - **Institution and firm.** Each field asks for its own families (a
+    buyer is an institution or a state company, a seller a firm). Stale
+    results no longer read as „Nimic pentru …", and Enter never picks the
+    last term's first hit.
+  - **Focus.** A pick or a ✕ that removes the focused control no longer
+    drops the focus to the top of the sheet: `Row` takes it to the row's
+    chip or field. The phone lift and the place list's open state go with
+    the field they belonged to.
+  - **Enter on an empty place field** picked the first region; with
+    nothing typed it now picks nothing.
+  - **County codes.** A county's code typed whole („IS", „NT") answers
+    first; matching inside a name needs three letters.
+  - **Tab** no longer walks the options: the field is the way in.
+  - **Escape** in an open search closes its list, not the sheet with what
+    was typed.
+  - **A picked older year** shows beside the recent ones, and the toggle
+    works.
+  - **Months.** They go back to SEAP's first, `2007-01`, the model's own
+    bound.
+  - **Without the API.** If its regions and counties fail, a search still
+    finds localities and says the failure beside them.
+  - **Screen readers.** Loading and „nothing found" are announced through
+    an always-present live region, a failure as an alert. Options sit in
+    named groups, and each month button names its month and year.
+- **Verified** by both reviewers after the fixes; the loose ends they found
+  are fixed too:
+  - Escape in a place field closes its list and keeps the focus; the field
+    reads as expanded whenever anything shows under it.
+  - The highlight belongs to an option, not a position, so a late read
+    shifting the list keeps it on the same place.
+  - An institution or firm row from the previous term is dimmed and cannot
+    be picked.
+  - A search waits for the regions and counties before it says „Nimic
+    pentru …".
+  - The value pair's hidden submit is out of the Tab order.
