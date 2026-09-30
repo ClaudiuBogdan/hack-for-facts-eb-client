@@ -5,7 +5,7 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { CornerTicks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
+import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { HUB_SHORTCUT_LINK_CLASS } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { LEADER_ROW_CLASS } from './ngo-hub-sections'
@@ -29,7 +29,7 @@ export function NgoHubHero({
   readonly registry: boolean
   readonly search: ReactNode
   readonly leaders: ReactNode
-  /** The sources in a line, as the procurement hub's head says its own; the full line closes the page. */
+  /** The sources in a line, at the head's foot, as the procurement hub's head says its own; the full line closes the page. */
   readonly source: ReactNode
 }) {
   return (
@@ -76,10 +76,15 @@ export function NgoHubHero({
                 </nav>
               </>
             ) : null}
-            <div className="mt-6">{source}</div>
           </div>
           <div className="min-w-0 lg:col-span-5">{leaders}</div>
+          {/* The sources close the head, apart from what it says: under the leaders on a phone; from a wide screen, at the head's foot, just above its bottom rule, however tall the leaders' card is — as on /procurement. */}
+          <div className="min-w-0 lg:absolute lg:inset-x-8 lg:bottom-6">{source}</div>
         </div>
+        {/* The crux on the head's bottom rule, where the pinned bar begins; above the bar, which would cover its lower half. */}
+        <span className="absolute inset-x-0 top-full z-30 mt-px" aria-hidden="true">
+          <CruxMarks />
+        </span>
       </RuledFrame>
     </section>
   )

@@ -557,11 +557,13 @@ sector's, never the registry's.
 - **Sources in the head**, in one line, as `/procurement` says its own: the
   two sources as links and one date, the registry's last update (the owner's
   call, 2026-09-30); the statements' years, the publishers and the population
-  year are in the full line closing the page.
-- **Pinned bar** of the four numbered bands, as on `/procurement`, carrying
-  the crux marks at its lower corners (`HomeSectionNav crux`): drawn in the
-  band below, the bar covered them; on the bar, they sit on the frame's
-  rules whether it is pinned or not.
+  year are in the full line closing the page. The line is set at the head's
+  foot, just above its bottom rule, apart from what the head says (under the
+  leaders on a phone) — `/procurement`'s layout since d55199ba.
+- **Pinned bar** of the four numbered bands, as on `/procurement`. The crux
+  marks sit on the head's bottom rule, where the bar begins, drawn above the
+  bar (`z-30`), which covered them when they were drawn in the figures band —
+  as `/procurement` draws its own.
 - **Figures** — registered NGOs (status „Înregistrat"; the 2,355 in
   liquidation are in the registry too, so not „în registru"), non-profit
   revenue in 2025 (33.5 bn lei), statements filed for 2025 (61,367; 47,160

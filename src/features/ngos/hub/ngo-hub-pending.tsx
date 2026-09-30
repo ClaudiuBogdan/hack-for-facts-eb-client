@@ -51,7 +51,7 @@ export function NgoHubPending() {
         }
       />
 
-      <HomeSectionNav title={t`ONG-urile din România`} sections={sections} crux />
+      <HomeSectionNav title={t`ONG-urile din România`} sections={sections} />
 
       {/* The four figures' cells, as the figures band draws them. */}
       <section className="border-b bg-muted/20" aria-hidden="true">

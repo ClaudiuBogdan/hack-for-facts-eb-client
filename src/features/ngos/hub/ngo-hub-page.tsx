@@ -91,7 +91,7 @@ export function NgoHubPage({
         source={<HeadSources summary={summary} finance={finance} />}
       />
 
-      <HomeSectionNav title={t`ONG-urile din România`} sections={sections} crux />
+      <HomeSectionNav title={t`ONG-urile din România`} sections={sections} />
 
       <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
         <RuledFrame>

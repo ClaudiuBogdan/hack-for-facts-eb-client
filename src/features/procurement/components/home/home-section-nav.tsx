@@ -2,25 +2,11 @@ import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { CruxMarks } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
 import type { HomeSection } from '../../lib/home-links'
 
 /** The company profile's pinned bar: the page's name, then its numbered bands. */
-export function HomeSectionNav({
-  title,
-  sections,
-  crux = false,
-}: {
-  readonly title: string
-  readonly sections: readonly HomeSection[]
-  /**
-   * The crux marks where the bar's lower rule crosses the frame's: over the
-   * band below, which the bar would otherwise cover, and pinned with the bar,
-   * where the rules still cross.
-   */
-  readonly crux?: boolean
-}) {
+export function HomeSectionNav({ title, sections }: { readonly title: string; readonly sections: readonly HomeSection[] }) {
   return (
     <nav aria-label={t`Secțiunile paginii`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       <RuledFrame className="flex items-center gap-6 overflow-x-auto py-0">
@@ -41,14 +27,6 @@ export function HomeSectionNav({
           ))}
         </ol>
       </RuledFrame>
-      {crux ? (
-        // Outside the scrolling frame, which would clip them; a pixel down, where CruxMarks expects the rule above its anchor.
-        <div className="pointer-events-none absolute inset-x-0 top-[calc(100%+1px)]">
-          <div className="relative mx-auto w-full max-w-6xl">
-            <CruxMarks />
-          </div>
-        </div>
-      ) : null}
     </nav>
   )
 }
