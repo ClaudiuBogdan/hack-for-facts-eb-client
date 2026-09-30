@@ -122,7 +122,8 @@ export function PendingBar({ className }: { readonly className?: string }) {
 /**
  * The leaders' rows before the figures arrive: each the height of a
  * leader's, from the same grid and the same type — two name lines on a
- * phone, as the leaders keep — so the card does not move when they land.
+ * phone, as the leaders keep, and the revenue bar's track — so the card does
+ * not move when they land.
  */
 export function NgoLeaderRowsPending({ rows, className }: { readonly rows: number; readonly className?: string }) {
   return (
@@ -135,7 +136,9 @@ export function NgoLeaderRowsPending({ rows, className }: { readonly rows: numbe
               <PendingBar className="block w-3/4" />
               <PendingBar className="block w-1/2 sm:hidden" />
             </span>
-            <MonoLabel className="mt-0.5 block">
+            {/* The revenue bar's track, its length not known yet. */}
+            <span className="mt-1 block h-1 bg-muted" />
+            <MonoLabel className="mt-1 block">
               <PendingBar className="w-1/3" />
             </MonoLabel>
           </span>

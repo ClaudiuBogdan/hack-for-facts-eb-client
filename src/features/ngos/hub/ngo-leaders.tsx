@@ -37,6 +37,8 @@ export function NgoLeaderRows({
   readonly className?: string
 }) {
   const { i18n } = useLingui()
+  // Against the largest of all, not of the rows shown, so the bars keep their lengths when the list opens.
+  const top = Math.max(...leaders.map((leader) => leader.revenue), 1)
   return (
     <ol id={id} className={cn('divide-y divide-border/70 border-y border-border/70', className)} data-testid="ngo-hub-leaders">
       {leaders.slice(0, limit).map((leader, index) => {
@@ -52,7 +54,8 @@ export function NgoLeaderRows({
               {/* Two lines on a phone, where one would keep a word of the name. */}
               {/* Two lines kept for it there, long name or short, so the loading state's rows are this height. */}
               <span className="line-clamp-2 text-sm font-medium text-foreground max-sm:min-h-10 sm:line-clamp-none sm:block sm:truncate">{leader.name}</span>
-              <MonoLabel className="mt-0.5 block truncate text-muted-foreground">
+              <RevenueBar fraction={leader.revenue / top} />
+              <MonoLabel className="mt-1 block truncate text-muted-foreground">
                 {meta}
                 {leader.status ? (
                   <>
@@ -89,5 +92,17 @@ export function NgoLeaderRows({
         )
       })}
     </ol>
+  )
+}
+
+/** The leader's revenue as a share of the largest's, as the procurement hub's rows draw theirs. */
+function RevenueBar({ fraction }: { readonly fraction: number }) {
+  return (
+    <span className="mt-1 block h-1 bg-muted" aria-hidden="true">
+      <span
+        className="block h-1 bg-primary/70 transition-colors group-hover:bg-primary"
+        style={{ width: `${Math.min(Math.max(fraction * 100, 0.8), 100).toFixed(1)}%` }}
+      />
+    </span>
   )
 }

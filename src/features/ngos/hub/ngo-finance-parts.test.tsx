@@ -44,6 +44,15 @@ describe('NgoLeaderRows', () => {
     expect(screen.queryAllByRole('link')).toHaveLength(0)
   })
 
+  it('draws each leader’s revenue as a share of the largest’s, the same lengths however many rows show', () => {
+    const widths = () => [...document.querySelectorAll<HTMLElement>('[data-testid="ngo-hub-leaders"] [style]')].map((bar) => bar.style.width)
+    const { unmount } = render(<NgoLeaderRows leaders={FINANCE.leaders} registry previousYear={2024} limit={10} />)
+    expect(widths()).toEqual(['100%', '75%', '50%'])
+    unmount()
+    render(<NgoLeaderRows leaders={FINANCE.leaders} registry previousYear={2024} limit={2} />)
+    expect(widths()).toEqual(['100%', '75%'])
+  })
+
   it('shows no more than its limit', () => {
     render(<NgoLeaderRows leaders={FINANCE.leaders} registry previousYear={2024} limit={2} />)
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
