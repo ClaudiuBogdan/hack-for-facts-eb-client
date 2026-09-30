@@ -23,7 +23,7 @@ type MainItemUrl =
   | "/legislation"
   | "/intreprinderi-publice"
   | "/alegeri"
-  | "/ong-uri"
+  | "/ngos"
   | "/ins";
 
 const mainItems: ReadonlyArray<{
@@ -58,7 +58,7 @@ const mainItems: ReadonlyArray<{
   },
   {
     title: <Trans>ONG-uri</Trans>,
-    url: "/ong-uri",
+    url: "/ngos",
     icon: HeartHandshake,
   },
   {

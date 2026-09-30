@@ -62,11 +62,11 @@ export function NgoHubHero({
                     <Trans>Sau mergi direct la</Trans>
                   </MonoLabel>
                   <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                    <Link to="/ong-uri/registru" search={registrySearch()} className={HUB_SHORTCUT_LINK_CLASS}>
+                    <Link to="/ngos/registry" search={registrySearch()} className={HUB_SHORTCUT_LINK_CLASS}>
                       <Trans>Tot registrul</Trans>
                     </Link>
                     <Link
-                      to="/ong-uri/registru"
+                      to="/ngos/registry"
                       search={registrySearch({ publicUtility: 'yes', status: REGISTRY_STATUS_VALUE.registered })}
                       className={HUB_SHORTCUT_LINK_CLASS}
                     >

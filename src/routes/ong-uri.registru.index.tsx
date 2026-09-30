@@ -1,31 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
-import {
-  fetchRegistryPage,
-  parseRegistrySearch,
-} from "@/features/ngos/registry/api";
-import {
-  NgoRegistryPage,
-  RegistryLoading,
-  RegistryUnavailable,
-} from "@/features/ngos/registry/registry-page";
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { parseRegistrySearch } from '@/features/ngos/registry/api'
 
-export const Route = createFileRoute("/ong-uri/registru/")({
-  validateSearch: parseRegistrySearch,
-  loaderDeps: ({ search }) => search,
-  loader: ({ deps, abortController }) =>
-    fetchRegistryPage(deps, abortController.signal),
-  component: RegistryRoute,
-  pendingComponent: RegistryLoading,
-  errorComponent: RegistryUnavailable,
-  head: () => ({
-    meta: [
-      { title: "Registrul ONG — Transparenta.eu" },
-      { name: "robots", content: "noindex,follow" },
-    ],
-  }),
-});
-function RegistryRoute() {
-  return (
-    <NgoRegistryPage page={Route.useLoaderData()} search={Route.useSearch()} />
-  );
-}
+/**
+ * The registry at its first release's Romanian path: one 301 to
+ * `/ngos/registry`, the search already in the registry's own shape so the
+ * target has nothing left to rewrite (and the site's own keys, `lang`, kept).
+ */
+export const Route = createFileRoute('/ong-uri/registru/')({
+  beforeLoad: ({ search }) => {
+    throw redirect({
+      to: '/ngos/registry',
+      search: { ...search, ...parseRegistrySearch(search) },
+      replace: true,
+      statusCode: 301,
+    })
+  },
+})

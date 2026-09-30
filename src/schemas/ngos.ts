@@ -259,7 +259,7 @@ export const linkReviewCaseSchema = z.object({
 export type LinkReviewCase = z.infer<typeof linkReviewCaseSchema>
 
 // ---------------------------------------------------------------------------
-// Profile aggregate (the /ong-uri/$cui UI boundary)
+// Profile aggregate (the /ngos/$cui UI boundary)
 // ---------------------------------------------------------------------------
 
 export const ngoProfileSchema = z.object({
@@ -278,7 +278,7 @@ export const ngoProfileSchema = z.object({
 export type NgoProfile = z.infer<typeof ngoProfileSchema>
 
 // ---------------------------------------------------------------------------
-// Service discovery (the /ong-uri/servicii UI boundary)
+// Service discovery (the /ngos/services UI boundary)
 // ---------------------------------------------------------------------------
 
 export const serviceDiscoveryRowSchema = socialServiceSchema.extend({
@@ -309,7 +309,7 @@ export const serviceDiscoveryResultSchema = z.object({
 export type ServiceDiscoveryResult = z.infer<typeof serviceDiscoveryResultSchema>
 
 // ---------------------------------------------------------------------------
-// Per-snapshot provenance page (/ong-uri/sursa/$snapshotId)
+// Per-snapshot provenance page (/ngos/sources/$snapshotId)
 // ---------------------------------------------------------------------------
 
 export const snapshotProvenanceSchema = z.object({
@@ -392,7 +392,7 @@ const NGO_PROFILE_TABS = [
 export const ngoProfileTabSchema = z.enum(NGO_PROFILE_TABS)
 export type NgoProfileTab = z.infer<typeof ngoProfileTabSchema>
 
-// --- /ong-uri (landing) ----------------------------------------------------
+// --- /ngos (landing) ----------------------------------------------------
 
 /** What the county map colours: registered NGOs per 10,000 residents, how many are registered, or the year's new ones per 100,000. */
 export const NGO_HUB_LAYERS = ['densitate', 'total', 'noi'] as const
@@ -421,7 +421,7 @@ export function parseNgoLandingSearch(
   return ngoLandingSearchSchema.parse(search) as NgoLandingSearch
 }
 
-// --- /ong-uri/$cui (profile) ----------------------------------------------
+// --- /ngos/$cui (profile) ----------------------------------------------
 
 export const ngoProfileSearchSchema = z
   .object({
@@ -453,7 +453,7 @@ export function parseNgoProfileSearch(
   return ngoProfileSearchSchema.parse(search) as NgoProfileSearch
 }
 
-// --- /ong-uri/servicii (discovery) -----------------------------------------
+// --- /ngos/services (discovery) -----------------------------------------
 
 export const ngoServicesSearchSchema = z
   .object({
@@ -539,7 +539,7 @@ export function parseNgoServicesSearch(
   return ngoServicesSearchSchema.parse(search) as NgoServicesSearch
 }
 
-// --- /ong-uri/sursa/$snapshotId (provenance) -------------------------------
+// --- /ngos/sources/$snapshotId (provenance) -------------------------------
 
 export const ngoSnapshotSearchSchema = z
   .object({

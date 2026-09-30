@@ -104,7 +104,7 @@ describe('NgoProfilePage', () => {
 
     const updateCall = navigateMock.mock.calls[0]?.[0]
     expect(updateCall).toMatchObject({
-      to: '/ong-uri/$cui',
+      to: '/ngos/$cui',
       params: { cui: '12345678' },
     })
     expect(updateCall.search({ tab: 'identitate' })).toMatchObject({

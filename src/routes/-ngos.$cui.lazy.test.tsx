@@ -19,14 +19,14 @@ vi.mock("@/features/ngos/profile/profile-page", () => ({
 }));
 describe("live NGO profile route", () => {
   it("renders the live loader result without funding or mock profile props", async () => {
-    const { Route } = await import("./ong-uri.$cui.lazy");
+    const { Route } = await import("./ngos.$cui.lazy");
     const Component = Route.options.component as ComponentType;
     render(<Component />);
     expect(screen.getByText("Live profile")).toBeInTheDocument();
     expect(pageProps).toHaveBeenCalledWith({ profile: profileFixture });
   });
   it("keeps missing current admission distinct from a read error", async () => {
-    const { Route } = await import("./ong-uri.$cui.lazy");
+    const { Route } = await import("./ngos.$cui.lazy");
     const Missing = Route.options.notFoundComponent as ComponentType;
     const Failed = Route.options.errorComponent as ComponentType;
     render(

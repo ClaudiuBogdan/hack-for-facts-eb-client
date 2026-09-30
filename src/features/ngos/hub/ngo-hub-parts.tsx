@@ -20,7 +20,7 @@ function RegistryRowLink({
   readonly children: ReactNode
 }) {
   return registry ? (
-    <Link to="/ong-uri/registru" search={search} className={cn(className, 'transition-colors hover:bg-muted/50')}>
+    <Link to="/ngos/registry" search={search} className={cn(className, 'transition-colors hover:bg-muted/50')}>
       {children}
     </Link>
   ) : (
@@ -141,7 +141,7 @@ export function NgoStartCards({ summary }: { readonly summary: NgoRegistrySummar
 function StartCard({ search, title, body }: { readonly search: ReturnType<typeof registrySearch>; readonly title: ReactNode; readonly body: ReactNode }) {
   return (
     <li>
-      <Link to="/ong-uri/registru" search={search} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
+      <Link to="/ngos/registry" search={search} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
         <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
         <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
       </Link>

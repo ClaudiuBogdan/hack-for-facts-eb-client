@@ -132,7 +132,7 @@ export function RegistryUnavailable() {
           <Trans>Retry</Trans>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/ong-uri/registru" search={parseRegistrySearch({})}>
+          <Link to="/ngos/registry" search={parseRegistrySearch({})}>
             <Trans>Restart search</Trans>
           </Link>
         </Button>
@@ -156,7 +156,7 @@ export function RegistryNotFound() {
         <Trans>Registry record not found</Trans>
       </h1>
       <Link
-        to="/ong-uri/registru"
+        to="/ngos/registry"
         search={parseRegistrySearch({})}
         className="text-primary underline"
       >
@@ -181,7 +181,7 @@ export function NgoRegistryPage({
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
       <header className="space-y-2">
-        <Link to="/ong-uri" className="text-sm text-muted-foreground underline">
+        <Link to="/ngos" className="text-sm text-muted-foreground underline">
           <Trans>NGO data</Trans>
         </Link>
         <h1 className="text-2xl font-semibold">
@@ -205,7 +205,7 @@ export function NgoRegistryPage({
           for (const key of ["category", "status", "publicUtility"])
             if (values[key] === "all") values[key] = "";
           const next = parseRegistrySearch(values);
-          void navigate({ to: "/ong-uri/registru", search: next });
+          void navigate({ to: "/ngos/registry", search: next });
         }}
       >
         <div className="space-y-2 sm:col-span-2">
@@ -335,7 +335,7 @@ export function NgoRegistryPage({
           {page.edges.map(({ node }) => (
             <li key={node.id} className="py-4">
               <Link
-                to="/ong-uri/registru/$recordId"
+                to="/ngos/registry/$recordId"
                 params={{ recordId: node.id }}
                 className="group flex items-start justify-between gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
@@ -372,7 +372,7 @@ export function NgoRegistryPage({
       >
         {search.after !== "" && (
           <Button asChild variant="outline">
-            <Link to="/ong-uri/registru" search={{ ...search, after: "" }}>
+            <Link to="/ngos/registry" search={{ ...search, after: "" }}>
               <Trans>First page</Trans>
             </Link>
           </Button>
@@ -380,7 +380,7 @@ export function NgoRegistryPage({
         {page.pageInfo.hasNextPage && page.pageInfo.endCursor !== null && (
           <Button asChild>
             <Link
-              to="/ong-uri/registru"
+              to="/ngos/registry"
               search={{ ...search, after: page.pageInfo.endCursor }}
             >
               <Trans>Next page</Trans>
@@ -414,7 +414,7 @@ export function NgoRegistryDetail({
     <main className="mx-auto max-w-5xl space-y-6 px-6 py-8">
       <header className="space-y-3">
         <Link
-          to="/ong-uri/registru"
+          to="/ngos/registry"
           search={parseRegistrySearch({})}
           className="text-sm text-primary underline"
         >
@@ -439,7 +439,7 @@ export function NgoRegistryDetail({
           </AlertTitle>
           <AlertDescription>
             <Link
-              to="/ong-uri/registru"
+              to="/ngos/registry"
               search={parseRegistrySearch({
                 registryNumber: record.registryNumber,
               })}
@@ -488,7 +488,7 @@ export function NgoRegistryDetail({
           <p>{record.linkedOrganizationCui}</p>
           <Button asChild variant="outline">
             <Link
-              to="/ong-uri/$cui"
+              to="/ngos/$cui"
               params={{ cui: record.linkedOrganizationCui }}
             >
               <Trans>View NGO profile for this CUI</Trans>

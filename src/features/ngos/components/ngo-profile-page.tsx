@@ -121,7 +121,7 @@ export function NgoProfileNotFound() {
         </CardHeader>
         <CardContent>
           <Button asChild variant="outline">
-            <Link to="/ong-uri" search={{}}>
+            <Link to="/ngos" search={{}}>
               <Trans>Inapoi la ONG-uri</Trans>
             </Link>
           </Button>
@@ -179,7 +179,7 @@ export function NgoProfileErrorPanel({
             </Button>
           ) : null}
           <Button asChild variant="ghost">
-            <Link to="/ong-uri" search={{}}>
+            <Link to="/ngos" search={{}}>
               <Trans>Inapoi la ONG-uri</Trans>
             </Link>
           </Button>
@@ -272,7 +272,7 @@ function ProfileHeader({ profile }: { readonly profile: NgoProfile }) {
           ) : null}
           <Button asChild variant="outline">
             <Link
-              to="/ong-uri/$cui"
+              to="/ngos/$cui"
               params={{ cui: profile.header.cui }}
               search={{ tab: 'dovezi', evidence: true }}
             >
@@ -1056,7 +1056,7 @@ export function NgoProfilePage({
   tab,
   evidenceOpen = false,
 }: NgoProfilePageProps) {
-  const navigate = useNavigate({ from: '/ong-uri/$cui' })
+  const navigate = useNavigate({ from: '/ngos/$cui' })
   const activeTab = tab ?? 'identitate'
   const [selectedSnapshotId, setSelectedSnapshotId] = useState<string | null>(
     null,
@@ -1085,7 +1085,7 @@ export function NgoProfilePage({
 
   const setTab = (nextTab: NgoProfileTab) => {
     void navigate({
-      to: '/ong-uri/$cui',
+      to: '/ngos/$cui',
       params: { cui },
       search: (previous) => ({
         ...previous,

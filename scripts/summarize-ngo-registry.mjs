@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Builds `src/features/ngos/hub/registry-summary.ts` — the figures behind
- * `/ong-uri` — from a full read of the NGO registry and INS's resident
+ * `/ngos` — from a full read of the NGO registry and INS's resident
  * population by county.
  *
  *   node scripts/capture-ngo-registry.mjs /tmp/rnong.jsonl

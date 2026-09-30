@@ -52,7 +52,7 @@ backlog sources (e.g. Legea 350) are shown as explicit "not yet available", neve
 
 ## Route and URL state
 
-- **No own route.** Renders as the `#fonduri` section within `/ong-uri/$cui` plus the
+- **No own route.** Renders as the `#fonduri` section within `/ngos/$cui` plus the
   profile's `RelatedLinksRail`.
 - Outbound links carry `from=ong&cui=<cui>` (and `county`/`siruta` where relevant) so
   destination domains can offer backtracking (foundation cross-domain link decision).

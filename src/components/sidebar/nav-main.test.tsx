@@ -177,7 +177,7 @@ describe('NavMain', () => {
     it('renders ONG-uri link', async () => {
       await renderNavMain()
 
-      expect(screen.getByTestId('link-/ong-uri')).toBeInTheDocument()
+      expect(screen.getByTestId('link-/ngos')).toBeInTheDocument()
       expect(screen.getByText('ONG-uri')).toBeInTheDocument()
     })
 
@@ -300,11 +300,11 @@ describe('NavMain', () => {
       expect(screen.getByTestId('link-/intreprinderi-publice')).toHaveClass('bg-muted')
     })
 
-    it('marks ONG-uri as active when on /ong-uri subpath', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/ong-uri/12345678' }])
+    it('marks ONG-uri as active when on /ngos subpath', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/ngos/12345678' }])
       await renderNavMain()
 
-      const ngosLink = screen.getByTestId('link-/ong-uri')
+      const ngosLink = screen.getByTestId('link-/ngos')
       expect(ngosLink).toHaveClass('bg-muted')
     })
 

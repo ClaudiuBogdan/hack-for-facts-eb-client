@@ -90,7 +90,7 @@ describe('landing universal search', () => {
     ).toContainEqual(['landingUniversalSearch', 'company', 'firma Dante'])
   })
   it('preserves server ordering and omits missing or external destinations', async () => {
-    const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ong-uri/123' }
+    const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ngos/123' }
     searchEntities.mockResolvedValue(response([
       ngo, COMPANY, { ...COMPANY, href: '' }, { ...COMPANY, href: 'https://example.com', isExternal: true },
     ]))
@@ -185,7 +185,7 @@ describe('landing universal search', () => {
 describe('landing selection', () => {
   it.each([
     ['company', '/companies/14399840'], ['organization', '/entities/4270740'],
-    ['ngo', '/ong-uri/123'], ['public_enterprise', '/intreprinderi-publice/1590082'],
+    ['ngo', '/ngos/123'], ['public_enterprise', '/intreprinderi-publice/1590082'],
     ['legal_act', '/legislation/acts/66150'],
   ])('uses the mapped %s destination', (docType, href) => {
     const { result } = renderHook(() => useEntitySelection())

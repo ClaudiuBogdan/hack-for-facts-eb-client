@@ -5,7 +5,7 @@ import { NGO_REGISTRY_SUMMARY as SUMMARY } from './registry-summary'
 /**
  * The summary is generated (`scripts/summarize-ngo-registry.mjs`); these
  * hold every refresh to the arithmetic the page relies on, so a broken
- * capture fails here rather than as a wrong figure on `/ong-uri`.
+ * capture fails here rather than as a wrong figure on `/ngos`.
  */
 describe('NGO_REGISTRY_SUMMARY', () => {
   const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0)

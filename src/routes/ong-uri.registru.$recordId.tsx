@@ -1,32 +1,14 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { fetchRegistryRecord } from "@/features/ngos/registry/api";
-import {
-  NgoRegistryDetail,
-  RegistryLoading,
-  RegistryNotFound,
-  RegistryUnavailable,
-} from "@/features/ngos/registry/registry-page";
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/ong-uri/registru/$recordId")({
-  loader: async ({ params, abortController }) => {
-    const record = await fetchRegistryRecord(
-      params.recordId,
-      abortController.signal,
-    );
-    if (record === null) throw notFound();
-    return record;
+/** A registry entry at its first release's Romanian path: a 301 to `/ngos/registry/$recordId`, the search carried over. */
+export const Route = createFileRoute('/ong-uri/registru/$recordId')({
+  beforeLoad: ({ params, search }) => {
+    throw redirect({
+      to: '/ngos/registry/$recordId',
+      params,
+      search,
+      replace: true,
+      statusCode: 301,
+    })
   },
-  component: RegistryDetailRoute,
-  pendingComponent: RegistryLoading,
-  errorComponent: RegistryUnavailable,
-  notFoundComponent: RegistryNotFound,
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.name ?? "Registrul ONG"} — Transparenta.eu` },
-      { name: "robots", content: "noindex,follow" },
-    ],
-  }),
-});
-function RegistryDetailRoute() {
-  return <NgoRegistryDetail record={Route.useLoaderData()} />;
-}
+})

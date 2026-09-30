@@ -38,7 +38,7 @@ describe('entityHref', () => {
 
     it('routes ngo to the dedicated NGO profile', () => {
       const result = entityHref(input({ docType: 'ngo', cuis: ['RO99999'] }))
-      expect(result).toEqual({ href: '/ong-uri/99999', isExternal: false })
+      expect(result).toEqual({ href: '/ngos/99999', isExternal: false })
     })
 
     it('uses the first CUI when several are present', () => {

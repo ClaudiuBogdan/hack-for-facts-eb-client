@@ -2,7 +2,7 @@ import { render, screen } from '@/test/test-utils'
 import type { ComponentType, ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getMockSnapshotProvenance } from '@/features/ngos/mocks/ngo-mocks'
-import type { NgoSnapshotRouteLoaderData } from './ong-uri.sursa.$snapshotId'
+import type { NgoSnapshotRouteLoaderData } from './ngos.sources.$snapshotId'
 
 const ngoSnapshotPagePropsMock = vi.fn()
 
@@ -47,7 +47,7 @@ describe('NgoSnapshotRoutePage', () => {
   })
 
   it('renders NgoSnapshotPage with provenance loader data and from label', async () => {
-    const { Route } = await import('./ong-uri.sursa.$snapshotId.lazy')
+    const { Route } = await import('./ngos.sources.$snapshotId.lazy')
     const RouteComponent = Route.options.component as ComponentType
 
     render(<RouteComponent />)
@@ -64,7 +64,7 @@ describe('NgoSnapshotRoutePage', () => {
   it('renders not-found UX when loader data is missing', async () => {
     mockedLoaderData = undefined
 
-    const { Route } = await import('./ong-uri.sursa.$snapshotId.lazy')
+    const { Route } = await import('./ngos.sources.$snapshotId.lazy')
     const RouteComponent = Route.options.component as ComponentType
 
     render(<RouteComponent />)
@@ -74,7 +74,7 @@ describe('NgoSnapshotRoutePage', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Înapoi la ONG-uri' }),
-    ).toHaveAttribute('href', '/ong-uri')
+    ).toHaveAttribute('href', '/ngos')
     expect(ngoSnapshotPagePropsMock).not.toHaveBeenCalled()
   })
 })

@@ -1,4 +1,4 @@
-# Feature: Social-Service Provider Discovery (`/ong-uri/servicii`)
+# Feature: Social-Service Provider Discovery (`/ngos/services`)
 
 > MVP-2 — the "find help nearby" surface. Source UX: `docs/ux-research/ngos.md`
 > §10.3, §13 MVP-2, Journeys B & E. Domain design: `docs/design/ngos/design.md`.
@@ -31,7 +31,7 @@ sync; freshness is prominent because the data is stale (2023–2024).
   `county`, `locality`, `siruta_code`, `address`, `license_number`, `valid_from`,
   `valid_until`, `capacity`, `status`.
 - **Fact:** One provider → many services via `provider_cui`.
-- **Decision:** Route `/ong-uri/servicii`; primary unit is the **service** (most
+- **Decision:** Route `/ngos/services`; primary unit is the **service** (most
   actionable for "find help"), grouped by provider; a provider toggle is available.
 - **Decision:** `MapListSync` — desktop list + county map; mobile toggles panes.
 - **Decision:** Derived `status: active | expiring | expired` from `valid_until`;
@@ -48,7 +48,7 @@ sync; freshness is prominent because the data is stale (2023–2024).
 
 ## Route and URL state
 
-- **Route:** `/ong-uri/servicii` (file route `ong-uri.servicii.tsx`).
+- **Route:** `/ngos/services` (file route `ngos.services.tsx`).
 - **Search params (Zod `validateSearch`, all optional, default view = no params):**
   - `q?` — free text (provider name, service name, license number).
   - `county?` — county code/name (single).
@@ -120,7 +120,7 @@ Wider layout `max-w-7xl mx-auto px-6`, 8pt grid.
 4. **`MapListSync` two-pane (desktop):**
    - **Left — list:** `unit` toggle (Servicii / Furnizori), sort `Select`, results
      count + freshness. Service rows (record cards / `divide-y` list): service name,
-     provider name (link to `/ong-uri/$cui`), service type (plain language), county ·
+     provider name (link to `/ngos/$cui`), service type (plain language), county ·
      locality, capacity, license number, `valid_from→valid_until` with derived-status
      `NgoStatusBadge` (active/expiring/expired). Pagination at the bottom.
    - **Right — map:** `InteractiveMap` `mapViewType="County"` choropleth shaded by
@@ -152,7 +152,7 @@ Wider layout `max-w-7xl mx-auto px-6`, 8pt grid.
   again clears.
 - Hover list row → highlight its county on the map (`highlightedFeatureId`).
 - `unit` toggle switches list grouping (services flat vs grouped under providers).
-- Provider name link → `/ong-uri/$cui?from=servicii`.
+- Provider name link → `/ngos/$cui?from=servicii`.
 - "Arată serviciile expirate" → sets `?valid=all`.
 - Copy current view (`ShareFilteredView`) → copies the URL with filters.
 - Keyboard: all filters reachable; map has a tabular fallback (the list IS the
@@ -190,14 +190,14 @@ Wider layout `max-w-7xl mx-auto px-6`, 8pt grid.
 
 ## Acceptance checklist
 
-- [ ] `/ong-uri/servicii` route with Zod `validateSearch`; default view (no params)
+- [ ] `/ngos/services` route with Zod `validateSearch`; default view (no params)
       renders nationwide results + choropleth.
 - [ ] County, locality, service type, provider type, validity, capacity, and free-text
       filters all reflected in URL and applied to list + map.
 - [ ] List ↔ map stay in sync (county click filters; row hover highlights).
 - [ ] Default validity hides expired with an explicit reveal affordance.
 - [ ] `StaleSnapshotNotice` + `CoverageRibbon` show both snapshot dates.
-- [ ] Provider rows link to `/ong-uri/$cui`; "find help in my county" works from the
+- [ ] Provider rows link to `/ngos/$cui`; "find help in my county" works from the
       county filter alone.
 - [ ] All five mock states render; mock surfaces marked with `DataStatusBadge`.
 - [ ] Mobile Listă/Hartă toggle + filter `Sheet` work.

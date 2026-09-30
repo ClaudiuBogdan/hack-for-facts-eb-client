@@ -10,7 +10,7 @@ import { NgoHubHero, NgoLeaderRowsPending, NgoLeadersFrame, NgoSearchShell, Pend
 import { NGO_HUB_LEADERS_SHOWN, WRAPS_WHERE_NARROW, ngoHubSections } from './ngo-hub-sections'
 
 /**
- * `/ong-uri` while its code loads on a client navigation: the page's own
+ * `/ngos` while its code loads on a client navigation: the page's own
  * head — title, lede, search box, shortcuts, the pinned bar and the first
  * band's title — drawn at once from the same components, and a pulse the
  * size of each figure where the figures go. The summaries stay in the page's
@@ -45,8 +45,8 @@ export function NgoHubPending() {
         }
         source={
           <p className="text-sm text-muted-foreground" aria-hidden="true">
-            {/* The line's two lines (three on a phone): each source, its site and its date. */}
-            <Trans>Surse:</Trans> <PendingBar className="w-3/4" /> <PendingBar className="w-1/2" /> <PendingBar className="w-2/3 sm:hidden" />
+            {/* One line; two on a phone. */}
+            <Trans>Surse:</Trans> <PendingBar className="w-2/3" /> <PendingBar className="w-1/2 sm:hidden" />
           </p>
         }
       />

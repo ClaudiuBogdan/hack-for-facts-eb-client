@@ -55,16 +55,16 @@ describe('buildNgoHubHead', () => {
     expect(meta('og:locale')).toEqual({ property: 'og:locale', content: 'ro_RO' })
   })
 
-  it('is canonical at /ong-uri in Romanian and at ?lang=en in English, each naming the other', () => {
+  it('is canonical at /ngos in Romanian and at ?lang=en in English, each naming the other', () => {
     expect(head.links).toEqual([
-      { rel: 'canonical', href: 'https://transparenta.eu/ong-uri' },
-      { rel: 'alternate', hrefLang: 'ro', href: 'https://transparenta.eu/ong-uri' },
-      { rel: 'alternate', hrefLang: 'en', href: 'https://transparenta.eu/ong-uri?lang=en' },
-      { rel: 'alternate', hrefLang: 'x-default', href: 'https://transparenta.eu/ong-uri' },
+      { rel: 'canonical', href: 'https://transparenta.eu/ngos' },
+      { rel: 'alternate', hrefLang: 'ro', href: 'https://transparenta.eu/ngos' },
+      { rel: 'alternate', hrefLang: 'en', href: 'https://transparenta.eu/ngos?lang=en' },
+      { rel: 'alternate', hrefLang: 'x-default', href: 'https://transparenta.eu/ngos' },
     ])
     const english = buildNgoHubHead(FIGURES, 'en')
     expect(translatorFor).toHaveBeenLastCalledWith('en')
-    expect(english.links[0]).toEqual({ rel: 'canonical', href: 'https://transparenta.eu/ong-uri?lang=en' })
+    expect(english.links[0]).toEqual({ rel: 'canonical', href: 'https://transparenta.eu/ngos?lang=en' })
     expect(english.meta).toContainEqual({ property: 'og:locale', content: 'en_US' })
     expect(meta('robots')).toEqual({ name: 'robots', content: 'index,follow' })
     expect(meta('twitter:card')).toEqual({ name: 'twitter:card', content: 'summary_large_image' })
@@ -74,7 +74,7 @@ describe('buildNgoHubHead', () => {
     const dataset = JSON.parse(head.scripts[0]?.children ?? '{}') as Record<string, unknown>
     expect(dataset).toMatchObject({
       '@type': 'Dataset',
-      url: 'https://transparenta.eu/ong-uri',
+      url: 'https://transparenta.eu/ngos',
       isBasedOn: ['https://rnong.just.ro/registru-ong', NGO_FINANCE_SUMMARY.source.dataset, 'https://insse.ro'],
       dateModified: NGO_REGISTRY_SUMMARY.capturedAt,
       temporalCoverage: `2001/${NGO_FINANCE_SUMMARY.year}`,

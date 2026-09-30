@@ -4,7 +4,7 @@ import {
   NgoLiveProfileNotFound,
   NgoLiveProfileUnavailable,
 } from "@/features/ngos/profile/profile-page";
-export const Route = createLazyFileRoute("/ong-uri/$cui")({
+export const Route = createLazyFileRoute("/ngos/$cui")({
   component: NgoProfileRoutePage,
   notFoundComponent: NgoLiveProfileNotFound,
   errorComponent: NgoLiveProfileUnavailable,

@@ -58,10 +58,10 @@ agents.
 - Decision: Keep `/companies/$cui` as the private-company profile route.
 - Decision: Add domain routes only where a domain needs a distinct task surface:
   `/achizitii`, `/legislatie`, `/justitie`, `/intreprinderi-publice`, `/alegeri`,
-  `/investitii-publice`, `/ong-uri`, and `/ins`.
+  `/investitii-publice`, `/ngos` (was `/ong-uri`, 2026-09-30), and `/ins`.
 - Decision: Domain entity profiles use explicit domain routes when the profile
   is meaningfully different from the generic CUI page:
-  `/intreprinderi-publice/$cui`, `/ong-uri/$cui`, and
+  `/intreprinderi-publice/$cui`, `/ngos/$cui`, and
   `/investitii-publice/obiective/$id`.
 - Decision: Cross-domain links should preserve the user's current context by
   using query parameters such as `from`, `county`, `year`, `source`, and

@@ -846,7 +846,7 @@ here.
 
 | Domain              | Route                  | Spec                                   | Anchor / signature concern                          |
 | ------------------- | ---------------------- | -------------------------------------- | --------------------------------------------------- |
-| NGOs                | `/ong-uri`             | `docs/design/ngos/`                    | Identity tiers; name-only refs zone; CUI spine      |
+| NGOs                | `/ngos`                | `docs/design/ngos/`                    | Identity tiers; name-only refs zone; CUI spine      |
 | Public companies    | `/intreprinderi-publice`| `docs/design/public-companies/`       | AMEPIP live lane; gated tabs; KPI-vs-currency guard |
 | Legal               | `/legislation`         | `docs/design/legal/`                   | Monitorul Oficial evidence; citation resolution honesty |
 | Elections           | `/alegeri`             | `docs/design/elections/`               | Results ≠ roll-call votes; candidate names as source only |
@@ -1205,6 +1205,8 @@ Append-only. Newest first. Each entry: date · decision · why.
   `/achizitii`, `/legislatie`, `/alegeri`, `/justitie`, `/investitii-publice`,
   `/ins`, `/intreprinderi-publice`). English technical routes already
   shipped stay as-is. *Why:* Romanian-first audience; stable, understandable URLs.
+  *Since reversed for procurement (`/procurement`) and NGOs (`/ngos`, 2026-09-30):
+  English paths beside `/companies`, Romanian UI copy, the old paths 301s.*
 - **2026-06-26 — PNRR keeps its brutalist token set**, quarantined to PNRR
   surfaces. *Why:* it predates this system and tested well; isolating it avoids a
   disruptive reskin while keeping the rest of the app on the neutral system.
@@ -1221,7 +1223,7 @@ obligations, tracked here until closed:
 - **Privacy/telemetry:** keep justice case IDs out of analytics path segments;
   ensure `PrivacyBoundaryNotice` on every NGO name-only surface; mark
   person-linked elections data `privacySensitive`.
-- **Routing:** global search must route `ngo` → `/ong-uri/$cui`,
+- **Routing:** global search must route `ngo` → `/ngos/$cui`,
   `public_enterprise` → `/intreprinderi-publice/$cui`, legal hits →
   `/legislatie/acte/$id`; unknown IDs return 404, not throw. Fix sidebar
   active-state prefix matching.

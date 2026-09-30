@@ -4,7 +4,7 @@ import { NGO_FINANCE_SUMMARY as FINANCE } from './finance-summary'
 /**
  * The summary is generated (`scripts/summarize-ngo-finances.mjs`); these
  * hold every refresh to the arithmetic the page relies on, so a broken read
- * fails here rather than as a wrong figure on `/ong-uri`.
+ * fails here rather than as a wrong figure on `/ngos`.
  */
 describe('NGO_FINANCE_SUMMARY', () => {
   const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0)

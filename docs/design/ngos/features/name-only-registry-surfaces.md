@@ -16,8 +16,8 @@ unconfirmed-identity language and never collapse records by name.
 ## Summary
 
 Two public-but-clearly-unconfirmed listing pages: the **MJ National NGO Registry**
-(`/ong-uri/registru`, 126,011 raw name-only rows) and the **SGG public-utility
-recognitions** (`/ong-uri/utilitate-publica`, 229 raw name-only rows). Both present
+(`/ngos/registry`, 126,011 raw name-only rows) and the **SGG public-utility
+recognitions** (`/ngos/public-utility`, 229 raw name-only rows). Both present
 records as *registry references whose identity is not confirmed against a CUI*, with
 disambiguating fields, candidate-match links where review cases exist, and full
 provenance — honoring the deliberate no-auto-merge design.
@@ -38,7 +38,7 @@ provenance — honoring the deliberate no-auto-merge design.
 - **Fact:** MJ = 126,011 raw rows (large; must paginate/virtualize); SGG = 229 (small).
 - **Fact:** `link_review_cases` may link a name-only record to a candidate CUI org with
   a `confidence` and `compared_fields`.
-- **Decision:** Routes `/ong-uri/registru` (MJ) and `/ong-uri/utilitate-publica` (SGG).
+- **Decision:** Routes `/ngos/registry` (MJ) and `/ngos/public-utility` (SGG).
 - **Decision:** Every record uses `UnconfirmedRecordCard` + `IdentityConfidenceBadge`
   (unconfirmed/candidate) inside the `UnconfirmedReferencesZone` framing; a page-level
   `PrivacyBoundaryNotice` explains why these are not confirmed profiles.
@@ -56,8 +56,8 @@ provenance — honoring the deliberate no-auto-merge design.
 
 ## Route and URL state
 
-### `/ong-uri/registru` (MJ)
-- File route `ong-uri.registru.tsx`. Search params (Zod, all optional):
+### `/ngos/registry` (MJ)
+- File route `ngos.registry.index.tsx`. Search params (Zod, all optional):
   - `q?` — organization name / registry number.
   - `county?`, `locality?` — single values.
   - `court?` — court name.
@@ -67,8 +67,8 @@ provenance — honoring the deliberate no-auto-merge design.
   - `sort?: 'nume' | 'judet' | 'numar_registru'` — default `nume`.
   - `page?`, `pageSize?` — default pageSize 50 (large dataset; virtualized list).
 
-### `/ong-uri/utilitate-publica` (SGG)
-- File route `ong-uri.utilitate-publica.tsx`. Search params:
+### `/ngos/public-utility` (SGG)
+- File route `ngos.public-utility.tsx`. Search params:
   - `q?` — organization name / HG number.
   - `authority?` — recognizing authority (multi).
   - `status?` — recognition status (multi).
@@ -141,8 +141,8 @@ Constrained `max-w-5xl` (SGG) / wider list (MJ). 8pt grid.
      HG nr. <hg_number>" (suppress empty date/order/year), status.
    - `link_status` shown in plain language.
    - Candidate match (if any): "Posibilă potrivire: <ONG name> (încredere X%) →"
-     opening the review-case detail and linking to `/ong-uri/$cui` labeled candidate.
-   - Source chip → `/ong-uri/sursa/$snapshotId`.
+     opening the review-case detail and linking to `/ngos/$cui` labeled candidate.
+   - Source chip → `/ngos/sources/$snapshotId`.
 6. **Pagination** (MJ virtualized for 126k rows).
 
 ## Component reuse and proposed new components
@@ -163,7 +163,7 @@ Constrained `max-w-5xl` (SGG) / wider list (MJ). 8pt grid.
 
 - Filter change → URL params → refetch (debounced `q`); MJ list virtualizes.
 - Candidate match → opens review-case detail (drawer: `compared_fields`, `confidence`,
-  `decision_notes`) and offers a labeled link to the candidate `/ong-uri/$cui`.
+  `decision_notes`) and offers a labeled link to the candidate `/ngos/$cui`.
 - Source chip → snapshot provenance page.
 - Copy current view (`ShareFilteredView`).
 - Keyboard: filters reachable; cards/links focusable; drawer focus-trapped.
@@ -198,16 +198,16 @@ Constrained `max-w-5xl` (SGG) / wider list (MJ). 8pt grid.
 
 ## Acceptance checklist
 
-- [ ] `/ong-uri/registru` and `/ong-uri/utilitate-publica` routes exist with Zod
+- [ ] `/ngos/registry` and `/ngos/public-utility` routes exist with Zod
       `validateSearch`; default views render without params.
 - [ ] Prominent page-level unconfirmed-identity notice on both pages.
 - [ ] Records show disambiguating fields and are never collapsed by name.
 - [ ] Dead/empty fields suppressed (MJ `document_*`; SGG `hg_date`/`order_number`/
       `recognition_year`).
 - [ ] Candidate matches appear only when a `link_review_case` with confidence exists,
-      labeled as candidates, linking to `/ong-uri/$cui`.
+      labeled as candidates, linking to `/ngos/$cui`.
 - [ ] MJ list virtualizes/paginates for 126k rows; SGG paginates 229 rows.
-- [ ] Every record cites its snapshot via chip → `/ong-uri/sursa/$snapshotId`.
+- [ ] Every record cites its snapshot via chip → `/ngos/sources/$snapshotId`.
 - [ ] All five mock states (per page) render; mock surfaces marked with `DataStatusBadge`.
 - [ ] `yarn typecheck` clean; Lingui extracted/compiled.
 

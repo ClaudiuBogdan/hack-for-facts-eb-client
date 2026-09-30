@@ -46,7 +46,7 @@ enrichment worker seeds data — with no UI rebuild (same typed boundary).
 
 ## Route and URL state
 
-- **No own route.** Renders as the `#financiar` section within `/ong-uri/$cui`.
+- **No own route.** Renders as the `#financiar` section within `/ngos/$cui`.
 - Honors the profile's currency/inflation-adjustment settings (the platform already
   threads `currency` / `inflation_adjusted` params on entity routes). No new params.
 
@@ -97,7 +97,7 @@ Within the profile `#financiar` section (unframed band, source-cited header):
   (neutral up/down, text + arrow, not color-only).
 - Mini-trend chart (Recharts/Visx) for income + subsidies over years, with an adjacent
   **tabular fallback** (required a11y) listing the same year/value pairs.
-- Per-year source chip → ANAF snapshot provenance (`/ong-uri/sursa/$snapshotId`).
+- Per-year source chip → ANAF snapshot provenance (`/ngos/sources/$snapshotId`).
 - Subsidies highlighted as the donor/journalist-relevant figure; never framed as
   wrongdoing.
 

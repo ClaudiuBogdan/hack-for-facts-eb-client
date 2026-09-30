@@ -63,11 +63,11 @@ describe('NgoHubPage', () => {
     expect(screen.getByTestId('registry-search')).toBeInTheDocument()
     const leaders = screen.getByRole('region', { name: 'Cele mai mari ONG-uri din registru, 2025' })
     expect(within(leaders).getAllByRole('listitem')).toHaveLength(3)
-    expect(within(leaders).getByRole('link', { name: /ASOCIATIA A/ })).toHaveAttribute('href', '/ong-uri/100')
+    expect(within(leaders).getByRole('link', { name: /ASOCIATIA A/ })).toHaveAttribute('href', '/ngos/100')
     // Matched but undeclared: no profile page to open yet.
     expect(within(leaders).queryByRole('link', { name: /FUNDATIA B/ })).not.toBeInTheDocument()
     const utility = href(within(screen.getByRole('navigation', { name: 'Scurtături' })).getByRole('link', { name: 'De utilitate publică' }))
-    expect(utility.pathname).toBe('/ong-uri/registru')
+    expect(utility.pathname).toBe('/ngos/registry')
     expect(utility.searchParams.get('publicUtility')).toBe('yes')
   })
 
@@ -206,9 +206,10 @@ describe('NgoHubPage', () => {
   it('names both sources in the head, short, and in full at the foot', () => {
     renderPage()
     const head = screen.getByText((_, element) => element?.tagName === 'P' && (element.textContent ?? '').startsWith('Surse:'))
-    expect(within(head).getByRole('link', { name: /Registrul ONG, just\.ro/ })).toHaveAttribute('href', 'https://rnong.just.ro/registru-ong')
-    expect(within(head).getByRole('link', { name: /situațiile financiare, data\.gov\.ro/ })).toHaveAttribute('href', FINANCE.source.dataset)
-    expect(head).toHaveTextContent('la 20 septembrie 2026')
+    expect(within(head).getByRole('link', { name: /^Registrul ONG/ })).toHaveAttribute('href', 'https://rnong.just.ro/registru-ong')
+    expect(within(head).getByRole('link', { name: /^Situațiile financiare/ })).toHaveAttribute('href', FINANCE.source.dataset)
+    // One date: the registry's last update.
+    expect(head).toHaveTextContent(/^Surse: Registrul ONG ↗.*, 20 septembrie 2026 · Situațiile financiare ↗[^,]*$/)
     expect(screen.getByRole('link', { name: 'Registrul național ONG' })).toHaveAttribute('href', 'https://rnong.just.ro/registru-ong')
     expect(screen.getByRole('link', { name: 'Situațiile financiare ale organizațiilor non-profit' })).toHaveAttribute('href', FINANCE.source.dataset)
     expect(screen.getByRole('contentinfo')).toHaveTextContent(
@@ -220,7 +221,7 @@ describe('NgoHubPage', () => {
     renderPage({ registry: false })
     expect(screen.queryByTestId('registry-search')).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /De aici poți începe/ })).not.toBeInTheDocument()
-    const outward = screen.queryAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/ong-uri/'))
+    const outward = screen.queryAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/ngos/'))
     expect(outward).toHaveLength(0)
     expect(within(figures()).getByRole('link', { name: /ONG-uri înregistrate/ })).toHaveAttribute('href', '#registru')
     // The counties still read, as plain rows.

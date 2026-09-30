@@ -1,4 +1,4 @@
-# Feature: NGO Landing & Source-Coverage Overview (`/ong-uri`)
+# Feature: NGO Landing & Source-Coverage Overview (`/ngos`)
 
 > MVP-5 — onboards every user type and bakes the "stale data" caveat into the product
 > honestly. Source UX: `docs/ux-research/ngos.md` §10.1, §13 MVP-5. Domain design:
@@ -34,7 +34,7 @@ listings. It sets correct expectations before users reach a profile.
   | SGG (utilitate publică) | Recunoașteri utilitate publică | — | Doar referință (neconfirmat) | 229 (brut) |
 - **Fact:** Full prod load 2026-06-20 (run 4931, 19,929 rows), gate green 15/15.
 - **Fact:** MJ/SGG are name-only, not promoted; financials are 0 rows.
-- **Decision:** Route `/ong-uri`; this is the landing + search hub and the sidebar
+- **Decision:** Route `/ngos`; this is the landing + search hub and the sidebar
   entry point ("ONG-uri").
 - **Decision:** The coverage matrix is honest about gaps — empty financials and stale
   snapshots are shown as states, not hidden.
@@ -45,10 +45,10 @@ listings. It sets correct expectations before users reach a profile.
 
 ## Route and URL state
 
-- **Route:** `/ong-uri` (file route `ong-uri.index.tsx`).
+- **Route:** `/ngos` (file route `ngos/index.tsx`).
 - **Search params:** `q?` — pre-fills the search box / deep-link; `lang?`. Default view
   = no params. Submitting search navigates to the entity-search results (existing
-  search route) or, for a resolved CUI, directly to `/ong-uri/$cui`.
+  search route) or, for a resolved CUI, directly to `/ngos/$cui`.
 - **Decision:** Entry-card links carry `from=ong-landing` for backtracking.
 
 ## Data contract and mock states
@@ -62,7 +62,7 @@ type SourceCoverageRow = {
   status: 'loaded' | 'loaded_stale' | 'pending' | 'name_only' | 'blocked'
   rowCount: number | null
   isNameOnly: boolean
-  sourceSnapshotId: string | null     // links to /ong-uri/sursa/$snapshotId
+  sourceSnapshotId: string | null     // links to /ngos/sources/$snapshotId
 }
 
 type DomainCoverage = {
@@ -95,15 +95,15 @@ DESIGN_PRINCIPLES).
    columns Sursă · Conținut · Ultimul instantaneu (`FreshnessBadge`) · Stare
    (`DataStatusBadge`: loaded/stale/pending/name_only) · Rânduri. Stale rows get the
    amber freshness style; name-only rows link to the name-only surfaces; rows with a
-   snapshot id link to `/ong-uri/sursa/$snapshotId`.
+   snapshot id link to `/ngos/sources/$snapshotId`.
 5. **Known caveats panel:** short `Alert`/list — "Datele financiare (ANAF) sunt în
    curs de actualizare", "Instantaneele pentru servicii sociale sunt din 2023–2024",
    "Înregistrările MJ/SGG sunt referințe neconfirmate".
 6. **Entry cards (2–4):** record cards (not nested) linking to:
-   - "Caută servicii sociale" → `/ong-uri/servicii`.
-   - "Registrul ONG (MJ) — referințe" → `/ong-uri/registru` (Next-2; show "în curând"
+   - "Caută servicii sociale" → `/ngos/services`.
+   - "Registrul ONG (MJ) — referințe" → `/ngos/registry` (Next-2; show "în curând"
      if not yet built).
-   - "Utilitate publică (SGG) — referințe" → `/ong-uri/utilitate-publica` (Next-2).
+   - "Utilitate publică (SGG) — referințe" → `/ngos/public-utility` (Next-2).
    Each card: title, one-line description, row count, status badge.
 
 ## Component reuse and proposed new components
@@ -119,9 +119,9 @@ DESIGN_PRINCIPLES).
 
 ## Interactions
 
-- Search submit → resolve to `/ong-uri/$cui` if a single CUI matches, else entity-search
+- Search submit → resolve to `/ngos/$cui` if a single CUI matches, else entity-search
   results scoped to organizations/NGOs.
-- Matrix row with snapshot → `/ong-uri/sursa/$snapshotId`.
+- Matrix row with snapshot → `/ngos/sources/$snapshotId`.
 - Name-only matrix rows / entry cards → name-only surfaces (or disabled "în curând"
   state pre-Next-2).
 - Entry card click → respective discovery route with `from=ong-landing`.
@@ -156,14 +156,14 @@ DESIGN_PRINCIPLES).
 
 ## Acceptance checklist
 
-- [ ] `/ong-uri` route renders title, intent, search, `CoverageRibbon`, source-coverage
+- [ ] `/ngos` route renders title, intent, search, `CoverageRibbon`, source-coverage
       matrix, caveats panel, and entry cards; default view needs no params.
 - [ ] Matrix shows all sources with content, last snapshot, status, and row counts;
       stale + name-only + pending states are visually distinct and text-labeled.
-- [ ] Search resolves to `/ong-uri/$cui` or scoped results.
-- [ ] Entry cards link to `/ong-uri/servicii` and (Next-2) name-only surfaces, with an
+- [ ] Search resolves to `/ngos/$cui` or scoped results.
+- [ ] Entry cards link to `/ngos/services` and (Next-2) name-only surfaces, with an
       "în curând" state when those routes don't exist yet.
-- [ ] Snapshot-bearing rows link to `/ong-uri/sursa/$snapshotId`.
+- [ ] Snapshot-bearing rows link to `/ngos/sources/$snapshotId`.
 - [ ] Sidebar gains an "ONG-uri" entry to this route.
 - [ ] All mock states render; mock surfaces marked with `DataStatusBadge`.
 - [ ] `yarn typecheck` clean; Lingui extracted/compiled; smoke test for the matrix.

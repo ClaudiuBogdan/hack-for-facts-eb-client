@@ -80,7 +80,7 @@ export function NgoCountyBand({
     const spelling = new Map(summary.counties.map((county) => [county.code, county.source]))
     // The registry's own spelling of the county: its filter matches it exactly.
     return (code: string): LinkOptions => ({
-      to: '/ong-uri/registru',
+      to: '/ngos/registry',
       search: registrySearch({
         county: spelling.get(code) ?? '',
         ...(layerKey === 'noi' ? {} : { status: REGISTRY_STATUS_VALUE.registered }),

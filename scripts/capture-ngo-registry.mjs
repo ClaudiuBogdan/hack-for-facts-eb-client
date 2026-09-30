@@ -4,7 +4,7 @@
  * the Chronos GraphQL API and writes one JSON object per line.
  *
  * The API serves the registry 100 records a page with no counts, so the
- * figures on `/ong-uri` are computed from a full read and kept in the client
+ * figures on `/ngos` are computed from a full read and kept in the client
  * (`src/features/ngos/hub/registry-summary.ts`). Run this, then
  * `node scripts/summarize-ngo-registry.mjs <file>` to rebuild that module.
  *

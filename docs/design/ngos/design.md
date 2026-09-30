@@ -67,28 +67,33 @@ sources — these are advanced features named for later.
 
 | Route | Purpose | Feature file |
 | --- | --- | --- |
-| `/ong-uri` | Landing: registry search, figures, counties, years (superseded by §12) | `ngo-landing-source-coverage.md` |
-| `/ong-uri/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
-| `/ong-uri/servicii` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
-| `/ong-uri/sursa/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
-| `/ong-uri/registru` | MJ legal-registry name-only listing (Next-2) | `name-only-registry-surfaces.md` |
-| `/ong-uri/utilitate-publica` | SGG public-utility name-only listing (Next-2) | `name-only-registry-surfaces.md` |
-| `/ong-uri/revizuire` | Link-review queue (advanced, staff-gated) | out of scope (named only) |
+| `/ngos` | Landing: registry search, figures, counties, years (superseded by §12) | `ngo-landing-source-coverage.md` |
+| `/ngos/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
+| `/ngos/services` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
+| `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
+| `/ngos/registry` | MJ legal-registry name-only listing (Next-2) | `name-only-registry-surfaces.md` |
+| `/ngos/public-utility` | SGG public-utility name-only listing (Next-2) | `name-only-registry-surfaces.md` |
+| `/ngos/review` | Link-review queue (advanced, staff-gated) | out of scope (named only) |
 
 **Decision — `/entities/$cui` integration.** Keep `/entities/$cui` as the shared
 cross-domain CUI shell. For `kind=ngo` organizations, the entities shell shows an NGO
-context band and a prominent "Vezi profilul ONG" link to `/ong-uri/$cui`. Update the
-global entity-search routing so NGO hits deep-link to `/ong-uri/$cui` instead of
+context band and a prominent "Vezi profilul ONG" link to `/ngos/$cui`. Update the
+global entity-search routing so NGO hits deep-link to `/ngos/$cui` instead of
 `/entities/$cui` (current behavior in
 `src/features/entity-search/lib/entity-search-routing.ts:47`). This is the one allowed
 routing change; implement it in the search-routing adapter, not by rebuilding search.
 
-**Decision — Route language.** Romanian public slugs (`/ong-uri`, `/servicii`,
-`/registru`, `/utilitate-publica`, `/sursa`, `/revizuire`), consistent with the
-foundation's Romanian-slug decision.
+**Decision — Route language (2026-09-30, replacing the Romanian slugs of
+2026-06-26).** English paths, Romanian UI copy, as `/achizitii` became
+`/procurement`: `/ngos`, `/ngos/$cui`, `/ngos/registry`, `/ngos/services`,
+`/ngos/sources/$snapshotId`, and later `/ngos/public-utility` and
+`/ngos/review`. The first release's `/ong-uri/*` paths answer with one 301
+each to their new page, parameters and search carried over (the registry's
+and the services page's search already in the target's own shape, so no
+second hop).
 
 **Decision — Evidence-trail addressing.** The evidence trail is both an in-profile
-section and a dedicated per-snapshot page at `/ong-uri/sursa/$snapshotId`. Inline
+section and a dedicated per-snapshot page at `/ngos/sources/$snapshotId`. Inline
 citation chips link to that page (or open the drawer for the quick view).
 
 **Decision — Shared URL state** (foundation parameter names): `q`, `county`,
@@ -113,7 +118,7 @@ existing entity/company route validation idiom. Default views render with no par
   (county-aware), each item reflecting whether its section has data, is empty, or is
   name-only/unconfirmed.
 - **Decision — Sidebar nav entry.** Add "ONG-uri" to the app sidebar
-  (`src/components/sidebar`) pointing to `/ong-uri`. (Implementation note for the
+  (`src/components/sidebar`) pointing to `/ngos`. (Implementation note for the
   landing feature owner; no design block.)
 - **Decision — Breadcrumbs.** Use existing `breadcrumb` UI:
   `ONG-uri / <Organization name>` on profile; `ONG-uri / Servicii sociale` on
@@ -156,7 +161,7 @@ the owning feature module and promote later.
   to the relevant section. Owned by `ngo-entity-profile.md`, consumed widely.
 - **`SourceCitationChip` / `EvidenceLink`** — inline `Sursă: <authority>,
   <snapshot date>` chip that opens `SourceProvenanceDrawer` or links to
-  `/ong-uri/sursa/$snapshotId`. Owned by `evidence-trail-source-citations.md`.
+  `/ngos/sources/$snapshotId`. Owned by `evidence-trail-source-citations.md`.
 - **`SourceProvenanceDrawer`** — `Sheet` showing source URL, snapshot date, content
   SHA-256, parser version, header/schema fingerprints, row count, status, accepted_at,
   review_status, confidence, and per-snapshot `validation_issues`. Owned by
@@ -337,18 +342,18 @@ type ValidationIssue = {
 
 ## 7. Feature implementation map (MVP first, then high-value next)
 
-1. **MVP-1** `ngo-entity-profile.md` — `/ong-uri/$cui`. Anchor surface; consumes all
+1. **MVP-1** `ngo-entity-profile.md` — `/ngos/$cui`. Anchor surface; consumes all
    confirmed evidence + the references zone + financial placeholder + evidence trail.
-2. **MVP-2** `social-service-provider-discovery.md` — `/ong-uri/servicii`. List+map.
+2. **MVP-2** `social-service-provider-discovery.md` — `/ngos/services`. List+map.
 3. **MVP-3** `evidence-trail-source-citations.md` — citation chips + provenance drawer
-   + `/ong-uri/sursa/$snapshotId`.
+   + `/ngos/sources/$snapshotId`.
 4. **MVP-4** `identity-confidence-communication.md` — `IdentityConfidenceBadge` +
    confirmed/name-only section separation rules (cross-cutting).
-5. **MVP-5** `ngo-landing-source-coverage.md` — `/ong-uri` landing + `CoverageRibbon`.
+5. **MVP-5** `ngo-landing-source-coverage.md` — `/ngos` landing + `CoverageRibbon`.
 6. **Next-1** `anaf-financial-enrichment-section.md` — profile financial section
    (placeholder → live).
-7. **Next-2** `name-only-registry-surfaces.md` — `/ong-uri/registru` +
-   `/ong-uri/utilitate-publica`.
+7. **Next-2** `name-only-registry-surfaces.md` — `/ngos/registry` +
+   `/ngos/public-utility`.
 8. **Next-3** `public-funding-cross-links.md` — profile "Fonduri publice" section +
    `RelatedLinksRail`.
 
@@ -408,12 +413,12 @@ proceed independently once shared components exist.
 
 ## 10. Acceptance criteria (domain-level)
 
-- **Routes** `/ong-uri`, `/ong-uri/$cui`, `/ong-uri/servicii`, and
-  `/ong-uri/sursa/$snapshotId` exist with Zod `validateSearch` and render default
-  views without query params. Next-2 adds `/ong-uri/registru` and
-  `/ong-uri/utilitate-publica`.
-- **`/entities/$cui`** shows an NGO context band + link to `/ong-uri/$cui` for
-  `kind=ngo`; global entity-search NGO hits deep-link to `/ong-uri/$cui`.
+- **Routes** `/ngos`, `/ngos/$cui`, `/ngos/services`, and
+  `/ngos/sources/$snapshotId` exist with Zod `validateSearch` and render default
+  views without query params. Next-2 adds `/ngos/registry` and
+  `/ngos/public-utility`.
+- **`/entities/$cui`** shows an NGO context band + link to `/ngos/$cui` for
+  `kind=ngo`; global entity-search NGO hits deep-link to `/ngos/$cui`.
 - **Every claim** on the profile and discovery surfaces exposes its source snapshot
   (authority + snapshot date + URL + SHA-256) via chip→drawer or the trail page.
 - **Identity confidence** is visible at profile (badge), section (separation), and row
@@ -546,13 +551,13 @@ sector's, never the registry's.
   change vs 2024 (named for a screen reader too); a closed entry says so. The
   ranking is of the organisations the NGO profile resolves (a
   registry-declared CUI, or an exact ANAF name-and-county match) — ten among
-  the 49 largest filers. A row opens `/ong-uri/$cui` only where the legacy
+  the 49 largest filers. A row opens `/ngos/$cui` only where the legacy
   overview resolves the CUI (`linked`; nine of ten): the inferred matches have
   no page until the client moves to `ngoOrganizationProfile`.
-- **Sources in the head**, short, as `/procurement` says its own: the
-  registry (just.ro) with its capture date and the statements (data.gov.ro)
-  with their last year; the full line, with publishers and the population
-  year, closes the page (2026-09-30).
+- **Sources in the head**, in one line, as `/procurement` says its own: the
+  two sources as links and one date, the registry's last update (the owner's
+  call, 2026-09-30); the statements' years, the publishers and the population
+  year are in the full line closing the page.
 - **Pinned bar** of the four numbered bands, as on `/procurement`, carrying
   the crux marks at its lower corners (`HomeSectionNav crux`): drawn in the
   band below, the bar covered them; on the bar, they sit on the frame's
@@ -657,7 +662,7 @@ unit left out of the legend's title and agreed with its figure, the label
 contrast on the middle blue, and the placeholder parts kept out of the
 leaders' module (the eager route would have pulled in its formatters).
 
-**Follow-ups.** Move `/ong-uri/$cui` to `ngoOrganizationProfile` (every leader
+**Follow-ups.** Move `/ngos/$cui` to `ngoOrganizationProfile` (every leader
 then links); move the pinned bar and band (`HomeSectionNav`, `HomeBand`, now
 in `home-section-nav.tsx`) out of the procurement feature into shared landing
 chrome.

@@ -34,18 +34,18 @@ never as "the ONG".
 
 ## MVP scope
 
-1. **NGO / Entity Profile** (`/ong-uri/$cui`) — identity + legal registry + sector
+1. **NGO / Entity Profile** (`/ngos/$cui`) — identity + legal registry + sector
    memberships (RUEIS, sanctions) + accreditations (ANOFM) + social services
    (MMuncii) + public-utility (SGG, name-only) + financials placeholder + evidence
    trail. Anchored on direct-CUI identity. (MVP-1)
-2. **Social-Service Provider Discovery** (`/ong-uri/servicii`) — faceted list + county
+2. **Social-Service Provider Discovery** (`/ngos/services`) — faceted list + county
    map of `social_service_providers` and `social_services`, with a stale-snapshot
    banner. (MVP-2)
 3. **Evidence trail / source citations** — inline source chips on every claim plus a
-   per-snapshot provenance page (`/ong-uri/sursa/$snapshotId`). (MVP-3)
+   per-snapshot provenance page (`/ngos/sources/$snapshotId`). (MVP-3)
 4. **Identity-confidence communication** — confirmed-via-CUI vs name-only-reference
    visual language at profile, section, and row level. (MVP-4)
-5. **NGO Landing** (`/ong-uri`) — domain explainer, source-coverage + freshness
+5. **NGO Landing** (`/ngos`) — domain explainer, source-coverage + freshness
    matrix, search, entry cards. (MVP-5)
 
 ## High-value next scope
@@ -54,13 +54,13 @@ never as "the ONG".
   is 0 rows today; ship the section now as a "in curs de actualizare" placeholder and
   light it up when seeded.
 - **Name-only registry surfaces** (Next-2) — public, clearly-unconfirmed MJ legal
-  registry (`/ong-uri/registru`) and SGG public-utility (`/ong-uri/utilitate-publica`)
+  registry (`/ngos/registry`) and SGG public-utility (`/ngos/public-utility`)
   listings.
 - **Public-funding cross-links** (Next-3) — "Fonduri publice" section on the profile
   linking procurement / PNRR / Legea 350 via CUI.
 
 Advanced / later (out of these feature files): Link Review Queue UI
-(`/ong-uri/revizuire`, staff-gated), coverage-gap analytics, financial peer
+(`/ngos/review`, staff-gated), coverage-gap analytics, financial peer
 benchmarking, snapshot supersede/history, backlog sources (RUTI, RegCult, CONECT).
 
 ## Source / data constraints

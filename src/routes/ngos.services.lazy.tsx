@@ -1,8 +1,8 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { NgoServicesPage } from '@/features/ngos/components/ngo-services-page'
-import type { NgoServicesRouteLoaderData } from './ong-uri.servicii'
+import type { NgoServicesRouteLoaderData } from './ngos.services'
 
-export const Route = createLazyFileRoute('/ong-uri/servicii')({
+export const Route = createLazyFileRoute('/ngos/services')({
   component: NgoServicesRoutePage,
 })
 

@@ -67,7 +67,7 @@ export function NgoSnapshotPage({
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-6 md:px-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <Button asChild variant="outline" className="w-fit">
-          <Link to="/ong-uri" search={{}}>
+          <Link to="/ngos" search={{}}>
             <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
             <Trans>Inapoi la ONG-uri</Trans>
           </Link>

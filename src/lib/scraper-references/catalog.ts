@@ -399,7 +399,7 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
       newLatest('docs/UNICORN_NGOS.md'),
       newLatest('src/sources/ngos/'),
     ],
-    clientFeaturePaths: ['src/features/ngos/', 'src/routes/ong-uri/'],
+    clientFeaturePaths: ['src/features/ngos/', 'src/routes/ngos/'],
     clientSchemaPaths: ['src/schemas/ngos.ts'],
     clientSpecPaths: [
       'docs/design/ngos/ux.md',

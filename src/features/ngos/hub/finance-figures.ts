@@ -2,7 +2,7 @@ import type { NgoHubDomainMetric } from '@/schemas/ngos'
 import type { NgoFinanceDomain, NgoFinanceSize, NgoFinanceSizeKey, NgoFinanceSummary } from './finance-summary-types'
 
 /**
- * The figures `/ong-uri` derives from the finance summary, as pure
+ * The figures `/ngos` derives from the finance summary, as pure
  * functions: the domains ranked, the domains a sentence names, the revenue
  * classes and the year's change.
  */

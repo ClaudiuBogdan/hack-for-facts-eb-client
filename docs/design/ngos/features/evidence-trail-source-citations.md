@@ -17,7 +17,7 @@ is a dependency of MVP-1; build it first or in parallel.
 
 A reusable citation layer: an inline `SourceCitationChip` on every claim, a
 `SourceProvenanceDrawer` for the quick provenance view, a per-profile `EvidenceTrail`
-section listing all evidence rows, and a dedicated `/ong-uri/sursa/$snapshotId` page
+section listing all evidence rows, and a dedicated `/ngos/sources/$snapshotId` page
 showing full snapshot provenance (URL, declared date, SHA-256, parser version,
 fingerprints, row count, status, accepted_at) and that snapshot's validation issues.
 
@@ -37,7 +37,7 @@ fingerprints, row count, status, accepted_at) and that snapshot's validation iss
 - **Decision:** Citation appears at the **point of use** — section headers and record
   rows — not only in a hidden trail. The trail is a first-class IA element.
 - **Decision:** Two depths: a `SourceProvenanceDrawer` (quick, in-context) and a
-  full-page `/ong-uri/sursa/$snapshotId` (linkable, shareable). The chip opens the
+  full-page `/ngos/sources/$snapshotId` (linkable, shareable). The chip opens the
   drawer; a "Vezi sursa completă" link inside the drawer goes to the page.
 - **Decision:** Show `source_declared_snapshot_date` as the user-facing "snapshot
   date" / `FreshnessBadge`; show SHA-256 truncated with a `CopyButton` for the full
@@ -47,13 +47,13 @@ fingerprints, row count, status, accepted_at) and that snapshot's validation iss
 
 ## Route and URL state
 
-- **Route:** `/ong-uri/sursa/$snapshotId` (file route `ong-uri.sursa.$snapshotId.tsx`).
+- **Route:** `/ngos/sources/$snapshotId` (file route `ngos.sources.$snapshotId.tsx`).
   `$snapshotId` validated as a non-empty id; unknown → `notFound()`.
 - **Search params:** `from?` (backtrack context, e.g. the originating CUI/profile),
   `lang?`. Default view = no params.
 - **Drawer (no route):** the `SourceProvenanceDrawer` is an ephemeral `Sheet`; its open
   state is local, not URL. Rationale: it is a transient inspection, not a shareable
-  view; the shareable artifact is the `/ong-uri/sursa/$snapshotId` page.
+  view; the shareable artifact is the `/ngos/sources/$snapshotId` page.
 
 ## Data contract and mock states
 
@@ -103,7 +103,7 @@ Heading "Sursa datelor". Body (label/value rows, no nested cards):
 - `parser_version`, `schema_fingerprint`, `header_fingerprint` (mono, truncated).
 - `content_sha256` truncated + `CopyButton` for full.
 - Validation issues summary (count by severity) if any.
-- Footer: "Vezi sursa completă →" → `/ong-uri/sursa/$snapshotId?from=…`.
+- Footer: "Vezi sursa completă →" → `/ngos/sources/$snapshotId?from=…`.
 
 ### C. `EvidenceTrail` (profile section `#dovezi`)
 Collapsible. A `Table` of all `EvidenceRecord`s for the org:
@@ -113,7 +113,7 @@ Collapsible. A `Table` of all `EvidenceRecord`s for the org:
 - Grouped by `evidence_kind`; name-only rows visually distinguished (amber row accent +
   identity badge), consistent with the references zone.
 
-### D. `/ong-uri/sursa/$snapshotId` page
+### D. `/ngos/sources/$snapshotId` page
 Constrained `max-w-5xl`. Breadcrumb `ONG-uri / Sursă / <authority> <date>`. Sections:
 1. Header: authority, snapshot date, status, `FreshnessBadge`, "Înapoi" (uses `from`).
 2. Provenance table (same fields as the drawer, full SHA-256 with copy).
@@ -121,7 +121,7 @@ Constrained `max-w-5xl`. Breadcrumb `ONG-uri / Sursă / <authority> <date>`. Sec
    "Înregistrări excluse corect la încărcare", with a `PrivacyBoundaryNotice`-style
    explanation that exclusions are a data-quality feature, not a defect.
 4. Derived-evidence list: the `EvidenceRecord`s produced by this snapshot, each linking
-   to its organization profile (`/ong-uri/$cui`) where a CUI exists.
+   to its organization profile (`/ngos/$cui`) where a CUI exists.
 
 ## Component reuse and proposed new components
 
@@ -133,7 +133,7 @@ Constrained `max-w-5xl`. Breadcrumb `ONG-uri / Sursă / <authority> <date>`. Sec
   - `SourceCitationChip` (a.k.a. `EvidenceLink`) — inline citation chip.
   - `SourceProvenanceDrawer` — the `Sheet`-based provenance viewer.
   - `EvidenceTrail` — the per-profile grouped evidence table.
-  - `SnapshotProvenancePage` — content component for `/ong-uri/sursa/$snapshotId`.
+  - `SnapshotProvenancePage` — content component for `/ngos/sources/$snapshotId`.
 
 ## Interactions
 
@@ -181,7 +181,7 @@ Constrained `max-w-5xl`. Breadcrumb `ONG-uri / Sursă / <authority> <date>`. Sec
       fingerprints, full-copy SHA-256, and validation summary.
 - [ ] `EvidenceTrail` lists all evidence rows grouped by kind with identity badges and
       per-row citation.
-- [ ] `/ong-uri/sursa/$snapshotId` route renders full provenance + validation issues +
+- [ ] `/ngos/sources/$snapshotId` route renders full provenance + validation issues +
       derived-evidence links; unknown id → `notFound()`.
 - [ ] All five mock states render; mock surfaces marked with `DataStatusBadge`.
 - [ ] `yarn typecheck` clean; Lingui extracted/compiled; drawer + page have smoke tests.

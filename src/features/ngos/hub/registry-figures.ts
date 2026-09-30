@@ -10,7 +10,7 @@ import type {
 } from './registry-summary-types'
 
 /**
- * The figures `/ong-uri` derives from the registry summary, as pure
+ * The figures `/ngos` derives from the registry summary, as pure
  * functions: the county layers the map colours, the legal forms and the
  * statuses with their shares, and the registry searches each figure opens.
  */

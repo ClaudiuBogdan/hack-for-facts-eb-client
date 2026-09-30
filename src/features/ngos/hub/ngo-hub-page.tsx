@@ -30,7 +30,7 @@ import { REGISTRY_STATUS_VALUE, perDay, registrationsIn, registrySearch } from '
 import type { NgoRegistrySummary } from './registry-summary-types'
 
 /**
- * `/ong-uri` — the NGOs of Romania in the companies, INS and procurement
+ * `/ngos` — the NGOs of Romania in the companies, INS and procurement
  * hubs' language (`docs/design/ngos/design.md` §13): the registry search
  * beside the year's largest NGOs, the pinned bar of numbered bands, four
  * figures, then the counties, what NGOs do, their money and the registry.
@@ -57,7 +57,7 @@ export function NgoHubPage({
   readonly registry: boolean
 }) {
   const { i18n } = useLingui()
-  const navigate = useNavigate({ from: '/ong-uri/' })
+  const navigate = useNavigate({ from: '/ngos/' })
   const rootRef = useRef<HTMLDivElement>(null)
   useRevealOnView(rootRef, (block, delay) => countUpWithin(block, delay))
   // The count-up driver is module state; an unmount mid-flight would leave it ticking against removed nodes.
@@ -211,7 +211,7 @@ function hubFacts(summary: NgoRegistrySummary, finance: NgoFinanceSummary, regis
       link: registry
         ? function RegistryLink(label, className) {
             return (
-              <Link to="/ong-uri/registru" search={registrySearch({ status: REGISTRY_STATUS_VALUE.registered })} className={className}>
+              <Link to="/ngos/registry" search={registrySearch({ status: REGISTRY_STATUS_VALUE.registered })} className={className}>
                 {label}
               </Link>
             )
@@ -475,14 +475,15 @@ function RegistryBand({ summary, index, registry }: { readonly summary: NgoRegis
 }
 
 /**
- * The sources in the head, short, as the procurement hub says its own: each
- * source by its site, and how fresh it is. The full line closes the page.
+ * The sources in the head, in a line, as the procurement hub says its own:
+ * each source a link, and the registry's last update — the date the owner
+ * wants read here. The statements' years, the publishers and the
+ * population's year are in the full line closing the page.
  */
 function HeadSources({ summary, finance }: { readonly summary: NgoRegistrySummary; readonly finance: NgoFinanceSummary }) {
   // A link's words and its arrow on one line.
   const link = 'whitespace-nowrap font-medium text-foreground underline-offset-4 hover:underline'
   const captured = formatNgoDate(summary.capturedAt)
-  const financeYear = finance.year
   const registryUrl = summary.sourceUrl
   const financeUrl = finance.source.dataset
   return (
@@ -490,15 +491,14 @@ function HeadSources({ summary, finance }: { readonly summary: NgoRegistrySummar
       <Trans>
         Surse:{' '}
         <a href={registryUrl} target="_blank" rel="noreferrer" className={link}>
-          Registrul ONG, just.ro<span aria-hidden="true"> ↗</span>
+          Registrul ONG<span aria-hidden="true"> ↗</span>
           <span className="sr-only"> (se deschide într-o filă nouă)</span>
         </a>
-        , la {captured} ·{' '}
+        , {captured} ·{' '}
         <a href={financeUrl} target="_blank" rel="noreferrer" className={link}>
-          situațiile financiare, data.gov.ro<span aria-hidden="true"> ↗</span>
+          Situațiile financiare<span aria-hidden="true"> ↗</span>
           <span className="sr-only"> (se deschide într-o filă nouă)</span>
         </a>
-        , până în {financeYear}
       </Trans>
     </p>
   )

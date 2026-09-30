@@ -69,7 +69,7 @@ export function NgoRegistrySearch({ className }: { readonly className?: string }
   const openList = () => {
     if (query.length === 0) return
     setIsOpen(false)
-    void navigate({ to: '/ong-uri/registru', search: listSearch })
+    void navigate({ to: '/ngos/registry', search: listSearch })
   }
 
   let message: string | null = null
@@ -181,7 +181,7 @@ export function NgoRegistrySearch({ className }: { readonly className?: string }
                     value={record}
                     className={resultRowClass}
                     onClick={() => setIsOpen(false)}
-                    render={<Link to="/ong-uri/registru/$recordId" params={{ recordId: record.id }} preload={false} />}
+                    render={<Link to="/ngos/registry/$recordId" params={{ recordId: record.id }} preload={false} />}
                   >
                     <RegistryRow record={record} />
                   </Autocomplete.Item>
@@ -208,7 +208,7 @@ export function NgoRegistrySearch({ className }: { readonly className?: string }
             </div>
             {rows.length > 0 ? (
               <Link
-                to="/ong-uri/registru"
+                to="/ngos/registry"
                 search={listSearch}
                 onClick={() => setIsOpen(false)}
                 className="flex items-center justify-between gap-3 border-t bg-muted/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"

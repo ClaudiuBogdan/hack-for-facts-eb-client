@@ -1,32 +1,14 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
-import { fetchSnapshotProvenance } from '@/features/ngos/api/ngo-api'
-import {
-  parseNgoSnapshotSearch,
-  type SnapshotProvenance,
-} from '@/schemas/ngos'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export type NgoSnapshotRouteLoaderData = {
-  readonly provenance: SnapshotProvenance
-}
-
+/** A source snapshot at its first release's Romanian path: a 301 to `/ngos/sources/$snapshotId`, the search carried over. */
 export const Route = createFileRoute('/ong-uri/sursa/$snapshotId')({
-  validateSearch: parseNgoSnapshotSearch,
-  loader: async ({ params }) => {
-    const provenance = await fetchSnapshotProvenance(params.snapshotId)
-    if (!provenance) throw notFound()
-
-    return { provenance } satisfies NgoSnapshotRouteLoaderData
-  },
-  head: ({ loaderData }) => {
-    const data = loaderData as NgoSnapshotRouteLoaderData | undefined
-    const label = data?.provenance.authorityLabel ?? 'Sursa ONG'
-
-    return {
-      meta: [
-        {
-          title: `${label} | Provenienta ONG | Transparenta.eu`,
-        },
-      ],
-    }
+  beforeLoad: ({ params, search }) => {
+    throw redirect({
+      to: '/ngos/sources/$snapshotId',
+      params,
+      search,
+      replace: true,
+      statusCode: 301,
+    })
   },
 })

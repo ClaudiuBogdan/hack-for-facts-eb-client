@@ -9,9 +9,9 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { NgoSnapshotPage } from '@/features/ngos/components/ngo-snapshot-page'
-import type { NgoSnapshotRouteLoaderData } from './ong-uri.sursa.$snapshotId'
+import type { NgoSnapshotRouteLoaderData } from './ngos.sources.$snapshotId'
 
-export const Route = createLazyFileRoute('/ong-uri/sursa/$snapshotId')({
+export const Route = createLazyFileRoute('/ngos/sources/$snapshotId')({
   component: NgoSnapshotRoutePage,
   notFoundComponent: NgoSnapshotNotFound,
 })
@@ -46,7 +46,7 @@ function NgoSnapshotNotFound() {
         </CardHeader>
         <CardContent>
           <Button asChild variant="outline">
-            <Link to="/ong-uri" search={{}}>
+            <Link to="/ngos" search={{}}>
               <Trans>Înapoi la ONG-uri</Trans>
             </Link>
           </Button>

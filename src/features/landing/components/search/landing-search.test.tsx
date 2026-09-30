@@ -91,12 +91,12 @@ describe('LandingSearch', () => {
     searchEntities.mockResolvedValue(response([
       { ...IASI, id: 'company:1', docType: 'company', title: 'Private company', href: '/companies/1' },
       { ...IASI, id: 'public_enterprise:2', docType: 'public_enterprise', title: 'Public enterprise', href: '/intreprinderi-publice/2' },
-      { ...IASI, id: 'ngo:3', docType: 'ngo', title: 'An NGO', href: '/ong-uri/3' },
+      { ...IASI, id: 'ngo:3', docType: 'ngo', title: 'An NGO', href: '/ngos/3' },
     ]))
     const { user } = setup()
     await typeAndWait(user, 'company')
     expect(screen.getAllByRole('option').map((row) => row.getAttribute('href'))).toEqual([
-      '/companies/1', '/intreprinderi-publice/2', '/ong-uri/3',
+      '/companies/1', '/intreprinderi-publice/2', '/ngos/3',
     ])
     expect(screen.getByText('ONG · Iași')).toBeInTheDocument()
   })

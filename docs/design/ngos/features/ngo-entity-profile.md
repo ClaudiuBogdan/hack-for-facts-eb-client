@@ -1,4 +1,4 @@
-# Feature: NGO / Entity Profile (`/ong-uri/$cui`)
+# Feature: NGO / Entity Profile (`/ngos/$cui`)
 
 > MVP-1 — the anchor surface of the domain. Source UX: `docs/ux-research/ngos.md`
 > §10.2, §13 MVP-1. Domain design: `docs/design/ngos/design.md`. Foundation:
@@ -39,7 +39,7 @@ placeholder until ANAF is seeded; an evidence trail closes the page.
 - **Fact:** Social-service snapshots are stale (providers 10.04.2024, services
   11.12.2023).
 - **Fact:** No backend NGO module/route exists yet; mock-first is required.
-- **Decision:** Route is `/ong-uri/$cui`; `/entities/$cui` shows an NGO band linking
+- **Decision:** Route is `/ngos/$cui`; `/entities/$cui` shows an NGO band linking
   here for `kind=ngo`; global entity-search NGO hits deep-link here.
 - **Decision:** Sectioned scroll layout with sticky in-page anchor nav, fixed trust
   order; not route tabs.
@@ -55,7 +55,7 @@ placeholder until ANAF is seeded; an evidence trail closes the page.
 
 ## Route and URL state
 
-- **Route:** `/ong-uri/$cui` (TanStack file route `ong-uri.$cui.tsx`). `$cui`
+- **Route:** `/ngos/$cui` (TanStack file route `ngos.$cui.tsx`). `$cui`
   normalized/validated like `companies.$cui` (`normalizeCompanyCui` idiom); invalid →
   `notFound()`.
 - **Search params (Zod `validateSearch`):**
@@ -148,7 +148,7 @@ Top → bottom (trust order). Constrained column `max-w-5xl mx-auto px-6`, 8pt g
    (plain language), code, county/locality, capacity, license number,
    `valid_from`→`valid_until` + validity state. `StaleSnapshotNotice` with the
    MMuncii snapshot date. Link "Vezi toți furnizorii din <județ> →" to
-   `/ong-uri/servicii?county=<county>`. Section source chip → MMuncii snapshot.
+   `/ngos/services?county=<county>`. Section source chip → MMuncii snapshot.
 8. **Public utility (`#utilitate`):** SGG recognition. Since SGG is name-only, render
    in the "Referințe neconfirmate" zone with `link_status`. Show recognizing
    authority + `hg_number` ("Recunoscut de utilitate publică prin HG nr. X") when
@@ -194,7 +194,7 @@ Top → bottom (trust order). Constrained column `max-w-5xl mx-auto px-6`, 8pt g
 - Click a section header source chip → open `SourceProvenanceDrawer` for that snapshot.
 - Expand/collapse evidence trail → toggles `?evidence=1`.
 - "Acest CUI apare și ca firmă →" → `/companies/$cui`.
-- "Vezi toți furnizorii din <județ> →" → `/ong-uri/servicii?county=<county>&from=profil`.
+- "Vezi toți furnizorii din <județ> →" → `/ngos/services?county=<county>&from=profil`.
 - Candidate match "Posibilă potrivire" → opens the relevant review-case detail (drawer)
   showing compared fields + confidence; never auto-navigates as if confirmed.
 - Keyboard: anchor nav and badges are buttons/links; drawer focus-trapped.
@@ -212,7 +212,7 @@ Top → bottom (trust order). Constrained column `max-w-5xl mx-auto px-6`, 8pt g
 - **Stale:** social-services section always shows `StaleSnapshotNotice` with the
   snapshot date; `FreshnessBadge` on each cited section.
 - **Error:** unknown/invalid CUI → `notFound()` with an NGO-specific 404 ("Nu am găsit
-  o organizație cu acest CUI." + link back to `/ong-uri`). Per-section fetch failure
+  o organizație cu acest CUI." + link back to `/ngos`). Per-section fetch failure
   (when live) → inline `Alert` "Nu am putut încărca această secțiune" + retry, without
   failing the whole page; URL stays intact.
 
@@ -241,7 +241,7 @@ Top → bottom (trust order). Constrained column `max-w-5xl mx-auto px-6`, 8pt g
 
 ## Acceptance checklist
 
-- [ ] `/ong-uri/$cui` route with Zod `validateSearch`; invalid CUI → NGO 404; default
+- [ ] `/ngos/$cui` route with Zod `validateSearch`; invalid CUI → NGO 404; default
       view renders with no params.
 - [ ] Header shows name, CUI (+copy), county/locality, ONG kind badge, profile-level
       `IdentityConfidenceBadge`, and CUI-collision company cross-link when applicable.
@@ -252,7 +252,7 @@ Top → bottom (trust order). Constrained column `max-w-5xl mx-auto px-6`, 8pt g
 - [ ] Name-only MJ/SGG content appears only in the separated "Referințe neconfirmate"
       zone with unconfirmed framing.
 - [ ] Social-services section shows `StaleSnapshotNotice` with the snapshot date and a
-      link to `/ong-uri/servicii?county=…`.
+      link to `/ngos/services?county=…`.
 - [ ] Evidence trail collapsible present; `?evidence=1` opens it.
 - [ ] All six mock states render correctly; mock surfaces marked with `DataStatusBadge`.
 - [ ] `yarn typecheck` clean; Lingui strings extracted/compiled; a presentation smoke
@@ -261,7 +261,7 @@ Top → bottom (trust order). Constrained column `max-w-5xl mx-auto px-6`, 8pt g
 ## Non-goals
 
 - No financial charts (Next-1 once seeded); no money-flow Sankey (Next-3).
-- No staff link-review actions (advanced `/ong-uri/revizuire`).
+- No staff link-review actions (advanced `/ngos/review`).
 - No editing/claiming an organization profile.
 - No cross-domain data fetching beyond CUI/SIRUTA link generation in MVP-1.
 

@@ -1,30 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { fetchNgoServiceDiscovery } from '@/features/ngos/api/ngo-api'
-import {
-  parseNgoServicesSearch,
-  type ServiceDiscoveryResult,
-} from '@/schemas/ngos'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { parseNgoServicesSearch } from '@/schemas/ngos'
 
-export type NgoServicesRouteLoaderData = {
-  readonly result: ServiceDiscoveryResult | null
-}
-
+/**
+ * Social services at their first release's Romanian path: one 301 to
+ * `/ngos/services`, the search already in the page's own shape so the target
+ * has nothing left to rewrite (and the site's own keys, `lang`, kept).
+ */
 export const Route = createFileRoute('/ong-uri/servicii')({
-  validateSearch: parseNgoServicesSearch,
-  loader: async () => {
-    const result = await fetchNgoServiceDiscovery()
-    return { result } satisfies NgoServicesRouteLoaderData
+  beforeLoad: ({ search }) => {
+    throw redirect({
+      to: '/ngos/services',
+      search: { ...search, ...parseNgoServicesSearch(search) },
+      replace: true,
+      statusCode: 301,
+    })
   },
-  head: () => ({
-    meta: [
-      {
-        title: 'Servicii sociale ONG | Transparenta.eu',
-      },
-      {
-        name: 'description',
-        content:
-          'Descoperire mock-first pentru furnizori ONG si servicii sociale licentiate.',
-      },
-    ],
-  }),
 })

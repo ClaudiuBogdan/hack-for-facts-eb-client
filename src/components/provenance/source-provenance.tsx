@@ -400,7 +400,7 @@ export function SourceProvenanceDrawer({
 
             <Button asChild variant="outline" size="sm">
               <Link
-                to="/ong-uri/sursa/$snapshotId"
+                to="/ngos/sources/$snapshotId"
                 params={{ snapshotId: snapshot.sourceSnapshotId }}
                 search={fromLabel ? { from: fromLabel } : {}}
               >

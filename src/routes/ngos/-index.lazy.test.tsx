@@ -34,7 +34,7 @@ async function renderRoute() {
   render(<RouteComponent />)
 }
 
-describe('/ong-uri route page', () => {
+describe('/ngos route page', () => {
   beforeEach(() => {
     search = {}
     registryEnabled = true

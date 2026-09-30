@@ -79,7 +79,7 @@ export function NgoLeaderRows({
         return (
           <li key={leader.cui}>
             {registry && leader.linked ? (
-              <Link to="/ong-uri/$cui" params={{ cui: leader.cui }} className={cn(ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
+              <Link to="/ngos/$cui" params={{ cui: leader.cui }} className={cn(ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
                 {cells}
               </Link>
             ) : (

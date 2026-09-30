@@ -397,7 +397,7 @@ function ServicesTable({
             <TableCell className="min-w-52">
               <Button asChild variant="link" className="h-auto p-0 text-left">
                 <Link
-                  to="/ong-uri/$cui"
+                  to="/ngos/$cui"
                   params={{ cui: row.providerCui }}
                   search={{ tab: 'servicii' }}
                 >
@@ -545,13 +545,13 @@ export function NgoServicesPage({
   initialResult,
   search,
 }: NgoServicesPageProps) {
-  const navigate = useNavigate({ from: '/ong-uri/servicii' })
+  const navigate = useNavigate({ from: '/ngos/services' })
   const serviceQuery = useNgoServiceDiscovery()
   const result = serviceQuery.data ?? initialResult
 
   const patchSearch = (patch: SearchPatch) => {
     void navigate({
-      to: '/ong-uri/servicii',
+      to: '/ngos/services',
       search: (previous) => ({
         ...previous,
         ...patch,

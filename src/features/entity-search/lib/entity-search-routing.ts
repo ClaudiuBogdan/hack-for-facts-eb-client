@@ -9,7 +9,7 @@
  *   company             /companies/$cui          (internal, cuis[0])
  *   organization        /entities/$cui           (internal, cuis[0])
  *   public_enterprise   /intreprinderi-publice/$cui (internal, cuis[0])
- *   ngo                 /ong-uri/$cui            (internal, cuis[0])
+ *   ngo                 /ngos/$cui            (internal, cuis[0])
  *   member              /parlament/membri/$id    (internal, best-effort docId)
  *   bill                /parlament/proiecte/$id  (internal, best-effort docId)
  *   committee           /parlament/comisii/$id   (internal, docKey = committee_key)
@@ -57,7 +57,7 @@ const CUI_SPINE_ROUTES: Readonly<Record<string, RouteBuilder>> = {
   },
   ngo: (cui) => {
     const normalized = normalizeNgoCui(cui)
-    return normalized ? `/ong-uri/${encodeURIComponent(normalized)}` : null
+    return normalized ? `/ngos/${encodeURIComponent(normalized)}` : null
   },
 }
 

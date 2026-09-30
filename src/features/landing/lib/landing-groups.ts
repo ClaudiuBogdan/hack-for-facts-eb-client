@@ -112,7 +112,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       {
         title: msg`ONG-uri`,
         blurb: msg`Organizații neguvernamentale și servicii sociale, cu nivel de identitate.`,
-        to: '/ong-uri',
+        to: '/ngos',
         icon: HeartHandshake,
       },
     ],

@@ -6,7 +6,7 @@ import type { NgoFinanceSummary } from './finance-summary-types'
 import { registrationsIn } from './registry-figures'
 import type { NgoRegistrySummary } from './registry-summary-types'
 
-const HUB_PATH = '/ong-uri'
+const HUB_PATH = '/ngos'
 const SHARE_IMAGE_PATH = '/assets/images/share-image.png'
 
 /** The few figures the head quotes: small enough for the route's loader to hand over. */
@@ -39,7 +39,7 @@ export function ngoHubSeoFigures(summary: NgoRegistrySummary, finance: NgoFinanc
 }
 
 /**
- * `/ong-uri`'s head: title, description, canonical and its language
+ * `/ngos`'s head: title, description, canonical and its language
  * alternates, social cards, and a schema.org `Dataset` naming both sources.
  * The description quotes the page's own figures, so a refresh of either
  * summary updates it too.
