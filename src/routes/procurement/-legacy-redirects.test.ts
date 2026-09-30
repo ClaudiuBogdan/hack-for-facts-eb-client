@@ -66,6 +66,9 @@ async function importLegacyRoute(path: string) {
   }
 }
 
+// The explorer's own default when a link named no period: the previous calendar year.
+const LAST_YEAR = new Date().getFullYear() - 1
+
 describe('legacy achizitii redirects', () => {
   beforeEach(() => {
     vi.resetModules()
@@ -105,7 +108,7 @@ describe('legacy achizitii redirects', () => {
         to: expectedTo,
         ...(params ? { params } : {}),
         // The explorer's list is the analytics page's records: the title's words open on them, the page number stays behind.
-        search: legacyRoute === 'search' ? { tip: 'contracte', titlu: 'spital' } : search,
+        search: legacyRoute === 'search' ? { tip: 'contracte', perioada: LAST_YEAR, titlu: 'spital' } : search,
         replace: true,
         statusCode: 301,
       })
@@ -114,7 +117,7 @@ describe('legacy achizitii redirects', () => {
         options: {
           to: expectedTo,
           ...(params ? { params } : {}),
-          search: legacyRoute === 'search' ? { tip: 'contracte', titlu: 'spital' } : search,
+          search: legacyRoute === 'search' ? { tip: 'contracte', perioada: LAST_YEAR, titlu: 'spital' } : search,
           replace: true,
           statusCode: 301,
         },

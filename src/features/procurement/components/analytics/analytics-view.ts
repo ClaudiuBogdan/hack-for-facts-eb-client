@@ -48,7 +48,7 @@ export function figuresOf(query: Query, answer: Answer): readonly Figure[] | nul
     {
       key: 'records',
       label: population.id === 'directe' ? t`Achiziții` : population.id === 'contracte' ? t`Contracte` : t`Acorduri-cadru`,
-      value: countText(now.records),
+      value: now.records !== null ? countText(now.records) : '—',
       change: changeText(now.records, before?.records ?? null),
     },
   ]

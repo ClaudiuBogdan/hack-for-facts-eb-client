@@ -359,7 +359,7 @@ export function MethodBody({ query, answer, className }: { readonly query: Query
   const now = answer.figures.data?.now ?? null
   const ranking = answer.ranking.data
   const sum = ranking ? ranking.buckets.reduce((total, bucket) => total + bucket.count, 0) : null
-  const adds = now && sum !== null ? sum === now.records : null
+  const adds = now?.records != null && sum !== null ? sum === now.records : null
   return (
     <div className={cn('space-y-2', className)}>
         <p>{populationGloss(query.tip)}</p>

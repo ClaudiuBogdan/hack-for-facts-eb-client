@@ -17,6 +17,9 @@ const route = Route as unknown as {
 }
 const search = Search as unknown as { readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void }
 
+// The explorer's own default when a link named no period: the previous calendar year.
+const LAST_YEAR = new Date().getFullYear() - 1
+
 function thrownBy(run: () => void): unknown {
   try {
     run()
@@ -44,7 +47,7 @@ describe('/procurement/analytics', () => {
   it('asks an explorer question again in its own words, permanently', () => {
     expect(thrownBy(() => route.beforeLoad({ location: { search: { view: 'overview', mapGrain: 'county', lang: 'en' } } }))).toEqual({
       kind: 'redirect',
-      options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte' }, replace: true, statusCode: 301 },
+      options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte', perioada: LAST_YEAR }, replace: true, statusCode: 301 },
     })
   })
 
@@ -68,7 +71,7 @@ describe('/procurement/search', () => {
   it('sends every explorer link to the analytics page, its list as the records', () => {
     expect(thrownBy(() => search.beforeLoad({ location: { search: { view: 'list', grain: 'direct_acquisitions', authority_cui: '4305857', sort: 'date_desc', page: 2 } } }))).toEqual({
       kind: 'redirect',
-      options: { to: '/procurement/analytics', search: { cumparator: 4305857, dupa: 'inregistrari' }, replace: true, statusCode: 301 },
+      options: { to: '/procurement/analytics', search: { cumparator: 4305857, perioada: LAST_YEAR, dupa: 'inregistrari' }, replace: true, statusCode: 301 },
     })
   })
 })

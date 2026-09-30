@@ -1,7 +1,7 @@
 import { plural, t } from '@lingui/core/macro'
 import { i18n } from '@lingui/core'
 import { displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
-import { cpvDivisionLabelRo } from './cpv-labels'
+import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
 import { bigCountText, countText, lowerFirst, moneyText, monthText, percentText } from './home-format'
 import { procedureLabel, tidyName } from './home-model'
 import { cpvKey, cpvPrefix, POPULATIONS, type AxisId, type GroupBy, type Measure, type PopulationId, type Query, type ResolvedPeriod } from './analytics-model'
@@ -17,18 +17,29 @@ import type { Names } from '../api/procurement-analytics-api'
 
 export interface Namer {
   readonly names: Names | undefined
-  readonly divisions: ReadonlyMap<string, string>
+  readonly divisions: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>
   readonly counties: ReadonlyMap<string, string>
   readonly localities: ReadonlyMap<string, { readonly name: string; readonly kind: string | null }> | null
 }
 
-/** A CPV code's label: its own, else its division's; the code when neither is known. */
+/** A name in the page's language, else the other. */
+function inLocale(name: { readonly ro: string | null; readonly en: string | null } | undefined): string | null {
+  if (!name) return null
+  return i18n.locale === 'en' ? (name.en ?? name.ro) : (name.ro ?? name.en)
+}
+
+/**
+ * A CPV code's label, in the page's language: for a division the client's
+ * short name where it has one (the nine most bought, checked against the
+ * CPV), else the API's; the code when nothing is known.
+ */
 export function cpvLabel(prefix: string, namer: Namer): string {
   if (prefix.length === 2) {
-    const division = cpvDivisionLabelRo(prefix) ?? namer.divisions.get(prefix)
+    const short = cpvDivisionLabelRo(prefix) !== null ? inLocale({ ro: cpvDivisionLabelRo(prefix), en: cpvDivisionLabelEn(prefix) }) : null
+    const division = short ?? inLocale(namer.divisions.get(prefix))
     if (division) return division
   }
-  return namer.names?.cpv.get(cpvKey(prefix))?.ro ?? t`Cod CPV ${prefix}`
+  return inLocale(namer.names?.cpv.get(cpvKey(prefix))) ?? t`Cod CPV ${prefix}`
 }
 
 /** What a key stands for, as a reader names it. */

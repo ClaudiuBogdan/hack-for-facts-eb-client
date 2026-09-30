@@ -367,8 +367,9 @@ function lei(text: string): number | null {
 }
 
 function ValueField({ query, onChange }: { readonly query: Query; readonly onChange: (query: Query) => void }) {
-  const [min, setMin] = useState(query.valoare?.min != null ? String(query.valoare.min) : '')
-  const [max, setMax] = useState(query.valoare?.max != null ? String(query.valoare.max) : '')
+  // Written as `lei` reads it — a comma for the decimals, no grouping — so leaving a field unchanged changes nothing.
+  const [min, setMin] = useState(query.valoare?.min != null ? String(query.valoare.min).replace('.', ',') : '')
+  const [max, setMax] = useState(query.valoare?.max != null ? String(query.valoare.max).replace('.', ',') : '')
   const apply = () => {
     const low = lei(min)
     const high = lei(max)

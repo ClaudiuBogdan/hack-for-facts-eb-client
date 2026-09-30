@@ -14,6 +14,9 @@ const route = Route as unknown as {
   readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
 }
 
+// The explorer's own default when a link named no period: the previous calendar year.
+const LAST_YEAR = new Date().getFullYear() - 1
+
 describe('/procurement', () => {
   it('sends an old explorer link to /procurement/analytics, its question in the page’s words, with what else it carried, less its own choices', () => {
     let thrown: unknown
@@ -24,7 +27,7 @@ describe('/procurement', () => {
     }
     expect(thrown).toEqual({
       kind: 'redirect',
-      options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte', titlu: 'spital' }, replace: true },
+      options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte', perioada: LAST_YEAR, titlu: 'spital' }, replace: true },
     })
   })
 

@@ -15,6 +15,8 @@ const ROUTE = '/procurement/analytics'
 /** The address's params, as the page wrote them. */
 const params = (page: Page) => Object.fromEntries(new URL(page.url()).searchParams)
 const pathname = (page: Page) => new URL(page.url()).pathname
+/** The explorer's own default when a link named no period: the previous calendar year. */
+const LAST_YEAR = String(new Date().getFullYear() - 1)
 
 test.describe('Procurement analytics — addresses and controls', () => {
   test('an old explorer list lands on the same records', async ({ page }) => {
@@ -22,7 +24,7 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await waitForPageReady(page)
 
     await expect.poll(() => pathname(page)).toBe(ROUTE)
-    expect(params(page)).toEqual({ cumparator: '4305857', dupa: 'inregistrari' })
+    expect(params(page)).toEqual({ cumparator: '4305857', perioada: LAST_YEAR, dupa: 'inregistrari' })
   })
 
   test('an old /procurement link carrying an explorer choice asks the analytics page', async ({ page }) => {
@@ -30,7 +32,7 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await waitForPageReady(page)
 
     await expect.poll(() => pathname(page)).toBe(ROUTE)
-    expect(params(page)).toEqual({ tip: 'contracte', titlu: 'spital' })
+    expect(params(page)).toEqual({ tip: 'contracte', perioada: LAST_YEAR, titlu: 'spital' })
     // The title's words are said in the headline.
     await expect(page.getByRole('heading', { level: 1 })).toContainText('spital')
   })

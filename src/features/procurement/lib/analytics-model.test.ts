@@ -56,6 +56,11 @@ describe('analytics URL it cannot read', () => {
     expect(queryOf({ cpv: '45000000-7' }).filters.cpv).toEqual({ level: 'cod', values: ['45000000'] })
     expect(queryOf({ judet: 'cj' }).filters.loc).toEqual({ level: 'judet', values: ['CJ'] })
   })
+  it('says a value range with an end it cannot read, and keeps the end it can', () => {
+    expect(unreadParams({ valoare: '1000..oops' }).map((item) => item.param)).toEqual(['valoare'])
+    expect(queryOf({ valoare: '1000..oops' }).valoare).toEqual({ min: 1000, max: null })
+    expect(unreadParams({ valoare: '1000..' })).toEqual([])
+  })
   it('says what it dropped', () => {
     expect(unreadParams({ cumparator: 'abc', titlu: 'ab', procedura: 'Licitatie deschisa', perioada: '9999', valoare: 'x..y' }).map((item) => item.param)).toEqual(['perioada', 'cumparator', 'procedura', 'titlu', 'valoare'])
     expect(unreadParams({ tip: 'contracte', procedura: 'Licitatie deschisa', judet: 'CJ', perioada: '2025' })).toEqual([])

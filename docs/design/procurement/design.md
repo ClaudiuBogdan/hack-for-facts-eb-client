@@ -2469,3 +2469,26 @@ the map with them, is the owner's call.
 - **Not this change's.** Server rendering with the shared Lingui instance
   can mix languages under concurrent requests. `head` is protected; the
   body is not, on every page with a blocking loader.
+
+**Second review** (Codex `gpt-6.1-sol`, xhigh, 30 September 2026). It found
+no mismatch between the server's and the browser's keys across 178
+questions, no redirect loop, and the cache headers right. It found eight
+defects, fixed in a follow-up commit:
+
+- **The CPV names.** The client's short list named division 80 security
+  and 85 education; CPV has 80 education and 85 health and social work.
+  The list is corrected; it serves the nine divisions it names, the API's
+  names serve the rest, and every name is in the page's language (the
+  divisions' read keeps both).
+- **The explorer's defaults.** A link that named no period meant the
+  previous calendar year (`resolveProcurementOverviewPeriod`), with
+  `period=all` read first. A ranking without `rankBy` was by value, so it
+  stays by value where the population has one.
+- **A withheld count.** A count the API withholds (`recordCount: null`,
+  abstained) is unknown, not zero: its figure is left out and the ⚠ marker
+  says why.
+- **The value field.** It shows a value the way it reads one, with a comma
+  for decimals, so leaving it unchanged changes nothing.
+- **A half-read range.** A range with one end the page cannot read
+  (`1000..oops`) is reported, and the end it can read is kept.
+- **The average.** The average is over the records that have a value.

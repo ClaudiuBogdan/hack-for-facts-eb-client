@@ -260,7 +260,7 @@ export function AnswerTable({
                 <TableCell className={cn('text-right tabular-nums', (byValue || perResident) && 'hidden sm:table-cell')}>{count !== null ? countText(count) : '—'}</TableCell>
                 {money ? <TableCell className={cn('text-right tabular-nums', (!byValue || perResident) && 'hidden sm:table-cell')}>{lei !== null ? moneyText(lei) : '—'}</TableCell> : null}
                 {perResident ? <TableCell className="text-right font-semibold tabular-nums" title={residents ? t`${countText(residents)} de locuitori` : undefined}>{row.figureText}</TableCell> : null}
-                {population.money === 'clean' && !perResident ? <TableCell className="hidden text-right tabular-nums md:table-cell">{count && lei !== null ? moneyText(lei / count) : '—'}</TableCell> : null}
+                {population.money === 'clean' && !perResident ? <TableCell className="hidden text-right tabular-nums md:table-cell">{bucket?.valued && lei !== null ? moneyText(lei / bucket.valued) : '—'}</TableCell> : null}
                 <TableCell className="hidden sm:table-cell">
                   {row.share !== null ? (
                     <span className="flex items-center justify-end gap-2">

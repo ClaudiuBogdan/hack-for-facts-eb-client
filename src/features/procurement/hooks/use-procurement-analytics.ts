@@ -108,7 +108,7 @@ export function useNamer(query: Query, answer: Pick<Answer, 'ranking'>, extra: r
   return useMemo(
     () => ({
       names: names.data,
-      divisions: divisions.data ?? new Map<string, string>(),
+      divisions: divisions.data ?? new Map<string, { readonly ro: string | null; readonly en: string | null }>(),
       counties: new Map((counties.data?.counties ?? []).map((county) => [county.countyCode, formatProcurementCountyName(county.countyName)])),
       localities,
     }),
@@ -134,7 +134,7 @@ export function useNames(keys: { readonly orgs: readonly string[]; readonly cpv:
 export function useCpvDivisions() {
   const seeded = useSeeded()
   const key = procurementAnalyticsKeys.cpvDivisions()
-  return useQuery({ queryKey: key, queryFn: ({ signal }) => readCpvDivisions(signal), staleTime: 24 * 60 * 60 * 1000, ...seeded<ReadonlyMap<string, string>>({ key }) })
+  return useQuery({ queryKey: key, queryFn: ({ signal }) => readCpvDivisions(signal), staleTime: 24 * 60 * 60 * 1000, ...seeded<ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>>({ key }) })
 }
 
 export function useCounties() {

@@ -48,15 +48,21 @@ function cpvOf(state: ProcurementHubState): string | undefined {
   return undefined
 }
 
-/** A year, the months between two days (one day alone runs to the end of the current year: the page stops at the data's cutoff), or every year. */
-function periodOf(state: ProcurementHubState, now: Date): string | undefined {
+/**
+ * The explorer's period in the page's words, read as the explorer read it
+ * (`resolveProcurementOverviewPeriod`): every year first, then the months
+ * between two days (one day alone runs to the end of the current year: the
+ * page stops at the data's cutoff), a year, and — when the link named none —
+ * the explorer's own default, the previous calendar year.
+ */
+function periodOf(state: ProcurementHubState, now: Date): string {
+  if (state.period === 'all') return allYears(now)
   if (state.dateFrom || state.dateTo) {
     const from = (state.dateFrom ?? '2019-01-01').slice(0, 7)
     const to = (state.dateTo ?? `${now.getFullYear()}-12-31`).slice(0, 7)
     return `${from}..${to}`
   }
-  if (state.year !== undefined) return String(state.year)
-  return state.period === 'all' ? allYears(now) : undefined
+  return String(state.year ?? now.getFullYear() - 1)
 }
 
 /** The view as the group-by: the list is the records, a ranking its axis (a fixed one gives way to the page's next, see `repaired`). */
@@ -85,7 +91,8 @@ export function analyticsRedirectSearch(raw: Readonly<Record<string, unknown>>, 
 /** The analytics page's address for an explorer link, normalised as the page writes it. */
 export function analyticsSearchFromExplorer(raw: Readonly<Record<string, unknown>>, now: Date = new Date()): AnalyticsUrlSearch {
   const state = parseProcurementHubSearch(raw as Record<string, unknown>)
-  const search: Record<string, string> = { tip: tipOf(state) }
+  const tip = tipOf(state)
+  const search: Record<string, string> = { tip }
   const put = (key: string, value: string | number | undefined) => {
     if (value !== undefined && value !== '') search[key] = String(value)
   }
@@ -103,8 +110,7 @@ export function analyticsSearchFromExplorer(raw: Readonly<Record<string, unknown
   put('titlu', state.q?.trim())
   if (state.valueMin !== undefined || state.valueMax !== undefined) put('valoare', `${state.valueMin ?? ''}..${state.valueMax ?? ''}`)
   put('dupa', groupOf(state))
-  // A ranking by count stays by count; by value, the page's own default measure.
-  if (state.view === 'rankings' && raw.rankBy === 'count') put('masura', 'numar')
-  if (state.view === 'rankings' && raw.rankBy === 'value') put('masura', 'lei')
+  // A ranking keeps its basis, the explorer's default (by value) included — where the population has a value to rank by.
+  if (state.view === 'rankings') put('masura', state.rankBy === 'count' || tip === 'acorduri' ? 'numar' : 'lei')
   return linkSearchOf(search as AnalyticsSearch)
 }

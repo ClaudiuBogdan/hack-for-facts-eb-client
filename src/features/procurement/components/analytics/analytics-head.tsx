@@ -238,7 +238,8 @@ function factOf(figure: Figure, answer: Answer, compared: string | undefined): H
   const concentration = answer.concentration.data
   const note = figure.change ? <span title={compared}>{figure.change}</span> : null
   const link = (label: ReactNode, className: string) => <span className={className}>{label}</span>
-  if (figure.key === 'records' && now) return { key: figure.key, value: now.records, digits: 0, label: figure.label, note, link }
+  // A count the API withheld has no figure: the caveats' marker says why.
+  if (figure.key === 'records' && now?.records != null) return { key: figure.key, value: now.records, digits: 0, label: figure.label, note, link }
   if (figure.key === 'money' && now?.money != null) {
     const [scale, unit] = now.money >= 1e9 ? [1e9, t`mld. lei`] : now.money >= 1e6 ? [1e6, t`mil. lei`] : [1, t`lei`]
     return { key: figure.key, value: now.money / scale, digits: scale === 1 ? 0 : 1, unit, label: figure.label, note, link }

@@ -103,7 +103,8 @@ const statsSchema = z.object({
 })
 
 export interface Figures {
-  readonly records: number
+  /** Null when the API abstains: unknown, not none. */
+  readonly records: number | null
   readonly valued: number
   readonly money: number | null
   readonly average: number | null
@@ -122,7 +123,7 @@ function figuresOf(raw: unknown): Figures | null {
   const block = statsSchema.parse(raw).blocks[0]
   if (!block) return null
   return {
-    records: block.recordCount ?? 0,
+    records: block.recordCount,
     valued: block.withValueCount ?? 0,
     money: block.valueAwardedSum,
     average: block.avgValueAwarded,
@@ -267,10 +268,10 @@ export async function readNames(cuis: readonly string[], codes: readonly string[
 
 const divisionsSchema = z.object({ procurementCpvDivisions: z.array(z.object({ divisionCode: z.string(), labelRo: z.string().nullable(), labelEn: z.string() })) })
 
-/** Every CPV division's name (the client's own list names nine). */
-export async function readCpvDivisions(signal?: AbortSignal): Promise<ReadonlyMap<string, string>> {
+/** Every CPV division's name in both languages (the client's own list names nine). */
+export async function readCpvDivisions(signal?: AbortSignal): Promise<ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>> {
   const raw = await graphqlQuery<unknown>(`query AnalyticsCpvDivisions { procurementCpvDivisions { divisionCode labelRo labelEn } }`, {}, { operationName: 'AnalyticsCpvDivisions', signal })
-  return new Map(divisionsSchema.parse(raw).procurementCpvDivisions.map((division) => [division.divisionCode, division.labelRo ?? division.labelEn]))
+  return new Map(divisionsSchema.parse(raw).procurementCpvDivisions.map((division) => [division.divisionCode, { ro: division.labelRo, en: division.labelEn }]))
 }
 
 const resolveSchema = z.object({ procurementResolve: z.array(z.object({ value: z.string(), label: z.string() })) })

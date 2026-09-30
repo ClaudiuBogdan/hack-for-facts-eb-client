@@ -360,7 +360,11 @@ export function unreadParams(search: AnalyticsSearch): readonly UnreadParam[] {
     for (const level of AXES[axisId].levels) if (search[level.param] !== undefined && query.filters[axisId]?.level !== level.id) add(level.param)
   }
   if (search.titlu !== undefined && query.titlu === null) add('titlu')
-  if (search.valoare !== undefined && query.valoare === null) add('valoare')
+  if (search.valoare !== undefined) {
+    const ends = search.valoare.split('..')
+    const unreadEnd = ends.length !== 2 || ends.some((end) => end.trim() !== '' && !Number.isFinite(Number(end)))
+    if (unreadEnd || query.valoare === null) add('valoare')
+  }
   if (search.dupa !== undefined && !ownKey(GROUP_PARAMS, search.dupa)) add('dupa')
   if (search.masura !== undefined && !MEASURES.includes(search.masura)) add('masura')
   return unread
