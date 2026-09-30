@@ -64,8 +64,8 @@ describe('NgoHubPage', () => {
     const leaders = screen.getByRole('region', { name: 'Cele mai mari ONG-uri din registru, 2025' })
     expect(within(leaders).getAllByRole('listitem')).toHaveLength(3)
     expect(within(leaders).getByRole('link', { name: /ASOCIATIA A/ })).toHaveAttribute('href', '/ngos/100')
-    // Matched but undeclared: no profile page to open yet.
-    expect(within(leaders).queryByRole('link', { name: /FUNDATIA B/ })).not.toBeInTheDocument()
+    // Every leader is an organisation the profile resolves, so each row opens it.
+    expect(within(leaders).getByRole('link', { name: /FUNDATIA B/ })).toHaveAttribute('href', '/ngos/200')
     const utility = href(within(screen.getByRole('navigation', { name: 'Scurtături' })).getByRole('link', { name: 'De utilitate publică' }))
     expect(utility.pathname).toBe('/ngos/registry')
     expect(utility.searchParams.get('publicUtility')).toBe('yes')

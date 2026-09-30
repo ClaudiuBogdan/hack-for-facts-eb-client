@@ -24,6 +24,12 @@ describe('parseNgoLandingSearch', () => {
 })
 
 describe('parseNgoProfileSearch', () => {
+  it('keeps a statement year, and drops one that is no year', () => {
+    expect(parseNgoProfileSearch({ an: '2019' })).toEqual({ an: 2019 })
+    expect(parseNgoProfileSearch({ an: 'ieri' })).toEqual({})
+    expect(parseNgoProfileSearch({ an: '1066' })).toEqual({})
+  })
+
   it('defaults to empty state', () => {
     expect(parseNgoProfileSearch({})).toEqual({})
   })

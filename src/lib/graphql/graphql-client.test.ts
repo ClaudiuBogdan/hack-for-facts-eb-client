@@ -1,12 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+const log = vi.hoisted(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }))
 vi.mock('@/lib/logger', () => ({
-  createLogger: vi.fn(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    debug: vi.fn(),
-  })),
+  createLogger: vi.fn(() => log),
 }))
 
 vi.mock('@/lib/auth', () => ({
@@ -130,6 +126,17 @@ describe('graphqlQuery', () => {
     expect(error).toBeInstanceOf(GraphQLRequestError)
     expect((error as GraphQLRequestError).status).toBe(400)
     expect((error as GraphQLRequestError).graphQLErrors).toHaveLength(1)
+  })
+
+  it('leaves a breadcrumb, not an error, for a failure the caller expects — and still throws it', async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({ errors: [{ message: 'Cannot query field "text"' }] }, { ok: false, status: 400, statusText: 'Bad Request' }),
+    )
+    await expect(graphqlQuery('query { ok }', {}, { expectFailure: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    fetchMock.mockResolvedValue(jsonResponse({ errors: [{ message: 'Cannot query field "text"' }] }))
+    await expect(graphqlQuery('query { ok }', {}, { expectFailure: true })).rejects.toBeInstanceOf(GraphQLRequestError)
+    expect(log.error).not.toHaveBeenCalled()
+    expect(log.info).toHaveBeenCalledTimes(2)
   })
 
   it('throws when data is null (distinct from a null field inside data)', async () => {

@@ -36,9 +36,9 @@ describe('NgoLeaderRows', () => {
     expect(row).not.toHaveTextContent('%')
   })
 
-  it('opens a profile only where the NGO API is on and the profile resolves the CUI', () => {
+  it('opens each leader’s profile, and none where the NGO API is off', () => {
     const { unmount } = render(<NgoLeaderRows leaders={FINANCE.leaders} registry previousYear={2024} limit={10} />)
-    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/ngos/100', '/ngos/300'])
+    expect(screen.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['/ngos/100', '/ngos/200', '/ngos/300'])
     unmount()
     render(<NgoLeaderRows leaders={FINANCE.leaders} registry={false} previousYear={2024} limit={10} />)
     expect(screen.queryAllByRole('link')).toHaveLength(0)

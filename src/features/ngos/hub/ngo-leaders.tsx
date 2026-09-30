@@ -17,8 +17,8 @@ import { LEADER_ROW_CLASS as ROW_CLASS } from './ngo-hub-sections'
  * there was no statement that year. A leader whose entry has closed since
  * says so: the ranking is of a year, the registry of now.
  *
- * A row opens the organisation's profile where there is one to open: with
- * the NGO API on (`registry`), and for a CUI the profile resolves (`linked`).
+ * A row opens the organisation's profile wherever the NGO API is on
+ * (`registry`): every leader is an organisation the profile resolves.
  */
 export function NgoLeaderRows({
   leaders,
@@ -81,7 +81,7 @@ export function NgoLeaderRows({
         )
         return (
           <li key={leader.cui}>
-            {registry && leader.linked ? (
+            {registry ? (
               <Link to="/ngos/$cui" params={{ cui: leader.cui }} className={cn(ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
                 {cells}
               </Link>

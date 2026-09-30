@@ -1,15 +1,29 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import {
-  NgoLiveProfilePage,
-  NgoLiveProfileNotFound,
-  NgoLiveProfileUnavailable,
-} from "@/features/ngos/profile/profile-page";
-export const Route = createLazyFileRoute("/ngos/$cui")({
+import { createLazyFileRoute, useNavigate, useRouter, useRouterState } from '@tanstack/react-router'
+import { NgoOrganizationPage } from '@/features/ngos/organization/components/ngo-organization-page'
+import { NgoProfileNotFound, NgoProfileUnavailable } from '@/features/ngos/organization/components/profile-fallbacks'
+
+export const Route = createLazyFileRoute('/ngos/$cui')({
   component: NgoProfileRoutePage,
-  notFoundComponent: NgoLiveProfileNotFound,
-  errorComponent: NgoLiveProfileUnavailable,
-});
+  notFoundComponent: NgoProfileNotFound,
+  errorComponent: NgoProfileUnavailable,
+})
+
 function NgoProfileRoutePage() {
-  const { profile } = Route.useLoaderData();
-  return <NgoLiveProfilePage profile={profile} />;
+  const { organization, statementsRead, purpose } = Route.useLoaderData()
+  const search = Route.useSearch()
+  const navigate = useNavigate({ from: '/ngos/$cui' })
+  const router = useRouter()
+  const retrying = useRouterState({ select: (state) => state.isLoading })
+  return (
+    <NgoOrganizationPage
+      organization={organization}
+      statementsRead={statementsRead}
+      purpose={purpose}
+      year={search.an}
+      // The year a reader chose, kept in the address; the view is the same band, so the scroll stays.
+      onYear={(year) => void navigate({ search: (previous) => ({ ...previous, an: year }), replace: true, resetScroll: false })}
+      onRetry={() => void router.invalidate()}
+      retrying={retrying}
+    />
+  )
 }

@@ -78,8 +78,6 @@ export interface NgoFinanceLeader {
   readonly previous: number | null
   /** The registry status now, when it is not „Înregistrat". */
   readonly status: 'dissolved' | 'inLiquidation' | 'deregistered' | null
-  /** Whether the NGO profile page opens this CUI; a matched but undeclared CUI has no page yet. */
-  readonly linked: boolean
 }
 
 export interface NgoFinanceSummary {

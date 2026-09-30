@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Builds `src/features/ngos/hub/finance-summary.ts` — the money behind
- * `/ong-uri` — from the Ministry of Finance's non-profit financial statements
+ * `/ngos` — from the Ministry of Finance's non-profit financial statements
  * on data.gov.ro (one `web_ong_an<YEAR>.txt` per year, 46 indicators by CUI)
  * and the platform's NGO profiles for the largest.
  *
@@ -23,9 +23,8 @@
  *
  * The leaders are the largest by revenue among the organisations the NGO
  * profile resolves: a registry entry whose CUI the platform admitted, by the
- * registry's own declaration or by an exact name and county match at ANAF.
- * `linked` says whether the profile page (`/ong-uri/$cui`, the legacy
- * overview) opens it: the overview takes registry-declared CUIs only. Most
+ * registry's own declaration or by an exact name and county match at ANAF —
+ * each one the profile page (`/ngos/$cui`) opens. Most
  * filers are not in that set — unions, religious bodies and parties are not
  * in the NGO registry, and most registry entries declare no CUI — so the
  * ranking is of the registry's NGOs, not of every non-profit.
@@ -243,10 +242,9 @@ const COUNTY_CODES = {
 }
 const fold = (value) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/-/g, ' ').toUpperCase().trim()
 const STATUS = { Inregistrat: null, Dizolvata: 'dissolved', 'In Lichidare': 'inLiquidation', Radiat: 'deregistered' }
-// The organisation profile admits a CUI; the overview is what `/ong-uri/$cui` opens today, for registry-declared CUIs only.
+// The organisation profile admits a CUI, and is what `/ngos/$cui` opens.
 const PROFILE = `query($cui: CUI!) {
   ngoOrganizationProfile(cui: $cui) { cui name county sourceRegistryStatus registryRecords { nameWithheld } }
-  ngoProfileOverview(cui: $cui) { cui }
 }`
 
 const ranked = [...latest].sort(([, a], [, b]) => b.I38 - a.I38).slice(0, PROFILE_DEPTH)
@@ -268,7 +266,6 @@ for (let start = 0; start < ranked.length && leaders.length < LEADERS; start += 
       revenue: statement.I38,
       previous: before && before.I38 > 0 ? before.I38 : null,
       status: STATUS[profile.sourceRegistryStatus],
-      linked: reads[index].ngoProfileOverview !== null,
     })
   })
 }

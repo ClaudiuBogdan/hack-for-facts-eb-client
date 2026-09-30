@@ -437,6 +437,8 @@ export const ngoProfileSearchSchema = z
       ),
     from: z.string().optional().catch(undefined),
     lang: z.string().optional().catch(undefined),
+    /** The statement read row by row; the latest when absent. */
+    an: z.coerce.number().int().min(1990).max(2100).optional().catch(undefined),
   })
   .catch(() => ({ evidence: undefined }))
 
@@ -445,6 +447,7 @@ export type NgoProfileSearch = {
   readonly evidence?: boolean
   readonly from?: string
   readonly lang?: string
+  readonly an?: number
 }
 
 export function parseNgoProfileSearch(

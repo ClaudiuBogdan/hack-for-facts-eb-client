@@ -668,3 +668,69 @@ leaders' module (the eager route would have pulled in its formatters).
 then links); move the pinned bar and band (`HomeSectionNav`, `HomeBand`, now
 in `home-section-nav.tsx`) out of the procurement feature into shared landing
 chrome.
+
+## 14. The profile on `ngoOrganizationProfile` (2026-09-30)
+
+Promoted from the `/development` prototype `ngos/profile`, variant **benzi**
+(the companies profile's language: head, pinned bar, four figures, one band
+per question). The owner chose it over **fisa** and **ani**, which were then
+removed from the prototype at their request; the prototype stays, on its seven
+real fixtures, as the design reference.
+
+`/ngos/$cui` now reads `ngoOrganizationProfile(cui)` — the organisation the
+registry and ANAF admit for a CUI — instead of the legacy
+`ngoProfileOverview`, whose module is gone. Every hub leader opens its
+profile (the `linked` flag that kept the inferred ones unlinked is dropped
+from the finance summary).
+
+- **Three requests, failing apart.** The loader reads, at once, the profile
+  (identity, registry, ANAF, the statements' years; `null` → not found, a
+  failure → the error page), every statement (a failure keeps the page, which
+  says „nu s-au încărcat" — never „none" — and reads again on request) and
+  the purpose's text (asked alone: until the server serves `purpose.text`,
+  that request fails and the head simply has no purpose).
+- **Head.** The name (a withheld one said as withheld), one sentence (form,
+  place, ANAF registration date), **the registry's purpose** („Scop") as
+  published — line breaks kept, the registry's own `<PERSON>` masking left as
+  it is, four lines then „Arată mai multe" — the chips (registry status, VAT,
+  fiscal inactivity explained as not dissolution, how the CUI was admitted,
+  amber where only inferred; no universal „verified"), CUI and registry
+  number; the last six years' revenue and expenses beside them.
+- **Bands.** 01 Banii (the latest year by activity, revenue and expenses per
+  year), 02 the statement row by row (every row under its own year's label,
+  exact values from the filed strings — a blank cell „—", a reported zero 0 —
+  the file and its dictionary linked), 03 year by year (the key rows as a
+  matrix, newest first, a missing year an empty column; its header opens that
+  year above), 04 ANAF and the registry, each read dated. A band's number is
+  its place in the bar, which drops 03 when there is nothing to tabulate.
+- **The year in the address** (`?an=2019`), as the app keeps its choices:
+  a shared link opens the same statement.
+- **Head (SEO).** Built in the request's language; the description is the
+  purpose where it is published, or what the organisation is, where, and its
+  latest revenue; canonical per language.
+- **What the page does not say.** A figure the latest form does not give (a
+  blank cell, or no such row that year) is left out of the four figures,
+  never drawn as 0; a result is zero only where both the surplus and the
+  deficit rows report zero. In the matrix „—" is only a blank cell in the
+  source; a row that year's form lacks stays empty, said to a screen reader.
+  A year without a statement is „fără situație pe platformă", not „absent
+  from the files": the API cannot say that. With no statement at all, the
+  statement's and the years' bands are not drawn, and the reason (not
+  loaded, not published, none, or a failed read) is said once. ANAF's two
+  reads — registration and fiscal status — are shown and dated apart. A name
+  the registry's observations disagree on is flagged, not presented as
+  agreed; the conflicts are named in words. Staff counts are in people, not
+  lei; on a phone a filed plan is read under the actual figure.
+- **Retries** read again through the router (`router.invalidate`), on the
+  error page too (a boundary's reset alone rendered the same failure), busy
+  while they run.
+- **The purpose's request** is expected to fail until the server serves
+  `purpose.text`; it passes `expectFailure` to the GraphQL client, which then
+  logs a breadcrumb instead of a Sentry error per profile.
+- **Reviews.** Codex (gpt-6.1-sol, xhigh) and an Opus 5.5 xhigh agent; every
+  point above that says what the page does not say came from them.
+- **Not yet.** The server's new sections — accredited social services,
+  social-economy and employment-service certificates — are not deployed; the
+  head will carry them as factual badges once they are. The statements'
+  hydrated payload grows with the years (about 80 KB raw, 10 KB gzipped for
+  17): the loader could send indicators as tuples if it grows.
