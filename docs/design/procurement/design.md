@@ -2715,3 +2715,13 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
   - A search waits for the regions and counties before it says „Nimic
     pentru …".
   - The value pair's hidden submit is out of the Tab order.
+- **Found later by the ONG registry's review** (1 October 2026), on the
+  same parts:
+  - A blur that removed nodes lost the focus. The place's list closing,
+    and a title or value becoming its chip, happened before the focus
+    landed. Radix's focus scope then took the focus to the sheet, which
+    cancelled a Tab or a tap on the next field. Such changes now wait
+    until the focus has landed (`lib/after-focus-moves.ts`).
+  - A list long enough to scroll was its own Tab stop in Chrome, unnamed,
+    and Escape there closed the sheet. Its box is now out of the Tab
+    order.

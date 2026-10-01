@@ -105,4 +105,26 @@ test.describe('Procurement analytics — addresses and controls', () => {
     // The field gave way to the chip: the focus goes to its ✕, not to the top of the sheet.
     await expect(sheet.getByRole('button', { name: 'Scoate Municipiul Cluj-Napoca' })).toBeFocused()
   })
+
+  test('the filters sheet lets the focus move on from a field its leaving changes', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    await page.getByRole('button', { name: /^Filtre/ }).first().click()
+    const sheet = page.getByRole('dialog')
+    // The place's list closes as the focus leaves: the focus reaches the next field, not the sheet.
+    const place = sheet.getByRole('combobox', { name: 'Caută locul instituției' })
+    await place.click()
+    await expect(place).toHaveAttribute('aria-expanded', 'true')
+    await place.press('Tab')
+    await expect(sheet.getByRole('combobox', { name: 'Caută o firmă' })).toBeFocused()
+    await expect(place).toHaveAttribute('aria-expanded', 'false')
+
+    // A title typed becomes its chip as the focus leaves.
+    const title = sheet.getByRole('textbox', { name: 'Titlul conține' })
+    await title.fill('laptop')
+    await title.press('Tab')
+    await expect.poll(() => params(page).titlu).toBe('laptop')
+    await expect(sheet.getByRole('textbox', { name: 'Valoare de la, lei' })).toBeFocused()
+  })
 })

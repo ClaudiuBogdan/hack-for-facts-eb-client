@@ -7,6 +7,7 @@ import { useActiveOption, type ActiveOption } from '../../hooks/use-active-optio
 import { usePlaceIndex } from '../../hooks/use-procurement-analytics'
 import { withFilter, withoutFilter, type Query } from '../../lib/analytics-model'
 import { browsePlaces, kindLabel, placePath, scopeOf, searchPlaces, type Place, type PlaceIndex, type PlaceMatches } from '../../lib/analytics-places'
+import { afterFocusMoves } from '../../lib/after-focus-moves'
 import { Announce, CELL, Chip, FIELD, Notice, OPTION, OptionGroup, Options, Row, TALL } from './analytics-filter-parts'
 
 /**
@@ -147,7 +148,12 @@ export function PlaceField({ axis, query, onChange }: { readonly axis: 'loc' | '
             if (first) pick(first)
           }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false)
+            const form = event.currentTarget
+            if (form.contains(event.relatedTarget as Node | null)) return
+            // The list closes once the focus has landed, unless it has come back.
+            afterFocusMoves(() => {
+              if (!form.contains(document.activeElement)) setFocused(false)
+            })
           }}
           className="space-y-1.5"
         >

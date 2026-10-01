@@ -91,7 +91,8 @@ export function Chip({ label, onClear, children }: { readonly label: string; rea
  */
 export function Options({ id, label, notices, children }: { readonly id: string; readonly label: string; readonly notices?: ReactNode; readonly children?: ReactNode }) {
   return (
-    <div className="max-h-80 overflow-y-auto border" onMouseDown={(event) => event.preventDefault()}>
+    // Out of the Tab order: Chrome makes a scroller a stop of its own, unnamed, where Escape would close the sheet.
+    <div tabIndex={-1} className="max-h-80 overflow-y-auto border" onMouseDown={(event) => event.preventDefault()}>
       <div id={id} role="listbox" aria-label={label}>
         {children}
       </div>

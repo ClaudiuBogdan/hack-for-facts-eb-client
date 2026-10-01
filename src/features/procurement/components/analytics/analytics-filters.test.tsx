@@ -194,10 +194,14 @@ describe('FilterPanel', () => {
     expect(onChange).not.toHaveBeenCalled()
   })
 
-  it('keeps the options out of the Tab order', () => {
+  it('keeps the options, and the box that scrolls them, out of the Tab order', () => {
     panel()
-    fireEvent.focus(screen.getByRole('combobox', { name: 'Caută locul firmei' }))
+    const field = screen.getByRole('combobox', { name: 'Caută locul firmei' })
+    fireEvent.focus(field)
     for (const option of screen.getAllByRole('option')) expect(option).toHaveAttribute('tabindex', '-1')
+    // Chrome makes a scroller that overflows a Tab stop of its own.
+    fireEvent.change(field, { target: { value: 'sibiu' } })
+    expect(screen.getByRole('listbox', { name: 'Locuri' }).parentElement).toHaveAttribute('tabindex', '-1')
   })
 
   it('offers the regions before a word is typed', () => {

@@ -12,6 +12,7 @@ import { cpvKey, cpvLevelOf, FIRST_MONTH, POPULATIONS, repaired, withFilter, wit
 import { useActiveOption } from '../../hooks/use-active-option'
 import { CPV_SEARCH_MIN, useCpvSearch, useNames, type Answer } from '../../hooks/use-procurement-analytics'
 import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, type Namer } from '../../lib/analytics-text'
+import { afterFocusMoves } from '../../lib/after-focus-moves'
 import { SHOW_MORE_CLASS } from '../home/home-chrome'
 import { Announce, CELL, Chip, FIELD, Group, Notice, OPTION, Options, Row, TALL } from './analytics-filter-parts'
 import { MonthField } from './analytics-month-field'
@@ -339,7 +340,7 @@ function TitleField({ query, onChange }: { readonly query: Query; readonly onCha
             apply()
           }}
         >
-          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={apply} placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
+          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={() => afterFocusMoves(apply)} placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
         </form>
       )}
     </Row>
@@ -378,7 +379,7 @@ function ValueField({ query, namer, onChange }: { readonly query: Query; readonl
           }}
           // Applied when the focus leaves the pair: moving from one field to the other applies nothing half-typed.
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) apply()
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) afterFocusMoves(apply)
           }}
         >
           <input inputMode="numeric" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoare de la, lei`} className={FIELD} />
