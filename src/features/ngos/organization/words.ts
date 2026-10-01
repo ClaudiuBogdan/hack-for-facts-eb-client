@@ -16,6 +16,16 @@ type Translate = (descriptor: MessageDescriptor) => string
 const active: Translate = (descriptor) => i18n._(descriptor)
 
 /** The organisation's name as the page says it: the registry's, mended; a withheld one said as withheld. */
+/**
+ * The registry's purpose as the page shows it: its text where it is
+ * `available` and says something; null for a blank cell, coverage not
+ * loaded or observations that disagree — none of which is „no purpose".
+ */
+export function purposeText(organization: Pick<NgoOrganization, 'purpose'>): string | null {
+  const { availability, text } = organization.purpose
+  return availability === 'available' ? text?.trim() || null : null
+}
+
 export function organizationName(organization: Pick<NgoOrganization, 'name' | 'registryRecords'>, translate: Translate = active): string {
   const name = organization.name ?? organization.registryRecords.find((record) => !record.nameWithheld)?.name ?? null
   return name ? displayNgoName(name) : translate(msg`Nume nepublicat`)

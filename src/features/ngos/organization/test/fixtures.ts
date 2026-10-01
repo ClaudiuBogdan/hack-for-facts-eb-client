@@ -45,6 +45,8 @@ export const FUNKY: NgoOrganization = {
   sourceReportsPublicUtility: false,
   sourceRegistrationDate: null,
   financials: { availability: 'available', fiscalYears: [2021, 2023, 2024] },
+  // As the dev API served it on 2026-10-01: the registry's capitals, cut by its own masking.
+  purpose: { availability: 'available', text: 'PROMOVAREA DREPTURILOR OMULUI, DEZVOLTAREA SUSTENABILA, RESPONSABILITATEA SOCALA SI INDIVIDUALA PRIN CETATENIE ACTIVA, EDUCATIE CIVICA SII CULTURALA, ATAT PRIN ACTIVITATI PROPRII, CAT SI PRIN SPRIJINIREA INITIATIVELOR CARE ISI <PERSON>' },
 }
 
 export const FUNKY_STATEMENTS: readonly NgoStatement[] = [
@@ -666,4 +668,5 @@ export const ABSOLUT: NgoOrganization = {
   sourceReportsPublicUtility: false,
   sourceRegistrationDate: null,
   financials: { availability: 'not_loaded', fiscalYears: [] },
+  purpose: { availability: 'available', text: 'stimularea interesului și curiozității față de cultură și artă, mai întâi prin cunoașterea tradițiilor locale, prin dezvoltarea deprinderilor de muncă practică și intelectuală, prin cultivarea capacității creatoare a imaginației, a spiritului de cercetare, a dorinței de a contribui după puterea fiecăruia la perpetuarea șl promovarea valorilor culturale, spirituale, naționale și internaționale, prin educarea copiilor .și a tinerilor cetățeni în domeniul artei: dans, etnografie, pictură, muzică, teatru, arta fotografică, designer vestimentar sau de ambient, artă manuală: creatori de goblen și a altor meșteșuguri tradiționale românești (arta țesutului, cusutului, împletitului, croșetatului, olăritului, sculptatului, etc.) precum și crearea unui cadru propice schimbului de cunoștințe, informații cultural-educative între cetățenii români și cetățenii altor țări, realizarea de parteneriate în vederea susținerii de proiecte cultural-educaționale, sprijinirea membrilor asociației în vederea participării și organizării activităților cultural-educative pe plan intern și internațional. Formarea atitudinii de respect față de propria cultură și fața de cultura celorlalte popoare.' },
 }

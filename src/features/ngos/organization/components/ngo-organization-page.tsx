@@ -13,9 +13,9 @@ import { HomeBand, HomeSectionNav } from '@/features/procurement/components/home
 import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import type { NgoOrganization, NgoPurpose, NgoStatementsRead } from '../api'
+import type { NgoOrganization, NgoStatementsRead } from '../api'
 import { keyFigures, latestStatement, placeOf, yearSeries } from '../model'
-import { categoryLabel, organizationName, profileFacts, type ProfileFacts } from '../words'
+import { categoryLabel, organizationName, profileFacts, purposeText, type ProfileFacts } from '../words'
 import {
   AnafFacts,
   Identifiers,
@@ -44,7 +44,6 @@ import { YearsMatrix } from './years-matrix'
 export function NgoOrganizationPage({
   organization,
   statementsRead,
-  purpose,
   year,
   onYear,
   onRetry,
@@ -52,7 +51,6 @@ export function NgoOrganizationPage({
 }: {
   readonly organization: NgoOrganization
   readonly statementsRead: NgoStatementsRead
-  readonly purpose: NgoPurpose | null
   /** The statement read row by row (`?an=`); the latest when absent or not filed. */
   readonly year: number | undefined
   readonly onYear: (year: number) => void
@@ -73,6 +71,7 @@ export function NgoOrganizationPage({
   const latest = latestStatement(statements)
   const chosen = statements.find((statement) => statement.fiscalYear === (year ?? latest?.fiscalYear)) ?? latest
   const facts = profileFacts(statements)
+  const purpose = purposeText(organization)
   const name = organizationName(organization)
   // A year the address asks for that has no statement on the platform: said, and the latest shown instead.
   const unfiled = year !== undefined && chosen !== null && chosen.fiscalYear !== year ? year : null
@@ -126,7 +125,7 @@ export function NgoOrganizationPage({
               <p className="mt-5 max-w-[42rem] text-lg leading-relaxed text-muted-foreground">
                 <ProfileSentence organization={organization} />
               </p>
-              {purpose?.availability === 'available' && purpose.text ? <PurposeText text={purpose.text} /> : null}
+              {purpose ? <PurposeText text={purpose} /> : null}
               <div className="mt-5 space-y-3">
                 <ProfileChips organization={organization} />
                 <Identifiers organization={organization} />

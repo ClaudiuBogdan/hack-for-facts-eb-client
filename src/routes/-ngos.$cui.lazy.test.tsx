@@ -10,7 +10,7 @@ const invalidate = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => (options: Record<string, unknown>) => ({
     options,
-    useLoaderData: () => ({ organization: FUNKY, statementsRead: { status: 'ready', statements: FUNKY_STATEMENTS }, purpose: null }),
+    useLoaderData: () => ({ organization: FUNKY, statementsRead: { status: 'ready', statements: FUNKY_STATEMENTS } }),
     useSearch: () => ({ an: 2023 }),
   }),
   useNavigate: () => navigate,

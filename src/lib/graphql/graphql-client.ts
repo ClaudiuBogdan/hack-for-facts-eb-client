@@ -128,12 +128,6 @@ export interface GraphQLQueryOptions {
    * whenever one is available.
    */
   readonly auth?: 'optional' | 'none'
-  /**
-   * The caller expects this read to fail sometimes and handles it (a field the
-   * deployed API may not serve yet): an HTTP or GraphQL error is logged as a
-   * breadcrumb, not an error. Transport failures still alert.
-   */
-  readonly expectFailure?: boolean
 }
 
 /**
@@ -200,8 +194,7 @@ export async function graphqlQuery<T>(
   if (!response.ok) {
     const errors = Array.isArray(parsed?.errors) ? parsed!.errors : []
     const detail = errors.length > 0 ? ` - ${formatGraphQLErrors(errors)}` : rawText ? ` - ${rawText}` : ''
-    if (options.expectFailure) logger.info('GraphQL HTTP error, expected', { label, status: response.status })
-    else logger.error('GraphQL HTTP error', { label, status: response.status })
+    logger.error('GraphQL HTTP error', { label, status: response.status })
     throw new GraphQLRequestError(
       `GraphQL request failed: ${response.status} ${response.statusText}${detail}`,
       { status: response.status, graphQLErrors: errors, query },
@@ -220,7 +213,6 @@ export async function graphqlQuery<T>(
     // A refused input is the caller's to handle (a mistyped or crawled
     // address, usually), so it leaves a breadcrumb rather than an alert.
     if (isGraphQLInvalidInput(error)) logger.info('GraphQL input refused', { label, errors: parsed.errors })
-    else if (options.expectFailure) logger.info('GraphQL errors, expected', { label, errors: parsed.errors })
     else logger.error('GraphQL errors', { label, errors: parsed.errors })
     throw error
   }

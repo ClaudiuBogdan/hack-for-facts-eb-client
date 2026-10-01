@@ -9,7 +9,7 @@ export const Route = createLazyFileRoute('/ngos/$cui')({
 })
 
 function NgoProfileRoutePage() {
-  const { organization, statementsRead, purpose } = Route.useLoaderData()
+  const { organization, statementsRead } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = useNavigate({ from: '/ngos/$cui' })
   const router = useRouter()
@@ -18,7 +18,6 @@ function NgoProfileRoutePage() {
     <NgoOrganizationPage
       organization={organization}
       statementsRead={statementsRead}
-      purpose={purpose}
       year={search.an}
       // The year a reader chose, kept in the address; the view is the same band, so the scroll stays.
       onYear={(year) => void navigate({ search: (previous) => ({ ...previous, an: year }), replace: true, resetScroll: false })}

@@ -683,12 +683,13 @@ registry and ANAF admit for a CUI — instead of the legacy
 profile (the `linked` flag that kept the inferred ones unlinked is dropped
 from the finance summary).
 
-- **Three requests, failing apart.** The loader reads, at once, the profile
-  (identity, registry, ANAF, the statements' years; `null` → not found, a
-  failure → the error page), every statement (a failure keeps the page, which
-  says „nu s-au încărcat" — never „none" — and reads again on request) and
-  the purpose's text (asked alone: until the server serves `purpose.text`,
-  that request fails and the head simply has no purpose).
+- **Two requests, failing apart.** The loader reads, at once, the profile
+  (identity, registry, the registry's purpose, ANAF, the statements' years;
+  `null` → not found, a failure → the error page) and every statement (a
+  failure keeps the page, which says „nu s-au încărcat" — never „none" — and
+  reads again on request). The purpose was first asked alone, expected to
+  fail; since the server serves `purpose { availability text }` (dev,
+  2026-09-30) it is read with the profile (2026-10-01).
 - **Head.** The name (a withheld one said as withheld), one sentence (form,
   place, ANAF registration date), **the registry's purpose** („Scop") as
   published — line breaks kept, the registry's own `<PERSON>` masking left as
@@ -706,8 +707,8 @@ from the finance summary).
 - **The year in the address** (`?an=2019`), as the app keeps its choices:
   a shared link opens the same statement.
 - **Head (SEO).** Built in the request's language; the description is the
-  purpose where it is published, or what the organisation is, where, and its
-  latest revenue; canonical per language.
+  purpose where it is published and the registry masked none of it, or what
+  the organisation is, where, and its latest revenue; canonical per language.
 - **What the page does not say.** A figure the latest form does not give (a
   blank cell, or no such row that year) is left out of the four figures,
   never drawn as 0; a result is zero only where both the surplus and the
@@ -724,9 +725,13 @@ from the finance summary).
 - **Retries** read again through the router (`router.invalidate`), on the
   error page too (a boundary's reset alone rendered the same failure), busy
   while they run.
-- **The purpose's request** is expected to fail until the server serves
-  `purpose.text`; it passes `expectFailure` to the GraphQL client, which then
-  logs a breadcrumb instead of a Sentry error per profile.
+- **The purpose** is shown only where it is `available` with a text, exactly
+  as the registry published it (plain text, line breaks, quotes and its
+  `<PERSON>`/`<LOCATION>` masking kept). `not_loaded` says nothing (missing
+  coverage, never „no purpose"); `not_released` names „scopul" among the
+  conflicts. The meta description leads with it unless the registry masked
+  part of it: a search snippet would read „<PERSON>", so the made
+  description („Asociație din …") stands in.
 - **Reviews.** Codex (gpt-6.1-sol, xhigh) and an Opus 5.5 xhigh agent; every
   point above that says what the page does not say came from them.
 - **Not yet.** The server's new sections — accredited social services,

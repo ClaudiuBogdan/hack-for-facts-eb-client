@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchNgoOrganization, fetchNgoPurpose, fetchNgoStatements, ngoOrganizationSchema } from './api'
+import { fetchNgoOrganization, fetchNgoStatements, ngoOrganizationSchema } from './api'
 import { ABSOLUT, FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
 
 const query = vi.hoisted(() => vi.fn())
@@ -30,17 +30,11 @@ describe('the NGO organisation profile, read', () => {
     expect(query.mock.calls[0]![2]).toMatchObject({ operationName: 'NgoStatements', auth: 'none' })
   })
 
-  it('reads the purpose alone, and leaves it out — the page whole — where the API does not serve it', async () => {
-    query.mockResolvedValueOnce({ ngoOrganizationProfile: { purpose: { availability: 'available', text: 'Apărarea drepturilor copilului.\nEducație.' } } })
-    expect(await fetchNgoPurpose(FUNKY.cui)).toEqual({ availability: 'available', text: 'Apărarea drepturilor copilului.\nEducație.' })
-    query.mockRejectedValueOnce(new Error('Cannot query field "text" on type "NgoPurposeSection".'))
-    expect(await fetchNgoPurpose(FUNKY.cui)).toBeNull()
-  })
-
-  it('does not swallow a navigation’s abort', async () => {
-    const controller = new AbortController()
-    controller.abort()
-    query.mockRejectedValueOnce(new DOMException('aborted', 'AbortError'))
-    await expect(fetchNgoPurpose(FUNKY.cui, { signal: controller.signal })).rejects.toThrow('aborted')
+  it('reads the registry’s purpose with the profile, in the same request', async () => {
+    query.mockResolvedValueOnce({ ngoOrganizationProfile: FUNKY })
+    expect((await fetchNgoOrganization(FUNKY.cui))?.purpose).toEqual(FUNKY.purpose)
+    expect(query.mock.calls[0]![0]).toContain('purpose { availability text }')
+    // An availability this client does not know drops the purpose, not the profile.
+    expect(ngoOrganizationSchema.parse({ ...FUNKY, purpose: { availability: 'unknown', text: 'x' } }).purpose).toEqual({ availability: 'not_loaded', text: null })
   })
 })

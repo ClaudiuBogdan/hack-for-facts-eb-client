@@ -30,7 +30,6 @@ const renderPage = (props: Partial<Parameters<typeof NgoOrganizationPage>[0]> = 
     <NgoOrganizationPage
       organization={FUNKY}
       statementsRead={{ status: 'ready', statements: FUNKY_STATEMENTS }}
-      purpose={null}
       year={undefined}
       onYear={onYear}
       onRetry={onRetry}
@@ -122,7 +121,7 @@ describe('NgoOrganizationPage', () => {
     fireEvent.click(within(alert).getByRole('button', { name: 'Încearcă din nou' }))
     expect(onRetry).toHaveBeenCalled()
     rerender(
-      <NgoOrganizationPage organization={FUNKY} statementsRead={{ status: 'failed' }} purpose={null} year={undefined} onYear={onYear} onRetry={onRetry} retrying />,
+      <NgoOrganizationPage organization={FUNKY} statementsRead={{ status: 'failed' }} year={undefined} onYear={onYear} onRetry={onRetry} retrying />,
     )
     expect(within(screen.getByRole('alert')).getByRole('button', { name: 'Se încarcă…' })).toBeDisabled()
   })
@@ -150,7 +149,7 @@ describe('NgoOrganizationPage', () => {
 
   it('shows the registry’s purpose as published, line breaks kept, a long one behind „Arată mai multe"', () => {
     const text = `Promovarea transparenței.\n${'Participare civică și educație. '.repeat(12)}`
-    renderPage({ purpose: { availability: 'available', text } })
+    renderPage({ organization: { ...FUNKY, purpose: { availability: 'available', text } } })
     const purpose = screen.getByText(/Promovarea transparenței\./)
     expect(purpose).toHaveClass('whitespace-pre-wrap', 'line-clamp-4')
     const more = screen.getByRole('button', { name: 'Arată mai multe' })
@@ -159,8 +158,20 @@ describe('NgoOrganizationPage', () => {
     expect(screen.getByRole('button', { name: 'Arată mai puține' })).toHaveAttribute('aria-expanded', 'true')
   })
 
+  it('shows the purpose the API serves as the registry wrote it, its masking as text', () => {
+    renderPage()
+    expect(screen.getByText(/PROMOVAREA DREPTURILOR OMULUI/)).toHaveTextContent(/<PERSON>$/)
+  })
+
+  it('shows nothing for a purpose that is only blank space', () => {
+    renderPage({ organization: { ...FUNKY, purpose: { availability: 'available', text: '   ' } } })
+    expect(screen.queryByText('Scopul, din registru')).not.toBeInTheDocument()
+  })
+
   it('shows no purpose where it is not published or blank', () => {
-    renderPage({ purpose: { availability: 'not_released', text: null } })
+    renderPage({ organization: { ...FUNKY, purpose: { availability: 'not_released', text: null }, conflicts: ['purpose'] } })
+    // Observations that disagree are named, never shown as one purpose.
+    expect(screen.getAllByText(/scopul/).length).toBeGreaterThan(0)
     expect(screen.queryByText('Scopul, din registru')).not.toBeInTheDocument()
   })
 })

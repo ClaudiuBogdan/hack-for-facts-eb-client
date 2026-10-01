@@ -19,7 +19,7 @@ const meta = (head: ReturnType<typeof buildNgoProfileHead>, key: string) =>
 
 describe('buildNgoProfileHead', () => {
   it('names the organisation and describes it with what it is, where, and its latest revenue', () => {
-    const head = buildNgoProfileHead({ organization: FUNKY, statements: FUNKY_STATEMENTS, purpose: null }, 'ro')
+    const head = buildNgoProfileHead({ organization: { ...FUNKY, purpose: { availability: 'not_loaded', text: null } }, statements: FUNKY_STATEMENTS }, 'ro')
     expect(head.meta[0]).toEqual({ title: 'Funky Citizens — Transparenta.eu' })
     const description = meta(head, 'description')!.content
     expect(description).toMatch(/^Asociație din Sectorul 3, București\. Venituri de .* în 2024/)
@@ -28,20 +28,40 @@ describe('buildNgoProfileHead', () => {
 
   it('leads with the registry’s purpose where it is published, cut where a search engine cuts', () => {
     const text = 'Promovarea transparenței și a participării civice. '.repeat(6)
-    const description = meta(buildNgoProfileHead({ organization: FUNKY, statements: [], purpose: { availability: 'available', text } }, 'ro'), 'description')!.content
+    const description = meta(buildNgoProfileHead({ organization: { ...FUNKY, purpose: { availability: 'available', text } }, statements: [] }, 'ro'), 'description')!.content
     expect(description.startsWith('Promovarea transparenței')).toBe(true)
     expect(description.endsWith('…')).toBe(true)
     expect(description.length).toBeLessThanOrEqual(160)
   })
 
+  it('makes no search snippet of a purpose the registry masked, which the page still shows as published', () => {
+    // Funky Citizens' purpose, as the API serves it, ends in the registry's own „<PERSON>".
+    const description = meta(buildNgoProfileHead({ organization: FUNKY, statements: FUNKY_STATEMENTS }, 'ro'), 'description')!.content
+    expect(description).not.toContain('<PERSON>')
+    expect(description).toMatch(/^Asociație din Sectorul 3, București\./)
+  })
+
+  it('says nothing of a purpose not loaded or not released, and leads with one blank in the source with what it is', () => {
+    for (const purpose of [
+      { availability: 'not_loaded', text: null },
+      { availability: 'not_released', text: null },
+      { availability: 'available', text: null },
+      { availability: 'available', text: '  ' },
+      { availability: 'available', text: 'Sprijinirea <PERSON_1>.' },
+    ] as const) {
+      const description = meta(buildNgoProfileHead({ organization: { ...FUNKY, purpose }, statements: [] }, 'ro'), 'description')!.content
+      expect(description).toMatch(/^Asociație din Sectorul 3, București\./)
+    }
+  })
+
   it('says only what it knows where there are no statements', () => {
-    const description = meta(buildNgoProfileHead({ organization: ABSOLUT, statements: [], purpose: null }, 'ro'), 'description')!.content
+    const description = meta(buildNgoProfileHead({ organization: { ...ABSOLUT, purpose: { availability: 'not_loaded', text: null } }, statements: [] }, 'ro'), 'description')!.content
     expect(description).not.toMatch(/Venituri/)
     expect(description).toContain('CUI 45781343')
   })
 
   it('is canonical at its path in Romanian and at ?lang=en in English, each naming the other', () => {
-    const english = buildNgoProfileHead({ organization: FUNKY, statements: [], purpose: null }, 'en')
+    const english = buildNgoProfileHead({ organization: FUNKY, statements: [] }, 'en')
     expect(translatorFor).toHaveBeenLastCalledWith('en')
     expect(english.links).toEqual([
       { rel: 'canonical', href: 'https://transparenta.eu/ngos/30339344?lang=en' },

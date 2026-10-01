@@ -37,7 +37,7 @@ function Fallback({ title, children }: { readonly title: ReactNode; readonly chi
 
 export function NgoProfileNotFound() {
   return (
-    <Fallback title={<Trans>Niciun ONG cu acest CUI</Trans>}>
+    <Fallback title={<Trans>Niciun profil disponibil pentru acest CUI</Trans>}>
       <p>
         <Trans>
           Pagina unui ONG există când registrul național ONG are o intrare curentă legată de CUI. Nu e o dovadă că organizația nu e un ONG: în registru o poți

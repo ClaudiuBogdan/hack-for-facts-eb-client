@@ -3,13 +3,12 @@ import { graphqlQuery } from '@/lib/graphql/graphql-client'
 
 /**
  * `ngoOrganizationProfile(cui)` — the NGO profile's one source (server
- * `src/modules/ngos/shell/graphql/organization-schema.ts`), read in three
+ * `src/modules/ngos/shell/graphql/organization-schema.ts`), read in two
  * requests that fail apart:
  *
- * - the profile: identity, registry, ANAF, and the statements' years only;
- * - the statements, every year's (1–20), each in its own dictionary;
- * - the purpose's text („Scop"), a field the API gains after this client:
- *   asked alone, so an API without it leaves the page whole.
+ * - the profile: identity, registry, the registry's purpose („Scop"), ANAF,
+ *   and the statements' years only;
+ * - the statements, every year's (1–20), each in its own dictionary.
  *
  * Money stays the exact integer string the source filed: `null` is a blank
  * cell, `"0"` a reported zero. `not_loaded` is missing coverage, never a
@@ -23,6 +22,15 @@ const identityMethod = z.enum(['registry_cui', 'registry_cui_fiscal_agreement', 
 export type NgoIdentityMethod = z.infer<typeof identityMethod>
 
 const section = <T extends z.ZodType>(data: T) => z.object({ availability, data: data.nullable() })
+
+/**
+ * The registry's „Scop", exactly as published (trimmed at the ends; line
+ * breaks, quotes and its masking — `<PERSON>`, `<LOCATION>`… — kept), shown
+ * as plain text. `available` with a null text is a blank source cell;
+ * `not_loaded` is missing coverage, never „no purpose"; `not_released` is
+ * observations that disagree (`conflicts` then holds `purpose`).
+ */
+export const ngoPurposeSchema = z.object({ availability, text: z.string().nullable() })
 
 export const ngoOrganizationSchema = z.object({
   cui: z.string(),
@@ -51,6 +59,8 @@ export const ngoOrganizationSchema = z.object({
     }),
   ),
   financials: z.object({ availability, fiscalYears: z.array(z.number().int()) }),
+  // An availability this client does not know yet drops the purpose, never the profile.
+  purpose: ngoPurposeSchema.catch({ availability: 'not_loaded', text: null }),
 })
 export type NgoOrganization = z.infer<typeof ngoOrganizationSchema>
 
@@ -67,8 +77,6 @@ export type NgoIndicator = z.infer<typeof indicatorSchema>
 /** The statements' read, which fails apart from the profile's: a failure is said, never shown as „none". */
 export type NgoStatementsRead = { readonly status: 'ready'; readonly statements: readonly NgoStatement[] } | { readonly status: 'failed' }
 
-export const ngoPurposeSchema = z.object({ availability, text: z.string().nullable() })
-export type NgoPurpose = z.infer<typeof ngoPurposeSchema>
 
 export const NGO_ORGANIZATION_QUERY = `query NgoOrganization($cui: CUI!) {
   ngoOrganizationProfile(cui: $cui) {
@@ -79,6 +87,7 @@ export const NGO_ORGANIZATION_QUERY = `query NgoOrganization($cui: CUI!) {
     anafRegistration { availability data { registrationStateText registrationDate queryDate } }
     fiscal { availability data { vatPayer declaredFiscallyInactive mainCaenCode queryDate } }
     financials { availability fiscalYears }
+    purpose { availability text }
   }
 }`
 
@@ -86,10 +95,6 @@ export const NGO_STATEMENTS_QUERY = `query NgoStatements($cui: CUI!) {
   ngoOrganizationProfile(cui: $cui) {
     financials { statements { fiscalYear sourceUrl dictionaryUrl indicators { code label value } } }
   }
-}`
-
-export const NGO_PURPOSE_QUERY = `query NgoPurpose($cui: CUI!) {
-  ngoOrganizationProfile(cui: $cui) { purpose { availability text } }
 }`
 
 type Options = { readonly signal?: AbortSignal }
@@ -107,20 +112,4 @@ export async function fetchNgoStatements(cui: string, { signal }: Options = {}):
     .object({ ngoOrganizationProfile: z.object({ financials: z.object({ statements: z.array(ngoStatementSchema) }) }).nullable() })
     .parse(data)
   return parsed.ngoOrganizationProfile?.financials.statements ?? []
-}
-
-/**
- * The purpose's text, or null where it cannot be read: an API that does not
- * serve the field yet, or any other failure. The purpose is the head's
- * description, never the page's reason to fail.
- */
-export async function fetchNgoPurpose(cui: string, { signal }: Options = {}): Promise<NgoPurpose | null> {
-  try {
-    // Expected to fail until the server serves `purpose.text`: a breadcrumb, not a Sentry alert per profile.
-    const data = await graphqlQuery<unknown>(NGO_PURPOSE_QUERY, { cui }, { operationName: 'NgoPurpose', auth: 'none', signal, expectFailure: true })
-    return z.object({ ngoOrganizationProfile: z.object({ purpose: ngoPurposeSchema }).nullable() }).parse(data).ngoOrganizationProfile?.purpose ?? null
-  } catch (error) {
-    if (signal?.aborted) throw error
-    return null
-  }
 }

@@ -2,11 +2,14 @@ import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
 import { translatorFor } from '@/lib/i18n'
-import type { NgoOrganization, NgoPurpose, NgoStatement } from './api'
+import type { NgoOrganization, NgoStatement } from './api'
 import { keyFigures, latestStatement, placeOf } from './model'
-import { categoryLabel, organizationName } from './words'
+import { categoryLabel, organizationName, purposeText } from './words'
 
 const SHARE_IMAGE_PATH = '/assets/images/share-image.png'
+/** The registry's masking in its texts: `<PERSON>`, `<LOCATION>`, `<ORGANIZATION>`, `<FACILITY>`, a numbered one too. */
+const MASKED = /<[A-Z][A-Z0-9_]*>/u
+
 /** Where a search engine cuts a description. */
 const DESCRIPTION_LENGTH = 160
 
@@ -14,15 +17,16 @@ const DESCRIPTION_LENGTH = 160
  * `/ngos/$cui`'s head, in the request's language (`locale`), not the shared
  * Lingui instance's: the organisation's name, and a description that says
  * what it is for where the registry's purpose is published — the reader's
- * first question — or what it is, where, and its latest revenue. Each
+ * first question — or what it is, where, and its latest revenue. A purpose
+ * the registry masked (`<PERSON>`, `<LOCATION>`…) stays on the page as
+ * published but is no search snippet: the made description stands in. Each
  * language has its canonical (`?lang=en`) and names the other.
  */
 export function buildNgoProfileHead(
   {
     organization,
     statements,
-    purpose,
-  }: { readonly organization: NgoOrganization; readonly statements: readonly NgoStatement[]; readonly purpose: NgoPurpose | null },
+  }: { readonly organization: NgoOrganization; readonly statements: readonly NgoStatement[] },
   locale: string,
   siteUrl: string = getSiteUrl(),
 ) {
@@ -47,9 +51,10 @@ export function buildNgoProfileHead(
     revenue != null
       ? `${new Intl.NumberFormat(english ? 'en-GB' : 'ro-RO', { maximumFractionDigits: 1 }).format(revenue >= 1e6 ? revenue / 1e6 : revenue)} ${revenue >= 1e6 ? translator._(msg`mil. lei`) : translator._(msg`lei`)}`
       : null
+  const purpose = purposeText(organization)
   const described =
-    purpose?.availability === 'available' && purpose.text
-      ? purpose.text.replace(/\s+/gu, ' ').trim()
+    purpose && !MASKED.test(purpose)
+      ? purpose.replace(/\s+/gu, ' ').trim()
       : [
           place ? translator._(msg`${category} din ${place}.`) : `${category}.`,
           amount && year ? translator._(msg`Venituri de ${amount} în ${year}, din situațiile financiare publicate.`) : null,
