@@ -65,7 +65,7 @@ function DirectPurchaseSheet({ purchase, initialContext }: { readonly purchase: 
     <div className="bg-background">
       <DirectPurchaseHead purchase={purchase} redo={redoOf(purchase, context)} />
       <RuledFrame className="py-10 sm:py-14">
-        <DirectPurchaseBlock purchase={purchase} year={context?.year ?? (day ? Number(day.slice(0, 4)) : null)} className="max-w-4xl" />
+        <DirectPurchaseBlock purchase={purchase} year={context?.year ?? (day ? Number(day.slice(0, 4)) : null)} />
       </RuledFrame>
       <DirectPurchaseContextBand purchase={purchase} context={{ data: contextQuery.data, isError: contextQuery.isError, retry: () => void contextQuery.refetch() }} />
     </div>

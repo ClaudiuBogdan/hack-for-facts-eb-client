@@ -64,7 +64,7 @@ describe('an association’s contract', () => {
     expect(page).toContain('Compania Nationala de Investitii C.N.I. SA a încheiat contractul cu Masterclass AG SRL și alte 2 firme, în asociere, pe 7 decembrie 2021, pentru 8,5 mil. lei .')
   })
 
-  it('then the contract: the value and its facts, the firms, the published values, the history, the source', () => {
+  it('then the contract: the value and its facts, its two parties, the firms, the published values, the history, the source', () => {
     inOrder(page, [
       'Ce s-a atribuit',
       'Valoarea contractului',
@@ -73,6 +73,11 @@ describe('an association’s contract', () => {
       'Data contractului',
       'Procedura',
       'Categoria',
+      'Cumpărătorul',
+      'Compania Nationala de Investitii C.N.I. SA',
+      'Furnizorul',
+      'Masterclass AG SRL',
+      'în asociere cu încă 2 firme',
       'Firmele din asociere',
       'Valorile publicate',
       'SEAP publică acest contract cu 3 valori diferite și nu spune care e în vigoare.',

@@ -35,6 +35,7 @@ import {
 import { dayLong, dayShort, labelText, leiExact, leiShort } from '../../lib/direct-purchase-text'
 import { procedureLabel } from '../../lib/home-model'
 import { PartyName } from '../direct-purchase/direct-purchase-head'
+import { RecordParties } from '../direct-purchase/record-parties'
 import { Clamp } from '../direct-purchase/direct-purchase-receipt'
 
 /**
@@ -492,6 +493,15 @@ function ContractSource({ sheet, className }: { readonly sheet: ContractSheet; r
 
 // ───────────────────────────────────────────────────────────── the block ──
 
+/** Whom the firm shares the record with, under its name: the association's other firms, or the framework's. */
+function partnersNote(sheet: ContractSheet): string | null {
+  const others = sheet.contract.firms.length - 1
+  if (others < 1) return null
+  const count = firmsCount(others)
+  if (isSharedFramework(sheet.contract)) return t`în acordul-cadru cu încă ${count}`
+  return isAssociation(sheet.contract) ? t`în asociere cu încă ${count}` : null
+}
+
 /** The record: what was awarded, then its firms, its published values, its history, the notice's other contracts, the source. */
 export function ContractBlock({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
   return (
@@ -504,16 +514,28 @@ export function ContractBlock({ sheet, className }: { readonly sheet: ContractSh
           {t`Celelalte rânduri ale anunțului nu s-au putut citi acum: firmele din asociere, celelalte valori publicate și celelalte contracte din anunț pot lipsi. Reîncarcă pagina pentru ele.`}
         </p>
       ) : null}
-      {/* The value on its own row — a contract's runs from 400 lei to 6,1 billion — and the facts under it. */}
-      <div className="mt-8 border-y py-7">
-        <ContractValue sheet={sheet} />
-        <ContractFacts sheet={sheet} className="mt-7 border-t pt-7" />
+      {/* The value on its own row — a contract's runs from 400 lei to 6,1 billion — the facts under it, and the two parties as the
+          last column: across the frame, the reading below at its own width. */}
+      <div className="mt-8 border-y py-7 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12">
+        <div className="min-w-0">
+          <ContractValue sheet={sheet} />
+          <ContractFacts sheet={sheet} className="mt-7 border-t pt-7" />
+        </div>
+        <RecordParties
+          authority={sheet.authority}
+          supplier={sheet.supplier}
+          year={linkYearOf(sheet)}
+          supplierNote={partnersNote(sheet)}
+          className="mt-7 border-t pt-7 lg:mt-0 lg:grid-cols-1 lg:self-center lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0"
+        />
       </div>
-      <ContractFirms sheet={sheet} className="mt-12" />
-      <ContractVersions sheet={sheet} className="mt-12" />
-      <ContractHistory sheet={sheet} className="mt-12" />
-      <NoticeOthers sheet={sheet} className="mt-12" />
-      <ContractSource sheet={sheet} className="mt-10" />
+      <div className="max-w-4xl">
+        <ContractFirms sheet={sheet} className="mt-12" />
+        <ContractVersions sheet={sheet} className="mt-12" />
+        <ContractHistory sheet={sheet} className="mt-12" />
+        <NoticeOthers sheet={sheet} className="mt-12" />
+        <ContractSource sheet={sheet} className="mt-10" />
+      </div>
     </section>
   )
 }

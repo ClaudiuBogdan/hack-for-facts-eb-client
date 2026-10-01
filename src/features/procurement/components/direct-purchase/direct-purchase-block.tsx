@@ -3,7 +3,7 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
-import { isAttempt, isPurchase, shownDayOf, type DirectPurchase } from '../../lib/direct-purchase-model'
+import { isAttempt, isPurchase, linkYearOf, shownDayOf, type DirectPurchase } from '../../lib/direct-purchase-model'
 import {
   afterText,
   alsoInText,
@@ -19,6 +19,7 @@ import {
 } from '../../lib/direct-purchase-text'
 import { statusLook } from './direct-purchase-style'
 import { Clamp, DirectPurchaseReceipt } from './direct-purchase-receipt'
+import { RecordParties } from './record-parties'
 
 /**
  * Everything about the purchase itself, in reading order: what was bought
@@ -379,30 +380,39 @@ export function DirectPurchaseBlock({ purchase, year, className }: { readonly pu
         <Trans>Ce s-a cumpărat</Trans>
       </h2>
       <PurchaseDescription purchase={purchase} className="mt-4" />
-      <div className="mt-8 grid gap-x-12 gap-y-8 border-y py-7 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      {/* The value, its facts, and the two parties as the last column: across the frame, the reading below at its own width. */}
+      <div className="mt-8 grid gap-x-12 gap-y-8 border-y py-7 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-cols-[minmax(0,4fr)_minmax(0,6fr)_minmax(0,3fr)]">
         <PurchaseValue purchase={purchase} />
         <PurchaseFacts purchase={purchase} className="self-center" />
+        <RecordParties
+          authority={purchase.authority}
+          supplier={purchase.supplier}
+          year={linkYearOf(purchase)}
+          className="border-t pt-7 md:col-span-2 lg:col-span-1 lg:grid-cols-1 lg:self-center lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0"
+        />
       </div>
-      <div className="mt-10">{hasLines ? <DirectPurchaseReceipt purchase={purchase} year={year} /> : <NoLines purchase={purchase} />}</div>
-      {detail ? (
-        <>
-          <h3 className={cn(SUBHEAD, 'mt-14')}>
-            <Trans>Cum s-a făcut</Trans>
-          </h3>
-          <Steps purchase={purchase} className="mt-5" />
-          {detail.delivery || detail.payment || detail.documents > 0 ? (
-            <>
-              <h3 className={cn(SUBHEAD, 'mt-12')}>
-                <Trans>Livrarea și plata</Trans>
-              </h3>
-              <Terms purchase={purchase} className="mt-4" />
-            </>
-          ) : null}
-        </>
-      ) : (
-        <RowDates purchase={purchase} className="mt-8" />
-      )}
-      <SourceLine purchase={purchase} className="mt-8" />
+      <div className="max-w-4xl">
+        <div className="mt-10">{hasLines ? <DirectPurchaseReceipt purchase={purchase} year={year} /> : <NoLines purchase={purchase} />}</div>
+        {detail ? (
+          <>
+            <h3 className={cn(SUBHEAD, 'mt-14')}>
+              <Trans>Cum s-a făcut</Trans>
+            </h3>
+            <Steps purchase={purchase} className="mt-5" />
+            {detail.delivery || detail.payment || detail.documents > 0 ? (
+              <>
+                <h3 className={cn(SUBHEAD, 'mt-12')}>
+                  <Trans>Livrarea și plata</Trans>
+                </h3>
+                <Terms purchase={purchase} className="mt-4" />
+              </>
+            ) : null}
+          </>
+        ) : (
+          <RowDates purchase={purchase} className="mt-8" />
+        )}
+        <SourceLine purchase={purchase} className="mt-8" />
+      </div>
     </section>
   )
 }

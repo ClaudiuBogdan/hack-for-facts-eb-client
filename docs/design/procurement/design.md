@@ -2913,3 +2913,25 @@ short labels, now in titles, are narrower than the division (90,
 „Servicii de curățenie"); with an institution picked a category stays on
 firms while a click on a category row goes one level down.
 
+
+## 20. The parties beside the facts (1 October 2026)
+
+The owner asked for the buyer and the supplier as one more column to the
+right of the record's facts, on the direct-purchase and contract pages
+(framework agreements use the contract page). `RecordParties`
+(`components/direct-purchase/record-parties.tsx`) shows „Cumpărătorul" and
+„Furnizorul", each a link to its procurement page (in the record's year,
+as the head's sentence links them) with its CUI under its name, or „fără
+CUI în SEAP"; a contract's firm says when it shares the record („în
+asociere cu încă 2 firme", „în acordul-cadru cu încă …") and when it is an
+IMM.
+
+- The value-and-facts box now spans the frame, as the context band below
+  it does; the reading under it (the lines, the steps, the history, the
+  source) keeps its 4xl width.
+- From `lg`: the direct purchase reads value · facts · parties; the
+  contract keeps its value over its facts on the left, the parties in a
+  column on the right, each behind a rule. Below `lg` the parties sit
+  under the facts, side by side from `sm`, one under the other on a
+  phone.
+- The procedure page still has the old shared layout (to migrate).

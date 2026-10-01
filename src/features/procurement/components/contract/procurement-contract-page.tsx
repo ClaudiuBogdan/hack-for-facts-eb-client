@@ -63,7 +63,7 @@ function ContractSheetView({ sheet, initialContext }: { readonly sheet: Contract
     <div className="bg-background">
       <ContractHead sheet={sheet} />
       <RuledFrame className="py-10 sm:py-14">
-        <ContractBlock sheet={sheet} className="max-w-4xl" />
+        <ContractBlock sheet={sheet} />
       </RuledFrame>
       <ContractContextBand sheet={sheet} context={{ data: contextQuery.data, isError: contextQuery.isError, retry: () => void contextQuery.refetch() }} />
     </div>
