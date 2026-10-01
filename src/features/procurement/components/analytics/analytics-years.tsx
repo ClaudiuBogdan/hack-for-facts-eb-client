@@ -203,7 +203,7 @@ function YearsChart({
                   {money ? <p className="tabular-nums">{money}</p> : null}
                   {change ? <p className="tabular-nums text-muted-foreground">{change}</p> : null}
                   {mixed(point.bucket) ? (
-                    <p className="text-amber-700 dark:text-amber-400">{query.tip === 'contracte' ? t`Se numără și acordurile-cadru.` : t`Lipsesc: se numără ca atribuiri.`}</p>
+                    <p className="text-amber-700 dark:text-amber-400">{t`Mai ales din e-licitație: comparați cu grijă.`}</p>
                   ) : null}
                   <p className="border-t pt-1 text-muted-foreground">
                     {point.bucket === pageYear ? t`Anul ales` : tapped ? t`Atinge iar: doar ${point.bucket}` : t`Clic: doar ${point.bucket}`}

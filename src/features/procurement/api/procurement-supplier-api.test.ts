@@ -17,7 +17,7 @@ type Raw = Record<string, unknown>
 
 const LATEST = homeYear()
 const PART = LATEST + 1
-const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
+const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })), meta: { buildId: '13' } }]
 const top = (key: string, recordCount: string, valueSum: string | null, shareOfScope: string | null = null) => ({ key, kind: 'top', recordCount, withValueCount: recordCount, valueSum, shareOfScope })
 const months = (year: number, count: string, through = 12) =>
   Object.fromEntries(Array.from({ length: through }, (_, index) => [`${year}-${String(index + 1).padStart(2, '0')}`, count]))
@@ -30,7 +30,7 @@ function emptyAnalysis(query: string): Raw {
       kind === 'Stats'
         ? { blocks: [{ recordCount: '0', withValueCount: '0', valueAwardedSum: null }] }
         : kind === 'Series'
-          ? [{ points: [] }]
+          ? [{ points: [], meta: { buildId: '13' } }]
           : [{ rankedBy: 'value', buckets: [] }]
   }
   return raw

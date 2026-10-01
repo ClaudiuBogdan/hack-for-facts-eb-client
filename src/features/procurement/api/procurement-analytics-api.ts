@@ -1,14 +1,13 @@
 import { z } from 'zod'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withDeadline } from '@/lib/ssr/deadline-signal'
-import { readCutoffOutcome } from './procurement-cutoff'
+import { readProcurementCutoff } from './procurement-cutoff'
 import {
   AXIS_ORDER,
   POPULATIONS,
   bucketsBetween,
   cpvPath,
   levelOf,
-  monthsBetween,
   resolvePeriod,
   scopeValue,
   type Dimension,
@@ -30,7 +29,10 @@ import { procurementAnalyticsKeys } from '../lib/analytics-keys'
  *   the answer holds; the counties from the reference read, the localities
  *   from the map's own file.
  *
- * Records are a separate read, on request (lists are the API's slowest reads).
+ * Records are a separate read, on request: the rows the figures count, over
+ * the same scope. Every read is pinned to the analysis build the cutoff was
+ * read from, so one page never mixes two generations; a build the API no
+ * longer serves is refused, and the page starts over from a fresh cutoff.
  * The hooks that hold them are in `use-procurement-analytics.ts`.
  */
 
@@ -49,6 +51,7 @@ export function scopeOf(query: Query, months: { readonly from: string; readonly 
   const population = POPULATIONS[query.tip]
   const scope: Record<string, unknown> = { grain: population.grain }
   if (population.recordKind) scope.recordKind = population.recordKind
+  if (population.frameworkRole) scope.frameworkRole = population.frameworkRole
   for (const axisId of AXIS_ORDER) {
     const filter = query.filters[axisId]
     const level = filter ? levelOf(axisId, filter.level) : null
@@ -71,15 +74,25 @@ export function scopeOf(query: Query, months: { readonly from: string; readonly 
 export interface AnalyticsCutoff {
   readonly direct: string
   readonly contract: string
-  /** The cutoff could not be read: the last complete year's end stands in. */
-  readonly failed: boolean
+  /** The analysis build the cutoff was read from: every read of the page is pinned to it. */
+  readonly build: string
 }
 
-/** Each population's newest complete month, from the shared national read (never from a narrow selection). */
+/**
+ * Each population's newest complete month, from the shared national read
+ * (never from a narrow selection), and the build it was read from. A read
+ * that fails, fails: without a build the page reads nothing, rather than
+ * figures and a list that could come from two generations.
+ */
 export async function readAnalyticsCutoff(latest: number): Promise<AnalyticsCutoff> {
-  const outcome = await readCutoffOutcome(latest)
-  // With no cutoff read, the last complete year's end: never a month the source has not filled.
-  return { direct: outcome.cutoff.direct ?? `${latest}-12`, contract: outcome.cutoff.contract ?? `${latest}-12`, failed: outcome.failed }
+  const cutoff = await readProcurementCutoff(latest)
+  // A month the national counts cannot date yet: the last complete year's end, never a month the source has not filled.
+  return { direct: cutoff.direct ?? `${latest}-12`, contract: cutoff.contract ?? `${latest}-12`, build: cutoff.build }
+}
+
+/** The API refused a pinned read: its build is no longer the one it serves (a publication since the page read its cutoff). */
+export function isStaleBuild(error: unknown): boolean {
+  return error instanceof GraphQLRequestError && error.graphQLErrors.some((entry) => entry.extensions?.code === GRAPHQL_INVALID_INPUT_CODE && entry.extensions?.field === 'build')
 }
 
 // ─────────────────────────────────────────────────────────────── figures ──
@@ -136,13 +149,13 @@ function figuresOf(raw: unknown): Figures | null {
   }
 }
 
-export async function readFigures(scope: Scope, previous: Scope | null, signal: AbortSignal) {
+export async function readFigures(scope: Scope, previous: Scope | null, build: string | null, signal: AbortSignal) {
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsFigures($now: ProcurementAnalysisScopeInput${previous ? ', $before: ProcurementAnalysisScopeInput' : ''}) {
-      now: procurementStats(scope: $now) { ${STATS_FIELDS} }
-      ${previous ? `before: procurementStats(scope: $before) { ${STATS_FIELDS} }` : ''}
+    `query AnalyticsFigures($now: ProcurementAnalysisScopeInput${previous ? ', $before: ProcurementAnalysisScopeInput' : ''}, $build: String) {
+      now: procurementStats(scope: $now, build: $build) { ${STATS_FIELDS} }
+      ${previous ? `before: procurementStats(scope: $before, build: $build) { ${STATS_FIELDS} }` : ''}
     }`,
-    previous ? { now: scope, before: previous } : { now: scope },
+    previous ? { now: scope, before: previous, build } : { now: scope, build },
     { operationName: 'AnalyticsFigures', signal },
   )
   return { now: figuresOf(raw.now), before: previous ? figuresOf(raw.before) : null }
@@ -156,10 +169,10 @@ export interface Concentration {
   readonly top5: number | null
 }
 
-export async function readConcentration(scope: Scope, basis: 'count' | 'value', signal: AbortSignal): Promise<Concentration | null> {
+export async function readConcentration(scope: Scope, basis: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Concentration | null> {
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsConcentration($s: ProcurementAnalysisScopeInput) { c: procurementConcentration(scope: $s, basis: ${basis}) { supplierCount top1Share top5Share } }`,
-    { s: scope },
+    `query AnalyticsConcentration($s: ProcurementAnalysisScopeInput, $build: String) { c: procurementConcentration(scope: $s, basis: ${basis}, build: $build) { supplierCount top1Share top5Share } }`,
+    { s: scope, build },
     { operationName: 'AnalyticsConcentration', signal },
   )
   const block = concentrationSchema.parse(raw.c)[0]
@@ -204,10 +217,10 @@ function bucketsOf(raw: z.infer<typeof breakdownSchema>[number]): Bucket[] {
   }))
 }
 
-export async function readRanking(scope: Scope, dimension: Dimension, topN: number, rankBy: 'count' | 'value', signal: AbortSignal): Promise<Ranking> {
+export async function readRanking(scope: Scope, dimension: Dimension, topN: number, rankBy: 'count' | 'value', build: string | null, signal: AbortSignal): Promise<Ranking> {
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}) { rankedBy valueWithheldAssociationSum buckets { key kind recordCount withValueCount valueSum shareOfScope } } }`,
-    { s: scope },
+    `query AnalyticsRanking($s: ProcurementAnalysisScopeInput, $build: String) { r: procurementBreakdown(scope: $s, dimension: ${dimension}, topN: ${topN}, rankBy: ${rankBy}, build: $build) { rankedBy valueWithheldAssociationSum buckets { key kind recordCount withValueCount valueSum shareOfScope } } }`,
+    { s: scope, build },
     { operationName: 'AnalyticsRanking', signal },
   )
   const block = breakdownSchema.parse(raw.r)[0]
@@ -223,13 +236,13 @@ export interface Point {
 }
 
 /** A series of counts and money by bucket, every bucket of the scope's months: the API leaves out an empty one, which is a zero, not a gap. */
-export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'month', withMoney: boolean, signal: AbortSignal): Promise<readonly Point[]> {
+export async function readSeries(scope: Scope, bucket: 'year' | 'quarter' | 'month', withMoney: boolean, build: string | null, signal: AbortSignal): Promise<readonly Point[]> {
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsSeries($s: ProcurementAnalysisScopeInput) {
-      n: procurementSeries(scope: $s, bucket: ${bucket}, measure: recordCount) { points { bucket value } }
-      ${withMoney ? `v: procurementSeries(scope: $s, bucket: ${bucket}, measure: valueAwardedSum) { points { bucket value } }` : ''}
+    `query AnalyticsSeries($s: ProcurementAnalysisScopeInput, $build: String) {
+      n: procurementSeries(scope: $s, bucket: ${bucket}, measure: recordCount, build: $build) { points { bucket value } }
+      ${withMoney ? `v: procurementSeries(scope: $s, bucket: ${bucket}, measure: valueAwardedSum, build: $build) { points { bucket value } }` : ''}
     }`,
-    { s: scope },
+    { s: scope, build },
     { operationName: 'AnalyticsSeries', signal },
   )
   const counts = new Map((seriesSchema.parse(raw.n)[0]?.points ?? []).map((point) => [point.bucket, point.value]))
@@ -288,137 +301,79 @@ export async function readCpvMatches(term: string, signal?: AbortSignal): Promis
 export interface RecordRow {
   readonly id: string
   readonly href: string
+  /** The record's title, or its display title (a contract's, from the production database); null when neither is published. */
   readonly title: string | null
   readonly authority: { readonly cui: string | null; readonly name: string | null }
   readonly supplier: { readonly cui: string | null; readonly name: string | null }
+  /** The money the figures count for this record; null when it adds none (no checked value, or a consortium's other members). */
   readonly value: number | null
-  readonly checked: boolean
   readonly date: string | null
-  readonly contractNo: string | null
 }
 
 const partySchema = z.object({ cui: z.string().nullable(), name: z.string().nullable(), displayName: z.string().nullable() })
-const recordSchema = z.object({
-  id: z.string(),
-  title: z.string().nullable(),
-  displayTitle: z.object({ text: z.string().nullable() }).nullable().optional(),
-  authority: partySchema,
-  supplier: partySchema,
-  valueRon: z.string().nullable(),
-  value: z.object({ valueAccepted: z.boolean(), valueRonComparable: z.string().nullable() }).nullable(),
-  contractDate: z.string().nullable().optional(),
-  finalizationDate: z.string().nullable().optional(),
-  publicationDate: z.string().nullable().optional(),
-  contractNo: z.string().nullable().optional(),
+const recordsSchema = z.object({
+  total: z.string().nullable(),
+  items: z.array(
+    z.object({
+      id: z.string(),
+      date: z.string().nullable(),
+      title: z.string().nullable(),
+      displayTitle: z.object({ text: z.string() }).nullable(),
+      authority: partySchema,
+      supplier: partySchema,
+      valueRon: z.string().nullable(),
+    }),
+  ),
+  meta: z.object({ answerability: z.string() }),
 })
-const listSchema = z.object({ total: z.number().nullable(), totalEstimated: z.boolean(), items: z.array(recordSchema) })
 
 export interface Records {
   readonly rows: readonly RecordRow[]
-  /** The list's own count (null past 10,000): never the analysis count. */
+  /** The figures' own count of the same scope; null when they abstain. */
   readonly total: number | null
+  /** The figures abstain for this scope: there is no list to show. */
+  readonly abstained: boolean
 }
 
-/** Why the API cannot list the records of a selection, or null. */
-export function recordsProblem(query: Query, period: ResolvedPeriod | null): 'supplier-place' | 'procedure' | 'too-wide' | null {
-  // The firm's place is filtered through the search index, which the API does not run (BAD_GATEWAY on dev). A
-  // firm has one place, its registered office (each firm's count is the same with and without it, dev API, 1
-  // October 2026): with a firm picked, the list asks for the firm alone.
-  if (query.filters.loc_firma && !query.filters.furnizor) return 'supplier-place'
-  // The contracts list has no procedure filter (`ProcurementContractsFilter`): without it the list would be wider than the answer.
-  if (query.filters.procedura) return 'procedure'
-  const party = Boolean(query.filters.cumparator || query.filters.furnizor)
-  if (query.tip === 'directe' && !party && period && monthsBetween(period.from, period.to) > 12) return 'too-wide'
-  return null
+/** A label that says something: a blank one is no label, so the next one stands in. */
+function textOf(value: string | null | undefined): string | null {
+  const text = value?.trim()
+  return text ? text : null
 }
 
-/**
- * Whether the records of a firm in a place may be read and shown. The list
- * asks for the firm alone (`listFilterOf`), which is the same selection
- * only when the firm is in the place; its count there says so, known and
- * not 0. Until then rows already read (the server's, the cache's) wait too.
- * Any other selection lists as it is.
- */
-export function firmPlaceGate(
-  query: Query,
-  figures: { readonly data: { readonly now: { readonly records: number | null } | null } | undefined; readonly isError: boolean },
-): 'list' | 'counting' | 'outside' | 'failed' | 'unknown' {
-  if (!(query.filters.furnizor && query.filters.loc_firma)) return 'list'
-  const counted = figures.data?.now?.records
-  if (typeof counted === 'number') return counted > 0 ? 'list' : 'outside'
-  if (figures.isError) return 'failed'
-  // A count read but not given (abstained) says nothing of the place: the firm's records elsewhere must not pass for its.
-  return figures.data === undefined ? 'counting' : 'unknown'
-}
+export const RECORDS_PAGE = 25
+/** The API pages a list up to its 10,000th row. */
+export const RECORDS_WINDOW = 10_000
 
-function lastDay(month: string): string {
-  const [year, index] = month.split('-').map(Number) as [number, number]
-  return `${month}-${String(new Date(Date.UTC(year, index, 0)).getUTCDate()).padStart(2, '0')}`
-}
+export type RecordsSort = 'value_desc' | 'date_desc'
 
-/** The list's filter for a query: the same filters, the same months (the list runs ahead of the analysis build, so it is clamped to the cutoff). */
-function listFilterOf(query: Query, period: ResolvedPeriod): Record<string, unknown> {
-  const filter: Record<string, unknown> = {}
-  const population = POPULATIONS[query.tip]
-  for (const axisId of AXIS_ORDER) {
-    // The firm fixes its place, which the list cannot filter (`recordsProblem`).
-    if (axisId === 'loc_firma' && query.filters.furnizor) continue
-    const value = query.filters[axisId]?.values[0]
-    const level = query.filters[axisId] ? levelOf(axisId, query.filters[axisId]!.level) : null
-    if (!level || !value) continue
-    filter[level.scopeKey] = { eq: scopeValue(axisId, level.id, value) }
-  }
-  const range = { gte: `${period.from}-01`, lte: lastDay(period.to) }
-  if (query.tip === 'directe') {
-    filter.publicationDate = range
-    // The analysis leaves the cancelled out; so does the list.
-    filter.status = { in: ['finalized', 'awarded', 'unknown'] }
-  } else {
-    filter.contractDate = range
-    filter.recordKind = { in: [population.recordKind] }
-  }
-  if (query.titlu) filter.q = { contains: query.titlu }
-  if (query.valoare) filter.valueRon = { ...(query.valoare.min != null ? { gte: query.valoare.min.toFixed(2) } : {}), ...(query.valoare.max != null ? { lte: query.valoare.max.toFixed(2) } : {}) }
-  return filter
-}
-
-export async function readRecords(query: Query, period: ResolvedPeriod, sort: 'value_desc' | 'date_desc', page: number, signal: AbortSignal): Promise<Records> {
-  const direct = query.tip === 'directe'
-  const fields = direct
-    ? 'id title authority { cui name displayName } supplier { cui name displayName } valueRon value { valueAccepted valueRonComparable } finalizationDate publicationDate'
-    : 'id title displayTitle { text } authority { cui name displayName } supplier { cui name displayName } valueRon value { valueAccepted valueRonComparable } contractDate contractNo'
-  const root = direct ? 'procurementDirectAcquisitions' : 'procurementContracts'
-  const type = direct ? 'ProcurementDirectAcquisitionsFilter' : 'ProcurementContractsFilter'
+/** A page of the records the figures count: the same scope, the same build, the rows one by one. */
+export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal): Promise<Records> {
+  const direct = scope.grain === 'direct_acquisition'
   // Its own deadline: a list the API cannot answer in time fails here, as a read, with the reason said.
   const deadline = withDeadline(signal, 9_000)
   const raw = await graphqlQuery<Record<string, unknown>>(
-    `query AnalyticsRecords($f: ${type}) { l: ${root}(filter: $f, sort: ${sort}, page: ${page}, pageSize: 25) { total totalEstimated items { ${fields} } } }`,
-    { f: listFilterOf(query, period) },
+    `query AnalyticsRecords($s: ProcurementAnalysisScopeInput!, $build: String) { l: procurementRecords(scope: $s, build: $build, sort: ${sort}, page: ${page}, pageSize: ${RECORDS_PAGE}) { total items { id date title displayTitle { text } authority { cui name displayName } supplier { cui name displayName } valueRon } meta { answerability } } }`,
+    { s: scope, build },
     { operationName: 'AnalyticsRecords', signal: deadline },
   )
-  const list = listSchema.parse(raw.l)
+  const list = recordsSchema.parse(raw.l)
   return {
-    total: list.total,
-    rows: list.items.map((item) => {
-      const value = item.value?.valueAccepted ? Number(item.value.valueRonComparable ?? item.valueRon) : item.valueRon !== null ? Number(item.valueRon) : null
-      return {
-        id: item.id,
-        href: direct ? `/procurement/direct-acquisitions/${item.id}` : `/procurement/contracts/${item.id}`,
-        title: item.title ?? item.displayTitle?.text ?? null,
-        authority: { cui: item.authority.cui, name: item.authority.displayName ?? item.authority.name },
-        supplier: { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
-        value: Number.isFinite(value) ? value : null,
-        checked: Boolean(item.value?.valueAccepted),
-        date: item.contractDate ?? item.finalizationDate ?? item.publicationDate ?? null,
-        contractNo: item.contractNo ?? null,
-      }
-    }),
+    total: list.total === null ? null : Number(list.total),
+    abstained: list.meta.answerability === 'abstained',
+    rows: list.items.map((item) => ({
+      id: item.id,
+      href: direct ? `/procurement/direct-acquisitions/${item.id}` : `/procurement/contracts/${item.id}`,
+      title: textOf(item.title) ?? textOf(item.displayTitle?.text) ?? null,
+      authority: { cui: item.authority.cui, name: item.authority.displayName ?? item.authority.name },
+      supplier: { cui: item.supplier.cui, name: item.supplier.displayName ?? item.supplier.name },
+      value: item.valueRon === null ? null : Number(item.valueRon),
+      date: item.date,
+    })),
   }
 }
 
 // ──────────────────────────────────────────────────────────────── the plan ──
-
-export type RecordsSort = 'value_desc' | 'date_desc'
 
 /** The order the records open in: the largest first where there is a value, else the newest. */
 export function defaultRecordsSort(query: Pick<Query, 'tip'>): RecordsSort {
@@ -454,6 +409,7 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
   const population = POPULATIONS[query.tip]
   const cutoff = cutoffs ? cutoffs[population.cutoff] : null
   const period = cutoff ? resolvePeriod(query.period, cutoff) : null
+  const build = cutoffs?.build ?? null
   const now = period ? scopeOf(query, period) : null
   // The window before is compared only where the population compares: direct purchases, never before 2019.
   const comparable = period !== null && population.changes && period.previous.from >= `${population.comparableFrom}-01`
@@ -473,20 +429,24 @@ export function planAnswer(query: Query, cutoffs: AnalyticsCutoff | null, option
     scopes: { now, before, years: yearsScope },
     supplierFixed,
     dimension,
-    figures: { key: procurementAnalyticsKeys.figures(now!, before), enabled: now !== null, read: (signal) => readFigures(now!, before, signal) },
-    concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, signal) },
-    ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, signal) },
-    series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, signal) },
-    years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, signal) },
+    figures: { key: procurementAnalyticsKeys.figures(now!, before, build), enabled: now !== null, read: (signal) => readFigures(now!, before, build, signal) },
+    concentration: { key: procurementAnalyticsKeys.concentration(now!, rankBy, build), enabled: now !== null && !supplierFixed, read: (signal) => readConcentration(now!, rankBy, build, signal) },
+    ranking: { key: procurementAnalyticsKeys.ranking(now!, dimension, topN, rankBy, build), enabled: now !== null && dimension !== null, read: (signal) => readRanking(now!, dimension!, topN, rankBy, build, signal) },
+    series: { key: procurementAnalyticsKeys.series(now!, bucket, moneyAllowed, build), enabled: now !== null && bucket !== null, read: (signal) => readSeries(now!, bucket ?? 'month', moneyAllowed, build, signal) },
+    years: { key: procurementAnalyticsKeys.years(yearsScope, moneyAllowed, build), enabled: yearsScope !== null && options.years, read: (signal) => readSeries(yearsScope!, 'year', moneyAllowed, build, signal) },
   }
 }
 
-/** A page of the records, planned as the answer's reads are. */
-export function planRecords(query: Query, period: ResolvedPeriod | null, sort: RecordsSort, page: number): PlannedRead<Records> {
+/** A page of the records, planned as the answer's reads are: the figures' own scope and build. */
+export function planRecords(query: Query, cutoffs: AnalyticsCutoff | null, sort: RecordsSort, page: number): PlannedRead<Records> {
+  const cutoff = cutoffs ? cutoffs[POPULATIONS[query.tip].cutoff] : null
+  const period = cutoff ? resolvePeriod(query.period, cutoff) : null
+  const scope = period ? scopeOf(query, period) : null
+  const build = cutoffs?.build ?? null
   return {
-    key: procurementAnalyticsKeys.records(query, period, sort, page),
-    enabled: period !== null && recordsProblem(query, period) === null,
-    read: (signal) => readRecords(query, period!, sort, page, signal),
+    key: procurementAnalyticsKeys.records(scope, build, sort, page),
+    enabled: scope !== null,
+    read: (signal) => readRecords(scope!, build, sort, page, signal),
   }
 }
 

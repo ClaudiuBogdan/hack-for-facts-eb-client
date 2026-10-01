@@ -80,9 +80,9 @@ export const QUESTIONS: readonly Question[] = [
 
   question('din-2019', 'cand', msg`Cum au evoluat achizițiile directe din 2019?`, { period: { kind: 'months', from: '2019-01', to: THROUGH }, dupa: { axis: 'timp', bucket: 'year' } }, msg`Lei ai fiecărui an, neajustați cu inflația; anul în curs e parțial.`),
   question('decembrie', 'cand', msg`Se cumpără mai mult în decembrie?`, { period: { kind: 'months', from: '2023-01', to: THROUGH }, dupa: { axis: 'timp', bucket: 'month' } }),
-  question('trimestre', 'cand', msg`Cum au evoluat contractele, pe trimestre?`, { tip: 'contracte', period: { kind: 'months', from: '2022-01', to: THROUGH }, dupa: { axis: 'timp', bucket: 'quarter' } }, msg`Sursele acoperă diferit fiecare an, iar din 2026 nu deosebesc acordurile-cadru: urmăriți forma, nu nivelul.`),
+  question('trimestre', 'cand', msg`Cum au evoluat contractele, pe trimestre?`, { tip: 'contracte', period: { kind: 'months', from: '2022-01', to: THROUGH }, dupa: { axis: 'timp', bucket: 'quarter' } }, msg`Sursele acoperă diferit fiecare an, iar din 2026 rândurile vin mai ales din e-licitație: urmăriți forma, nu nivelul.`),
 
-  question('proceduri', 'cum', msg`Cum atribuie statul contractele?`, { tip: 'contracte', dupa: { axis: 'procedura', level: 'tip' } }, msg`Contractele subsecvente se numără și ele ca atribuiri.`),
+  question('proceduri', 'cum', msg`Cum atribuie statul contractele?`, { tip: 'contracte', dupa: { axis: 'procedura', level: 'tip' } }, msg`Se numără doar contractele de sine stătătoare: plafoanele acordurilor-cadru și contractele subsecvente nu intră.`),
   question(
     'directe-mari',
     'cum',

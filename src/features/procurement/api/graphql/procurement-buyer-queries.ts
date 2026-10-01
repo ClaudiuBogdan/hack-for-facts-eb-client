@@ -79,11 +79,13 @@ export interface BuyerField {
   readonly args?: string
   /** The profile request it belongs to; the follow-up's reads have none. */
   readonly group?: BuyerFieldGroup
+  /** Also read the analysis build the answer comes from (a series' `meta.buildId`). */
+  readonly withBuild?: boolean
 }
 
 function fieldOf(field: BuyerField): string {
   if (field.kind === 'stats') return `${field.alias}: procurementStats(scope: $${field.alias}) { ${STATS} }`
-  if (field.kind === 'series') return `${field.alias}: procurementSeries(scope: $${field.alias}, ${field.args ?? ''}) { ${SERIES} }`
+  if (field.kind === 'series') return `${field.alias}: procurementSeries(scope: $${field.alias}, ${field.args ?? ''}) { ${SERIES}${field.withBuild ? ' meta { buildId }' : ''} }`
   if (field.kind === 'concentration') return `${field.alias}: procurementConcentration(scope: $${field.alias}, basis: count) { supplierCount }`
   return `${field.alias}: procurementBreakdown(scope: $${field.alias}, ${field.args ?? ''}) { ${BREAKDOWN} }`
 }

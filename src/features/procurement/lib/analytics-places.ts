@@ -16,6 +16,28 @@ import { formatProcurementCountyName } from './procurement-geography'
  * no list: picking the county covers it.
  */
 
+/**
+ * București's own institutions are registered at the municipality (SIRUTA
+ * 179132), not at its county node (403, which anchors nothing): its own code
+ * is the municipality's. The whole city, sectors included, is the county `B`.
+ */
+const BUCHAREST_OWN_CODE = '179132'
+
+/** The SIRUTA a county's own institutions are registered at: the county's, or București's municipality. */
+export function countyOwnCode(mnemonic: string, countySiruta: string): string {
+  return mnemonic === 'B' ? BUCHAREST_OWN_CODE : countySiruta
+}
+
+/** București as a county (`judet=B`): the city with all six sectors. */
+export function bucharestWholeLabel(): string {
+  return t`București, cu toate sectoarele`
+}
+
+/** București's own code (`localitate=179132`): the municipality's institutions, without the sectors'. */
+export function bucharestOwnLabel(): string {
+  return t`Municipiul București, fără sectoare (instituțiile municipiului)`
+}
+
 export type PlaceLevel = 'regiune' | 'judet' | 'localitate'
 export type PlaceKind = 'comuna' | 'oras' | 'municipiu' | 'resedinta' | 'sector' | 'judet'
 
@@ -141,8 +163,8 @@ export function placeIndexOf(geography: PlaceGeography | undefined, uat: PlaceFe
   })
   const countyPlaces = (geography?.counties ?? []).map((item) => {
     const name = countyDisplayName(item.countyCode, item.countyName)
-    // București is a municipality with a county's rank, not a county.
-    const label = item.countyCode === 'B' ? t`Municipiul ${name}` : t`Jud. ${name}`
+    // București is a municipality with a county's rank: as a county, the whole city, its six sectors included.
+    const label = item.countyCode === 'B' ? bucharestWholeLabel() : t`Jud. ${name}`
     return place({ level: 'judet', value: item.countyCode, name, label, region: item.region, county: item.countyCode, kind: null, population: null })
   })
   const regionOf = new Map(countyPlaces.map((county) => [county.county, county.region]))
@@ -176,9 +198,9 @@ export function placeIndexOf(geography: PlaceGeography | undefined, uat: PlaceFe
       ownCodes.push(
         place({
           level: 'localitate',
-          value: String(props.countyCode),
+          value: countyOwnCode(props.mnemonic, String(props.countyCode)),
           name,
-          label: props.mnemonic === 'B' ? t`Municipiul ${name} (instituțiile municipiului)` : t`Jud. ${name} (instituțiile județului)`,
+          label: props.mnemonic === 'B' ? bucharestOwnLabel() : t`Jud. ${name} (instituțiile județului)`,
           region: regionOf.get(props.mnemonic) ?? null,
           county: props.mnemonic,
           kind: 'judet',
