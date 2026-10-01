@@ -154,7 +154,7 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
               else keys.onKeyDown(event, (position) => pick(choices[position]!))
             }}
             placeholder={t`Nume sau CUI`}
-            aria-label={axis === 'furnizor' ? t`Caută o firmă` : t`Caută o instituție`}
+            aria-label={label}
             className={FIELD}
           />
           {open ? (
@@ -264,7 +264,7 @@ function CpvField({ query, namer, onChange }: { readonly query: Query; readonly 
               else keys.onKeyDown(event, (position) => pick(hits[position]!))
             }}
             placeholder={t`„drumuri", „medicamente", 45233120`}
-            aria-label={t`Caută o categorie`}
+            aria-label={t`Categoria`}
             className={FIELD}
           />
           {asked ? (
@@ -382,8 +382,8 @@ function ValueField({ query, namer, onChange }: { readonly query: Query; readonl
             if (!event.currentTarget.contains(event.relatedTarget as Node | null)) afterFocusMoves(apply)
           }}
         >
-          <input inputMode="numeric" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoare de la, lei`} className={FIELD} />
-          <input inputMode="numeric" value={max} onChange={(event) => setMax(event.target.value)} placeholder={t`până la`} aria-label={t`Valoare până la, lei`} className={FIELD} />
+          <input inputMode="numeric" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoarea de la, lei`} className={FIELD} />
+          <input inputMode="numeric" value={max} onChange={(event) => setMax(event.target.value)} placeholder={t`până la`} aria-label={t`Valoarea până la, lei`} className={FIELD} />
           <span className="text-xs text-muted-foreground">{t`lei`}</span>
           {/* What lets Enter apply the pair; out of the Tab order, where it would be a stop no one sees. */}
           <button type="submit" tabIndex={-1} className="sr-only">

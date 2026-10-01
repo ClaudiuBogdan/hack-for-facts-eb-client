@@ -133,7 +133,7 @@ describe('FilterPanel', () => {
 
   it('finds a place by typing and picks it with the keys', () => {
     const onChange = panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul instituției' })
+    const field = screen.getByRole('combobox', { name: 'Locul instituției' })
     fireEvent.focus(field)
     fireEvent.change(field, { target: { value: 'sibiu' } })
     const list = screen.getByRole('listbox', { name: 'Locuri' })
@@ -148,7 +148,7 @@ describe('FilterPanel', () => {
 
   it('picks nothing on Enter with nothing typed: the regions on offer are no answer', () => {
     const onChange = panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul firmei' })
+    const field = screen.getByRole('combobox', { name: 'Locul firmei' })
     fireEvent.focus(field)
     fireEvent.submit(field.closest('form')!)
     expect(onChange).not.toHaveBeenCalled()
@@ -156,7 +156,7 @@ describe('FilterPanel', () => {
 
   it('takes the focus to the chip when a pick removes the field', () => {
     const onChange = panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul instituției' })
+    const field = screen.getByRole('combobox', { name: 'Locul instituției' })
     act(() => field.focus())
     fireEvent.change(field, { target: { value: 'sibiu' } })
     fireEvent.keyDown(field, { key: 'ArrowDown' })
@@ -168,7 +168,7 @@ describe('FilterPanel', () => {
 
   it('closes a place’s list on Escape and keeps the focus in the field', () => {
     panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul instituției' })
+    const field = screen.getByRole('combobox', { name: 'Locul instituției' })
     act(() => field.focus())
     fireEvent.change(field, { target: { value: 'sibiu' } })
     expect(screen.getByRole('listbox', { name: 'Locuri' })).toBeInTheDocument()
@@ -185,7 +185,7 @@ describe('FilterPanel', () => {
     search.results = [{ id: '1', title: 'Spitalul Județean Sibiu', href: '/entities/4240600', isExternal: false }]
     search.isCurrent = false
     const onChange = panel()
-    const field = screen.getByRole('combobox', { name: 'Caută o instituție' })
+    const field = screen.getByRole('combobox', { name: 'Instituția' })
     fireEvent.change(field, { target: { value: 'spital cluj' } })
     expect(screen.getByRole('option', { name: 'Spitalul Județean Sibiu' })).toBeDisabled()
     expect(announced('Se caută…')).toBe(true)
@@ -196,7 +196,7 @@ describe('FilterPanel', () => {
 
   it('keeps the options, and the box that scrolls them, out of the Tab order', () => {
     panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul firmei' })
+    const field = screen.getByRole('combobox', { name: 'Locul firmei' })
     fireEvent.focus(field)
     for (const option of screen.getAllByRole('option')) expect(option).toHaveAttribute('tabindex', '-1')
     // Chrome makes a scroller that overflows a Tab stop of its own.
@@ -206,7 +206,7 @@ describe('FilterPanel', () => {
 
   it('offers the regions before a word is typed', () => {
     panel()
-    fireEvent.focus(screen.getByRole('combobox', { name: 'Caută locul firmei' }))
+    fireEvent.focus(screen.getByRole('combobox', { name: 'Locul firmei' }))
     expect(within(screen.getByRole('listbox', { name: 'Regiuni' })).getAllByRole('option').map((option) => option.textContent)).toEqual(['Centru', 'Nord-Vest'])
   })
 
@@ -223,7 +223,7 @@ describe('FilterPanel', () => {
     places.uat = undefined
     places.counties = undefined
     panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul instituției' })
+    const field = screen.getByRole('combobox', { name: 'Locul instituției' })
     fireEvent.focus(field)
     fireEvent.change(field, { target: { value: 'sibiu' } })
     expect(screen.getByText('Se încarcă localitățile…')).toBeInTheDocument()
@@ -235,7 +235,7 @@ describe('FilterPanel', () => {
     places.geography = undefined
     places.countiesFailed = true
     panel()
-    const field = screen.getByRole('combobox', { name: 'Caută locul instituției' })
+    const field = screen.getByRole('combobox', { name: 'Locul instituției' })
     fireEvent.focus(field)
     fireEvent.change(field, { target: { value: 'sibiu' } })
     expect(within(screen.getByRole('listbox', { name: 'Locuri' })).getAllByRole('option')).toHaveLength(2)
@@ -247,7 +247,7 @@ describe('FilterPanel', () => {
   it('on a phone, gives a focused search room to rise, and takes it back when a pick removes the field', () => {
     const onChange = panel(queryOf({}), true)
     const root = onChange.view.container.firstElementChild!
-    const field = screen.getByRole('combobox', { name: 'Caută locul instituției' })
+    const field = screen.getByRole('combobox', { name: 'Locul instituției' })
     fireEvent.focus(field)
     expect(root).toHaveClass('pb-[70vh]')
     fireEvent.change(field, { target: { value: 'sibiu' } })
@@ -256,14 +256,14 @@ describe('FilterPanel', () => {
     fireEvent.keyDown(field, { key: 'Enter' })
     // The address now holds the locality: its picker gives way to the chip, the field with it.
     onChange.view.rerender(<FilterPanel query={onChange.mock.calls[0]![0]} answer={ANSWER} namer={NAMER} phone onChange={onChange} />)
-    expect(screen.queryByRole('combobox', { name: 'Caută locul instituției' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox', { name: 'Locul instituției' })).not.toBeInTheDocument()
     expect(root).not.toHaveClass('pb-[70vh]')
   })
 
   it('says a failed search failed, and runs it again on request', () => {
     search.status = { kind: 'error' }
     panel()
-    fireEvent.change(screen.getByRole('combobox', { name: 'Caută o instituție' }), { target: { value: 'spital' } })
+    fireEvent.change(screen.getByRole('combobox', { name: 'Instituția' }), { target: { value: 'spital' } })
     expect(screen.getByRole('alert')).toHaveTextContent('Căutarea nu a mers.')
     fireEvent.click(screen.getByRole('button', { name: 'Încearcă din nou' }))
     expect(search.retry).toHaveBeenCalledTimes(1)
@@ -271,7 +271,7 @@ describe('FilterPanel', () => {
 
   it('says a category search found nothing, and that it is reading before it knows', () => {
     const { rerender } = render(<FilterPanel query={queryOf({})} answer={ANSWER} namer={NAMER} phone={false} onChange={vi.fn()} />)
-    const field = screen.getByRole('combobox', { name: 'Caută o categorie' })
+    const field = screen.getByRole('combobox', { name: 'Categoria' })
     fireEvent.change(field, { target: { value: 'xyzw' } })
     expect(announced('Se caută…')).toBe(true)
     cpv.data = []
@@ -285,7 +285,7 @@ describe('FilterPanel', () => {
     cpv.data = [{ value: '33600000', label: 'Produse farmaceutice' }]
     cpv.settled = false
     render(<FilterPanel query={queryOf({})} answer={ANSWER} namer={NAMER} phone={false} onChange={onChange} />)
-    const field = screen.getByRole('combobox', { name: 'Caută o categorie' })
+    const field = screen.getByRole('combobox', { name: 'Categoria' })
     fireEvent.change(field, { target: { value: 'drumuri' } })
     expect(screen.getByRole('option', { name: /Produse farmaceutice/ })).toBeDisabled()
     fireEvent.keyDown(field, { key: 'ArrowDown' })

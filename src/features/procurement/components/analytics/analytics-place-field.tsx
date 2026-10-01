@@ -179,7 +179,8 @@ export function PlaceField({ axis, query, onChange }: { readonly axis: 'loc' | '
               }
             }}
             placeholder={placeholder}
-            aria-label={axis === 'loc_firma' ? t`Caută locul firmei` : t`Caută locul instituției`}
+            // Its name starts with the row's label, as voice control reads it („Locul"); the party tells the two rows apart.
+            aria-label={axis === 'loc_firma' ? t`Locul firmei` : t`Locul instituției`}
             className={FIELD}
           />
           {open ? (

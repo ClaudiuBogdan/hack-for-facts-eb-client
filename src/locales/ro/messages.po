@@ -4600,7 +4600,7 @@ msgid "Apropie"
 msgstr "Apropie"
 
 #: src/features/parliament/components/member-interventii-tab.tsx:226
-#: src/features/procurement/components/analytics/analytics-filters.tsx:522
+#: src/features/procurement/components/analytics/analytics-filters.tsx:517
 #: src/features/procurement/components/buyer/buyer-bands.tsx:57
 #: src/features/procurement/components/home/home-money-bands.tsx:182
 #: src/features/procurement/components/supplier/supplier-bands.tsx:48
@@ -4608,7 +4608,7 @@ msgid "Arată"
 msgstr "Arată"
 
 #. placeholder {0}: countText(records)
-#: src/features/procurement/components/analytics/analytics-filters.tsx:522
+#: src/features/procurement/components/analytics/analytics-filters.tsx:517
 msgid "Arată {0}"
 msgstr "Arată {0}"
 
@@ -5881,6 +5881,7 @@ msgid "Câte ONG-uri are județul tău"
 msgstr "Câte ONG-uri are județul tău"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:229
+#: src/features/procurement/components/analytics/analytics-filters.tsx:267
 #: src/features/procurement/components/contract/contract-block.tsx:151
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:163
 msgid "Categoria"
@@ -6150,24 +6151,24 @@ msgstr "Caută județul…"
 #~ msgstr "Caută localitatea ta ca să vezi indicatorii disponibili pentru ea."
 
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:182
-msgid "Caută locul firmei"
-msgstr "Caută locul firmei"
+#~ msgid "Caută locul firmei"
+#~ msgstr "Caută locul firmei"
 
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:182
-msgid "Caută locul instituției"
-msgstr "Caută locul instituției"
+#~ msgid "Caută locul instituției"
+#~ msgstr "Caută locul instituției"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:267
-msgid "Caută o categorie"
-msgstr "Caută o categorie"
+#~ msgid "Caută o categorie"
+#~ msgstr "Caută o categorie"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:157
-msgid "Caută o firmă"
-msgstr "Caută o firmă"
+#~ msgid "Caută o firmă"
+#~ msgstr "Caută o firmă"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:157
-msgid "Caută o instituție"
-msgstr "Caută o instituție"
+#~ msgid "Caută o instituție"
+#~ msgstr "Caută o instituție"
 
 #: src/features/statistics/components/uat-map/uat-map-finder.tsx:93
 #: src/features/statistics/components/uat-map/uat-map-finder.tsx:94
@@ -13439,7 +13440,7 @@ msgstr "Filtrat"
 #: src/features/legal/components/legislation-changes-feed.tsx:300
 #: src/features/legal/components/legislation-gazette-directory.tsx:203
 #: src/features/procurement/components/analytics/analytics-filters.tsx:470
-#: src/features/procurement/components/analytics/analytics-filters.tsx:511
+#: src/features/procurement/components/analytics/analytics-filters.tsx:506
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:621
 #: src/features/statistics/components/explorer/dataset-explorer-filter-sheet.tsx:56
 #: src/features/statistics/components/explorer/statistics-filter-trigger-button.tsx:23
@@ -15612,6 +15613,7 @@ msgstr ""
 msgid "Încărcat"
 msgstr ""
 
+#: src/components/filters/filter-sheet/filter-sheet-parts.tsx:136
 #: src/features/entity-search/components/entity-empty-state.tsx:161
 #: src/features/entity-search/components/entity-empty-state.tsx:180
 #: src/features/legal/components/legislation-act-finder.tsx:317
@@ -15624,7 +15626,6 @@ msgstr ""
 #: src/features/private-companies/components/hub/company-county-map.tsx:133
 #: src/features/private-companies/components/profile/company-profile-states.tsx:123
 #: src/features/procurement/components/analytics/analytics-answer.tsx:351
-#: src/features/procurement/components/analytics/analytics-filter-parts.tsx:132
 #: src/features/statistics/components/county-map/county-map.tsx:126
 #: src/features/statistics/components/hub/hub-chrome.tsx:62
 #: src/features/statistics/components/hub/hub-county-band.tsx:287
@@ -16930,8 +16931,8 @@ msgid "județe"
 msgstr "județe"
 
 #: src/features/procurement/components/analytics/analytics-controls.tsx:190
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:204
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:237
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:205
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:238
 msgid "Județe"
 msgstr "Județe"
 
@@ -18189,7 +18190,7 @@ msgstr "Localitatea vs județul vs România"
 msgid "localități"
 msgstr "localități"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:244
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:245
 #: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:166
 msgid "Localități"
 msgstr "Localități"
@@ -18198,7 +18199,7 @@ msgstr "Localități"
 #~ msgid "Localități (SIRUTA)"
 #~ msgstr "Localități (SIRUTA)"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:216
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:217
 msgid "Localitățile nu s-au încărcat."
 msgstr "Localitățile nu s-au încărcat."
 
@@ -18336,19 +18337,19 @@ msgstr "Locul"
 msgid "locul {0} din {1}"
 msgstr "locul {0} din {1}"
 
-#: src/features/procurement/components/analytics/analytics-filters.tsx:437
-#~ msgid "Locul firmei"
-#~ msgstr "Locul firmei"
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:183
+msgid "Locul firmei"
+msgstr "Locul firmei"
 
-#: src/features/procurement/components/analytics/analytics-filters.tsx:431
-#~ msgid "Locul instituției"
-#~ msgstr "Locul instituției"
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:183
+msgid "Locul instituției"
+msgstr "Locul instituției"
 
 #: src/features/statistics/components/landing/landing-hero.tsx:106
 #~ msgid "Locul tău în cifre"
 #~ msgstr "Locul tău în cifre"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:209
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:210
 msgid "Locuri"
 msgstr "Locuri"
 
@@ -20485,7 +20486,7 @@ msgid "Niciunul dintre cei {known} furnizori identificați nu are {basis} în ac
 msgstr ""
 
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:136
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:199
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:200
 msgid "Nimic de arătat."
 msgstr "Nimic de arătat."
 
@@ -25784,17 +25785,17 @@ msgstr "Regiune, județ sau localitate"
 msgid "regiuni"
 msgstr "regiuni"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:204
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:230
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:205
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:231
 msgid "Regiuni"
 msgstr "Regiuni"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:190
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:191
 msgid "Regiuni și județe"
 msgstr "Regiuni și județe"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:196
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:222
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:197
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:223
 msgid "Regiunile și județele nu s-au încărcat."
 msgstr "Regiunile și județele nu s-au încărcat."
 
@@ -26840,7 +26841,7 @@ msgstr "Scoate „{0}\""
 msgid "Scoate {0} din comparație"
 msgstr "Scoate {0} din comparație"
 
-#: src/features/procurement/components/analytics/analytics-filter-parts.tsx:80
+#: src/components/filters/filter-sheet/filter-sheet-parts.tsx:84
 msgid "Scoate {label}"
 msgstr "Scoate {label}"
 
@@ -27073,7 +27074,7 @@ msgstr ""
 msgid "Se încarcă lista de intervenții"
 msgstr ""
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:213
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:214
 msgid "Se încarcă localitățile…"
 msgstr "Se încarcă localitățile…"
 
@@ -27106,7 +27107,7 @@ msgstr "Se încarcă profilul de furnizor"
 msgid "Se încarcă profilul firmei"
 msgstr "Se încarcă profilul firmei"
 
-#: src/features/procurement/components/analytics/analytics-place-field.tsx:193
+#: src/features/procurement/components/analytics/analytics-place-field.tsx:194
 msgid "Se încarcă regiunile și județele…"
 msgstr "Se încarcă regiunile și județele…"
 
@@ -29559,7 +29560,7 @@ msgstr "Șterge teritoriul invalid"
 msgid "Șterge toate filtrele"
 msgstr "Șterge toate filtrele"
 
-#: src/features/procurement/components/analytics/analytics-filters.tsx:519
+#: src/features/procurement/components/analytics/analytics-filters.tsx:514
 msgid "Șterge tot"
 msgstr "Șterge tot"
 
@@ -32888,8 +32889,8 @@ msgid "Valoare de cel puțin {0}"
 msgstr "Valoare de cel puțin {0}"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:385
-msgid "Valoare de la, lei"
-msgstr "Valoare de la, lei"
+#~ msgid "Valoare de la, lei"
+#~ msgstr "Valoare de la, lei"
 
 #: src/features/procurement/lib/analytics-questions.ts:91
 msgid "Valoare fără TVA; pragurile legale diferă după tip și an."
@@ -32919,8 +32920,8 @@ msgstr "valoare nepublicată"
 #~ msgstr ""
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:386
-msgid "Valoare până la, lei"
-msgstr "Valoare până la, lei"
+#~ msgid "Valoare până la, lei"
+#~ msgstr "Valoare până la, lei"
 
 #: src/features/statistics/components/landing/landing-example-card.tsx:102
 #~ msgid "valoare raportată și în"
@@ -32992,6 +32993,10 @@ msgstr "valoarea de azi a anunțului"
 msgid "Valoarea de azi, în anunț"
 msgstr "Valoarea de azi, în anunț"
 
+#: src/features/procurement/components/analytics/analytics-filters.tsx:385
+msgid "Valoarea de la, lei"
+msgstr "Valoarea de la, lei"
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:87
 msgid "Valoarea din SEAP, fără TVA"
 msgstr "Valoarea din SEAP, fără TVA"
@@ -33021,6 +33026,10 @@ msgstr "Valoarea lor întreagă"
 #: src/features/procurement/lib/contract-text.ts:162
 msgid "Valoarea maximă"
 msgstr "Valoarea maximă"
+
+#: src/features/procurement/components/analytics/analytics-filters.tsx:386
+msgid "Valoarea până la, lei"
+msgstr "Valoarea până la, lei"
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:323
 msgid "Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări."

@@ -2757,3 +2757,10 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
   - A list long enough to scroll was its own Tab stop in Chrome, unnamed,
     and Escape there closed the sheet. Its box is now out of the Tab
     order.
+- **Fields named by their row** (the owner, 1 October 2026). A field's
+  name starts with the label beside it, as voice control reads it:
+  „Instituția", „Firma", „Locul instituției", „Locul firmei",
+  „Categoria", „Valoarea de la, lei" (in English „Institution",
+  „Location of the firm", „Value from, lei"…). They were „Caută o
+  instituție" and the like, which a reader saying the label could not
+  reach.

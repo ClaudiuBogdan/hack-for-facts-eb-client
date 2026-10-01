@@ -76,7 +76,7 @@ test.describe('Procurement analytics — addresses and controls', () => {
 
     await page.getByRole('button', { name: /^Filtre/ }).first().click()
     const sheet = page.getByRole('dialog')
-    await sheet.getByRole('combobox', { name: 'Caută locul instituției' }).click()
+    await sheet.getByRole('combobox', { name: 'Locul instituției', exact: true }).click()
     await sheet.getByRole('option', { name: 'Centru', exact: true }).click()
     await expect.poll(() => params(page).regiune).toBe('Centru')
     await sheet.getByRole('option', { name: 'Sibiu', exact: true }).click()
@@ -97,7 +97,7 @@ test.describe('Procurement analytics — addresses and controls', () => {
 
     await page.getByRole('button', { name: /^Filtre/ }).first().click()
     const sheet = page.getByRole('dialog')
-    const field = sheet.getByRole('combobox', { name: 'Caută locul firmei' })
+    const field = sheet.getByRole('combobox', { name: 'Locul firmei', exact: true })
     await field.click()
     await field.pressSequentially('cluj napoca')
     await expect(sheet.getByRole('option', { name: /^Cluj-Napoca/ })).toBeVisible()
@@ -123,11 +123,11 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await page.getByRole('button', { name: /^Filtre/ }).first().click()
     const sheet = page.getByRole('dialog')
     // The place's list closes as the focus leaves: the focus reaches the next field, not the sheet.
-    const place = sheet.getByRole('combobox', { name: 'Caută locul instituției' })
+    const place = sheet.getByRole('combobox', { name: 'Locul instituției', exact: true })
     await place.click()
     await expect(place).toHaveAttribute('aria-expanded', 'true')
     await place.press('Tab')
-    await expect(sheet.getByRole('combobox', { name: 'Caută o firmă' })).toBeFocused()
+    await expect(sheet.getByRole('combobox', { name: 'Firma', exact: true })).toBeFocused()
     await expect(place).toHaveAttribute('aria-expanded', 'false')
 
     // A title typed becomes its chip as the focus leaves.
@@ -135,6 +135,6 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await title.fill('laptop')
     await title.press('Tab')
     await expect.poll(() => params(page).titlu).toBe('laptop')
-    await expect(sheet.getByRole('textbox', { name: 'Valoare de la, lei' })).toBeFocused()
+    await expect(sheet.getByRole('textbox', { name: 'Valoarea de la, lei', exact: true })).toBeFocused()
   })
 })
