@@ -47,7 +47,7 @@ export function ProcurementAnalyticsPage() {
         <RuledFrame className="py-12 sm:py-16">
           <GroupBar query={query} onChange={move} />
           {query.dupa.axis === 'inregistrari' ? (
-            <AnswerRecords key={recordsKey(query)} query={query} answer={answer} className="mt-3" />
+            <AnswerRecords key={recordsKey(query)} query={query} answer={answer} onChange={move} className="mt-3" />
           ) : query.dupa.axis === 'timp' ? (
             <AnswerTime query={query} answer={answer} onChange={move} className="mt-4" />
           ) : (

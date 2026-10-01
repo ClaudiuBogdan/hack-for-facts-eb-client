@@ -320,8 +320,10 @@ export interface Records {
 
 /** Why the API cannot list the records of a selection, or null. */
 export function recordsProblem(query: Query, period: ResolvedPeriod | null): 'supplier-place' | 'procedure' | 'too-wide' | null {
-  // The firm's place is filtered through the search index, which the API does not run.
-  if (query.filters.loc_firma) return 'supplier-place'
+  // The firm's place is filtered through the search index, which the API does not run (BAD_GATEWAY on dev). A
+  // firm has one place, its registered office (each firm's count is the same with and without it, dev API, 1
+  // October 2026): with a firm picked, the list asks for the firm alone.
+  if (query.filters.loc_firma && !query.filters.furnizor) return 'supplier-place'
   // The contracts list has no procedure filter (`ProcurementContractsFilter`): without it the list would be wider than the answer.
   if (query.filters.procedura) return 'procedure'
   const party = Boolean(query.filters.cumparator || query.filters.furnizor)
@@ -339,6 +341,8 @@ function listFilterOf(query: Query, period: ResolvedPeriod): Record<string, unkn
   const filter: Record<string, unknown> = {}
   const population = POPULATIONS[query.tip]
   for (const axisId of AXIS_ORDER) {
+    // The firm fixes its place, which the list cannot filter (`recordsProblem`).
+    if (axisId === 'loc_firma' && query.filters.furnizor) continue
     const value = query.filters[axisId]?.values[0]
     const level = query.filters[axisId] ? levelOf(axisId, query.filters[axisId]!.level) : null
     if (!level || !value) continue

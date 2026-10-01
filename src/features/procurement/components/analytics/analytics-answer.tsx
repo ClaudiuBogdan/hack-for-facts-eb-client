@@ -312,27 +312,38 @@ const PAGE = 25
  * its own read, with its own count (never the analysis count), and says when
  * the API cannot list a selection rather than showing a wider one.
  */
-export function AnswerRecords({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
+export function AnswerRecords({ query, answer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly className?: string }) {
   // A framework has no value to order by (a ceiling at most): its records come newest first, with no choice.
   const valued = POPULATIONS[query.tip].money !== 'none'
   const [sort, setSort] = useState<'value_desc' | 'date_desc'>(valued ? 'value_desc' : 'date_desc')
   const [page, setPage] = useState(1)
   const problem = recordsProblem(query, answer.period)
-  const records = useRecords(query, answer.period, sort, page, problem === null)
+  // A firm and a place: the list asks for the firm alone. A firm outside the place has nothing here, so the count says first.
+  const firmInPlace = Boolean(query.filters.furnizor && query.filters.loc_firma)
+  const counting = firmInPlace && answer.figures.data === undefined && !answer.figures.isError
+  const outside = firmInPlace && answer.figures.data?.now?.records === 0
+  const records = useRecords(query, answer.period, sort, page, problem === null && !counting && !outside)
   const party = Boolean(query.filters.cumparator || query.filters.furnizor)
   const order = (next: 'value_desc' | 'date_desc') => () => {
     setSort(next)
     setPage(1)
   }
-  if (problem) return (
+  if (problem === 'supplier-place') return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
-        {problem === 'supplier-place'
-          ? t`Lista nu se poate filtra încă după locul firmei. Alege o firmă pentru înregistrările ei.`
-          : problem === 'procedure'
-            ? t`Lista nu se poate filtra încă după procedură: ar arăta și contracte din alte proceduri.`
-            : t`Pentru achiziții directe, lista cere o instituție, o firmă sau cel mult 12 luni.`}
+        {t`Lista nu se poate filtra încă după locul firmei. Alege o firmă pentru înregistrările ei.`}{' '}
+        <button type="button" onClick={() => onChange({ ...query, dupa: { axis: 'furnizor', level: 'cui' } })} className="font-medium text-foreground underline underline-offset-4">
+          {t`Vezi firmele`}
+        </button>
       </p>
     )
+  if (problem) return (
+      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
+        {problem === 'procedure'
+          ? t`Lista nu se poate filtra încă după procedură: ar arăta și contracte din alte proceduri.`
+          : t`Pentru achiziții directe, lista cere o instituție, o firmă sau cel mult 12 luni.`}
+      </p>
+    )
+  if (outside) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
   if (records.isError) return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
         {party ? t`Lista nu s-a putut citi acum.` : t`Lista nu s-a putut citi pentru o selecție atât de largă. Restrânge la o instituție, o firmă sau o lună și încearcă din nou.`}{' '}

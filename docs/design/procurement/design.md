@@ -2404,6 +2404,26 @@ pages), the national list (it answers within the 9-second deadline), the
 order by date (27 May 2026 first), a tab away and back; the table fits a
 390 px phone; unit tests cover the records' round trip and the title rule.
 
+**A firm's place (1 October 2026).** The owner saw the count (384 contracts
+of Sibiu's firms) over an empty list. The list's firm-place filters
+(`supplierRegion`, `supplierCounty`, `supplierSiruta`) are served by the
+search engine, which the dev API does not run: each fails with
+BAD_GATEWAY, while the buyer's place answers. The analysis reads its own
+fact rows, so the count stands.
+- A firm has one place, its registered office: for 36 firms (Sibiu's and
+  Cluj's top contractors, Sibiu's top direct suppliers) the count is the
+  same with and without it. So a firm picked lists its records by the firm
+  alone (11, 22 and 9 records, as their counts say). Until then the list's
+  own advice, „Alege o firmă", led to the same refusal.
+- A firm outside the place picked has a count of 0 and no records; the
+  list waits for the count before it asks.
+- The place alone is still refused, now with „Vezi firmele", the firms of
+  that place, each a way to its records.
+- The rest is the server's: the list's firm-place filters served without
+  the search engine (from the analysis rows, as the amendments' buyer place
+  already is), or the engine run; then the refusal goes and the list is
+  the count's.
+
 ### 18.15 The years in a band of their own (29 September 2026)
 
 The owner, on the years strip under the answer: polish it, „maybe add it in
