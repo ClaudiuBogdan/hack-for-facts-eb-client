@@ -838,3 +838,13 @@ Known gaps, for the server: the index marks every NGO active (`isActive`),
 so a struck-off or dissolved organisation reads like any other row; it holds
 NGOs without a profile, unmarked; it does not hold registry numbers, which
 the registry page (`/ngos/registry`) looks up.
+
+### Profiles without a CUI (2026-10-01)
+
+95% of registry entries carry no CUI the client can reach, and a registry
+row does not name the profile an inferred CUI gives it. The owner decided:
+one address per organisation — `/ngos/{cui}` where a CUI is admitted, else
+`/ngos/registry/{registry number}`, which 301s to the CUI address once one
+is admitted; the content is the server's profile read by registry number;
+these pages are indexed. What the server is asked for, with the
+measurements and the checks: `server-request-registry-profiles.md`.
