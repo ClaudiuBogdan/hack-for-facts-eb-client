@@ -76,10 +76,16 @@ describe('legacy achizitii redirects', () => {
     redirectMock.mockClear()
   })
 
+  it('sends the old category alias straight to the analytics page, its category the filter, the site keys kept', async () => {
+    const route = await importLegacyRoute('category')
+    expect(() => route.beforeLoad({ params: { code: '45' }, search: { lang: 'en', q: 'spital', page: 2 } } as never)).toThrow()
+    // The explorer's keys stay behind: beside the page's defaults they would read as an explorer link.
+    expect(redirectMock).toHaveBeenCalledWith({ to: '/procurement/analytics', search: { lang: 'en', cpv: 45 }, replace: true, statusCode: 301 })
+  })
+
   it.each([
     ['index', '/procurement', undefined],
     ['search', '/procurement/analytics', undefined],
-    ['category', '/procurement/categories/$code', { code: '45' }],
     ['contract', '/procurement/contracts/$id', { id: 'contract-key-001' }],
     ['procedure', '/procurement/procedures/$id', { id: 'proc-001' }],
     [

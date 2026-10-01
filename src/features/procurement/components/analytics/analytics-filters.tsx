@@ -11,7 +11,7 @@ import { MIN_QUERY_CHARS, useSearchResults } from '@/features/landing/hooks/use-
 import { procurementHrefOf } from '@/features/procurement/lib/home-links'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
-import { cpvKey, cpvLevelOf, FIRST_MONTH, POPULATIONS, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
+import { cpvKey, cpvPath, FIRST_MONTH, POPULATIONS, withCategory, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
 import { CPV_SEARCH_MIN, useCpvSearch, useNames, type Answer } from '../../hooks/use-procurement-analytics'
 import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, type Namer } from '../../lib/analytics-text'
 import { SHOW_MORE_CLASS } from '../home/home-chrome'
@@ -197,13 +197,6 @@ function OrgField({ axis, label, query, namer, onChange }: { readonly axis: 'cum
 
 // ──────────────────────────────────────────────────────────── the what ──
 
-/** A CPV pick from its path: division › group › class › category › code, each step a click back up. */
-function cpvPath(prefix: string): readonly string[] {
-  const steps = [2, 3, 4, 5].filter((length) => length < prefix.length).map((length) => prefix.slice(0, length))
-  // A step ending in 0 is no level of its own (45000000 is the division's own code, not a group „450").
-  return [...steps.filter((step) => step.length === 2 || !step.endsWith('0')), prefix]
-}
-
 function CpvField({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const filter = query.filters.cpv
   const [text, setText] = useState('')
@@ -222,7 +215,7 @@ function CpvField({ query, namer, onChange }: { readonly query: Query; readonly 
   const stale = !found.settled
   const pick = (hit: { readonly level: string; readonly value: string }) => {
     setText('')
-    onChange(withFilter(query, 'cpv', hit.level, hit.value))
+    onChange(withCategory(query, hit.value))
   }
   const keys = useActiveOption(asked && !stale ? hits.map((hit) => hit.value) : [])
   return (
@@ -234,9 +227,9 @@ function CpvField({ query, namer, onChange }: { readonly query: Query; readonly 
             return (
               <li key={step}>
                 {index === path.length - 1 ? (
-                  <Chip label={`${step} · ${label}`} onClear={() => onChange(index > 0 ? withFilter(query, 'cpv', cpvLevelOf(path[index - 1]!)!.id, path[index - 1]!) : withoutFilter(query, 'cpv'))} />
+                  <Chip label={`${step} · ${label}`} onClear={() => onChange(withCategory(query, index > 0 ? path[index - 1]! : null))} />
                 ) : (
-                  <button type="button" onClick={() => onChange(withFilter(query, 'cpv', cpvLevelOf(step)!.id, step))} title={t`Doar ${label}`} className={cn(OPTION, 'justify-start gap-2 border text-muted-foreground hover:text-foreground')}>
+                  <button type="button" onClick={() => onChange(withCategory(query, step))} title={t`Doar ${label}`} className={cn(OPTION, 'justify-start gap-2 border text-muted-foreground hover:text-foreground')}>
                     <span className="shrink-0 font-mono text-xs">{step}</span>
                     <span className="min-w-0 truncate">{label}</span>
                   </button>

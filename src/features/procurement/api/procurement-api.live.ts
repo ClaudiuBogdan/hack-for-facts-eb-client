@@ -12,7 +12,6 @@
  */
 import type {
   AuthorityProcurementSlice,
-  CpvCategoryPage,
   ProcedureRecord,
   ProcurementRecordDetail,
   ProcurementRecordSummary,
@@ -53,7 +52,6 @@ import {
 import {
   mapAuthoritySlice,
   mapContract,
-  mapCpvCategoryPage,
   mapDirectAcquisition,
   mapModification,
   mapProcedure,
@@ -371,22 +369,6 @@ export async function fetchProcedureDetailLive(
       ted: detail.ted,
     },
   }
-}
-
-// ── CPV category page ───────────────────────────────────────────────────────
-
-export async function fetchCpvCategoryPageLive(
-  code: string,
-): Promise<CpvCategoryPage | null> {
-  const scope = buildScopeFilter(
-    code.length === 2 ? { cpvDivision: code } : { cpvCode: code },
-  )
-  const [aggregates, divisions] = await Promise.all([
-    loadAggregates(scope, { includeCategories: false }),
-    loadCpvDivisions(),
-  ])
-  const partyNames = await loadPartyNames(aggregates)
-  return mapCpvCategoryPage({ code, divisions, aggregates, partyNames })
 }
 
 // ── supplier slice + records ────────────────────────────────────────────────

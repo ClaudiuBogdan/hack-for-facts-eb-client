@@ -37,6 +37,26 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('spital')
   })
 
+  test('the old category page asks the analytics page about its category', async ({ page }) => {
+    await page.goto('/procurement/categories/45')
+    await waitForPageReady(page)
+
+    await expect.poll(() => pathname(page)).toBe(ROUTE)
+    expect(params(page)).toEqual({ cpv: '45' })
+    // The category's code over the headline, and the page's title naming it.
+    await expect(page.getByText('CPV', { exact: true })).toBeVisible()
+    await expect(page).toHaveTitle(/\(CPV 45\)/u)
+  })
+
+  test('each population’s tab says its count for the question', async ({ page }) => {
+    await page.goto(`${ROUTE}?cpv=45`)
+    await waitForPageReady(page)
+
+    const tabs = page.getByRole('navigation', { name: 'Ce înregistrări' }).getByRole('button')
+    await expect(tabs).toHaveCount(3)
+    for (const tab of await tabs.all()) await expect(tab).toContainText(/\d/u)
+  })
+
   test('/procurement is still the front door', async ({ page }) => {
     await page.goto('/procurement')
     await waitForPageReady(page)

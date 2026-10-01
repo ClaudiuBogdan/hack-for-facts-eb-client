@@ -6,7 +6,8 @@ import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { ProcurementAnalyticsServerRead } from '@/features/procurement/api/procurement-analytics-ssr'
 import { analyticsRedirectSearch, isExplorerSearch } from '@/features/procurement/lib/analytics-legacy'
-import { SEARCH_KEYS, type AnalyticsUrlSearch } from '@/features/procurement/lib/analytics-model'
+import { categoryLandingOf, landingDescription, landingName, landingTitle } from '@/features/procurement/lib/analytics-head'
+import { analyticsSearchOf, SEARCH_KEYS, type AnalyticsUrlSearch } from '@/features/procurement/lib/analytics-model'
 
 /** The keys the page reads, each a string or the number a digits-only value travels as; any other is left to its own route. */
 function validateAnalyticsSearch(search: Record<string, unknown>): AnalyticsUrlSearch {
@@ -56,24 +57,33 @@ export const Route = createFileRoute('/procurement/analytics')({
           vary: ['Accept-Encoding', 'Cookie'],
         }),
   // In the request's own language: the shared Lingui instance may hold another request's by the time a head that waited on its loader runs.
-  head: ({ match }) => {
-    const translator = translatorFor(match.context.locale)
-    const canonical = `${getSiteUrl()}/procurement/analytics`
-    const title = `${translator._(msg`Analize ale achizițiilor publice`)} — Transparenta.eu`
-    const description = translator._(
-      msg`Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019.`,
-    )
+  // A category alone is a landing with its own title and address; the bare page is the page; any other question is a
+  // reader's own, answered but not indexed (design.md §19). No canonical elsewhere for those: with noindex it would contradict it.
+  head: ({ match, loaderData }) => {
+    const locale = match.context.locale
+    const translator = translatorFor(locale)
+    const search = analyticsSearchOf(match.search as Record<string, unknown>)
+    const landing = categoryLandingOf(search)
+    const bare = Object.keys(search).length === 0
+    const name = landing ? landingName(landing.code, locale, loaderData?.landingName) : null
+    const canonical = landing ? `${getSiteUrl()}/procurement/analytics?${landing.search}` : `${getSiteUrl()}/procurement/analytics`
+    const title = landing ? landingTitle(translator, landing, name) : `${translator._(msg`Analize ale achizițiilor publice`)} — Transparenta.eu`
+    const description = landing
+      ? landingDescription(translator, landing, name)
+      : translator._(msg`Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019.`)
+    const indexed = landing !== null || bare
     return {
       meta: [
         { title },
         { name: 'description', content: description },
+        ...(indexed ? [] : [{ name: 'robots', content: 'noindex, follow' }]),
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
         { property: 'og:url', content: canonical },
         { name: 'twitter:title', content: title },
         { name: 'twitter:description', content: description },
       ],
-      links: [{ rel: 'canonical', href: canonical }],
+      links: indexed ? [{ rel: 'canonical', href: canonical }] : [],
     }
   },
 })

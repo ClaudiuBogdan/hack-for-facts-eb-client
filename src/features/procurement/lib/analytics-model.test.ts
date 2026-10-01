@@ -12,6 +12,7 @@ import {
   resolvePeriod,
   searchOf,
   unreadParams,
+  withCategory,
   withTitle,
   type GroupBy,
   type PopulationId,
@@ -42,6 +43,23 @@ describe('analytics URL round trip', () => {
         expect(roundTrip(next)).toEqual(next)
       }
     }
+  })
+})
+
+describe('a category picked, a step up its path, none', () => {
+  it('takes a grouping the reader did not choose with it: what is inside first', () => {
+    const code = queryOf({ cpv: '33600000' })
+    expect(code.dupa).toEqual({ axis: 'furnizor', level: 'cui' })
+    expect(withCategory(code, '33').dupa).toEqual({ axis: 'cpv', level: 'grup' })
+    expect(withCategory(code, '336').dupa).toEqual({ axis: 'cpv', level: 'clasa' })
+    expect(withCategory(queryOf({}), '45').dupa).toEqual({ axis: 'cpv', level: 'grup' })
+    expect(withCategory(queryOf({ cpv: '45' }), null)).toEqual(queryOf({}))
+  })
+
+  it('leaves a grouping the reader chose where it is', () => {
+    const chosen = queryOf({ cpv: '33600000', dupa: 'institutie' })
+    expect(withCategory(chosen, '33').dupa).toEqual({ axis: 'cumparator', level: 'cui' })
+    expect(searchOf(withCategory(chosen, '33'))).toMatchObject({ cpv: '33', dupa: 'institutie' })
   })
 })
 

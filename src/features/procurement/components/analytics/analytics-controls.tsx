@@ -13,6 +13,7 @@ import {
   groupProblem,
   perResidentAllowed,
   POPULATIONS,
+  withCategory,
   withFilter,
   withTitle,
   type AxisId,
@@ -178,7 +179,7 @@ export function AddFilter({
                   const next = cpvFilterOf(hit.value)
                   if (!next) return null
                   return (
-                    <CommandItem key={hit.value} value={`cpv-${hit.value}`} onSelect={() => pick(withFilter(query, 'cpv', next.level, next.value))}>
+                    <CommandItem key={hit.value} value={`cpv-${hit.value}`} onSelect={() => pick(withCategory(query, next.value))}>
                       <span className="min-w-0 flex-1 truncate">{hit.label}</span>
                       <MonoLabel className="tabular-nums text-muted-foreground">{hit.value}</MonoLabel>
                     </CommandItem>

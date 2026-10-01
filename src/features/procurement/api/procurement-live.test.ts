@@ -9,7 +9,6 @@ import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withProcurementSearchDefaults } from '@/schemas/procurement-search'
 import {
   fetchAuthorityProcurementSliceLive,
-  fetchCpvCategoryPageLive,
   fetchProcedureDetailLive,
   fetchProcurementSearchLive,
   fetchSupplierRecordsLive,
@@ -156,25 +155,21 @@ describe('live procurement adapter', () => {
     expect(page.records[0]?.grain).toBe('contract')
   })
 
-  it('batches canonical authority and supplier names into ranking rows', async () => {
+  it('names ranking rows through the identity spine', async () => {
     answerByOperation({
-      authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }],
       suppliers: [{ cui: '222', canonicalName: 'Furnizor Exemplu SRL', status: 'named' }],
     })
 
-    const page = await fetchCpvCategoryPageLive('45')
+    const slice = await fetchAuthorityProcurementSliceLive('111')
 
-    expect(page?.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
-    expect(page?.analysisByGrain.contract.topSuppliers[0]?.supplier?.name).toBe('Furnizor Exemplu SRL')
-    // One batched read for both roles, through the identity spine: a role registry cannot name a buyer that is a state company.
-    const names = callsOf('ProcurementPartyNames')
-    expect(names).toHaveLength(1)
-    expect(names[0]?.[0]).toContain('authorities: organizationLabels')
-    expect(names[0]?.[0]).toContain('suppliers: organizationLabels')
-    expect(names[0]?.[0]).not.toContain('entity(cui:')
-    expect(names[0]?.[0]).not.toContain('company(cui:')
-    // A category page ranks by count.
-    expect(callsOf('ProcurementAggregates')[0]?.[1]).toMatchObject({ scope: { cpvDivision: '45' }, rankBy: 'count' })
+    expect(slice.analysisByGrain.contract.topSuppliers[0]?.supplier?.name).toBe('Furnizor Exemplu SRL')
+    // Through the identity spine: a role registry cannot name a party that is a state company.
+    const names = callsOf('ProcurementPartyNames').map((call) => String(call[0]))
+    expect(names.some((query) => query.includes('suppliers: organizationLabels'))).toBe(true)
+    for (const query of names) {
+      expect(query).not.toContain('entity(cui:')
+      expect(query).not.toContain('company(cui:')
+    }
   })
 
   it('asks an institution’s slice for money order, and passes the order on', async () => {

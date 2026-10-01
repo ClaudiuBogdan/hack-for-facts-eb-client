@@ -100,6 +100,18 @@ export function analyticsRedirectSearch(raw: Readonly<Record<string, unknown>>, 
   return { ...carried, ...analyticsSearchFromExplorer(raw) } as AnalyticsUrlSearch
 }
 
+/**
+ * The analytics page's address for the old CPV category page
+ * (`/procurement/categories/$code`, `/achizitii/cpv/$code`): the category
+ * as its filter, at the page's own period and grouping, the site's keys
+ * kept. A code the page cannot read goes on as it came, for the page to say
+ * so.
+ */
+export function categoryRedirectSearch(raw: Readonly<Record<string, unknown>>, code: string): AnalyticsUrlSearch {
+  // What the link carried goes as the router parsed it (the root route validates its own keys again on arrival).
+  return { ...siteSearchOf(raw), ...linkSearchOf({ cpv: code }) } as AnalyticsUrlSearch
+}
+
 /** The analytics page's address for an explorer link, normalised as the page writes it. */
 export function analyticsSearchFromExplorer(raw: Readonly<Record<string, unknown>>, now: Date = new Date()): AnalyticsUrlSearch {
   const state = parseProcurementHubSearch(raw as Record<string, unknown>)

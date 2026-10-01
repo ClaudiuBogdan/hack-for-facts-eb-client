@@ -3,7 +3,8 @@ import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import type { AnalyticsSeed } from '../hooks/use-procurement-analytics'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { analyticsSearchOf, queryOf, repaired, urlSearchOf } from '../lib/analytics-model'
+import { categoryLandingOf } from '../lib/analytics-head'
+import { analyticsSearchOf, cpvKey, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation } from '../lib/analytics-model'
 import { homeYear } from '../lib/home-model'
 import {
   defaultRecordsSort,
@@ -15,6 +16,7 @@ import {
   readAnalyticsCutoff,
   readCpvDivisions,
   type AnalyticsCutoff,
+  type Names,
   type PlannedRead,
   type Ranking,
 } from './procurement-analytics-api'
@@ -53,6 +55,8 @@ export interface ProcurementAnalyticsServerRead {
   readonly complete: boolean
   /** The year the cutoff's key was read under, so the browser plans the same keys around a new year. */
   readonly latest?: number
+  /** A category landing's name in both languages, for the route's title (`analytics-head.ts`): the API's, for a level under a division. */
+  readonly landingName?: { readonly ro: string | null; readonly en: string | null }
 }
 
 // A partial read is served once and read again, never kept.
@@ -83,26 +87,35 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     const answer: PlannedRead<unknown>[] = [plan.figures, plan.concentration, plan.ranking, plan.series, plan.years].filter((read) => read.enabled)
     // A firm in a place lists only once its count is known (`firmPlaceGate`): the browser reads it then, not the server now.
     const records = query.dupa.axis === 'inregistrari' && firmPlaceGate(query, { data: undefined, isError: false }) === 'list' ? planRecords(query, plan.period, defaultRecordsSort(query), 1) : null
-    const [settled, listed] = await Promise.all([
+    // The other populations' figures, for the counts on their tabs (and their answer, should a tab be clicked): a failure there is the browser's to read.
+    const others = POPULATION_ORDER.filter((tip) => tip !== query.tip)
+      .map((tip) => planAnswer(withPopulation(query, tip), cutoff.value, { topN: 25, years: false }).figures)
+      .filter((read) => read.enabled)
+    const [settled, listed, counted] = await Promise.all([
       Promise.allSettled(answer.map((read) => seeded(read))),
       records?.enabled ? Promise.allSettled([seeded(records)]) : Promise.resolve([]),
+      Promise.allSettled(others.map((read) => seeded(read))),
     ])
     let complete = counties.status === 'fulfilled' && divisions.status === 'fulfilled'
     for (const read of settled) {
       if (read.status === 'fulfilled') seed.push(read.value)
       else complete = false
     }
-    for (const read of listed) if (read.status === 'fulfilled') seed.push(read.value)
+    for (const read of [...listed, ...counted]) if (read.status === 'fulfilled') seed.push(read.value)
     // The names of what the answer holds: the filters' own, and the ranked keys once the ranking is in.
     const rankingIndex = answer.indexOf(plan.ranking)
     const rankingRead = rankingIndex >= 0 ? settled[rankingIndex] : undefined
     const ranking = rankingRead?.status === 'fulfilled' ? (rankingRead.value.data as Ranking) : undefined
     const names = planNames(nameKeys(query, [ranking]))
+    const landing = categoryLandingOf(analyticsSearchOf(search))
+    let landingName: ProcurementAnalyticsServerRead['landingName']
     if (names.enabled) {
       const [read] = await Promise.allSettled([seeded(names)])
-      if (read.status === 'fulfilled') seed.push(read.value)
-      else complete = false
+      if (read.status === 'fulfilled') {
+        seed.push(read.value)
+        if (landing) landingName = (read.value.data as Names).cpv.get(cpvKey(landing.code))
+      } else complete = false
     }
-    return { seed, complete, latest }
+    return { seed, complete, latest, ...(landingName ? { landingName } : {}) }
   })
 }

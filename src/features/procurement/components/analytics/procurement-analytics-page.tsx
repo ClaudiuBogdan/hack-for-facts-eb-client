@@ -1,8 +1,12 @@
 import { useState } from 'react'
+import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { useAnalyticsQuery, useAnswer, useNamer } from '../../hooks/use-procurement-analytics'
-import { searchOf, type Query } from '../../lib/analytics-model'
+import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
+import { useAnalyticsQuery, useAnswer, useNamer, usePopulationCounts } from '../../hooks/use-procurement-analytics'
+import { categoryLandingOf, landingName, landingTitle } from '../../lib/analytics-head'
+import { cpvKey, searchOf, type Query } from '../../lib/analytics-model'
+import { headline } from '../../lib/analytics-text'
 import { AnswerRecords, AnswerTable, AnswerTime, SourceLine } from './analytics-answer'
 import { GroupBar } from './analytics-controls'
 import { FilterSheet } from './analytics-filters'
@@ -32,16 +36,22 @@ function recordsKey(query: Query): string {
  * writes the address: a question is a link.
  */
 export function ProcurementAnalyticsPage() {
-  const [query, move] = useAnalyticsQuery()
+  const [query, move, strings] = useAnalyticsQuery()
   const [expanded, setExpanded] = useExpanded(query)
   const [filters, setFilters] = useState(false)
   const answer = useAnswer(query, { topN: expanded ? 100 : 25, years: true })
   const namer = useNamer(query, answer)
+  const counts = usePopulationCounts(query)
+  // The tab says the question: a category landing as the route's head says it, once its name is read; any other question by its headline.
+  const { i18n } = useLingui()
+  const landing = categoryLandingOf(strings)
+  const named = landing ? landingName(landing.code, i18n.locale, namer.names?.cpv.get(cpvKey(landing.code))) : null
+  useClientDocumentTitle(landing ? (named ? landingTitle(i18n, landing, named) : null) : Object.keys(strings).length > 0 ? `${headline(query, namer)} — Transparenta.eu` : null)
   return (
     // Clip, not hide: the crux marks overhang the frame, and a hidden overflow would unstick the bar.
     <div className="relative w-full overflow-x-clip bg-background">
       <AnalyticsHead query={query} answer={answer} namer={namer} onChange={move} onFilters={() => setFilters(true)} />
-      <PopulationNav query={query} namer={namer} onChange={move} />
+      <PopulationNav query={query} namer={namer} counts={counts} onChange={move} />
       <AnalyticsFigures query={query} answer={answer} />
       <section className="border-b" aria-label={t`Răspunsul`}>
         <RuledFrame className="py-12 sm:py-16">

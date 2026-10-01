@@ -558,6 +558,33 @@ export function withFilter(query: Query, axis: AxisId, level: string, value: str
   return repaired({ ...query, filters: { ...query.filters, [axis]: { level, values: [value] } } })
 }
 
+/**
+ * A category picked, a step up its path, or none: a grouping the reader did
+ * not choose follows the category, as a title's does (`withTitle`) — a
+ * division opens on its groups, a code on its firms, what's inside first
+ * (design.md §19); a grouping the reader chose stays.
+ */
+export function withCategory(query: Query, prefix: string | null): Query {
+  const level = prefix ? cpvLevelOf(prefix) : null
+  const next = prefix && level ? withFilter(query, 'cpv', level.id, prefix) : withoutFilter(query, 'cpv')
+  return sameGroup(query.dupa, defaultGroupOf(query)) ? repaired({ ...next, dupa: defaultGroupOf(next) }) : next
+}
+
+/** The three populations in the order the page's tabs show them. */
+export const POPULATION_ORDER: readonly PopulationId[] = ['directe', 'contracte', 'acorduri']
+
+/** The question asked of another population: its own measure, and what it cannot take dropped. */
+export function withPopulation(query: Query, tip: PopulationId): Query {
+  return repaired({ ...query, tip, masura: POPULATIONS[tip].defaultMeasure })
+}
+
+/** A CPV pick from its path: division › group › class › category › code, each step a click back up. */
+export function cpvPath(prefix: string): readonly string[] {
+  const steps = [2, 3, 4, 5].filter((length) => length < prefix.length).map((length) => prefix.slice(0, length))
+  // A step ending in 0 is no level of its own (45000000 is the division's own code, not a group „450").
+  return [...steps.filter((step) => step.length === 2 || !step.endsWith('0')), prefix]
+}
+
 // ─────────────────────────────────────────────────────────────── period ──
 
 export interface ResolvedPeriod {

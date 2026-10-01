@@ -8,12 +8,22 @@ vi.mock('@tanstack/react-router', () => ({
   redirect: redirectMock,
 }))
 
+// The head's words through the tests' Lingui (the source text, its values put in): the real catalogs are the app's.
+vi.mock('@/lib/i18n', async (importOriginal) => {
+  const { i18n } = await import('@lingui/core')
+  return { ...(await importOriginal<Record<string, unknown>>()), translatorFor: () => i18n }
+})
+
 const { Route } = await import('./analytics')
 const { Route: Search } = await import('./search')
 const route = Route as unknown as {
   readonly validateSearch: (search: Record<string, unknown>) => Record<string, unknown>
   readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void
   readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
+  readonly head: (input: { readonly match: { readonly context: { readonly locale: string }; readonly search: Record<string, unknown> }; readonly loaderData?: Record<string, unknown> }) => {
+    readonly meta: readonly Record<string, string>[]
+    readonly links: readonly Record<string, string>[]
+  }
 }
 const search = Search as unknown as { readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void }
 
@@ -49,6 +59,26 @@ describe('/procurement/analytics', () => {
       kind: 'redirect',
       options: { to: '/procurement/analytics', search: { lang: 'en', tip: 'contracte', perioada: LAST_YEAR }, replace: true, statusCode: 301 },
     })
+  })
+
+  it('makes a category alone a landing: its own title, its own canonical address', () => {
+    const head = route.head({ match: { context: { locale: 'ro' }, search: { cpv: 336, lang: 'en' } }, loaderData: { seed: [], complete: true, landingName: { ro: 'Produse farmaceutice', en: 'Pharmaceutical products' } } })
+    expect(head.meta[0]).toEqual({ title: 'Produse farmaceutice (CPV 336): achiziții directe — Transparenta.eu' })
+    expect(head.meta.some((tag) => tag.name === 'robots')).toBe(false)
+    expect(head.links[0]?.href).toMatch(/\/procurement\/analytics\?cpv=336$/u)
+    // The population's own word; the page's default population is not written.
+    const contracts = route.head({ match: { context: { locale: 'ro' }, search: { tip: 'contracte', cpv: 45 } } })
+    expect(contracts.meta[0]?.title).toMatch(/^Lucrări de construcții \(CPV 45\): contracte atribuite/u)
+    expect(route.head({ match: { context: { locale: 'ro' }, search: { tip: 'directe', cpv: 336 } } }).links[0]?.href).toMatch(/\?cpv=336$/u)
+  })
+
+  it('keeps a reader’s own question out of the index, and the bare page in it', () => {
+    const own = route.head({ match: { context: { locale: 'ro' }, search: { cpv: 336, judet: 'SB' } } })
+    expect(own.meta).toContainEqual({ name: 'robots', content: 'noindex, follow' })
+    expect(own.links).toEqual([])
+    const bare = route.head({ match: { context: { locale: 'ro' }, search: { lang: 'en' } } })
+    expect(bare.meta.some((tag) => tag.name === 'robots')).toBe(false)
+    expect(bare.links[0]?.href).toMatch(/\/procurement\/analytics$/u)
   })
 
   it('never caches a render with a failed read for everyone', () => {

@@ -1,14 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { CpvCategoryPage } from '@/features/procurement/components/cpv-category-page'
 
+/** The category page's old address: the redirect in `$code.tsx` always runs first; this never renders. */
 export const Route = createLazyFileRoute('/procurement/categories/$code')({
-  component: CpvCategoryRoutePage,
+  component: () => null,
 })
-
-function CpvCategoryRoutePage() {
-  const { code } = Route.useParams()
-  // `page` is empty on a client-side navigation — the loader only blocks while
-  // rendering HTML. See `lib/ssr/loader-blocking`.
-  const { page } = Route.useLoaderData()
-  return <CpvCategoryPage code={code} initialPage={page} />
-}

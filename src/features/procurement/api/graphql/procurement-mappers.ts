@@ -25,7 +25,6 @@ import {
   type ContractModification,
   type ContractModificationRecord,
   type ContractRecord,
-  type CpvCategoryPage,
   type DirectAcquisitionRecord,
   type MonthlyPoint,
   type Party,
@@ -495,78 +494,6 @@ export function mapSearchPage(options: {
         ...(highlight.supplierName != null && { supplierName: highlight.supplierName }),
       })),
     }),
-  }
-}
-
-/**
- * CPV taxonomy is authoritative at division level only. A 2-digit code with
- * no division row returns `null` (unknown category). Longer codes are served
- * best-effort: aggregates are scoped by the exact code, labels fall back to
- * the parent division's.
- */
-export function mapCpvCategoryPage(parts: {
-  code: string
-  divisions: readonly RawProcurementCpvDivision[]
-  aggregates: RawProcurementAggregates
-  partyNames?: ReadonlyMap<string, string>
-}): CpvCategoryPage | null {
-  const { code, divisions } = parts
-  const level = code.length === 2 ? 'division' : 'code'
-  const divisionCode = code.slice(0, 2)
-  const division = divisions.find((d) => d.divisionCode === divisionCode)
-  if (!division) return null
-
-  const procedure = mapGrainAnalytics(
-    parts.aggregates,
-    divisions,
-    'procedure',
-    parts.partyNames,
-  )
-  const contract = mapGrainAnalytics(
-    parts.aggregates,
-    divisions,
-    'contract',
-    parts.partyNames,
-  )
-  const directAcquisition = mapGrainAnalytics(
-    parts.aggregates,
-    divisions,
-    'direct_acquisition',
-    parts.partyNames,
-  )
-  const relatedCategories = divisions
-    .filter(
-      (d) =>
-        d.divisionCode !== divisionCode &&
-        d.divisionCode[0] === divisionCode[0],
-    )
-    .slice(0, 6)
-    .map((d) => ({
-      code: d.divisionCode,
-      labelRo: d.labelRo,
-      labelEn: d.labelEn,
-    }))
-
-  return {
-    code,
-    level,
-    labelRo: division.labelRo,
-    labelEn: division.labelEn,
-    divisionCode,
-    parentCode: level === 'code' ? divisionCode : null,
-    summary: {
-      totalValueRon: addDecimalStrings(
-        contract.stats.valueAwardedSum,
-        directAcquisition.stats.valueAwardedSum,
-      ),
-      recordCounts: {
-        contracts: contract.stats.recordCount,
-        directAcquisitions: directAcquisition.stats.recordCount,
-        procedures: procedure.stats.recordCount,
-      },
-    },
-    analysisByGrain: { procedure, contract, directAcquisition },
-    relatedCategories,
   }
 }
 

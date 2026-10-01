@@ -8,7 +8,6 @@ describe('procurement API facade', () => {
     expect(facade.fetchProcurementAuthoritySlice).toBe(
       live.fetchAuthorityProcurementSliceLive,
     )
-    expect(facade.fetchProcurementCpvCategoryPage).toBe(live.fetchCpvCategoryPageLive)
     expect('isProcurementMock' in facade).toBe(false)
   })
 })

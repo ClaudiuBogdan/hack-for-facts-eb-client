@@ -2,21 +2,22 @@ import { Fragment, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { ArrowLeft, FileSignature, Layers, Plus, ShoppingCart, X, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, ChevronRight, FileSignature, Layers, Plus, ShoppingCart, X, type LucideIcon } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
-import { dayText } from '@/features/procurement/lib/home-format'
+import { Bone } from '@/features/procurement/components/home/home-chrome'
+import { countText, dayText } from '@/features/procurement/lib/home-format'
 import { lastDayOf } from '@/features/procurement/lib/profile-period'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import { AXIS_ORDER, POPULATIONS, repaired, withoutFilter, withTitle, type AxisId, type PopulationId, type Query } from '../../lib/analytics-model'
-import type { Answer } from '../../hooks/use-procurement-analytics'
+import { AXIS_ORDER, cpvKey, cpvPath, POPULATION_ORDER, POPULATIONS, withCategory, withoutFilter, withPopulation, withTitle, type AxisId, type PopulationId, type Query } from '../../lib/analytics-model'
+import { useNames, type Answer, type PopulationCounts } from '../../hooks/use-procurement-analytics'
 import { AddFilter, PeriodMenu, QuestionsMenu } from './analytics-controls'
 import { NotesMarker, ShareIcon } from './analytics-answer'
 import { FiltersButton } from './analytics-filters'
-import { headline, headlineParts, moneyText, monthsText, populationLabel, type HeadlinePart, type Namer } from '../../lib/analytics-text'
+import { cpvLabel, headline, headlineParts, moneyText, monthsText, populationLabel, type HeadlinePart, type Namer } from '../../lib/analytics-text'
 import { figuresOf, filterChipLabel, type Figure } from './analytics-view'
 
 /**
@@ -26,13 +27,8 @@ import { figuresOf, filterChipLabel, type Figure } from './analytics-view'
  * it, the figures in the profiles' band.
  */
 const PHRASE = 'text-left underline decoration-muted-foreground/35 decoration-dotted decoration-2 underline-offset-[0.18em] transition-colors hover:decoration-foreground'
-const POPULATION_ORDER: readonly PopulationId[] = ['directe', 'contracte', 'acorduri']
 /** Each population's mark: a purchase from the catalogue, a signed contract, a framework's layers (the contract page's own two). */
 const POPULATION_ICON: Readonly<Record<PopulationId, LucideIcon>> = { directe: ShoppingCart, contracte: FileSignature, acorduri: Layers }
-
-function withPopulation(query: Query, tip: PopulationId): Query {
-  return repaired({ ...query, tip, masura: POPULATIONS[tip].defaultMeasure })
-}
 
 /** A filter's value in a few words: „instituții din Cluj", „titlu: „laptop"", „≥ 100.000 lei". */
 function chipLabel(query: Query, key: AxisId | 'titlu' | 'valoare', namer: Namer): string {
@@ -49,6 +45,7 @@ function chipLabel(query: Query, key: AxisId | 'titlu' | 'valoare', namer: Namer
 function without(query: Query, key: AxisId | 'titlu' | 'valoare'): Query {
   if (key === 'titlu') return withTitle(query, null)
   if (key === 'valoare') return { ...query, valoare: null }
+  if (key === 'cpv') return withCategory(query, null)
   return withoutFilter(query, key)
 }
 
@@ -97,6 +94,47 @@ const LINK = 'inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreg
  * adds to the query and the caveats' marker; the cross where the head's
  * bottom rule meets the frame, over the bar below.
  */
+/**
+ * A category's place in the CPV tree, over the headline that names it: its
+ * code and its parents' codes, each parent a step back up (design.md §19).
+ * Codes, not names: the headline says the category's name, and a path of
+ * names would not fit a phone; each code carries its name for a screen
+ * reader and on hover.
+ */
+function CategoryPath({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
+  const path = cpvPath(query.filters.cpv?.values[0] ?? '')
+  const names = useNames({ orgs: [], cpv: path.map(cpvKey) })
+  const local: Namer = { ...namer, names: names.data ?? namer.names }
+  return (
+    <MonoLabel className="mt-6 flex flex-wrap items-center gap-x-1.5 text-muted-foreground sm:mt-8">
+      <span>CPV</span>
+      {path.map((step, index) => {
+        const label = cpvLabel(step, local)
+        return (
+          <Fragment key={step}>
+            {index > 0 ? <ChevronRight className="size-3 shrink-0" aria-hidden="true" /> : null}
+            {index === path.length - 1 ? (
+              <span className="inline-flex min-h-11 items-center text-foreground sm:min-h-0" title={label}>
+                {step}
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onChange(withCategory(query, step))}
+                title={t`Doar ${label}`}
+                aria-label={`${step} ${label}`}
+                className="inline-flex min-h-11 items-center underline-offset-4 hover:text-foreground hover:underline sm:min-h-0"
+              >
+                {step}
+              </button>
+            )}
+          </Fragment>
+        )
+      })}
+    </MonoLabel>
+  )
+}
+
 export function AnalyticsHead({
   query,
   answer,
@@ -146,7 +184,8 @@ export function AnalyticsHead({
           </div>
         </div>
         {fresh ? <p className="mt-2 text-right text-xs text-muted-foreground sm:hidden">{fresh}</p> : null}
-        <h1 id="analytics-title" className={cn('mt-6 max-w-5xl font-extrabold leading-[1.02] tracking-tighter text-foreground sm:mt-8', headlineSize(parts.map((part) => part.before + part.text).join('')))}>
+        {query.filters.cpv ? <CategoryPath query={query} namer={namer} onChange={onChange} /> : null}
+        <h1 id="analytics-title" className={cn(query.filters.cpv ? 'mt-2' : 'mt-6 sm:mt-8', 'max-w-5xl font-extrabold leading-[1.02] tracking-tighter text-foreground', headlineSize(parts.map((part) => part.before + part.text).join('')))}>
           {parts.map((part) => (
             <Fragment key={part.role}>
               {part.before}
@@ -199,7 +238,18 @@ export function AnalyticsHead({
  * populations at the right, each with its mark instead of a number (they
  * are choices, not a sequence); the one read is underlined.
  */
-export function PopulationNav({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
+export function PopulationNav({
+  query,
+  namer,
+  counts,
+  onChange,
+}: {
+  readonly query: Query
+  readonly namer: Namer
+  /** Each population's count for the question's filters (design.md §19): read, unknown (`null`) or on its way (`undefined`). */
+  readonly counts: PopulationCounts
+  readonly onChange: (query: Query) => void
+}) {
   return (
     <nav aria-label={t`Ce înregistrări`} className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
       {/* Nothing scrolls: on a phone the three share the width; from a small screen up they sit at the right. */}
@@ -221,7 +271,15 @@ export function PopulationNav({ query, namer, onChange }: { readonly query: Quer
                   )}
                 >
                   <Icon className={cn('size-4 shrink-0', active && 'text-primary')} aria-hidden="true" />
-                  {populationLabel(tip)}
+                  {/* The count under the name on a phone, beside it from a small screen up; a bone while it is read, so nothing moves. */}
+                  <span className="flex min-w-0 flex-col sm:flex-row sm:items-baseline sm:gap-1.5">
+                    <span>{populationLabel(tip)}</span>
+                    {counts[tip] === undefined ? (
+                      <Bone className="mt-0.5 w-12 sm:mt-0" />
+                    ) : counts[tip] !== null ? (
+                      <span className="text-xs tabular-nums text-muted-foreground">{countText(counts[tip])}</span>
+                    ) : null}
+                  </span>
                 </button>
               </li>
             )

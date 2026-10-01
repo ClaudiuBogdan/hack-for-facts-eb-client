@@ -75,7 +75,7 @@ These patterns are the domain's backbone. Every feature references them by name.
 | `/achizitii/proceduri/$id` | Procedure detail | `routes/achizitii.proceduri.$id.tsx` |
 | `/achizitii/contracte/$id` | Contract detail | `routes/achizitii.contracte.$id.tsx` |
 | `/achizitii/achizitii-directe/$id` | Direct-acquisition detail | `routes/achizitii.achizitii-directe.$id.tsx` |
-| `/achizitii/cpv/$code` | CPV category page | `routes/achizitii.cpv.$code.tsx` |
+| `/achizitii/cpv/$code` | CPV category page — since 1 October 2026 a redirect to `/procurement/analytics?cpv=$code` (§19) | `routes/achizitii.cpv.$code.tsx` |
 | `/achizitii/semnale` | Review-signals explorer (next) | `routes/achizitii.semnale.tsx` |
 | `/entities/$cui?view=achizitii` | Authority procurement slice | existing route, new `view` value |
 | `/companies/$cui?tab=achizitii` | Supplier procurement slice | existing route, new `tab` value |
@@ -385,7 +385,7 @@ type SameDayCandidate = {
 | 1 | authority-procurement-slice | `/entities/$cui?view=achizitii` | `org_edge_monthly_rollups`, `authority_cpv_division_monthly_rollups`, `procurement_flow_facts_v1`, gate | KPIs, `TopSuppliersChart`, `CategoryBreakdown`, recent-DA list, signal teaser |
 | 2 | procurement-search-listing | `/achizitii/cautare` | grain tables + `cpv_codes/divisions` + gate | `GrainSelector`, filter rail, `ProcurementRecordCard`, coverage banner, export |
 | 3 | procurement-record-detail-pages | `/achizitii/{proceduri,contracte,achizitii-directe}/$id` | grain tables + `contract_modifications` + `attrs` | `ProcurementRecordHeader`, `ModificationTrail`, related links |
-| 4 | cpv-category-page | `/achizitii/cpv/$code` | `cpv_codes/divisions` + category rollups + gate | `CpvLabel`, `SpendOverTime`, top-N |
+| 4 | cpv-category-page — folded into the analytics page (§19) | `/achizitii/cpv/$code` | `cpv_codes/divisions` + category rollups + gate | `CpvLabel`, `SpendOverTime`, top-N |
 | 5 | supplier-procurement-slice | `/companies/$cui?tab=achizitii` | `procurement_flow_facts_v1`, `org_edge_*`, `supplier_cpv_*` | KPIs, `TopBuyersChart`, `CategoryBreakdown`, cross-domain chips |
 | 6 | coverage-data-as-of-layer | cross-cutting | `aggregate_quality_by_grain`, `public_contracts_filter_capabilities_v1`, watermark | `CoverageRibbon`, `DataStatusBadge`, `FreshnessBadge`, `SourceProvenanceDrawer`, gate hook |
 | 7 | review-signals-explorer | `/achizitii/semnale` | `same_day_*`, `org_edge_*`, `contract_modifications` | leaderboards, cluster drilldown, `ReviewSignalBadge` |
@@ -2142,7 +2142,12 @@ scope (`scopeOf`), and each read (`analytics.data.ts`) is its own request.
 ### 18.6 What the API should add (for the server session)
 
 1. **`in` filters** (several buyers, counties, CPV prefixes, procedures) and
-   **exclusion** (all but București).
+   **exclusion** (all but București). They are what would make the front
+   door's reader categories („Medicamente", „Drumuri, poduri și
+   autostrăzi", „IT și telecomunicații") questions of the analytics page:
+   each is a set of CPV prefixes, some minus a longer one (`33` without
+   `336`). Only 5 of the 21 are one prefix with nothing carved out (§19),
+   so they stay unlinked until the API takes a set.
 2. **A two-dimensional breakdown** with marginal totals.
 3. **An offset** past the top 100 (rankings to page through).
 4. **Distinct firms and institutions in `procurementStats`** for the whole
@@ -2798,3 +2803,70 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
     undoes the other); a phone tap from an open place list.
   - Left: `Row`'s label is a plain span, so each field repeats it in its
     own name; a label id from `Row` would make that hold by construction.
+
+## 19. The category page folded into the analytics page (1 October 2026)
+
+The owner asked whether the old CPV category page
+(`/procurement/categories/$code`) should become part of the analytics page.
+It did: the page and its route are gone, its addresses redirect.
+
+**What the old page had** (last reworked in August): the category's name
+(an 8-digit code showed its division's), four all-time tiles (direct
+purchases, contracts, procedures, and one lei total that added contract
+money to direct-purchase money), a toggle between the two, a monthly chart,
+the top 10 institutions and firms by count, „related categories" (the
+divisions sharing the first digit: 45 listed 41–44 and 48, not related),
+and a link to the analytics page for the records. Divisions and 8-digit
+codes only.
+
+**What a category is worth to a reader, and where the analytics page
+answers it:**
+
+| The question | The analytics page with `?cpv=…` |
+|---|---|
+| How much, and is it growing? | The figures against the period before; the years band |
+| Who sells it — is the market held by a few? | „Firmă", and the top-5 share among the figures |
+| Who buys it, and where? | „Instituție", „Unde cumpără" (per resident by county) |
+| How is it bought? | „Procedură" (contracts); the population tabs |
+| What is inside it? | „Categorie", one level down, at every CPV level |
+| The largest records | The records tab, each opening its page |
+
+Only the procedures' count is not carried over (procedures are their own
+page, still to migrate).
+
+**Decided with the owner:**
+
+- **Folded in.** `/procurement/categories/$code` and `/achizitii/cpv/$code`
+  redirect (301) to `/procurement/analytics?cpv=$code`, the site's keys
+  (`lang`) kept and the explorer's dropped (`categoryRedirectSearch`); a
+  code that is no CPV code is a 404. The entity page's category bars
+  (`procurement-authority-slice`) open the analytics page for that
+  institution and division, in the slice's population and months.
+- **A category opens on what is inside it**, as before: a division or a
+  group on the next level, a code on its firms. Picking a category, a step
+  of its path, or its ✕ takes a grouping the reader did not choose with
+  it (`withCategory`, as a title's does); one the reader chose stays.
+- **Search engines.** A category alone (any population, every other key
+  the page's default) is a landing: its own title („Produse farmaceutice
+  (CPV 336): achiziții directe — Transparenta.eu"), description and
+  canonical address (`?cpv=336`, `?tip=contracte&cpv=336`), named by the
+  division's short name or the API's (`analytics-head.ts`). The bare page
+  stays as it was. Any other question is a reader's own: `noindex,
+  follow`, and no canonical link — with noindex, a canonical pointing
+  elsewhere would contradict it. In the browser the tab says the question
+  (its headline).
+- **The populations' counts** on their tabs: each the figures read its
+  tab opens on, for the question's filters (`usePopulationCounts`; the
+  server reads them too), so a click on a tab is answered at once. This
+  is what the old tiles gave, without adding two kinds of money.
+- **The category's path** over the headline: „CPV 33 › 336 › 33600000",
+  each parent a step back up, its name for a screen reader and on hover;
+  codes, not names, so it fits a phone (each step 44 px tall there).
+- **Reader categories** wait for the API's set filters (§18.6, item 1).
+
+**Measured on the dev server:** the redirects answer 301 (`abc` 404); a
+landing's head has its title, description and canonical, a combination
+`noindex`; the tabs read 13.446 · 1.889 · 6.145 for `33600000`; a step up
+from `33600000` to `33` opens on its groups. On a phone the tab bar grows
+to 70 px: the names already take two lines, the count a third.
+

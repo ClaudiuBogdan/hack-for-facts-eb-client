@@ -1,7 +1,6 @@
 import { queryOptions, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
   fetchProcurementAuthoritySlice,
-  fetchProcurementCpvCategoryPage,
   fetchProcurementSearch,
   fetchProcurementSupplierRecords,
   fetchProcurementSupplierSlice,
@@ -10,7 +9,6 @@ import {
 } from '../api/procurement-api'
 import type {
   AuthorityProcurementSlice,
-  CpvCategoryPage,
   ProcurementRecordDetail,
 } from '@/schemas/procurement'
 import type { DetailGrainKey, DetailRecord } from '../lib/detail-config'
@@ -55,24 +53,6 @@ export function useProcurementRecordDetail(
 ) {
   return useQuery({
     ...procurementRecordDetailQueryOptions(grain, id),
-    initialData,
-  })
-}
-
-export function procurementCpvCategoryQueryOptions(code: string) {
-  return queryOptions({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'cpv', code] as const,
-    queryFn: () => fetchProcurementCpvCategoryPage(code),
-    enabled: Boolean(code),
-  })
-}
-
-export function useProcurementCpvCategory(
-  code: string,
-  initialData?: CpvCategoryPage,
-) {
-  return useQuery({
-    ...procurementCpvCategoryQueryOptions(code),
     initialData,
   })
 }

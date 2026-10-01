@@ -341,6 +341,15 @@ function SliceContent({
               : t`Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări.`
           }
           select={categoryFilter}
+          // A division opens on the analytics page for this institution, in this slice's population and months.
+          categorySearch={(code) =>
+            analyticsSearch({
+              tip: grain === 'contract' ? 'contracte' : 'directe',
+              cumparator: slice.authorityCui,
+              cpv: code,
+              perioada: scope?.monthFrom && scope.monthTo ? `${scope.monthFrom}..${scope.monthTo}` : allYears(),
+            })
+          }
         />
       </div>
 

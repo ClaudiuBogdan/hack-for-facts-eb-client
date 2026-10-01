@@ -25,7 +25,7 @@ import {
 import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
 import { siteSearchOf } from '../lib/analytics-legacy'
-import { analyticsSearchOf, queryOf, repaired, urlSearchOf, type AnalyticsSearch, type Query, type ResolvedPeriod } from '../lib/analytics-model'
+import { analyticsSearchOf, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation, type AnalyticsSearch, type PopulationId, type Query, type ResolvedPeriod } from '../lib/analytics-model'
 import type { Namer } from '../lib/analytics-text'
 import { placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
 import { homeYear } from '../lib/home-model'
@@ -315,6 +315,31 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
     years: { data: years.data as readonly Point[] | undefined, isError: years.isError, retry: () => void years.refetch() },
     scopes: { now: plan.scopes.now, years: plan.scopes.years },
   }
+}
+
+/** Each population's count for a question's filters: read, unknown (`null`) or on its way (`undefined`). */
+export type PopulationCounts = Readonly<Record<PopulationId, number | null | undefined>>
+
+/**
+ * Each population's count for the question's filters, as its own tab would
+ * answer it: the very figures read the tab opens on (its own months, its own
+ * filters — a procedure has no direct purchases), so a click on a tab is
+ * answered at once.
+ */
+export function usePopulationCounts(query: Query): PopulationCounts {
+  const cutoffRead = useCutoff()
+  const seeded = useSeeded()
+  const plans = POPULATION_ORDER.map((tip) => planAnswer(withPopulation(query, tip), cutoffRead.data ?? null, { topN: 25, years: false }).figures)
+  const reads = useQueries({
+    queries: plans.map((plan) => ({ queryKey: plan.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.read(signal), enabled: plan.enabled, staleTime: STALE, ...seeded(plan) })),
+  })
+  const countOf = (index: number): number | null | undefined => {
+    const read = reads[index]!
+    if (read.isError) return null
+    if (read.data === undefined) return plans[index]!.enabled || cutoffRead.isPending ? undefined : null
+    return (read.data as Answer['figures']['data'])?.now?.records ?? null
+  }
+  return { directe: countOf(0), contracte: countOf(1), acorduri: countOf(2) }
 }
 
 // ─────────────────────────────────────────────────────────────── records ──

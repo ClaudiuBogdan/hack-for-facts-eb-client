@@ -491,12 +491,6 @@ export type ProcurementGrainAnalytics = z.infer<
   typeof procurementGrainAnalyticsSchema
 >
 
-const procurementAnalysisByGrainSchema = z.object({
-  procedure: procurementGrainAnalyticsSchema,
-  contract: procurementGrainAnalyticsSchema,
-  directAcquisition: procurementGrainAnalyticsSchema,
-})
-
 const procurementFlowAnalysisByGrainSchema = z.object({
   contract: procurementGrainAnalyticsSchema,
   directAcquisition: procurementGrainAnalyticsSchema,
@@ -701,34 +695,6 @@ export type ProcurementRecordDetail<T> = {
     } | null
   }
 }
-
-export const cpvCategoryPageSchema = z.object({
-  code: z.string(),
-  level: z.enum(['division', 'code']),
-  labelRo: z.string().nullable(),
-  labelEn: z.string(),
-  divisionCode: z.string(),
-  parentCode: z.string().nullable(),
-  summary: z.object({
-    /** RON sum decimal string, or null when not summable. */
-    totalValueRon: decimalStringSchema.nullable(),
-    recordCounts: z.object({
-      contracts: bigintStringSchema.nullable(),
-      directAcquisitions: bigintStringSchema.nullable(),
-      procedures: bigintStringSchema.nullable(),
-    }),
-  }),
-  analysisByGrain: procurementAnalysisByGrainSchema,
-  relatedCategories: z.array(
-    z.object({
-      code: z.string(),
-      labelRo: z.string().nullable(),
-      labelEn: z.string(),
-    }),
-  ),
-})
-
-export type CpvCategoryPage = z.infer<typeof cpvCategoryPageSchema>
 
 export const supplierProcurementSliceSchema = z.object({
   supplierCui: z.string(),
