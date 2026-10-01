@@ -46,10 +46,10 @@ function MaskedData({ kind, token, focusable }: { readonly kind: MaskKind; reado
       <PopoverTrigger
         tabIndex={focusable ? undefined : -1}
         aria-label={t`Ascuns în registru: ${label}. De ce?`}
-        className="mx-0.5 inline-flex items-center gap-1 rounded-sm border border-dashed border-muted-foreground/45 bg-muted/50 px-1.5 align-baseline font-mono text-[0.8em] leading-snug text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground"
+        className="mx-0.5 inline-flex items-center gap-1.5 rounded-sm border border-dashed border-muted-foreground/45 bg-muted/50 px-2 py-px align-baseline text-[0.8em] font-semibold uppercase leading-snug tracking-[0.06em] text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground"
       >
         {label}
-        <Info className="size-3 shrink-0" aria-hidden="true" />
+        <Info className="size-[1.05em] shrink-0" aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent align="start" aria-labelledby={`${id}-title`} aria-describedby={`${id}-body`} className="w-[min(92vw,22rem)] space-y-2 text-sm leading-relaxed">
         <div className="flex items-start justify-between gap-3">
