@@ -846,5 +846,23 @@ row does not name the profile an inferred CUI gives it. The owner decided:
 one address per organisation — `/ngos/{cui}` where a CUI is admitted, else
 `/ngos/registry/{registry number}`, which 301s to the CUI address once one
 is admitted; the content is the server's profile read by registry number;
-these pages are indexed. What the server is asked for, with the
-measurements and the checks: `server-request-registry-profiles.md`.
+these pages are indexed. What the server was asked for, what it shipped and
+the checks: `server-request-registry-profiles.md`.
+
+The owner's further decisions (2026-10-01):
+
+- **No old addresses kept.** The registry-entry pages
+  (`/ngos/registry/$recordId`, keyed by one export's row id) were never
+  deployed, so they go without redirects; only the registry-number address
+  remains.
+- **Every profile is indexed**, withheld-name ones too.
+- **„Cu CUI" counts every admitted CUI** (71,853 of 141,206 groups), by any
+  reviewed method, not only the CUI written in the registry (about 6,300): the
+  profile says how each identity was established.
+- **The site-wide search shows the non-registry „NGOs" as organisations.** Its
+  `ngo` label comes from a loose legacy classification (any CUI in the social
+  sector lists, a penitentiary included), not from the registry; until a
+  checked classification exists, those hits are plain organisations with no
+  link: no page of ours holds them (the company page 404s for them). Asked
+  of the server as R5. The hub searches the registry only (`entityTags:
+  ["source::rnong"]`).
