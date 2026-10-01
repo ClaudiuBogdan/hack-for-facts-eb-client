@@ -5,10 +5,12 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 
 /**
- * The filters panel's parts: a group under its head, a row with its label,
- * a value set shown as a chip, the list under a search and what the list
- * says instead of options. Every control is 40 px tall, 44 on a phone (the
- * owner, 30 September 2026: no small buttons).
+ * A filters sheet's parts, shared by the analysis pages' „Filtre" panels
+ * (procurement's analytics, the NGO registry): a group under its head, a
+ * row with its label, a value set shown as a chip, the list under a search
+ * and what the list says instead of options. Every control is 40 px tall,
+ * 44 on a phone (the owner, 30 September 2026: no small buttons). The
+ * design: docs/design/procurement/design.md §18.18.
  */
 
 /** A control's height: 44 px on a phone, 40 px from `sm`. */
@@ -16,6 +18,8 @@ export const TALL = 'min-h-11 sm:min-h-10'
 export const FIELD = `${TALL} w-full min-w-0 border bg-background px-2.5 text-sm placeholder:text-muted-foreground/70`
 export const OPTION = `flex ${TALL} w-full items-center justify-between gap-3 px-2.5 py-1 text-left text-sm hover:bg-muted aria-selected:bg-muted`
 export const CELL = `${TALL} border bg-background px-2 text-sm hover:bg-muted`
+/** The sheet's close (`SheetContent`'s `closeClassName`): as tall as the header, a whole tap target on a phone, its ring for the keyboard only. */
+export const SHEET_CLOSE = 'right-2 top-1 flex size-11 items-center justify-center focus:ring-0 focus:ring-offset-0 focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=open]:bg-transparent sm:top-1.5 sm:size-10'
 
 /** One of the panel's questions — what, when, who buys, who sells — under its head. */
 export function Group({ title, children }: { readonly title: string; readonly children: ReactNode }) {

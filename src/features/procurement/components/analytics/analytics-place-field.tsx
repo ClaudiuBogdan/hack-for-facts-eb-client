@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { ChevronRight } from 'lucide-react'
+import { afterFocusMoves } from '@/components/filters/filter-sheet/filter-sheet-focus'
+import { Announce, CELL, Chip, FIELD, Notice, OPTION, OptionGroup, Options, Row, TALL } from '@/components/filters/filter-sheet/filter-sheet-parts'
+import { useActiveOption, type ActiveOption } from '@/components/filters/filter-sheet/use-active-option'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
-import { useActiveOption, type ActiveOption } from '../../hooks/use-active-option'
 import { usePlaceIndex } from '../../hooks/use-procurement-analytics'
 import { withFilter, withoutFilter, type Query } from '../../lib/analytics-model'
 import { browsePlaces, kindLabel, placePath, scopeOf, searchPlaces, type Place, type PlaceIndex, type PlaceMatches } from '../../lib/analytics-places'
-import { afterFocusMoves } from '../../lib/after-focus-moves'
-import { Announce, CELL, Chip, FIELD, Notice, OPTION, OptionGroup, Options, Row, TALL } from './analytics-filter-parts'
 
 /**
  * A party's place — the institution's or the firm's — as one search over

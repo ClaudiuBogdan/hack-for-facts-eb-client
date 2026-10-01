@@ -8,3 +8,13 @@
 export function afterFocusMoves(change: () => void) {
   window.setTimeout(change, 0)
 }
+
+/**
+ * The sheet's `onEscapeKeyDown`: Escape in a search whose list is open is
+ * the list's (each field closes its own), not the sheet's with what was
+ * typed.
+ */
+export function keepEscapeForOpenList(event: KeyboardEvent) {
+  const active = document.activeElement
+  if (active instanceof HTMLInputElement && active.getAttribute('aria-expanded') === 'true') event.preventDefault()
+}

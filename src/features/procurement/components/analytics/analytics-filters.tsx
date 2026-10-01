@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { SlidersHorizontal } from 'lucide-react'
+import { afterFocusMoves, keepEscapeForOpenList } from '@/components/filters/filter-sheet/filter-sheet-focus'
+import { Announce, CELL, Chip, FIELD, Group, Notice, OPTION, Options, Row, SHEET_CLOSE, TALL } from '@/components/filters/filter-sheet/filter-sheet-parts'
+import { useActiveOption } from '@/components/filters/filter-sheet/use-active-option'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
@@ -9,12 +12,9 @@ import { procurementHrefOf } from '@/features/procurement/lib/home-links'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
 import { cpvKey, cpvLevelOf, FIRST_MONTH, POPULATIONS, repaired, withFilter, withoutFilter, withTitle, type PopulationId, type Query } from '../../lib/analytics-model'
-import { useActiveOption } from '../../hooks/use-active-option'
 import { CPV_SEARCH_MIN, useCpvSearch, useNames, type Answer } from '../../hooks/use-procurement-analytics'
 import { countText, cpvLabel, headlineParts, keyLabel, recordsTab, type Namer } from '../../lib/analytics-text'
-import { afterFocusMoves } from '../../lib/after-focus-moves'
 import { SHOW_MORE_CLASS } from '../home/home-chrome'
-import { Announce, CELL, Chip, FIELD, Group, Notice, OPTION, Options, Row, TALL } from './analytics-filter-parts'
 import { MonthField } from './analytics-month-field'
 import { PlaceField } from './analytics-place-field'
 import { cpvFilterOf, filterCount, PROCEDURES } from './analytics-view'
@@ -498,13 +498,8 @@ export function FilterSheet({
       <SheetContent
         side={phone ? 'bottom' : 'right'}
         onOverlayClick={() => onOpenChange(false)}
-        // Escape in a search with its list open closes the list (each field does it), not the sheet with what was typed.
-        onEscapeKeyDown={(event) => {
-          const active = document.activeElement
-          if (active instanceof HTMLInputElement && active.getAttribute('aria-expanded') === 'true') event.preventDefault()
-        }}
-        // The close as tall as the header, a whole tap target on a phone; its ring for the keyboard only.
-        closeClassName="right-2 top-1 flex size-11 items-center justify-center focus:ring-0 focus:ring-offset-0 focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=open]:bg-transparent sm:top-1.5 sm:size-10"
+        onEscapeKeyDown={keepEscapeForOpenList}
+        closeClassName={SHEET_CLOSE}
         className={cn('flex flex-col gap-0 p-0', phone ? 'max-h-[90vh] rounded-t-2xl' : 'w-full sm:max-w-sm')}
       >
         <div className="flex items-baseline gap-2 border-b px-4 py-3">

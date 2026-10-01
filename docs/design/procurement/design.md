@@ -2674,7 +2674,7 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
 - **No small controls.** Everything is 44 px on a phone and 40 px from
   `sm`, including the sheet's close (a new `closeClassName` on
   `SheetContent`, its ring for the keyboard only).
-- **The keyboard.** Every search is a combobox (`hooks/use-active-option.ts`):
+- **The keyboard.** Every search is a combobox (`use-active-option.ts`):
   - the arrows walk the rows, the region and county grids included;
   - Enter picks the active row, or the first when none is active;
   - Space, Home and End stay the text's. The site's
@@ -2740,13 +2740,20 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
   - A search waits for the regions and counties before it says „Nimic
     pentru …".
   - The value pair's hidden submit is out of the Tab order.
+- **Shared with the NGO registry** (1 October 2026). The parts that are
+  not procurement's are in `src/components/filters/filter-sheet/`, so the
+  NGO registry's panel imports them instead of keeping a copy:
+  `filter-sheet-parts.tsx` (Group, Row, Chip, Options, OptionGroup,
+  Notice, Announce, the control classes, the close's `SHEET_CLOSE`),
+  `use-active-option.ts` and `filter-sheet-focus.ts` (`afterFocusMoves`,
+  `keepEscapeForOpenList`). The place index stays procurement's.
 - **Found later by the ONG registry's review** (1 October 2026), on the
   same parts:
   - A blur that removed nodes lost the focus. The place's list closing,
     and a title or value becoming its chip, happened before the focus
     landed. Radix's focus scope then took the focus to the sheet, which
     cancelled a Tab or a tap on the next field. Such changes now wait
-    until the focus has landed (`lib/after-focus-moves.ts`).
+    until the focus has landed (`afterFocusMoves`).
   - A list long enough to scroll was its own Tab stop in Chrome, unnamed,
     and Escape there closed the sheet. Its box is now out of the Tab
     order.
