@@ -10,8 +10,6 @@ import {
   buildProceduresFilter,
   buildProcurementSort,
   buildScopeFilter,
-  statusesHiddenByDefault,
-  statusesIncludedByRequest,
 } from './procurement-filters'
 import { PROCUREMENT_DA_MAX_WINDOW_DAYS } from '../../lib/search-dates'
 
@@ -145,49 +143,6 @@ describe('buildDirectAcquisitionsFilter', () => {
         in: ['offered', 'awarded', 'finalized', 'unknown'],
       })
     }
-  })
-
-  // The notice must agree with the query on that same path, or the reader is
-  // told nothing is hidden while a slice quietly is.
-  it('keeps the disclosure in step with the applied filter', () => {
-    expect(
-      statusesHiddenByDefault(
-        state({ status: ['in_progress' as never] }),
-        'direct_acquisitions',
-      ),
-    ).toEqual(['cancelled'])
-    expect(
-      statusesHiddenByDefault(state(), 'direct_acquisitions'),
-    ).toEqual(['cancelled'])
-    expect(
-      statusesHiddenByDefault(state({ status: ['cancelled'] }), 'direct_acquisitions'),
-    ).toEqual([])
-    expect(statusesHiddenByDefault(state(), 'contracts')).toEqual([])
-  })
-
-  // Opting refusals back in makes the list stop reconciling with the
-  // aggregates (which drop `cancelled` at the data layer), so that path needs
-  // its own disclosure — and must never fire on the default path.
-  it('reports an explicit opt-in to a default-hidden status', () => {
-    expect(
-      statusesIncludedByRequest(
-        state({ status: ['cancelled', 'finalized'] }),
-        'direct_acquisitions',
-      ),
-    ).toEqual(['cancelled'])
-    expect(
-      statusesIncludedByRequest(state(), 'direct_acquisitions'),
-    ).toEqual([])
-    expect(
-      statusesIncludedByRequest(
-        state({ status: ['finalized'] }),
-        'direct_acquisitions',
-      ),
-    ).toEqual([])
-    // ...and never on a grain with no default to opt out of.
-    expect(
-      statusesIncludedByRequest(state({ status: ['cancelled'] }), 'contracts'),
-    ).toEqual([])
   })
 
   // `unknown` is 8.97M seap rows whose status the parser never populated. They

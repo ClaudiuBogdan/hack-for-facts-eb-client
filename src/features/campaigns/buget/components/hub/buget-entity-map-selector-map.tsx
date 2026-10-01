@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { GeoJSON, MapContainer, useMap } from 'react-leaflet'
 import type { Feature, GeoJsonObject, Geometry } from 'geojson'
 import type { GeoJSON as LeafletGeoJSON, Layer, LeafletMouseEvent, PathOptions } from 'leaflet'
+import { escapeHtml } from '@/lib/html'
 import { CampaignSubscriptionMapLegend } from './campaign-subscription-map-legend'
 import {
   DEFAULT_MAP_CENTER,
@@ -186,7 +187,8 @@ function buildTooltipContent(
   subscriptionCountsByNatcode: ReadonlyMap<string, number> | undefined,
 ): string {
   const featureLabel = (featureProperties.name || featureProperties.natcode).trim()
-  const tooltipLabel = formatCityHallLabel(featureLabel, locale)
+  // Leaflet sets a string tooltip as HTML, the plain label included.
+  const tooltipLabel = escapeHtml(formatCityHallLabel(featureLabel, locale))
 
   if (!highlightSubscriptions) {
     return tooltipLabel

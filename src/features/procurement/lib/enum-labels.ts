@@ -5,18 +5,8 @@
  * a locale switch is picked up, unlike module-level `t` consts).
  */
 import { t } from '@lingui/core/macro'
-import type {
-  ContractKind,
-  ProcurementGrain,
-  ProcurementSourceSystem,
-  ReviewSignalKind,
-} from '@/schemas/procurement'
-import type {
-  ProcurementSort,
-  ProcurementSource,
-} from '@/schemas/procurement-search'
-import type { ProcurementRecordKindOption } from './record-kind'
-import type { ProcurementValueCategory } from './value-category'
+import type { ContractKind, ProcurementSourceSystem } from '@/schemas/procurement'
+import type { ProcurementSource } from '@/schemas/procurement-search'
 
 export function contractKindLabel(kind: ContractKind): string {
   switch (kind) {
@@ -54,86 +44,5 @@ export function sourceLabel(source: ProcurementSource): string {
       return t`e-licitatie`
     case 'seap':
       return t`SEAP / SICAP`
-  }
-}
-
-export function sortLabel(sort: ProcurementSort): string {
-  switch (sort) {
-    case 'date_desc':
-      return t`Newest first`
-    case 'date_asc':
-      return t`Oldest first`
-    case 'value_desc':
-      return t`Highest value`
-    case 'value_asc':
-      return t`Lowest value`
-    case 'relevance':
-      return t`Best match`
-  }
-}
-
-/**
- * The value-quality facet labels — kept in step with the record display
- * vocabulary (`ValueWithCurrency` / `describeMoney`) so the same word names a
- * value on a record and in the filter.
- */
-export function valueCategoryLabel(category: ProcurementValueCategory): string {
-  switch (category) {
-    case 'accepted':
-      return t`Valoare confirmată`
-    case 'foreign':
-      return t`Valută străină`
-    case 'invalid':
-      return t`Valoare atipică`
-    case 'ambiguous':
-      return t`Valoare neatribuibilă`
-    case 'conflict':
-      return t`Surse divergente`
-    case 'missing':
-      return t`Fără valoare`
-  }
-}
-
-export function recordKindLabel(option: ProcurementRecordKindOption): string {
-  switch (option) {
-    case 'purchases':
-      return t`Contracte efective`
-    case 'frameworks':
-      return t`Acorduri-cadru`
-  }
-}
-
-export function reviewSignalLabel(signal: ReviewSignalKind): string {
-  switch (signal) {
-    case 'same_day':
-      return t`Same-day purchases`
-    case 'repeated_pairs':
-      return t`Repeated buyer–supplier pairs`
-  }
-}
-
-export function grainLabelEn(grain: ProcurementGrain): string {
-  switch (grain) {
-    case 'procedures':
-      return t`Procedures`
-    case 'contracts':
-      return t`Contracts`
-    case 'direct_acquisitions':
-      return t`Direct acquisitions`
-    case 'modifications':
-      return t`Modifications`
-  }
-}
-
-export function grainSingularLabelEn(grain: ProcurementGrain): string {
-  switch (grain) {
-    case 'procedures':
-      return t`Procedure`
-    case 'contracts':
-      return t`Contract`
-    case 'direct_acquisitions':
-      return t`Direct acquisition`
-    case 'modifications':
-      return t`Modification`
   }
 }

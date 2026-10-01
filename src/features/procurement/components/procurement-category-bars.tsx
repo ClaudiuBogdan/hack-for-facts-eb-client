@@ -13,7 +13,6 @@ import {
 import { cn } from '@/lib/utils'
 import type { CategoryRow } from '@/schemas/procurement'
 import {
-  cleanProcurementHubSearch,
   type ProcurementHubMeasure,
   type ProcurementRankDim,
   type ProcurementRankBy,
@@ -28,10 +27,13 @@ import {
   procurementSectionHeaderClassName,
   procurementSectionTitleClassName,
 } from '../lib/procurement-theme'
+import { analyticsSearchFromExplorer } from '../lib/analytics-legacy'
+import type { AnalyticsUrlSearch } from '../lib/analytics-model'
+import { analyticsSearch } from '../lib/home-links'
 
 /**
- * Overview CPV glance deep-links to Rankings. Other surfaces keep a local sheet.
- * CPV code labels + top-100 depth are live on the Rankings hub (cpvLevel=code).
+ * A glance card of the top categories; with `rankingsDim` it links to the
+ * full ranking on the analytics page, else it keeps a local sheet.
  */
 
 const CARD_LIMIT = 5
@@ -66,16 +68,21 @@ type Props = {
   readonly title?: string
   readonly description?: string
   readonly className?: string
-  /** Tighter card gutters for constrained surfaces such as map drawers. */
+  /** Tighter card gutters for constrained surfaces. */
   readonly compact?: boolean
-  /** Deep-link to hub Rankings for CPV. */
+  /** Link to the full category ranking on the analytics page. */
   readonly rankingsDim?: ProcurementRankDim
-  /** Exact hub search for that deep-link (see party ranking). */
+  /** The link's scope, in the old explorer's words (see party ranking). */
   readonly rankingsSearch?: Record<string, unknown>
   readonly measure?: ProcurementHubMeasure
   readonly rankedBy?: ProcurementRankBy | null
   readonly select?: CategorySelection
+  /** Where a division opens: the analytics page with the surface's own scope (its institution, its period); the division alone by default. */
+  readonly categorySearch?: (code: string) => AnalyticsUrlSearch
 }
+
+/** A division's question on the analytics page, which took over the category page. */
+const DIVISION_ALONE = (code: string): AnalyticsUrlSearch => analyticsSearch({ cpv: code })
 
 /**
  * CPV division breakdown — primary metric + secondary context to the right of
@@ -92,6 +99,7 @@ export function ProcurementCategoryBars({
   measure = 'record_count',
   rankedBy,
   select,
+  categorySearch = DIVISION_ALONE,
 }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -219,8 +227,8 @@ export function ProcurementCategoryBars({
                       </span>
                     ) : code ? (
                       <Link
-                        to="/procurement/categories/$code"
-                        params={{ code }}
+                        to="/procurement/analytics"
+                        search={categorySearch(code)}
                         className="min-w-0 underline-offset-2 hover:underline sm:truncate"
                         title={titleHint}
                       >
@@ -335,8 +343,9 @@ export function ProcurementCategoryBars({
           {rows.length > 0 ? (
             rankingsDim ? (
               <Link
-                to="/procurement/search"
-                search={cleanProcurementHubSearch({
+                to="/procurement/analytics"
+                // The ranking in the analytics page's words: its scope, by the same axis and measure.
+                search={analyticsSearchFromExplorer({
                   ...(rankingsSearch ??
                     (currentSearch as Record<string, unknown>)),
                   view: 'rankings',
@@ -368,6 +377,7 @@ export function ProcurementCategoryBars({
           onOpenChange={setSheetOpen}
           title={title ?? t`Spending categories`}
           rows={rows}
+          categorySearch={categorySearch}
         />
       ) : null}
     </section>
@@ -379,11 +389,13 @@ function CategoryRankingSheet({
   onOpenChange,
   title,
   rows,
+  categorySearch,
 }: {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
   readonly title: string
   readonly rows: readonly CategoryRow[]
+  readonly categorySearch: (code: string) => AnalyticsUrlSearch
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -431,8 +443,8 @@ function CategoryRankingSheet({
                     <td className="py-2.5 pr-2">
                       {code ? (
                         <Link
-                          to="/procurement/categories/$code"
-                          params={{ code }}
+                          to="/procurement/analytics"
+                          search={categorySearch(code)}
                           className="font-semibold text-[var(--pnrr-fg)] underline-offset-2 hover:underline"
                           onClick={() => onOpenChange(false)}
                         >

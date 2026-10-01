@@ -7,10 +7,11 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HubLoadError, HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { contextGapOf, isPurchase, linkYearOf, LISTED_FROM, purchasesSince, shareOf, type DirectPurchase, type DpContext, type DpYear } from '../../lib/direct-purchase-model'
+import { contextGapOf, isPurchase, linkYearOf, purchasesSince, shareOf, type DirectPurchase, type DpContext, type DpYear } from '../../lib/direct-purchase-model'
 import { aboutText, contextYearText, dayShort, directSalesCount, leiExact, leiShort, ordinalText, purchasesCount, shareText } from '../../lib/direct-purchase-text'
 import { directPurchasesCount } from '../../lib/home-format'
 import { DIRECT_COMPARABLE_FROM } from '../../lib/home-model'
+import { allYears, analyticsSearch } from '../../lib/home-links'
 import { PartyName } from './direct-purchase-head'
 import { CONTEXT_TINT } from './direct-purchase-style'
 
@@ -175,9 +176,8 @@ function PairYear({ context }: { readonly context: DpContext }) {
 function RecordsAround({ purchase, context, className }: { readonly purchase: DirectPurchase; readonly context: DpContext; readonly className?: string }) {
   const { authority, supplier } = purchase
   const { records } = context
-  // The explorer lists the purchases, not the cancelled: the link counts what it opens on.
+  // The list leaves the cancelled out: the link shows when the pair has more purchases than this page lists.
   const listed = context.others.filter((other) => other.done).length
-  const all = records ? purchasesCount(records.count) : null
   if (context.others.length === 0) return null
   return (
     <div className={className}>
@@ -214,11 +214,12 @@ function RecordsAround({ purchase, context, className }: { readonly purchase: Di
       </ol>
       {authority.cui && supplier.cui && records && (records.estimated || records.count > listed) ? (
         <Link
-          to="/procurement/search"
-          search={{ view: 'list', grain: 'direct_acquisitions', authority_cui: authority.cui, supplier_cui: supplier.cui, dateFrom: LISTED_FROM }}
+          to="/procurement/analytics"
+          search={analyticsSearch({ cumparator: authority.cui, furnizor: supplier.cui, perioada: allYears(), dupa: 'inregistrari' })}
           className={cn(OUT_LINK, 'mt-3 text-sm')}
         >
-          {records.estimated ? <Trans>Toate achizițiile dintre ele</Trans> : <Trans>Toate cele {all} dintre ele</Trans>}
+          {/* No count: the list runs to the data's cutoff and leaves the cancelled out, so it may hold fewer than the pair's own count. */}
+          <Trans>Toate achizițiile dintre ele</Trans>
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </Link>
       ) : null}

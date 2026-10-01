@@ -35,6 +35,7 @@ import {
   ProcurementAnalysisGrainToggle,
   type FlowAnalysisGrain,
 } from './procurement-analysis-grain-toggle'
+import { allYears, analyticsSearch } from '../lib/home-links'
 
 type Props = {
   readonly authorityCui: string
@@ -213,8 +214,8 @@ function SliceContent({
     }),
     { enabled: needsOwnRecords },
   )
-  // The full-table affordance is the hub's Rankings view carrying this page's
-  // filters — not a side sheet that dead-ends in a second copy of the list.
+  // The full-table affordance is the analytics page's ranking carrying this
+  // page's filters — not a side sheet that dead-ends in a second copy of the list.
   const rankingsSearch = analysis
     ? {
         authority_cui: slice.authorityCui,
@@ -340,6 +341,16 @@ function SliceContent({
               : t`Clasamentul pe valoare nu este disponibil aici, așa că ordinea este dată de numărul de înregistrări.`
           }
           select={categoryFilter}
+          // A division opens on the analytics page for this institution: its direct purchases or its awards (framework
+          // agreements apart, as the analytics page counts them), in this slice's months or every comparable year.
+          categorySearch={(code) =>
+            analyticsSearch({
+              tip: grain === 'contract' ? 'contracte' : 'directe',
+              cumparator: slice.authorityCui,
+              cpv: code,
+              perioada: scope?.monthFrom && scope.monthTo ? `${scope.monthFrom}..${scope.monthTo}` : allYears(),
+            })
+          }
         />
       </div>
 
@@ -381,8 +392,8 @@ function SliceContent({
 
       <div className="flex flex-wrap gap-x-4 gap-y-2">
         <Link
-          to="/procurement/search"
-          search={{ view: 'list', authority_cui: slice.authorityCui }}
+          to="/procurement/analytics"
+          search={analyticsSearch({ tip: 'contracte', cumparator: slice.authorityCui, perioada: allYears(), dupa: 'inregistrari' })}
           className={procurementUnderlineLinkClassName}
         >
           <Trans>Search all records for this institution</Trans>

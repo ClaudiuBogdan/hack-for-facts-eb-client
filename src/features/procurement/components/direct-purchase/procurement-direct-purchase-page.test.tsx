@@ -88,7 +88,8 @@ describe('a catalogue purchase', () => {
     expect(page).toContain('În 2026 (până în mai), firma e al șaselea furnizor al instituției din 47, cu 5,6% din banii achizițiilor ei directe.')
     expect(page).toContain('Pentru firmă, instituția e al doilea client din 7: 27,9% din vânzările ei directe.')
     expect(page).toContain('Diferite aranjamente florale nefinalizată')
-    expect(page).toContain('Toate cele 17 achiziții dintre ele')
+    // No count on the link: the list runs to the cutoff and leaves the cancelled out, so it may hold fewer than the 17.
+    expect(page).toContain('Toate achizițiile dintre ele')
   })
 
   it('leaves out a part of the context it could not read — never a zero — and says so', () => {

@@ -200,24 +200,6 @@ export function matchesCalendarYearPeriod(
 }
 
 /**
- * Full calendar year selected by the resolved period, when it matches a
- * complete Jan–Dec range (including the soft previous-year default).
- */
-export function selectedCalendarYearFromPeriod(
-  period: Pick<
-    ResolvedProcurementOverviewPeriod,
-    'dateFrom' | 'dateTo' | 'isAllTime'
-  >,
-): number | undefined {
-  if (period.isAllTime || !period.dateFrom) return undefined
-  const year = Number(period.dateFrom.slice(0, 4))
-  if (!Number.isInteger(year) || !matchesCalendarYearPeriod(period, year)) {
-    return undefined
-  }
-  return year
-}
-
-/**
  * Resolve the hub period for display and analytics.
  *
  * - `period=all` → all time (no month bounds)
@@ -328,68 +310,4 @@ export function buildProcurementOverviewMonthScope(
     ...(dateFrom ? { monthFrom: dateFrom.slice(0, 7) } : {}),
     ...(dateTo ? { monthTo: dateTo.slice(0, 7) } : {}),
   }
-}
-
-/**
- * The month a period covers exactly, or `null` when it spans more (or less)
- * than one. Drives the monthly chart's selected column.
- */
-export function selectedMonthFromPeriod(
-  period: Pick<ResolvedProcurementOverviewPeriod, 'dateFrom' | 'dateTo' | 'isAllTime'>,
-): string | null {
-  if (period.isAllTime || !period.dateFrom || !period.dateTo) return null
-  const month = period.dateFrom.slice(0, 7)
-  if (period.dateTo.slice(0, 7) !== month) return null
-  if (!period.dateFrom.endsWith('-01')) return null
-  return month
-}
-
-/** Calendar bounds of a `YYYY-MM` month, inclusive. */
-export function getCalendarMonthBounds(month: string): {
-  readonly dateFrom: string
-  readonly dateTo: string
-} {
-  const [year, mm] = month.split('-').map(Number)
-  return {
-    dateFrom: `${month}-01`,
-    dateTo: new Date(Date.UTC(year, mm, 0)).toISOString().slice(0, 10),
-  }
-}
-
-/**
- * Reader-facing label for a resolved period. A range whose ends are the first
- * and last day of the same calendar year or month IS that year or month —
- * spelling it "Jan 2025 – Dec 2025" or "May 2025 – May 2025" made the reader
- * decode two dates to recover one fact. Anything else keeps the range.
- *
- * `null` for an all-time period: the caller already has a word for that.
- */
-export function formatProcurementPeriodLabel(
-  period: Pick<
-    ResolvedProcurementOverviewPeriod,
-    'dateFrom' | 'dateTo' | 'isAllTime'
-  >,
-  locale?: string,
-): string | null {
-  if (period.isAllTime) return null
-  const { dateFrom, dateTo } = period
-  if (!dateFrom || !dateTo) return null
-
-  const year = Number(dateFrom.slice(0, 4))
-  const bounds = getCalendarYearBounds(year)
-  if (dateFrom === bounds.dateFrom && dateTo === bounds.dateTo) {
-    return String(year)
-  }
-
-  const month = dateFrom.slice(0, 7)
-  const monthBounds = getCalendarMonthBounds(month)
-  if (dateFrom === monthBounds.dateFrom && dateTo === monthBounds.dateTo) {
-    return new Intl.DateTimeFormat(locale, {
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'UTC',
-    }).format(new Date(`${dateFrom}T00:00:00Z`))
-  }
-
-  return null
 }

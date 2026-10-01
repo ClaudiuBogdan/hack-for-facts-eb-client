@@ -4,6 +4,8 @@
  */
 import { t } from '@lingui/core/macro'
 import type { Party, ProcurementGrain } from '@/schemas/procurement'
+import type { AnalyticsUrlSearch } from './analytics-model'
+import { allYears, analyticsSearch } from './home-links'
 
 export type PartyKind = 'authority' | 'supplier'
 
@@ -17,14 +19,8 @@ export type PartyPairScope = {
 }
 
 export type PartyPairSearchLink = {
-  readonly to: '/procurement/search'
-  readonly search: {
-    readonly view: 'list'
-    readonly authority_cui: string
-    readonly supplier_cui: string
-    readonly grain: 'contracts' | 'direct_acquisitions'
-    readonly sort: 'value_desc'
-  }
+  readonly to: '/procurement/analytics'
+  readonly search: AnalyticsUrlSearch
 }
 
 export function partyLabel(party: Party | null): string {
@@ -87,9 +83,9 @@ export function partyProcurementLink(
 }
 
 /**
- * Search deep link for records between a fixed slice party and a ranking
- * counterpart, sorted by value. Null when either CUI is missing or kinds do
- * not form an authority×supplier pair.
+ * The records between a fixed slice party and a ranking counterpart, every
+ * year, on the analytics page (largest first, its default order). Null when
+ * either CUI is missing or kinds do not form an authority×supplier pair.
  */
 export function partyPairSearchLink(options: {
   readonly pairScope: PartyPairScope
@@ -108,13 +104,13 @@ export function partyPairSearchLink(options: {
     options.pairScope.kind === 'supplier' ? scopeCui : counterpartCui
 
   return {
-    to: '/procurement/search',
-    search: {
-      view: 'list',
-      authority_cui,
-      supplier_cui,
-      grain: analysisGrainToSearchGrain(options.grain),
-      sort: 'value_desc',
-    },
+    to: '/procurement/analytics',
+    search: analyticsSearch({
+      tip: options.grain === 'contract' ? 'contracte' : 'directe',
+      cumparator: authority_cui,
+      furnizor: supplier_cui,
+      perioada: allYears(),
+      dupa: 'inregistrari',
+    }),
   }
 }

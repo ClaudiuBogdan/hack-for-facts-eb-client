@@ -9,8 +9,8 @@ import {
 } from './procurement'
 
 /**
- * Route search parser for `/procurement/search` (and reused as a subset by
- * `/procurement/categories/$code` and the deferred `/procurement/semnale`).
+ * Route search parser for the explorer's old `/procurement/search` (and the
+ * deferred `/procurement/semnale`); the analytics page reads its links.
  *
  * Follows the parliament search-schema idiom: every field is
  * `.optional().catch(undefined)` so a hand-edited or junk URL never throws —
@@ -275,58 +275,4 @@ export function parseProcurementSearch(
   return withProcurementSearchDefaults(procurementSearchSchema.parse(search))
 }
 
-export function cleanProcurementSearch(
-  search: ProcurementSearchState,
-): Partial<ProcurementSearchState> {
-  const cleaned: Partial<ProcurementSearchState> = { ...search }
-
-  const trimmedText: Array<keyof ProcurementSearchState> = [
-    'q',
-    'authority_cui',
-    'supplier_cui',
-    'cpv',
-    'cpv_division',
-    'county',
-    'region',
-    'from',
-    'highlight',
-    'dateFrom',
-    'dateTo',
-  ]
-  for (const key of trimmedText) {
-    const value = cleaned[key]
-    if (typeof value === 'string') {
-      const trimmed = value.trim()
-      if (trimmed.length === 0) {
-        delete cleaned[key]
-      } else {
-        ;(cleaned as Record<string, unknown>)[key] = trimmed
-      }
-    }
-  }
-
-  if (cleaned.grain === PROCUREMENT_SEARCH_DEFAULTS.grain) {
-    delete cleaned.grain
-  }
-  if (cleaned.sort === PROCUREMENT_SEARCH_DEFAULTS.sort) {
-    delete cleaned.sort
-  }
-  if (cleaned.page === PROCUREMENT_SEARCH_DEFAULTS.page) {
-    delete cleaned.page
-  }
-  if (cleaned.pageSize === PROCUREMENT_SEARCH_DEFAULTS.pageSize) {
-    delete cleaned.pageSize
-  }
-  if (!cleaned.status?.length) delete cleaned.status
-  if (!cleaned.value_state?.length) delete cleaned.value_state
-  if (!cleaned.record_kind?.length) delete cleaned.record_kind
-
-  return cleaned
-}
-
 export type ReviewSignalKindValue = ReviewSignalKind
-
-export const REVIEW_SIGNAL_KIND_VALUES: readonly ReviewSignalKind[] = [
-  'same_day',
-  'repeated_pairs',
-]

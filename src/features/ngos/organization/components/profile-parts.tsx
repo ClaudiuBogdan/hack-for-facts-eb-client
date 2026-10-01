@@ -509,7 +509,7 @@ export function RegistryFacts({ organization }: { readonly organization: NgoOrga
             {record.nameWithheld ? <Trans>Nume nepublicat</Trans> : record.name}
           </Fact>
         ))}
-        <Fact term={<Trans>Număr</Trans>}>{organization.registryNumber ?? '—'}</Fact>
+        <Fact term={<Trans context="număr de registru">Număr</Trans>}>{organization.registryNumber ?? '—'}</Fact>
         <Fact term={<Trans>Stare</Trans>}>{statusLabel(statusOf(organization))}</Fact>
         <Fact term={<Trans>Forma</Trans>}>{categoryLabel(organization.category)}</Fact>
         <Fact term={<Trans>Legătura cu CUI-ul</Trans>}>

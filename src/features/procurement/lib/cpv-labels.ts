@@ -10,8 +10,8 @@ const CPV_DIVISION_RO: Record<string, string> = {
   '48': 'Pachete software și servicii IT',
   '71': 'Servicii arhitecturale și inginerești',
   '79': 'Servicii de afaceri',
-  '85': 'Servicii de educație',
-  '80': 'Servicii de securitate',
+  '80': 'Servicii de educație',
+  '85': 'Servicii de sănătate și asistență socială',
 }
 
 const CPV_DIVISION_EN: Record<string, string> = {
@@ -22,8 +22,8 @@ const CPV_DIVISION_EN: Record<string, string> = {
   '48': 'Software and IT services',
   '71': 'Architectural and engineering services',
   '79': 'Business services',
-  '85': 'Education services',
-  '80': 'Security services',
+  '80': 'Education services',
+  '85': 'Health and social work services',
 }
 
 export function cpvDivisionLabelRo(code: string): string | null {

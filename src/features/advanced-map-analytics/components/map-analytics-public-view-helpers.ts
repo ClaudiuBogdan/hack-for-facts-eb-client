@@ -25,8 +25,8 @@ import {
   resolveSeriesDisplayUnit,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
 import { resolveSeriesDisplayValueForSiruta } from '@/lib/map-series/grouping';
+import { escapeHtml } from '@/lib/html';
 import {
-  escapeHtmlValue,
   getEntityCuiFromUatProperties,
   normalizeNatLevelPrefix,
   resolveUatDisplayTitle,
@@ -230,10 +230,10 @@ export function buildPublicMapTooltipContent({
         : undefined;
     const tooltipTitle = activeGroupMetadata?.groupLabel ??
       (natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName);
-    const countyLabel = escapeHtmlValue(t`County`);
+    const countyLabel = escapeHtml(t`County`);
     const countyRowHtml =
       countyName.length > 0
-        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${countyLabel}: ${escapeHtmlValue(countyName)}</div>`
+        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${countyLabel}: ${escapeHtml(countyName)}</div>`
         : '';
     const memberCountLabel = activeGroupMetadata
       ? activeGroupMetadata.memberSirutaCodes.length === 1
@@ -242,22 +242,22 @@ export function buildPublicMapTooltipContent({
       : '';
     const groupRowsHtml = activeGroupMetadata
       ? `
-        <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">${escapeHtmlValue(t`Grouping`)}: ${escapeHtmlValue(activeGroupMetadata.groupingLabel)}</div>
-        <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${escapeHtmlValue(t`Members`)}: ${escapeHtmlValue(memberCountLabel)}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">${escapeHtml(t`Grouping`)}: ${escapeHtml(activeGroupMetadata.groupingLabel)}</div>
+        <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${escapeHtml(t`Members`)}: ${escapeHtml(memberCountLabel)}</div>
       `
       : '';
 
     if (!activeSeries) {
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:220px;max-width:320px;padding:8px;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtmlValue(tooltipTitle)}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${escapeHtmlValue(t`CUI`)}: ${escapeHtmlValue(entityCui ?? t`N/A`)}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(tooltipTitle)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${escapeHtml(t`CUI`)}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
           ${
             countyName.length > 0
-              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${countyLabel}: ${escapeHtmlValue(countyName)}</div>`
+              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${countyLabel}: ${escapeHtml(countyName)}</div>`
               : ''
           }
-          <div style="color:#6b7280;">${escapeHtmlValue(t`No active series selected.`)}</div>
+          <div style="color:#6b7280;">${escapeHtml(t`No active series selected.`)}</div>
         </div>
       `;
     }
@@ -287,8 +287,8 @@ export function buildPublicMapTooltipContent({
           <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:flex-start;">
             <span style="min-width:0;font-weight:${seriesRow.isActive ? '700' : '500'};color:${
               seriesRow.isActive ? '#111827' : '#374151'
-            };overflow-wrap:anywhere;word-break:break-word;">${escapeHtmlValue(seriesRow.label)}</span>
-            <span style="font-weight:${seriesRow.isActive ? '700' : '500'};text-align:right;white-space:nowrap;">${escapeHtmlValue(
+            };overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(seriesRow.label)}</span>
+            <span style="font-weight:${seriesRow.isActive ? '700' : '500'};text-align:right;white-space:nowrap;">${escapeHtml(
               seriesRow.value
             )}</span>
           </div>
@@ -328,23 +328,23 @@ export function buildPublicMapTooltipContent({
     if (shouldShowNoDataTooltipMarker && activeNoDataConfig) {
       noDataTooltipMarker = `
         <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;color:#6b7280;">
-          ${escapeHtmlValue(activeNoDataConfig.label)}
+          ${escapeHtml(activeNoDataConfig.label)}
         </div>
       `;
     }
 
     return `
       <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
-        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtmlValue(tooltipTitle)}</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(tooltipTitle)}</div>
         ${activeGroupMetadata
           ? groupRowsHtml
           : `
-            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtmlValue(t`CUI`)}: ${escapeHtmlValue(entityCui ?? t`N/A`)}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtml(t`CUI`)}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
             ${countyRowHtml}
           `
         }
         <div style="display:flex;flex-direction:column;gap:6px;">
-          ${rowsHtml || `<span>${escapeHtmlValue(t`No enabled series`)}</span>`}
+          ${rowsHtml || `<span>${escapeHtml(t`No enabled series`)}</span>`}
         </div>
         ${noDataTooltipMarker}
       </div>

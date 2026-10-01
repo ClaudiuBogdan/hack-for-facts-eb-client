@@ -3,15 +3,16 @@ import type { ReactNode } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
-import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import type { ProcurementHomeMoney, ProcurementHomeSellers } from '@/schemas/procurement-home'
 import type { HomeCategoriesRead } from '../../api/procurement-home-api'
+import { HOME_BIG_CONTRACTS } from '../../hooks/use-procurement-home'
 import { categoryOfCode, frequentWinners } from '../../lib/home-categories'
 import type { NationalRead, RecentRecord } from '../../lib/home-model'
 import { consortiumLede, frequentLede, whatLede } from '../../lib/home-text'
-import { HomeBand, ProvisionalMark } from './home-chrome'
-import { CategoryRows, PartyRows, RecordRows } from './home-rows'
+import { HomeBand, ProvisionalMark, RULED_NOTE_CLASS, SHOW_MORE_CLASS, ShowMorePending, TextPending, type NationalState } from './home-chrome'
+import { CategoryRows, PARTY_ROWS, PartyRows, PendingRows, RecordRows } from './home-rows'
 
 /** A lede about contract money carries its provisional mark beside it. */
 function withMark(text: string | null): ReactNode {
@@ -24,6 +25,9 @@ function withMark(text: string | null): ReactNode {
 
 /** Enough categories to cover most of the money; the rest one click away. */
 const CATEGORY_ROWS = 8
+
+/** A money lede while its read is pending: the five lines these ledes take, six on a phone. */
+const MONEY_LEDE_PENDING = <TextPending lines={5} narrow={6} />
 
 interface ReadState<T> {
   readonly data: T | undefined
@@ -64,7 +68,7 @@ export function HomeWhatBand({
                 banii publici
               </Trans>
             }
-            lede={withMark(categories.data ? whatLede(categories.data, year, i18n) : null)}
+            lede={categories.data ? withMark(whatLede(categories.data, year, i18n)) : categories.isError ? null : MONEY_LEDE_PENDING}
           />
         </div>
         <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
@@ -90,7 +94,7 @@ export function HomeWhatBand({
                 <button
                   type="button"
                   onClick={() => setOpen((value) => !value)}
-                  className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
+                  className={SHOW_MORE_CLASS}
                   aria-expanded={open}
                 >
                   {open ? <Trans>Arată mai puține</Trans> : plural(rows.length, { few: 'Toate cele # categorii', other: 'Toate cele # de categorii' })}
@@ -98,7 +102,10 @@ export function HomeWhatBand({
               ) : null}
             </>
           ) : (
-            <HubPending className="mt-5" rows={CATEGORY_ROWS} />
+            <>
+              <PendingRows className="mt-5" shape="category" rows={CATEGORY_ROWS} />
+              <ShowMorePending className="w-44" />
+            </>
           )}
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             {money === 'contracte' ? (
@@ -132,7 +139,7 @@ export function HomeSellersBand({
   /** Absent while the national read is pending or failed: the band stands on the largest contracts. */
   readonly read: NationalRead | undefined
   /** The national read failed: the direct sellers come from it. */
-  readonly national: { readonly isError: boolean; readonly retry: () => void }
+  readonly national: NationalState
   readonly index: string
   readonly bigContracts: ReadState<readonly RecentRecord[]>
   readonly roadsConsortium: HomeCategoriesRead['roadsConsortium']
@@ -157,11 +164,15 @@ export function HomeSellersBand({
                 vând statului
               </Trans>
             }
-            lede={withMark(read ? consortiumLede(read, roadsConsortium) : null)}
+            lede={read ? withMark(consortiumLede(read, roadsConsortium)) : national.isError ? null : MONEY_LEDE_PENDING}
           />
           {frequent && bigContracts.data ? (
-            <p className="mt-6 max-w-[56ch] border-l-2 border-primary/60 pl-4 text-sm leading-relaxed text-muted-foreground" data-reveal>
+            <p className={RULED_NOTE_CLASS} data-reveal>
               {frequentLede(frequent, bigContracts.data.length, year)}
+            </p>
+          ) : !bigContracts.data && !bigContracts.isError ? (
+            <p className={RULED_NOTE_CLASS}>
+              <TextPending lines={2} narrow={3} />
             </p>
           ) : null}
         </div>
@@ -185,7 +196,7 @@ export function HomeSellersBand({
                 <HubLoadError onRetry={national.retry} />
               </div>
             ) : (
-              <HubPending className="mt-5" rows={8} />
+              <PendingRows className="mt-5" shape="party" rows={PARTY_ROWS} />
             )
           ) : bigContracts.isError && !bigContracts.data ? (
             <div className="mt-5">
@@ -194,7 +205,7 @@ export function HomeSellersBand({
           ) : bigContracts.data ? (
             <RecordRows className="mt-5" records={bigContracts.data} lead="winners" fallbackTitle={categoryOf} />
           ) : (
-            <HubPending className="mt-5" rows={8} />
+            <PendingRows className="mt-5" shape="record" rows={HOME_BIG_CONTRACTS} />
           )}
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             {sellers === 'directe' ? (

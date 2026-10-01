@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  cleanProcurementSearch,
-  parseProcurementSearch,
-  procurementSearchSchema,
-  withProcurementSearchDefaults,
-  PROCUREMENT_SEARCH_DEFAULTS,
-} from './procurement-search'
+import { parseProcurementSearch, procurementSearchSchema, withProcurementSearchDefaults, PROCUREMENT_SEARCH_DEFAULTS } from './procurement-search'
 
 describe('procurement search route state', () => {
   it('normalizes invalid URL search params back to route-safe defaults', () => {
@@ -35,25 +29,6 @@ describe('procurement search route state', () => {
     expect(
       parseProcurementSearch({ value_state: 'garbage' }).value_state,
     ).toBeUndefined()
-  })
-
-  it('cleans defaults and empty strings before the search state is written back to the URL', () => {
-    expect(
-      cleanProcurementSearch(
-        parseProcurementSearch({
-          q: '  drumuri  ',
-          authority_cui: '   ',
-          grain: 'contracts',
-          page: 1,
-          pageSize: 25,
-          sort: 'date_desc',
-          region: 'Vest',
-        }),
-      ),
-    ).toEqual({
-      q: 'drumuri',
-      region: 'Vest',
-    })
   })
 
   it('drops every junk facet to undefined instead of throwing (.catch idiom)', () => {
@@ -103,10 +78,5 @@ describe('procurement search route state', () => {
     })
     expect(state.authority_cui).toBeUndefined()
     expect(state.status).toBeUndefined()
-  })
-
-  it('round-trips: clean strips exactly the defaults that withDefaults added', () => {
-    const cleaned = cleanProcurementSearch(parseProcurementSearch({ q: 'apa' }))
-    expect(cleaned).toEqual({ q: 'apa' })
   })
 })

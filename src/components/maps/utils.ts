@@ -1,6 +1,7 @@
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from "@/schemas/heatmap";
 import { UatFeature, UatProperties } from './interfaces';
 import { formatCurrency, formatNumber, getNormalizationUnit, getUserLocale } from '@/lib/utils';
+import { escapeHtml } from '@/lib/html';
 import { DEFAULT_FEATURE_STYLE, PERMANENT_HIGHLIGHT_STYLE } from './constants';
 import { Feature, Geometry } from 'geojson';
 import { AnalyticsFilterType } from "@/schemas/charts";
@@ -28,9 +29,9 @@ const createFilterSummary = (filters: AnalyticsFilterType): string => {
 
   if (filters.report_period) {
     if (filters.report_period.selection.dates) {
-      summaryItems.push(`<strong>${t`Period`}:</strong> ${filters.report_period.selection.dates.length} ${filters.report_period.type.toLowerCase()}(s)`);
+      summaryItems.push(`<strong>${t`Period`}:</strong> ${filters.report_period.selection.dates.length} ${escapeHtml(filters.report_period.type.toLowerCase())}(s)`);
     } else if (filters.report_period.selection.interval) {
-        summaryItems.push(`<strong>${t`Period`}:</strong> ${filters.report_period.selection.interval.start} - ${filters.report_period.selection.interval.end}`);
+        summaryItems.push(`<strong>${t`Period`}:</strong> ${escapeHtml(filters.report_period.selection.interval.start)} - ${escapeHtml(filters.report_period.selection.interval.end)}`);
     }
   }
 
@@ -156,8 +157,8 @@ export const createTooltipContent = (
 
     return `
       <div style="${styles.container}">
-        <div style="${styles.header}">${name}</div>
-        <div style="${styles.subHeader}">${subtext}</div>
+        <div style="${styles.header}">${escapeHtml(name)}</div>
+        <div style="${styles.subHeader}">${escapeHtml(subtext)}</div>
         <div style="${styles.dataGrid}">
           <div style="${styles.dataLabel}">${t`Population`}</div>
           <div style="${styles.dataValue}">
@@ -194,8 +195,8 @@ export const createTooltipContent = (
 
   return `
     <div style="${styles.container}">
-      <div style="${styles.header}">${locationName}</div>
-      <div style="${styles.subHeader}">${locationSubtext}</div>
+      <div style="${styles.header}">${escapeHtml(locationName)}</div>
+      <div style="${styles.subHeader}">${escapeHtml(locationSubtext)}</div>
       <div style="${styles.noData}">
         <span>
             ${t`No aggregated data`}

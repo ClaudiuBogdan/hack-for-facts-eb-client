@@ -1,5 +1,6 @@
-import type { ProcurementHubState } from '@/schemas/procurement-hub'
-import { lastDayOf, type ProfilePeriod } from './profile-period'
+import { linkSearchOf, type AnalyticsUrlSearch } from './analytics-model'
+import { DIRECT_COMPARABLE_FROM } from './home-model'
+import type { ProfilePeriod } from './profile-period'
 
 /** Where the front door's links and anchors point, as pure functions. */
 
@@ -28,70 +29,80 @@ export function procurementHrefOf(hit: { readonly href: string; readonly isExter
   return match[1] === 'companies' ? `/procurement/suppliers/${match[2]}` : `/procurement/institutions/${match[2]}`
 }
 
-/** The explorer's address, typed: a value its schema would drop is a type error here, not a silent wider list. */
-export type ExplorerSearch = Partial<ProcurementHubState>
-
 /**
- * A county's list in the explorer, for what the map counts there: its direct
- * purchases, or its contract awards — framework agreements apart, as the map
- * counts them.
+ * The analytics page's address for a question, as the page writes it: a
+ * digits-only value travels bare, a value it cannot read is kept for the
+ * page to say so (see `linkSearchOf`). `tip` is the population,
+ * `dupa=inregistrari` its records.
  */
-export function countyExplorerSearch(indicator: 'lei' | 'contracte', county: string, year: number): ExplorerSearch {
-  return indicator === 'lei'
-    ? { view: 'list', grain: 'direct_acquisitions', buyerCounty: county, year }
-    : { view: 'list', grain: 'contracts', record_kind: ['purchases'], buyerCounty: county, year }
+export function analyticsSearch(params: Readonly<Record<string, string | number | undefined>>): AnalyticsUrlSearch {
+  const strings = Object.fromEntries(Object.entries(params).flatMap(([key, value]) => (value === undefined ? [] : [[key, String(value)]])))
+  return linkSearchOf(strings)
 }
 
-/** Every record of a buyer in one population, every year, in the explorer's list (its default would be contracts only). */
-export function buyerAllRecordsSearch(cui: string, grain: 'direct' | 'contract'): ExplorerSearch {
-  return grain === 'direct'
-    ? { view: 'list', grain: 'direct_acquisitions', authority_cui: cui }
-    : { view: 'list', grain: 'contracts', record_kind: ['purchases'], authority_cui: cui }
+/** The population a page's toggle names: direct purchases, or contract awards (framework agreements apart). */
+function tipOf(grain: 'direct' | 'contract'): string {
+  return grain === 'direct' ? 'directe' : 'contracte'
 }
 
 /**
- * A page's period in the explorer: a complete year by its year; the last
- * twelve months and the year in progress by their months, first day to the
- * cutoff's last — so the list holds what the page counts, not the months
- * after.
+ * A page's period in the analytics page's words: a complete year by its
+ * year; the last twelve months and the year in progress by their months,
+ * through the cutoff's — so the answer holds what the page counts, not the
+ * months after.
  */
-function periodSearch(period: ProfilePeriod): ExplorerSearch {
-  return period.through ? { dateFrom: `${period.from}-01`, dateTo: lastDayOf(period.through) } : { year: period.year }
+function periodOf(period: ProfilePeriod): string {
+  return period.through ? `${period.from}..${period.through}` : String(period.year)
 }
 
-/** A buyer's records of a page's period in the explorer: its direct purchases, or its contract awards (framework agreements apart). */
-export function buyerRecordsSearch(cui: string, period: ProfilePeriod, grain: 'direct' | 'contract'): ExplorerSearch {
-  return grain === 'direct'
-    ? { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, ...periodSearch(period) }
-    : { view: 'list', grain: 'contracts', record_kind: ['purchases'], authority_cui: cui, ...periodSearch(period) }
-}
-
-/** A buyer's direct purchases of a page's period from firms in one county: exactly what its county row counts. */
-export function buyerCountySearch(cui: string, county: string, period: ProfilePeriod): ExplorerSearch {
-  return { view: 'list', grain: 'direct_acquisitions', authority_cui: cui, supplierCounty: county, ...periodSearch(period) }
+/** Every year the platform reads, from 2019 through the end of the current one (the page stops at the data's cutoff). */
+export function allYears(now: Date = new Date()): string {
+  return `${DIRECT_COMPARABLE_FROM}-01..${now.getFullYear()}-12`
 }
 
 /**
- * A firm's records in the explorer, every year (`period` null) or a page's
- * period: its direct purchases, or its contract awards (framework agreements
- * apart).
+ * A county's records, for what the map counts there: its direct purchases,
+ * or its contract awards — framework agreements apart, as the map counts
+ * them.
  */
-export function supplierRecordsSearch(cui: string, period: ProfilePeriod | null, grain: 'direct' | 'contract'): ExplorerSearch {
-  const base: ExplorerSearch =
-    grain === 'direct' ? { view: 'list', grain: 'direct_acquisitions', supplier_cui: cui } : { view: 'list', grain: 'contracts', record_kind: ['purchases'], supplier_cui: cui }
-  return period === null ? base : { ...base, ...periodSearch(period) }
+export function countyRecordsSearch(indicator: 'lei' | 'contracte', county: string, year: number): AnalyticsUrlSearch {
+  return analyticsSearch({ tip: indicator === 'lei' ? 'directe' : 'contracte', judet: county, perioada: year, dupa: 'inregistrari' })
+}
+
+/** Every record of a buyer in one population, every year. */
+export function buyerAllRecordsSearch(cui: string, grain: 'direct' | 'contract', now: Date = new Date()): AnalyticsUrlSearch {
+  return analyticsSearch({ tip: tipOf(grain), cumparator: cui, perioada: allYears(now), dupa: 'inregistrari' })
+}
+
+/** A buyer's records of a page's period: its direct purchases, or its contract awards (framework agreements apart). */
+export function buyerRecordsSearch(cui: string, period: ProfilePeriod, grain: 'direct' | 'contract'): AnalyticsUrlSearch {
+  return analyticsSearch({ tip: tipOf(grain), cumparator: cui, perioada: periodOf(period), dupa: 'inregistrari' })
+}
+
+/**
+ * A buyer's direct purchases of a page's period from firms in one county,
+ * what its county row counts — by firm: a list cannot filter on the firm's
+ * place, the analysis can.
+ */
+export function buyerCountySearch(cui: string, county: string, period: ProfilePeriod): AnalyticsUrlSearch {
+  return analyticsSearch({ cumparator: cui, judet_firma: county, perioada: periodOf(period), dupa: 'firma' })
+}
+
+/** A firm's records, every year (`period` null) or a page's period: its direct purchases, or its contract awards (framework agreements apart). */
+export function supplierRecordsSearch(cui: string, period: ProfilePeriod | null, grain: 'direct' | 'contract', now: Date = new Date()): AnalyticsUrlSearch {
+  return analyticsSearch({ tip: tipOf(grain), furnizor: cui, perioada: period === null ? allYears(now) : periodOf(period), dupa: 'inregistrari' })
 }
 
 /** A firm's records of a page's period from institutions in one county: exactly what its county row counts. */
-export function supplierCountySearch(cui: string, county: string, period: ProfilePeriod, grain: 'direct' | 'contract'): ExplorerSearch {
-  return { ...supplierRecordsSearch(cui, period, grain), buyerCounty: county }
+export function supplierCountySearch(cui: string, county: string, period: ProfilePeriod, grain: 'direct' | 'contract'): AnalyticsUrlSearch {
+  return analyticsSearch({ tip: tipOf(grain), furnizor: cui, judet: county, perioada: periodOf(period), dupa: 'inregistrari' })
 }
 
-/** The three ways in: the year's contract awards, its framework agreements, the rankings. */
-export function startSearches(year: number): { readonly awards: ExplorerSearch; readonly frameworks: ExplorerSearch; readonly rankings: ExplorerSearch } {
+/** The three ways in: the year's contract awards, its framework agreements, the analysis itself. */
+export function startSearches(year: number): { readonly awards: AnalyticsUrlSearch; readonly frameworks: AnalyticsUrlSearch; readonly rankings: AnalyticsUrlSearch } {
   return {
-    awards: { view: 'list', grain: 'contracts', record_kind: ['purchases'], year },
-    frameworks: { view: 'list', grain: 'contracts', record_kind: ['frameworks'], year },
-    rankings: { view: 'rankings' },
+    awards: analyticsSearch({ tip: 'contracte', perioada: year, dupa: 'inregistrari' }),
+    frameworks: analyticsSearch({ tip: 'acorduri', perioada: year, dupa: 'inregistrari' }),
+    rankings: {},
   }
 }

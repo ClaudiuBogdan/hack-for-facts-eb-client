@@ -8,9 +8,10 @@ vi.mock('@/lib/graphql/graphql-client', () => ({
 import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { withProcurementSearchDefaults } from '@/schemas/procurement-search'
 import {
+  fetchAuthorityProcurementSliceLive,
   fetchProcedureDetailLive,
-  fetchProcurementLandingLive,
   fetchProcurementSearchLive,
+  fetchSupplierProcurementSliceLive,
   fetchSupplierRecordsLive,
   resetProcurementLiveCachesForTests,
 } from './procurement-api.live'
@@ -76,6 +77,28 @@ function aggregateResponse() {
   }
 }
 
+/** Each read answered by its operation, as the API would: the aggregates, the divisions, the names, an empty contract list. */
+function answerByOperation(names: { readonly authorities?: readonly unknown[]; readonly suppliers?: readonly unknown[] } = {}) {
+  graphqlQueryMock.mockImplementation(async (_query, _variables, options) => {
+    switch ((options as { operationName?: string } | undefined)?.operationName) {
+      case 'ProcurementAggregates':
+        return aggregateResponse()
+      case 'ProcurementCpvDivisions':
+        return { procurementCpvDivisions: [{ divisionCode: '45', labelEn: 'Construction work', labelRo: 'Lucrări de construcții' }] }
+      case 'ProcurementPartyNames':
+        return { authorities: names.authorities ?? [], suppliers: names.suppliers ?? [] }
+      case 'ProcurementContracts':
+        return { procurementContracts: { total: 0, totalEstimated: false, items: [] } }
+      case 'ProcurementSupplierRecords':
+        return { procurementSupplierRecords: { total: 0, edges: [], pageInfo: { hasNextPage: false, endCursor: null } } }
+      default:
+        throw new Error('unexpected read')
+    }
+  })
+}
+
+const callsOf = (operation: string) => graphqlQueryMock.mock.calls.filter((call) => (call[2] as { operationName?: string } | undefined)?.operationName === operation)
+
 beforeEach(() => {
   graphqlQueryMock.mockReset()
   resetProcurementLiveCachesForTests()
@@ -135,106 +158,46 @@ describe('live procurement adapter', () => {
     expect(page.records[0]?.grain).toBe('contract')
   })
 
-  it('batches canonical authority and supplier names into ranking rows', async () => {
-    graphqlQueryMock
-      .mockResolvedValueOnce(aggregateResponse())
-      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
-      .mockResolvedValueOnce({
-        authorities: [
-          { cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' },
-        ],
-        suppliers: [
-          { cui: '222', canonicalName: 'Furnizor Exemplu SRL', status: 'named' },
-        ],
-      })
-
-    const landing = await fetchProcurementLandingLive({
-      dateFrom: '2024-05-17',
-      dateTo: '2024-06-02',
+  it('names a firm’s buyers through the identity spine: a state company among them', async () => {
+    answerByOperation({
+      authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }],
     })
 
-    expect(
-      landing.analysisByGrain.contract.topAuthorities[0]?.authority?.name,
-    ).toBe('Municipiul Exemplu')
-    expect(
-      landing.analysisByGrain.contract.topSuppliers[0]?.supplier?.name,
-    ).toBe('Furnizor Exemplu SRL')
-    expect(graphqlQueryMock).toHaveBeenCalledTimes(3)
-    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
-      scope: { from: '2024-05', to: '2024-06' },
-      rankBy: 'count',
-    })
-    expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
-      'query ProcurementPartyNames',
-    )
-    // Both party roles resolve through the identity spine now — a role registry
-    // cannot name a buyer that is a state company.
-    expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
-      'authorities: organizationLabels',
-    )
-    expect(graphqlQueryMock.mock.calls[2]?.[0]).toContain(
-      'suppliers: organizationLabels',
-    )
-    expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('entity(cui:')
-    expect(graphqlQueryMock.mock.calls[2]?.[0]).not.toContain('company(cui:')
+    const slice = await fetchSupplierProcurementSliceLive('222')
+
+    expect(slice.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    const names = callsOf('ProcurementPartyNames').map((call) => String(call[0]))
+    expect(names.some((query) => query.includes('authorities: organizationLabels'))).toBe(true)
+    for (const query of names) {
+      expect(query).not.toContain('entity(cui:')
+      expect(query).not.toContain('company(cui:')
+    }
   })
 
-  it('requests value-ranked overview breakdowns when selected', async () => {
-    graphqlQueryMock
-      .mockResolvedValueOnce(aggregateResponse())
-      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
-      .mockResolvedValueOnce({ authorities: [], suppliers: [] })
-
-    await fetchProcurementLandingLive({ rankBy: 'value' })
-
-    expect(graphqlQueryMock.mock.calls[0]?.[0]).toContain(
-      'rankBy: $rankBy',
-    )
-    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
-      rankBy: 'value',
+  it('names ranking rows through the identity spine', async () => {
+    answerByOperation({
+      suppliers: [{ cui: '222', canonicalName: 'Furnizor Exemplu SRL', status: 'named' }],
     })
+
+    const slice = await fetchAuthorityProcurementSliceLive('111')
+
+    expect(slice.analysisByGrain.contract.topSuppliers[0]?.supplier?.name).toBe('Furnizor Exemplu SRL')
+    // Through the identity spine: a role registry cannot name a party that is a state company.
+    const names = callsOf('ProcurementPartyNames').map((call) => String(call[0]))
+    expect(names.some((query) => query.includes('suppliers: organizationLabels'))).toBe(true)
+    for (const query of names) {
+      expect(query).not.toContain('entity(cui:')
+      expect(query).not.toContain('company(cui:')
+    }
   })
 
-  it('scopes landing analytics by buyer region with party rankings included', async () => {
-    graphqlQueryMock
-      .mockResolvedValueOnce({
-        ...aggregateResponse(),
-        authorities: undefined,
-        suppliers: undefined,
-      })
-      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
+  it('asks an institution’s slice for money order, and passes the order on', async () => {
+    answerByOperation()
 
-    const landing = await fetchProcurementLandingLive({
-      buyerRegion: 'Nord-Vest',
-    })
+    await fetchAuthorityProcurementSliceLive('111')
 
-    expect(landing.analysisByGrain.contract.topAuthorities).toEqual([])
-    expect(landing.analysisByGrain.contract.topSuppliers).toEqual([])
-    expect(graphqlQueryMock).toHaveBeenCalledTimes(2)
-    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
-      scope: { buyerRegion: 'Nord-Vest' },
-      // Party rankings under buyer geography are served (ClickHouse, dev
-      // 2026-07-22) — the rollup-era omission is lifted.
-      includeAuthorities: true,
-      includeSuppliers: true,
-      includeCategories: true,
-    })
-  })
-
-  it('scopes landing analytics by buyer county natively (no region approximation)', async () => {
-    graphqlQueryMock
-      .mockResolvedValueOnce({
-        ...aggregateResponse(),
-        authorities: undefined,
-        suppliers: undefined,
-      })
-      .mockResolvedValueOnce({ procurementCpvDivisions: [] })
-
-    await fetchProcurementLandingLive({ buyerCounty: 'CJ' })
-
-    expect(graphqlQueryMock).toHaveBeenCalledTimes(2)
-    expect(graphqlQueryMock.mock.calls[0]?.[1]).toMatchObject({
-      scope: { buyerCounty: 'CJ' },
-    })
+    const [aggregates] = callsOf('ProcurementAggregates')
+    expect(aggregates?.[0]).toContain('rankBy: $rankBy')
+    expect(aggregates?.[1]).toMatchObject({ rankBy: 'value', includeAuthorities: false })
   })
 })

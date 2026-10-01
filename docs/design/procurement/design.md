@@ -75,7 +75,7 @@ These patterns are the domain's backbone. Every feature references them by name.
 | `/achizitii/proceduri/$id` | Procedure detail | `routes/achizitii.proceduri.$id.tsx` |
 | `/achizitii/contracte/$id` | Contract detail | `routes/achizitii.contracte.$id.tsx` |
 | `/achizitii/achizitii-directe/$id` | Direct-acquisition detail | `routes/achizitii.achizitii-directe.$id.tsx` |
-| `/achizitii/cpv/$code` | CPV category page | `routes/achizitii.cpv.$code.tsx` |
+| `/achizitii/cpv/$code` | CPV category page — since 1 October 2026 a redirect to `/procurement/analytics?cpv=$code` (§19) | `routes/achizitii.cpv.$code.tsx` |
 | `/achizitii/semnale` | Review-signals explorer (next) | `routes/achizitii.semnale.tsx` |
 | `/entities/$cui?view=achizitii` | Authority procurement slice | existing route, new `view` value |
 | `/companies/$cui?tab=achizitii` | Supplier procurement slice | existing route, new `tab` value |
@@ -385,7 +385,7 @@ type SameDayCandidate = {
 | 1 | authority-procurement-slice | `/entities/$cui?view=achizitii` | `org_edge_monthly_rollups`, `authority_cpv_division_monthly_rollups`, `procurement_flow_facts_v1`, gate | KPIs, `TopSuppliersChart`, `CategoryBreakdown`, recent-DA list, signal teaser |
 | 2 | procurement-search-listing | `/achizitii/cautare` | grain tables + `cpv_codes/divisions` + gate | `GrainSelector`, filter rail, `ProcurementRecordCard`, coverage banner, export |
 | 3 | procurement-record-detail-pages | `/achizitii/{proceduri,contracte,achizitii-directe}/$id` | grain tables + `contract_modifications` + `attrs` | `ProcurementRecordHeader`, `ModificationTrail`, related links |
-| 4 | cpv-category-page | `/achizitii/cpv/$code` | `cpv_codes/divisions` + category rollups + gate | `CpvLabel`, `SpendOverTime`, top-N |
+| 4 | cpv-category-page — folded into the analytics page (§19) | `/achizitii/cpv/$code` | `cpv_codes/divisions` + category rollups + gate | `CpvLabel`, `SpendOverTime`, top-N |
 | 5 | supplier-procurement-slice | `/companies/$cui?tab=achizitii` | `procurement_flow_facts_v1`, `org_edge_*`, `supplier_cpv_*` | KPIs, `TopBuyersChart`, `CategoryBreakdown`, cross-domain chips |
 | 6 | coverage-data-as-of-layer | cross-cutting | `aggregate_quality_by_grain`, `public_contracts_filter_capabilities_v1`, watermark | `CoverageRibbon`, `DataStatusBadge`, `FreshnessBadge`, `SourceProvenanceDrawer`, gate hook |
 | 7 | review-signals-explorer | `/achizitii/semnale` | `same_day_*`, `org_edge_*`, `contract_modifications` | leaderboards, cluster drilldown, `ReviewSignalBadge` |
@@ -678,6 +678,67 @@ browser's own reads; a hover preloads them).
   contract money rank buyers (the hero ranks contracts by number until then).
 - The companies hub keeps its own county-band fork; one shared choropleth
   (with the INS band's `countyLink`) is a separate job.
+
+### 12.5 The hero, and the page before its reads (30 September 2026)
+
+The owner's polish of the front door, after the analytics page was promoted.
+
+- **Five buyers, then ten.** The hero names the five largest buyers.
+  „Arată mai multe" („Show more") opens the next five, and „Arată mai puține" closes
+  them (the categories band's control). Before this, the hero showed ten on
+  a wide screen and five on a phone. The hero is now 667 px tall at
+  1440×900 (906 before), so the pinned bar sits above the fold.
+- **The source closes the hero.** On a wide screen the source line sits at
+  the hero's foot, 24 px above its bottom rule, in the hero's bottom
+  padding. It stays there however tall the buyers panel is, open or
+  closed. (A first version set it level with the panel's foot, which left
+  80 px of hero under it.) On a phone it comes after the panel. Until the
+  read says which month the records are complete to, the month's place is
+  held.
+- **The cross over the pinned bar.** The blue cross sits on the hero's
+  bottom rule, where the pinned bar begins, and is drawn above the bar. It
+  used to sit at the bar's foot, in the figures band, and the bar covered
+  its top half. This is the pattern the buyer head and the analytics head
+  already follow.
+- **The map first.** The bands now run: 01 Pe județe, 02 Ce se cumpără,
+  03 Cine vinde, 04 În timp, 05 Cum se cumpără, 06 Cele mai noi. The
+  figures band stays between the pinned bar and the map.
+- **The page before its reads.** A client-side navigation mounts before the
+  reads. Every band now renders what it knows without them: its number,
+  title and toggle, its captions, the figures' terms, and the map's caveat.
+  The rest holds its place in the shape of what replaces it:
+  - rows with the real rows' lines, at their sizes, with a ranking's places
+    shown;
+  - ledes with the lines they take;
+  - the map's frame, the legend's height, and the county ranking's two ends;
+  - the year columns' frame.
+
+  The old skeletons (grey bars, titles missing) grew the page by 2,700 px
+  when the data landed. Measured with the API held back (Playwright, dev
+  server):
+
+  | band | 1440 px: pending → loaded | 390 px: pending → loaded |
+  |---|---|---|
+  | hero | 667 → 667 | 1084 → 1084 |
+  | figures | same height | 16 px short |
+  | map | 942 → 943 | 1369 → 1377 |
+  | categories | 847 → 847 | 1063 → 1082 |
+  | sellers | 990 → 990 | 1444 → 1444 |
+  | years | 483 → 483 | 701 → 701 |
+  | procedures | 640 → 640 | 951 → 951 |
+  | newest | 1013 → 993 | 1152 → 1152 |
+
+  What remains depends on the data: how many titles or notes take two lines.
+- **Reviewed** by Codex `gpt-6.1-sol` (xhigh; no defects) and Opus 5.5
+  (xhigh). Opus found no serious defects; its findings are fixed:
+  - Opening the list from the keyboard now moves focus to the sixth buyer,
+    as the county ranking's control does. Before, the next Tab skipped the
+    five new rows.
+  - A pending paragraph now shortens only its own last line, at each width.
+  - The contract ranking's caption („După numărul de contracte
+    atribuite.") shows before the read, because it doesn't depend on it.
+  - One ruled-note class, one show-more class and its placeholder, and
+    the national read's state type are now shared from `home-chrome.tsx`.
 
 ## 13. The buyer page, redesigned (prototyped and promoted 27 September 2026)
 
@@ -1871,3 +1932,984 @@ contracte"; the export's quarter is said in the reader's language; the EU
 journal sentence is one message; a framework's description says so; a title
 that is the procedure's is marked; the shared page's contract types and
 branches are gone.
+
+## 18. The analytics page (prototyped 29 September 2026)
+
+`/procurement/search` becomes „Analize" at `/procurement/analytics`. The
+explorer it replaces has three tabs (overview, list, rankings), a filter
+sheet whose filters apply differently per tab („doar în listă", „nu în
+clasamente"), a grain toggle and a value-basis radio: powerful, but the
+reader must know the model first. The new page answers a question: one query
+in the URL, one answer, every part of the answer a way to the next question.
+Prototype: `/development/procurement/analytics` (`?v=raspuns|traseu|panou`),
+live on the dev API (build 12); the production database was not read. The
+brief was critiqued by Codex `gpt-6-astra` (xhigh) before the build.
+
+### 18.1 What the analysis API can answer (dev API, 2026-09-29)
+
+- **Six reads, 120–460 ms each, on ClickHouse:** `procurementStats`,
+  `procurementSeries` (month / quarter / year; sparse — a month with nothing
+  is missing, not zero), `procurementBreakdown` (17 dimensions, top ≤ 100 —
+  SIRUTA ≤ 3,300 — plus `other` and `unknown` buckets that add up to the
+  stats), `procurementFacets` (1–3 dimensions, explicit grain),
+  `procurementConcentration` (firms, top-1 and top-5 share, HHI) and
+  `procurementShare`. Names are separate: `organizationLabels` (≤ 250 CUIs),
+  `procurementCpvCodes` (≤ 200), `procurementCpvDivisions`; localities have
+  none (the page reads them from the map's UAT file, a county's own SIRUTA
+  from the County file).
+- **A scope is single values, ANDed:** grain, record kind, buyer, firm, one
+  CPV level (a division is 2 digits; a group, class, category or code is the
+  8-digit code), buyer and firm region / county / locality, procedure type
+  (contracts), `from`/`to` months or a `year`, a title substring (3–100
+  characters, diacritics not folded) and a value range (which keeps only the
+  valued rows). No multi-select, no exclusion, no offset past the top 100,
+  no two-dimensional breakdown, no median.
+- **Failure is all-or-nothing per request:** a breakdown on a dimension the
+  scope fixes errors, one invalid root nulls the whole response, and an
+  unused declared variable is a 400. The page sends each read as its own
+  request, so one failure leaves the rest of the answer.
+- **Populations.** Direct purchases: clean money without VAT, comparable
+  from 2019. Contracts: award rows and framework rows together; money
+  provisional (framework ceilings and call-offs; ~25.7% of rows valued);
+  counts are rows (an association member or a lot is a row); a firm's money
+  withholds association money (`valueWithheldAssociationSum`). Frameworks:
+  ceilings, not spend. Both populations are complete through May 2026
+  (`readCutoffOutcome`).
+- **The record kind splits only SEAP's export.** e-licitatie's award
+  notices carry no kind, so their frameworks and call-offs are awards
+  (scrapper `PROCUREMENT_SERVING_REVIEW_2026-08-05.md`), and from January
+  2026 the rows come mostly from e-licitatie: framework rows fall from
+  7–12k a month to 187 (January), 957, 1,987, 4,054, 2,085 (May), while award
+  rows rise to 6,875 (March) and 7,357 (April). The last 12 months showed
+  frameworks −46% and awards +15% against the 12 before — the sources
+  moving, not the buying. Contract coverage moves by year anyway (SEAP's
+  2019 bulk year missed; awards at 1.5–1.8k in January–February and
+  July–August 2025 against ~4.5k; `PUBLIC_CONTRACTS_TIME_COVERAGE_AUDIT.md`).
+- **Lists stay slow** (Postgres on dev, 0.1–15 s; no search engine):
+  `eq` filters, a direct-purchase list needs a party or a window of at most
+  366 days, firm-geography list filters fail (BAD_GATEWAY), `total` is null
+  past 10,000.
+
+### 18.2 The page
+
+**The query** (`analytics.model.ts`) is the page's whole state, in readable
+URL keys:
+
+| Part | URL | Values |
+|---|---|---|
+| Population | `tip` | `directe` (default) · `contracte` · `acorduri` |
+| Period | `perioada` | the last 12 months to the cutoff (default) · `2025` · `2024-01..2025-06` |
+| Who buys | `cumparator` · `regiune` · `judet` · `localitate` | a CUI · a region · a county code · a SIRUTA |
+| Who sells | `firma` · `regiune_firma` · `judet_firma` · `localitate_firma` | the same, for the firm's seat |
+| What | `cpv` | a digit prefix: 2 = division … 8 = code |
+| How | `procedura` | a SEAP procedure label (contracts, frameworks) |
+| Narrowers | `titlu` · `valoare` | a title substring · `min..max` lei |
+| Divided by | `dupa` | `institutie` `firma` `categorie` `grup` `clasa` `categorie5` `cod` `regiune` `judet` `localitate` `*_firma` `procedura` `an` `trimestru` `luna` |
+| Measure | `masura` | `numar` · `lei` · `locuitor` |
+
+A URL that asks for something the population cannot give is repaired, not
+refused: `dupa` on an axis the filters fix becomes the filters' natural
+next question (a county's institutions, an institution's firms, a
+category's next level); a procedure on direct purchases is dropped; lei on
+frameworks become a count; per resident outside buyer counties becomes lei.
+
+**The answer, in reading order:**
+
+1. **The controls:** population, period, the filters as removable chips,
+   „+ Filtru" (one omnibox: institutions and firms from the site search,
+   CPV by name or code, counties for either side, procedures, „titlul
+   conține", value from/to), „Întrebări", „Legătură" (the link with the
+   months frozen, so a shared answer does not move).
+2. **The readout:** the query as a Romanian sentence — „Achizițiile
+   directe ale instituțiilor din județul Cluj, pentru lucrări de
+   construcții, pe firme" — the months, and one gloss of the population
+   („Cumpărături din catalogul SEAP, fără licitație. Bani verificați, fără
+   TVA."). A gallery question's trap follows it.
+3. **Four figures:** records, lei (direct purchases; contracts only as a
+   marked provisional figure), firms, the top five firms' share of the
+   money. Direct purchases add the change against the same months a whole
+   number of years before (January–May 2026 against January–May 2025; the
+   last 12 months against the 12 before; none when that window reaches
+   before 2019), the months said („față de ianuarie 2025 – mai 2025");
+   contracts and frameworks show none (§18.1).
+4. **The answer:** tabs for the axis (Instituție · Firmă · Categorie · Unde
+   cumpără · De unde vând · În timp), the level (diviziuni → coduri;
+   regiuni → localități; ani → luni) and the measure. A ranked list with
+   fill bars, share, value and count, then „Restul" and the unknown, so it
+   adds up. A row click narrows to that row and opens the next level (a
+   firm → its categories, a year → its months); the arrow opens the
+   profile. By time: bars, the year or quarter still filling dashed and
+   said so („2026 (până în mai)").
+5. **Context:** „În această selecție" (the top of the other axes, each a
+   chip that narrows), the years since 2019, the records, the method.
+6. **Records on request** („Vezi înregistrările"): 25, the largest
+   first or the newest, in their own request with a 9-second deadline;
+   loaded at once when an institution or a firm is picked. A wide
+   direct-purchase selection says why it cannot list („lista cere o
+   instituție, o firmă sau cel mult 12 luni") instead of narrowing
+   silently; a firm-county selection says the list cannot filter by it.
+7. **The gallery:** 25 questions in six groups (Cine cumpără · Cine vinde ·
+   Ce se cumpără · Unde · Când · Cum), six of them under the default answer,
+   each a URL and each with the trap its data sets where there is one („Un
+   acord-cadru fixează un plafon, nu o cheltuială"; „Sediul firmei nu e
+   locul lucrării"; „Caută «laptop» în titlu: un coș numit altfel nu
+   apare").
+
+Measured (last 12 months, June 2025 – May 2026, buyers in Cluj): 95,800
+direct purchases, 666.0 M lei, 7,775 firms, the top five firms 3% of the
+money; Cluj firms take 59% of it; Cluj-Napoca's institutions 49%, the county
+council 8.2%. Per resident, București's institutions buy 1,203 lei (they
+hold the central state). Every analysis read answers in under half a
+second; a page reaches network idle in 3.5–5 s in `yarn dev` (the names and
+the map files after the figures).
+
+### 18.3 The variants
+
+- **`raspuns` — the answer is the page.** The controls stick above (from
+  `sm`; on a phone they scroll away), the readout, the figures, one answer,
+  the context below. Closest to Astra's `intrebare`: conventional controls
+  under the sentence, not a sentence to edit word by word (Romanian
+  agreement would decide the interaction).
+- **`traseu` — who buys, what, from whom** (removed 29 September, §18.9).
+  No group-by: three linked columns, each ranked under every pick but its
+  own; a pick in one narrows the other two.
+- **`panou` — the workbench** (removed 29 September, §18.9). A rail with the
+  top six of every axis, the answer beside it.
+
+### 18.4 Decisions in the prototype
+
+- **Default: direct purchases, the last 12 months, categories by lei** —
+  what the state buys, the front door's first question. The money there is
+  clean; the profile pages open on the same window (§15).
+- **Contracts are counted.** Lei are offered, marked provisional, never
+  beside a count; a firm's lei end with „În asociere — neîmpărțit pe firme"
+  (the withheld association money), never spread over the members.
+- **Per resident only for the buyer's county,** over INS POP105A (1
+  January 2025), said under the ranking; counted at the institutions'
+  seat, not where the money is spent.
+- **The cutoff is national**, from the population's monthly counts; never
+  from a narrow selection.
+- **Contracts and frameworks past 2025 are said to be mixed:** a note under
+  the headline when the period reaches 2026, the 2026 bars dashed („fără
+  deosebirea acordurilor-cadru"), and no change figure for either
+  population in any window (`kindSplitUntil`, `changes: false` in the
+  registry). Framework records open newest first — there is no value to
+  rank them by.
+- **Facets are one band below the answer**, not a permanent side panel
+  (Astra: three facet dimensions cannot feed four panels, and they compete
+  with the answer). `panou` keeps the rail as the control.
+- **No map yet.** Geography ranks first; a map is a second view of the same
+  ranking, later.
+- **Cut from the population picker:** procedures (all-time only),
+  modifications (counts only, half undated), call-offs (2016–2018). Their
+  old links need a compatibility state when the route is promoted.
+
+### 18.5 Extending it
+
+The registry in `analytics.model.ts` holds what the page knows:
+`POPULATIONS` (grain, record kind, money policy, comparable-from, cutoff,
+default measure) and `AXES` (per axis: its levels, each with the API
+dimension, the scope key, the URL param and its validation; the names
+source; `maxValues`; the populations it works for). The query compiles to a
+scope (`scopeOf`), and each read (`analytics.data.ts`) is its own request.
+
+- **A new dimension or filter the API serves** (buyer type, framework role)
+  is an entry in `AXES` plus its name source.
+- **Multi-select** is `maxValues > 1`: the filter's `values` is already an
+  array, the chips already list them; the scope then needs an `in` field.
+  Summing single-value queries is wrong (distinct counts overlap).
+- **A two-dimensional answer** (institution × category) is a new `dupa`
+  shape and an answer component; it needs a server breakdown with marginal
+  totals.
+- **Comparing two selections** is a second `Query` and a second `useAnswer`;
+  the figures band already takes a before.
+- **What would resist** (the review counted it): a new dimension is about a
+  dozen hand edits, not an entry — `defaultGroupOf`, `nextGroupAfter`,
+  `facetAxesOf`, the group-by tabs and URL keys, the headline's phrases,
+  `groupTab` / `unknownLabel` / `keyLabel`, `profileLink`, `useNamer`; a
+  new population means the `tip` branches in the text, the figure labels and
+  the records; multi-select touches every `values[0]`; and what the list
+  endpoints can filter by has no place in the registry (the contracts list
+  has no procedure filter). Promotion should move these into the registry
+  (per level: its phrase, its unknown label, its link, its list filter key)
+  and version the URL (`v=1`), migrating the old explorer's params before
+  parsing.
+- **The headline is built from fragments** (subject, buyer, seller,
+  category…), each translated on its own: a translator cannot reorder them.
+  Promotion needs whole-sentence messages per population with the slots as
+  variables.
+
+### 18.6 What the API should add (for the server session)
+
+1. **`in` filters** (several buyers, counties, CPV prefixes, procedures) and
+   **exclusion** (all but București). They are what would make the front
+   door's reader categories („Medicamente", „Drumuri, poduri și
+   autostrăzi", „IT și telecomunicații") questions of the analytics page:
+   each is a set of CPV prefixes, some minus a longer one (`33` without
+   `336`). Only 5 of the 21 are one prefix with nothing carved out (§19),
+   so they stay unlinked until the API takes a set.
+2. **A two-dimensional breakdown** with marginal totals.
+3. **An offset** past the top 100 (rankings to page through).
+4. **Distinct firms and institutions in `procurementStats`** for the whole
+   period (the series' monthly distincts do not add).
+5. **Value bands** (a histogram) and the **median**.
+6. **The buyer's type** (ministry, county council, hospital, school…): the
+   question readers ask most after „who".
+7. **`framework_role`** (framework / call-off / standalone) on every
+   channel, e-licitatie included, so contract lei stop being provisional and
+   2026's awards and frameworks separate (§17.2, §18.1).
+8. **A diacritic-folded title search** („deszăpezire" = „deszapezire").
+9. **The data's as-of date served** (the cutoff per population), instead of
+   deriving it from counts.
+10. **Locality names** in the API (the page reads them from a map file).
+11. **A procedure filter on the contracts list** (`ProcurementContractsFilter`
+    has none: a procedure-scoped answer cannot show its records).
+12. **The firm's place on the lists without the search engine.** The
+    contracts' and direct purchases' `supplierRegion`, `supplierCounty` and
+    `supplierSiruta` fail with BAD_GATEWAY on the dev API, which runs no
+    search engine, while the buyer's place answers. Served from the
+    analysis rows (as the amendments' buyer place already is), a
+    firm-place question would list its records and they would match its
+    count; until then the page lists only a firm picked (§18.14). On 1
+    October 2026 the production API (`api.transparenta.eu/graphql`) had
+    no procurement reads at all (`procurementContracts` unknown), so
+    nothing there can be checked yet.
+
+### 18.7 Review (Opus 5.5, 29 September 2026)
+
+Two blockers, ten major, ten minor; all fixed, and the query's contract with
+its address is now under unit test (`analytics.model.test.ts`: every
+question and drill round-trips; the adversarial addresses; the periods).
+
+- **Blockers.** `?dupa=constructor` crashed the page and `?tip=constructor`
+  hung it (the lookups reached `Object.prototype`); an address the page
+  could not read (`cumparator=RO4305857`, `cpv=45000000-7`, `judet=cj`,
+  `titlu=ab`, a procedure on direct purchases) was dropped silently and the
+  answer turned national — under the default question's trap. Now the
+  common forms are read (the „RO", the check digit, the case), and what is
+  still unread is said above the figures („Din adresă n-am putut folosi:
+  …"), with no trap.
+- **Money said for what it is.** The association money now has its row on
+  every axis that ranks by firm or by the firm's place (on „De unde vând"
+  the rows added up to about 69% and 28.7 bn lei were invisible); a firm's
+  contracts say they leave out the ones won in an association; contract lei
+  are marked provisional in the time answer, the top-five figure and the
+  years strip.
+- **Time.** The series is filled (an institution's 12 months drew as 9
+  bars); a bucket the window cuts is dashed and said at either end („2025
+  (din iunie)"); the change compares the same months (January–May 2026 had
+  been set against August–December 2025, December included); direct
+  purchases before 2019 carry their note; a period after the data or out of
+  range answers the last 12 months and says so; a failed cutoff read is said
+  instead of claiming „date complete".
+- **The API's own verdict** is shown: every contract answer is `degraded`
+  („Răspuns parțial: 33.836 de rânduri fără dată (94,1 mld. lei) nu intră
+  în nicio perioadă"); an `abstained` one says the figures are missing, not
+  zero. The API's English caveats stay in „Cum am calculat", labelled.
+- **Two traps were false** and are rewritten from the data: the county
+  council is filed under the county's own SIRUTA („Județul Cluj", 8.2%),
+  not in Cluj-Napoca; the top direct-purchase sellers are telecoms,
+  wholesale and DIY stores and pharmacies (Vodafone, Selgros, Dedeman,
+  Sensiblu, Poșta, Metro), none above 0.44% — fuel is tenth.
+- **Records.** A procedure filter now says the list cannot filter by it (the
+  contracts list has no such field — it answered 400), and a failed list
+  with a party fixed no longer tells the reader to pick a party.
+- Also: Romanian plurals („1.709.191 de locuitori"); empty „Restul" rows
+  gone; per-resident unknown rows no longer print lei among rates; facet
+  localities named; the link copies this page's address and freezes a year
+  in progress; the list deadline uses `withDeadline` (Safari < 17.4 has no
+  `AbortSignal.any`); questions, traps, tabs and the population note are
+  translatable (`msg`); the period menu opens on the period's months; „Arată
+  primele 100" belongs to its question (Back opens at 25); `traseu` no
+  longer reads a ranking it does not show; the rail and the columns say
+  what the rest holds.
+- Found while fixing: direct purchases spiked in April–June 2025 (≈255k,
+  254k, 222k a month against ≈135k in 2026), so January–May 2026 reads −29%
+  against January–May 2025; the arithmetic is right, the cause is not
+  known.
+
+### 18.8 Open for the owner
+
+- ~~The layout~~ — `curat` (§18.10).
+- Whether contract lei are offered at all before `framework_role` lands.
+- The route: `/procurement/analytics` with `/procurement/search` redirecting
+  (the old params mapped), and the explorer's list view kept as the
+  records layer or dropped.
+
+### 18.9 The owner's pick and the clean versions (29 September 2026)
+
+The owner kept `raspuns` only and asked for a much cleaner interface — „no
+need for extra text, let the data speak" — and for every filter in a side
+panel (a responsive sheet on a phone) beside the quick filters, for the
+power user. `traseu` and `panou` are removed at the owner's word; `raspuns`
+stays as it was; three versions of it are added:
+
+- **`curat` — the words cut.** The question as the headline; under it the
+  months and one marker (an „i", or amber with a count when something is
+  off) whose popover holds everything that was prose — what the address held
+  that the page could not use, the window before 2019, the record-kind
+  split, the API's partial verdict, the question's trap, the population's
+  rules. Four bare figures (the change's months in its title); the ranked
+  answer on one line per row (rank, name, bar, value, share; the bar under
+  the name on a phone; the count in the row's title; the profile arrow on
+  hover); the chart with its buckets labelled; the years as a small strip;
+  one source line at the foot („Sursa: SEAP, complet până în mai 2026 · Cum
+  am calculat", the method in a popover). No facets and no gallery on the
+  page: the questions stay in „Întrebări".
+- **`lateral` — filters beside the answer.** `curat`'s answer, the panel
+  open at the left from `lg` (sticky, its own scroll); each field shows its
+  axis's top five in the selection with their shares, and „restul". A pick
+  shows its own next level (a county → its localities, a category → its
+  groups). The quick row gives the panel what it holds (population, period).
+- **`tabel` — every number at once.** The figures in one line; the answer a
+  table — records, lei, the average, the share with a bar — whose headers
+  rank by their column (the server ranks: the top 25 by lei is not the top
+  25 by count); in time, a row per period. On a phone the table keeps the
+  name and the column it ranks by.
+
+**The filter panel** (`analytics.filters.tsx`) holds the whole query:
+population; period (the last 12 months, a year, two months applied when the
+focus leaves the pair); institution and firm (the site's search, or a CUI
+typed as it is — „RO" read); the buyer's and the firm's place (region and
+county selects, then the county's localities from the map's file); the
+category (search by name or code, the pick shown as its path — division ›
+group › class — each step a click back up); the procedure (contracts and
+frameworks); the title's words; the value range. A change applies at once:
+the address is the state. In `curat` and `tabel` it opens as a sheet — from
+the right, from the bottom on a phone — with „Șterge tot" and „Arată 95.800"
+to close on; in `lateral` it is the rail (and the same sheet, values
+included, on a phone).
+
+**Checked on the dev API:** every panel field drives the address (an
+institution, a county and its top locality, a category and a step back up
+its path, the title, the value, the months, a year, contracts, a procedure,
+clearing all; a firm from the sheet), with no console errors; the three
+versions answer the review's hard cases (contracts by year, per resident,
+frameworks, one firm's contracts, months, an unread address) without
+errors; no horizontal scroll at 390 px; `raspuns` renders as before.
+
+### 18.10 `curat` with the table (29 September 2026)
+
+The owner liked `curat`'s figures and `tabel`'s table, and asked to remove
+`lateral` and move the table into `curat`. `curat` now answers a ranking
+with the table (records, lei, the average, the share; a header ranks by its
+column) under its four large figures; a breakdown in time stays a chart.
+`lateral` is removed with what only it used — the panel's top values and
+the rail — and so are `curat`'s one-line bar rows. The filter panel is the
+sheet.
+
+Then the owner kept `curat` alone: `tabel` is removed, with its one-line
+figures and the table's rows in time. The prototype holds `raspuns` (as it
+was) and `curat`, the page to promote.
+
+### 18.11 Two heads for `curat` (29 September 2026)
+
+The owner asked for two redesigns of `curat`'s head: the control bar, the
+headline, the months, the figures. Both keep the rest of `curat` (the
+group-by, the table or the chart, the records, the source line, the filter
+sheet) and read the same query; `curat` stays as it was.
+
+- **`propozitie` — the headline is the control.** No toolbar. The
+  headline's phrases are the query's parts (`headlineParts` in
+  `analytics.text.ts`; `headline` joins them, so the other versions read the
+  same sentence): „Achizițiile directe ▾" opens the population's switch; a
+  filter's phrase („ale instituțiilor din județul Cluj") opens the filter
+  sheet, its ✕ (on hover from `sm`, always on a phone) drops it; the
+  group-by's phrase is text (the tabs above the table choose it). A filter
+  the sentence folds into another (a county under a chosen institution)
+  shows as a chip under it. The months under the headline are the period's
+  picker, beside the caveats' marker; „Adaugă", „Filtre", „Întrebări" and
+  the link sit quietly at that line's end. The figures in one ruled row:
+  the value first, what it counts and its change under it.
+- **`bara` — one bar, figures with their years.** The populations as
+  tabs (three equal on a phone) and the period on the first line; on the
+  second, one search field that holds the filters as chips and opens the
+  search over institutions, firms, categories and counties — replacing
+  „+ Filtru", too close to „Filtre" — then „Filtre", „Întrebări", the link.
+  The headline with the marker on its last line; each figure with its
+  years since 2019 as small bars (the window's darker, 2026 dashed, a click
+  takes the year), so the years strip below goes. Firms and the top five
+  have no yearly read yet (the series' distinct firms per year would serve
+  the first).
+
+Checked on the dev API: the population switch, dropping a phrase, the
+period, adding a filter (the sentence); a search from the bar, dropping a
+chip, the tabs, a year from a trend (the bar) — all drive the address, no
+console errors; the review's hard cases load in both; no horizontal scroll
+at 390 px.
+
+### 18.12 `propozitie` on the profiles' grid (29 September 2026)
+
+The owner kept `propozitie`'s head and asked for it polished onto the new
+design grid, with the title no longer a dropdown and the options laid out as
+on the procurement profile pages. It now stands on the buyer page's
+geometry, part for part:
+
+- **The head band** (`GridHead`): the lattice, the corner ticks, the ruled
+  frame; the top row with the way back („Achiziții publice / Analize") and,
+  at the right end, how recent the data is („Date actualizate până la 31 mai
+  2026") beside the „Perioada" control; the question as an extrabold
+  headline sized by its length, the population and the group-by as words,
+  each filter's phrase opening the panel with its ✕ to drop it; under it
+  „Adaugă un filtru", „Filtre", „Întrebări", the link and the caveats'
+  marker, as the profile's ways out; the crux where the head's bottom rule
+  meets the frame.
+- **The pinned bar** (`PopulationNav`, in `HomeSectionNav`'s shape): the
+  question on the left from `md`, and the three populations at the right —
+  „Achiziții directe · Contracte atribuite · Acorduri-cadru" — the one read
+  underlined; nothing scrolls (the owner: „there is a scroll" — the
+  underline reached a pixel past the bar, and the bar scrolled): on a phone
+  the three share the width, their names wrapping. Not
+  numbered (the owner: „the numbers don't make sense here"): the profiles
+  number a sequence of bands, these are three choices — each carries an
+  icon instead (the owner's suggestion): a cart for direct purchases, and
+  the contract page's own marks, `FileSignature` for contracts and `Layers`
+  for frameworks; the active one's in the navy accent.
+- **The figures band** (`HubFiguresBand`, as the profiles use it): the value
+  large with its unit apart („15,3 mld. lei"), the mono term under it, the
+  change as the cell's note.
+- The answer, then the years and the records, each in a band of the same
+  frame; the source line at the foot.
+
+The group-by stays above the table. A variant for later: the group-by's
+axes as the pinned bar's numbered items („01 Ce · 02 Cine cumpără · 03 De
+la cine · …"), the profiles' own bands, with the populations as a toggle.
+
+### 18.13 The page (29 September 2026)
+
+The owner made `propozitie` the analytics page and removed the other
+versions; `/development/procurement/analytics` opens it. Removed with them,
+the code only they used: `raspuns`'s readout, figures, ranked list, time
+answer, facets band (and the facets read), years strip and gallery;
+`curat`'s control row, head and figures; `bara`'s command bar and trends.
+Kept, and used by the page: the query and its address
+(`analytics.model.ts`, with its tests), the reads (`analytics.data.ts`), the
+words (`analytics.text.ts`), the ready questions (in „Întrebări"), the
+filter panel (`analytics.filters.tsx`), the answer's table, chart, years
+and source line (`analytics.clean.tsx`), the head, the bar and the figures
+band (`analytics.heads.tsx`). §18.2–18.10 record the versions tried and why
+each went; §18.11–18.12 the page's head.
+
+### 18.14 The records as the answer's first tab (29 September 2026)
+
+The owner: simplify the band under the answer, and add „a first tab with
+the items based on the active tab … if I search for laptop, I want to see
+that entry in the table". The records block („Înregistrările", with its
+„Vezi cele mai mari 25 din 22" button — wrong when fewer than 25) is gone;
+the records are the group-by's first option (`dupa=inregistrari`), named
+for what they are — „Achiziții", „Contracte", „Acorduri-cadru":
+
+- **The table** (`RecordsTable`): the title (opening the record's page) with
+  who bought from whom under it, the date, the value (bold when checked); 25
+  at a time with the list's own count („26–50 din 351"); „Dată" and
+  „Valoare" order it (frameworks by date only); an association's rows as
+  one. On a phone, the title and the value (the date under the title). No
+  measure toggle and no levels for it. The three cases the dev API cannot
+  list (a firm's place, a procedure, a wide direct-purchase window) say so
+  in its place.
+- **A title's words open on their records**: `defaultGroupOf` answers a
+  query with `titlu` with the records, and setting or clearing a title
+  (`withTitle`) moves a group-by the reader did not choose with it — a
+  chosen one stays. „laptop" opens on the laptops, largest first (the
+  Autoritatea Rutieră Română's 245,000 lei on 7 September 2025).
+- The band under the answer is the years strip alone, in the answer's band.
+
+Checked on the dev API: „laptop" and one institution's records (351, two
+pages), the national list (it answers within the 9-second deadline), the
+order by date (27 May 2026 first), a tab away and back; the table fits a
+390 px phone; unit tests cover the records' round trip and the title rule.
+
+**A firm's place (1 October 2026).** The owner saw the count (384 contracts
+of Sibiu's firms) over an empty list. The list's firm-place filters
+(`supplierRegion`, `supplierCounty`, `supplierSiruta`) are served by the
+search engine, which the dev API does not run: each fails with
+BAD_GATEWAY, while the buyer's place answers. The analysis reads its own
+fact rows, so the count stands.
+- A firm has one place, its registered office: for 36 firms (Sibiu's and
+  Cluj's top contractors, Sibiu's top direct suppliers) the count is the
+  same with and without it. So a firm picked lists its records by the firm
+  alone (11, 22 and 9 records, as their counts say). Until then the list's
+  own advice, „Alege o firmă", led to the same refusal.
+- A firm outside the place picked has a count of 0 and no records. The
+  list waits for the count, known and not 0, before it asks or shows rows
+  (the server's or the cache's included); a count that failed or
+  abstained shows no list, so a firm's records elsewhere never pass for
+  the place's (`firmPlaceGate`; Codex's review).
+- The place alone is still refused, now with „Vezi firmele", the firms of
+  that place, each a way to its records.
+- The rest is the server's: the list's firm-place filters served without
+  the search engine (from the analysis rows, as the amendments' buyer place
+  already is), or the engine run; then the refusal goes and the list is
+  the count's.
+
+### 18.15 The years in a band of their own (29 September 2026)
+
+The owner, on the years strip under the answer: polish it, „maybe add it in
+its own section, add tooltip". The strip (`CleanYears`, 56 px of unlabelled
+bars) is replaced by `YearsBand` (`analytics.years.tsx`), a band after the
+answer's, before the source line:
+
+- **Its head** on the grid: the span („2019–2026") as the kicker, „Pe ani",
+  and the page's measure toggle (Număr / Lei; none for frameworks), which
+  sets `masura` for the whole page.
+- **A bar a year with its figure on it**, in one unit said once above
+  („MLD. LEI, FĂRĂ TVA", „MII DE CONTRACTE ATRIBUITE"), so the bars read
+  without pointing. The years the page's window covers are solid, the rest
+  light. A year the data does not finish is dashed and says „până în mai"
+  under its label. So is a year whose sources mix, e.g. contracts from 2026.
+- **The tooltip**, on pointing or focus, gives the year's count, its lei
+  („fără TVA" or „provizoriu"), the change on the year before (only for
+  whole years of a population that compares), the kind-split note for mixed
+  years, and what a click does („Clic: doar 2024", or „Anul ales"). It sits
+  beside the column, at the top of the plot, and never covers its bar.
+- **A click takes the year** as the page's period. On a touch screen the
+  first tap shows the tooltip and the second takes the year.
+- Not shown when the answer is itself by year.
+
+The prototype's wrapper now clips its horizontal overflow (`overflow-x-clip`),
+as the profile pages' wrappers do. The crux marks overhang the frame by
+6 px, which scrolled a phone sideways.
+
+Then (the owner): „When I click Număr / Lei it jumps to the top of the page."
+The router resets the scroll on every navigation, and every change of
+question is one. `useAnalyticsQuery`'s move now keeps the scroll
+(`resetScroll: false`): the measure, a year, a tab, a filter or a drill all
+change the answer in place.
+
+### 18.16 Promoted to `/procurement/analytics` (29 September 2026)
+
+The owner: „We have a good prototype … go ahead with the implementation."
+The `propozitie` page is the real page at `/procurement/analytics`. The
+prototype stays at `/development/procurement/analytics` as the record of the
+design.
+
+- **Where the code lives.** It follows the profile pages' split:
+  - `lib/analytics-model.ts` (the query, its address), `analytics-text.ts`,
+    `analytics-questions.ts`, `analytics-keys.ts` (query keys) and
+    `analytics-legacy.ts` (the explorer's addresses);
+  - `api/procurement-analytics-api.ts` (the reads, and the plan that names
+    them) and `api/procurement-analytics-ssr.ts` (the server's reads);
+  - `hooks/use-procurement-analytics.ts`;
+  - `components/analytics/`: the page, head, answer, years, filters and
+    controls, with the pure helpers in `analytics-view.ts`.
+- **Read on the server.** The route's loader reads the cutoff, then the
+  question's reads side by side: the figures, the concentration, the
+  ranking, the series or the records' first page, the years, and the names.
+  Each read has a 3-second deadline and is kept ten minutes per question.
+  The reads seed the page's queries under the keys the browser plans
+  (`planAnswer`), so the document carries the answer and the browser reads
+  nothing more on load. A read past its deadline is left to the browser,
+  and that render goes out `no-store`. A slow list is better read under the
+  painted page than held against the whole document.
+- **A clean address.** The router quotes a string that parses as JSON
+  (`perioada=%222024%22`), so a digits-only value travels as a number:
+  `perioada=2024`, `cumparator=4305857`. A CPV code with a leading zero stays
+  a string, which is not JSON and so stays bare.
+- **The site's own keys stay.** A change of question rewrites only the
+  page's keys; `lang`, the currency and any other key ride along
+  (`siteSearchOf`). Until 1 October 2026 it replaced the whole address: a
+  reader on `?lang=en` without a saved language was switched to Romanian
+  by the first filter (found by the ONG registry's review). The explorer's
+  keys are dropped as well: a stray `page=2` kept beside the page's
+  defaults would read as an explorer link and redirect (Codex's review).
+- **The explorer's addresses** (`/procurement/search`, the old
+  `/procurement/analytics`, `/procurement?view=…`, `/achizitii/cautare`)
+  redirect with the same question in this page's words:
+  - the grain and the record kind give the population (the explorer's
+    default was the contracts);
+  - the list gives the records, a ranking its axis;
+  - it keeps the parties, the category at its level, the places, the
+    period (a year, or two days' months), the title's words and the value
+    range.
+  - What the page has no filter for stays behind: the status, the value's
+    quality, the source, the value basis, the map, the order and the page.
+  - The redirect is permanent and carries the site's own keys (the
+    language, the currency).
+- **The links into it.** The profile pages, the front door (the shortcuts,
+  the county map, the three ways in), the contract and direct-purchase pages'
+  pair links, the category page, the procedure breadcrumb, the methodology
+  page, the entity page and the authority slice now write this page's
+  address. A profile's county row opens by firm, the institution's own
+  default, not by records: a list cannot filter on the firm's place.
+- **In both languages.** The page's 256 strings have English in `en` and
+  their own words in `ro` (an empty `ro` renders the English).
+
+The old explorer's components (the overview with the buyer map, the list,
+the rankings) are unreachable now and still in the tree. Deleting them, and
+the map with them, is the owner's call.
+
+**Review** (Opus 5.5, xhigh), with its fixes:
+
+- **The pair links.** The contract and direct-purchase pages said „Toate
+  cele N dintre ele", but N counts every record kind and status, with no
+  upper month. The list the link opens is one population, three statuses,
+  and stops at the cutoff. The links now open the sheet's own population
+  (awards, or frameworks) and say „Toate contractele / acordurile-cadru /
+  achizițiile dintre ele", with no count.
+- **A value the page cannot read is kept.** A link or a redirect used to
+  drop such a value (a foreign fiscal code for a firm, a month before 2007),
+  so the page answered wider in silence. `linkSearchOf` keeps it as it came,
+  and the page's ⚠ says it could not use it.
+- **Explorer detection.** One stray explorer key (`page=2`) on the page's
+  own address rebuilt the question from the explorer's keys, with a 301. An
+  address with any of the page's own keys is now answered as it is.
+- **The legacy mapping.** `period=all` is every year. The legacy
+  `county`/`region`, which the explorer read and ignored, stay behind.
+  `vbasis=ceiling` is the framework agreements.
+- **The server read.** It has one 3.5-second budget for all its reads,
+  where it had a deadline per read, sequential stages that could reach about
+  11 s, and a counties read with no deadline at all. The records' first page
+  no longer decides whether a render may be kept: a wide list is often
+  slower than the budget.
+- **The year of the keys.** The server's year goes to the browser, so its
+  keys hold around a new year.
+- **Smaller fixes:**
+  - the category page's „all records" link runs every year;
+  - the procedure breadcrumb no longer links to a list that is gone;
+  - the multi-year ready questions run to the current year's end;
+  - the records' „Data" header uses the `day` context;
+  - the share link no longer carries the prototype's parameters.
+- **Left as is.** A seeded query counts as fresh when it mounts, even when
+  Back returns to a server-rendered question later. The data changes daily
+  at most, and the front door makes the same choice.
+- **Not this change's.** Server rendering with the shared Lingui instance
+  can mix languages under concurrent requests. `head` is protected; the
+  body is not, on every page with a blocking loader.
+
+**Second review** (Codex `gpt-6.1-sol`, xhigh, 30 September 2026). It found
+no mismatch between the server's and the browser's keys across 178
+questions, no redirect loop, and the cache headers right. It found eight
+defects, fixed in a follow-up commit:
+
+- **The CPV names.** The client's short list named division 80 security
+  and 85 education; CPV has 80 education and 85 health and social work.
+  The list is corrected; it serves the nine divisions it names, the API's
+  names serve the rest, and every name is in the page's language (the
+  divisions' read keeps both).
+- **The explorer's defaults.** A link that named no period meant the
+  previous calendar year (`resolveProcurementOverviewPeriod`), with
+  `period=all` read first. A ranking without `rankBy` was by value, so it
+  stays by value where the population has one.
+- **A withheld count.** A count the API withholds (`recordCount: null`,
+  abstained) is unknown, not zero: its figure is left out and the ⚠ marker
+  says why.
+- **The value field.** It shows a value the way it reads one, with a comma
+  for decimals, so leaving it unchanged changes nothing.
+- **A half-read range.** A range with one end the page cannot read
+  (`1000..oops`) is reported, and the end it can read is kept.
+- **The average.** The average is over the records that have a value.
+
+### 18.17 The explorer deleted (30 September 2026)
+
+The owner, asked whether to delete the old explorer now that nothing reached
+it: „yes, delete".
+
+- **What went.** The overview with the buyer map, the record list and the
+  rankings, and their filter sheets, shell, tab bar, search dock, pagination,
+  value-basis notices and territory drawer (41 modules, with their tests).
+  So did what only they used:
+  - the analysis and leaderboard reads;
+  - the landing read and its mappers;
+  - the explorer's hooks in `use-procurement-data.ts`;
+  - its skeletons, labels and theme classes;
+  - the URL cleaner, the value-basis plans and the territory scopes in
+    `schemas/procurement-hub.ts`.
+
+  The explorer's own tests went with its code. Where a removed test also
+  covered live code, its cases moved to a live reader:
+  - `mapLanding`'s cases (the awarded-value sum, null when either block
+    abstains; names in ranking rows; the served ranking basis) now go
+    through `mapAuthoritySlice`;
+  - the batched party names through `fetchCpvCategoryPageLive`;
+  - the money-order request through the institution slice;
+  - the explorer parser's defaults, which the redirects read, have their
+    own test.
+- **What stays.**
+  - The explorer's URL parser (`parseProcurementHubSearch`), which the
+    redirects read old links with.
+  - The shared pieces the category page, the entity page's authority slice,
+    the detail pages and the company profile still use.
+  - The record search (`useProcurementSearch`), the ranking cards and the
+    monthly chart.
+- **Found no longer anywhere.** The buyer map (the region, county and
+  locality choropleth, with its territory drawer), the full-text search over
+  every record field, and the status, value-quality, source and review-signal
+  filters. The front door's county map (`HomeCountiesBand`) is a different
+  map and stays.
+- **Unlinked.** The value-model methodology page (`/achizitii/metodologie`)
+  is still served, but no page links to it any more: its links were in the
+  explorer's filter sheet, info sheet and value-basis notice. Its text
+  describes the maps, the panel under them and the five value logics the
+  explorer offered. Whether to link it from the analytics page's caveats,
+  rewrite it, or retire it is open.
+- **Reviewed** by Opus 5.5 (xhigh) and Codex `gpt-6.1-sol` (xhigh). Nothing
+  live depended on what went. Their findings are fixed:
+  - lost test coverage, moved to live readers as above;
+  - the scope scrubber's type, which leaned on a removed builder and now
+    has its own;
+  - helpers kept alive only by their own tests: the explorer's
+    state-to-query builders, the capability registry, the list-capability
+    drops;
+  - comments describing the removed views.
+- **The catalogs.** The explorer's 296 strings are marked obsolete by
+  `lingui extract`, as the project keeps obsolete entries. A
+  `yarn i18n:clean` would drop them, along with the 762 already obsolete.
+
+### 18.18 The filters sheet, regrouped (30 September 2026)
+
+The owner asked for a Fable design session on the „Filtre" sheet: an
+improvement, not a rewrite. It should be better grouped, simpler, and handle
+region, county and UAT in one easy picker. Fable prototyped it at
+`/development/procurement/analytics-filters-fable` (`actual` beside
+`grupat`) over four rounds of the owner's feedback. Claude then took over,
+fitted it to a phone and promoted it. Rationale, rejected options and every
+decision: `src/development/prototypes/procurement/analytics-filters-fable/RATIONALE.md`.
+
+- **Five groups instead of ten sections:** Înregistrări, Perioada, Cine
+  cumpără (institution, its place), Cine vinde (firm, its place), Ce cumpără
+  (category, procedure, title, value). Each row has a label and one control.
+  A value that is set is a chip with its own ✕; the per-section „Șterge"
+  links are gone, and the sheet's header counts the filters.
+- **One place picker per party**
+  (`components/analytics/analytics-place-field.tsx`, index in
+  `lib/analytics-places.ts`).
+  - One field searches the regions, the counties (by name or code) and the
+    3,186 UATs. It matches with or without diacritics, and cedilla or comma
+    forms alike.
+  - Before a word is typed it browses: region → the region's counties → the
+    county's ten largest localities.
+  - The pick is its path, each name with its kind: „Reg. Centru › Jud. Sibiu
+    › Municipiul Sibiu". A locality carries its official kind (Municipiul,
+    Orașul, Comuna, Sectorul). București at the county level is „Municipiul
+    București".
+  - Lists under a level's head drop the prefix, because the head names the
+    level.
+  - A county's own code (the county council) is offered in no list; a link
+    that carries it still reads as a chip.
+- **Years and months.** The four recent years are shown, the rest behind
+  „Arată mai multe"; a picked older year keeps them open. Months are picked
+  from a Romanian month grid („iun. 2025") instead of the browser's own
+  month input, which read in English. The grid opens on the picked month's
+  year.
+- **No small controls.** Everything is 44 px on a phone and 40 px from
+  `sm`, including the sheet's close (a new `closeClassName` on
+  `SheetContent`, its ring for the keyboard only).
+- **The keyboard.** Every search is a combobox (`use-active-option.ts`):
+  - the arrows walk the rows, the region and county grids included;
+  - Enter picks the active row, or the first when none is active;
+  - Space, Home and End stay the text's. The site's
+    `useListKeyboardNavigation` takes Space as a pick, which would break
+    „sector 3".
+- **Loading, failed, empty in words.** Each list that waits on a read says
+  so („Se caută…", „Se încarcă localitățile…"). A failure says so with
+  „Încearcă din nou", and a search that finds nothing says „Nimic pentru …".
+  A failed map file leaves the regions and counties working.
+- **On a phone** a focused search moves to the top of the sheet, with room
+  below it so its list sits above the keyboard. Measured before the fix: the
+  firm's field could scroll only 207 px of the 535 it needed.
+- **Reads.**
+  - `useCpvSearch` now waits for the typing to pause (250 ms, as the site's
+    search does), keeps its last answer while the next is read, and says
+    when its answer is settled.
+  - `useSearchResults` exposes `retry`.
+  - `useLocalities` builds its map once per read of the files. It used to
+    build it on every render, which gave the page's namer a new identity
+    each time.
+- **Unchanged:** the URL model and grouping after a pick (the owner kept
+  the current behaviour). The map's 3 MB UAT file is still what names
+  localities; a `referenceLocalities` read from the API would replace it
+  (§18.6).
+- **Reviewed** by Codex `gpt-6.1-sol` (xhigh; three defects) and Opus 5.5
+  (xhigh; ten defects, no blockers). All are fixed:
+  - **Categories.** The last term's categories could be picked for the
+    new one: in the quick filter by cmdk's highlight, in the sheet by Enter.
+    They now show only when settled; the sheet shows them dimmed and
+    disabled while it reads.
+  - **Institution and firm.** Each field asks for its own families (a
+    buyer is an institution or a state company, a seller a firm). Stale
+    results no longer read as „Nimic pentru …", and Enter never picks the
+    last term's first hit.
+  - **Focus.** A pick or a ✕ that removes the focused control no longer
+    drops the focus to the top of the sheet: `Row` takes it to the row's
+    chip or field. The phone lift and the place list's open state go with
+    the field they belonged to.
+  - **Enter on an empty place field** picked the first region; with
+    nothing typed it now picks nothing.
+  - **County codes.** A county's code typed whole („IS", „NT") answers
+    first; matching inside a name needs three letters.
+  - **Tab** no longer walks the options: the field is the way in.
+  - **Escape** in an open search closes its list, not the sheet with what
+    was typed.
+  - **A picked older year** shows beside the recent ones, and the toggle
+    works.
+  - **Months.** They go back to SEAP's first, `2007-01`, the model's own
+    bound.
+  - **Without the API.** If its regions and counties fail, a search still
+    finds localities and says the failure beside them.
+  - **Screen readers.** Loading and „nothing found" are announced through
+    an always-present live region, a failure as an alert. Options sit in
+    named groups, and each month button names its month and year.
+- **Verified** by both reviewers after the fixes; the loose ends they found
+  are fixed too:
+  - Escape in a place field closes its list and keeps the focus; the field
+    reads as expanded whenever anything shows under it.
+  - The highlight belongs to an option, not a position, so a late read
+    shifting the list keeps it on the same place.
+  - An institution or firm row from the previous term is dimmed and cannot
+    be picked.
+  - A search waits for the regions and counties before it says „Nimic
+    pentru …".
+  - The value pair's hidden submit is out of the Tab order.
+- **Shared with the NGO registry** (1 October 2026). The parts that are
+  not procurement's are in `src/components/filters/filter-sheet/`, so the
+  NGO registry's panel imports them instead of keeping a copy:
+  `filter-sheet-parts.tsx` (Group, Row, Chip, Options, OptionGroup,
+  Notice, Announce, the control classes, the close's `SHEET_CLOSE`),
+  `use-active-option.ts` and `filter-sheet-focus.ts` (`afterFocusMoves`,
+  `keepEscapeForOpenList`). The place index stays procurement's.
+- **Found later by the ONG registry's review** (1 October 2026), on the
+  same parts:
+  - A blur that removed nodes lost the focus. The place's list closing,
+    and a title or value becoming its chip, happened before the focus
+    landed. Radix's focus scope then took the focus to the sheet, which
+    cancelled a Tab or a tap on the next field. What the screen swaps now
+    waits until the focus has landed (`afterFocusMoves`); the change to
+    the question does not. Codex's review of the fix: a title or value
+    applied later overwrote a tap made in between (on a phone the tap's
+    click comes before the timer), restoring cleared filters. It is
+    applied at once, and only its chip waits.
+  - A list long enough to scroll was its own Tab stop in Chrome, unnamed,
+    and Escape there closed the sheet. Its box is now out of the Tab
+    order.
+- **Fields named by their row** (the owner, 1 October 2026). A field's
+  name starts with the label beside it, as voice control reads it:
+  „Instituția", „Firma", „Locul instituției", „Locul firmei",
+  „Categoria", „Valoarea de la, lei" (in English „Institution",
+  „Location of the firm", „Value from, lei"…). They were „Caută o
+  instituție" and the like, which a reader saying the label could not
+  reach.
+- **Reviewed again** (1 October 2026) by Opus 5.5 and Codex
+  `gpt-6.1-sol` (xhigh), over the focus, `?lang=`, firm-place, shared
+  parts and names commits. Besides the three Codex fixes recorded above
+  (§18.14, §18.16 and the focus bullet):
+  - On a phone, a tap from an open place list to the next search left
+    that search off the top of the sheet by the list's height: the lift
+    scrolled before the list closed. The list now closes at once once the
+    focus has landed, and the lift scrolls after it (0 px, measured).
+  - „Vezi firmele" removed itself with the focus on it; the focus goes to
+    the „Firmă" tab.
+  - The server no longer reads a firm-in-place list it would not show.
+  - Integration tests: a title typed, then a click elsewhere (neither
+    undoes the other); a phone tap from an open place list.
+  - Left: `Row`'s label is a plain span, so each field repeats it in its
+    own name; a label id from `Row` would make that hold by construction.
+
+## 19. The category page folded into the analytics page (1 October 2026)
+
+The owner asked whether the old CPV category page
+(`/procurement/categories/$code`) should become part of the analytics page.
+It did: the page and its route are gone, its addresses redirect.
+
+**What the old page had** (last reworked in August): the category's name
+(an 8-digit code showed its division's), four all-time tiles (direct
+purchases, contracts, procedures, and one lei total that added contract
+money to direct-purchase money), a toggle between the two, a monthly chart,
+the top 10 institutions and firms by count, „related categories" (the
+divisions sharing the first digit: 45 listed 41–44 and 48, not related),
+and a link to the analytics page for the records. Divisions and 8-digit
+codes only.
+
+**What a category is worth to a reader, and where the analytics page
+answers it:**
+
+| The question | The analytics page with `?cpv=…` |
+|---|---|
+| How much, and is it growing? | The figures against the period before; the years band |
+| Who sells it — is the market held by a few? | „Firmă", and the top-5 share among the figures |
+| Who buys it, and where? | „Instituție", „Unde cumpără" (per resident by county) |
+| How is it bought? | „Procedură" (contracts); the population tabs |
+| What is inside it? | „Categorie", one level down, at every CPV level |
+| The largest records | The records tab, each opening its page |
+
+Only the procedures' count is not carried over (procedures are their own
+page, still to migrate).
+
+**Decided with the owner:**
+
+- **Folded in.** `/procurement/categories/$code` and `/achizitii/cpv/$code`
+  redirect (301) to `/procurement/analytics?cpv=$code`, the site's keys
+  (`lang`) kept and the explorer's dropped (`categoryRedirectSearch`); a
+  code that is no CPV code is a 404. The entity page's category bars
+  (`procurement-authority-slice`) open the analytics page for that
+  institution and division, in the slice's population and months.
+- **A category opens on what is inside it**, as before: a division or a
+  group on the next level, a code on its firms. Picking a category, a step
+  of its path, or its ✕ takes a grouping the reader did not choose with
+  it (`withCategory`, as a title's does); one the reader chose stays.
+- **Search engines.** A category alone (any population, every other key
+  the page's default) is a landing: its own title („Produse farmaceutice
+  (CPV 336): achiziții directe — Transparenta.eu"), description and
+  canonical address (`?cpv=336`, `?tip=contracte&cpv=336`), named by the
+  division's short name or the API's (`analytics-head.ts`). The bare page
+  stays as it was. Any other question is a reader's own: `noindex,
+  follow`, and no canonical link — with noindex, a canonical pointing
+  elsewhere would contradict it. In the browser the tab says the question
+  (its headline).
+- **The populations' counts** on their tabs: each the figures read its
+  tab opens on, for the question's filters (`usePopulationCounts`; the
+  server reads them too), so a click on a tab is answered at once. This
+  is what the old tiles gave, without adding two kinds of money.
+- **The category's path** over the headline: „CPV 33 › 336 › 33600000",
+  each parent a step back up, its name for a screen reader and on hover;
+  codes, not names, so it fits a phone (each step 44 px tall there).
+- **Reader categories** wait for the API's set filters (§18.6, item 1).
+
+**Measured on the dev server:** the redirects answer 301 (`abc` 404); a
+landing's head has its title, description and canonical, a combination
+`noindex`; the tabs read 13.446 · 1.889 · 6.145 for `33600000`; a step up
+from `33600000` to `33` opens on its groups. On a phone the tab bar grows
+to 70 px: the names already take two lines, the count a third.
+
+**Reviewed** by Opus 5.5 and Codex `gpt-6.1-sol` (xhigh); no blockers.
+Fixed:
+
+- **A landing's name, whatever address came first.** The server keeps one
+  read per question, and a landing's address shares it with addresses that
+  are not landings (`?cpv=X&dupa=<its default>`); read first, they left the
+  landing unnamed for ten minutes. The name now comes from the category
+  filter itself.
+- **No soft 404s.** A well-formed code that names no category (`99`,
+  `39210000`) is no landing: `noindex`, no canonical. `/achizitii/cpv/$code`
+  checks the code as `/procurement/categories/$code` does; both accept an
+  8-digit code's check digit (`45000000-7`) and drop it (`cpvCodeParam`).
+- **A page key the router parsed as something else** (`cpv=true`, a
+  repeated `cpv`) stays as text, for the page to say it could not read it,
+  instead of vanishing into a bare page or a landing the index would take.
+- **The browser tab's title** is the page's own on the bare page, and is
+  put back after a client navigation that set the head's title again with
+  the same text (`useClientDocumentTitle` checks after every render).
+- **The counts keep the page's trust rules.** A population that would drop
+  one of the question's filters (a procedure on direct purchases) shows no
+  count: it would answer a wider question under this one's headline. Where
+  a population's months run past the record kinds' split, its count is
+  marked „*" with its own page's warning (for a screen reader too), and
+  every count names its months on hover — each population counts its own.
+  What was read stands though a later read failed. The slot keeps one
+  height, so the bar does not move. Below 768 px the count sits under the
+  name: beside it, three counts overflowed a 640 px screen.
+- **The server's reads.** The names start once the answer is in, the other
+  populations' counts going on beside them (a slow count must not spend
+  the names' budget); a failed count makes the render partial, not kept.
+- **The path** is named by the page's own read (`nameKeys` takes the
+  category's steps, so the server reads them too); its steps are 24 px from
+  a small screen up, and the current step's name is said to a screen
+  reader.
+- `og:url` is left out where the page is not indexed; the supplier slice's
+  buyer names are tested again through the identity spine.
+
+Left as they are: an 8-digit generic code and its group share the API's
+name („Produse farmaceutice" for `336` and `33600000`); some divisions'
+short labels, now in titles, are narrower than the division (90,
+„Servicii de curățenie"); with an institution picked a category stays on
+firms while a click on a category row goes one level down.
+

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
@@ -107,17 +107,18 @@ describe('ProcurementHomePage', () => {
     expect(html).toContain('date până în mai 2026')
   })
 
-  it('numbers the bands in the owner’s order: the procedures after the years', () => {
+  it('numbers the bands in the owner’s order: the map first, the procedures after the years', () => {
     render(page())
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     expect(within(bar).getAllByRole('link').map((link) => link.textContent)).toEqual([
-      '01Ce se cumpără',
-      '02Cine vinde',
-      '03Pe județe',
+      '01Pe județe',
+      '02Ce se cumpără',
+      '03Cine vinde',
       '04În timp',
       '05Cum se cumpără',
       '06Cele mai noi',
     ])
+    expect(screen.getByText('01 / Pe județe')).toBeInTheDocument()
     expect(screen.getByText('04 / În timp')).toBeInTheDocument()
     expect(screen.getByText('05 / Cum se cumpără')).toBeInTheDocument()
   })
@@ -134,7 +135,8 @@ describe('ProcurementHomePage', () => {
     expect(navigatedSearch()).toEqual({ bani: 'directe' })
 
     render(page({ bani: 'directe' }))
-    fireEvent.click(screen.getAllByRole('radio', { name: 'Contracte' })[1]!)
+    // The hero's toggle, the map's, then the categories'.
+    fireEvent.click(screen.getAllByRole('radio', { name: 'Contracte' })[2]!)
     expect(navigatedSearch({ bani: 'directe' })).toEqual({ bani: undefined })
   })
 
@@ -143,10 +145,35 @@ describe('ProcurementHomePage', () => {
     expect(screen.getByRole('link', { name: /Selgros Cash & Carry SRL/ }).getAttribute('href')).toBe('/procurement/suppliers/11805367')
   })
 
-  it('mounts on skeletons when a client-side navigation has nothing read yet', () => {
+  it('names the five largest buyers, and the next five on request', async () => {
+    const buyers = Array.from({ length: 7 }, (_, index) => ({
+      key: String(1000 + index),
+      label: `Instituția ${index + 1}`,
+      count: 100 - index,
+      value: 1_000_000 * (7 - index),
+      share: null,
+    }))
+    const national = nationalRead({ buyers: { contract: nationalRead().buyers.contract, direct: { rankedBy: 'value', rows: buyers } } })
+    render(page({}, { ...INITIAL, national }))
+    const panel = screen.getByRole('region', { name: /Cine cumpără cel mai mult/ })
+    expect(within(panel).getAllByRole('link')).toHaveLength(5)
+    // A key press (`detail` 0) takes focus to the first buyer the button added.
+    fireEvent.click(within(panel).getByRole('button', { name: 'Arată mai multe' }), { detail: 0 })
+    expect(within(panel).getAllByRole('link')).toHaveLength(7)
+    await waitFor(() => expect(document.activeElement).toBe(within(panel).getAllByRole('link')[5]))
+    expect(within(panel).getByRole('button', { name: 'Arată mai puține' }).getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('mounts on the page’s own words when a client-side navigation has nothing read yet', () => {
     const html = renderToStaticMarkup(page({}, { year: 2025 }))
     expect(html).toContain('Ce cumpără statul')
-    expect(html).not.toContain('Contracte atribuite, 2025')
+    // What the page knows before its reads: the figures' terms, every band's head.
+    expect(html).toContain('Contracte atribuite, 2025')
+    expect(html).toContain('Cât cumpără județul tău')
+    expect(html).toContain('Contractele atribuite în 2025, după procedură')
+    // Not the figures themselves.
+    expect(html).not.toContain('Și 88.105 acorduri-cadru')
+    expect(html).not.toContain('date până în')
     expect(html).toContain('aria-busy="true"')
   })
 })

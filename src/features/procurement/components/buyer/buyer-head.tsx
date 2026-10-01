@@ -144,11 +144,11 @@ export function BuyerHead({
                   <ArrowUpRight className="size-3.5" aria-hidden="true" />
                 </Link>
               ) : null}
-              <Link to="/procurement/search" search={buyerAllRecordsSearch(identity.cui, 'direct')} className={OUT_LINK}>
+              <Link to="/procurement/analytics" search={buyerAllRecordsSearch(identity.cui, 'direct')} className={OUT_LINK}>
                 <Trans>Toate achizițiile directe</Trans>
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
               </Link>
-              <Link to="/procurement/search" search={buyerAllRecordsSearch(identity.cui, 'contract')} className={OUT_LINK}>
+              <Link to="/procurement/analytics" search={buyerAllRecordsSearch(identity.cui, 'contract')} className={OUT_LINK}>
                 <Trans>Toate contractele</Trans>
                 <ArrowUpRight className="size-3.5" aria-hidden="true" />
               </Link>

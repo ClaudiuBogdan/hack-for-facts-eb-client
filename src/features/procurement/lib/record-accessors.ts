@@ -54,10 +54,6 @@ export function recordNumberLabel(
   }
 }
 
-export function recordAuthority(record: ProcurementRecordSummary): Party {
-  return record.authority
-}
-
 export function recordSupplier(
   record: ProcurementRecordSummary,
 ): Party | null {
@@ -142,18 +138,6 @@ export function recordStatus(
   record: ProcurementRecordSummary,
 ): ProcurementStatus | null {
   return 'status' in record ? record.status : null
-}
-
-export function recordSourceSystem(
-  record: ProcurementRecordSummary,
-): string | null {
-  return 'sourceSystem' in record ? record.sourceSystem : null
-}
-
-export function recordSourceUrl(
-  record: ProcurementRecordSummary,
-): string | null {
-  return 'sourceUrl' in record ? record.sourceUrl : null
 }
 
 /** UI search grain (plural route vocabulary) for a record union member. */

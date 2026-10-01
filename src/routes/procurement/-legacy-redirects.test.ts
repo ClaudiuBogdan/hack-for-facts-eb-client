@@ -6,9 +6,12 @@ const redirectMock = vi.fn((options: Record<string, unknown>) => ({
   options,
 }))
 
+const notFoundError = new Error('not-found')
+
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
   redirect: redirectMock,
+  notFound: () => notFoundError,
 }))
 
 async function importLegacyRoute(path: string) {
@@ -66,6 +69,9 @@ async function importLegacyRoute(path: string) {
   }
 }
 
+// The explorer's own default when a link named no period: the previous calendar year.
+const LAST_YEAR = new Date().getFullYear() - 1
+
 describe('legacy achizitii redirects', () => {
   beforeEach(() => {
     vi.resetModules()
@@ -73,10 +79,22 @@ describe('legacy achizitii redirects', () => {
     redirectMock.mockClear()
   })
 
+  it('answers the old category alias with a 404 for a code that is no CPV code, and drops a check digit', async () => {
+    const route = (await importLegacyRoute('category')) as unknown as { readonly params: { readonly parse: (params: { readonly code: string }) => { readonly code: string } } }
+    for (const code of ['abc', '45 33', '45,33']) expect(() => route.params.parse({ code })).toThrow(notFoundError)
+    expect(route.params.parse({ code: '45000000-7' })).toEqual({ code: '45000000' })
+  })
+
+  it('sends the old category alias straight to the analytics page, its category the filter, the site keys kept', async () => {
+    const route = await importLegacyRoute('category')
+    expect(() => route.beforeLoad({ params: { code: '45' }, search: { lang: 'en', q: 'spital', page: 2 } } as never)).toThrow()
+    // The explorer's keys stay behind: beside the page's defaults they would read as an explorer link.
+    expect(redirectMock).toHaveBeenCalledWith({ to: '/procurement/analytics', search: { lang: 'en', cpv: 45 }, replace: true, statusCode: 301 })
+  })
+
   it.each([
     ['index', '/procurement', undefined],
-    ['search', '/procurement/search', undefined],
-    ['category', '/procurement/categories/$code', { code: '45' }],
+    ['search', '/procurement/analytics', undefined],
     ['contract', '/procurement/contracts/$id', { id: 'contract-key-001' }],
     ['procedure', '/procurement/procedures/$id', { id: 'proc-001' }],
     [
@@ -95,6 +113,7 @@ describe('legacy achizitii redirects', () => {
         route.beforeLoad({
           params: params ?? {},
           search,
+          location: { search },
         } as never)
       } catch (error) {
         thrown = error
@@ -103,10 +122,8 @@ describe('legacy achizitii redirects', () => {
       expect(redirectMock).toHaveBeenCalledWith({
         to: expectedTo,
         ...(params ? { params } : {}),
-        search:
-          legacyRoute === 'search'
-            ? expect.objectContaining({ view: 'list', q: 'spital', page: 2 })
-            : search,
+        // The explorer's list is the analytics page's records: the title's words open on them, the page number stays behind.
+        search: legacyRoute === 'search' ? { tip: 'contracte', perioada: LAST_YEAR, titlu: 'spital' } : search,
         replace: true,
         statusCode: 301,
       })
@@ -115,10 +132,7 @@ describe('legacy achizitii redirects', () => {
         options: {
           to: expectedTo,
           ...(params ? { params } : {}),
-          search:
-            legacyRoute === 'search'
-              ? expect.objectContaining({ view: 'list', q: 'spital', page: 2 })
-              : search,
+          search: legacyRoute === 'search' ? { tip: 'contracte', perioada: LAST_YEAR, titlu: 'spital' } : search,
           replace: true,
           statusCode: 301,
         },

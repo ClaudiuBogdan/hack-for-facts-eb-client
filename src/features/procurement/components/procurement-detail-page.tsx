@@ -59,13 +59,8 @@ export function ProcurementDetailPage({ grain, detail, className }: Props) {
           <Trans>Public procurement</Trans>
         </Link>
         <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-        <Link
-          to="/procurement/search"
-          search={{ view: 'list', grain: config.grain }}
-          className="underline underline-offset-2 hover:text-[var(--pnrr-fg)]"
-        >
-          {config.pageLabel()}
-        </Link>
+        {/* The procedures' own list went with the explorer: the crumb names where the record sits, and links nowhere. */}
+        <span>{config.pageLabel()}</span>
         <ChevronRight className="h-3.5 w-3.5" aria-hidden />
         <span className="text-[var(--pnrr-fg)]">{record.id}</span>
       </nav>

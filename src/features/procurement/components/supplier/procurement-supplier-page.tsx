@@ -79,7 +79,7 @@ function supplierFacts(profile: SupplierProfile): HubFact[] {
   const { cui, period } = profile
   const year = periodText(period)
   const records = (grain: 'direct' | 'contract') => (label: ReactNode, className: string) => (
-    <Link to="/procurement/search" search={supplierRecordsSearch(cui, period, grain)} className={className}>
+    <Link to="/procurement/analytics" search={supplierRecordsSearch(cui, period, grain)} className={className}>
       {label}
     </Link>
   )

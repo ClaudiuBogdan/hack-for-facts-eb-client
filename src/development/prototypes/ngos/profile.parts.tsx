@@ -579,7 +579,7 @@ export function RegistryFacts({ profile }: { readonly profile: RawProfile }) {
             {record.nameWithheld ? <Trans>Nume nepublicat</Trans> : record.name}
           </Fact>
         ))}
-        <Fact term={<Trans>Număr</Trans>}>{profile.registryNumber ?? '—'}</Fact>
+        <Fact term={<Trans context="număr de registru">Număr</Trans>}>{profile.registryNumber ?? '—'}</Fact>
         <Fact term={<Trans>Stare</Trans>}>{statusLabel(statusOf(profile))}</Fact>
         <Fact term={<Trans>Forma</Trans>}>{categoryLabel(profile.category)}</Fact>
         <Fact term={<Trans>Legătura cu CUI-ul</Trans>}>

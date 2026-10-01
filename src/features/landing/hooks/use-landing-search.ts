@@ -67,7 +67,7 @@ export function useSearchResults({
   // families the field started with, and a field with a fixed scope offers no
   // chips at all.
   const scopeKey = docTypes.join(',')
-  const { data, error, isError, isFetching, isPlaceholderData, isSuccess } = useQuery({
+  const { data, error, isError, isFetching, isPlaceholderData, isSuccess, refetch } = useQuery({
     queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters],
     queryFn: async ({ signal }) => {
       const response = await searchEntitiesLive({
@@ -144,7 +144,10 @@ export function useSearchResults({
     })
   }, [isCurrent, normalized, results, filters])
 
-  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent }
+  /** A failed search asked again, as it stands. */
+  const retry = useCallback(() => void refetch(), [refetch])
+
+  return { term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent, retry }
 }
 
 export function useEntitySelection({

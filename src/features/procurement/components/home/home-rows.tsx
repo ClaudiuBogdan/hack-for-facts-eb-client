@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import type { CategoryFigure } from '../../lib/home-categories'
 import { countText, dayText, firmsCount, moneyText, percentText, unitCount } from '../../lib/home-format'
 import type { HomeGrain, RankedRow, Ranking, RecentRecord } from '../../lib/home-model'
+import { Bone } from './home-chrome'
 
 /**
  * The front door's rows. A row keeps its name on the left with what it
@@ -34,13 +35,16 @@ function Bar({ fraction }: { readonly fraction: number | null }) {
   )
 }
 
+/** The rows a party ranking shows unless told otherwise. */
+export const PARTY_ROWS = 10
+
 /** A party ranking: the value by money where the server ranked by it, the count where it did not. */
 export function PartyRows({
   ranking,
   grain,
   kind,
   year,
-  limit = 10,
+  limit = PARTY_ROWS,
   dense = false,
   className,
 }: {
@@ -91,6 +95,78 @@ export function PartyRows({
           </li>
         )
       })}
+    </ol>
+  )
+}
+
+/**
+ * Rows not read yet, in the shape of the rows that replace them: the same
+ * lines at the same sizes, so the list keeps its height when they land. A
+ * ranking's places are known before its names, so they show.
+ */
+export function PendingRows({
+  shape,
+  rows,
+  dense = false,
+  className,
+}: {
+  readonly shape: 'party' | 'category' | 'record'
+  readonly rows: number
+  readonly dense?: boolean
+  readonly className?: string
+}) {
+  return (
+    <ol className={cn(LIST, className)} aria-hidden="true">
+      {Array.from({ length: rows }, (_, index) => (
+        <li key={index} className={cn(ROW, shape === 'record' ? 'py-3' : dense ? 'py-2' : 'py-2.5')}>
+          {shape === 'party' ? (
+            <span className="grid min-w-0 grid-cols-[1.75rem_minmax(0,1fr)] gap-x-2">
+              <MonoLabel className="pt-0.5 tabular-nums text-muted-foreground/60">{String(index + 1).padStart(2, '0')}</MonoLabel>
+              <span className="min-w-0">
+                <span className="block text-sm">
+                  <Bone className={index % 2 === 0 ? 'w-4/5' : 'w-3/5'} />
+                </span>
+                <span className="mt-1 block h-1 bg-muted" />
+                <MonoLabel className="mt-1 block">
+                  <Bone className="w-32" />
+                </MonoLabel>
+              </span>
+            </span>
+          ) : shape === 'category' ? (
+            <span className="min-w-0">
+              <span className="block text-sm leading-snug">
+                <Bone className={index % 2 === 0 ? 'w-3/4' : 'w-1/2'} />
+              </span>
+              <span className="mt-1 block h-1 bg-muted" />
+              <MonoLabel className="mt-1 block">
+                <Bone className="w-36" />
+              </MonoLabel>
+            </span>
+          ) : (
+            <span className="min-w-0">
+              {/* A published title takes two lines below a wide screen; on it, one in four still does. */}
+              <span className="block text-sm font-medium leading-snug">
+                <Bone className="w-11/12" />
+                <Bone className={cn('w-1/2', index % 4 !== 0 && 'lg:hidden')} />
+              </span>
+              <span className="mt-1 block text-xs">
+                <Bone className="w-2/3" />
+              </span>
+              <span className="mt-0.5 block text-xs">
+                <Bone className="w-1/2" />
+              </span>
+            </span>
+          )}
+          <span className="text-right text-sm">
+            <Bone className="w-20" />
+            {shape === 'record' ? (
+              <MonoLabel className="block">
+                <Bone className="w-14" />
+              </MonoLabel>
+            ) : null}
+          </span>
+        </li>
+      ))}
     </ol>
   )
 }

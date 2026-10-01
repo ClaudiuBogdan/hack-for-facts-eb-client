@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { procurementDataStatus } from '@/schemas/procurement'
 import type { RawProcurementAggregates } from './procurement-queries'
-import { addDecimalStrings, mapLanding } from './procurement-mappers'
+import { addDecimalStrings, mapAuthoritySlice } from './procurement-mappers'
 
 const meta = (
   grain: 'procedure' | 'contract' | 'direct_acquisition',
@@ -73,18 +73,20 @@ function aggregates(
   }
 }
 
+/** An institution's slice (the entity page's contracts view), the live reader of these rules. */
+const slice = (input: RawProcurementAggregates, partyNames?: ReadonlyMap<string, string>) =>
+  mapAuthoritySlice({ authorityCui: '9', aggregates: input, divisions: [], recentRecords: [], partyNames })
+
 describe('unified procurement mapper honesty', () => {
   it('adds decimal strings exactly and excludes procedure estimated value', () => {
-    const landing = mapLanding({ aggregates: aggregates('0.10', '0.20'), divisions: [] })
-    expect(landing.headline.totalValueRon).toBe('0.30')
-    expect(landing.headline.proceduresCount).toBe('7')
-    expect(landing.headline.buyersCount).toBeNull()
-    expect(landing.headline.suppliersCount).toBeNull()
+    const { summary } = slice(aggregates('0.10', '0.20'))
+    expect(summary.totalSpendRon).toBe('0.30')
+    expect(summary.proceduresCount).toBe('7')
   })
 
   it('keeps the total null if either awarded-value block abstains', () => {
-    const landing = mapLanding({ aggregates: aggregates(null, '5.00'), divisions: [] })
-    expect(landing.headline.totalValueRon).toBeNull()
+    expect(slice(aggregates(null, '5.00')).summary.totalSpendRon).toBeNull()
+    expect(addDecimalStrings(null, '5.00')).toBeNull()
   })
 
   it('adds resolved names to authority and supplier ranking rows', () => {
@@ -101,21 +103,20 @@ describe('unified procurement mapper honesty', () => {
     input.authorities[1]!.buckets = [bucket]
     input.suppliers[1]!.buckets = [bucket]
 
-    const landing = mapLanding({
-      aggregates: input,
-      divisions: [],
-      partyNames: new Map([
+    const { analysisByGrain } = slice(
+      input,
+      new Map([
         ['authority:123', 'Public Buyer'],
         ['supplier:123', 'Private Supplier'],
       ]),
-    })
+    )
 
-    expect(landing.analysisByGrain.contract.topAuthorities[0]?.authority).toEqual({
+    expect(analysisByGrain.contract.topAuthorities[0]?.authority).toEqual({
       cui: '123',
       name: 'Public Buyer',
       displayName: null,
     })
-    expect(landing.analysisByGrain.contract.topSuppliers[0]?.supplier?.name).toBe(
+    expect(analysisByGrain.contract.topSuppliers[0]?.supplier?.name).toBe(
       'Private Supplier',
     )
   })
@@ -125,14 +126,10 @@ describe('unified procurement mapper honesty', () => {
     input.authorities[1]!.rankedBy = 'count'
     input.suppliers[2]!.rankedBy = 'value'
 
-    const landing = mapLanding({ aggregates: input, divisions: [] })
+    const { analysisByGrain } = slice(input)
 
-    expect(
-      landing.analysisByGrain.contract.meta.authoritiesRankedBy,
-    ).toBe('count')
-    expect(
-      landing.analysisByGrain.directAcquisition.meta.suppliersRankedBy,
-    ).toBe('value')
+    expect(analysisByGrain.contract.meta.authoritiesRankedBy).toBe('count')
+    expect(analysisByGrain.directAcquisition.meta.suppliersRankedBy).toBe('value')
   })
 
   it('maps server answerability directly to DataStatus', () => {

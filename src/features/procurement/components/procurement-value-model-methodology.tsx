@@ -266,7 +266,7 @@ export function ProcurementValueModelMethodology() {
         </p>
         <p>
           <Link
-            to="/procurement/search"
+            to="/procurement/analytics"
             className="font-bold underline underline-offset-2"
           >
             Înapoi la analiza achizițiilor

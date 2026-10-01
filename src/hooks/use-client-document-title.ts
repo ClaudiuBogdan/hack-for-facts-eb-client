@@ -11,11 +11,15 @@ import { useEffect } from 'react'
  * "Instituție CUI 16054368" forever. Call this once the real name lands.
  *
  * Pass `null` while the name is unknown to leave the router's title alone.
+ *
+ * Checked after every render, not only when the title changes: a client
+ * navigation can have the route's head write its own title back while this
+ * one's text stays the same.
  */
 export function useClientDocumentTitle(title: string | null): void {
   useEffect(() => {
     if (title === null || title.length === 0) return
     if (document.title === title) return
     document.title = title
-  }, [title])
+  })
 }

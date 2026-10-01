@@ -388,7 +388,7 @@ export function SupplierLargestBand({
           ) : (
             <span />
           )}
-          <Link to="/procurement/search" search={supplierRecordsSearch(profile.cui, profile.period, grain)} className={OUT_LINK}>
+          <Link to="/procurement/analytics" search={supplierRecordsSearch(profile.cui, profile.period, grain)} className={OUT_LINK}>
             {grain === 'contract' ? <Trans>Toate contractele din {periodText(profile.period)}</Trans> : <Trans>Toate achizițiile directe din {periodText(profile.period)}</Trans>}
             <ArrowUpRight className="size-3.5" aria-hidden="true" />
           </Link>

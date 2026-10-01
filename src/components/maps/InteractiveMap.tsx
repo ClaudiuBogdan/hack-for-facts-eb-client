@@ -26,6 +26,7 @@ import type {
 import { t } from '@lingui/core/macro';
 
 import { Analytics } from '@/lib/analytics';
+import { escapeHtml } from '@/lib/html';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGeoJsonData } from '@/hooks/useGeoJson';
 import type { AnalyticsFilterType, Currency, Normalization } from '@/schemas/charts';
@@ -135,17 +136,6 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
 };
 const MAP_TOOLTIP_POPUP_CLASS = 'interactive-map-tooltip-popup';
 
-// Global regexes rather than `replaceAll`: the app compiles against ES2020,
-// where that method does not exist. The ampersand still has to go first, or
-// the escapes introduced below it get double-escaped.
-function escapeAttributionHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
 function buildMapAttributions(
   sourceAttribution: InteractiveMapProps['sourceAttribution'],
 ): string[] {
@@ -156,7 +146,7 @@ function buildMapAttributions(
   // MapLibre sorts separate attribution entries by HTML length. Keep both
   // credits in one native entry so the source remains immediately to its left.
   const sourceAttributionHtml =
-    `<a href="${escapeAttributionHtml(sourceAttribution.href)}" target="_blank" rel="noopener noreferrer">${escapeAttributionHtml(sourceAttribution.label)}</a>`;
+    `<a href="${escapeHtml(sourceAttribution.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceAttribution.label)}</a>`;
   return [`${sourceAttributionHtml} | ${MAPLIBRE_ATTRIBUTION_HTML}`];
 }
 

@@ -102,6 +102,30 @@ export default tseslint.config(
       ],
     },
   },
+  // A JSON-LD block's `children` is written into the page as raw HTML (the
+  // router's `dangerouslySetInnerHTML`), and `JSON.stringify` leaves `<` as it
+  // is: a `</script>` in a name would close the tag. Every block goes through
+  // `serializeForInlineScript` (src/lib/inline-script-json.ts), called right
+  // there, so a string prepared elsewhere cannot slip past the check. It reads
+  // the object literal only: a `type` or `children` brought in by a spread, a
+  // `type` held in a variable, or a JSX `<script>` is not seen. This is the
+  // only `no-restricted-syntax` block for src; a later one for the same files
+  // would replace this selector rather than add to it.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "ObjectExpression:has(> Property:matches([key.name='type'], [key.value='type'])[value.value='application/ld+json']) > Property:matches([key.name='children'], [key.value='children']):not([value.type='CallExpression'][value.callee.name='serializeForInlineScript'])",
+          message:
+            'JSON-LD `children` must be `serializeForInlineScript(node)` from @/lib/inline-script-json: the router writes it into the page as raw HTML.',
+        },
+      ],
+    },
+  },
   // Relax `no-explicit-any` in test files – test utilities often need `any`
   // for mock objects, cast-through values, etc.
   {
