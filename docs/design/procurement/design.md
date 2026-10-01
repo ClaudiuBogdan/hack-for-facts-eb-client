@@ -2159,6 +2159,16 @@ scope (`scopeOf`), and each read (`analytics.data.ts`) is its own request.
 10. **Locality names** in the API (the page reads them from a map file).
 11. **A procedure filter on the contracts list** (`ProcurementContractsFilter`
     has none: a procedure-scoped answer cannot show its records).
+12. **The firm's place on the lists without the search engine.** The
+    contracts' and direct purchases' `supplierRegion`, `supplierCounty` and
+    `supplierSiruta` fail with BAD_GATEWAY on the dev API, which runs no
+    search engine, while the buyer's place answers. Served from the
+    analysis rows (as the amendments' buyer place already is), a
+    firm-place question would list its records and they would match its
+    count; until then the page lists only a firm picked (§18.14). On 1
+    October 2026 the production API (`api.transparenta.eu/graphql`) had
+    no procurement reads at all (`procurementContracts` unknown), so
+    nothing there can be checked yet.
 
 ### 18.7 Review (Opus 5.5, 29 September 2026)
 
