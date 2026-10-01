@@ -52,7 +52,7 @@ describe('the place index', () => {
   it('names every place with its kind: the level for a region or a county, the official kind for a locality', () => {
     expect(INDEX.byValue.get('regiune:Bucuresti-Ilfov')?.label).toBe('Reg. București-Ilfov')
     expect(INDEX.byValue.get('judet:SB')?.label).toBe('Jud. Sibiu')
-    expect(INDEX.byValue.get('judet:B')?.label).toBe('Municipiul București')
+    expect(INDEX.byValue.get('judet:B')?.label).toBe('București, cu toate sectoarele')
     expect(INDEX.byValue.get('localitate:143450')?.label).toBe('Municipiul Sibiu')
     expect(INDEX.byValue.get('localitate:143619')?.label).toBe('Municipiul Mediaș')
     expect(INDEX.byValue.get('localitate:144928')?.label).toBe('Orașul Miercurea Sibiului')
@@ -145,6 +145,30 @@ describe('a picked place', () => {
   it('names a link’s county code under its county, and a code it does not know as its number', () => {
     expect(placePath(INDEX, { level: 'localitate', values: ['127'] }).map((item) => item.label)).toEqual(['Reg. Nord-Vest', 'Jud. Cluj', 'Jud. Cluj (instituțiile județului)'])
     expect(placePath(INDEX, { level: 'localitate', values: ['999999'] }).map((item) => item.label)).toEqual(['SIRUTA 999999'])
-    expect(INDEX.byValue.get('localitate:403')?.label).toBe('Municipiul București (instituțiile municipiului)')
+    // București's own institutions sit on its municipality, 179132: its county node (403) anchors nothing.
+    expect(INDEX.byValue.get('localitate:179132')?.label).toBe('Municipiul București, fără sectoare (instituțiile municipiului)')
+    expect(INDEX.byValue.has('localitate:403')).toBe(false)
+  })
+})
+
+describe('București: the whole city, its own institutions, its six sectors', () => {
+  const SECTORS = ['179141', '179150', '179169', '179178', '179187', '179196']
+  const bucharest = placeIndexOf(
+    { regions: [{ region: 'Bucuresti-Ilfov' }], counties: [{ countyCode: 'B', countyName: 'MUNICIPIUL BUCUREȘTI', region: 'Bucuresti-Ilfov' }] },
+    { features: SECTORS.map((code, index) => uat(code, `București Sectorul ${String(index + 1)}`, 'B', 'Sectoarele municipiului Bucuresti', 200000)) },
+    { features: [{ properties: { countyCode: 403, mnemonic: 'B', name: 'București' } }] },
+  )
+
+  it('names the county the whole city, sectors included', () => {
+    expect(bucharest.byValue.get('judet:B')?.label).toBe('București, cu toate sectoarele')
+  })
+
+  it('names 179132 the municipality’s own institutions, without the sectors', () => {
+    expect(bucharest.byValue.get('localitate:179132')).toMatchObject({ label: 'Municipiul București, fără sectoare (instituțiile municipiului)', county: 'B' })
+  })
+
+  it('names each of the six sectors on its own, under the whole city', () => {
+    expect(SECTORS.map((code) => bucharest.byValue.get(`localitate:${code}`)?.label)).toEqual(['Sectorul 1', 'Sectorul 2', 'Sectorul 3', 'Sectorul 4', 'Sectorul 5', 'Sectorul 6'])
+    expect(placePath(bucharest, { level: 'localitate', values: ['179169'] }).map((item) => item.label)).toEqual(['Reg. București-Ilfov', 'București, cu toate sectoarele', 'Sectorul 3'])
   })
 })

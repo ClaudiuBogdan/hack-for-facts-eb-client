@@ -8,7 +8,7 @@ import { dayText, monthText } from '@/features/procurement/lib/home-format'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { bucketStart, clippedBucket, drilled, POPULATIONS, type Query } from '../../lib/analytics-model'
-import { firmPlaceGate, recordsProblem, type Point, type Ranking, type RecordRow } from '../../api/procurement-analytics-api'
+import { RECORDS_PAGE, RECORDS_WINDOW, type Point, type Ranking, type RecordsSort } from '../../api/procurement-analytics-api'
 import { COUNTY_POPULATION, countyPopulationNote, useRecords, type Answer } from '../../hooks/use-procurement-analytics'
 import { useSearchStrings } from '../../hooks/use-procurement-analytics'
 import { MethodBody } from './analytics-controls'
@@ -46,7 +46,7 @@ export function ShareIcon({ query, answer, className }: { readonly query: Query;
 export function NotesMarker({ query, answer }: { readonly query: Query; readonly answer: Answer }) {
   const notes = readoutNotes(query, answer, useSearchStrings())
   const alerts = [...(notes.unread ? [notes.unread] : []), ...notes.warnings]
-  const gloss = answer.period ? periodGloss(answer.period, query, answer.cutoff?.failed ?? false) : null
+  const gloss = answer.period ? periodGloss(answer.period, query) : null
   return (
     <Popover>
       <PopoverTrigger
@@ -290,92 +290,37 @@ export function AnswerTable({
 
 // ─────────────────────────────────────────────────────────── records ──
 
-/** Several rows of one contract (a consortium's members, each at the whole value) as one. */
-function groupedRows(rows: readonly RecordRow[]): readonly (RecordRow & { readonly suppliers: readonly string[] })[] {
-  const groups = new Map<string, RecordRow & { suppliers: string[] }>()
-  for (const row of rows) {
-    const key = row.contractNo ? `${row.authority.cui}|${row.contractNo}|${row.value}` : row.id
-    const found = groups.get(key)
-    const name = row.supplier.name ?? '—'
-    if (found) found.suppliers.push(name)
-    else groups.set(key, { ...row, suppliers: [name] })
-  }
-  return [...groups.values()]
-}
-
-const PAGE = 25
-
 /**
- * The records themselves, the answer's first tab: every record of the
- * selection — a title's words included — 25 at a time, the largest or the
- * newest first (a header orders them), each opening its own page. The list is
- * its own read, with its own count (never the analysis count), and says when
- * the API cannot list a selection rather than showing a wider one.
+ * The records themselves, the answer's first tab: the rows the figures count —
+ * the same filters, the same months, the same data build — 25 at a time, the
+ * largest or the newest first (a header orders them), each opening its own
+ * page. One row per counted record: a consortium's award lists once per
+ * member, as it is counted, its value once. The list's total IS the count.
  */
-export function AnswerRecords({ query, answer, onChange, className }: { readonly query: Query; readonly answer: Answer; readonly onChange: (query: Query) => void; readonly className?: string }) {
+export function AnswerRecords({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   // A framework has no value to order by (a ceiling at most): its records come newest first, with no choice.
   const valued = POPULATIONS[query.tip].money !== 'none'
-  const [sort, setSort] = useState<'value_desc' | 'date_desc'>(valued ? 'value_desc' : 'date_desc')
+  const [sort, setSort] = useState<RecordsSort>(valued ? 'value_desc' : 'date_desc')
   const [page, setPage] = useState(1)
-  const problem = recordsProblem(query, answer.period)
-  const gate = firmPlaceGate(query, answer.figures)
-  const records = useRecords(query, answer.period, sort, page, problem === null && gate === 'list')
-  const party = Boolean(query.filters.cumparator || query.filters.furnizor)
-  const order = (next: 'value_desc' | 'date_desc') => () => {
+  const { read: records, retry } = useRecords(query, answer.cutoff, sort, page)
+  const order = (next: RecordsSort) => () => {
     setSort(next)
     setPage(1)
   }
-  if (problem === 'supplier-place') return (
+  // No cutoff, no build: nothing is listed — said, with a retry that reads the cutoff again.
+  if (answer.cutoffFailed || records.isError) return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
-        {t`Lista nu se poate filtra încă după locul firmei. Alege o firmă pentru înregistrările ei.`}{' '}
-        <button
-          type="button"
-          onClick={(event) => {
-            // The button goes with the list: the focus goes to the firms' tab, which stays.
-            event.currentTarget.closest('section')?.querySelector<HTMLElement>('[role="tab"][data-axis="furnizor"]')?.focus()
-            onChange({ ...query, dupa: { axis: 'furnizor', level: 'cui' } })
-          }}
-          className="font-medium text-foreground underline underline-offset-4"
-        >
-          {t`Vezi firmele`}
-        </button>
-      </p>
-    )
-  if (problem) return (
-      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
-        {problem === 'procedure'
-          ? t`Lista nu se poate filtra încă după procedură: ar arăta și contracte din alte proceduri.`
-          : t`Pentru achiziții directe, lista cere o instituție, o firmă sau cel mult 12 luni.`}
-      </p>
-    )
-  if (gate === 'outside') return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
-  if (gate === 'failed' || gate === 'unknown') return (
-      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
-        {t`Lista nu s-a putut citi acum.`}
-        {gate === 'failed' ? (
-          <>
-            {' '}
-            <button type="button" onClick={answer.figures.retry} className="font-medium text-foreground underline underline-offset-4">
-              {t`Încearcă din nou`}
-            </button>
-          </>
-        ) : null}
-      </p>
-    )
-  if (gate === 'counting') return <Pending rows={10} className={className} />
-  if (records.isError) return (
-      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
-        {party ? t`Lista nu s-a putut citi acum.` : t`Lista nu s-a putut citi pentru o selecție atât de largă. Restrânge la o instituție, o firmă sau o lună și încearcă din nou.`}{' '}
-        <button type="button" onClick={() => void records.refetch()} className="font-medium text-foreground underline underline-offset-4">
+        {t`Lista nu s-a putut citi acum.`}{' '}
+        <button type="button" onClick={retry} className="font-medium text-foreground underline underline-offset-4">
           {t`Încearcă din nou`}
         </button>
       </p>
     )
   if (!records.data) return <Pending rows={10} className={className} />
-  const rows = query.tip === 'directe' ? records.data.rows.map((row) => ({ ...row, suppliers: [row.supplier.name ?? '—'] })) : groupedRows(records.data.rows)
-  const total = records.data.total
-  const first = (page - 1) * PAGE + 1
-  const more = records.data.rows.length === PAGE && page * PAGE < (total ?? 10_000)
+  if (records.data.abstained) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Lista nu se arată: cifrele acestei selecții nu pot fi date (vezi „Cum am calculat").`}</p>
+  const { rows, total } = records.data
+  const first = (page - 1) * RECORDS_PAGE + 1
+  const more = page * RECORDS_PAGE < Math.min(total ?? 0, RECORDS_WINDOW)
   if (rows.length === 0) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
   return (
     <div className={cn(className, records.isFetching && 'opacity-70 transition-opacity')}>
@@ -397,20 +342,22 @@ export function AnswerRecords({ query, answer, onChange, className }: { readonly
                   {row.title ?? t`Fără titlu în SEAP`}
                 </a>
                 <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                  {row.authority.name ?? '—'} → {row.suppliers.join(', ')}
+                  {row.authority.name ?? '—'} → {row.supplier.name ?? '—'}
                   <span className="sm:hidden">{row.date ? ` · ${dayText(row.date)} ${row.date.slice(0, 4)}` : ''}</span>
                 </span>
               </TableCell>
               <TableCell className="hidden whitespace-nowrap text-right align-top tabular-nums text-muted-foreground sm:table-cell">{row.date ? `${dayText(row.date)} ${row.date.slice(0, 4)}` : '—'}</TableCell>
-              <TableCell className={cn('whitespace-nowrap text-right align-top tabular-nums', row.checked ? 'font-semibold text-foreground' : 'text-muted-foreground')}>{row.value !== null ? moneyText(row.value) : '—'}</TableCell>
+              <TableCell className={cn('whitespace-nowrap text-right align-top tabular-nums', row.value !== null ? 'font-semibold text-foreground' : 'text-muted-foreground')}>
+                {valued && row.value !== null ? moneyText(row.value) : '—'}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="tabular-nums">
-          {total === null ? t`${first}–${first + records.data.rows.length - 1} din peste 10.000` : page === 1 && !more ? listTotalText(total) : t`${first}–${first + records.data.rows.length - 1} din ${countText(total)}`}
-          {query.tip !== 'directe' ? ` · ${t`rândurile unei asocieri, într-unul`}` : ''}
+          {total !== null && page === 1 && !more ? listTotalText(total) : t`${first}–${first + rows.length - 1} din ${countText(total ?? 0)}`}
+          {query.tip !== 'directe' ? ` · ${t`o asociere apare o dată pentru fiecare membru, cu valoarea o singură dată`}` : ''}
         </span>
         {page > 1 || more ? (
           <span className="flex items-center gap-1">

@@ -26,7 +26,7 @@ function emptyProfile(cui: string, year: number, latest: number): Record<string,
       field.kind === 'stats'
         ? { blocks: [{ recordCount: '0', withValueCount: '0', valueAwardedSum: null }] }
         : field.kind === 'series'
-          ? [{ points: [] }]
+          ? [{ points: [], meta: { buildId: '13' } }]
           : field.kind === 'concentration'
             ? [{ supplierCount: 0 }]
             : [{ rankedBy: 'value', buckets: [] }]
@@ -34,7 +34,7 @@ function emptyProfile(cui: string, year: number, latest: number): Record<string,
   return raw
 }
 
-const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })) }]
+const series = (points: Record<string, string | null>) => [{ points: Object.entries(points).map(([bucket, value]) => ({ bucket, value })), meta: { buildId: '13' } }]
 const top = (key: string, recordCount: string, valueSum: string | null, shareOfScope: string | null = null) => ({ key, kind: 'top', recordCount, valueSum, shareOfScope })
 
 function otopeni(): Record<string, unknown> {

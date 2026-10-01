@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo } from 'react'
-import { hashKey, useQueries, useQuery } from '@tanstack/react-query'
+import { createContext, useContext, useEffect, useMemo } from 'react'
+import { hashKey, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
@@ -7,6 +7,7 @@ import { SEARCH_DEBOUNCE_MS } from '@/features/landing/hooks/use-landing-search'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import { COMPANY_HUB_SNAPSHOT } from '@/features/private-companies/lib/hub-snapshot'
 import {
+  isStaleBuild,
   nameKeys,
   planAnswer,
   planNames,
@@ -22,12 +23,13 @@ import {
   type RecordsSort,
   type Scope,
 } from '../api/procurement-analytics-api'
+import { forgetProcurementCutoff } from '../api/procurement-cutoff'
 import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
 import { siteSearchOf } from '../lib/analytics-legacy'
 import { analyticsSearchOf, dropsFilters, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation, type AnalyticsSearch, type PopulationId, type Query, type ResolvedPeriod } from '../lib/analytics-model'
 import type { Namer } from '../lib/analytics-text'
-import { placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
+import { bucharestOwnLabel, countyOwnCode, placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
 import { homeYear } from '../lib/home-model'
 import { formatProcurementCountyName } from '../lib/procurement-geography'
 
@@ -98,6 +100,60 @@ export function useCutoff() {
   return useQuery({ queryKey: key, queryFn: () => readAnalyticsCutoff(latest), staleTime: STALE, ...seeded<AnalyticsCutoff>({ key }) })
 }
 
+/** The builds the page has already started over from, once each: a recovery that lands on the same build stops, said. */
+const recoveredBuilds = new Set<string>()
+
+/** A pinned read, as the page's recovery sees it. */
+interface PinnedRead {
+  readonly error: unknown
+  readonly refetch: () => Promise<unknown>
+}
+
+/**
+ * The page's generation guard. Every analysis read is pinned to the build its
+ * cutoff was read from; when the API refuses one (a publication since), the
+ * cutoff is forgotten and read again, ONCE per refused build, and every read
+ * follows the new build under new keys — the figures, the rankings, the list
+ * and the tabs' counts alike, the server's seeds included (keyed by the old
+ * build, they no longer answer). A recovery that comes back with the same
+ * build stops there: the reads stay failed, with a retry. The retry starts
+ * over from the cutoff whenever the cutoff, or the build, is the problem.
+ */
+function usePinGuard(reads: readonly PinnedRead[]) {
+  const latest = useContext(AnalyticsSeedContext).latest ?? homeYear()
+  const client = useQueryClient()
+  const cutoff = useCutoff()
+  const build = cutoff.data?.build
+  const stale = reads.some((read) => isStaleBuild(read.error))
+  const restart = () => {
+    forgetProcurementCutoff(latest)
+    return client.invalidateQueries({ queryKey: procurementAnalyticsKeys.cutoff(latest) })
+  }
+  useEffect(() => {
+    if (!stale || build === undefined || recoveredBuilds.has(build)) return
+    recoveredBuilds.add(build)
+    forgetProcurementCutoff(latest)
+    void client.invalidateQueries({ queryKey: procurementAnalyticsKeys.cutoff(latest) })
+  }, [stale, build, latest, client])
+  return {
+    cutoff,
+    /** The cutoff could not be read: no read runs, and the page says so with a retry. */
+    cutoffFailed: cutoff.isError,
+    /** Retry a read: from the cutoff when it failed or the read's build was refused, else the read alone. */
+    retry: (read?: PinnedRead) => {
+      if (cutoff.isError) return void cutoff.refetch()
+      if (read === undefined) return
+      if (isStaleBuild(read.error)) return void restart().then(() => read.refetch())
+      void read.refetch()
+    },
+  }
+}
+
+/** For tests: a page load starts with no build recovered. */
+export function resetRecoveredBuilds(): void {
+  recoveredBuilds.clear()
+}
+
 // ───────────────────────────────────────────────────────────────── names ──
 
 /** Names for everything on screen: the filters' values, the answer's keys. */
@@ -165,7 +221,8 @@ export function useLocalities(enabled: boolean) {
       const props = feature.properties ?? {}
       if (props.countyCode === undefined || props.countyCode === null) continue
       const county = String(props.name ?? '')
-      names.set(String(props.countyCode), { name: t`Județul ${county}`, kind: 'judet', county: typeof props.mnemonic === 'string' ? props.mnemonic : null, population: null })
+      const mnemonic = typeof props.mnemonic === 'string' ? props.mnemonic : null
+      names.set(mnemonic ? countyOwnCode(mnemonic, String(props.countyCode)) : String(props.countyCode), { name: mnemonic === 'B' ? bucharestOwnLabel() : t`Județul ${county}`, kind: 'judet', county: mnemonic, population: null })
     }
     for (const feature of features) {
       const props = feature.properties ?? {}
@@ -272,8 +329,11 @@ export function useCpvSearch(term: string) {
 
 export interface Answer {
   readonly period: ResolvedPeriod | null
-  /** Each population's cutoff; `failed` when it could not be read and the last complete year's end stands in. */
+  /** Each population's cutoff and the build every read is pinned to; null until read. */
   readonly cutoff: AnalyticsCutoff | null
+  /** The cutoff could not be read: nothing is read, and the page says so with `retryCutoff`. */
+  readonly cutoffFailed: boolean
+  readonly retryCutoff: () => void
   readonly figures: { readonly data: { readonly now: Figures | null; readonly before: Figures | null } | undefined; readonly isError: boolean; readonly retry: () => void }
   readonly concentration: { readonly data: Concentration | null | undefined; readonly isError: boolean }
   readonly ranking: { readonly data: Ranking | undefined; readonly isError: boolean; readonly isFetching: boolean; readonly retry: () => void }
@@ -285,8 +345,8 @@ export interface Answer {
 
 /** Everything the page reads for a query, each read on its own. */
 export function useAnswer(query: Query, options: { readonly topN: number; readonly years: boolean }): Answer {
-  const cutoffRead = useCutoff()
   const seeded = useSeeded()
+  const cutoffRead = useCutoff()
   const plan = planAnswer(query, cutoffRead.data ?? null, options)
   const dimension = plan.dimension
   const [figures, concentration, ranking, series, years] = useQueries({
@@ -305,14 +365,19 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
       { queryKey: plan.years.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.years.read(signal), enabled: plan.years.enabled, staleTime: STALE, ...seeded(plan.years) },
     ],
   })
+  const guard = usePinGuard([figures, concentration, ranking, series, years])
+  // No cutoff, no build: every read is off, and each says it failed rather than wait forever.
+  const failed = guard.cutoffFailed
   return {
     period: plan.period,
     cutoff: cutoffRead.data ?? null,
-    figures: { data: figures.data as Answer['figures']['data'], isError: figures.isError, retry: () => void figures.refetch() },
-    concentration: { data: plan.supplierFixed ? null : (concentration.data as Concentration | null | undefined), isError: concentration.isError },
-    ranking: { data: ranking.data as Ranking | undefined, isError: ranking.isError, isFetching: ranking.isFetching, retry: () => void ranking.refetch() },
-    series: { data: series.data as readonly Point[] | undefined, isError: series.isError, retry: () => void series.refetch() },
-    years: { data: years.data as readonly Point[] | undefined, isError: years.isError, retry: () => void years.refetch() },
+    cutoffFailed: failed,
+    retryCutoff: () => guard.retry(),
+    figures: { data: figures.data as Answer['figures']['data'], isError: failed || figures.isError, retry: () => guard.retry(figures) },
+    concentration: { data: plan.supplierFixed ? null : (concentration.data as Concentration | null | undefined), isError: failed || concentration.isError },
+    ranking: { data: ranking.data as Ranking | undefined, isError: failed || ranking.isError, isFetching: ranking.isFetching, retry: () => guard.retry(ranking) },
+    series: { data: series.data as readonly Point[] | undefined, isError: failed || series.isError, retry: () => guard.retry(series) },
+    years: { data: years.data as readonly Point[] | undefined, isError: failed || years.isError, retry: () => guard.retry(years) },
     scopes: { now: plan.scopes.now, years: plan.scopes.years },
   }
 }
@@ -359,6 +424,7 @@ export function usePopulationCounts(query: Query): PopulationCounts {
   const reads = useQueries({
     queries: plans.map(({ figures, drops }) => ({ queryKey: figures.key, queryFn: ({ signal }: { signal: AbortSignal }) => figures.read(signal), enabled: figures.enabled && !drops, staleTime: STALE, ...seeded(figures) })),
   })
+  usePinGuard(reads)
   const countOf = (index: number): PopulationCount => {
     const { period, figures, drops } = plans[index]!
     return { value: populationCountOf(reads[index]!, { drops, enabled: figures.enabled, cutoffPending: cutoffRead.isPending }), period }
@@ -368,15 +434,18 @@ export function usePopulationCounts(query: Query): PopulationCounts {
 
 // ─────────────────────────────────────────────────────────────── records ──
 
-export function useRecords(query: Query, period: ResolvedPeriod | null, sort: RecordsSort, page: number, enabled: boolean) {
+/** A page of the records the figures count: their scope, their build, 25 rows; a retry that starts over from the cutoff when it must. */
+export function useRecords(query: Query, cutoff: AnalyticsCutoff | null, sort: RecordsSort, page: number) {
   const seeded = useSeeded()
-  const plan = planRecords(query, period, sort, page)
-  return useQuery({
+  const plan = planRecords(query, cutoff, sort, page)
+  const read = useQuery({
     queryKey: plan.key,
     queryFn: ({ signal }) => plan.read(signal),
-    enabled: enabled && plan.enabled,
+    enabled: plan.enabled,
     staleTime: STALE,
     retry: false,
     ...seeded(plan),
   })
+  const guard = usePinGuard([read])
+  return { read, retry: () => guard.retry(read) }
 }

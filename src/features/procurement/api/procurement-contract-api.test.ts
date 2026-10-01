@@ -144,7 +144,7 @@ describe('the contract', () => {
 
 describe('the context', () => {
   const stats = (count: string) => ({ blocks: [{ recordCount: count, withValueCount: count, valueAwardedSum: null }] })
-  const series = (points: readonly (readonly [string, string])[]) => [{ points: points.map(([bucket, point]) => ({ bucket, value: point })) }]
+  const series = (points: readonly (readonly [string, string])[]) => [{ points: points.map(([bucket, point]) => ({ bucket, value: point })), meta: { buildId: '13' } }]
   const month = (index: number) => `${PART}-${String(index).padStart(2, '0')}`
 
   const handlers: Record<string, Handler> = {

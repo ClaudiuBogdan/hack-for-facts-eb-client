@@ -7,7 +7,7 @@ import { analyticsSearchOf, cpvKey, dropsFilters, POPULATION_ORDER, queryOf, rep
 import { homeYear } from '../lib/home-model'
 import {
   defaultRecordsSort,
-  firmPlaceGate,
+  isStaleBuild,
   nameKeys,
   planAnswer,
   planNames,
@@ -19,15 +19,17 @@ import {
   type PlannedRead,
   type Ranking,
 } from './procurement-analytics-api'
-import { untilAborted } from './procurement-cutoff'
+import { forgetProcurementCutoff, untilAborted } from './procurement-cutoff'
 import { fetchProcurementGeographyOptions } from './procurement-reference-api'
 
 /**
  * The analytics page's server reads, for the route loader only.
  *
- * The cutoff first (every read's months hang on it), then the answer's reads
- * side by side — the figures, the concentration, the ranking or the series
- * or the records' first page, the years — and the names of what they hold.
+ * The cutoff first (every read's months hang on it, and every read is pinned
+ * to the analysis build it was read from), then the answer's reads side by
+ * side — the figures, the concentration, the ranking or the series or the
+ * records' first page, the years — and the names of what they hold. A question
+ * is kept per build: a publication starts every question over.
  * They seed the page's queries under the keys the browser plans (see
  * `planAnswer`), so the document carries the answer and the browser reads
  * only what the server could not.
@@ -60,32 +62,32 @@ export interface ProcurementAnalyticsServerRead {
 
 // A partial read is served once and read again, never kept.
 const questions = createServerMemo<ProcurementAnalyticsServerRead>(KEEP_MS, { maxEntries: MAX_QUESTIONS, keep: (read) => read.complete })
-// A cutoff that could not be read stands in with the year's end: kept by no one.
-const cutoffs = createServerMemo<AnalyticsCutoff>(KEEP_MS, { maxEntries: 4, keep: (cutoff) => !cutoff.failed })
 const reference = createServerMemo<unknown>(KEEP_REFERENCE_MS, { maxEntries: 4 })
 
 export async function readProcurementAnalyticsForSsr(search: Readonly<Record<string, unknown>>): Promise<ProcurementAnalyticsServerRead> {
   const query = repaired(queryOf(analyticsSearchOf(search)))
-  return questions(hashKey([urlSearchOf(query)]), async () => {
+  const latest = homeYear()
+  // The shared cutoff read keeps itself (`procurement-cutoff.ts`): its build keys the question. Within the render's budget.
+  const cutoffBudget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
+  const pinned = await untilAborted(readAnalyticsCutoff(latest), cutoffBudget).catch(() => null)
+  return questions(hashKey([urlSearchOf(query), pinned?.build ?? null]), async () => {
     const budget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
     const seeded = async <T>(read: PlannedRead<T>) => ({ key: read.key, data: await read.read(budget) })
-    const latest = homeYear()
     const cutoffKey = procurementAnalyticsKeys.cutoff(latest)
     const [cutoff, counties, divisions] = await Promise.allSettled([
-      untilAborted(cutoffs(hashKey(cutoffKey), () => readAnalyticsCutoff(latest)), budget),
+      pinned ? Promise.resolve<AnalyticsCutoff>(pinned) : Promise.reject(new Error('cutoff not read within the render budget')),
       untilAborted(reference('counties', () => fetchProcurementGeographyOptions()), budget),
       reference('cpv-divisions', () => readCpvDivisions(budget)),
     ])
     const seed: { key: readonly unknown[]; data: unknown }[] = []
     if (counties.status === 'fulfilled') seed.push({ key: procurementAnalyticsKeys.counties(), data: counties.value })
     if (divisions.status === 'fulfilled') seed.push({ key: procurementAnalyticsKeys.cpvDivisions(), data: divisions.value })
-    // Without the cutoff no read knows its months: the page reads them all in the browser.
-    if (cutoff.status !== 'fulfilled' || cutoff.value.failed) return { seed, complete: false, latest }
+    // Without the cutoff no read knows its months or its build: the page reads them all in the browser.
+    if (cutoff.status !== 'fulfilled') return { seed, complete: false, latest }
     seed.push({ key: cutoffKey, data: cutoff.value })
     const plan = planAnswer(query, cutoff.value, { topN: 25, years: true })
     const answer: PlannedRead<unknown>[] = [plan.figures, plan.concentration, plan.ranking, plan.series, plan.years].filter((read) => read.enabled)
-    // A firm in a place lists only once its count is known (`firmPlaceGate`): the browser reads it then, not the server now.
-    const records = query.dupa.axis === 'inregistrari' && firmPlaceGate(query, { data: undefined, isError: false }) === 'list' ? planRecords(query, plan.period, defaultRecordsSort(query), 1) : null
+    const records = query.dupa.axis === 'inregistrari' ? planRecords(query, cutoff.value, defaultRecordsSort(query), 1) : null
     // The other populations' figures, for the counts on their tabs (and their answer, should a tab be clicked): a failure there is the browser's to read.
     const others = POPULATION_ORDER.filter((tip) => tip !== query.tip && !dropsFilters(query, tip))
       .map((tip) => planAnswer(withPopulation(query, tip), cutoff.value, { topN: 25, years: false }).figures)
@@ -119,10 +121,14 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
       } else complete = false
     }
     // The counts: a failed one is the browser's to read, and the render is not kept without it.
-    for (const read of await counting) {
+    const counted = await counting
+    for (const read of counted) {
       if (read.status === 'fulfilled') seed.push(read.value)
       else complete = false
     }
-    return { seed, complete, latest, ...(landingName ? { landingName } : {}) }
+    // A read refused for its build: a publication since the cutoff was read. The next render reads a fresh one.
+    const refused = [...settled, ...listed, ...counted].some((read) => read.status === 'rejected' && isStaleBuild(read.reason))
+    if (refused) forgetProcurementCutoff(latest)
+    return { seed, complete: complete && !refused, latest, ...(landingName ? { landingName } : {}) }
   })
 }

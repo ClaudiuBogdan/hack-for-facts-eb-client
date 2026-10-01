@@ -114,7 +114,7 @@ describe('the context', () => {
   const PART = LATEST + 1
   const stats = (count: string, value: string | null) => ({ blocks: [{ recordCount: count, withValueCount: count, valueAwardedSum: value }] })
   const top = (key: string) => ({ key, kind: 'top', recordCount: '1', withValueCount: '1', valueSum: '1', shareOfScope: null })
-  const series = (points: readonly (readonly [string, string])[]) => [{ points: points.map(([bucket, value]) => ({ bucket, value })) }]
+  const series = (points: readonly (readonly [string, string])[]) => [{ points: points.map(([bucket, value]) => ({ bucket, value })), meta: { buildId: '13' } }]
   const month = (index: number) => `${PART}-${String(index).padStart(2, '0')}`
   const complete = directPurchase({ publicationDate: `${LATEST}-06-01`, finalizationDate: `${LATEST}-06-02` })
   const input = { id: complete.id, authorityCui: '361684', supplierCui: '9446547', day: `${LATEST}-06-01`, yearDay: `${LATEST}-06-02` }

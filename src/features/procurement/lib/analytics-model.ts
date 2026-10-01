@@ -20,19 +20,27 @@ export interface Population {
   readonly grain: 'direct_acquisition' | 'contract'
   readonly recordKind?: 'contract_award' | 'framework_agreement'
   /**
+   * The framework role a population names. The API's contract grain defaults
+   * to purchases (standalone awards); a framework agreement is a ceiling, so
+   * the frameworks' population names its role, or it would count none.
+   */
+  readonly frameworkRole?: 'framework_ceiling'
+  /**
    * What its money may say: `clean` (checked, without VAT — direct purchases),
-   * `provisional` (contract awards: framework ceilings and call-offs still
-   * counted, a quarter valued), `none` (frameworks: a ceiling is not spend).
+   * `provisional` (contract awards: standalone contracts only — the API's
+   * purchases default leaves framework ceilings and call-offs out — a quarter
+   * valued), `none` (frameworks: a ceiling is not spend).
    */
   readonly money: 'clean' | 'provisional' | 'none'
   /** The first year whose records compare with today's (direct purchases before 2019 cannot tell a purchase from a refused offer). */
   readonly comparableFrom: number
   /**
-   * The last month the record kind splits awards from frameworks. SEAP's
-   * export stamps it; e-licitatie's award notices do not, so their frameworks
-   * (and call-offs) count as awards — and from 2026 the rows come mostly from
-   * e-licitatie: awards rise, frameworks all but vanish. Past this month the
-   * population is not comparable with its own past.
+   * The last month before the rows come mostly from e-licitatie (from 2026):
+   * the source mix changes, so a count past it is compared with its past with
+   * care. Build 13 stamps every row's framework role across both sources, so
+   * the awards are standalone contracts and the frameworks are framework
+   * agreements on either side of it; the one edge left is 201 older rows whose
+   * role is a framework ceiling while their kind is an award — on neither page.
    */
   readonly kindSplitUntil?: string
   /**
@@ -51,7 +59,7 @@ export interface Population {
 export const POPULATIONS: Readonly<Record<PopulationId, Population>> = {
   directe: { id: 'directe', grain: 'direct_acquisition', money: 'clean', comparableFrom: 2019, changes: true, cutoff: 'direct', defaultMeasure: 'lei' },
   contracte: { id: 'contracte', grain: 'contract', recordKind: 'contract_award', money: 'provisional', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
-  acorduri: { id: 'acorduri', grain: 'contract', recordKind: 'framework_agreement', money: 'none', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
+  acorduri: { id: 'acorduri', grain: 'contract', recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling', money: 'none', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
 }
 
 // ────────────────────────────────────────────────────────────────── axes ──

@@ -5,6 +5,7 @@ import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
 import { bigCountText, countText, lowerFirst, moneyText, monthText, percentText } from './home-format'
 import { procedureLabel, tidyName } from './home-model'
 import { cpvKey, cpvPrefix, POPULATIONS, type AxisId, type GroupBy, type Measure, type PopulationId, type Query, type ResolvedPeriod } from './analytics-model'
+import { bucharestWholeLabel } from './analytics-places'
 import type { Names } from '../api/procurement-analytics-api'
 
 /**
@@ -65,7 +66,8 @@ export function keyLabel(axis: AxisId, level: string, key: string, namer: Namer)
 function countyName(code: string, namer: Namer): string {
   const name = namer.counties.get(code)
   if (!name) return code
-  return code === 'B' ? t`București` : name
+  // As a county, București is the whole city: its own institutions are the locality 179132.
+  return code === 'B' ? bucharestWholeLabel() : name
 }
 
 /** A bucket SEAP could not place on the axis: named for what it is on each axis, never drilled. */
@@ -105,7 +107,7 @@ export function populationLabel(tip: PopulationId): string {
 
 export function populationGloss(tip: PopulationId): string {
   if (tip === 'directe') return t`Cumpărături din catalogul SEAP, fără licitație. Bani verificați, fără TVA.`
-  if (tip === 'contracte') return t`Contractele din anunțurile de atribuire. Numărăm rânduri: o asociere are un rând pe firmă. Banii sunt provizorii.`
+  if (tip === 'contracte') return t`Contractele de sine stătătoare din anunțurile de atribuire, fără acorduri-cadru și fără contracte subsecvente. Numărăm rânduri: o asociere are un rând pe firmă. Banii sunt provizorii.`
   return t`Acorduri care fixează un plafon; banii se cheltuiesc prin contracte subsecvente. Le numărăm, nu le adunăm banii.`
 }
 
@@ -135,10 +137,10 @@ export function undatedText(value: number): string {
   return plural(value, { one: 'O înregistrare fără dată nu intră în nicio perioadă.', few: '# înregistrări fără dată nu intră în nicio perioadă.', other: '# de înregistrări fără dată nu intră în nicio perioadă.' })
 }
 
-/** Said where a contract or framework selection reaches past the record kind's split. */
+/** Said where a contract or framework selection reaches past the month the source mix changes. */
 export function kindSplitNote(tip: PopulationId): string {
-  if (tip === 'contracte') return t`Din 2026, rândurile vin mai ales din e-licitație, care nu deosebește acordurile-cadru: aici se numără și ele.`
-  return t`Din 2026, rândurile vin mai ales din e-licitație, care nu deosebește acordurile-cadru: le numără ca atribuiri, așa că aici lipsesc.`
+  if (tip === 'contracte') return t`Din 2026, rândurile vin mai ales din e-licitație: comparați cu anii dinainte cu grijă. Se numără tot doar contractele de sine stătătoare.`
+  return t`Din 2026, rândurile vin mai ales din e-licitație: comparați cu anii dinainte cu grijă.`
 }
 
 // ───────────────────────────────────────────────────────────── headline ──
@@ -313,9 +315,7 @@ export function periodText(period: ResolvedPeriod, query: Query): string {
   return from === to ? from : `${from} – ${to}`
 }
 
-export function periodGloss(period: ResolvedPeriod, query: Query, cutoffFailed: boolean): string | null {
-  // With no cutoff read, the last complete year stands in: said, never claimed complete.
-  if (cutoffFailed) return t`Nu am putut afla până când sunt complete datele SEAP; arătăm până în ${monthText(period.to)}.`
+export function periodGloss(period: ResolvedPeriod, query: Query): string | null {
   if (period.replaced) return t`Perioada cerută e după ultimele date; arătăm ultimele 12 luni (până în ${monthText(period.to)}).`
   if (query.period.kind !== 'recent') return period.throughCutoff ? t`Datele SEAP sunt complete până în ${monthText(period.to)}.` : null
   return t`Ultimele 12 luni cu date complete în SEAP (până în ${monthText(period.to)}).`

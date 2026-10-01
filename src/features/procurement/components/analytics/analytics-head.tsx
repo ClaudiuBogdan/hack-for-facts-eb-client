@@ -154,7 +154,7 @@ export function AnalyticsHead({
   // A filter the sentence folds into another (a county under a chosen institution) is still on: a chip says it.
   const unsaid = activeKeys(query).filter((key) => !said.has(key))
   const cutoff = answer.cutoff?.[POPULATIONS[query.tip].cutoff] ?? null
-  const fresh = cutoff && !answer.cutoff?.failed ? t`Date actualizate până la ${dayText(lastDayOf(cutoff))} ${cutoff.slice(0, 4)}` : null
+  const fresh = cutoff ? t`Date actualizate până la ${dayText(lastDayOf(cutoff))} ${cutoff.slice(0, 4)}` : null
   return (
     <section className="relative border-b" aria-labelledby="analytics-title">
       <TwoLayerLattice idPrefix="analytics-head" />
