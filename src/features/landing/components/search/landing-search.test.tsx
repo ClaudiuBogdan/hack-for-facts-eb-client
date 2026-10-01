@@ -119,6 +119,42 @@ describe('LandingSearch', () => {
     expect(open).toHaveAttribute('href', '/ngos/registry/3117-A-2026')
   })
 
+  it('shows an organisation no page holds as a plain row, which Enter never passes over', async () => {
+    // An exact CUI comes first; the firm after it only shares the number's start.
+    searchEntities.mockResolvedValue(response([
+      { ...IASI, id: 'ngo_4408836_x', docType: 'organization_unclassified', title: 'Crucea Roșie, Filiala Sibiu', href: '', countyName: 'Sibiu', identifiers: ['4408836'] },
+      { ...IASI, id: 'company:44088366', docType: 'company', title: 'Another firm', href: '/companies/44088366', identifiers: ['44088366'] },
+    ]))
+    const { user, input } = setup()
+    await typeAndWait(user, '4408836')
+    const [plain, linked] = screen.getAllByRole('option')
+    expect(plain).not.toHaveAttribute('href')
+    expect(plain).toHaveAttribute('aria-disabled', 'true')
+    expect(plain).toHaveTextContent('Organizație · Sibiu · fără profil pe platformă')
+    expect(plain).toHaveTextContent('4408836')
+    expect(linked).toHaveAttribute('href', '/companies/44088366')
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(navigate).not.toHaveBeenCalled()
+    // The answer stays in view.
+    expect(screen.getAllByRole('option')).toHaveLength(2)
+    expect(input).toHaveValue('4408836')
+  })
+
+  it('does nothing for a plain row chosen with the keyboard or the pointer', async () => {
+    const chosen = vi.fn()
+    searchEntities.mockResolvedValue(response([
+      { ...IASI, id: 'ngo_10860991_x', docType: 'organization_unclassified', title: 'Crucea Roșie, Filiala Cluj', href: '', countyName: 'Cluj', identifiers: ['10860991'] },
+    ]))
+    const user = userEvent.setup()
+    render(<LandingSearch onSelect={chosen} />, { queryClient: createTestQueryClient() })
+    const input = await typeAndWait(user, '10860991')
+    await user.keyboard('{ArrowDown}{Enter}')
+    await user.click(screen.getByRole('option'))
+    expect(chosen).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
+    expect(input).toHaveValue('10860991')
+  })
+
   it('opens where a domain page points a result, on the row and on Enter alike', async () => {
     const user = userEvent.setup()
     const hrefOf = (hit: EntitySearchHit) => (hit.href.startsWith('/entities/') ? hit.href.replace('/entities/', '/procurement/institutions/') : null)

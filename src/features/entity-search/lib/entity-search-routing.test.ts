@@ -58,6 +58,13 @@ describe('entityHref', () => {
       expect(entityHref(input({ docType: 'company', cuis: ['30339344'], ngoRegistryNumber: null }))?.href).toBe('/companies/30339344')
     })
 
+    it('gives an organisation outside the registry no page, though it has a CUI', () => {
+      // R5: the old label called it an NGO; no NGO, company or institution page holds it.
+      expect(entityHref(input({ docType: 'organization_unclassified', cuis: ['10860991'], docKey: '10860991', url: null }))).toBeNull()
+      // Not even a source page stands in for one.
+      expect(entityHref(input({ docType: 'organization_unclassified', cuis: ['10860991'], url: 'https://example.org' }))).toBeNull()
+    })
+
     it('keeps an irregular registry literal as written', () => {
       const result = entityHref(input({ docType: 'ngo', cuis: [], ngoRegistryNumber: '99/B/2000`' }))
       expect(result?.href).toBe('/ngos/registry/99-B-2000%60')

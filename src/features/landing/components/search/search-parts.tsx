@@ -85,6 +85,8 @@ export const resultRowClass = cn(
   // keys land on the same appearance, which is correct: there is one active row
   // and one way to show it.
   'data-highlighted:bg-muted',
+  // A row no page holds is no link: no hand over it.
+  'data-disabled:cursor-default',
 )
 
 /**
@@ -109,7 +111,9 @@ export function ResultRowContent({
   const closed = registryStatus !== null && registryStatus !== 'registered' && registryStatus !== 'unknown' ? statusLabel(registryStatus) : null
   // The registry's county as the registry writes it („BUCURESTI", „NEDETERMINAT") is said as the profile says it.
   const county = entity.ngoRegistryNumber ? placeOf({ county: entity.countyName, locality: null }) : entity.countyName
-  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, county, closed].filter(Boolean).join(' · ')
+  // A result no page holds says so where its link would have taken the reader.
+  const unlinked = entity.href === '' ? t`fără profil pe platformă` : null
+  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, county, closed, unlinked].filter(Boolean).join(' · ')
 
   return (
     <>

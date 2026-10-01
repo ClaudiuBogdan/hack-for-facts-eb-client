@@ -868,9 +868,11 @@ The owner's further decisions (2026-10-01):
   `ngo` label comes from a loose legacy classification (any CUI in the social
   sector lists, a penitentiary included), not from the registry; until a
   checked classification exists, those hits are plain organisations with no
-  link: no page of ours holds them (the company page 404s for them). Asked
-  of the server as R5. The hub searches the registry only (`entityTags:
-  ["source::rnong"]`).
+  link: no page of ours holds them (the company page 404s for them). The
+  server ships them as `organization_unclassified` (R5, 1,188 results); the
+  site's search names them „Organizație" and draws a plain row with the CUI,
+  the county and „fără profil pe platformă". The hub searches the registry
+  only (`entityTags: ["source::rnong"]`).
 
 **Built (2026-10-01), on the live contract.**
 

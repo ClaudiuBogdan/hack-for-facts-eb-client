@@ -23,6 +23,9 @@ export const ENTITY_SEARCH_DOC_TYPES = [
   'company',
   'public_enterprise',
   'ngo',
+  // Organisations the old sector loader labelled NGOs but the NGO registry does not
+  // hold (R5, 2026-10-01): searchable by name, CUI and county, with no profile page.
+  'organization_unclassified',
   'pnrr_entity',
   'member',
   'bill',

@@ -11,6 +11,7 @@
  *   public_enterprise   /intreprinderi-publice/$cui (internal, cuis[0])
  *   ngo                 /ngos/$cui            (internal, cuis[0]; without one,
  *                       /ngos/registry/$number from ngoRegistryNumber)
+ *   organization_unclassified  none           (no page holds it: a plain row)
  *   member              /parlament/membri/$id    (internal, best-effort docId)
  *   bill                /parlament/proiecte/$id  (internal, best-effort docId)
  *   committee           /parlament/comisii/$id   (internal, docKey = committee_key)
@@ -106,6 +107,10 @@ export function entityHref(hit: EntityRoutingInput): EntityHref | null {
     const code = hit.docKey?.trim()
     return code ? { href: `/ins/seturi/${encodeURIComponent(code)}`, isExternal: false } : null
   }
+
+  // An organisation outside the NGO registry: no NGO, company or institution page
+  // holds it, and no source page stands in for one (R5).
+  if (hit.docType === 'organization_unclassified') return null
 
   const externalUrl = makeExternal(hit.url)
 

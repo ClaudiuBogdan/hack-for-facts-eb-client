@@ -63,7 +63,7 @@ describe('landing universal search', () => {
     expect(searchEntities).toHaveBeenCalledWith({
       q: 'Dante', docTypes: LANDING_SEARCH_TYPES, limit: 8,
     }, expect.any(AbortSignal))
-    expect(LANDING_SEARCH_TYPES).toEqual(['organization', 'company', 'public_enterprise', 'ngo', 'legal_act', 'ins_dataset'])
+    expect(LANDING_SEARCH_TYPES).toEqual(['organization', 'company', 'public_enterprise', 'ngo', 'organization_unclassified', 'legal_act', 'ins_dataset'])
     expect(result.current.status).toEqual({ kind: 'results', results: [COMPANY], stale: false })
     await search(result, '  Dante  ')
     expect(searchEntities).toHaveBeenCalledTimes(1)
@@ -109,12 +109,14 @@ describe('landing universal search', () => {
   })
   it('preserves server ordering and omits missing or external destinations', async () => {
     const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ngos/123' }
+    const plain = { ...COMPANY, id: 'ngo_10860991_x', docType: 'organization_unclassified', href: '' }
     searchEntities.mockResolvedValue(response([
-      ngo, COMPANY, { ...COMPANY, href: '' }, { ...COMPANY, href: 'https://example.com', isExternal: true },
+      ngo, COMPANY, { ...COMPANY, href: '' }, plain, { ...COMPANY, href: 'https://example.com', isExternal: true },
     ]))
     const { result } = setup()
     await search(result)
-    expect(result.current.results).toEqual([ngo, COMPANY])
+    // A company with no link is a broken row and goes; an organisation no page holds is shown as such.
+    expect(result.current.results).toEqual([ngo, COMPANY, plain])
   })
   it('distinguishes empty results from an unavailable engine', async () => {
     searchEntities.mockResolvedValue(response([]))

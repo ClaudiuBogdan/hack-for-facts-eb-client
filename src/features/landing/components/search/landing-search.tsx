@@ -523,8 +523,17 @@ export function LandingSearch({
               // is auto-highlighted precisely so that this stays a decision
               // rather than a side effect of results arriving.
               if (!isCurrent) return
-              const first = results[0]
-              if (!first) return
+              const top = results[0]
+              if (!top) return
+              const first = pointed(top)
+              // The first row is the answer to what was typed (an exact CUI comes
+              // first); one no page holds opens nothing, and the list stays open on it
+              // rather than Enter passing over it to a row that only resembles it.
+              if (first.href === '') {
+                event.preventDefault()
+                event.preventBaseUIHandler()
+                return
+              }
               event.preventDefault()
               commit(pointed(first))
               reset()
@@ -704,9 +713,9 @@ export function LandingSearch({
                               // The anchor navigates, so the recorder is told to skip it.
                               // Cmd-click then works for free: the browser opens a tab,
                               // the router never runs, the selection is still counted.
-                              disabled={!isCurrent}
+                              disabled={!isCurrent || entity.href === ''}
                               onClick={(event) => {
-                                if (!isCurrent) {
+                                if (!isCurrent || entity.href === '') {
                                   event.preventDefault()
                                   return
                                 }
@@ -717,12 +726,17 @@ export function LandingSearch({
                               // `render` is what lets the option *be* the anchor rather
                               // than contain one, which is what keeps `preload="intent"`
                               // and Cmd-click working.
+                              // A result no page holds stays a plain option: no anchor to follow.
                               render={
-                                <Link
-                                  to={entity.href as '/'}
-                                  preload={false}
-                                  onClick={(event) => { if (!isCurrent) event.preventDefault() }}
-                                />
+                                entity.href === '' ? (
+                                  <div />
+                                ) : (
+                                  <Link
+                                    to={entity.href as '/'}
+                                    preload={false}
+                                    onClick={(event) => { if (!isCurrent) event.preventDefault() }}
+                                  />
+                                )
                               }
                             >
                               <ResultRowContent entity={entity} query={term.trim()} showDocType={!fixedScope} />
