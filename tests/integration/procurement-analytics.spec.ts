@@ -137,4 +137,44 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await expect.poll(() => params(page).titlu).toBe('laptop')
     await expect(sheet.getByRole('textbox', { name: 'Valoarea de la, lei', exact: true })).toBeFocused()
   })
+
+  test('the filters sheet applies what was typed and what was clicked next, neither undoing the other', async ({ page }) => {
+    await page.goto(`${ROUTE}?judet=SB`)
+    await waitForPageReady(page)
+
+    await page.getByRole('button', { name: /^Filtre/ }).first().click()
+    const sheet = page.getByRole('dialog')
+    // The click's blur applies the title; the click's own change comes after it and stands.
+    await sheet.getByRole('textbox', { name: 'Titlul conține' }).fill('laptop')
+    await sheet.getByRole('radio', { name: 'Contracte' }).click()
+    await expect.poll(() => params(page).tip).toBe('contracte')
+    expect(params(page)).toMatchObject({ judet: 'SB', titlu: 'laptop' })
+
+    // A value typed, then „Șterge tot": everything goes, nothing comes back.
+    await sheet.getByRole('textbox', { name: 'Valoarea de la, lei', exact: true }).fill('1000')
+    await sheet.getByRole('button', { name: 'Șterge tot' }).click()
+    await expect.poll(() => params(page).judet).toBeUndefined()
+    await page.waitForTimeout(300)
+    expect(params(page).titlu).toBeUndefined()
+    expect(params(page).valoare).toBeUndefined()
+  })
+})
+
+test.describe('Procurement analytics — the filters sheet on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true })
+
+  test('a tap from an open place list to the next search keeps that search in view', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    await page.getByRole('button', { name: /^Filtre/ }).first().tap()
+    const sheet = page.getByRole('dialog')
+    await sheet.getByRole('combobox', { name: 'Locul instituției', exact: true }).tap()
+    await expect(sheet.getByRole('option', { name: 'Centru', exact: true })).toBeVisible()
+    // The list closes as the focus leaves; the search tapped rises to the top of the sheet, not off by the list's height.
+    const firm = sheet.getByRole('combobox', { name: 'Firma', exact: true })
+    await firm.tap()
+    await expect(firm).toBeFocused()
+    await expect(firm).toBeInViewport()
+  })
 })

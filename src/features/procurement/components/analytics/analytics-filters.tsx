@@ -437,7 +437,8 @@ export function FilterPanel({
   // panel to scroll that far even for the last field.
   const [lifted, setLifted] = useState<HTMLElement | null>(null)
   useEffect(() => {
-    lifted?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    // After the list the blur closes above it (its timer was set first): scrolled before, the field would sit off by the list's height.
+    if (lifted) afterFocusMoves(() => lifted.scrollIntoView({ block: 'start', behavior: 'smooth' }))
   }, [lifted])
   return (
     <div

@@ -482,6 +482,7 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
                 key={item.axis}
                 type="button"
                 role="tab"
+                data-axis={item.axis}
                 aria-selected={active}
                 onClick={() => onChange({ ...query, dupa: groupOf(item.axis, firstReadable.id) })}
                 className={cn('-mb-px border-b-2 px-0.5 pb-2 text-sm', active ? 'border-primary font-semibold text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}

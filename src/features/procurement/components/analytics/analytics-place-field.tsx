@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { flushSync } from 'react-dom'
 import { t } from '@lingui/core/macro'
 import { ChevronRight } from 'lucide-react'
 import { afterFocusMoves } from '@/components/filters/filter-sheet/filter-sheet-focus'
@@ -152,7 +153,8 @@ export function PlaceField({ axis, query, onChange }: { readonly axis: 'loc' | '
             if (form.contains(event.relatedTarget as Node | null)) return
             // The list closes once the focus has landed, unless it has come back.
             afterFocusMoves(() => {
-              if (!form.contains(document.activeElement)) setFocused(false)
+              // Collapsed now, not at React's next render: the phone lift scrolls to the new field right after (`FilterPanel`).
+              if (!form.contains(document.activeElement)) flushSync(() => setFocused(false))
             })
           }}
           className="space-y-1.5"

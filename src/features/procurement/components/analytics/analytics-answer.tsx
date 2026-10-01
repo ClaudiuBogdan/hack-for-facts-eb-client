@@ -328,7 +328,15 @@ export function AnswerRecords({ query, answer, onChange, className }: { readonly
   if (problem === 'supplier-place') return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
         {t`Lista nu se poate filtra încă după locul firmei. Alege o firmă pentru înregistrările ei.`}{' '}
-        <button type="button" onClick={() => onChange({ ...query, dupa: { axis: 'furnizor', level: 'cui' } })} className="font-medium text-foreground underline underline-offset-4">
+        <button
+          type="button"
+          onClick={(event) => {
+            // The button goes with the list: the focus goes to the firms' tab, which stays.
+            event.currentTarget.closest('section')?.querySelector<HTMLElement>('[role="tab"][data-axis="furnizor"]')?.focus()
+            onChange({ ...query, dupa: { axis: 'furnizor', level: 'cui' } })
+          }}
+          className="font-medium text-foreground underline underline-offset-4"
+        >
           {t`Vezi firmele`}
         </button>
       </p>

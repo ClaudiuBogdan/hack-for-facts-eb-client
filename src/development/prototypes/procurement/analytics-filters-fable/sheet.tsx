@@ -1,4 +1,5 @@
 import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { flushSync } from 'react-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { ChevronRight, Loader2, X } from 'lucide-react'
@@ -437,7 +438,8 @@ function PlaceRow({ axis, query, onChange }: { readonly axis: 'loc' | 'loc_firma
             if (form.contains(event.relatedTarget as Node | null)) return
             // The list closes once the focus has landed, unless it has come back.
             afterFocusMoves(() => {
-              if (!form.contains(document.activeElement)) setFocused(false)
+              // Collapsed now, not at React's next render: the phone lift scrolls to the new field right after (`FilterPanel`).
+              if (!form.contains(document.activeElement)) flushSync(() => setFocused(false))
             })
           }}
           className="space-y-1.5"
@@ -745,7 +747,8 @@ export function FableFilterPanel({
   // panel to scroll that far even for the last field.
   const [lifted, setLifted] = useState<HTMLElement | null>(null)
   useEffect(() => {
-    lifted?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+    // After the list the blur closes above it (its timer was set first): scrolled before, the field would sit off by the list's height.
+    if (lifted) afterFocusMoves(() => lifted.scrollIntoView({ block: 'start', behavior: 'smooth' }))
   }, [lifted])
   return (
     <div

@@ -7,6 +7,7 @@ import { analyticsSearchOf, queryOf, repaired, urlSearchOf } from '../lib/analyt
 import { homeYear } from '../lib/home-model'
 import {
   defaultRecordsSort,
+  firmPlaceGate,
   nameKeys,
   planAnswer,
   planNames,
@@ -80,7 +81,8 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     seed.push({ key: cutoffKey, data: cutoff.value })
     const plan = planAnswer(query, cutoff.value, { topN: 25, years: true })
     const answer: PlannedRead<unknown>[] = [plan.figures, plan.concentration, plan.ranking, plan.series, plan.years].filter((read) => read.enabled)
-    const records = query.dupa.axis === 'inregistrari' ? planRecords(query, plan.period, defaultRecordsSort(query), 1) : null
+    // A firm in a place lists only once its count is known (`firmPlaceGate`): the browser reads it then, not the server now.
+    const records = query.dupa.axis === 'inregistrari' && firmPlaceGate(query, { data: undefined, isError: false }) === 'list' ? planRecords(query, plan.period, defaultRecordsSort(query), 1) : null
     const [settled, listed] = await Promise.all([
       Promise.allSettled(answer.map((read) => seeded(read))),
       records?.enabled ? Promise.allSettled([seeded(records)]) : Promise.resolve([]),

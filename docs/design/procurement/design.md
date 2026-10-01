@@ -2783,3 +2783,18 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
   „Location of the firm", „Value from, lei"…). They were „Caută o
   instituție" and the like, which a reader saying the label could not
   reach.
+- **Reviewed again** (1 October 2026) by Opus 5.5 and Codex
+  `gpt-6.1-sol` (xhigh), over the focus, `?lang=`, firm-place, shared
+  parts and names commits. Besides the three Codex fixes recorded above
+  (§18.14, §18.16 and the focus bullet):
+  - On a phone, a tap from an open place list to the next search left
+    that search off the top of the sheet by the list's height: the lift
+    scrolled before the list closed. The list now closes at once once the
+    focus has landed, and the lift scrolls after it (0 px, measured).
+  - „Vezi firmele" removed itself with the focus on it; the focus goes to
+    the „Firmă" tab.
+  - The server no longer reads a firm-in-place list it would not show.
+  - Integration tests: a title typed, then a click elsewhere (neither
+    undoes the other); a phone tap from an open place list.
+  - Left: `Row`'s label is a plain span, so each field repeats it in its
+    own name; a label id from `Row` would make that hold by construction.
