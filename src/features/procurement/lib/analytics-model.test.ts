@@ -10,6 +10,7 @@ import {
   drilled,
   queryOf,
   resolvePeriod,
+  dropsFilters,
   searchOf,
   unreadParams,
   withCategory,
@@ -43,6 +44,15 @@ describe('analytics URL round trip', () => {
         expect(roundTrip(next)).toEqual(next)
       }
     }
+  })
+})
+
+describe('another population’s count', () => {
+  it('is a wider question’s when that population cannot take one of the filters', () => {
+    const procedure = queryOf({ tip: 'contracte', cpv: '45', procedura: 'Licitatie deschisa' })
+    expect(dropsFilters(procedure, 'directe')).toBe(true)
+    expect(dropsFilters(procedure, 'acorduri')).toBe(false)
+    expect(dropsFilters(queryOf({ cpv: '45', judet: 'SB' }), 'contracte')).toBe(false)
   })
 })
 

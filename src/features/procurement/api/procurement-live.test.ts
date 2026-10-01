@@ -11,6 +11,7 @@ import {
   fetchAuthorityProcurementSliceLive,
   fetchProcedureDetailLive,
   fetchProcurementSearchLive,
+  fetchSupplierProcurementSliceLive,
   fetchSupplierRecordsLive,
   resetProcurementLiveCachesForTests,
 } from './procurement-api.live'
@@ -88,6 +89,8 @@ function answerByOperation(names: { readonly authorities?: readonly unknown[]; r
         return { authorities: names.authorities ?? [], suppliers: names.suppliers ?? [] }
       case 'ProcurementContracts':
         return { procurementContracts: { total: 0, totalEstimated: false, items: [] } }
+      case 'ProcurementSupplierRecords':
+        return { procurementSupplierRecords: { total: 0, edges: [], pageInfo: { hasNextPage: false, endCursor: null } } }
       default:
         throw new Error('unexpected read')
     }
@@ -153,6 +156,22 @@ describe('live procurement adapter', () => {
     const page = await fetchSupplierRecordsLive('123')
     expect(page.total).toBeNull()
     expect(page.records[0]?.grain).toBe('contract')
+  })
+
+  it('names a firm’s buyers through the identity spine: a state company among them', async () => {
+    answerByOperation({
+      authorities: [{ cui: '111', canonicalName: 'Municipiul Exemplu', status: 'named' }],
+    })
+
+    const slice = await fetchSupplierProcurementSliceLive('222')
+
+    expect(slice.analysisByGrain.contract.topAuthorities[0]?.authority?.name).toBe('Municipiul Exemplu')
+    const names = callsOf('ProcurementPartyNames').map((call) => String(call[0]))
+    expect(names.some((query) => query.includes('authorities: organizationLabels'))).toBe(true)
+    for (const query of names) {
+      expect(query).not.toContain('entity(cui:')
+      expect(query).not.toContain('company(cui:')
+    }
   })
 
   it('names ranking rows through the identity spine', async () => {

@@ -9,8 +9,8 @@ import {
 } from './procurement'
 
 /**
- * Route search parser for `/procurement/search` (and reused as a subset by
- * `/procurement/categories/$code` and the deferred `/procurement/semnale`).
+ * Route search parser for the explorer's old `/procurement/search` (and the
+ * deferred `/procurement/semnale`); the analytics page reads its links.
  *
  * Follows the parliament search-schema idiom: every field is
  * `.optional().catch(undefined)` so a hand-edited or junk URL never throws —

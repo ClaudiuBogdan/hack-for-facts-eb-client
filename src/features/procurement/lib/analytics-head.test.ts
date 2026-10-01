@@ -2,7 +2,9 @@
 import { i18n as testI18n } from '@lingui/core'
 import type { I18n } from '@lingui/core'
 import { describe, expect, it } from 'vitest'
-import { categoryLandingOf, landingName, landingTitle } from './analytics-head'
+import { queryOf } from './analytics-model'
+import type { Namer } from './analytics-text'
+import { categoryLandingOf, documentTitleOf, landingName, landingTitle } from './analytics-head'
 
 describe('categoryLandingOf', () => {
   it('takes a category alone, in any population, at its one address', () => {
@@ -36,3 +38,31 @@ describe('landingName and landingTitle', () => {
     expect(landingTitle(i18n, { code: '336', tip: 'acorduri', search: 'tip=acorduri&cpv=336' }, null)).toBe('Categoria CPV 336 (CPV 336): acorduri-cadru — Transparenta.eu')
   })
 })
+
+describe('documentTitleOf', () => {
+  const i18n = testI18n as unknown as I18n
+  const namer = (cpv: ReadonlyMap<string, { readonly ro: string | null; readonly en: string | null }>): Namer => ({
+    names: { orgs: new Map(), cpv },
+    divisions: new Map(),
+    counties: new Map(),
+    localities: null,
+  })
+
+  it('gives the bare page the page’s title, so a client navigation back to it leaves no question’s title behind', () => {
+    expect(documentTitleOf(i18n, {}, queryOf({}), namer(new Map()))).toBe('Analize ale achizițiilor publice — Transparenta.eu')
+  })
+
+  it('gives a landing its category’s title once named, and nothing before', () => {
+    const landing = { cpv: '336' }
+    expect(documentTitleOf(i18n, landing, queryOf(landing), namer(new Map()))).toBeNull()
+    // The tests' Lingui is English.
+    expect(documentTitleOf(i18n, landing, queryOf(landing), namer(new Map([['33600000', { ro: 'Produse farmaceutice', en: 'Pharmaceutical products' }]])))).toMatch(/^Pharmaceutical products \(CPV 336\)/u)
+  })
+
+  it('gives any other question its headline', () => {
+    const own = { tip: 'contracte', judet: 'SB' }
+    expect(documentTitleOf(i18n, own, queryOf(own), namer(new Map()))).toMatch(/ — Transparenta\.eu$/u)
+    expect(documentTitleOf(i18n, own, queryOf(own), namer(new Map()))).not.toMatch(/^Analize/u)
+  })
+})
+

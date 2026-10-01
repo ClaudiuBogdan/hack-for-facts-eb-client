@@ -2870,3 +2870,46 @@ landing's head has its title, description and canonical, a combination
 from `33600000` to `33` opens on its groups. On a phone the tab bar grows
 to 70 px: the names already take two lines, the count a third.
 
+**Reviewed** by Opus 5.5 and Codex `gpt-6.1-sol` (xhigh); no blockers.
+Fixed:
+
+- **A landing's name, whatever address came first.** The server keeps one
+  read per question, and a landing's address shares it with addresses that
+  are not landings (`?cpv=X&dupa=<its default>`); read first, they left the
+  landing unnamed for ten minutes. The name now comes from the category
+  filter itself.
+- **No soft 404s.** A well-formed code that names no category (`99`,
+  `39210000`) is no landing: `noindex`, no canonical. `/achizitii/cpv/$code`
+  checks the code as `/procurement/categories/$code` does; both accept an
+  8-digit code's check digit (`45000000-7`) and drop it (`cpvCodeParam`).
+- **A page key the router parsed as something else** (`cpv=true`, a
+  repeated `cpv`) stays as text, for the page to say it could not read it,
+  instead of vanishing into a bare page or a landing the index would take.
+- **The browser tab's title** is the page's own on the bare page, and is
+  put back after a client navigation that set the head's title again with
+  the same text (`useClientDocumentTitle` checks after every render).
+- **The counts keep the page's trust rules.** A population that would drop
+  one of the question's filters (a procedure on direct purchases) shows no
+  count: it would answer a wider question under this one's headline. Where
+  a population's months run past the record kinds' split, its count is
+  marked „*" with its own page's warning (for a screen reader too), and
+  every count names its months on hover — each population counts its own.
+  What was read stands though a later read failed. The slot keeps one
+  height, so the bar does not move. Below 768 px the count sits under the
+  name: beside it, three counts overflowed a 640 px screen.
+- **The server's reads.** The names start once the answer is in, the other
+  populations' counts going on beside them (a slow count must not spend
+  the names' budget); a failed count makes the render partial, not kept.
+- **The path** is named by the page's own read (`nameKeys` takes the
+  category's steps, so the server reads them too); its steps are 24 px from
+  a small screen up, and the current step's name is said to a screen
+  reader.
+- `og:url` is left out where the page is not indexed; the supplier slice's
+  buyer names are tested again through the identity spine.
+
+Left as they are: an 8-digit generic code and its group share the API's
+name („Produse farmaceutice" for `336` and `33600000`); some divisions'
+short labels, now in titles, are narrower than the division (90,
+„Servicii de curățenie"); with an institution picked a category stays on
+firms while a click on a category row goes one level down.
+

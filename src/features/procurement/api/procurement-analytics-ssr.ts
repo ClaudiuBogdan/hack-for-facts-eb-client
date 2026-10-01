@@ -3,8 +3,7 @@ import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import type { AnalyticsSeed } from '../hooks/use-procurement-analytics'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { categoryLandingOf } from '../lib/analytics-head'
-import { analyticsSearchOf, cpvKey, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation } from '../lib/analytics-model'
+import { analyticsSearchOf, cpvKey, dropsFilters, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation } from '../lib/analytics-model'
 import { homeYear } from '../lib/home-model'
 import {
   defaultRecordsSort,
@@ -88,33 +87,41 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     // A firm in a place lists only once its count is known (`firmPlaceGate`): the browser reads it then, not the server now.
     const records = query.dupa.axis === 'inregistrari' && firmPlaceGate(query, { data: undefined, isError: false }) === 'list' ? planRecords(query, plan.period, defaultRecordsSort(query), 1) : null
     // The other populations' figures, for the counts on their tabs (and their answer, should a tab be clicked): a failure there is the browser's to read.
-    const others = POPULATION_ORDER.filter((tip) => tip !== query.tip)
+    const others = POPULATION_ORDER.filter((tip) => tip !== query.tip && !dropsFilters(query, tip))
       .map((tip) => planAnswer(withPopulation(query, tip), cutoff.value, { topN: 25, years: false }).figures)
       .filter((read) => read.enabled)
-    const [settled, listed, counted] = await Promise.all([
+    // Not waited for with the answer: a slow count must not spend the names' budget.
+    const counting = Promise.allSettled(others.map((read) => seeded(read)))
+    const [settled, listed] = await Promise.all([
       Promise.allSettled(answer.map((read) => seeded(read))),
       records?.enabled ? Promise.allSettled([seeded(records)]) : Promise.resolve([]),
-      Promise.allSettled(others.map((read) => seeded(read))),
     ])
     let complete = counties.status === 'fulfilled' && divisions.status === 'fulfilled'
     for (const read of settled) {
       if (read.status === 'fulfilled') seed.push(read.value)
       else complete = false
     }
-    for (const read of [...listed, ...counted]) if (read.status === 'fulfilled') seed.push(read.value)
+    for (const read of listed) if (read.status === 'fulfilled') seed.push(read.value)
     // The names of what the answer holds: the filters' own, and the ranked keys once the ranking is in.
     const rankingIndex = answer.indexOf(plan.ranking)
     const rankingRead = rankingIndex >= 0 ? settled[rankingIndex] : undefined
     const ranking = rankingRead?.status === 'fulfilled' ? (rankingRead.value.data as Ranking) : undefined
     const names = planNames(nameKeys(query, [ranking]))
-    const landing = categoryLandingOf(analyticsSearchOf(search))
+    // The category's name, whatever address asked: the memo keeps one read per question, and the
+    // landing's own address shares it with addresses that are not landings (`?cpv=X&dupa=<its default>`).
+    const category = query.filters.cpv?.values[0] ?? null
     let landingName: ProcurementAnalyticsServerRead['landingName']
     if (names.enabled) {
       const [read] = await Promise.allSettled([seeded(names)])
       if (read.status === 'fulfilled') {
         seed.push(read.value)
-        if (landing) landingName = (read.value.data as Names).cpv.get(cpvKey(landing.code))
+        if (category) landingName = (read.value.data as Names).cpv.get(cpvKey(category))
       } else complete = false
+    }
+    // The counts: a failed one is the browser's to read, and the render is not kept without it.
+    for (const read of await counting) {
+      if (read.status === 'fulfilled') seed.push(read.value)
+      else complete = false
     }
     return { seed, complete, latest, ...(landingName ? { landingName } : {}) }
   })

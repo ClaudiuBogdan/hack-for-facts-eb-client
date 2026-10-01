@@ -122,7 +122,7 @@ msgstr "“roads”, “medicines”, 45233120"
 msgid "„laptop\", „deszăpezire\""
 msgstr "“laptop”, “deszăpezire”"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:373
+#: src/features/procurement/components/analytics/analytics-controls.tsx:374
 msgid "„Titlul conține\" caută în titlu, fără diacritice ignorate: „deszăpezire\" și „deszapezire\" dau răspunsuri diferite."
 msgstr "“Title contains” searches the title, with diacritics not ignored: “deszăpezire” and “deszapezire” give different answers."
 
@@ -1251,11 +1251,11 @@ msgstr "{bought}, and signed {signed}."
 msgid "{boxLabel}, fără TVA"
 msgstr "{boxLabel}, excluding VAT"
 
-#: src/features/procurement/lib/analytics-head.ts:53
+#: src/features/procurement/lib/analytics-head.ts:54
 msgid "{category} (CPV {code}): {kind}"
 msgstr "{category} (CPV {code}): {kind}"
 
-#: src/features/procurement/lib/analytics-head.ts:59
+#: src/features/procurement/lib/analytics-head.ts:60
 msgid "{category}: cât cumpără instituțiile publice, de la ce firme și unde — achiziții directe, contracte și acorduri-cadru, pe ani, din SEAP."
 msgstr "{category}: how much public institutions buy, from which firms and where — direct purchases, contracts and framework agreements, by year, from SEAP."
 
@@ -2650,7 +2650,7 @@ msgid "Achiziții"
 msgstr "Procurement"
 
 #: src/features/procurement/components/analytics/analytics-years.tsx:66
-#: src/features/procurement/lib/analytics-head.ts:43
+#: src/features/procurement/lib/analytics-head.ts:44
 msgid "achiziții directe"
 msgstr "direct purchases"
 
@@ -2714,7 +2714,7 @@ msgstr "Direct purchases, lei"
 msgid "achiziții directe, până în {0}"
 msgstr "direct purchases, through {0}"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:370
+#: src/features/procurement/components/procurement-authority-slice.tsx:371
 msgid "Achiziții în timp"
 msgstr "Achiziții în timp"
 
@@ -2722,7 +2722,7 @@ msgstr "Achiziții în timp"
 #: src/features/landing/components/landing-page.tsx:70
 #: src/features/landing/lib/landing-groups.ts:70
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:208
-#: src/features/procurement/components/analytics/analytics-head.tsx:165
+#: src/features/procurement/components/analytics/analytics-head.tsx:167
 #: src/features/procurement/components/buyer/buyer-head.tsx:46
 #: src/features/procurement/components/contract/contract-head.tsx:38
 #: src/features/procurement/components/direct-purchase/direct-purchase-head.tsx:90
@@ -2895,7 +2895,7 @@ msgstr "Agreements that set a ceiling; the money is spent through subsequent con
 
 #: src/features/procurement/components/analytics/analytics-years.tsx:66
 #: src/features/procurement/components/contract/contract-context.tsx:97
-#: src/features/procurement/lib/analytics-head.ts:45
+#: src/features/procurement/lib/analytics-head.ts:46
 msgid "acorduri-cadru"
 msgstr "framework agreements"
 
@@ -3207,7 +3207,7 @@ msgstr "Actul prevede sancțiuni."
 msgid "Adaugă teritorii"
 msgstr "Add territories"
 
-#: src/features/procurement/components/analytics/analytics-head.tsx:216
+#: src/features/procurement/components/analytics/analytics-head.tsx:218
 msgid "Adaugă un filtru"
 msgstr "Add a filter"
 
@@ -3928,7 +3928,7 @@ msgstr "Other professional services"
 msgid "Altele"
 msgstr "Other"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:213
+#: src/features/procurement/components/analytics/analytics-controls.tsx:214
 msgid "Altfel"
 msgstr "Other"
 
@@ -4148,12 +4148,12 @@ msgstr "Entity analytics"
 msgid "Analiza legislației"
 msgstr "Analiza legislației"
 
-#: src/features/procurement/components/analytics/analytics-head.tsx:169
+#: src/features/procurement/components/analytics/analytics-head.tsx:171
 #: src/features/procurement/components/home/home-context-bands.tsx:549
 msgid "Analize"
 msgstr "Analyses"
 
-#: src/routes/procurement/analytics.tsx:70
+#: src/features/procurement/lib/analytics-head.ts:65
 msgid "Analize ale achizițiilor publice"
 msgstr "Public procurement analytics"
 
@@ -4528,7 +4528,7 @@ msgstr "Apeluri"
 msgid "API live neconectat"
 msgstr "API live neconectat"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:100
+#: src/features/procurement/components/analytics/analytics-controls.tsx:101
 #: src/features/procurement/components/analytics/analytics-filters.tsx:401
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:118
 msgid "Aplică"
@@ -5871,7 +5871,7 @@ msgstr "The INS Tempo catalog, by domain, frequency and territorial coverage. Ea
 #~ msgid "Catalogul pe teme"
 #~ msgstr "Catalogul pe teme"
 
-#: src/routes/procurement/analytics.tsx:73
+#: src/routes/procurement/analytics.tsx:81
 msgid "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 msgstr "How many direct purchases, contracts and framework agreements, for how many lei, at which institutions, companies, categories and places: ask and compare, from SEAP, since 2019."
 
@@ -5894,8 +5894,8 @@ msgstr "How many NGOs your county has"
 msgid "Categoria"
 msgstr "Category"
 
-#: src/features/procurement/lib/analytics-head.ts:52
-#: src/features/procurement/lib/analytics-head.ts:58
+#: src/features/procurement/lib/analytics-head.ts:53
+#: src/features/procurement/lib/analytics-head.ts:59
 msgid "Categoria CPV {code}"
 msgstr "CPV category {code}"
 
@@ -5939,7 +5939,7 @@ msgid "categorii"
 msgstr "categories"
 
 #: src/features/justice/components/litigation-slice-section.tsx:214
-#: src/features/procurement/components/analytics/analytics-controls.tsx:176
+#: src/features/procurement/components/analytics/analytics-controls.tsx:177
 #: src/features/procurement/components/analytics/analytics-filters.tsx:266
 #: src/routes/justitie.instante.$courtId.tsx:137
 #: src/routes/justitie.instante.$courtId.tsx:246
@@ -6446,7 +6446,7 @@ msgid "Ce funcționează în căutare — și ce nu funcționează încă."
 msgstr "Ce funcționează în căutare — și ce nu funcționează încă."
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:447
-#: src/features/procurement/components/analytics/analytics-head.tsx:253
+#: src/features/procurement/components/analytics/analytics-head.tsx:286
 msgid "Ce înregistrări"
 msgstr "Which records"
 
@@ -7045,7 +7045,7 @@ msgstr "Cifre de ansamblu"
 #: src/features/ngos/hub/ngo-hub-page.tsx:225
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:243
 #: src/features/private-companies/components/profile/company-profile-page.tsx:127
-#: src/features/procurement/components/analytics/analytics-head.tsx:322
+#: src/features/procurement/components/analytics/analytics-head.tsx:351
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:285
 #: src/features/procurement/components/home/procurement-home-page.tsx:187
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:269
@@ -8344,7 +8344,7 @@ msgid "Contracte"
 msgstr "Contracts"
 
 #: src/features/procurement/components/analytics/analytics-years.tsx:66
-#: src/features/procurement/lib/analytics-head.ts:44
+#: src/features/procurement/lib/analytics-head.ts:45
 msgid "contracte atribuite"
 msgstr "contracts awarded"
 
@@ -9734,7 +9734,7 @@ msgstr "Date"
 #. placeholder {0}: dayText(lastDayOf(period.through))
 #. placeholder {1}: cutoff.slice(0, 4)
 #. placeholder {1}: period.through.slice(0, 4)
-#: src/features/procurement/components/analytics/analytics-head.tsx:155
+#: src/features/procurement/components/analytics/analytics-head.tsx:157
 #: src/features/procurement/components/profile/profile-top-row.tsx:22
 msgid "Date actualizate până la {0} {1}"
 msgstr "Data up to date through {0} {1}"
@@ -10100,7 +10100,7 @@ msgstr "from"
 
 #: src/features/legal/components/legislation-changes-feed.tsx:329
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:174
-#: src/features/procurement/components/analytics/analytics-controls.tsx:97
+#: src/features/procurement/components/analytics/analytics-controls.tsx:98
 #: src/features/procurement/components/analytics/analytics-filters.tsx:90
 msgid "De la"
 msgstr "From"
@@ -11147,7 +11147,7 @@ msgid "Doar {0}: {1} {2}, România {3}. Fereastra de trei ani netezește anii mi
 msgstr "{0} alone: {1} {2}, Romania {3}. The three-year window smooths small years and lags a fast change."
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:232
-#: src/features/procurement/components/analytics/analytics-head.tsx:123
+#: src/features/procurement/components/analytics/analytics-head.tsx:117
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:82
 msgid "Doar {label}"
 msgstr "Only {label}"
@@ -11433,7 +11433,7 @@ msgstr "after amendment no. {act}"
 msgid "După anul din numărul de registru, pe care o organizație îl păstrează. Registrul există din 2000; organizațiile mai vechi au fost preluate atunci."
 msgstr "By the year in the registry number, which an organisation keeps. The registry dates from 2000; older organisations were taken into it then."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:299
+#: src/features/procurement/components/analytics/analytics-controls.tsx:300
 msgid "După ce"
 msgstr "By"
 
@@ -13215,7 +13215,7 @@ msgstr "since"
 #. placeholder {0}: monthsText(answer.period.previous)
 #. placeholder {0}: previous.fiscalYear
 #: src/features/private-companies/components/profile/company-business-band.tsx:198
-#: src/features/procurement/components/analytics/analytics-head.tsx:316
+#: src/features/procurement/components/analytics/analytics-head.tsx:345
 msgid "față de {0}"
 msgstr "vs {0}"
 
@@ -13551,7 +13551,7 @@ msgid "Filtrele se păstrează în adresă — o vedere filtrată este un link p
 msgstr "Filtrele se păstrează în adresă — o vedere filtrată este un link pe care îl poți trimite."
 
 #: src/features/landing/components/search/search-parts.tsx:253
-#: src/features/procurement/components/analytics/analytics-controls.tsx:145
+#: src/features/procurement/components/analytics/analytics-controls.tsx:146
 msgid "Filtru"
 msgstr "Filter"
 
@@ -13710,7 +13710,7 @@ msgstr "Finish"
 msgid "Firma"
 msgstr "Firm"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:168
+#: src/features/procurement/components/analytics/analytics-controls.tsx:169
 msgid "firmă"
 msgstr "company"
 
@@ -13811,7 +13811,7 @@ msgstr "Companies that sold directly to the state"
 msgid "firme din {name}"
 msgstr "companies from {name}"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:198
+#: src/features/procurement/components/analytics/analytics-controls.tsx:199
 msgid "Firme din {name}"
 msgstr "Companies from {name}"
 
@@ -16075,12 +16075,12 @@ msgstr "înregistrări"
 msgid "Înregistrări"
 msgstr "Records"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:375
+#: src/features/procurement/components/procurement-authority-slice.tsx:376
 msgid "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție."
 msgstr "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție."
 
 #. placeholder {0}: analysis.recordLabel
-#: src/features/procurement/components/procurement-authority-slice.tsx:383
+#: src/features/procurement/components/procurement-authority-slice.tsx:384
 msgid "Înregistrări recente · {0}"
 msgstr "Înregistrări recente · {0}"
 
@@ -16385,7 +16385,7 @@ msgstr "the institution did not accept the offer in time."
 msgid "Instituția nu a publicat un anunț de participare: a negociat direct. Legea permite asta doar în anumite cazuri (urgență, un singur furnizor posibil)."
 msgstr "The institution published no call for competition: it negotiated directly. The law allows this only in certain cases (urgency, a single possible supplier)."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:168
+#: src/features/procurement/components/analytics/analytics-controls.tsx:169
 msgid "instituție"
 msgstr "institution"
 
@@ -16428,7 +16428,7 @@ msgstr "Public institution"
 msgid "Instituție, firmă sau CUI…"
 msgstr "Institution, company or tax ID…"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:151
+#: src/features/procurement/components/analytics/analytics-controls.tsx:152
 msgid "Instituție, firmă, categorie, județ…"
 msgstr "Institution, company, category, county…"
 
@@ -16458,7 +16458,7 @@ msgstr "institutions with {0} execution data"
 msgid "instituții din {name}"
 msgstr "institutions from {name}"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:193
+#: src/features/procurement/components/analytics/analytics-controls.tsx:194
 msgid "Instituții din {name}"
 msgstr "Institutions from {name}"
 
@@ -16470,7 +16470,7 @@ msgstr "Institutions with no known location"
 msgid "instituții publice"
 msgstr "instituții publice"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:159
+#: src/features/procurement/components/analytics/analytics-controls.tsx:160
 msgid "Instituții și firme"
 msgstr "Institutions and companies"
 
@@ -16636,7 +16636,7 @@ msgstr "Between {since} and {until}, direct purchases grew from {from} to {to} a
 msgid "Între {since} și {until}, achizițiile directe au scăzut de la {from} la {to} pe an, în lei ai fiecărui an."
 msgstr "Between {since} and {until}, direct purchases fell from {from} to {to} a year, in each year's lei."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:89
+#: src/features/procurement/components/analytics/analytics-controls.tsx:90
 msgid "Între două luni"
 msgstr "Between two months"
 
@@ -16648,7 +16648,7 @@ msgstr "Between them, by year"
 msgid "Între ele, pe ani, lei"
 msgstr "Between them, by year, lei"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:243
+#: src/features/procurement/components/analytics/analytics-controls.tsx:244
 msgid "Întrebări"
 msgstr "Questions"
 
@@ -16946,7 +16946,7 @@ msgstr "Judete"
 msgid "județe"
 msgstr "counties"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:190
+#: src/features/procurement/components/analytics/analytics-controls.tsx:191
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:207
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:240
 msgid "Județe"
@@ -17469,7 +17469,7 @@ msgstr "Legislation"
 #: src/features/private-companies/lib/company-profile-format.ts:44
 #: src/features/private-companies/lib/hub-format.ts:56
 #: src/features/procurement/components/analytics/analytics-filters.tsx:398
-#: src/features/procurement/components/analytics/analytics-head.tsx:301
+#: src/features/procurement/components/analytics/analytics-head.tsx:330
 #: src/features/procurement/components/analytics/analytics-years.tsx:71
 #: src/features/procurement/components/home/home-context-bands.tsx:87
 #: src/features/statistics/lib/units.ts:38
@@ -18476,13 +18476,13 @@ msgstr "Months"
 #. placeholder {1}: answer.period.to
 #. placeholder {2}: answer.period.previous.from
 #. placeholder {3}: answer.period.previous.to
-#: src/features/procurement/components/analytics/analytics-controls.tsx:368
+#: src/features/procurement/components/analytics/analytics-controls.tsx:369
 msgid "Lunile: {0} – {1}; schimbarea se măsoară față de aceleași luni cu ani în urmă, {2} – {3}."
 msgstr "Months: {0} – {1}; the change is measured against the same months a year earlier, {2} – {3}."
 
 #. placeholder {0}: answer.period.from
 #. placeholder {1}: answer.period.to
-#: src/features/procurement/components/analytics/analytics-controls.tsx:369
+#: src/features/procurement/components/analytics/analytics-controls.tsx:370
 msgid "Lunile: {0} – {1}."
 msgstr "Months: {0} – {1}."
 
@@ -18940,7 +18940,7 @@ msgstr "Master preference for public debate campaign notifications"
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Master the app with these powerful keyboard shortcuts"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:322
+#: src/features/procurement/components/analytics/analytics-controls.tsx:323
 #: src/features/procurement/components/analytics/analytics-years.tsx:42
 msgid "Măsura"
 msgstr "Measure"
@@ -19216,7 +19216,7 @@ msgid "mil."
 msgstr "M"
 
 #: src/features/private-companies/lib/company-profile-format.ts:43
-#: src/features/procurement/components/analytics/analytics-head.tsx:301
+#: src/features/procurement/components/analytics/analytics-head.tsx:330
 #: src/features/procurement/components/analytics/analytics-years.tsx:69
 #: src/features/procurement/components/profile/profile-facts.ts:7
 msgid "mil. lei"
@@ -19351,7 +19351,7 @@ msgstr "bn"
 #: src/features/landing/lib/national-facts.ts:96
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:133
 #: src/features/private-companies/lib/company-profile-format.ts:42
-#: src/features/procurement/components/analytics/analytics-head.tsx:301
+#: src/features/procurement/components/analytics/analytics-head.tsx:330
 #: src/features/procurement/components/analytics/analytics-years.tsx:68
 #: src/features/procurement/components/home/procurement-home-page.tsx:387
 #: src/features/procurement/components/profile/profile-facts.ts:6
@@ -20507,7 +20507,7 @@ msgstr "Niciunul dintre cei {known} furnizori identificați nu are {basis} în a
 msgid "Nimic de arătat."
 msgstr "Nothing to show."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:156
+#: src/features/procurement/components/analytics/analytics-controls.tsx:157
 msgid "Nimic găsit."
 msgstr "Nothing found."
 
@@ -21324,7 +21324,7 @@ msgstr "Note: Romania has been under EU Excessive Deficit Procedure since 2020"
 msgid "Note: Transfer items are excluded as they represent internal movements within the public administration rather than actual expenditures or revenues."
 msgstr "Note: Transfer items are excluded as they represent internal movements within the public administration rather than actual expenditures or revenues."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:376
+#: src/features/procurement/components/analytics/analytics-controls.tsx:377
 msgid "Notele sursei (în engleză):"
 msgstr "The source's notes (in English):"
 
@@ -22540,7 +22540,7 @@ msgid "Open floating entity search"
 msgstr "Open floating entity search"
 
 #: src/components/entities/views/ContractsView.tsx:46
-#: src/features/procurement/components/procurement-authority-slice.tsx:406
+#: src/features/procurement/components/procurement-authority-slice.tsx:407
 msgid "Open full procurement profile"
 msgstr "Open full procurement profile"
 
@@ -23055,7 +23055,7 @@ msgstr "to"
 
 #: src/features/legal/components/legislation-changes-feed.tsx:350
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:191
-#: src/features/procurement/components/analytics/analytics-controls.tsx:98
+#: src/features/procurement/components/analytics/analytics-controls.tsx:99
 #: src/features/procurement/components/analytics/analytics-filters.tsx:91
 msgid "Până la"
 msgstr "To"
@@ -23319,7 +23319,7 @@ msgstr "PDF oficial"
 msgid "PDF oficial disponibil"
 msgstr "PDF oficial disponibil"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:331
+#: src/features/procurement/components/analytics/analytics-controls.tsx:332
 msgid "pe"
 msgstr "by"
 
@@ -23610,7 +23610,7 @@ msgid "Performanță pe scurt"
 msgstr "Performanță pe scurt"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:455
-#: src/features/procurement/components/analytics/analytics-head.tsx:175
+#: src/features/procurement/components/analytics/analytics-head.tsx:177
 #: src/features/procurement/components/profile/profile-year-select.tsx:65
 msgid "Perioada"
 msgstr "Period"
@@ -24614,7 +24614,7 @@ msgstr "Procedures"
 msgid "Procedures carry no supplier until an award."
 msgstr "Procedures carry no supplier until an award."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:204
+#: src/features/procurement/components/analytics/analytics-controls.tsx:205
 msgid "Proceduri"
 msgstr "Procedures"
 
@@ -25224,11 +25224,11 @@ msgstr "The lines add up to {lines}, and the purchase is {value}. SEAP publishes
 msgid "Randurile care leaga acest instantaneu de profiluri sau referinte."
 msgstr "Randurile care leaga acest instantaneu de profiluri sau referinte."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:374
+#: src/features/procurement/components/analytics/analytics-controls.tsx:375
 msgid "Rândurile listei nu se adună exact la total: citirile nu sunt din același moment."
 msgstr "The list's rows do not add up exactly to the total: the readings are not from the same moment."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:374
+#: src/features/procurement/components/analytics/analytics-controls.tsx:375
 msgid "Rândurile listei, cu „Restul\" și cele necunoscute, se adună la total."
 msgstr "The list's rows, with “The rest” and the unknown ones, add up to the total."
 
@@ -25337,7 +25337,7 @@ msgstr "Partial answer: {undated, plural, one {# row} other {# rows}} with no da
 msgid "Răspuns parțial: sursa nu acoperă toată selecția."
 msgstr "Partial answer: the source does not cover the whole selection."
 
-#: src/features/procurement/components/analytics/procurement-analytics-page.tsx:56
+#: src/features/procurement/components/analytics/procurement-analytics-page.tsx:53
 msgid "Răspunsul"
 msgstr "The answer"
 
@@ -25461,7 +25461,7 @@ msgstr "Receive updates about this entity in the local budget campaign"
 #~ msgid "Received from public institutions"
 #~ msgstr "Received from public institutions"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:385
+#: src/features/procurement/components/procurement-authority-slice.tsx:386
 msgid "Recent contracts"
 msgstr "Recent contracts"
 
@@ -26842,12 +26842,12 @@ msgstr "Change"
 #~ msgid "Schimbarea populației pe județe"
 #~ msgstr "Population change by county"
 
-#: src/features/procurement/components/analytics/analytics-head.tsx:200
+#: src/features/procurement/components/analytics/analytics-head.tsx:202
 msgid "Scoate"
 msgstr "Remove"
 
 #. placeholder {0}: part.text
-#: src/features/procurement/components/analytics/analytics-head.tsx:70
+#: src/features/procurement/components/analytics/analytics-head.tsx:71
 msgid "Scoate „{0}\""
 msgstr "Remove “{0}”"
 
@@ -26900,7 +26900,7 @@ msgstr "Type a name to search in <0>{scope}</0>."
 msgid "Scrie un nume sau un identificator pentru a căuta."
 msgstr "Enter a name or identifier to search."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:154
+#: src/features/procurement/components/analytics/analytics-controls.tsx:155
 msgid "Scrie un nume, un CUI, o categorie („medicamente\", „drumuri\") sau un județ."
 msgstr "Type a name, a tax ID, a category (“medicines”, “roads”) or a county."
 
@@ -27370,7 +27370,7 @@ msgid "Search a county"
 msgstr "Search a county"
 
 #: src/components/entities/views/ContractsView.tsx:59
-#: src/features/procurement/components/procurement-authority-slice.tsx:398
+#: src/features/procurement/components/procurement-authority-slice.tsx:399
 msgid "Search all records for this institution"
 msgstr "Search all records for this institution"
 
@@ -31222,7 +31222,7 @@ msgid "Titlul conține"
 msgstr "Title contains"
 
 #. placeholder {0}: search.term.trim()
-#: src/features/procurement/components/analytics/analytics-controls.tsx:216
+#: src/features/procurement/components/analytics/analytics-controls.tsx:217
 msgid "Titlul conține „{0}\""
 msgstr "Title contains “{0}”"
 
@@ -32116,7 +32116,7 @@ msgid "ultimele 12 luni"
 msgstr "the last 12 months"
 
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:218
-#: src/features/procurement/components/analytics/analytics-controls.tsx:73
+#: src/features/procurement/components/analytics/analytics-controls.tsx:74
 #: src/features/procurement/components/analytics/analytics-filters.tsx:71
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:276
 #: src/features/procurement/components/profile/profile-year-select.tsx:73
@@ -32173,7 +32173,7 @@ msgstr "Un act corespunde acestei căutări:"
 msgid "Un act poate ține de mai multe domenii, așa că numerele se suprapun — adunate, depășesc numărul real de acte din corpus."
 msgstr "Un act poate ține de mai multe domenii, așa că numerele se suprapun — adunate, depășesc numărul real de acte din corpus."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:76
+#: src/features/procurement/components/analytics/analytics-controls.tsx:77
 msgid "Un an"
 msgstr "One year"
 
@@ -32201,7 +32201,7 @@ msgstr "A bitten cookie, with crumbs beside it"
 msgid "Un exemplu, ca să vezi cum arată. Schimbă indicatorul sau teritoriile și comparația devine a ta."
 msgstr "An example, to show what it looks like. Change the indicator or the territories and the comparison becomes yours."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:372
+#: src/features/procurement/components/analytics/analytics-controls.tsx:373
 msgid "Un filtru de valoare păstrează doar înregistrările cu valoare publicată; și numărul lor se schimbă."
 msgstr "A value filter keeps only the records with a published value; their count changes too."
 
@@ -32873,7 +32873,7 @@ msgstr "Valoare atipică — sursă coruptă sau în afara limitelor."
 msgid "valoare atribuită"
 msgstr "valoare atribuită"
 
-#: src/features/procurement/components/procurement-authority-slice.tsx:374
+#: src/features/procurement/components/procurement-authority-slice.tsx:375
 msgid "Valoare atribuită pe lună pentru acest cumpărător public."
 msgstr "Valoare atribuită pe lună pentru acest cumpărător public."
 
@@ -32894,12 +32894,12 @@ msgstr "Valoare atribuită pe lună pentru acest cumpărător public."
 #~ msgstr "Value has an INS status flag"
 
 #. placeholder {0}: moneyText(number)
-#: src/features/procurement/components/analytics/analytics-controls.tsx:224
+#: src/features/procurement/components/analytics/analytics-controls.tsx:225
 msgid "Valoare de cel mult {0}"
 msgstr "Value of at most {0}"
 
 #. placeholder {0}: moneyText(number)
-#: src/features/procurement/components/analytics/analytics-controls.tsx:221
+#: src/features/procurement/components/analytics/analytics-controls.tsx:222
 msgid "Valoare de cel puțin {0}"
 msgstr "Value of at least {0}"
 

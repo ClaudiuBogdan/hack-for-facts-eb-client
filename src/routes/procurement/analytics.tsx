@@ -6,15 +6,22 @@ import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { ProcurementAnalyticsServerRead } from '@/features/procurement/api/procurement-analytics-ssr'
 import { analyticsRedirectSearch, isExplorerSearch } from '@/features/procurement/lib/analytics-legacy'
-import { categoryLandingOf, landingDescription, landingName, landingTitle } from '@/features/procurement/lib/analytics-head'
+import { categoryLandingOf, landingDescription, landingName, landingTitle, pageTitle } from '@/features/procurement/lib/analytics-head'
 import { analyticsSearchOf, SEARCH_KEYS, type AnalyticsUrlSearch } from '@/features/procurement/lib/analytics-model'
 
-/** The keys the page reads, each a string or the number a digits-only value travels as; any other is left to its own route. */
+/**
+ * The keys the page reads, each a string or the number a digits-only value
+ * travels as; any other is left to its own route. A page key the router
+ * parsed as something else (`cpv=true`, `cpv=45&cpv=33`) stays as text, for
+ * the page to say it could not read it: dropped, the address would read as
+ * the bare page or a landing, and be indexed as one.
+ */
 function validateAnalyticsSearch(search: Record<string, unknown>): AnalyticsUrlSearch {
   const valid: Record<string, string | number> = {}
   for (const key of SEARCH_KEYS) {
     const value = search[key]
     if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) valid[key] = value
+    else if (value !== undefined && value !== null) valid[key] = typeof value === 'object' ? JSON.stringify(value) : String(value)
   }
   return valid
 }
@@ -57,8 +64,9 @@ export const Route = createFileRoute('/procurement/analytics')({
           vary: ['Accept-Encoding', 'Cookie'],
         }),
   // In the request's own language: the shared Lingui instance may hold another request's by the time a head that waited on its loader runs.
-  // A category alone is a landing with its own title and address; the bare page is the page; any other question is a
-  // reader's own, answered but not indexed (design.md §19). No canonical elsewhere for those: with noindex it would contradict it.
+  // A named category alone is a landing with its own title and address; the bare page is the page; any other question — a
+  // code that names no category among them — is a reader's own, answered but not indexed (design.md §19). No canonical or
+  // og:url elsewhere for those: with noindex it would contradict it, and a shared question's preview would be the bare page's.
   head: ({ match, loaderData }) => {
     const locale = match.context.locale
     const translator = translatorFor(locale)
@@ -67,11 +75,11 @@ export const Route = createFileRoute('/procurement/analytics')({
     const bare = Object.keys(search).length === 0
     const name = landing ? landingName(landing.code, locale, loaderData?.landingName) : null
     const canonical = landing ? `${getSiteUrl()}/procurement/analytics?${landing.search}` : `${getSiteUrl()}/procurement/analytics`
-    const title = landing ? landingTitle(translator, landing, name) : `${translator._(msg`Analize ale achizițiilor publice`)} — Transparenta.eu`
+    const title = landing ? landingTitle(translator, landing, name) : pageTitle(translator)
     const description = landing
       ? landingDescription(translator, landing, name)
       : translator._(msg`Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019.`)
-    const indexed = landing !== null || bare
+    const indexed = (landing !== null && name !== null) || bare
     return {
       meta: [
         { title },
@@ -79,7 +87,7 @@ export const Route = createFileRoute('/procurement/analytics')({
         ...(indexed ? [] : [{ name: 'robots', content: 'noindex, follow' }]),
         { property: 'og:title', content: title },
         { property: 'og:description', content: description },
-        { property: 'og:url', content: canonical },
+        ...(indexed ? [{ property: 'og:url', content: canonical }] : []),
         { name: 'twitter:title', content: title },
         { name: 'twitter:description', content: description },
       ],

@@ -6,6 +6,7 @@ import {
   AXIS_ORDER,
   POPULATIONS,
   bucketsBetween,
+  cpvPath,
   levelOf,
   monthsBetween,
   resolvePeriod,
@@ -495,7 +496,8 @@ export function nameKeys(query: Query, rankings: readonly (Ranking | undefined)[
   const cpv: string[] = []
   if (query.filters.cumparator) orgs.push(...query.filters.cumparator.values)
   if (query.filters.furnizor) orgs.push(...query.filters.furnizor.values)
-  if (query.filters.cpv) cpv.push(...query.filters.cpv.values.map((value) => value.padEnd(8, '0')))
+  // The category and each step of its path, which the head shows over the headline.
+  if (query.filters.cpv) cpv.push(...query.filters.cpv.values.flatMap((value) => cpvPath(value).map((step) => step.padEnd(8, '0'))))
   for (const ranking of rankings) {
     if (!ranking) continue
     for (const bucket of ranking.buckets) {

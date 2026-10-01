@@ -25,7 +25,7 @@ import {
 import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
 import { siteSearchOf } from '../lib/analytics-legacy'
-import { analyticsSearchOf, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation, type AnalyticsSearch, type PopulationId, type Query, type ResolvedPeriod } from '../lib/analytics-model'
+import { analyticsSearchOf, dropsFilters, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation, type AnalyticsSearch, type PopulationId, type Query, type ResolvedPeriod } from '../lib/analytics-model'
 import type { Namer } from '../lib/analytics-text'
 import { placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
 import { homeYear } from '../lib/home-model'
@@ -317,8 +317,31 @@ export function useAnswer(query: Query, options: { readonly topN: number; readon
   }
 }
 
-/** Each population's count for a question's filters: read, unknown (`null`) or on its way (`undefined`). */
-export type PopulationCounts = Readonly<Record<PopulationId, number | null | undefined>>
+/** A population's count for the question, on its tab. */
+export interface PopulationCount {
+  /** The count; `null` when there is none to show (unknown, withheld, or a wider question's); `undefined` while it is read. */
+  readonly value: number | null | undefined
+  /** The months it counts: each population its own, through its own cutoff. */
+  readonly period: ResolvedPeriod | null
+}
+
+export type PopulationCounts = Readonly<Record<PopulationId, PopulationCount>>
+
+/**
+ * A tab's count from its read. What was read stands, though a later read
+ * failed; a population that would drop one of the question's filters says
+ * nothing — its count would answer a wider question under this one's
+ * headline.
+ */
+export function populationCountOf(
+  read: { readonly data: unknown; readonly isError: boolean },
+  state: { readonly drops: boolean; readonly enabled: boolean; readonly cutoffPending: boolean },
+): number | null | undefined {
+  if (state.drops) return null
+  if (read.data !== undefined) return (read.data as Answer['figures']['data'])?.now?.records ?? null
+  if (read.isError) return null
+  return state.enabled || state.cutoffPending ? undefined : null
+}
 
 /**
  * Each population's count for the question's filters, as its own tab would
@@ -329,15 +352,16 @@ export type PopulationCounts = Readonly<Record<PopulationId, number | null | und
 export function usePopulationCounts(query: Query): PopulationCounts {
   const cutoffRead = useCutoff()
   const seeded = useSeeded()
-  const plans = POPULATION_ORDER.map((tip) => planAnswer(withPopulation(query, tip), cutoffRead.data ?? null, { topN: 25, years: false }).figures)
-  const reads = useQueries({
-    queries: plans.map((plan) => ({ queryKey: plan.key, queryFn: ({ signal }: { signal: AbortSignal }) => plan.read(signal), enabled: plan.enabled, staleTime: STALE, ...seeded(plan) })),
+  const plans = POPULATION_ORDER.map((tip) => {
+    const plan = planAnswer(withPopulation(query, tip), cutoffRead.data ?? null, { topN: 25, years: false })
+    return { period: plan.period, figures: plan.figures, drops: dropsFilters(query, tip) }
   })
-  const countOf = (index: number): number | null | undefined => {
-    const read = reads[index]!
-    if (read.isError) return null
-    if (read.data === undefined) return plans[index]!.enabled || cutoffRead.isPending ? undefined : null
-    return (read.data as Answer['figures']['data'])?.now?.records ?? null
+  const reads = useQueries({
+    queries: plans.map(({ figures, drops }) => ({ queryKey: figures.key, queryFn: ({ signal }: { signal: AbortSignal }) => figures.read(signal), enabled: figures.enabled && !drops, staleTime: STALE, ...seeded(figures) })),
+  })
+  const countOf = (index: number): PopulationCount => {
+    const { period, figures, drops } = plans[index]!
+    return { value: populationCountOf(reads[index]!, { drops, enabled: figures.enabled, cutoffPending: cutoffRead.isPending }), period }
   }
   return { directe: countOf(0), contracte: countOf(1), acorduri: countOf(2) }
 }

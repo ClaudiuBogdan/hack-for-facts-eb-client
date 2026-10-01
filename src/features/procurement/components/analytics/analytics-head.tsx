@@ -12,12 +12,12 @@ import { lastDayOf } from '@/features/procurement/lib/profile-period'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import { AXIS_ORDER, cpvKey, cpvPath, POPULATION_ORDER, POPULATIONS, withCategory, withoutFilter, withPopulation, withTitle, type AxisId, type PopulationId, type Query } from '../../lib/analytics-model'
-import { useNames, type Answer, type PopulationCounts } from '../../hooks/use-procurement-analytics'
+import { AXIS_ORDER, cpvPath, POPULATION_ORDER, POPULATIONS, withCategory, withoutFilter, withPopulation, withTitle, type AxisId, type PopulationId, type Query } from '../../lib/analytics-model'
+import type { Answer, PopulationCounts } from '../../hooks/use-procurement-analytics'
 import { AddFilter, PeriodMenu, QuestionsMenu } from './analytics-controls'
 import { NotesMarker, ShareIcon } from './analytics-answer'
 import { FiltersButton } from './analytics-filters'
-import { cpvLabel, headline, headlineParts, moneyText, monthsText, populationLabel, type HeadlinePart, type Namer } from '../../lib/analytics-text'
+import { cpvLabel, headline, headlineParts, kindSplitNote, moneyText, monthsText, populationLabel, type HeadlinePart, type Namer } from '../../lib/analytics-text'
 import { figuresOf, filterChipLabel, type Figure } from './analytics-view'
 
 /**
@@ -87,35 +87,28 @@ function headlineSize(text: string): string {
 const LINK = 'inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-0'
 
 /**
- * The page's head, in the procurement profiles' shape and on their grid: the
- * lattice, the corner ticks; the top row with the way back and the period
- * (with the date its data runs through); the question as the headline —
- * each filter's phrase opens the panel, its ✕ drops it; under it, what
- * adds to the query and the caveats' marker; the cross where the head's
- * bottom rule meets the frame, over the bar below.
- */
-/**
  * A category's place in the CPV tree, over the headline that names it: its
  * code and its parents' codes, each parent a step back up (design.md §19).
  * Codes, not names: the headline says the category's name, and a path of
  * names would not fit a phone; each code carries its name for a screen
- * reader and on hover.
+ * reader, and on hover. The names are the page's own read (`nameKeys`).
  */
 function CategoryPath({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const path = cpvPath(query.filters.cpv?.values[0] ?? '')
-  const names = useNames({ orgs: [], cpv: path.map(cpvKey) })
-  const local: Namer = { ...namer, names: names.data ?? namer.names }
   return (
-    <MonoLabel className="mt-6 flex flex-wrap items-center gap-x-1.5 text-muted-foreground sm:mt-8">
-      <span>CPV</span>
+    <MonoLabel className="mt-6 flex flex-wrap items-center gap-x-0.5 text-muted-foreground sm:mt-8">
+      <span className="mr-1">CPV</span>
       {path.map((step, index) => {
-        const label = cpvLabel(step, local)
+        const label = cpvLabel(step, namer)
+        // A whole target: 44 px tall on a phone, 24 from a small screen up, a little wider than its digits.
+        const target = 'inline-flex min-h-11 items-center px-1 sm:min-h-6'
         return (
           <Fragment key={step}>
             {index > 0 ? <ChevronRight className="size-3 shrink-0" aria-hidden="true" /> : null}
             {index === path.length - 1 ? (
-              <span className="inline-flex min-h-11 items-center text-foreground sm:min-h-0" title={label}>
+              <span className={cn(target, 'text-foreground')} title={label}>
                 {step}
+                <span className="sr-only"> {label}</span>
               </span>
             ) : (
               <button
@@ -123,7 +116,7 @@ function CategoryPath({ query, namer, onChange }: { readonly query: Query; reado
                 onClick={() => onChange(withCategory(query, step))}
                 title={t`Doar ${label}`}
                 aria-label={`${step} ${label}`}
-                className="inline-flex min-h-11 items-center underline-offset-4 hover:text-foreground hover:underline sm:min-h-0"
+                className={cn(target, 'underline-offset-4 hover:text-foreground hover:underline')}
               >
                 {step}
               </button>
@@ -135,6 +128,14 @@ function CategoryPath({ query, namer, onChange }: { readonly query: Query; reado
   )
 }
 
+/**
+ * The page's head, in the procurement profiles' shape and on their grid: the
+ * lattice, the corner ticks; the top row with the way back and the period
+ * (with the date its data runs through); the question as the headline —
+ * each filter's phrase opens the panel, its ✕ drops it; under it, what
+ * adds to the query and the caveats' marker; the cross where the head's
+ * bottom rule meets the frame, over the bar below.
+ */
 export function AnalyticsHead({
   query,
   answer,
@@ -238,6 +239,37 @@ export function AnalyticsHead({
  * populations at the right, each with its mark instead of a number (they
  * are choices, not a sequence); the one read is underlined.
  */
+/**
+ * A tab's count, in a slot of its own height: a bone while it is read, the
+ * count, or nothing — the bar never moves. Its months on hover (each
+ * population counts its own), and the record kinds' caveat marked where its
+ * months run past the split, as the population's own page says it.
+ */
+function TabCount({ tip, count }: { readonly tip: PopulationId; readonly count: PopulationCounts[PopulationId] }) {
+  const split = POPULATIONS[tip].kindSplitUntil
+  const note = split && count.period && count.period.to > split ? kindSplitNote(tip) : null
+  const months = count.period ? monthsText(count.period) : null
+  return (
+    <span className="flex h-4 items-center text-xs tabular-nums text-muted-foreground" title={count.value != null ? [months, note].filter(Boolean).join(' · ') : undefined}>
+      {count.value === undefined ? (
+        <Bone className="w-12" />
+      ) : count.value !== null ? (
+        <>
+          {countText(count.value)}
+          {note ? (
+            <>
+              <span className="text-amber-700 dark:text-amber-400" aria-hidden="true">
+                *
+              </span>
+              <span className="sr-only">{note}</span>
+            </>
+          ) : null}
+        </>
+      ) : null}
+    </span>
+  )
+}
+
 export function PopulationNav({
   query,
   namer,
@@ -271,14 +303,10 @@ export function PopulationNav({
                   )}
                 >
                   <Icon className={cn('size-4 shrink-0', active && 'text-primary')} aria-hidden="true" />
-                  {/* The count under the name on a phone, beside it from a small screen up; a bone while it is read, so nothing moves. */}
-                  <span className="flex min-w-0 flex-col sm:flex-row sm:items-baseline sm:gap-1.5">
+                  {/* The count under the name, beside it from `md` (three long names and counts overflow a small screen). */}
+                  <span className="flex min-w-0 flex-col md:flex-row md:items-baseline md:gap-1.5">
                     <span>{populationLabel(tip)}</span>
-                    {counts[tip] === undefined ? (
-                      <Bone className="mt-0.5 w-12 sm:mt-0" />
-                    ) : counts[tip] !== null ? (
-                      <span className="text-xs tabular-nums text-muted-foreground">{countText(counts[tip])}</span>
-                    ) : null}
+                    <TabCount tip={tip} count={counts[tip]} />
                   </span>
                 </button>
               </li>

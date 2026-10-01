@@ -48,6 +48,12 @@ describe('/procurement/analytics', () => {
     })
   })
 
+  it('keeps a page key the router parsed as something else, as text, for the page to say it could not read it', () => {
+    expect(route.validateSearch({ cpv: true, tip: ['contracte', 'directe'] })).toEqual({ cpv: 'true', tip: '["contracte","directe"]' })
+    const head = route.head({ match: { context: { locale: 'ro' }, search: route.validateSearch({ cpv: true }) } })
+    expect(head.meta).toContainEqual({ name: 'robots', content: 'noindex, follow' })
+  })
+
   it('answers its own address, a stray explorer key and all', () => {
     expect(() => route.beforeLoad({ location: { search: { cumparator: 4305857, dupa: 'firma' } } })).not.toThrow()
     expect(() => route.beforeLoad({ location: { search: {} } })).not.toThrow()
@@ -69,13 +75,18 @@ describe('/procurement/analytics', () => {
     // The population's own word; the page's default population is not written.
     const contracts = route.head({ match: { context: { locale: 'ro' }, search: { tip: 'contracte', cpv: 45 } } })
     expect(contracts.meta[0]?.title).toMatch(/^Lucrări de construcții \(CPV 45\): contracte atribuite/u)
-    expect(route.head({ match: { context: { locale: 'ro' }, search: { tip: 'directe', cpv: 336 } } }).links[0]?.href).toMatch(/\?cpv=336$/u)
+    expect(route.head({ match: { context: { locale: 'ro' }, search: { tip: 'directe', cpv: 336 } }, loaderData: { seed: [], complete: true, landingName: { ro: 'Produse farmaceutice', en: null } } }).links[0]?.href).toMatch(/\?cpv=336$/u)
   })
 
   it('keeps a reader’s own question out of the index, and the bare page in it', () => {
     const own = route.head({ match: { context: { locale: 'ro' }, search: { cpv: 336, judet: 'SB' } } })
     expect(own.meta).toContainEqual({ name: 'robots', content: 'noindex, follow' })
     expect(own.links).toEqual([])
+    expect(own.meta.some((tag) => tag.property === 'og:url')).toBe(false)
+    // A well-formed code that names no category is no landing: no soft 404 in the index.
+    const unnamed = route.head({ match: { context: { locale: 'ro' }, search: { cpv: 999 } }, loaderData: { seed: [], complete: true } })
+    expect(unnamed.meta).toContainEqual({ name: 'robots', content: 'noindex, follow' })
+    expect(unnamed.links).toEqual([])
     const bare = route.head({ match: { context: { locale: 'ro' }, search: { lang: 'en' } } })
     expect(bare.meta.some((tag) => tag.name === 'robots')).toBe(false)
     expect(bare.links[0]?.href).toMatch(/\/procurement\/analytics$/u)

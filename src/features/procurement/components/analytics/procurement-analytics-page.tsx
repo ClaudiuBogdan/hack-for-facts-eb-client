@@ -4,9 +4,8 @@ import { t } from '@lingui/core/macro'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import { useAnalyticsQuery, useAnswer, useNamer, usePopulationCounts } from '../../hooks/use-procurement-analytics'
-import { categoryLandingOf, landingName, landingTitle } from '../../lib/analytics-head'
-import { cpvKey, searchOf, type Query } from '../../lib/analytics-model'
-import { headline } from '../../lib/analytics-text'
+import { documentTitleOf } from '../../lib/analytics-head'
+import { searchOf, type Query } from '../../lib/analytics-model'
 import { AnswerRecords, AnswerTable, AnswerTime, SourceLine } from './analytics-answer'
 import { GroupBar } from './analytics-controls'
 import { FilterSheet } from './analytics-filters'
@@ -42,11 +41,9 @@ export function ProcurementAnalyticsPage() {
   const answer = useAnswer(query, { topN: expanded ? 100 : 25, years: true })
   const namer = useNamer(query, answer)
   const counts = usePopulationCounts(query)
-  // The tab says the question: a category landing as the route's head says it, once its name is read; any other question by its headline.
+  // The browser tab says the question, as the route's head would with every name read: its own title stays on a client navigation.
   const { i18n } = useLingui()
-  const landing = categoryLandingOf(strings)
-  const named = landing ? landingName(landing.code, i18n.locale, namer.names?.cpv.get(cpvKey(landing.code))) : null
-  useClientDocumentTitle(landing ? (named ? landingTitle(i18n, landing, named) : null) : Object.keys(strings).length > 0 ? `${headline(query, namer)} — Transparenta.eu` : null)
+  useClientDocumentTitle(documentTitleOf(i18n, strings, query, namer))
   return (
     // Clip, not hide: the crux marks overhang the frame, and a hidden overflow would unstick the bar.
     <div className="relative w-full overflow-x-clip bg-background">

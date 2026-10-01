@@ -578,6 +578,12 @@ export function withPopulation(query: Query, tip: PopulationId): Query {
   return repaired({ ...query, tip, masura: POPULATIONS[tip].defaultMeasure })
 }
 
+/** Whether another population would drop one of the question's filters (a procedure has no direct purchases): its answer would be a wider question's. */
+export function dropsFilters(query: Query, tip: PopulationId): boolean {
+  const next = withPopulation(query, tip)
+  return AXIS_ORDER.some((axis) => query.filters[axis] !== undefined && next.filters[axis] === undefined)
+}
+
 /** A CPV pick from its path: division › group › class › category › code, each step a click back up. */
 export function cpvPath(prefix: string): readonly string[] {
   const steps = [2, 3, 4, 5].filter((length) => length < prefix.length).map((length) => prefix.slice(0, length))

@@ -1,9 +1,22 @@
 // The explorer's addresses as the analytics page's: every question an old link asked is asked again, in the page's words, with the explorer's own defaults; what the page cannot filter on stays behind.
 import { describe, expect, it } from 'vitest'
-import { analyticsRedirectSearch, analyticsSearchFromExplorer, isExplorerSearch, siteSearchOf } from './analytics-legacy'
+import { analyticsRedirectSearch, analyticsSearchFromExplorer, cpvCodeParam, isExplorerSearch, siteSearchOf } from './analytics-legacy'
 import { queryOf, repaired, urlSearchOf } from './analytics-model'
 
 const NOW = new Date('2026-09-29T12:00:00Z')
+
+describe('an old category address', () => {
+  it('takes 2 to 8 digits, and an 8-digit code’s check digit, which it drops', () => {
+    expect(cpvCodeParam('45')).toBe('45')
+    expect(cpvCodeParam('03')).toBe('03')
+    expect(cpvCodeParam('33600000')).toBe('33600000')
+    expect(cpvCodeParam('45000000-7')).toBe('45000000')
+  })
+
+  it('is no category otherwise', () => {
+    for (const code of ['abc', '1', '123456789', '45 33', '45,33', '4500-7', '45000000-77']) expect(cpvCodeParam(code)).toBeNull()
+  })
+})
 
 describe('a change of question', () => {
   it('keeps the site’s own keys, and none of the page’s or the explorer’s', () => {

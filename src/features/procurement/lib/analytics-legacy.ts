@@ -101,6 +101,17 @@ export function analyticsRedirectSearch(raw: Readonly<Record<string, unknown>>, 
 }
 
 /**
+ * A CPV code as the old category addresses took it: 2 to 8 digits, an
+ * 8-digit code's check digit („45000000-7") allowed and dropped; anything
+ * else is no category (a 404).
+ */
+export function cpvCodeParam(code: string): string | null {
+  const match = /^(\d{2,8})(?:-\d)?$/u.exec(code)
+  if (!match || (code.includes('-') && match[1]!.length !== 8)) return null
+  return match[1]!
+}
+
+/**
  * The analytics page's address for the old CPV category page
  * (`/procurement/categories/$code`, `/achizitii/cpv/$code`): the category
  * as its filter, at the page's own period and grouping, the site's keys

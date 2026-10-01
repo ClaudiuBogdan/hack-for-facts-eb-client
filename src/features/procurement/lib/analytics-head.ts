@@ -1,7 +1,8 @@
 import type { I18n } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
-import { queryOf, repaired, searchOf, unreadParams, type AnalyticsSearch, type PopulationId } from './analytics-model'
+import { cpvKey, queryOf, repaired, searchOf, unreadParams, type AnalyticsSearch, type PopulationId, type Query } from './analytics-model'
+import { headline, type Namer } from './analytics-text'
 
 /**
  * What the analytics page tells search engines (design.md §19). A category
@@ -58,3 +59,25 @@ export function landingDescription(i18n: I18n, landing: CategoryLanding, name: s
   const category = name ?? i18n._(msg`Categoria CPV ${code}`)
   return i18n._(msg`${category}: cât cumpără instituțiile publice, de la ce firme și unde — achiziții directe, contracte și acorduri-cadru, pe ani, din SEAP.`)
 }
+
+/** The page's own title, for the bare page and any question that is no landing. */
+export function pageTitle(i18n: I18n): string {
+  return `${i18n._(msg`Analize ale achizițiilor publice`)} — Transparenta.eu`
+}
+
+/**
+ * The browser tab's title for a question, as the route's head would give it
+ * with every name read: a named landing by its category, the bare page by
+ * the page, any other question by its headline; null while a landing's name
+ * is not read yet (the head's title stands meanwhile).
+ */
+export function documentTitleOf(i18n: I18n, search: AnalyticsSearch, query: Query, namer: Namer): string | null {
+  const landing = categoryLandingOf(search)
+  if (landing) {
+    const name = landingName(landing.code, i18n.locale, namer.names?.cpv.get(cpvKey(landing.code)))
+    return name ? landingTitle(i18n, landing, name) : null
+  }
+  if (Object.keys(search).length === 0) return pageTitle(i18n)
+  return `${headline(query, namer)} — Transparenta.eu`
+}
+

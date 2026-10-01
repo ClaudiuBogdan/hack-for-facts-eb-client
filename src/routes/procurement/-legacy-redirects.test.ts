@@ -6,9 +6,12 @@ const redirectMock = vi.fn((options: Record<string, unknown>) => ({
   options,
 }))
 
+const notFoundError = new Error('not-found')
+
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
   redirect: redirectMock,
+  notFound: () => notFoundError,
 }))
 
 async function importLegacyRoute(path: string) {
@@ -74,6 +77,12 @@ describe('legacy achizitii redirects', () => {
     vi.resetModules()
     routeStub.mockClear()
     redirectMock.mockClear()
+  })
+
+  it('answers the old category alias with a 404 for a code that is no CPV code, and drops a check digit', async () => {
+    const route = (await importLegacyRoute('category')) as unknown as { readonly params: { readonly parse: (params: { readonly code: string }) => { readonly code: string } } }
+    for (const code of ['abc', '45 33', '45,33']) expect(() => route.params.parse({ code })).toThrow(notFoundError)
+    expect(route.params.parse({ code: '45000000-7' })).toEqual({ code: '45000000' })
   })
 
   it('sends the old category alias straight to the analytics page, its category the filter, the site keys kept', async () => {
