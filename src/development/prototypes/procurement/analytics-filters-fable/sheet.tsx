@@ -2,6 +2,7 @@ import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from '
 import { useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { ChevronRight, Loader2, X } from 'lucide-react'
+import { afterFocusMoves } from '@/components/filters/filter-sheet/filter-sheet-focus'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -126,7 +127,8 @@ function useActiveOption(count: number, reset: string) {
 /** The list under a search, and what it says instead of rows: it keeps the input's focus, so a tap on a row is a pick and not a blur. */
 function Options({ id, label, notices, children }: { readonly id: string; readonly label: string; readonly notices?: ReactNode; readonly children?: ReactNode }) {
   return (
-    <div className="max-h-80 overflow-y-auto border" onMouseDown={(event) => event.preventDefault()}>
+    // Out of the Tab order: Chrome makes a scroller a stop of its own, unnamed, where Escape would close the sheet.
+    <div tabIndex={-1} className="max-h-80 overflow-y-auto border" onMouseDown={(event) => event.preventDefault()}>
       <ul id={id} role="listbox" aria-label={label}>
         {children}
       </ul>
@@ -431,7 +433,12 @@ function PlaceRow({ axis, query, onChange }: { readonly axis: 'loc' | 'loc_firma
             if (first) pick(first)
           }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false)
+            const form = event.currentTarget
+            if (form.contains(event.relatedTarget as Node | null)) return
+            // The list closes once the focus has landed, unless it has come back.
+            afterFocusMoves(() => {
+              if (!form.contains(document.activeElement)) setFocused(false)
+            })
           }}
           className="space-y-1.5"
         >
@@ -652,7 +659,7 @@ function TitleRow({ query, onChange }: { readonly query: Query; readonly onChang
             apply()
           }}
         >
-          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={apply} placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
+          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={() => afterFocusMoves(apply)} placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
         </form>
       )}
     </Row>
@@ -689,7 +696,7 @@ function ValueRow({ query, namer, onChange }: { readonly query: Query; readonly 
             apply()
           }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) apply()
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) afterFocusMoves(apply)
           }}
         >
           <input inputMode="numeric" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoare de la, lei`} className={FIELD} />

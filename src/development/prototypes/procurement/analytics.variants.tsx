@@ -59,7 +59,7 @@ export function AnalyticsPropozitie() {
         <RuledFrame className="py-12 sm:py-16">
           <GroupBar query={query} onChange={move} />
           {query.dupa.axis === 'inregistrari' ? (
-            <RecordsTable key={recordsKey(query)} query={query} answer={answer} className="mt-3" />
+            <RecordsTable key={recordsKey(query)} query={query} answer={answer} onChange={move} className="mt-3" />
           ) : query.dupa.axis === 'timp' ? (
             <CleanTime query={query} answer={answer} onChange={move} className="mt-4" />
           ) : (
