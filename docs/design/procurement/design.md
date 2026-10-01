@@ -2467,6 +2467,11 @@ design.
   (`perioada=%222024%22`), so a digits-only value travels as a number:
   `perioada=2024`, `cumparator=4305857`. A CPV code with a leading zero stays
   a string, which is not JSON and so stays bare.
+- **The site's own keys stay.** A change of question rewrites only the
+  page's keys; `lang`, the currency and any other key ride along
+  (`siteSearchOf`). Until 1 October 2026 it replaced the whole address: a
+  reader on `?lang=en` without a saved language was switched to Romanian
+  by the first filter (found by the ONG registry's review).
 - **The explorer's addresses** (`/procurement/search`, the old
   `/procurement/analytics`, `/procurement?view=…`, `/achizitii/cautare`)
   redirect with the same question in this page's words:

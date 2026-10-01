@@ -52,6 +52,16 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Contractele atribuite')
   })
 
+  test('a change of question keeps the site’s own keys: the page stays in its language', async ({ page }) => {
+    await page.goto(`${ROUTE}?lang=en`)
+    await waitForPageReady(page)
+
+    await page.getByRole('navigation', { name: 'Which records' }).getByRole('button', { name: /Contracts awarded/ }).click()
+    await expect.poll(() => params(page).tip).toBe('contracte')
+    expect(params(page).lang).toBe('en')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  })
+
   test('a filter’s ✕ in the headline drops it from the address', async ({ page }) => {
     await page.goto(`${ROUTE}?titlu=laptop`)
     await waitForPageReady(page)

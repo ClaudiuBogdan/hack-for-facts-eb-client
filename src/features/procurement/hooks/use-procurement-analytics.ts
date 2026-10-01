@@ -24,7 +24,7 @@ import {
 } from '../api/procurement-analytics-api'
 import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { analyticsSearchOf, queryOf, repaired, urlSearchOf, type AnalyticsSearch, type Query, type ResolvedPeriod } from '../lib/analytics-model'
+import { analyticsSearchOf, queryOf, repaired, siteSearchOf, urlSearchOf, type AnalyticsSearch, type Query, type ResolvedPeriod } from '../lib/analytics-model'
 import type { Namer } from '../lib/analytics-text'
 import { placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
 import { homeYear } from '../lib/home-model'
@@ -79,9 +79,10 @@ export function useSearchStrings(): AnalyticsSearch {
 export function useAnalyticsQuery(): readonly [Query, (next: Query) => void, AnalyticsSearch] {
   const strings = useSearchStrings()
   const query = queryOf(strings)
-  const navigate = useNavigate()
+  const navigate = useNavigate({ from: '/procurement/analytics' })
   // A change of question stays where the reader is: the page answers in place, it is not a new page.
-  const move = (next: Query) => void navigate({ to: '/procurement/analytics', search: urlSearchOf(repaired(next)), resetScroll: false })
+  // The site's own keys stay with it: without `?lang=en` the next render would be in Romanian.
+  const move = (next: Query) => void navigate({ search: (previous) => ({ ...siteSearchOf(previous), ...urlSearchOf(repaired(next)) }), resetScroll: false })
   return [query, move, strings] as const
 }
 

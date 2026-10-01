@@ -11,6 +11,7 @@ import {
   queryOf,
   resolvePeriod,
   searchOf,
+  siteSearchOf,
   unreadParams,
   withTitle,
   type GroupBy,
@@ -42,6 +43,9 @@ describe('analytics URL round trip', () => {
         expect(roundTrip(next)).toEqual(next)
       }
     }
+  })
+  it('leaves the site’s own keys to a change of question, and takes every one of its own', () => {
+    expect(siteSearchOf({ lang: 'en', currency: 'EUR', utm_source: 'x', tip: 'contracte', perioada: 2024, judet: 'SB', titlu: 'laptop' })).toEqual({ lang: 'en', currency: 'EUR', utm_source: 'x' })
   })
 })
 
