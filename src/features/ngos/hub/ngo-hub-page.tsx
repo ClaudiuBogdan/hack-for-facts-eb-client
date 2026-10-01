@@ -24,7 +24,7 @@ import { NgoHubHero, NgoLeadersFrame } from './ngo-hub-hero'
 import { NGO_HUB_LEADERS_SHOWN, ngoHubSections } from './ngo-hub-sections'
 import { NgoLeaderRows } from './ngo-leaders'
 import { NgoSizeTable, NgoSourceSplit } from './ngo-money'
-import { NgoRegistrySearch } from './ngo-registry-search'
+import { NgoHubSearch } from './ngo-hub-search'
 import { NgoYearChart } from './ngo-year-chart'
 import { REGISTRY_STATUS_VALUE, perDay, registrationsIn, registrySearch } from './registry-figures'
 import type { NgoRegistrySummary } from './registry-summary-types'
@@ -86,7 +86,7 @@ export function NgoHubPage({
 
       <NgoHubHero
         registry={registry}
-        search={<NgoRegistrySearch />}
+        search={<NgoHubSearch autoFocus />}
         leaders={<HeroLeaders finance={finance} registry={registry} />}
         source={<HeadSources summary={summary} finance={finance} />}
       />

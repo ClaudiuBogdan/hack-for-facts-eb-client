@@ -10,7 +10,7 @@ describe('NgoHubPending', () => {
   it('draws the page’s own head at once — title, search box, pinned bar, first band — and no figure', () => {
     render(<NgoHubPending />)
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ONG-urile din România')
-    expect(screen.getByText('Numele organizației sau numărul din registru')).toBeInTheDocument()
+    expect(screen.getByText('Numele organizației sau CUI…')).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Scurtături' })).toHaveTextContent('Tot registrul')
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     expect(bar).toHaveTextContent('01Pe județe02Ce fac03Banii04În registru')

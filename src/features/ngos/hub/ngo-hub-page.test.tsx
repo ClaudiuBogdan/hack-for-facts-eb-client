@@ -10,7 +10,7 @@ const { navigate } = vi.hoisted(() => ({ navigate: vi.fn() }))
 vi.mock('@/features/statistics/lib/format', () => ({ activeNumberLocale: () => 'ro-RO' }))
 vi.mock('@/hooks/useGeoJson', () => ({ useGeoJsonData: () => ({ data: undefined, isError: false, refetch: vi.fn() }) }))
 // The search has its own tests; here it only has to be there, or not.
-vi.mock('./ngo-registry-search', () => ({ NgoRegistrySearch: () => <div data-testid="registry-search" /> }))
+vi.mock('./ngo-hub-search', () => ({ NgoHubSearch: () => <div data-testid="hub-search" /> }))
 
 vi.mock('@lingui/react/macro', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@lingui/react/macro')>()
@@ -60,7 +60,7 @@ describe('NgoHubPage', () => {
   it('opens on the registry’s search beside the year’s largest NGOs, a resolved one opening its profile', () => {
     renderPage()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ONG-urile din România')
-    expect(screen.getByTestId('registry-search')).toBeInTheDocument()
+    expect(screen.getByTestId('hub-search')).toBeInTheDocument()
     const leaders = screen.getByRole('region', { name: 'Cele mai mari ONG-uri din registru, 2025' })
     expect(within(leaders).getAllByRole('listitem')).toHaveLength(3)
     expect(within(leaders).getByRole('link', { name: /ASOCIATIA A/ })).toHaveAttribute('href', '/ngos/100')
@@ -219,7 +219,7 @@ describe('NgoHubPage', () => {
 
   it('leaves the search, the start cards and every registry or profile link out where there is no NGO API', () => {
     renderPage({ registry: false })
-    expect(screen.queryByTestId('registry-search')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('hub-search')).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /De aici poți începe/ })).not.toBeInTheDocument()
     const outward = screen.queryAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/ngos/'))
     expect(outward).toHaveLength(0)

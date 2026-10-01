@@ -1448,8 +1448,8 @@ msgid "{form} înregistrată în {founded}."
 msgstr "{form} registered in {founded}."
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:154
-msgid "{found, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}"
-msgstr "{found, plural, one {# result} other {# results}}"
+#~ msgid "{found, plural, one {# rezultat} few {# rezultate} other {# de rezultate}}"
+#~ msgstr "{found, plural, one {# result} other {# results}}"
 
 #: src/components/data-trust/coverage-ribbon.tsx:77
 msgid "{gapCount} goluri cunoscute"
@@ -6263,7 +6263,6 @@ msgstr "Caută în intervențiile parlamentarului"
 msgid "Caută în legislație"
 msgstr "Caută în legislație"
 
-#: src/features/ngos/hub/ngo-registry-search.tsx:104
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:31
 msgid "Caută în registru"
 msgstr "Search the registry"
@@ -11285,7 +11284,6 @@ msgstr "diviziune"
 #~ msgid "Diviziuni CAEN după activitățile înregistrate la ONRC. O firmă cu mai multe activități apare în mai multe bare, așa că barele nu se adună."
 #~ msgstr "CAEN divisions by the activities recorded at ONRC. A company with several activities appears in several bars, so the bars do not add up."
 
-#: src/features/ngos/hub/ngo-registry-search.tsx:28
 #: src/features/ngos/registry/model.ts:189
 msgid "dizolvat"
 msgstr "dissolved"
@@ -15655,7 +15653,6 @@ msgid "În lei ai fiecărui an, fără ajustare cu inflația."
 msgstr "In each year’s lei, not adjusted for inflation."
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:57
-#: src/features/ngos/hub/ngo-registry-search.tsx:30
 #: src/features/ngos/registry/model.ts:191
 #: src/features/ngos/registry/model.ts:244
 msgid "în lichidare"
@@ -15927,7 +15924,6 @@ msgstr "Încărcat"
 #: src/features/legal/components/legislation-changes-feed.tsx:460
 #: src/features/legal/components/legislation-gazette-directory.tsx:266
 #: src/features/legal/components/reader/legal-reader-page.tsx:535
-#: src/features/ngos/hub/ngo-registry-search.tsx:200
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:409
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:71
 #: src/features/ngos/registry/components/filter-parts.tsx:165
@@ -20640,8 +20636,8 @@ msgid "Niciun județ pentru „{term}”."
 msgstr "No county for “{term}”."
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:78
-msgid "Niciun ONG cu „{query}” în registru."
-msgstr "No NGO matching “{query}” in the registry."
+#~ msgid "Niciun ONG cu „{query}” în registru."
+#~ msgstr "No NGO matching “{query}” in the registry."
 
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:40
 #~ msgid "Niciun ONG cu acest CUI"
@@ -21612,7 +21608,6 @@ msgstr "Trade register number"
 msgid "Nr. înreg."
 msgstr "Nr. înreg."
 
-#: src/features/ngos/hub/ngo-registry-search.tsx:173
 #: src/features/ngos/organization/components/profile-parts.tsx:110
 #: src/features/ngos/registry/components/registry-answer.tsx:318
 #: src/features/private-companies/components/profile/company-profile-head.tsx:195
@@ -22259,7 +22254,6 @@ msgstr "Nume din sursa - identitate nerezolvata"
 msgid "Nume furnizor, serviciu, CUI sau licenta"
 msgstr "Nume furnizor, serviciu, CUI sau licenta"
 
-#: src/features/ngos/hub/ngo-registry-search.tsx:234
 #: src/features/ngos/registry/components/registry-answer.tsx:335
 msgid "Nume în curs de verificare"
 msgstr "Name pending verification"
@@ -22330,11 +22324,16 @@ msgstr "The firms' names and years could not be read just now: the firms show wi
 msgid "Numele în registru"
 msgstr "Name in the registry"
 
+#: src/features/ngos/hub/ngo-hub-hero.tsx:116
+#: src/features/ngos/hub/ngo-hub-search.tsx:27
+msgid "Numele organizației sau CUI…"
+msgstr "Organisation name or CUI…"
+
 #: src/features/ngos/hub/ngo-hub-hero.tsx:111
 #: src/features/ngos/hub/ngo-registry-search.tsx:136
 #: src/features/ngos/hub/ngo-registry-search.tsx:137
-msgid "Numele organizației sau numărul din registru"
-msgstr "Organisation name or registry number"
+#~ msgid "Numele organizației sau numărul din registru"
+#~ msgstr "Organisation name or registry number"
 
 #: src/features/public-investments/components/HowToReadData.tsx:113
 msgid "Numele părților reținute (PFA / în curs de verificare) nu sunt afișate. În locul lor apare un aviz de confidențialitate."
@@ -22574,6 +22573,8 @@ msgstr "ONG negasit"
 #: src/features/landing/lib/search-filters.ts:102
 #: src/features/legal/lib/legal-vocabulary.ts:68
 #: src/features/ngos/hub/ngo-county-band.tsx:43
+#: src/features/ngos/hub/ngo-hub-hero.tsx:114
+#: src/features/ngos/hub/ngo-hub-search.tsx:26
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:278
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:21
 #: src/features/ngos/registry/components/registry-head.tsx:303
@@ -25446,7 +25447,6 @@ msgstr "Quickly adjust chart settings"
 msgid "Quiz configuration error"
 msgstr "Quiz configuration error"
 
-#: src/features/ngos/hub/ngo-registry-search.tsx:26
 #: src/features/ngos/registry/model.ts:193
 msgid "radiat"
 msgstr "struck off"
@@ -26082,7 +26082,6 @@ msgstr "Trade register (ONRC), {0}"
 msgid "Registrul declară acest CUI, iar la ANAF CUI-ul poartă același nume."
 msgstr "The registry declares this CUI, and at ANAF the CUI carries the same name."
 
-#: src/features/ngos/hub/ngo-registry-search.tsx:170
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:255
 #: src/features/ngos/organization/components/profile-parts.tsx:554
 msgid "Registrul național ONG"
@@ -26101,8 +26100,8 @@ msgid "Registrul național ONG, citit la {captured}"
 msgstr "National NGO Registry, read on {captured}"
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:77
-msgid "Registrul nu a răspuns."
-msgstr "The registry did not answer."
+#~ msgid "Registrul nu a răspuns."
+#~ msgstr "The registry did not answer."
 
 #: src/features/ngos/organization/words.ts:130
 msgid "Registrul nu declară un CUI; un document publicat leagă înregistrarea din registru de acest CUI."
@@ -27226,8 +27225,8 @@ msgstr "Purpose from the <0>National NGO Registry</0>, read on {captured}"
 #~ msgstr "Purpose, from the registry"
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:76
-msgid "Scrie cel puțin {MIN_LENGTH} litere."
-msgstr "Type at least {MIN_LENGTH} letters."
+#~ msgid "Scrie cel puțin {MIN_LENGTH} litere."
+#~ msgstr "Type at least {MIN_LENGTH} letters."
 
 #: src/features/statistics/components/comparison/comparison-pickers.tsx:224
 msgid "Scrie cel puțin {TERRITORY_SEARCH_MIN_LENGTH} litere din nume."
@@ -29938,7 +29937,6 @@ msgid "Șterge anii din adresă"
 msgstr "Clear the years from the address"
 
 #: src/features/landing/components/search/landing-search.tsx:560
-#: src/features/ngos/hub/ngo-registry-search.tsx:144
 #: src/features/statistics/components/uat-map/uat-map-finder.tsx:105
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:133
 msgid "Șterge căutarea"
@@ -31848,8 +31846,8 @@ msgid "Toate randurile de evidenta grupate dupa tipul sursei."
 msgstr "Toate randurile de evidenta grupate dupa tipul sursei."
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:216
-msgid "Toate rezultatele din registru"
-msgstr "All results in the registry"
+#~ msgid "Toate rezultatele din registru"
+#~ msgstr "All results in the registry"
 
 #: src/features/privacy/components/consent-card.tsx:398
 msgid "Toate setările"

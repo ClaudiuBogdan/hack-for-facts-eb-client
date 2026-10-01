@@ -67,7 +67,7 @@ sources — these are advanced features named for later.
 
 | Route | Purpose | Feature file |
 | --- | --- | --- |
-| `/ngos` | Landing: registry search, figures, counties, years (superseded by §12) | `ngo-landing-source-coverage.md` |
+| `/ngos` | Landing: NGO search, figures, counties, years (superseded by §12, §13) | `ngo-landing-source-coverage.md` |
 | `/ngos/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
 | `/ngos/services` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
 | `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
@@ -458,7 +458,9 @@ now takes the INS hub's composition and visual language
   is not used: its NGO documents come from other sources, and most have no
   registry entry to open (Salvați Copiii and Crucea Roșie branches returned
   no profile on 2026-09-23). Beside it, the **legal forms** with count, share
-  and an inline fill, each a filtered registry link.
+  and an inline fill, each a filtered registry link. *Superseded 2026-10-01:*
+  the hub's search is now the site's index scoped to NGOs, its rows opening
+  profiles (§13, „Search").
 - **Figures band** — registered NGOs (status „Înregistrat"), those new in
   2025 (against 2024), NGOs per 10,000 residents, and those the registry
   marks as of public utility. Each opens the registry filtered, or its band on
@@ -817,3 +819,22 @@ API probes and the reader's questions are in
   ignores diacritics.
 - **Reviews.** Opus 5.5 xhigh and Codex gpt-6.1-sol xhigh on the prototype
   (two rounds each) and on the promotion.
+
+### §13 addendum — Search (2026-10-01)
+
+The owner found the hub's registry search broken: „salvati copiii" listed six
+registry entries in registration order, without Organizația Salvați Copiii,
+and each opened a raw registry entry. The hub now uses the site's search, as
+the INS, companies and procurement hubs do: `LandingSearch` scoped to
+`docTypes: ['ngo']`, an „ONG-uri" pill, name (with or without diacritics) or
+CUI, each row opening `/ngos/$cui`. This reverses §12's choice of the
+registry over the index, made when NGOs had no profile to open: on
+2026-10-01, 37 of the top 45 hits of eight queries had a profile (Salvați
+Copiii 7 of 8; Crucea Roșie 1 of 8 — the Red Cross, founded by its own law,
+and its branches are not in the registry). A hit without one lands on „Niciun
+profil disponibil pentru acest CUI", which leads to the registry search.
+
+Known gaps, for the server: the index marks every NGO active (`isActive`),
+so a struck-off or dissolved organisation reads like any other row; it holds
+NGOs without a profile, unmarked; it does not hold registry numbers, which
+the registry page (`/ngos/registry`) looks up.

@@ -121,12 +121,3 @@ export function registrySearch(filters: RegistrySearch = {}): RegistrySearch {
   return Object.fromEntries(Object.entries(filters).filter(([, value]) => typeof value === 'string' && value !== '')) as RegistrySearch
 }
 
-/** A registry number as the registry writes it: `3446/A/2026` (A–E: the registry's parts, by legal form). */
-const REGISTRY_NUMBER = /^\d{1,6}\s*\/\s*[a-e]\s*\/\s*\d{4}$/i
-
-/** What a typed query asks the registry for: a registry number is looked up exactly, anything else by name. */
-export function registryQuery(input: string): Pick<RegistrySearch, 'q' | 'registryNumber'> {
-  const text = input.trim().replace(/\s+/g, ' ')
-  if (REGISTRY_NUMBER.test(text)) return { q: '', registryNumber: text.replace(/\s/g, '').toUpperCase() }
-  return { q: text, registryNumber: '' }
-}

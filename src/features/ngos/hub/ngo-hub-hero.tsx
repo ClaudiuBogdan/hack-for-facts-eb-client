@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Search } from 'lucide-react'
+import { HeartHandshake, Search } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -25,7 +25,7 @@ export function NgoHubHero({
   leaders,
   source,
 }: {
-  /** Whether the NGO API is on: the search and the shortcuts exist only with it. */
+  /** Whether the NGO pages' API is on: the search (whose rows open NGO profiles) and the registry shortcuts exist only with it. */
   readonly registry: boolean
   readonly search: ReactNode
   readonly leaders: ReactNode
@@ -102,13 +102,23 @@ export function NgoLeadersFrame({ title, children }: { readonly title: ReactNode
   )
 }
 
-/** The search field as it first renders, before its code: the same box, the same words, not yet typeable. */
+/** The search field as it first renders, before its code: the same box, scope pill and words (`NgoHubSearch`), not yet typeable. */
 export function NgoSearchShell() {
   return (
     <div className="relative w-full" aria-hidden="true">
-      <div className="flex min-h-12 items-center rounded-lg border border-input bg-card py-2 pl-10 pr-12">
+      {/* As the field: it wraps below ~340 px, the words under the pill, so a phone's shell is as tall as the field that replaces it. */}
+      <div className="flex min-h-12 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-card py-2 pl-10 pr-20">
         <Search className="pointer-events-none absolute left-3.5 top-6 size-4 -translate-y-1/2 text-muted-foreground" />
-        <span className="h-7 flex-1 truncate text-base leading-7 text-muted-foreground">{t`Numele organizației sau numărul din registru`}</span>
+        {/* The search's scope pill (`ScopePill`), drawn here: its module would bring the search's code into this shell. */}
+        <span className="inline-flex h-7 max-w-full shrink-0 items-center gap-1.5 rounded-sm bg-muted px-2 text-xs font-medium text-foreground">
+          <HeartHandshake className="size-3.5 text-muted-foreground" />
+          <span className="truncate">{t`ONG-uri`}</span>
+        </span>
+        <span className="h-7 min-w-24 flex-1 truncate text-base leading-7 text-muted-foreground">{t`Numele organizației sau CUI…`}</span>
+        {/* The field's shortcut hint, as its first render draws it (the modifier is corrected after hydration). */}
+        <kbd className="absolute right-3 top-6 hidden -translate-y-1/2 items-center gap-0.5 rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-[0.625rem] text-muted-foreground sm:flex">
+          <span className="text-xs leading-none">⌘</span>K
+        </kbd>
       </div>
     </div>
   )

@@ -3,7 +3,6 @@ import {
   categoryShares,
   perDay,
   registryCountyLayer,
-  registryQuery,
   registrySearch,
   statusShares,
 } from './registry-figures'
@@ -72,9 +71,4 @@ describe('registry links', () => {
     expect(registrySearch()).toEqual({})
   })
 
-  it('looks a registry number up exactly and anything else up by name', () => {
-    expect(registryQuery(' 3446 / a / 2026 ')).toEqual({ q: '', registryNumber: '3446/A/2026' })
-    expect(registryQuery('  salvati   copiii ')).toEqual({ q: 'salvati copiii', registryNumber: '' })
-    expect(registryQuery('Asociatia 2026')).toEqual({ q: 'Asociatia 2026', registryNumber: '' })
-  })
 })
