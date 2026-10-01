@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -28,6 +28,7 @@ import {
   YearSelect,
   YearsChart,
 } from './profile-parts'
+import { PurposeSection } from './purpose-section'
 import { YearsMatrix } from './years-matrix'
 
 /**
@@ -76,6 +77,7 @@ export function NgoOrganizationPage({
   // A year the address asks for that has no statement on the platform: said, and the latest shown instead.
   const unfiled = year !== undefined && chosen !== null && chosen.fiscalYear !== year ? year : null
   const sections = [
+    ...(purpose ? [{ id: 'scop', label: t`Scopul` }] : []),
     { id: 'bani', label: t`Banii` },
     ...(chosen ? [{ id: 'situatie', label: t`Situația financiară` }] : []),
     ...(series.length > 0 ? [{ id: 'an-cu-an', label: t`An cu an` }] : []),
@@ -125,7 +127,6 @@ export function NgoOrganizationPage({
               <p className="mt-5 max-w-[42rem] text-lg leading-relaxed text-muted-foreground">
                 <ProfileSentence organization={organization} />
               </p>
-              {purpose ? <PurposeText text={purpose} /> : null}
               <div className="mt-5 space-y-3">
                 <ProfileChips organization={organization} />
                 <Identifiers organization={organization} />
@@ -162,6 +163,8 @@ export function NgoOrganizationPage({
           </RuledFrame>
         </section>
       ) : null}
+
+      {purpose ? <PurposeSection organization={organization} text={purpose} index={indexOf('scop')} /> : null}
 
       <HomeBand id="bani" labelledBy="ngo-profile-money">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
@@ -276,42 +279,6 @@ function Crumbs({ organization }: { readonly organization: NgoOrganization }) {
       </Link>
       {place ? ` / ${place.split(', ').pop()}` : ''} / {categoryLabel(organization.category)}
     </MonoLabel>
-  )
-}
-
-/** Where the registry's purpose runs past this, the rest is a click away. */
-const PURPOSE_SHOWN = 280
-
-/**
- * What the organisation says it is for: the registry's „Scop", exactly as
- * published — its line breaks kept, and the registry's own masking
- * („<PERSON>") left as the registry wrote it. A long one opens on its first
- * lines.
- */
-function PurposeText({ text }: { readonly text: string }) {
-  const [open, setOpen] = useState(false)
-  const long = text.length > PURPOSE_SHOWN || text.split('\n').length > 4
-  return (
-    <div className="mt-4 max-w-[42rem]">
-      <MonoLabel className="block text-muted-foreground">
-        <Trans>Scopul, din registru</Trans>
-      </MonoLabel>
-      {/* pre-wrap: the registry's line breaks and indents, exactly as published. */}
-      <p id="ngo-profile-purpose" className={cn('mt-1.5 whitespace-pre-wrap text-base leading-relaxed text-foreground', long && !open && 'line-clamp-4')}>
-        {text}
-      </p>
-      {long ? (
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls="ngo-profile-purpose"
-          onClick={() => setOpen((value) => !value)}
-          className="mt-1 inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline"
-        >
-          {open ? <Trans>Arată mai puține</Trans> : <Trans>Arată mai multe</Trans>}
-        </button>
-      ) : null}
-    </div>
   )
 }
 

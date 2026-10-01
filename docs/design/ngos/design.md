@@ -697,7 +697,8 @@ from the finance summary).
   fiscal inactivity explained as not dissolution, how the CUI was admitted,
   amber where only inferred; no universal „verified"), CUI and registry
   number; the last six years' revenue and expenses beside them.
-- **Bands.** 01 Banii (the latest year by activity, revenue and expenses per
+- **Bands.** Where the registry's purpose is published, it opens them as 01
+  Scopul and the others follow one place down (below). 01 Banii (the latest year by activity, revenue and expenses per
   year), 02 the statement row by row (every row under its own year's label,
   exact values from the filed strings — a blank cell „—", a reported zero 0 —
   the file and its dictionary linked), 03 year by year (the key rows as a
@@ -725,9 +726,21 @@ from the finance summary).
 - **Retries** read again through the router (`router.invalidate`), on the
   error page too (a boundary's reset alone rendered the same failure), busy
   while they run.
-- **The purpose** is shown only where it is `available` with a text, exactly
-  as the registry published it (plain text, line breaks, quotes and its
-  `<PERSON>`/`<LOCATION>` masking kept). `not_loaded` says nothing (missing
+- **The purpose** is the first band, „01 / Scopul — Ce își propune" (the
+  owner, 2026-10-01: not in the head), dated by the registry export it comes
+  from, shown only where it is `available` with a text, exactly as the
+  registry published it (plain text, line breaks and quotes kept; long ones
+  open on eight lines). Each mask the registry left in the text
+  (`<PERSON>`, `<LOCATION>`, `<ORGANIZATION>`, `<FACILITY>`, numbered or
+  not, and the other personal-data kinds such masking names; any other
+  capitals in brackets stay the registry's words) is a dashed badge naming
+  the kind the mark claims — „persoană", „loc", „organizație", „clădire",
+  „date ascunse" — with an „i". A click opens „Text ascuns în registru": the
+  mark, quoted, stands for one or more words hidden as personal data; it
+  does not say what it replaced (often an ordinary word: „drepturilor
+  <PERSON>"); the hidden text cannot be read here. Badges the eight-line
+  clamp hides are no Tab stops until the text is open. The band's date is
+  „citit la", as the registry facts say it. `not_loaded` says nothing (missing
   coverage, never „no purpose"); `not_released` names „scopul" among the
   conflicts. The meta description leads with it unless the registry masked
   part of it: a search snippet would read „<PERSON>", so the made

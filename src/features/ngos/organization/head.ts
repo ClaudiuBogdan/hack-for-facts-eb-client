@@ -4,12 +4,9 @@ import { getSiteUrl } from '@/config/env'
 import { translatorFor } from '@/lib/i18n'
 import type { NgoOrganization, NgoStatement } from './api'
 import { keyFigures, latestStatement, placeOf } from './model'
-import { categoryLabel, organizationName, purposeText } from './words'
+import { categoryLabel, isMasked, organizationName, purposeText } from './words'
 
 const SHARE_IMAGE_PATH = '/assets/images/share-image.png'
-/** The registry's masking in its texts: `<PERSON>`, `<LOCATION>`, `<ORGANIZATION>`, `<FACILITY>`, a numbered one too. */
-const MASKED = /<[A-Z][A-Z0-9_]*>/u
-
 /** Where a search engine cuts a description. */
 const DESCRIPTION_LENGTH = 160
 
@@ -53,7 +50,7 @@ export function buildNgoProfileHead(
       : null
   const purpose = purposeText(organization)
   const described =
-    purpose && !MASKED.test(purpose)
+    purpose && !isMasked(purpose)
       ? purpose.replace(/\s+/gu, ' ').trim()
       : [
           place ? translator._(msg`${category} din ${place}.`) : `${category}.`,

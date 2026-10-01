@@ -26,6 +26,60 @@ export function purposeText(organization: Pick<NgoOrganization, 'purpose'>): str
   return availability === 'available' ? text?.trim() || null : null
 }
 
+/** What the registry hid: the kinds its masking names, and any other it may add. */
+export type MaskKind = 'person' | 'location' | 'organization' | 'facility' | 'other'
+
+/** A purpose's text, cut where the registry masked a name, a place, an organisation: plain text and the masks between it. */
+export type PurposeSegment = { readonly text: string } | { readonly mask: MaskKind; readonly token: string }
+
+const MASK = /<([A-Z][A-Z0-9_]*)>/gu
+
+/**
+ * The masks the registry's texts carry, by name (numbered or not): the four
+ * seen in the purposes, and the other personal-data kinds such masking
+ * names. Any other capitals in angle brackets („<ONG>", „<<SPERANTA>>") are
+ * the registry's own words and stay text.
+ */
+const MASK_KINDS: Readonly<Record<string, MaskKind>> = {
+  PERSON: 'person',
+  LOCATION: 'location',
+  ORGANIZATION: 'organization',
+  FACILITY: 'facility',
+  EMAIL_ADDRESS: 'other',
+  PHONE_NUMBER: 'other',
+  DATE_TIME: 'other',
+  NRP: 'other',
+  URL: 'other',
+  IBAN_CODE: 'other',
+}
+
+/**
+ * The purpose as the registry published it, its masks apart: „Ocrotirea
+ * <PERSON> din <LOCATION>" is the text „Ocrotirea ", a person, „ din ", a
+ * place. A mask is read by its name without a number (`<PERSON_1>` is a
+ * person); a name that is no mask stays text. Nothing is dropped: joined
+ * again, the segments are the text.
+ */
+export function purposeSegments(text: string): readonly PurposeSegment[] {
+  const segments: PurposeSegment[] = []
+  let at = 0
+  for (const match of text.matchAll(MASK)) {
+    const kind = MASK_KINDS[(match[1] ?? '').replace(/_?\d+$/u, '')]
+    if (!kind) continue
+    const index = match.index ?? 0
+    if (index > at) segments.push({ text: text.slice(at, index) })
+    segments.push({ mask: kind, token: match[0] })
+    at = index + match[0].length
+  }
+  if (at < text.length) segments.push({ text: text.slice(at) })
+  return segments
+}
+
+/** Whether the registry masked part of the text. */
+export function isMasked(text: string): boolean {
+  return purposeSegments(text).some((segment) => 'mask' in segment)
+}
+
 export function organizationName(organization: Pick<NgoOrganization, 'name' | 'registryRecords'>, translate: Translate = active): string {
   const name = organization.name ?? organization.registryRecords.find((record) => !record.nameWithheld)?.name ?? null
   return name ? displayNgoName(name) : translate(msg`Nume nepublicat`)
