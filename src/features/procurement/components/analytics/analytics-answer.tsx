@@ -8,7 +8,7 @@ import { dayText, monthText } from '@/features/procurement/lib/home-format'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { bucketStart, clippedBucket, drilled, POPULATIONS, type Query } from '../../lib/analytics-model'
-import { recordsProblem, type Point, type Ranking, type RecordRow } from '../../api/procurement-analytics-api'
+import { firmPlaceGate, recordsProblem, type Point, type Ranking, type RecordRow } from '../../api/procurement-analytics-api'
 import { COUNTY_POPULATION, countyPopulationNote, useRecords, type Answer } from '../../hooks/use-procurement-analytics'
 import { useSearchStrings } from '../../hooks/use-procurement-analytics'
 import { MethodBody } from './analytics-controls'
@@ -318,11 +318,8 @@ export function AnswerRecords({ query, answer, onChange, className }: { readonly
   const [sort, setSort] = useState<'value_desc' | 'date_desc'>(valued ? 'value_desc' : 'date_desc')
   const [page, setPage] = useState(1)
   const problem = recordsProblem(query, answer.period)
-  // A firm and a place: the list asks for the firm alone. A firm outside the place has nothing here, so the count says first.
-  const firmInPlace = Boolean(query.filters.furnizor && query.filters.loc_firma)
-  const counting = firmInPlace && answer.figures.data === undefined && !answer.figures.isError
-  const outside = firmInPlace && answer.figures.data?.now?.records === 0
-  const records = useRecords(query, answer.period, sort, page, problem === null && !counting && !outside)
+  const gate = firmPlaceGate(query, answer.figures)
+  const records = useRecords(query, answer.period, sort, page, problem === null && gate === 'list')
   const party = Boolean(query.filters.cumparator || query.filters.furnizor)
   const order = (next: 'value_desc' | 'date_desc') => () => {
     setSort(next)
@@ -343,7 +340,21 @@ export function AnswerRecords({ query, answer, onChange, className }: { readonly
           : t`Pentru achiziții directe, lista cere o instituție, o firmă sau cel mult 12 luni.`}
       </p>
     )
-  if (outside) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
+  if (gate === 'outside') return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
+  if (gate === 'failed' || gate === 'unknown') return (
+      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
+        {t`Lista nu s-a putut citi acum.`}
+        {gate === 'failed' ? (
+          <>
+            {' '}
+            <button type="button" onClick={answer.figures.retry} className="font-medium text-foreground underline underline-offset-4">
+              {t`Încearcă din nou`}
+            </button>
+          </>
+        ) : null}
+      </p>
+    )
+  if (gate === 'counting') return <Pending rows={10} className={className} />
   if (records.isError) return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
         {party ? t`Lista nu s-a putut citi acum.` : t`Lista nu s-a putut citi pentru o selecție atât de largă. Restrânge la o instituție, o firmă sau o lună și încearcă din nou.`}{' '}

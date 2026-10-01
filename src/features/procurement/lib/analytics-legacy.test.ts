@@ -1,8 +1,21 @@
 // The explorer's addresses as the analytics page's: every question an old link asked is asked again, in the page's words, with the explorer's own defaults; what the page cannot filter on stays behind.
 import { describe, expect, it } from 'vitest'
-import { analyticsRedirectSearch, analyticsSearchFromExplorer, isExplorerSearch } from './analytics-legacy'
+import { analyticsRedirectSearch, analyticsSearchFromExplorer, isExplorerSearch, siteSearchOf } from './analytics-legacy'
+import { queryOf, repaired, urlSearchOf } from './analytics-model'
 
 const NOW = new Date('2026-09-29T12:00:00Z')
+
+describe('a change of question', () => {
+  it('keeps the site’s own keys, and none of the page’s or the explorer’s', () => {
+    expect(siteSearchOf({ lang: 'en', currency: 'EUR', utm_source: 'x', tip: 'contracte', perioada: 2024, judet: 'SB', titlu: 'laptop', page: 2, view: 'list' })).toEqual({ lang: 'en', currency: 'EUR', utm_source: 'x' })
+  })
+
+  it('never reads as an explorer question, even at the page’s defaults', () => {
+    // An analytics address carrying a stray explorer key, asked again with every key a default.
+    const next = { ...siteSearchOf({ lang: 'en', tip: 'contracte', page: 2 }), ...urlSearchOf(repaired(queryOf({}))) }
+    expect(isExplorerSearch(next)).toBe(false)
+  })
+})
 
 describe('an explorer link', () => {
   it('is told by its keys, not by the analytics page’s own', () => {

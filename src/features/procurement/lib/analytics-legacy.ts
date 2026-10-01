@@ -17,6 +17,18 @@ import { allYears } from './home-links'
 export const EXPLORER_KEYS: ReadonlySet<string> = new Set([...Object.keys(procurementHubSearchSchema.shape), 'tab'])
 
 /**
+ * The address's keys that are neither the page's nor the explorer's —
+ * `lang`, the site's currency, a campaign's tags — which a change of
+ * question keeps. An explorer key left in it (`page=2`) would make the next
+ * address read as an explorer question once the page's own keys are all
+ * defaults, and redirect it.
+ */
+export function siteSearchOf<S extends Readonly<Record<string, unknown>>>(search: S): Partial<S> {
+  // Only keys are dropped: what is left is the address's own, as its type says.
+  return Object.fromEntries(Object.entries(search).filter(([key]) => !SEARCH_KEYS.includes(key) && !EXPLORER_KEYS.has(key))) as Partial<S>
+}
+
+/**
  * A link carries an explorer question: one of its keys, and none of the
  * analytics page's own (`cpv` is both pages' key, and means the same code) —
  * an analytics address with a stray key (`page=2`) is answered as it is.

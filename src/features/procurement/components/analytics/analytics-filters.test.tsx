@@ -194,6 +194,28 @@ describe('FilterPanel', () => {
     expect(onChange).not.toHaveBeenCalled()
   })
 
+  it('applies a title as the focus leaves, at once and on the question as it is; its chip waits for the focus to land', () => {
+    vi.useFakeTimers()
+    try {
+      const query = queryOf({ cumparator: '4305857' })
+      const onChange = panel(query)
+      const field = screen.getByRole('textbox', { name: 'Titlul conține' })
+      fireEvent.change(field, { target: { value: 'laptop' } })
+      fireEvent.blur(field)
+      // Made now, not later: a tap's click that follows cannot be overwritten by it.
+      expect(onChange).toHaveBeenCalledTimes(1)
+      expect(onChange.mock.calls[0]![0]).toMatchObject({ titlu: 'laptop', filters: query.filters })
+      // The question now holds the title; until the focus has landed the field stays where it was.
+      onChange.view.rerender(<FilterPanel query={onChange.mock.calls[0]![0]} answer={ANSWER} namer={NAMER} phone={false} onChange={onChange} />)
+      expect(screen.getByRole('textbox', { name: 'Titlul conține' })).toBeInTheDocument()
+      act(() => vi.runAllTimers())
+      expect(screen.queryByRole('textbox', { name: 'Titlul conține' })).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /laptop/ })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('keeps the options, and the box that scrolls them, out of the Tab order', () => {
     panel()
     const field = screen.getByRole('combobox', { name: 'Locul firmei' })

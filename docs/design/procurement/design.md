@@ -2425,8 +2425,11 @@ fact rows, so the count stands.
   same with and without it. So a firm picked lists its records by the firm
   alone (11, 22 and 9 records, as their counts say). Until then the list's
   own advice, „Alege o firmă", led to the same refusal.
-- A firm outside the place picked has a count of 0 and no records; the
-  list waits for the count before it asks.
+- A firm outside the place picked has a count of 0 and no records. The
+  list waits for the count, known and not 0, before it asks or shows rows
+  (the server's or the cache's included); a count that failed or
+  abstained shows no list, so a firm's records elsewhere never pass for
+  the place's (`firmPlaceGate`; Codex's review).
 - The place alone is still refused, now with „Vezi firmele", the firms of
   that place, each a way to its records.
 - The rest is the server's: the list's firm-place filters served without
@@ -2501,7 +2504,9 @@ design.
   page's keys; `lang`, the currency and any other key ride along
   (`siteSearchOf`). Until 1 October 2026 it replaced the whole address: a
   reader on `?lang=en` without a saved language was switched to Romanian
-  by the first filter (found by the ONG registry's review).
+  by the first filter (found by the ONG registry's review). The explorer's
+  keys are dropped as well: a stray `page=2` kept beside the page's
+  defaults would read as an explorer link and redirect (Codex's review).
 - **The explorer's addresses** (`/procurement/search`, the old
   `/procurement/analytics`, `/procurement?view=…`, `/achizitii/cautare`)
   redirect with the same question in this page's words:
@@ -2762,8 +2767,12 @@ decision: `src/development/prototypes/procurement/analytics-filters-fable/RATION
   - A blur that removed nodes lost the focus. The place's list closing,
     and a title or value becoming its chip, happened before the focus
     landed. Radix's focus scope then took the focus to the sheet, which
-    cancelled a Tab or a tap on the next field. Such changes now wait
-    until the focus has landed (`afterFocusMoves`).
+    cancelled a Tab or a tap on the next field. What the screen swaps now
+    waits until the focus has landed (`afterFocusMoves`); the change to
+    the question does not. Codex's review of the fix: a title or value
+    applied later overwrote a tap made in between (on a phone the tap's
+    click comes before the timer), restoring cleared filters. It is
+    applied at once, and only its chip waits.
   - A list long enough to scroll was its own Tab stop in Chrome, unnamed,
     and Escape there closed the sheet. Its box is now out of the Tab
     order.

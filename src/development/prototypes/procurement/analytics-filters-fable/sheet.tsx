@@ -641,6 +641,8 @@ function ProcedureRow({ query, namer, onChange }: { readonly query: Query; reado
 
 function TitleRow({ query, onChange }: { readonly query: Query; readonly onChange: (query: Query) => void }) {
   const [value, setValue] = useState('')
+  // Applied at once as the focus leaves; only the chip waits for the focus to land (as the page's).
+  const [held, setHeld] = useState(false)
   const apply = () => {
     const words = value.trim()
     if (words.length >= 3) {
@@ -650,7 +652,7 @@ function TitleRow({ query, onChange }: { readonly query: Query; readonly onChang
   }
   return (
     <Row label={t`Titlul`}>
-      {query.titlu ? (
+      {query.titlu && !held ? (
         <Chip label={`„${query.titlu}"`} onClear={() => onChange(withTitle(query, null))} />
       ) : (
         <form
@@ -659,7 +661,12 @@ function TitleRow({ query, onChange }: { readonly query: Query; readonly onChang
             apply()
           }}
         >
-          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={() => afterFocusMoves(apply)} placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
+          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={() => {
+              setHeld(true)
+              apply()
+              afterFocusMoves(() => setHeld(false))
+            }}
+            placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
         </form>
       )}
     </Row>
@@ -674,6 +681,7 @@ function lei(text: string): number | null {
 function ValueRow({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const [min, setMin] = useState('')
   const [max, setMax] = useState('')
+  const [held, setHeld] = useState(false)
   const apply = () => {
     const low = lei(min)
     const high = lei(max)
@@ -686,7 +694,7 @@ function ValueRow({ query, namer, onChange }: { readonly query: Query; readonly 
   const text = headlineParts(query, namer, false).find((part) => part.role === 'valoare')?.text ?? ''
   return (
     <Row label={t`Valoarea`}>
-      {query.valoare ? (
+      {query.valoare && !held ? (
         <Chip label={text} onClear={() => onChange({ ...query, valoare: null })} />
       ) : (
         <form
@@ -696,7 +704,10 @@ function ValueRow({ query, namer, onChange }: { readonly query: Query; readonly 
             apply()
           }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) afterFocusMoves(apply)
+            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+            setHeld(true)
+            apply()
+            afterFocusMoves(() => setHeld(false))
           }}
         >
           <input inputMode="numeric" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoare de la, lei`} className={FIELD} />

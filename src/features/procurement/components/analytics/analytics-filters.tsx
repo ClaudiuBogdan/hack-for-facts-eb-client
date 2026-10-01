@@ -321,6 +321,8 @@ function ProcedureField({ query, namer, onChange }: { readonly query: Query; rea
 
 function TitleField({ query, onChange }: { readonly query: Query; readonly onChange: (query: Query) => void }) {
   const [value, setValue] = useState('')
+  // A title applied as the focus leaves is applied at once, against the query as it is; only the chip waits for the focus to land.
+  const [held, setHeld] = useState(false)
   const title = query.titlu
   const apply = () => {
     const words = value.trim()
@@ -331,7 +333,7 @@ function TitleField({ query, onChange }: { readonly query: Query; readonly onCha
   }
   return (
     <Row label={t`Titlul`}>
-      {title ? (
+      {title && !held ? (
         <Chip label={t`„${title}"`} onClear={() => onChange(withTitle(query, null))} />
       ) : (
         <form
@@ -340,7 +342,18 @@ function TitleField({ query, onChange }: { readonly query: Query; readonly onCha
             apply()
           }}
         >
-          <input value={value} onChange={(event) => setValue(event.target.value)} onBlur={() => afterFocusMoves(apply)} placeholder={t`„laptop", „deszăpezire"`} aria-label={t`Titlul conține`} className={FIELD} />
+          <input
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            onBlur={() => {
+              setHeld(true)
+              apply()
+              afterFocusMoves(() => setHeld(false))
+            }}
+            placeholder={t`„laptop", „deszăpezire"`}
+            aria-label={t`Titlul conține`}
+            className={FIELD}
+          />
         </form>
       )}
     </Row>
@@ -356,6 +369,8 @@ function lei(text: string): number | null {
 function ValueField({ query, namer, onChange }: { readonly query: Query; readonly namer: Namer; readonly onChange: (query: Query) => void }) {
   const [min, setMin] = useState('')
   const [max, setMax] = useState('')
+  // As the title's: applied at once as the focus leaves the pair, the chip waiting for the focus to land.
+  const [held, setHeld] = useState(false)
   const apply = () => {
     const low = lei(min)
     const high = lei(max)
@@ -368,7 +383,7 @@ function ValueField({ query, namer, onChange }: { readonly query: Query; readonl
   const text = headlineParts(query, namer, false).find((part) => part.role === 'valoare')?.text ?? ''
   return (
     <Row label={t`Valoarea`}>
-      {query.valoare ? (
+      {query.valoare && !held ? (
         <Chip label={text} onClear={() => onChange({ ...query, valoare: null })} />
       ) : (
         <form
@@ -379,7 +394,10 @@ function ValueField({ query, namer, onChange }: { readonly query: Query; readonl
           }}
           // Applied when the focus leaves the pair: moving from one field to the other applies nothing half-typed.
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) afterFocusMoves(apply)
+            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+            setHeld(true)
+            apply()
+            afterFocusMoves(() => setHeld(false))
           }}
         >
           <input inputMode="numeric" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoarea de la, lei`} className={FIELD} />

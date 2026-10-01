@@ -395,12 +395,6 @@ export const SEARCH_KEYS: readonly string[] = ['tip', 'perioada', ...AXIS_ORDER.
   (key, index, keys) => keys.indexOf(key) === index,
 )
 
-/** The address's keys that are not the page's — `lang`, the site's currency, a campaign's tags — which a change of question keeps. */
-export function siteSearchOf<S extends Readonly<Record<string, unknown>>>(search: S): Partial<S> {
-  // Only keys are dropped: what is left is the address's own, as its type says.
-  return Object.fromEntries(Object.entries(search).filter(([key]) => !SEARCH_KEYS.includes(key))) as Partial<S>
-}
-
 /** The page's address as the router holds it: each key a string, or the number a digits-only value travels as. */
 export type AnalyticsUrlSearch = Readonly<Partial<Record<string, string | number>>>
 

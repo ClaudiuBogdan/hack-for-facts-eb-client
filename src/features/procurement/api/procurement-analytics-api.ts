@@ -331,6 +331,25 @@ export function recordsProblem(query: Query, period: ResolvedPeriod | null): 'su
   return null
 }
 
+/**
+ * Whether the records of a firm in a place may be read and shown. The list
+ * asks for the firm alone (`listFilterOf`), which is the same selection
+ * only when the firm is in the place; its count there says so, known and
+ * not 0. Until then rows already read (the server's, the cache's) wait too.
+ * Any other selection lists as it is.
+ */
+export function firmPlaceGate(
+  query: Query,
+  figures: { readonly data: { readonly now: { readonly records: number | null } | null } | undefined; readonly isError: boolean },
+): 'list' | 'counting' | 'outside' | 'failed' | 'unknown' {
+  if (!(query.filters.furnizor && query.filters.loc_firma)) return 'list'
+  const counted = figures.data?.now?.records
+  if (typeof counted === 'number') return counted > 0 ? 'list' : 'outside'
+  if (figures.isError) return 'failed'
+  // A count read but not given (abstained) says nothing of the place: the firm's records elsewhere must not pass for its.
+  return figures.data === undefined ? 'counting' : 'unknown'
+}
+
 function lastDay(month: string): string {
   const [year, index] = month.split('-').map(Number) as [number, number]
   return `${month}-${String(new Date(Date.UTC(year, index, 0)).getUTCDate()).padStart(2, '0')}`
