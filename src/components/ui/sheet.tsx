@@ -53,12 +53,14 @@ interface SheetContentProps
   VariantProps<typeof sheetVariants> {
   onOverlayClick?: () => void
   closeLabel?: string
+  /** Classes for the close button: a sheet whose header needs it placed or sized otherwise (a 44 px target on a phone). */
+  closeClassName?: string
 }
 
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, onOverlayClick, closeLabel = t`Închide`, ...props }, ref) => (
+>(({ side = "right", className, children, onOverlayClick, closeLabel = t`Închide`, closeClassName, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay onClick={onOverlayClick} />
     <SheetPrimitive.Content
@@ -66,7 +68,7 @@ const SheetContent = React.forwardRef<
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >
-      <SheetPrimitive.Close className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+      <SheetPrimitive.Close className={cn("absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary", closeClassName)}>
         <X className="h-4 w-4" />
         <span className="sr-only">{closeLabel}</span>
       </SheetPrimitive.Close>
