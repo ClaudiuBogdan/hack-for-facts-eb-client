@@ -2935,3 +2935,19 @@ IMM.
   under the facts, side by side from `sm`, one under the other on a
   phone.
 - The procedure page still has the old shared layout (to migrate).
+
+## 21. The answer bar's controls (1 October 2026)
+
+The owner found the level buttons under the analytics page's tabs („pe
+județe · localități · regiuni", „pe diviziuni · grupe · …") too small, as
+the filters' had been. They are now the bar's own segmented control, the
+one the measure uses (`IndicatorToggle`: a radio group, one tab stop, the
+arrows move it), both 44 px on a phone and 40 px from `sm`
+(`CONTROL_HEIGHT`).
+
+- The levels run coarse to fine, places as categories do: regiuni, județe,
+  localități; the place tabs still open on județe (`opens`).
+- Only the levels the question can be grouped by are offered (a county
+  picked has no counties to rank), and the row goes when one is left.
+- On a phone five CPV levels sit three to a row, the last taking the
+  second row's rest.
