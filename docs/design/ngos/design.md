@@ -71,7 +71,7 @@ sources — these are advanced features named for later.
 | `/ngos/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
 | `/ngos/services` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
 | `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
-| `/ngos/registry` | MJ legal-registry name-only listing (Next-2) | `name-only-registry-surfaces.md` |
+| `/ngos/registry` | The national registry asked as the analytics page asks its records (superseded by §15) | `name-only-registry-surfaces.md` |
 | `/ngos/public-utility` | SGG public-utility name-only listing (Next-2) | `name-only-registry-surfaces.md` |
 | `/ngos/review` | Link-review queue (advanced, staff-gated) | out of scope (named only) |
 
@@ -734,3 +734,68 @@ from the finance summary).
   head will carry them as factual badges once they are. The statements'
   hydrated payload grows with the years (about 80 KB raw, 10 KB gzipped for
   17): the loader could send indicators as tuples if it grows.
+
+## 15. The registry asked as the analytics page asks its records (2026-10-01)
+
+Promoted from the `/development` prototype `ngos/registry`, variant
+**intrebare** (designed by Fable on the owner's request, finished here; the
+plain list `lista` stays in the prototype as the record). The rationale, the
+API probes and the reader's questions are in
+`src/development/prototypes/ngos/registry.RATIONALE.md`.
+
+- **Shape.** The way back and the export's date; the selection as the
+  headline („Fundațiile radiate din județul Cluj cu „kirali” în nume"), each
+  filter a phrase that opens the sheet, its ✕ dropping it; „+ Adaugă un
+  filtru" (one box over counties, forms, statuses, public utility, a name, a
+  registry number), „Filtre (n)", ten ready questions, the link, one caveats
+  marker (amber with a count when something is off). The statuses in the
+  pinned bar (Toate · Înregistrate · Dizolvate · În lichidare · Radiate; the
+  default is the registry, so a name finds a struck-off NGO). Four figures
+  true of the selection. The answer: „Înregistrări" (25 a page, the export's
+  order) or „Pe județe / localități / forme / stări / ani" — the axes the
+  filters leave open; a row the address can say narrows to it. One source
+  line, „Cum am numărat" behind it.
+- **The address** keeps the route's keys (`q`, `county`, `category`,
+  `status`, `registryNumber`, `publicUtility`), only those set; every hub
+  link opens unchanged, and `/ong-uri/registru` answers with one 301 to it.
+  A county the registry does not spell is reported as unread and filters
+  nothing.
+- **Counting what the API cannot.** `ngoRegistryRecords` has six filters,
+  no count, no sort, no group-by. `scripts/count-ngo-registry.mjs` counts a
+  full capture by county × locality × form × status × public utility ×
+  registry-number year × declared CUI (`data/registry-counts.json`, 37,703
+  cells, ~134 KB gzipped, refreshed with each export as the hub's summary).
+  The page uses it only while the API serves the export it counted, for
+  every selection without a name or a number; tests hold it to the hub's
+  summary (every status, form, county, year). A name or a number is read
+  whole up to 2,000 rows and counted from its own rows; past that, „N+" and
+  the axes off, said under the tabs. Repeats are dropped by the same fields
+  in the script and the page. A registry-number year before 1990 or after
+  the export is a slip, counted as no year.
+- **Server render.** The loader reads, on the server only, the first page
+  (under a 4 s deadline) and the selection's tally from the counts, which
+  stay in the server bundle; only the tally travels (without the country's
+  ~3,000 localities, which no tab of it shows). A complete render is cached
+  ten minutes; one without its first page is not. A client-side navigation
+  reads nothing in the loader; the counts load as their own chunk.
+- **The filters sheet** follows the procurement panel (procurement
+  design.md §18.18), its parts copied into `components/filter-parts.tsx` and
+  `use-active-option.ts` until the two branches meet on `dev` and the pieces
+  move to one shared module: groups Registrul · Ce organizații · Unde ·
+  Care; chips with ✕; the county one search, listed one a row with its code
+  (the owner's choice over procurement's grid). County only: the registry
+  filters no region and no locality. A list closed or a field turned into
+  its chip on blur waits until the focus has landed (otherwise the sheet
+  takes it), a fix procurement took too (7c2e15a2).
+- **What the page does not say.** „Înregistrat" is not „active"; the
+  export's completeness is unverified; the registry date moves when an entry
+  changes; the export's own year is drawn paler and said „până la …". „Noi
+  în 2025" counts the selection's own (4,306 among „Înregistrate", 4,331 in
+  the whole registry).
+- **API asks** (for the server): a total count and a breakdown endpoint
+  (they would retire both generated files and give a name search of any size
+  its axes), filters for the registry-number year, a date range, locality,
+  court and a declared CUI, `in` filters, sort, and county matching that
+  ignores diacritics.
+- **Reviews.** Opus 5.5 xhigh and Codex gpt-6.1-sol xhigh on the prototype
+  (two rounds each) and on the promotion.

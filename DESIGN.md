@@ -864,6 +864,19 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-10-01 — A registry is asked as the analytics page asks its records.**
+  `/ngos/registry` takes the procurement analytics page's shape: the
+  selection as the headline (each filter a phrase), the statuses in the
+  pinned bar, four figures true of the selection, the answer as the records
+  or the selection split on an axis its filters leave open, one source line,
+  the caveats behind one marker, every filter in a sheet built as the
+  approved procurement panel (groups, chips, 44/40 px controls, one county
+  search). Where an API cannot count or group, the page counts from a full
+  read of the same export kept with the app, used only while the API
+  serves that export, and never estimates from part of a selection.
+  *Why:* the owner asked for the registry to look like the analytics page
+  and chose Fable's `intrebare` prototype; a list with no count answers
+  „which ones" but not „how many, where, of what kind" (`docs/design/ngos/design.md` §15).
 - **2026-09-28 — A record's page keeps the record and its context apart.**
   The direct-purchase page (`/procurement/direct-acquisitions/$id`) is the
   purchase first — how it ended, what, from whom, for how much, when; the

@@ -3,21 +3,23 @@ import { i18n } from '@lingui/core'
 import { NGO_REGISTRY_SUMMARY } from '@/features/ngos/hub/registry-summary'
 import { REGISTRY_STATUS_VALUE } from '@/features/ngos/hub/registry-figures'
 import type { NgoRegistryStatusKey } from '@/features/ngos/hub/registry-summary-types'
-import COUNTS_JSON from '@/features/ngos/registry/data/registry-counts.json'
+import COUNTS_JSON from './data/registry-counts.json'
 import {
   entriesOf,
   figuresOf,
   groupRows,
   localityName,
+  tallyFromData,
   tallyOfCounts,
+  tallyToData,
   tallyOfRows,
   unplacedOn,
   valuesOn,
   yearPoints,
   type RegistryCounts,
-} from './registry.counts'
-import { read, row } from './registry.fixtures'
-import { EMPTY_QUERY } from './registry.model'
+} from './counts'
+import { read, row } from './test/fixtures'
+import { EMPTY_QUERY } from './model'
 
 vi.mock('@/features/statistics/lib/format', () => ({ activeNumberLocale: () => 'ro-RO' }))
 
@@ -53,6 +55,20 @@ describe('the counts agree with the hub’s summary of the same export', () => {
   it('and the selections the live API was read for (2026-09-30)', () => {
     expect(tally({ county: 'CLUJ', status: 'deregistered' })?.total).toBe(354)
     expect(tally({ county: 'CLUJ', status: 'registered', category: 'foundation' })?.total).toBe(1247)
+  })
+})
+
+describe('a tally on its way from the server', () => {
+  it('carries no control character — a NUL in the page’s script would reach the browser as „�" — and comes back whole', () => {
+    const counted = tally({ county: 'CLUJ', status: 'deregistered' })!
+    const wire = JSON.stringify(tallyToData(counted, true))
+    expect([...wire].some((char) => char.charCodeAt(0) < 0x20)).toBe(false)
+    const back = tallyFromData(JSON.parse(wire.split(String.fromCharCode(0)).join('\uFFFD')) as ReturnType<typeof tallyToData>)
+    expect(back).toEqual(counted)
+    expect(unplacedOn(back, 'an')).toBe(unplacedOn(counted, 'an'))
+  })
+  it('leaves the country’s localities behind, which no tab of it shows', () => {
+    expect(tallyToData(tally({})!, false).by.localitate).toEqual([])
   })
 })
 

@@ -1,26 +1,11 @@
-import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { t } from "@lingui/core/macro";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import type {
-  RegistryPage,
-  RegistryRecord,
-  RegistrySearch,
-  RegistrySnapshot,
-} from "./api";
-import { parseRegistrySearch } from "./api";
+import type { RegistryRecord, RegistrySnapshot } from "./api";
 
 export function RegistryProvenance({
   snapshot,
@@ -132,7 +117,7 @@ export function RegistryUnavailable() {
           <Trans>Retry</Trans>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/ngos/registry" search={parseRegistrySearch({})}>
+          <Link to="/ngos/registry" search={{}}>
             <Trans>Restart search</Trans>
           </Link>
         </Button>
@@ -155,239 +140,9 @@ export function RegistryNotFound() {
       <h1 className="text-2xl font-semibold">
         <Trans>Registry record not found</Trans>
       </h1>
-      <Link
-        to="/ngos/registry"
-        search={parseRegistrySearch({})}
-        className="text-primary underline"
-      >
+      <Link to="/ngos/registry" search={{}} className="text-primary underline">
         <Trans>Search the registry</Trans>
       </Link>
-    </main>
-  );
-}
-
-export function NgoRegistryPage({
-  page,
-  search,
-}: {
-  readonly page: RegistryPage;
-  readonly search: RegistrySearch;
-}) {
-  const navigate = useNavigate();
-  const { i18n } = useLingui();
-  const total = new Intl.NumberFormat(i18n.locale).format(
-    page.snapshot.recordCount,
-  );
-  return (
-    <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
-      <header className="space-y-2">
-        <Link to="/ngos" className="text-sm text-muted-foreground underline">
-          <Trans>NGO data</Trans>
-        </Link>
-        <h1 className="text-2xl font-semibold">
-          <Trans>NGO registry</Trans>
-        </h1>
-        <p className="text-muted-foreground">
-          <Trans>
-            {total} registry records in this snapshot. Records without a CUI are
-            included.
-          </Trans>
-        </p>
-      </header>
-      <RegistryProvenance snapshot={page.snapshot} />
-      <form
-        key={JSON.stringify(search)}
-        className="grid items-end gap-4 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-4"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const data = new FormData(event.currentTarget);
-          const values = Object.fromEntries(data.entries());
-          for (const key of ["category", "status", "publicUtility"])
-            if (values[key] === "all") values[key] = "";
-          const next = parseRegistrySearch(values);
-          void navigate({ to: "/ngos/registry", search: next });
-        }}
-      >
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="ngo-name">
-            <Trans>Organization name</Trans>
-          </Label>
-          <Input
-            id="ngo-name"
-            name="q"
-            defaultValue={search.q}
-            maxLength={200}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="ngo-registry">
-            <Trans>Registry number</Trans>
-          </Label>
-          <Input
-            id="ngo-registry"
-            name="registryNumber"
-            defaultValue={search.registryNumber}
-            maxLength={200}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="ngo-county">
-            <Trans>County</Trans>
-          </Label>
-          <Input
-            id="ngo-county"
-            name="county"
-            defaultValue={search.county}
-            maxLength={200}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="ngo-category">
-            <Trans>Category</Trans>
-          </Label>
-          <Select name="category" defaultValue={search.category || "all"}>
-            <SelectTrigger id="ngo-category">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <Trans>All categories</Trans>
-              </SelectItem>
-              <SelectItem value="association">
-                <Trans>Association</Trans>
-              </SelectItem>
-              <SelectItem value="foundation">
-                <Trans>Foundation</Trans>
-              </SelectItem>
-              <SelectItem value="federation">
-                <Trans>Federation</Trans>
-              </SelectItem>
-              <SelectItem value="foreign_legal_person">
-                <Trans>Foreign legal person</Trans>
-              </SelectItem>
-              <SelectItem value="religious_association">
-                <Trans>Religious association</Trans>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="ngo-status">
-            <Trans>Status in source</Trans>
-          </Label>
-          <Select name="status" defaultValue={search.status || "all"}>
-            <SelectTrigger id="ngo-status">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <Trans>All statuses</Trans>
-              </SelectItem>
-              <SelectItem value="Inregistrat">
-                <Trans>Registered</Trans>
-              </SelectItem>
-              <SelectItem value="In Lichidare">
-                <Trans>In liquidation</Trans>
-              </SelectItem>
-              <SelectItem value="Dizolvata">
-                <Trans>Dissolved</Trans>
-              </SelectItem>
-              <SelectItem value="Radiat">
-                <Trans>Removed from register</Trans>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="ngo-utility">
-            <Trans>Public utility reported</Trans>
-          </Label>
-          <Select
-            name="publicUtility"
-            defaultValue={search.publicUtility || "all"}
-          >
-            <SelectTrigger id="ngo-utility">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                <Trans>Any</Trans>
-              </SelectItem>
-              <SelectItem value="yes">
-                <Trans>Yes</Trans>
-              </SelectItem>
-              <SelectItem value="no">
-                <Trans>No</Trans>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button type="submit">
-          <Trans>Search registry</Trans>
-        </Button>
-      </form>
-      {page.edges.length === 0 ? (
-        <p role="status">
-          <Trans>No records match these filters.</Trans>
-        </p>
-      ) : (
-        <ul className="divide-y border-y">
-          {page.edges.map(({ node }) => (
-            <li key={node.id} className="py-4">
-              <Link
-                to="/ngos/registry/$recordId"
-                params={{ recordId: node.id }}
-                className="group flex items-start justify-between gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <div className="min-w-0 space-y-1">
-                  <h2 className="break-words font-semibold text-primary group-hover:underline">
-                    {node.nameWithheld ? (
-                      <Trans>Name pending verification</Trans>
-                    ) : (
-                      node.name
-                    )}
-                  </h2>
-                  <p className="text-sm">
-                    {node.registryNumber} · {node.legalForm} ·{" "}
-                    {node.sourceRegistryStatus}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {[node.county, node.locality].filter(Boolean).join(" · ")}{" "}
-                    {node.sourceCui === null ? (
-                      <Trans>CUI not provided or invalid</Trans>
-                    ) : (
-                      `CUI ${node.sourceCui}`
-                    )}
-                  </p>
-                </div>
-                <ArrowRight className="mt-1 size-4 shrink-0" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      <nav
-        aria-label={t`Registry pages`}
-        className="flex flex-wrap justify-between gap-3"
-      >
-        {search.after !== "" && (
-          <Button asChild variant="outline">
-            <Link to="/ngos/registry" search={{ ...search, after: "" }}>
-              <Trans>First page</Trans>
-            </Link>
-          </Button>
-        )}
-        {page.pageInfo.hasNextPage && page.pageInfo.endCursor !== null && (
-          <Button asChild>
-            <Link
-              to="/ngos/registry"
-              search={{ ...search, after: page.pageInfo.endCursor }}
-            >
-              <Trans>Next page</Trans>
-            </Link>
-          </Button>
-        )}
-      </nav>
     </main>
   );
 }
@@ -415,7 +170,7 @@ export function NgoRegistryDetail({
       <header className="space-y-3">
         <Link
           to="/ngos/registry"
-          search={parseRegistrySearch({})}
+          search={{}}
           className="text-sm text-primary underline"
         >
           <Trans>NGO registry</Trans>
@@ -440,9 +195,7 @@ export function NgoRegistryDetail({
           <AlertDescription>
             <Link
               to="/ngos/registry"
-              search={parseRegistrySearch({
-                registryNumber: record.registryNumber,
-              })}
+              search={{ registryNumber: record.registryNumber }}
               className="underline"
             >
               <Trans>Find current records with this registry number</Trans>

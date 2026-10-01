@@ -66,16 +66,10 @@ describe('shares', () => {
 })
 
 describe('registry links', () => {
-  it('fills every filter the registry route keeps in its URL', () => {
-    expect(registrySearch({ county: 'CLUJ', status: 'Inregistrat' })).toEqual({
-      q: '',
-      county: 'CLUJ',
-      category: '',
-      status: 'Inregistrat',
-      registryNumber: '',
-      publicUtility: '',
-      after: '',
-    })
+  it('carries the filters given and only those, so a link reads ?county=CLUJ&status=Inregistrat', () => {
+    expect(registrySearch({ county: 'CLUJ', status: 'Inregistrat' })).toEqual({ county: 'CLUJ', status: 'Inregistrat' })
+    expect(registrySearch({ q: '', county: 'CLUJ' })).toEqual({ county: 'CLUJ' })
+    expect(registrySearch()).toEqual({})
   })
 
   it('looks a registry number up exactly and anything else up by name', () => {

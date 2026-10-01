@@ -6,7 +6,12 @@
  * registry page can count and break down any selection its filters make.
  *
  *   node scripts/capture-ngo-registry.mjs /tmp/rnong.jsonl
- *   node scripts/count-ngo-registry.mjs /tmp/rnong.jsonl <output.json>
+ *   node scripts/count-ngo-registry.mjs /tmp/rnong.jsonl
+ *
+ * It writes `src/features/ngos/registry/data/registry-counts.json`, or the
+ * path given as a second argument. Refresh it with each new export, as the
+ * hub's summary (`summarize-ngo-registry.mjs`): until then the page reads a
+ * new export live and says so.
  *
  * The API serves the registry 100 records a page, with no count and no
  * group-by: until it has both, these counts stand in, and the page uses
@@ -25,6 +30,7 @@
  * the number has none), CUI declared (0/1), entries.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 const API_URL = process.env.NGO_API_URL ?? 'https://dev-chronos-api.transparenta.eu/api/v1/graphql'
 const REGISTRY_NUMBER_YEAR = /\/(\d{4})$/
@@ -34,9 +40,9 @@ const STATUSES = ['Inregistrat', 'Dizolvata', 'In Lichidare', 'Radiat']
 const FIRST_YEAR = 1990
 const NO_COUNTY = 'NEDETERMINAT'
 
-const [input, output] = process.argv.slice(2)
-if (!input || !output) {
-  console.error('usage: node scripts/count-ngo-registry.mjs <capture.jsonl> <output.json>')
+const [input, output = fileURLToPath(new URL('../src/features/ngos/registry/data/registry-counts.json', import.meta.url))] = process.argv.slice(2)
+if (!input) {
+  console.error('usage: node scripts/count-ngo-registry.mjs <capture.jsonl> [output.json]')
   process.exit(1)
 }
 

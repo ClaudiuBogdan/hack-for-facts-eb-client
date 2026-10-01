@@ -110,9 +110,17 @@ msgstr ".csv, .tsv, .xlsx, .xls"
 #~ msgid "· seturi cu date"
 #~ msgstr "· seturi cu date"
 
+#: src/features/ngos/registry/components/registry-filters.tsx:257
+msgid "„{words}”"
+msgstr "„{words}”"
+
 #: src/features/legal/components/legislation-guide.tsx:125
 msgid "„Abrogat parțial” NU înseamnă că legea nu mai e în vigoare. Este statutul firesc al unei legi modificate ani la rând: unele articole au fost abrogate, restul produc efecte în continuare. Printre cele mai citate acte din corpus, Codul de procedură penală — aplicat zi de zi în instanțe — poartă exact acest statut."
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-filters.tsx:269
+msgid "„banca pentru alimente”, „club sportiv”"
+msgstr "„banca pentru alimente”, „club sportiv”"
 
 #: src/features/legal/components/legislation-top-acts.tsx:43
 msgid "„Citări primite” numără trimiterile din alte acte către acesta. Graful de citări rezolvă 56,9% dintre trimiteri la un act intern; restul rămân potriviri posibile."
@@ -121,6 +129,10 @@ msgstr ""
 #: src/features/procurement/components/supplier/supplier-bands.tsx:112
 msgid "„Din achizițiile ei directe”: banii plătiți firmei împărțiți la toate achizițiile directe ale instituției în același an, calculat de Transparenta.eu."
 msgstr "„Din achizițiile ei directe”: banii plătiți firmei împărțiți la toate achizițiile directe ale instituției în același an, calculat de Transparenta.eu."
+
+#: src/features/ngos/registry/model.ts:489
+msgid "„Înregistrat” înseamnă că organizația e în registru, nu că mai funcționează: registrul nu știe asta."
+msgstr "„Înregistrat” înseamnă că organizația e în registru, nu că mai funcționează: registrul nu știe asta."
 
 #: src/components/entities/views/ins-stats-view.derived.ts:126
 msgid "((Immigrants − Emigrants) / Population) × 1,000"
@@ -1124,6 +1136,10 @@ msgstr "{0}% din totalul țării"
 msgid "{activeCount} active filters"
 msgstr "{activeCount} filtre active"
 
+#: src/features/ngos/registry/counts.ts:358
+msgid "{addedBefore} în {previousYear}; după anul din numărul de registru"
+msgstr "{addedBefore} în {previousYear}; după anul din numărul de registru"
+
 #: src/features/ngos/hub/ngo-hub-page.tsx:252
 msgid "{addedPrevious} în {previousYear}"
 msgstr "{addedPrevious} în {previousYear}"
@@ -1247,6 +1263,10 @@ msgstr "{change} față de {previousYear}"
 msgid "{conflictingCount} poziții au alegeri contradictorii în observațiile sursei. Sunt numărate ca participare, dar nu sunt atribuite niciunei alegeri."
 msgstr "{conflictingCount} poziții au alegeri contradictorii în observațiile sursei. Sunt numărate ca participare, dar nu sunt atribuite niciunei alegeri."
 
+#: src/features/ngos/registry/components/registry-head.tsx:72
+msgid "{count, plural, one {# atenționare} few {# atenționări} other {# de atenționări}}"
+msgstr "{count, plural, one {# atenționare} few {# atenționări} other {# de atenționări}}"
+
 #: src/features/private-companies/lib/public-money-display.ts:92
 msgid "{count, plural, one {# commitment} few {# commitments} other {# commitments}}"
 msgstr "{count, plural, one {# angajament} few {# angajamente} other {# de angajamente}}"
@@ -1254,6 +1274,10 @@ msgstr "{count, plural, one {# angajament} few {# angajamente} other {# de angaj
 #: src/features/private-companies/lib/public-money-display.ts:88
 msgid "{count, plural, one {# contract} few {# contracts} other {# contracts}}"
 msgstr "{count, plural, one {# contract} few {# contracte} other {# de contracte}}"
+
+#: src/features/ngos/registry/model.ts:317
+msgid "{count, plural, one {# înregistrare} few {# înregistrări} other {# de înregistrări}}"
+msgstr "{count, plural, one {# înregistrare} few {# înregistrări} other {# de înregistrări}}"
 
 #: src/features/private-companies/lib/public-money-display.ts:90
 msgid "{count, plural, one {# payment} few {# payments} other {# payments}}"
@@ -1313,6 +1337,10 @@ msgstr "{count}: {values}"
 #: src/features/procurement/components/procurement-party-ranking.tsx:307
 msgid "{countLabel} records"
 msgstr "{countLabel} înregistrări"
+
+#: src/features/ngos/registry/counts.ts:392
+msgid "{cuiShare}; restul fără CUI declarat"
+msgstr "{cuiShare}; restul fără CUI declarat"
 
 #. placeholder {0}: coverageExplanation(iso)
 #: src/features/parliament/components/parliament-hub-vote-activity.tsx:351
@@ -1398,6 +1426,14 @@ msgstr "{firstName} i-a atribuit {0} în {year}, cele mai multe."
 #: src/features/procurement/lib/supplier-text.ts:96
 msgid "{firstName} i-a atribuit {0} în {year}."
 msgstr "{firstName} i-a atribuit {0} în {year}."
+
+#: src/features/ngos/registry/components/registry-answer.tsx:359
+msgid "{firstText}–{lastText} din {totalText}"
+msgstr "{firstText}–{lastText} din {totalText}"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:360
+msgid "{firstText}–{lastText} din cel puțin {atLeast}"
+msgstr "{firstText}–{lastText} din cel puțin {atLeast}"
 
 #: src/features/private-companies/lib/company-profile-text.ts:26
 msgid "{form} din {where}, înregistrată în {founded}."
@@ -1675,9 +1711,22 @@ msgstr "{registered, plural, one {Un ONG înregistrat și {added} noi în {year}
 #~ msgid "{registered} de ONG-uri înregistrate în Registrul național, {added} noi în {year} și {density} la 10.000 de locuitori: asociațiile, fundațiile și federațiile din fiecare județ."
 #~ msgstr "{registered} de ONG-uri înregistrate în Registrul național, {added} noi în {year} și {density} la 10.000 de locuitori: asociațiile, fundațiile și federațiile din fiecare județ."
 
+#: src/features/ngos/registry/counts.ts:353
+#: src/features/ngos/registry/counts.ts:377
+msgid "{registeredShare} din selecție"
+msgstr "{registeredShare} din selecție"
+
 #: src/features/landing/components/search/search-parts.tsx:336
 msgid "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
 msgstr "{remaining, plural, one {Încă un caracter pentru a căuta.} few {Încă # caractere pentru a căuta.} other {Încă # de caractere pentru a căuta.}}"
+
+#: src/features/ngos/registry/counts.ts:332
+msgid "{repeated} rânduri repetate scoase"
+msgstr "{repeated} rânduri repetate scoase"
+
+#: src/features/ngos/registry/model.ts:494
+msgid "{repeated} rânduri se repetă în export câmp cu câmp; sunt numărate o dată."
+msgstr "{repeated} rânduri se repetă în export câmp cu câmp; sunt numărate o dată."
 
 #: src/features/private-companies/components/private-company-summary-highlights.tsx:115
 #~ msgid "{representativeCount} legal representatives"
@@ -1790,8 +1839,8 @@ msgid "{total, plural, one {O localitate găsită} few {# localități găsite} 
 msgstr "{total, plural, one {O localitate găsită} few {# localități găsite} other {# de localități găsite}}"
 
 #: src/features/ngos/registry/registry-page.tsx:191
-msgid "{total} registry records in this snapshot. Records without a CUI are included."
-msgstr "{total} înregistrări în acest instantaneu. Sunt incluse și înregistrările fără CUI."
+#~ msgid "{total} registry records in this snapshot. Records without a CUI are included."
+#~ msgstr "{total} înregistrări în acest instantaneu. Sunt incluse și înregistrările fără CUI."
 
 #: src/features/procurement/lib/contract-text.ts:295
 msgid "{total}, {mine} acestei firme"
@@ -1825,6 +1874,10 @@ msgstr "{totalRowCount} UAT-uri · {editedRowCount} editate"
 msgid "{unattributedCount} fără alegere înregistrată"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-answer.tsx:578
+msgid "{unknownText} fără an valid în număr."
+msgstr "{unknownText} fără an valid în număr."
+
 #: src/features/ngos/hub/ngo-hub-page.tsx:81
 #~ msgid "{unplaced, plural, one {# dintre cele noi în {year} nu are județ în registru și intră doar în cifra țării} other {# dintre cele noi în {year} nu au județ în registru și intră doar în cifra țării}}"
 #~ msgstr "{unplaced, plural, one {# dintre cele noi în {year} nu are județ în registru și intră doar în cifra țării} other {# dintre cele noi în {year} nu au județ în registru și intră doar în cifra țării}}"
@@ -1836,6 +1889,14 @@ msgstr ""
 #: src/features/ngos/hub/ngo-county-band.tsx:62
 msgid "{unplaced, plural, one {Media țării cuprinde și # ONG fără județ în registru.} few {Media țării cuprinde și cele # ONG-uri fără județ în registru.} other {Media țării cuprinde și cele # de ONG-uri fără județ în registru.}}"
 msgstr "{unplaced, plural, one {Media țării cuprinde și # ONG fără județ în registru.} few {Media țării cuprinde și cele # ONG-uri fără județ în registru.} other {Media țării cuprinde și cele # de ONG-uri fără județ în registru.}}"
+
+#: src/features/ngos/registry/model.ts:497
+msgid "{unplaced} intrări înregistrate nu au județ în registru; un filtru pe județ nu le găsește."
+msgstr "{unplaced} intrări înregistrate nu au județ în registru; un filtru pe județ nu le găsește."
+
+#: src/features/ngos/registry/counts.ts:385
+msgid "{unplacedText} fără județ"
+msgstr "{unplacedText} fără județ"
 
 #. placeholder {0}: contractsCount(listed)
 #: src/features/procurement/lib/supplier-text.ts:194
@@ -2567,6 +2628,10 @@ msgstr ""
 msgid "Această secțiune va folosi sursa {sourceName}, dar nu este încă live în API. Nu afișăm date simulate ca rezultate reale."
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-answer.tsx:628
+msgid "Această selecție a fost numărată din rândurile ei, citite integral."
+msgstr "Această selecție a fost numărată din rândurile ei, citite integral."
+
 #: src/features/public-investments/components/BlockedDataState.tsx:51
 #: src/features/public-investments/components/BlockedDataState.tsx:58
 msgid "Această suprafață este mock-first. Activează VITE_USE_MOCK_DATA=true sau VITE_MOCK_DATASETS=all, investments-anghel-saligny ori investments-pndl pentru a vedea fixture-urile locale."
@@ -3234,6 +3299,10 @@ msgstr ""
 msgid "Adaugă teritorii"
 msgstr "Adaugă teritorii"
 
+#: src/features/ngos/registry/components/registry-head.tsx:343
+msgid "Adaugă un filtru"
+msgstr "Adaugă un filtru"
+
 #: src/features/statistics/components/comparison/comparison-rail.tsx:241
 msgid "Adaugă un teritoriu"
 msgstr "Adaugă un teritoriu"
@@ -3817,8 +3886,8 @@ msgid "All budget expenditures"
 msgstr "Toate cheltuielile bugetare"
 
 #: src/features/ngos/registry/registry-page.tsx:254
-msgid "All categories"
-msgstr "Toate categoriile"
+#~ msgid "All categories"
+#~ msgstr "Toate categoriile"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:128
 msgid "All changes saved"
@@ -3842,8 +3911,8 @@ msgid "All predefined views are already enabled."
 msgstr "Toate vizualizările predefinite sunt deja activate."
 
 #: src/features/ngos/registry/registry-page.tsx:284
-msgid "All statuses"
-msgstr "Toate stările"
+#~ msgid "All statuses"
+#~ msgstr "Toate stările"
 
 #: src/components/charts/components/series-config/ins-map-period-editor.tsx:82
 msgid "All territories use the same most recent reference period. Missing observations remain unavailable."
@@ -4368,6 +4437,7 @@ msgstr "anual"
 #: src/features/legal/components/legislation-acts-directory.tsx:251
 #: src/features/legal/components/legislation-gazette-directory.tsx:209
 #: src/features/ngos/organization/components/profile-parts.tsx:355
+#: src/features/ngos/registry/components/registry-answer.tsx:505
 msgid "Anul"
 msgstr "Anul"
 
@@ -4435,8 +4505,8 @@ msgid "Anunțul de participare"
 msgstr "Anunțul de participare"
 
 #: src/features/ngos/registry/registry-page.tsx:314
-msgid "Any"
-msgstr "Oricare"
+#~ msgid "Any"
+#~ msgstr "Oricare"
 
 #: src/features/procurement/components/procurement-match-mode-select.tsx:35
 msgid "Any word or similar"
@@ -4625,12 +4695,17 @@ msgstr ""
 msgid "Apropie"
 msgstr "Apropie"
 
+#: src/features/ngos/registry/components/registry-filters.tsx:435
 #: src/features/parliament/components/member-interventii-tab.tsx:226
 #: src/features/procurement/components/buyer/buyer-bands.tsx:57
 #: src/features/procurement/components/home/home-money-bands.tsx:171
 #: src/features/procurement/components/supplier/supplier-bands.tsx:48
 msgid "Arată"
 msgstr "Arată"
+
+#: src/features/ngos/registry/components/registry-filters.tsx:435
+msgid "Arată {shown}"
+msgstr "Arată {shown}"
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:358
 msgid "arată cuprinsul"
@@ -4646,6 +4721,7 @@ msgstr "Arată frecvența publicată"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:170
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:312
+#: src/features/ngos/registry/components/registry-filters.tsx:103
 msgid "Arată mai multe"
 msgstr "Arată mai multe"
 
@@ -4659,6 +4735,8 @@ msgstr "Arată mai puțin"
 #: src/features/legal/components/act-timeline-band.tsx:96
 #: src/features/ngos/hub/ngo-hub-page.tsx:170
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:312
+#: src/features/ngos/registry/components/registry-answer.tsx:487
+#: src/features/ngos/registry/components/registry-filters.tsx:103
 #: src/features/procurement/components/buyer/buyer-bands.tsx:119
 #: src/features/procurement/components/home/home-money-bands.tsx:96
 #: src/features/procurement/components/supplier/supplier-bands.tsx:176
@@ -4668,6 +4746,10 @@ msgstr "Arată mai puține"
 #: src/features/parliament/components/parliament-stenogram-filter-notice.tsx:82
 msgid "Arată stenograma integrală"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-answer.tsx:487
+msgid "Arată toate ({rowCount})"
+msgstr "Arată toate ({rowCount})"
 
 #. placeholder {0}: formatLegalNumber(ordered.length, i18n.locale)
 #: src/features/legal/components/act-timeline-band.tsx:98
@@ -4781,6 +4863,7 @@ msgid "Asociație religioasă"
 msgstr "Asociație religioasă"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:13
+#: src/features/ngos/registry/model.ts:206
 msgid "Asociații"
 msgstr "Asociații"
 
@@ -4789,6 +4872,7 @@ msgid "Asociații profesionale și patronale"
 msgstr "Asociații profesionale și patronale"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:16
+#: src/features/ngos/registry/model.ts:212
 msgid "Asociații religioase"
 msgstr "Asociații religioase"
 
@@ -4800,6 +4884,19 @@ msgstr "asociații și fundații"
 msgid "Asociații și organizații"
 msgstr "Asociații și organizații"
 
+#: src/features/ngos/registry/model.ts:222
+msgid "Asociațiile"
+msgstr "Asociațiile"
+
+#: src/features/ngos/registry/model.ts:550
+msgid "Asociațiile de dezvoltare intercomunitară"
+msgstr "Asociațiile de dezvoltare intercomunitară"
+
+#: src/features/ngos/registry/model.ts:228
+#: src/features/ngos/registry/model.ts:542
+msgid "Asociațiile religioase"
+msgstr "Asociațiile religioase"
+
 #: src/features/ngos/hub/ngo-hub-hero.tsx:55
 msgid "Asociațiile și fundațiile din registrul Ministerului Justiției, și banii sectorului non-profit din situațiile financiare."
 msgstr "Asociațiile și fundațiile din registrul Ministerului Justiției, și banii sectorului non-profit din situațiile financiare."
@@ -4809,7 +4906,6 @@ msgstr "Asociațiile și fundațiile din registrul Ministerului Justiției, și 
 #~ msgstr "Asociațiile, fundațiile și federațiile din Registrul național al Ministerului Justiției, județ cu județ."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:709
-#: src/features/ngos/registry/registry-page.tsx:257
 msgid "Association"
 msgstr "Asociație"
 
@@ -5094,6 +5190,10 @@ msgstr ""
 msgid "Bănci și servicii financiare"
 msgstr "Bănci și servicii financiare"
 
+#: src/features/ngos/registry/model.ts:546
+msgid "Băncile pentru alimente"
+msgstr "Băncile pentru alimente"
+
 #: src/features/private-companies/components/profile/company-profile-page.tsx:46
 msgid "Bani publici"
 msgstr "Bani publici"
@@ -5287,7 +5387,7 @@ msgstr "Ambele limite"
 msgid "Bottom"
 msgstr "Jos"
 
-#: src/features/ngos/registry/registry-page.tsx:463
+#: src/features/ngos/registry/registry-page.tsx:216
 msgid "Branch reported"
 msgstr "Filială conform sursei"
 
@@ -5858,6 +5958,10 @@ msgstr "captura zilei nu a fost încă finalizată după încheiere"
 msgid "Cardurile afișează rezumatul fiecărei luări de cuvânt; transcrierea completă apare acolo unde a fost încărcată din stenogramă. Acolo unde intervenția are o poziție dovedită în stenogramă, cardul duce la locul ei exact în textul integral al ședinței."
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-filters.tsx:369
+msgid "Care"
+msgstr "Care"
+
 #: src/features/ngos/organization/components/years-matrix.tsx:18
 msgid "Casa și conturi la bănci"
 msgstr "Casa și conturi la bănci"
@@ -6016,7 +6120,6 @@ msgstr "Categoriile grupează codurile CPV ale achizițiilor."
 msgid "Categoriile, domeniile și cuvintele-cheie sunt atribuite automat de un model pe baza textului actului — nu sunt o clasificare legală."
 msgstr ""
 
-#: src/features/ngos/registry/registry-page.tsx:246
 #: src/features/procurement/components/procurement-rankings-view.tsx:271
 msgid "Category"
 msgstr "Categorie"
@@ -6181,6 +6284,10 @@ msgstr ""
 msgid "Caută întreprindere publică"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-filters.tsx:217
+msgid "Caută județul"
+msgstr "Caută județul"
+
 #: src/features/statistics/components/uat-map/uat-map-county-picker.tsx:41
 msgid "Caută județul după nume; harta se apropie de el."
 msgstr "Caută județul după nume; harta se apropie de el."
@@ -6315,6 +6422,10 @@ msgstr ""
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:201
 msgid "Căutarea folosește fixture AMEPIP în mock mode. Filtrele pentru sancțiuni, ajutor de stat și autoritate rămân marcate ca gated până când lane-urile ajung în API."
 msgstr ""
+
+#: src/features/ngos/registry/model.ts:505
+msgid "Căutarea în nume ignoră diacriticele și găsește cuvintele oriunde în nume."
+msgstr "Căutarea în nume ignoră diacriticele și găsește cuvintele oriunde în nume."
 
 #: src/features/private-companies/components/profile/company-money-band.tsx:272
 msgid "Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări, așa că plătitorii nu pot fi numiți aici."
@@ -6461,6 +6572,10 @@ msgstr ""
 msgid "Ce nu vă putem spune încă"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-filters.tsx:362
+msgid "Ce organizații"
+msgstr "Ce organizații"
+
 #: src/features/privacy/lib/consent-categories.ts:40
 msgid "Ce pagini se deschid și ce funcții se folosesc, ca să știm ce merită îmbunătățit."
 msgstr "Ce pagini se deschid și ce funcții se folosesc, ca să știm ce merită îmbunătățit."
@@ -6568,6 +6683,10 @@ msgstr "cel mai mare furnizor direct al ei: {0} din achizițiile ei"
 msgid "Cel mai mare rând, {name}, face {part} din bani."
 msgstr "Cel mai mare rând, {name}, face {part} din bani."
 
+#: src/features/ngos/registry/counts.ts:397
+msgid "Cel mai nou an"
+msgstr "Cel mai nou an"
+
 #: src/features/statistics/components/landing/landing-example-card.tsx:59
 #~ msgid "Cel mai recent an cu valori numerice pentru toate cele trei teritorii:"
 #~ msgstr "Cel mai recent an cu valori numerice pentru toate cele trei teritorii:"
@@ -6596,6 +6715,18 @@ msgstr ""
 #: src/features/legal/components/legislation-act-finder.tsx:161
 msgid "cel puțin {0} potriviri"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-answer.tsx:197
+msgid "Cel puțin {atLeast} de înregistrări: restrânge selecția pentru a o împărți."
+msgstr "Cel puțin {atLeast} de înregistrări: restrânge selecția pentru a o împărți."
+
+#: src/features/ngos/registry/counts.ts:337
+msgid "cel puțin; citirea s-a oprit"
+msgstr "cel puțin; citirea s-a oprit"
+
+#: src/features/ngos/registry/counts.ts:335
+msgid "cel puțin; lista continuă"
+msgstr "cel puțin; lista continuă"
 
 #. placeholder {0}: number(CCR_DECISION_COUNT)
 #: src/features/legal/components/legislation-guide.tsx:156
@@ -7052,6 +7183,7 @@ msgstr ""
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:96
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:160
+#: src/features/ngos/registry/components/registry-answer.tsx:72
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:243
 #: src/features/private-companies/components/profile/company-profile-page.tsx:127
 #: src/features/procurement/components/buyer/procurement-buyer-page.tsx:285
@@ -7064,6 +7196,10 @@ msgstr "Cifre-cheie"
 #: src/routes/legislation/analytics.tsx:26
 msgid "Cifrele de ansamblu ale corpusului legislativ și actele pe care se sprijină restul legislației."
 msgstr ""
+
+#: src/features/ngos/registry/model.ts:481
+msgid "Cifrele de context au fost calculate pe alt export decât cel citit acum; nu le arătăm."
+msgstr "Cifrele de context au fost calculate pe alt export decât cel citit acum; nu le arătăm."
 
 #. placeholder {0}: formatLegalDate(LEGAL_CORPUS_MEASURED_AT, i18n.locale)
 #: src/features/legal/components/legislation-honesty-notes.tsx:113
@@ -7179,6 +7315,14 @@ msgstr ""
 #: src/features/private-companies/components/profile/company-profile-states.tsx:114
 msgid "Citirea datelor a eșuat. Nu înseamnă că firma lipsește din registru: încearcă din nou, iar dacă eroarea se repetă, sursa poate fi indisponibilă pentru moment."
 msgstr "Citirea datelor a eșuat. Nu înseamnă că firma lipsește din registru: încearcă din nou, iar dacă eroarea se repetă, sursa poate fi indisponibilă pentru moment."
+
+#: src/features/ngos/registry/components/registry-answer.tsx:387
+msgid "Citirea s-a oprit după {atLeast} de înregistrări."
+msgstr "Citirea s-a oprit după {atLeast} de înregistrări."
+
+#: src/features/ngos/registry/counts.ts:333
+msgid "citite din registru"
+msgstr "citite din registru"
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:135
 msgid "Cititorul de stenograme nu este disponibil momentan"
@@ -7882,6 +8026,10 @@ msgstr "Finalizat."
 msgid "Completion"
 msgstr "Finalizare"
 
+#: src/features/ngos/registry/model.ts:490
+msgid "Completitudinea la nivel național a exportului nu a fost verificată independent."
+msgstr "Completitudinea la nivel național a exportului nu a fost verificată independent."
+
 #: src/features/statistics/components/uat-map/uat-map-series.ts:60
 #: src/features/statistics/lib/comparison-format.ts:84
 msgid "comună"
@@ -8524,8 +8672,10 @@ msgstr "Este necesar consimțământul pentru cookie-uri"
 #~ msgstr "Coordonatele INS și filtrul teritorial canonic se intersectează. Nicio observație nu corespunde ambelor selecții."
 
 #: src/components/ui/copy-button.tsx:22
+#: src/features/ngos/registry/components/registry-head.tsx:106
+#: src/features/ngos/registry/components/registry-head.tsx:107
 msgid "Copiat"
-msgstr ""
+msgstr "Copiat"
 
 #: src/components/ui/copy-button.tsx:21
 msgid "Copiază"
@@ -8543,6 +8693,11 @@ msgstr "Copiază CUI {cui}"
 #: src/components/data-trust/source-provenance-drawer.tsx:83
 msgid "Copiază hash-ul rândului"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-head.tsx:106
+#: src/features/ngos/registry/components/registry-head.tsx:107
+msgid "Copiază legătura"
+msgstr "Copiază legătura"
 
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:120
 msgid "Copiază link"
@@ -8856,8 +9011,7 @@ msgstr "Numărătorile descriu înregistrările care corespund acestor filtre, n
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2987
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1542
-#: src/features/ngos/registry/registry-page.tsx:235
-#: src/features/ngos/registry/registry-page.tsx:460
+#: src/features/ngos/registry/registry-page.tsx:213
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:95
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:448
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:476
@@ -8916,7 +9070,7 @@ msgstr "Conținutul cursului"
 msgid "Course Progress"
 msgstr "Progresul cursului"
 
-#: src/features/ngos/registry/registry-page.tsx:459
+#: src/features/ngos/registry/registry-page.tsx:212
 msgid "Court"
 msgstr "Instanță"
 
@@ -9127,6 +9281,10 @@ msgstr "Eroare la parsarea CSV: {0}"
 msgid "CSV-ul păstrează valorile exact cum le publică INS, cu sursa fiecărui rând."
 msgstr "CSV-ul păstrează valorile exact cum le publică INS, cu sursa fiecărui rând."
 
+#: src/features/ngos/registry/model.ts:283
+msgid "cu „{words}” în nume"
+msgstr "cu „{words}” în nume"
+
 #. placeholder {0}: partners.join(', ')
 #: src/features/procurement/components/supplier/supplier-rows.tsx:154
 msgid "cu {0}"
@@ -9160,6 +9318,10 @@ msgstr "Cu cine"
 msgid "Cu cine câștigă"
 msgstr "Cu cine câștigă"
 
+#: src/features/ngos/registry/counts.ts:392
+msgid "Cu CUI în registru"
+msgstr "Cu CUI în registru"
+
 #: src/features/procurement/components/contract/contract-block.tsx:243
 msgid "cu data {dayText}"
 msgstr "cu data {dayText}"
@@ -9180,6 +9342,10 @@ msgstr ""
 #: src/features/ngos/hub/ngo-hub-page.tsx:386
 msgid "Cu linie întreruptă: {provisionalList}, la prima publicare, fără depunerile întârziate pe care le adaugă o revizuire."
 msgstr "Cu linie întreruptă: {provisionalList}, la prima publicare, fără depunerile întârziate pe care le adaugă o revizuire."
+
+#: src/features/ngos/registry/model.ts:287
+msgid "cu numărul {number}"
+msgstr "cu numărul {number}"
 
 #: src/features/legal/components/legislation-kpi-strip.tsx:65
 msgid "cu statut „modificat”"
@@ -9267,10 +9433,10 @@ msgid "CUI legat printr-un document publicat"
 msgstr "CUI legat printr-un document publicat"
 
 #: src/features/ngos/registry/registry-page.tsx:357
-msgid "CUI not provided or invalid"
-msgstr "CUI necompletat sau nevalid"
+#~ msgid "CUI not provided or invalid"
+#~ msgstr "CUI necompletat sau nevalid"
 
-#: src/features/ngos/registry/registry-page.tsx:462
+#: src/features/ngos/registry/registry-page.tsx:215
 msgid "CUI reported in source"
 msgstr "CUI raportat în sursă"
 
@@ -9308,6 +9474,10 @@ msgstr "Cultură și timp liber"
 msgid "Cum"
 msgstr "Cum"
 
+#: src/features/ngos/registry/components/registry-answer.tsx:622
+msgid "Cum am numărat"
+msgstr "Cum am numărat"
+
 #: src/features/procurement/components/supplier/supplier-bands.tsx:244
 msgid "Cum câștigă"
 msgstr "Cum câștigă"
@@ -9333,9 +9503,17 @@ msgstr ""
 msgid "Cum găsești o lege"
 msgstr ""
 
+#: src/features/ngos/registry/counts.ts:371
+msgid "cum le trece registrul"
+msgstr "cum le trece registrul"
+
 #: src/features/private-companies/components/profile/company-business-band.tsx:33
 msgid "Cum merge afacerea"
 msgstr "Cum merge afacerea"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:171
+msgid "Cum răspunde"
+msgstr "Cum răspunde"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:390
 msgid "Cum s-a făcut"
@@ -9470,6 +9648,7 @@ msgid "Cuvinte-cheie"
 msgstr ""
 
 #: src/features/ngos/organization/components/profile-parts.tsx:433
+#: src/features/ngos/registry/components/registry-filters.tsx:112
 msgid "Da"
 msgstr "Da"
 
@@ -9510,6 +9689,10 @@ msgstr "Data cererii"
 msgid "Data contractului"
 msgstr "Data contractului"
 
+#: src/features/ngos/registry/model.ts:503
+msgid "Data din registru se schimbă când intrarea se modifică; anul din numărul de registru rămâne. Lista vine în ordinea datei, cea mai recentă întâi."
+msgstr "Data din registru se schimbă când intrarea se modifică; anul din numărul de registru rămâne. Lista vine în ordinea datei, cea mai recentă întâi."
+
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:312
 msgid "Data din SEAP: {on}."
 msgstr "Data din SEAP: {on}."
@@ -9521,6 +9704,10 @@ msgstr ""
 #: src/components/shared/procurement-data/coverage-ribbon.tsx:51
 msgid "Dată flux"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-answer.tsx:319
+msgid "Data în registru"
+msgstr "Data în registru"
 
 #: src/features/parliament/components/parliament-speech-detail-page.tsx:207
 #: src/features/parliament/lib/stenogram-presentation.ts:150
@@ -9988,7 +10175,7 @@ msgstr "Datele vin din surse oficiale — ANAF, Ministerul Finanțelor, SEAP, Mo
 msgid "Dates"
 msgstr "Date"
 
-#: src/features/ngos/registry/registry-page.tsx:99
+#: src/features/ngos/registry/registry-page.tsx:84
 msgid "Dates, status and public utility are claims in this snapshot. Records include duplicates and are not a count of distinct organizations."
 msgstr "Datele, starea și utilitatea publică sunt informații raportate în acest instantaneu. Înregistrările includ duplicate și nu reprezintă numărul de organizații distincte."
 
@@ -10092,8 +10279,15 @@ msgstr "De unde vin banii"
 msgid "De unde vin banii, {year}"
 msgstr "De unde vin banii, {year}"
 
+#: src/features/ngos/registry/model.ts:276
+msgid "de utilitate publică"
+msgstr "de utilitate publică"
+
 #: src/features/ngos/hub/ngo-hub-hero.tsx:73
 #: src/features/ngos/hub/ngo-hub-parts.tsx:110
+#: src/features/ngos/registry/counts.ts:371
+#: src/features/ngos/registry/model.ts:304
+#: src/features/ngos/registry/model.ts:599
 msgid "De utilitate publică"
 msgstr "De utilitate publică"
 
@@ -10580,6 +10774,10 @@ msgstr "Deșeuri și reciclare"
 msgid "Despre acest set de date"
 msgstr "Despre acest set de date"
 
+#: src/features/ngos/registry/components/registry-head.tsx:72
+msgid "Despre aceste cifre"
+msgstr "Despre aceste cifre"
+
 #: src/features/parliament/components/parliament-list-surface.tsx:50
 msgid "Despre aceste date și surse"
 msgstr ""
@@ -10757,6 +10955,10 @@ msgstr ""
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr ""
 
+#: src/features/ngos/registry/counts.ts:369
+msgid "din {counties}, după înregistrate"
+msgstr "din {counties}, după înregistrate"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:315
 msgid "Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut."
 msgstr "Din {naturalDecreaseSince}, în fiecare an au murit mai mulți oameni decât s-au născut."
@@ -10801,9 +11003,17 @@ msgstr "din activități economice"
 msgid "din activități fără scop patrimonial"
 msgstr "din activități fără scop patrimonial"
 
+#: src/features/ngos/registry/model.ts:475
+msgid "Din adresă n-am putut folosi: {list}. Lista de mai jos nu ține seama de ele."
+msgstr "Din adresă n-am putut folosi: {list}. Lista de mai jos nu ține seama de ele."
+
 #: src/features/privacy/components/cookie-settings-page.tsx:142
 msgid "din browserul tău"
 msgstr "din browserul tău"
+
+#: src/features/ngos/registry/model.ts:279
+msgid "din București"
+msgstr "din București"
 
 #: src/features/private-companies/components/profile/company-business-band.tsx:162
 msgid "din care creanțe"
@@ -10840,6 +11050,10 @@ msgstr "din cifra de afaceri raportată în România"
 msgid "Din firmele înființate în {COHORT_YEAR}, {0} mai sunt în funcțiune."
 msgstr "Din firmele înființate în {COHORT_YEAR}, {0} mai sunt în funcțiune."
 
+#: src/features/ngos/registry/model.ts:279
+msgid "din județul {name}"
+msgstr "din județul {name}"
+
 #: src/features/statistics/lib/territory-derived.ts:244
 msgid "din lungimea străzilor orășenești"
 msgstr "din lungimea străzilor orășenești"
@@ -10847,6 +11061,10 @@ msgstr "din lungimea străzilor orășenești"
 #: src/features/procurement/lib/direct-purchase-text.ts:273
 msgid "Din notificarea instituției; SEAP nu spune pașii."
 msgstr "Din notificarea instituției; SEAP nu spune pașii."
+
+#: src/features/ngos/registry/counts.ts:397
+msgid "din numărul de registru; cel mai vechi {oldest}"
+msgstr "din numărul de registru; cel mai vechi {oldest}"
 
 #: src/features/procurement/lib/direct-purchase-text.ts:273
 msgid "Din raportul trimestrial; SEAP nu spune pașii."
@@ -10859,6 +11077,10 @@ msgstr "Din registrul comerțului și bilanțurile depuse la ANAF, pentru fiecar
 #: src/features/private-companies/components/profile/company-economy-band.tsx:18
 msgid "din salariații domeniului"
 msgstr "din salariații domeniului"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:440
+msgid "Din selecție"
+msgstr "Din selecție"
 
 #: src/features/procurement/components/contract/contract-block.tsx:251
 msgid "din valori raportate care nu se potrivesc cu textele actelor"
@@ -10996,8 +11218,8 @@ msgid "Disponibilitate: {availability}"
 msgstr ""
 
 #: src/features/ngos/registry/registry-page.tsx:293
-msgid "Dissolved"
-msgstr "Dizolvată"
+#~ msgid "Dissolved"
+#~ msgstr "Dizolvată"
 
 #: src/features/procurement/components/procurement-rankings-view.tsx:377
 msgid "Distinct institution counts are not published on this concentration payload yet."
@@ -11040,6 +11262,7 @@ msgstr ""
 #~ msgstr "Diviziuni CAEN după activitățile înregistrate la ONRC. O firmă cu mai multe activități apare în mai multe bare, așa că barele nu se adună."
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:28
+#: src/features/ngos/registry/model.ts:189
 msgid "dizolvat"
 msgstr "dizolvat"
 
@@ -11051,7 +11274,12 @@ msgstr "dizolvată"
 msgid "Dizolvată"
 msgstr "Dizolvată"
 
+#: src/features/ngos/registry/model.ts:242
+msgid "dizolvate"
+msgstr "dizolvate"
+
 #: src/features/ngos/hub/ngo-hub-labels.ts:22
+#: src/features/ngos/registry/model.ts:172
 msgid "Dizolvate"
 msgstr "Dizolvate"
 
@@ -11137,6 +11365,10 @@ msgstr "Doar municipii și orașe. O pondere din rețea, nu pe locuitor."
 #: src/features/statistics/components/uat-map/uat-map-series.ts:143
 msgid "Doar mutările cu domiciliul: cine pleacă fără să-și schimbe domiciliul nu apare."
 msgstr "Doar mutările cu domiciliul: cine pleacă fără să-și schimbe domiciliul nu apare."
+
+#: src/features/ngos/registry/model.ts:548
+msgid "Doar numele care conțin cuvintele; o organizație numită altfel nu apare."
+msgstr "Doar numele care conțin cuvintele; o organizație numită altfel nu apare."
 
 #: src/features/ngos/hub/ngo-domains.tsx:90
 #: src/features/private-companies/components/hub/hub-sectors.tsx:111
@@ -11353,6 +11585,10 @@ msgstr "după {modifications} ale contractului"
 #: src/features/procurement/components/contract/contract-block.tsx:239
 msgid "după actul adițional nr. {act}"
 msgstr "după actul adițional nr. {act}"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:577
+msgid "După anul din numărul de registru, nu după data înregistrării."
+msgstr "După anul din numărul de registru, nu după data înregistrării."
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:308
 #~ msgid "După anul din numărul de registru, pe care o organizație îl păstrează. Registrul există din 2000; organizațiile mai vechi au fost preluate atunci."
@@ -12559,6 +12795,10 @@ msgstr "Exportă configurația"
 msgid "Export CSV"
 msgstr "Exportă CSV"
 
+#: src/features/ngos/registry/components/registry-head.tsx:296
+msgid "Export din {captured}"
+msgstr "Export din {captured}"
+
 #: src/routes/entity-analytics.lazy.tsx:211
 msgid "Exporting…"
 msgstr "Se exportă…"
@@ -12838,6 +13078,10 @@ msgstr ""
 msgid "Fără activitate principală recunoscută"
 msgstr "Fără activitate principală recunoscută"
 
+#: src/features/ngos/registry/counts.ts:202
+msgid "Fără an în număr"
+msgstr "Fără an în număr"
+
 #: src/features/private-companies/lib/company-profile-text.ts:251
 msgid "fără an în sursă"
 msgstr "fără an în sursă"
@@ -12978,6 +13222,10 @@ msgstr ""
 msgid "fără ICCJ"
 msgstr ""
 
+#: src/features/ngos/registry/counts.ts:202
+msgid "Fără județ"
+msgstr "Fără județ"
+
 #: src/features/ngos/components/ngo-profile-page.tsx:913
 msgid "Fara legaturi de finantare"
 msgstr ""
@@ -12985,6 +13233,10 @@ msgstr ""
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:159
 msgid "fără listă de produse în SEAP"
 msgstr "fără listă de produse în SEAP"
+
+#: src/features/ngos/registry/counts.ts:202
+msgid "Fără localitate"
+msgstr "Fără localitate"
 
 #: src/features/procurement/components/contract/contract-block.tsx:431
 msgid "fără număr"
@@ -13103,6 +13355,14 @@ msgstr ""
 msgid "Fără urmărire pe ascuns"
 msgstr "Fără urmărire pe ascuns"
 
+#: src/features/ngos/registry/model.ts:304
+msgid "Fără utilitate publică"
+msgstr "Fără utilitate publică"
+
+#: src/features/ngos/registry/model.ts:276
+msgid "fără utilitate publică declarată"
+msgstr "fără utilitate publică declarată"
+
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1476
 msgid "fără valoare"
 msgstr ""
@@ -13197,12 +13457,21 @@ msgid "Federație"
 msgstr "Federație"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:15
+#: src/features/ngos/registry/model.ts:210
 msgid "Federații"
 msgstr "Federații"
 
+#: src/features/ngos/registry/model.ts:226
+msgid "Federațiile"
+msgstr "Federațiile"
+
+#: src/features/ngos/registry/model.ts:541
+msgid "Federațiile din registru"
+msgstr "Federațiile din registru"
+
 #: src/features/ngos/registry/registry-page.tsx:263
-msgid "Federation"
-msgstr "Federație"
+#~ msgid "Federation"
+#~ msgstr "Federație"
 
 #: src/components/feedback/FeedbackFab.tsx:29
 msgid "Feedback"
@@ -13317,7 +13586,7 @@ msgstr ""
 msgid "File imported"
 msgstr "Fișier importat"
 
-#: src/features/ngos/registry/registry-page.tsx:66
+#: src/features/ngos/registry/registry-page.tsx:51
 msgid "File received on {date}"
 msgstr "Fișier primit la {date}"
 
@@ -13414,6 +13683,8 @@ msgstr "Filtrat"
 #: src/features/legal/components/legislation-acts-directory.tsx:205
 #: src/features/legal/components/legislation-changes-feed.tsx:300
 #: src/features/legal/components/legislation-gazette-directory.tsx:203
+#: src/features/ngos/registry/components/registry-filters.tsx:415
+#: src/features/ngos/registry/components/registry-head.tsx:228
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:621
 #: src/features/statistics/components/explorer/dataset-explorer-filter-sheet.tsx:56
 #: src/features/statistics/components/explorer/statistics-filter-trigger-button.tsx:23
@@ -13513,6 +13784,7 @@ msgid "Filtrele se păstrează în adresă — o vedere filtrată este un link p
 msgstr ""
 
 #: src/features/landing/components/search/search-parts.tsx:253
+#: src/features/ngos/registry/components/registry-head.tsx:157
 msgid "Filtru"
 msgstr "Filtru"
 
@@ -13629,7 +13901,7 @@ msgstr "Finanțarea"
 msgid "Finanțe"
 msgstr "Finanțe"
 
-#: src/features/ngos/registry/registry-page.tsx:448
+#: src/features/ngos/registry/registry-page.tsx:201
 msgid "Find current records with this registry number"
 msgstr "Caută înregistrările curente cu acest număr de registru"
 
@@ -13863,8 +14135,8 @@ msgid "First available month"
 msgstr "Prima lună disponibilă"
 
 #: src/features/ngos/registry/registry-page.tsx:376
-msgid "First page"
-msgstr "Prima pagină"
+#~ msgid "First page"
+#~ msgstr "Prima pagină"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:512
 msgid "First value only"
@@ -14015,8 +14287,8 @@ msgid "for the selected filters."
 msgstr "pentru filtrele selectate."
 
 #: src/features/ngos/registry/registry-page.tsx:266
-msgid "Foreign legal person"
-msgstr "Persoană juridică străină"
+#~ msgid "Foreign legal person"
+#~ msgstr "Persoană juridică străină"
 
 #: src/features/private-companies/components/layout/private-company-status-tags.tsx:62
 #~ msgid "Form"
@@ -14027,12 +14299,18 @@ msgid "forma"
 msgstr "forma"
 
 #: src/features/ngos/organization/components/profile-parts.tsx:514
+#: src/features/ngos/registry/components/registry-answer.tsx:501
+#: src/features/ngos/registry/components/registry-filters.tsx:75
 msgid "Forma"
 msgstr "Forma"
 
 #: src/features/legal/components/act-versions-band.tsx:95
 msgid "forma afișată"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-filters.tsx:318
+msgid "Forma este număr/literă/an: 3446/A/2026."
+msgstr "Forma este număr/literă/an: 3446/A/2026."
 
 #: src/features/private-companies/components/profile/company-registry-band.tsx:48
 msgid "Formă juridică"
@@ -14041,6 +14319,10 @@ msgstr "Formă juridică"
 #: src/features/ngos/components/ngo-profile-page.tsx:765
 msgid "forma juridica necunoscuta"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-head.tsx:116
+msgid "Forme juridice"
+msgstr "Forme juridice"
 
 #: src/features/statistics/components/territory/territory-derived-list.tsx:282
 msgid "Formula:"
@@ -14064,8 +14346,8 @@ msgid "Found {replacementCount} occurrence{0}"
 msgstr "S-au găsit {replacementCount} apariții{0}"
 
 #: src/features/ngos/registry/registry-page.tsx:260
-msgid "Foundation"
-msgstr "Fundație"
+#~ msgid "Foundation"
+#~ msgstr "Fundație"
 
 #: src/features/procurement/lib/caveat-text.ts:24
 msgid "framework agreements"
@@ -14154,8 +14436,21 @@ msgid "Fundație"
 msgstr "Fundație"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:14
+#: src/features/ngos/registry/model.ts:208
 msgid "Fundații"
 msgstr "Fundații"
+
+#: src/features/ngos/registry/model.ts:224
+msgid "Fundațiile"
+msgstr "Fundațiile"
+
+#: src/features/ngos/registry/model.ts:551
+msgid "Fundațiile dizolvate"
+msgstr "Fundațiile dizolvate"
+
+#: src/features/ngos/registry/model.ts:537
+msgid "Fundațiile înregistrate din Cluj"
+msgstr "Fundațiile înregistrate din Cluj"
 
 #: src/lib/chart-filter-utils.ts:43
 msgid "Funding source"
@@ -14736,7 +15031,7 @@ msgstr "Volatilitatea ridicată poate apărea în localități mici, unde fluxur
 msgid "Highest value"
 msgstr "Valoarea cea mai mare"
 
-#: src/features/ngos/registry/registry-page.tsx:62
+#: src/features/ngos/registry/registry-page.tsx:47
 msgid "Historical snapshot"
 msgstr "Instantaneu istoric"
 
@@ -15043,7 +15338,7 @@ msgstr "Importă spațiu de lucru din CSV"
 msgid "Imported group workspace"
 msgstr "Spațiu de lucru de grup importat"
 
-#: src/features/ngos/registry/registry-page.tsx:91
+#: src/features/ngos/registry/registry-page.tsx:76
 msgid "Imported on {imported}"
 msgstr "Importat la {imported}"
 
@@ -15333,18 +15628,21 @@ msgstr "În lei ai fiecărui an, fără ajustare cu inflația."
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:57
 #: src/features/ngos/hub/ngo-registry-search.tsx:30
+#: src/features/ngos/registry/model.ts:191
+#: src/features/ngos/registry/model.ts:244
 msgid "în lichidare"
 msgstr "în lichidare"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:23
 #: src/features/ngos/hub/ngo-hub-parts.tsx:122
 #: src/features/ngos/organization/words.ts:44
+#: src/features/ngos/registry/model.ts:174
 msgid "În lichidare"
 msgstr "În lichidare"
 
 #: src/features/ngos/registry/registry-page.tsx:290
-msgid "In liquidation"
-msgstr "În lichidare"
+#~ msgid "In liquidation"
+#~ msgstr "În lichidare"
 
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:159
 msgid "În lucru"
@@ -15353,6 +15651,10 @@ msgstr ""
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1640
 msgid "În mock mode, aceste fixture sunt doar exemple modelate după contractul AMEPIP; nu sunt prezentate ca răspuns live."
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-head.tsx:119
+msgid "În nume"
+msgstr "În nume"
 
 #: src/features/learning/components/interactive/VATCalculator.tsx:180
 msgid "In one year, you will pay"
@@ -15596,6 +15898,8 @@ msgstr ""
 #: src/features/ngos/hub/ngo-registry-search.tsx:200
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:443
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:71
+#: src/features/ngos/registry/components/filter-parts.tsx:165
+#: src/features/ngos/registry/components/registry-answer.tsx:394
 #: src/features/private-companies/components/hub/company-county-map.tsx:133
 #: src/features/private-companies/components/profile/company-profile-states.tsx:123
 #: src/features/statistics/components/county-map/county-map.tsx:126
@@ -15665,7 +15969,7 @@ msgstr "Începutul contractului"
 msgid "încetarea suspendării"
 msgstr ""
 
-#: src/components/ui/sheet.tsx:61
+#: src/components/ui/sheet.tsx:63
 #: src/features/statistics/components/request-dataset-action.tsx:148
 msgid "Închide"
 msgstr "Închide"
@@ -16026,9 +16330,15 @@ msgstr ""
 msgid "înregistrări"
 msgstr ""
 
-#: src/features/procurement/components/procurement-supplier-page.tsx:188
-#~ msgid "Înregistrări"
-#~ msgstr ""
+#: src/features/ngos/registry/components/registry-answer.tsx:191
+#: src/features/ngos/registry/components/registry-answer.tsx:439
+#: src/features/ngos/registry/counts.ts:326
+msgid "Înregistrări"
+msgstr "Înregistrări"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:555
+msgid "Înregistrări pe ani; săgețile schimbă anul"
+msgstr "Înregistrări pe ani; săgețile schimbă anul"
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:365
 msgid "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție."
@@ -16059,6 +16369,10 @@ msgstr "Înregistrările SEAP"
 msgid "Înregistrările sunt agregate sau redactate pentru a proteja persoanele fizice; detaliile individuale sunt afișate doar când sunt esențiale și de interes public."
 msgstr ""
 
+#: src/features/ngos/registry/model.ts:187
+msgid "înregistrat"
+msgstr "înregistrat"
+
 #: src/features/ngos/organization/words.ts:42
 #: src/features/private-companies/components/profile/company-registry-band.tsx:49
 msgid "Înregistrată"
@@ -16068,15 +16382,26 @@ msgstr "Înregistrată"
 msgid "Înregistrată la ANAF din {registered}."
 msgstr "Înregistrată la ANAF din {registered}."
 
+#: src/features/ngos/registry/model.ts:240
+msgid "înregistrate"
+msgstr "înregistrate"
+
 #: src/features/ngos/hub/ngo-hub-labels.ts:21
 #: src/features/ngos/hub/ngo-hub-page.tsx:112
 #: src/features/ngos/hub/ngo-hub-pending.tsx:98
+#: src/features/ngos/registry/counts.ts:353
+#: src/features/ngos/registry/counts.ts:377
+#: src/features/ngos/registry/model.ts:170
 msgid "Înregistrate"
 msgstr "Înregistrate"
 
 #: src/features/private-companies/components/hub/hub-sections.tsx:589
 #~ msgid "Înregistrate din 2024"
 #~ msgstr "Înregistrate din 2024"
+
+#: src/features/ngos/registry/counts.ts:364
+msgid "înregistrate; populația INS, 1 ianuarie {year}"
+msgstr "înregistrate; populația INS, 1 ianuarie {year}"
 
 #: src/features/landing/lib/national-facts.ts:120
 msgid "INS · 1 ian. 2025 · definitiv"
@@ -16568,6 +16893,10 @@ msgstr "Între ele, pe ani"
 msgid "Între ele, pe ani, lei"
 msgstr "Între ele, pe ani, lei"
 
+#: src/features/ngos/registry/components/registry-head.tsx:193
+msgid "Întrebări"
+msgstr "Întrebări"
+
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:248
 #~ msgid "Întrebări cu care se începe"
 #~ msgstr "Întrebări cu care se începe"
@@ -16793,6 +17122,10 @@ msgstr "jud. {0}"
 msgid "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 msgstr "jud. {countyReference}<0/> · RO {countryReference}<1/>"
 
+#: src/features/ngos/registry/place.ts:47
+msgid "Jud. {name}"
+msgstr "Jud. {name}"
+
 #: src/features/justice/lib/justice-format.ts:82
 #: src/routes/justitie.cautare.tsx:297
 msgid "Judecătorie"
@@ -16838,13 +17171,24 @@ msgstr ""
 msgid "județ necunoscut"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-head.tsx:163
+msgid "Județ, formă, stare, cuvinte din nume…"
+msgstr "Județ, formă, stare, cuvinte din nume…"
+
+#: src/features/ngos/registry/components/registry-filters.tsx:216
+msgid "Județ: nume sau cod („CJ”)"
+msgstr "Județ: nume sau cod („CJ”)"
+
 #: src/features/ngos/components/ngo-services-page.tsx:605
 msgid "Judete"
 msgstr ""
 
-#: src/features/statistics/components/detail/detail-accordion.tsx:188
-#~ msgid "Județe"
-#~ msgstr "Județe"
+#: src/features/ngos/registry/components/registry-filters.tsx:222
+#: src/features/ngos/registry/components/registry-filters.tsx:224
+#: src/features/ngos/registry/components/registry-head.tsx:115
+#: src/features/ngos/registry/counts.ts:383
+msgid "Județe"
+msgstr "Județe"
 
 #: src/features/ngos/components/ngo-services-page.tsx:661
 msgid "Judete filtrate"
@@ -16881,9 +17225,10 @@ msgstr "Județele pe hartă →"
 msgid "județul"
 msgstr "județul"
 
-#: src/features/statistics/components/uat-map/uat-map-lists.tsx:102
-#~ msgid "Județul"
-#~ msgstr "Județul"
+#: src/features/ngos/registry/components/registry-answer.tsx:497
+#: src/features/ngos/registry/components/registry-filters.tsx:175
+msgid "Județul"
+msgstr "Județul"
 
 #. placeholder {0}: countyName(code)
 #: src/features/procurement/lib/buyer-text.ts:28
@@ -17015,6 +17360,10 @@ msgstr "l/locuitor/zi"
 msgid "la {0} din {1}"
 msgstr "la {0} din {1}"
 
+#: src/features/ngos/registry/counts.ts:329
+msgid "la {captured}"
+msgstr "la {captured}"
+
 #: src/features/ngos/hub/ngo-hub-page.tsx:210
 msgid "La {captured}"
 msgstr "La {captured}"
@@ -17054,6 +17403,7 @@ msgstr "la 10.000 de locuitori"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:111
 #: src/features/ngos/hub/ngo-hub-pending.tsx:97
+#: src/features/ngos/registry/counts.ts:362
 msgid "La 10.000 de locuitori"
 msgstr "La 10.000 de locuitori"
 
@@ -17529,7 +17879,7 @@ msgstr ""
 #~ msgid "Linked by an accepted CUI in the current registry. Each source retains its own observations."
 #~ msgstr "Asociere acceptată prin CUI în registrul curent. Datele fiecărei surse sunt prezentate separat."
 
-#: src/features/ngos/registry/registry-page.tsx:486
+#: src/features/ngos/registry/registry-page.tsx:239
 msgid "Linked CUI"
 msgstr "CUI corelat"
 
@@ -17600,6 +17950,10 @@ msgstr ""
 #: src/features/privacy/components/cookie-settings-page.tsx:262
 msgid "Lista completă a ce se scrie în browserul tău, cu durata fiecărei chei, este în politica de cookie-uri."
 msgstr "Lista completă a ce se scrie în browserul tău, cu durata fiecărei chei, este în politica de cookie-uri."
+
+#: src/features/ngos/registry/components/registry-answer.tsx:624
+msgid "Lista este exportul registrului, filtrat de API, în ordinea exportului: data din registru, cea mai recentă întâi. API-ul nu numără și nu grupează."
+msgstr "Lista este exportul registrului, filtrat de API, în ordinea exportului: data din registru, cea mai recentă întâi. API-ul nu numără și nu grupează."
 
 #: src/features/elections/components/election-shared.tsx:413
 msgid "Lista finala"
@@ -17875,7 +18229,7 @@ msgstr "Se încarcă seriile de date publice..."
 msgid "Loading public map..."
 msgstr "Se încarcă harta publică..."
 
-#: src/features/ngos/registry/registry-page.tsx:147
+#: src/features/ngos/registry/registry-page.tsx:132
 msgid "Loading registry records…"
 msgstr "Se încarcă înregistrările…"
 
@@ -18031,6 +18385,10 @@ msgstr ""
 msgid "localitatea"
 msgstr "localitatea"
 
+#: src/features/ngos/registry/components/registry-answer.tsx:499
+msgid "Localitatea"
+msgstr "Localitatea"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:278
 #~ msgid "Localitatea ta"
 #~ msgstr "Localitatea ta"
@@ -18039,9 +18397,10 @@ msgstr "localitatea"
 msgid "Localitatea vs județul vs România"
 msgstr "Localitatea vs județul vs România"
 
+#: src/features/ngos/registry/counts.ts:389
 #: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:166
 msgid "Localități"
-msgstr ""
+msgstr "Localități"
 
 #: src/features/statistics/components/detail/detail-accordion.tsx:185
 #~ msgid "Localități (SIRUTA)"
@@ -18055,7 +18414,7 @@ msgstr "Localitățile (UAT-urile) sunt colorate după totalurile sediilor socia
 msgid "Localities (UATs) are coloured by their own totals under the current filters. Records without known buyer geography are excluded from the map — never shown as zero."
 msgstr "Localitățile (UAT-urile) sunt colorate după propriile totaluri, conform filtrelor curente. Înregistrările fără geografie cunoscută a cumpărătorului sunt excluse din hartă — nu sunt afișate niciodată ca zero."
 
-#: src/features/ngos/registry/registry-page.tsx:461
+#: src/features/ngos/registry/registry-page.tsx:214
 msgid "Locality"
 msgstr "Localitate"
 
@@ -18176,6 +18535,10 @@ msgstr "locul"
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:77
 msgid "locul {0} din {1}"
 msgstr "locul {0} din {1}"
+
+#: src/features/ngos/registry/counts.ts:369
+msgid "Locul între județe"
+msgstr "Locul între județe"
 
 #: src/features/statistics/components/landing/landing-hero.tsx:106
 #~ msgid "Locul tău în cifre"
@@ -19063,7 +19426,7 @@ msgstr ""
 msgid "Ministerul Transporturilor"
 msgstr ""
 
-#: src/features/ngos/registry/registry-page.tsx:74
+#: src/features/ngos/registry/registry-page.tsx:59
 msgid "Ministry of Justice source"
 msgstr "Sursa Ministerului Justiției"
 
@@ -19523,6 +19886,10 @@ msgstr "Municipiu"
 msgid "municipiu, reședință de județ"
 msgstr "municipiu, reședință de județ"
 
+#: src/features/ngos/registry/place.ts:47
+msgid "Municipiul {name}"
+msgstr "Municipiul {name}"
+
 #: src/features/statistics/components/uat-map/uat-map-series.ts:42
 msgid "Municipiul București"
 msgstr "Municipiul București"
@@ -19589,8 +19956,7 @@ msgstr "Nume"
 msgid "Name (A-Z)"
 msgstr "Nume (A-Z)"
 
-#: src/features/ngos/registry/registry-page.tsx:345
-#: src/features/ngos/registry/registry-page.tsx:425
+#: src/features/ngos/registry/registry-page.tsx:180
 msgid "Name pending verification"
 msgstr "Denumire în curs de verificare"
 
@@ -19649,11 +20015,11 @@ msgstr "Național"
 msgid "National Budget"
 msgstr "Buget Național"
 
-#: src/features/ngos/registry/registry-page.tsx:85
+#: src/features/ngos/registry/registry-page.tsx:70
 msgid "National completeness has not been independently verified."
 msgstr "Caracterul complet la nivel național nu a fost verificat independent."
 
-#: src/features/ngos/registry/registry-page.tsx:52
+#: src/features/ngos/registry/registry-page.tsx:37
 msgid "National completeness unverified"
 msgstr "Caracterul complet la nivel național este neverificat"
 
@@ -19811,6 +20177,10 @@ msgstr ""
 msgid "nesalvat"
 msgstr "nesalvat"
 
+#: src/features/ngos/registry/counts.ts:202
+msgid "Nespecificat"
+msgstr "Nespecificat"
+
 #: src/features/private-companies/components/sections/private-company-financials-section.tsx:106
 #~ msgid "Net loss (I20)"
 #~ msgstr "Pierdere netă (I20)"
@@ -19875,7 +20245,7 @@ msgstr "Nou"
 msgid "New conversation"
 msgstr "Conversație nouă"
 
-#: src/features/ngos/registry/registry-page.tsx:57
+#: src/features/ngos/registry/registry-page.tsx:42
 msgid "New export overdue"
 msgstr "Este necesar un export nou"
 
@@ -19914,15 +20284,14 @@ msgstr "Următorul"
 msgid "Next observations"
 msgstr "Observațiile următoare"
 
-#: src/features/ngos/registry/registry-page.tsx:386
 #: src/features/procurement/components/procurement-pagination.tsx:75
 #: src/features/procurement/components/procurement-ranking-table.tsx:276
 msgid "Next page"
 msgstr "Pagina următoare"
 
 #: src/features/ngos/registry/registry-page.tsx:185
-msgid "NGO data"
-msgstr "Date despre ONG-uri"
+#~ msgid "NGO data"
+#~ msgstr "Date despre ONG-uri"
 
 #: src/features/ngos/profile/profile-page.tsx:75
 #: src/routes/ngos.$cui.tsx:24
@@ -19933,12 +20302,11 @@ msgstr "Date despre ONG-uri"
 #~ msgid "NGO profile temporarily unavailable"
 #~ msgstr "Profilul ONG-ului este temporar indisponibil"
 
-#: src/features/ngos/registry/registry-page.tsx:188
-#: src/features/ngos/registry/registry-page.tsx:421
+#: src/features/ngos/registry/registry-page.tsx:176
 msgid "NGO registry"
 msgstr "Registrul ONG"
 
-#: src/features/ngos/registry/registry-page.tsx:113
+#: src/features/ngos/registry/registry-page.tsx:98
 msgid "NGO registry unavailable"
 msgstr "Registrul ONG nu este disponibil"
 
@@ -20018,6 +20386,11 @@ msgstr "Nicio firmă cu CUI {cui} în registrul comerțului sau la ANAF. Verific
 #: src/features/private-companies/components/profile/company-money-band.tsx:193
 msgid "Nicio înregistrare în acest an"
 msgstr "Nicio înregistrare în acest an"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:229
+#: src/features/ngos/registry/components/registry-answer.tsx:427
+msgid "Nicio înregistrare pentru această selecție."
+msgstr "Nicio înregistrare pentru această selecție."
 
 #. placeholder {0}: String(resolved.anchorYear)
 #: src/features/parliament/components/parliament-speech-activity-panel.tsx:259
@@ -20156,6 +20529,10 @@ msgstr ""
 msgid "Niciun act nu corespunde filtrelor."
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-answer.tsx:525
+msgid "Niciun an de registru în selecție."
+msgstr "Niciun an de registru în selecție."
+
 #: src/features/parliament/components/parliament-year-combobox.tsx:106
 msgid "Niciun an disponibil."
 msgstr ""
@@ -20215,6 +20592,10 @@ msgstr "Niciun județ cu valoare pentru {0}."
 #: src/features/statistics/components/uat-map/uat-map-county-picker.tsx:69
 msgid "Niciun județ nu se potrivește."
 msgstr "Niciun județ nu se potrivește."
+
+#: src/features/ngos/registry/components/registry-filters.tsx:172
+msgid "Niciun județ pentru „{term}”."
+msgstr "Niciun județ pentru „{term}”."
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:78
 msgid "Niciun ONG cu „{query}” în registru."
@@ -20311,6 +20692,10 @@ msgstr "niciunul"
 msgid "Niciunul dintre cei {known} furnizori identificați nu are {basis} în această selecție, așa că nu se poate calcula o concentrare."
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-head.tsx:168
+msgid "Nimic găsit."
+msgstr "Nimic găsit."
+
 #: src/features/procurement/components/contract/contract-context.tsx:51
 #: src/features/procurement/lib/contract-text.ts:336
 msgid "nimic între ele"
@@ -20333,8 +20718,7 @@ msgstr "Nivel necunoscut"
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:57
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:68
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:79
-#: src/features/ngos/registry/registry-page.tsx:320
-#: src/features/ngos/registry/registry-page.tsx:412
+#: src/features/ngos/registry/registry-page.tsx:167
 msgid "No"
 msgstr "Nu"
 
@@ -20846,8 +21230,8 @@ msgid "No records in scope"
 msgstr "Nicio înregistrare în domeniul selectat"
 
 #: src/features/ngos/registry/registry-page.tsx:331
-msgid "No records match these filters."
-msgstr "Nicio înregistrare nu corespunde filtrelor."
+#~ msgid "No records match these filters."
+#~ msgstr "Nicio înregistrare nu corespunde filtrelor."
 
 #: src/features/learning/components/interactive/RectificationHistory.tsx:127
 msgid "No rectifications"
@@ -20932,6 +21316,7 @@ msgstr "Nu există avertismente."
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:113
 #: src/features/ngos/hub/ngo-hub-page.tsx:251
+#: src/features/ngos/registry/counts.ts:356
 msgid "Noi în {year}"
 msgstr "Noi în {year}"
 
@@ -21063,9 +21448,9 @@ msgstr "Nu a fost găsit"
 msgid "Not linked to a contract in the source data — no detail page."
 msgstr "Nu este legată de un contract în datele sursă — nu are pagină de detaliu."
 
-#: src/features/ngos/registry/registry-page.tsx:404
-#: src/features/ngos/registry/registry-page.tsx:412
-#: src/features/ngos/registry/registry-page.tsx:472
+#: src/features/ngos/registry/registry-page.tsx:159
+#: src/features/ngos/registry/registry-page.tsx:167
+#: src/features/ngos/registry/registry-page.tsx:225
 msgid "Not provided"
 msgstr "Necompletat"
 
@@ -21183,11 +21568,13 @@ msgstr ""
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:173
 #: src/features/ngos/organization/components/profile-parts.tsx:110
+#: src/features/ngos/registry/components/registry-answer.tsx:318
 #: src/features/private-companies/components/profile/company-profile-head.tsx:195
 msgid "Nr. registru"
 msgstr "Nr. registru"
 
 #: src/features/ngos/organization/components/profile-parts.tsx:433
+#: src/features/ngos/registry/components/registry-filters.tsx:113
 msgid "Nu"
 msgstr "Nu"
 
@@ -21705,6 +22092,10 @@ msgstr "număr"
 msgid "Număr"
 msgstr "Număr"
 
+#: src/features/ngos/registry/components/registry-head.tsx:120
+msgid "Număr de registru"
+msgstr "Număr de registru"
+
 #: src/routes/justitie.cautare.tsx:211
 msgid "Număr dosar"
 msgstr ""
@@ -21733,6 +22124,22 @@ msgstr "Numărate unde se muncește, nu unde se locuiește."
 msgid "numărați unde lucrează, nu unde locuiesc"
 msgstr "numărați unde lucrează, nu unde locuiesc"
 
+#: src/features/ngos/registry/model.ts:483
+msgid "Numărătoarea întregului registru e a altui export: selecția e numărată din rândurile citite."
+msgstr "Numărătoarea întregului registru e a altui export: selecția e numărată din rândurile citite."
+
+#: src/features/ngos/registry/model.ts:482
+msgid "Numărătoarea întregului registru nu s-a încărcat: selecția e numărată din rândurile citite."
+msgstr "Numărătoarea întregului registru nu s-a încărcat: selecția e numărată din rândurile citite."
+
+#: src/features/ngos/registry/components/registry-answer.tsx:625
+msgid "Numărătorile și împărțirile vin din citirea integrală a aceluiași export, pe județ, localitate, formă, stare, utilitate publică, an și CUI; le arătăm doar cât timp API-ul servește acel export."
+msgstr "Numărătorile și împărțirile vin din citirea integrală a aceluiași export, pe județ, localitate, formă, stare, utilitate publică, an și CUI; le arătăm doar cât timp API-ul servește acel export."
+
+#: src/features/ngos/registry/components/registry-filters.tsx:293
+msgid "Numărul"
+msgstr "Numărul"
+
 #: src/features/legal/components/legislation-act-finder.tsx:275
 msgid "numărul actului — „Legea 53/2003”, „OUG 57/2019”, „HG 1/2016”"
 msgstr ""
@@ -21745,6 +22152,14 @@ msgstr "Numărul contractelor din {0} nu e disponibil acum."
 #: src/features/legal/components/legislation-domain-grid.tsx:68
 msgid "Numărul de acte pe domeniu nu a putut fi încărcat."
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-filters.tsx:311
+msgid "Numărul de registru"
+msgstr "Numărul de registru"
+
+#: src/features/ngos/registry/model.ts:576
+msgid "Numărul de registru {number}"
+msgstr "Numărul de registru {number}"
 
 #: src/features/parliament/components/vote-individual-votes-section.tsx:285
 msgid "Numărul de voturi pe grup poate diferi de totalul din divizare atunci când unii membri nu au participat sau nu au votat în mod explicit."
@@ -21799,6 +22214,7 @@ msgid "Nume furnizor, serviciu, CUI sau licenta"
 msgstr ""
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:234
+#: src/features/ngos/registry/components/registry-answer.tsx:335
 msgid "Nume în curs de verificare"
 msgstr "Nume în curs de verificare"
 
@@ -21828,6 +22244,10 @@ msgstr "Nume sau identificator."
 msgid "Nume sau identificator..."
 msgstr "Nume sau identificator..."
 
+#: src/features/ngos/registry/model.ts:309
+msgid "nume: „{words}”"
+msgstr "nume: „{words}”"
+
 #: src/features/statistics/components/request-dataset-action.tsx:117
 msgid "nume@example.ro"
 msgstr "nume@example.ro"
@@ -21836,9 +22256,21 @@ msgstr "nume@example.ro"
 msgid "numele"
 msgstr "numele"
 
+#: src/features/ngos/registry/components/registry-filters.tsx:255
+msgid "Numele"
+msgstr "Numele"
+
 #: src/components/data-trust/privacy-boundary-notice.tsx:21
 msgid "Numele candidatilor sunt afisate ca etichete publicate de sursa, nu ca identitati de persoane rezolvate."
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-filters.tsx:270
+msgid "Numele conține"
+msgstr "Numele conține"
+
+#: src/features/ngos/registry/model.ts:601
+msgid "Numele conține „{typed}”"
+msgstr "Numele conține „{typed}”"
 
 #: src/features/private-companies/components/hub/hub-sections.tsx:366
 #~ msgid "Numele diviziunilor vin din nomenclatorul CAEN Rev.2; cifrele grupează codurile din toate revizuirile."
@@ -21865,6 +22297,10 @@ msgstr ""
 #: src/routes/procurement/direct-acquisitions/$id.tsx:59
 msgid "O achiziție directă din SEAP: ce s-a cumpărat, de la cine, cu cât și cum s-a făcut."
 msgstr "O achiziție directă din SEAP: ce s-a cumpărat, de la cine, cu cât și cum s-a făcut."
+
+#: src/features/ngos/registry/components/registry-answer.tsx:626
+msgid "O căutare după nume sau după număr e numărată din propriile rânduri, citite până la {cap}; peste acest prag spunem doar că sunt mai multe."
+msgstr "O căutare după nume sau după număr e numărată din propriile rânduri, citite până la {cap}; peste acest prag spunem doar că sunt mai multe."
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:161
 msgid "o ediție în {partLabel}, {year}"
@@ -22094,6 +22530,7 @@ msgstr ""
 #: src/features/ngos/hub/ngo-county-band.tsx:43
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:276
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:21
+#: src/features/ngos/registry/components/registry-head.tsx:306
 msgid "ONG-uri"
 msgstr "ONG-uri"
 
@@ -22141,13 +22578,25 @@ msgstr "ONG-uri noi în registru, pe an"
 #~ msgid "ONG-uri si servicii sociale"
 #~ msgstr ""
 
+#: src/features/ngos/registry/model.ts:232
+msgid "ONG-urile"
+msgstr "ONG-urile"
+
 #: src/features/ngos/hub/ngo-hub-hero.tsx:47
 msgid "ONG-urile <0/>din România"
 msgstr "ONG-urile <0/>din România"
 
-#: src/features/ngos/hub/ngo-hub-page.tsx:204
-#~ msgid "ONG-urile de utilitate publică"
-#~ msgstr "ONG-urile de utilitate publică"
+#: src/features/ngos/registry/model.ts:524
+msgid "ONG-urile de utilitate publică"
+msgstr "ONG-urile de utilitate publică"
+
+#: src/features/ngos/registry/model.ts:584
+msgid "ONG-urile din București"
+msgstr "ONG-urile din București"
+
+#: src/features/ngos/registry/model.ts:584
+msgid "ONG-urile din județul {name}"
+msgstr "ONG-urile din județul {name}"
 
 #: src/features/ngos/hub/ngo-hub-head.ts:61
 #: src/features/ngos/hub/ngo-hub-page.tsx:94
@@ -22162,6 +22611,10 @@ msgstr "ONG-urile înregistrate, după forma juridică"
 #: src/features/ngos/hub/ngo-county-map.tsx:163
 #~ msgid "ONG-urile județului"
 #~ msgstr "ONG-urile județului"
+
+#: src/features/ngos/registry/model.ts:531
+msgid "ONG-urile radiate din București"
+msgstr "ONG-urile radiate din București"
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:177
 msgid "Online link"
@@ -22590,6 +23043,10 @@ msgstr ""
 msgid "Ordonate după numărul de înregistrări: prea puține au valoare publicată."
 msgstr "Ordonate după numărul de înregistrări: prea puține au valoare publicată."
 
+#: src/features/ngos/registry/components/registry-answer.tsx:317
+msgid "Organizația"
+msgstr "Organizația"
+
 #: src/features/ngos/organization/words.ts:38
 msgid "Organizație"
 msgstr "Organizație"
@@ -22615,9 +23072,21 @@ msgstr "organizații noi"
 #~ msgid "organizatii si dovezi directe in schema ngo"
 #~ msgstr ""
 
+#: src/routes/ngos.registry.index.tsx:42
+msgid "Organizațiile din registrul național ONG al Ministerului Justiției: câte sunt, unde, de ce formă și în ce stare, și fiecare intrare."
+msgstr "Organizațiile din registrul național ONG al Ministerului Justiției: câte sunt, unde, de ce formă și în ce stare, și fiecare intrare."
+
+#: src/features/ngos/registry/model.ts:528
+msgid "Organizațiile în lichidare"
+msgstr "Organizațiile în lichidare"
+
 #: src/features/ngos/registry/registry-page.tsx:213
-msgid "Organization name"
-msgstr "Denumirea organizației"
+#~ msgid "Organization name"
+#~ msgstr "Denumirea organizației"
+
+#: src/features/ngos/registry/components/registry-filters.tsx:111
+msgid "Oricare"
+msgstr "Oricare"
 
 #: src/features/landing/lib/search-filters.ts:71
 msgid "orice entitate publică, inclusiv primăriile"
@@ -22680,7 +23149,7 @@ msgstr "Alte surse"
 msgid "Other sources for this record"
 msgstr "Alte surse pentru această înregistrare"
 
-#: src/features/ngos/registry/registry-page.tsx:498
+#: src/features/ngos/registry/registry-page.tsx:251
 msgid "Other sources may have different coverage. This link does not change the registry's legal classification."
 msgstr "Alte surse pot avea o acoperire diferită. Această legătură nu modifică încadrarea juridică din registru."
 
@@ -22783,10 +23252,11 @@ msgstr "pagina achiziției pe e-licitatie.ro"
 
 #: src/components/ui/pagination.tsx:104
 #: src/features/legal/components/legislation-gazette-directory.tsx:422
+#: src/features/ngos/registry/components/registry-answer.tsx:369
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:173
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:763
 msgid "Pagina anterioară"
-msgstr ""
+msgstr "Pagina anterioară"
 
 #: src/features/statistics/components/detail-dimension-panel.tsx:228
 #~ msgid "Pagina anterioară de opțiuni"
@@ -22806,10 +23276,11 @@ msgstr "Pagina unui ONG există când registrul național ONG are o intrare cure
 
 #: src/components/ui/pagination.tsx:149
 #: src/features/legal/components/legislation-gazette-directory.tsx:430
+#: src/features/ngos/registry/components/registry-answer.tsx:378
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:209
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:774
 msgid "Pagina următoare"
-msgstr ""
+msgstr "Pagina următoare"
 
 #: src/features/statistics/components/detail-dimension-panel.tsx:241
 #~ msgid "Pagina următoare de opțiuni"
@@ -22864,6 +23335,10 @@ msgstr "Până în {0} a cumpărat doar direct, din catalogul SEAP: nicio proced
 #: src/features/parliament/components/parliament-bills-filter-sheet.tsx:191
 msgid "Până la"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-answer.tsx:548
+msgid "până la {until}"
+msgstr "până la {until}"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:48
 msgid "până la 10.000"
@@ -23144,6 +23619,10 @@ msgstr "pe {on}"
 msgid "Pe an, după anul contractului sau al achiziției"
 msgstr "Pe an, după anul contractului sau al achiziției"
 
+#: src/features/ngos/registry/model.ts:426
+msgid "Pe ani"
+msgstr "Pe ani"
+
 #: src/features/procurement/components/profile/profile-years-chart.tsx:75
 msgid "Pe ani, din {DIRECT_COMPARABLE_FROM}"
 msgstr "Pe ani, din {DIRECT_COMPARABLE_FROM}"
@@ -23160,11 +23639,16 @@ msgstr ""
 msgid "Pe domenii"
 msgstr "Pe domenii"
 
+#: src/features/ngos/registry/model.ts:422
+msgid "Pe forme"
+msgstr "Pe forme"
+
 #: src/features/ngos/hub/ngo-hub-page.tsx:214
 #~ msgid "Pe forme juridice"
 #~ msgstr "Pe forme juridice"
 
 #: src/features/ngos/hub/ngo-hub-sections.ts:9
+#: src/features/ngos/registry/model.ts:418
 #: src/features/procurement/components/home/procurement-home-page.tsx:99
 msgid "Pe județe"
 msgstr "Pe județe"
@@ -23172,6 +23656,10 @@ msgstr "Pe județe"
 #: src/features/procurement/lib/home-text.ts:76
 msgid "Pe lângă contracte, instituțiile au făcut {purchases} din catalogul SEAP, de {average} în medie: cumpărături sub pragul pentru licitație."
 msgstr "Pe lângă contracte, instituțiile au făcut {purchases} din catalogul SEAP, de {average} în medie: cumpărături sub pragul pentru licitație."
+
+#: src/features/ngos/registry/model.ts:420
+msgid "Pe localități"
+msgstr "Pe localități"
 
 #: src/features/statistics/lib/territory-derived.ts:271
 msgid "pe locuitor"
@@ -23194,6 +23682,10 @@ msgstr "Pe populația după domiciliu, nu pe cea rezidentă a indicatorului euro
 #: src/features/statistics/pages/statistics-territory-hub-page.tsx:181
 msgid "Pe scurt"
 msgstr "Pe scurt"
+
+#: src/features/ngos/registry/model.ts:424
+msgid "Pe stări"
+msgstr "Pe stări"
 
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:142
 msgid "Pending review"
@@ -23463,6 +23955,7 @@ msgid "persoane"
 msgstr "persoane"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:17
+#: src/features/ngos/registry/model.ts:214
 msgid "Persoane juridice străine"
 msgstr "Persoane juridice străine"
 
@@ -23473,6 +23966,11 @@ msgstr ""
 #: src/routes/justitie.cautare.tsx:439
 msgid "Persoanele fizice sunt agregate, nu afișate nominal."
 msgstr ""
+
+#: src/features/ngos/registry/model.ts:230
+#: src/features/ngos/registry/model.ts:543
+msgid "Persoanele juridice străine"
+msgstr "Persoanele juridice străine"
 
 #: src/routes/justitie.instante.$courtId.tsx:325
 msgid "Persoanele și părțile necunoscute nu sunt afișate nominal."
@@ -24766,8 +25264,7 @@ msgstr "Secțiuni de achiziții publice"
 #~ msgid "Public revenue (RON)"
 #~ msgstr "Venituri publice (RON)"
 
-#: src/features/ngos/registry/registry-page.tsx:303
-#: src/features/ngos/registry/registry-page.tsx:465
+#: src/features/ngos/registry/registry-page.tsx:218
 msgid "Public utility reported"
 msgstr "Utilitate publică raportată"
 
@@ -24896,6 +25393,7 @@ msgid "Quiz configuration error"
 msgstr "Eroare de configurare a chestionarului"
 
 #: src/features/ngos/hub/ngo-registry-search.tsx:26
+#: src/features/ngos/registry/model.ts:193
 msgid "radiat"
 msgstr "radiat"
 
@@ -24912,13 +25410,18 @@ msgstr "Radiată"
 msgid "Radiată din registrul comerțului: cifrele de mai jos sunt istoria ei."
 msgstr "Radiată din registrul comerțului: cifrele de mai jos sunt istoria ei."
 
-#: src/features/private-companies/components/hub/hub-sections.tsx:203
-#~ msgid "radiate"
-#~ msgstr "radiate"
+#: src/features/ngos/registry/model.ts:246
+msgid "radiate"
+msgstr "radiate"
 
 #: src/features/ngos/hub/ngo-hub-labels.ts:24
+#: src/features/ngos/registry/model.ts:176
 msgid "Radiate"
 msgstr "Radiate"
+
+#: src/features/ngos/registry/model.ts:533
+msgid "Radierea închide intrarea; data din registru e a ultimei modificări, nu neapărat a radierii."
+msgstr "Radierea închide intrarea; data din registru e a ultimei modificări, nu neapărat a radierii."
 
 #: src/features/private-companies/lib/caen-divisions.ts:72
 msgid "Radio și televiziune"
@@ -24995,6 +25498,14 @@ msgstr "Rândurile adună {lines}, iar achiziția are {value}. SEAP publică amb
 #: src/features/ngos/components/ngo-snapshot-page.tsx:251
 msgid "Randurile care leaga acest instantaneu de profiluri sau referinte."
 msgstr ""
+
+#: src/features/ngos/registry/model.ts:500
+msgid "Rândurile repetate câmp cu câmp sunt numărate o dată."
+msgstr "Rândurile repetate câmp cu câmp sunt numărate o dată."
+
+#: src/features/ngos/registry/components/registry-answer.tsx:627
+msgid "Rândurile repetate câmp cu câmp sunt numărate o dată. Anul este cel din numărul de registru; un an înainte de 1990 sau după export e o greșeală de scriere și nu e numărat."
+msgstr "Rândurile repetate câmp cu câmp sunt numărate o dată. Anul este cel din numărul de registru; un an înainte de 1990 sau după export e o greșeală de scriere și nu e numărat."
 
 #: src/features/elections/components/election-shared.tsx:293
 msgid "Rang"
@@ -25083,6 +25594,10 @@ msgstr "raportul trimestrial al achizițiilor directe"
 #: src/features/legal/components/legislation-act-finder.tsx:206
 msgid "răspuns degradat — o parte din căutare nu a rulat"
 msgstr ""
+
+#: src/features/ngos/registry/components/registry-list-page.tsx:87
+msgid "Răspunsul"
+msgstr "Răspunsul"
 
 #: src/routes/justitie.instante.$courtId.tsx:125
 msgid "Rată apel"
@@ -25424,8 +25939,8 @@ msgid "Region totals"
 msgstr "Totaluri pe regiuni"
 
 #: src/features/ngos/registry/registry-page.tsx:287
-msgid "Registered"
-msgstr "Înregistrată"
+#~ msgid "Registered"
+#~ msgstr "Înregistrată"
 
 #: src/features/private-companies/components/search/company-active-filters.tsx:35
 msgid "Registered {regFrom} – {regTo}"
@@ -25473,7 +25988,7 @@ msgstr "Ponderea șomajului înregistrat"
 msgid "Registration date"
 msgstr "Data înregistrării"
 
-#: src/features/ngos/registry/registry-page.tsx:457
+#: src/features/ngos/registry/registry-page.tsx:210
 msgid "Registration date in source"
 msgstr "Data înregistrării conform sursei"
 
@@ -25495,6 +26010,8 @@ msgstr ""
 #~ msgstr ""
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:131
+#: src/features/ngos/registry/components/registry-filters.tsx:359
+#: src/features/ngos/registry/components/registry-head.tsx:310
 msgid "Registrul"
 msgstr "Registrul"
 
@@ -25541,8 +26058,15 @@ msgstr "Registrul nu declară un CUI. La ANAF, un singur CUI are exact numele ș
 msgid "Registrul o trece sub mai multe nume; toate sunt la „Ce spun ANAF și registrul\"."
 msgstr "Registrul o trece sub mai multe nume; toate sunt la „Ce spun ANAF și registrul\"."
 
-#: src/features/ngos/registry/registry-page.tsx:224
-#: src/features/ngos/registry/registry-page.tsx:455
+#: src/routes/ngos.registry.index.tsx:38
+msgid "Registrul ONG"
+msgstr "Registrul ONG"
+
+#: src/features/ngos/registry/model.ts:526
+msgid "Registrul spune că o organizație e de utilitate publică; hotărârea de guvern nu e în export."
+msgstr "Registrul spune că o organizație e de utilitate publică; hotărârea de guvern nu e în export."
+
+#: src/features/ngos/registry/registry-page.tsx:208
 msgid "Registry number"
 msgstr "Număr de registru"
 
@@ -25555,10 +26079,10 @@ msgstr "Număr de registru"
 #~ msgstr ""
 
 #: src/features/ngos/registry/registry-page.tsx:370
-msgid "Registry pages"
-msgstr "Paginile registrului"
+#~ msgid "Registry pages"
+#~ msgstr "Paginile registrului"
 
-#: src/features/ngos/registry/registry-page.tsx:156
+#: src/features/ngos/registry/registry-page.tsx:141
 msgid "Registry record not found"
 msgstr "Înregistrarea nu a fost găsită"
 
@@ -25639,8 +26163,8 @@ msgid "Relevance"
 msgstr "Relevanță"
 
 #: src/features/ngos/registry/registry-page.tsx:269
-msgid "Religious association"
-msgstr "Asociație religioasă"
+#~ msgid "Religious association"
+#~ msgstr "Asociație religioasă"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:396
 msgid "Remove"
@@ -25678,8 +26202,8 @@ msgid "Remove this view?"
 msgstr "Elimini această vizualizare?"
 
 #: src/features/ngos/registry/registry-page.tsx:296
-msgid "Removed from register"
-msgstr "Radiată din registru"
+#~ msgid "Removed from register"
+#~ msgstr "Radiată din registru"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1310
 msgid "Removed UAT and deleted the empty group."
@@ -25945,7 +26469,7 @@ msgstr "Repornește procesul de inițiere"
 msgid "Restart Onboarding?"
 msgstr "Repornești procesul de inițiere?"
 
-#: src/features/ngos/registry/registry-page.tsx:136
+#: src/features/ngos/registry/registry-page.tsx:121
 msgid "Restart search"
 msgstr "Reia căutarea"
 
@@ -25999,7 +26523,7 @@ msgid "Resursa de revizuit"
 msgstr ""
 
 #: src/features/agent/components/agent-chat.tsx:73
-#: src/features/ngos/registry/registry-page.tsx:132
+#: src/features/ngos/registry/registry-page.tsx:117
 #: src/features/procurement/components/procurement-error-state.tsx:111
 #: src/routes/maps/editor/new.lazy.tsx:300
 msgid "Retry"
@@ -26598,10 +27122,18 @@ msgstr "Schimbare"
 #~ msgid "Schimbarea populației pe județe"
 #~ msgstr "Schimbarea populației pe județe"
 
+#: src/features/ngos/registry/components/registry-head.tsx:260
+msgid "Scoate „{phrase}”"
+msgstr "Scoate „{phrase}”"
+
 #. placeholder {0}: territory.name
 #: src/features/statistics/components/comparison/comparison-rail.tsx:216
 msgid "Scoate {0} din comparație"
 msgstr "Scoate {0} din comparație"
+
+#: src/features/ngos/registry/components/filter-parts.tsx:90
+msgid "Scoate {label}"
+msgstr "Scoate {label}"
 
 #: src/features/statistics/components/comparison-territory-picker.tsx:66
 #~ msgid "Scoate {label} din comparație"
@@ -26610,6 +27142,10 @@ msgstr "Scoate {0} din comparație"
 #: src/features/statistics/components/comparison-territory-picker.tsx:88
 #~ msgid "Scoate toate teritoriile"
 #~ msgstr "Scoate toate teritoriile"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:232
+msgid "Scoate:"
+msgstr "Scoate:"
 
 #: src/features/ngos/organization/components/profile-parts.tsx:496
 msgid "scopul"
@@ -26638,6 +27174,10 @@ msgstr "Scrie cel puțin {TERRITORY_SEARCH_MIN_LENGTH} litere din nume."
 #: src/features/statistics/components/territory-search.tsx:42
 #~ msgid "Scrie numele unei localități sau al unui județ. Căutarea ignoră diacriticele."
 #~ msgstr "Scrie numele unei localități sau al unui județ. Căutarea ignoră diacriticele."
+
+#: src/features/ngos/registry/components/registry-head.tsx:166
+msgid "Scrie un județ („Cluj”), o formă („fundații”), o stare („radiate”), un număr de registru sau cuvinte din nume."
+msgstr "Scrie un județ („Cluj”), o formă („fundații”), o stare („radiate”), un număr de registru sau cuvinte din nume."
 
 #: src/features/landing/components/search/landing-search.tsx:105
 msgid "Scrie un nume pentru a căuta în <0>{scope}</0>."
@@ -26760,6 +27300,10 @@ msgstr "Se caută."
 msgid "Se caută…"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-answer.tsx:93
+msgid "se citește"
+msgstr "se citește"
+
 #: src/features/privacy/components/cookie-settings-page.tsx:131
 msgid "Se citește…"
 msgstr "Se citește…"
@@ -26881,6 +27425,7 @@ msgstr ""
 #: src/features/legal/components/legislation-changes-feed.tsx:551
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:443
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:71
+#: src/features/ngos/registry/components/registry-answer.tsx:394
 #: src/features/parliament/components/member-interventii-tab.tsx:338
 #: src/features/parliament/components/parliament-stenogram-interventions-view.tsx:163
 #: src/features/parliament/components/parliament-stenogram-sessions-view.tsx:207
@@ -27260,8 +27805,8 @@ msgid "Search records"
 msgstr "Caută înregistrări"
 
 #: src/features/ngos/registry/registry-page.tsx:326
-msgid "Search registry"
-msgstr "Caută în registru"
+#~ msgid "Search registry"
+#~ msgstr "Caută în registru"
 
 #: src/features/procurement/components/procurement-list-provenance-notice.tsx:52
 msgid "Search results as of {stamp} UTC; record values are read live from the database."
@@ -27283,7 +27828,7 @@ msgstr "Caută etichete (ex: Spital, Local)"
 msgid "Search territories"
 msgstr "Caută teritorii"
 
-#: src/features/ngos/registry/registry-page.tsx:163
+#: src/features/ngos/registry/registry-page.tsx:144
 msgid "Search the registry"
 msgstr "Caută în registru"
 
@@ -27616,6 +28161,10 @@ msgstr "UAT-ul selectat nu are cod SIRUTA."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1314
 msgid "Selected UATs are already in group."
 msgstr "UAT-urile selectate sunt deja în grup."
+
+#: src/features/ngos/registry/model.ts:486
+msgid "Selecția are cel puțin {atLeast} de înregistrări: cifrele ei nu se calculează. Restrânge-o pentru un răspuns exact."
+msgstr "Selecția are cel puțin {atLeast} de înregistrări: cifrele ei nu se calculează. Restrânge-o pentru un răspuns exact."
 
 #: src/features/statistics/components/detail/detail-accordion.tsx:127
 #~ msgid "Selecția curentă nu are observații."
@@ -28794,7 +29343,7 @@ msgstr "Sosirile în structurile de cazare, 2018–2025, pentru țară sau pentr
 msgid "Source"
 msgstr "Sursă"
 
-#: src/features/ngos/registry/registry-page.tsx:46
+#: src/features/ngos/registry/registry-page.tsx:31
 msgid "Source and coverage"
 msgstr "Sursă și acoperire"
 
@@ -28832,7 +29381,7 @@ msgstr "URL sursă"
 msgid "Source verification unavailable"
 msgstr "Verificarea sursei nu este disponibilă"
 
-#: src/features/ngos/registry/registry-page.tsx:95
+#: src/features/ngos/registry/registry-page.tsx:80
 msgid "Source-declared snapshot date: {sourceDate}"
 msgstr "Data instantaneului declarată de sursă: {sourceDate}"
 
@@ -28862,7 +29411,7 @@ msgstr "Surse, acoperire și limitele declarate ale setului de date despre achiz
 msgid "Spații verzi"
 msgstr "Spații verzi"
 
-#: src/features/ngos/registry/registry-page.tsx:456
+#: src/features/ngos/registry/registry-page.tsx:209
 msgid "Special registry number"
 msgstr "Număr în registrul special"
 
@@ -29029,11 +29578,14 @@ msgstr "stare:"
 msgid "starea"
 msgstr "starea"
 
+#: src/features/ngos/registry/components/registry-answer.tsx:503
+#: src/features/ngos/registry/components/registry-filters.tsx:48
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:149
 msgid "Starea"
 msgstr "Starea"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:440
+#: src/features/ngos/registry/components/registry-head.tsx:391
 msgid "Starea în registru"
 msgstr "Starea în registru"
 
@@ -29044,6 +29596,10 @@ msgstr "Starea în registru"
 #: src/features/privacy/components/cookie-settings-page.tsx:126
 msgid "Starea ta"
 msgstr "Starea ta"
+
+#: src/features/ngos/registry/components/registry-head.tsx:117
+msgid "Stări"
+msgstr "Stări"
 
 #: src/features/ngos/components/ngo-landing-page.tsx:362
 #~ msgid "stari utile pentru QA pana la conectarea backendului"
@@ -29210,8 +29766,7 @@ msgstr "Stare"
 msgid "Status by Budget Chapters"
 msgstr "Situația pe Capitole Bugetare"
 
-#: src/features/ngos/registry/registry-page.tsx:276
-#: src/features/ngos/registry/registry-page.tsx:458
+#: src/features/ngos/registry/registry-page.tsx:211
 msgid "Status in source"
 msgstr "Stare conform sursei"
 
@@ -29371,6 +29926,10 @@ msgstr "Șterge teritoriul invalid"
 #: src/features/statistics/components/explorer/statistics-active-filters.tsx:101
 msgid "Șterge toate filtrele"
 msgstr "Șterge toate filtrele"
+
+#: src/features/ngos/registry/components/registry-filters.tsx:428
+msgid "Șterge tot"
+msgstr "Șterge tot"
 
 #: src/features/statistics/pages/statistics-dataset-detail-page.tsx:212
 msgid "Șterge unitatea invalidă"
@@ -29775,6 +30334,14 @@ msgstr ""
 #: src/features/statistics/components/territory/ins-provenance-drawer.tsx:56
 #~ msgid "Sursă: {datasetName}"
 #~ msgstr "Sursă: {datasetName}"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:611
+msgid "Sursa: <0>Registrul național ONG</0>, Ministerul Justiției"
+msgstr "Sursa: <0>Registrul național ONG</0>, Ministerul Justiției"
+
+#: src/features/ngos/registry/components/registry-answer.tsx:603
+msgid "Sursa: <0>Registrul național ONG</0>, Ministerul Justiției, export din {captured}"
+msgstr "Sursa: <0>Registrul național ONG</0>, Ministerul Justiției, export din {captured}"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1575
 msgid "Sursă: AMEPIP (OUG 109/2011)"
@@ -30468,7 +31035,7 @@ msgstr "Linkul conține o selecție invalidă a sursei. Corectează câmpurile s
 msgid "The list of reports could not be loaded. This does not mean none were filed — try again in a moment."
 msgstr ""
 
-#: src/features/ngos/registry/registry-page.tsx:120
+#: src/features/ngos/registry/registry-page.tsx:105
 msgid "The live dataset may not be published yet, or the snapshot may have changed. No sample data is shown."
 msgstr "Setul de date poate să nu fie publicat încă sau instantaneul s-a schimbat. Nu sunt afișate date demonstrative."
 
@@ -30526,7 +31093,7 @@ msgstr "Realitatea"
 msgid "The reform simplified the tax code but increased the burden on consumption. The \"Essentials\" category now consolidates food, books, and tourism under a single 11% rate."
 msgstr "Reforma a simplificat codul fiscal, dar a crescut povara asupra consumului. Categoria „Esențiale” consolidează acum alimentele, cărțile și turismul sub o singură cotă de 11%."
 
-#: src/features/ngos/registry/registry-page.tsx:117
+#: src/features/ngos/registry/registry-page.tsx:102
 msgid "The registry could not be loaded"
 msgstr "Registrul nu a putut fi încărcat"
 
@@ -30580,7 +31147,7 @@ msgstr "Configurația hărții partajate este invalidă sau ilizibilă. Puteți 
 #~ msgid "The source publishes no itemised detail for this kind of record — it was collected from official bulk exports that contain only the summary above. This does not mean nothing was purchased."
 #~ msgstr "Sursa nu publică detalii pe poziții pentru acest tip de înregistrare — aceasta a fost colectată din exporturi bulk oficiale care conțin doar rezumatul de mai sus. Asta nu înseamnă că nu s-a cumpărat nimic."
 
-#: src/features/ngos/registry/registry-page.tsx:478
+#: src/features/ngos/registry/registry-page.tsx:231
 msgid "The source registration date is not necessarily the organization's founding date."
 msgstr "Data înregistrării din sursă nu este neapărat data înființării organizației."
 
@@ -30775,7 +31342,7 @@ msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
 msgid "This page cannot show budget or debate details for this city hall right now."
 msgstr "Această pagină nu poate afișa momentan detaliile despre buget sau dezbatere pentru această primărie."
 
-#: src/features/ngos/registry/registry-page.tsx:80
+#: src/features/ngos/registry/registry-page.tsx:65
 msgid "This page uses a supplied registry export."
 msgstr "Această pagină folosește un export de registru furnizat."
 
@@ -30795,7 +31362,7 @@ msgstr "Această previzualizare este incompletă. Restrânge selecția sursei pe
 msgid "This preview uses the persisted dataset state from the server."
 msgstr "Această previzualizare folosește starea persistentă a setului de date de pe server."
 
-#: src/features/ngos/registry/registry-page.tsx:438
+#: src/features/ngos/registry/registry-page.tsx:193
 msgid "This record belongs to an earlier snapshot"
 msgstr "Această înregistrare aparține unui instantaneu anterior"
 
@@ -31041,6 +31608,7 @@ msgstr ""
 
 #: src/features/entity-search/components/entity-facet-chips.tsx:73
 #: src/features/ngos/components/ngo-services-page.tsx:298
+#: src/features/ngos/registry/model.ts:178
 #: src/features/private-companies/lib/company-profile-text.ts:114
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1240
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:210
@@ -31050,6 +31618,10 @@ msgstr ""
 #: src/routes/justitie.cautare.tsx:407
 msgid "Toate"
 msgstr "Toate"
+
+#: src/features/ngos/registry/model.ts:272
+msgid "Toate {subject} din registru"
+msgstr "Toate {subject} din registru"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:221
 msgid "Toate achizițiile dintre ele"
@@ -31165,6 +31737,10 @@ msgstr ""
 msgid "Toate firmele în funcțiune"
 msgstr "Toate firmele în funcțiune"
 
+#: src/features/ngos/registry/components/registry-filters.tsx:83
+msgid "Toate formele"
+msgstr "Toate formele"
+
 #: src/features/procurement/lib/supplier-text.ts:160
 msgid "Toate instituțiile care au cumpărat direct de la firmă în {year} sunt din {where}, județul firmei."
 msgstr "Toate instituțiile care au cumpărat direct de la firmă în {year} sunt din {where}, județul firmei."
@@ -31184,6 +31760,10 @@ msgstr "Toate instituțiile care i-au atribuit contracte în {year} sunt din {wh
 #: src/features/ngos/components/ngo-services-page.tsx:266
 msgid "Toate judetele"
 msgstr ""
+
+#: src/features/ngos/registry/model.ts:272
+msgid "Toate ONG-urile din registru"
+msgstr "Toate ONG-urile din registru"
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:244
 msgid "toate părțile"
@@ -31953,6 +32533,10 @@ msgstr "Un cookie mușcat, cu firimituri alături"
 msgid "Un exemplu, ca să vezi cum arată. Schimbă indicatorul sau teritoriile și comparația devine a ta."
 msgstr "Un exemplu, ca să vezi cum arată. Schimbă indicatorul sau teritoriile și comparația devine a ta."
 
+#: src/features/ngos/registry/model.ts:479
+msgid "Un export nou al registrului întârzie: datele sunt din {captured}."
+msgstr "Un export nou al registrului întârzie: datele sunt din {captured}."
+
 #: src/features/statistics/pages/statistics-comparisons-page.tsx:343
 #: src/routes/ins/comparatii/index.tsx:11
 msgid "Un indicator INS pentru până la șase locuri — localități, județe sau toată țara: cum stau acum, cum s-au schimbat și unde se află printre județe."
@@ -31995,6 +32579,7 @@ msgstr "Indisponibil"
 msgid "unavailable under the current answerability policy"
 msgstr "indisponibil conform politicii actuale de răspuns"
 
+#: src/features/ngos/registry/components/registry-filters.tsx:366
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:235
 msgid "Unde"
 msgstr "Unde"
@@ -32512,6 +33097,15 @@ msgstr "Folosește aceeași populație anuală INS ca în calculele bugetare pe 
 msgid "Utilitate"
 msgstr ""
 
+#: src/features/ngos/registry/model.ts:598
+msgid "utilitate publică"
+msgstr "utilitate publică"
+
+#: src/features/ngos/registry/components/registry-filters.tsx:116
+#: src/features/ngos/registry/components/registry-head.tsx:118
+msgid "Utilitate publică"
+msgstr "Utilitate publică"
+
 #: src/components/provenance/source-provenance.tsx:436
 msgid "Utilitate publică (SGG)"
 msgstr ""
@@ -32523,6 +33117,10 @@ msgstr ""
 #: src/features/ngos/components/ngo-landing-page.tsx:428
 #~ msgid "Utilitate publica SGG"
 #~ msgstr ""
+
+#: src/features/ngos/registry/model.ts:506
+msgid "Utilitatea publică este cea declarată în export, nu verificată la Secretariatul General al Guvernului."
+msgstr "Utilitatea publică este cea declarată în export, nu verificată la Secretariatul General al Guvernului."
 
 #: src/features/statistics/lib/territory-groups.ts:28
 msgid "Utilități publice"
@@ -33313,7 +33911,7 @@ msgstr "Vizualizați în Analiza Entităților"
 msgid "View map details and status."
 msgstr "Vizualizează detaliile și starea hărții."
 
-#: src/features/ngos/registry/registry-page.tsx:494
+#: src/features/ngos/registry/registry-page.tsx:247
 msgid "View NGO profile for this CUI"
 msgstr "Vezi profilul ONG-ului pentru acest CUI"
 
@@ -33726,8 +34324,7 @@ msgstr "Anual"
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:55
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:66
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:77
-#: src/features/ngos/registry/registry-page.tsx:317
-#: src/features/ngos/registry/registry-page.tsx:412
+#: src/features/ngos/registry/registry-page.tsx:167
 msgid "Yes"
 msgstr "Da"
 

@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { parseRegistrySearch } from '@/features/ngos/registry/api'
+import { siteKeys, validateRegistrySearch } from '@/features/ngos/registry/api'
 
 /**
  * The registry at its first release's Romanian path: one 301 to
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/ong-uri/registru/')({
   beforeLoad: ({ search }) => {
     throw redirect({
       to: '/ngos/registry',
-      search: { ...search, ...parseRegistrySearch(search) },
+      search: { ...siteKeys(search), ...validateRegistrySearch(search) },
       replace: true,
       statusCode: 301,
     })

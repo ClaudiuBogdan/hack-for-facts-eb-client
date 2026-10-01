@@ -63,44 +63,74 @@ export const REGISTRY_LIST_QUERY = `query NgoRegistryRecords($filter: NgoRegistr
 }`;
 export const REGISTRY_DETAIL_QUERY = `query NgoRegistryRecord($id: ID!) { ngoRegistryRecord(id: $id) { ${recordFields} } }`;
 
+/** The registry route's address: the filters set, each in the registry's own spelling; an unset one is absent. */
 export type RegistrySearch = {
-  readonly q: string;
-  readonly county: string;
-  readonly category: string;
-  readonly status: string;
-  readonly registryNumber: string;
-  readonly publicUtility: string;
-  readonly after: string;
+  readonly q?: string;
+  readonly county?: string;
+  readonly category?: string;
+  readonly status?: string;
+  readonly registryNumber?: string;
+  readonly publicUtility?: string;
 };
-export function parseRegistrySearch(
+
+export const REGISTRY_SEARCH_KEYS = [
+  "q",
+  "county",
+  "category",
+  "status",
+  "registryNumber",
+  "publicUtility",
+] as const;
+
+/**
+ * The keys the registry page reads, each a non-empty string (trimmed, at
+ * most 200 characters); any other key, and an empty one, is dropped. What
+ * a value means — and whether the page can use it — is the page's to say
+ * (`queryOf`), so an unreadable value reaches it and is reported.
+ */
+export function validateRegistrySearch(
   search: Record<string, unknown>,
 ): RegistrySearch {
-  const text = (key: string, max = 200) =>
-    typeof search[key] === "string" ? search[key].trim().slice(0, max) : "";
-  return {
-    q: text("q"),
-    county: text("county"),
-    category: text("category"),
-    status: text("status"),
-    registryNumber: text("registryNumber"),
-    publicUtility: ["yes", "no"].includes(text("publicUtility"))
-      ? text("publicUtility")
-      : "",
-    after: text("after", 2000),
-  };
+  const valid: Record<string, string> = {};
+  for (const key of REGISTRY_SEARCH_KEYS) {
+    const value = search[key];
+    const text =
+      typeof value === "string"
+        ? value.trim().slice(0, 200)
+        : typeof value === "number" && Number.isFinite(value)
+          ? String(value)
+          : "";
+    if (text !== "") valid[key] = text;
+  }
+  return valid;
 }
+
+/**
+ * A search without the registry's keys (and the old cursor, `after`, the
+ * page no longer reads): what the rest of the site keeps in the address —
+ * `lang`, the currency — which a new question must not drop.
+ */
+export function siteKeys(
+  search: Record<string, unknown>,
+): Record<string, unknown> {
+  const dropped = new Set<string>([...REGISTRY_SEARCH_KEYS, "after"]);
+  return Object.fromEntries(
+    Object.entries(search).filter(([key]) => !dropped.has(key)),
+  );
+}
+
 export function registryFilter(search: RegistrySearch) {
   return {
-    ...(search.q === "" ? {} : { name: { contains: search.q } }),
-    ...(search.county === "" ? {} : { county: { eq: search.county } }),
-    ...(search.category === "" ? {} : { category: { eq: search.category } }),
-    ...(search.status === "" ? {} : { status: { eq: search.status } }),
-    ...(search.registryNumber === ""
-      ? {}
-      : { registryNumber: { eq: search.registryNumber } }),
-    ...(search.publicUtility === ""
-      ? {}
-      : { publicUtility: { eq: search.publicUtility === "yes" } }),
+    ...(search.q ? { name: { contains: search.q } } : {}),
+    ...(search.county ? { county: { eq: search.county } } : {}),
+    ...(search.category ? { category: { eq: search.category } } : {}),
+    ...(search.status ? { status: { eq: search.status } } : {}),
+    ...(search.registryNumber
+      ? { registryNumber: { eq: search.registryNumber } }
+      : {}),
+    ...(search.publicUtility === "yes" || search.publicUtility === "no"
+      ? { publicUtility: { eq: search.publicUtility === "yes" } }
+      : {}),
   };
 }
 /** Dedicated live transport. Never imports the mock NGO dispatcher or its environment flag. */
@@ -109,9 +139,25 @@ export async function fetchRegistryPage(
   signal?: AbortSignal,
   first = 25,
 ): Promise<RegistryPage> {
+  return fetchRegistryRecords(registryFilter(search), { first, signal });
+}
+
+/** One page of the records a GraphQL filter selects, from a cursor; the registry page's reads go through here. */
+export async function fetchRegistryRecords(
+  filter: Record<string, unknown>,
+  {
+    first,
+    after = null,
+    signal,
+  }: {
+    readonly first: number;
+    readonly after?: string | null;
+    readonly signal?: AbortSignal | undefined;
+  },
+): Promise<RegistryPage> {
   const data = await graphqlQuery<unknown>(
     REGISTRY_LIST_QUERY,
-    { filter: registryFilter(search), first, after: search.after || null },
+    { filter, first, after },
     {
       operationName: "NgoRegistryRecords",
       auth: "none",

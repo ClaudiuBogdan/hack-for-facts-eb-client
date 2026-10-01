@@ -24,7 +24,7 @@ import {
 /**
  * The registry page's reads, live on the dev API. The records come page by
  * page (100 a page, a cursor each); the count and the breakdowns come from
- * the registry counted whole (`registry.counts.json`, a chunk of its own)
+ * the registry counted whole (`features/ngos/registry/data/registry-counts.json`, a chunk of its own)
  * while the API serves the export it was counted on. A name or a registry
  * number, which the counts do not keep, is read on until it ends or the cap
  * is reached — counted exactly under the cap, said to be wider past it.
@@ -100,7 +100,8 @@ async function readPage(query: RegistryQuery, after: string | null, simulated: S
 function useRegistryCounts(): { readonly counts: RegistryCounts | null; readonly failed: boolean; readonly settled: boolean } {
   const result = useQuery({
     queryKey: ['proto-ngo-registry-counts'],
-    queryFn: () => quietImport(() => import('./registry.counts.json')).then((module) => module.default as unknown as RegistryCounts),
+    queryFn: () =>
+      quietImport(() => import('@/features/ngos/registry/data/registry-counts.json')).then((module) => module.default as unknown as RegistryCounts),
     staleTime: Infinity,
     gcTime: Infinity,
     retry: false,

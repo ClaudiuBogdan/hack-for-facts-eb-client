@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseRegistrySearch,
   registryFilter,
   registryDetailSchema,
   registryPageSchema,
+  validateRegistrySearch,
 } from "./api";
 
 const snapshot = {
@@ -44,7 +44,7 @@ describe("RNONG client contract", () => {
   it("keeps explicit false public-utility filters and source registry numbers", () => {
     expect(
       registryFilter(
-        parseRegistrySearch({
+        validateRegistrySearch({
           publicUtility: "no",
           registryNumber: " 1/A/2001 ",
           after: "cursor",
@@ -54,23 +54,21 @@ describe("RNONG client contract", () => {
       publicUtility: { eq: false },
       registryNumber: { eq: "1/A/2001" },
     });
-    expect(registryFilter(parseRegistrySearch({}))).toEqual({});
+    expect(registryFilter(validateRegistrySearch({}))).toEqual({});
   });
-  it("rejects wrong-shaped URL values and bounds text without losing the cursor", () => {
+  it("keeps only the page's keys, non-empty and bounded, and leaves their reading to the page", () => {
     expect(
-      parseRegistrySearch({
+      validateRegistrySearch({
         q: ["bad"],
         category: {},
+        county: "  ",
         after: "cursor",
         publicUtility: "unknown",
+        status: "Radiat",
       }),
-    ).toMatchObject({
-      q: "",
-      category: "",
-      after: "cursor",
-      publicUtility: "",
-    });
-    expect(parseRegistrySearch({ q: "a".repeat(300) }).q).toHaveLength(200);
+    ).toEqual({ publicUtility: "unknown", status: "Radiat" });
+    expect(validateRegistrySearch({ q: "a".repeat(300) }).q).toHaveLength(200);
+    expect(registryFilter({ publicUtility: "unknown" })).toEqual({});
   });
   it("preserves duplicate source observations and rows without CUI", () => {
     const page = registryPageSchema.parse({
@@ -104,7 +102,13 @@ describe("RNONG client contract", () => {
     expect(result.ngoRegistryRecord?.snapshot).not.toHaveProperty("objectKey");
   });
   it("keeps a withheld-name record and its safe source identifiers", () => {
-    const result = registryDetailSchema.parse({ ngoRegistryRecord: { ...record, name: "[name pending verification]", nameWithheld: true } });
+    const result = registryDetailSchema.parse({
+      ngoRegistryRecord: {
+        ...record,
+        name: "[name pending verification]",
+        nameWithheld: true,
+      },
+    });
     expect(result.ngoRegistryRecord?.nameWithheld).toBe(true);
     expect(result.ngoRegistryRecord?.registryNumber).toBe("1/A/2001");
   });

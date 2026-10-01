@@ -97,7 +97,7 @@ describe('NgoRegistrySearch', () => {
     render(<NgoRegistrySearch />)
     fireEvent.change(input(), { target: { value: 'salvati copiii' } })
     const options = await screen.findAllByRole('option')
-    expect(fetchRegistryPage).toHaveBeenCalledWith(expect.objectContaining({ q: 'salvati copiii', registryNumber: '' }), expect.anything(), 6)
+    expect(fetchRegistryPage).toHaveBeenCalledWith({ q: 'salvati copiii' }, expect.anything(), 6)
     expect(options).toHaveLength(3)
     expect(options[0]).toHaveAttribute('href', '/ngos/registry/row:1')
     expect(options[0]).toHaveTextContent('Asociație · DEJ · CLUJ')
@@ -112,7 +112,7 @@ describe('NgoRegistrySearch', () => {
     render(<NgoRegistrySearch />)
     fireEvent.change(input(), { target: { value: '2401/a/2021' } })
     await waitFor(() =>
-      expect(fetchRegistryPage).toHaveBeenCalledWith(expect.objectContaining({ q: '', registryNumber: '2401/A/2021' }), expect.anything(), 6),
+      expect(fetchRegistryPage).toHaveBeenCalledWith({ registryNumber: '2401/A/2021' }, expect.anything(), 6),
     )
   })
 
@@ -122,7 +122,7 @@ describe('NgoRegistrySearch', () => {
     fireEvent.change(input(), { target: { value: 'habitat' } })
     await screen.findAllByRole('option')
     fireEvent.keyDown(input(), { key: 'Enter' })
-    expect(navigate).toHaveBeenCalledWith({ to: '/ngos/registry', search: expect.objectContaining({ q: 'habitat', registryNumber: '' }) })
+    expect(navigate).toHaveBeenCalledWith({ to: '/ngos/registry', search: { q: 'habitat' } })
   })
 
   it('lets Base UI open a highlighted row while the list answers the field', async () => {

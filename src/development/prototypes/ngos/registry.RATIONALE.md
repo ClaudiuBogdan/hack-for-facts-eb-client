@@ -88,7 +88,7 @@ Introspection is off; probed with deliberate errors and real queries.
 
 Two exact sources, never an estimate:
 
-- **A. The registry counted whole** (`registry.counts.json`, 889 KB, ~134
+- **A. The registry counted whole** (`features/ngos/registry/data/registry-counts.json`, 889 KB, ~134
   KB gzipped, built by `scripts/count-ngo-registry.mjs` from a full capture):
   every entry counted by county × locality × legal form × status × public
   utility × registry-number year × declared CUI, 37,703 cells. Loaded as
@@ -187,7 +187,7 @@ tabs off past the cap. The tabs scroll on one line on a phone.
    needs no walk and the cap goes away.
 2. **A breakdown** (`ngoRegistryBreakdown(filter, by: county | locality |
    category | status | numberYear)`) — it would retire both generated files
-   (`registry-summary.ts`, `registry.counts.json`) and their refresh step,
+   (`registry-summary.ts`, `registry-counts.json`) and their refresh step,
    and break down name searches of any size.
 3. **A year filter** on the registry number (`numberYear: {eq | gte | lte}`)
    and a **date range** on the registration date.

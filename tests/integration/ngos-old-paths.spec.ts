@@ -12,7 +12,7 @@ import { test, expect } from '../utils/integration-base'
 const OLD_PATHS: readonly (readonly [string, string])[] = [
   ['/ong-uri?indicator=total', '/ngos?indicator=total'],
   ['/ong-uri/3151288?lang=en', '/ngos/3151288?lang=en'],
-  ['/ong-uri/registru?q=salvati', '/ngos/registry?q=salvati&county=&category=&status=&registryNumber=&publicUtility=&after='],
+  ['/ong-uri/registru?q=salvati', '/ngos/registry?q=salvati'],
   ['/ong-uri/registru/42', '/ngos/registry/42'],
   ['/ong-uri/sursa/anofm_rueis_2026_06_20', '/ngos/sources/anofm_rueis_2026_06_20'],
 ]

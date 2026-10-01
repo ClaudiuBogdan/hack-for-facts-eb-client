@@ -927,7 +927,9 @@ const NgosRegistryIndexRoute = NgosRegistryIndexRouteImport.update({
   id: '/registry/',
   path: '/registry/',
   getParentRoute: () => NgosRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/ngos.registry.index.lazy').then((d) => d.Route),
+)
 const NgosRegistryRecordIdRoute = NgosRegistryRecordIdRouteImport.update({
   id: '/registry/$recordId',
   path: '/registry/$recordId',

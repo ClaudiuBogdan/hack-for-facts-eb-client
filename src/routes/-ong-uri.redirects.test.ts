@@ -35,9 +35,9 @@ describe('the Romanian paths of the first release', () => {
 describe('the Romanian paths whose target cleans its search', () => {
   it('sends the registry its search in the registry’s own shape, in one hop, the site’s keys kept', async () => {
     const { Route } = (await import('./ong-uri.registru.index')) as unknown as RouteModule
-    const redirect = thrownBy(() => Route.options.beforeLoad({ params: {}, search: { q: 'salvati', county: 'CLUJ', lang: 'en' } })) as { readonly redirect: Record<string, unknown> }
+    const redirect = thrownBy(() => Route.options.beforeLoad({ params: {}, search: { q: 'salvati', county: 'CLUJ', category: '', after: 'cursor', lang: 'en' } })) as { readonly redirect: Record<string, unknown> }
     expect(redirect.redirect).toMatchObject({ to: '/ngos/registry', statusCode: 301 })
-    expect(redirect.redirect.search).toEqual({ q: 'salvati', county: 'CLUJ', category: '', status: '', registryNumber: '', publicUtility: '', after: '', lang: 'en' })
+    expect(redirect.redirect.search).toEqual({ q: 'salvati', county: 'CLUJ', lang: 'en' })
   })
 
   it('sends the services page its search with the page’s defaults filled in, in one hop', async () => {

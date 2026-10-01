@@ -116,17 +116,9 @@ export const REGISTRY_STATUS_VALUE: Readonly<Record<NgoRegistryStatusKey, string
   deregistered: 'Radiat',
 }
 
-/** A registry search with every filter the registry route keeps in its URL, empty unless given. */
-export function registrySearch(filters: Partial<Omit<RegistrySearch, 'after'>> = {}): RegistrySearch {
-  return {
-    q: filters.q ?? '',
-    county: filters.county ?? '',
-    category: filters.category ?? '',
-    status: filters.status ?? '',
-    registryNumber: filters.registryNumber ?? '',
-    publicUtility: filters.publicUtility ?? '',
-    after: '',
-  }
+/** A registry address with the filters given, and only those: an unset filter is no key, so a link reads `?status=Inregistrat`. */
+export function registrySearch(filters: RegistrySearch = {}): RegistrySearch {
+  return Object.fromEntries(Object.entries(filters).filter(([, value]) => typeof value === 'string' && value !== '')) as RegistrySearch
 }
 
 /** A registry number as the registry writes it: `3446/A/2026` (A–E: the registry's parts, by legal form). */
