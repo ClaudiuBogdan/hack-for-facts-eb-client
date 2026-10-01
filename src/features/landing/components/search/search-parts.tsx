@@ -8,6 +8,8 @@ import { Trans, useLingui } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import type { EntitySearchHit } from '@/schemas/entity-search'
 import { getDocTypeMeta } from '@/features/entity-search/lib/doc-type-meta'
+import { placeOf, statusOf } from '@/features/ngos/organization/model'
+import { statusLabel } from '@/features/ngos/organization/words'
 import { highlightSegments } from '@/features/landing/lib/search-highlight'
 import type { SearchFilter } from '@/features/landing/lib/search-filters'
 import type { SearchStatus } from '@/features/landing/hooks/use-landing-search'
@@ -102,7 +104,12 @@ export function ResultRowContent({
   /** Off in a field with a fixed scope: its pill already names every row's kind. */
   readonly showDocType?: boolean
 }) {
-  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, entity.countyName].filter(Boolean).join(' · ')
+  // An NGO the registry no longer counts as registered says so: a struck-off one is no row like the others.
+  const registryStatus = entity.ngoRegistryStatus ? statusOf({ sourceRegistryStatus: entity.ngoRegistryStatus }) : null
+  const closed = registryStatus !== null && registryStatus !== 'registered' && registryStatus !== 'unknown' ? statusLabel(registryStatus) : null
+  // The registry's county as the registry writes it („BUCURESTI", „NEDETERMINAT") is said as the profile says it.
+  const county = entity.ngoRegistryNumber ? placeOf({ county: entity.countyName, locality: null }) : entity.countyName
+  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, county, closed].filter(Boolean).join(' · ')
 
   return (
     <>

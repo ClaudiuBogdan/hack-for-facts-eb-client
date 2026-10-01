@@ -54,6 +54,9 @@ export interface EntitySearchHit {
   /** False for struck-off companies and repealed acts. */
   readonly isUat?: boolean | null
   readonly entityTags?: readonly string[]
+  /** On the NGO registry's organisations: the registry's number (its profile's address without a CUI) and status as written (`Radiat`). */
+  readonly ngoRegistryNumber?: string | null
+  readonly ngoRegistryStatus?: string | null
   readonly isActive: boolean
   readonly identifiers: readonly string[]
   readonly docId: string | null

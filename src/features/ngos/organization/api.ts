@@ -33,8 +33,9 @@ const section = <T extends z.ZodType>(data: T) => z.object({ availability, data:
 export const ngoPurposeSchema = z.object({ availability, text: z.string().nullable() })
 
 export const ngoOrganizationSchema = z.object({
-  cui: z.string(),
-  identity: z.object({ cui: z.string(), method: identityMethod }),
+  /** Null on a profile read by registry number where the platform admits no CUI: then the CUI-keyed sections are `not_loaded`. */
+  cui: z.string().nullable(),
+  identity: z.object({ cui: z.string(), method: identityMethod }).nullable(),
   registryNumber: z.string(),
   name: z.string().nullable(),
   category: z.string().nullable(),
@@ -77,9 +78,7 @@ export type NgoIndicator = z.infer<typeof indicatorSchema>
 /** The statements' read, which fails apart from the profile's: a failure is said, never shown as „none". */
 export type NgoStatementsRead = { readonly status: 'ready'; readonly statements: readonly NgoStatement[] } | { readonly status: 'failed' }
 
-
-export const NGO_ORGANIZATION_QUERY = `query NgoOrganization($cui: CUI!) {
-  ngoOrganizationProfile(cui: $cui) {
+const PROFILE_FIELDS = `
     cui identity { cui method } registryNumber name category legalForm county locality sourceRegistryStatus
     sourceReportsPublicUtility sourceRegistrationDate conflicts
     snapshot { sourceUrl capturedAt refreshOverdue }
@@ -87,7 +86,24 @@ export const NGO_ORGANIZATION_QUERY = `query NgoOrganization($cui: CUI!) {
     anafRegistration { availability data { registrationStateText registrationDate queryDate } }
     fiscal { availability data { vatPayer declaredFiscallyInactive mainCaenCode queryDate } }
     financials { availability fiscalYears }
-    purpose { availability text }
+    purpose { availability text }`
+
+export const NGO_ORGANIZATION_QUERY = `query NgoOrganization($cui: CUI!) {
+  ngoOrganizationProfile(cui: $cui) {${PROFILE_FIELDS}
+  }
+}`
+
+/**
+ * `ngoRegistryProfile(registryNumber)` — the same profile read by the
+ * registry's literal number: null for one the current export does not hold;
+ * `resolved` with one profile; `ambiguous` with every candidate, of which the
+ * client never picks one.
+ */
+export const NGO_REGISTRY_PROFILE_QUERY = `query NgoRegistryProfile($registryNumber: String!) {
+  ngoRegistryProfile(registryNumber: $registryNumber) {
+    status
+    profiles {${PROFILE_FIELDS}
+    }
   }
 }`
 
@@ -112,4 +128,24 @@ export async function fetchNgoStatements(cui: string, { signal }: Options = {}):
     .object({ ngoOrganizationProfile: z.object({ financials: z.object({ statements: z.array(ngoStatementSchema) }) }).nullable() })
     .parse(data)
   return parsed.ngoOrganizationProfile?.financials.statements ?? []
+}
+
+export type NgoRegistryProfileRead =
+  | { readonly status: 'resolved'; readonly organization: NgoOrganization }
+  | { readonly status: 'ambiguous'; readonly candidates: readonly NgoOrganization[] }
+
+const registryProfileSchema = z.object({
+  // A status this client does not know yet is a choice for the reader, never one profile picked for them.
+  ngoRegistryProfile: z.object({ status: z.enum(['resolved', 'ambiguous']).catch('ambiguous'), profiles: z.array(ngoOrganizationSchema) }).nullable(),
+})
+
+/** The profile a registry number names, the candidates where it names several, or null where the current export does not hold it. */
+export async function fetchNgoRegistryProfile(registryNumber: string, { signal }: Options = {}): Promise<NgoRegistryProfileRead | null> {
+  const data = await graphqlQuery<unknown>(NGO_REGISTRY_PROFILE_QUERY, { registryNumber }, { operationName: 'NgoRegistryProfile', auth: 'none', signal })
+  const read = registryProfileSchema.parse(data).ngoRegistryProfile
+  if (read === null || read.profiles.length === 0) return null
+  const [only] = read.profiles
+  // One profile is the answer only when the server says so; anything else is a choice the reader makes.
+  if (read.status === 'resolved' && read.profiles.length === 1 && only) return { status: 'resolved', organization: only }
+  return { status: 'ambiguous', candidates: read.profiles }
 }

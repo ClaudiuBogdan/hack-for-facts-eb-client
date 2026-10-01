@@ -114,7 +114,7 @@ export function NgoSearchShell() {
           <HeartHandshake className="size-3.5 text-muted-foreground" />
           <span className="truncate">{t`ONG-uri`}</span>
         </span>
-        <span className="h-7 min-w-24 flex-1 truncate text-base leading-7 text-muted-foreground">{t`Numele organizației sau CUI…`}</span>
+        <span className="h-7 min-w-24 flex-1 truncate text-base leading-7 text-muted-foreground">{t`Numele organizației, CUI sau nr. registru…`}</span>
         {/* The field's shortcut hint, as its first render draws it (the modifier is corrected after hydration). */}
         <kbd className="absolute right-3 top-6 hidden -translate-y-1/2 items-center gap-0.5 rounded-sm border bg-muted px-1.5 py-0.5 font-mono text-[0.625rem] text-muted-foreground sm:flex">
           <span className="text-xs leading-none">⌘</span>K

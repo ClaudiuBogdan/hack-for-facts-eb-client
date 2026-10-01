@@ -60,11 +60,12 @@ function Chip({ tone = 'plain', children }: { readonly tone?: 'plain' | 'ok' | '
 
 const identityQuestion = (link: string) => t`${link}: cum a fost legat CUI-ul`
 
-/** Registry status, VAT, fiscal inactivity (explained: it is not dissolution) and how the CUI was admitted. */
+/** Registry status, VAT, fiscal inactivity (explained: it is not dissolution) and how the CUI was admitted — or that none is. */
 export function ProfileChips({ organization }: { readonly organization: NgoOrganization }) {
   const status = statusOf(organization)
   const fiscal = organization.fiscal.data
-  const identity = identityText(organization.identity.method)
+  const method = organization.identity?.method ?? null
+  const identity = method ? identityText(method) : null
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Chip tone={status === 'registered' ? 'ok' : 'closed'}>{statusLabel(status)}</Chip>
@@ -84,16 +85,20 @@ export function ProfileChips({ organization }: { readonly organization: NgoOrgan
           </PopoverContent>
         </Popover>
       ) : null}
-      <Popover>
-        <PopoverTrigger asChild>
-          <button type="button" className="cursor-help" aria-label={identityQuestion(identity.short)}>
-            <Chip tone={isInferred(organization.identity.method) ? 'warn' : 'plain'}>{identity.short}</Chip>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-72 text-xs leading-relaxed">
-          {identity.long} <Trans>Nicio metodă nu e o verificare juridică.</Trans>
-        </PopoverContent>
-      </Popover>
+      {method && identity ? (
+        <Popover>
+          <PopoverTrigger asChild>
+            <button type="button" className="cursor-help" aria-label={identityQuestion(identity.short)}>
+              <Chip tone={isInferred(method) ? 'warn' : 'plain'}>{identity.short}</Chip>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 text-xs leading-relaxed">
+            {identity.long} <Trans>Nicio metodă nu e o verificare juridică.</Trans>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <Chip>{t`Fără CUI legat`}</Chip>
+      )}
     </div>
   )
 }
@@ -102,9 +107,11 @@ export function ProfileChips({ organization }: { readonly organization: NgoOrgan
 export function Identifiers({ organization }: { readonly organization: NgoOrganization }) {
   return (
     <div className="flex flex-wrap gap-x-5 gap-y-1">
-      <MonoLabel className="text-muted-foreground">
-        CUI <span className="text-foreground">{organization.cui}</span>
-      </MonoLabel>
+      {organization.cui ? (
+        <MonoLabel className="text-muted-foreground">
+          CUI <span className="text-foreground">{organization.cui}</span>
+        </MonoLabel>
+      ) : null}
       {organization.registryNumber ? (
         <MonoLabel className="text-muted-foreground">
           <Trans>Nr. registru</Trans> <span className="text-foreground">{organization.registryNumber}</span>
@@ -499,7 +506,7 @@ const conflictLabel = (code: string) => CONFLICT[code]?.() ?? code
 
 /** The registry entry: the name it holds, its status, the CUI's link to it and when the registry was read. */
 export function RegistryFacts({ organization }: { readonly organization: NgoOrganization }) {
-  const identity = identityText(organization.identity.method)
+  const identity = organization.identity ? identityText(organization.identity.method) : null
   const captured = formatNgoDate(organization.snapshot.capturedAt.slice(0, 10))
   return (
     <div>
@@ -513,8 +520,10 @@ export function RegistryFacts({ organization }: { readonly organization: NgoOrga
         <Fact term={<Trans>Stare</Trans>}>{statusLabel(statusOf(organization))}</Fact>
         <Fact term={<Trans>Forma</Trans>}>{categoryLabel(organization.category)}</Fact>
         <Fact term={<Trans>Legătura cu CUI-ul</Trans>}>
-          {identity.short}
-          <span className="block text-xs text-muted-foreground">{identity.long}</span>
+          {identity ? identity.short : <Trans>Niciun CUI legat</Trans>}
+          <span className="block text-xs text-muted-foreground">
+            {identity ? identity.long : <Trans>Platforma nu a legat un CUI de această organizație.</Trans>}
+          </span>
         </Fact>
         {organization.conflicts.length > 0 ? (
           <Fact term={<Trans>Neconcordanțe</Trans>}>
@@ -554,9 +563,14 @@ export function ProfileSources({ organization, statements }: { readonly organiza
         {t`Registrul național ONG`}
       </a>
       {`, ${captured}`}
-      {' · '}
-      {t`ANAF`}
-      {anafRead ? `, ${formatNgoDate(anafRead)}` : ''}
+      {/* ANAF is read by CUI: without one, it is no source of this page. */}
+      {organization.cui ? (
+        <>
+          {' · '}
+          {t`ANAF`}
+          {anafRead ? `, ${formatNgoDate(anafRead)}` : ''}
+        </>
+      ) : null}
       {statement ? (
         <>
           {' · '}

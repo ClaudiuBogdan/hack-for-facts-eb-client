@@ -20,7 +20,7 @@ import {
 /**
  * The registry counted whole (`scripts/count-ngo-registry.mjs`): every entry
  * by county, locality, legal form, status, public utility, registry-number
- * year and declared CUI. The API cannot count or group, so these counts
+ * year and admitted CUI. The API cannot count or group, so these counts
  * answer any selection its filters make except a name or a registry number
  * — those are read from the API and counted from their own rows. Either way
  * a selection comes to the page as a {@link Tally}: the same figures and
@@ -41,7 +41,7 @@ export interface RegistryCounts {
   readonly categories: readonly string[]
   /** The registry's status values (`Inregistrat`, `Radiat`…). */
   readonly statuses: readonly string[]
-  /** Eight integers a cell: county, locality, form, status, public utility, year, CUI declared, entries (-1 where blank). */
+  /** Eight integers a cell: county, locality, form, status, public utility, year, CUI admitted, entries (-1 where blank). */
   readonly cells: readonly number[]
 }
 
@@ -114,7 +114,8 @@ export function tallyOfRows(rows: readonly RegistryRecord[], lastYear: number): 
   const by = emptySplits()
   let withCui = 0
   for (const row of rows) {
-    if (row.sourceCui) withCui += 1
+    // The CUI the platform admits, by any reviewed method — not only one the registry declares.
+    if (row.organizationCui) withCui += 1
     add(by.judet, row.county === null || row.county === 'NEDETERMINAT' ? NONE : row.county, 1)
     add(by.localitate, row.locality ?? NONE, 1)
     add(by.forma, row.category, 1)
@@ -259,7 +260,7 @@ function share(part: number, whole: number): string {
  * then, for the country or a county, the hub's context — registered, new
  * last year, per 10,000 residents, the county's rank — and otherwise what
  * the tally says: the registered among them, where they are, how many
- * declare a CUI, the newest registry year. Nothing is estimated from part
+ * have a CUI the platform admits, the newest registry year. Nothing is estimated from part
  * of a selection.
  */
 export function figuresOf({
@@ -350,7 +351,7 @@ export function figuresOf({
     figures.push({ key: 'localities', label: t`Localități`, value: formatNgoNumber(valuesOn(tally, 'localitate', code)), note: null })
   }
   const cuiShare = share(tally.withCui, tally.total)
-  figures.push({ key: 'cui', label: t`Cu CUI în registru`, value: formatNgoNumber(tally.withCui), note: t`${cuiShare}; restul fără CUI declarat` })
+  figures.push({ key: 'cui', label: t`Cu CUI`, value: formatNgoNumber(tally.withCui), note: t`${cuiShare}; CUI legat de platformă` })
   const years = yearPoints(tally).filter((point) => point.count > 0)
   const newest = years[years.length - 1]?.year
   const oldest = years[0]?.year

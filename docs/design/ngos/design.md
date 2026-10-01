@@ -72,6 +72,7 @@ sources — these are advanced features named for later.
 | `/ngos/services` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
 | `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
 | `/ngos/registry` | The national registry asked as the analytics page asks its records (superseded by §15) | `name-only-registry-surfaces.md` |
+| `/ngos/registry/$number` | The profile of an organisation without an admitted CUI, by registry number (`1471-A-2012`); 301 to `/ngos/$cui` once one is admitted (§15, „Profiles without a CUI") | — |
 | `/ngos/public-utility` | SGG public-utility name-only listing (Next-2) | `name-only-registry-surfaces.md` |
 | `/ngos/review` | Link-review queue (advanced, staff-gated) | out of scope (named only) |
 
@@ -837,7 +838,11 @@ profil disponibil pentru acest CUI", which leads to the registry search.
 Known gaps, for the server: the index marks every NGO active (`isActive`),
 so a struck-off or dissolved organisation reads like any other row; it holds
 NGOs without a profile, unmarked; it does not hold registry numbers, which
-the registry page (`/ngos/registry`) looks up.
+the registry page (`/ngos/registry`) looks up. *Closed by the registry
+release, below:* the hub now searches the registry's organisations
+(`entityTags: ["source::rnong"]`, not `docTypes`), one row per registry
+organisation — by name, CUI or registry number — each opening its one
+address, and a row says the registry status when it is not „Înregistrat".
 
 ### Profiles without a CUI (2026-10-01)
 
@@ -866,3 +871,28 @@ The owner's further decisions (2026-10-01):
   link: no page of ours holds them (the company page 404s for them). Asked
   of the server as R5. The hub searches the registry only (`entityTags:
   ["source::rnong"]`).
+
+**Built (2026-10-01), on the live contract.**
+
+- `/ngos/registry/$number` reads `ngoRegistryProfile` by the registry's
+  literal number. The address writes `/` as `-`; a literal `-` is written
+  `~-` and a `~` `~~`, so any literal, irregular ones included, comes back
+  exactly (`features/ngos/lib/ngo-address.ts`). An admitted CUI answers
+  with a 301 to `/ngos/$cui`, the search kept; a number several
+  organisations share lists them for the reader to choose (unindexed,
+  never the first picked); one the export does not hold is not found.
+- The profile page is the CUI profile's. Without a CUI it draws the purpose
+  and the registry („Ce spune registrul": every row of the number, the
+  disagreements named) and no band read by CUI; the head says once why
+  ANAF and the statements are not there. The chips say „Fără CUI legat"
+  where the identity chip would be. Head, title and canonical as the CUI
+  profile's, the description ending in the registry number.
+- Registry list rows open `/ngos/{organizationCui}` or the registry-number
+  address. The row-id pages (`/ngos/registry/$recordId`,
+  `/ong-uri/registru/$recordId`) are gone.
+- The site's search routes an `ngo` hit by its explicit fields: `cuis[0]`,
+  else `ngoRegistryNumber`; never by `docKey` or an inferred identifier.
+- „Cu CUI" on the registry page counts `organizationCui`, in the counts cube
+  (rebuilt from a capture with the admitted CUI) and in a selection read
+  whole.
+

@@ -60,6 +60,8 @@ export const SEARCH_ENTITIES_QUERY = /* GraphQL */ `
         isActive
         isUat
         entityTags
+        ngoRegistryNumber
+        ngoRegistryStatus
       }
     }
   }
@@ -96,6 +98,9 @@ const rawSearchHitSchema = z.object({
   isActive: z.boolean().nullable(),
   isUat: z.boolean().nullish(),
   entityTags: z.array(z.string()).nullish(),
+  /** The NGO registry's own number and status, on the registry's organisations (`source::rnong`); the registry route's lookup. */
+  ngoRegistryNumber: z.string().nullish(),
+  ngoRegistryStatus: z.string().nullish(),
 })
 
 export const searchEntitiesResponseSchema = z.object({

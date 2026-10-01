@@ -82,7 +82,7 @@ describe('what the counts cannot answer', () => {
 
 describe('a selection read whole, counted from its rows', () => {
   const rows = [
-    row({ id: 'a', county: 'CLUJ', registryNumber: '1/A/2020', category: 'association', sourceCui: '123' }),
+    row({ id: 'a', county: 'CLUJ', registryNumber: '1/A/2020', category: 'association', organizationCui: '123' }),
     row({ id: 'b', county: 'CLUJ', registryNumber: '2/B/2021', category: 'foundation' }),
     row({ id: 'c', county: 'BUCURESTI', registryNumber: '3/A/2020', category: 'association', sourceRegistryStatus: REGISTRY_STATUS_VALUE.deregistered }),
     row({ id: 'd', county: null, registryNumber: '4/A/2019', category: 'association' }),
@@ -178,7 +178,7 @@ describe('the figures', () => {
   })
   it('a name read whole: what its rows say, nothing estimated', () => {
     const rows = [
-      row({ id: 'a', sourceCui: '43788701', registryNumber: '405/A/2021', county: 'MARAMURES' }),
+      row({ id: 'a', organizationCui: '43788701', registryNumber: '405/A/2021', county: 'MARAMURES' }),
       row({ id: 'b', registryNumber: '23528/A/2016' }),
       row({ id: 'c', registryNumber: '1/A/2016', county: null, sourceRegistryStatus: 'Radiat' }),
     ]

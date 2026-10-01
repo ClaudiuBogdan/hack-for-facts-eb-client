@@ -9,7 +9,8 @@
  *   company             /companies/$cui          (internal, cuis[0])
  *   organization        /entities/$cui           (internal, cuis[0])
  *   public_enterprise   /intreprinderi-publice/$cui (internal, cuis[0])
- *   ngo                 /ngos/$cui            (internal, cuis[0])
+ *   ngo                 /ngos/$cui            (internal, cuis[0]; without one,
+ *                       /ngos/registry/$number from ngoRegistryNumber)
  *   member              /parlament/membri/$id    (internal, best-effort docId)
  *   bill                /parlament/proiecte/$id  (internal, best-effort docId)
  *   committee           /parlament/comisii/$id   (internal, docKey = committee_key)
@@ -24,6 +25,7 @@
  * interim hit with no `url`), `entityHref` returns `null` so the component can
  * render the row as non-clickable rather than linking to a broken `#`.
  */
+import { ngoProfileHref } from '@/features/ngos/lib/ngo-address'
 import { normalizeNgoCui } from '@/features/ngos/lib/normalize-ngo-cui'
 import { normalizePublicEnterpriseCui } from '@/features/public-enterprises/lib/normalize-public-enterprise-cui'
 
@@ -34,6 +36,8 @@ export interface EntityRoutingInput {
   readonly docId: string | null
   readonly docKey: string | null
   readonly url: string | null
+  /** The NGO registry's number, on the registry's organisations: the profile's address where no CUI is admitted. */
+  readonly ngoRegistryNumber?: string | null
 }
 
 export interface EntityHref {
@@ -54,10 +58,6 @@ const CUI_SPINE_ROUTES: Readonly<Record<string, RouteBuilder>> = {
     return normalized
       ? `/intreprinderi-publice/${encodeURIComponent(normalized)}`
       : null
-  },
-  ngo: (cui) => {
-    const normalized = normalizeNgoCui(cui)
-    return normalized ? `/ngos/${encodeURIComponent(normalized)}` : null
   },
 }
 
@@ -108,6 +108,15 @@ export function entityHref(hit: EntityRoutingInput): EntityHref | null {
   }
 
   const externalUrl = makeExternal(hit.url)
+
+  // An NGO's one address: its admitted CUI's profile, else its registry number's —
+  // by the hit's explicit fields, never a number inferred from its identifiers. A
+  // registry organisation the index files under a stronger kind is still the registry's.
+  if (hit.docType === 'ngo' || hit.ngoRegistryNumber?.trim()) {
+    const first = firstNonEmpty(hit.cuis)
+    const href = ngoProfileHref({ cui: first ? normalizeNgoCui(first) : null, registryNumber: hit.ngoRegistryNumber?.trim() || null })
+    return href ? { href, isExternal: false } : externalUrl
+  }
 
   const cuiRoute = CUI_SPINE_ROUTES[hit.docType]
   if (cuiRoute) {

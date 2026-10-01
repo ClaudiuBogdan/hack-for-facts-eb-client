@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  recordSchema,
   registryFilter,
-  registryDetailSchema,
   registryPageSchema,
   validateRegistrySearch,
 } from "./api";
@@ -35,6 +35,7 @@ const record = {
   locality: null,
   sourceCui: null,
   linkedOrganizationCui: null,
+  organizationCui: null,
   isBranch: false,
   sourceReportsPublicUtility: false,
   snapshot,
@@ -88,42 +89,33 @@ describe("RNONG client contract", () => {
     expect(page.ngoRegistryRecords.edges[0]?.node.sourceCui).toBeNull();
   });
   it("retains historical provenance but removes unexpected private payload fields", () => {
-    const result = registryDetailSchema.parse({
-      ngoRegistryRecord: {
-        ...record,
-        purpose: "private",
-        attrs: { private: true },
-        snapshot: { ...snapshot, isCurrent: false, objectKey: "private/file" },
-      },
+    const result = recordSchema.parse({
+      ...record,
+      purpose: "private",
+      attrs: { private: true },
+      snapshot: { ...snapshot, isCurrent: false, objectKey: "private/file" },
     });
-    expect(result.ngoRegistryRecord?.snapshot.isCurrent).toBe(false);
-    expect(result.ngoRegistryRecord).not.toHaveProperty("purpose");
-    expect(result.ngoRegistryRecord).not.toHaveProperty("attrs");
-    expect(result.ngoRegistryRecord?.snapshot).not.toHaveProperty("objectKey");
+    expect(result.snapshot.isCurrent).toBe(false);
+    expect(result).not.toHaveProperty("purpose");
+    expect(result).not.toHaveProperty("attrs");
+    expect(result.snapshot).not.toHaveProperty("objectKey");
   });
   it("keeps a withheld-name record and its safe source identifiers", () => {
-    const result = registryDetailSchema.parse({
-      ngoRegistryRecord: {
-        ...record,
-        name: "[name pending verification]",
-        nameWithheld: true,
-      },
+    const result = recordSchema.parse({
+      ...record,
+      name: "[name pending verification]",
+      nameWithheld: true,
     });
-    expect(result.ngoRegistryRecord?.nameWithheld).toBe(true);
-    expect(result.ngoRegistryRecord?.registryNumber).toBe("1/A/2001");
+    expect(result.nameWithheld).toBe(true);
+    expect(result.registryNumber).toBe("1/A/2001");
   });
   it("fails rather than treating an invalid or missing response as an empty registry", () => {
     expect(() => registryPageSchema.parse({})).toThrow();
     expect(() =>
-      registryDetailSchema.parse({
-        ngoRegistryRecord: {
-          ...record,
-          snapshot: { ...snapshot, recordCount: 0 },
-        },
+      recordSchema.parse({
+        ...record,
+        snapshot: { ...snapshot, recordCount: 0 },
       }),
     ).toThrow();
-    expect(
-      registryDetailSchema.parse({ ngoRegistryRecord: null }).ngoRegistryRecord,
-    ).toBeNull();
   });
 });

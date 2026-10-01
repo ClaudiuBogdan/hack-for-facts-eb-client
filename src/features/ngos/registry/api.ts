@@ -30,6 +30,8 @@ export const recordSchema = z.object({
   locality: z.string().nullable(),
   sourceCui: z.string().nullable(),
   linkedOrganizationCui: z.string().nullable(),
+  /** The CUI the platform admits for this entry's organisation, by any reviewed method; its profile's address. */
+  organizationCui: z.string().nullable(),
   isBranch: z.boolean().nullable(),
   sourceReportsPublicUtility: z.boolean().nullable(),
   snapshot: snapshotSchema,
@@ -44,9 +46,6 @@ export const registryPageSchema = z.object({
     snapshot: snapshotSchema,
   }),
 });
-export const registryDetailSchema = z.object({
-  ngoRegistryRecord: recordSchema.nullable(),
-});
 export type RegistrySnapshot = z.infer<typeof snapshotSchema>;
 export type RegistryRecord = z.infer<typeof recordSchema>;
 export type RegistryPage = z.infer<
@@ -55,13 +54,12 @@ export type RegistryPage = z.infer<
 
 const snapshotFields =
   "id sourceDeclaredDate importedAt capturedAt refreshOverdue acceptedAt recordCount isCurrent sourceUrl coverageBasis nationalCompleteness";
-export const recordFields = `id sourceRowNumber registryNumber specialRegistryNumber sourceRegistrationDate category legalForm name nameWithheld court sourceRegistryStatus county locality sourceCui linkedOrganizationCui isBranch sourceReportsPublicUtility snapshot { ${snapshotFields} }`;
+export const recordFields = `id sourceRowNumber registryNumber specialRegistryNumber sourceRegistrationDate category legalForm name nameWithheld court sourceRegistryStatus county locality sourceCui linkedOrganizationCui organizationCui isBranch sourceReportsPublicUtility snapshot { ${snapshotFields} }`;
 export const REGISTRY_LIST_QUERY = `query NgoRegistryRecords($filter: NgoRegistryFilter, $first: Int!, $after: String) {
   ngoRegistryRecords(filter: $filter, first: $first, after: $after) {
     edges { cursor node { ${recordFields} } } pageInfo { hasNextPage endCursor } snapshot { ${snapshotFields} }
   }
 }`;
-export const REGISTRY_DETAIL_QUERY = `query NgoRegistryRecord($id: ID!) { ngoRegistryRecord(id: $id) { ${recordFields} } }`;
 
 /** The registry route's address: the filters set, each in the registry's own spelling; an unset one is absent. */
 export type RegistrySearch = {
@@ -165,19 +163,4 @@ export async function fetchRegistryRecords(
     },
   );
   return registryPageSchema.parse(data).ngoRegistryRecords;
-}
-export async function fetchRegistryRecord(
-  id: string,
-  signal?: AbortSignal,
-): Promise<RegistryRecord | null> {
-  const data = await graphqlQuery<unknown>(
-    REGISTRY_DETAIL_QUERY,
-    { id },
-    {
-      operationName: "NgoRegistryRecord",
-      auth: "none",
-      ...(signal === undefined ? {} : { signal }),
-    },
-  );
-  return registryDetailSchema.parse(data).ngoRegistryRecord;
 }

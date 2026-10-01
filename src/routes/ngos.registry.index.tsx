@@ -5,7 +5,7 @@ import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import { validateRegistrySearch } from '@/features/ngos/registry/api'
 import type { RegistryServerRead } from '@/features/ngos/registry/registry-ssr'
-import { RegistryUnavailable } from '@/features/ngos/registry/registry-page'
+import { RegistryUnavailable } from '@/features/ngos/registry/components/registry-unavailable'
 
 /**
  * `/ngos/registry` (design.md §15): the national NGO registry asked as the

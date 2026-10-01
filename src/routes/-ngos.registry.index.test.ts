@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest'
 
 const ssr = vi.hoisted(() => ({ readRegistryForSsr: vi.fn() }))
 vi.mock('@/features/ngos/registry/registry-ssr', () => ssr)
-vi.mock('@/features/ngos/registry/registry-page', () => ({ RegistryUnavailable: () => null }))
 const cache = vi.hoisted(() => ({
   createPublicPageCacheHeaders: vi.fn(() => ({ 'Cache-Control': 'public' })),
   createNoStoreHeaders: vi.fn(() => ({ 'Cache-Control': 'no-store' })),

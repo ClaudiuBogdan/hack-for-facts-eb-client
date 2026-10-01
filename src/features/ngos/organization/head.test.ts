@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { buildNgoProfileHead } from './head'
-import { ABSOLUT, FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
+import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
 
 const { translatorFor } = vi.hoisted(() => ({
   translatorFor: vi.fn((_locale: string) => ({
@@ -69,5 +69,14 @@ describe('buildNgoProfileHead', () => {
       { rel: 'alternate', hrefLang: 'en', href: 'https://transparenta.eu/ngos/30339344?lang=en' },
       { rel: 'alternate', hrefLang: 'x-default', href: 'https://transparenta.eu/ngos/30339344' },
     ])
+  })
+
+  it('gives a profile without a CUI its registry-number address and a registry description', () => {
+    const head = buildNgoProfileHead({ organization: { ...BLANC, purpose: { availability: 'not_loaded', text: null } }, statements: [] }, 'ro')
+    const canonical = head.links.find((link) => link.rel === 'canonical')?.href
+    expect(canonical).toBe('https://transparenta.eu/ngos/registry/3117-A-2026')
+    expect(meta(head, 'robots')?.content).toBe('index,follow')
+    expect(meta(head, 'description')?.content).toContain('Nr. registru 3117/A/2026, din Registrul național ONG.')
+    expect(meta(head, 'description')?.content).not.toContain('CUI')
   })
 })

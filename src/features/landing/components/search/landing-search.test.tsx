@@ -101,6 +101,24 @@ describe('LandingSearch', () => {
     expect(screen.getByText('ONG · Iași')).toBeInTheDocument()
   })
 
+  it('says when the NGO registry no longer counts an organisation as registered', async () => {
+    searchEntities.mockResolvedValue(response([
+      { ...IASI, id: 'ngo:1', docType: 'ngo', title: 'Struck off', href: '/ngos/13245720', countyName: 'NEDETERMINAT', ngoRegistryNumber: '24957/A/2006', ngoRegistryStatus: 'Radiat' },
+      { ...IASI, id: 'ngo:2', docType: 'ngo', title: 'Registered', href: '/ngos/registry/3117-A-2026', countyName: 'BUCURESTI', ngoRegistryNumber: '3117/A/2026', ngoRegistryStatus: 'Inregistrat' },
+    ]))
+    const user = userEvent.setup()
+    render(<LandingSearch entityTags={['source::rnong']} fixedScope={{ label: 'ONG-uri', Icon: Building2 }} />, { queryClient: createTestQueryClient() })
+    await typeAndWait(user, 'asociatia')
+    expect(searchEntities).toHaveBeenCalledWith(expect.objectContaining({ entityTags: ['source::rnong'] }), expect.any(AbortSignal))
+    const [closed, open] = screen.getAllByRole('option')
+    expect(closed).toHaveTextContent('Radiată')
+    // The registry's own spellings: no county said for „NEDETERMINAT", „BUCURESTI" said as the profile says it.
+    expect(closed).not.toHaveTextContent('NEDETERMINAT')
+    expect(open).toHaveTextContent('București')
+    expect(open).not.toHaveTextContent('Înregistrată')
+    expect(open).toHaveAttribute('href', '/ngos/registry/3117-A-2026')
+  })
+
   it('opens where a domain page points a result, on the row and on Enter alike', async () => {
     const user = userEvent.setup()
     const hrefOf = (hit: EntitySearchHit) => (hit.href.startsWith('/entities/') ? hit.href.replace('/entities/', '/procurement/institutions/') : null)

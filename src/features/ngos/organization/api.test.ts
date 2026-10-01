@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fetchNgoOrganization, fetchNgoStatements, ngoOrganizationSchema } from './api'
-import { ABSOLUT, FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
+import { fetchNgoOrganization, fetchNgoRegistryProfile, fetchNgoStatements, ngoOrganizationSchema } from './api'
+import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
 
 const query = vi.hoisted(() => vi.fn())
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: query }))
@@ -22,7 +22,7 @@ describe('the NGO organisation profile, read', () => {
 
   it('reads every statement in its own request, keeping a blank cell null and a zero a string', async () => {
     query.mockResolvedValueOnce({ ngoOrganizationProfile: { financials: { statements: FUNKY_STATEMENTS } } })
-    const statements = await fetchNgoStatements(FUNKY.cui)
+    const statements = await fetchNgoStatements('30339344')
     expect(statements.map((statement) => statement.fiscalYear)).toEqual(FUNKY_STATEMENTS.map((statement) => statement.fiscalYear))
     const values = statements.flatMap((statement) => statement.indicators.map((indicator) => indicator.value))
     expect(values).toContain(null)
@@ -32,9 +32,30 @@ describe('the NGO organisation profile, read', () => {
 
   it('reads the registry’s purpose with the profile, in the same request', async () => {
     query.mockResolvedValueOnce({ ngoOrganizationProfile: FUNKY })
-    expect((await fetchNgoOrganization(FUNKY.cui))?.purpose).toEqual(FUNKY.purpose)
+    expect((await fetchNgoOrganization('30339344'))?.purpose).toEqual(FUNKY.purpose)
     expect(query.mock.calls[0]![0]).toContain('purpose { availability text }')
     // An availability this client does not know drops the purpose, not the profile.
     expect(ngoOrganizationSchema.parse({ ...FUNKY, purpose: { availability: 'unknown', text: 'x' } }).purpose).toEqual({ availability: 'not_loaded', text: null })
+  })
+
+  it('reads a profile by the registry’s literal number, a CUI-less one included', async () => {
+    query.mockResolvedValueOnce({ ngoRegistryProfile: { status: 'resolved', profiles: [BLANC] } })
+    expect(await fetchNgoRegistryProfile('3117/A/2026')).toEqual({ status: 'resolved', organization: BLANC })
+    expect(query.mock.calls[0]![1]).toEqual({ registryNumber: '3117/A/2026' })
+    expect(query.mock.calls[0]![2]).toMatchObject({ operationName: 'NgoRegistryProfile', auth: 'none' })
+  })
+
+  it('never picks one of several candidates, and is null for a number the export does not hold', async () => {
+    const other = { ...BLANC, name: 'ALTA' }
+    query.mockResolvedValueOnce({ ngoRegistryProfile: { status: 'ambiguous', profiles: [BLANC, other] } })
+    expect(await fetchNgoRegistryProfile('1/A/122')).toEqual({ status: 'ambiguous', candidates: [BLANC, other] })
+    // „resolved" with more than one profile is still a choice, not the first one.
+    query.mockResolvedValueOnce({ ngoRegistryProfile: { status: 'resolved', profiles: [BLANC, other] } })
+    expect(await fetchNgoRegistryProfile('1/A/122')).toMatchObject({ status: 'ambiguous' })
+    // A status this client does not know yet is still the reader's choice.
+    query.mockResolvedValueOnce({ ngoRegistryProfile: { status: 'merged', profiles: [BLANC] } })
+    expect(await fetchNgoRegistryProfile('1/A/122')).toEqual({ status: 'ambiguous', candidates: [BLANC] })
+    query.mockResolvedValueOnce({ ngoRegistryProfile: null })
+    expect(await fetchNgoRegistryProfile('9/A/1900')).toBeNull()
   })
 })

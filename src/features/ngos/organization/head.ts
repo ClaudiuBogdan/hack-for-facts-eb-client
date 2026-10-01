@@ -1,6 +1,7 @@
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
+import { ngoProfileHref } from '@/features/ngos/lib/ngo-address'
 import { translatorFor } from '@/lib/i18n'
 import type { NgoOrganization, NgoStatement } from './api'
 import { keyFigures, latestStatement, placeOf } from './model'
@@ -11,7 +12,8 @@ const SHARE_IMAGE_PATH = '/assets/images/share-image.png'
 const DESCRIPTION_LENGTH = 160
 
 /**
- * `/ngos/$cui`'s head, in the request's language (`locale`), not the shared
+ * An NGO profile's head — `/ngos/$cui`, or `/ngos/registry/$number` for one
+ * without an admitted CUI — in the request's language (`locale`), not the shared
  * Lingui instance's: the organisation's name, and a description that says
  * what it is for where the registry's purpose is published — the reader's
  * first question — or what it is, where, and its latest revenue. A purpose
@@ -29,7 +31,8 @@ export function buildNgoProfileHead(
 ) {
   const english = locale === 'en'
   const translator = translatorFor(english ? 'en' : 'ro')
-  const path = `/ngos/${organization.cui}`
+  // Its one address: the CUI's where one is admitted, else the registry number's.
+  const path = ngoProfileHref({ cui: organization.cui, registryNumber: organization.registryNumber }) ?? '/ngos'
   const romanianUrl = `${siteUrl}${path}`
   const englishUrl = `${siteUrl}${path}?lang=en`
   const canonical = english ? englishUrl : romanianUrl
@@ -41,6 +44,7 @@ export function buildNgoProfileHead(
   const category = categoryLabel(organization.category, translate)
   const place = placeOf(organization)
   const cui = organization.cui
+  const registryNumber = organization.registryNumber
   const latest = latestStatement(statements)
   const revenue = latest ? keyFigures(latest).revenue?.value : null
   const year = latest?.fiscalYear
@@ -55,7 +59,9 @@ export function buildNgoProfileHead(
       : [
           place ? translator._(msg`${category} din ${place}.`) : `${category}.`,
           amount && year ? translator._(msg`Venituri de ${amount} în ${year}, din situațiile financiare publicate.`) : null,
-          translator._(msg`CUI ${cui}, din Registrul național ONG și ANAF.`),
+          cui
+            ? translator._(msg`CUI ${cui}, din Registrul național ONG și ANAF.`)
+            : translator._(msg`Nr. registru ${registryNumber}, din Registrul național ONG.`),
         ]
           .filter(Boolean)
           .join(' ')

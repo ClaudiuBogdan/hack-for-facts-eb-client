@@ -90,6 +90,11 @@ Not `organization` either: that type routes to the public-entity page.
 The client shows such a hit as an organisation without a profile page (no
 link, the CUI and county), not as an NGO.
 
+With it, one small fix: a registry-only search hit still carries `url:
+/ong-uri/registru/{row id}`, a path the client has removed (it routes by
+`ngoRegistryNumber`, never by `url`). Write `/ngos/registry/{number}` with
+`/` as `-` (a literal `-` as `~-`, a `~` as `~~`), or leave `url` null.
+
 **Check:** `searchEntities(q: "cruce rosie", docTypes: ["ngo"])` returns no
 hit without `source::rnong`; `10860991` is still found, under the neutral
 type.

@@ -2,7 +2,9 @@
 /**
  * Builds the NGO registry's counts — every registry entry counted by county,
  * locality, legal form, status, public utility, registry-number year and
- * whether it declares a CUI — from a full read of the registry, so the
+ * whether it has a CUI — the platform's admitted one (`organizationCui`,
+ * any reviewed method), not only one the registry declares — from a full
+ * read of the registry, so the
  * registry page can count and break down any selection its filters make.
  *
  *   node scripts/capture-ngo-registry.mjs /tmp/rnong.jsonl
@@ -27,7 +29,7 @@
  * Output: dictionaries, then `cells` — one flat array, eight integers a
  * cell: county, locality, form, status (indexes into the dictionaries, -1
  * where the registry leaves it blank), public utility (0/1), year (-1 where
- * the number has none), CUI declared (0/1), entries.
+ * the number has none), CUI admitted (0/1), entries.
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -71,6 +73,8 @@ const REPEAT_FIELDS = [
 
 const lines = readFileSync(input, 'utf8').split('\n').filter(Boolean)
 const captured = lines.map((line) => JSON.parse(line))
+// A capture from before the admitted CUI was read would count every entry as without one.
+if (captured.some((row) => !('organizationCui' in row))) throw new Error('the capture has no organizationCui: capture again')
 const seen = new Set()
 const rows = []
 for (const row of captured) {
@@ -118,7 +122,7 @@ for (const row of rows) {
     status,
     row.sourceReportsPublicUtility ? 1 : 0,
     year,
-    row.sourceCui ? 1 : 0,
+    row.organizationCui ? 1 : 0,
   ]
   const key = cell.join(',')
   const found = cells.get(key)

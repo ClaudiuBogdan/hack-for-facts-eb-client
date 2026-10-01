@@ -126,10 +126,9 @@ import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as NgosRegistryIndexRouteImport } from './routes/ngos.registry.index'
-import { Route as NgosRegistryRecordIdRouteImport } from './routes/ngos.registry.$recordId'
+import { Route as NgosRegistryNumberRouteImport } from './routes/ngos.registry.$number'
 import { Route as NgosSourcesSnapshotIdRouteImport } from './routes/ngos.sources.$snapshotId'
 import { Route as OngUriRegistruIndexRouteImport } from './routes/ong-uri.registru.index'
-import { Route as OngUriRegistruRecordIdRouteImport } from './routes/ong-uri.registru.$recordId'
 import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
 import { Route as ParlamentAgendaIndexRouteImport } from './routes/parlament/agenda/index'
 import { Route as ParlamentAgendaAgendaKeyRouteImport } from './routes/parlament/agenda/$agendaKey'
@@ -930,11 +929,13 @@ const NgosRegistryIndexRoute = NgosRegistryIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/ngos.registry.index.lazy').then((d) => d.Route),
 )
-const NgosRegistryRecordIdRoute = NgosRegistryRecordIdRouteImport.update({
-  id: '/registry/$recordId',
-  path: '/registry/$recordId',
+const NgosRegistryNumberRoute = NgosRegistryNumberRouteImport.update({
+  id: '/registry/$number',
+  path: '/registry/$number',
   getParentRoute: () => NgosRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/ngos.registry.$number.lazy').then((d) => d.Route),
+)
 const NgosSourcesSnapshotIdRoute = NgosSourcesSnapshotIdRouteImport.update({
   id: '/sources/$snapshotId',
   path: '/sources/$snapshotId',
@@ -945,11 +946,6 @@ const NgosSourcesSnapshotIdRoute = NgosSourcesSnapshotIdRouteImport.update({
 const OngUriRegistruIndexRoute = OngUriRegistruIndexRouteImport.update({
   id: '/registru/',
   path: '/registru/',
-  getParentRoute: () => OngUriRoute,
-} as any)
-const OngUriRegistruRecordIdRoute = OngUriRegistruRecordIdRouteImport.update({
-  id: '/registru/$recordId',
-  path: '/registru/$recordId',
   getParentRoute: () => OngUriRoute,
 } as any)
 const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
@@ -1605,9 +1601,8 @@ export interface FileRoutesByFullPath {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
-  '/ngos/registry/$recordId': typeof NgosRegistryRecordIdRoute
+  '/ngos/registry/$number': typeof NgosRegistryNumberRoute
   '/ngos/sources/$snapshotId': typeof NgosSourcesSnapshotIdRoute
-  '/ong-uri/registru/$recordId': typeof OngUriRegistruRecordIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
@@ -1780,9 +1775,8 @@ export interface FileRoutesByTo {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
-  '/ngos/registry/$recordId': typeof NgosRegistryRecordIdRoute
+  '/ngos/registry/$number': typeof NgosRegistryNumberRoute
   '/ngos/sources/$snapshotId': typeof NgosSourcesSnapshotIdRoute
-  '/ong-uri/registru/$recordId': typeof OngUriRegistruRecordIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
@@ -1971,9 +1965,8 @@ export interface FileRoutesById {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
-  '/ngos/registry/$recordId': typeof NgosRegistryRecordIdRoute
+  '/ngos/registry/$number': typeof NgosRegistryNumberRoute
   '/ngos/sources/$snapshotId': typeof NgosSourcesSnapshotIdRoute
-  '/ong-uri/registru/$recordId': typeof OngUriRegistruRecordIdRoute
   '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
@@ -2164,9 +2157,8 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
-    | '/ngos/registry/$recordId'
+    | '/ngos/registry/$number'
     | '/ngos/sources/$snapshotId'
-    | '/ong-uri/registru/$recordId'
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
@@ -2339,9 +2331,8 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
-    | '/ngos/registry/$recordId'
+    | '/ngos/registry/$number'
     | '/ngos/sources/$snapshotId'
-    | '/ong-uri/registru/$recordId'
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
@@ -2529,9 +2520,8 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
-    | '/ngos/registry/$recordId'
+    | '/ngos/registry/$number'
     | '/ngos/sources/$snapshotId'
-    | '/ong-uri/registru/$recordId'
     | '/ong-uri/sursa/$snapshotId'
     | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
@@ -3558,11 +3548,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NgosRegistryIndexRouteImport
       parentRoute: typeof NgosRoute
     }
-    '/ngos/registry/$recordId': {
-      id: '/ngos/registry/$recordId'
-      path: '/registry/$recordId'
-      fullPath: '/ngos/registry/$recordId'
-      preLoaderRoute: typeof NgosRegistryRecordIdRouteImport
+    '/ngos/registry/$number': {
+      id: '/ngos/registry/$number'
+      path: '/registry/$number'
+      fullPath: '/ngos/registry/$number'
+      preLoaderRoute: typeof NgosRegistryNumberRouteImport
       parentRoute: typeof NgosRoute
     }
     '/ngos/sources/$snapshotId': {
@@ -3577,13 +3567,6 @@ declare module '@tanstack/react-router' {
       path: '/registru'
       fullPath: '/ong-uri/registru/'
       preLoaderRoute: typeof OngUriRegistruIndexRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/ong-uri/registru/$recordId': {
-      id: '/ong-uri/registru/$recordId'
-      path: '/registru/$recordId'
-      fullPath: '/ong-uri/registru/$recordId'
-      preLoaderRoute: typeof OngUriRegistruRecordIdRouteImport
       parentRoute: typeof OngUriRoute
     }
     '/ong-uri/sursa/$snapshotId': {
@@ -4193,7 +4176,7 @@ interface NgosRouteChildren {
   NgosCuiRoute: typeof NgosCuiRoute
   NgosServicesRoute: typeof NgosServicesRoute
   NgosIndexRoute: typeof NgosIndexRoute
-  NgosRegistryRecordIdRoute: typeof NgosRegistryRecordIdRoute
+  NgosRegistryNumberRoute: typeof NgosRegistryNumberRoute
   NgosSourcesSnapshotIdRoute: typeof NgosSourcesSnapshotIdRoute
   NgosRegistryIndexRoute: typeof NgosRegistryIndexRoute
 }
@@ -4202,7 +4185,7 @@ const NgosRouteChildren: NgosRouteChildren = {
   NgosCuiRoute: NgosCuiRoute,
   NgosServicesRoute: NgosServicesRoute,
   NgosIndexRoute: NgosIndexRoute,
-  NgosRegistryRecordIdRoute: NgosRegistryRecordIdRoute,
+  NgosRegistryNumberRoute: NgosRegistryNumberRoute,
   NgosSourcesSnapshotIdRoute: NgosSourcesSnapshotIdRoute,
   NgosRegistryIndexRoute: NgosRegistryIndexRoute,
 }
@@ -4213,7 +4196,6 @@ interface OngUriRouteChildren {
   OngUriCuiRoute: typeof OngUriCuiRoute
   OngUriServiciiRoute: typeof OngUriServiciiRoute
   OngUriIndexRoute: typeof OngUriIndexRoute
-  OngUriRegistruRecordIdRoute: typeof OngUriRegistruRecordIdRoute
   OngUriSursaSnapshotIdRoute: typeof OngUriSursaSnapshotIdRoute
   OngUriRegistruIndexRoute: typeof OngUriRegistruIndexRoute
 }
@@ -4222,7 +4204,6 @@ const OngUriRouteChildren: OngUriRouteChildren = {
   OngUriCuiRoute: OngUriCuiRoute,
   OngUriServiciiRoute: OngUriServiciiRoute,
   OngUriIndexRoute: OngUriIndexRoute,
-  OngUriRegistruRecordIdRoute: OngUriRegistruRecordIdRoute,
   OngUriSursaSnapshotIdRoute: OngUriSursaSnapshotIdRoute,
   OngUriRegistruIndexRoute: OngUriRegistruIndexRoute,
 }

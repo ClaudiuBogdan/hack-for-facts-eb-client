@@ -670,3 +670,39 @@ export const ABSOLUT: NgoOrganization = {
   financials: { availability: 'not_loaded', fiscalYears: [] },
   purpose: { availability: 'available', text: 'stimularea interesului și curiozității față de cultură și artă, mai întâi prin cunoașterea tradițiilor locale, prin dezvoltarea deprinderilor de muncă practică și intelectuală, prin cultivarea capacității creatoare a imaginației, a spiritului de cercetare, a dorinței de a contribui după puterea fiecăruia la perpetuarea șl promovarea valorilor culturale, spirituale, naționale și internaționale, prin educarea copiilor .și a tinerilor cetățeni în domeniul artei: dans, etnografie, pictură, muzică, teatru, arta fotografică, designer vestimentar sau de ambient, artă manuală: creatori de goblen și a altor meșteșuguri tradiționale românești (arta țesutului, cusutului, împletitului, croșetatului, olăritului, sculptatului, etc.) precum și crearea unui cadru propice schimbului de cunoștințe, informații cultural-educative între cetățenii români și cetățenii altor țări, realizarea de parteneriate în vederea susținerii de proiecte cultural-educaționale, sprijinirea membrilor asociației în vederea participării și organizării activităților cultural-educative pe plan intern și internațional. Formarea atitudinii de respect față de propria cultură și fața de cultura celorlalte popoare.' },
 }
+
+/**
+ * `ngoRegistryProfile("3117/A/2026")` as Chronos dev served it on
+ * 2026-10-01: no admitted CUI, so the CUI-keyed sections are not loaded; two
+ * registry rows of one number that disagree on the court.
+ */
+export const BLANC: NgoOrganization = {
+  cui: null,
+  identity: null,
+  registryNumber: '3117/A/2026',
+  name: 'BLANC',
+  category: 'association',
+  legalForm: 'Asociație',
+  county: 'BUCURESTI',
+  locality: 'BUCURESTI',
+  sourceRegistryStatus: 'Inregistrat',
+  sourceReportsPublicUtility: false,
+  sourceRegistrationDate: '2026-08-07',
+  conflicts: ['court'],
+  snapshot: {
+    sourceUrl: 'https://rnong.just.ro/registru-ong',
+    capturedAt: '2026-09-20T06:11:58.733Z',
+    refreshOverdue: true,
+  },
+  registryRecords: [
+    { id: 'mj_rnong:ngos:mj_rnong:registry_export:955ec3c867a0507797c73c9f:row:392', name: 'BLANC', nameWithheld: false },
+    { id: 'mj_rnong:ngos:mj_rnong:registry_export:955ec3c867a0507797c73c9f:row:393', name: 'BLANC', nameWithheld: false },
+  ],
+  anafRegistration: { availability: 'not_loaded', data: null },
+  fiscal: { availability: 'not_loaded', data: null },
+  financials: { availability: 'not_loaded', fiscalYears: [] },
+  purpose: {
+    availability: 'available',
+    text: 'Scopul pentru care se constituie Asociatia: sprijinirea familiilor persoanelor afectate de dependențe (droguri, alcool, ecrane, jocuri de noroc, etc.) prin oferirea de consiliere, educație, suport și integrare sociala.',
+  },
+}

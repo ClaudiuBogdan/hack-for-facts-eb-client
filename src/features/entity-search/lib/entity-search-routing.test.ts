@@ -41,6 +41,33 @@ describe('entityHref', () => {
       expect(result).toEqual({ href: '/ngos/99999', isExternal: false })
     })
 
+    it('routes an ngo with an admitted CUI to the CUI, even with a registry number', () => {
+      const result = entityHref(input({ docType: 'ngo', cuis: ['30339344'], docKey: '30339344', ngoRegistryNumber: '1471/A/2012' }))
+      expect(result).toEqual({ href: '/ngos/30339344', isExternal: false })
+    })
+
+    it('routes a registry ngo without a CUI to its registry number, not to its docKey', () => {
+      const result = entityHref(input({ docType: 'ngo', cuis: [], docKey: 'registry:3117/A/2026', ngoRegistryNumber: '3117/A/2026' }))
+      expect(result).toEqual({ href: '/ngos/registry/3117-A-2026', isExternal: false })
+    })
+
+    it('routes a registry organisation filed under another kind to its NGO address', () => {
+      expect(entityHref(input({ docType: 'company', cuis: ['30339344'], ngoRegistryNumber: '1471/A/2012' }))?.href).toBe('/ngos/30339344')
+      expect(entityHref(input({ docType: 'organization', cuis: [], ngoRegistryNumber: '3117/A/2026' }))?.href).toBe('/ngos/registry/3117-A-2026')
+      // Without a registry number, a company stays a company.
+      expect(entityHref(input({ docType: 'company', cuis: ['30339344'], ngoRegistryNumber: null }))?.href).toBe('/companies/30339344')
+    })
+
+    it('keeps an irregular registry literal as written', () => {
+      const result = entityHref(input({ docType: 'ngo', cuis: [], ngoRegistryNumber: '99/B/2000`' }))
+      expect(result?.href).toBe('/ngos/registry/99-B-2000%60')
+    })
+
+    it('falls back to the url for an ngo with neither a CUI nor a registry number', () => {
+      expect(entityHref(input({ docType: 'ngo', cuis: [], url: 'https://example.org' }))).toEqual({ href: 'https://example.org', isExternal: true })
+      expect(entityHref(input({ docType: 'ngo', cuis: [] }))).toBeNull()
+    })
+
     it('uses the first CUI when several are present', () => {
       const result = entityHref(
         input({ docType: 'company', cuis: ['111', '222'] }),

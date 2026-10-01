@@ -22,7 +22,6 @@ describe('the Romanian paths of the first release', () => {
   it.each([
     ['./ong-uri/index', '/ngos', {}, { indicator: 'total' }],
     ['./ong-uri.$cui', '/ngos/$cui', { cui: '3151288' }, { an: '2024' }],
-    ['./ong-uri.registru.$recordId', '/ngos/registry/$recordId', { recordId: '42' }, {}],
     ['./ong-uri.sursa.$snapshotId', '/ngos/sources/$snapshotId', { snapshotId: 'abc' }, {}],
   ])('%s answers with a 301 to %s, its parameters and search carried over', async (module, to, params, search) => {
     const { Route } = (await import(module)) as unknown as RouteModule

@@ -37,6 +37,7 @@ export function row(overrides: Partial<RegistryRecord> = {}): RegistryRecord {
     locality: 'SECTORUL 3 - BUCURESTI',
     sourceCui: null,
     linkedOrganizationCui: null,
+    organizationCui: null,
     isBranch: null,
     sourceReportsPublicUtility: false,
     snapshot,

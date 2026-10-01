@@ -32,9 +32,12 @@ export const LANDING_SEARCH_TYPES = [
   'organization', 'company', 'public_enterprise', 'ngo', 'legal_act', 'ins_dataset',
 ] as const
 
+const NO_TAGS: readonly string[] = []
+
 export function useSearchResults({
   debounceMs = SEARCH_DEBOUNCE_MS,
   docTypes = LANDING_SEARCH_TYPES,
+  entityTags = NO_TAGS,
   suggestions: suggestionsEnabled = true,
 }: {
   readonly debounceMs?: number
@@ -45,6 +48,12 @@ export function useSearchResults({
    * index, rather than on the first page as a chip does.
    */
   readonly docTypes?: readonly string[]
+  /**
+   * Source tags every row must carry (`source::rnong`: the NGO registry's
+   * organisations), for a page whose population is a source rather than a
+   * kind. Sent with the chips' tags, never instead of them.
+   */
+  readonly entityTags?: readonly string[]
   /**
    * Whether category words in the text may become chips. Off when the scope
    * is fixed by the caller: a *Primării* chip over company-only rows can only
@@ -66,12 +75,13 @@ export function useSearchResults({
   // chip's own `docTypes` wins over the caller's: a chip narrows within the
   // families the field started with, and a field with a fixed scope offers no
   // chips at all.
-  const scopeKey = docTypes.join(',')
+  const scopeKey = entityTags.length > 0 ? `${docTypes.join(',')}|${entityTags.join(',')}` : docTypes.join(',')
   const { data, error, isError, isFetching, isPlaceholderData, isSuccess, refetch } = useQuery({
     queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters],
     queryFn: async ({ signal }) => {
+      const tags = [...entityTags, ...(serverFilters.entityTags ?? [])]
       const response = await searchEntitiesLive({
-        q: normalized, docTypes, ...serverFilters, limit: SEARCH_LIMIT,
+        q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }), limit: SEARCH_LIMIT,
       }, signal)
       if (response.degraded) throw new Error('Search unavailable')
       return response.hits.filter((hit) => hit.href.startsWith('/') && !hit.isExternal)

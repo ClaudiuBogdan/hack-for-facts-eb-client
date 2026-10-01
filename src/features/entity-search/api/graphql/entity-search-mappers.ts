@@ -40,6 +40,7 @@ export function mapSearchHit(raw: RawSearchHit): EntitySearchHit {
     docId,
     docKey: raw.docKey,
     url: raw.url,
+    ngoRegistryNumber: raw.ngoRegistryNumber ?? null,
   })
 
   return {
@@ -53,6 +54,8 @@ export function mapSearchHit(raw: RawSearchHit): EntitySearchHit {
     isActive: raw.isActive ?? true,
     isUat: raw.isUat ?? null,
     entityTags: raw.entityTags ?? [],
+    ngoRegistryNumber: raw.ngoRegistryNumber ?? null,
+    ngoRegistryStatus: raw.ngoRegistryStatus ?? null,
     identifiers: raw.identifiers ?? cuis,
     docId,
     docKey: raw.docKey,

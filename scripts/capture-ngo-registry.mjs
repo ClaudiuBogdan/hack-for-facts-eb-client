@@ -27,7 +27,7 @@ const QUERY = `query CaptureNgoRegistry($first: Int!, $after: String) {
     edges { node {
       id registryNumber name nameWithheld category legalForm court
       sourceRegistryStatus sourceRegistrationDate county locality
-      sourceCui linkedOrganizationCui isBranch sourceReportsPublicUtility
+      sourceCui linkedOrganizationCui organizationCui organizationIdentityMethod isBranch sourceReportsPublicUtility
     } }
     pageInfo { hasNextPage endCursor }
     snapshot { id recordCount capturedAt sourceUrl }

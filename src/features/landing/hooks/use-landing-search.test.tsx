@@ -89,6 +89,24 @@ describe('landing universal search', () => {
       queryClient.getQueryCache().findAll().map((query) => query.queryKey.slice(0, 3)),
     ).toContainEqual(['landingUniversalSearch', 'company', 'firma Dante'])
   })
+  it('sends a caller’s source tag with the request, and keys the cache by it', async () => {
+    const queryClient = createTestQueryClient()
+    function Wrapper({ children }: { readonly children: ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(
+      () => useSearchResults({ debounceMs: 0, entityTags: ['source::rnong'], suggestions: false }),
+      { wrapper: Wrapper },
+    )
+    await search(result, '3117/A/2026')
+    expect(searchEntities).toHaveBeenCalledWith(
+      expect.objectContaining({ q: '3117/A/2026', entityTags: ['source::rnong'], limit: 8 }),
+      expect.any(AbortSignal),
+    )
+    // The same term over the whole index is another answer: the tag sits in the key.
+    const keys = queryClient.getQueryCache().findAll().map((query) => String(query.queryKey[1]))
+    expect(keys.every((key) => key.endsWith('|source::rnong'))).toBe(true)
+  })
   it('preserves server ordering and omits missing or external destinations', async () => {
     const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ngos/123' }
     searchEntities.mockResolvedValue(response([
@@ -149,6 +167,21 @@ describe('landing universal search', () => {
     searchEntities.mockResolvedValue(response([COMPANY]))
     act(() => result.current.removeFilter(result.current.filters[0]))
     await waitFor(() => expect(result.current.results).toEqual([COMPANY]))
+  })
+  it('sends a caller’s tag with a chip’s, never instead of it', async () => {
+    const queryClient = createTestQueryClient()
+    function Wrapper({ children }: { readonly children: ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useSearchResults({ debounceMs: 0, entityTags: ['source::rnong'] }), { wrapper: Wrapper })
+    await search(result, 'spital Dante')
+    act(() => result.current.addFilter(result.current.suggestions.find(filter => filter.entityTag === 'kind::hospital')!))
+    await waitFor(() =>
+      expect(searchEntities).toHaveBeenLastCalledWith(
+        expect.objectContaining({ entityTags: ['source::rnong', 'kind::hospital'] }),
+        expect.any(AbortSignal),
+      ),
+    )
   })
   it('refetches tag selection and removal for the same text', async () => {
     const { result } = setup()

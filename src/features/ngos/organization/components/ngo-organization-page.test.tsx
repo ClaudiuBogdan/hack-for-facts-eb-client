@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NgoIndicator } from '../api'
-import { ABSOLUT, FUNKY, FUNKY_STATEMENTS } from '../test/fixtures'
+import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS } from '../test/fixtures'
 import { NgoOrganizationPage } from './ngo-organization-page'
 
 vi.mock('@/features/statistics/lib/format', () => ({ activeNumberLocale: () => 'ro-RO' }))
@@ -106,8 +106,8 @@ describe('NgoOrganizationPage', () => {
     renderPage({ organization: ABSOLUT, statementsRead: { status: 'ready', statements: [] } })
     expect(screen.queryByRole('region', { name: /an cu an/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('region', { name: /rând cu rând/ })).not.toBeInTheDocument()
-    expect(screen.getAllByText(/nu sunt încă încărcate pentru acest CUI/)).toHaveLength(1)
-    expect(screen.getByText('Situații financiare încă neîncărcate.')).toBeInTheDocument()
+    expect(screen.getByText('Nu avem situații financiare disponibile pentru acest ONG. Lipsa lor nu înseamnă că organizația nu le-a depus.')).toBeInTheDocument()
+    expect(screen.getByText('Nu avem situații financiare disponibile pentru acest ONG.')).toBeInTheDocument()
     expect(screen.queryByText(/Nicio situație/)).not.toBeInTheDocument()
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     expect(bar).toHaveTextContent('01Scopul02Banii03ANAF și registru')
@@ -199,5 +199,35 @@ describe('NgoOrganizationPage', () => {
     // Observations that disagree are named, never shown as one purpose.
     expect(screen.getAllByText(/scopul/).length).toBeGreaterThan(0)
     expect(screen.queryByRole('region', { name: 'Ce își propune' })).not.toBeInTheDocument()
+  })
+
+  describe('without an admitted CUI (read by registry number)', () => {
+    const renderUnlinked = () => renderPage({ organization: BLANC, statementsRead: { status: 'ready', statements: [] } })
+
+    it('draws the purpose and the registry, and no band read by CUI', () => {
+      renderUnlinked()
+      const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
+      expect(within(bar).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['#scop', '#registru'])
+      expect(screen.queryByRole('region', { name: /De unde vin banii/ })).not.toBeInTheDocument()
+      const registry = band(/Ce spune registrul/)
+      expect(within(registry).queryByText('ANAF')).not.toBeInTheDocument()
+      expect(within(registry).getByText('Niciun CUI legat')).toBeInTheDocument()
+    })
+
+    it('says once, in the head, why ANAF and the statements are not here', () => {
+      renderUnlinked()
+      expect(screen.getAllByText(/Datele ANAF și situațiile financiare se citesc după CUI/)).toHaveLength(1)
+      expect(screen.getByText('Fără CUI legat')).toBeInTheDocument()
+      expect(screen.queryByText(/^CUI$/)).not.toBeInTheDocument()
+      // The registry number is the identifier a reader copies, in the head as in the registry's facts.
+      expect(screen.getAllByText('3117/A/2026').length).toBeGreaterThan(0)
+    })
+
+    it('lists every registry row of its number, and names where they disagree', () => {
+      renderUnlinked()
+      const registry = band(/Ce spune registrul/)
+      expect(within(registry).getAllByText('BLANC')).toHaveLength(2)
+      expect(within(registry).getByText('instanța')).toBeInTheDocument()
+    })
   })
 })

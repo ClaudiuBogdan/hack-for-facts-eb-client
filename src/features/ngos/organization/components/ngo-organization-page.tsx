@@ -40,6 +40,10 @@ import { YearsMatrix } from './years-matrix'
  *
  * The statements are read apart from the profile: where they fail, the page
  * stands and says so, with a way to read them again.
+ *
+ * A profile read by registry number may have no CUI the platform admits
+ * (`/ngos/registry/$number`): ANAF and the statements are read by CUI, so
+ * their bands are not drawn, and the head says why, once.
  */
 
 export function NgoOrganizationPage({
@@ -76,12 +80,13 @@ export function NgoOrganizationPage({
   const name = organizationName(organization)
   // A year the address asks for that has no statement on the platform: said, and the latest shown instead.
   const unfiled = year !== undefined && chosen !== null && chosen.fiscalYear !== year ? year : null
+  const linked = organization.cui !== null
   const sections = [
     ...(purpose ? [{ id: 'scop', label: t`Scopul` }] : []),
-    { id: 'bani', label: t`Banii` },
+    ...(linked ? [{ id: 'bani', label: t`Banii` }] : []),
     ...(chosen ? [{ id: 'situatie', label: t`Situația financiară` }] : []),
     ...(series.length > 0 ? [{ id: 'an-cu-an', label: t`An cu an` }] : []),
-    { id: 'registru', label: t`ANAF și registru` },
+    { id: 'registru', label: linked ? t`ANAF și registru` : t`Registrul` },
   ]
   /** „02 / An cu an": a band's number is its place in the bar, which drops a band when there is nothing to show in it. */
   const indexOf = (id: string) => {
@@ -121,7 +126,11 @@ export function NgoOrganizationPage({
               {/* The registry's observations disagree on the name: the one shown is one of them, not an agreed name. */}
               {organization.name === null && organization.conflicts.includes('name') ? (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  <Trans>Registrul o trece sub mai multe nume; toate sunt la „Ce spun ANAF și registrul".</Trans>
+                  {linked ? (
+                    <Trans>Registrul o trece sub mai multe nume; toate sunt la „Ce spun ANAF și registrul".</Trans>
+                  ) : (
+                    <Trans>Registrul o trece sub mai multe nume; toate sunt la „Ce spune registrul".</Trans>
+                  )}
                 </p>
               ) : null}
               <p className="mt-5 max-w-[42rem] text-lg leading-relaxed text-muted-foreground">
@@ -134,9 +143,16 @@ export function NgoOrganizationPage({
             </div>
             <div className="min-w-0 lg:col-span-4 lg:border-l lg:pl-8">
               <MonoLabel className="text-primary">
-                <Trans>Ultimii ani cu situații financiare</Trans>
+                {linked ? <Trans>Ultimii ani cu situații financiare</Trans> : <Trans>Situații financiare și ANAF</Trans>}
               </MonoLabel>
-              {series.length > 0 ? (
+              {!linked ? (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  <Trans>
+                    Niciun CUI legat de această organizație. Datele ANAF și situațiile financiare se citesc după CUI, așa că nu sunt pe această pagină;
+                    lipsa lor nu spune nimic despre organizație.
+                  </Trans>
+                </p>
+              ) : series.length > 0 ? (
                 <div className="mt-6">
                   <YearsChart series={series.slice(-6)} height="h-28" compact />
                 </div>
@@ -166,40 +182,42 @@ export function NgoOrganizationPage({
 
       {purpose ? <PurposeSection organization={organization} text={purpose} index={indexOf('scop')} /> : null}
 
-      <HomeBand id="bani" labelledBy="ngo-profile-money">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <HubSectionHead
-              titleId="ngo-profile-money"
-              index={indexOf('bani')}
-              title={<Trans>De unde vin banii</Trans>}
-              lede={facts && figures?.revenue?.value != null ? <MoneyLede facts={facts} /> : null}
-            />
-            {latest ? (
-              <div className="mt-8" data-reveal>
+      {linked ? (
+        <HomeBand id="bani" labelledBy="ngo-profile-money">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <HubSectionHead
+                titleId="ngo-profile-money"
+                index={indexOf('bani')}
+                title={<Trans>De unde vin banii</Trans>}
+                lede={facts && figures?.revenue?.value != null ? <MoneyLede facts={facts} /> : null}
+              />
+              {latest ? (
+                <div className="mt-8" data-reveal>
+                  <MonoLabel className="block text-muted-foreground">
+                    <LatestSourcesLabel year={latest.fiscalYear} />
+                  </MonoLabel>
+                  <div className="mt-3">
+                    <RevenueSources statement={latest} />
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-8">{missing}</div>
+              )}
+            </div>
+            {series.length > 0 ? (
+              <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
                 <MonoLabel className="block text-muted-foreground">
-                  <LatestSourcesLabel year={latest.fiscalYear} />
+                  <Trans>Venituri și cheltuieli pe an, lei</Trans>
                 </MonoLabel>
-                <div className="mt-3">
-                  <RevenueSources statement={latest} />
+                <div className="mt-2">
+                  <YearsChart series={series} />
                 </div>
               </div>
-            ) : (
-              <div className="mt-8">{missing}</div>
-            )}
+            ) : null}
           </div>
-          {series.length > 0 ? (
-            <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-              <MonoLabel className="block text-muted-foreground">
-                <Trans>Venituri și cheltuieli pe an, lei</Trans>
-              </MonoLabel>
-              <div className="mt-2">
-                <YearsChart series={series} />
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </HomeBand>
+        </HomeBand>
+      ) : null}
 
       {chosen ? (
         <HomeBand id="situatie" labelledBy="ngo-profile-statement">
@@ -240,16 +258,22 @@ export function NgoOrganizationPage({
       ) : null}
 
       <HomeBand id="registru" labelledBy="ngo-profile-registry">
-        <HubSectionHead titleId="ngo-profile-registry" index={indexOf('registru')} title={<Trans>Ce spun ANAF și registrul</Trans>} />
+        <HubSectionHead
+          titleId="ngo-profile-registry"
+          index={indexOf('registru')}
+          title={linked ? <Trans>Ce spun ANAF și registrul</Trans> : <Trans>Ce spune registrul</Trans>}
+        />
         <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12" data-reveal>
-          <div>
-            <MonoLabel className="block text-primary">
-              <Trans>ANAF</Trans>
-            </MonoLabel>
-            <div className="mt-3">
-              <AnafFacts organization={organization} />
+          {linked ? (
+            <div>
+              <MonoLabel className="block text-primary">
+                <Trans>ANAF</Trans>
+              </MonoLabel>
+              <div className="mt-3">
+                <AnafFacts organization={organization} />
+              </div>
             </div>
-          </div>
+          ) : null}
           <div>
             <MonoLabel className="block text-primary">
               <Trans>Registrul național ONG</Trans>
@@ -384,7 +408,7 @@ function NoStatements({ organization }: { readonly organization: NgoOrganization
       {organization.financials.availability === 'not_released' ? (
         <Trans>Situațiile financiare ale acestei organizații nu sunt publicate pe platformă.</Trans>
       ) : organization.financials.availability === 'not_loaded' ? (
-        <Trans>Situațiile financiare nu sunt încă încărcate pentru acest CUI. Lipsa lor nu înseamnă că organizația nu le-a depus.</Trans>
+        <Trans>Nu avem situații financiare disponibile pentru acest ONG. Lipsa lor nu înseamnă că organizația nu le-a depus.</Trans>
       ) : (
         <Trans>Nicio situație financiară pe platformă pentru acest CUI. Asta nu dovedește că organizația nu a depus.</Trans>
       )}
@@ -419,7 +443,7 @@ function NoStatementsShort({ organization, failed }: { readonly organization: Ng
     case 'not_released':
       return <Trans>Situații financiare nepublicate pe platformă.</Trans>
     case 'not_loaded':
-      return <Trans>Situații financiare încă neîncărcate.</Trans>
+      return <Trans>Nu avem situații financiare disponibile pentru acest ONG.</Trans>
     default:
       return <Trans>Nicio situație financiară pe platformă.</Trans>
   }

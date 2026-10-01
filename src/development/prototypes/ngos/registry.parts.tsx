@@ -65,6 +65,7 @@ import {
 import { placeKey } from './registry.place'
 import { groupRows, isUnplaced, townLabel, unplacedOn, yearPoints, type RegistryFigure, type Tally } from './registry.counts'
 import type { RegistryReadState } from './registry.data'
+import { ngoProfileLink } from '@/features/ngos/lib/ngo-address'
 
 /**
  * The registry page's parts, in the analytics page's language: the head on
@@ -745,8 +746,8 @@ export function RecordsTable({
                   <TableCell className="hidden align-top font-mono text-xs tabular-nums text-muted-foreground sm:table-cell">{first + index + 1}</TableCell>
                   <TableCell className="w-full max-w-0">
                     <Link
-                      to="/ngos/registry/$recordId"
-                      params={{ recordId: row.id }}
+                      // The organisation's one address: its admitted CUI's profile, else its registry number's.
+                      {...(ngoProfileLink({ cui: row.organizationCui, registryNumber: row.registryNumber }) ?? { to: '/ngos/registry' })}
                       className={cn('line-clamp-2 break-words font-medium hover:underline', closed ? 'text-muted-foreground' : 'text-foreground')}
                       title={row.name}
                     >
