@@ -3,7 +3,8 @@
 For the NGO server / data thread, from the client session on branch
 `ong-hub-redesign`. R1–R4 **shipped** to Chronos dev on 2026-10-01 (API image
 `cad05e5d…`, pin `df71ace3…`) and were checked from the client against the
-public GraphQL endpoint. R5 is open.
+public GraphQL endpoint. R5 **shipped** the same day (server commit
+`8c71bd0e…`, pin `b169ee2a…`) and is checked the same way.
 
 ## The problem
 
@@ -67,7 +68,7 @@ the head reads.
 The masks in the purpose (`<PERSON>`, `<LOCATION>`…) are in the Ministry's
 text, not the platform's redaction.
 
-## R5 — Non-registry organisations are not labelled NGOs (open)
+## R5 — Non-registry organisations are not labelled NGOs (shipped)
 
 The site-wide search makes any `core.organizations.kind = 'ngo'` CUI an `ngo`
 document with role `ngo` (scrapper `src/search/palette-contract.ts`,
@@ -98,3 +99,20 @@ With it, one small fix: a registry-only search hit still carries `url:
 **Check:** `searchEntities(q: "cruce rosie", docTypes: ["ngo"])` returns no
 hit without `source::rnong`; `10860991` is still found, under the neutral
 type.
+
+**What shipped (checked from the client, 2026-10-01).** Only the registry's
+documents (`source::rnong`, 140,718: 71,853 admitted CUIs and 68,865
+registry-only) carry the `ngo` type and role. 1,188 former `ngo` hits outside
+the registry are `organization_unclassified` (type and role), still found by
+name, CUI and county: `10860991` is one, with no tag and a null profile. The
+1,647 public entities among the old `ngo` population (`4331341`,
+Penitenciarul Aiud) stay `organization` and lose the `ngo` role. No document
+was removed and no id changed, so some neutral results keep an `ngo_` id
+prefix: the client classifies by `docType`, `cuis` and `ngoRegistryNumber`,
+never by id. Registry-only hits have `url: null`.
+
+The client names `organization_unclassified` „Organizație" and draws it as a
+plain row with its CUI and county and „fără profil pe platformă", with no
+link: in the site's search box a disabled option that Enter passes by, on the
+search page an inert row. Remaining, not blocking: some neutral hits carry
+the county as their source wrote it („JUD. SATU MARE").

@@ -14,11 +14,11 @@ describe('DOC_TYPE_META', () => {
   })
 
   it('keeps the expected Romanian labels for visible chips and badges', () => {
-    expect(DOC_TYPE_META.company.label).toBe('Firmă')
-    expect(DOC_TYPE_META.public_enterprise.label).toBe('Companie de stat')
-    expect(DOC_TYPE_META.committee.label).toBe('Comisie')
-    expect(DOC_TYPE_META.legal_act.label).toBe('Legislație')
-    expect(DOC_TYPE_META.member.label).toBe('Parlamentar')
+    expect(getDocTypeMeta('company').label).toBe('Firmă')
+    expect(getDocTypeMeta('public_enterprise').label).toBe('Companie de stat')
+    expect(getDocTypeMeta('committee').label).toBe('Comisie')
+    expect(getDocTypeMeta('legal_act').label).toBe('Legislație')
+    expect(getDocTypeMeta('member').label).toBe('Parlamentar')
   })
 
   it('groups related types into the intended color families', () => {

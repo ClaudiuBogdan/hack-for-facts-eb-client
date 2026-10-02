@@ -26,6 +26,7 @@ const CUI_SPINE_DOC_TYPES = new Set([
   'organization',
   'public_enterprise',
   'ngo',
+  'organization_unclassified',
 ])
 
 function isSafeExternalHref(href: string): boolean {
@@ -65,6 +66,11 @@ function getHitMetaPieces(hit: EntitySearchHit): readonly MetaPiece[] {
   // than letting a dead entity look identical to a live one.
   if (!hit.isActive) {
     pieces.push({ key: 'inactive', label: t`Inactiv` })
+  }
+
+  // An organisation outside the NGO registry has no page here: the row says why it opens nothing.
+  if (hit.docType === 'organization_unclassified' && hit.href.trim() === '') {
+    pieces.push({ key: 'profileless', label: t`fără profil pe platformă` })
   }
 
   return pieces

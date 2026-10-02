@@ -2,7 +2,7 @@ import { Trans } from '@lingui/react/macro'
 import { Search, SearchX } from 'lucide-react'
 import type { EntitySearchDocType } from '@/schemas/entity-search'
 import { cn } from '@/lib/utils'
-import { DOC_TYPE_META } from '../lib/doc-type-meta'
+import { getDocTypeMeta } from '../lib/doc-type-meta'
 
 /**
  * `degraded` is deliberately distinct from `zero`. The server answered
@@ -53,7 +53,7 @@ function PopularTypeButtons({
   return (
     <div className="grid grid-cols-2 gap-2 pt-2 sm:grid-cols-4">
       {POPULAR_DOC_TYPES.map((docType) => {
-        const meta = DOC_TYPE_META[docType]
+        const meta = getDocTypeMeta(docType)
         const Icon = meta.Icon
         const selected = selectedTypes.includes(docType)
 

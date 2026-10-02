@@ -1,4 +1,5 @@
-import { t } from '@lingui/core/macro'
+import { i18n, type MessageDescriptor } from '@lingui/core'
+import { msg } from '@lingui/core/macro'
 import {
   ChartNoAxesCombined,
   Building,
@@ -24,80 +25,89 @@ export type EntityDocTypeMeta = {
   readonly Icon: LucideIcon
 }
 
+/** A doc type's label kept as a message, read in the reader's language when it is drawn, not when the module loads. */
+type DocTypeEntry = Omit<EntityDocTypeMeta, 'label'> & { readonly label: MessageDescriptor }
+
 export const DOC_TYPE_META = {
   ins_dataset: {
-    label: t`Statistici INS`,
+    label: msg`Statistici INS`,
     color: 'border-teal-200 bg-teal-100 text-teal-900 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-200',
     Icon: ChartNoAxesCombined,
   },
   company: {
-    label: t`Firmă`,
+    label: msg`Firmă`,
     color:
       'border-blue-200 bg-blue-100 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200',
     Icon: Building2,
   },
   ngo: {
-    label: t`ONG`,
+    label: msg`ONG`,
     color:
       'border-blue-200 bg-blue-100 text-blue-900 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200',
     Icon: HeartHandshake,
   },
+  organization_unclassified: {
+    label: msg`Organizație`,
+    color:
+      'border-neutral-200 bg-neutral-100 text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200',
+    Icon: Building,
+  },
   public_enterprise: {
-    label: t`Companie de stat`,
+    label: msg`Companie de stat`,
     color:
       'border-[var(--pnrr-green)]/40 bg-[var(--pnrr-green)]/15 text-emerald-900 dark:text-emerald-200',
     Icon: Landmark,
   },
   organization: {
-    label: t`Instituție`,
+    label: msg`Instituție`,
     color:
       'border-[var(--pnrr-green)]/40 bg-[var(--pnrr-green)]/15 text-emerald-900 dark:text-emerald-200',
     Icon: Landmark,
   },
   legal_act: {
-    label: t`Legislație`,
+    label: msg`Legislație`,
     color:
       'border-violet-200 bg-violet-100 text-violet-900 dark:border-violet-900 dark:bg-violet-950 dark:text-violet-200',
     Icon: Scale,
   },
   bill: {
-    label: t`Proiect de lege`,
+    label: msg`Proiect de lege`,
     color:
       'border-violet-200 bg-violet-100 text-violet-900 dark:border-violet-900 dark:bg-violet-950 dark:text-violet-200',
     Icon: ScrollText,
   },
   mo_act: {
-    label: t`Monitorul Oficial`,
+    label: msg`Monitorul Oficial`,
     color:
       'border-violet-200 bg-violet-100 text-violet-900 dark:border-violet-900 dark:bg-violet-950 dark:text-violet-200',
     Icon: Newspaper,
   },
   pnrr_entity: {
-    label: t`PNRR`,
+    label: msg`PNRR`,
     color:
       'border-teal-200 bg-teal-100 text-teal-900 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-200',
     Icon: Building,
   },
   member: {
-    label: t`Parlamentar`,
+    label: msg`Parlamentar`,
     color:
       'border-rose-200 bg-rose-100 text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200',
     Icon: Users,
   },
   committee: {
-    label: t`Comisie`,
+    label: msg`Comisie`,
     color:
       'border-rose-200 bg-rose-100 text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200',
     Icon: Gavel,
   },
-} satisfies Record<EntitySearchDocType, EntityDocTypeMeta>
+} satisfies Record<EntitySearchDocType, DocTypeEntry>
 
 export const UNKNOWN_DOC_TYPE_META = {
-  label: t`Document`,
+  label: msg`Document`,
   color:
     'border-neutral-200 bg-neutral-100 text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200',
   Icon: FileText,
-} satisfies EntityDocTypeMeta
+} satisfies DocTypeEntry
 
 const ENTITY_SEARCH_DOC_TYPE_SET = new Set<string>(ENTITY_SEARCH_DOC_TYPES)
 
@@ -108,9 +118,6 @@ export function isEntitySearchDocType(
 }
 
 export function getDocTypeMeta(docType: string): EntityDocTypeMeta {
-  if (isEntitySearchDocType(docType)) {
-    return DOC_TYPE_META[docType]
-  }
-
-  return UNKNOWN_DOC_TYPE_META
+  const entry: DocTypeEntry = isEntitySearchDocType(docType) ? DOC_TYPE_META[docType] : UNKNOWN_DOC_TYPE_META
+  return { ...entry, label: i18n._(entry.label) }
 }

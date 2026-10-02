@@ -29,8 +29,17 @@ export const SEARCH_LIMIT = 8
 // Use existing internal destination mappings. Parliament person/case keys and
 // source-only publication links need separate routing work before inclusion.
 export const LANDING_SEARCH_TYPES = [
-  'organization', 'company', 'public_enterprise', 'ngo', 'legal_act', 'ins_dataset',
+  'organization', 'company', 'public_enterprise', 'ngo', 'organization_unclassified', 'legal_act', 'ins_dataset',
 ] as const
+
+/**
+ * A result no page of the site holds, shown as what it is rather than hidden:
+ * an organisation outside the NGO registry that an old classification called
+ * one. It has no link; the row says so.
+ */
+export function isProfileless(hit: Pick<EntitySearchHit, 'docType' | 'href'>): boolean {
+  return hit.docType === 'organization_unclassified' && hit.href === ''
+}
 
 const NO_TAGS: readonly string[] = []
 
@@ -84,7 +93,7 @@ export function useSearchResults({
         q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }), limit: SEARCH_LIMIT,
       }, signal)
       if (response.degraded) throw new Error('Search unavailable')
-      return response.hits.filter((hit) => hit.href.startsWith('/') && !hit.isExternal)
+      return response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit))
     },
     enabled: isQueryable,
     retry: false,
