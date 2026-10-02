@@ -3040,11 +3040,18 @@ read.
 - **`azi`:** the sheet on what the API answers now — no lots, offers,
   criteria, call or dates; a row per firm gathered by contract number.
 
+**The owner's pick (2 October): `fisa`.** `concurenta` and `azi` are
+deleted; the model keeps its `today` read (tested), which the promoted page
+needs until the API serves the notice. In the calendar a step's value sits
+under its title, not across the page at the right where the eye loses it,
+and the last contract's says it is the procedure's total („63.233.506,18
+lei pe 3 contracte"; a framework's „cel mult …, pe 37 de acorduri-cadru").
+
 The records: ANIF's three lots (and the same procedure opened on its call),
 Sibiu's negotiation and its suspended call, CNIR's 6.1 bn association with
 one offer, CNAIR's Pașcani–Suceava (three offers, two unacceptable, −29%),
 Spitalul Caracal's 44-lot framework, Sibiu's Turnul Sfatului, Universitatea
 de Vest's cancelled call, Nuclearelectrica's 2009 call.
 
-Open for the owner: which variant; whether a call's row should redirect to
-its award's page once the two are tied.
+Open for the owner: whether a call's row should redirect to its award's
+page once the two are tied.

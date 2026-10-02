@@ -20,7 +20,7 @@ import { gapFigure, gapText, lotsCount, noticeDelay, offersTotal, priceWeight, r
  * the contracts, the rows SEAP links here by mistake, the source.
  */
 
-export const SUBHEAD = 'text-base font-semibold tracking-tight text-foreground sm:text-lg'
+const SUBHEAD = 'text-base font-semibold tracking-tight text-foreground sm:text-lg'
 const LEDE = 'mt-2 max-w-[62ch] text-sm leading-relaxed text-muted-foreground'
 const OUT_LINK = 'inline-flex min-h-11 items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0'
 const INLINE_LINK = 'underline decoration-border underline-offset-4 hover:decoration-foreground'
@@ -362,7 +362,9 @@ interface Step {
   readonly when: string | null
   readonly title: string
   readonly body: ReactNode
+  /** Lei, under the title: the contract's, or (with `across`, „3 contracte") the procedure's on its last contract. */
   readonly value: number | null
+  readonly across?: string
   readonly mark?: boolean
 }
 
@@ -417,17 +419,22 @@ function stepsOf(sheet: ProcedureSheet): Step[] {
   if (sheet.kind === 'award' && sheet.contractsSpan) {
     const span = sheet.contractsSpan
     const many = sheet.contracts.length > 1
-    steps.push({
-      key: 'signed',
-      when: span.from,
-      title: sheet.framework ? (many ? t`Primele acorduri-cadru, încheiate` : t`Acordul-cadru, încheiat`) : many ? t`Primul contract, încheiat` : t`Contractul, încheiat`,
-      body: many ? null : <span className="block">{namesList(sheet.contracts[0]!.firms.map((firm) => firm.name))}</span>,
-      value: many ? null : sheet.awarded,
-      mark: true,
-    })
-    if (span.to !== span.from) {
-      const count = sheet.framework ? frameworksCount(sheet.contracts.length) : contractsCount(sheet.contracts.length)
-      steps.push({ key: 'signed-last', when: span.to, title: sheet.framework ? t`Ultimul acord-cadru, încheiat` : t`Ultimul contract, încheiat`, body: <span className="block">{t`${count} în total`}</span>, value: sheet.awarded })
+    const count = sheet.framework ? frameworksCount(sheet.contracts.length) : contractsCount(sheet.contracts.length)
+    if (!many) {
+      steps.push({
+        key: 'signed',
+        when: span.from,
+        title: sheet.framework ? t`Acordul-cadru, încheiat` : t`Contractul, încheiat`,
+        body: <span className="block">{namesList(sheet.contracts[0]!.firms.map((firm) => firm.name))}</span>,
+        value: sheet.awarded,
+        mark: true,
+      })
+    } else if (span.from === span.to) {
+      // All signed on one day: one step, with the procedure's total.
+      steps.push({ key: 'signed', when: span.from, title: sheet.framework ? t`Acordurile-cadru, încheiate` : t`Contractele, încheiate`, body: null, value: sheet.awarded, across: count, mark: true })
+    } else {
+      steps.push({ key: 'signed', when: span.from, title: sheet.framework ? t`Primele acorduri-cadru, încheiate` : t`Primul contract, încheiat`, body: null, value: null, mark: true })
+      steps.push({ key: 'signed-last', when: span.to, title: sheet.framework ? t`Ultimul acord-cadru, încheiat` : t`Ultimul contract, încheiat`, body: null, value: sheet.awarded, across: count })
     }
   }
   if (sheet.awardNotice) {
@@ -474,6 +481,16 @@ function stepsOf(sheet: ProcedureSheet): Step[] {
   return result
 }
 
+/** A step's value, under its title where the eye already is: the figure, and over how many contracts when it is the whole procedure's. */
+function StepValue({ value, across, framework }: { readonly value: number; readonly across: string | null; readonly framework: boolean }) {
+  const figure = leiExact(value)
+  return (
+    <p className="mt-1 text-sm tabular-nums text-foreground">
+      {across ? (framework ? t`cel mult ${figure}, pe ${across}` : t`${figure} pe ${across}`) : figure}
+    </p>
+  )
+}
+
 /** „Calendarul": the procedure's notices and contracts in the order they happened. */
 export function ProcedureCalendar({ sheet, className }: { readonly sheet: ProcedureSheet; readonly className?: string }) {
   const steps = stepsOf(sheet)
@@ -486,10 +503,8 @@ export function ProcedureCalendar({ sheet, className }: { readonly sheet: Proced
           <li key={step.key} className="relative pb-7 last:pb-0">
             <span className={cn('absolute -left-[1.6rem] top-1.5 size-2.5 rounded-full border-2 border-background', step.mark ? 'bg-primary' : 'bg-foreground')} aria-hidden="true" />
             <MonoLabel className="block tabular-nums text-muted-foreground">{step.when ? dayLong(step.when) : step.key === 'status' ? t`azi` : t`fără dată`}</MonoLabel>
-            <p className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 text-sm font-semibold text-foreground">
-              <span>{step.title}</span>
-              {step.value !== null ? <span className="tabular-nums">{leiExact(step.value)}</span> : null}
-            </p>
+            <p className="mt-1 text-sm font-semibold text-foreground">{step.title}</p>
+            {step.value !== null ? <StepValue value={step.value} across={step.across ?? null} framework={sheet.framework} /> : null}
             {step.body ? <div className="mt-1 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">{step.body}</div> : null}
           </li>
         ))}
@@ -663,7 +678,7 @@ export function ProcedureBox({ sheet }: { readonly sheet: ProcedureSheet }) {
   )
 }
 
-export function ProcedureBlock({ sheet, className, withLots = true }: { readonly sheet: ProcedureSheet; readonly className?: string; readonly withLots?: boolean }) {
+export function ProcedureBlock({ sheet, className }: { readonly sheet: ProcedureSheet; readonly className?: string }) {
   return (
     <section className={className} aria-labelledby="procedure-block">
       <h2 id="procedure-block" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -671,7 +686,7 @@ export function ProcedureBlock({ sheet, className, withLots = true }: { readonly
       </h2>
       <ProcedureBox sheet={sheet} />
       <div className="max-w-4xl">
-        {withLots ? <ProcedureLots sheet={sheet} className="mt-12" /> : null}
+        <ProcedureLots sheet={sheet} className="mt-12" />
         <ProcedureCriteria sheet={sheet} className="mt-12" />
         <ProcedureCalendar sheet={sheet} className="mt-12" />
         <ProcedureContracts sheet={sheet} className="mt-12" />

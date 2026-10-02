@@ -2,9 +2,8 @@ import { useNavigate, useSearch } from '@tanstack/react-router'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { PROCEDURE_FIXTURES } from './procedure.fixtures'
-import { ProcedureCompetition } from './procedure.competition'
 import { ProcedureHead } from './procedure.head'
-import { procedureSheetOf, type PsRead } from './procedure.model'
+import { procedureSheetOf } from './procedure.model'
 import { ProcedureBlock } from './procedure.sheet'
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
@@ -43,47 +42,9 @@ function RecordPicker() {
   )
 }
 
-function useSheet(read: PsRead) {
-  return procedureSheetOf(PROCEDURE_FIXTURES[useRecordKey()]!, read)
-}
-
 /** The sheet (`fisa`): the contract page's record sheet on the whole procedure, as the award notice tells it. */
 export function ProcedureFisa() {
-  const sheet = useSheet('target')
-  return (
-    <div className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
-      <RecordPicker />
-      <ProcedureHead sheet={sheet} />
-      <RuledFrame className="py-10 sm:py-14">
-        <ProcedureBlock sheet={sheet} />
-      </RuledFrame>
-    </div>
-  )
-}
-
-/** The competition first (`concurenta`): the offers and the lots before the value and the facts. */
-export function ProcedureConcurenta() {
-  const sheet = useSheet('target')
-  const competes = sheet.kind === 'award' && sheet.lots.length > 0
-  return (
-    <div className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
-      <RecordPicker />
-      <ProcedureHead sheet={sheet} />
-      {competes ? (
-        <RuledFrame className="border-b py-10 sm:py-14">
-          <ProcedureCompetition sheet={sheet} />
-        </RuledFrame>
-      ) : null}
-      <RuledFrame className="py-10 sm:py-14">
-        <ProcedureBlock sheet={sheet} withLots={!competes} />
-      </RuledFrame>
-    </div>
-  )
-}
-
-/** The sheet on today's API (`azi`): the notice's row and its contract rows, nothing of the award notice's own data. */
-export function ProcedureAzi() {
-  const sheet = useSheet('today')
+  const sheet = procedureSheetOf(PROCEDURE_FIXTURES[useRecordKey()]!, 'target')
   return (
     <div className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <RecordPicker />
