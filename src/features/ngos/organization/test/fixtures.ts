@@ -49,9 +49,13 @@ export const FUNKY: NgoOrganization = {
   purpose: { availability: 'available', text: 'PROMOVAREA DREPTURILOR OMULUI, DEZVOLTAREA SUSTENABILA, RESPONSABILITATEA SOCALA SI INDIVIDUALA PRIN CETATENIE ACTIVA, EDUCATIE CIVICA SII CULTURALA, ATAT PRIN ACTIVITATI PROPRII, CAT SI PRIN SPRIJINIREA INITIATIVELOR CARE ISI <PERSON>' },
 }
 
+/** The server's review of a statement no rule flags: assessed, not suspected — no certificate of correctness. */
+export const ASSESSED: NgoStatement['quality'] = { ruleVersion: 'ngo-revenue-v1', assessment: 'assessed', suspected: false, reasons: [] }
+
 export const FUNKY_STATEMENTS: readonly NgoStatement[] = [
   {
     fiscalYear: 2024,
+    quality: ASSESSED,
     sourceUrl:
       'https://data.gov.ro/dataset/cc8de892-f661-4f6e-97c0-15f5271d8a13/resource/d330113b-3dfd-499e-a1fa-27aeea1c7d19/download/web_ong_an2024.txt',
     dictionaryUrl:
@@ -231,6 +235,7 @@ export const FUNKY_STATEMENTS: readonly NgoStatement[] = [
   },
   {
     fiscalYear: 2023,
+    quality: ASSESSED,
     sourceUrl:
       'https://data.gov.ro/dataset/7861a98f-4d5c-4faa-90d4-8e934ebd1782/resource/137f73ef-e1e4-466e-b1ab-1912c9be7c83/download/web_ong_an2023.txt',
     dictionaryUrl:
@@ -430,6 +435,7 @@ export const FUNKY_STATEMENTS: readonly NgoStatement[] = [
   },
   {
     fiscalYear: 2021,
+    quality: ASSESSED,
     sourceUrl:
       'https://data.gov.ro/dataset/f8353c0e-fee9-4aa3-b26d-be0e96c328a7/resource/2a1ef5c1-8160-4ccd-a631-d945d4a9b00a/download/web_ong_an2021.txt',
     dictionaryUrl:

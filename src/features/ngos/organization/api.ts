@@ -66,11 +66,28 @@ export const ngoOrganizationSchema = z.object({
 export type NgoOrganization = z.infer<typeof ngoOrganizationSchema>
 
 const indicatorSchema = z.object({ code: z.string(), label: z.string(), value: z.string().nullable() })
+
+/**
+ * The server's review of a statement's revenue (`ngo-revenue-v1`): `suspected`
+ * true is a signal to verify, never a confirmed error; false is no matching
+ * rule, not a certificate; null, a dictionary the rules do not cover. Each
+ * reason is a rule that matched (`IMPLAUSIBLE_REVENUE`: I38 above 1 bn lei;
+ * `REVENUE_EQUALS_FIXED_ASSETS`: a positive I38 equal to a positive I1). The
+ * values themselves stay as published.
+ */
+const qualitySchema = z.object({
+  ruleVersion: z.string().nullable(),
+  assessment: z.string(),
+  suspected: z.boolean().nullable(),
+  reasons: z.array(z.object({ code: z.string(), detail: z.string().nullable() })),
+})
 export const ngoStatementSchema = z.object({
   fiscalYear: z.number().int(),
   sourceUrl: z.string().url(),
   dictionaryUrl: z.string().url(),
   indicators: z.array(indicatorSchema),
+  // A review the client cannot read drops the review, never the statement.
+  quality: qualitySchema.nullable().catch(null),
 })
 export type NgoStatement = z.infer<typeof ngoStatementSchema>
 export type NgoIndicator = z.infer<typeof indicatorSchema>
@@ -109,7 +126,7 @@ export const NGO_REGISTRY_PROFILE_QUERY = `query NgoRegistryProfile($registryNum
 
 export const NGO_STATEMENTS_QUERY = `query NgoStatements($cui: CUI!) {
   ngoOrganizationProfile(cui: $cui) {
-    financials { statements { fiscalYear sourceUrl dictionaryUrl indicators { code label value } } }
+    financials { statements { fiscalYear sourceUrl dictionaryUrl indicators { code label value } quality { ruleVersion assessment suspected reasons { code detail } } } }
   }
 }`
 

@@ -398,10 +398,12 @@ function MoneyBand({ finance, index, registry }: { readonly finance: NgoFinanceS
 }
 
 /**
- * A statement left out of the sums, said where its year's column is: a
- * suspected entry error, not a proven one — why it is suspected (its revenue
- * is exactly its fixed assets, or past any non-profit's), the year as
- * reported and without it, and the statement itself where its profile is.
+ * A statement left out of the sums, said where its year's column is: the
+ * hub's own rule (a revenue above 1 bn lei leaves them), then the review — a
+ * value to verify, never a proven error, as the server's review
+ * (`ngo-revenue-v1`) says on the profile; equal to its fixed assets where it
+ * is, which alone excludes nothing. The year as reported and without it, and
+ * the statement itself where its profile is.
  */
 function ExcludedNote({
   statement,
@@ -439,11 +441,11 @@ function ExcludedNote({
       {' '}
       {statement.equalsFixedAssets ? (
         <Trans>
-          {year}: lăsată deoparte {situation} cu {amount}, cât activele ei imobilizate — probabil o greșeală de completare.
+          {year}: lăsată deoparte din sume {situation} cu {amount}, peste pragul de 1 mld. lei; de verificat: e cât activele ei imobilizate.
         </Trans>
       ) : (
         <Trans>
-          {year}: lăsată deoparte {situation} cu {amount}, peste pragul de 1 mld. lei — probabil o greșeală de completare.
+          {year}: lăsată deoparte din sume {situation} cu {amount}, peste pragul de 1 mld. lei, de verificat.
         </Trans>
       )}
       {last && adjusted !== null && reported !== null ? (

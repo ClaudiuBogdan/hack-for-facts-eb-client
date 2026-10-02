@@ -84,13 +84,13 @@ export interface NgoFinanceLeader {
   readonly status: 'dissolved' | 'inLiquidation' | 'deregistered' | null
 }
 
-/** A statement left out of every sum: its revenue, as reported, is suspected an entry error. */
+/** A statement left out of every sum by the hub's rule (a revenue above 1 bn lei): a value to verify, never a proven error. */
 export interface NgoFinanceExcluded {
   readonly year: number
   readonly cui: string
   /** The total revenue reported, lei. */
   readonly revenue: number
-  /** The revenue is exactly the statement's fixed assets (I1): a balance figure typed as revenue, likely. */
+  /** The revenue is exactly the statement's fixed assets (I1): a reason to verify it, which alone excludes nothing. */
   readonly equalsFixedAssets: boolean
   /** The organisation has an NGO profile, where the statement can be read. */
   readonly profile: boolean
@@ -111,7 +111,7 @@ export interface NgoFinanceSummary {
   readonly domains: readonly NgoFinanceDomain[]
   /** Every year with a published file, oldest first. */
   readonly years: readonly NgoFinanceYear[]
-  /** Statements left out of every sum as suspected entry errors (a revenue above 1 bn lei). */
+  /** Statements left out of every sum, whole, by the hub's rule: a revenue above 1 bn lei, to verify. */
   readonly excluded: readonly NgoFinanceExcluded[]
   readonly leaders: readonly NgoFinanceLeader[]
 }

@@ -20,7 +20,7 @@
  * is blank is counted in the `unknown` class, never in `none` (seven in
  * 2025); in the sums it adds nothing.
  *
- * A statement with a revenue above 1 bn lei is suspected an entry error — no
+ * A statement with a revenue above 1 bn lei is a value to verify — no
  * non-profit comes near (the largest, 450 mil. lei in 2025) — and is left out
  * of every sum and named in `excluded`, with whether its revenue repeats its
  * fixed assets (I1, „Active imobilizate – total", read unvalidated, for this) and
@@ -178,7 +178,7 @@ const series = years.map((year) => {
 
 const year = years[years.length - 1]
 const latest = counted(year)
-// The year before as it is summed: an excluded entry error is no base for a change either.
+// The year before as it is summed: an excluded statement is no base for a change either.
 const previous = new Map(counted(year - 1))
 const sum = (pick) => latest.reduce((total, [, statement]) => total + (pick(statement) ?? 0), 0)
 

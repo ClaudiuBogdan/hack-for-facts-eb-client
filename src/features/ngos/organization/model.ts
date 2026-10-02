@@ -175,6 +175,11 @@ export function keyFigures(statement: NgoStatement): Readonly<Record<FigureKey, 
   return Object.fromEntries(Object.entries(FIGURE_LABELS).map(([key, pattern]) => [key, find(pattern)])) as Record<FigureKey, Amount | null>
 }
 
+/** The server flags the statement for review (`quality.suspected`): a signal to verify, never a confirmed error. */
+export function needsReview(statement: NgoStatement | null): boolean {
+  return statement?.quality?.suspected === true
+}
+
 export interface YearPoint {
   readonly year: number
   readonly statement: NgoStatement | null

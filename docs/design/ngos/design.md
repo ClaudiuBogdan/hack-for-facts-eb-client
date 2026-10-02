@@ -941,9 +941,10 @@ say better, and the catalog had one wrong. The owner's decisions:
 - **The 2019 exclusion is a suspected value, not a proven error.** The
   statement's 6,226,050,000 lei of revenue are exactly its fixed assets (I1,
   „Active imobilizate – total", in the 2019 dictionary): the script records
-  that, and whether the organisation has a profile. The chart's note says „lăsată
-  deoparte o situație cu 6,2 mld. lei, cât activele ei imobilizate — probabil
-  o greșeală de completare", links the statement on its profile at its year
+  that, and whether the organisation has a profile. The chart's note says
+  „lăsată deoparte din sume o situație cu 6,2 mld. lei, peste pragul de 1 mld.
+  lei; de verificat: e cât activele ei imobilizate" — the hub's own rule, then
+  the review (§18) — links the statement on its profile at its year
   (Fundația Prințul Paul, CUI 6286387) where the NGO API is on, and gives the
   year as reported and without it (23,9 / 17,7 bn lei).
 - **A blank revenue is unknown, never zero.** The statements file leaves I38
@@ -962,4 +963,35 @@ say better, and the catalog had one wrong. The owner's decisions:
   the profile's „no statements" sentences are translated.
 - **The catalog says the NGO data is served live** (`ngo-core`,
   `apiReady: true`): the landing's „servite live" count includes it.
+
+## 18. The server's review of a statement (2026-10-02)
+
+The server flags statements for review (`financials.statements.quality`,
+rule `ngo-revenue-v1`, live on Chronos dev): `suspected` with its reasons —
+`IMPLAUSIBLE_REVENUE` (I38 above 1 bn lei) and `REVENUE_EQUALS_FIXED_ASSETS`
+(a positive I38 equal to a positive I1). It flags at least 50 statements of
+32 profiles, 2008–2025 (46 of them 2016–2025); of them only Fundația Prințul
+Paul's 2019 passes 1 bn lei, and nearly all the rest are equality alone, with
+I38 between 100 and 2,500,000 lei. `suspected: true` is
+a signal to verify, never a confirmed error; `false` is no matching rule, not a
+certificate; `null`, a dictionary the rules do not cover.
+
+- **The profile says it where the year is read.** Above the open statement:
+  „De verificat: veniturile totale (I38), 6,2 mld. lei, depășesc 1 mld. lei și
+  sunt egale cu activele imobilizate (I1). Un semnal de verificare, nu o
+  eroare confirmată; valorile sunt cele publicate." The revenue rules are said
+  of I38, read by its code; a reason or rule version this client does not know
+  is shown by the server's code and detail („Alt semnal al platformei: …").
+  The revenue chart's year reads „…, de verificat"; the year-by-year table
+  marks its column (a warning icon, and in its name). Every value and label
+  stays as published.
+- **The hub keeps its own rule**, said as such: the summary reads every
+  non-profit filer's file, broader than the profiles, and no sector totals API
+  exists; it leaves out of the sums, whole, only a statement whose revenue
+  passes 1 bn lei, and says the review beside it in the server's words („de
+  verificat"); of the 77 equality cases the full 2016–2025 files hold, the 76
+  below 1 bn lei (100 – 2,500,000 lei) stay in every sum.
+- **Not yet:** where the latest statement is flagged (five profiles in 2025),
+  the profile's figures band, money sentence and meta description show its
+  revenue without the mark; the warning is where a year's statement is read.
 

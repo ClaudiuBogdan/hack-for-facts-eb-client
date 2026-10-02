@@ -136,7 +136,7 @@ describe('NgoHubPage', () => {
     expect(first).toHaveTextContent('Educație')
   })
 
-  it('says how the money is spread, where it comes from, and how it grew, with the entry error it leaves out', () => {
+  it('says how the money is spread, where it comes from, and how it grew, with the statement its rule leaves out', () => {
     renderPage()
     const money = band(/Banii sectorului/)
     expect(money).toHaveTextContent('10 organizații cu venituri de peste 1 mil. lei au 90% din bani. 18 n-au avut niciun venit în 2025.')
@@ -144,7 +144,7 @@ describe('NgoHubPage', () => {
     expect(within(money).getByTestId('ngo-hub-sources')).toBeInTheDocument()
     expect(within(money).getByRole('slider', { name: 'Veniturile sectorului non-profit, pe an, 2023–2025' })).toHaveAttribute('aria-valuetext', '2025: 1,0\u00a0mld. lei (prima publicare)')
     expect(money).toHaveTextContent(
-      'În lei ai fiecărui an, fără ajustare cu inflația. Cu linie întreruptă: 2025, la prima publicare, fără depunerile întârziate pe care le adaugă o revizuire. 2023: lăsată deoparte o situație cu 5,0 mld. lei, cât activele ei imobilizate — probabil o greșeală de completare. Total raportat 5,8 mld. lei; fără ea 800,0 mil. lei.',
+      'În lei ai fiecărui an, fără ajustare cu inflația. Cu linie întreruptă: 2025, la prima publicare, fără depunerile întârziate pe care le adaugă o revizuire. 2023: lăsată deoparte din sume o situație cu 5,0 mld. lei, peste pragul de 1 mld. lei; de verificat: e cât activele ei imobilizate. Total raportat 5,8 mld. lei; fără ea 800,0 mil. lei.',
     )
     // The statement itself, on its organisation's profile, at its year.
     expect(within(money).getByRole('link', { name: 'o situație financiară din 2023, pe profilul organizației' })).toHaveAttribute('href', expect.stringMatching(/^\/ngos\/1\?an=2023/))
@@ -161,7 +161,7 @@ describe('NgoHubPage', () => {
     renderPage({ finance })
     const money = band(/Banii sectorului/)
     expect(money).toHaveTextContent(
-      '2023: lăsată deoparte o situație cu 5,0 mld. lei, peste pragul de 1 mld. lei — probabil o greșeală de completare. 2023: lăsată deoparte o situație cu 2,0 mld. lei, cât activele ei imobilizate — probabil o greșeală de completare. Total raportat 7,8 mld. lei; fără ele 800,0 mil. lei.',
+      '2023: lăsată deoparte din sume o situație cu 5,0 mld. lei, peste pragul de 1 mld. lei, de verificat. 2023: lăsată deoparte din sume o situație cu 2,0 mld. lei, peste pragul de 1 mld. lei; de verificat: e cât activele ei imobilizate. Total raportat 7,8 mld. lei; fără ele 800,0 mil. lei.',
     )
     // Only the one with a profile links its statement.
     expect(within(money).getAllByRole('link', { name: /o situație financiară din 2023/ })).toHaveLength(1)

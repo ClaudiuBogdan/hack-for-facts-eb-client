@@ -24,6 +24,7 @@ import {
   ProfileSources,
   RegistryFacts,
   RevenueSources,
+  StatementReviewNote,
   StatementTable,
   YearSelect,
   YearsChart,
@@ -233,6 +234,7 @@ export function NgoOrganizationPage({
                 <UnfiledYear asked={unfiled} shown={chosen.fiscalYear} />
               </p>
             ) : null}
+            <StatementReviewNote statement={chosen} className="mb-6" />
             <StatementTable statement={chosen} />
           </div>
         </HomeBand>

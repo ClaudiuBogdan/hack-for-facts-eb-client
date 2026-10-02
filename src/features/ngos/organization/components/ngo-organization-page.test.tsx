@@ -132,6 +132,35 @@ describe('NgoOrganizationPage', () => {
     expect(band(/rând cu rând/)).toHaveTextContent('Nicio situație pe platformă pentru 2022; se arată 2024.')
   })
 
+  it('says where the server asks a statement verified — above its rows, on its chart year, in its table column — the values as published', () => {
+    const sorted = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)
+    const [latest, older] = sorted
+    const flagged = {
+      ...older!,
+      quality: {
+        ruleVersion: 'ngo-revenue-v1',
+        assessment: 'assessed',
+        suspected: true,
+        reasons: [{ code: 'REVENUE_EQUALS_FIXED_ASSETS', detail: 'I38 = I1' }],
+      },
+    }
+    const year = older!.fiscalYear
+    const { unmount } = renderPage({ statementsRead: { status: 'ready', statements: [latest!, flagged, ...sorted.slice(2)] }, year })
+    const statement = band(/rând cu rând/)
+    const note = within(statement).getByRole('note')
+    expect(note).toHaveTextContent(/^De verificat: veniturile totale \(I38\), .+ lei, sunt egale cu activele imobilizate \(I1\)\./)
+    expect(note).toHaveTextContent('Un semnal de verificare, nu o eroare confirmată; valorile sunt cele publicate.')
+    expect(screen.getByRole('button', { name: new RegExp(`^${year}: venituri .*, de verificat$`) })).toBeInTheDocument()
+    const column = screen.getByRole('button', { name: `Situația din ${year}, rând cu rând, de verificat` })
+    // The mark is seen, not read: the name says it.
+    expect(column.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
+    expect(screen.getByRole('button', { name: `Situația din ${latest!.fiscalYear}, rând cu rând` }).querySelector('svg')).toBeNull()
+    unmount()
+    // The latest statement, which no rule flags, says nothing.
+    renderPage({ statementsRead: { status: 'ready', statements: [latest!, flagged, ...sorted.slice(2)] } })
+    expect(within(band(/rând cu rând/)).queryByRole('note')).not.toBeInTheDocument()
+  })
+
   it('leaves out a figure the latest form does not give, never a zero, and calls a zero result neither', () => {
     const [latest, ...rest] = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)
     const blank = (pattern: RegExp) => (indicator: NgoIndicator) => (pattern.test(indicator.label) ? { ...indicator, value: null } : indicator)
