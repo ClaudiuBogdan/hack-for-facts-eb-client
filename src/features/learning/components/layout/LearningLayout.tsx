@@ -186,7 +186,7 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
         <div className="border-b border-border/50">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center justify-between py-3 px-4 hover:bg-muted/50 transition-all text-left outline-none group border-none bg-transparent">
+              <button className="w-full flex items-center justify-between py-3 px-4 hover:bg-muted/50 transition-all text-left group border-none bg-transparent">
                 <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] leading-none">
                     {t`Learning Path`}

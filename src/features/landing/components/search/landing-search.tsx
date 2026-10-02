@@ -541,12 +541,10 @@ export function LandingSearch({
             }}
             className={cn(
               // Bare: the group draws the field. Keep room for the query and
-              // wrap it below long or multiple chips on narrow screens. The
-              // outline is forced off because `src/index.css` draws one on
-              // every `:focus-visible` element from outside any layer, where a
-              // plain utility cannot reach it — and a text input is
-              // focus-visible on click. The group draws focus instead.
-              'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden! placeholder:text-muted-foreground md:text-base',
+              // wrap it below long or multiple chips on narrow screens. No
+              // outline of its own: a text input is focus-visible on click
+              // too, and the group draws focus instead.
+              'h-7 min-w-24 flex-1 bg-transparent text-base text-foreground outline-hidden placeholder:text-muted-foreground md:text-base',
             )}
             // A chip narrows the field to a family whose hint the caller never
             // wrote, so the field falls back to the generic one. A fixed scope

@@ -107,7 +107,7 @@ export function Quiz({
                   onClick={() => void handleSelect(option.id)}
                   disabled={isAnswered || isSaving}
                   className={cn(
-                    'relative group w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 outline-none',
+                    'relative group w-full text-left p-4 rounded-2xl border-2 transition-all duration-200',
                     'flex items-center justify-between',
                     // Default clean state
                     !isAnswered && !isSelected && 'bg-white/60 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 shadow-sm',

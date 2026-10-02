@@ -4907,6 +4907,8 @@ const ManualGroupItemCard = memo(forwardRef<HTMLDivElement, Readonly<ManualGroup
                 }}
                 readOnly={!isEditingGroupTitle}
                 disabled={!canEdit}
+                // A label until Rename: no Tab stop with nothing to show or edit.
+                tabIndex={isEditingGroupTitle ? undefined : -1}
                 autoFocus={isEditingGroupTitle}
                 className={cn(
                   'h-7 w-full truncate border-0 bg-transparent px-0 text-sm font-semibold shadow-none outline-none transition-colors focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',

@@ -148,7 +148,8 @@ export function AddFilter({
         )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(92vw,26rem)] p-0">
-        <Command shouldFilter={false}>
+        {/* Room above the field, so it does not sit on the panel's edge. */}
+        <Command shouldFilter={false} className="pt-1.5">
           <CommandInput value={search.term} onValueChange={search.setTerm} placeholder={t`Instituție, firmă, categorie, județ…`} />
           <CommandList className="max-h-[60vh]">
             {term.length < 2 ? (

@@ -35,7 +35,7 @@ export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemPr
                     preload="intent"
                     onClick={onClick}
                     className={cn(
-                        "block w-full px-6 py-4 transition-colors group focus:outline-none",
+                        "block w-full px-6 py-4 transition-colors group outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                         isActive
                             ? "bg-slate-100 dark:bg-slate-600"
                             : "hover:bg-slate-50 dark:hover:bg-slate-700"

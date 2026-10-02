@@ -316,7 +316,7 @@ export const FinancialDataCard: React.FC<FinancialDataCardProps> = ({
               value={currentYear.toString()}
               onValueChange={(val) => onYearChange(parseInt(val, 10))}
             >
-              <SelectTrigger className="w-auto border-0 shadow-none bg-transparent focus:ring-0">
+              <SelectTrigger className="w-auto border-0 shadow-none bg-transparent focus:ring-0 focus-visible:ring-1">
                 <h3 className="text-lg font-semibold">
                   {title} ({dateLabel})
                 </h3>

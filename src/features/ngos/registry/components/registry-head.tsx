@@ -159,7 +159,8 @@ function AddFilter({
         )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(92vw,26rem)] p-0">
-        <Command shouldFilter={false}>
+        {/* Room above the field, so it does not sit on the panel's edge. */}
+        <Command shouldFilter={false} className="pt-1.5">
           <CommandInput value={term} onValueChange={setTerm} placeholder={t`Județ, formă, stare, cuvinte din nume…`} />
           <CommandList className="max-h-[60vh]">
             {term.trim().length < 2 ? (

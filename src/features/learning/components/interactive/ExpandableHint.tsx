@@ -78,7 +78,7 @@ export function ExpandableHint({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between px-6 py-5 text-left transition-colors outline-none",
+          "w-full flex items-center justify-between px-6 py-5 text-left transition-colors focus-visible:-outline-offset-2",
           "hover:bg-zinc-50 dark:hover:bg-zinc-900/50",
           isOpen && "bg-zinc-50/80 dark:bg-zinc-900/80"
         )}

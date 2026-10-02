@@ -182,7 +182,7 @@ function PhaseChip({
         onClick={onClick}
         onKeyDown={handleKeyDown}
         className={cn(
-          'relative w-full flex flex-col items-center gap-3 p-2 rounded-2xl transition-all duration-300 z-10 focus:outline-none group',
+          'relative w-full flex flex-col items-center gap-3 p-2 rounded-2xl transition-all duration-300 z-10 group',
           isSelected ? 'scale-110' : 'hover:scale-105'
         )}
         aria-pressed={isSelected}

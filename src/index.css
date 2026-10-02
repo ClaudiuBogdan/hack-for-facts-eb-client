@@ -212,6 +212,21 @@
     --pnrr-orange: #fbbf24;
     --pnrr-blue: #60a5fa;
   }
+
+  /*
+   * The default focus ring: shown where the browser judges focus should be
+   * visible (the keyboard; any focused text field, by the spec's heuristic).
+   * In the base layer, as shadcn keeps its outline default, so a component's
+   * own outline-hidden or focus-visible style wins over it.
+   */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
@@ -241,16 +256,6 @@
   * {
     scrollbar-width: thin;
     scrollbar-color: hsla(var(--scrollbar-thumb)) hsla(var(--scrollbar-track));
-  }
-
-  /* Remove focus outline for mouse users but keep it for keyboard navigation */
-  *:focus:not(:focus-visible) {
-    outline: none;
-  }
-
-  *:focus-visible {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
   }
 
   body {
@@ -526,3 +531,17 @@ details> :not(summary) {
 @utility rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+/*
+ * Forced colours (Windows High Contrast) drop box shadows, and with them every
+ * focus-visible:ring a component draws in place of the outline it hides. There
+ * the system outline comes back, over any utility: unlayered, so it outranks
+ * the layers.
+ */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+

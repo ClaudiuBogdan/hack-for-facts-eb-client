@@ -569,7 +569,7 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                 >
                   <SelectTrigger
                     aria-label={copy.reportTypeLabel}
-                    className="h-8 w-[210px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                    className="h-8 w-[210px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0 focus-visible:ring-1"
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -602,7 +602,7 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                 >
                   <SelectTrigger
                     aria-label={copy.normalizationLabel}
-                    className="h-8 w-[140px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                    className="h-8 w-[140px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0 focus-visible:ring-1"
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -641,7 +641,7 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                 >
                   <SelectTrigger
                     aria-label={copy.commitmentsMetricLabel}
-                    className="h-8 w-[220px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                    className="h-8 w-[220px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0 focus-visible:ring-1"
                   >
                     <SelectValue />
                   </SelectTrigger>
