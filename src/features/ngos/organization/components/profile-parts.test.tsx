@@ -94,4 +94,3 @@ describe('StatementReviewNote', () => {
     expect(note()).toHaveTextContent('De verificat: platforma marchează această situație pentru verificare.')
   })
 })
-

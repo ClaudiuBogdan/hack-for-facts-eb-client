@@ -4,7 +4,7 @@ import { getSiteUrl } from '@/config/env'
 import { ngoProfileHref } from '@/features/ngos/lib/ngo-address'
 import { translatorFor } from '@/lib/i18n'
 import type { NgoOrganization, NgoStatement } from './api'
-import { keyFigures, latestStatement, placeOf } from './model'
+import { keyFigures, latestStatement, needsReview, placeOf } from './model'
 import { categoryLabel, isMasked, organizationName, purposeText } from './words'
 
 const SHARE_IMAGE_PATH = '/assets/images/share-image.png'
@@ -53,19 +53,29 @@ export function buildNgoProfileHead(
       ? `${new Intl.NumberFormat(english ? 'en-GB' : 'ro-RO', { maximumFractionDigits: 1 }).format(revenue >= 1e6 ? revenue / 1e6 : revenue)} ${revenue >= 1e6 ? translator._(msg`mil. lei`) : translator._(msg`lei`)}`
       : null
   const purpose = purposeText(organization)
-  const described =
-    purpose && !isMasked(purpose)
-      ? purpose.replace(/\s+/gu, ' ').trim()
-      : [
-          place ? translator._(msg`${category} din ${place}.`) : `${category}.`,
-          amount && year ? translator._(msg`Venituri de ${amount} în ${year}, din situațiile financiare publicate.`) : null,
-          cui
-            ? translator._(msg`CUI ${cui}, din Registrul național ONG și ANAF.`)
-            : translator._(msg`Nr. registru ${registryNumber}, din Registrul național ONG.`),
-        ]
-          .filter(Boolean)
-          .join(' ')
-  const description = described.length > DESCRIPTION_LENGTH ? `${described.slice(0, DESCRIPTION_LENGTH - 1).replace(/\s+\S*$/u, '')}…` : described
+  const flagged = needsReview(latest)
+  // The same statement's flag, said right after its amount: its revenue, as published, is to verify.
+  const mark = translator._(msg`de verificat`)
+  const revenueSentence =
+    amount && year
+      ? flagged
+        ? translator._(msg`Venituri de ${amount} în ${year}, de verificat, din situațiile financiare publicate.`)
+        : translator._(msg`Venituri de ${amount} în ${year}, din situațiile financiare publicate.`)
+      : null
+  const shorten = (text: string) => (text.length > DESCRIPTION_LENGTH ? `${text.slice(0, DESCRIPTION_LENGTH - 1).replace(/\s+\S*$/u, '')}…` : text)
+  const facts = (withRevenue: boolean) =>
+    [
+      place ? translator._(msg`${category} din ${place}.`) : `${category}.`,
+      withRevenue ? revenueSentence : null,
+      cui
+        ? translator._(msg`CUI ${cui}, din Registrul național ONG și ANAF.`)
+        : translator._(msg`Nr. registru ${registryNumber}, din Registrul național ONG.`),
+    ]
+      .filter(Boolean)
+      .join(' ')
+  let description = purpose && !isMasked(purpose) ? shorten(purpose.replace(/\s+/gu, ' ').trim()) : shorten(facts(true))
+  // A flagged revenue never goes out without its mark: where the cut would keep the amount and drop the mark, no revenue.
+  if (flagged && amount && description.includes(amount) && !description.includes(mark)) description = shorten(facts(false))
 
   return {
     meta: [

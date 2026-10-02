@@ -145,7 +145,15 @@ describe('NgoOrganizationPage', () => {
       },
     }
     const year = older!.fiscalYear
+    // The fixture's two latest years are consecutive: the flagged one is the latest's year before.
+    expect(latest!.fiscalYear - 1).toBe(year)
     const { unmount } = renderPage({ statementsRead: { status: 'ready', statements: [latest!, flagged, ...sorted.slice(2)] }, year })
+    // Open on the flagged year, the latest's figures and sources stay unmarked; only the change says its base is to verify.
+    const openFigures = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(openFigures).not.toHaveTextContent(new RegExp(`Venituri, ${latest!.fiscalYear}\\s*·\\s*de verificat`))
+    expect(openFigures).toHaveTextContent(`față de ${year}, an de verificat`)
+    expect(band(/De unde vin banii/)).not.toHaveTextContent('după activitate · de verificat')
+    expect(band(/De unde vin banii/)).not.toHaveTextContent('sunt de verificat')
     const statement = band(/rând cu rând/)
     const note = within(statement).getByRole('note')
     expect(note).toHaveTextContent(/^De verificat: veniturile totale \(I38\), .+ lei, sunt egale cu activele imobilizate \(I1\)\./)
@@ -156,9 +164,30 @@ describe('NgoOrganizationPage', () => {
     expect(column.querySelector('svg[aria-hidden="true"]')).not.toBeNull()
     expect(screen.getByRole('button', { name: `Situația din ${latest!.fiscalYear}, rând cu rând` }).querySelector('svg')).toBeNull()
     unmount()
-    // The latest statement, which no rule flags, says nothing.
+    // The latest statement, which no rule flags, says nothing — its figures neither, the year before's flag said only of that year.
     renderPage({ statementsRead: { status: 'ready', statements: [latest!, flagged, ...sorted.slice(2)] } })
     expect(within(band(/rând cu rând/)).queryByRole('note')).not.toBeInTheDocument()
+    const figures = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(figures).toHaveTextContent(`față de ${year}, an de verificat`)
+    expect(figures).not.toHaveTextContent(new RegExp(`Venituri, ${latest!.fiscalYear}\\s*·\\s*de verificat`))
+    expect(band(/De unde vin banii/)).not.toHaveTextContent('sunt de verificat')
+  })
+
+  it('marks a flagged latest statement wherever its revenue shows: figures, money sentence, sources, statement', () => {
+    const [latest, ...rest] = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)
+    const flagged = {
+      ...latest!,
+      quality: { ruleVersion: 'ngo-revenue-v1', assessment: 'assessed', suspected: true, reasons: [{ code: 'REVENUE_EQUALS_FIXED_ASSETS', detail: 'I38 = I1' }] },
+    }
+    const year = latest!.fiscalYear
+    renderPage({ statementsRead: { status: 'ready', statements: [flagged, ...rest] } })
+    const figures = screen.getByRole('region', { name: 'Cifre-cheie' })
+    // On its own label, as the sources label carries it.
+    expect(figures).toHaveTextContent(new RegExp(`Venituri, ${year}\\s*·\\s*de verificat`))
+    const money = band(/De unde vin banii/)
+    expect(money).toHaveTextContent(`Veniturile din ${year} sunt de verificat: un semnal al platformei, nu o eroare confirmată.`)
+    expect(money).toHaveTextContent(`Veniturile din ${year}, după activitate · de verificat`)
+    expect(within(band(/rând cu rând/)).getByRole('note')).toHaveTextContent('De verificat:')
   })
 
   it('leaves out a figure the latest form does not give, never a zero, and calls a zero result neither', () => {

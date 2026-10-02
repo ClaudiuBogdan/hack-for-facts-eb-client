@@ -118,4 +118,3 @@ describe('the review', () => {
     expect(needsReview(null)).toBe(false)
   })
 })
-

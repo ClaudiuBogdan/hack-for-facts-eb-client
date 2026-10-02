@@ -991,7 +991,16 @@ certificate; `null`, a dictionary the rules do not cover.
   passes 1 bn lei, and says the review beside it in the server's words („de
   verificat"); of the 77 equality cases the full 2016–2025 files hold, the 76
   below 1 bn lei (100 – 2,500,000 lei) stay in every sum.
-- **Not yet:** where the latest statement is flagged (five profiles in 2025),
-  the profile's figures band, money sentence and meta description show its
-  revenue without the mark; the warning is where a year's statement is read.
-
+- **The latest statement's figures say it too** (2026-10-02, five profiles
+  in 2025): where the latest statement is flagged, the figures band's revenue
+  label reads „Venituri, 2025 · de verificat", the money sentence adds
+  „Veniturile din 2025 sunt de verificat: un semnal al platformei, nu o eroare
+  confirmată.", the revenue-by-activity label „· de verificat", and the
+  description „…, de verificat, din situațiile financiare publicate." — a
+  description cut short never keeps the revenue without its mark (it drops
+  both). Each mark is the flag of the very statement the figure comes from: a
+  year chosen in the statement band (6286387, 2019) marks only that year's
+  rows; a flagged year before is said only of the change („față de 2024, an
+  de verificat"). The hub's ten leaders, read from the static summary, match
+  their 2025 statements on the API exactly and none of their 2024–2025
+  statements is flagged.

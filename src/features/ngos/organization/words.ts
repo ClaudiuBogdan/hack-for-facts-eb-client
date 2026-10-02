@@ -3,7 +3,7 @@ import { msg, t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { formatNgoChange } from '@/features/ngos/hub/ngo-format'
 import type { NgoIdentityMethod, NgoOrganization, NgoStatement } from './api'
-import { displayNgoName, keyFigures, latestStatement, resultOf, yearSeries, type RegistryStatus } from './model'
+import { displayNgoName, keyFigures, latestStatement, needsReview, resultOf, yearSeries, type RegistryStatus } from './model'
 
 /**
  * What the profile says in words and figures before any component draws it:
@@ -145,6 +145,10 @@ export interface ProfileFacts {
   readonly previousFiled: boolean
   readonly filed: number
   readonly span: readonly [number, number] | null
+  /** The server flags this year's statement for review: its revenue is to verify (never a confirmed error). */
+  readonly review: boolean
+  /** The year before's statement, the base of `change`, is flagged for review. */
+  readonly previousReview: boolean
 }
 
 export function profileFacts(statements: readonly NgoStatement[]): ProfileFacts | null {
@@ -163,5 +167,8 @@ export function profileFacts(statements: readonly NgoStatement[]): ProfileFacts 
     previousFiled: Boolean(previous?.statement),
     filed: statements.length,
     span: series.length > 0 ? [series[0]!.year, series[series.length - 1]!.year] : null,
+    // Each flag the server's, on the very statement the figure comes from: the latest, and the year before for the change.
+    review: needsReview(statement),
+    previousReview: needsReview(previous?.statement ?? null),
   }
 }
