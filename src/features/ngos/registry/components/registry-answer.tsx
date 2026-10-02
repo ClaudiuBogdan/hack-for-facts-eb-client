@@ -15,6 +15,7 @@ import { activeNumberLocale } from '@/features/statistics/lib/format'
 import { cn } from '@/lib/utils'
 import {
   activeFilters,
+  CATEGORY_KEYS,
   countText,
   countyLabel,
   drilled,
@@ -36,6 +37,7 @@ import { placeKey } from '../place'
 import { groupRows, isUnplaced, townLabel, unplacedOn, yearPoints, type RegistryFigure, type Tally } from '../counts'
 import type { RegistryReadState } from '../use-registry-read'
 import { ngoProfileLink } from '@/features/ngos/lib/ngo-address'
+import { categoryLabel as formLabel } from '@/features/ngos/organization/words'
 
 /**
  * The registry page's answer: the figures band, the tabs (the records, or
@@ -258,7 +260,9 @@ function rowMeta(row: RegistryRecord, query: RegistryQuery, counties: NgoRegistr
   // „Arad, Arad" says the county twice: the county's name alone (with its diacritics) where the town bears it.
   const place = town && county && placeKey(town) === placeKey(county) ? county : [town, county].filter(Boolean).join(', ')
   const status = query.status === null && statusKeyOf(row.sourceRegistryStatus) !== 'registered' ? statusWord(row.sourceRegistryStatus) : null
-  return [row.legalForm, place || null, status].filter(Boolean).join(' · ')
+  // The form in the reader's language („Association"), as the profile names it; the source's own text where it is none of the five.
+  const form = row.category && (CATEGORY_KEYS as readonly string[]).includes(row.category) ? formLabel(row.category) : row.legalForm
+  return [form, place || null, status].filter(Boolean).join(' · ')
 }
 
 /**

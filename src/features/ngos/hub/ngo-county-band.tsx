@@ -73,8 +73,10 @@ export function NgoCountyBand({
           ramp: 'steps',
           caveat: `${i18n._(msg`După anul din numărul de registru; media țării cuprinde și intrările fără județ.`)} ${population}`,
           source,
+          // The registry cannot filter by year (server request: docs/design/ngos/server-request-registry-year-filter.md).
+          ...(registry ? { open: i18n._(msg`Toate înregistrările din județ, din toți anii`) } : {}),
         }
-  }, [layerKey, year, unplaced, summary.status.registered, i18n])
+  }, [layerKey, year, unplaced, summary.status.registered, registry, i18n])
   const countyLink = useMemo(() => {
     if (!registry) return null
     const spelling = new Map(summary.counties.map((county) => [county.code, county.source]))

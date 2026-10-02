@@ -30,6 +30,7 @@ export function HubCountyRank({
   onActiveChange,
   swatchOf,
   countyLink,
+  open,
   className,
 }: {
   readonly layer: StatisticsHubCountyLayer
@@ -37,6 +38,8 @@ export function HubCountyRank({
   readonly unit?: string
   /** Where a county's row opens; the INS series by default; `null`, a plain row. */
   readonly countyLink?: ((code: string) => LinkOptions) | null
+  /** What a row's link opens, where it is not the county's data: said to a screen reader after the row (the map's tooltip shows it). */
+  readonly open?: string
   /** How many counties each end of the collapsed list shows. */
   readonly edge?: number
   readonly activeCode?: string
@@ -138,6 +141,7 @@ export function HubCountyRank({
             className={rowClass}
           >
             {cells}
+            {open ? <span className="sr-only">. {open}</span> : null}
           </Link>
         ) : (
           <div onPointerEnter={(event) => hoverOnly(event, county.code)} onPointerLeave={(event) => hoverOnly(event, undefined)} className={rowClass}>

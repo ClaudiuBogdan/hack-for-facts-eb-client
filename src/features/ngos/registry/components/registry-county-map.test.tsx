@@ -87,7 +87,8 @@ describe('RegistryCountyMap', () => {
     render(<RegistryCountyMap query={EMPTY_QUERY} counties={NGO_REGISTRY_SUMMARY.counties} tally={tally([['CLUJ', 12]], 0)} />)
     fireEvent.pointerEnter(screen.getByRole('link', { name: /^Județul Cluj/ }), { pointerType: 'mouse' })
     const tooltip = document.querySelector<HTMLElement>('[data-county-tooltip]')!
-    expect(tooltip).toHaveTextContent(/^Județul Cluj12 înregistrări\s*locul 1 din 42$/)
+    // And what a click does, the county narrowing the selection rather than opening its data.
+    expect(tooltip).toHaveTextContent(/^Județul Cluj12 înregistrări\s*locul 1 din 42Arată doar acest județ →$/)
   })
 
   it('names the one class by its value where no entry has a county: every county at 0', () => {

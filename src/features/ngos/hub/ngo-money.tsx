@@ -11,7 +11,8 @@ import { SIZE_LABEL } from './ngo-hub-labels'
  * The statements by revenue class: how many organisations each class is, and
  * how much of the year's revenue it holds — of the headline total, so the two
  * agree. The few statements below zero hold no share of it (a dash, not a
- * negative percent). The caller's caption names the classes.
+ * negative percent), nor do those whose revenue is blank: unknown, drawn
+ * paler, never zero. The caller's caption names the classes.
  */
 export function NgoSizeTable({ sizes, className }: { readonly sizes: readonly NgoFinanceSize[]; readonly className?: string }) {
   const { i18n } = useLingui()
@@ -33,17 +34,22 @@ export function NgoSizeTable({ sizes, className }: { readonly sizes: readonly Ng
         </tr>
       </thead>
       <tbody className="divide-y divide-border/70">
-        {sizes.map((row) => (
-          <tr key={row.key}>
-            <th scope="row" className="whitespace-nowrap py-2.5 pl-1 text-left font-normal text-foreground">
-              {i18n._(SIZE_LABEL[row.key])}
-            </th>
-            <td className="py-2.5 pl-3 text-right tabular-nums text-foreground">{share(row.statements, statements)}</td>
-            <td className="py-2.5 pl-3 pr-1 text-right font-semibold tabular-nums text-foreground">
-              {row.revenue < 0 ? '—' : share(row.revenue, revenue)}
-            </td>
-          </tr>
-        ))}
+        {sizes.map((row) => {
+          const unknown = row.key === 'unknown'
+          // A class that holds no statement this year (no blank revenue) is not drawn: an empty row says nothing.
+          if (unknown && row.statements === 0) return null
+          return (
+            <tr key={row.key} className={cn(unknown && 'text-muted-foreground')}>
+              <th scope="row" className={cn('whitespace-nowrap py-2.5 pl-1 text-left font-normal', !unknown && 'text-foreground')}>
+                {i18n._(SIZE_LABEL[row.key])}
+              </th>
+              <td className={cn('py-2.5 pl-3 text-right tabular-nums', !unknown && 'text-foreground')}>{share(row.statements, statements)}</td>
+              <td className={cn('py-2.5 pl-3 pr-1 text-right tabular-nums', !unknown && 'font-semibold text-foreground')}>
+                {row.revenue < 0 || unknown ? '—' : share(row.revenue, revenue)}
+              </td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   )

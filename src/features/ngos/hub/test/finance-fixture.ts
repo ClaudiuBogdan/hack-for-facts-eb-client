@@ -38,7 +38,7 @@ export function financeFixture(overrides: Partial<NgoFinanceSummary> = {}): NgoF
       { year: 2024, statements: 95, revenue: 900_000_000, published: '2026-06-24', firstRelease: false },
       { year: 2025, statements: 100, revenue: 1_000_000_000, published: '2026-06-11', firstRelease: true },
     ],
-    excluded: [{ year: 2023, cui: '1', revenue: 5_000_000_000 }],
+    excluded: [{ year: 2023, cui: '1', revenue: 5_000_000_000, equalsFixedAssets: true, profile: true }],
     leaders: [
       { cui: '100', name: 'ASOCIATIA A', county: 'CJ', domain: 'social', revenue: 200_000_000, previous: 100_000_000, status: null },
       { cui: '200', name: 'FUNDATIA B', county: null, domain: 'general', revenue: 150_000_000, previous: null, status: 'dissolved' },

@@ -153,6 +153,23 @@ describe('NgoRegistryListPage', () => {
     expect(await screen.findByText(/county=Atlantida/)).toBeInTheDocument()
   })
 
+  it('names a row’s legal form in the reader’s language from its category, the source’s text only for a form it does not know', async () => {
+    const page = {
+      edges: [
+        { cursor: '0', node: row({ id: 'f', name: 'FUNDATIA A', category: 'foundation', legalForm: 'FUNDATIE (text sursă)' }) },
+        { cursor: '1', node: row({ id: 'x', name: 'ASOCIATIA B', category: 'altceva', legalForm: 'Formă necunoscută' }) },
+      ],
+      pageInfo: { hasNextPage: false, endCursor: '1' },
+      snapshot,
+    }
+    api.fetchRegistryRecords.mockResolvedValue(page)
+    renderPage({ q: 'fundatia' }, null)
+    const known = (await screen.findByRole('link', { name: 'FUNDATIA A' })).closest('td')!
+    expect(known).toHaveTextContent(/Fundație ·/)
+    expect(known).not.toHaveTextContent('text sursă')
+    expect(screen.getByRole('link', { name: 'ASOCIATIA B' }).closest('td')).toHaveTextContent(/Formă necunoscută ·/)
+  })
+
   it('reads in the browser what the server did not, the records first', async () => {
     api.fetchRegistryRecords.mockResolvedValue(firstPage)
     renderPage({ q: 'asociatia' }, null)

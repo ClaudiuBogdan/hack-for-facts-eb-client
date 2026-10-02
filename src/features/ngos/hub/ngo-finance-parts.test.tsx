@@ -100,6 +100,19 @@ describe('the money', () => {
     ])
   })
 
+  it('keeps a blank revenue apart from no revenue: its own row, no share of the money', () => {
+    const sizes = FINANCE.sizes.map((size) => (size.key === 'none' ? { ...size, statements: 16 } : size)).concat({ key: 'unknown', statements: 2, revenue: 0 })
+    render(<NgoSizeTable sizes={sizes} />)
+    const rows = within(screen.getByTestId('ngo-hub-sizes')).getAllByRole('row')
+    expect(rows.map((row) => row.textContent)).toContain('niciun venit16%0,0%')
+    expect(rows[rows.length - 1]?.textContent).toBe('necompletat2,0%—')
+  })
+
+  it('draws no unknown row in a year with no blank revenue', () => {
+    render(<NgoSizeTable sizes={[...FINANCE.sizes, { key: 'unknown', statements: 0, revenue: 0 }]} />)
+    expect(within(screen.getByTestId('ngo-hub-sizes')).queryByText('necompletat')).not.toBeInTheDocument()
+  })
+
   it('says where the money comes from, the three sources adding up to the year', () => {
     render(<NgoSourceSplit summary={FINANCE} />)
     const rows = within(screen.getByTestId('ngo-hub-sources')).getAllByRole('listitem')

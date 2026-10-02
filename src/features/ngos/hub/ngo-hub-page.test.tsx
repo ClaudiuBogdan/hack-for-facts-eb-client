@@ -120,7 +120,7 @@ describe('NgoHubPage', () => {
   it('says what NGOs do, ranked by organisations until the reader asks for revenue, kept in the URL', () => {
     renderPage()
     const domains = band(/Ce fac organizațiile non-profit/)
-    expect(domains).toHaveTextContent('Cele mai multe sunt în sport: 20. Cei mai mulți bani merg în educație: 400,0 mil. lei.')
+    expect(domains).toHaveTextContent('Dintre organizațiile cu un domeniu precis, cele mai multe sunt în sport: 20, iar cele mai mari venituri declarate le au cele din educație: 400,0 mil. lei.')
     const toggle = within(domains).getByRole('radiogroup', { name: 'Domeniile după' })
     expect(within(toggle).getByRole('radio', { name: 'Organizații' })).toHaveAttribute('aria-checked', 'true')
     fireEvent.click(within(toggle).getByRole('radio', { name: 'Venituri' }))
@@ -144,9 +144,27 @@ describe('NgoHubPage', () => {
     expect(within(money).getByTestId('ngo-hub-sources')).toBeInTheDocument()
     expect(within(money).getByRole('slider', { name: 'Veniturile sectorului non-profit, pe an, 2023–2025' })).toHaveAttribute('aria-valuetext', '2025: 1,0\u00a0mld. lei (prima publicare)')
     expect(money).toHaveTextContent(
-      'În lei ai fiecărui an, fără ajustare cu inflația. Cu linie întreruptă: 2025, la prima publicare, fără depunerile întârziate pe care le adaugă o revizuire. 2023 fără o situație cu 5,0 mld. lei, o eroare de raportare.',
+      'În lei ai fiecărui an, fără ajustare cu inflația. Cu linie întreruptă: 2025, la prima publicare, fără depunerile întârziate pe care le adaugă o revizuire. 2023: lăsată deoparte o situație cu 5,0 mld. lei, cât activele ei imobilizate — probabil o greșeală de completare. Total raportat 5,8 mld. lei; fără ea 800,0 mil. lei.',
     )
+    // The statement itself, on its organisation's profile, at its year.
+    expect(within(money).getByRole('link', { name: 'o situație financiară din 2023, pe profilul organizației' })).toHaveAttribute('href', expect.stringMatching(/^\/ngos\/1\?an=2023/))
     expect(money.querySelectorAll('[data-provisional]')).toHaveLength(1)
+  })
+
+  it('says why a statement is suspected, and both totals once for a year with two, unlinked where the profile is not there', () => {
+    const finance = financeFixture({
+      excluded: [
+        { year: 2023, cui: '1', revenue: 5_000_000_000, equalsFixedAssets: false, profile: false },
+        { year: 2023, cui: '2', revenue: 2_000_000_000, equalsFixedAssets: true, profile: true },
+      ],
+    })
+    renderPage({ finance })
+    const money = band(/Banii sectorului/)
+    expect(money).toHaveTextContent(
+      '2023: lăsată deoparte o situație cu 5,0 mld. lei, peste pragul de 1 mld. lei — probabil o greșeală de completare. 2023: lăsată deoparte o situație cu 2,0 mld. lei, cât activele ei imobilizate — probabil o greșeală de completare. Total raportat 7,8 mld. lei; fără ele 800,0 mil. lei.',
+    )
+    // Only the one with a profile links its statement.
+    expect(within(money).getAllByRole('link', { name: /o situație financiară din 2023/ })).toHaveLength(1)
   })
 
   it('colours the counties per 10,000 residents by default, and the year’s new ones from the URL', () => {

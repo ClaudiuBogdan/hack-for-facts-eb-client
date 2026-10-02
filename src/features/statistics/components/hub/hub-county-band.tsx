@@ -56,7 +56,11 @@ export interface HubCountyBandDefinition {
   readonly caveat: ReactNode
   /** The source, after the caveat; `null` where the page names it once already. */
   readonly source: ReactNode
-  /** What a held county's link does, where it does not open the county's data („Deschide datele județului"). */
+  /**
+   * What a county's link does, where it does not open the county's data
+   * („Deschide datele județului"): the held tooltip's link, a line in the
+   * hover tooltip and the end of the county's name.
+   */
   readonly open?: string
 }
 
@@ -276,7 +280,8 @@ export function HubCountyBand({
                   <Link
                     key={shape.code}
                     {...linkOf(county.code)}
-                    aria-label={name}
+                    // Where the link does something of its own („Toate înregistrările din județ, din toți anii"), its name says so.
+                    aria-label={definition.open ? `${name}. ${definition.open}` : name}
                     onPointerDown={(event) => {
                       pointerType.current = event.pointerType
                     }}
@@ -397,6 +402,10 @@ export function HubCountyBand({
                   <dd className="text-right tabular-nums text-foreground">{withUnit(layer.national)}</dd>
                 </dl>
               ) : null}
+              {!held && linkOf && definition.open ? (
+                // What a click opens, where it is not the county's own data: the pointer's reader sees it before clicking.
+                <p className="mt-2 border-t pt-2 text-muted-foreground">{definition.open} →</p>
+              ) : null}
               {held && linkOf ? (
                 <p className="mt-2 border-t pt-2">
                   <Link {...linkOf(activeCounty.code)} className="font-medium text-primary underline-offset-4 hover:underline">
@@ -445,7 +454,15 @@ export function HubCountyBand({
       </div>
       {list ? (
         <div className="min-w-0 lg:col-span-5 lg:col-start-8" data-reveal>
-          <HubCountyRank layer={layer} unit={unit} activeCode={active ?? undefined} onActiveChange={pointAt} swatchOf={swatchOf} countyLink={linkOf} />
+          <HubCountyRank
+            layer={layer}
+            unit={unit}
+            activeCode={active ?? undefined}
+            onActiveChange={pointAt}
+            swatchOf={swatchOf}
+            countyLink={linkOf}
+            {...(definition.open ? { open: definition.open } : {})}
+          />
         </div>
       ) : null}
     </div>

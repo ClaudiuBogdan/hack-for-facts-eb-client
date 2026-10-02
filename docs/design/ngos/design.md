@@ -924,3 +924,42 @@ only; the profile no longer reads the mock profile's `tab`, `evidence` and
 `features/social-service-provider-discovery.md` and
 `features/evidence-trail-source-citations.md`, to be built on the server's
 data once it serves accredited social services.
+
+## 17. The audit's corrections (2026-10-02)
+
+An outside audit of the hub, registry and profiles (2026-10-02) reconciled
+every figure it checked against the official files; it found five things to
+say better, and the catalog had one wrong. The owner's decisions:
+
+- **The domains' sentence names its scope.** The leading domains are picked
+  among the domains that say what an organisation does — not the catch-all
+  „Fără domeniu precis" (27,946 filers, 10,9 bn lei), not the unclassified
+  rest — and the money is revenue the organisations declared, not money that
+  „goes" somewhere: „Dintre organizațiile cu un domeniu precis, cele mai multe
+  sunt în sport…, iar cele mai mari venituri declarate le au cele din
+  educație…" — one sentence, so the scope covers the money too.
+- **The 2019 exclusion is a suspected value, not a proven error.** The
+  statement's 6,226,050,000 lei of revenue are exactly its fixed assets (I1,
+  „Active imobilizate – total", in the 2019 dictionary): the script records
+  that, and whether the organisation has a profile. The chart's note says „lăsată
+  deoparte o situație cu 6,2 mld. lei, cât activele ei imobilizate — probabil
+  o greșeală de completare", links the statement on its profile at its year
+  (Fundația Prințul Paul, CUI 6286387) where the NGO API is on, and gives the
+  year as reported and without it (23,9 / 17,7 bn lei).
+- **A blank revenue is unknown, never zero.** The statements file leaves I38
+  blank for seven 2025 filers: they are the `unknown` class („necompletat",
+  no share of the money), not among the 14,177 with no revenue. The parser
+  (`scripts/lib/ngo-statements.mjs`) is tested for it.
+- **The „Noi în 2025" county says it opens every year.** The registry has no
+  year filter; until the server adds one
+  (`server-request-registry-year-filter.md`) the link says „Toate
+  înregistrările din județ, din toți anii" — in the county's name, the hover
+  tooltip, the held link and the ranked list's rows (`HubCountyBand`'s
+  `open`). The registry's own county map, whose counties narrow the
+  selection, says „Arată doar acest județ" the same way.
+- **English is English.** Registry rows name the legal form as the profile
+  does („Association"), the source's text only for a form outside the five;
+  the profile's „no statements" sentences are translated.
+- **The catalog says the NGO data is served live** (`ngo-core`,
+  `apiReady: true`): the landing's „servite live" count includes it.
+

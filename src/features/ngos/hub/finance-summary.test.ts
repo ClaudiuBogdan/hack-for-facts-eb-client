@@ -18,9 +18,11 @@ describe('NGO_FINANCE_SUMMARY', () => {
     expect(sum(FINANCE.sizes.map((size) => size.revenue))).toBe(FINANCE.revenue)
     expect(sum(FINANCE.domains.map((domain) => domain.statements))).toBe(FINANCE.statements)
     expect(sum(FINANCE.domains.map((domain) => domain.revenue))).toBe(FINANCE.revenue)
-    const without = FINANCE.sizes.filter((size) => size.key === 'none' || size.key === 'negative').reduce((total, size) => total + size.statements, 0)
+    // No revenue, a negative one, or a blank one (unknown, never counted as none).
+    const without = FINANCE.sizes.filter((size) => size.key === 'none' || size.key === 'negative' || size.key === 'unknown').reduce((total, size) => total + size.statements, 0)
     expect(FINANCE.statements - without).toBe(FINANCE.withRevenue)
     expect(FINANCE.sizes.find((size) => size.key === 'none')?.revenue).toBe(0)
+    expect(FINANCE.sizes.find((size) => size.key === 'unknown')?.revenue ?? 0).toBe(0)
     expect(FINANCE.sizes.find((size) => size.key === 'negative')?.revenue ?? 0).toBeLessThanOrEqual(0)
   })
 

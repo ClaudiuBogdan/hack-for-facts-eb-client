@@ -9,7 +9,7 @@ import { getUserLocale } from '@/lib/utils'
 
 /**
  * Provenance — the home of every figure that describes *us* rather than the
- * country. Saying "5 servite live" out of 23 registered datasets only works
+ * country. Saying "6 servite live" out of 23 registered datasets only works
  * next to the sentence that explains it; left in the facts strip it reads as
  * a shortfall. `DESIGN.md` §Data Trust makes stating it at all a requirement.
  *

@@ -410,7 +410,7 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
       'docs/design/ngos/features/evidence-trail-source-citations.md',
       'docs/design/ngos/features/public-funding-cross-links.md',
     ],
-    apiReady: false,
+    apiReady: true,
     mockDataAvailable: false,
     privacySensitive: false,
   },

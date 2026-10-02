@@ -49,6 +49,7 @@ export const SIZE_LABEL: Readonly<Record<NgoFinanceSizeKey, MessageDescriptor>> 
   under100k: msg`10.000–100.000`,
   under1m: msg`100.000–1 mil.`,
   over1m: msg`peste 1 mil.`,
+  unknown: msg`necompletat`,
 }
 
 /** A leader whose registry entry has closed since the year it led. */

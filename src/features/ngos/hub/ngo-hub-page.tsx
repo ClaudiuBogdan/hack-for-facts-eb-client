@@ -14,7 +14,7 @@ import { HubFiguresBand, type HubFact } from '@/features/statistics/components/h
 import { cn } from '@/lib/utils'
 import type { NgoHubDomainMetric, NgoHubLayerKey, NgoLandingSearch } from '@/schemas/ngos'
 import { comparableRevenue, firstReleaseYears, leadingDomains, sizeClass } from './finance-figures'
-import type { NgoFinanceSummary } from './finance-summary-types'
+import type { NgoFinanceExcluded, NgoFinanceSummary } from './finance-summary-types'
 import { NgoCountyBand } from './ngo-county-band'
 import { NgoDomainRows } from './ngo-domains'
 import { formatNgoChange, formatNgoDate, formatNgoMoneyText, formatNgoMoneyTick, formatNgoNumber, formatNgoShare } from './ngo-format'
@@ -121,7 +121,7 @@ export function NgoHubPage({
       </HomeBand>
 
       <DomainsBand finance={finance} index={indexOf('ce-fac')} metric={metric} onMetric={(value) => choose('domenii', value, DEFAULT_METRIC)} />
-      <MoneyBand finance={finance} index={indexOf('bani')} />
+      <MoneyBand finance={finance} index={indexOf('bani')} registry={registry} />
 
       <RegistryBand summary={summary} index={indexOf('registru')} registry={registry} />
 
@@ -287,7 +287,8 @@ function DomainsBand({
             lede={
               most && richest ? (
                 <Trans>
-                  Cele mai multe sunt în {mostDomain}: {mostCount}. Cei mai mulți bani merg în {richestDomain}: {richestRevenue}.
+                  Dintre organizațiile cu un domeniu precis, cele mai multe sunt în {mostDomain}: {mostCount}, iar cele mai mari venituri
+                  declarate le au cele din {richestDomain}: {richestRevenue}.
                 </Trans>
               ) : null
             }
@@ -312,7 +313,7 @@ function DomainsBand({
   )
 }
 
-function MoneyBand({ finance, index }: { readonly finance: NgoFinanceSummary; readonly index: string }) {
+function MoneyBand({ finance, index, registry }: { readonly finance: NgoFinanceSummary; readonly index: string; readonly registry: boolean }) {
   const year = finance.year
   const large = sizeClass(finance, 'over1m')
   const none = sizeClass(finance, 'none')
@@ -387,7 +388,7 @@ function MoneyBand({ finance, index }: { readonly finance: NgoFinanceSummary; re
               </>
             ) : null}
             {excluded.map((statement) => (
-              <ExcludedNote key={`${statement.year}-${statement.cui}`} year={statement.year} revenue={statement.revenue} />
+              <ExcludedNote key={`${statement.year}-${statement.cui}`} statement={statement} finance={finance} linked={registry} />
             ))}
           </p>
         </div>
@@ -396,15 +397,69 @@ function MoneyBand({ finance, index }: { readonly finance: NgoFinanceSummary; re
   )
 }
 
-/** A statement left out of the sums as an entry error, said where its year's column is. */
-function ExcludedNote({ year, revenue }: { readonly year: number; readonly revenue: number }) {
-  const amount = formatNgoMoneyText(revenue)
+/**
+ * A statement left out of the sums, said where its year's column is: a
+ * suspected entry error, not a proven one — why it is suspected (its revenue
+ * is exactly its fixed assets, or past any non-profit's), the year as
+ * reported and without it, and the statement itself where its profile is.
+ */
+function ExcludedNote({
+  statement,
+  finance,
+  linked,
+}: {
+  readonly statement: NgoFinanceExcluded
+  readonly finance: NgoFinanceSummary
+  /** The NGO API is on: the profile can open. */
+  readonly linked: boolean
+}) {
+  const year = statement.year
+  const amount = formatNgoMoneyText(statement.revenue)
+  const sameYear = finance.excluded.filter((entry) => entry.year === year)
+  const adjusted = finance.years.find((point) => point.year === year)?.revenue ?? null
+  const reported = adjusted === null ? null : adjusted + sameYear.reduce((sum, entry) => sum + entry.revenue, 0)
+  // The year's totals once, after its last excluded statement.
+  const last = sameYear[sameYear.length - 1] === statement
+  const situation = statement.profile && linked ? (
+    <Link
+      to="/ngos/$cui"
+      params={{ cui: statement.cui }}
+      search={{ an: year }}
+      // In a list of links „o situație" says nothing; its name says which, and still starts with what it shows.
+      aria-label={t`o situație financiară din ${year}, pe profilul organizației`}
+      className="underline underline-offset-4 hover:text-foreground"
+    >
+      <Trans>o situație</Trans>
+    </Link>
+  ) : (
+    <Trans>o situație</Trans>
+  )
   return (
     <>
       {' '}
-      <Trans>
-        {year} fără o situație cu {amount}, o eroare de raportare.
-      </Trans>
+      {statement.equalsFixedAssets ? (
+        <Trans>
+          {year}: lăsată deoparte {situation} cu {amount}, cât activele ei imobilizate — probabil o greșeală de completare.
+        </Trans>
+      ) : (
+        <Trans>
+          {year}: lăsată deoparte {situation} cu {amount}, peste pragul de 1 mld. lei — probabil o greșeală de completare.
+        </Trans>
+      )}
+      {last && adjusted !== null && reported !== null ? (
+        <>
+          {' '}
+          {sameYear.length === 1 ? (
+            <Trans>
+              Total raportat {formatNgoMoneyText(reported)}; fără ea {formatNgoMoneyText(adjusted)}.
+            </Trans>
+          ) : (
+            <Trans>
+              Total raportat {formatNgoMoneyText(reported)}; fără ele {formatNgoMoneyText(adjusted)}.
+            </Trans>
+          )}
+        </>
+      ) : null}
     </>
   )
 }

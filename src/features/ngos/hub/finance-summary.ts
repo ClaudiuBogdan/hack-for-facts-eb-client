@@ -19,11 +19,12 @@ export const NGO_FINANCE_SUMMARY: NgoFinanceSummary = {
   },
   sizes: [
     { key: 'negative', statements: 23, revenue: -1645308 },
-    { key: 'none', statements: 14184, revenue: 0 },
+    { key: 'none', statements: 14177, revenue: 0 },
     { key: 'under10k', statements: 8321, revenue: 32603620 },
     { key: 'under100k', statements: 18736, revenue: 791693978 },
     { key: 'under1m', statements: 15160, revenue: 5003597072 },
     { key: 'over1m', statements: 4943, revenue: 27694718614 },
+    { key: 'unknown', statements: 7, revenue: 0 },
   ],
   domains: [
     { key: 'general', statements: 27946, revenue: 10906948098 },
@@ -53,7 +54,7 @@ export const NGO_FINANCE_SUMMARY: NgoFinanceSummary = {
     { year: 2025, statements: 61367, revenue: 33520967976, published: '2026-06-11', firstRelease: true },
   ],
   excluded: [
-    { year: 2019, cui: '6286387', revenue: 6226050000 },
+    { year: 2019, cui: '6286387', revenue: 6226050000, equalsFixedAssets: true, profile: true },
   ],
   leaders: [
     { cui: '7681180', name: 'ASOCIATIA BIROUL ASIGURATORILOR DE AUTOVEHICULE DIN ROMANIA', county: 'B', domain: 'professional', revenue: 449691812, previous: 467016528, status: null },
