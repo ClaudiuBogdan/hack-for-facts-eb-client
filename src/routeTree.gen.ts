@@ -26,7 +26,6 @@ import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-
 import { Route as JustitieRouteImport } from './routes/justitie'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as NgosRouteImport } from './routes/ngos'
-import { Route as OngUriRouteImport } from './routes/ong-uri'
 import { Route as PnrrRouteImport } from './routes/pnrr'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProcurementRouteRouteImport } from './routes/procurement/route'
@@ -69,10 +68,6 @@ import { Route as LegislationGuideRouteImport } from './routes/legislation/guide
 import { Route as LegislationSearchRouteImport } from './routes/legislation/search'
 import { Route as NgosIndexRouteImport } from './routes/ngos/index'
 import { Route as NgosCuiRouteImport } from './routes/ngos.$cui'
-import { Route as NgosServicesRouteImport } from './routes/ngos.services'
-import { Route as OngUriIndexRouteImport } from './routes/ong-uri/index'
-import { Route as OngUriCuiRouteImport } from './routes/ong-uri.$cui'
-import { Route as OngUriServiciiRouteImport } from './routes/ong-uri.servicii'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
 import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as PnrrJudeteRouteImport } from './routes/pnrr_.judete'
@@ -127,9 +122,6 @@ import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as NgosRegistryIndexRouteImport } from './routes/ngos.registry.index'
 import { Route as NgosRegistryNumberRouteImport } from './routes/ngos.registry.$number'
-import { Route as NgosSourcesSnapshotIdRouteImport } from './routes/ngos.sources.$snapshotId'
-import { Route as OngUriRegistruIndexRouteImport } from './routes/ong-uri.registru.index'
-import { Route as OngUriSursaSnapshotIdRouteImport } from './routes/ong-uri.sursa.$snapshotId'
 import { Route as ParlamentAgendaIndexRouteImport } from './routes/parlament/agenda/index'
 import { Route as ParlamentAgendaAgendaKeyRouteImport } from './routes/parlament/agenda/$agendaKey'
 import { Route as ParlamentComisiiIndexRouteImport } from './routes/parlament/comisii/index'
@@ -282,11 +274,6 @@ const MapRoute = MapRouteImport.update({
 const NgosRoute = NgosRouteImport.update({
   id: '/ngos',
   path: '/ngos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OngUriRoute = OngUriRouteImport.update({
-  id: '/ong-uri',
-  path: '/ong-uri',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PnrrRoute = PnrrRouteImport.update({
@@ -542,26 +529,6 @@ const NgosCuiRoute = NgosCuiRouteImport.update({
   path: '/$cui',
   getParentRoute: () => NgosRoute,
 } as any).lazy(() => import('./routes/ngos.$cui.lazy').then((d) => d.Route))
-const NgosServicesRoute = NgosServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => NgosRoute,
-} as any).lazy(() => import('./routes/ngos.services.lazy').then((d) => d.Route))
-const OngUriIndexRoute = OngUriIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => OngUriRoute,
-} as any)
-const OngUriCuiRoute = OngUriCuiRouteImport.update({
-  id: '/$cui',
-  path: '/$cui',
-  getParentRoute: () => OngUriRoute,
-} as any)
-const OngUriServiciiRoute = OngUriServiciiRouteImport.update({
-  id: '/servicii',
-  path: '/servicii',
-  getParentRoute: () => OngUriRoute,
-} as any)
 const ParlamentIndexRoute = ParlamentIndexRouteImport.update({
   id: '/parlament/',
   path: '/parlament/',
@@ -936,23 +903,6 @@ const NgosRegistryNumberRoute = NgosRegistryNumberRouteImport.update({
 } as any).lazy(() =>
   import('./routes/ngos.registry.$number.lazy').then((d) => d.Route),
 )
-const NgosSourcesSnapshotIdRoute = NgosSourcesSnapshotIdRouteImport.update({
-  id: '/sources/$snapshotId',
-  path: '/sources/$snapshotId',
-  getParentRoute: () => NgosRoute,
-} as any).lazy(() =>
-  import('./routes/ngos.sources.$snapshotId.lazy').then((d) => d.Route),
-)
-const OngUriRegistruIndexRoute = OngUriRegistruIndexRouteImport.update({
-  id: '/registru/',
-  path: '/registru/',
-  getParentRoute: () => OngUriRoute,
-} as any)
-const OngUriSursaSnapshotIdRoute = OngUriSursaSnapshotIdRouteImport.update({
-  id: '/sursa/$snapshotId',
-  path: '/sursa/$snapshotId',
-  getParentRoute: () => OngUriRoute,
-} as any)
 const ParlamentAgendaIndexRoute = ParlamentAgendaIndexRouteImport.update({
   id: '/parlament/agenda/',
   path: '/parlament/agenda/',
@@ -1505,7 +1455,6 @@ export interface FileRoutesByFullPath {
   '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
   '/ngos': typeof NgosRouteWithChildren
-  '/ong-uri': typeof OngUriRouteWithChildren
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
@@ -1538,9 +1487,6 @@ export interface FileRoutesByFullPath {
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
   '/ngos/$cui': typeof NgosCuiRoute
-  '/ngos/services': typeof NgosServicesRoute
-  '/ong-uri/$cui': typeof OngUriCuiRoute
-  '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr/judete': typeof PnrrJudeteRoute
   '/pnrr/organizatii': typeof PnrrOrganizatiiRoute
@@ -1569,7 +1515,6 @@ export interface FileRoutesByFullPath {
   '/justitie/': typeof JustitieIndexRoute
   '/legislation/': typeof LegislationIndexRoute
   '/ngos/': typeof NgosIndexRoute
-  '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
@@ -1602,8 +1547,6 @@ export interface FileRoutesByFullPath {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ngos/registry/$number': typeof NgosRegistryNumberRoute
-  '/ngos/sources/$snapshotId': typeof NgosSourcesSnapshotIdRoute
-  '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
@@ -1627,7 +1570,6 @@ export interface FileRoutesByFullPath {
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
   '/ngos/registry/': typeof NgosRegistryIndexRoute
-  '/ong-uri/registru/': typeof OngUriRegistruIndexRoute
   '/parlament/agenda/': typeof ParlamentAgendaIndexRoute
   '/parlament/comisii/': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
@@ -1716,9 +1658,6 @@ export interface FileRoutesByTo {
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
   '/ngos/$cui': typeof NgosCuiRoute
-  '/ngos/services': typeof NgosServicesRoute
-  '/ong-uri/$cui': typeof OngUriCuiRoute
-  '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr/judete': typeof PnrrJudeteRoute
   '/pnrr/organizatii': typeof PnrrOrganizatiiRoute
@@ -1747,7 +1686,6 @@ export interface FileRoutesByTo {
   '/justitie': typeof JustitieIndexRoute
   '/legislation': typeof LegislationIndexRoute
   '/ngos': typeof NgosIndexRoute
-  '/ong-uri': typeof OngUriIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/procurement': typeof ProcurementIndexRoute
@@ -1776,8 +1714,6 @@ export interface FileRoutesByTo {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ngos/registry/$number': typeof NgosRegistryNumberRoute
-  '/ngos/sources/$snapshotId': typeof NgosSourcesSnapshotIdRoute
-  '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
@@ -1801,7 +1737,6 @@ export interface FileRoutesByTo {
   '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
   '/ngos/registry': typeof NgosRegistryIndexRoute
-  '/ong-uri/registru': typeof OngUriRegistruIndexRoute
   '/parlament/agenda': typeof ParlamentAgendaIndexRoute
   '/parlament/comisii': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri': typeof ParlamentGrupuriIndexRoute
@@ -1869,7 +1804,6 @@ export interface FileRoutesById {
   '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
   '/ngos': typeof NgosRouteWithChildren
-  '/ong-uri': typeof OngUriRouteWithChildren
   '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
@@ -1902,9 +1836,6 @@ export interface FileRoutesById {
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
   '/ngos/$cui': typeof NgosCuiRoute
-  '/ngos/services': typeof NgosServicesRoute
-  '/ong-uri/$cui': typeof OngUriCuiRoute
-  '/ong-uri/servicii': typeof OngUriServiciiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr_/judete': typeof PnrrJudeteRoute
   '/pnrr_/organizatii': typeof PnrrOrganizatiiRoute
@@ -1933,7 +1864,6 @@ export interface FileRoutesById {
   '/justitie/': typeof JustitieIndexRoute
   '/legislation/': typeof LegislationIndexRoute
   '/ngos/': typeof NgosIndexRoute
-  '/ong-uri/': typeof OngUriIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
@@ -1966,8 +1896,6 @@ export interface FileRoutesById {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/ngos/registry/$number': typeof NgosRegistryNumberRoute
-  '/ngos/sources/$snapshotId': typeof NgosSourcesSnapshotIdRoute
-  '/ong-uri/sursa/$snapshotId': typeof OngUriSursaSnapshotIdRoute
   '/parlament/agenda/$agendaKey': typeof ParlamentAgendaAgendaKeyRoute
   '/parlament/comisii/$committeeKey': typeof ParlamentComisiiCommitteeKeyRoute
   '/parlament/grupuri/$groupId': typeof ParlamentGrupuriGroupIdRoute
@@ -1991,7 +1919,6 @@ export interface FileRoutesById {
   '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
   '/ngos/registry/': typeof NgosRegistryIndexRoute
-  '/ong-uri/registru/': typeof OngUriRegistruIndexRoute
   '/parlament/agenda/': typeof ParlamentAgendaIndexRoute
   '/parlament/comisii/': typeof ParlamentComisiiIndexRoute
   '/parlament/grupuri/': typeof ParlamentGrupuriIndexRoute
@@ -2061,7 +1988,6 @@ export interface FileRouteTypes {
     | '/justitie'
     | '/map'
     | '/ngos'
-    | '/ong-uri'
     | '/pnrr'
     | '/privacy'
     | '/provocare'
@@ -2094,9 +2020,6 @@ export interface FileRouteTypes {
     | '/legislation/guide'
     | '/legislation/search'
     | '/ngos/$cui'
-    | '/ngos/services'
-    | '/ong-uri/$cui'
-    | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
     | '/pnrr/judete'
     | '/pnrr/organizatii'
@@ -2125,7 +2048,6 @@ export interface FileRouteTypes {
     | '/justitie/'
     | '/legislation/'
     | '/ngos/'
-    | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
     | '/procurement/'
@@ -2158,8 +2080,6 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ngos/registry/$number'
-    | '/ngos/sources/$snapshotId'
-    | '/ong-uri/sursa/$snapshotId'
     | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
@@ -2183,7 +2103,6 @@ export interface FileRouteTypes {
     | '/maps/datasets/'
     | '/maps/editor/'
     | '/ngos/registry/'
-    | '/ong-uri/registru/'
     | '/parlament/agenda/'
     | '/parlament/comisii/'
     | '/parlament/grupuri/'
@@ -2272,9 +2191,6 @@ export interface FileRouteTypes {
     | '/legislation/guide'
     | '/legislation/search'
     | '/ngos/$cui'
-    | '/ngos/services'
-    | '/ong-uri/$cui'
-    | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
     | '/pnrr/judete'
     | '/pnrr/organizatii'
@@ -2303,7 +2219,6 @@ export interface FileRouteTypes {
     | '/justitie'
     | '/legislation'
     | '/ngos'
-    | '/ong-uri'
     | '/parlament'
     | '/primarie'
     | '/procurement'
@@ -2332,8 +2247,6 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ngos/registry/$number'
-    | '/ngos/sources/$snapshotId'
-    | '/ong-uri/sursa/$snapshotId'
     | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
@@ -2357,7 +2270,6 @@ export interface FileRouteTypes {
     | '/maps/datasets'
     | '/maps/editor'
     | '/ngos/registry'
-    | '/ong-uri/registru'
     | '/parlament/agenda'
     | '/parlament/comisii'
     | '/parlament/grupuri'
@@ -2424,7 +2336,6 @@ export interface FileRouteTypes {
     | '/justitie'
     | '/map'
     | '/ngos'
-    | '/ong-uri'
     | '/pnrr'
     | '/privacy'
     | '/provocare'
@@ -2457,9 +2368,6 @@ export interface FileRouteTypes {
     | '/legislation/guide'
     | '/legislation/search'
     | '/ngos/$cui'
-    | '/ngos/services'
-    | '/ong-uri/$cui'
-    | '/ong-uri/servicii'
     | '/pnrr/share-image.png'
     | '/pnrr_/judete'
     | '/pnrr_/organizatii'
@@ -2488,7 +2396,6 @@ export interface FileRouteTypes {
     | '/justitie/'
     | '/legislation/'
     | '/ngos/'
-    | '/ong-uri/'
     | '/parlament/'
     | '/primarie/'
     | '/procurement/'
@@ -2521,8 +2428,6 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/ngos/registry/$number'
-    | '/ngos/sources/$snapshotId'
-    | '/ong-uri/sursa/$snapshotId'
     | '/parlament/agenda/$agendaKey'
     | '/parlament/comisii/$committeeKey'
     | '/parlament/grupuri/$groupId'
@@ -2546,7 +2451,6 @@ export interface FileRouteTypes {
     | '/maps/datasets/'
     | '/maps/editor/'
     | '/ngos/registry/'
-    | '/ong-uri/registru/'
     | '/parlament/agenda/'
     | '/parlament/comisii/'
     | '/parlament/grupuri/'
@@ -2615,7 +2519,6 @@ export interface RootRouteChildren {
   JustitieRoute: typeof JustitieRouteWithChildren
   MapRoute: typeof MapRoute
   NgosRoute: typeof NgosRouteWithChildren
-  OngUriRoute: typeof OngUriRouteWithChildren
   PnrrRoute: typeof PnrrRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
@@ -2811,13 +2714,6 @@ declare module '@tanstack/react-router' {
       path: '/ngos'
       fullPath: '/ngos'
       preLoaderRoute: typeof NgosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ong-uri': {
-      id: '/ong-uri'
-      path: '/ong-uri'
-      fullPath: '/ong-uri'
-      preLoaderRoute: typeof OngUriRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pnrr': {
@@ -3127,34 +3023,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/ngos/$cui'
       preLoaderRoute: typeof NgosCuiRouteImport
       parentRoute: typeof NgosRoute
-    }
-    '/ngos/services': {
-      id: '/ngos/services'
-      path: '/services'
-      fullPath: '/ngos/services'
-      preLoaderRoute: typeof NgosServicesRouteImport
-      parentRoute: typeof NgosRoute
-    }
-    '/ong-uri/': {
-      id: '/ong-uri/'
-      path: '/'
-      fullPath: '/ong-uri/'
-      preLoaderRoute: typeof OngUriIndexRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/ong-uri/$cui': {
-      id: '/ong-uri/$cui'
-      path: '/$cui'
-      fullPath: '/ong-uri/$cui'
-      preLoaderRoute: typeof OngUriCuiRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/ong-uri/servicii': {
-      id: '/ong-uri/servicii'
-      path: '/servicii'
-      fullPath: '/ong-uri/servicii'
-      preLoaderRoute: typeof OngUriServiciiRouteImport
-      parentRoute: typeof OngUriRoute
     }
     '/parlament/': {
       id: '/parlament/'
@@ -3554,27 +3422,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/ngos/registry/$number'
       preLoaderRoute: typeof NgosRegistryNumberRouteImport
       parentRoute: typeof NgosRoute
-    }
-    '/ngos/sources/$snapshotId': {
-      id: '/ngos/sources/$snapshotId'
-      path: '/sources/$snapshotId'
-      fullPath: '/ngos/sources/$snapshotId'
-      preLoaderRoute: typeof NgosSourcesSnapshotIdRouteImport
-      parentRoute: typeof NgosRoute
-    }
-    '/ong-uri/registru/': {
-      id: '/ong-uri/registru/'
-      path: '/registru'
-      fullPath: '/ong-uri/registru/'
-      preLoaderRoute: typeof OngUriRegistruIndexRouteImport
-      parentRoute: typeof OngUriRoute
-    }
-    '/ong-uri/sursa/$snapshotId': {
-      id: '/ong-uri/sursa/$snapshotId'
-      path: '/sursa/$snapshotId'
-      fullPath: '/ong-uri/sursa/$snapshotId'
-      preLoaderRoute: typeof OngUriSursaSnapshotIdRouteImport
-      parentRoute: typeof OngUriRoute
     }
     '/parlament/agenda/': {
       id: '/parlament/agenda/'
@@ -4174,42 +4021,19 @@ const JustitieRouteWithChildren = JustitieRoute._addFileChildren(
 
 interface NgosRouteChildren {
   NgosCuiRoute: typeof NgosCuiRoute
-  NgosServicesRoute: typeof NgosServicesRoute
   NgosIndexRoute: typeof NgosIndexRoute
   NgosRegistryNumberRoute: typeof NgosRegistryNumberRoute
-  NgosSourcesSnapshotIdRoute: typeof NgosSourcesSnapshotIdRoute
   NgosRegistryIndexRoute: typeof NgosRegistryIndexRoute
 }
 
 const NgosRouteChildren: NgosRouteChildren = {
   NgosCuiRoute: NgosCuiRoute,
-  NgosServicesRoute: NgosServicesRoute,
   NgosIndexRoute: NgosIndexRoute,
   NgosRegistryNumberRoute: NgosRegistryNumberRoute,
-  NgosSourcesSnapshotIdRoute: NgosSourcesSnapshotIdRoute,
   NgosRegistryIndexRoute: NgosRegistryIndexRoute,
 }
 
 const NgosRouteWithChildren = NgosRoute._addFileChildren(NgosRouteChildren)
-
-interface OngUriRouteChildren {
-  OngUriCuiRoute: typeof OngUriCuiRoute
-  OngUriServiciiRoute: typeof OngUriServiciiRoute
-  OngUriIndexRoute: typeof OngUriIndexRoute
-  OngUriSursaSnapshotIdRoute: typeof OngUriSursaSnapshotIdRoute
-  OngUriRegistruIndexRoute: typeof OngUriRegistruIndexRoute
-}
-
-const OngUriRouteChildren: OngUriRouteChildren = {
-  OngUriCuiRoute: OngUriCuiRoute,
-  OngUriServiciiRoute: OngUriServiciiRoute,
-  OngUriIndexRoute: OngUriIndexRoute,
-  OngUriSursaSnapshotIdRoute: OngUriSursaSnapshotIdRoute,
-  OngUriRegistruIndexRoute: OngUriRegistruIndexRoute,
-}
-
-const OngUriRouteWithChildren =
-  OngUriRoute._addFileChildren(OngUriRouteChildren)
 
 interface PnrrRouteChildren {
   PnrrShareImageDotpngRoute: typeof PnrrShareImageDotpngRoute
@@ -4470,7 +4294,6 @@ const rootRouteChildren: RootRouteChildren = {
   JustitieRoute: JustitieRouteWithChildren,
   MapRoute: MapRoute,
   NgosRoute: NgosRouteWithChildren,
-  OngUriRoute: OngUriRouteWithChildren,
   PnrrRoute: PnrrRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,

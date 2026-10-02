@@ -3,6 +3,11 @@
 > MVP-1 — the anchor surface of the domain. Source UX: `docs/ux-research/ngos.md`
 > §10.2, §13 MVP-1. Domain design: `docs/design/ngos/design.md`. Foundation:
 > `docs/design/README.md`.
+>
+> **Superseded** by `design.md` §14 (the profile on `ngoOrganizationProfile`).
+> The `?tab=` and `?evidence=1` keys below belonged to the first release's mock
+> profile and were removed with it on 2026-10-02 (§16); the profile reads `an`
+> and `lang` only.
 
 ## Feature owner profile
 

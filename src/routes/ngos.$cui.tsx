@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, rootRouteId } from '@tanstack/react-router'
 import { normalizeNgoCui } from '@/features/ngos/lib/normalize-ngo-cui'
 import { fetchNgoOrganization, fetchNgoStatements, type NgoStatementsRead } from '@/features/ngos/organization/api'
 import { buildNgoProfileHead } from '@/features/ngos/organization/head'
@@ -15,7 +15,8 @@ export const Route = createFileRoute('/ngos/$cui')({
   validateSearch: parseNgoProfileSearch,
   loader: async ({ params, abortController }) => {
     const cui = normalizeNgoCui(params.cui)
-    if (!cui || !/^[1-9][0-9]{1,9}$/.test(cui)) throw notFound()
+    // No CUI at all (`/ngos/services`, a word): the site's own not-found page, not a profile's.
+    if (!cui || !/^[1-9][0-9]{1,9}$/.test(cui)) throw notFound({ routeId: rootRouteId })
     const signal = abortController.signal
     const [organization, statementsRead] = await Promise.all([
       fetchNgoOrganization(cui, { signal }),

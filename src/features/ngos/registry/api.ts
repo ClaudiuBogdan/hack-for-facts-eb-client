@@ -117,29 +117,6 @@ export function siteKeys(
   );
 }
 
-export function registryFilter(search: RegistrySearch) {
-  return {
-    ...(search.q ? { name: { contains: search.q } } : {}),
-    ...(search.county ? { county: { eq: search.county } } : {}),
-    ...(search.category ? { category: { eq: search.category } } : {}),
-    ...(search.status ? { status: { eq: search.status } } : {}),
-    ...(search.registryNumber
-      ? { registryNumber: { eq: search.registryNumber } }
-      : {}),
-    ...(search.publicUtility === "yes" || search.publicUtility === "no"
-      ? { publicUtility: { eq: search.publicUtility === "yes" } }
-      : {}),
-  };
-}
-/** Dedicated live transport. Never imports the mock NGO dispatcher or its environment flag. */
-export async function fetchRegistryPage(
-  search: RegistrySearch,
-  signal?: AbortSignal,
-  first = 25,
-): Promise<RegistryPage> {
-  return fetchRegistryRecords(registryFilter(search), { first, signal });
-}
-
 /** One page of the records a GraphQL filter selects, from a cursor; the registry page's reads go through here. */
 export async function fetchRegistryRecords(
   filter: Record<string, unknown>,

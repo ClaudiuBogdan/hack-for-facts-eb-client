@@ -68,9 +68,9 @@ sources — these are advanced features named for later.
 | Route | Purpose | Feature file |
 | --- | --- | --- |
 | `/ngos` | Landing: NGO search, figures, counties, years (superseded by §12, §13) | `ngo-landing-source-coverage.md` |
-| `/ngos/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
-| `/ngos/services` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
-| `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
+| `/ngos/$cui` | NGO entity profile (organization-anchored; superseded by §14) | `ngo-entity-profile.md` |
+| `/ngos/services` | Social-service provider/service discovery (list + map). Planned: its mock page was removed on 2026-10-02 (§16) | `social-service-provider-discovery.md` |
+| `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page. Planned: its mock page was removed on 2026-10-02 (§16) | `evidence-trail-source-citations.md` |
 | `/ngos/registry` | The national registry asked as the analytics page asks its records (superseded by §15) | `name-only-registry-surfaces.md` |
 | `/ngos/registry/$number` | The profile of an organisation without an admitted CUI, by registry number (`1471-A-2012`); 301 to `/ngos/$cui` once one is admitted (§15, „Profiles without a CUI") | — |
 | `/ngos/public-utility` | SGG public-utility name-only listing (Next-2) | `name-only-registry-surfaces.md` |
@@ -88,10 +88,9 @@ routing change; implement it in the search-routing adapter, not by rebuilding se
 2026-06-26).** English paths, Romanian UI copy, as `/achizitii` became
 `/procurement`: `/ngos`, `/ngos/$cui`, `/ngos/registry`, `/ngos/services`,
 `/ngos/sources/$snapshotId`, and later `/ngos/public-utility` and
-`/ngos/review`. The first release's `/ong-uri/*` paths answer with one 301
-each to their new page, parameters and search carried over (the registry's
-and the services page's search already in the target's own shape, so no
-second hop).
+`/ngos/review`. The first release's `/ong-uri/*` paths answered with one 301
+each to their new page until 2026-10-02, when the redirects were removed:
+nothing deployed for readers ever linked to them (§16).
 
 **Decision — Evidence-trail addressing.** The evidence trail is both an in-profile
 section and a dedicated per-snapshot page at `/ngos/sources/$snapshotId`. Inline
@@ -148,9 +147,10 @@ existing entity/company route validation idiom. Default views render with no par
 ### Domain / foundation components to standardize (build under the feature module)
 
 These are named in the foundation as cross-domain primitives; implement them so other
-domains can reuse. Place shared ones in `src/components/provenance/` and
-`src/components/identity/` (proposed) or, if a single domain needs them first, under
-the owning feature module and promote later.
+domains can reuse. Place shared ones in `src/components/data-trust/` or, if a single
+domain needs them first, under the owning feature module and promote later. (The
+first release's `src/components/provenance/` and `src/components/identity/` went
+with its mock pages on 2026-10-02, §16.)
 
 - **`IdentityConfidenceBadge`** — high/medium/low identity certainty. NGO usage:
   `confirmat` (direct-CUI), `neconfirmat` (name-only), `candidat` (review case with
@@ -198,11 +198,13 @@ the owning feature module and promote later.
 
 ## 6. Data model expectations at the UI boundary
 
-**Decision — Mock-first.** Each feature defines a TS type that mirrors the `ngo.*`
-serving columns named in `docs/ux-research/ngos.md` §5. API adapters live under the
-feature module's `api/` with mocks alongside; the UI consumes the typed boundary, so
-swapping mock→live is an adapter change. Mark mock-rendered surfaces with
-`DataStatusBadge variant="mock"` during development.
+**Decision — Mock-first** (the first release's; superseded). Each feature defined a
+TS type mirroring the `ngo.*` serving columns, with mocks beside its `api/`. No NGO
+page renders a mock any more: the registry and the profiles read the live API
+through their feature's `api.ts`; the hub's figures are summaries captured from
+the registry export and the MFP statements by `scripts/summarize-ngo-*.mjs`
+(its search reads the live API). The mocks and their switch were removed on
+2026-10-02 (§16).
 
 Shared boundary shapes (authoritative field lists; null where the source omits a field):
 
@@ -416,7 +418,8 @@ proceed independently once shared components exist.
 
 - **Routes** `/ngos`, `/ngos/$cui`, `/ngos/services`, and
   `/ngos/sources/$snapshotId` exist with Zod `validateSearch` and render default
-  views without query params. Next-2 adds `/ngos/registry` and
+  views without query params. (The services and sources pages were removed on
+  2026-10-02 until real data backs them: §16.) Next-2 adds `/ngos/registry` and
   `/ngos/public-utility`.
 - **`/entities/$cui`** shows an NGO context band + link to `/ngos/$cui` for
   `kind=ngo`; global entity-search NGO hits deep-link to `/ngos/$cui`.
@@ -429,8 +432,9 @@ proceed independently once shared components exist.
   social-service snapshots (10.04.2024 / 11.12.2023) are flagged on the data.
 - **Empty/partial states** are explicit: empty financials → "în curs de actualizare";
   missing county/locality handled gracefully; CUI collision shows the company cross-link.
-- **Mock-first**: each surface renders from typed mocks shaped like `ngo.*`; mock
-  surfaces are marked with `DataStatusBadge`.
+- **Mock-first** (first release only): each surface rendered from typed mocks
+  shaped like `ngo.*`, marked with `DataStatusBadge`. Superseded: no NGO page
+  renders a mock (§6, §16).
 - `yarn typecheck` clean; i18n extracted/compiled; key views have at least smoke-level
   tests where the surrounding code has them.
 
@@ -778,7 +782,7 @@ API probes and the reader's questions are in
   line, „Cum am numărat" behind it.
 - **The address** keeps the route's keys (`q`, `county`, `category`,
   `status`, `registryNumber`, `publicUtility`), only those set; every hub
-  link opens unchanged, and `/ong-uri/registru` answers with one 301 to it.
+  link opens unchanged.
   A county the registry does not spell is reported as unread and filters
   nothing.
 - **Counting what the API cannot.** `ngoRegistryRecords` has six filters,
@@ -898,3 +902,25 @@ The owner's further decisions (2026-10-01):
   (rebuilt from a capture with the admitted CUI) and in a selection read
   whole.
 
+**Counties as a list or a map (2026-10-02).** The „Pe județe" tab shows the
+counties as the ranked list or the hubs' county map (`HubCountyBand` without
+its list), the reader's choice; a breakdown row narrows the selection from
+anywhere on it, its arrow shown under the pointer or on keyboard focus only.
+
+## 16. The mock-era pages removed (2026-10-02)
+
+The services discovery (`/ngos/services`) and the source snapshot page
+(`/ngos/sources/$snapshotId`) were the first release's mock-first pages
+(2026-06-26). They never had a live API: the NGO mock switch always served
+fixtures, so dev showed seven invented services as „un instantaneu oficial",
+their providers linked to whatever real organisation holds the made-up CUI,
+and a source page with an invented checksum — both indexable. The owner had
+them removed, with everything only they used: the mock profile page, the
+`ngo-api` mock/live dispatcher, `use-ngos`, the fixtures, the NGO mock
+switch, `components/provenance` and `components/identity`, and the domain
+schemas in `src/schemas/ngos.ts` (now the landing's and the profile's search
+only; the profile no longer reads the mock profile's `tab`, `evidence` and
+`from` keys). The `/ong-uri/*` redirects went with them. The plans stay in
+`features/social-service-provider-discovery.md` and
+`features/evidence-trail-source-citations.md`, to be built on the server's
+data once it serves accredited social services.
