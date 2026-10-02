@@ -2951,3 +2951,7 @@ arrows move it), both 44 px on a phone and 40 px from `sm`
   picked has no counties to rank), and the row goes when one is left.
 - On a phone five CPV levels sit three to a row, the last taking the
   second row's rest.
+- The control has no visible „pe" before it, so it starts where the tabs
+  do and where the measure does when it wraps under them (the owner's ask);
+  its name, „Nivelul", is for a screen reader. The measure stays right of
+  the tabs while they fit on one line.

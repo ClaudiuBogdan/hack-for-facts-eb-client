@@ -337,19 +337,17 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
         )}
       </div>
       {/* The tab's levels, coarse to fine, as the measure's own control: only those the question can be grouped by (a county
-          picked has no counties to rank), and none when one is left. As tall as the filters' controls. */}
+          picked has no counties to rank), and none when one is left. As tall as the filters' controls, and unlabelled so it
+          starts where the tabs and a wrapped measure do (its name, „Nivelul", is for a screen reader). */}
       {levels.length > 1 ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <MonoLabel className="text-muted-foreground">{t`pe`}</MonoLabel>
-          <IndicatorToggle<string>
-            label={t`Nivelul`}
-            value={currentLevel}
-            onChange={(level) => onChange({ ...query, dupa: groupOf(current.axis, level) })}
-            options={levels.map((level) => ({ key: level.id, label: levelLabel(level.id) }))}
-            // Five CPV levels on a phone: three to a row, the last taking the row's rest, no empty cell.
-            className={cn(CONTROL_HEIGHT, levels.length > 3 && 'grid-flow-row grid-cols-3', levels.length % 3 === 2 && '[&>button:last-child]:col-span-2')}
-          />
-        </div>
+        <IndicatorToggle<string>
+          label={t`Nivelul`}
+          value={currentLevel}
+          onChange={(level) => onChange({ ...query, dupa: groupOf(current.axis, level) })}
+          options={levels.map((level) => ({ key: level.id, label: levelLabel(level.id) }))}
+          // Five CPV levels on a phone: three to a row, the last taking the row's rest, no empty cell.
+          className={cn(CONTROL_HEIGHT, 'self-start', levels.length > 3 && 'grid-flow-row grid-cols-3', levels.length % 3 === 2 && '[&>button:last-child]:col-span-2')}
+        />
       ) : null}
     </div>
   )
