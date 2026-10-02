@@ -2955,3 +2955,88 @@ arrows move it), both 44 px on a phone and 40 px from `sm`
   do and where the measure does when it wraps under them (the owner's ask);
   its name, „Nivelul", is for a screen reader. The measure stays right of
   the tabs while they fit on one line.
+
+## 22. The procedure page (prototyped 2 October 2026)
+
+`/procurement/procedures/$id` is the last record page on the old shared
+layout (`ProcurementDetailRoutePage`). Prototype:
+`/development/procurement/procedure` (`?v=fisa|concurenta|azi`,
+`&c=<record>`), on ten real notices read from the dev API and from
+e-licitatie's public api on 2 October 2026; the production database was not
+read.
+
+### 22.1 What a procedure's data can say
+
+- **A row is one notice, not a procedure.** `procurement.procedures` holds
+  e-licitatie award notices (CAN…, SCNA…: `source_system = elicitatie`) and
+  rows of SEAP's notice exports on data.gov.ro (calls for competition CN…,
+  SCN…, and the legacy numeric notices). A tender's call and its award are
+  two unlinked rows: ANIF's call CN1044934 (412114) and its award CAN1096494
+  (355515). The award notice names its call
+  (`publicationDetailsModel.noticeNo`), so the link exists at the source.
+- **The award notice's own estimate repeats the award** (CNIR: 6.14 bn on
+  both). The institution's estimate is the call's (7.58 bn), the lots', or
+  each contract's (`GetContractView.estimatedContractValue`). Compared only
+  over the lots awarded.
+- **Served today:** the notice's row and at most 50 contract rows, no total,
+  one firm per row; a TED number. e-licitatie rows carry no publication or
+  state date. That is the `azi` variant.
+- **Stored but not served:** the lots, the criteria and the offer spread
+  (`procedure_lots`, `procedure_award_criteria`, `lowest/highest_offer`).
+  **Not scraped:** the offers each lot received (admitted, unacceptable,
+  non-compliant, withdrawn; from SMEs, from abroad), every winner of a
+  contract, every published version of the notice. The `fisa` and
+  `concurenta` variants read them from the notice (`procedure.fixtures.ts`).
+- **An award notice can report frameworks and call-offs together.**
+  Spitalul Caracal's CAN1150526: 44 lots (7 cancelled), 37 frameworks with
+  three firms each, and „contracte subsecvente" that span several lots.
+  Added to the frameworks they inflate a lot (lot 5: 2,486 lei → 103,851).
+  The frameworks make the value; the call-offs are listed apart, as what was
+  bought under them.
+- **Legacy rows join another institution's contracts.** Nuclearelectrica's
+  2009 call no. 92137 carries Municipiul București's 37.8 M lei building job
+  and a Ploiești school's purchase: SEAP matched them by the bare notice
+  number. Never the procedure's: set apart, said, counted nowhere.
+- **A negotiation without a call says why** (annex D). Sibiu's street
+  cleaning (CAN1165498, 46.1 M lei, one offer) cites its contested open
+  tender CN1089166 (92.4 M, suspended); the two are tied only by that text.
+- **Late or republished award notices are visible.** ANIF's: the contracts
+  in December 2022 and January 2023, the notice on 22 January 2023, then
+  republished five times through March 2026.
+
+### 22.2 What the API should change (for the server session)
+
+1. **One procedure:** the call and its award tied by the award notice's
+   call number (and the same institution); either row answers the whole.
+2. **Lots** with their estimate, status, criteria and weights, duration;
+   **offers per lot** (received, admitted, unacceptable, non-compliant,
+   withdrawn, SMEs, other EU, non-EU) from `GetContractView`.
+3. **Contracts from the notice:** all winners, the framework / call-off
+   kind, uncapped with a total; never a row of another institution (§17.2
+   item 3).
+4. **Dates:** the call's publication, the award notice's first and last
+   publication (`GetAllVersions`).
+5. **Annex D** for negotiations without a call; the VAT basis.
+
+### 22.3 The variants
+
+- **`fisa` — the record sheet** (§17's): head; the value against the
+  estimate with the facts and the buyer and winners beside them; the lots;
+  how the offers were scored (when price is not all); the calendar from the
+  call to the award notice; the contracts; the call-offs; the rows linked by
+  mistake; the source.
+- **`concurenta` — the competition first:** four figures (offers, lots
+  awarded, lots with one offer, gap to the estimate), then each lot with a
+  mark per offer (filled admitted, faded rejected, hollow withdrawn) and its
+  value against its estimate on one bar; the sheet after.
+- **`azi`:** the sheet on what the API answers now — no lots, offers,
+  criteria, call or dates; a row per firm gathered by contract number.
+
+The records: ANIF's three lots (and the same procedure opened on its call),
+Sibiu's negotiation and its suspended call, CNIR's 6.1 bn association with
+one offer, CNAIR's Pașcani–Suceava (three offers, two unacceptable, −29%),
+Spitalul Caracal's 44-lot framework, Sibiu's Turnul Sfatului, Universitatea
+de Vest's cancelled call, Nuclearelectrica's 2009 call.
+
+Open for the owner: which variant; whether a call's row should redirect to
+its award's page once the two are tied.
