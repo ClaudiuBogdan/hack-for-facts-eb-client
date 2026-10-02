@@ -1,10 +1,11 @@
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { ProcedureBlock } from '@/features/procurement/components/procedure/procedure-block'
+import { ProcedureHead } from '@/features/procurement/components/procedure/procedure-head'
+import { procedureSheetOf } from '@/features/procurement/lib/procedure-model'
 import { PROCEDURE_FIXTURES } from './procedure.fixtures'
-import { ProcedureHead } from './procedure.head'
-import { procedureSheetOf } from './procedure.model'
-import { ProcedureBlock } from './procedure.sheet'
+import { procedureReadOfFixture } from './procedure.model'
 
 /** Literal marker. `yarn build:validate` fails if this reaches `.output/`. */
 const PROTOTYPE_MARKER = 'TRANSPARENTA_PROTOTYPE_MUST_NOT_SHIP'
@@ -42,9 +43,9 @@ function RecordPicker() {
   )
 }
 
-/** The sheet (`fisa`): the contract page's record sheet on the whole procedure, as the award notice tells it. */
+/** The sheet (`fisa`), the owner's pick, promoted: the page's own components on the record as the fixed API must serve it (§22.2). */
 export function ProcedureFisa() {
-  const sheet = procedureSheetOf(PROCEDURE_FIXTURES[useRecordKey()]!, 'target')
+  const sheet = procedureSheetOf(procedureReadOfFixture(PROCEDURE_FIXTURES[useRecordKey()]!, 'target'))
   return (
     <div className="bg-background" data-dev-marker={PROTOTYPE_MARKER}>
       <RecordPicker />

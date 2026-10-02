@@ -3025,6 +3025,24 @@ read.
 4. **Dates:** the call's publication, the award notice's first and last
    publication (`GetAllVersions`).
 5. **Annex D** for negotiations without a call; the VAT basis.
+6. **A framework notice's value is its call-offs'.** The award notice's
+   `awardedValueRon` (e-licitatie's II.1.7 „valoarea totală") is the
+   call-offs awarded under the frameworks so far — Caracal's 557,085.90 lei
+   against frameworks of at most 4,680,134.40; five more notices alike
+   (CAN1167301, CAN1163132, CAN1163668, CAN1167549, CAN1155234). The
+   ceiling is `frameworkContractValue`, not projected. Every reading of the
+   procedure grain's money (the analysis's sums included) takes the
+   call-offs for the award; serve both, named apart.
+7. **E-licitatie award notices whose state reads „in evaluation"**
+   (1,378 on the dev API): the state is an award notice's, so the
+   procedure is awarded; the mapping of e-licitatie's state 2 („Publicat")
+   wants checking. And many recent award notices carry no linked contract
+   yet, and 0.00 where they have no value.
+8. **Day and month swapped on contract rows.** Spitalul Caracal's rows
+   (`seap_contracts`) date frameworks 364.9 and 364.37 on 2025-01-07, the
+   notice on 2025-07-01; call-offs 386 and 604 on 2025-10-07 and 2025-12-11,
+   the notice on 2025-07-10 and 2025-11-12. The same rows file the two
+   call-offs as `framework_agreement`. How far it reaches is not measured.
 
 ### 22.3 The variants
 
@@ -3055,3 +3073,64 @@ de Vest's cancelled call, Nuclearelectrica's 2009 call.
 
 Open for the owner: whether a call's row should redirect to its award's
 page once the two are tied.
+
+### 22.4 Promoted (2 October 2026)
+
+The page is live at `/procurement/procedures/$id` on the record sheet
+(`components/procedure/`, `lib/procedure-model.ts`); the old shared detail
+layout and its read are deleted (`ProcurementDetailRoutePage`,
+`ProcurementDetailPage` and its sections, `detail-config`, the record-detail
+fetchers, loader, schema and query). The prototype renders the page's own
+components on its fixtures, with the notice's data the API does not serve
+yet.
+
+On today's API (§22.1) the page reads the notice's row, its contract rows
+and TED notice, and the names; the parts the notice alone has (lots,
+offers, criteria, the call, the versions) appear when the API serves them
+(§22.2). What it says there:
+
+- An award notice: the institution, the firms (an association's rows are
+  one contract; several firms at one value are said to be in association),
+  the day or span, the notice's value. An award notice with no contract
+  linked says so; a cancelled or suspended one says that, its zeros no
+  value.
+- A framework notice: the frameworks and firms, and the call-offs the
+  notice reports, as such — never as the frameworks' ceiling (§22.2 item 6).
+  Recognised by its rows or, with none, by its title („Acord-cadru …", not
+  a call-off naming its framework).
+- A full page of rows (50, no total): „cel puțin" for the contracts and the
+  firms, and no span — the days are a part's.
+- A call: its day, its estimate, its state; contracts of other institutions
+  joined by its number are set apart and counted nowhere.
+- An award notice is a row of an award kind or an award number (CAN…,
+  SCNA…); any other — a call, a dynamic purchasing system's invitation
+  (`sad`), a legacy notice — tells what was asked.
+- A row is another institution's only when the two certainly differ: both
+  CUIs known and different, or, a CUI missing, both names known and
+  different (3,534 e-licitatie and 9,963 export notices have no CUI).
+- The notice's value goes with its contracts („pentru X", „X pe 3
+  contracte") only when their values add up to it, within a percent;
+  otherwise the head says it apart („Anunțul de atribuire raportează o
+  valoare de …") and the box says the contracts do not add up to it. A
+  cancelled or suspended notice's figure is „Valoarea din anunț", and the
+  head says its state.
+- An untitled notice is named by its number („Anunțul 92137"), never by
+  the page's id; an id that is not a number is a 404.
+- A row that names no institution at all is the notice's under an
+  e-licitatie award number (unique), and set apart, unverified, under any
+  other: the box then reads „Contracte legate de acest anunț doar după
+  număr", the row „instituție nepublicată în SEAP".
+- „Adds up" allows the rows' rounding to whole lei (a leu a contract), no
+  more; an accepted row's value is the value engine's resolved amount when
+  it has one. Several firms on one contract are said to be in association
+  only when every row of it shows one value, and never on a framework. A
+  firm met with and without its CUI is one firm. No signing span when a
+  contract has no day.
+- Known limit: call-offs the API files as frameworks (§22.2 item 8) are
+  listed with the frameworks — nothing on the rows tells them apart today.
+
+The server read is kept ten minutes (a thousand notices at most) under a
+6-second deadline; a read with failed names is served `no-store`. The head
+names the page by its title and institution (an untitled notice by its
+number) and describes a call and an award apart.
+

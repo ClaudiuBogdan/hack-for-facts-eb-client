@@ -12,15 +12,10 @@
  */
 import type {
   AuthorityProcurementSlice,
-  ProcedureRecord,
-  ProcurementRecordDetail,
   ProcurementRecordSummary,
   ProcurementSearchPage,
   SupplierProcurementSlice,
   SupplierRecordsPage,
-} from '@/schemas/procurement'
-import {
-  procurementSourceSystemSchema,
 } from '@/schemas/procurement'
 import {
   withProcurementSearchDefaults,
@@ -34,7 +29,6 @@ import {
   PROCUREMENT_DIRECT_ACQUISITIONS_QUERY,
   PROCUREMENT_MODIFICATIONS_QUERY,
   PROCUREMENT_PARTY_NAMES_QUERY,
-  PROCUREMENT_PROCEDURE_DETAIL_QUERY,
   PROCUREMENT_PROCEDURES_QUERY,
   PROCUREMENT_SUPPLIER_RECORDS_QUERY,
   procurementAggregatesResponseSchema,
@@ -43,7 +37,6 @@ import {
   procurementDirectAcquisitionsResponseSchema,
   procurementModificationsResponseSchema,
   procurementPartyNamesResponseSchema,
-  procurementProcedureDetailResponseSchema,
   procurementProceduresResponseSchema,
   procurementSupplierRecordsResponseSchema,
   type RawProcurementCpvDivision,
@@ -334,41 +327,6 @@ export async function fetchProcurementSearchLive(
     ...(facets !== undefined && { facets }),
     ...(highlights !== undefined && { highlights }),
   })
-}
-
-// ── detail ──────────────────────────────────────────────────────────────────
-
-function mapDuplicates(
-  duplicates: ReadonlyArray<{ sourceSystem: string; id: string }>,
-) {
-  return duplicates.map((ref) => ({
-    sourceSystem: procurementSourceSystemSchema.parse(ref.sourceSystem),
-    id: ref.id,
-  }))
-}
-
-export async function fetchProcedureDetailLive(
-  id: string,
-): Promise<ProcurementRecordDetail<ProcedureRecord> | null> {
-  const data = await graphqlQuery<unknown>(
-    PROCUREMENT_PROCEDURE_DETAIL_QUERY,
-    { id },
-    { operationName: 'ProcurementProcedureDetail' },
-  )
-  const detail =
-    procurementProcedureDetailResponseSchema.parse(data).procurementProcedure
-  if (detail === null) return null
-  return {
-    record: mapProcedure(detail.procedure),
-    related: {
-      procedure: null,
-      contracts: detail.contracts.map(mapContract),
-      modifications: [],
-      duplicates: mapDuplicates(detail.duplicates),
-      perLotWinners: detail.perLotWinners,
-      ted: detail.ted,
-    },
-  }
 }
 
 // ── supplier slice + records ────────────────────────────────────────────────

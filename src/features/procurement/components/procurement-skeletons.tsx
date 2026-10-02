@@ -20,24 +20,6 @@ function SectionSkeleton({ className }: { readonly className?: string }) {
   )
 }
 
-export function ProcurementDetailSkeleton() {
-  return (
-    <div className="space-y-6" data-testid="procurement-detail-skeleton">
-      <Skeleton className="h-4 w-64 rounded-none" />
-      <div className={cn(procurementSectionClassName, 'p-6')}>
-        <Skeleton className="h-3 w-24 rounded-none" />
-        <Skeleton className="mt-3 h-8 w-3/4 rounded-none" />
-        <Skeleton className="mt-3 h-5 w-40 rounded-none" />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <SectionSkeleton />
-        <SectionSkeleton />
-      </div>
-      <SectionSkeleton />
-    </div>
-  )
-}
-
 export function SupplierSliceSkeleton() {
   return (
     <div className="space-y-4" data-testid="supplier-slice-skeleton">

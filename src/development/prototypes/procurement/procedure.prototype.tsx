@@ -7,7 +7,9 @@ import { ProcedureFisa } from './procedure.variants'
  * e-licitatie on 2 October 2026 (`&c=<record>`). The owner's pick the same
  * day: `fisa`, reading the award notice as e-licitatie publishes it — what the
  * API must serve; `concurenta` (the competition first) and `azi` (the sheet on
- * today's API) are deleted. See `docs/design/procurement/design.md` §22.
+ * today's API) are deleted. Promoted the same day: `fisa` is now the page's own
+ * components (`components/procedure/`) on the fixtures. See
+ * `docs/design/procurement/design.md` §22.
  */
 export const prototype = {
   title: 'Procurement procedure page',

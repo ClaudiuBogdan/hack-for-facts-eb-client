@@ -1,7 +1,7 @@
 import { plural, t } from '@lingui/core/macro'
-import { dayLong, daysBetween } from '@/features/procurement/lib/direct-purchase-text'
-import { percentText } from '@/features/procurement/lib/home-format'
-import type { ProcedureSheet, PsLot, PsStatus } from './procedure.model'
+import { dayLong, daysBetween } from './direct-purchase-text'
+import { percentText } from './home-format'
+import type { PrLot, PrStatus, ProcedureSheet } from './procedure-model'
 
 /** The procedure page's words, from the record — left out when the data would not support them. */
 
@@ -17,7 +17,7 @@ export function winnersCount(value: number): string {
   return plural(value, { one: 'o firmă', few: '# firme', other: '# de firme' })
 }
 
-/** The value against the institution's estimate: „cu 19% sub estimare"; nothing within half a percent. */
+/** The value against the institution's estimate: „cu 19% sub estimare", „cât a estimat instituția" within half a percent. */
 export function gapText(estimate: number | null, value: number | null): string | null {
   if (estimate === null || value === null || estimate <= 0) return null
   const change = value / estimate - 1
@@ -26,7 +26,7 @@ export function gapText(estimate: number | null, value: number | null): string |
   return change < 0 ? t`cu ${part} sub estimare` : t`cu ${part} peste estimare`
 }
 
-/** The gap as a signed short figure for a lot's row: „−10%", „+5%". */
+/** The gap as a signed short figure for a lot's row: „−10%", „+5%", „±0%". */
 export function gapFigure(estimate: number | null, value: number | null): string | null {
   if (estimate === null || value === null || estimate <= 0) return null
   const change = value / estimate - 1
@@ -34,7 +34,21 @@ export function gapFigure(estimate: number | null, value: number | null): string
   return `${change < 0 ? '−' : '+'}${percentText(Math.abs(change), 0)}`
 }
 
-export function statusText(status: PsStatus): string | null {
+export function contractTypeLabel(type: ProcedureSheet['contractType']): string | null {
+  switch (type) {
+    case 'works':
+      return t`Lucrări`
+    case 'services':
+      return t`Servicii`
+    case 'supplies':
+      return t`Produse`
+    default:
+      return null
+  }
+}
+
+/** What happened to a procedure that has no award to tell, in one sentence. */
+export function statusText(status: PrStatus): string | null {
   switch (status) {
     case 'cancelled':
       return t`Procedura a fost anulată.`
@@ -51,7 +65,7 @@ export function statusText(status: PsStatus): string | null {
   }
 }
 
-export function statusLabel(status: PsStatus): string {
+export function statusLabel(status: PrStatus): string {
   switch (status) {
     case 'awarded':
       return t`atribuită`
@@ -77,11 +91,12 @@ export function signedWhen(span: ProcedureSheet['contractsSpan']): string {
   return t`între ${from} și ${to}`
 }
 
-/** How late the award notice came: days after the last contract it reports. */
-export function noticeDelay(sheet: ProcedureSheet): string | null {
+/** How late the award notice came after the last contract it reports. */
+export function noticeDelay(sheet: Pick<ProcedureSheet, 'awardNotice' | 'contractsSpan'>): string | null {
   if (!sheet.awardNotice || !sheet.contractsSpan) return null
   const days = daysBetween(sheet.contractsSpan.to, sheet.awardNotice.first)
   if (days < 0) return null
+  if (days === 0) return t`în ziua contractului`
   if (days > 730) {
     const years = Math.floor(days / 365)
     return plural(years, { one: 'la peste un an după contract', few: 'la peste # ani după contract', other: 'la peste # de ani după contract' })
@@ -89,17 +104,16 @@ export function noticeDelay(sheet: ProcedureSheet): string | null {
   return plural(days, { one: 'a doua zi după contract', few: 'la # zile după contract', other: 'la # de zile după contract' })
 }
 
-/** The price's weight in a quality–price criterion: „prețul: 40%". */
-export function priceWeight(lot: PsLot): number | null {
+/** The price's weight in a quality–price criterion, out of 100. */
+export function priceWeight(lot: PrLot): number | null {
   const price = lot.criteria.filter((criterion) => criterion.price && criterion.weight !== null)
   if (price.length === 0 || lot.criteria.length < 2) return null
   return price.reduce((total, criterion) => total + (criterion.weight ?? 0), 0)
 }
 
-/** The lots' criteria are the same on every lot: one block says them. */
-export function sameCriteria(lots: readonly PsLot[]): boolean {
-  // The weights, price first: two lots whose criteria differ only in their names score alike.
-  const key = (lot: PsLot) => lot.criteria.map((criterion) => `${criterion.price ? 'p' : 'q'}${criterion.weight}`).sort().join('|')
+/** The lots score offers alike: one block says how. Criteria that differ only in their names score alike. */
+export function sameCriteria(lots: readonly PrLot[]): boolean {
+  const key = (lot: PrLot) => lot.criteria.map((criterion) => `${criterion.price ? 'p' : 'q'}${criterion.weight}`).sort().join('|')
   return lots.every((lot) => key(lot) === key(lots[0]!))
 }
 

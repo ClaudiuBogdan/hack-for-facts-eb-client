@@ -1,9 +1,10 @@
 // The procedure page's record: another institution's contracts are never the procedure's, call-offs never add to their frameworks, an award's estimate is never its own award, and a call's row tells the procedure it opened.
 import { describe, expect, it } from 'vitest'
 import { PROCEDURE_FIXTURES } from '@/development/prototypes/procurement/procedure.fixtures'
-import { procedureSheetOf } from '@/development/prototypes/procurement/procedure.model'
+import { procedureReadOfFixture } from '@/development/prototypes/procurement/procedure.model'
+import { procedureSheetOf } from '@/features/procurement/lib/procedure-model'
 
-const sheet = (key: string, read: 'target' | 'today' = 'target') => procedureSheetOf(PROCEDURE_FIXTURES[key]!, read)
+const sheet = (key: string, read: 'target' | 'today' = 'target') => procedureSheetOf(procedureReadOfFixture(PROCEDURE_FIXTURES[key]!, read))
 
 describe('procedureSheetOf', () => {
   it('sets apart the contracts another institution signed under a reused notice number', () => {

@@ -464,49 +464,7 @@ const rawDuplicateRefSchema = z.object({
   id: z.string(),
 })
 
-const rawLotWinnerSchema = z.object({
-  lotLabel: z.string(),
-  winner: rawPartySchema,
-  valueRon: z.string().nullable(),
-  currency: z.string().nullable(),
-})
-
-const rawTedRefSchema = z.object({
-  tedNoticeNo: z.string(),
-  sourceUrl: z.string(),
-})
-
 const DETAIL_SHARED_FIELDS = /* GraphQL */ `duplicates { sourceSystem id }`
-
-export const PROCUREMENT_PROCEDURE_DETAIL_QUERY = /* GraphQL */ `
-  query ProcurementProcedureDetail($id: ID!) {
-    procurementProcedure(id: $id) {
-      procedure { ${PROCEDURE_FIELDS} }
-      contracts { ${CONTRACT_FIELDS} }
-      perLotWinners {
-        lotLabel
-        winner { ${PARTY_FIELDS} }
-        valueRon currency
-      }
-      ted { tedNoticeNo sourceUrl }
-      ${DETAIL_SHARED_FIELDS}
-    }
-  }
-`
-export const procurementProcedureDetailResponseSchema = z.object({
-  procurementProcedure: z
-    .object({
-      procedure: rawProcedureSchema,
-      contracts: z.array(rawContractSchema),
-      perLotWinners: z.array(rawLotWinnerSchema).nullable(),
-      ted: rawTedRefSchema.nullable(),
-      duplicates: z.array(rawDuplicateRefSchema),
-    })
-    .nullable(),
-})
-export type RawProcurementProcedureDetail = NonNullable<
-  z.infer<typeof procurementProcedureDetailResponseSchema>['procurementProcedure']
->
 
 const DA_ITEM_FIELDS = /* GraphQL */ `
   id itemIndex catalogItemCode catalogItemName catalogItemDescription

@@ -3,14 +3,14 @@ import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { PartyName } from '@/features/procurement/components/direct-purchase/direct-purchase-head'
-import { Clamp } from '@/features/procurement/components/direct-purchase/direct-purchase-receipt'
-import { contractsCount, criterionText, frameworksCount, monthsCount, namesList, offersCount, offersFate, offersFrom } from '@/features/procurement/lib/contract-text'
-import { dayLong, dayShort, labelText, leiExact, leiShort } from '@/features/procurement/lib/direct-purchase-text'
 import { cn } from '@/lib/utils'
-import { useRouteLabel } from './procedure.head'
-import type { ProcedureSheet, PsContract, PsLot, PsNoticeRef } from './procedure.model'
-import { gapFigure, gapText, lotsCount, noticeDelay, offersTotal, priceWeight, republishedNote, sameCriteria, signedWhen, statusLabel } from './procedure.text'
+import { useProcedureRouteLabel } from '../../hooks/use-procedure-route-label'
+import { contractsCount, criterionText, frameworksCount, monthsCount, namesList, offersCount, offersFate, offersFrom } from '../../lib/contract-text'
+import { dayLong, dayShort, labelText, leiExact, leiShort } from '../../lib/direct-purchase-text'
+import type { PrContract, PrLot, PrNoticeRef, ProcedureSheet } from '../../lib/procedure-model'
+import { gapFigure, gapText, lotsCount, noticeDelay, offersTotal, priceWeight, republishedNote, sameCriteria, signedWhen, statusLabel, statusText } from '../../lib/procedure-text'
+import { PartyName } from '../direct-purchase/direct-purchase-head'
+import { Clamp } from '../direct-purchase/direct-purchase-receipt'
 
 /**
  * The procedure, section by section (the contract page's sheet, §17.6): the
@@ -38,7 +38,7 @@ function ExternalLink({ href, children }: { readonly href: string; readonly chil
 }
 
 /** Another notice of the procedure: its page when the API has its row, its number otherwise. */
-export function NoticeLink({ notice, current }: { readonly notice: PsNoticeRef; readonly current: string }) {
+export function NoticeLink({ notice, current }: { readonly notice: PrNoticeRef; readonly current: string }) {
   if (!notice.id || notice.id === current) return <span className="font-mono tabular-nums">{notice.no}</span>
   return (
     <Link to="/procurement/procedures/$id" params={{ id: notice.id }} className={cn('font-mono tabular-nums', INLINE_LINK)}>
@@ -58,20 +58,35 @@ function figureSize(figure: string): string {
 function ProcedureValue({ sheet }: { readonly sheet: ProcedureSheet }) {
   const vat = sheet.vatExcluded
   const call = sheet.kind === 'call'
-  const value = call ? sheet.estimate : sheet.awarded
-  const base = call ? t`Valoarea estimată` : sheet.framework ? t`Valoarea maximă a acordurilor-cadru` : t`Valoarea atribuită`
+  // Today's read of a framework notice has the call-offs' value only: said as such, the ceiling said to be missing.
+  const callOffs = !call && sheet.awarded === null ? sheet.callOffsReported : null
+  const value = call ? sheet.estimate : (sheet.awarded ?? callOffs)
+  // A cancelled or suspended notice's figure is the notice's, not an award.
+  const base = call
+    ? t`Valoarea estimată`
+    : callOffs !== null
+      ? t`Contractele subsecvente din anunț`
+      : sheet.status !== 'awarded'
+        ? t`Valoarea din anunț`
+        : sheet.framework
+          ? t`Valoarea maximă a acordurilor-cadru`
+          : t`Valoarea atribuită`
   const label = vat && value !== null ? t`${base}, fără TVA` : base
   const figure = value !== null ? leiExact(value) : '—'
   const notes: string[] = []
   if (!call) {
+    const state = sheet.status === 'awarded' ? null : statusText(sheet.status)
+    if (state) notes.push(state)
     const gap = gapText(sheet.estimate, sheet.awarded)
     const estimate = sheet.estimate !== null ? leiExact(sheet.estimate) : ''
     if (gap) notes.push(gapFigure(sheet.estimate, sheet.awarded) === '±0%' ? t`Cât a estimat instituția: ${estimate}.` : raisedFirst(t`${gap}: instituția estimase ${estimate}.`))
     if (sheet.lotsCancelled > 0) {
-      const cancelled = lotsCount(sheet.lotsCancelled)
-      notes.push(t`Pe loturile atribuite: ${cancelled} s-au anulat.`)
+      const cancelled = plural(sheet.lotsCancelled, { one: 'un lot s-a anulat', few: '# loturi s-au anulat', other: '# de loturi s-au anulat' })
+      notes.push(t`Valoarea loturilor atribuite; ${cancelled}.`)
     }
-    if (sheet.awarded === null) notes.push(t`SEAP nu publică o valoare verificată a procedurii.`)
+    if (sheet.awarded !== null && sheet.contracts.length > 0 && !sheet.awardedByContracts) notes.push(t`Valoarea din anunțul de atribuire: contractele pe care SEAP le leagă de el nu o adună.`)
+    if (callOffs !== null) notes.push(t`Ce a cumpărat instituția prin acordurile-cadru, până la publicarea anunțului. Valoarea lor maximă nu e publicată încă aici.`)
+    else if (sheet.awarded === null && !state) notes.push(t`SEAP nu publică o valoare verificată a procedurii.`)
   } else if (value === null) {
     notes.push(t`Anunțul nu are o valoare estimată.`)
   }
@@ -148,11 +163,11 @@ function durationOf(sheet: ProcedureSheet): number | null {
 
 /** How many facts the grid holds: one per cell `ProcedureFacts` renders, three to a row. */
 function factsCount(sheet: ProcedureSheet): number {
-  return [sheet.procedureType, sheet.unpublished || sheet.call, sheet.kind === 'award', sheet.awardNotice, sheet.offers, sheet.lots.some((lot) => lot.criterion), sheet.cpv, durationOf(sheet) !== null].filter(Boolean).length
+  return [sheet.procedureType, sheet.unpublished || sheet.call, sheet.contractsSpan, sheet.awardNotice, sheet.offers, sheet.lots.some((lot) => lot.criterion), sheet.cpv, durationOf(sheet) !== null].filter(Boolean).length
 }
 
 function ProcedureFacts({ sheet, className }: { readonly sheet: ProcedureSheet; readonly className?: string }) {
-  const route = useRouteLabel(sheet.procedureType)
+  const route = useProcedureRouteLabel(sheet.procedureType)
   const category = sheet.cpv ? labelText(sheet.cpv.label) : null
   const duration = durationOf(sheet)
   const delay = noticeDelay(sheet)
@@ -182,7 +197,8 @@ function ProcedureFacts({ sheet, className }: { readonly sheet: ProcedureSheet; 
       {sheet.unpublished ? (
         <Fact label={t`Anunțul de participare`}>
           {t`Niciunul`}
-          <span className="mt-1 block text-muted-foreground">{t`negociere fără anunț prealabil: motivul, mai jos`}</span>
+          {/* The reason is the notice's (annex D), said in the calendar when it is read. */}
+          <span className="mt-1 block text-muted-foreground">{sheet.reason?.text || sheet.reason?.urgency ? t`negociere fără anunț prealabil: motivul, mai jos` : t`negociere fără anunț prealabil`}</span>
         </Fact>
       ) : call ? (
         <Fact label={t`Anunțul de participare`}>
@@ -191,7 +207,7 @@ function ProcedureFacts({ sheet, className }: { readonly sheet: ProcedureSheet; 
           {callState ? <span className="mt-1 block text-muted-foreground">{t`rândul lui în SEAP: ${callState}`}</span> : null}
         </Fact>
       ) : null}
-      {sheet.kind === 'award' ? (
+      {sheet.contractsSpan ? (
         <Fact label={sheet.framework ? t`Acordurile-cadru, încheiate` : sheet.contracts.length === 1 ? t`Contractul, încheiat` : t`Contractele, încheiate`}>{raisedFirst(signedWhen(sheet.contractsSpan))}</Fact>
       ) : null}
       {sheet.awardNotice ? (
@@ -243,7 +259,13 @@ function ProcedureParties({ sheet, className }: { readonly sheet: ProcedureSheet
                 {firm.sme ? <MonoLabel className="ml-2 text-muted-foreground">{t`IMM`}</MonoLabel> : null}
               </span>
             ))}
-            {more > 0 ? <span className="block font-normal text-muted-foreground">{plural(more, { one: 'și încă o firmă', few: 'și încă # firme', other: 'și încă # de firme' })}</span> : null}
+            {more > 0 ? (
+              <span className="block font-normal text-muted-foreground">
+                {sheet.contractsCapped
+                  ? plural(more, { one: 'și cel puțin încă o firmă', few: 'și cel puțin încă # firme', other: 'și cel puțin încă # de firme' })
+                  : plural(more, { one: 'și încă o firmă', few: 'și încă # firme', other: 'și încă # de firme' })}
+              </span>
+            ) : null}
           </dd>
         </div>
       ) : null}
@@ -253,12 +275,12 @@ function ProcedureParties({ sheet, className }: { readonly sheet: ProcedureSheet
 
 // ──────────────────────────────────────────────────────────────── lots ──
 
-function lotFirms(lot: PsLot): string {
+function lotFirms(lot: PrLot): string {
   return namesList([...new Set(lot.contracts.flatMap((contract) => contract.firms.map((firm) => firm.name)))])
 }
 
 /** One lot: its number and title, who won it on how many offers; its value against its estimate. */
-function LotRow({ lot }: { readonly lot: PsLot }) {
+function LotRow({ lot }: { readonly lot: PrLot }) {
   const cancelled = lot.status === 'cancelled'
   const firms = lotFirms(lot)
   const offers = lot.offers ? offersCount(lot.offers.received) : null
@@ -292,11 +314,11 @@ function LotRow({ lot }: { readonly lot: PsLot }) {
 
 export function ProcedureLots({ sheet, className, limit = 8 }: { readonly sheet: ProcedureSheet; readonly className?: string; readonly limit?: number }) {
   const [open, setOpen] = useState(false)
-  if (sheet.lotsTotal < 2) return null
+  if (sheet.lots.length < 2) return null
   const shown = open ? sheet.lots : sheet.lots.slice(0, limit)
-  const total = lotsCount(sheet.lotsTotal)
+  const total = lotsCount(sheet.lots.length)
   const cancelledText = sheet.lotsCancelled > 0 ? plural(sheet.lotsCancelled, { one: 'unul s-a anulat', few: '# s-au anulat', other: '# s-au anulat' }) : null
-  const all = sheet.lotsTotal
+  const all = sheet.lots.length
   return (
     <div className={className}>
       <h3 className={SUBHEAD}>{t`Loturile`}</h3>
@@ -333,7 +355,7 @@ export function ProcedureCriteria({ sheet, className }: { readonly sheet: Proced
     <div className={className}>
       <h3 className={SUBHEAD}>{t`Cum s-au punctat ofertele`}</h3>
       <p className={LEDE}>
-        {sheet.lotsTotal > 1 ? (same ? t`La fel pe fiecare lot.` : t`Pe lotul ${lotNo}; celelalte loturi au alte ponderi.`) : null} {t`Din 100 de puncte:`}
+        {sheet.lots.length > 1 ? (same ? t`La fel pe fiecare lot.` : t`Pe lotul ${lotNo}; celelalte loturi au alte ponderi.`) : null} {t`Din 100 de puncte:`}
       </p>
       <div className="mt-4 flex h-3 w-full gap-px overflow-hidden" aria-hidden="true">
         {criteria.map((criterion) => (
@@ -426,15 +448,15 @@ function stepsOf(sheet: ProcedureSheet): Step[] {
         when: span.from,
         title: sheet.framework ? t`Acordul-cadru, încheiat` : t`Contractul, încheiat`,
         body: <span className="block">{namesList(sheet.contracts[0]!.firms.map((firm) => firm.name))}</span>,
-        value: sheet.awarded,
+        value: sheet.contracts[0]!.value,
         mark: true,
       })
     } else if (span.from === span.to) {
       // All signed on one day: one step, with the procedure's total.
-      steps.push({ key: 'signed', when: span.from, title: sheet.framework ? t`Acordurile-cadru, încheiate` : t`Contractele, încheiate`, body: null, value: sheet.awarded, across: count, mark: true })
+      steps.push({ key: 'signed', when: span.from, title: sheet.framework ? t`Acordurile-cadru, încheiate` : t`Contractele, încheiate`, body: null, value: sheet.awardedByContracts ? sheet.awarded : null, across: count, mark: true })
     } else {
       steps.push({ key: 'signed', when: span.from, title: sheet.framework ? t`Primele acorduri-cadru, încheiate` : t`Primul contract, încheiat`, body: null, value: null, mark: true })
-      steps.push({ key: 'signed-last', when: span.to, title: sheet.framework ? t`Ultimul acord-cadru, încheiat` : t`Ultimul contract, încheiat`, body: null, value: sheet.awarded, across: count })
+      steps.push({ key: 'signed-last', when: span.to, title: sheet.framework ? t`Ultimul acord-cadru, încheiat` : t`Ultimul contract, încheiat`, body: null, value: sheet.awardedByContracts ? sheet.awarded : null, across: count })
     }
   }
   if (sheet.awardNotice) {
@@ -515,7 +537,7 @@ export function ProcedureCalendar({ sheet, className }: { readonly sheet: Proced
 
 // ─────────────────────────────────────────────────────────── contracts ──
 
-function ContractRow({ contract }: { readonly contract: PsContract }) {
+function ContractRow({ contract }: { readonly contract: PrContract }) {
   const names = namesList(contract.firms.map((firm) => firm.name))
   const number = contract.no
   const lotList = contract.lots.join(', ')
@@ -563,8 +585,7 @@ export function ProcedureContracts({ sheet, className, limit = 6 }: { readonly s
     <div className={className}>
       <h3 className={SUBHEAD}>{sheet.framework ? t`Acordurile-cadru` : all === 1 ? t`Contractul` : t`Contractele`}</h3>
       <p className={LEDE}>
-        {sheet.contractsCapped ? t`Cel puțin ${count}, cu ${firms}: API-ul dă primele 50 de rânduri ale anunțului și niciun total.` : t`${counted}, cu ${firms}.`}{' '}
-        {sheet.read === 'today' ? t`Un rând e o firmă: o asociere apare de atâtea ori câte firme are.` : null}
+        {sheet.contractsCapped ? t`Cel puțin ${count}, cu cel puțin ${firms}: API-ul dă primele 50 de rânduri ale anunțului și niciun total.` : t`${counted}, cu ${firms}.`}
       </p>
       <ol className="mt-4 divide-y divide-border/70 border-y border-border/70">
         {shown.map((contract) => (
@@ -609,21 +630,32 @@ export function ProcedureCallOffs({ sheet, className, limit = 4 }: { readonly sh
   )
 }
 
-/** Rows SEAP links to the notice that another institution signed: said, listed apart, counted nowhere. */
+/**
+ * Rows SEAP links to the notice that another institution signed — or that
+ * name no institution, under a number that repeats: said, listed apart,
+ * counted nowhere.
+ */
 export function ProcedureForeign({ sheet, className }: { readonly sheet: ProcedureSheet; readonly className?: string }) {
   if (sheet.foreign.length === 0) return null
   const notice = sheet.noticeNo ?? ''
   const count = contractsCount(sheet.foreign.length)
+  // A full page of rows may hold more of them.
+  const counted = sheet.contractsCapped ? t`cel puțin ${count}` : count
+  const unverified = sheet.foreign.some((row) => !row.verified)
   return (
     <div className={cn('border-l-2 border-amber-600/60 pl-4 dark:border-amber-400/60', className)}>
-      <h3 className={SUBHEAD}>{t`Contracte legate greșit de acest anunț`}</h3>
-      <p className={LEDE}>{t`SEAP leagă de anunțul nr. ${notice} ${count} ale altor instituții: le potrivește doar după număr, iar numerele vechi se repetă. Nu țin de această procedură și nu sunt numărate aici.`}</p>
+      <h3 className={SUBHEAD}>{unverified ? t`Contracte legate de acest anunț doar după număr` : t`Contracte legate greșit de acest anunț`}</h3>
+      <p className={LEDE}>
+        {unverified
+          ? t`SEAP leagă de anunțul nr. ${notice} ${counted} ale altor instituții sau fără instituție în SEAP: le potrivește doar după număr, iar numerele vechi se repetă. Nu sunt numărate aici.`
+          : t`SEAP leagă de anunțul nr. ${notice} ${counted} ale altor instituții: le potrivește doar după număr, iar numerele vechi se repetă. Nu țin de această procedură și nu sunt numărate aici.`}
+      </p>
       <ul className="mt-4 divide-y divide-border/70 border-y border-border/70">
         {sheet.foreign.map((row) => (
           <li key={row.id}>
             <Link to="/procurement/contracts/$id" params={{ id: row.id }} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 py-3 text-sm text-muted-foreground transition-colors hover:text-primary">
               <span className="min-w-0">
-                <span className="block truncate">{namesList([row.authority.name, row.supplier.name])}</span>
+                <span className="block truncate">{namesList([row.verified ? row.authority.name : t`instituție nepublicată în SEAP`, row.supplier.name])}</span>
                 <MonoLabel className="mt-1 block">
                   {row.no ? t`nr. ${row.no}` : t`fără număr`}
                   {row.date ? ` · ${dayShort(row.date)}` : ''}
@@ -644,7 +676,11 @@ export function ProcedureSource({ sheet, className }: { readonly sheet: Procedur
     <p className={cn('text-sm text-muted-foreground', className)}>
       <Trans>Sursa:</Trans>{' '}
       {source.kind === 'notice' ? (
-        <ExternalLink href={source.url}>{t`anunțul de atribuire pe e-licitatie.ro`}</ExternalLink>
+        source.url ? (
+          <ExternalLink href={source.url}>{t`anunțul de atribuire pe e-licitatie.ro`}</ExternalLink>
+        ) : (
+          t`anunțul de atribuire din SEAP`
+        )
       ) : (
         <>
           {t`rândul anunțului în raportul SEAP`}
