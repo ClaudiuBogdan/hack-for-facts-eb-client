@@ -7,6 +7,7 @@ import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useSearchResults } from '@/features/landing/hooks/use-landing-search'
+import { humanizeProcurementCaveat, isSourceDisclosure } from '../../lib/caveat-text'
 import { procurementHrefOf } from '../../lib/home-links'
 import { cn } from '@/lib/utils'
 import {
@@ -360,6 +361,8 @@ export function MethodBody({ query, answer, className }: { readonly query: Query
   const ranking = answer.ranking.data
   const sum = ranking ? ranking.buckets.reduce((total, bucket) => total + bucket.count, 0) : null
   const adds = now?.records != null && sum !== null ? sum === now.records : null
+  // The source-reported and source-catalogue notes sit on the source line.
+  const caveats = now?.caveats.filter((caveat) => !isSourceDisclosure(caveat)) ?? []
   return (
     <div className={cn('space-y-2', className)}>
         <p>{populationGloss(query.tip)}</p>
@@ -374,11 +377,11 @@ export function MethodBody({ query, answer, className }: { readonly query: Query
         {query.titlu ? <p>{t`„Titlul conține" caută în titlu, fără diacritice ignorate: „deszăpezire" și „deszapezire" dau răspunsuri diferite.`}</p> : null}
         {adds !== null ? <p>{adds ? t`Rândurile listei, cu „Restul" și cele necunoscute, se adună la total.` : t`Rândurile listei nu se adună exact la total: citirile nu sunt din același moment.`}</p> : null}
         {now?.undated ? <p>{undatedText(now.undated)}</p> : null}
-        {now?.caveats.length ? <p className="text-xs">{t`Notele sursei (în engleză):`}</p> : null}
-        {now?.caveats.length ? (
+        {caveats.length ? <p className="text-xs">{t`Notele sursei:`}</p> : null}
+        {caveats.length ? (
           <ul className="list-disc space-y-1 pl-5 text-xs">
-            {now.caveats.map((caveat) => (
-              <li key={caveat}>{caveat}</li>
+            {caveats.map((caveat) => (
+              <li key={caveat}>{humanizeProcurementCaveat(caveat)}</li>
             ))}
           </ul>
         ) : null}

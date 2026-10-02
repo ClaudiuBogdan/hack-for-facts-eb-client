@@ -14,6 +14,9 @@
 import { t } from '@lingui/core/macro'
 import { formatRon } from './formatting'
 
+const SOURCE_REPORTED_PREFIX = 'procurement amounts are source-reported'
+const CATALOGUE_PREFIX = 'source catalogue, not loaded coverage: '
+
 const GRAIN_TOKENS: Record<string, () => string> = {
   direct_acquisition: () => t`direct acquisitions`,
   directAcquisition: () => t`direct acquisitions`,
@@ -206,16 +209,18 @@ const FIXED_NOTES: readonly (readonly [string, () => string])[] = [
     () =>
       t`The comparison base is zero in this selection, so no ratio can be derived.`,
   ],
-  // Source notes — the server's `procurement/core/source-capture.ts`.
+  // Source notes — the server's `procurement/core/source-capture.ts`. They
+  // sit beside the page's Romanian source line, so they are authored in
+  // Romanian like the supplier-money notes below.
   [
-    'procurement amounts are source-reported',
+    SOURCE_REPORTED_PREFIX,
     () =>
-      t`Amounts are as the sources reported them and may include source errors; they are not verified payments.`,
+      t`Valorile sunt cele raportate de surse și pot conține erori ale surselor; nu sunt plăți verificate.`,
   ],
   [
-    'source catalogue, not loaded coverage: unknown for this build',
+    `${CATALOGUE_PREFIX}unknown for this build`,
     () =>
-      t`What the source catalogues held when this data was loaded is unknown.`,
+      t`Nu se știe ce conțineau cataloagele surselor când au fost încărcate aceste date.`,
   ],
 ]
 
@@ -332,15 +337,16 @@ function concentrationPopulationSentence(caveat: string): string | null {
 }
 
 const LISTING_TOKENS: Record<string, () => string> = {
-  'direct acquisitions': () => t`direct acquisitions`,
-  'award notices': () => t`award notices`,
+  'direct acquisitions': () => t`achiziții directe`,
+  'award notices': () => t`anunțuri de atribuire`,
 }
 
 const SEAP_FAMILY_TOKENS: Record<string, () => string> = {
-  'direct acquisition': () => t`direct acquisition`,
-  notice: () => t`notice`,
-  contract: () => t`contract`,
-  'contract and subsequent-contract': () => t`contract and subsequent-contract`,
+  'direct acquisition': () => t`achiziții directe`,
+  notice: () => t`anunțuri`,
+  contract: () => t`contracte`,
+  'contract and subsequent-contract': () =>
+    t`contracte și contracte subsecvente`,
 }
 
 /**
@@ -349,22 +355,21 @@ const SEAP_FAMILY_TOKENS: Record<string, () => string> = {
  * export file may not be loaded.
  */
 function sourceCatalogueSentence(caveat: string): string | null {
-  const prefix = 'source catalogue, not loaded coverage: '
-  if (!caveat.startsWith(prefix)) return null
-  const rest = caveat.slice(prefix.length)
+  if (!caveat.startsWith(CATALOGUE_PREFIX)) return null
+  const rest = caveat.slice(CATALOGUE_PREFIX.length)
   const listed = rest.match(
     /^latest completed e-licitatie (.+?) listing window ends (\d{4}-\d{2}-\d{2}); (\d+) earlier windows unfinished$/,
   )
   if (listed) {
     const [, token, date, unfinished] = listed
     const what = LISTING_TOKENS[token ?? '']?.() ?? token
-    return t`The latest completed e-licitatie listing of ${what} ends on ${date}, with ${unfinished} earlier listing windows unfinished. This is how recent the source catalogue is, not what this data covers.`
+    return t`Ultima listare finalizată din e-licitatie pentru ${what} se încheie la ${date}, iar ${unfinished} ferestre de listare anterioare nu sunt finalizate. Aceasta arată cât de recent este catalogul sursei, nu ce acoperă aceste date.`
   }
   const unknownListing = rest.match(/^e-licitatie (.+?) listing unknown$/)
   if (unknownListing) {
     const what =
       LISTING_TOKENS[unknownListing[1] ?? '']?.() ?? unknownListing[1]
-    return t`How recent the e-licitatie listing of ${what} is, is unknown.`
+    return t`Nu se știe cât de recentă este listarea e-licitatie pentru ${what}.`
   }
   const seap = rest.match(
     /^SEAP (.+?) export files listed up to year (\d{4})$/,
@@ -372,14 +377,37 @@ function sourceCatalogueSentence(caveat: string): string | null {
   if (seap) {
     const [, token, year] = seap
     const family = SEAP_FAMILY_TOKENS[token ?? '']?.() ?? token
-    return t`The SEAP catalogue lists ${family} export files up to ${year}. This is what the catalogue lists, not what this data has loaded.`
+    return t`Catalogul SEAP listează fișiere de export pentru ${family} până în ${year}. Aceasta este ce listează catalogul, nu ce au încărcat aceste date.`
   }
   const seapUnknown = rest.match(/^SEAP (.+?) exports unknown$/)
   if (seapUnknown) {
     const family = SEAP_FAMILY_TOKENS[seapUnknown[1] ?? '']?.() ?? seapUnknown[1]
-    return t`How recent the SEAP ${family} export catalogue is, is unknown.`
+    return t`Nu se știe cât de recent este catalogul de exporturi SEAP pentru ${family}.`
   }
   return null
+}
+
+/** The source-reported and source-catalogue notes, which the page shows by its source line. */
+export const isSourceDisclosure = (caveat: string): boolean =>
+  caveat.startsWith(SOURCE_REPORTED_PREFIX) ||
+  caveat.startsWith(CATALOGUE_PREFIX)
+
+/**
+ * At most two short lines for the source line: what the amounts are, then how
+ * recent the source catalogues were (never what the build loaded).
+ */
+export function sourceDisclosureNotes(
+  caveats: readonly string[],
+): readonly string[] {
+  const unique = [...new Set(caveats)]
+  const reported = unique
+    .filter((caveat) => caveat.startsWith(SOURCE_REPORTED_PREFIX))
+    .map(humanizeProcurementCaveat)
+  const catalogue = unique
+    .filter((caveat) => caveat.startsWith(CATALOGUE_PREFIX))
+    .map(humanizeProcurementCaveat)
+    .join(' ')
+  return [...reported.slice(0, 1), ...(catalogue ? [catalogue] : [])]
 }
 
 /**

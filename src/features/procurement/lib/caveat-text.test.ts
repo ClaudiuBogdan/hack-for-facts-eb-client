@@ -167,13 +167,13 @@ describe('source notes', () => {
     const listing = humanizeProcurementCaveat(SERVER_CAVEATS.catalogueListing)
     expect(listing).toContain('2026-06-30')
     expect(listing).toContain('3209')
-    expect(listing).toContain('not what this data covers')
+    expect(listing).toContain('nu ce acoperă aceste date')
     const seap = humanizeProcurementCaveat(SERVER_CAVEATS.catalogueSeap)
     expect(seap).toContain('2026')
-    expect(seap).toContain('not what this data has loaded')
+    expect(seap).toContain('nu ce au încărcat aceste date')
     expect(
       humanizeProcurementCaveat(SERVER_CAVEATS.sourceReported),
-    ).not.toMatch(/capped|kept/)
+    ).not.toMatch(/plafon|păstrat/)
   })
 })
 

@@ -317,8 +317,8 @@ export function periodText(period: ResolvedPeriod, query: Query): string {
 
 export function periodGloss(period: ResolvedPeriod, query: Query): string | null {
   if (period.replaced) return t`Perioada cerută e după ultimele date; arătăm ultimele 12 luni (până în ${monthText(period.to)}).`
-  if (query.period.kind !== 'recent') return period.throughCutoff ? t`Datele SEAP sunt complete până în ${monthText(period.to)}.` : null
-  return t`Ultimele 12 luni cu date complete în SEAP (până în ${monthText(period.to)}).`
+  if (query.period.kind !== 'recent') return period.throughCutoff ? t`Datele SEAP disponibile ajung până în ${monthText(period.to)}.` : null
+  return t`Ultimele 12 luni cu date disponibile în SEAP (până în ${monthText(period.to)}).`
 }
 
 /** „ian. 2025 – mai 2025", „mai 2025". */
