@@ -14,6 +14,9 @@
 import { t } from '@lingui/core/macro'
 import { formatRon } from './formatting'
 
+const SOURCE_REPORTED_PREFIX = 'procurement amounts are source-reported'
+const CATALOGUE_PREFIX = 'source catalogue, not loaded coverage: '
+
 const GRAIN_TOKENS: Record<string, () => string> = {
   direct_acquisition: () => t`direct acquisitions`,
   directAcquisition: () => t`direct acquisitions`,
@@ -206,6 +209,19 @@ const FIXED_NOTES: readonly (readonly [string, () => string])[] = [
     () =>
       t`The comparison base is zero in this selection, so no ratio can be derived.`,
   ],
+  // Source notes — the server's `procurement/core/source-capture.ts`. They
+  // sit beside the page's Romanian source line, so they are authored in
+  // Romanian like the supplier-money notes below.
+  [
+    SOURCE_REPORTED_PREFIX,
+    () =>
+      t`Valorile sunt cele raportate de surse și pot conține erori ale surselor; nu sunt plăți verificate.`,
+  ],
+  [
+    `${CATALOGUE_PREFIX}unknown for this build`,
+    () =>
+      t`Nu se știe ce conțineau cataloagele surselor când au fost încărcate aceste date.`,
+  ],
 ]
 
 const fixedNoteSentence = (caveat: string): string | null => {
@@ -320,12 +336,86 @@ function concentrationPopulationSentence(caveat: string): string | null {
   return null
 }
 
+const LISTING_TOKENS: Record<string, () => string> = {
+  'direct acquisitions': () => t`achiziții directe`,
+  'award notices': () => t`anunțuri de atribuire`,
+}
+
+const SEAP_FAMILY_TOKENS: Record<string, () => string> = {
+  'direct acquisition': () => t`achiziții directe`,
+  notice: () => t`anunțuri`,
+  contract: () => t`contracte`,
+  'contract and subsequent-contract': () =>
+    t`contracte și contracte subsecvente`,
+}
+
+/**
+ * Source catalogue recency — what the catalogues listed, never what this
+ * build loaded: the latest completed listing window is an edge, and a listed
+ * export file may not be loaded.
+ */
+function sourceCatalogueSentence(caveat: string): string | null {
+  if (!caveat.startsWith(CATALOGUE_PREFIX)) return null
+  const rest = caveat.slice(CATALOGUE_PREFIX.length)
+  const listed = rest.match(
+    /^latest completed e-licitatie (.+?) listing window ends (\d{4}-\d{2}-\d{2}); (\d+) earlier windows unfinished$/,
+  )
+  if (listed) {
+    const [, token, date, unfinished] = listed
+    const what = LISTING_TOKENS[token ?? '']?.() ?? token
+    return t`Ultima listare finalizată din e-licitatie pentru ${what} se încheie la ${date}, iar ${unfinished} ferestre de listare anterioare nu sunt finalizate. Aceasta arată cât de recent este catalogul sursei, nu ce acoperă aceste date.`
+  }
+  const unknownListing = rest.match(/^e-licitatie (.+?) listing unknown$/)
+  if (unknownListing) {
+    const what =
+      LISTING_TOKENS[unknownListing[1] ?? '']?.() ?? unknownListing[1]
+    return t`Nu se știe cât de recentă este listarea e-licitatie pentru ${what}.`
+  }
+  const seap = rest.match(
+    /^SEAP (.+?) export files listed up to year (\d{4})$/,
+  )
+  if (seap) {
+    const [, token, year] = seap
+    const family = SEAP_FAMILY_TOKENS[token ?? '']?.() ?? token
+    return t`Catalogul SEAP listează fișiere de export pentru ${family} până în ${year}. Aceasta este ce listează catalogul, nu ce au încărcat aceste date.`
+  }
+  const seapUnknown = rest.match(/^SEAP (.+?) exports unknown$/)
+  if (seapUnknown) {
+    const family = SEAP_FAMILY_TOKENS[seapUnknown[1] ?? '']?.() ?? seapUnknown[1]
+    return t`Nu se știe cât de recent este catalogul de exporturi SEAP pentru ${family}.`
+  }
+  return null
+}
+
+/** The source-reported and source-catalogue notes, which the page shows by its source line. */
+export const isSourceDisclosure = (caveat: string): boolean =>
+  caveat.startsWith(SOURCE_REPORTED_PREFIX) ||
+  caveat.startsWith(CATALOGUE_PREFIX)
+
+/**
+ * At most two short lines for the source line: what the amounts are, then how
+ * recent the source catalogues were (never what the build loaded).
+ */
+export function sourceDisclosureNotes(
+  caveats: readonly string[],
+): readonly string[] {
+  const unique = [...new Set(caveats)]
+  const reported = unique
+    .filter((caveat) => caveat.startsWith(SOURCE_REPORTED_PREFIX))
+    .map(humanizeProcurementCaveat)
+  const catalogue = unique
+    .filter((caveat) => caveat.startsWith(CATALOGUE_PREFIX))
+    .map(humanizeProcurementCaveat)
+    .join(' ')
+  return [...reported.slice(0, 1), ...(catalogue ? [catalogue] : [])]
+}
+
 /**
  * Plain-language rendering of a server caveat. Returns the original string
  * when the shape is not one of the known gate sentences.
  */
 export function humanizeProcurementCaveat(caveat: string): string {
-  const fixed = fixedNoteSentence(caveat)
+  const fixed = fixedNoteSentence(caveat) ?? sourceCatalogueSentence(caveat)
   if (fixed) return fixed
 
   const supplierMoney =

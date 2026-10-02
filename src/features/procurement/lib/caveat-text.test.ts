@@ -87,6 +87,19 @@ const SERVER_CAVEATS = {
   rankFallbackNoValue:
     'ranked by record count: no record in this scope carries an accepted value on this breakdown’s money basis, so a value ranking would order an all-zero tie',
   rankGateSuppressed: 'ranked by record count (money ranking is gate-suppressed)',
+  // Source notes — `procurement/core/source-capture.ts`.
+  sourceReported:
+    'procurement amounts are source-reported and may include source errors; they are not verified payments',
+  catalogueListing:
+    'source catalogue, not loaded coverage: latest completed e-licitatie direct acquisitions listing window ends 2026-06-30; 3209 earlier windows unfinished',
+  catalogueListingUnknown:
+    'source catalogue, not loaded coverage: e-licitatie award notices listing unknown',
+  catalogueSeap:
+    'source catalogue, not loaded coverage: SEAP contract and subsequent-contract export files listed up to year 2026',
+  catalogueSeapUnknown:
+    'source catalogue, not loaded coverage: SEAP notice exports unknown',
+  catalogueBuildUnknown:
+    'source catalogue, not loaded coverage: unknown for this build',
 } as const
 
 describe('humanizeProcurementCaveat', () => {
@@ -149,6 +162,21 @@ describe('humanizeProcurementCaveat', () => {
  * language: they explain why a buyer's whole awarded total can sit outside
  * every supplier figure on the page.
  */
+describe('source notes', () => {
+  it('keeps the listing edge and the year, and never claims loaded coverage', () => {
+    const listing = humanizeProcurementCaveat(SERVER_CAVEATS.catalogueListing)
+    expect(listing).toContain('2026-06-30')
+    expect(listing).toContain('3209')
+    expect(listing).toContain('nu ce acoperă aceste date')
+    const seap = humanizeProcurementCaveat(SERVER_CAVEATS.catalogueSeap)
+    expect(seap).toContain('2026')
+    expect(seap).toContain('nu ce au încărcat aceste date')
+    expect(
+      humanizeProcurementCaveat(SERVER_CAVEATS.sourceReported),
+    ).not.toMatch(/plafon|păstrat/)
+  })
+})
+
 describe('supplier-money disclosures', () => {
   it('keeps both amounts and the share of the consortium withholding', () => {
     const human = humanizeProcurementCaveat(SERVER_CAVEATS.consortiumWithheld)

@@ -13,6 +13,7 @@ import { COUNTY_POPULATION, countyPopulationNote, useRecords, type Answer } from
 import { useSearchStrings } from '../../hooks/use-procurement-analytics'
 import { MethodBody } from './analytics-controls'
 import { countText, listTotalText, moneyText, percentText, periodGloss, populationGloss, recordsCount, type Namer } from '../../lib/analytics-text'
+import { sourceDisclosureNotes } from '../../lib/caveat-text'
 import { bucketLabel, clippedText, profileLink, readoutNotes, rowsOf, shareUrl, type Row } from './analytics-view'
 
 /**
@@ -376,12 +377,18 @@ export function AnswerRecords({ query, answer, className }: { readonly query: Qu
 
 // ──────────────────────────────────────────────────────────── source ──
 
-/** One line at the foot: the source, how far it is complete, and how it was counted behind a click. */
+/**
+ * One line at the foot: the source, the last month with data, how it was
+ * counted behind a click, and — from the answer itself — what the amounts are
+ * and how recent the source catalogues were. The cutoff is the newest month
+ * the national counts fill, not evidence that the source is complete.
+ */
 export function SourceLine({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   const cutoff = answer.cutoff?.[POPULATIONS[query.tip].cutoff] ?? null
+  const notes = sourceDisclosureNotes(answer.figures.data?.now?.caveats ?? [])
   return (
     <footer className={cn('flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground', className)}>
-      <span>{cutoff ? t`Sursa: SEAP, complet până în ${monthText(cutoff)}` : t`Sursa: SEAP`}</span>
+      <span>{cutoff ? t`Sursa: SEAP, date disponibile până în ${monthText(cutoff)}` : t`Sursa: SEAP`}</span>
       <span aria-hidden="true">·</span>
       <Popover>
         <PopoverTrigger className="underline-offset-4 hover:text-foreground hover:underline">{t`Cum am calculat`}</PopoverTrigger>
@@ -389,6 +396,11 @@ export function SourceLine({ query, answer, className }: { readonly query: Query
           <MethodBody query={query} answer={answer} />
         </PopoverContent>
       </Popover>
+      {notes.map((note) => (
+        <p key={note} className="basis-full">
+          {note}
+        </p>
+      ))}
     </footer>
   )
 }
