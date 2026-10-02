@@ -540,8 +540,8 @@ details> :not(summary) {
  */
 @media (forced-colors: active) {
   :focus-visible {
+    /* The offset stays the element's: an inset ring stays inside a card that clips. */
     outline: 2px solid Highlight;
-    outline-offset: 2px;
   }
 }
 

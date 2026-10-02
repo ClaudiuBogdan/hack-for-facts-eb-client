@@ -146,7 +146,7 @@ msgstr "“Registered” means the organisation is in the registry, not that it 
 msgid "„laptop\", „deszăpezire\""
 msgstr "“laptop”, “deszăpezire”"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:377
+#: src/features/procurement/components/analytics/analytics-controls.tsx:378
 msgid "„Titlul conține\" caută în titlu, fără diacritice ignorate: „deszăpezire\" și „deszapezire\" dau răspunsuri diferite."
 msgstr "“Title contains” searches the title, with diacritics not ignored: “deszăpezire” and “deszapezire” give different answers."
 
@@ -1058,7 +1058,7 @@ msgstr "{0} and {1}, {2}–{3}"
 #: src/features/advanced-map-analytics/components/map-analytics-group-workspace-import-dialog.tsx:287
 #: src/features/advanced-map-analytics/components/map-analytics-public-view-helpers.ts:241
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2994
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4923
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4925
 msgid "{0} UATs"
 msgstr "{0} UATs"
 
@@ -2400,7 +2400,7 @@ msgstr "1 merged group"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2993
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4283
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4474
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4922
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4924
 msgid "1 UAT"
 msgstr "1 UAT"
 
@@ -3438,7 +3438,7 @@ msgstr "Actul prevede sancțiuni."
 msgid "Adaugă teritorii"
 msgstr "Add territories"
 
-#: src/features/ngos/registry/components/registry-head.tsx:339
+#: src/features/ngos/registry/components/registry-head.tsx:340
 #: src/features/procurement/components/analytics/analytics-head.tsx:218
 msgid "Adaugă un filtru"
 msgstr "Add a filter"
@@ -3568,7 +3568,7 @@ msgstr "Add the role used in official documents, for example president or execut
 msgid "Add UATs here"
 msgstr "Add UATs here"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4952
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4954
 msgid "Add UATs to this group"
 msgstr "Add UATs to this group"
 
@@ -4164,7 +4164,7 @@ msgstr "Other professional services"
 msgid "Altele"
 msgstr "Other"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:215
+#: src/features/procurement/components/analytics/analytics-controls.tsx:216
 msgid "Altfel"
 msgstr "Other"
 
@@ -6302,7 +6302,7 @@ msgid "categorii"
 msgstr "categories"
 
 #: src/features/justice/components/litigation-slice-section.tsx:214
-#: src/features/procurement/components/analytics/analytics-controls.tsx:178
+#: src/features/procurement/components/analytics/analytics-controls.tsx:179
 #: src/features/procurement/components/analytics/analytics-filters.tsx:266
 #: src/routes/justitie.instante.$courtId.tsx:137
 #: src/routes/justitie.instante.$courtId.tsx:246
@@ -6376,7 +6376,7 @@ msgstr "Rubber and plastics"
 msgid "Cauta"
 msgstr "Cauta"
 
-#: src/features/landing/components/search/landing-search.tsx:654
+#: src/features/landing/components/search/landing-search.tsx:652
 #: src/features/legal/components/legislation-act-finder.tsx:232
 #: src/features/legal/components/legislation-search-band.tsx:65
 #: src/features/legal/components/legislation-tab-nav.tsx:49
@@ -10980,7 +10980,7 @@ msgstr "Delete conversation"
 msgid "Delete data series?"
 msgstr "Delete data series?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4960
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4962
 msgid "Delete group"
 msgstr "Delete group"
 
@@ -12130,7 +12130,7 @@ msgstr "By the year in the registry number; the national average also counts the
 msgid "După anul din numărul de registru. Registrul există din 2000; organizațiile mai vechi au fost preluate atunci."
 msgstr "By the year in the registry number. The registry has existed since 2000; older organisations were entered into it then."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:301
+#: src/features/procurement/components/analytics/analytics-controls.tsx:302
 msgid "După ce"
 msgstr "By"
 
@@ -13326,7 +13326,7 @@ msgstr "Export config"
 msgid "Export CSV"
 msgstr "Export CSV"
 
-#: src/features/ngos/registry/components/registry-head.tsx:293
+#: src/features/ngos/registry/components/registry-head.tsx:294
 msgid "Export din {captured}"
 msgstr "Export of {captured}"
 
@@ -14251,7 +14251,7 @@ msgstr "Filtered"
 #: src/features/legal/components/legislation-changes-feed.tsx:300
 #: src/features/legal/components/legislation-gazette-directory.tsx:203
 #: src/features/ngos/registry/components/registry-filters.tsx:415
-#: src/features/ngos/registry/components/registry-head.tsx:228
+#: src/features/ngos/registry/components/registry-head.tsx:229
 #: src/features/procurement/components/analytics/analytics-filters.tsx:482
 #: src/features/procurement/components/analytics/analytics-filters.tsx:518
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:621
@@ -14296,7 +14296,7 @@ msgstr "Filtre întreprinderi"
 msgid "Filtre servicii"
 msgstr "Filtre servicii"
 
-#: src/features/landing/components/search/landing-search.tsx:687
+#: src/features/landing/components/search/landing-search.tsx:685
 msgid "Filtre sugerate"
 msgstr "Suggested filters"
 
@@ -14513,7 +14513,7 @@ msgstr "Finish"
 msgid "Firma"
 msgstr "Firm"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:170
+#: src/features/procurement/components/analytics/analytics-controls.tsx:171
 msgid "firmă"
 msgstr "company"
 
@@ -14614,7 +14614,7 @@ msgstr "Companies that sold directly to the state"
 msgid "firme din {name}"
 msgstr "companies from {name}"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:200
+#: src/features/procurement/components/analytics/analytics-controls.tsx:201
 msgid "Firme din {name}"
 msgstr "Companies from {name}"
 
@@ -15424,7 +15424,7 @@ msgstr "Group / UAT"
 msgid "Group context"
 msgstr "Group context"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4916
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4918
 msgid "Group name"
 msgstr "Group name"
 
@@ -15745,7 +15745,7 @@ msgstr "ICCJ"
 msgid "Identification"
 msgstr "Identification"
 
-#: src/features/landing/components/search/landing-search.tsx:657
+#: src/features/landing/components/search/landing-search.tsx:655
 msgid "Identificator"
 msgstr "Identifier"
 
@@ -17323,7 +17323,7 @@ msgstr "the institution did not accept the offer in time."
 msgid "Instituția nu a publicat un anunț de participare: a negociat direct. Legea permite asta doar în anumite cazuri (urgență, un singur furnizor posibil)."
 msgstr "The institution published no call for competition: it negotiated directly. The law allows this only in certain cases (urgency, a single possible supplier)."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:170
+#: src/features/procurement/components/analytics/analytics-controls.tsx:171
 msgid "instituție"
 msgstr "institution"
 
@@ -17366,7 +17366,7 @@ msgstr "Public institution"
 msgid "Instituție, firmă sau CUI…"
 msgstr "Institution, company or tax ID…"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:153
+#: src/features/procurement/components/analytics/analytics-controls.tsx:154
 msgid "Instituție, firmă, categorie, județ…"
 msgstr "Institution, company, category, county…"
 
@@ -17396,7 +17396,7 @@ msgstr "institutions with {0} execution data"
 msgid "instituții din {name}"
 msgstr "institutions from {name}"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:195
+#: src/features/procurement/components/analytics/analytics-controls.tsx:196
 msgid "Instituții din {name}"
 msgstr "Institutions from {name}"
 
@@ -17408,7 +17408,7 @@ msgstr "Institutions with no known location"
 msgid "instituții publice"
 msgstr "instituții publice"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:161
+#: src/features/procurement/components/analytics/analytics-controls.tsx:162
 msgid "Instituții și firme"
 msgstr "Institutions and companies"
 
@@ -17586,8 +17586,8 @@ msgstr "Between them, by year"
 msgid "Între ele, pe ani, lei"
 msgstr "Between them, by year, lei"
 
-#: src/features/ngos/registry/components/registry-head.tsx:193
-#: src/features/procurement/components/analytics/analytics-controls.tsx:245
+#: src/features/ngos/registry/components/registry-head.tsx:194
+#: src/features/procurement/components/analytics/analytics-controls.tsx:246
 msgid "Întrebări"
 msgstr "Questions"
 
@@ -17877,7 +17877,7 @@ msgstr "județ necunoscut"
 msgid "Județ sau localitate din {0}"
 msgstr "County or locality in {0}"
 
-#: src/features/ngos/registry/components/registry-head.tsx:163
+#: src/features/ngos/registry/components/registry-head.tsx:164
 msgid "Județ, formă, stare, cuvinte din nume…"
 msgstr "County, form, status, words in the name…"
 
@@ -17897,7 +17897,7 @@ msgstr "counties"
 #: src/features/ngos/registry/components/registry-filters.tsx:224
 #: src/features/ngos/registry/components/registry-head.tsx:115
 #: src/features/ngos/registry/counts.ts:384
-#: src/features/procurement/components/analytics/analytics-controls.tsx:192
+#: src/features/procurement/components/analytics/analytics-controls.tsx:193
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:207
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:240
 msgid "Județe"
@@ -19474,13 +19474,13 @@ msgstr "Months"
 #. placeholder {1}: answer.period.to
 #. placeholder {2}: answer.period.previous.from
 #. placeholder {3}: answer.period.previous.to
-#: src/features/procurement/components/analytics/analytics-controls.tsx:372
+#: src/features/procurement/components/analytics/analytics-controls.tsx:373
 msgid "Lunile: {0} – {1}; schimbarea se măsoară față de aceleași luni cu ani în urmă, {2} – {3}."
 msgstr "Months: {0} – {1}; the change is measured against the same months a year earlier, {2} – {3}."
 
 #. placeholder {0}: answer.period.from
 #. placeholder {1}: answer.period.to
-#: src/features/procurement/components/analytics/analytics-controls.tsx:373
+#: src/features/procurement/components/analytics/analytics-controls.tsx:374
 msgid "Lunile: {0} – {1}."
 msgstr "Months: {0} – {1}."
 
@@ -19946,7 +19946,7 @@ msgstr "Master preference for public debate campaign notifications"
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Master the app with these powerful keyboard shortcuts"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:324
+#: src/features/procurement/components/analytics/analytics-controls.tsx:325
 #: src/features/procurement/components/analytics/analytics-years.tsx:42
 msgid "Măsura"
 msgstr "Measure"
@@ -20665,11 +20665,11 @@ msgstr "Move down"
 msgid "Move Down"
 msgstr "Move Down"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5003
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5005
 msgid "Move earlier"
 msgstr "Move earlier"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5010
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5012
 msgid "Move later"
 msgstr "Move later"
 
@@ -21599,8 +21599,8 @@ msgstr "Niciunul dintre cei {known} furnizori identificați nu are {basis} în a
 msgid "Nimic de arătat."
 msgstr "Nothing to show."
 
-#: src/features/ngos/registry/components/registry-head.tsx:168
-#: src/features/procurement/components/analytics/analytics-controls.tsx:158
+#: src/features/ngos/registry/components/registry-head.tsx:169
+#: src/features/procurement/components/analytics/analytics-controls.tsx:159
 msgid "Nimic găsit."
 msgstr "Nothing found."
 
@@ -22208,7 +22208,7 @@ msgstr "No steps available"
 msgid "No steps available yet. Please check back later."
 msgstr "No steps available yet. Please check back later."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5036
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5038
 msgid "No UATs in {groupLabel}."
 msgstr "No UATs in {groupLabel}."
 
@@ -22416,7 +22416,7 @@ msgstr "Note: Transfer items are excluded as they represent internal movements w
 #~ msgid "Notele sursei (în engleză):"
 #~ msgstr "The source's notes (in English):"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:380
+#: src/features/procurement/components/analytics/analytics-controls.tsx:381
 msgid "Notele sursei:"
 msgstr "The source's notes:"
 
@@ -23207,7 +23207,7 @@ msgstr "Name or CUI..."
 msgid "Nume sau identificator."
 msgstr "Name or identifier."
 
-#: src/features/landing/components/search/landing-search.tsx:555
+#: src/features/landing/components/search/landing-search.tsx:553
 msgid "Nume sau identificator..."
 msgstr "Name or identifier..."
 
@@ -23513,7 +23513,7 @@ msgstr "ONG negasit"
 #: src/features/ngos/hub/ngo-hub-search.tsx:31
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:302
 #: src/features/ngos/organization/components/profile-fallbacks.tsx:26
-#: src/features/ngos/registry/components/registry-head.tsx:303
+#: src/features/ngos/registry/components/registry-head.tsx:304
 msgid "ONG-uri"
 msgstr "NGOs"
 
@@ -23794,7 +23794,7 @@ msgstr "Open full procurement profile"
 msgid "Open full table"
 msgstr "Open full table"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4934
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4936
 msgid "Open group menu"
 msgstr "Open group menu"
 
@@ -23875,7 +23875,7 @@ msgstr "Open the campaign forum discussion."
 #~ msgid "Open title source"
 #~ msgstr "Open title source"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4991
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4993
 msgid "Open UAT menu"
 msgstr "Open UAT menu"
 
@@ -24616,7 +24616,7 @@ msgstr "PDF oficial"
 msgid "PDF oficial disponibil"
 msgstr "PDF oficial disponibil"
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:333
+#: src/features/procurement/components/analytics/analytics-controls.tsx:334
 msgid "pe"
 msgstr "by"
 
@@ -25852,7 +25852,7 @@ msgstr "Sector town hall"
 msgid "Primării"
 msgstr "Town halls"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4980
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4982
 msgid "Primary UAT"
 msgstr "Primary UAT"
 
@@ -25978,7 +25978,7 @@ msgstr "Procedures"
 msgid "Procedures carry no supplier until an award."
 msgstr "Procedures carry no supplier until an award."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:206
+#: src/features/procurement/components/analytics/analytics-controls.tsx:207
 msgid "Proceduri"
 msgstr "Procedures"
 
@@ -26609,11 +26609,11 @@ msgstr "The lines add up to {lines}, and the purchase is {value}. SEAP publishes
 msgid "Randurile care leaga acest instantaneu de profiluri sau referinte."
 msgstr "Randurile care leaga acest instantaneu de profiluri sau referinte."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:378
+#: src/features/procurement/components/analytics/analytics-controls.tsx:379
 msgid "Rândurile listei nu se adună exact la total: citirile nu sunt din același moment."
 msgstr "The list's rows do not add up exactly to the total: the readings are not from the same moment."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:378
+#: src/features/procurement/components/analytics/analytics-controls.tsx:379
 msgid "Rândurile listei, cu „Restul\" și cele necunoscute, se adună la total."
 msgstr "The list's rows, with “The rest” and the unknown ones, add up to the total."
 
@@ -27145,7 +27145,7 @@ msgstr "Registru legal (MJ)"
 #: src/features/ngos/hub/ngo-hub-page.tsx:131
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:89
 #: src/features/ngos/registry/components/registry-filters.tsx:359
-#: src/features/ngos/registry/components/registry-head.tsx:307
+#: src/features/ngos/registry/components/registry-head.tsx:308
 msgid "Registrul"
 msgstr "The registry"
 
@@ -27365,7 +27365,7 @@ msgstr "Remove condition"
 msgid "Remove filter {label}"
 msgstr "Remove filter {label}"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5025
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5027
 msgid "Remove from group"
 msgstr "Remove from group"
 
@@ -27390,7 +27390,7 @@ msgid "Removed UAT from group."
 msgstr "Removed UAT from group."
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4655
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4946
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:4948
 msgid "Rename"
 msgstr "Rename"
 
@@ -27843,8 +27843,8 @@ msgstr "rezultate"
 #: src/features/elections/components/contest-result-explorer-page.tsx:166
 #: src/features/entity-search/components/entity-results-header.tsx:38
 #: src/features/entity-search/components/entity-search-skeleton.tsx:15
-#: src/features/landing/components/search/landing-search.tsx:654
-#: src/features/landing/components/search/landing-search.tsx:705
+#: src/features/landing/components/search/landing-search.tsx:652
+#: src/features/landing/components/search/landing-search.tsx:703
 #: src/features/legal/components/legislation-act-finder.tsx:372
 #: src/features/statistics/components/explorer/dataset-explorer-results.tsx:117
 msgid "Rezultate"
@@ -28315,7 +28315,7 @@ msgstr "Remove"
 msgid "Scoate „{0}\""
 msgstr "Remove “{0}”"
 
-#: src/features/ngos/registry/components/registry-head.tsx:260
+#: src/features/ngos/registry/components/registry-head.tsx:261
 msgid "Scoate „{phrase}”"
 msgstr "Remove “{phrase}”"
 
@@ -28381,7 +28381,7 @@ msgstr "Type at least {TERRITORY_SEARCH_MIN_LENGTH} letters of the name."
 #~ msgid "Scrie numele unei localități sau al unui județ. Căutarea ignoră diacriticele."
 #~ msgstr "Enter a locality or county name. Search ignores diacritics."
 
-#: src/features/ngos/registry/components/registry-head.tsx:166
+#: src/features/ngos/registry/components/registry-head.tsx:167
 msgid "Scrie un județ („Cluj”), o formă („fundații”), o stare („radiate”), un număr de registru sau cuvinte din nume."
 msgstr "Type a county (“Cluj”), a form (“fundații”), a status (“radiate”), a registry number or words from the name."
 
@@ -28397,7 +28397,7 @@ msgstr "Type a name to search in <0>{scope}</0>."
 msgid "Scrie un nume sau un identificator pentru a căuta."
 msgstr "Enter a name or identifier to search."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:156
+#: src/features/procurement/components/analytics/analytics-controls.tsx:157
 msgid "Scrie un nume, un CUI, o categorie („medicamente\", „drumuri\") sau un județ."
 msgstr "Type a name, a tax ID, a category (“medicines”, “roads”) or a county."
 
@@ -29798,7 +29798,7 @@ msgstr "Dataset not found"
 #~ msgid "Set fără dimensiune geografică."
 #~ msgstr "Dataset without a geographic dimension."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5017
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:5019
 msgid "Set primary"
 msgstr "Set primary"
 
@@ -30844,7 +30844,7 @@ msgid "Starea"
 msgstr "Status"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:440
-#: src/features/ngos/registry/components/registry-head.tsx:387
+#: src/features/ngos/registry/components/registry-head.tsx:388
 msgid "Starea în registru"
 msgstr "Status in the registry"
 
@@ -31121,7 +31121,7 @@ msgstr "Clear"
 msgid "Șterge anii din adresă"
 msgstr "Clear the years from the address"
 
-#: src/features/landing/components/search/landing-search.tsx:572
+#: src/features/landing/components/search/landing-search.tsx:570
 #: src/features/statistics/components/uat-map/uat-map-finder.tsx:105
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:133
 msgid "Șterge căutarea"
@@ -32879,7 +32879,7 @@ msgid "Titlul conține"
 msgstr "Title contains"
 
 #. placeholder {0}: search.term.trim()
-#: src/features/procurement/components/analytics/analytics-controls.tsx:218
+#: src/features/procurement/components/analytics/analytics-controls.tsx:219
 msgid "Titlul conține „{0}\""
 msgstr "Title contains “{0}”"
 
@@ -33889,7 +33889,7 @@ msgstr "An example, to show what it looks like. Change the indicator or the terr
 msgid "Un export nou al registrului întârzie: datele sunt din {captured}."
 msgstr "A new registry export is overdue: the data are from {captured}."
 
-#: src/features/procurement/components/analytics/analytics-controls.tsx:376
+#: src/features/procurement/components/analytics/analytics-controls.tsx:377
 msgid "Un filtru de valoare păstrează doar înregistrările cu valoare publicată; și numărul lor se schimbă."
 msgstr "A value filter keeps only the records with a published value; their count changes too."
 
@@ -34594,12 +34594,12 @@ msgstr "Valoare atribuită pe lună pentru acest cumpărător public."
 #~ msgstr "Value has an INS status flag"
 
 #. placeholder {0}: moneyText(number)
-#: src/features/procurement/components/analytics/analytics-controls.tsx:226
+#: src/features/procurement/components/analytics/analytics-controls.tsx:227
 msgid "Valoare de cel mult {0}"
 msgstr "Value of at most {0}"
 
 #. placeholder {0}: moneyText(number)
-#: src/features/procurement/components/analytics/analytics-controls.tsx:223
+#: src/features/procurement/components/analytics/analytics-controls.tsx:224
 msgid "Valoare de cel puțin {0}"
 msgstr "Value of at least {0}"
 
