@@ -43,6 +43,9 @@ export default defineNitroConfig({
       },
     },
     "/budget-explorer": { cache: longPublicPageCache },
+    // A withdrawn companies analytics release must stop reaching readers at the
+    // next request: every render reads the API afresh, and none is ever kept.
+    "/companies/analytics": { cache: false },
 
     // Never cache personalized or mutable server endpoints.
     "/api": { cache: false },

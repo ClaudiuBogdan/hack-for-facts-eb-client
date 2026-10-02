@@ -1,6 +1,8 @@
 import { Chart } from '@/schemas/charts';
 import { useMemo, type ReactNode } from 'react';
 import { yValueFormatter } from '../utils';
+import { formatDecimal } from '@/lib/exact-decimal';
+import { getUserLocale } from '@/lib/utils';
 import { SeriesId, DataPointPayload } from '../../../hooks/useChartData';
 import { Trans } from '@lingui/react/macro';
 
@@ -122,10 +124,13 @@ export function CustomSeriesTooltip({
 
             <div className="flex flex-col p-4 gap-6">
                 {mappedPayload.map((dataPoint) => {
-                    const { value, unit, initialValue, initialUnit } = dataPoint;
+                    const { value, unit, initialValue, initialUnit, exact, note } = dataPoint;
 
                     const primaryDisplayValue = yValueFormatter(value, unit, 'compact');
-                    const secondaryDisplayValue = yValueFormatter(initialValue, initialUnit, 'standard');
+                    // A source that serves exact decimals (companies) shows them as sent: the plotted number is rounded by floating point.
+                    const secondaryDisplayValue = exact
+                        ? `${formatDecimal(exact, getUserLocale() === 'en' ? 'en' : 'ro')} ${initialUnit}`.trim()
+                        : yValueFormatter(initialValue, initialUnit, 'standard');
 
                     return (
                         <div
@@ -147,6 +152,7 @@ export function CustomSeriesTooltip({
                                     <span className="text-xs text-muted-foreground whitespace-nowrap">
                                         {secondaryDisplayValue}
                                     </span>
+                                    {note ? <span className="text-xs text-muted-foreground">{note}</span> : null}
                                 </div>
                             </div>
                         </div>

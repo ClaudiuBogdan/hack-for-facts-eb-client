@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { hashKey, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { t } from "@lingui/core/macro";
 
@@ -13,12 +13,16 @@ import {
     defaultYearRange,
     SeriesConfig,
     CommitmentsSeriesConfiguration,
+    CompaniesAnalyticsSeriesConfiguration,
     InsSeriesConfiguration,
     StaticSeriesConfiguration,
 } from "@/schemas/charts";
 import { normalizeAnalyticsFilter, prepareCommitmentsFilterForServer } from "@/lib/filterUtils";
 import { generateHash, convertDaysToMs, getUserLocale } from "@/lib/utils";
-import { calculateAllSeriesData, getInsDependentSeriesIds } from "@/lib/chart-calculation-utils";
+import { calculateAllSeriesData, getCompleteOperandSeriesIds } from "@/lib/chart-calculation-utils";
+import { companiesSeriesRefusedBy, companiesSeriesWithdrawn, mapCompaniesSeriesToAnalyticsSeries } from "@/lib/companies-chart-series";
+import { COMPANIES_CHART_QUERY_KEY, knownRefusedReleases, rememberRefusedRelease, useRefusedReleases } from "@/features/private-companies/lib/company-release-refusals";
+import { companiesAggregateProblem, companiesChartProblems, getCompaniesDependentSeriesIds } from "@/lib/companies-chart-guards";
 import {
     validateAnalyticsSeries,
     sanitizeAnalyticsSeries,
@@ -46,6 +50,10 @@ export type DataPointPayload = {
     unit: string;
     initialValue: number;
     initialUnit: string;
+    /** The source's exact decimal for the point, where it serves one (companies): `value` is only its plotting coordinate. */
+    exact?: string;
+    /** The point's coverage in words (who reported it). */
+    note?: string;
 };
 
 export type TimeSeriesDataPoint = Record<SeriesId, DataPointPayload> & {
@@ -90,6 +98,13 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
             .map((series) => series as InsSeriesConfiguration);
     }, [chart]);
 
+    const companiesSeries = useMemo(() => {
+        if (!chart) return [];
+        return chart.series
+            .filter((series) => series.type === "companies-analytics")
+            .map((series) => series as CompaniesAnalyticsSeriesConfiguration);
+    }, [chart]);
+
     const commitmentsSeriesInputs = useMemo<CommitmentsAnalyticsInput[]>(() => {
         if (!chart) return [];
 
@@ -123,6 +138,7 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
         [staticSeriesIds]
     );
     const insSeriesHash = useMemo(() => getInsSeriesInputHash(insSeries), [insSeries]);
+    const companiesSeriesHash = useMemo(() => getCompaniesSeriesInputHash(companiesSeries), [companiesSeries]);
     const commitmentsSeriesInputsHash = useMemo(
         () => getCommitmentsSeriesInputHash(commitmentsSeriesInputs),
         [commitmentsSeriesInputs]
@@ -132,6 +148,7 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
     const hasFilters = analyticsInputs.length > 0;
     const hasStaticSeries = staticSeries.length > 0;
     const hasInsSeries = insSeries.length > 0;
+    const hasCompaniesSeries = companiesSeries.length > 0;
     const hasCommitmentsSeries = commitmentsSeriesInputs.length > 0;
 
     // Fetch dynamic series
@@ -176,6 +193,43 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
             return results;
         },
         enabled: enabled && hasChart && hasInsSeries,
+        staleTime: (query) => query.state.data?.some(result => result.retryable) ? 0 : convertDaysToMs(1),
+        gcTime: convertDaysToMs(3),
+    });
+
+    // Company figures, each series on its pinned release: gaps as missing periods, exact values beside the plotted ones.
+    // A release this browser has seen refused (by any reader) is neither read nor drawn; a refusal seen here is
+    // remembered for every reader, and drops every other cached company chart (`company-release-refusals.ts`).
+    const queryClient = useQueryClient();
+    const refusedReleases = useRefusedReleases();
+    const {
+        data: companiesSeriesResults,
+        isLoading: isLoadingCompaniesData,
+        error: companiesDataError,
+        refetch: retryCompaniesData,
+        isFetching: isRetryingCompaniesData,
+    } = useQuery({
+        queryKey: [COMPANIES_CHART_QUERY_KEY, companiesSeriesHash, locale],
+        queryFn: async ({ signal, queryKey }) => {
+            const results = await Promise.all(companiesSeries.map(async (series) => {
+                const refused = knownRefusedReleases(queryClient);
+                const pin = series.release?.id ?? null;
+                if (pin !== null && refused.has(pin)) return companiesSeriesWithdrawn(series, pin);
+                const result = await mapCompaniesSeriesToAnalyticsSeries(series, signal, refused);
+                // Known to every reader as soon as this read is refused, not once the chart's other series land.
+                if (result.refusedRelease) rememberRefusedRelease(queryClient, result.refusedRelease, { keepChartQuery: hashKey(queryKey) });
+                return result;
+            }));
+            // Stored only as what is still served: a series read (pinned or not) from a release refused
+            // meanwhile — by a sibling in this chart or any other reader — keeps no figure.
+            const refused = knownRefusedReleases(queryClient);
+            return results.map((result, index) => {
+                const series = companiesSeries[index];
+                const refusedBy = result.series ? companiesSeriesRefusedBy(series, result, refused) : null;
+                return refusedBy === null ? result : companiesSeriesWithdrawn(series, refusedBy);
+            });
+        },
+        enabled: enabled && hasChart && hasCompaniesSeries,
         staleTime: (query) => query.state.data?.some(result => result.retryable) ? 0 : convertDaysToMs(1),
         gcTime: convertDaysToMs(3),
     });
@@ -258,17 +312,46 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
             });
         }
 
-        // Include calculated/custom series
+        if (companiesSeriesResults) {
+            companiesSeriesResults.forEach((result) => {
+                insWarnings.push(...result.warnings);
+                if (result.series) {
+                    map.set(result.series.seriesId, result.series);
+                }
+            });
+        }
+        // Whatever a read cached before: a series read from, or pinned to, a refused release draws nothing, said.
+        companiesSeries.forEach((series) => {
+            if (!map.has(series.id)) return;
+            const result = companiesSeriesResults?.find((item) => item.series?.seriesId === series.id);
+            const refusedBy = companiesSeriesRefusedBy(series, result, refusedReleases);
+            if (refusedBy === null) return;
+            map.delete(series.id);
+            insWarnings.push(...companiesSeriesWithdrawn(series, refusedBy).warnings);
+        });
+
+        // Include calculated/custom series (a disabled series is still read: a calculation may use it)
         const calc = calculateAllSeriesData(chart.series, map);
-        return { map: calc.dataSeriesMap, calcWarnings: calc.warnings, insWarnings };
-    }, [chart, serverChartData, staticServerChartData, staticSeries, insSeriesResults, commitmentsSeriesData]);
+
+        // Company figures the chart cannot draw as configured (a chart type, a monthly
+        // neighbour) give way, said; a saved address reaches here without the editor.
+        // Judged once the calculations are built: a calculation over a disabled monthly
+        // source is drawn monthly, and is a monthly neighbour like any other.
+        const companiesProblems = companiesChartProblems(chart, calc.dataSeriesMap);
+        companiesProblems.blocked.forEach((id) => calc.dataSeriesMap.delete(id));
+        insWarnings.push(...companiesProblems.warnings);
+        const calcWarnings = calc.warnings.filter((warning) => !companiesProblems.blocked.has(warning.seriesId));
+        return { map: calc.dataSeriesMap, calcWarnings, insWarnings };
+    }, [chart, serverChartData, staticServerChartData, staticSeries, insSeriesResults, commitmentsSeriesData, companiesSeries, companiesSeriesResults, refusedReleases]);
 
     const dataSeriesMap = computedSeries?.map;
+    // Held to the axis the chart draws, as plotted: a disabled series read for a calculation does not set it.
+    const drawn = useMemo(() => (chart && dataSeriesMap ? drawnSeriesIds(chart, dataSeriesMap) : undefined), [chart, dataSeriesMap]);
 
     // Validate the data (base validation + calculation warnings)
     const validationResult = useMemo(() => {
         if (!dataSeriesMap) return null;
-        const base = validateAnalyticsSeries(dataSeriesMap);
+        const base = validateAnalyticsSeries(dataSeriesMap, drawn);
         const calculationWarnings = computedSeries?.calcWarnings ?? [];
         const insWarnings = computedSeries?.insWarnings ?? [];
         const calcWarningsResult =
@@ -288,27 +371,30 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
                 } as ValidationResult)
                 : null;
         return combineValidationResults(base, calcWarningsResult, insWarningsResult);
-    }, [dataSeriesMap, computedSeries]);
+    }, [dataSeriesMap, computedSeries, drawn]);
 
     // Sanitize invalid points if needed
     const sanitizedDataSeriesMap = useMemo(() => {
         if (!dataSeriesMap || !validationResult) return dataSeriesMap;
 
         if (!validationResult.isValid || validationResult.warnings.length > 0) {
-            return sanitizeAnalyticsSeries(dataSeriesMap, validationResult);
+            return sanitizeAnalyticsSeries(dataSeriesMap, validationResult, drawn);
         }
 
         return dataSeriesMap;
-    }, [dataSeriesMap, validationResult]);
+    }, [dataSeriesMap, validationResult, drawn]);
 
     return {
         dataSeriesMap: sanitizedDataSeriesMap,
-        isLoadingData: isLoadingData || isLoadingStaticData || isLoadingInsData || isLoadingCommitmentsData,
-        dataError: dataError || staticDataError || insDataError || commitmentsDataError,
+        isLoadingData: isLoadingData || isLoadingStaticData || isLoadingInsData || isLoadingCommitmentsData || isLoadingCompaniesData,
+        dataError: dataError || staticDataError || insDataError || commitmentsDataError || companiesDataError,
         validationResult,
         canRetryInsData: insSeriesResults?.some(result => result.retryable) ?? false,
         retryInsData,
         isRetryingInsData,
+        canRetryCompaniesData: companiesSeriesResults?.some(result => result.retryable) ?? false,
+        retryCompaniesData,
+        isRetryingCompaniesData,
     };
 }
 
@@ -338,12 +424,31 @@ function getInsSeriesInputHash(seriesList: InsSeriesConfiguration[]) {
     return generateHash(payloadHash);
 }
 
+function getCompaniesSeriesInputHash(seriesList: CompaniesAnalyticsSeriesConfiguration[]) {
+    if (seriesList.length === 0) return "";
+    // What the read depends on, not the label or colour: renaming a series reads nothing again.
+    const payloadHash = [...seriesList]
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .reduce((acc, series) => acc + series.id + "::" + JSON.stringify([series.metric, series.period, series.scope, series.referenceYear, series.cohortMode, series.release]), "");
+    return generateHash(payloadHash);
+}
+
 function getCommitmentsSeriesInputHash(inputs: CommitmentsAnalyticsInput[]) {
     if (inputs.length === 0) return "";
     const payloadHash = inputs
         .sort((a, b) => String(a.seriesId ?? "").localeCompare(String(b.seriesId ?? "")))
         .reduce((acc, input) => acc + (input.seriesId ?? "") + "::" + input.metric + "::" + JSON.stringify(input.filter), "");
     return generateHash(payloadHash);
+}
+
+/**
+ * The series a chart draws: every one read that is not explicitly disabled (an id
+ * the chart does not list stays drawn, as before). A disabled series is still read
+ * for the calculations that use it, but it neither sets the x-axis nor is held to it.
+ */
+function drawnSeriesIds(chart: Pick<Chart, "series">, dataSeriesMap: ReadonlyMap<SeriesId, AnalyticsSeries>): Set<SeriesId> {
+    const disabled = new Set(chart.series.filter((series) => series.enabled === false).map((series) => series.id));
+    return new Set([...dataSeriesMap.keys()].filter((seriesId) => !disabled.has(seriesId)));
 }
 
 export interface ChartDataResult<T> {
@@ -368,13 +473,6 @@ export function convertToTimeSeriesData(
         };
     }
 
-    const insDependentIds = getInsDependentSeriesIds(chart.series);
-    // Infer x-axis semantics from the first series. Server provides xAxis.unit and x values as strings.
-    const xUnit = getXAxisUnit(dataSeriesMap);
-    const isMonth = xUnit === 'month';
-    const isQuarter = xUnit === 'quarter';
-    const isYear = xUnit === 'year';
-
     // Build a quick lookup from series id -> series configuration (for per-series x-label transforms)
     const seriesMap = chart.series.reduce(
         (acc, series) => {
@@ -383,6 +481,29 @@ export function convertToTimeSeriesData(
         },
         {} as Record<SeriesId, Series>
     );
+
+    // Only what is drawn sets the axis and its periods. A disabled series stays in the
+    // map for the calculations that read it, but a disabled monthly source must neither
+    // turn an annual chart monthly nor bring back years outside the chart's range.
+    const drawnIds = drawnSeriesIds(chart, dataSeriesMap);
+    const drawnSeriesMap = new Map([...dataSeriesMap].filter(([seriesId]) => drawnIds.has(seriesId)));
+
+    const insDependentIds = getCompleteOperandSeriesIds(chart.series);
+    // Infer x-axis semantics from the first drawn series. Server provides xAxis.unit and x values as strings.
+    const xUnit = getXAxisUnit(drawnSeriesMap);
+    const isMonth = xUnit === 'month';
+    const isQuarter = xUnit === 'quarter';
+    const isYear = xUnit === 'year';
+    // Company figures reach back to 2008: a budget series that starts in 2016 has no
+    // value for the years before — a gap, not 0 lei. Each such series is drawn over its own years.
+    const companiesIds = getCompaniesDependentSeriesIds(chart.series);
+    const ownYears = new Map<SeriesId, { first: number; last: number }>();
+    if (isYear && [...drawnSeriesMap.keys()].some((id) => companiesIds.has(id))) {
+        drawnSeriesMap.forEach((series, id) => {
+            const years = series.data.map((point) => Number(point.x)).filter(Number.isFinite);
+            if (years.length > 0) ownYears.set(id, { first: Math.min(...years), last: Math.max(...years) });
+        });
+    }
 
     // Per-series x-axis label transformation (strip configured prefix if present)
     const transformXLabel = (seriesId: SeriesId, raw: string): string => {
@@ -396,7 +517,7 @@ export function convertToTimeSeriesData(
     };
 
     // Index once: explicit gaps can add buckets even when the fact series is sparse.
-    const indexedSeries = new Map([...dataSeriesMap].map(([id, series]) => {
+    const indexedSeries = new Map([...drawnSeriesMap].map(([id, series]) => {
         const points = new Map<string, AnalyticsSeries['data'][number]>();
         for (const point of series.data) {
             const label = transformXLabel(id, point.x);
@@ -407,7 +528,7 @@ export function convertToTimeSeriesData(
 
     // Collect x-buckets (preserve display labels after per-series transforms)
     const buckets = new Set<string>();
-    dataSeriesMap.forEach((series, seriesId) => {
+    drawnSeriesMap.forEach((series, seriesId) => {
         [...series.data.map(point => point.x), ...(series.missingPeriods ?? [])].forEach((x) => {
             const label = transformXLabel(seriesId, String(x));
             if (label !== '' && label !== 'NaN') buckets.add(label);
@@ -467,13 +588,16 @@ export function convertToTimeSeriesData(
         // Build a plain record first to avoid mutating a fully-cast object
         const row: Record<SeriesId, DataPointPayload> = Object.create(null);
 
-        dataSeriesMap.forEach((seriesData, seriesId) => {
+        drawnSeriesMap.forEach((seriesData, seriesId) => {
             const indexed = indexedSeries.get(seriesId);
             if (indexed?.missing.has(bucketLabel)) return;
             const match = indexed?.points.get(bucketLabel);
             if (!match && (insDependentIds.has(seriesId) || seriesData.missingPeriods != null)) return;
+            const own = ownYears.get(seriesId);
+            if (!match && own && (Number(bucketLabel) < own.first || Number(bucketLabel) > own.last)) return;
             const initialValue = match?.y ?? 0;
             const initialUnit = seriesData.yAxis.unit || "";
+            const detail = match && !isRelative ? seriesData.pointDetails?.[match.x] : undefined;
 
             const series = seriesMap[seriesId];
 
@@ -487,6 +611,7 @@ export function convertToTimeSeriesData(
                 unit: initialUnit,
                 initialValue,
                 initialUnit,
+                ...(detail ? { exact: detail.exact, ...(detail.note ? { note: detail.note } : {}) } : {}),
             };
         });
 
@@ -650,7 +775,8 @@ export function convertToAggregatedData(
     }
 
     const enabledSeries = chart.series.filter((s) => s.enabled);
-    const insDependentIds = getInsDependentSeriesIds(chart.series);
+    const insDependentIds = getCompleteOperandSeriesIds(chart.series);
+    const companiesIds = getCompaniesDependentSeriesIds(chart.series);
 
     const unitMap = new Map<SeriesId, Unit>();
     const isRelative = chart.config.showRelativeValues ?? false;
@@ -713,6 +839,14 @@ export function convertToAggregatedData(
             missingPeriods = missingPeriods.filter(label => dates.has(label.trim()));
         }
 
+        // An aggregate sums every year a series has: a company figure is compared for one year only.
+        if (companiesIds.has(series.id)) {
+            const problem = companiesAggregateProblem(series.id, [...filteredPoints.map((point) => String(point.x)), ...missingPeriods]);
+            if (problem) {
+                warnings.push(problem);
+                return [];
+            }
+        }
         if (missingPeriods.length > 0) {
             warnings.push({ type: 'missing_data', seriesId: series.id,
                 message: t`Some periods are unavailable. Totals and calculations requiring them are not shown.` });
@@ -778,6 +912,9 @@ export function convertToAggregatedData(
         }
 
         unitMap.set(series.id, unit);
+        // A single-year company figure keeps its exact value for the tooltip.
+        const onlyPoint = filteredPoints.length === 1 ? filteredPoints[0] : undefined;
+        const detail = !isRelative && onlyPoint ? dataSeries?.pointDetails?.[onlyPoint.x] : undefined;
 
         const aggregatedDataPoint: DataPointPayload = {
             id: series.id,
@@ -788,6 +925,7 @@ export function convertToAggregatedData(
             unit,
             initialValue,
             initialUnit,
+            ...(detail ? { exact: detail.exact, ...(detail.note ? { note: detail.note } : {}) } : {}),
         };
 
         return [aggregatedDataPoint];

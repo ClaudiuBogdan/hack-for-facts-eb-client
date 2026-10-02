@@ -6,6 +6,7 @@ import { CustomSeriesValueSeriesFilter } from "./CustomSeriesValueSeriesFilter";
 import { StaticSeriesFilter } from "./StaticSeriesFilter";
 import { InsSeriesFilter } from "./InsSeriesFilter";
 import { CommitmentsSeriesFilter } from "./CommitmentsSeriesFilter";
+import { CompaniesSeriesFilter } from "./CompaniesSeriesFilter";
 import { z } from "zod";
 
 interface SeriesFilterDisplayProps {
@@ -29,6 +30,8 @@ export function SeriesFilterDisplay({ series, chart }: SeriesFilterDisplayProps)
       return <StaticSeriesFilter series={series} chart={chart} />;
     case "ins-series":
       return <InsSeriesFilter series={series} />;
+    case "companies-analytics":
+      return <CompaniesSeriesFilter series={series} />;
     default:
       return null;
   }

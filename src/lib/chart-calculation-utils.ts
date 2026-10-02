@@ -20,9 +20,10 @@ interface CalculationResult {
   unavailable?: boolean;
 }
 
-function unavailableInsCalculation(seriesId: string, dependency?: string): CalculationResult {
+/** A calculation over a complete-operand source (INS, companies) with an operand it cannot have: unavailable as a whole, never computed with a 0. */
+function unavailableCompleteCalculation(seriesId: string, dependency?: string): CalculationResult {
   return { points: [], unavailable: true, warnings: [{ type: 'missing_data', seriesId,
-    message: t`The calculation depends on INS data with missing coverage or an undefined result. Inspect its source series.`,
+    message: t`The calculation depends on INS or company data with missing coverage or an undefined result. Inspect its source series.`,
     ...(dependency ? { value: { dependency } } : {}),
   }] };
 }
@@ -179,7 +180,7 @@ export function evaluateCalculation(
         });
       } else {
         // Strict calculations use the topological result; never recompute an unavailable dependency.
-        if (requireCompleteOperands) return unavailableInsCalculation(seriesIdForWarnings, operand);
+        if (requireCompleteOperands) return unavailableCompleteCalculation(seriesIdForWarnings, operand);
         // Check if it's a calculation series that needs evaluation
         const series = allSeries.find(s => s.id === operand);
         if (series && series.type === 'aggregated-series-calculation') {
@@ -225,7 +226,7 @@ function performOperation(
   xAxisUnit: CalculationXAxisUnit,
   requireCompleteOperands = false
 ): CalculationResult {
-  if (requireCompleteOperands && operands.some(operand => !operand.isConstant && operand.points.length === 0)) return unavailableInsCalculation(seriesIdForWarnings);
+  if (requireCompleteOperands && operands.some(operand => !operand.isConstant && operand.points.length === 0)) return unavailableCompleteCalculation(seriesIdForWarnings);
   if (operands.length === 0) {
     return { points: [], warnings: [] };
   }
@@ -280,7 +281,7 @@ function performOperation(
 
   for (const label of sortedLabels) {
     if (missing.has(label)) continue;
-    if (requireCompleteOperands && operands.some((_, index) => !Number.isFinite(getOperandValue(index, label)))) return unavailableInsCalculation(seriesIdForWarnings);
+    if (requireCompleteOperands && operands.some((_, index) => !Number.isFinite(getOperandValue(index, label)))) return unavailableCompleteCalculation(seriesIdForWarnings);
     let value: number | null = null;
 
     switch (operation) {
@@ -364,7 +365,7 @@ function performOperation(
         break;
     }
 
-    if (requireCompleteOperands && (value === null || !Number.isFinite(value))) return unavailableInsCalculation(seriesIdForWarnings);
+    if (requireCompleteOperands && (value === null || !Number.isFinite(value))) return unavailableCompleteCalculation(seriesIdForWarnings);
     if (hasNativeCoverage && (value === null || !Number.isFinite(value))) {
       missing.add(label);
       continue;
@@ -458,7 +459,7 @@ export function calculateAllSeriesData(
 ): { dataSeriesMap: Map<string, AnalyticsSeries>; warnings: DataValidationError[] } {
   // Sort series by dependency order (topological sort)
   const sortedSeries = topologicalSortSeries(series);
-  const insDependentIds = getInsDependentSeriesIds(series);
+  const completeOperandIds = getCompleteOperandSeriesIds(series);
 
   const defaultYears = Array.from({ length: defaultYearRange.end - defaultYearRange.start + 1 }, (_, index) => index + defaultYearRange.start);
 
@@ -504,7 +505,7 @@ export function calculateAllSeriesData(
         series,
         s.id,
         xAxisResolution.xAxisUnit,
-        insDependentIds.has(s.id)
+        completeOperandIds.has(s.id)
       );
       warnings.push(...calcWarnings);
       if (unavailable) {
@@ -644,5 +645,21 @@ export function getAllDependencies(series: Series, chart: Pick<Chart, 'series'>)
 export function getInsDependentSeriesIds(series: Series[]): Set<string> {
   return new Set(series.filter(item => item.type === 'ins-series' ||
     (item.type === 'aggregated-series-calculation' && getAllDependencies(item, { series }).some(dependency => dependency.type === 'ins-series'))
+  ).map(item => item.id));
+}
+
+/** The sources whose missing periods are gaps, never zeros: INS observations and company figures. */
+const COMPLETE_OPERAND_TYPES: ReadonlySet<Series['type']> = new Set(['ins-series', 'companies-analytics']);
+
+/**
+ * The series a missing value must make unavailable rather than zero: the
+ * complete-operand sources and every calculation that depends on one, at
+ * any depth. Shared by the arithmetic (a calculation over one is computed
+ * only with every operand present) and the renderers (no zero-filled gap,
+ * no relative baseline from an unavailable value).
+ */
+export function getCompleteOperandSeriesIds(series: Series[]): Set<string> {
+  return new Set(series.filter(item => COMPLETE_OPERAND_TYPES.has(item.type) ||
+    (item.type === 'aggregated-series-calculation' && getAllDependencies(item, { series }).some(dependency => COMPLETE_OPERAND_TYPES.has(dependency.type)))
   ).map(item => item.id));
 }

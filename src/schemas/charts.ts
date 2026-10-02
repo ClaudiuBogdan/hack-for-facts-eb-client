@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ChartTypeEnum, createDefaultChart } from './constants';
 import { generateRandomColor } from '@/components/charts/components/chart-renderer/color-utils';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults';
+import { COMPANY_ANALYSIS_RELEASE_ID_RE, CompanyAnalysisCohortModeZ, CompanyAnalysisMetricZ, CompanyAnalysisScopeZ } from './company-analytics';
 
 export const defaultYearRange = {
   start: 2016,
@@ -386,6 +387,26 @@ export const CommitmentsSeriesConfigurationSchema = BaseSeriesConfigurationSchem
   }).describe('Commitments analytics filter defining period, dimensions, transformations, and exclusions.'),
 }).loose();
 
+/** The earliest fiscal year the companies analytics releases hold (MFP statements from 2008): a saved chart's range may start there. */
+export const COMPANIES_ANALYTICS_FIRST_YEAR = 2008;
+
+export const CompaniesAnalyticsReleasePinSchema = z.object({
+  id: z.string().regex(COMPANY_ANALYSIS_RELEASE_ID_RE).describe('The companies analytics release the series was built on (a positive integer as text). Every read names it; a release the API no longer serves is shown as unavailable, never replaced by another.'),
+  policy: z.literal('pinned').describe('Release policy. "pinned": the series always reads this release, for reproducible charts.'),
+});
+
+export const CompaniesAnalyticsSeriesConfigurationSchema = BaseSeriesConfigurationSchema.extend({
+  type: z.literal('companies-analytics').describe('Series type: "companies-analytics" - annual company financial figures from the companies analytics API (companyAnalysisSeries): the sum of one reported metric over a company scope, one point per fiscal year, with explicit gaps and coverage. Annual only; nominal RON or reported average headcount; balances and headcounts are never added across years.'),
+  unit: z.string().optional().default('').describe('Not used for display: the unit always comes from the API (nominal RON, or reported average headcount). A typed unit cannot relabel lei as another currency.'),
+  metric: CompanyAnalysisMetricZ.default('TURNOVER').describe('The company metric summed per fiscal year (TURNOVER, NET_RESULT, EMPLOYEES, ...).'),
+  period: ReportPeriodInputZ.optional().describe('Fiscal years drawn, as a YEAR period (interval or dates). Omitted: every year the release offers for the metric. Monthly or quarterly periods are refused: company statements are annual.'),
+  scope: CompanyAnalysisScopeZ.default({}).describe('The company scope, in the API input shape without fiscalYear: OR within a field, AND across fields. Company keys describe the release snapshot; filing, financial ranges and size bands act on the reference year.'),
+  referenceYear: z.number().int().optional().describe('The fiscal year the scope is asked in: its selected-year filters apply there, and the REFERENCE_YEAR cohort is selected there. Omitted: the release default year.'),
+  cohortMode: CompanyAnalysisCohortModeZ.optional().describe('REFERENCE_YEAR follows the companies selected in the reference year; EACH_YEAR re-applies the filters every year. Omitted: the API default.'),
+  dimensionBasis: z.literal('release-snapshot').default('release-snapshot').describe('Company dimensions (geography, observed status, ANAF attributes) describe the release snapshot, not each fiscal year.'),
+  release: CompaniesAnalyticsReleasePinSchema.optional().describe('The pinned release. Omitted only while a new series is being configured; the editor pins the active release.'),
+}).loose();
+
 export const SeriesSchema = z.discriminatedUnion('type', [
   SeriesConfigurationSchema,
   SeriesGroupConfigurationSchema,
@@ -394,6 +415,7 @@ export const SeriesSchema = z.discriminatedUnion('type', [
   StaticSeriesConfigurationSchema,
   InsSeriesConfigurationSchema,
   CommitmentsSeriesConfigurationSchema,
+  CompaniesAnalyticsSeriesConfigurationSchema,
 ]);
 
 export type SeriesConfiguration = z.infer<typeof SeriesConfigurationSchema>;
@@ -401,6 +423,7 @@ export type SeriesGroupConfiguration = z.infer<typeof SeriesGroupConfigurationSc
 export type StaticSeriesConfiguration = z.infer<typeof StaticSeriesConfigurationSchema>;
 export type InsSeriesConfiguration = z.infer<typeof InsSeriesConfigurationSchema>;
 export type CommitmentsSeriesConfiguration = z.infer<typeof CommitmentsSeriesConfigurationSchema>;
+export type CompaniesAnalyticsSeriesConfiguration = z.infer<typeof CompaniesAnalyticsSeriesConfigurationSchema>;
 export type Series = z.infer<typeof SeriesSchema>;
 
 // ============================================================================
@@ -439,7 +462,7 @@ export const ChartSchema = z.object({
   config: ChartConfigSchema.describe('Global chart configuration controlling visualization appearance and behavior. Includes chart type (line/bar/pie/etc.), display options (legends, tooltips, labels), and user interactions. These settings apply to all series unless overridden at series level. See ChartConfigSchema for 11 configuration options. Critical for defining how data is visualized.'),
 
   // Series data
-  series: z.array(SeriesSchema).default([]).describe('Array of data series to display on the chart. Each series represents a dataset (query results, calculations, or custom data). Can contain multiple series for comparisons. Series types: "line-items-aggregated-yearly" (execution analytics queries), "commitments-analytics" (commitments analytics queries), "aggregated-series-calculation" (computed from other series), "custom-series" (manual data), "custom-series-value" (constant lines), "static-series" (pre-defined datasets), "ins-series" (INS Tempo observations). Order affects rendering and legend order. Minimum 1 series for meaningful charts, but can be empty during creation.'),
+  series: z.array(SeriesSchema).default([]).describe('Array of data series to display on the chart. Each series represents a dataset (query results, calculations, or custom data). Can contain multiple series for comparisons. Series types: "line-items-aggregated-yearly" (execution analytics queries), "commitments-analytics" (commitments analytics queries), "aggregated-series-calculation" (computed from other series), "custom-series" (manual data), "custom-series-value" (constant lines), "static-series" (pre-defined datasets), "ins-series" (INS Tempo observations), "companies-analytics" (annual company financial figures). Order affects rendering and legend order. Minimum 1 series for meaningful charts, but can be empty during creation.'),
 
   // Annotations
   annotations: z.array(AnnotationSchema).default([]).describe('Array of annotations marking important events, insights, or context on the chart. Each annotation points to a specific location and displays explanatory text. Use to highlight: policy changes, significant events, anomalies, milestones. Examples: "COVID-19 Pandemic", "New Budget Law Enacted", "Election Year". Annotations are optional - charts can have zero annotations. Can be created manually or programmatically. Visibility controlled by chart config.showAnnotations and individual annotation.enabled flags.'),
@@ -475,6 +498,10 @@ export type AnalyticsSeriesPoint = z.infer<typeof AnalyticsSeriesPointSchema>;
 
 export const AnalyticsSeriesSchema = z.object({
   missingPeriods: z.array(z.string()).nullish().describe("Native reference coverage gaps; values for these periods are unavailable."),
+  pointDetails: z.record(z.string(), z.object({
+    exact: z.string().describe('The exact decimal value as the source sent it; y is only its plotting coordinate.'),
+    note: z.string().optional().describe('Coverage of the point in words (who reported it).'),
+  })).optional().describe('Per x label: the exact value and coverage of a point, for tooltips and export. Set by sources that serve exact decimals (companies analytics).'),
   seriesId: z.string().describe('ID of the series this data belongs to. Matches the series.id from the chart configuration. Used to associate fetched data with its series definition. Required for multi-series charts to map data correctly.'),
   xAxis: AxisSchema.describe('Metadata about the x-axis (typically time). Defines the data type, name, and unit for x values. Usually type=STRING/DATE, name="Period"/"Year", unit="" or "Year". Consistent across all points in this series.'),
   yAxis: AxisSchema.describe('Metadata about the y-axis (measured values). Defines the data type, name, and unit for y values. Usually type=FLOAT/INTEGER, name="Amount", unit="RON" or "RON/capita". Reflects normalization applied to data.'),

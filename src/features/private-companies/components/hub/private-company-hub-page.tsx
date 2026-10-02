@@ -204,6 +204,9 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                   <Link to="/companies/search" search={{ status: [STATUS_ACTIVE] }} preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
                     <Trans>Toate firmele în funcțiune</Trans>
                   </Link>
+                  <Link to="/companies/analytics" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
+                    <Trans>Analiza bilanțurilor</Trans>
+                  </Link>
                   <Link to="/procurement" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
                     <Trans>Achiziții publice</Trans>
                   </Link>

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { Label } from '@/components/ui/label';
-import { Chart, defaultYearRange } from '@/schemas/charts';
+import { Chart, COMPANIES_ANALYTICS_FIRST_YEAR, defaultYearRange } from '@/schemas/charts';
 import { SettingsCard } from './SettingsCard';
 import { getChartTypeIcon } from '../../utils';
 import { ChartTypeSelect } from './ChartTypeSelect';
@@ -23,8 +23,10 @@ export const GlobalSettingsCard = React.memo(({ chart, onUpdateChart }: GlobalSe
         handleConfigChange({ yearRange: { start: newRange[0], end: newRange[1] } });
     }, [handleConfigChange]);
 
-    const minYear = defaultYearRange.start;
-    const maxYear = defaultYearRange.end;
+    // Company figures reach back to 2008, and a saved range may start before the builder's default: the slider keeps it.
+    const hasCompanies = chart.series.some((series) => series.type === 'companies-analytics');
+    const minYear = Math.min(defaultYearRange.start, hasCompanies ? COMPANIES_ANALYTICS_FIRST_YEAR : defaultYearRange.start, chart.config.yearRange?.start ?? defaultYearRange.start);
+    const maxYear = Math.max(defaultYearRange.end, chart.config.yearRange?.end ?? defaultYearRange.end);
     const startYear = chart.config.yearRange?.start ?? minYear;
     const endYear = chart.config.yearRange?.end ?? maxYear;
 

@@ -1,5 +1,6 @@
 import { ChartSchema, CommitmentsReportType, createDefaultCommitmentsYearReportPeriod, defaultYearRange, ReportType } from '@/schemas/charts';
 import type { Chart, Calculation, Series, Normalization, AnalyticsFilterType } from '@/schemas/charts';
+import type { CompanyAnalysisCohortMode, CompanyAnalysisMetric, CompanyAnalysisScope } from '@/schemas/company-analytics';
 import type { ChartUrlState } from '@/components/charts/page-schema';
 import { generateHash, getNormalizationUnit } from '@/lib/utils';
 import { t } from '@lingui/core/macro';
@@ -719,6 +720,78 @@ export function buildInsComparisonChartState(options: BuildInsComparisonChartOpt
 
 export function buildInsComparisonChartLink(options: BuildInsComparisonChartOptions) {
     return buildChartRouteLink(buildInsComparisonChartState(options));
+}
+
+export interface BuildCompaniesAnalyticsChartOptions {
+    readonly title: string;
+    readonly label: string;
+    /** The release the figures were read from: the chart pins it. */
+    readonly releaseId: string;
+    readonly metric: CompanyAnalysisMetric;
+    /** The company scope without its fiscal year (the reference year carries it). */
+    readonly scope: CompanyAnalysisScope;
+    readonly referenceYear: number;
+    readonly cohortMode: CompanyAnalysisCohortMode;
+    /** The fiscal years drawn, from the release's capabilities (2008 included where offered). */
+    readonly fromYear: number;
+    readonly toYear: number;
+    readonly color?: string;
+    /** The time the chart is made; fixed by tests. */
+    readonly now?: string;
+}
+
+/**
+ * The companies analysis question as a chart: one annual `companies-analytics`
+ * series on the pinned release, the same scope, cohort and reference year,
+ * over the release's years — its first year kept, not cut to the builder's
+ * 2016 default. A line: company figures start as trends, and an aggregate of
+ * them is a single-year comparison (see `companies-chart-guards.ts`).
+ */
+export function buildCompaniesAnalyticsChartState(options: BuildCompaniesAnalyticsChartOptions): ChartUrlState {
+    const { title, label, releaseId, metric, scope, referenceYear, cohortMode, fromYear, toYear } = options;
+    const now = options.now ?? new Date().toISOString();
+    const chartId = generateHash(JSON.stringify({ kind: 'companies-analytics', releaseId, metric, scope, referenceYear, cohortMode, fromYear, toYear }));
+    const chart: Chart = ChartSchema.parse({
+        id: chartId,
+        title,
+        config: {
+            chartType: 'line',
+            showGridLines: true,
+            showLegend: true,
+            showTooltip: true,
+            editAnnotations: false,
+            showAnnotations: true,
+            showDiffControl: false,
+            yearRange: { start: fromYear, end: toYear },
+        },
+        series: [
+            {
+                id: generateHash(JSON.stringify({ chartId, metric })),
+                type: 'companies-analytics',
+                label,
+                enabled: true,
+                unit: '',
+                metric,
+                period: { type: 'YEAR', selection: { interval: { start: String(fromYear), end: String(toYear) } } },
+                scope,
+                referenceYear,
+                cohortMode,
+                dimensionBasis: 'release-snapshot',
+                release: { id: releaseId, policy: 'pinned' },
+                config: { showDataLabels: false, color: options.color ?? '#0f766e' },
+                createdAt: now,
+                updatedAt: now,
+            },
+        ],
+        annotations: [],
+        createdAt: now,
+        updatedAt: now,
+    });
+    return { chart, view: 'overview' };
+}
+
+export function buildCompaniesAnalyticsChartLink(options: BuildCompaniesAnalyticsChartOptions) {
+    return buildChartRouteLink(buildCompaniesAnalyticsChartState(options));
 }
 
 /**

@@ -37,6 +37,9 @@ import { CustomSeriesValueEditor } from '../series-config/CustomSeriesValueEdito
 import { UnitInput } from '../series-config/UnitInput';
 import { StaticSeriesEditor } from '../series-config/StaticSeriesEditor';
 import { InsSeriesEditor } from '../series-config/InsSeriesEditor';
+import { CompaniesSeriesEditor } from '../series-config/CompaniesSeriesEditor';
+import { nonAnnualSeries } from '@/lib/companies-chart-guards';
+import type { CompaniesAnalyticsSeriesConfiguration } from '@/schemas/charts';
 import { useCopyPasteChart } from '../../hooks/useCopyPaste';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
@@ -140,6 +143,19 @@ export function SeriesConfigView() {
           updatedAt: new Date().toISOString(),
         } as Series;
       });
+      return;
+    }
+    if (nextType === 'companies-analytics') {
+      // Its own question: no budget filter, no editable unit (the source names it), pinned by its editor.
+      updateSeries(series.id, (prev) => ({
+        ...prev,
+        type: 'companies-analytics',
+        unit: '',
+        metric: 'TURNOVER',
+        scope: {},
+        dimensionBasis: 'release-snapshot',
+        updatedAt: new Date().toISOString(),
+      }) as Series);
       return;
     }
     if (nextType !== 'commitments-analytics') {
@@ -324,9 +340,19 @@ export function SeriesConfigView() {
                   <SelectItem value="custom-series-value">{t`Custom Series Value`}</SelectItem>
                   <SelectItem value="static-series">{t`Static Series`}</SelectItem>
                   <SelectItem value="ins-series">{t`INS Series`}</SelectItem>
+                  {/* Annual only: beside a monthly or quarterly series it could not be drawn. */}
+                  <SelectItem value="companies-analytics" disabled={series.type !== 'companies-analytics' && nonAnnualSeries(chart).length > 0}>
+                    {t`Companies (annual financial statements)`}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {series.type !== 'companies-analytics' && chart.series.some((item) => item.enabled && item.type === 'companies-analytics') && nonAnnualSeries(chart).some((item) => item.id === series.id) && (
+              <p role="alert" className="rounded-md border border-amber-600/40 bg-amber-50/60 p-3 text-sm dark:bg-amber-950/20">
+                {t`This chart has company series, which are annual. While this series is monthly or quarterly, the company series are not drawn: choose yearly periods, or disable this series.`}
+              </p>
+            )}
 
             {/* Quick settings section with improved layout */}
             <div className="flex flex-col gap-4 pt-2 border-t">
@@ -386,7 +412,8 @@ export function SeriesConfigView() {
               </div>
             </div>
 
-            {series.type !== 'line-items-aggregated-yearly' && series.type !== 'commitments-analytics' && (
+            {/* A company series' unit is the source's (nominal lei, headcount): a typed unit would relabel lei without converting them. */}
+            {series.type !== 'line-items-aggregated-yearly' && series.type !== 'commitments-analytics' && series.type !== 'companies-analytics' && (
               <UnitInput
                 id="series-unit"
                 value={series?.unit || ''}
@@ -555,6 +582,9 @@ export function SeriesConfigView() {
         )}
         {series.type === 'ins-series' && (
           <InsSeriesEditor series={series as z.infer<typeof InsSeriesConfigurationSchema>} />
+        )}
+        {series.type === 'companies-analytics' && (
+          <CompaniesSeriesEditor series={series as CompaniesAnalyticsSeriesConfiguration} />
         )}
 
         {/* ================= Series Delete ================= */}

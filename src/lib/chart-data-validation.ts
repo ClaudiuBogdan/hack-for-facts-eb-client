@@ -26,13 +26,24 @@ export interface ValidationResult {
 }
 
 /**
+ * The x-axis the drawn series share, and whether a series is held to it.
+ * `drawn`, when given, names the series the chart draws: only they set the
+ * axis, and only their x values are checked against it — a series read but
+ * not drawn (a disabled operand) neither turns the axis nor loses its points.
+ */
+function plotAxis(seriesMap: Map<string, AnalyticsSeries>, drawn?: ReadonlySet<string>) {
+  const xUnit = getXAxisUnit(drawn ? new Map([...seriesMap].filter(([seriesId]) => drawn.has(seriesId))) : seriesMap);
+  return { xUnit, heldToAxis: (seriesId: string) => !drawn || drawn.has(seriesId) };
+}
+
+/**
  * Validates AnalyticsSeries data for chart rendering
  * - Downgrades non-numeric points to warnings (sanitizer will remove)
  */
-export function validateAnalyticsSeries(seriesMap: Map<string, AnalyticsSeries>): ValidationResult {
+export function validateAnalyticsSeries(seriesMap: Map<string, AnalyticsSeries>, drawn?: ReadonlySet<string>): ValidationResult {
   const errors: DataValidationError[] = [];
   const warnings: DataValidationError[] = [];
-  const xUnit = getXAxisUnit(seriesMap);
+  const { xUnit, heldToAxis } = plotAxis(seriesMap, drawn);
 
   for (const [seriesId, series] of seriesMap.entries()) {
     if (series.missingPeriods?.length) warnings.push({
@@ -53,7 +64,7 @@ export function validateAnalyticsSeries(seriesMap: Map<string, AnalyticsSeries>)
     // Validate each data point
     series.data.forEach((point, index) => {
       // Validate x value (should be convertible to finite number for time series)
-      if (xUnit === 'year') {
+      if (xUnit === 'year' && heldToAxis(seriesId)) {
         const xValue = Number(point.x);
         if (!Number.isFinite(xValue)) {
             const valueType = typeof point.x;
@@ -100,14 +111,15 @@ export function validateAnalyticsSeries(seriesMap: Map<string, AnalyticsSeries>)
  */
 export function sanitizeAnalyticsSeries(
   seriesMap: Map<string, AnalyticsSeries>,
-  _validationResult: ValidationResult
+  _validationResult: ValidationResult,
+  drawn?: ReadonlySet<string>
 ): Map<string, AnalyticsSeries> {
   const sanitizedMap = new Map<string, AnalyticsSeries>();
-  const xUnit = getXAxisUnit(seriesMap);
+  const { xUnit, heldToAxis } = plotAxis(seriesMap, drawn);
 
   for (const [seriesId, series] of seriesMap.entries()) {
     const validPoints = (series.data ?? []).filter((point, index) => {
-      const xValid = xUnit === 'year' ? Number.isFinite(Number(point.x)) : (typeof point.x === 'string' && point.x.length > 0);
+      const xValid = !heldToAxis(seriesId) || (xUnit === 'year' ? Number.isFinite(Number(point.x)) : (typeof point.x === 'string' && point.x.length > 0));
       const yValid = typeof point.y === "number" && Number.isFinite(point.y);
 
       if (!xValid || !yValid) {

@@ -17,7 +17,7 @@ import { combineValidationResults, validateSeriesCompleteness } from '@/lib/char
 
 export function ChartView() {
   const { chart, goToConfig, goToSeriesConfig, addSeries, updateAnnotation } = useChartStore();
-  const { dataSeriesMap, isLoadingData, dataError, validationResult, canRetryInsData, retryInsData, isRetryingInsData } = useChartData({ chart });
+  const { dataSeriesMap, isLoadingData, dataError, validationResult, canRetryInsData, retryInsData, isRetryingInsData, canRetryCompaniesData, retryCompaniesData, isRetryingCompaniesData } = useChartData({ chart });
 
   const processedData = useMemo(() => {
     if (!dataSeriesMap) {
@@ -85,6 +85,12 @@ export function ChartView() {
       {canRetryInsData && (
         <Button variant="outline" disabled={isRetryingInsData} onClick={() => { void retryInsData(); }}>
           {t`Retry INS data`}
+        </Button>
+      )}
+
+      {canRetryCompaniesData && (
+        <Button variant="outline" disabled={isRetryingCompaniesData} onClick={() => { void retryCompaniesData(); }}>
+          {t`Retry company data`}
         </Button>
       )}
 
