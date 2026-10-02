@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { countyScale } from './hub-county-scale'
+import { classLabel } from '../uat-map/uat-map-class-label'
 
 // 42 counties' life expectancy, 74,8 … 82,0, Romania 77,45.
 const LIFE = Array.from({ length: 42 }, (_, i) => Number((74.8 + (i * 7.2) / 41).toFixed(2)))
@@ -129,8 +130,14 @@ describe('countyScale in steps', () => {
   it('draws every county in one class, the lightest, where all are equal', () => {
     const { scale } = countyScale([0, 0, 0], null, { ramp: 'steps', digits: 0 })
     expect(scale.classes.map((drawn) => drawn.swatch)).toEqual(['bg-choropleth-1'])
-    expect(scale.classes[0]?.interval).toEqual({ from: 0, to: 0 })
+    expect(scale.classes[0]?.interval).toEqual({ from: 0, to: 0, includesTo: true })
     expect([0, 1, 2].map((index) => scale.classAt(index))).toEqual([0, 0, 0])
+  })
+
+  it.each([0, 7, 1.5])('names a single-value class as %s through the shared legend', (value) => {
+    const { scale } = countyScale([value, value, value], null, { ramp: 'steps' })
+    expect([0, 1, 2].map((index) => scale.classAt(index))).toEqual([0, 0, 0])
+    expect(classLabel(String, scale.classes[0]!.interval, scale.wholeNumbers ?? false)).toBe(String(value))
   })
 
   it('rounds the bound that replaces one at the lowest value up to the step, as the legend prints it', () => {

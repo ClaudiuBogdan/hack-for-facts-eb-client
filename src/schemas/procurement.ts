@@ -579,40 +579,6 @@ export const procurementSearchPageSchema = z.object({
 
 export type ProcurementSearchPage = z.infer<typeof procurementSearchPageSchema>
 
-export const procurementRecordDetailSchema = <T extends z.ZodTypeAny>(
-  recordSchema: T,
-) =>
-  z.object({
-    record: recordSchema,
-    related: z.object({
-      procedure: procedureRecordSummarySchema.nullable(),
-      contracts: z.array(contractRecordSummarySchema),
-      modifications: z.array(contractModificationSchema),
-      duplicates: z.array(
-        z.object({
-          sourceSystem: procurementSourceSystemSchema,
-          id: z.string(),
-        }),
-      ),
-      perLotWinners: z
-        .array(
-          z.object({
-            lotLabel: z.string(),
-            winner: partySchema,
-            valueRon: decimalStringSchema.nullable(),
-            currency: z.string().nullable(),
-          }),
-        )
-        .nullable(),
-      ted: z
-        .object({
-          tedNoticeNo: z.string(),
-          sourceUrl: z.string(),
-        })
-        .nullable(),
-    }),
-  })
-
 /**
  * Why a direct acquisition has no detail body. Absence of a detail is NOT
  * absence of a purchase — the detail surface covers ~41% of direct acquisitions
@@ -671,29 +637,6 @@ export type DaDetail = {
   readonly textRedacted: boolean
   readonly sourceUrl: string
   readonly items: readonly DaItem[]
-}
-
-export type ProcurementRecordDetail<T> = {
-  readonly record: T
-  readonly related: {
-    readonly procedure: ProcedureRecordSummary | null
-    readonly contracts: readonly ContractRecordSummary[]
-    readonly modifications: readonly ContractModification[]
-    readonly duplicates: ReadonlyArray<{
-      readonly sourceSystem: ProcurementSourceSystem
-      readonly id: string
-    }>
-    readonly perLotWinners: ReadonlyArray<{
-      readonly lotLabel: string
-      readonly winner: Party
-      readonly valueRon: string | null
-      readonly currency: string | null
-    }> | null
-    readonly ted: {
-      readonly tedNoticeNo: string
-      readonly sourceUrl: string
-    } | null
-  }
 }
 
 export const supplierProcurementSliceSchema = z.object({

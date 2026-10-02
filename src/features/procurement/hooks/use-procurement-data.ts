@@ -7,12 +7,7 @@ import {
   type ProcurementAuthoritySliceScope,
   type ProcurementSliceScope,
 } from '../api/procurement-api'
-import type {
-  AuthorityProcurementSlice,
-  ProcurementRecordDetail,
-} from '@/schemas/procurement'
-import type { DetailGrainKey, DetailRecord } from '../lib/detail-config'
-import { RECORD_DETAIL_FETCHERS } from '../lib/detail-fetchers'
+import type { AuthorityProcurementSlice } from '@/schemas/procurement'
 import type { ProcurementSearchState } from '@/schemas/procurement-search'
 
 const PROCUREMENT_QUERY_KEY = ['procurement'] as const
@@ -27,33 +22,6 @@ export function useProcurementSearch(
     // Keep the previous page visible while the next one loads (list paging).
     placeholderData: (prev) => prev,
     enabled: options?.enabled ?? true,
-  })
-}
-
-export function procurementRecordDetailQueryOptions(
-  grain: DetailGrainKey,
-  id: string,
-) {
-  return queryOptions({
-    queryKey: [...PROCUREMENT_QUERY_KEY, 'record-detail', grain, id] as const,
-    queryFn: () => RECORD_DETAIL_FETCHERS[grain](id),
-    enabled: Boolean(id),
-  })
-}
-
-/**
- * `initialData` carries the server-rendered payload into the first client
- * render, so a server-rendered visit does not re-request what SSR already
- * resolved. Matches how the sibling institution route seeds its queries.
- */
-export function useProcurementRecordDetail(
-  grain: DetailGrainKey,
-  id: string,
-  initialData?: ProcurementRecordDetail<DetailRecord>,
-) {
-  return useQuery({
-    ...procurementRecordDetailQueryOptions(grain, id),
-    initialData,
   })
 }
 

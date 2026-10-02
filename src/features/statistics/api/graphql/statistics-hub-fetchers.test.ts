@@ -78,8 +78,8 @@ describe('fetchStatisticsHub', () => {
     expect(hub.failures).toEqual([])
     const inflation = hub.indicators?.find((indicator) => indicator.code === 'IPC102E')
     expect(inflation).toMatchObject({ value: 110.85, rawValue: '110.85', unit: 'percent', period: '2026-05', pins: ['D0:12668'], hasGeography: false })
-    const earnings = hub.indicators?.find((indicator) => indicator.code === 'FOM106D')
-    expect(earnings).toMatchObject({ value: 5914, unit: 'other', unitLabel: 'Lei RON', period: '2025-12', hasGeography: false })
+    const earnings = hub.indicators?.find((indicator) => indicator.code === 'FOM106G')
+    expect(earnings).toMatchObject({ value: 5684, unit: 'other', unitLabel: 'Lei RON', period: '2026-05', hasGeography: false })
   })
 
   it('refuses a national-only cell that names a territory', async () => {

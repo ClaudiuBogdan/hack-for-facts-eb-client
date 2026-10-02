@@ -41,6 +41,7 @@ const latest: StatisticsLatestValue = {
   unitCode: '0',
   unitSymbol: null,
   unitNameRo: null,
+  unitNameEn: null,
   period: '2025',
   resolvedPeriodicity: 'ANNUAL',
   resolvedClassifications: [

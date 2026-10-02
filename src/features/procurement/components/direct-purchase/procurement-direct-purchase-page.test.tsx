@@ -56,7 +56,7 @@ describe('a catalogue purchase', () => {
     expect(page).toContain('Banca Nationala a Romaniei a cumpărat direct de la Floraria Iris SRL , cu 98.448 lei fără TVA , pe 21 ianuarie 2026.')
   })
 
-  it('then the purchase: the institution’s words, the value beside its facts, the lines, the steps, the terms, the source', () => {
+  it('then the purchase: the institution’s words, the value beside its facts and its two parties, the lines, the steps, the terms, the source', () => {
     const order = [
       'Ce s-a cumpărat',
       'Instituția a descris achiziția așa:',
@@ -68,6 +68,8 @@ describe('a catalogue purchase', () => {
       '3 produse',
       'Categoria',
       'Aranjamente florale CPV 03121210',
+      'Cumpărătorul',
+      'Furnizorul',
       'Cel mai mare rând, Aranjament floral mic, face 48% din bani.',
       'Coroana funerara model I',
       'Total, fără TVA',
@@ -78,6 +80,9 @@ describe('a catalogue purchase', () => {
     ].map((text) => page.indexOf(text))
     expect(order.every((at) => at >= 0)).toBe(true)
     expect([...order].sort((a, b) => a - b)).toEqual(order)
+    // The two parties, each under its label (their names are in the head's sentence too).
+    expect(page.slice(page.indexOf('Cumpărătorul'), page.indexOf('Furnizorul'))).toContain('Banca Nationala a Romaniei')
+    expect(page.slice(page.indexOf('Furnizorul'), page.indexOf('Cel mai mare rând'))).toContain('Floraria Iris SRL')
   })
 
   it('then, apart, the context: the other purchases between the two', () => {
@@ -172,6 +177,8 @@ describe('the other kinds of record', () => {
     const page = html(directPurchase({ authority: { cui: null, name: 'R 361684 Banca Nationala a Romaniei', displayName: 'R 361684 Banca Nationala a Romaniei' } }), null)
     expect(page).toContain('Banca Nationala a Romaniei a cumpărat direct')
     expect(page).toContain('SEAP nu dă codul fiscal al uneia dintre părți')
+    // In the parties' column too: the name, and that SEAP gave no CUI.
+    expect(page).toContain('fără CUI în SEAP')
   })
 
   it('a record with no date, and one from before 2019: each says why there is no context', () => {

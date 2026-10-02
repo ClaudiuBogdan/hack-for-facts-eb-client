@@ -2913,3 +2913,241 @@ short labels, now in titles, are narrower than the division (90,
 „Servicii de curățenie"); with an institution picked a category stays on
 firms while a click on a category row goes one level down.
 
+
+## 20. The parties beside the facts (1 October 2026)
+
+The owner asked for the buyer and the supplier as one more column to the
+right of the record's facts, on the direct-purchase and contract pages
+(framework agreements use the contract page). `RecordParties`
+(`components/direct-purchase/record-parties.tsx`) shows „Cumpărătorul" and
+„Furnizorul", each a link to its procurement page (in the record's year,
+as the head's sentence links them) with its CUI under its name, or „fără
+CUI în SEAP"; a contract's firm says when it shares the record („în
+asociere cu încă 2 firme", „în acordul-cadru cu încă …") and when it is an
+IMM.
+
+- The value-and-facts box now spans the frame, as the context band below
+  it does; the reading under it (the lines, the steps, the history, the
+  source) keeps its 4xl width.
+- From `lg`: the direct purchase reads value · facts · parties; the
+  contract keeps its value over its facts on the left, the parties in a
+  column on the right, each behind a rule. Below `lg` the parties sit
+  under the facts, side by side from `sm`, one under the other on a
+  phone.
+- The procedure page still has the old shared layout (to migrate).
+- 2 October: on the contract page (and the procedure prototype) the
+  parties sit on the facts' rows from `lg`, at the owner's ask: the buyer
+  level with the first row of facts and as tall as it, the firm from the
+  second row on. The facts and the parties are subgrids of one grid with a
+  row per row of facts (two at least); the parties keep the facts' rule
+  and space above them with the rule unseen, so the two first rows start
+  level. The direct purchase, whose value and facts share one row, keeps
+  its centred column.
+- Reviewed (Opus 5.5 and Codex gpt-6.1-sol, 2 October). Fixed:
+  - the direct purchase's figure, at 48 px, ran into its facts from `md`
+    once the parties took a column („154.244,78 lei" over „Finalizată" at
+    1024 px). From `md` it is fitted to its column (a size container,
+    `min(3rem, …cqw)` by its length); smaller screens keep their sizes;
+  - the contract's unpublished note follows its facts in reading order
+    (a last row of the grid, under them), no longer after the parties;
+  - the facts' count uses the cells' own tests;
+  - where subgrid is missing (Chrome 111–116) the firm stays below the
+    buyer;
+  - the firm's IMM tag comes from the notice's firms;
+  - „încă o firmă", not „încă 1 firmă".
+
+## 21. The answer bar's controls (1 October 2026)
+
+The owner found the level buttons under the analytics page's tabs („pe
+județe · localități · regiuni", „pe diviziuni · grupe · …") too small, as
+the filters' had been. They are now the bar's own segmented control, the
+one the measure uses (`IndicatorToggle`: a radio group, one tab stop, the
+arrows move it), both 44 px on a phone and 40 px from `sm`
+(`CONTROL_HEIGHT`).
+
+- The levels run coarse to fine, places as categories do: regiuni, județe,
+  localități; the place tabs still open on județe (`opens`).
+- Only the levels the question can be grouped by are offered (a county
+  picked has no counties to rank), and the row goes when one is left.
+- On a phone five CPV levels sit three to a row, the last taking the
+  second row's rest.
+- The control has no visible „pe" before it, so it starts where the tabs
+  do and where the measure does when it wraps under them (the owner's ask);
+  its name, „Nivelul", is for a screen reader. The measure stays right of
+  the tabs while they fit on one line.
+
+## 22. The procedure page (prototyped 2 October 2026)
+
+`/procurement/procedures/$id` is the last record page on the old shared
+layout (`ProcurementDetailRoutePage`). Prototype:
+`/development/procurement/procedure` (`?v=fisa|concurenta|azi`,
+`&c=<record>`), on ten real notices read from the dev API and from
+e-licitatie's public api on 2 October 2026; the production database was not
+read.
+
+### 22.1 What a procedure's data can say
+
+- **A row is one notice, not a procedure.** `procurement.procedures` holds
+  e-licitatie award notices (CAN…, SCNA…: `source_system = elicitatie`) and
+  rows of SEAP's notice exports on data.gov.ro (calls for competition CN…,
+  SCN…, and the legacy numeric notices). A tender's call and its award are
+  two unlinked rows: ANIF's call CN1044934 (412114) and its award CAN1096494
+  (355515). The award notice names its call
+  (`publicationDetailsModel.noticeNo`), so the link exists at the source.
+- **The award notice's own estimate repeats the award** (CNIR: 6.14 bn on
+  both). The institution's estimate is the call's (7.58 bn), the lots', or
+  each contract's (`GetContractView.estimatedContractValue`). Compared only
+  over the lots awarded.
+- **Served today:** the notice's row and at most 50 contract rows, no total,
+  one firm per row; a TED number. e-licitatie rows carry no publication or
+  state date. That is the `azi` variant.
+- **Stored but not served:** the lots, the criteria and the offer spread
+  (`procedure_lots`, `procedure_award_criteria`, `lowest/highest_offer`).
+  **Not scraped:** the offers each lot received (admitted, unacceptable,
+  non-compliant, withdrawn; from SMEs, from abroad), every winner of a
+  contract, every published version of the notice. The `fisa` and
+  `concurenta` variants read them from the notice (`procedure.fixtures.ts`).
+- **An award notice can report frameworks and call-offs together.**
+  Spitalul Caracal's CAN1150526: 44 lots (7 cancelled), 37 frameworks with
+  three firms each, and „contracte subsecvente" that span several lots.
+  Added to the frameworks they inflate a lot (lot 5: 2,486 lei → 103,851).
+  The frameworks make the value; the call-offs are listed apart, as what was
+  bought under them.
+- **Legacy rows join another institution's contracts.** Nuclearelectrica's
+  2009 call no. 92137 carries Municipiul București's 37.8 M lei building job
+  and a Ploiești school's purchase: SEAP matched them by the bare notice
+  number. Never the procedure's: set apart, said, counted nowhere.
+- **A negotiation without a call says why** (annex D). Sibiu's street
+  cleaning (CAN1165498, 46.1 M lei, one offer) cites its contested open
+  tender CN1089166 (92.4 M, suspended); the two are tied only by that text.
+- **Late or republished award notices are visible.** ANIF's: the contracts
+  in December 2022 and January 2023, the notice on 22 January 2023, then
+  republished five times through March 2026.
+
+### 22.2 What the API should change (for the server session)
+
+1. **One procedure:** the call and its award tied by the award notice's
+   call number (and the same institution); either row answers the whole.
+2. **Lots** with their estimate, status, criteria and weights, duration;
+   **offers per lot** (received, admitted, unacceptable, non-compliant,
+   withdrawn, SMEs, other EU, non-EU) from `GetContractView`.
+3. **Contracts from the notice:** all winners, the framework / call-off
+   kind, uncapped with a total; never a row of another institution (§17.2
+   item 3).
+4. **Dates:** the call's publication, the award notice's first and last
+   publication (`GetAllVersions`).
+5. **Annex D** for negotiations without a call; the VAT basis.
+6. **A framework notice's value is its call-offs'.** The award notice's
+   `awardedValueRon` (e-licitatie's II.1.7 „valoarea totală") is the
+   call-offs awarded under the frameworks so far — Caracal's 557,085.90 lei
+   against frameworks of at most 4,680,134.40; five more notices alike
+   (CAN1167301, CAN1163132, CAN1163668, CAN1167549, CAN1155234). The
+   ceiling is `frameworkContractValue`, not projected. Every reading of the
+   procedure grain's money (the analysis's sums included) takes the
+   call-offs for the award; serve both, named apart.
+7. **E-licitatie award notices whose state reads „in evaluation"**
+   (1,378 on the dev API): the state is an award notice's, so the
+   procedure is awarded; the mapping of e-licitatie's state 2 („Publicat")
+   wants checking. And many recent award notices carry no linked contract
+   yet, and 0.00 where they have no value.
+8. **Day and month swapped on contract rows.** Spitalul Caracal's rows
+   (`seap_contracts`) date frameworks 364.9 and 364.37 on 2025-01-07, the
+   notice on 2025-07-01; call-offs 386 and 604 on 2025-10-07 and 2025-12-11,
+   the notice on 2025-07-10 and 2025-11-12. The same rows file the two
+   call-offs as `framework_agreement`. How far it reaches is not measured.
+
+### 22.3 The variants
+
+- **`fisa` — the record sheet** (§17's): head; the value against the
+  estimate with the facts and the buyer and winners beside them; the lots;
+  how the offers were scored (when price is not all); the calendar from the
+  call to the award notice; the contracts; the call-offs; the rows linked by
+  mistake; the source.
+- **`concurenta` — the competition first:** four figures (offers, lots
+  awarded, lots with one offer, gap to the estimate), then each lot with a
+  mark per offer (filled admitted, faded rejected, hollow withdrawn) and its
+  value against its estimate on one bar; the sheet after.
+- **`azi`:** the sheet on what the API answers now — no lots, offers,
+  criteria, call or dates; a row per firm gathered by contract number.
+
+**The owner's pick (2 October): `fisa`.** `concurenta` and `azi` are
+deleted; the model keeps its `today` read (tested), which the promoted page
+needs until the API serves the notice. In the calendar a step's value sits
+under its title, not across the page at the right where the eye loses it,
+and the last contract's says it is the procedure's total („63.233.506,18
+lei pe 3 contracte"; a framework's „cel mult …, pe 37 de acorduri-cadru").
+The contract page's history follows (the owner, 2 October): each step's
+value under its title, an act whose reported value contradicts its text
+still in amber with what the text says.
+
+The records: ANIF's three lots (and the same procedure opened on its call),
+Sibiu's negotiation and its suspended call, CNIR's 6.1 bn association with
+one offer, CNAIR's Pașcani–Suceava (three offers, two unacceptable, −29%),
+Spitalul Caracal's 44-lot framework, Sibiu's Turnul Sfatului, Universitatea
+de Vest's cancelled call, Nuclearelectrica's 2009 call.
+
+The call's address, once the API ties a call to its award (the owner,
+2 October): it stays a page, telling the whole procedure, with its
+canonical link on the award notice's page — one page for search engines,
+no redirect.
+
+### 22.4 Promoted (2 October 2026)
+
+The page is live at `/procurement/procedures/$id` on the record sheet
+(`components/procedure/`, `lib/procedure-model.ts`); the old shared detail
+layout and its read are deleted (`ProcurementDetailRoutePage`,
+`ProcurementDetailPage` and its sections, `detail-config`, the record-detail
+fetchers, loader, schema and query). The prototype renders the page's own
+components on its fixtures, with the notice's data the API does not serve
+yet.
+
+On today's API (§22.1) the page reads the notice's row, its contract rows
+and TED notice, and the names; the parts the notice alone has (lots,
+offers, criteria, the call, the versions) appear when the API serves them
+(§22.2). What it says there:
+
+- An award notice: the institution, the firms (an association's rows are
+  one contract; several firms at one value are said to be in association),
+  the day or span, the notice's value. An award notice with no contract
+  linked says so; a cancelled or suspended one says that, its zeros no
+  value.
+- A framework notice: the frameworks and firms, and the call-offs the
+  notice reports, as such — never as the frameworks' ceiling (§22.2 item 6).
+  Recognised by its rows or, with none, by its title („Acord-cadru …", not
+  a call-off naming its framework).
+- A full page of rows (50, no total): „cel puțin" for the contracts and the
+  firms, and no span — the days are a part's.
+- A call: its day, its estimate, its state; contracts of other institutions
+  joined by its number are set apart and counted nowhere.
+- An award notice is a row of an award kind or an award number (CAN…,
+  SCNA…); any other — a call, a dynamic purchasing system's invitation
+  (`sad`), a legacy notice — tells what was asked.
+- A row is another institution's only when the two certainly differ: both
+  CUIs known and different, or, a CUI missing, both names known and
+  different (3,534 e-licitatie and 9,963 export notices have no CUI).
+- The notice's value goes with its contracts („pentru X", „X pe 3
+  contracte") only when their values add up to it, within a percent;
+  otherwise the head says it apart („Anunțul de atribuire raportează o
+  valoare de …") and the box says the contracts do not add up to it. A
+  cancelled or suspended notice's figure is „Valoarea din anunț", and the
+  head says its state.
+- An untitled notice is named by its number („Anunțul 92137"), never by
+  the page's id; an id that is not a number is a 404.
+- A row that names no institution at all is the notice's under an
+  e-licitatie award number (unique), and set apart, unverified, under any
+  other: the box then reads „Contracte legate de acest anunț doar după
+  număr", the row „instituție nepublicată în SEAP".
+- „Adds up" allows the rows' rounding to whole lei (a leu a contract), no
+  more; an accepted row's value is the value engine's resolved amount when
+  it has one. Several firms on one contract are said to be in association
+  only when every row of it shows one value, and never on a framework. A
+  firm met with and without its CUI is one firm. No signing span when a
+  contract has no day.
+- Known limit: call-offs the API files as frameworks (§22.2 item 8) are
+  listed with the frameworks — nothing on the rows tells them apart today.
+
+The server read is kept ten minutes (a thousand notices at most) under a
+6-second deadline; a read with failed names is served `no-store`. The head
+names the page by its title and institution (an untitled notice by its
+number) and describes a call and an award apart.
+

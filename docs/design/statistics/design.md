@@ -2245,6 +2245,60 @@ sentence under its title.
   against the captured histories, so a refresh that no longer bears it out
   fails before it ships.
 
+## 6al. The audit of 2 October 2026: what the client fixed (2026-10-02)
+
+An audit of the INS pages on the deployed dev site (English, 1440 and 390
+wide) found eight issues. Two are data freshness — the database trails INS
+Tempo by one or two periods, and INS revised three 2023 national points
+(births 164,004 → 168,079, deaths 244,624 → 245,115, life expectancy 75.52 →
+75.50) that neither the database nor `hub-national-series.ts` has yet; both
+wait on the reload, and the localities map's snapshot is regenerated after
+it. The other six were fixed in the client, each as the product owner chose
+it from options:
+
+- **The earnings card reads FOM106G**, the CAEN Rev.3 series INS publishes
+  from January 2025 (FOM106D, Rev.2, ends in December 2025). The deployed
+  API's total fallback does not read „TOTAL ECONOMIE" as a total and
+  answered `NO_DATA`; the national read names that member (103475) beside
+  `TOTAL` until the server does (`national-latest.ts`). The card is never
+  spliced with FOM106D: the classifications differ.
+- **A legend names exactly the values a class holds.** A value on a bound
+  belongs to the class above it, and the top class read „peste 81" while
+  holding the UATs at 81. Classes now say which ends they hold
+  (`ClassInterval.includesFrom/includesTo`); whole numbers read as closed
+  ranges („1–20", „81 sau mai mult"), decimals name the open end („2,5 – sub
+  5"; above a reference „peste 77,9 – 78,9", the band „77,0–77,9"). The
+  county map's legend reads by the same rule. Chosen over symbols („≥ 81")
+  and over moving the boundary, which would have recoloured every UAT on one.
+- **A county's list ranks by place in the county**: Cluj-Napoca is 1 in
+  Cluj, not „2" (its place in the country), which the row's title and
+  accessible name keep. Chosen over labelling the national rank, where the
+  list's order and its numbers would keep disagreeing at the top.
+- **English pages read INS's English, corrected.** INS publishes English for
+  axes, members and units; the pages showed the Romanian („Sexe",
+  „Feminin", „Mii metri cubi", the comparison's indicator name). `insText`
+  (`lib/ins-english.ts`) picks the language when the page renders — never
+  when the data is fetched, so a figure read once serves both — and a short
+  glossary corrects INS's recurring mistakes („Thousands persons",
+  „cubits metres", „CANE Rev.2"), read off the live catalog's 783 axis names
+  and a quarter of its units. Chosen over INS's English as-is and over
+  translating only units ourselves.
+- **Phones**: the locality page's headline tiles stay two abreast with their
+  names whole, never clamped (four fixed indicators, the longest 82
+  characters in English); the dataset page's selection button lists one axis
+  a line instead of a clamped run („Sexe: Feminin · Medii…").
+- **A year picked on a place's page travels with its links.** The compare
+  icon ends the comparison at the cell the tile shows (for a matrix published
+  at one cadence only: the comparison reads a period at its default cadence,
+  and naming the cadence would make the selection wait for its other axes);
+  the row opens the whole series with that period marked — a dashed line, a
+  ring, „2020 · 176.996" — while the figure stays on the latest
+  (`?perioada=` on `/ins/seturi/$cod`). Chosen over cutting the series at the
+  year, which would have read the past year as the latest.
+
+Before and after screenshots of each fix were taken on the dev server
+(2026-10-02).
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

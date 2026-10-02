@@ -6,6 +6,7 @@ import {
   type EffectiveScope,
 } from '../lib/dataset-selection'
 import { figureUnitWord } from '../lib/units'
+import { insText } from '../lib/ins-english'
 import {
   sourceMemberLabelKey,
   useSourceMemberLabels,
@@ -45,11 +46,11 @@ export function useScopeLabels(params: {
     scope.territory === null
       ? t`România`
       : (sampleRow?.territory?.name_ro ?? scope.territory.value)
-  const rowLabel = (typeCode: string) =>
-    (sampleRow?.classifications ?? [])
-      .find((classification) => classification.type_code === typeCode)
-      ?.name_ro?.trim() || null
-  const rowUnitLabel = sampleRow?.unit?.name_ro ?? sampleRow?.unit?.symbol ?? null
+  const rowLabel = (typeCode: string) => {
+    const member = (sampleRow?.classifications ?? []).find((classification) => classification.type_code === typeCode)
+    return insText(member?.name_ro, member?.name_en)
+  }
+  const rowUnitLabel = insText(sampleRow?.unit?.name_ro, sampleRow?.unit?.name_en) ?? sampleRow?.unit?.symbol ?? null
 
   const unitAxis = dimensionsOfType(dataset.dimensions, 'UNIT_OF_MEASURE')[0]
   const unitLookup: SourceMemberLookup | null =

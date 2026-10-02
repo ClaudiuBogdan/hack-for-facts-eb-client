@@ -20,6 +20,7 @@ import { getInsDatasetDetails } from '../api/graphql/ins-bootstrap-fetchers'
 import type { ComparisonTerritoryToken } from '../lib/dataset-selection'
 import type { ComparisonMatrix } from '../lib/native-comparison'
 import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
+import { insText } from '../lib/ins-english'
 
 /**
  * The dataset an address names, on its own: what the rail prints and what
@@ -191,7 +192,7 @@ export function useComparisons(search: StatisticsComparisonsSearch) {
     ? [
         ...prepared.dataset.dimensions
           .filter((d) => resolved?.unresolvedAxes.includes(`D${d.index}`))
-          .map((d) => d.label_ro || `D${d.index}`),
+          .map((d) => insText(d.label_ro, d.label_en) || `D${d.index}`),
         ...(resolved?.unit === null ? [t`Unitate de măsură`] : []),
         ...(resolved?.cadence === null ? [t`Frecvență`] : []),
       ]

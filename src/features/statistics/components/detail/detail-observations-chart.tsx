@@ -47,6 +47,13 @@ type Props = {
   readonly stats?: SeriesStats
   /** Height utility for the plot area. */
   readonly height?: string
+  /**
+   * A period the reader came to read — the year picked on a place's page —
+   * marked on the whole series, while the figure stays on the latest. Not
+   * marked where the plot does not hold it with a value: another cadence, a
+   * capped series, a gap.
+   */
+  readonly markedPeriod?: string | null
 }
 
 /**
@@ -170,6 +177,7 @@ export function DetailObservationsChart({
   mean = false,
   stats,
   height = 'h-72',
+  markedPeriod = null,
 }: Props) {
   const axis = seriesAxis(series.points)
   const valueAxis = axisLabels(axis.ticks, activeNumberLocale())
@@ -278,6 +286,24 @@ export function DetailObservationsChart({
   if (marks?.trough && troughPosition && !troughIsLatest && !troughIsPeak)
     annotated.add(marks.trough.period)
   if (marks?.latest && latestOnChart) annotated.add(marks.latest.period)
+  const marked = markedPeriod
+    ? (series.points.find((point) => point.period === markedPeriod && point.value !== null && point.raw !== null) ?? null)
+    : null
+  if (marked) annotated.add(marked.period)
+  const indexOf = (period: string) => series.points.findIndex((point) => point.period === period)
+  const span = Math.max(1, series.points.length - 1)
+  const markedIndex = marked ? indexOf(marked.period) : -1
+  // Where the latest's halo or the peak's „maxim" already says the value, the
+  // mark is the line alone: its label printed the same figure over theirs.
+  const markedSaid =
+    marked !== null &&
+    ((marks?.latest != null && latestOnChart && marks.latest.period === marked.period) ||
+      (marks?.peak != null && peakPosition !== null && marks.peak.period === marked.period))
+  // The label reads away from the right edge, where the end label's gutter is
+  // too narrow for it, and under the plot when the peak's label is close by.
+  const markedLabelSide = markedIndex / span > 0.6 ? 'Right' : 'Left'
+  const peakNearby = marks?.peak != null && peakPosition !== null && Math.abs(indexOf(marks.peak.period) - markedIndex) / span < 0.15
+  const markedLabelPosition = `${peakNearby ? 'insideBottom' : 'insideTop'}${markedLabelSide}` as const
 
   const endLabel = marks?.latest != null ? formatMarkValue(marks.latest) : ''
   // An extreme the plot does not contain is not marked; the note under the
@@ -476,6 +502,41 @@ export function DetailObservationsChart({
                   fontSize: 11,
                   ...LABEL_HALO,
                 }}
+              />
+            ) : null}
+            {/* The period the reader chose, across the plot: the line says
+                when, the ring says where the series stood then. */}
+            {marked ? (
+              <ReferenceLine
+                zIndex={ANNOTATION_Z_INDEX}
+                x={marked.period}
+                stroke="hsl(var(--foreground))"
+                strokeOpacity={0.55}
+                strokeDasharray="3 3"
+                strokeWidth={1}
+                {...(markedSaid
+                  ? {}
+                  : {
+                      label: {
+                        value: `${formatHubPeriod(marked.period)} · ${groupWireValue(marked.raw!, activeNumberLocale())}`,
+                        position: markedLabelPosition,
+                        fill: 'hsl(var(--foreground))',
+                        fontSize: 11,
+                        ...LABEL_HALO,
+                        fontWeight: 600,
+                      },
+                    })}
+              />
+            ) : null}
+            {marked && !markedSaid ? (
+              <ReferenceDot
+                zIndex={ANNOTATION_Z_INDEX}
+                x={marked.period}
+                y={marked.value!}
+                r={5}
+                fill={SURFACE_COLOR}
+                stroke="hsl(var(--foreground))"
+                strokeWidth={2}
               />
             ) : null}
             {/* The latest value is where the reading ends, so it carries a

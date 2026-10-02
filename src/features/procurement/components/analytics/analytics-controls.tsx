@@ -264,7 +264,11 @@ export function QuestionsMenu({ onChange, triggerClassName }: { readonly onChang
 
 // ────────────────────────────────────────────────────── group-by and measure ──
 
-const TABS: readonly { readonly axis: AxisId | 'timp' | 'inregistrari'; readonly levels: readonly { readonly id: string }[] }[] = [
+/** The bar's two controls, the level and the measure: 44 px on a phone, 40 from a small screen up, as the filters' (no small buttons). */
+const CONTROL_HEIGHT = '[&>button]:min-h-11 sm:[&>button]:min-h-10 sm:[&>button]:px-4'
+
+/** The tabs, each with its levels coarse to fine; `opens` is the level a tab opens on, when not its first (a county map before eight regions). */
+const TABS: readonly { readonly axis: AxisId | 'timp' | 'inregistrari'; readonly levels: readonly { readonly id: string }[]; readonly opens?: string }[] = [
   { axis: 'inregistrari', levels: [{ id: 'toate' }] },
   { axis: 'cumparator', levels: [{ id: 'cui' }] },
   { axis: 'furnizor', levels: [{ id: 'cui' }] },
@@ -278,8 +282,8 @@ const TABS: readonly { readonly axis: AxisId | 'timp' | 'inregistrari'; readonly
       { id: 'cod' },
     ],
   },
-  { axis: 'loc', levels: [{ id: 'judet' }, { id: 'localitate' }, { id: 'regiune' }] },
-  { axis: 'loc_firma', levels: [{ id: 'judet' }, { id: 'localitate' }, { id: 'regiune' }] },
+  { axis: 'loc', levels: [{ id: 'regiune' }, { id: 'judet' }, { id: 'localitate' }], opens: 'judet' },
+  { axis: 'loc_firma', levels: [{ id: 'regiune' }, { id: 'judet' }, { id: 'localitate' }], opens: 'judet' },
   { axis: 'procedura', levels: [{ id: 'tip' }] },
   { axis: 'timp', levels: [{ id: 'year' }, { id: 'quarter' }, { id: 'month' }] },
 ]
@@ -294,6 +298,7 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
   const current = query.dupa
   const currentLevel = current.axis === 'timp' ? current.bucket : current.axis === 'inregistrari' ? 'toate' : current.level
   const tab = TABS.find((item) => item.axis === current.axis)
+  const levels = (tab?.levels ?? []).filter((level) => groupProblem(query, groupOf(current.axis, level.id)) === null)
   const measures: Measure[] = POPULATIONS[query.tip].money === 'none' ? ['numar'] : ['numar', 'lei']
   if (perResidentAllowed(current)) measures.push('locuitor')
   return (
@@ -301,7 +306,8 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div role="tablist" aria-label={t`După ce`} className="flex flex-wrap gap-x-4 gap-y-1 border-b">
           {TABS.map((item) => {
-            const firstReadable = item.levels.find((level) => groupProblem(query, groupOf(item.axis, level.id)) === null)
+            const readable = item.levels.filter((level) => groupProblem(query, groupOf(item.axis, level.id)) === null)
+            const firstReadable = readable.find((level) => level.id === item.opens) ?? readable[0]
             if (!firstReadable) return null
             const active = item.axis === current.axis
             return (
@@ -326,28 +332,22 @@ export function GroupBar({ query, onChange, className }: { readonly query: Query
             value={query.masura}
             onChange={(masura) => onChange({ ...query, masura })}
             options={measures.map((key) => ({ key, label: measureLabel(key, query.tip) }))}
+            className={CONTROL_HEIGHT}
           />
         )}
       </div>
-      {tab && tab.levels.length > 1 ? (
-        <div className="flex flex-wrap items-center gap-1.5 text-sm">
-          <MonoLabel className="text-muted-foreground">{t`pe`}</MonoLabel>
-          {tab.levels.map((level) => {
-            const group = groupOf(tab.axis, level.id)
-            const disabled = groupProblem(query, group) !== null
-            return (
-              <button
-                key={level.id}
-                type="button"
-                disabled={disabled}
-                onClick={() => onChange({ ...query, dupa: group })}
-                className={cn('border px-2 py-0.5 disabled:opacity-40', level.id === currentLevel ? 'border-primary font-semibold' : 'hover:bg-muted')}
-              >
-                {levelLabel(level.id)}
-              </button>
-            )
-          })}
-        </div>
+      {/* The tab's levels, coarse to fine, as the measure's own control: only those the question can be grouped by (a county
+          picked has no counties to rank), and none when one is left. As tall as the filters' controls, and unlabelled so it
+          starts where the tabs and a wrapped measure do (its name, „Nivelul", is for a screen reader). */}
+      {levels.length > 1 ? (
+        <IndicatorToggle<string>
+          label={t`Nivelul`}
+          value={currentLevel}
+          onChange={(level) => onChange({ ...query, dupa: groupOf(current.axis, level) })}
+          options={levels.map((level) => ({ key: level.id, label: levelLabel(level.id) }))}
+          // Five CPV levels on a phone: three to a row, the last taking the row's rest, no empty cell.
+          className={cn(CONTROL_HEIGHT, 'self-start', levels.length > 3 && 'grid-flow-row grid-cols-3', levels.length % 3 === 2 && '[&>button:last-child]:col-span-2')}
+        />
       ) : null}
     </div>
   )

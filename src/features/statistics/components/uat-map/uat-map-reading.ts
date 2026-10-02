@@ -70,7 +70,7 @@ export function readingOf({
   readonly meta: SeriesMeta
 }): Reading {
   const figures = series.total
-  const scale = mapScale(figures.values, { diverging: meta.signed, separateZero: meta.separateZero })
+  const scale = mapScale(figures.values, { diverging: meta.signed, separateZero: meta.separateZero, digits: meta.digits })
   const { rank, order } = rankOf(figures.values)
   const within = countyRanks(order, geometry.county, figures.values)
   return {

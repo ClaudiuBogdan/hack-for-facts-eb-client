@@ -7,6 +7,7 @@ import { tileUnit } from '../../lib/territory-groups'
 import { hubUnitWord } from '../../lib/units'
 import { formatHubPeriod } from '../../lib/period'
 import { LatestValueTile } from './fact-tile'
+import { insText } from '../../lib/ins-english'
 
 type Props = {
   readonly latest: StatisticsLatestValue
@@ -58,10 +59,10 @@ export function DetailTier0Hero({ latest }: Props) {
     )
   }
 
-  // The unit as a Romanian word where the API's symbol is a code
-  // („persons", „percent"); otherwise the unit's own name.
+  // The unit as a word where the API's symbol is a code („persons",
+  // „percent"); otherwise the unit's own name, in the reader's language.
   const unit = tileUnit(latest)
-  const unitWord = hubUnitWord(unit, latest.unitNameRo ?? latest.unitSymbol)
+  const unitWord = hubUnitWord(unit, insText(latest.unitNameRo, latest.unitNameEn) ?? latest.unitSymbol)
 
   return (
     <div className="@container">

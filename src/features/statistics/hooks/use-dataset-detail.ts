@@ -28,6 +28,7 @@ import {
 } from '../lib/detail-series-resolution'
 import { detailBootstrapEntity } from '../lib/source-selection'
 import { STATISTICS_STALE_TIME, statisticsKeys, statisticsRetry } from './query-config'
+import { insText } from '../lib/ins-english'
 
 /** The most options the API hands back in one read. */
 const DIMENSION_OPTIONS_PAGE_SIZE = 1000
@@ -305,10 +306,17 @@ export function useSourceMemberLabels(params: {
 
   const labels = new Map<string, string>()
   params.lookups.forEach((lookup, index) => {
-    const label = results[index]?.data
+    const names = results[index]?.data
+    const label = names ? insText(names.ro, names.en) : null
     if (label) labels.set(sourceMemberLabelKey(lookup), label)
   })
   return labels
+}
+
+/** A member's name as INS publishes it, both languages: the page picks one when it renders. */
+export interface SourceMemberNames {
+  readonly ro: string | null
+  readonly en: string | null
 }
 
 /** The key a resolved label is filed under: axis and member together. */
@@ -320,7 +328,7 @@ export async function findSourceMemberLabel(params: {
   readonly datasetCode: string
   readonly lookup: SourceMemberLookup
   readonly signal?: AbortSignal
-}): Promise<string | null> {
+}): Promise<SourceMemberNames | null> {
   const { datasetCode, lookup, signal } = params
   const matches = (value: InsDimensionValue) =>
     lookup.kind === 'unit'
@@ -337,11 +345,13 @@ export async function findSourceMemberLabel(params: {
     })
     const hit = result.nodes.find(matches)
     if (hit) {
-      const label =
+      const names =
         lookup.kind === 'unit'
-          ? (hit.unit?.name_ro ?? hit.unit?.symbol ?? hit.label_ro)
-          : (hit.label_ro ?? hit.classification_value?.name_ro)
-      return label?.trim() || null
+          ? { ro: hit.unit?.name_ro || hit.unit?.symbol || hit.label_ro, en: hit.unit?.name_en || hit.label_en }
+          : { ro: hit.label_ro || hit.classification_value?.name_ro, en: hit.label_en }
+      const ro = names.ro?.trim() || null
+      const en = names.en?.trim() || null
+      return ro || en ? { ro, en } : null
     }
     if (!result.pageInfo.hasNextPage || result.nodes.length === 0) return null
     offset += result.nodes.length

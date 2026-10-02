@@ -11,7 +11,7 @@ import type { InsLatestValueNodeRaw } from './statistics-raw-schemas'
  * are kept. A duplicate or an unrequested code, and a cell that does not
  * hold the requested geography, are contract breaches and refused.
  *
- * A matrix with no geography axis (IPC102E, FOM106D) publishes the country
+ * A matrix with no geography axis (IPC102E, FOM106G) publishes the country
  * and nothing else: its cell carries no territory to check, and it can only
  * answer a national request.
  */

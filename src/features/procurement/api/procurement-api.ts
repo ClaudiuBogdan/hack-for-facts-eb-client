@@ -6,7 +6,6 @@ export type {
 export {
   fetchAuthorityProcurementSliceLive as fetchProcurementAuthoritySlice,
   fetchProcurementSearchLive as fetchProcurementSearch,
-  fetchProcedureDetailLive as fetchProcurementProcedureDetail,
   fetchSupplierProcurementSliceLive as fetchProcurementSupplierSlice,
   fetchSupplierRecordsLive as fetchProcurementSupplierRecords,
 } from './procurement-api.live'

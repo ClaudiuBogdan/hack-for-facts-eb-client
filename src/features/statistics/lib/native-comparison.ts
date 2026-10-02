@@ -50,6 +50,8 @@ export interface ComparisonMatrix {
   readonly periods: readonly ComparisonPeriodOption[]
   readonly rows: readonly ComparisonTerritoryRow[]
   readonly unitSymbol: string | null
+  /** The unit's English name where the symbol is not one, for an English page to pick when it renders. */
+  readonly unitSymbolEn?: string | null
 }
 
 export type NativeComparisonAvailability =
@@ -232,7 +234,9 @@ export function projectNativeComparison(input: {
     rows.push(row)
     grouped.set(key, rows)
   }
+  // Read inside a fetch whose cache serves both languages: both names, chosen at render.
   let unitLabel: string | null = null
+  let unitLabelEn: string | null = null
   const labels = new Set<string>()
   const rows = input.territories.map<NativeComparisonRow>((territory) => {
     const observations =
@@ -260,7 +264,11 @@ export function projectNativeComparison(input: {
         }
         labels.add(label)
         // „other" is the API's placeholder symbol, not a unit; the name is.
-        unitLabel ??= (row.unit.symbol !== 'other' && row.unit.symbol) || row.unit.name_ro || row.unit.code
+        if (unitLabel === null) {
+          const symbol = (row.unit.symbol !== 'other' && row.unit.symbol) || null
+          unitLabel = symbol || row.unit.name_ro || row.unit.code
+          unitLabelEn = symbol || row.unit.name_en || null
+        }
       }
     }
     return {
@@ -284,6 +292,7 @@ export function projectNativeComparison(input: {
     },
     rows,
     unitSymbol: unitLabel,
+    unitSymbolEn: unitLabelEn,
     periods: calendarPeriods(
       [...labels],
       input.cadence,

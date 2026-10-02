@@ -228,6 +228,7 @@ export const insObservationNodeRawSchema = z.object({
       code: z.string().nullish(),
       symbol: z.string().nullish(),
       name_ro: z.string().nullish(),
+      name_en: z.string().nullish(),
     })
     .nullish(),
   classifications: z

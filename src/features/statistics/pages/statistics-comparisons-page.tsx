@@ -30,6 +30,7 @@ import { editComparisonSearch, type ComparisonSearchEdit } from '../lib/comparis
 import { MAX_COMPARISON_TERRITORIES } from '../lib/comparison-territories'
 import { HUB_EXAMPLE_PLACES } from '../lib/landing-constants'
 import { statisticsTheme } from '../lib/statistics-theme'
+import { datasetDisplayName } from '../lib/dataset-names'
 
 /**
  * „Compară teritorii": one INS indicator across up to six places — localities,
@@ -126,7 +127,12 @@ export function StatisticsComparisonsPage() {
   const localities = datasetMeta?.has_uat_data ?? true
   const indicator = {
     code: datasetCode || undefined,
-    name: quick ? i18n._(quick) : datasetMeta ? (datasetMeta.name_ro ?? datasetMeta.code) : null,
+    // The matrix's own name in the reader's language, as the dataset page titles it.
+    name: quick
+      ? i18n._(quick)
+      : datasetMeta
+        ? datasetDisplayName({ code: datasetMeta.code, nameRo: datasetMeta.name_ro ?? null, nameEn: datasetMeta.name_en ?? null }, i18n.locale)
+        : null,
     meta: datasetMeta ? (localities ? datasetMeta.code : `${datasetMeta.code} · ${t`doar județe`}`) : null,
   }
 

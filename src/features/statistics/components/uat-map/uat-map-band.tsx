@@ -285,7 +285,7 @@ function UatMapReady({ data, view }: { readonly data: UatMapSnapshot; readonly v
         </div>
         <div className="min-w-0 lg:col-span-4">
           {county ? (
-            <CountyList county={county} meta={meta} series={series} geometry={geometry} rank={reading.rank} order={reading.order} onHover={hoverRow} />
+            <CountyList county={county} meta={meta} series={series} geometry={geometry} rank={reading.rank} countyRank={reading.countyRank} order={reading.order} onHover={hoverRow} />
           ) : (
             <NationalExtremes meta={meta} series={series} geometry={geometry} rank={reading.rank} order={reading.order} onHover={hoverRow} />
           )}

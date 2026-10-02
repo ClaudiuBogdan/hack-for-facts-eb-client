@@ -3,6 +3,7 @@ import type { StatisticsDatasetDetailSearch, StatisticsLatestValue } from '@/sch
 import { activeNumberLocale, groupWireValue } from './format'
 import { figureUnitWord } from './units'
 import { parseWireDecimal } from './value-status'
+import { insText } from './ins-english'
 
 /**
  * What the detail page can already show while its series reads: the figure
@@ -45,7 +46,7 @@ export function knownLatestFigure(params: {
   if (search.din !== undefined || search.pana !== undefined) return null
   return {
     value: groupWireValue(latest.value, activeNumberLocale()),
-    unit: figureUnitWord(latest, latest.unitNameRo ?? latest.unitSymbol),
+    unit: figureUnitWord(latest, insText(latest.unitNameRo, latest.unitNameEn) ?? latest.unitSymbol),
     period: latest.period,
   }
 }

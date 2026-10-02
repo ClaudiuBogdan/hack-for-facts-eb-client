@@ -70,6 +70,7 @@ export function detailLatest(
     unitCode: '0',
     unitSymbol: 'pers.',
     unitNameRo: 'Numar persoane',
+    unitNameEn: 'Number of persons',
     period: '2025',
     resolvedPeriodicity: 'ANNUAL',
     resolvedClassifications: [

@@ -12,10 +12,18 @@ const logger = createLogger('ins-national-latest')
 /** A retired matrix is missing from every answer; the alert is worth raising once per process. */
 const reported = new Set<string>()
 
+/**
+ * `TOTAL`, and the total members the API's total fallback does not recognise
+ * by their label: FOM106G's „TOTAL ECONOMIE" (103475) answered `NO_DATA` on
+ * 2026-10-02 while its cells were there. A member code only ranks the cells of
+ * a matrix that has it. Drop it once the server reads that label as a total.
+ */
+const PREFERRED_CLASSIFICATION_CODES = ['TOTAL', '103475']
+
 /** The read, under the name its caller logs and mocks it by. */
 const queryNamed = (operation: string) => `query ${operation}($codes: [String!]!) {
   latest: insLatestDatasetValues(entity: { territoryCode: "RO", territoryLevel: NATIONAL },
-    datasetCodes: $codes, preferredClassificationCodes: ["TOTAL"]) { ${INS_LATEST_VALUE_FIELDS} }
+    datasetCodes: $codes, preferredClassificationCodes: ${JSON.stringify(PREFERRED_CLASSIFICATION_CODES)}) { ${INS_LATEST_VALUE_FIELDS} }
 }`
 
 /**

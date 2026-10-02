@@ -8,6 +8,7 @@ import { periodicityLabel } from '../../lib/periodicity-labels'
 import { DetailCadenceControl } from '../detail/detail-cadence-control'
 import { DetailDimensionPanel } from '../detail/detail-dimension-panel'
 import type { ComparisonRailAxis } from './comparison-rail'
+import { insText } from '../../lib/ins-english'
 
 /** The cadences a comparison can draw, when the matrix does not list its own. */
 const COMPARISON_CADENCES: readonly InsPeriodicity[] = ['ANNUAL', 'QUARTERLY', 'MONTHLY']
@@ -51,7 +52,7 @@ export function comparisonAxes({
   for (const dimension of datasetMeta.dimensions.filter((d) => d.type === 'CLASSIFICATION')) {
     const type = `D${dimension.index}`
     const selected = pins.get(type) ?? null
-    const label = dimension.label_ro?.trim() || type
+    const label = insText(dimension.label_ro, dimension.label_en) || type
     axes.push({
       id: `clasificare-${type}`,
       icon: Tags,

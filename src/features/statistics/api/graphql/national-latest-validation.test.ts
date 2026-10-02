@@ -55,8 +55,8 @@ describe('validateNationalLatest', () => {
   })
 
   it('takes a matrix with no geography axis as national, and only for a national request', () => {
-    // IPC102E and FOM106D carry no territory and no geography: that is their shape.
-    const nationalOnly = ['IPC102E', 'FOM106D']
+    // IPC102E and FOM106G carry no territory and no geography: that is their shape.
+    const nationalOnly = ['IPC102E', 'FOM106G']
     const latest = tiles().filter((outcome) => nationalOnly.includes(outcome.dataset.code))
     expect(() => validateNationalLatest(latest, nationalOnly, NATIONAL)).not.toThrow()
     expect(() => validateNationalLatest(latest, nationalOnly, { code: 'CJ', level: 'NUTS3' })).toThrow(

@@ -22,6 +22,14 @@ export function buildDirectPurchaseDocumentTitle(options: { readonly id: string;
   return authority ? `${title} — ${authority} — ${PROCUREMENT_TITLE_SUFFIX}` : `${title} — ${PROCUREMENT_TITLE_SUFFIX}`
 }
 
+/** A procedure is named by what it was for and whose it is: „Autostrada Pașcani–Suceava, lotul 1 — CNAIR — …"; an untitled one by its notice's number, else the page's. */
+export function buildProcedureDocumentTitle(options: { readonly id: string; readonly title?: string | null; readonly noticeNo?: string | null; readonly authorityName?: string | null }): string {
+  const noticeNo = options.noticeNo?.trim()
+  const title = options.title?.trim() || (noticeNo ? `Anunțul ${noticeNo}` : `Procedură ${options.id}`)
+  const authority = options.authorityName?.trim()
+  return authority ? `${title} — ${authority} — ${PROCUREMENT_TITLE_SUFFIX}` : `${title} — ${PROCUREMENT_TITLE_SUFFIX}`
+}
+
 /** A contract is named by what was awarded and who awarded it: „Pașcani–Suceava — CNAIR — …". */
 export function buildContractDocumentTitle(options: { readonly id: string; readonly title?: string | null; readonly authorityName?: string | null }): string {
   const title = options.title?.trim()

@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
-import { isAttempt, isPurchase, shownDayOf, type DirectPurchase } from '../../lib/direct-purchase-model'
+import { isAttempt, isPurchase, linkYearOf, shownDayOf, type DirectPurchase } from '../../lib/direct-purchase-model'
 import {
   afterText,
   alsoInText,
@@ -19,6 +19,7 @@ import {
 } from '../../lib/direct-purchase-text'
 import { statusLook } from './direct-purchase-style'
 import { Clamp, DirectPurchaseReceipt } from './direct-purchase-receipt'
+import { RecordParties } from './record-parties'
 
 /**
  * Everything about the purchase itself, in reading order: what was bought
@@ -78,15 +79,29 @@ function PurchaseDescription({ purchase, className }: { readonly purchase: Direc
  * struck; an unchecked value is said, not shown as one; a record whose end
  * SEAP does not say shows SEAP's value, unmarked.
  */
+/**
+ * The figure's size from `md`, where the value has a column of its own beside the facts: as large as its column holds it, at most
+ * 3rem — a figure of any length, in a column as narrow as the parties leave it, never runs into the facts. Its digits are
+ * tabular, about 0.55em each with the unit (measured: „3.516.088,80 lei" fills 0.52em a character).
+ */
+const figureFit = (figure: string) => ({ '--figure-fit': `${(100 / (figure.length * 0.55)).toFixed(2)}cqw` }) as CSSProperties
+
 function PurchaseValue({ purchase }: { readonly purchase: DirectPurchase }) {
   const done = isPurchase(purchase.outcome)
   const attempt = isAttempt(purchase.outcome)
   const unverified = purchase.unverifiedValue !== null ? leiExact(purchase.unverifiedValue) : null
+  const figure = purchase.value !== null ? leiExact(purchase.value) : '—'
   return (
-    <div>
+    <div className="@container min-w-0">
       <MonoLabel className="block text-muted-foreground">{done ? t`Valoarea, fără TVA` : attempt ? t`Oferta, fără TVA` : t`Valoarea din SEAP, fără TVA`}</MonoLabel>
-      <p className={cn('mt-3 text-4xl font-semibold tabular-nums tracking-tight text-foreground sm:text-5xl', attempt && 'text-muted-foreground line-through decoration-2')}>
-        {purchase.value !== null ? leiExact(purchase.value) : '—'}
+      <p
+        className={cn(
+          'mt-3 text-4xl font-semibold tabular-nums tracking-tight text-foreground sm:text-5xl md:text-[length:min(3rem,var(--figure-fit))]',
+          attempt && 'text-muted-foreground line-through decoration-2',
+        )}
+        style={figureFit(figure)}
+      >
+        {figure}
       </p>
       {attempt ? <p className="mt-2 text-sm text-muted-foreground">{t`Nu s-a plătit: achiziția nu s-a făcut.`}</p> : null}
       {done && unverified ? <p className="mt-2 max-w-[40ch] text-sm text-muted-foreground">{t`SEAP publică ${unverified}, dar valoarea nu a trecut verificările platformei.`}</p> : null}
@@ -379,30 +394,39 @@ export function DirectPurchaseBlock({ purchase, year, className }: { readonly pu
         <Trans>Ce s-a cumpărat</Trans>
       </h2>
       <PurchaseDescription purchase={purchase} className="mt-4" />
-      <div className="mt-8 grid gap-x-12 gap-y-8 border-y py-7 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      {/* The value, its facts, and the two parties as the last column: across the frame, the reading below at its own width. */}
+      <div className="mt-8 grid gap-x-12 gap-y-8 border-y py-7 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:grid-cols-[minmax(0,4fr)_minmax(0,6fr)_minmax(0,3fr)]">
         <PurchaseValue purchase={purchase} />
         <PurchaseFacts purchase={purchase} className="self-center" />
+        <RecordParties
+          authority={purchase.authority}
+          supplier={purchase.supplier}
+          year={linkYearOf(purchase)}
+          className="border-t pt-7 md:col-span-2 lg:col-span-1 lg:grid-cols-1 lg:self-center lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0"
+        />
       </div>
-      <div className="mt-10">{hasLines ? <DirectPurchaseReceipt purchase={purchase} year={year} /> : <NoLines purchase={purchase} />}</div>
-      {detail ? (
-        <>
-          <h3 className={cn(SUBHEAD, 'mt-14')}>
-            <Trans>Cum s-a făcut</Trans>
-          </h3>
-          <Steps purchase={purchase} className="mt-5" />
-          {detail.delivery || detail.payment || detail.documents > 0 ? (
-            <>
-              <h3 className={cn(SUBHEAD, 'mt-12')}>
-                <Trans>Livrarea și plata</Trans>
-              </h3>
-              <Terms purchase={purchase} className="mt-4" />
-            </>
-          ) : null}
-        </>
-      ) : (
-        <RowDates purchase={purchase} className="mt-8" />
-      )}
-      <SourceLine purchase={purchase} className="mt-8" />
+      <div className="max-w-4xl">
+        <div className="mt-10">{hasLines ? <DirectPurchaseReceipt purchase={purchase} year={year} /> : <NoLines purchase={purchase} />}</div>
+        {detail ? (
+          <>
+            <h3 className={cn(SUBHEAD, 'mt-14')}>
+              <Trans>Cum s-a făcut</Trans>
+            </h3>
+            <Steps purchase={purchase} className="mt-5" />
+            {detail.delivery || detail.payment || detail.documents > 0 ? (
+              <>
+                <h3 className={cn(SUBHEAD, 'mt-12')}>
+                  <Trans>Livrarea și plata</Trans>
+                </h3>
+                <Terms purchase={purchase} className="mt-4" />
+              </>
+            ) : null}
+          </>
+        ) : (
+          <RowDates purchase={purchase} className="mt-8" />
+        )}
+        <SourceLine purchase={purchase} className="mt-8" />
+      </div>
     </section>
   )
 }

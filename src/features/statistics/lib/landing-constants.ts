@@ -45,7 +45,8 @@ export const LANDING_THEMES: readonly {
  * (the county map's own anchors are a second: `HUB_COUNTY_ANCHOR_CODES`).
  * Labels are short, truthful renderings for a row; the API `name_ro` travels
  * alongside. Verified against the live data (2026-09-22): every code resolves
- * a `TOTAL_FALLBACK` cell at RO/NATIONAL. IPC102E and FOM106D have no
+ * a `TOTAL_FALLBACK` cell at RO/NATIONAL — FOM106G a `PREFERRED_CLASSIFICATION`
+ * one, its total named in the read (`fetchNationalLatest`). IPC102E and FOM106G have no
  * geography axis — national by construction — and their cells carry none.
  */
 export const HUB_NATIONAL_DATASETS: readonly {
@@ -53,7 +54,7 @@ export const HUB_NATIONAL_DATASETS: readonly {
   readonly shortLabel: MessageDescriptor
 }[] = [
   { code: 'IPC102E', shortLabel: msg`Inflația anuală` },
-  { code: 'FOM106D', shortLabel: msg`Salariul mediu net` },
+  { code: 'FOM106G', shortLabel: msg`Salariul mediu net` },
   { code: 'SOM103B', shortLabel: msg`Rata șomajului` },
   { code: 'POP105A', shortLabel: msg`Populația rezidentă` },
   { code: 'FOM104D', shortLabel: msg`Salariați (număr mediu)` },
@@ -76,8 +77,10 @@ export const HUB_NATIONAL_DATASET_CODES: readonly string[] = HUB_NATIONAL_DATASE
  * - IPC102E is the consumer price index against the same month a year
  *   earlier (=100); the band shows the index less 100, which is how INS
  *   itself states the annual inflation rate.
- * - FOM106D is the monthly average net earnings; its CAEN Rev.2 series ends
- *   in December 2025, where INS moved to Rev.3.
+ * - FOM106G is the monthly average net earnings by CAEN Rev.3 activity,
+ *   published from January 2025; the Rev.2 series it succeeds (FOM106D) ends
+ *   in December 2025. The two classifications differ, so the card shows
+ *   FOM106G's own latest month and is never spliced with FOM106D.
  * - SOM103B is the REGISTERED unemployment rate at the end of the month —
  *   the same measure as the county map's SOM103A, monthly.
  * - POP105A is the resident population, the official count; the population
@@ -85,7 +88,7 @@ export const HUB_NATIONAL_DATASET_CODES: readonly string[] = HUB_NATIONAL_DATASE
  */
 export const HUB_HEADLINE_CODES = {
   inflation: 'IPC102E',
-  earnings: 'FOM106D',
+  earnings: 'FOM106G',
   unemployment: 'SOM103B',
   population: 'POP105A',
 } as const

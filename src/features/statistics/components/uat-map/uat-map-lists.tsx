@@ -32,12 +32,28 @@ function ListHead({ meta }: { readonly meta: SeriesMeta }) {
   )
 }
 
-function UatRow({ index, meta, series, geometry, rank, onHover, showCounty }: ListProps & { readonly index: number; readonly showCounty: boolean }) {
+function UatRow({
+  index,
+  meta,
+  series,
+  geometry,
+  rank,
+  nationalRank,
+  onHover,
+  showCounty,
+}: ListProps & {
+  readonly index: number
+  readonly showCounty: boolean
+  /** In a county's list, `rank` is the place in the county, and this the place in the country. */
+  readonly nationalRank?: ReadonlyMap<number, number>
+}) {
+  const national = nationalRank?.get(index)
   return (
     <li>
       <Link
         to="/ins/teritorii/$siruta"
         params={{ siruta: geometry.siruta[index]! }}
+        title={national !== undefined ? t`Locul ${national} în țară` : undefined}
         onPointerEnter={() => onHover(index)}
         onPointerLeave={() => onHover(null)}
         onFocus={() => onHover(index)}
@@ -48,6 +64,7 @@ function UatRow({ index, meta, series, geometry, rank, onHover, showCounty }: Li
         <span className="font-mono text-xs tabular-nums text-muted-foreground">
           <span className="sr-only">{t`locul`} </span>
           {rank.get(index) ?? '—'}
+          {national !== undefined ? <span className="sr-only"> {t`în județ`}, {t`locul ${national} în țară`}</span> : null}
         </span>
         <span className="min-w-0 truncate text-foreground">
           {geometry.name[index]}
@@ -96,9 +113,21 @@ export const NationalExtremes = memo(function NationalExtremes(props: ListProps 
   )
 })
 
-/** Every UAT of a county, largest total first, the ones with none last. */
-export const CountyList = memo(function CountyList(props: ListProps & { readonly county: string; readonly order: readonly number[] }) {
-  const { county, meta, geometry, order } = props
+/**
+ * Every UAT of a county, largest total first, the ones with none last —
+ * numbered by their place in the county, as the list reads (Cluj-Napoca
+ * first in Cluj, though second in the country, which the row's title and its
+ * accessible name keep).
+ */
+export const CountyList = memo(function CountyList(
+  props: ListProps & {
+    readonly county: string
+    readonly order: readonly number[]
+    /** Each UAT's place within its county (`countyRanks`). */
+    readonly countyRank: ReadonlyMap<number, number>
+  },
+) {
+  const { county, meta, geometry, order, rank, countyRank } = props
   const ranked = order.filter((index) => geometry.county[index] === county)
   const placed = new Set(ranked)
   const rest = geometry.county.flatMap((code, index) => (code === county && !placed.has(index) ? [index] : []))
@@ -112,7 +141,7 @@ export const CountyList = memo(function CountyList(props: ListProps & { readonly
         {/* Positioned, so it clips its rows' screen-reader text too: an `sr-only` span is absolute, and one placed against an ancestor outside this scroll would lengthen the page by the list's hidden height. */}
         <ol className="relative max-h-120 divide-y overflow-y-auto border-y">
           {[...ranked, ...rest].map((index) => (
-            <UatRow key={index} {...props} index={index} showCounty={false} />
+            <UatRow key={index} {...props} rank={countyRank} nationalRank={rank} index={index} showCounty={false} />
           ))}
         </ol>
       </div>

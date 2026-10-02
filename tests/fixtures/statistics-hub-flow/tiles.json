@@ -83,8 +83,8 @@
       },
       {
         "dataset": {
-          "id": "FOM106D",
-          "code": "FOM106D",
+          "id": "FOM106G",
+          "code": "FOM106G",
           "name_ro": "Castigul salarial mediu net lunar",
           "name_en": "Castigul salarial mediu net lunar",
           "data_status": "AVAILABLE",
@@ -127,15 +127,15 @@
           ]
         },
         "observation": {
-          "id": "FOM106D-RO",
-          "dataset_code": "FOM106D",
-          "value": "5914",
+          "id": "FOM106G-RO",
+          "dataset_code": "FOM106G",
+          "value": "5684",
           "value_status": null,
           "time_period": {
-            "iso_period": "2025-12",
-            "year": 2025,
+            "iso_period": "2026-05",
+            "year": 2026,
             "quarter": null,
-            "month": 12,
+            "month": 5,
             "periodicity": "MONTHLY"
           },
           "territory": null,
@@ -146,19 +146,19 @@
           },
           "classifications": [
             {
-              "id": "FOM106D-0",
+              "id": "FOM106G-0",
               "type_code": "D0",
-              "code": "23415",
-              "name_ro": "23415"
+              "code": "103475",
+              "name_ro": "TOTAL ECONOMIE"
             }
           ],
           "dimensions": {
             "geography": null
           }
         },
-        "latestPeriod": "2025-12",
+        "latestPeriod": "2026-05",
         "hasData": true,
-        "matchStrategy": "TOTAL_FALLBACK",
+        "matchStrategy": "PREFERRED_CLASSIFICATION",
         "geographicWitnesses": []
       },
       {

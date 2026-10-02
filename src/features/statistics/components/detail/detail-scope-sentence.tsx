@@ -58,6 +58,7 @@ import {
   FilterPanelSection,
   FilterPanelStatic,
 } from '../filter-panel'
+import { insText } from '../../lib/ins-english'
 
 /** What a segment's control is handed by the section it opens in. */
 interface ScopeControlOptions {
@@ -178,7 +179,8 @@ export function DetailScopeSentence({
     for (const value of list) {
       const code =
         dimension.type === 'UNIT_OF_MEASURE' ? value.unit?.code : value.classification_value?.code
-      if (code && value.label_ro) labels.set(code, value.label_ro)
+      const label = insText(value.label_ro, value.label_en)
+      if (code && label) labels.set(code, label)
     }
     optionLabels.set(dimension.index, labels)
   }
@@ -247,19 +249,20 @@ export function DetailScopeSentence({
             <button
               type="button"
               aria-label={t`Alege ce arată seria`}
-              className="flex w-full items-center justify-between gap-2 rounded-md border border-border/70 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex w-full items-start justify-between gap-2 rounded-md border border-border/70 px-3 py-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="line-clamp-2 min-w-0 text-sm">
-                {/* Trimmed: INS ships labels with a trailing space, which
-                    rendered as „Localitati : TOTAL". */}
-                {segments
-                  .map(
-                    (segment) =>
-                      `${segment.controlLabel.trim()}: ${segment.text.trim()}`,
-                  )
-                  .join(' · ')}
+              {/* One axis a line, its name before its value: run together and
+                  clamped, „Sexe: Feminin · Medii de rezidenta: …" hid the very
+                  choices the button is there to show. Trimmed: INS ships labels
+                  with a trailing space („Localitati : TOTAL"). */}
+              <span className="min-w-0 space-y-0.5 text-sm">
+                {segments.map((segment) => (
+                  <span key={segment.id} className="block">
+                    <span className="text-muted-foreground">{segment.controlLabel.trim()}:</span> {segment.text.trim()}
+                  </span>
+                ))}
               </span>
-              <SlidersHorizontal className="h-4 w-4 shrink-0" aria-hidden />
+              <SlidersHorizontal className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
             </button>
           </SheetTrigger>
           <SheetContent
@@ -480,7 +483,8 @@ function buildSegments(params: {
     const typeCode = classificationTypeCode(dimension)
     const value = scope.classifications.get(typeCode)
     const controlLabel =
-      dimension.label_ro ?? dimension.classification_type?.name_ro ?? typeCode
+      insText(dimension.label_ro ?? dimension.classification_type?.name_ro, dimension.label_en ?? dimension.classification_type?.name_en) ??
+      typeCode
     if (value === undefined && !unresolvedTypeCodes.has(typeCode)) continue
     segments.push({
       id: `clasificare-${typeCode}`,
@@ -516,8 +520,8 @@ function buildSegments(params: {
 
   const unitDimension = dimensionsOfType(dimensions, 'UNIT_OF_MEASURE')[0]
   if (unitDimension) {
-    // INS names this axis „UM: <unit>"; the value already says which unit.
-    const unitAxisLabel = unitDimension.label_ro?.replace(/^UM\s*:\s*/i, '').trim()
+    // INS names this axis „UM: <unit>" („MU:" in English); the value already says which unit.
+    const unitAxisLabel = insText(unitDimension.label_ro, unitDimension.label_en)?.replace(/^(?:UM|MU)\s*:\s*/i, '').trim()
     const unitName =
       scope.unitCode === null
         ? unitLabel
@@ -671,7 +675,8 @@ function ClassificationControl({
     )
   const typeCode = classificationTypeCode(dimension)
   const label =
-    dimension.label_ro ?? dimension.classification_type?.name_ro ?? typeCode
+    insText(dimension.label_ro ?? dimension.classification_type?.name_ro, dimension.label_en ?? dimension.classification_type?.name_en) ??
+    typeCode
 
   /**
    * A pick keeps the cell one INS publishes (`source-hierarchy.ts`): a

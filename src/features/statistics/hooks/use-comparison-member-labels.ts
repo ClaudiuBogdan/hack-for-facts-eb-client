@@ -6,6 +6,7 @@ import type { ClassificationPin } from '../lib/dataset-selection'
 import { hubUnitWord } from '../lib/units'
 import type { NativeComparisonMatrix } from '../lib/native-comparison'
 import { sourceMemberLabelKey, useSourceMemberLabels, type SourceMemberLookup } from './use-dataset-detail'
+import { insText } from '../lib/ins-english'
 
 /**
  * The series' own coordinates, by name: each pinned member and the unit as
@@ -32,11 +33,11 @@ export function useComparisonMemberLabels(params: {
     const labels = new Map<string, string>()
     for (const row of matrix?.observations ?? []) {
       for (const member of row.classifications) {
-        const name = member.name_ro?.trim()
+        const name = insText(member.name_ro, member.name_en)
         const dimension = datasetMeta?.dimensions.find((entry) => `D${entry.index}` === member.type_code)
         if (name && dimension) labels.set(sourceMemberLabelKey({ dimensionIndex: dimension.index, code: member.code, kind: 'classification' }), name)
       }
-      const unitName = row.unit.name_ro?.trim() || row.unit.symbol?.trim()
+      const unitName = insText(row.unit.name_ro, row.unit.name_en) || row.unit.symbol?.trim()
       if (unitName && unitDimension) labels.set(sourceMemberLabelKey({ dimensionIndex: unitDimension.index, code: row.unit.code, kind: 'unit' }), unitName)
     }
     return labels

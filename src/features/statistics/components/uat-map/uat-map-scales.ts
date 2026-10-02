@@ -9,11 +9,20 @@
  * smallest 30% and full colour only the largest 3%.
  */
 
-/** A class's bounds; null is open. `zero` is the class of exact zeros. */
+/**
+ * A class's bounds; null is open. `zero` is the class of exact zeros. A class
+ * holds its lower bound and not its upper one — a value on a bound belongs to
+ * the class above it — unless `includesFrom` / `includesTo` say otherwise, and
+ * the legend words each class by the values it holds.
+ */
 export interface ClassInterval {
   readonly from: number | null
   readonly to: number | null
   readonly zero?: boolean
+  /** False where the class starts just above `from`: the classes above a reference, the first above zero. */
+  readonly includesFrom?: boolean
+  /** True where the class ends at `to` itself: a band around a reference, the classes above it. */
+  readonly includesTo?: boolean
 }
 
 export interface MapClass {
@@ -31,6 +40,8 @@ export interface MapClass {
 export interface MapScale {
   readonly kind: 'level' | 'level-zero' | 'diverging'
   readonly classes: readonly MapClass[]
+  /** Every figure a whole number: the legend reads its classes as closed ranges („21–80"). */
+  readonly wholeNumbers?: boolean
   /** The class of UAT `index`, or null where it has no figure. */
   readonly classAt: (index: number) => number | null
   /** Where a value sits on a legend of equal-width classes, 0 to 1. */
@@ -90,7 +101,12 @@ const stepIn = (bounds: readonly number[], value: number) => bounds.filter((boun
 
 export function mapScale(
   values: readonly (number | null)[],
-  options: { readonly diverging: boolean; readonly separateZero?: boolean },
+  options: {
+    readonly diverging: boolean
+    readonly separateZero?: boolean
+    /** The decimals the figures are shown with: whole-number labels only at none. */
+    readonly digits?: number
+  },
 ): MapScale {
   const present = values.filter((value): value is number => value !== null)
   const positionIn = (edges: readonly number[], classOf: (value: number) => number, count: number) => (value: number) => {
@@ -101,6 +117,8 @@ export function mapScale(
   }
   const min = Math.min(...present)
   const max = Math.max(...present)
+  // Water is counted in whole thousands of m³ but shown to a decimal: its classes read in the decimals it is shown in.
+  const wholeNumbers = (options.digits ?? 0) === 0 && present.every(Number.isInteger)
 
   if (options.diverging) {
     const magnitudes = present.map(Math.abs).sort((a, b) => a - b)
@@ -109,12 +127,14 @@ export function mapScale(
     const classOf = (value: number) => (value < -far ? 0 : value < -inner ? 1 : value <= inner ? 2 : value <= far ? 3 : 4)
     return {
       kind: 'diverging',
+      wholeNumbers,
+      // The band holds both its bounds, and the classes above it their upper one: `classOf`'s `<=`.
       classes: [
         { interval: { from: null, to: -far }, ...HUE.orange, opacity: DIVERGING_OPACITY.far },
         { interval: { from: -far, to: -inner }, ...HUE.orange, opacity: DIVERGING_OPACITY.near },
-        { interval: { from: -inner, to: inner }, ...HUE.grey, opacity: DIVERGING_OPACITY.band },
-        { interval: { from: inner, to: far }, ...HUE.blue, opacity: DIVERGING_OPACITY.near },
-        { interval: { from: far, to: null }, ...HUE.blue, opacity: DIVERGING_OPACITY.far },
+        { interval: { from: -inner, to: inner, includesTo: true }, ...HUE.grey, opacity: DIVERGING_OPACITY.band },
+        { interval: { from: inner, to: far, includesFrom: false, includesTo: true }, ...HUE.blue, opacity: DIVERGING_OPACITY.near },
+        { interval: { from: far, to: null, includesFrom: false }, ...HUE.blue, opacity: DIVERGING_OPACITY.far },
       ],
       classAt: (index) => (values[index] == null ? null : classOf(values[index]!)),
       positionOf: positionIn([min, -far, -inner, inner, far, max], classOf, 5),
@@ -124,18 +144,25 @@ export function mapScale(
   const sorted = [...present].sort((a, b) => a - b)
   const zeros = sorted.filter((value) => value === 0).length
   if (zeros > 0 && (options.separateZero || zeros > sorted.length * 0.1)) {
+    // A first bound of 1 on whole numbers would leave the class between zero and it empty.
     const bounds = boundsAt(
       sorted.filter((value) => value > 0),
       ABOVE_ZERO_CUTS,
-    )
+    ).filter((bound) => !(wholeNumbers && bound <= 1))
     const opacities = ABOVE_ZERO_OPACITY.slice(ABOVE_ZERO_OPACITY.length - bounds.length - 1)
     const classOf = (value: number) => (value <= 0 ? 0 : 1 + stepIn(bounds, value))
     const count = bounds.length + 2
     return {
       kind: 'level-zero',
+      wholeNumbers,
       classes: [
         { interval: { from: 0, to: 0, zero: true }, ...HUE.grey, opacity: ZERO_OPACITY },
-        ...intervalsOf(bounds).map((interval, i) => ({ interval, ...HUE.blue, opacity: opacities[i]! })),
+        // The first class above zero starts just above it: „1–2" for a count, not „sub 3".
+        ...intervalsOf(bounds).map((interval, i) => ({
+          interval: i === 0 ? { ...interval, from: 0, includesFrom: false } : interval,
+          ...HUE.blue,
+          opacity: opacities[i]!,
+        })),
       ],
       classAt: (index) => (values[index] == null ? null : classOf(values[index]!)),
       positionOf: (value) => (value <= 0 ? 0.5 / count : positionIn([0, 0, ...bounds, max], classOf, count)(value)),
@@ -147,6 +174,7 @@ export function mapScale(
   const opacities = LEVEL_OPACITY.slice(LEVEL_OPACITY.length - bounds.length - 1)
   return {
     kind: 'level',
+    wholeNumbers,
     classes: intervalsOf(bounds).map((interval, i) => ({ interval, ...HUE.blue, opacity: opacities[i]! })),
     classAt: (index) => (values[index] == null ? null : stepIn(bounds, values[index]!)),
     positionOf: positionIn([min, ...bounds, max], (value) => stepIn(bounds, value), bounds.length + 1),

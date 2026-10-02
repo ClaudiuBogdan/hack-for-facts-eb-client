@@ -7,7 +7,7 @@ import { formatTileValue } from '../../lib/territory-values'
 import { TerritorySparkline, TerritorySparklineChart } from './territory-sparkline'
 import { tileSparklinePoints } from '../../lib/territory-sparkline'
 import { useTileName } from '../../hooks/use-tile-name'
-import { shortIndicatorName, tileStateNote } from '../../lib/territory-tiles'
+import { shortIndicatorName, tileChosenPeriod, tileDetailSearch, tileStateNote } from '../../lib/territory-tiles'
 import { TerritoryTileAction, TerritoryTileFigure, TerritoryTilePeriod } from './territory-tile-parts'
 
 /**
@@ -47,6 +47,8 @@ export function TerritoryIndicatorRow({ tile, siruta, countyCode, activePeriod }
   const fullName = nameOf(tile)
   const name = shortIndicatorName(fullName)
   const note = tileStateNote(tile, activePeriod)
+  // The period picked on the page travels with both links: marked on the series, the end of the comparison.
+  const chosen = tileChosenPeriod(tile, activePeriod)
   const drawable = tile.tileState === 'available' && tile.sparklineCadence !== null
 
   return (
@@ -61,7 +63,7 @@ export function TerritoryIndicatorRow({ tile, siruta, countyCode, activePeriod }
         <Link
           to="/ins/seturi/$cod"
           params={{ cod: tile.datasetCode }}
-          search={{ teritoriu: `siruta:${siruta}` }}
+          search={tileDetailSearch(tile, siruta, chosen)}
           title={fullName === name ? undefined : fullName}
           className={cn(ROW_LINK_CLASS, 'line-clamp-2 text-sm font-medium text-foreground sm:line-clamp-1')}
         >
@@ -86,7 +88,7 @@ export function TerritoryIndicatorRow({ tile, siruta, countyCode, activePeriod }
       <TerritoryTileFigure tile={tile} size="row" className="justify-self-end text-right [grid-area:value]" />
       <TerritoryTilePeriod tile={tile} className="justify-self-end text-right [grid-area:period]" />
       <span className="flex justify-end [grid-area:action]">
-        <TerritoryTileAction tile={tile} name={name} siruta={siruta} countyCode={countyCode} className="-mr-1.5" />
+        <TerritoryTileAction tile={tile} name={name} siruta={siruta} countyCode={countyCode} chosen={chosen} className="-mr-1.5" />
       </span>
     </li>
   )
@@ -120,6 +122,7 @@ function referenceText(
     valueStatus: latest.valueStatus,
     unitSymbol: latest.unitSymbol,
     unitNameRo: latest.unitNameRo,
+    unitNameEn: latest.unitNameEn,
   })
   if (!formatted) return null
   const own = formatTileValue(tile)
@@ -147,6 +150,7 @@ export function TerritoryHeadlineTile({
   const fullName = nameOf(tile)
   const name = shortIndicatorName(fullName)
   const note = tileStateNote(tile, activePeriod)
+  const chosen = tileChosenPeriod(tile, activePeriod)
   const county = showCountyReference ? referenceText(benchmark?.county ?? null, tile) : null
   const national = referenceText(benchmark?.national ?? null, tile)
   const drawable = tile.tileState === 'available' && tile.sparklineCadence !== null
@@ -158,14 +162,19 @@ export function TerritoryHeadlineTile({
           <Link
             to="/ins/seturi/$cod"
             params={{ cod: tile.datasetCode }}
-            search={{ teritoriu: `siruta:${siruta}` }}
+            search={tileDetailSearch(tile, siruta, chosen)}
             title={fullName === name ? undefined : fullName}
-            className={cn(ROW_LINK_CLASS, 'line-clamp-2')}
+            // Whole, never clamped: two tiles abreast on a phone are ~150px
+            // wide and INS's English names run past 80 characters even
+            // shortened, so a clamp cut „Share of registered unemployed…"
+            // before it said what the figure is. Four fixed indicators, so the
+            // longest name is known.
+            className={ROW_LINK_CLASS}
           >
             {name}
           </Link>
         </h3>
-        <TerritoryTileAction tile={tile} name={name} siruta={siruta} countyCode={countyCode} className="-mr-2 -mt-1.5" />
+        <TerritoryTileAction tile={tile} name={name} siruta={siruta} countyCode={countyCode} chosen={chosen} className="-mr-2 -mt-1.5" />
       </div>
       <p className="mt-3">
         <TerritoryTileFigure tile={tile} size="tile" />

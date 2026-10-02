@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -35,6 +35,7 @@ import {
 import { dayLong, dayShort, labelText, leiExact, leiShort } from '../../lib/direct-purchase-text'
 import { procedureLabel } from '../../lib/home-model'
 import { PartyName } from '../direct-purchase/direct-purchase-head'
+import { RecordParties } from '../direct-purchase/record-parties'
 import { Clamp } from '../direct-purchase/direct-purchase-receipt'
 
 /**
@@ -110,14 +111,28 @@ function Fact({ label, children }: { readonly label: string; readonly children: 
   )
 }
 
+/** How many facts the grid holds: one per cell `ContractFacts` renders, by the same tests. */
+function factsCount(sheet: ContractSheet): number {
+  return [sheet.date, sheet.procedure?.type, sheet.cpv, sheet.offers, sheet.criterion, sheet.duration].filter(Boolean).length + (sheet.estimate !== null ? 1 : 0)
+}
+
+/** Four facts to a row from a tablet up when there are four or more, three otherwise. */
+const factsColumns = (count: number) => (count >= 4 ? 4 : 3)
+
+/** The facts' rows on a wide screen, two at least: the buyer takes the first, the firm the rest. */
+function factsRows(sheet: ContractSheet): number {
+  const count = factsCount(sheet)
+  return Math.max(2, Math.ceil(count / factsColumns(count)))
+}
+
 /** The facts under the value: the day, the route, the category — and, where the notice says them, the offers, the criterion, the duration, the estimate. */
-function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
+function ContractFacts({ sheet, className, style }: { readonly sheet: ContractSheet; readonly className?: string; readonly style?: CSSProperties }) {
   const { i18n } = useLingui()
   const procedureType = sheet.procedure?.type ?? null
   const routeLabel = procedureType ? procedureLabel(procedureType) : null
   const route = procedureType ? (routeLabel ? i18n._(routeLabel) : procedureType) : null
   const category = sheet.cpv ? labelText(sheet.cpv.label) : null
-  const cells = [sheet.date, route, sheet.cpv, sheet.estimate, sheet.offers, sheet.criterion, sheet.duration].filter((cell) => cell !== null && cell !== undefined).length
+  const columns = factsColumns(factsCount(sheet))
   const own = sheet.contract.versions.find((version) => version.isThis)?.value ?? null
   const fate = sheet.offers ? offersFate(sheet.offers) : null
   const from = sheet.offers ? offersFrom(sheet.offers) : null
@@ -125,66 +140,69 @@ function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; re
   const ted = sheet.procedure?.ted ?? null
   const tedNo = ted?.no ?? ''
   return (
-    <div className={className}>
-      <dl className={cn('grid grid-cols-2 gap-x-8 gap-y-6', cells >= 4 ? 'md:grid-cols-4' : 'md:grid-cols-3')}>
-        {sheet.date ? <Fact label={t`Data contractului`}>{dayLong(sheet.date)}</Fact> : null}
-        {route && sheet.procedure ? (
-          <Fact label={t`Procedura`}>
-            <Link to="/procurement/procedures/$id" params={{ id: sheet.procedure.id }} className="underline decoration-border underline-offset-4 hover:decoration-foreground">
-              {route}
-            </Link>
-            {ted ? (
-              <span className="mt-1 block text-muted-foreground">
-                <Trans>
-                  publicată și în{' '}
-                  <a href={ted.url} target="_blank" rel="noreferrer" title={`TED ${tedNo}`} className="whitespace-nowrap underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground">
-                    Jurnalul UE
-                  </a>
-                </Trans>
-                <span aria-hidden="true"> ↗</span>
-                <span className="sr-only"> {t`(TED ${tedNo}, se deschide într-o filă nouă)`}</span>
-              </span>
-            ) : null}
-          </Fact>
-        ) : null}
-        {sheet.cpv ? (
-          <Fact label={t`Categoria`}>
-            {category ?? t`Cod CPV`}
-            <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">CPV {sheet.cpv.code}</span>
-          </Fact>
-        ) : null}
-        {sheet.offers ? (
-          <Fact label={t`Oferte primite`}>
-            {raisedFirst(offersCount(sheet.offers.received))}
-            {fate ? <span className="mt-1 block text-muted-foreground">{fate}</span> : null}
-            {from ? <span className="mt-1 block text-muted-foreground">{from}</span> : null}
-          </Fact>
-        ) : null}
-        {sheet.criterion ? <Fact label={t`Criteriul de atribuire`}>{criterionText(sheet.criterion)}</Fact> : null}
-        {sheet.duration ? <Fact label={t`Durata`}>{sheet.duration.months ? monthsCount(sheet.duration.months) : daysCount(sheet.duration.days ?? 0)}</Fact> : null}
-        {sheet.estimate !== null ? (
-          <Fact label={t`Estimarea instituției`}>
-            {leiExact(sheet.estimate)}
-            {gap ? <span className="mt-1 block text-muted-foreground">{gap}</span> : null}
-          </Fact>
-        ) : null}
-      </dl>
-      {sheet.procedure?.unpublished ? (
-        <div className="mt-6 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
-          <p>{unpublishedText()}</p>
-          {sheet.justification?.text ? (
-            <figure className="mt-3">
-              <figcaption>{t`Instituția a explicat așa:`}</figcaption>
-              <blockquote className="mt-1 border-l-2 border-border pl-3 text-foreground">
-                <Clamp text={`„${sheet.justification.text}”`} lines={3} />
-              </blockquote>
-            </figure>
-          ) : sheet.justification?.urgency ? (
-            <p className="mt-2">{t`Motivul invocat: urgența.`}</p>
-          ) : sheet.justification?.exclusive ? (
-            <p className="mt-2">{t`Motivul invocat: drepturi exclusive.`}</p>
+    <dl className={cn('grid grid-cols-2 gap-x-8 gap-y-6', columns === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3', className)} style={style}>
+      {sheet.date ? <Fact label={t`Data contractului`}>{dayLong(sheet.date)}</Fact> : null}
+      {route && sheet.procedure ? (
+        <Fact label={t`Procedura`}>
+          <Link to="/procurement/procedures/$id" params={{ id: sheet.procedure.id }} className="underline decoration-border underline-offset-4 hover:decoration-foreground">
+            {route}
+          </Link>
+          {ted ? (
+            <span className="mt-1 block text-muted-foreground">
+              <Trans>
+                publicată și în{' '}
+                <a href={ted.url} target="_blank" rel="noreferrer" title={`TED ${tedNo}`} className="whitespace-nowrap underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground">
+                  Jurnalul UE
+                </a>
+              </Trans>
+              <span aria-hidden="true"> ↗</span>
+              <span className="sr-only"> {t`(TED ${tedNo}, se deschide într-o filă nouă)`}</span>
+            </span>
           ) : null}
-        </div>
+        </Fact>
+      ) : null}
+      {sheet.cpv ? (
+        <Fact label={t`Categoria`}>
+          {category ?? t`Cod CPV`}
+          <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">CPV {sheet.cpv.code}</span>
+        </Fact>
+      ) : null}
+      {sheet.offers ? (
+        <Fact label={t`Oferte primite`}>
+          {raisedFirst(offersCount(sheet.offers.received))}
+          {fate ? <span className="mt-1 block text-muted-foreground">{fate}</span> : null}
+          {from ? <span className="mt-1 block text-muted-foreground">{from}</span> : null}
+        </Fact>
+      ) : null}
+      {sheet.criterion ? <Fact label={t`Criteriul de atribuire`}>{criterionText(sheet.criterion)}</Fact> : null}
+      {sheet.duration ? <Fact label={t`Durata`}>{sheet.duration.months ? monthsCount(sheet.duration.months) : daysCount(sheet.duration.days ?? 0)}</Fact> : null}
+      {sheet.estimate !== null ? (
+        <Fact label={t`Estimarea instituției`}>
+          {leiExact(sheet.estimate)}
+          {gap ? <span className="mt-1 block text-muted-foreground">{gap}</span> : null}
+        </Fact>
+      ) : null}
+    </dl>
+  )
+}
+
+/** Awarded without a call for competition: said under the facts, with the institution's reason when it gave one. */
+function UnpublishedNote({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
+  if (!sheet.procedure?.unpublished) return null
+  return (
+    <div className={cn('max-w-[62ch] text-sm leading-relaxed text-muted-foreground', className)}>
+      <p>{unpublishedText()}</p>
+      {sheet.justification?.text ? (
+        <figure className="mt-3">
+          <figcaption>{t`Instituția a explicat așa:`}</figcaption>
+          <blockquote className="mt-1 border-l-2 border-border pl-3 text-foreground">
+            <Clamp text={`„${sheet.justification.text}”`} lines={3} />
+          </blockquote>
+        </figure>
+      ) : sheet.justification?.urgency ? (
+        <p className="mt-2">{t`Motivul invocat: urgența.`}</p>
+      ) : sheet.justification?.exclusive ? (
+        <p className="mt-2">{t`Motivul invocat: drepturi exclusive.`}</p>
       ) : null}
     </div>
   )
@@ -367,11 +385,10 @@ function ContractHistory({ sheet, className }: { readonly sheet: ContractSheet; 
             <li key={step.key} className="relative pb-7 last:pb-0">
               <span className={cn('absolute -left-[1.6rem] top-1.5 size-2.5 rounded-full border-2 border-background', step.key === 'contract' ? 'bg-primary' : 'bg-foreground')} aria-hidden="true" />
               <MonoLabel className="block tabular-nums text-muted-foreground">{step.when ? dayLong(step.when) : step.key === 'current' ? t`azi` : t`fără dată`}</MonoLabel>
-              <p className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 text-sm font-semibold text-foreground">
-                <span>{step.title}</span>
-                {step.value !== null ? <span className={cn('tabular-nums', stated && 'text-amber-800 dark:text-amber-300')}>{leiExact(step.value)}</span> : null}
-              </p>
-              {stated ? <p className="mt-0.5 text-right text-xs text-amber-800 dark:text-amber-300">{t`valoare raportată; textul actului spune ${stated}`}</p> : null}
+              <p className="mt-1 text-sm font-semibold text-foreground">{step.title}</p>
+              {/* The value under its step's title, where the eye already is (the procedure's calendar, §22.3), not across the page. */}
+              {step.value !== null ? <p className={cn('mt-1 text-sm tabular-nums', stated ? 'text-amber-800 dark:text-amber-300' : 'text-foreground')}>{leiExact(step.value)}</p> : null}
+              {stated ? <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300">{t`valoare raportată; textul actului spune ${stated}`}</p> : null}
               {step.body ? <div className="mt-1 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">{step.body}</div> : null}
             </li>
           )
@@ -492,8 +509,25 @@ function ContractSource({ sheet, className }: { readonly sheet: ContractSheet; r
 
 // ───────────────────────────────────────────────────────────── the block ──
 
+/** Whom the firm shares the record with, under its name: the association's other firms, or the framework's. */
+function partnersNote(sheet: ContractSheet): string | null {
+  const others = sheet.contract.firms.length - 1
+  if (others < 1) return null
+  // „încă o firmă", not „încă 1 firmă".
+  const count = plural(others, { one: 'o firmă', few: '# firme', other: '# de firme' })
+  if (isSharedFramework(sheet.contract)) return t`în acordul-cadru cu încă ${count}`
+  return isAssociation(sheet.contract) ? t`în asociere cu încă ${count}` : null
+}
+
+/** The firm with what the notice says of it: its SME flag lives on the notice's firms, not on the record's own supplier. */
+function supplierOf(sheet: ContractSheet): CtParty {
+  const own = sheet.contract.firms.find((firm) => (sheet.supplier.cui ? firm.cui === sheet.supplier.cui : firm.name === sheet.supplier.name))
+  return own?.sme == null ? sheet.supplier : { ...sheet.supplier, sme: own.sme }
+}
+
 /** The record: what was awarded, then its firms, its published values, its history, the notice's other contracts, the source. */
 export function ContractBlock({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
+  const rows = factsRows(sheet)
   return (
     <section className={className} aria-labelledby="contract-block">
       <h2 id="contract-block" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -504,16 +538,33 @@ export function ContractBlock({ sheet, className }: { readonly sheet: ContractSh
           {t`Celelalte rânduri ale anunțului nu s-au putut citi acum: firmele din asociere, celelalte valori publicate și celelalte contracte din anunț pot lipsi. Reîncarcă pagina pentru ele.`}
         </p>
       ) : null}
-      {/* The value on its own row — a contract's runs from 400 lei to 6,1 billion — and the facts under it. */}
+      {/* The value on its own row — a contract's runs from 400 lei to 6,1 billion — the facts under it, and the two parties as the
+          last column on the facts' rows (the buyer level with the first, the firm from the second): across the frame, the reading
+          below at its own width. The two lists are subgrids of one grid with a row per row of facts; each keeps its rule and the
+          space above it, the parties' rule unseen, so their first rows start level. */}
       <div className="mt-8 border-y py-7">
         <ContractValue sheet={sheet} />
-        <ContractFacts sheet={sheet} className="mt-7 border-t pt-7" />
+        {/* The unpublished note follows the facts it explains, in reading order too: a last row of the grid, under the facts. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12 lg:gap-y-6" style={{ gridTemplateRows: `repeat(${rows}, auto) auto` }}>
+          <ContractFacts sheet={sheet} className="mt-7 min-w-0 border-t pt-7 lg:grid-rows-subgrid" style={{ gridRow: `1 / span ${rows}` }} />
+          <UnpublishedNote sheet={sheet} className="mt-6 lg:col-start-1 lg:row-start-[-2]" />
+          <RecordParties
+            authority={sheet.authority}
+            supplier={supplierOf(sheet)}
+            year={linkYearOf(sheet)}
+            supplierNote={partnersNote(sheet)}
+            rows={rows}
+            className="mt-7 border-t pt-7 lg:col-start-2 lg:row-start-1 lg:grid-cols-1 lg:border-l lg:border-t-transparent lg:pl-12"
+          />
+        </div>
       </div>
-      <ContractFirms sheet={sheet} className="mt-12" />
-      <ContractVersions sheet={sheet} className="mt-12" />
-      <ContractHistory sheet={sheet} className="mt-12" />
-      <NoticeOthers sheet={sheet} className="mt-12" />
-      <ContractSource sheet={sheet} className="mt-10" />
+      <div className="max-w-4xl">
+        <ContractFirms sheet={sheet} className="mt-12" />
+        <ContractVersions sheet={sheet} className="mt-12" />
+        <ContractHistory sheet={sheet} className="mt-12" />
+        <NoticeOthers sheet={sheet} className="mt-12" />
+        <ContractSource sheet={sheet} className="mt-10" />
+      </div>
     </section>
   )
 }

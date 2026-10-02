@@ -60,7 +60,7 @@ test.describe('Statistics hub', () => {
     // inflation is the index less 100, at the index's own precision.
     const figures = page.locator('section[aria-label="Cifre-cheie"]')
     await expect(figures).toContainText('10,85', { timeout: 20000 })
-    await expect(figures).toContainText('5.914')
+    await expect(figures).toContainText('5.684')
     await expect(figures).toContainText('3,2')
     await expect(figures).toContainText('19.043.151')
     await expect(figures).toContainText('mai 2026 față de mai 2025')

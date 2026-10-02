@@ -162,6 +162,18 @@ export const statisticsDatasetDetailSearchSchema = z
       .catch(undefined),
     din: z.number().int().min(1900).max(2100).optional().catch(undefined),
     pana: z.number().int().min(1900).max(2100).optional().catch(undefined),
+    /**
+     * A period to mark on the series — the year a place's page was read at
+     * („2020"), or that year's month or quarter for a sub-annual matrix
+     * („2020-12"). The router parses a bare year as a number.
+     */
+    perioada: z
+      .preprocess(
+        (value) => (typeof value === 'number' ? String(value) : value),
+        z.string().regex(/^\d{4}(?:-(?:0[1-9]|1[0-2]|Q[1-4]))?$/),
+      )
+      .optional()
+      .catch(undefined),
   })
   .catch({})
 
@@ -395,6 +407,7 @@ export interface StatisticsLatestValue {
   readonly unitCode: string | null
   readonly unitSymbol: string | null
   readonly unitNameRo: string | null
+  readonly unitNameEn: string | null
   readonly period: string | null
   /** The resolved observation's own cadence FIELD — never string grammar. */
   readonly resolvedPeriodicity: InsPeriodicity | null
@@ -479,6 +492,8 @@ export interface StatisticsHubCountyLayer {
   readonly period: string | null
   readonly unit: StatisticsHubUnit
   readonly unitLabel: string | null
+  /** The unit's English name where the layer carries it, for an English page to pick when it renders. */
+  readonly unitLabelEn?: string | null
   readonly values: readonly StatisticsHubCountyValue[]
   /** Counties the read did not return a total cell for — hatched on the map, never zero. */
   readonly missingCounties: readonly string[]

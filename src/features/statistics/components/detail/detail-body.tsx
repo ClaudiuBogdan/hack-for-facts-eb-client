@@ -38,6 +38,7 @@ import { DetailSeriesSummary } from './detail-series-summary'
 import { DetailSeriesSkeleton } from './detail-skeletons'
 import { DetailTier0Hero } from './detail-tier0-hero'
 import { knownLatestFigure } from '../../lib/detail-loading'
+import { insText } from '../../lib/ins-english'
 
 /** What the body reads off the series query. */
 export type DetailSeriesQuery = {
@@ -92,8 +93,10 @@ export function DetailBody({
 
   const missingClassificationLabels = unresolvedDimensions.map(
     (dimension) =>
-      dimension.classification_type?.name_ro ??
-      dimension.label_ro ??
+      insText(
+        dimension.classification_type?.name_ro ?? dimension.label_ro,
+        dimension.classification_type?.name_en ?? dimension.label_en,
+      ) ??
       classificationTypeCode(dimension),
   )
   if (scope.unitCode === null) missingClassificationLabels.push(t`Unitate de măsură`)
@@ -265,6 +268,8 @@ export function DetailBody({
                 mean
                 stats={view.windowStats}
                 height="h-80"
+                // The year picked on a place's page, marked on the whole series.
+                markedPeriod={search.perioada ?? null}
               />
             ) : null}
 
