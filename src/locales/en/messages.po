@@ -4236,6 +4236,10 @@ msgstr "Amount Per Capita"
 msgid "Amount Range"
 msgstr "Amount Range"
 
+#: src/features/procurement/lib/caveat-text.ts:213
+msgid "Amounts are as the sources reported them and may include source errors; they are not verified payments."
+msgstr "Amounts are as the sources reported them and may include source errors; they are not verified payments."
+
 #: src/features/procurement/lib/caveat-text.ts:136
 msgid "Amounts are usable on {coverage} of {grain}, so these totals are a lower bound — the real spend is higher."
 msgstr "Amounts are usable on {coverage} of {grain}, so these totals are a lower bound — the real spend is higher."
@@ -5243,6 +5247,10 @@ msgstr "Avg. Amount"
 #: src/components/maps/charts/UatAverageSpendingCountyChart.tsx:75
 msgid "Avg. Amount per UAT"
 msgstr "Avg. Amount per UAT"
+
+#: src/features/procurement/lib/caveat-text.ts:336
+msgid "award notices"
+msgstr "award notices"
 
 #: src/features/procurement/lib/status-meta.ts:73
 msgid "Awarded"
@@ -7724,11 +7732,11 @@ msgstr "Rank by"
 #~ msgid "Clasamentul este indisponibil până când toate teritoriile au observații comparabile."
 #~ msgstr "The ranking is unavailable until every territory has comparable observations."
 
-#: src/features/procurement/lib/caveat-text.ts:267
+#: src/features/procurement/lib/caveat-text.ts:278
 msgid "Clasamentul este ordonat după numărul de înregistrări, pentru că valorile sunt reținute pentru această populație."
 msgstr "Clasamentul este ordonat după numărul de înregistrări, pentru că valorile sunt reținute pentru această populație."
 
-#: src/features/procurement/lib/caveat-text.ts:272
+#: src/features/procurement/lib/caveat-text.ts:283
 msgid "Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri."
 msgstr "Clasamentul este ordonat după numărul de înregistrări: nicio înregistrare din această selecție nu are o valoare acceptată pe baza de calcul folosită, așa că o ordonare după valoare ar fi o egalitate de zerouri."
 
@@ -8390,7 +8398,7 @@ msgstr "Comunicat"
 #~ msgid "Concentrare furnizori"
 #~ msgstr "Concentrare furnizori"
 
-#: src/features/procurement/lib/caveat-text.ts:308
+#: src/features/procurement/lib/caveat-text.ts:319
 msgid "Concentrarea este calculată pe {positive} din {known} furnizori identificați — cei care au {basis} în această selecție."
 msgstr "Concentrarea este calculată pe {positive} din {known} furnizori identificați — cei care au {basis} în această selecție."
 
@@ -8697,6 +8705,7 @@ msgid "Continuous range"
 msgstr "Continuous range"
 
 #: src/features/private-companies/components/profile/company-money-band.tsx:437
+#: src/features/procurement/lib/caveat-text.ts:342
 msgid "contract"
 msgstr "contract"
 
@@ -8705,6 +8714,10 @@ msgstr "contract"
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:107
 msgid "Contract"
 msgstr "Contract"
+
+#: src/features/procurement/lib/caveat-text.ts:343
+msgid "contract and subsequent-contract"
+msgstr "contract and subsequent-contract"
 
 #: src/features/procurement/lib/status-meta.ts:86
 msgid "Contract closed."
@@ -11401,11 +11414,11 @@ msgstr "Din {0} de trimiteri între acte, {1} ({2}) nu se rezolvă la un act anu
 msgid "Din {0}, firma apare în {through} din bani publici, cu valori publicate de {sum}."
 msgstr "Since {0}, the company appears in {through} of public money, with published values of {sum}."
 
-#: src/features/procurement/lib/caveat-text.ts:295
+#: src/features/procurement/lib/caveat-text.ts:306
 msgid "Din {awarded} atribuiți în această selecție, {withheld} ({share}) revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr "Din {awarded} atribuiți în această selecție, {withheld} ({share}) revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 
-#: src/features/procurement/lib/caveat-text.ts:294
+#: src/features/procurement/lib/caveat-text.ts:305
 msgid "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 msgstr "Din {awarded} atribuiți în această selecție, {withheld} revin unor contracte încredințate asocierilor cu mai mulți membri. Repartiția între membri nu este publicată, așa că suma nu este atribuită niciunui furnizor."
 
@@ -11581,6 +11594,10 @@ msgstr "Of the largest {0} in {year}, {together} were won together with other fi
 msgid "Dintre cele mai mari {0} din {year}, unul a fost câștigat împreună cu alte firme, în asociere."
 msgstr "Of the largest {0} in {year}, one was won together with other firms, in a consortium."
 
+#: src/features/procurement/lib/caveat-text.ts:340
+msgid "direct acquisition"
+msgstr "direct acquisition"
+
 #: src/features/procurement/components/procurement-info-sheet.tsx:38
 #: src/features/procurement/lib/enum-labels.ts:135
 #~ msgid "Direct acquisition"
@@ -11592,6 +11609,7 @@ msgstr "Direct acquisition finalized."
 
 #: src/features/procurement/lib/caveat-text.ts:18
 #: src/features/procurement/lib/caveat-text.ts:19
+#: src/features/procurement/lib/caveat-text.ts:335
 msgid "direct acquisitions"
 msgstr "direct acquisitions"
 
@@ -14334,7 +14352,7 @@ msgstr "Filtru program"
 msgid "Filtru valabilitate"
 msgstr "Filtru valabilitate"
 
-#: src/features/procurement/lib/caveat-text.ts:247
+#: src/features/procurement/lib/caveat-text.ts:258
 msgid "Filtrul pe valoare lasă complet deoparte contractele încredințate unor asocieri cu mai mulți membri — valorile lor pe furnizor nu sunt publicate, deci nu pot fi comparate cu un prag."
 msgstr "Filtrul pe valoare lasă complet deoparte contractele încredințate unor asocieri cu mai mulți membri — valorile lor pe furnizor nu sunt publicate, deci nu pot fi comparate cu un prag."
 
@@ -15634,6 +15652,14 @@ msgstr "How much stays <0/><1>in your wallet?</1>"
 msgid "How much was <0>built</0>?"
 msgstr "How much was <0>built</0>?"
 
+#: src/features/procurement/lib/caveat-text.ts:367
+msgid "How recent the e-licitatie listing of {what} is, is unknown."
+msgstr "How recent the e-licitatie listing of {what} is, is unknown."
+
+#: src/features/procurement/lib/caveat-text.ts:380
+msgid "How recent the SEAP {family} export catalogue is, is unknown."
+msgstr "How recent the SEAP {family} export catalogue is, is unknown."
+
 #: src/features/procurement/components/procurement-value-basis-notice.tsx:90
 #~ msgid "How these values work — full methodology"
 #~ msgstr "How these values work — full methodology"
@@ -16919,7 +16945,7 @@ msgstr "Registration, read on {registrationRead}"
 msgid "Inregistrari"
 msgstr "Inregistrari"
 
-#: src/features/procurement/lib/caveat-text.ts:232
+#: src/features/procurement/lib/caveat-text.ts:243
 msgid "înregistrări"
 msgstr "înregistrări"
 
@@ -16944,7 +16970,7 @@ msgstr "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru
 msgid "Înregistrări recente · {0}"
 msgstr "Înregistrări recente · {0}"
 
-#: src/features/procurement/lib/caveat-text.ts:317
+#: src/features/procurement/lib/caveat-text.ts:328
 msgid "Înregistrările fără furnizor identificat nu intră în calculul concentrării și cumulează {amount} ({basis}) în această selecție."
 msgstr "Înregistrările fără furnizor identificat nu intră în calculul concentrării și cumulează {amount} ({basis}) în această selecție."
 
@@ -21537,7 +21563,7 @@ msgstr "Niciun vot nu corespunde filtrelor selectate."
 msgid "niciunul"
 msgstr "none"
 
-#: src/features/procurement/lib/caveat-text.ts:307
+#: src/features/procurement/lib/caveat-text.ts:318
 msgid "Niciunul dintre cei {known} furnizori identificați nu are {basis} în această selecție, așa că nu se poate calcula o concentrare."
 msgstr "Niciunul dintre cei {known} furnizori identificați nu are {basis} în această selecție, așa că nu se poate calcula o concentrare."
 
@@ -22372,6 +22398,10 @@ msgstr "Notes"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1572
 msgid "Nothing to paste"
 msgstr "Nothing to paste"
+
+#: src/features/procurement/lib/caveat-text.ts:341
+msgid "notice"
+msgstr "notice"
 
 #: src/features/procurement/lib/detail-config.ts:43
 msgid "Notice number"
@@ -23419,7 +23449,7 @@ msgstr "Oldest"
 msgid "One of the lowest"
 msgstr "One of the lowest"
 
-#: src/features/procurement/lib/caveat-text.ts:215
+#: src/features/procurement/lib/caveat-text.ts:226
 msgid "One side of this ratio has no observed amounts in this selection, so no ratio can be derived."
 msgstr "One side of this ratio has no observed amounts in this selection, so no ratio can be derived."
 
@@ -31279,7 +31309,7 @@ msgstr "Sum group members"
 msgid "Suma alocată din program pentru obiectiv (valoare planificată)."
 msgstr "Suma alocată din program pentru obiectiv (valoare planificată)."
 
-#: src/features/procurement/lib/caveat-text.ts:252
+#: src/features/procurement/lib/caveat-text.ts:263
 msgid "Suma nerepartizată este numărată în regiunea membrului care reprezintă asocierea."
 msgstr "Suma nerepartizată este numărată în regiunea membrului care reprezintă asocierea."
 
@@ -32025,7 +32055,7 @@ msgstr "Textul stocat este momentan inconsistent"
 msgid "That is <0>{0}</0> per year."
 msgstr "That is <0>{0}</0> per year."
 
-#: src/features/procurement/lib/caveat-text.ts:370
+#: src/features/procurement/lib/caveat-text.ts:432
 msgid "The {subject} are not published for {grain}."
 msgstr "The {subject} are not published for {grain}."
 
@@ -32214,6 +32244,10 @@ msgstr "The INS response has incomplete or conflicting source coordinates."
 msgid "The largest chunk. VAT alone brings in nearly as much as all salary taxes combined."
 msgstr "The largest chunk. VAT alone brings in nearly as much as all salary taxes combined."
 
+#: src/features/procurement/lib/caveat-text.ts:361
+msgid "The latest completed e-licitatie listing of {what} ends on {date}, with {unfinished} earlier listing windows unfinished. This is how recent the source catalogue is, not what this data covers."
+msgstr "The latest completed e-licitatie listing of {what} ends on {date}, with {unfinished} earlier listing windows unfinished. This is how recent the source catalogue is, not what this data covers."
+
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:47
 msgid "The learning path you're looking for doesn't exist or has been moved."
 msgstr "The learning path you're looking for doesn't exist or has been moved."
@@ -32322,6 +32356,10 @@ msgstr "The relative comparison has no usable baseline for this period."
 msgid "The saved INS selection is invalid. Edit its period, source coordinates or unit."
 msgstr "The saved INS selection is invalid. Edit its period, source coordinates or unit."
 
+#: src/features/procurement/lib/caveat-text.ts:375
+msgid "The SEAP catalogue lists {family} export files up to {year}. This is what the catalogue lists, not what this data has loaded."
+msgstr "The SEAP catalogue lists {family} export files up to {year}. This is what the catalogue lists, not what this data has loaded."
+
 #: src/features/statistics/components/entity/entity-ins-source-history.tsx:220
 msgid "The selected budget period uses a different frequency. Choose matching periods to see the corresponding INS observations."
 msgstr "The selected budget period uses a different frequency. Choose matching periods to see the corresponding INS observations."
@@ -32383,7 +32421,7 @@ msgstr "There are {warningCount} warnings that may affect how your map is displa
 msgid "There is 1 warning that may affect how your map is displayed."
 msgstr "There is 1 warning that may affect how your map is displayed."
 
-#: src/features/procurement/lib/caveat-text.ts:362
+#: src/features/procurement/lib/caveat-text.ts:424
 msgid "There is no coverage check for {subject} on {grain}, so the figure is withheld rather than served unchecked."
 msgstr "There is no coverage check for {subject} on {grain}, so the figure is withheld rather than served unchecked."
 
@@ -32457,7 +32495,7 @@ msgstr "This classification has no subcategories"
 #~ msgid "This CUI is not in the ANAF public registry. Turnover, employees, and bilant history are not available."
 #~ msgstr "This CUI is not in the ANAF public registry. Turnover, employees, and bilant history are not available."
 
-#: src/features/procurement/lib/caveat-text.ts:352
+#: src/features/procurement/lib/caveat-text.ts:414
 msgid "This data build carries no quality check for {grain}, so {measure} answers are withheld."
 msgstr "This data build carries no quality check for {grain}, so {measure} answers are withheld."
 
@@ -34473,7 +34511,7 @@ msgstr "Valoare atipică"
 msgid "Valoare atipică — sursă coruptă sau în afara limitelor."
 msgstr "Valoare atipică — sursă coruptă sau în afara limitelor."
 
-#: src/features/procurement/lib/caveat-text.ts:231
+#: src/features/procurement/lib/caveat-text.ts:242
 msgid "valoare atribuită"
 msgstr "valoare atribuită"
 
@@ -34588,7 +34626,7 @@ msgstr "The value of direct purchases per year, lei, excluding VAT"
 msgid "Valoarea afisata este o agregare a mai multor randuri de sursa."
 msgstr "Valoarea afisata este o agregare a mai multor randuri de sursa."
 
-#: src/features/procurement/lib/caveat-text.ts:262
+#: src/features/procurement/lib/caveat-text.ts:273
 msgid "Valoarea ajustată cu acte adiționale există doar la nivelul cumpărătorului: repartiția ajustărilor pe furnizori nu este publicată."
 msgstr "Valoarea ajustată cu acte adiționale există doar la nivelul cumpărătorului: repartiția ajustărilor pe furnizori nu este publicată."
 
@@ -34654,11 +34692,11 @@ msgstr "Value to, lei"
 msgid "Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări."
 msgstr "Valoarea pe furnizor nu este disponibilă pentru această selecție, așa că ordinea este dată de numărul de înregistrări."
 
-#: src/features/procurement/lib/caveat-text.ts:257
+#: src/features/procurement/lib/caveat-text.ts:268
 msgid "Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri; suma nu este indicată pentru că cifrele de cheltuire ale acestei populații sunt reținute."
 msgstr "Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri; suma nu este indicată pentru că cifrele de cheltuire ale acestei populații sunt reținute."
 
-#: src/features/procurement/lib/caveat-text.ts:242
+#: src/features/procurement/lib/caveat-text.ts:253
 msgid "Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri: repartiția între membri nu este publicată, așa că nu se poate indica o sumă pentru o singură firmă."
 msgstr "Valoarea pe furnizor nu include contractele încredințate unor asocieri cu mai mulți membri: repartiția între membri nu este publicată, așa că nu se poate indica o sumă pentru o singură firmă."
 
@@ -35469,6 +35507,10 @@ msgstr "What stage is it in?"
 #: src/features/procurement/components/procurement-hub-filter-sheet.tsx:307
 #~ msgid "What the charts and totals count."
 #~ msgstr "What the charts and totals count."
+
+#: src/features/procurement/lib/caveat-text.ts:218
+msgid "What the source catalogues held when this data was loaded is unknown."
+msgstr "What the source catalogues held when this data was loaded is unknown."
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:33
 msgid "What this means"

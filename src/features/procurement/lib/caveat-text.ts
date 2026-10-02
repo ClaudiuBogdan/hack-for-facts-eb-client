@@ -206,6 +206,17 @@ const FIXED_NOTES: readonly (readonly [string, () => string])[] = [
     () =>
       t`The comparison base is zero in this selection, so no ratio can be derived.`,
   ],
+  // Source notes — the server's `procurement/core/source-capture.ts`.
+  [
+    'procurement amounts are source-reported',
+    () =>
+      t`Amounts are as the sources reported them and may include source errors; they are not verified payments.`,
+  ],
+  [
+    'source catalogue, not loaded coverage: unknown for this build',
+    () =>
+      t`What the source catalogues held when this data was loaded is unknown.`,
+  ],
 ]
 
 const fixedNoteSentence = (caveat: string): string | null => {
@@ -320,12 +331,63 @@ function concentrationPopulationSentence(caveat: string): string | null {
   return null
 }
 
+const LISTING_TOKENS: Record<string, () => string> = {
+  'direct acquisitions': () => t`direct acquisitions`,
+  'award notices': () => t`award notices`,
+}
+
+const SEAP_FAMILY_TOKENS: Record<string, () => string> = {
+  'direct acquisition': () => t`direct acquisition`,
+  notice: () => t`notice`,
+  contract: () => t`contract`,
+  'contract and subsequent-contract': () => t`contract and subsequent-contract`,
+}
+
+/**
+ * Source catalogue recency — what the catalogues listed, never what this
+ * build loaded: the latest completed listing window is an edge, and a listed
+ * export file may not be loaded.
+ */
+function sourceCatalogueSentence(caveat: string): string | null {
+  const prefix = 'source catalogue, not loaded coverage: '
+  if (!caveat.startsWith(prefix)) return null
+  const rest = caveat.slice(prefix.length)
+  const listed = rest.match(
+    /^latest completed e-licitatie (.+?) listing window ends (\d{4}-\d{2}-\d{2}); (\d+) earlier windows unfinished$/,
+  )
+  if (listed) {
+    const [, token, date, unfinished] = listed
+    const what = LISTING_TOKENS[token ?? '']?.() ?? token
+    return t`The latest completed e-licitatie listing of ${what} ends on ${date}, with ${unfinished} earlier listing windows unfinished. This is how recent the source catalogue is, not what this data covers.`
+  }
+  const unknownListing = rest.match(/^e-licitatie (.+?) listing unknown$/)
+  if (unknownListing) {
+    const what =
+      LISTING_TOKENS[unknownListing[1] ?? '']?.() ?? unknownListing[1]
+    return t`How recent the e-licitatie listing of ${what} is, is unknown.`
+  }
+  const seap = rest.match(
+    /^SEAP (.+?) export files listed up to year (\d{4})$/,
+  )
+  if (seap) {
+    const [, token, year] = seap
+    const family = SEAP_FAMILY_TOKENS[token ?? '']?.() ?? token
+    return t`The SEAP catalogue lists ${family} export files up to ${year}. This is what the catalogue lists, not what this data has loaded.`
+  }
+  const seapUnknown = rest.match(/^SEAP (.+?) exports unknown$/)
+  if (seapUnknown) {
+    const family = SEAP_FAMILY_TOKENS[seapUnknown[1] ?? '']?.() ?? seapUnknown[1]
+    return t`How recent the SEAP ${family} export catalogue is, is unknown.`
+  }
+  return null
+}
+
 /**
  * Plain-language rendering of a server caveat. Returns the original string
  * when the shape is not one of the known gate sentences.
  */
 export function humanizeProcurementCaveat(caveat: string): string {
-  const fixed = fixedNoteSentence(caveat)
+  const fixed = fixedNoteSentence(caveat) ?? sourceCatalogueSentence(caveat)
   if (fixed) return fixed
 
   const supplierMoney =
