@@ -6,7 +6,8 @@ import type { UatMapFigures } from '../../lib/uat-map-snapshot'
 import { cn } from '@/lib/utils'
 import { formatSourceDate } from '../../lib/format'
 import type { LegendKeys } from './uat-map-reading'
-import type { ClassInterval, MapScale } from './uat-map-scales'
+import type { MapScale } from './uat-map-scales'
+import { classLabel } from './uat-map-class-label'
 import { countyLabel, type SeriesMeta } from './uat-map-series'
 
 /**
@@ -18,15 +19,6 @@ import { countyLabel, type SeriesMeta } from './uat-map-series'
  * the UAT or county read marked on them, what the hatching means; and where
  * the figures come from.
  */
-
-function intervalLabel(format: (value: number) => string, interval: ClassInterval): string {
-  if (interval.zero) return '0'
-  if (interval.from === null) return t`sub ${format(interval.to!)}`
-  if (interval.to === null) return t`peste ${format(interval.from)}`
-  // A band around a reference reads as its half-width.
-  if (interval.from === -interval.to && interval.to > 0) return `±${format(interval.to).replace(/^\+/, '')}`
-  return `${format(interval.from)} … ${format(interval.to)}`
-}
 
 function Keys({ keys }: { readonly keys: LegendKeys }) {
   const label = keys.territoryLevel === 'uat'
@@ -140,7 +132,7 @@ export function ColourLegend({
         <ol className="mt-1.5 grid gap-px" style={{ gridTemplateColumns: `repeat(${scale.classes.length}, minmax(0, 1fr))` }}>
           {scale.classes.map(({ interval }, index) => (
             <li key={index} className="text-center font-mono text-[10px] leading-tight tabular-nums text-muted-foreground">
-              {intervalLabel(format, interval)}
+              {classLabel(format, interval, scale.wholeNumbers ?? false)}
             </li>
           ))}
         </ol>

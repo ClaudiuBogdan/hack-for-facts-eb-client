@@ -92,12 +92,14 @@ function againstNational(values: readonly number[], national: number, reversed: 
   const edges = [Math.min(...values, lowFar), lowFar, low, high, highFar, Math.max(...values, highFar)]
   const scale: MapScale = {
     kind: 'diverging',
+    wholeNumbers: values.every(Number.isInteger),
+    // The band holds both its bounds, and the classes above it their upper one: `classOf`'s `<=`.
     classes: [
       { interval: { from: null, to: lowFar }, ...below, opacity: OPACITY.far },
       { interval: { from: lowFar, to: low }, ...below, opacity: OPACITY.near },
-      { interval: { from: low, to: high }, ...HUE.grey, opacity: OPACITY.band },
-      { interval: { from: high, to: highFar }, ...above, opacity: OPACITY.near },
-      { interval: { from: highFar, to: null }, ...above, opacity: OPACITY.far },
+      { interval: { from: low, to: high, includesTo: true }, ...HUE.grey, opacity: OPACITY.band },
+      { interval: { from: high, to: highFar, includesFrom: false, includesTo: true }, ...above, opacity: OPACITY.near },
+      { interval: { from: highFar, to: null, includesFrom: false }, ...above, opacity: OPACITY.far },
     ],
     classAt: (index) => (values[index] === undefined ? null : classOf(values[index]!)),
     positionOf: (value) => positionIn(edges, classOf(value), value, 5),
@@ -120,6 +122,7 @@ function inQuintiles(values: readonly number[], digits: number, palette: Palette
   const edges = [sorted[0] ?? 0, ...bounds, sorted[sorted.length - 1] ?? 0]
   const scale: MapScale = {
     kind: 'level',
+    wholeNumbers: values.every(Number.isInteger),
     classes: intervals.map((interval, i) => ({ interval, ...colours[i]! })),
     classAt: (index) => (values[index] === undefined ? null : classOf(values[index]!)),
     positionOf: (value) => positionIn(edges, classOf(value), value, intervals.length),
