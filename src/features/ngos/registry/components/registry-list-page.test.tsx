@@ -30,6 +30,9 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }))
 
+// The county shapes never arrive here: the map waits for them, its place held.
+vi.mock('@/hooks/useGeoJson', () => ({ useGeoJsonData: () => ({ data: undefined, isError: false, refetch: vi.fn() }) }))
+
 i18n.load('ro', {})
 i18n.activate('ro')
 
@@ -81,6 +84,20 @@ describe('NgoRegistryListPage', () => {
     expect(within(panel).getByRole('button', { name: /Asociații/ })).toBeInTheDocument()
     fireEvent.click(within(panel).getByRole('button', { name: /Fundații/ }))
     expect(onSearch).toHaveBeenCalledWith({ ...CLUJ_RADIATE, category: 'foundation' })
+  })
+
+  it('shows the counties as the list or the map, the reader’s choice kept from one selection to the next', () => {
+    const { rerender } = renderPage({}, EMPTY_QUERY)
+    fireEvent.click(screen.getByRole('tab', { name: 'Pe județe' }))
+    const panel = () => screen.getByRole('tabpanel')
+    expect(within(panel()).getByRole('button', { name: 'Listă', pressed: true })).toBeInTheDocument()
+    expect(within(panel()).getByRole('columnheader', { name: 'Județul' })).toBeInTheDocument()
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Hartă' }))
+    expect(within(panel()).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
+    expect(within(panel()).queryByRole('table')).not.toBeInTheDocument()
+    expect(within(panel()).getByText(/fără un județ recunoscut nu apar pe hartă/)).toBeInTheDocument()
+    rerender(<NgoRegistryListPage search={{ status: 'Dizolvata' }} seed={seedOf({ ...EMPTY_QUERY, status: 'dissolved' })} onSearch={onSearch} />)
+    expect(within(panel()).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
   })
 
   it('moves between the tabs with the arrow keys, one tab stop', () => {

@@ -21,6 +21,8 @@ import { countyLabel, type SeriesMeta } from './uat-map-series'
 
 function intervalLabel(format: (value: number) => string, interval: ClassInterval): string {
   if (interval.zero) return '0'
+  // One value for every place: the value itself.
+  if (interval.from !== null && interval.from === interval.to) return format(interval.from)
   if (interval.from === null) return t`sub ${format(interval.to!)}`
   if (interval.to === null) return t`peste ${format(interval.from)}`
   // A band around a reference reads as its half-width.

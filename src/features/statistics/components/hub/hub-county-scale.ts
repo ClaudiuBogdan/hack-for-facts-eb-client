@@ -40,6 +40,7 @@ function stepFor(sorted: readonly number[], digits: number): number {
 /** The decimals a step keeps: 0,1 → 1; 100 → 0. */
 const decimalsOf = (step: number) => Math.max(0, -Math.floor(Math.log10(step)))
 const roundTo = (value: number, step: number) => Number((Math.round(value / step) * step).toFixed(decimalsOf(step)))
+const ceilTo = (value: number, step: number) => Number((Math.ceil(value / step) * step).toFixed(decimalsOf(step)))
 
 /** Where a value sits on a legend of equal-width classes, 0 to 1. */
 function positionIn(edges: readonly number[], step: number, value: number, count: number): number {
@@ -108,14 +109,25 @@ function againstNational(values: readonly number[], national: number, reversed: 
 function inQuintiles(values: readonly number[], digits: number, palette: Palette) {
   const sorted = [...values].sort((a, b) => a - b)
   const step = stepFor(sorted, digits)
+  const lowest = sorted[0] ?? 0
+  const next = sorted.find((value) => value > lowest)
   const bounds: number[] = []
   for (const q of QUINTILES) {
-    const bound = roundTo(quantile(sorted, q), step)
+    let bound = roundTo(quantile(sorted, q), step)
+    // A bound at the lowest value leaves the class below it empty — a selection's counts, most counties at 0:
+    // the next value up, rounded up to the step, opens the second class instead, and the lowest value fills the first.
+    if (bound <= lowest) {
+      if (next === undefined) continue
+      bound = ceilTo(next, step)
+    }
     if (bounds.length === 0 || bound > bounds[bounds.length - 1]!) bounds.push(bound)
   }
-  const intervals: ClassInterval[] = [...bounds, null].map((to, i) => ({ from: i === 0 ? null : bounds[i - 1]!, to }))
-  // Fewer classes where counties tie at a bound: the darker end of the palette, so the top class is always its darkest.
-  const colours = palette.slice(palette.length - intervals.length)
+  // Every county alike: one class, named by the value they share.
+  const intervals: ClassInterval[] =
+    bounds.length === 0 ? [{ from: lowest, to: lowest }] : [...bounds, null].map((to, i) => ({ from: i === 0 ? null : bounds[i - 1]!, to }))
+  // Fewer classes where counties tie at a bound: spread over the palette, so the bottom class is always its lightest (a
+  // selection's zeros never read as many) and the top its darkest. One class, every county alike: the lightest.
+  const colours = intervals.map((_, i) => palette[intervals.length === 1 ? 0 : Math.round((i * (palette.length - 1)) / (intervals.length - 1))]!)
   const classOf = (value: number) => bounds.filter((bound) => value >= bound).length
   const edges = [sorted[0] ?? 0, ...bounds, sorted[sorted.length - 1] ?? 0]
   const scale: MapScale = {

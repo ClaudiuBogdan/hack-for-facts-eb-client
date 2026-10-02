@@ -364,7 +364,7 @@ msgid "{0, plural, one {# trimitere} few {# trimiteri} other {# de trimiteri}}"
 msgstr ""
 
 #. placeholder {0}: keys.noData
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:33
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:35
 msgid "{0, plural, one {# UAT fără date} few {# UAT-uri fără date} other {# de UAT-uri fără date}}"
 msgstr "{0, plural, one {# UAT fără date} few {# UAT-uri fără date} other {# de UAT-uri fără date}}"
 
@@ -708,13 +708,13 @@ msgid "{0} enabled series"
 msgstr "{0} serii activate"
 
 #. placeholder {0}: keys.noData
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:36
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:38
 msgid "{0} fără date"
 msgstr "{0} fără date"
 
 #. placeholder {0}: keys.noData
 #. placeholder {1}: keys.noDataNames.join(', ')
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:35
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:37
 msgid "{0} fără date: {1}"
 msgstr "{0} fără date: {1}"
 
@@ -921,7 +921,7 @@ msgid "{0} publicații în cuprins"
 msgstr ""
 
 #. placeholder {0}: formatHubValue(gap, 'other', null, { digits }).value
-#: src/features/statistics/components/hub/hub-county-band.tsx:115
+#: src/features/statistics/components/hub/hub-county-band.tsx:123
 msgid "{0} puncte procentuale"
 msgstr "{0} puncte procentuale"
 
@@ -1215,11 +1215,11 @@ msgstr "{amount} (echivalentul în lei al unei valori în valută)"
 msgid "{amount} fără TVA"
 msgstr "{amount} fără TVA"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:116
+#: src/features/statistics/components/hub/hub-county-band.tsx:124
 msgid "{amount} peste media națională"
 msgstr "{amount} peste media națională"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:116
+#: src/features/statistics/components/hub/hub-county-band.tsx:124
 msgid "{amount} sub media națională"
 msgstr "{amount} sub media națională"
 
@@ -1367,6 +1367,10 @@ msgstr "{count, plural, one {# înregistrare} few {# înregistrări} other {# de
 #: src/features/private-companies/lib/public-money-display.ts:94
 msgid "{count, plural, one {# subcontract} few {# subcontracts} other {# subcontracts}}"
 msgstr "{count, plural, one {# subcontract} few {# subcontracte} other {# de subcontracte}}"
+
+#: src/features/ngos/registry/components/registry-county-map.tsx:84
+msgid "{count, plural, one {înregistrare} few {înregistrări} other {de înregistrări}}"
+msgstr "{count, plural, one {înregistrare} few {înregistrări} other {de înregistrări}}"
 
 #: src/features/procurement/lib/home-text.ts:153
 msgid "{count, plural, one {O cumpărătură, fără TVA} few {# cumpărături, fără TVA} other {# de cumpărături, fără TVA}}"
@@ -1985,6 +1989,14 @@ msgstr "{unknownText} fără an valid în număr."
 #: src/features/ngos/hub/ngo-county-band.tsx:62
 msgid "{unplaced, plural, one {Media țării cuprinde și # ONG fără județ în registru.} few {Media țării cuprinde și cele # ONG-uri fără județ în registru.} other {Media țării cuprinde și cele # de ONG-uri fără județ în registru.}}"
 msgstr "{unplaced, plural, one {Media țării cuprinde și # ONG fără județ în registru.} few {Media țării cuprinde și cele # ONG-uri fără județ în registru.} other {Media țării cuprinde și cele # de ONG-uri fără județ în registru.}}"
+
+#: src/features/ngos/registry/components/registry-county-map.tsx:89
+#~ msgid "{unplaced, plural, one {O înregistrare fără județ în registru nu apare pe hartă.} few {# înregistrări fără județ în registru nu apar pe hartă.} other {# de înregistrări fără județ în registru nu apar pe hartă.}}"
+#~ msgstr "{unplaced, plural, one {O înregistrare fără județ în registru nu apare pe hartă.} few {# înregistrări fără județ în registru nu apar pe hartă.} other {# de înregistrări fără județ în registru nu apar pe hartă.}}"
+
+#: src/features/ngos/registry/components/registry-county-map.tsx:89
+msgid "{unplaced, plural, one {O înregistrare fără un județ recunoscut nu apare pe hartă.} few {# înregistrări fără un județ recunoscut nu apar pe hartă.} other {# de înregistrări fără un județ recunoscut nu apar pe hartă.}}"
+msgstr "{unplaced, plural, one {O înregistrare fără un județ recunoscut nu apare pe hartă.} few {# înregistrări fără un județ recunoscut nu apar pe hartă.} other {# de înregistrări fără un județ recunoscut nu apar pe hartă.}}"
 
 #: src/features/ngos/registry/model.ts:497
 msgid "{unplaced} intrări înregistrate nu au județ în registru; un filtru pe județ nu le găsește."
@@ -4902,6 +4914,10 @@ msgstr "Arată {shown}"
 msgid "arată cuprinsul"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-county-map.tsx:98
+msgid "Arată doar acest județ"
+msgstr "Arată doar acest județ"
+
 #: src/components/provenance/source-provenance.tsx:489
 msgid "Arată dovada"
 msgstr ""
@@ -4909,6 +4925,10 @@ msgstr ""
 #: src/features/statistics/components/detail/detail-empty-state.tsx:57
 msgid "Arată frecvența publicată"
 msgstr "Arată frecvența publicată"
+
+#: src/features/ngos/registry/components/registry-county-map.tsx:25
+msgid "Arată județele ca"
+msgstr "Arată județele ca"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:170
 #: src/features/ngos/organization/components/purpose-section.tsx:127
@@ -9032,7 +9052,7 @@ msgstr "Contribuții înregistrate"
 
 #: src/features/private-companies/components/hub/company-county-map.tsx:126
 #: src/features/statistics/components/county-map/county-map.tsx:119
-#: src/features/statistics/components/hub/hub-county-band.tsx:330
+#: src/features/statistics/components/hub/hub-county-band.tsx:347
 msgid "Conturul județelor nu s-a încărcat."
 msgstr "Conturul județelor nu s-a încărcat."
 
@@ -11124,7 +11144,7 @@ msgstr "Deschide analiza entităților"
 #~ msgid "Deschide comparația"
 #~ msgstr "Deschide comparația"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:386
+#: src/features/statistics/components/hub/hub-county-band.tsx:403
 msgid "Deschide datele județului"
 msgstr "Deschide datele județului"
 
@@ -13933,17 +13953,17 @@ msgstr "fără utilitate publică declarată"
 msgid "fără valoare"
 msgstr ""
 
-#: src/features/procurement/lib/enum-labels.ts:93
-#~ msgid "Fără valoare"
-#~ msgstr ""
+#: src/features/statistics/components/hub/hub-county-band.tsx:368
+msgid "Fără valoare"
+msgstr "Fără valoare"
 
 #: src/features/private-companies/components/hub/company-county-map.tsx:340
 msgctxt "county map readout"
 msgid "Fără valoare"
 msgstr "Fără valoare"
 
-#. placeholder {0}: layer.period ?? ''
-#: src/features/statistics/components/hub/hub-county-band.tsx:351
+#. placeholder {0}: layer.period
+#: src/features/statistics/components/hub/hub-county-band.tsx:368
 msgid "Fără valoare în {0}"
 msgstr "Fără valoare în {0}"
 
@@ -15500,6 +15520,7 @@ msgid "Harta"
 msgstr ""
 
 #: src/features/landing/lib/landing-groups.ts:162
+#: src/features/ngos/registry/components/registry-county-map.tsx:22
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:292
 msgid "Hartă"
 msgstr "Hartă"
@@ -15967,10 +15988,10 @@ msgid "in \"invisible\" consumption taxes."
 msgstr "în taxe de consum „invizibile”."
 
 #. placeholder {0}: current.year
-#. placeholder {0}: layer.period ?? ''
+#. placeholder {0}: layer.period
 #. placeholder {0}: series.year
 #: src/features/procurement/components/home/home-context-bands.tsx:231
-#: src/features/statistics/components/hub/hub-county-band.tsx:370
+#: src/features/statistics/components/hub/hub-county-band.tsx:387
 #: src/features/statistics/components/uat-map/uat-map-series.ts:105
 msgid "în {0}"
 msgstr "în {0}"
@@ -16537,7 +16558,7 @@ msgstr ""
 #: src/features/procurement/components/analytics/analytics-answer.tsx:316
 #: src/features/statistics/components/county-map/county-map.tsx:126
 #: src/features/statistics/components/hub/hub-chrome.tsx:62
-#: src/features/statistics/components/hub/hub-county-band.tsx:337
+#: src/features/statistics/components/hub/hub-county-band.tsx:354
 msgid "Încearcă din nou"
 msgstr "Încearcă din nou"
 
@@ -16972,6 +16993,11 @@ msgstr ""
 msgid "înregistrări"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-county-map.tsx:82
+msgctxt "registru ONG"
+msgid "înregistrări"
+msgstr "înregistrări"
+
 #: src/features/ngos/registry/components/registry-answer.tsx:192
 #: src/features/ngos/registry/components/registry-answer.tsx:440
 #: src/features/ngos/registry/counts.ts:327
@@ -16983,6 +17009,10 @@ msgstr "Înregistrări"
 #: src/features/ngos/registry/components/registry-answer.tsx:556
 msgid "Înregistrări pe ani; săgețile schimbă anul"
 msgstr "Înregistrări pe ani; săgețile schimbă anul"
+
+#: src/features/ngos/registry/components/registry-county-map.tsx:81
+msgid "Înregistrări pe județe"
+msgstr "Înregistrări pe județe"
 
 #: src/features/procurement/components/procurement-authority-slice.tsx:376
 msgid "Înregistrări pe lună — seria pe valoare nu este disponibilă pentru această selecție."
@@ -18162,7 +18192,7 @@ msgstr "la fel ca în {year}"
 msgid "la fel ca înainte"
 msgstr "la fel ca înainte"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:113
+#: src/features/statistics/components/hub/hub-county-band.tsx:121
 msgid "la media națională"
 msgstr "la media națională"
 
@@ -18708,9 +18738,10 @@ msgstr "Lipsa unei valori pentru locuințe terminate nu înseamnă zero. Hașuri
 msgid "Lista"
 msgstr ""
 
+#: src/features/ngos/registry/components/registry-county-map.tsx:21
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:291
 msgid "Listă"
-msgstr ""
+msgstr "Listă"
 
 #: src/features/privacy/components/cookie-settings-page.tsx:262
 msgid "Lista completă a ce se scrie în browserul tău, cu durata fiecărei chei, este în politica de cookie-uri."
@@ -19338,8 +19369,8 @@ msgstr "Locul"
 #. placeholder {0}: rank.get(county.code) ?? '—'
 #. placeholder {1}: formatCount(standing.of)
 #. placeholder {1}: values.length
-#: src/features/statistics/components/hub/hub-county-band.tsx:226
-#: src/features/statistics/components/hub/hub-county-band.tsx:374
+#: src/features/statistics/components/hub/hub-county-band.tsx:243
+#: src/features/statistics/components/hub/hub-county-band.tsx:391
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:77
 msgid "locul {0} din {1}"
 msgstr "locul {0} din {1}"
@@ -20021,12 +20052,12 @@ msgstr "Medie"
 msgid "Media {0}"
 msgstr "Media {0}"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:379
+#: src/features/statistics/components/hub/hub-county-band.tsx:396
 msgid "Media națională"
 msgstr "Media națională"
 
 #. placeholder {0}: figure(layer.national)
-#: src/features/statistics/components/hub/hub-county-band.tsx:415
+#: src/features/statistics/components/hub/hub-county-band.tsx:432
 msgid "Media națională {0}"
 msgstr "Media națională {0}"
 
@@ -25099,7 +25130,7 @@ msgstr "Pescuit și acvacultură"
 #. placeholder {0}: seller.clients
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:139
 #: src/features/procurement/components/direct-purchase/direct-purchase-context.tsx:140
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:25
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:27
 msgid "peste {0}"
 msgstr "peste {0}"
 
@@ -25111,7 +25142,7 @@ msgstr ""
 msgid "peste 1 mil."
 msgstr "peste 1 mil."
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:417
+#: src/features/statistics/components/hub/hub-county-band.tsx:434
 msgid "peste medie"
 msgstr "peste medie"
 
@@ -26726,7 +26757,7 @@ msgstr "Răspuns parțial: {undated, plural, one {# rând} few {# rânduri} othe
 msgid "Răspuns parțial: sursa nu acoperă toată selecția."
 msgstr "Răspuns parțial: sursa nu acoperă toată selecția."
 
-#: src/features/ngos/registry/components/registry-list-page.tsx:87
+#: src/features/ngos/registry/components/registry-list-page.tsx:90
 #: src/features/procurement/components/analytics/procurement-analytics-page.tsx:53
 msgid "Răspunsul"
 msgstr "Răspunsul"
@@ -27951,7 +27982,7 @@ msgstr "Rol"
 #: src/features/statistics/components/territory/territory-derived-trend.tsx:330
 #: src/features/statistics/components/territory/territory-header.tsx:69
 #: src/features/statistics/components/territory/territory-indicator-row.tsx:214
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:89
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:91
 #: src/features/statistics/components/uat-map/uat-map-tooltip.tsx:89
 #: src/features/statistics/hooks/use-comparison-reading.ts:88
 #: src/features/statistics/hooks/use-comparisons.ts:339
@@ -28216,7 +28247,7 @@ msgstr ""
 msgid "Sari la textul ședinței"
 msgstr ""
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:388
+#: src/features/statistics/components/hub/hub-county-band.tsx:405
 msgid "sau atinge-l încă o dată pe hartă"
 msgstr "sau atinge-l încă o dată pe hartă"
 
@@ -31224,7 +31255,7 @@ msgid "studenți"
 msgstr ""
 
 #. placeholder {0}: format(interval.to!)
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:24
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:26
 msgid "sub {0}"
 msgstr "sub {0}"
 
@@ -31232,7 +31263,7 @@ msgstr "sub {0}"
 msgid "sub 0,1%"
 msgstr "sub 0,1%"
 
-#: src/features/statistics/components/hub/hub-county-band.tsx:417
+#: src/features/statistics/components/hub/hub-county-band.tsx:434
 msgid "sub medie"
 msgstr "sub medie"
 
@@ -31606,7 +31637,7 @@ msgstr ""
 #~ msgstr "Sursă: INS Tempo"
 
 #. placeholder {0}: meta.sources
-#: src/features/statistics/components/uat-map/uat-map-legend.tsx:167
+#: src/features/statistics/components/uat-map/uat-map-legend.tsx:169
 msgid "Sursa: INS Tempo, {0}; calculat de Transparenta.eu din cifrele preluate pe {day}."
 msgstr "Sursa: INS Tempo, {0}; calculat de Transparenta.eu din cifrele preluate pe {day}."
 

@@ -113,4 +113,36 @@ describe('countyScale in steps', () => {
     expect(scale.classes.length).toBeLessThan(5)
     expect(scale.classes[scale.classes.length - 1]?.swatch).toBe('bg-choropleth-5')
   })
+
+  it('leaves no class empty where most counties are at the lowest value: the zeros first, the rest above', () => {
+    const values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 7]
+    const { scale } = countyScale(values, null, { ramp: 'steps', digits: 0 })
+    expect(scale.classes.map((drawn) => drawn.interval)).toEqual([
+      { from: null, to: 3 },
+      { from: 3, to: null },
+    ])
+    expect(values.map((_, index) => scale.classAt(index))).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
+    // The zeros in the lightest blue, never a dark one: none must not read as many.
+    expect(scale.classes.map((drawn) => drawn.swatch)).toEqual(['bg-choropleth-1', 'bg-choropleth-5'])
+  })
+
+  it('draws every county in one class, the lightest, where all are equal', () => {
+    const { scale } = countyScale([0, 0, 0], null, { ramp: 'steps', digits: 0 })
+    expect(scale.classes.map((drawn) => drawn.swatch)).toEqual(['bg-choropleth-1'])
+    expect(scale.classes[0]?.interval).toEqual({ from: 0, to: 0 })
+    expect([0, 1, 2].map((index) => scale.classAt(index))).toEqual([0, 0, 0])
+  })
+
+  it('rounds the bound that replaces one at the lowest value up to the step, as the legend prints it', () => {
+    const values = [12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.4, 12.6, 30, 40, 50]
+    const { scale, decimals } = countyScale(values, null, { digits: 1 })
+    expect(decimals).toBe(0)
+    expect(scale.classes.map((drawn) => drawn.interval)).toEqual([
+      { from: null, to: 13 },
+      { from: 13, to: 30 },
+      { from: 30, to: null },
+    ])
+    // 12,6 sits under „13", with the lowest values.
+    expect(scale.classAt(9)).toBe(0)
+  })
 })

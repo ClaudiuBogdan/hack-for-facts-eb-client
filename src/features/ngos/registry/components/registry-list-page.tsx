@@ -7,6 +7,7 @@ import { figuresOf } from '../counts'
 import { groupAxes, notesOf, queryOf, questionOf, selectionKey, type RegistryQuery } from '../model'
 import { useRegistryRead, type RegistrySeed } from '../use-registry-read'
 import { AnswerPanel, AnswerTabs, GroupTable, Pending, RecordsTable, RegistryFigures, SourceLine, YearsBars, type AnswerAxis } from './registry-answer'
+import { CountyViewToggle, RegistryCountyMap, type CountyView } from './registry-county-map'
 import { RegistryFilters } from './registry-filters'
 import { RegistryHead, StatusNav } from './registry-head'
 
@@ -60,6 +61,8 @@ export function NgoRegistryListPage({
   // A new question keeps them: the sheet stays open for the next filter, the answer on its axis.
   const [filters, setFilters] = useState(false)
   const [axis, setAxis] = useState<AnswerAxis>('inregistrari')
+  // The counties as the list or the map: the reader's choice, kept as the axis is.
+  const [countyView, setCountyView] = useState<CountyView>('list')
   const [page, setPage] = useTablePage(key)
   const state = useRegistryRead(query, page, seed)
   const { read, summary, tally } = state
@@ -94,6 +97,17 @@ export function NgoRegistryListPage({
               <Pending rows={8} className="mt-3" />
             ) : shownAxis === 'an' ? (
               <YearsBars key={key} tally={tally} through={read.snapshot?.capturedAt.slice(0, 10) ?? null} className="mt-4" />
+            ) : shownAxis === 'judet' && tally.total > 0 ? (
+              <>
+                <CountyViewToggle view={countyView} onView={setCountyView} className="mt-4" />
+                {countyView === 'map' ? (
+                  <div className="mt-6">
+                    <RegistryCountyMap key={key} query={query} counties={counties} tally={tally} />
+                  </div>
+                ) : (
+                  <GroupTable key={`${shownAxis}:${key}`} query={query} counties={counties} tally={tally} axis={shownAxis} onChange={onSearch} className="mt-3" />
+                )}
+              </>
             ) : (
               <GroupTable key={`${shownAxis}:${key}`} query={query} counties={counties} tally={tally} axis={shownAxis} onChange={onSearch} className="mt-3" />
             )}
