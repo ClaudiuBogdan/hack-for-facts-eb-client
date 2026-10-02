@@ -83,7 +83,18 @@ describe('NgoRegistryListPage', () => {
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByRole('button', { name: /Asociații/ })).toBeInTheDocument()
     fireEvent.click(within(panel).getByRole('button', { name: /Fundații/ }))
+    expect(onSearch).toHaveBeenCalledTimes(1)
     expect(onSearch).toHaveBeenCalledWith({ ...CLUJ_RADIATE, category: 'foundation' })
+    // Anywhere on the row, not only its name: here, its count.
+    const associations = within(panel).getByRole('button', { name: /Asociații/ }).closest('tr')!
+    fireEvent.click(within(associations).getAllByRole('cell')[2]!)
+    expect(onSearch).toHaveBeenLastCalledWith({ ...CLUJ_RADIATE, category: 'association' })
+    // A drag that selects the count to copy it narrows nothing.
+    onSearch.mockClear()
+    const selection = vi.spyOn(window, 'getSelection').mockReturnValue({ toString: () => '1.234' } as Selection)
+    fireEvent.click(within(associations).getAllByRole('cell')[2]!, { detail: 1 })
+    expect(onSearch).not.toHaveBeenCalled()
+    selection.mockRestore()
   })
 
   it('shows the counties as the list or the map, the reader’s choice kept from one selection to the next', () => {

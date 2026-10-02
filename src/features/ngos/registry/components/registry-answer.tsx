@@ -446,13 +446,23 @@ export function GroupTable({
             const unplaced = isUnplaced(row)
             const next = unplaced ? null : drilled(query, axis, row.key)
             return (
-              <TableRow key={row.key} className={cn(unplaced && 'text-muted-foreground')}>
+              <TableRow
+                key={row.key}
+                className={cn(unplaced && 'text-muted-foreground', next && 'group/row cursor-pointer')}
+                // The whole row narrows the selection to it, as the name's button does from the keyboard: its click reaches the row.
+                // Not a pointer's drag that selects a figure to copy (a key's click has no `detail`).
+                onClick={next ? (event) => (event.detail > 0 && window.getSelection()?.toString() ? undefined : onChange(next)) : undefined}
+              >
                 <TableCell className="align-top font-mono text-xs tabular-nums text-muted-foreground">{unplaced ? '' : index + 1}</TableCell>
                 <TableCell className="w-full max-w-0">
                   {next ? (
-                    <button type="button" onClick={() => onChange(next)} className="group flex max-w-full items-center gap-1.5 text-left hover:underline">
+                    <button type="button" className="group flex max-w-full cursor-pointer items-center gap-1.5 text-left group-hover/row:underline">
                       <span className="truncate">{row.label}</span>
-                      <ArrowUpRight className="size-3.5 shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+                      {/* Under the pointer or the keyboard only; where a finger can tap, with no hover to show it, it stays. */}
+                      <ArrowUpRight
+                        className="size-3.5 shrink-0 text-foreground opacity-0 transition-opacity group-focus-visible:opacity-100 group-hover/row:opacity-100 any-pointer-coarse:text-muted-foreground any-pointer-coarse:opacity-100"
+                        aria-hidden="true"
+                      />
                     </button>
                   ) : (
                     <span className="block truncate">{row.label}</span>
