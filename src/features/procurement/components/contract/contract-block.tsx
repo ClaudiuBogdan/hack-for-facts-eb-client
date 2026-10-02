@@ -385,11 +385,10 @@ function ContractHistory({ sheet, className }: { readonly sheet: ContractSheet; 
             <li key={step.key} className="relative pb-7 last:pb-0">
               <span className={cn('absolute -left-[1.6rem] top-1.5 size-2.5 rounded-full border-2 border-background', step.key === 'contract' ? 'bg-primary' : 'bg-foreground')} aria-hidden="true" />
               <MonoLabel className="block tabular-nums text-muted-foreground">{step.when ? dayLong(step.when) : step.key === 'current' ? t`azi` : t`fără dată`}</MonoLabel>
-              <p className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 text-sm font-semibold text-foreground">
-                <span>{step.title}</span>
-                {step.value !== null ? <span className={cn('tabular-nums', stated && 'text-amber-800 dark:text-amber-300')}>{leiExact(step.value)}</span> : null}
-              </p>
-              {stated ? <p className="mt-0.5 text-right text-xs text-amber-800 dark:text-amber-300">{t`valoare raportată; textul actului spune ${stated}`}</p> : null}
+              <p className="mt-1 text-sm font-semibold text-foreground">{step.title}</p>
+              {/* The value under its step's title, where the eye already is (the procedure's calendar, §22.3), not across the page. */}
+              {step.value !== null ? <p className={cn('mt-1 text-sm tabular-nums', stated ? 'text-amber-800 dark:text-amber-300' : 'text-foreground')}>{leiExact(step.value)}</p> : null}
+              {stated ? <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300">{t`valoare raportată; textul actului spune ${stated}`}</p> : null}
               {step.body ? <div className="mt-1 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">{step.body}</div> : null}
             </li>
           )

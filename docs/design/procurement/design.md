@@ -3064,6 +3064,9 @@ needs until the API serves the notice. In the calendar a step's value sits
 under its title, not across the page at the right where the eye loses it,
 and the last contract's says it is the procedure's total („63.233.506,18
 lei pe 3 contracte"; a framework's „cel mult …, pe 37 de acorduri-cadru").
+The contract page's history follows (the owner, 2 October): each step's
+value under its title, an act whose reported value contradicts its text
+still in amber with what the text says.
 
 The records: ANIF's three lots (and the same procedure opened on its call),
 Sibiu's negotiation and its suspended call, CNIR's 6.1 bn association with
@@ -3071,8 +3074,10 @@ one offer, CNAIR's Pașcani–Suceava (three offers, two unacceptable, −29%),
 Spitalul Caracal's 44-lot framework, Sibiu's Turnul Sfatului, Universitatea
 de Vest's cancelled call, Nuclearelectrica's 2009 call.
 
-Open for the owner: whether a call's row should redirect to its award's
-page once the two are tied.
+The call's address, once the API ties a call to its award (the owner,
+2 October): it stays a page, telling the whole procedure, with its
+canonical link on the award notice's page — one page for search engines,
+no redirect.
 
 ### 22.4 Promoted (2 October 2026)
 
