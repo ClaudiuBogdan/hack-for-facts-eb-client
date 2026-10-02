@@ -201,7 +201,7 @@ function TargetSheet({ fixture, purchase }: { readonly fixture: RawDaFixture; re
     <>
       <DirectPurchaseHead purchase={purchase} redo={redoOf(purchase, context.data ?? null)} />
       <RuledFrame className="py-10 sm:py-14">
-        <DirectPurchaseBlock purchase={purchase} year={context.data?.year ?? (day ? Number(day.slice(0, 4)) : null)} className="max-w-4xl" />
+        <DirectPurchaseBlock purchase={purchase} year={context.data?.year ?? (day ? Number(day.slice(0, 4)) : null)} />
       </RuledFrame>
       <LiveContextNote fixture={fixture} />
       <DirectPurchaseContextBand purchase={purchase} context={{ data: context.data, isError: context.isError, retry: () => void context.refetch() }} />

@@ -24,7 +24,7 @@ export function ContractFisa() {
       <RecordPicker />
       <ContractHead sheet={sheet} />
       <RuledFrame className="py-10 sm:py-14">
-        <ContractBlock sheet={sheet} className="max-w-4xl" />
+        <ContractBlock sheet={sheet} />
       </RuledFrame>
       <ContractContextBand sheet={sheet} context={{ data: context, isError: false, retry: () => undefined }} />
     </div>

@@ -2935,6 +2935,14 @@ IMM.
   under the facts, side by side from `sm`, one under the other on a
   phone.
 - The procedure page still has the old shared layout (to migrate).
+- 2 October: on the contract page (and the procedure prototype) the
+  parties sit on the facts' rows from `lg`, at the owner's ask: the buyer
+  level with the first row of facts and as tall as it, the firm from the
+  second row on. The facts and the parties are subgrids of one grid with a
+  row per row of facts (two at least); the parties keep the facts' rule
+  and space above them with the rule unseen, so the two first rows start
+  level. The direct purchase, whose value and facts share one row, keeps
+  its centred column.
 
 ## 21. The answer bar's controls (1 October 2026)
 

@@ -140,11 +140,21 @@ function CriterionFact({ sheet }: { readonly sheet: ProcedureSheet }) {
   )
 }
 
+/** The lots' duration, when every lot runs as long. */
+function durationOf(sheet: ProcedureSheet): number | null {
+  const months = sheet.lots.map((lot) => lot.months).filter((value): value is number => value !== null)
+  return months.length > 0 && months.every((value) => value === months[0]) ? months[0]! : null
+}
+
+/** How many facts the grid holds: one per cell `ProcedureFacts` renders, three to a row. */
+function factsCount(sheet: ProcedureSheet): number {
+  return [sheet.procedureType, sheet.unpublished || sheet.call, sheet.kind === 'award', sheet.awardNotice, sheet.offers, sheet.lots.some((lot) => lot.criterion), sheet.cpv, durationOf(sheet) !== null].filter(Boolean).length
+}
+
 function ProcedureFacts({ sheet, className }: { readonly sheet: ProcedureSheet; readonly className?: string }) {
   const route = useRouteLabel(sheet.procedureType)
   const category = sheet.cpv ? labelText(sheet.cpv.label) : null
-  const months = sheet.lots.map((lot) => lot.months).filter((value): value is number => value !== null)
-  const duration = months.length > 0 && months.every((value) => value === months[0]) ? months[0]! : null
+  const duration = durationOf(sheet)
   const delay = noticeDelay(sheet)
   const tedNo = sheet.ted?.no ?? ''
   const call = sheet.call
@@ -210,7 +220,7 @@ function ProcedureParties({ sheet, className }: { readonly sheet: ProcedureSheet
   const shown = firms.slice(0, 4)
   const more = firms.length - shown.length
   return (
-    <dl className={cn('grid gap-x-8 gap-y-5 sm:grid-cols-2', className)}>
+    <dl className={cn('grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:row-span-full lg:grid-rows-subgrid lg:gap-y-6', className)}>
       <div className="min-w-0">
         <dt>
           <MonoLabel className="text-muted-foreground">{t`Cumpărătorul`}</MonoLabel>
@@ -220,8 +230,9 @@ function ProcedureParties({ sheet, className }: { readonly sheet: ProcedureSheet
           {sheet.authority.cui ? <span className="mt-1 block font-mono text-xs font-normal tabular-nums text-muted-foreground">CUI {sheet.authority.cui}</span> : null}
         </dd>
       </div>
+      {/* From the facts' second row on (as `RecordParties` with `rows`). */}
       {firms.length > 0 ? (
-        <div className="min-w-0">
+        <div className="min-w-0 lg:row-start-2 lg:row-end-[-1]">
           <dt>
             <MonoLabel className="text-muted-foreground">{firms.length === 1 ? t`Câștigătorul` : t`Câștigătorii`}</MonoLabel>
           </dt>
@@ -641,12 +652,13 @@ export function ProcedureSource({ sheet, className }: { readonly sheet: Procedur
 /** The value and facts, the parties beside them: the box every record page opens on. */
 export function ProcedureBox({ sheet }: { readonly sheet: ProcedureSheet }) {
   return (
-    <div className="mt-8 border-y py-7 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12">
-      <div className="min-w-0">
-        <ProcedureValue sheet={sheet} />
-        <ProcedureFacts sheet={sheet} className="mt-7 border-t pt-7" />
+    <div className="mt-8 border-y py-7">
+      <ProcedureValue sheet={sheet} />
+      {/* The facts and the parties on the same rows (the contract page's box): the buyer level with the first row of facts. */}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12 lg:gap-y-6" style={{ gridTemplateRows: `repeat(${Math.max(2, Math.ceil(factsCount(sheet) / 3))}, auto)` }}>
+        <ProcedureFacts sheet={sheet} className="mt-7 min-w-0 border-t pt-7 lg:row-span-full lg:grid-rows-subgrid" />
+        <ProcedureParties sheet={sheet} className="mt-7 border-t pt-7 lg:grid-cols-1 lg:border-l lg:border-t-transparent lg:pl-12" />
       </div>
-      <ProcedureParties sheet={sheet} className="mt-7 border-t pt-7 lg:mt-0 lg:grid-cols-1 lg:self-center lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0" />
     </div>
   )
 }

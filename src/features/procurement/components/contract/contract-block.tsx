@@ -111,6 +111,20 @@ function Fact({ label, children }: { readonly label: string; readonly children: 
   )
 }
 
+/** How many facts the grid holds: one per cell `ContractFacts` renders. */
+function factsCount(sheet: ContractSheet): number {
+  return [sheet.date, sheet.procedure?.type, sheet.cpv, sheet.estimate, sheet.offers, sheet.criterion, sheet.duration].filter((cell) => cell !== null && cell !== undefined).length
+}
+
+/** Four facts to a row from a tablet up when there are four or more, three otherwise. */
+const factsColumns = (count: number) => (count >= 4 ? 4 : 3)
+
+/** The facts' rows on a wide screen, two at least: the buyer takes the first, the firm the rest. */
+function factsRows(sheet: ContractSheet): number {
+  const count = factsCount(sheet)
+  return Math.max(2, Math.ceil(count / factsColumns(count)))
+}
+
 /** The facts under the value: the day, the route, the category — and, where the notice says them, the offers, the criterion, the duration, the estimate. */
 function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
   const { i18n } = useLingui()
@@ -118,7 +132,7 @@ function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; re
   const routeLabel = procedureType ? procedureLabel(procedureType) : null
   const route = procedureType ? (routeLabel ? i18n._(routeLabel) : procedureType) : null
   const category = sheet.cpv ? labelText(sheet.cpv.label) : null
-  const cells = [sheet.date, route, sheet.cpv, sheet.estimate, sheet.offers, sheet.criterion, sheet.duration].filter((cell) => cell !== null && cell !== undefined).length
+  const columns = factsColumns(factsCount(sheet))
   const own = sheet.contract.versions.find((version) => version.isThis)?.value ?? null
   const fate = sheet.offers ? offersFate(sheet.offers) : null
   const from = sheet.offers ? offersFrom(sheet.offers) : null
@@ -126,66 +140,69 @@ function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; re
   const ted = sheet.procedure?.ted ?? null
   const tedNo = ted?.no ?? ''
   return (
-    <div className={className}>
-      <dl className={cn('grid grid-cols-2 gap-x-8 gap-y-6', cells >= 4 ? 'md:grid-cols-4' : 'md:grid-cols-3')}>
-        {sheet.date ? <Fact label={t`Data contractului`}>{dayLong(sheet.date)}</Fact> : null}
-        {route && sheet.procedure ? (
-          <Fact label={t`Procedura`}>
-            <Link to="/procurement/procedures/$id" params={{ id: sheet.procedure.id }} className="underline decoration-border underline-offset-4 hover:decoration-foreground">
-              {route}
-            </Link>
-            {ted ? (
-              <span className="mt-1 block text-muted-foreground">
-                <Trans>
-                  publicată și în{' '}
-                  <a href={ted.url} target="_blank" rel="noreferrer" title={`TED ${tedNo}`} className="whitespace-nowrap underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground">
-                    Jurnalul UE
-                  </a>
-                </Trans>
-                <span aria-hidden="true"> ↗</span>
-                <span className="sr-only"> {t`(TED ${tedNo}, se deschide într-o filă nouă)`}</span>
-              </span>
-            ) : null}
-          </Fact>
-        ) : null}
-        {sheet.cpv ? (
-          <Fact label={t`Categoria`}>
-            {category ?? t`Cod CPV`}
-            <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">CPV {sheet.cpv.code}</span>
-          </Fact>
-        ) : null}
-        {sheet.offers ? (
-          <Fact label={t`Oferte primite`}>
-            {raisedFirst(offersCount(sheet.offers.received))}
-            {fate ? <span className="mt-1 block text-muted-foreground">{fate}</span> : null}
-            {from ? <span className="mt-1 block text-muted-foreground">{from}</span> : null}
-          </Fact>
-        ) : null}
-        {sheet.criterion ? <Fact label={t`Criteriul de atribuire`}>{criterionText(sheet.criterion)}</Fact> : null}
-        {sheet.duration ? <Fact label={t`Durata`}>{sheet.duration.months ? monthsCount(sheet.duration.months) : daysCount(sheet.duration.days ?? 0)}</Fact> : null}
-        {sheet.estimate !== null ? (
-          <Fact label={t`Estimarea instituției`}>
-            {leiExact(sheet.estimate)}
-            {gap ? <span className="mt-1 block text-muted-foreground">{gap}</span> : null}
-          </Fact>
-        ) : null}
-      </dl>
-      {sheet.procedure?.unpublished ? (
-        <div className="mt-6 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
-          <p>{unpublishedText()}</p>
-          {sheet.justification?.text ? (
-            <figure className="mt-3">
-              <figcaption>{t`Instituția a explicat așa:`}</figcaption>
-              <blockquote className="mt-1 border-l-2 border-border pl-3 text-foreground">
-                <Clamp text={`„${sheet.justification.text}”`} lines={3} />
-              </blockquote>
-            </figure>
-          ) : sheet.justification?.urgency ? (
-            <p className="mt-2">{t`Motivul invocat: urgența.`}</p>
-          ) : sheet.justification?.exclusive ? (
-            <p className="mt-2">{t`Motivul invocat: drepturi exclusive.`}</p>
+    <dl className={cn('grid grid-cols-2 gap-x-8 gap-y-6', columns === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3', className)}>
+      {sheet.date ? <Fact label={t`Data contractului`}>{dayLong(sheet.date)}</Fact> : null}
+      {route && sheet.procedure ? (
+        <Fact label={t`Procedura`}>
+          <Link to="/procurement/procedures/$id" params={{ id: sheet.procedure.id }} className="underline decoration-border underline-offset-4 hover:decoration-foreground">
+            {route}
+          </Link>
+          {ted ? (
+            <span className="mt-1 block text-muted-foreground">
+              <Trans>
+                publicată și în{' '}
+                <a href={ted.url} target="_blank" rel="noreferrer" title={`TED ${tedNo}`} className="whitespace-nowrap underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground">
+                  Jurnalul UE
+                </a>
+              </Trans>
+              <span aria-hidden="true"> ↗</span>
+              <span className="sr-only"> {t`(TED ${tedNo}, se deschide într-o filă nouă)`}</span>
+            </span>
           ) : null}
-        </div>
+        </Fact>
+      ) : null}
+      {sheet.cpv ? (
+        <Fact label={t`Categoria`}>
+          {category ?? t`Cod CPV`}
+          <span className="mt-1 block font-mono text-xs tabular-nums text-muted-foreground">CPV {sheet.cpv.code}</span>
+        </Fact>
+      ) : null}
+      {sheet.offers ? (
+        <Fact label={t`Oferte primite`}>
+          {raisedFirst(offersCount(sheet.offers.received))}
+          {fate ? <span className="mt-1 block text-muted-foreground">{fate}</span> : null}
+          {from ? <span className="mt-1 block text-muted-foreground">{from}</span> : null}
+        </Fact>
+      ) : null}
+      {sheet.criterion ? <Fact label={t`Criteriul de atribuire`}>{criterionText(sheet.criterion)}</Fact> : null}
+      {sheet.duration ? <Fact label={t`Durata`}>{sheet.duration.months ? monthsCount(sheet.duration.months) : daysCount(sheet.duration.days ?? 0)}</Fact> : null}
+      {sheet.estimate !== null ? (
+        <Fact label={t`Estimarea instituției`}>
+          {leiExact(sheet.estimate)}
+          {gap ? <span className="mt-1 block text-muted-foreground">{gap}</span> : null}
+        </Fact>
+      ) : null}
+    </dl>
+  )
+}
+
+/** Awarded without a call for competition: said under the facts, with the institution's reason when it gave one. */
+function UnpublishedNote({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
+  if (!sheet.procedure?.unpublished) return null
+  return (
+    <div className={cn('max-w-[62ch] text-sm leading-relaxed text-muted-foreground', className)}>
+      <p>{unpublishedText()}</p>
+      {sheet.justification?.text ? (
+        <figure className="mt-3">
+          <figcaption>{t`Instituția a explicat așa:`}</figcaption>
+          <blockquote className="mt-1 border-l-2 border-border pl-3 text-foreground">
+            <Clamp text={`„${sheet.justification.text}”`} lines={3} />
+          </blockquote>
+        </figure>
+      ) : sheet.justification?.urgency ? (
+        <p className="mt-2">{t`Motivul invocat: urgența.`}</p>
+      ) : sheet.justification?.exclusive ? (
+        <p className="mt-2">{t`Motivul invocat: drepturi exclusive.`}</p>
       ) : null}
     </div>
   )
@@ -515,19 +532,23 @@ export function ContractBlock({ sheet, className }: { readonly sheet: ContractSh
         </p>
       ) : null}
       {/* The value on its own row — a contract's runs from 400 lei to 6,1 billion — the facts under it, and the two parties as the
-          last column: across the frame, the reading below at its own width. */}
-      <div className="mt-8 border-y py-7 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12">
-        <div className="min-w-0">
-          <ContractValue sheet={sheet} />
-          <ContractFacts sheet={sheet} className="mt-7 border-t pt-7" />
+          last column on the facts' rows (the buyer level with the first, the firm from the second): across the frame, the reading
+          below at its own width. The two lists are subgrids of one grid with a row per row of facts; each keeps its rule and the
+          space above it, the parties' rule unseen, so their first rows start level. */}
+      <div className="mt-8 border-y py-7">
+        <ContractValue sheet={sheet} />
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12 lg:gap-y-6" style={{ gridTemplateRows: `repeat(${factsRows(sheet)}, auto)` }}>
+          <ContractFacts sheet={sheet} className="mt-7 min-w-0 border-t pt-7 lg:row-span-full lg:grid-rows-subgrid" />
+          <RecordParties
+            authority={sheet.authority}
+            supplier={sheet.supplier}
+            year={linkYearOf(sheet)}
+            supplierNote={partnersNote(sheet)}
+            rows
+            className="mt-7 border-t pt-7 lg:grid-cols-1 lg:border-l lg:border-t-transparent lg:pl-12"
+          />
         </div>
-        <RecordParties
-          authority={sheet.authority}
-          supplier={sheet.supplier}
-          year={linkYearOf(sheet)}
-          supplierNote={partnersNote(sheet)}
-          className="mt-7 border-t pt-7 lg:mt-0 lg:grid-cols-1 lg:self-center lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0"
-        />
+        <UnpublishedNote sheet={sheet} className="mt-6" />
       </div>
       <div className="max-w-4xl">
         <ContractFirms sheet={sheet} className="mt-12" />
