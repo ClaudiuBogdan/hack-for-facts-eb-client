@@ -30,6 +30,25 @@ describe('the NGO organisation profile, read', () => {
     expect(query.mock.calls[0]![2]).toMatchObject({ operationName: 'NgoStatements', auth: 'none' })
   })
 
+  it('reads the server’s review of each statement, and drops a review it cannot read, never the statement', async () => {
+    const [first, second] = FUNKY_STATEMENTS
+    const flagged = {
+      ...first!,
+      quality: {
+        ruleVersion: 'ngo-revenue-v1',
+        assessment: 'assessed',
+        suspected: true,
+        reasons: [{ code: 'REVENUE_EQUALS_FIXED_ASSETS', detail: 'I38 = I1 = 2500 lei' }],
+      },
+    }
+    query.mockResolvedValueOnce({ ngoOrganizationProfile: { financials: { statements: [flagged, { ...second!, quality: { suspected: 'yes' } }] } } })
+    const statements = await fetchNgoStatements('30339344')
+    expect(statements[0]?.quality).toEqual(flagged.quality)
+    expect(statements[1]?.quality).toBeNull()
+    expect(statements[1]?.indicators).toEqual(second!.indicators)
+    expect(query.mock.calls[0]![0]).toContain('quality { ruleVersion assessment suspected reasons { code detail } }')
+  })
+
   it('reads the registry’s purpose with the profile, in the same request', async () => {
     query.mockResolvedValueOnce({ ngoOrganizationProfile: FUNKY })
     expect((await fetchNgoOrganization('30339344'))?.purpose).toEqual(FUNKY.purpose)

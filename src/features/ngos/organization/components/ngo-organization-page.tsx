@@ -14,7 +14,7 @@ import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/co
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import type { NgoOrganization, NgoStatementsRead } from '../api'
-import { keyFigures, latestStatement, placeOf, yearSeries } from '../model'
+import { keyFigures, latestStatement, needsReview, placeOf, yearSeries } from '../model'
 import { categoryLabel, organizationName, profileFacts, purposeText, type ProfileFacts } from '../words'
 import {
   AnafFacts,
@@ -24,6 +24,7 @@ import {
   ProfileSources,
   RegistryFacts,
   RevenueSources,
+  StatementReviewNote,
   StatementTable,
   YearSelect,
   YearsChart,
@@ -194,8 +195,8 @@ export function NgoOrganizationPage({
               />
               {latest ? (
                 <div className="mt-8" data-reveal>
-                  <MonoLabel className="block text-muted-foreground">
-                    <LatestSourcesLabel year={latest.fiscalYear} />
+                  <MonoLabel className="block leading-relaxed text-muted-foreground">
+                    <LatestSourcesLabel year={latest.fiscalYear} review={needsReview(latest)} />
                   </MonoLabel>
                   <div className="mt-3">
                     <RevenueSources statement={latest} />
@@ -233,6 +234,7 @@ export function NgoOrganizationPage({
                 <UnfiledYear asked={unfiled} shown={chosen.fiscalYear} />
               </p>
             ) : null}
+            <StatementReviewNote statement={chosen} className="mb-6" />
             <StatementTable statement={chosen} />
           </div>
         </HomeBand>
@@ -329,23 +331,20 @@ function profileFactRow(facts: ProfileFacts): readonly HubFact[] {
     if (magnitude >= 1e6) return { value: Math.round(value / 1e5) / 10, digits: 1, unit: t`mil. lei` }
     return { value, digits: 0, unit: t`lei` }
   }
-  const { year, previousYear, change, revenue, expenses, result } = facts
+  const { year, revenue, expenses, result } = facts
   const [first, last] = facts.span ?? [null, null]
   const row: HubFact[] = []
   if (revenue !== null)
     row.push({
       key: 'revenue',
       ...money(revenue),
-      label: <Trans>Venituri, {year}</Trans>,
-      note: change ? (
-        <Trans>
-          {change} față de {previousYear}
-        </Trans>
-      ) : facts.previousFiled ? (
-        ''
-      ) : (
-        <Trans>Fără situație pe platformă pentru {previousYear}</Trans>
+      label: (
+        <>
+          <Trans>Venituri, {year}</Trans>
+          {facts.review ? <ReviewMark leading /> : null}
+        </>
       ),
+      note: revenueNote(facts),
       link: toBand('bani'),
     })
   if (expenses !== null) row.push({ key: 'expenses', ...money(expenses), label: <Trans>Cheltuieli, {year}</Trans>, note: '', link: toBand('bani') })
@@ -375,8 +374,48 @@ function profileFactRow(facts: ProfileFacts): readonly HubFact[] {
   return row
 }
 
-function LatestSourcesLabel({ year }: { readonly year: number }) {
-  return <Trans>Veniturile din {year}, după activitate</Trans>
+/**
+ * The revenue figure's note: the change on the year before (whose figure, where the server flags it, is said to be
+ * to verify), or that the year before has no statement. Empty where there is nothing to say, so the band draws no
+ * note. The year's own flag is on the label, not here.
+ */
+function revenueNote(facts: ProfileFacts): ReactNode {
+  const { change, previousYear } = facts
+  const before = change ? (
+    facts.previousReview ? (
+      <Trans>
+        {change} față de {previousYear}, an de verificat
+      </Trans>
+    ) : (
+      <Trans>
+        {change} față de {previousYear}
+      </Trans>
+    )
+  ) : facts.previousFiled ? null : (
+    <Trans>Fără situație pe platformă pentru {previousYear}</Trans>
+  )
+  return before ?? ''
+}
+
+function LatestSourcesLabel({ year, review }: { readonly year: number; readonly review: boolean }) {
+  return (
+    <>
+      <Trans>Veniturile din {year}, după activitate</Trans>
+      {review ? <ReviewMark leading /> : null}
+    </>
+  )
+}
+
+/** „de verificat" beside a figure of a statement the server flags for review, in the warning's colour; kept on one line. */
+function ReviewMark({ leading = false }: { readonly leading?: boolean }) {
+  return (
+    <>
+      {leading ? ' · ' : null}
+      <span className="whitespace-nowrap text-amber-800 dark:text-amber-300">
+        <Trans>de verificat</Trans>
+      </span>
+    </>
+  )
 }
 
 function MoneyLede({ facts }: { readonly facts: ProfileFacts }) {
@@ -389,6 +428,34 @@ function MoneyLede({ facts }: { readonly facts: ProfileFacts }) {
   const revenue = text(facts.revenue)
   const expenses = text(facts.expenses)
   const result = text(facts.result)
+  // The year's statement flagged for review: said after the figures, which stay as published.
+  const review = facts.review ? (
+    <>
+      {' '}
+      <Trans>Veniturile din {year} sunt de verificat: un semnal al platformei, nu o eroare confirmată.</Trans>
+    </>
+  ) : null
+  return (
+    <>
+      <MoneyFigures facts={facts} year={year} revenue={revenue} expenses={expenses} result={result} />
+      {review}
+    </>
+  )
+}
+
+function MoneyFigures({
+  facts,
+  year,
+  revenue,
+  expenses,
+  result,
+}: {
+  readonly facts: ProfileFacts
+  readonly year: number
+  readonly revenue: string
+  readonly expenses: string
+  readonly result: string
+}) {
   if (facts.result === null) return <Trans>În {year}, venituri de {revenue} și cheltuieli de {expenses}.</Trans>
   if (facts.result === 0) return <Trans>În {year}, venituri de {revenue} și cheltuieli de {expenses}: nici excedent, nici deficit.</Trans>
   return facts.result < 0 ? (

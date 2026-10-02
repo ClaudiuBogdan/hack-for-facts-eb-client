@@ -21,6 +21,7 @@ export function classLabel(format: (value: number) => string, interval: ClassInt
   const includesTo = interval.includesTo ?? false
   const from = interval.from === null ? null : snap(interval.from)
   const to = interval.to === null ? null : snap(interval.to)
+  if (from !== null && from === to && includesFrom && includesTo) return format(from)
   // A band around zero that holds both its bounds reads as its half-width.
   if (from !== null && to !== null && from === -to && to > 0 && includesFrom && includesTo)
     return `±${format(to).replace(/^\+/, '')}`

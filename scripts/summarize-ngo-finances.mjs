@@ -16,10 +16,16 @@
  * counts (I45, I46) are not read: filers type activity codes into them (9499
  * „employees").
  *
- * A statement with a revenue above 1 bn lei is an entry error — no non-profit
- * comes near (the largest, 450 mil. lei in 2025) — and is left out of every
- * sum and named in `excluded`: one, in 2019, whose 6,2 bn lei repeat its fixed
- * assets.
+ * A blank cell is unknown, not zero: a statement whose total revenue (I38)
+ * is blank is counted in the `unknown` class, never in `none` (seven in
+ * 2025); in the sums it adds nothing.
+ *
+ * A statement with a revenue above 1 bn lei is a value to verify — no
+ * non-profit comes near (the largest, 450 mil. lei in 2025) — and is left out
+ * of every sum and named in `excluded`, with whether its revenue repeats its
+ * fixed assets (I1, „Active imobilizate – total", read unvalidated, for this) and
+ * whether the organisation has a profile to show the statement on: one, in
+ * 2019, whose 6,2 bn lei are exactly its fixed assets.
  *
  * The leaders are the largest by revenue among the organisations the NGO
  * profile resolves: a registry entry whose CUI the platform admitted, by the
@@ -32,6 +38,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseStatements } from './lib/ngo-statements.mjs'
 
 const API_URL = process.env.NGO_API_URL ?? 'https://dev-chronos-api.transparenta.eu/api/v1/graphql'
 const CKAN = 'https://data.gov.ro/api/3/action/package_search'
@@ -89,45 +96,6 @@ async function yearlyFiles() {
   return files
 }
 
-const INTEGER = /^-?\d+$/
-/** The statements of one file, by CUI; a row with a non-integer cell is dropped and counted. */
-function parse(text) {
-  const [header, ...lines] = text.split(/\r?\n/).filter(Boolean)
-  const columns = header.split(',')
-  const at = (name) => {
-    const index = columns.indexOf(name)
-    if (index < 0) throw new Error(`no column ${name}`)
-    return index
-  }
-  const cui = at('CUI')
-  const activity = at('CAENO')
-  const indicators = ['I14', 'I22', 'I30', 'I38'].map((name) => [name, at(name)])
-  // Some years carry activity names (`DEN_CAENO`) with unquoted commas: a column after one is not where the header says.
-  const firstText = columns.findIndex((name) => name.startsWith('DEN_'))
-  if (firstText >= 0 && indicators.some(([, index]) => index > firstText)) throw new Error('an indicator read sits after a text column')
-  const statements = new Map()
-  let malformed = 0
-  for (const line of lines) {
-    const cells = line.split(',')
-    const id = cells[cui]?.trim()
-    const values = indicators.map(([name, index]) => [name, cells[index]?.trim()])
-    // A row shorter than the header is cut, not empty: its missing cells are not zeros.
-    const complete = cells.length >= columns.length
-    if (!complete || !id || !INTEGER.test(id) || values.some(([, value]) => value === undefined || (value !== '' && !INTEGER.test(value)))) {
-      malformed += 1
-      continue
-    }
-    const read = Object.fromEntries(values.map(([name, value]) => [name, value === '' ? 0 : Number(value)]))
-    const statement = { activity: cells[activity]?.trim() ?? '', ...read }
-    const key = id.replace(/^0+/, '')
-    // A CUI filed twice must be the same statement twice (a handful per file are); anything else is ambiguous.
-    const seen = statements.get(key)
-    if (seen && JSON.stringify(seen) !== JSON.stringify(statement)) throw new Error(`CUI ${key} has two different statements`)
-    statements.set(key, statement)
-  }
-  return { statements, malformed }
-}
-
 /** The non-profit activity's domain; codes lose their leading zero in the files (`162` is 0162). */
 function domainOf(code) {
   const activity = code.padStart(4, '0')
@@ -148,6 +116,7 @@ function domainOf(code) {
 }
 
 function sizeOf(revenue) {
+  if (revenue === null) return 'unknown'
   if (revenue < 0) return 'negative'
   if (revenue === 0) return 'none'
   if (revenue <= 10_000) return 'under10k'
@@ -170,7 +139,7 @@ for (const year of years) {
     if (!response.ok) throw new Error(`${year}: ${response.status}`)
     writeFileSync(path, Buffer.from(await response.arrayBuffer()))
   }
-  const parsed = parse(readFileSync(path, 'latin1'))
+  const parsed = parseStatements(readFileSync(path, 'latin1'))
   // A few bad rows are the source's; more is a changed layout or a cut file, and no summary.
   if (parsed.malformed > parsed.statements.size / 1000) throw new Error(`${year}: ${parsed.malformed} malformed rows`)
   read.set(year, parsed)
@@ -182,8 +151,8 @@ const kept = new Map(
   years.map((year) => [
     year,
     [...read.get(year).statements].filter(([cui, statement]) => {
-      if (statement.I38 <= ERROR_REVENUE) return true
-      excluded.push({ year, cui, revenue: statement.I38 })
+      if ((statement.I38 ?? 0) <= ERROR_REVENUE) return true
+      excluded.push({ year, cui, revenue: statement.I38, equalsFixedAssets: statement.I38 === statement.fixedAssets, profile: false })
       return false
     }),
   ]),
@@ -201,7 +170,7 @@ const series = years.map((year) => {
   return {
     year,
     statements: rows.length,
-    revenue: rows.reduce((sum, [, statement]) => sum + statement.I38, 0),
+    revenue: rows.reduce((sum, [, statement]) => sum + (statement.I38 ?? 0), 0),
     published: files.get(year).modified.slice(0, 10),
     firstRelease: firstRelease(year),
   }
@@ -209,25 +178,25 @@ const series = years.map((year) => {
 
 const year = years[years.length - 1]
 const latest = counted(year)
-// The year before as it is summed: an excluded entry error is no base for a change either.
+// The year before as it is summed: an excluded statement is no base for a change either.
 const previous = new Map(counted(year - 1))
-const sum = (pick) => latest.reduce((total, [, statement]) => total + pick(statement), 0)
+const sum = (pick) => latest.reduce((total, [, statement]) => total + (pick(statement) ?? 0), 0)
 
 const sources = { nonProfit: sum((s) => s.I14), economic: sum((s) => s.I30), special: sum((s) => s.I22) }
 const revenue = sum((s) => s.I38)
 if (sources.nonProfit + sources.economic + sources.special !== revenue) throw new Error('the revenue sources do not add up to the total')
 
-const SIZES = ['negative', 'none', 'under10k', 'under100k', 'under1m', 'over1m']
+const SIZES = ['negative', 'none', 'under10k', 'under100k', 'under1m', 'over1m', 'unknown']
 const sizes = SIZES.map((key) => ({ key, statements: 0, revenue: 0 }))
 const domains = new Map()
 for (const [, statement] of latest) {
   const size = sizes[SIZES.indexOf(sizeOf(statement.I38))]
   size.statements += 1
-  size.revenue += statement.I38
+  size.revenue += statement.I38 ?? 0
   const key = domainOf(statement.activity)
   const domain = domains.get(key) ?? { key, statements: 0, revenue: 0 }
   domain.statements += 1
-  domain.revenue += statement.I38
+  domain.revenue += statement.I38 ?? 0
   domains.set(key, domain)
 }
 
@@ -247,7 +216,7 @@ const PROFILE = `query($cui: CUI!) {
   ngoOrganizationProfile(cui: $cui) { cui name county sourceRegistryStatus registryRecords { nameWithheld } }
 }`
 
-const ranked = [...latest].sort(([, a], [, b]) => b.I38 - a.I38).slice(0, PROFILE_DEPTH)
+const ranked = [...latest].sort(([, a], [, b]) => (b.I38 ?? 0) - (a.I38 ?? 0)).slice(0, PROFILE_DEPTH)
 const leaders = []
 for (let start = 0; start < ranked.length && leaders.length < LEADERS; start += 4) {
   const batch = ranked.slice(start, start + 4)
@@ -271,11 +240,14 @@ for (let start = 0; start < ranked.length && leaders.length < LEADERS; start += 
 }
 if (leaders.length < LEADERS) throw new Error(`only ${leaders.length} profiles in the top ${PROFILE_DEPTH}`)
 
+// An excluded statement's organisation, where the profile admits it: the page links the statement there.
+for (const entry of excluded) entry.profile = (await graphql(PROFILE, { cui: entry.cui })).ngoOrganizationProfile !== null
+
 const summary = {
   year,
   source: { dataset: files.get(year).dataset, file: files.get(year).url, published: files.get(year).modified.slice(0, 10) },
   statements: latest.length,
-  withRevenue: latest.filter(([, statement]) => statement.I38 > 0).length,
+  withRevenue: latest.filter(([, statement]) => (statement.I38 ?? 0) > 0).length,
   revenue,
   sources,
   sizes,

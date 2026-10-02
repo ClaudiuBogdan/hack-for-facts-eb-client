@@ -54,8 +54,14 @@ export interface HubCountyBandDefinition {
   readonly countUnit?: (value: number) => string
   /** One line against the likeliest misreading. */
   readonly caveat: ReactNode
-  /** The source, after the caveat. */
+  /** The source, after the caveat; `null` where the page names it once already. */
   readonly source: ReactNode
+  /**
+   * What a county's link does, where it does not open the county's data
+   * („Deschide datele județului"): the held tooltip's link, a line in the
+   * hover tooltip and the end of the county's name.
+   */
+  readonly open?: string
 }
 
 /** The layer as the band reads it: „‰" for a rate per 1,000, money in whole lei — in the list too. */
@@ -73,9 +79,15 @@ export function HubCountyBand({
   layer: read,
   definition,
   countyLink,
+  list = true,
 }: {
   readonly layer: StatisticsHubCountyLayer
   readonly definition: HubCountyBandDefinition
+  /**
+   * The ranked list beside the map. Without it — where the page shows its own
+   * list in place of the map — the map and its legend side by side.
+   */
+  readonly list?: boolean
   /**
    * Where a county opens, on the map, in its held tooltip and in the list; the
    * INS series by default. `null` where there is nowhere to go: the counties
@@ -169,10 +181,19 @@ export function HubCountyBand({
   const fontSize = renderedWidth ? (countyLabelPixels(renderedWidth) * COUNTY_MAP_WIDTH) / renderedWidth : 11
 
   return (
-    <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
+    <div className={cn(list && 'mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8')}>
       {/* The map stays in view beside the full list of 42, where the window is tall enough to hold all of it (legend included). */}
-      <div ref={figureRef} className="min-w-0 lg:top-6 lg:col-span-7 lg:self-start lg:[@media(min-height:42rem)]:sticky" data-reveal>
-        <div ref={frameRef} className="relative">
+      <div
+        ref={figureRef}
+        className={
+          list
+            ? 'min-w-0 lg:top-6 lg:col-span-7 lg:self-start lg:[@media(min-height:42rem)]:sticky'
+            : // Alone, the map as tall as a window holds; its legend in the room beside it.
+              'grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,52rem)_minmax(16rem,1fr)] lg:gap-10'
+        }
+        data-reveal
+      >
+        <div ref={frameRef} className="relative min-w-0">
           {shapes ? (
             <svg
               viewBox={`0 0 ${COUNTY_MAP_WIDTH} ${shapes.height.toFixed(0)}`}
@@ -259,7 +280,8 @@ export function HubCountyBand({
                   <Link
                     key={shape.code}
                     {...linkOf(county.code)}
-                    aria-label={name}
+                    // Where the link does something of its own („Toate înregistrările din județ, din toți anii"), its name says so.
+                    aria-label={definition.open ? `${name}. ${definition.open}` : name}
                     onPointerDown={(event) => {
                       pointerType.current = event.pointerType
                     }}
@@ -348,7 +370,7 @@ export function HubCountyBand({
               className="pointer-events-none absolute left-0 top-0 z-10 w-max max-w-72 rounded-sm border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
             >
               <p className="text-sm font-medium leading-snug text-foreground">{countyLabel(activeMissing)}</p>
-              <p className="mt-1 text-muted-foreground">{t`Fără valoare în ${layer.period ?? ''}`}</p>
+              <p className="mt-1 text-muted-foreground">{layer.period ? t`Fără valoare în ${layer.period}` : t`Fără valoare`}</p>
             </div>
           ) : null}
           {activeCounty ? (
@@ -367,7 +389,7 @@ export function HubCountyBand({
                 <span className="text-lg font-semibold tabular-nums tracking-tight text-foreground">{figure(activeCounty.value)}</span>{' '}
                 <span className="text-muted-foreground">
                   {percent || !unit ? '' : `${unitFor(activeCounty.value)} `}
-                  {t`în ${layer.period ?? ''}`}
+                  {layer.period ? t`în ${layer.period}` : ''}
                 </span>
               </p>
               <p className="text-muted-foreground">
@@ -380,10 +402,14 @@ export function HubCountyBand({
                   <dd className="text-right tabular-nums text-foreground">{withUnit(layer.national)}</dd>
                 </dl>
               ) : null}
+              {!held && linkOf && definition.open ? (
+                // What a click opens, where it is not the county's own data: the pointer's reader sees it before clicking.
+                <p className="mt-2 border-t pt-2 text-muted-foreground">{definition.open} →</p>
+              ) : null}
               {held && linkOf ? (
                 <p className="mt-2 border-t pt-2">
                   <Link {...linkOf(activeCounty.code)} className="font-medium text-primary underline-offset-4 hover:underline">
-                    {t`Deschide datele județului`} →
+                    {definition.open ?? t`Deschide datele județului`} →
                   </Link>
                   <span className="block text-muted-foreground">{t`sau atinge-l încă o dată pe hartă`}</span>
                 </p>
@@ -391,7 +417,7 @@ export function HubCountyBand({
             </div>
           ) : null}
         </div>
-        <div className="mt-6 space-y-6">
+        <div className={list ? 'mt-6 space-y-6' : 'min-w-0 max-w-md space-y-6 lg:self-end'}>
           <ColourLegend
             title={legendTitle}
             unit={percent ? '' : ownUnit}
@@ -419,14 +445,26 @@ export function HubCountyBand({
                 }
               : {})}
           />
-          <p className="text-xs leading-relaxed text-muted-foreground" data-source-line>
-            {definition.caveat} {definition.source}
-          </p>
+          {definition.caveat || definition.source ? (
+            <p className="text-xs leading-relaxed text-muted-foreground" data-source-line>
+              {definition.caveat} {definition.source}
+            </p>
+          ) : null}
         </div>
       </div>
-      <div className="min-w-0 lg:col-span-5 lg:col-start-8" data-reveal>
-        <HubCountyRank layer={layer} unit={unit} activeCode={active ?? undefined} onActiveChange={pointAt} swatchOf={swatchOf} countyLink={linkOf} />
-      </div>
+      {list ? (
+        <div className="min-w-0 lg:col-span-5 lg:col-start-8" data-reveal>
+          <HubCountyRank
+            layer={layer}
+            unit={unit}
+            activeCode={active ?? undefined}
+            onActiveChange={pointAt}
+            swatchOf={swatchOf}
+            countyLink={linkOf}
+            {...(definition.open ? { open: definition.open } : {})}
+          />
+        </div>
+      ) : null}
     </div>
   )
 }

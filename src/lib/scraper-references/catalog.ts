@@ -383,7 +383,7 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
     id: 'ngo-core',
     title: 'NGOs — registry, CUI, and sector anchors',
     description:
-      'Mock-first NGO profile, services, provenance, and funding surface anchored on CUI-based NGO evidence; live client API is not connected yet.',
+      'NGO hub, registry and profiles over the national NGO registry, ANAF and MFP statements, anchored on CUI and registry number; social services, source provenance and public funding are planned, with no mock surface.',
     lifecycle: 'loading',
     joinKeys: ['CUI', 'SIRUTA'],
     scrapperRepoRelativePath: prodDb('NGOS_NOTES.md'),
@@ -410,8 +410,8 @@ export const scraperDatasetCatalog: readonly ScraperDatasetReference[] = [
       'docs/design/ngos/features/evidence-trail-source-citations.md',
       'docs/design/ngos/features/public-funding-cross-links.md',
     ],
-    apiReady: false,
-    mockDataAvailable: true,
+    apiReady: true,
+    mockDataAvailable: false,
     privacySensitive: false,
   },
   {

@@ -30,6 +30,9 @@ vi.mock('@tanstack/react-router', () => ({
   ),
 }))
 
+// The county shapes never arrive here: the map waits for them, its place held.
+vi.mock('@/hooks/useGeoJson', () => ({ useGeoJsonData: () => ({ data: undefined, isError: false, refetch: vi.fn() }) }))
+
 i18n.load('ro', {})
 i18n.activate('ro')
 
@@ -80,7 +83,32 @@ describe('NgoRegistryListPage', () => {
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByRole('button', { name: /Asociații/ })).toBeInTheDocument()
     fireEvent.click(within(panel).getByRole('button', { name: /Fundații/ }))
+    expect(onSearch).toHaveBeenCalledTimes(1)
     expect(onSearch).toHaveBeenCalledWith({ ...CLUJ_RADIATE, category: 'foundation' })
+    // Anywhere on the row, not only its name: here, its count.
+    const associations = within(panel).getByRole('button', { name: /Asociații/ }).closest('tr')!
+    fireEvent.click(within(associations).getAllByRole('cell')[2]!)
+    expect(onSearch).toHaveBeenLastCalledWith({ ...CLUJ_RADIATE, category: 'association' })
+    // A drag that selects the count to copy it narrows nothing.
+    onSearch.mockClear()
+    const selection = vi.spyOn(window, 'getSelection').mockReturnValue({ toString: () => '1.234' } as Selection)
+    fireEvent.click(within(associations).getAllByRole('cell')[2]!, { detail: 1 })
+    expect(onSearch).not.toHaveBeenCalled()
+    selection.mockRestore()
+  })
+
+  it('shows the counties as the list or the map, the reader’s choice kept from one selection to the next', () => {
+    const { rerender } = renderPage({}, EMPTY_QUERY)
+    fireEvent.click(screen.getByRole('tab', { name: 'Pe județe' }))
+    const panel = () => screen.getByRole('tabpanel')
+    expect(within(panel()).getByRole('button', { name: 'Listă', pressed: true })).toBeInTheDocument()
+    expect(within(panel()).getByRole('columnheader', { name: 'Județul' })).toBeInTheDocument()
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Hartă' }))
+    expect(within(panel()).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
+    expect(within(panel()).queryByRole('table')).not.toBeInTheDocument()
+    expect(within(panel()).getByText(/fără un județ recunoscut nu apar pe hartă/)).toBeInTheDocument()
+    rerender(<NgoRegistryListPage search={{ status: 'Dizolvata' }} seed={seedOf({ ...EMPTY_QUERY, status: 'dissolved' })} onSearch={onSearch} />)
+    expect(within(panel()).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
   })
 
   it('moves between the tabs with the arrow keys, one tab stop', () => {
@@ -123,6 +151,23 @@ describe('NgoRegistryListPage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Toate ONG-urile din registru')
     fireEvent.click(screen.getByRole('button', { name: /atenționar/ }))
     expect(await screen.findByText(/county=Atlantida/)).toBeInTheDocument()
+  })
+
+  it('names a row’s legal form in the reader’s language from its category, the source’s text only for a form it does not know', async () => {
+    const page = {
+      edges: [
+        { cursor: '0', node: row({ id: 'f', name: 'FUNDATIA A', category: 'foundation', legalForm: 'FUNDATIE (text sursă)' }) },
+        { cursor: '1', node: row({ id: 'x', name: 'ASOCIATIA B', category: 'altceva', legalForm: 'Formă necunoscută' }) },
+      ],
+      pageInfo: { hasNextPage: false, endCursor: '1' },
+      snapshot,
+    }
+    api.fetchRegistryRecords.mockResolvedValue(page)
+    renderPage({ q: 'fundatia' }, null)
+    const known = (await screen.findByRole('link', { name: 'FUNDATIA A' })).closest('td')!
+    expect(known).toHaveTextContent(/Fundație ·/)
+    expect(known).not.toHaveTextContent('text sursă')
+    expect(screen.getByRole('link', { name: 'ASOCIATIA B' }).closest('td')).toHaveTextContent(/Formă necunoscută ·/)
   })
 
   it('reads in the browser what the server did not, the records first', async () => {

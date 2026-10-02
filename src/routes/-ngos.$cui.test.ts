@@ -6,7 +6,8 @@ vi.mock('@/features/ngos/organization/api', () => api)
 vi.mock('@/features/ngos/organization/head', () => ({ buildNgoProfileHead: vi.fn(() => ({})) }))
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (options: Record<string, unknown>) => ({ ...options, options }),
-  notFound: () => ({ notFound: true }),
+  notFound: (options?: Record<string, unknown>) => ({ notFound: true, ...options }),
+  rootRouteId: '__root__',
 }))
 
 type Loader = (context: { readonly params: { readonly cui: string }; readonly abortController: AbortController }) => Promise<unknown>
@@ -25,7 +26,9 @@ describe('the NGO profile route’s loader', () => {
   })
 
   it('is not found for a CUI that is no CUI, or that no organisation holds', async () => {
-    expect(await settled(load('abc'))).toEqual({ error: { notFound: true } })
+    // No CUI at all (`/ngos/services`): the site's not-found page, not the profile's.
+    expect(await settled(load('abc'))).toEqual({ error: { notFound: true, routeId: '__root__' } })
+    expect(await settled(load('services'))).toEqual({ error: { notFound: true, routeId: '__root__' } })
     api.fetchNgoOrganization.mockResolvedValueOnce(null)
     api.fetchNgoStatements.mockResolvedValueOnce([])
     expect(await settled(load('123'))).toEqual({ error: { notFound: true } })

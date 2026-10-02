@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { formatNgoDate, formatNgoMoney, formatNgoShare } from '@/features/ngos/hub/ngo-format'
 import { cn } from '@/lib/utils'
 import type { NgoAvailability, NgoOrganization, NgoStatement } from '../api'
-import { formatExact, isInferred, keyFigures, latestStatement, placeOf, statementRows, statusOf, type Amount, type StatementRow, type YearPoint } from '../model'
+import { formatExact, isInferred, keyFigures, latestStatement, needsReview, placeOf, statementRows, statusOf, type Amount, type StatementRow, type YearPoint } from '../model'
 import { categoryLabel, identityText, statusLabel, useNumberLocale } from '../words'
 
 /**
@@ -142,7 +142,9 @@ function yearText(point: YearPoint, money: (value: number | null) => string): st
   if (!point.statement) return t`${year}: nicio situație pe platformă`
   const revenue = money(point.revenue)
   const expenses = money(point.expenses)
-  return t`${year}: venituri ${revenue}, cheltuieli ${expenses}`
+  const text = t`${year}: venituri ${revenue}, cheltuieli ${expenses}`
+  // The figures as published, and that the server asks them verified.
+  return needsReview(point.statement) ? `${text}, ${t`de verificat`}` : text
 }
 
 /**
@@ -349,6 +351,60 @@ export function StatementTable({ statement }: { readonly statement: NgoStatement
         </a>
       </p>
     </div>
+  )
+}
+
+/** The revenue rules of `ngo-revenue-v1`, said of the total revenue (I38) they test. */
+const REVENUE_REASONS: Readonly<Record<string, () => string>> = {
+  IMPLAUSIBLE_REVENUE: () => t`depășesc 1 mld. lei`,
+  REVENUE_EQUALS_FIXED_ASSETS: () => t`sunt egale cu activele imobilizate (I1)`,
+}
+const REVIEW_RULES = 'ngo-revenue-v1'
+
+/**
+ * A statement the server flags for review (`quality.suspected`): why, above
+ * its rows — a signal to verify, never a confirmed error, the values left as
+ * published. The revenue rules it knows are said of I38, read by its code; a
+ * rule it does not know (another code, another rule version) by the server's
+ * own code and detail. Nothing where the server flags nothing or could not tell.
+ */
+export function StatementReviewNote({ statement, className }: { readonly statement: NgoStatement; readonly className?: string }) {
+  const quality = statement.quality
+  if (!needsReview(statement) || !quality) return null
+  // Own keys only: a code such as `toString` or `__proto__` is a rule this client does not know.
+  const known = quality.reasons.filter((reason) => quality.ruleVersion === REVIEW_RULES && Object.prototype.hasOwnProperty.call(REVENUE_REASONS, reason.code))
+  const others = quality.reasons.filter((reason) => !known.includes(reason))
+  const raw = statement.indicators.find((indicator) => indicator.code === 'I38')?.value ?? null
+  const revenue = raw !== null && /^-?\d+$/u.test(raw) ? Number(raw) : null
+  const money = revenue === null ? null : formatNgoMoney(revenue)
+  const amount = money ? `${money.value} ${money.unit}` : null
+  const said = known.map((reason) => REVENUE_REASONS[reason.code]!()).join(` ${t`și`} `)
+  const other = others.map((reason) => (reason.detail ? `${reason.code}: ${reason.detail}` : reason.code)).join('; ')
+  return (
+    <p role="note" className={cn('border-l-2 border-amber-700/50 py-1 pl-3 text-sm leading-relaxed text-foreground dark:border-amber-300/50', className)}>
+      <span className="font-medium text-amber-800 dark:text-amber-300">
+        <Trans>De verificat:</Trans>
+      </span>{' '}
+      {said ? (
+        amount ? (
+          <Trans>
+            veniturile totale (I38), {amount}, {said}.
+          </Trans>
+        ) : (
+          <Trans>veniturile totale (I38) {said}.</Trans>
+        )
+      ) : null}
+      {other ? (
+        <>
+          {said ? ' ' : null}
+          <Trans>Alt semnal al platformei: {other}.</Trans>
+        </>
+      ) : null}
+      {!said && !other ? <Trans>platforma marchează această situație pentru verificare.</Trans> : null}{' '}
+      <span className="text-muted-foreground">
+        <Trans>Un semnal de verificare, nu o eroare confirmată; valorile sunt cele publicate.</Trans>
+      </span>
+    </p>
   )
 }
 

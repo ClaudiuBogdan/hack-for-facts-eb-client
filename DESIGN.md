@@ -585,8 +585,9 @@ filter tags. Propose a new cross-domain component only when **two or more domain
 need the same pattern.
 
 **Shared data-trust system** (the cross-cutting components that make provenance a
-first-class citizen — consolidating under `src/components/data-trust/`,
-`src/components/identity/`, and `src/components/provenance/`):
+first-class citizen — consolidating under `src/components/data-trust/`; the
+NGO mock pages' `src/components/identity/` and `src/components/provenance/`
+were removed with them on 2026-10-02):
 
 | Component                | Purpose                                                            |
 | ------------------------ | ----------------------------------------------------------------- |
@@ -1230,7 +1231,8 @@ Append-only. Newest first. Each entry: date · decision · why.
   `/ins`, `/intreprinderi-publice`). English technical routes already
   shipped stay as-is. *Why:* Romanian-first audience; stable, understandable URLs.
   *Since reversed for procurement (`/procurement`) and NGOs (`/ngos`, 2026-09-30):
-  English paths beside `/companies`, Romanian UI copy, the old paths 301s.*
+  English paths beside `/companies`, Romanian UI copy, the old paths 301s —
+  the NGO ones removed on 2026-10-02, never having had readers.*
 - **2026-06-26 — PNRR keeps its brutalist token set**, quarantined to PNRR
   surfaces. *Why:* it predates this system and tested well; isolating it avoids a
   disruptive reskin while keeping the rest of the app on the neutral system.

@@ -12,6 +12,7 @@ import {
   statementRows,
   statusOf,
   yearSeries,
+  needsReview,
 } from './model'
 import { FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
 
@@ -83,6 +84,7 @@ describe('the result', () => {
       fiscalYear: 2024,
       sourceUrl: 'https://data.gov.ro/a',
       dictionaryUrl: 'https://data.gov.ro/b',
+      quality: null,
       indicators: [
         { code: 'I40', label: 'Excedent/profit - la 31.12.2024', value: surplus },
         { code: 'I41', label: 'Deficit/pierdere - la 31.12.2024', value: deficit },
@@ -102,5 +104,17 @@ describe('the years', () => {
     expect(series[1]).toEqual({ year: 2022, statement: null, revenue: null, expenses: null })
     expect(latestStatement(FUNKY_STATEMENTS)?.fiscalYear).toBe(2024)
     expect(yearSeries([])).toEqual([])
+  })
+})
+
+describe('the review', () => {
+  it('asks a statement verified only where the server says suspected, never on false, null or no review', () => {
+    const quality = (suspected: boolean | null) => ({ ruleVersion: 'ngo-revenue-v1', assessment: 'assessed', suspected, reasons: [] })
+    const statement = FUNKY_STATEMENTS[0]!
+    expect(needsReview({ ...statement, quality: quality(true) })).toBe(true)
+    expect(needsReview({ ...statement, quality: quality(false) })).toBe(false)
+    expect(needsReview({ ...statement, quality: quality(null) })).toBe(false)
+    expect(needsReview({ ...statement, quality: null })).toBe(false)
+    expect(needsReview(null)).toBe(false)
   })
 })

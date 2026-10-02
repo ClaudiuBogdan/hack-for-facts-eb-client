@@ -31,8 +31,12 @@ export type NgoFinanceDomainKey =
   | 'other'
   | 'general'
 
-/** Classes of total revenue in the year, in lei; `negative` holds the few statements that report reversals as revenue below zero. */
-export type NgoFinanceSizeKey = 'negative' | 'none' | 'under10k' | 'under100k' | 'under1m' | 'over1m'
+/**
+ * Classes of total revenue in the year, in lei; `negative` holds the few
+ * statements that report reversals as revenue below zero, `unknown` those
+ * whose total revenue cell is blank (unknown, never zero: not in `none`).
+ */
+export type NgoFinanceSizeKey = 'negative' | 'none' | 'under10k' | 'under100k' | 'under1m' | 'over1m' | 'unknown'
 
 export interface NgoFinanceDomain {
   readonly key: NgoFinanceDomainKey
@@ -80,6 +84,18 @@ export interface NgoFinanceLeader {
   readonly status: 'dissolved' | 'inLiquidation' | 'deregistered' | null
 }
 
+/** A statement left out of every sum by the hub's rule (a revenue above 1 bn lei): a value to verify, never a proven error. */
+export interface NgoFinanceExcluded {
+  readonly year: number
+  readonly cui: string
+  /** The total revenue reported, lei. */
+  readonly revenue: number
+  /** The revenue is exactly the statement's fixed assets (I1): a reason to verify it, which alone excludes nothing. */
+  readonly equalsFixedAssets: boolean
+  /** The organisation has an NGO profile, where the statement can be read. */
+  readonly profile: boolean
+}
+
 export interface NgoFinanceSummary {
   /** The latest year with published statements. */
   readonly year: number
@@ -95,7 +111,7 @@ export interface NgoFinanceSummary {
   readonly domains: readonly NgoFinanceDomain[]
   /** Every year with a published file, oldest first. */
   readonly years: readonly NgoFinanceYear[]
-  /** Statements left out of every sum as entry errors (a revenue above 1 bn lei). */
-  readonly excluded: readonly { readonly year: number; readonly cui: string; readonly revenue: number }[]
+  /** Statements left out of every sum, whole, by the hub's rule: a revenue above 1 bn lei, to verify. */
+  readonly excluded: readonly NgoFinanceExcluded[]
   readonly leaders: readonly NgoFinanceLeader[]
 }

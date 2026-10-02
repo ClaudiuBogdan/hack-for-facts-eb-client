@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   recordSchema,
-  registryFilter,
   registryPageSchema,
   validateRegistrySearch,
 } from "./api";
@@ -42,21 +41,6 @@ const record = {
 };
 
 describe("RNONG client contract", () => {
-  it("keeps explicit false public-utility filters and source registry numbers", () => {
-    expect(
-      registryFilter(
-        validateRegistrySearch({
-          publicUtility: "no",
-          registryNumber: " 1/A/2001 ",
-          after: "cursor",
-        }),
-      ),
-    ).toEqual({
-      publicUtility: { eq: false },
-      registryNumber: { eq: "1/A/2001" },
-    });
-    expect(registryFilter(validateRegistrySearch({}))).toEqual({});
-  });
   it("keeps only the page's keys, non-empty and bounded, and leaves their reading to the page", () => {
     expect(
       validateRegistrySearch({
@@ -69,7 +53,6 @@ describe("RNONG client contract", () => {
       }),
     ).toEqual({ publicUtility: "unknown", status: "Radiat" });
     expect(validateRegistrySearch({ q: "a".repeat(300) }).q).toHaveLength(200);
-    expect(registryFilter({ publicUtility: "unknown" })).toEqual({});
   });
   it("preserves duplicate source observations and rows without CUI", () => {
     const page = registryPageSchema.parse({

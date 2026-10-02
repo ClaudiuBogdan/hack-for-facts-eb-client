@@ -158,6 +158,21 @@ describe('HubCountyBand', () => {
     expect(tooltip()).toBeNull()
   })
 
+  it('says what a county opens where it is not the county’s data: in its name, the hover tooltip and the held link', () => {
+    const open = 'Toate înregistrările din județ, din toți anii'
+    render(<HubCountyBand layer={LIFE} definition={{ ...bandOf(LIFE_DEFINITION, LIFE), open }} />)
+    const vl = countyLink(/Vâlcea/)
+    expect(vl).toHaveAccessibleName(expect.stringMatching(/^Județul Vâlcea: .*\. Toate înregistrările din județ, din toți anii$/))
+    fireEvent.pointerEnter(vl, { pointerType: 'mouse' })
+    expect(tooltip()).toHaveTextContent(`${open} →`)
+    fireEvent.pointerLeave(map(), { pointerType: 'mouse' })
+    fireEvent.pointerDown(vl, { pointerType: 'touch' })
+    fireEvent.click(vl, { detail: 1 })
+    expect(within(tooltip()!).getByRole('link', { name: new RegExp(open) })).toBeInTheDocument()
+    // The ranked list's rows say it too.
+    expect(screen.getAllByRole('link', { name: /Vâlcea/ }).filter((link) => link.closest('[data-county-map]') === null)[0]).toHaveAccessibleName(expect.stringContaining(open))
+  })
+
   it('holds a county on the first tap, with its link, and opens it on the second', () => {
     render(<Band />)
     const vl = countyLink(/Vâlcea/)

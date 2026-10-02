@@ -26,6 +26,38 @@ describe('buildNgoProfileHead', () => {
     expect(description.length).toBeLessThanOrEqual(160)
   })
 
+  it('says the latest revenue is to verify where the server flags that statement, never for another year’s flag', () => {
+    const flagged = { ruleVersion: 'ngo-revenue-v1', assessment: 'assessed', suspected: true, reasons: [{ code: 'REVENUE_EQUALS_FIXED_ASSETS', detail: 'I38 = I1' }] }
+    const sorted = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)
+    const organization = { ...FUNKY, purpose: { availability: 'not_loaded' as const, text: null } }
+    const describe = (statements: typeof sorted) => meta(buildNgoProfileHead({ organization, statements }, 'ro'), 'description')!.content
+    expect(describe([{ ...sorted[0]!, quality: flagged }, ...sorted.slice(1)])).toMatch(/Venituri de .+ în \d{4}, de verificat, din situațiile financiare publicate\./)
+    expect(describe([sorted[0]!, { ...sorted[1]!, quality: flagged }, ...sorted.slice(2)])).not.toContain('de verificat')
+  })
+
+  it('never cuts a flagged revenue from its mark: where the cut would, the revenue goes, the mark with it', () => {
+    const flagged = { ruleVersion: 'ngo-revenue-v1', assessment: 'assessed', suspected: true, reasons: [{ code: 'REVENUE_EQUALS_FIXED_ASSETS', detail: 'I38 = I1' }] }
+    const latest = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)[0]!
+    const statement = {
+      ...latest,
+      // The revenue row as filed, its value 2,5 mil. lei.
+      indicators: latest.indicators.map((indicator) => (indicator.code === 'I38' ? { ...indicator, value: '2500000' } : indicator)),
+      quality: flagged,
+    }
+    // A long „what and where": the 160-character cut lands after the mark, then inside the revenue sentence.
+    const seen: string[] = []
+    for (const locality of ['MUNICIPIUL DROBETA-TURNU SEVERIN', 'MUNICIPIUL DROBETA-TURNU SEVERIN SI COMUNELE INVECINATE ALE JUDETULUI']) {
+      const organization = { ...FUNKY, category: 'foreign_legal_person', locality, county: 'MEHEDINTI', purpose: { availability: 'not_loaded' as const, text: null } }
+      const description = meta(buildNgoProfileHead({ organization, statements: [statement] }, 'ro'), 'description')!.content
+      expect(description.length).toBeLessThanOrEqual(160)
+      expect(!description.includes('2,5 mil. lei') || description.includes('de verificat')).toBe(true)
+      seen.push(description)
+    }
+    // The first keeps the revenue with its mark; the second, cut inside it, keeps neither.
+    expect(seen[0]).toContain('Venituri de 2,5 mil. lei în 2024, de verificat')
+    expect(seen[1]).not.toContain('2,5 mil. lei')
+  })
+
   it('leads with the registry’s purpose where it is published, cut where a search engine cuts', () => {
     const text = 'Promovarea transparenței și a participării civice. '.repeat(6)
     const description = meta(buildNgoProfileHead({ organization: { ...FUNKY, purpose: { availability: 'available', text } }, statements: [] }, 'ro'), 'description')!.content

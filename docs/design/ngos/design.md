@@ -68,9 +68,9 @@ sources — these are advanced features named for later.
 | Route | Purpose | Feature file |
 | --- | --- | --- |
 | `/ngos` | Landing: NGO search, figures, counties, years (superseded by §12, §13) | `ngo-landing-source-coverage.md` |
-| `/ngos/$cui` | NGO entity profile (organization-anchored) | `ngo-entity-profile.md` |
-| `/ngos/services` | Social-service provider/service discovery (list + map) | `social-service-provider-discovery.md` |
-| `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page | `evidence-trail-source-citations.md` |
+| `/ngos/$cui` | NGO entity profile (organization-anchored; superseded by §14) | `ngo-entity-profile.md` |
+| `/ngos/services` | Social-service provider/service discovery (list + map). Planned: its mock page was removed on 2026-10-02 (§16) | `social-service-provider-discovery.md` |
+| `/ngos/sources/$snapshotId` | Per-snapshot source/provenance trail page. Planned: its mock page was removed on 2026-10-02 (§16) | `evidence-trail-source-citations.md` |
 | `/ngos/registry` | The national registry asked as the analytics page asks its records (superseded by §15) | `name-only-registry-surfaces.md` |
 | `/ngos/registry/$number` | The profile of an organisation without an admitted CUI, by registry number (`1471-A-2012`); 301 to `/ngos/$cui` once one is admitted (§15, „Profiles without a CUI") | — |
 | `/ngos/public-utility` | SGG public-utility name-only listing (Next-2) | `name-only-registry-surfaces.md` |
@@ -88,10 +88,9 @@ routing change; implement it in the search-routing adapter, not by rebuilding se
 2026-06-26).** English paths, Romanian UI copy, as `/achizitii` became
 `/procurement`: `/ngos`, `/ngos/$cui`, `/ngos/registry`, `/ngos/services`,
 `/ngos/sources/$snapshotId`, and later `/ngos/public-utility` and
-`/ngos/review`. The first release's `/ong-uri/*` paths answer with one 301
-each to their new page, parameters and search carried over (the registry's
-and the services page's search already in the target's own shape, so no
-second hop).
+`/ngos/review`. The first release's `/ong-uri/*` paths answered with one 301
+each to their new page until 2026-10-02, when the redirects were removed:
+nothing deployed for readers ever linked to them (§16).
 
 **Decision — Evidence-trail addressing.** The evidence trail is both an in-profile
 section and a dedicated per-snapshot page at `/ngos/sources/$snapshotId`. Inline
@@ -148,9 +147,10 @@ existing entity/company route validation idiom. Default views render with no par
 ### Domain / foundation components to standardize (build under the feature module)
 
 These are named in the foundation as cross-domain primitives; implement them so other
-domains can reuse. Place shared ones in `src/components/provenance/` and
-`src/components/identity/` (proposed) or, if a single domain needs them first, under
-the owning feature module and promote later.
+domains can reuse. Place shared ones in `src/components/data-trust/` or, if a single
+domain needs them first, under the owning feature module and promote later. (The
+first release's `src/components/provenance/` and `src/components/identity/` went
+with its mock pages on 2026-10-02, §16.)
 
 - **`IdentityConfidenceBadge`** — high/medium/low identity certainty. NGO usage:
   `confirmat` (direct-CUI), `neconfirmat` (name-only), `candidat` (review case with
@@ -198,11 +198,13 @@ the owning feature module and promote later.
 
 ## 6. Data model expectations at the UI boundary
 
-**Decision — Mock-first.** Each feature defines a TS type that mirrors the `ngo.*`
-serving columns named in `docs/ux-research/ngos.md` §5. API adapters live under the
-feature module's `api/` with mocks alongside; the UI consumes the typed boundary, so
-swapping mock→live is an adapter change. Mark mock-rendered surfaces with
-`DataStatusBadge variant="mock"` during development.
+**Decision — Mock-first** (the first release's; superseded). Each feature defined a
+TS type mirroring the `ngo.*` serving columns, with mocks beside its `api/`. No NGO
+page renders a mock any more: the registry and the profiles read the live API
+through their feature's `api.ts`; the hub's figures are summaries captured from
+the registry export and the MFP statements by `scripts/summarize-ngo-*.mjs`
+(its search reads the live API). The mocks and their switch were removed on
+2026-10-02 (§16).
 
 Shared boundary shapes (authoritative field lists; null where the source omits a field):
 
@@ -416,7 +418,8 @@ proceed independently once shared components exist.
 
 - **Routes** `/ngos`, `/ngos/$cui`, `/ngos/services`, and
   `/ngos/sources/$snapshotId` exist with Zod `validateSearch` and render default
-  views without query params. Next-2 adds `/ngos/registry` and
+  views without query params. (The services and sources pages were removed on
+  2026-10-02 until real data backs them: §16.) Next-2 adds `/ngos/registry` and
   `/ngos/public-utility`.
 - **`/entities/$cui`** shows an NGO context band + link to `/ngos/$cui` for
   `kind=ngo`; global entity-search NGO hits deep-link to `/ngos/$cui`.
@@ -429,8 +432,9 @@ proceed independently once shared components exist.
   social-service snapshots (10.04.2024 / 11.12.2023) are flagged on the data.
 - **Empty/partial states** are explicit: empty financials → "în curs de actualizare";
   missing county/locality handled gracefully; CUI collision shows the company cross-link.
-- **Mock-first**: each surface renders from typed mocks shaped like `ngo.*`; mock
-  surfaces are marked with `DataStatusBadge`.
+- **Mock-first** (first release only): each surface rendered from typed mocks
+  shaped like `ngo.*`, marked with `DataStatusBadge`. Superseded: no NGO page
+  renders a mock (§6, §16).
 - `yarn typecheck` clean; i18n extracted/compiled; key views have at least smoke-level
   tests where the surrounding code has them.
 
@@ -778,7 +782,7 @@ API probes and the reader's questions are in
   line, „Cum am numărat" behind it.
 - **The address** keeps the route's keys (`q`, `county`, `category`,
   `status`, `registryNumber`, `publicUtility`), only those set; every hub
-  link opens unchanged, and `/ong-uri/registru` answers with one 301 to it.
+  link opens unchanged.
   A county the registry does not spell is reported as unread and filters
   nothing.
 - **Counting what the API cannot.** `ngoRegistryRecords` has six filters,
@@ -898,3 +902,105 @@ The owner's further decisions (2026-10-01):
   (rebuilt from a capture with the admitted CUI) and in a selection read
   whole.
 
+**Counties as a list or a map (2026-10-02).** The „Pe județe" tab shows the
+counties as the ranked list or the hubs' county map (`HubCountyBand` without
+its list), the reader's choice; a breakdown row narrows the selection from
+anywhere on it, its arrow shown under the pointer or on keyboard focus only.
+
+## 16. The mock-era pages removed (2026-10-02)
+
+The services discovery (`/ngos/services`) and the source snapshot page
+(`/ngos/sources/$snapshotId`) were the first release's mock-first pages
+(2026-06-26). They never had a live API: the NGO mock switch always served
+fixtures, so dev showed seven invented services as „un instantaneu oficial",
+their providers linked to whatever real organisation holds the made-up CUI,
+and a source page with an invented checksum — both indexable. The owner had
+them removed, with everything only they used: the mock profile page, the
+`ngo-api` mock/live dispatcher, `use-ngos`, the fixtures, the NGO mock
+switch, `components/provenance` and `components/identity`, and the domain
+schemas in `src/schemas/ngos.ts` (now the landing's and the profile's search
+only; the profile no longer reads the mock profile's `tab`, `evidence` and
+`from` keys). The `/ong-uri/*` redirects went with them. The plans stay in
+`features/social-service-provider-discovery.md` and
+`features/evidence-trail-source-citations.md`, to be built on the server's
+data once it serves accredited social services.
+
+## 17. The audit's corrections (2026-10-02)
+
+An outside audit of the hub, registry and profiles (2026-10-02) reconciled
+every figure it checked against the official files; it found five things to
+say better, and the catalog had one wrong. The owner's decisions:
+
+- **The domains' sentence names its scope.** The leading domains are picked
+  among the domains that say what an organisation does — not the catch-all
+  „Fără domeniu precis" (27,946 filers, 10,9 bn lei), not the unclassified
+  rest — and the money is revenue the organisations declared, not money that
+  „goes" somewhere: „Dintre organizațiile cu un domeniu precis, cele mai multe
+  sunt în sport…, iar cele mai mari venituri declarate le au cele din
+  educație…" — one sentence, so the scope covers the money too.
+- **The 2019 exclusion is a suspected value, not a proven error.** The
+  statement's 6,226,050,000 lei of revenue are exactly its fixed assets (I1,
+  „Active imobilizate – total", in the 2019 dictionary): the script records
+  that, and whether the organisation has a profile. The chart's note says
+  „lăsată deoparte din sume o situație cu 6,2 mld. lei, peste pragul de 1 mld.
+  lei; de verificat: e cât activele ei imobilizate" — the hub's own rule, then
+  the review (§18) — links the statement on its profile at its year
+  (Fundația Prințul Paul, CUI 6286387) where the NGO API is on, and gives the
+  year as reported and without it (23,9 / 17,7 bn lei).
+- **A blank revenue is unknown, never zero.** The statements file leaves I38
+  blank for seven 2025 filers: they are the `unknown` class („necompletat",
+  no share of the money), not among the 14,177 with no revenue. The parser
+  (`scripts/lib/ngo-statements.mjs`) is tested for it.
+- **The „Noi în 2025" county says it opens every year.** The registry has no
+  year filter; until the server adds one
+  (`server-request-registry-year-filter.md`) the link says „Toate
+  înregistrările din județ, din toți anii" — in the county's name, the hover
+  tooltip, the held link and the ranked list's rows (`HubCountyBand`'s
+  `open`). The registry's own county map, whose counties narrow the
+  selection, says „Arată doar acest județ" the same way.
+- **English is English.** Registry rows name the legal form as the profile
+  does („Association"), the source's text only for a form outside the five;
+  the profile's „no statements" sentences are translated.
+- **The catalog says the NGO data is served live** (`ngo-core`,
+  `apiReady: true`): the landing's „servite live" count includes it.
+
+## 18. The server's review of a statement (2026-10-02)
+
+The server flags statements for review (`financials.statements.quality`,
+rule `ngo-revenue-v1`, live on Chronos dev): `suspected` with its reasons —
+`IMPLAUSIBLE_REVENUE` (I38 above 1 bn lei) and `REVENUE_EQUALS_FIXED_ASSETS`
+(a positive I38 equal to a positive I1). It flags at least 50 statements of
+32 profiles, 2008–2025 (46 of them 2016–2025); of them only Fundația Prințul
+Paul's 2019 passes 1 bn lei, and nearly all the rest are equality alone, with
+I38 between 100 and 2,500,000 lei. `suspected: true` is
+a signal to verify, never a confirmed error; `false` is no matching rule, not a
+certificate; `null`, a dictionary the rules do not cover.
+
+- **The profile says it where the year is read.** Above the open statement:
+  „De verificat: veniturile totale (I38), 6,2 mld. lei, depășesc 1 mld. lei și
+  sunt egale cu activele imobilizate (I1). Un semnal de verificare, nu o
+  eroare confirmată; valorile sunt cele publicate." The revenue rules are said
+  of I38, read by its code; a reason or rule version this client does not know
+  is shown by the server's code and detail („Alt semnal al platformei: …").
+  The revenue chart's year reads „…, de verificat"; the year-by-year table
+  marks its column (a warning icon, and in its name). Every value and label
+  stays as published.
+- **The hub keeps its own rule**, said as such: the summary reads every
+  non-profit filer's file, broader than the profiles, and no sector totals API
+  exists; it leaves out of the sums, whole, only a statement whose revenue
+  passes 1 bn lei, and says the review beside it in the server's words („de
+  verificat"); of the 77 equality cases the full 2016–2025 files hold, the 76
+  below 1 bn lei (100 – 2,500,000 lei) stay in every sum.
+- **The latest statement's figures say it too** (2026-10-02, five profiles
+  in 2025): where the latest statement is flagged, the figures band's revenue
+  label reads „Venituri, 2025 · de verificat", the money sentence adds
+  „Veniturile din 2025 sunt de verificat: un semnal al platformei, nu o eroare
+  confirmată.", the revenue-by-activity label „· de verificat", and the
+  description „…, de verificat, din situațiile financiare publicate." — a
+  description cut short never keeps the revenue without its mark (it drops
+  both). Each mark is the flag of the very statement the figure comes from: a
+  year chosen in the statement band (6286387, 2019) marks only that year's
+  rows; a flagged year before is said only of the change („față de 2024, an
+  de verificat"). The hub's ten leaders, read from the static summary, match
+  their 2025 statements on the API exactly and none of their 2024–2025
+  statements is flagged.

@@ -35,7 +35,6 @@ describe('scraper-references', () => {
 
   it('keeps implemented mock-first catalog entries wired to client paths', () => {
     const entries = [
-      ['ngo-core', 'src/features/ngos/', 'src/schemas/ngos.ts'],
       [
         'public-investments',
         'src/features/public-investments/',

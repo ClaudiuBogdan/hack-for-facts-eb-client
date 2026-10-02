@@ -1,10 +1,11 @@
+import { TriangleAlert } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { formatNgoMoney } from '@/features/ngos/hub/ngo-format'
 import { cn } from '@/lib/utils'
 import type { NgoStatement } from '../api'
-import { formatExact, keyFigures, yearSeries, type FigureKey } from '../model'
+import { formatExact, keyFigures, needsReview, yearSeries, type FigureKey } from '../model'
 import { useNumberLocale } from '../words'
 
 const MATRIX_ROWS: readonly { readonly key: FigureKey; readonly label: () => string; readonly strong?: boolean; readonly indent?: boolean }[] = [
@@ -62,14 +63,16 @@ export function YearsMatrix({
                   <button
                     type="button"
                     onClick={() => onChoose(column.year)}
-                    aria-label={statementOf(column.year)}
+                    // A year the server flags for review says so in its name, and with a mark beside it; the open statement says why.
+                    aria-label={needsReview(column.statement) ? `${statementOf(column.year)}, ${t`de verificat`}` : statementOf(column.year)}
                     aria-pressed={chosenYear === column.year}
                     className={cn(
-                      'inline-flex min-h-8 items-center font-mono text-xs tabular-nums underline-offset-4 hover:underline',
+                      'inline-flex min-h-8 items-center gap-1 font-mono text-xs tabular-nums underline-offset-4 hover:underline',
                       chosenYear === column.year ? 'font-bold text-foreground' : 'text-muted-foreground',
                     )}
                   >
                     {column.year}
+                    {needsReview(column.statement) ? <TriangleAlert className="size-3 text-amber-800 dark:text-amber-300" aria-hidden="true" /> : null}
                   </button>
                 ) : (
                   <MonoLabel className="text-muted-foreground">
