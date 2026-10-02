@@ -864,6 +864,17 @@ auto-join on names** (NGO ↔ company, candidate ↔ official, supplier ↔ supp
 
 Append-only. Newest first. Each entry: date · decision · why.
 
+- **2026-10-02 — A map legend names exactly the values each class holds.**
+  A class holds its lower bound and not its upper one unless its scale says
+  otherwise, and its label says which: whole numbers as closed ranges („1–20",
+  „81 sau mai mult"), decimals naming the open end („2,5 – sub 5", „peste 77,9
+  – 78,9"). *Why:* the INS localities map coloured the UATs at 81 in its top
+  class and labelled that class „peste 81"; an audit found two of them. The
+  owner chose words over symbols („≥ 81") and over moving the boundary. Code:
+  `ClassInterval.includesFrom/includesTo` and `classLabel`
+  (`src/features/statistics/components/uat-map/`); details in
+  `docs/design/statistics/design.md` §6al.
+
 - **2026-10-01 — A registry is asked as the analytics page asks its records.**
   `/ngos/registry` takes the procurement analytics page's shape: the
   selection as the headline (each filter a phrase), the statuses in the
