@@ -117,6 +117,13 @@ describe('national latest cells boundary', () => {
     vi.mocked(graphqlQuery).mockResolvedValue({ latest })
     await expect(fetchNationalLatest(CODES)).rejects.toThrow()
   })
+  it('names FOM106G\'s total, which the API\'s total fallback misses, beside TOTAL', async () => {
+    vi.mocked(graphqlQuery).mockResolvedValue({ latest: outcomes() })
+    await fetchNationalLatest(CODES)
+    const calls = vi.mocked(graphqlQuery).mock.calls
+    expect(calls[calls.length - 1]![0]).toContain('preferredClassificationCodes: ["TOTAL","103475"]')
+  })
+
   it('serves the cells that came back and names the code the API left out', async () => {
     const latest = outcomes()
     latest.pop()

@@ -107,12 +107,13 @@ describe('StatisticsHubPage', () => {
     // The count-up carries the full number for readers; inflation is the
     // index less 100, at the index's own precision.
     expect(within(band).getByText('10,85')).toBeInTheDocument()
-    expect(within(band).getByText('5.914')).toBeInTheDocument()
+    expect(within(band).getByText('5.684')).toBeInTheDocument()
     expect(within(band).getByText('3,2')).toBeInTheDocument()
     expect(within(band).getByText('19.043.151')).toBeInTheDocument()
     expect(band).toHaveTextContent('mai 2026 față de mai 2025')
     expect(band).toHaveTextContent('lei')
-    expect(band).toHaveTextContent('decembrie 2025')
+    // The earnings card reads FOM106G, the CAEN Rev.3 series, at its own latest month.
+    expect(within(band).getByRole('link', { name: /Salariul mediu net/ }).closest('dt')).toHaveTextContent('mai 2026')
     expect(band).toHaveTextContent('Populația rezidentă la 1 ianuarie 2025')
 
     // A matrix with no geography axis is linked without a territory.
@@ -145,12 +146,12 @@ describe('StatisticsHubPage', () => {
   it('spells out an INS flag on a headline figure, as the rows do', () => {
     const data = hubData()
     const flagged = data.indicators!.map((indicator) =>
-      indicator.code === 'FOM106D' ? { ...indicator, valueStatus: 'p' } : indicator,
+      indicator.code === 'FOM106G' ? { ...indicator, valueStatus: 'p' } : indicator,
     )
     stub(hubData({ indicators: flagged }))
     render(<StatisticsHubPage search={{}} />)
     const band = screen.getByRole('region', { name: 'Cifre-cheie' })
-    expect(band).toHaveTextContent('decembrie 2025, date provizorii')
+    expect(band).toHaveTextContent('mai 2026, date provizorii')
   })
 
   it('lists the national series with their exact cell links, without repeating the headline figures', () => {

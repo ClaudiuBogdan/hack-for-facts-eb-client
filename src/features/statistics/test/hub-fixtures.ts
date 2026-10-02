@@ -41,7 +41,7 @@ export interface HubNationalSpec {
 /** The national cells the hub reads, at the values measured on 2026-09-22. */
 export const HUB_NATIONAL_SPECS: readonly HubNationalSpec[] = [
   { code: 'IPC102E', nameRo: 'Indicii preturilor de consum fata de luna corespunzatoare din anul precedent', value: '110.85', period: '2026-05', periodicity: 'MONTHLY', unit: HUB_UNITS.percent, members: ['12668'], nationalOnly: true },
-  { code: 'FOM106D', nameRo: 'Castigul salarial mediu net lunar', value: '5914', period: '2025-12', periodicity: 'MONTHLY', unit: HUB_UNITS.lei, members: ['23415'], nationalOnly: true },
+  { code: 'FOM106G', nameRo: 'Castigul salarial mediu net lunar', value: '5684', period: '2026-05', periodicity: 'MONTHLY', unit: HUB_UNITS.lei, members: ['103475'], nationalOnly: true },
   { code: 'SOM103B', nameRo: 'Rata somajului inregistrat la sfarsitul lunii', value: '3.2', period: '2026-05', periodicity: 'MONTHLY', unit: HUB_UNITS.percent, members: ['105', '112'] },
   { code: 'POP105A', nameRo: 'Populatia rezidenta la 1 ianuarie', value: '19043151', period: '2025', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['1', '105', '108', '112'] },
   { code: 'FOM104D', nameRo: 'Numarul mediu al salariatilor', value: '5453155', period: '2024', periodicity: 'ANNUAL', unit: HUB_UNITS.persons, members: ['112', '112'] },
