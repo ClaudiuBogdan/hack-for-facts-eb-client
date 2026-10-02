@@ -138,6 +138,29 @@ describe('what the page says without data', () => {
     expect(page).toContain('Bazin de inot didactic Titlul procedurii: SEAP nu dă contractului un titlu al lui.')
   })
 
+  it('reads the note on a contract awarded without a call right after the facts it explains, before the parties', () => {
+    const read = plainRead()
+    const page = html(contractSheetOf({ ...read, procedure: { ...read.procedure!, procedureType: 'Negociere fara publicare prealabila' } }), ctContext())
+    inOrder(page, ['Procedura', 'Negociere fără anunț prealabil', 'Instituția nu a publicat un anunț de participare: a negociat direct.', 'Cumpărătorul', 'Furnizorul'])
+  })
+
+  it('says an association’s one other firm as „încă o firmă"', () => {
+    const read = cniRead()
+    // The association down to two firms: this contract's and one other.
+    const other = read.notice.rows.find((row) => row.supplier.cui !== read.contract.supplier.cui)!.supplier.cui
+    const rows = read.notice.rows.filter((row) => row.supplier.cui === read.contract.supplier.cui || row.supplier.cui === other)
+    const page = html(contractSheetOf({ ...read, notice: { ...read.notice, rows } }), ctContext())
+    expect(page).toContain('în asociere cu încă o firmă')
+  })
+
+  it('tags the firm an IMM beside the facts when the notice says it is one', () => {
+    const sheet = contractSheetOf(cniRead())
+    const cui = sheet.supplier.cui!
+    const page = html({ ...sheet, contract: { ...sheet.contract, firms: sheet.contract.firms.map((firm) => (firm.cui === cui ? { ...firm, sme: true } : firm)) } }, ctContext())
+    expect(page).toContain(`CUI ${cui} · IMM`)
+    expect(html(sheet, ctContext())).not.toContain(`CUI ${cui} · IMM`)
+  })
+
   it('says a record SEAP does not have was not found', () => {
     expect(html(null)).toContain('Contractul nu a fost găsit')
   })

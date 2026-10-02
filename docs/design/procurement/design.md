@@ -2943,6 +2943,18 @@ IMM.
   and space above them with the rule unseen, so the two first rows start
   level. The direct purchase, whose value and facts share one row, keeps
   its centred column.
+- Reviewed (Opus 5.5 and Codex gpt-6.1-sol, 2 October). Fixed:
+  - the direct purchase's figure, at 48 px, ran into its facts from `md`
+    once the parties took a column („154.244,78 lei" over „Finalizată" at
+    1024 px). From `md` it is fitted to its column (a size container,
+    `min(3rem, …cqw)` by its length); smaller screens keep their sizes;
+  - the contract's unpublished note follows its facts in reading order
+    (a last row of the grid, under them), no longer after the parties;
+  - the facts' count uses the cells' own tests;
+  - where subgrid is missing (Chrome 111–116) the firm stays below the
+    buyer;
+  - the firm's IMM tag comes from the notice's firms;
+  - „încă o firmă", not „încă 1 firmă".
 
 ## 21. The answer bar's controls (1 October 2026)
 

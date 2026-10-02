@@ -248,7 +248,7 @@ function ProcedureParties({ sheet, className }: { readonly sheet: ProcedureSheet
       </div>
       {/* From the facts' second row on (as `RecordParties` with `rows`). */}
       {firms.length > 0 ? (
-        <div className="min-w-0 lg:row-start-2 lg:row-end-[-1]">
+        <div className="min-w-0 lg:row-start-2 lg:supports-[grid-template-rows:subgrid]:row-end-[-1]">
           <dt>
             <MonoLabel className="text-muted-foreground">{firms.length === 1 ? t`Câștigătorul` : t`Câștigătorii`}</MonoLabel>
           </dt>

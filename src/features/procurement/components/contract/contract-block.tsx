@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
@@ -111,9 +111,9 @@ function Fact({ label, children }: { readonly label: string; readonly children: 
   )
 }
 
-/** How many facts the grid holds: one per cell `ContractFacts` renders. */
+/** How many facts the grid holds: one per cell `ContractFacts` renders, by the same tests. */
 function factsCount(sheet: ContractSheet): number {
-  return [sheet.date, sheet.procedure?.type, sheet.cpv, sheet.estimate, sheet.offers, sheet.criterion, sheet.duration].filter((cell) => cell !== null && cell !== undefined).length
+  return [sheet.date, sheet.procedure?.type, sheet.cpv, sheet.offers, sheet.criterion, sheet.duration].filter(Boolean).length + (sheet.estimate !== null ? 1 : 0)
 }
 
 /** Four facts to a row from a tablet up when there are four or more, three otherwise. */
@@ -126,7 +126,7 @@ function factsRows(sheet: ContractSheet): number {
 }
 
 /** The facts under the value: the day, the route, the category — and, where the notice says them, the offers, the criterion, the duration, the estimate. */
-function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
+function ContractFacts({ sheet, className, style }: { readonly sheet: ContractSheet; readonly className?: string; readonly style?: CSSProperties }) {
   const { i18n } = useLingui()
   const procedureType = sheet.procedure?.type ?? null
   const routeLabel = procedureType ? procedureLabel(procedureType) : null
@@ -140,7 +140,7 @@ function ContractFacts({ sheet, className }: { readonly sheet: ContractSheet; re
   const ted = sheet.procedure?.ted ?? null
   const tedNo = ted?.no ?? ''
   return (
-    <dl className={cn('grid grid-cols-2 gap-x-8 gap-y-6', columns === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3', className)}>
+    <dl className={cn('grid grid-cols-2 gap-x-8 gap-y-6', columns === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3', className)} style={style}>
       {sheet.date ? <Fact label={t`Data contractului`}>{dayLong(sheet.date)}</Fact> : null}
       {route && sheet.procedure ? (
         <Fact label={t`Procedura`}>
@@ -513,13 +513,21 @@ function ContractSource({ sheet, className }: { readonly sheet: ContractSheet; r
 function partnersNote(sheet: ContractSheet): string | null {
   const others = sheet.contract.firms.length - 1
   if (others < 1) return null
-  const count = firmsCount(others)
+  // „încă o firmă", not „încă 1 firmă".
+  const count = plural(others, { one: 'o firmă', few: '# firme', other: '# de firme' })
   if (isSharedFramework(sheet.contract)) return t`în acordul-cadru cu încă ${count}`
   return isAssociation(sheet.contract) ? t`în asociere cu încă ${count}` : null
 }
 
+/** The firm with what the notice says of it: its SME flag lives on the notice's firms, not on the record's own supplier. */
+function supplierOf(sheet: ContractSheet): CtParty {
+  const own = sheet.contract.firms.find((firm) => (sheet.supplier.cui ? firm.cui === sheet.supplier.cui : firm.name === sheet.supplier.name))
+  return own?.sme == null ? sheet.supplier : { ...sheet.supplier, sme: own.sme }
+}
+
 /** The record: what was awarded, then its firms, its published values, its history, the notice's other contracts, the source. */
 export function ContractBlock({ sheet, className }: { readonly sheet: ContractSheet; readonly className?: string }) {
+  const rows = factsRows(sheet)
   return (
     <section className={className} aria-labelledby="contract-block">
       <h2 id="contract-block" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
@@ -536,18 +544,19 @@ export function ContractBlock({ sheet, className }: { readonly sheet: ContractSh
           space above it, the parties' rule unseen, so their first rows start level. */}
       <div className="mt-8 border-y py-7">
         <ContractValue sheet={sheet} />
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12 lg:gap-y-6" style={{ gridTemplateRows: `repeat(${factsRows(sheet)}, auto)` }}>
-          <ContractFacts sheet={sheet} className="mt-7 min-w-0 border-t pt-7 lg:row-span-full lg:grid-rows-subgrid" />
+        {/* The unpublished note follows the facts it explains, in reading order too: a last row of the grid, under the facts. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,17rem)] lg:gap-x-12 lg:gap-y-6" style={{ gridTemplateRows: `repeat(${rows}, auto) auto` }}>
+          <ContractFacts sheet={sheet} className="mt-7 min-w-0 border-t pt-7 lg:grid-rows-subgrid" style={{ gridRow: `1 / span ${rows}` }} />
+          <UnpublishedNote sheet={sheet} className="mt-6 lg:col-start-1 lg:row-start-[-2]" />
           <RecordParties
             authority={sheet.authority}
-            supplier={sheet.supplier}
+            supplier={supplierOf(sheet)}
             year={linkYearOf(sheet)}
             supplierNote={partnersNote(sheet)}
-            rows
-            className="mt-7 border-t pt-7 lg:grid-cols-1 lg:border-l lg:border-t-transparent lg:pl-12"
+            rows={rows}
+            className="mt-7 border-t pt-7 lg:col-start-2 lg:row-start-1 lg:grid-cols-1 lg:border-l lg:border-t-transparent lg:pl-12"
           />
         </div>
-        <UnpublishedNote sheet={sheet} className="mt-6" />
       </div>
       <div className="max-w-4xl">
         <ContractFirms sheet={sheet} className="mt-12" />

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -79,15 +79,29 @@ function PurchaseDescription({ purchase, className }: { readonly purchase: Direc
  * struck; an unchecked value is said, not shown as one; a record whose end
  * SEAP does not say shows SEAP's value, unmarked.
  */
+/**
+ * The figure's size from `md`, where the value has a column of its own beside the facts: as large as its column holds it, at most
+ * 3rem — a figure of any length, in a column as narrow as the parties leave it, never runs into the facts. Its digits are
+ * tabular, about 0.55em each with the unit (measured: „3.516.088,80 lei" fills 0.52em a character).
+ */
+const figureFit = (figure: string) => ({ '--figure-fit': `${(100 / (figure.length * 0.55)).toFixed(2)}cqw` }) as CSSProperties
+
 function PurchaseValue({ purchase }: { readonly purchase: DirectPurchase }) {
   const done = isPurchase(purchase.outcome)
   const attempt = isAttempt(purchase.outcome)
   const unverified = purchase.unverifiedValue !== null ? leiExact(purchase.unverifiedValue) : null
+  const figure = purchase.value !== null ? leiExact(purchase.value) : '—'
   return (
-    <div>
+    <div className="@container min-w-0">
       <MonoLabel className="block text-muted-foreground">{done ? t`Valoarea, fără TVA` : attempt ? t`Oferta, fără TVA` : t`Valoarea din SEAP, fără TVA`}</MonoLabel>
-      <p className={cn('mt-3 text-4xl font-semibold tabular-nums tracking-tight text-foreground sm:text-5xl', attempt && 'text-muted-foreground line-through decoration-2')}>
-        {purchase.value !== null ? leiExact(purchase.value) : '—'}
+      <p
+        className={cn(
+          'mt-3 text-4xl font-semibold tabular-nums tracking-tight text-foreground sm:text-5xl md:text-[length:min(3rem,var(--figure-fit))]',
+          attempt && 'text-muted-foreground line-through decoration-2',
+        )}
+        style={figureFit(figure)}
+      >
+        {figure}
       </p>
       {attempt ? <p className="mt-2 text-sm text-muted-foreground">{t`Nu s-a plătit: achiziția nu s-a făcut.`}</p> : null}
       {done && unverified ? <p className="mt-2 max-w-[40ch] text-sm text-muted-foreground">{t`SEAP publică ${unverified}, dar valoarea nu a trecut verificările platformei.`}</p> : null}
