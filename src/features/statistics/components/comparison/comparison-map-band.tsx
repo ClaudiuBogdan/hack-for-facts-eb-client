@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
 import { cn } from '@/lib/utils'
+import { insText } from '../../lib/ins-english'
 import { formatHubPeriod } from '../../lib/period'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { HubLoadError, HubPending } from '../hub/hub-chrome'
@@ -37,6 +38,12 @@ export function ComparisonMapBand({
   readonly className?: string
 }) {
   const [activeCode, setActiveCode] = useState<string>()
+  const { i18n } = useLingui()
+  // The layer was read once for both languages; its unit is named in the reader's here.
+  const shown = useMemo(
+    () => (layer ? { ...layer, unitLabel: insText(layer.unitLabel, layer.unitLabelEn, i18n.locale) } : undefined),
+    [layer, i18n.locale],
+  )
   const period = layer?.period ? formatHubPeriod(layer.period) : null
   return (
     <section aria-labelledby="comparison-map-title" aria-busy={stale || loading} className={cn(statisticsTheme.band, className)}>
@@ -49,9 +56,9 @@ export function ComparisonMapBand({
         </p>
       </div>
       <div className={cn(statisticsTheme.bandBody, 'transition-opacity', stale && 'opacity-60')}>
-        {layer ? (
+        {shown ? (
           <CountyMap
-            layer={layer}
+            layer={shown}
             legend={period ? t`${label}, ${period}` : label}
             selection={selection}
             activeCode={activeCode}

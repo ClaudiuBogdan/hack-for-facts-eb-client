@@ -194,7 +194,9 @@ export function comparisonCountyLayer(input: {
     code: input.code,
     period: input.period,
     unit: unit ? hubUnitOf({ unitSymbol: unit.symbol ?? null, unitCode: unit.code, unitNameRo: unit.name_ro ?? null }) : 'other',
+    // Read inside a fetch whose cache serves both languages: both names, chosen at render.
     unitLabel: unit ? (unit.name_ro ?? unit.symbol ?? null) : null,
+    unitLabelEn: unit ? (unit.name_en ?? null) : null,
     values,
     missingCounties: ROMANIA_COUNTIES.map((county) => county.code).filter((code) => !present.has(code)),
     national: national.length === 1 ? (national[0] ?? null) : null,

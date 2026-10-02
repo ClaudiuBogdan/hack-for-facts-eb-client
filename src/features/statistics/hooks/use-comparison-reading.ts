@@ -19,6 +19,7 @@ import type { ComparisonTerritoryToken } from '../lib/dataset-selection'
 import { hubUnitOf } from '../lib/units'
 import type { NativeComparisonMatrix } from '../lib/native-comparison'
 import { useComparisonTerritoryNames } from './use-comparisons'
+import { insText } from '../lib/ins-english'
 
 /** A compared territory as the page names and colours it, in selection order. */
 export interface ComparisonReadingTerritory extends ComparisonTerritoryToken {
@@ -117,7 +118,7 @@ export function useComparisonReading(params: {
   )
   const unitRow = matrix?.observations.find((row) => row.unit.code === matrix.sharedSelection.unitate)?.unit
   const unit = hubUnitOf({ unitSymbol: unitRow?.symbol ?? null, unitCode: unitRow?.code ?? null, unitNameRo: unitRow?.name_ro ?? null })
-  const unitLabel = unitRow ? (unitRow.name_ro ?? unitRow.symbol ?? null) : null
+  const unitLabel = unitRow ? (insText(unitRow.name_ro, unitRow.name_en) ?? unitRow.symbol ?? null) : null
   const comparedLevels = territories.filter((territory) => lines.get(territory.code)).map((territory) => territory.level)
   const view = resolveComparisonView(requestedView, defaultComparisonView(comparedLevels, unit))
   const windowFrom = range ? (periods[range.from] ?? null) : null

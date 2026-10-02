@@ -22,6 +22,7 @@ import { validatedSourceRows } from '../../lib/source-observations'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { figureUnitWord } from '../../lib/units'
 import { ValueStatusLegend, ValueStatusMarker } from '../value-status-legend'
+import { insText } from '../../lib/ins-english'
 
 type Props = {
   /** The rows the chart draws — or, for a selection that is not one series yet, the rows read to inspect it. */
@@ -105,7 +106,7 @@ export function DetailObservationsTable({
     ? ''
     : figureUnitWord(
         { unitSymbol: sample.symbol ?? null, unitNameRo: sample.name_ro ?? null },
-        sample.name_ro ?? sample.symbol ?? null,
+        insText(sample.name_ro, sample.name_en) ?? sample.symbol ?? null,
       ).replace(/^\p{Lu}(?=\p{Ll})/u, (initial) => initial.toLocaleLowerCase('ro'))
 
   // Folded by period, not by row: an inspection read holds several series,
@@ -156,7 +157,7 @@ export function DetailObservationsTable({
                 </TableHead>
                 {varyingAxes.map((d) => (
                   <TableHead key={d.index} className={headClass}>
-                    {d.label_ro ?? `D${d.index}`}
+                    {insText(d.label_ro, d.label_en) ?? `D${d.index}`}
                   </TableHead>
                 ))}
                 {unitVaries ? (
@@ -187,12 +188,12 @@ export function DetailObservationsTable({
                   </TableCell>
                   {varyingAxes.map((d) => (
                     <TableCell key={d.index} className={cellClass}>
-                      {memberOf(row, d.index)?.name_ro ?? '—'}
+                      {insText(memberOf(row, d.index)?.name_ro, memberOf(row, d.index)?.name_en) ?? '—'}
                     </TableCell>
                   ))}
                   {unitVaries ? (
                     <TableCell className={cellClass}>
-                      {row.unit.name_ro ?? row.unit.symbol ?? '—'}
+                      {insText(row.unit.name_ro, row.unit.name_en) ?? row.unit.symbol ?? '—'}
                     </TableCell>
                   ) : null}
                   <TableCell

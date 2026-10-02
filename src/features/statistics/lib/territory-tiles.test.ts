@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { shortIndicatorName } from './territory-tiles'
+import type { StatisticsIndicatorTile } from '@/schemas/statistics'
+import { shortIndicatorName, tileChosenPeriod, tileCompareSearch, tileDetailSearch } from './territory-tiles'
 
 describe('shortIndicatorName', () => {
   it.each([
@@ -40,5 +41,59 @@ describe('shortIndicatorName', () => {
   it('leaves a name with no place breakdown, and an acronym, as they are', () => {
     expect(shortIndicatorName('Cifra de afaceri CAEN Rev.2')).toBe('Cifra de afaceri CAEN Rev.2')
     expect(shortIndicatorName('UAT pe judete si localitati')).toBe('UAT')
+  })
+})
+
+const tile = (overrides: Partial<StatisticsIndicatorTile> = {}): StatisticsIndicatorTile =>
+  ({
+    datasetCode: 'FOM104D',
+    periodicity: ['ANNUAL'],
+    tileState: 'available',
+    latestPeriod: '2020',
+    sparklineCadence: 'ANNUAL',
+    ...overrides,
+  }) as StatisticsIndicatorTile
+
+describe('the links of a tile read at a chosen period', () => {
+  it('carry nothing on the latest period, or where the tile shows no cell', () => {
+    expect(tileChosenPeriod(tile(), null)).toBeNull()
+    expect(tileChosenPeriod(tile({ tileState: 'period-missing', latestPeriod: null }), '2020')).toBeNull()
+    expect(tileCompareSearch(tile(), '54975', 'CJ', null)).not.toHaveProperty('perioada')
+    expect(tileDetailSearch(tile(), '54975', null)).toEqual({ teritoriu: 'siruta:54975' })
+  })
+
+  it('end the comparison at the period and mark it on the series, at its cadence', () => {
+    const chosen = tileChosenPeriod(tile(), '2020')
+    expect(chosen).toEqual({ period: '2020', cadence: 'ANNUAL' })
+    expect(tileCompareSearch(tile(), '54975', 'CJ', chosen)).toEqual({
+      cod: 'FOM104D',
+      teritorii: ['siruta:54975', 'cod:CJ', 'cod:RO'],
+      perioada: '2020',
+    })
+    // One cadence: naming it would only add a pin to reset.
+    expect(tileDetailSearch(tile(), '54975', chosen)).toEqual({ teritoriu: 'siruta:54975', perioada: '2020' })
+  })
+
+  it('keep the period of a monthly series as the month the tile shows', () => {
+    const monthly = tile({ periodicity: ['MONTHLY'], latestPeriod: '2020-12', sparklineCadence: 'MONTHLY' })
+    const chosen = tileChosenPeriod(monthly, '2020')
+    expect(tileCompareSearch(monthly, '54975', 'CJ', chosen)).toMatchObject({ perioada: '2020-12' })
+    expect(tileDetailSearch(monthly, '54975', chosen)).toEqual({ teritoriu: 'siruta:54975', perioada: '2020-12' })
+  })
+
+  it('leave the comparison unbounded for a matrix published at more than one cadence, and name the cadence on the series', () => {
+    const mixed = tile({ periodicity: ['MONTHLY', 'ANNUAL'] })
+    const chosen = tileChosenPeriod(mixed, '2020')
+    expect(tileCompareSearch(mixed, '54975', 'CJ', chosen)).not.toHaveProperty('perioada')
+    expect(tileDetailSearch(mixed, '54975', chosen)).toEqual({ teritoriu: 'siruta:54975', perioada: '2020', frecventa: 'ANNUAL' })
+  })
+})
+
+describe('the dataset page address', () => {
+  it('reads a marked period, a bare year included, and drops one it cannot read', async () => {
+    const { statisticsDatasetDetailSearchSchema } = await import('@/schemas/statistics')
+    expect(statisticsDatasetDetailSearchSchema.parse({ perioada: 2020 })).toMatchObject({ perioada: '2020' })
+    expect(statisticsDatasetDetailSearchSchema.parse({ perioada: '2020-12' })).toMatchObject({ perioada: '2020-12' })
+    expect(statisticsDatasetDetailSearchSchema.parse({ perioada: 'ieri' }).perioada).toBeUndefined()
   })
 })

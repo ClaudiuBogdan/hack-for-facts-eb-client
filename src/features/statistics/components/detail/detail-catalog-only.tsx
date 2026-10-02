@@ -7,6 +7,7 @@ import { dimensionTypeLabel } from '../../lib/dimension-labels'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { DetailDefinition } from './detail-definition'
 import { RequestDatasetAction } from '../request-dataset-action'
+import { insText } from '../../lib/ins-english'
 
 type Props = {
   readonly dataset: InsDatasetDetails
@@ -65,7 +66,7 @@ export function DetailCatalogOnly({ dataset, definition }: Props) {
               className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
             >
               <span className="min-w-0">
-                {dimension.label_ro ?? `#${dimension.index}`}
+                {insText(dimension.label_ro, dimension.label_en) ?? `#${dimension.index}`}
               </span>
               <span className="shrink-0 text-xs text-muted-foreground">
                 {dimensionTypeLabel(dimension.type)}

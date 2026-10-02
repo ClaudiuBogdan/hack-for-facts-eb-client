@@ -120,6 +120,7 @@ export function mapLatestValue(node: InsLatestValueNodeRaw): StatisticsLatestVal
     unitCode: node.observation?.unit?.code ?? null,
     unitSymbol: node.observation?.unit?.symbol ?? null,
     unitNameRo: node.observation?.unit?.name_ro ?? null,
+    unitNameEn: node.observation?.unit?.name_en ?? null,
     period: node.observation?.time_period.iso_period ?? node.latestPeriod ?? null,
     resolvedPeriodicity: node.observation?.time_period.periodicity ?? null,
     resolvedClassifications: (node.observation?.classifications ?? []).flatMap(

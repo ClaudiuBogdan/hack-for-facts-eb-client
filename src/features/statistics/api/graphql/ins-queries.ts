@@ -88,7 +88,7 @@ const INS_OBSERVATION_FIELDS = `
   value_status
   time_period { iso_period year quarter month periodicity }
   territory { code siruta_code level name_ro }
-  unit { code symbol name_ro }
+  unit { code symbol name_ro name_en }
   classifications { id type_code type_name_ro type_name_en code name_ro name_en sort_order }
 `
 
@@ -294,7 +294,7 @@ export const INS_DATASET_DIMENSION_VALUES_QUERY = `
         territory { code siruta_code canonical_siruta_code level name_ro }
         time_period { iso_period year quarter month periodicity }
         classification_value { type_code code name_ro }
-        unit { code symbol name_ro }
+        unit { code symbol name_ro name_en }
       }
       pageInfo { totalCount hasNextPage hasPreviousPage }
     }

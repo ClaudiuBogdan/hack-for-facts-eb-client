@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import type { InsChartPeriodicity } from '@/lib/ins/source-contract'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
 import { sentenceCaseShouting } from './dataset-names'
 import { formatHubPeriod } from './period'
@@ -80,10 +81,53 @@ export function tileStateNote(tile: StatisticsIndicatorTile, activePeriod: strin
   }
 }
 
-/** The comparison of this matrix across the place, its county and the country. */
-export function tileCompareSearch(tile: StatisticsIndicatorTile, siruta: string, countyCode: string | null | undefined) {
+/** The cell a tile shows once the reader has picked a period: its period and cadence. */
+export interface TileChosenPeriod {
+  readonly period: string
+  readonly cadence: InsChartPeriodicity | null
+}
+
+/**
+ * The period the tile's links carry: the cell it shows for the period the
+ * reader picked — the year, or that year's latest month for a monthly series.
+ * None on the latest period, and none where the tile shows no cell for it.
+ */
+export function tileChosenPeriod(tile: StatisticsIndicatorTile, activePeriod: string | null): TileChosenPeriod | null {
+  if (!activePeriod || tile.tileState !== 'available' || !tile.latestPeriod) return null
+  return { period: tile.latestPeriod, cadence: tile.sparklineCadence }
+}
+
+/**
+ * The comparison of this matrix across the place, its county and the country,
+ * ending at the period the reader picked. Only for a matrix published at that
+ * cadence alone: the comparison reads a period at the matrix's default
+ * cadence, and naming the cadence too would make the selection explicit and
+ * leave it waiting for the other axes.
+ */
+export function tileCompareSearch(
+  tile: StatisticsIndicatorTile,
+  siruta: string,
+  countyCode: string | null | undefined,
+  chosen: TileChosenPeriod | null = null,
+) {
+  const singleCadence = tile.periodicity.length === 1 && tile.periodicity[0] === chosen?.cadence
   return {
     cod: tile.datasetCode,
     teritorii: [`siruta:${siruta}`, ...(countyCode ? [`cod:${countyCode}`] : []), 'cod:RO'] as [string, ...string[]],
+    ...(chosen && singleCadence ? { perioada: chosen.period } : {}),
+  }
+}
+
+/**
+ * The tile's whole series at this place, with the period the reader picked
+ * marked on it. The cadence is named only for a matrix published at more than
+ * one, so the series shows the cell the tile showed; for the rest it would be
+ * a pin the page counts and offers to reset for nothing.
+ */
+export function tileDetailSearch(tile: StatisticsIndicatorTile, siruta: string, chosen: TileChosenPeriod | null = null) {
+  const cadence = chosen?.cadence && tile.periodicity.length > 1 ? { frecventa: chosen.cadence } : {}
+  return {
+    teritoriu: `siruta:${siruta}`,
+    ...(chosen ? { perioada: chosen.period, ...cadence } : {}),
   }
 }

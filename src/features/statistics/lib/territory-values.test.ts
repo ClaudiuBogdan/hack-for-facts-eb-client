@@ -34,3 +34,21 @@ describe('tileStatusLabel', () => {
     expect(tileStatusLabel(null)).toBeNull()
   })
 })
+
+describe('formatTileValue in the reader\'s language', () => {
+  const water = { value: '607313', valueStatus: null, unitSymbol: 'other', unitNameRo: 'Mii metri cubi', unitNameEn: 'Thousands cubits metres' }
+
+  it('names a unit INS words itself in its corrected English on an English page, and in Romanian on a Romanian one', async () => {
+    // The test setup's Lingui mock is a plain object whose `activate` does nothing: the locale is set on it directly.
+    const { i18n } = (await import('@lingui/core')) as unknown as { i18n: { locale: string } }
+    const previous = i18n.locale
+    try {
+      i18n.locale = 'en'
+      expect(formatTileValue(water)?.unit).toBe('Thousand cubic metres')
+      i18n.locale = 'ro'
+      expect(formatTileValue(water)?.unit).toBe('Mii metri cubi')
+    } finally {
+      i18n.locale = previous
+    }
+  })
+})

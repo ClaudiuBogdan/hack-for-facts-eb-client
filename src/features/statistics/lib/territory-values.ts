@@ -2,6 +2,7 @@ import { t } from '@lingui/core/macro'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
 import { formatHubValue } from './units'
 import { tileUnit } from './territory-groups'
+import { insText } from './ins-english'
 
 const BLOCKING_STATUSES = new Set([':', 'c', 'x'])
 
@@ -19,10 +20,12 @@ export function tileStatusLabel(status: string | null): string | null {
   return labels[status] ?? t`marcaj INS „${status}”`
 }
 
-/** The tile's value as the reader reads it: locale number, Romanian unit word. */
-export function formatTileValue(tile: Pick<StatisticsIndicatorTile, 'value' | 'unitSymbol' | 'unitNameRo' | 'valueStatus'>) {
+/** The tile's value as the reader reads it: locale number, the unit in the reader's language. */
+export function formatTileValue(
+  tile: Pick<StatisticsIndicatorTile, 'value' | 'unitSymbol' | 'unitNameRo' | 'valueStatus'> & { readonly unitNameEn?: string | null },
+) {
   if (tile.value === null || tile.value.trim() === '' || BLOCKING_STATUSES.has(tile.valueStatus ?? '')) return null
   const numeric = Number(tile.value.trim().replace(',', '.'))
   if (!Number.isFinite(numeric)) return { value: tile.value, unit: '' }
-  return formatHubValue(numeric, tileUnit(tile), tile.unitNameRo ?? tile.unitSymbol)
+  return formatHubValue(numeric, tileUnit(tile), insText(tile.unitNameRo, tile.unitNameEn) ?? tile.unitSymbol)
 }

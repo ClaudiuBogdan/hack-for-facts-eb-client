@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 import type { StatisticsIndicatorTile } from '@/schemas/statistics'
 import { formatHubPeriod, isPeriodStale } from '../../lib/period'
-import { tileCompareSearch } from '../../lib/territory-tiles'
+import { tileCompareSearch, type TileChosenPeriod } from '../../lib/territory-tiles'
 import { formatTileValue, tileStatusLabel } from '../../lib/territory-values'
 import { RequestDatasetAction } from '../request-dataset-action'
 
@@ -85,6 +85,8 @@ type ActionProps = {
   readonly name: string
   readonly siruta: string
   readonly countyCode?: string | null
+  /** The period the reader picked, as the tile shows it; the comparison ends there. */
+  readonly chosen?: TileChosenPeriod | null
   readonly className?: string
 }
 
@@ -95,7 +97,7 @@ type ActionProps = {
  * column of the same word. A matrix listed without data offers a request
  * instead. Everything else is on the series the row opens.
  */
-export function TerritoryTileAction({ tile, name, siruta, countyCode, className }: ActionProps) {
+export function TerritoryTileAction({ tile, name, siruta, countyCode, chosen = null, className }: ActionProps) {
   if (tile.tileState === 'catalog-only') {
     return (
       <span className={cn('relative z-10', className)}>
@@ -110,7 +112,7 @@ export function TerritoryTileAction({ tile, name, siruta, countyCode, className 
       <TooltipTrigger asChild>
         <Link
           to="/ins/comparatii"
-          search={tileCompareSearch(tile, siruta, countyCode)}
+          search={tileCompareSearch(tile, siruta, countyCode, chosen)}
           aria-label={`${label}: ${name}`}
           // 32px: clear of the 24px floor in WCAG 2.5.8, and above the
           // row's own link, which covers the row.

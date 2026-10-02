@@ -17,6 +17,7 @@ import {
   type ComparisonSeriesDescriptor,
 } from '../../lib/comparison-format'
 import type { NativeComparisonMatrix } from '../../lib/native-comparison'
+import { insText } from '../../lib/ins-english'
 
 /** The em-dash cell for "this territory reported nothing for this period". */
 const MISSING_MARK = '—'
@@ -178,7 +179,7 @@ export function ComparisonTable({ matrix, series, selectedPeriod }: Props) {
 
       {matrix.unitSymbol ? (
         <p className="px-4 pb-3 pt-2 text-xs text-muted-foreground md:px-5">
-          <Trans>Unitate de măsură: {describeUnitSymbol(matrix.unitSymbol)}</Trans>
+          <Trans>Unitate de măsură: {describeUnitSymbol(insText(matrix.unitSymbol, matrix.unitSymbolEn) ?? matrix.unitSymbol)}</Trans>
         </p>
       ) : null}
     </div>

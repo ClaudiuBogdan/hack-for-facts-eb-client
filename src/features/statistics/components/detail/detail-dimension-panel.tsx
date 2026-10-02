@@ -10,6 +10,7 @@ import type { InsDimensionValue } from '@/schemas/ins'
 import { dimensionOptionsQuery } from '../../hooks/use-dataset-detail'
 import { statisticsTheme } from '../../lib/statistics-theme'
 import { DetailOptionList, type DetailOption } from './detail-option-list'
+import { insText } from '../../lib/ins-english'
 
 /**
  * Past this many options the list gets a search field. Below it every option
@@ -215,7 +216,7 @@ function flattenOptions(
     const key = optionKey(value)
     if (!key || values.has(key)) continue
     values.set(key, value)
-    options.push({ key, label: value.label_ro ?? key })
+    options.push({ key, label: insText(value.label_ro, value.label_en) ?? key })
   }
   return [options, values]
 }
