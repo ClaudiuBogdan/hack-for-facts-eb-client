@@ -1,0 +1,10 @@
+{
+  "data": { "searchEntities": null },
+  "errors": [
+    {
+      "message": "the company scope moved while the answer was served; retry",
+      "path": ["searchEntities"],
+      "extensions": { "code": "SERVICE_UNAVAILABLE" }
+    }
+  ]
+}

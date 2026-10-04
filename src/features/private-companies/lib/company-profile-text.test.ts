@@ -1,21 +1,33 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
+import { admittedQualification } from '../mocks/fixtures/qualification'
 import { buildCompanyProfileModel } from './company-profile-model'
 import {
   changeNote,
   companySentence,
   countChangeNote,
   debtSentence,
-  economyShares,
   financialLede,
   institutionName,
+  metricStatusLabel,
   moneyLede,
   moneyPeriod,
   nameLength,
   netChangeNote,
+  netResultStatusLabel,
+  notAssessedLabel,
+  notAssessedNotice,
+  otherBasisNotice,
+  qualificationLede,
+  statementPublisherLabel,
+  statementStateLabel,
   statusNotice,
   statusText,
 } from './company-profile-text'
 import { balanceSummary, companyProfile, financialYear } from './company-profile.fixture'
+import { notAssessed } from './financial-qualification'
+import { MOCK_REGISTRY_ENVELOPE, mockRegistryEvidence, registryStateEvidence } from '../mocks/fixtures/registry'
 
 // The page's language, pinned: the test environment activates English.
 vi.mock('@/lib/utils', async (importOriginal) => ({
@@ -27,10 +39,12 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
 const lei = (text: string) => text.replace(/ /gu, '\u00a0')
 
 describe('the company in a sentence', () => {
-  it('says what, where, since when and what it does, and only what the record has', () => {
-    expect(companySentence(buildCompanyProfileModel(companyProfile()))).toBe(
-      'Societate cu răspundere limitată din Gherla, Cluj, înregistrată în 2007. Activitatea principală: restaurante.',
-    )
+  it('says what, where and what it declared to ANAF, and only what the record has — never a year', () => {
+    // ANAF published no CAEN revision for 5610: the sentence names no activity rather than borrow the registry's name.
+    expect(companySentence(buildCompanyProfileModel(companyProfile()))).toBe('Societate cu răspundere limitată din Gherla, Cluj.')
+    expect(
+      companySentence(buildCompanyProfileModel(companyProfile({ fiscal: { ...companyProfile().fiscal, fiscalCaen: { code: '5610', rev: 'rev2' } } }))),
+    ).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: restaurante.')
     expect(
       companySentence(
         buildCompanyProfileModel(
@@ -43,10 +57,16 @@ describe('the company in a sentence', () => {
   it('lowers the activity’s first letter inside the sentence, not an acronym it starts with', () => {
     const withLabel = (label: string) =>
       companySentence(
-        buildCompanyProfileModel(companyProfile({ caenActivities: [{ code: '5610', rev: 'rev2', label, source: 'onrc' }], registrationDate: null })),
+        buildCompanyProfileModel(
+          companyProfile({
+            caenActivities: [{ code: '5610', rev: 'rev2', label, source: 'onrc' }],
+            fiscal: { ...companyProfile().fiscal, fiscalCaen: { code: '5610', rev: 'rev2' } },
+            registrationDate: null,
+          }),
+        ),
       )
-    expect(withLabel('Restaurante cu PVC')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală: restaurante cu PVC.')
-    expect(withLabel('TIC pentru restaurante')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală: TIC pentru restaurante.')
+    expect(withLabel('Restaurante cu PVC')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: restaurante cu PVC.')
+    expect(withLabel('TIC pentru restaurante')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: TIC pentru restaurante.')
   })
 
   it('sizes the heading by the name', () => {
@@ -73,7 +93,28 @@ describe('status', () => {
   it('writes the chip in the page’s words', () => {
     expect(statusText(withStatus('1048', 'funcțiune'))).toBe('În funcțiune')
     expect(statusText(withStatus('1107', 'insolvență'))).toBe('Insolvență')
-    expect(statusText(buildCompanyProfileModel(companyProfile({ status: null })))).toBe('Stare necunoscută')
+    // No consensus in the edition: said as such, never „unknown" or a guess.
+    expect(statusText(buildCompanyProfileModel(companyProfile({ status: null })))).toBe('Stare neconfirmată în registru')
+  })
+
+  it('says a conflict as a conflict, naming the „în funcțiune" observation among the others', () => {
+    const registry = mockRegistryEvidence({ identifier: 'J1', name: 'X SRL', legalForm: 'SRL', recordedDate: null, countyCode: null, countyName: null, statusCodes: ['1048', '1084'], caen: [] })
+    const model = buildCompanyProfileModel(companyProfile({ status: null, registry }))
+    expect(statusText(model)).toBe('Stări diferite în registru')
+    expect(statusNotice(model)).toBe(
+      'Înscrierile din registru au stări diferite, între care una „în funcțiune”; toate sunt listate în secțiunea Registru, niciuna nu e aleasă.',
+    )
+  })
+
+  it('says a CUI outside the edition is outside the edition, never unregistered; an unpublished registry as a state', () => {
+    const outside = buildCompanyProfileModel(companyProfile({ status: null, registry: registryStateEvidence(MOCK_REGISTRY_ENVELOPE, 'not_in_edition') }))
+    expect(statusText(outside)).toBe('Fără profil în ediția ONRC')
+    expect(statusNotice(outside)).toBe('Ediția ONRC afișată nu are un profil public calificat pentru acest CUI. Asta nu înseamnă că firma nu este înregistrată.')
+    const unpublished = buildCompanyProfileModel(
+      companyProfile({ status: null, registry: registryStateEvidence({ ...MOCK_REGISTRY_ENVELOPE, state: 'unpublished', editionId: null }, 'unpublished') }),
+    )
+    expect(statusText(unpublished)).toBe('Registru indisponibil')
+    expect(statusNotice(unpublished)).toMatch(/nu are încă o ediție publicată.*nu sunt disponibile, nu lipsesc/u)
   })
 })
 
@@ -108,7 +149,7 @@ describe('financialLede', () => {
     const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024].map((year) => financialYear(year, { turnover: 100, netProfit: 0, netLoss: 10 }))
     years.push(financialYear(2025, { turnover: 50, netProfit: 0, netLoss: 20 }))
     expect(financialLede(buildCompanyProfileModel(companyProfile({ financials: years })))).toBe(
-      'În 2025, cifra de afaceri a scăzut cu 50,0%, iar pierderea a crescut. A încheiat cu pierdere 8 ani din 8.',
+      'În 2025, cifra de afaceri a scăzut cu 50,0%, iar pierderea a crescut. A încheiat cu pierdere 8 ani din cei 8 cu rezultat net admis.',
     )
   })
 
@@ -194,21 +235,113 @@ describe('public money', () => {
   })
 })
 
-describe('economyShares', () => {
-  it('lists only the shares the model kept, and only those the page can name', () => {
-    const model = buildCompanyProfileModel(companyProfile())
-    const shares = economyShares({
-      ...model,
-      context: { year: 2025, sectorTurnoverShare: 0.756, sectorEmployeesShare: null, countyTurnoverShare: 0.029, nationalTurnoverShare: 0.011 },
-    })
-    expect(shares).toEqual([
-      { key: 'sector-turnover', share: 0.756 },
-      { key: 'county', share: 0.029 },
-      { key: 'national', share: 0.011 },
+describe('qualification in words (CD-14)', () => {
+  /** A statement as the evaluator held it: these statuses over the admitted defaults. */
+  const held = (year: number, values: Parameters<typeof financialYear>[1], statuses: Parameters<typeof admittedQualification>[1]) => {
+    const base = financialYear(year, values)
+    return { ...base, qualification: admittedQualification(base, statuses) }
+  }
+
+  it('compares nothing held, nothing across policies, and counts losses only among reported results', () => {
+    const before = financialYear(2024, { turnover: 100, netProfit: 0, netLoss: 10 })
+    const turnoverHeld = held(2025, { turnover: 50, netProfit: 0, netLoss: 20 }, { turnover: 'held_observation' })
+    // No turnover movement from a held turnover; the sentence has nothing else to stand on.
+    expect(financialLede(buildCompanyProfileModel(companyProfile({ financials: [before, turnoverHeld] })))).toBeNull()
+    const otherPolicy = { ...financialYear(2025, { netProfit: 0, netLoss: 20 }), qualification: { ...financialYear(2025, { netProfit: 0, netLoss: 20 }).qualification, policySha256: 'b2'.repeat(32) } }
+    expect(netChangeNote(before, otherPolicy)).toBeNull()
+    const years = [2018, 2019, 2020, 2021].map((year) => financialYear(year, { turnover: 100, netProfit: 0, netLoss: 10 }))
+    years.push(held(2022, { turnover: 100, netProfit: 0, netLoss: 10 }, { net_loss: 'held_observation', net_result: 'held_component' }))
+    years.push(financialYear(2023, { turnover: 50, netProfit: 0, netLoss: 20 }))
+    // Six statements, five reported results: the held 2022 is neither a loss nor a profit here,
+    // and the sentence says its count is of the admitted results, and how many it leaves out (D1-C04).
+    expect(financialLede(buildCompanyProfileModel(companyProfile({ financials: years })))).toBe(
+      'Ultimul bilanț publicat este pe 2023. În 2023, cifra de afaceri a scăzut cu 50,0%. A încheiat cu pierdere 5 ani din cei 5 cu rezultat net admis. Rezultatul net al încă unui bilanț nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+    )
+    // A statement on another basis is left out of the count the same way.
+    const rebased = years.map((year) => (year.fiscalYear === 2018 ? { ...year, qualification: { ...year.qualification, releaseId: '1' } } : year))
+    expect(financialLede(buildCompanyProfileModel(companyProfile({ financials: rebased })))).toBe(
+      'Ultimul bilanț publicat este pe 2023. În 2023, cifra de afaceri a scăzut cu 50,0%. A încheiat cu pierdere 4 ani din cei 4 cu rezultat net admis. Rezultatul net al altor 2 bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+    )
+  })
+
+  it('says the loss count is of the admitted results in English too (D1-C04)', () => {
+    // A live entry of the English catalog, not an obsolete `#~` one.
+    const catalog = readFileSync(resolve(process.cwd(), 'src/locales/en/messages.po'), 'utf8')
+    const entry = (source: RegExp) => catalog.split('\n\n').find((block) => source.test(block))
+    expect(entry(/^msgid "\{lossYears, plural, one \{A încheiat cu pierdere un an din cei \{counted\} cu rezultat net admis/m)).toMatch(
+      /msgstr "\{lossYears, plural, one \{It made a loss in one of the \{counted\} years with an admitted net result\.\} other \{It made a loss in # of the \{counted\} years with an admitted net result\.\}\}"/,
+    )
+    expect(entry(/^msgid "\{uncounted, plural, one \{Rezultatul net al încă unui bilanț nu e numărat/m)).toMatch(/msgstr "\{uncounted, plural, one \{The net result of one more statement is not counted: .*other \{The net results of # more statements are not counted: /)
+  })
+
+  it('sets no ratio on a held balance value', () => {
+    const debtsHeld = held(2025, { summary: balanceSummary({ debts: 10, totalEquity: 5 }) }, { debts: 'held_observation' })
+    expect(debtSentence(buildCompanyProfileModel(companyProfile({ financials: [debtsHeld] })))).toBeNull()
+    const equityHeld = held(2025, { summary: balanceSummary({ debts: 10, totalEquity: 5 }) }, { total_equity: 'held_profile' })
+    expect(debtSentence(buildCompanyProfileModel(companyProfile({ financials: [equityHeld] })))).toBe(`Datorii de ${lei('10 lei')} la sfârșitul lui 2025.`)
+  })
+
+  it('names the policy and a statement it could not assess', () => {
+    const model = buildCompanyProfileModel(companyProfile({ financials: [financialYear(2025, { turnover: 5 })] }))
+    expect(qualificationLede(model)).toBe(
+      'Cifrele, graficele și comparațiile folosesc doar valorile admise de politica de calificare companies-analytics-admission-2026-10-02-q1, aprobată pe 2026-10-02. Admisă înseamnă extrasă și încadrată după regulile politicii, nu verificată economic.',
+    )
+    expect(notAssessedNotice(model)).toBeNull()
+    const unassessed = buildCompanyProfileModel(
+      companyProfile({ financials: [{ ...financialYear(2025, { turnover: 5 }), qualification: notAssessed('qualification_unavailable') }] }),
+    )
+    expect(qualificationLede(unassessed)).toBeNull()
+    expect(notAssessedNotice(unassessed)).toBe(
+      'Bilanțul pe 2025 nu a putut fi calificat (calificarea nu este disponibilă acum): valorile lui sunt cele publicate de sursă și nu intră în cifre, grafice sau comparații.',
+    )
+    expect(metricStatusLabel('held_observation')).toBe('reținută după verificare')
+    expect(metricStatusLabel(null)).toBe('necalificată')
+    expect(notAssessedLabel('a-reason-from-the-future')).toBe('politica de calificare nu poate fi aplicată')
+  })
+
+  it('names the basis of the series, the statements outside it, and each statement’s state (D1-C01, D1-C03)', () => {
+    const years = [2021, 2022, 2023].map((year) => financialYear(year, { turnover: 10 }))
+    const unassessedNewest = buildCompanyProfileModel(
+      companyProfile({ financials: [...years, { ...financialYear(2024, { turnover: 5 }), qualification: notAssessed('qualification_unavailable') }] }),
+    )
+    // The series still stand on 2021–2023: the page names their policy, and the newest's state.
+    expect(qualificationLede(unassessedNewest)).toMatch(/politica de calificare companies-analytics-admission-2026-10-02-q1/u)
+    expect(notAssessedNotice(unassessedNewest)).toMatch(/^Bilanțul pe 2024 nu a putut fi calificat/u)
+    expect(otherBasisNotice(unassessedNewest)).toBeNull()
+    expect(unassessedNewest.qualification.statements.map(statementStateLabel)).toEqual([
+      'necalificat (calificarea nu este disponibilă acum)',
+      'toate valorile admise',
+      'toate valorile admise',
+      'toate valorile admise',
     ])
-    // With no division to name, a sector share is not said.
-    expect(
-      economyShares({ ...model, mainActivity: null, context: { year: 2025, sectorTurnoverShare: 0.5, sectorEmployeesShare: 0.5, countyTurnoverShare: null, nationalTurnoverShare: null } }),
-    ).toEqual([])
+
+    const rebased = buildCompanyProfileModel(
+      companyProfile({ financials: years.map((year) => (year.fiscalYear < 2023 ? { ...year, qualification: { ...year.qualification, policySha256: 'b2'.repeat(32) } } : year)) }),
+    )
+    expect(otherBasisNotice(rebased)).toBe(
+      'Bilanțurile pe 2021–2022 au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt listate mai jos.',
+    )
+    expect(rebased.qualification.statements.map(statementStateLabel)).toEqual([
+      'toate valorile admise',
+      'calificat după altă politică sau altă ediție a datelor',
+      'calificat după altă politică sau altă ediție a datelor',
+    ])
+    expect(statementPublisherLabel('mfp')).toBe('Ministerul Finanțelor')
+    expect(statementPublisherLabel(null)).toBe('sursă nenumită')
+  })
+
+  it('explains a held derived net without a value, apart from its published components (D1-C02)', () => {
+    const fourSixFour = held(2024, { netProfit: 120, employees: 7 }, { gross_loss: 'held_profile', net_loss: 'missing', net_result: 'held_profile' })
+    const [statement] = buildCompanyProfileModel(companyProfile({ financials: [fourSixFour] })).qualification.statements
+    // Every published value admitted, the derived net held: the heading says both.
+    expect(statementStateLabel(statement!)).toBe('valorile publicate admise; rezultatul net reținut')
+    expect(statement?.netResult).toEqual({ status: 'held_profile', value: null })
+    expect(netResultStatusLabel('held_profile')).toBe('reținut: pentru această formă de bilanț nu se calculează din profit și pierdere')
+    expect(netResultStatusLabel('held_component')).toBe('reținut: profitul sau pierderea publicată e reținută')
+    expect(netResultStatusLabel('missing')).toBe('nu se poate calcula: nici profitul, nici pierderea nu sunt publicate')
+    const heldTurnover = held(2024, { turnover: 1, employees: 2 }, { turnover: 'held_observation' })
+    expect(statementStateLabel(buildCompanyProfileModel(companyProfile({ financials: [heldTurnover] })).qualification.statements[0]!)).toBe(
+      '1 valoare ținută în afara cifrelor',
+    )
   })
 })

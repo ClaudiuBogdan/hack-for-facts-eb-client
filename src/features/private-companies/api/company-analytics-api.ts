@@ -10,6 +10,7 @@ import {
   type CompanyAnalysisDimension,
   type CompanyAnalysisDirection,
   type CompanyAnalysisMetric,
+  type CompanyAnalysisOnrcInput,
   type CompanyAnalysisRankBy,
   type CompanyAnalysisRecordSort,
   type CompanyAnalysisRecords,
@@ -30,12 +31,15 @@ import {
 
 const COVERAGE = 'coverage { reported missing notAdmitted heldProfile heldObservation heldQuality heldComponent }'
 const AGGREGATE = `metric unit kind sum contributors mean ${COVERAGE}`
-const ANSWER = 'release { releaseId publishedAt active } scope scopeHash fiscalYear caveats'
+/** Every answer names its release and the ONRC edition that release was exported from (its eight-key source pin). */
+const RELEASE_REF =
+  'release { releaseId publishedAt active source { editionId publicationEpoch sourceSnapshotId sourcePublishedAt interpretationVersion privacyPolicyVersion dimensionPolicyVersion eligibilityPolicyVersion } }'
+const ANSWER = `${RELEASE_REF} scope scopeHash fiscalYear caveats`
 
 const RELEASE_QUERY = /* GraphQL */ `
   query CompanyAnalysisRelease($release: BigInt) {
     companyAnalysisRelease(release: $release) {
-      release { releaseId publishedAt active }
+      ${RELEASE_REF}
       publicationId
       schemaVersion
       populationPolicyVersion
@@ -69,7 +73,7 @@ const STATS_QUERY = /* GraphQL */ `
   }
 `
 
-const BUCKET = `kind key label caen { code revision basis label } groups companies filers metric { ${AGGREGATE} }`
+const BUCKET = `kind key label labelSource basis caen { code revision basis label } groups companies filers metric { ${AGGREGATE} }`
 
 const BREAKDOWN_QUERY = /* GraphQL */ `
   query CompanyAnalysisBreakdown($release: BigInt!, $scope: CompanyAnalysisScopeInput, $dimension: CompanyAnalysisDimension!, $metric: CompanyAnalysisMetric, $rankBy: CompanyAnalysisRankBy, $topN: Int) {
@@ -120,13 +124,21 @@ const RECORDS_QUERY = /* GraphQL */ `
           cui
           currentName
           legalForm
-          county { code label }
-          uat { code label }
-          observedStatus { code label }
+          legalFormBasis
+          county { code label labelSource }
+          countyBasis
+          uat { code label labelSource }
+          uatBasis
+          observedStatus { code label labelSource }
+          observedStatusBasis
+          observedStatusCoverage
+          onrcCaenCoverage
+          onrcRecordedDate
+          onrcRecordedYear
+          onrcRecordedDateBasis
           vatPayer
           fiscallyInactive
           mainCaen { code revision basis label }
-          registrationYear
           filed
           employeeSizeBand
           values { metric value status }
@@ -163,6 +175,22 @@ export function isAnalyticsUnavailable(error: unknown): boolean {
 
 // ──────────────────────────────────────────────────────────────── scope ──
 
+/** The ONRC observation filters as the API takes them: no empty list, no empty `exclude`, nothing at all when nothing is left. */
+function apiOnrcOf(onrc: CompanyAnalysisOnrcInput | undefined): CompanyAnalysisOnrcInput | undefined {
+  if (!onrc) return undefined
+  const lists = <K extends string>(source: Partial<Record<K, readonly string[] | undefined>>, keys: readonly K[]) => {
+    const out: Partial<Record<K, string[]>> = {}
+    for (const key of keys) {
+      const values = source[key]
+      if (values && values.length > 0) out[key] = [...values]
+    }
+    return out
+  }
+  const exclude = onrc.exclude ? lists(onrc.exclude, ['status', 'caenCode', 'county', 'legalForm'] as const) : {}
+  const out = { ...lists(onrc, ['status', 'county', 'caenCode', 'onrcCaen'] as const), ...(Object.keys(exclude).length > 0 ? { exclude } : {}) }
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
 /**
  * The scope as the API takes it: no empty list (the API refuses one rather
  * than reading it as "every value"), no key filter without values or the
@@ -197,6 +225,8 @@ export function apiScopeOf(scope: CompanyAnalysisScopeInput): CompanyAnalysisSco
     scope.financialRanges?.filter((range) => range.min !== undefined || range.max !== undefined),
   )
   list('employeeSizeBands', scope.employeeSizeBands)
+  const onrc = apiOnrcOf(scope.onrc)
+  if (onrc) out.onrc = onrc
   return out as CompanyAnalysisScopeInput
 }
 

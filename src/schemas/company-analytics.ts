@@ -3,16 +3,20 @@ import { z } from 'zod'
 /**
  * Companies analytics — the API's vocabulary and answers, as the client reads
  * them (server `src/modules/companies/core/analytics-types.ts` and
- * `shell/graphql/analytics-typedefs.ts`, schema `companies-analytics-ch-v1`).
+ * `shell/graphql/analytics-typedefs.ts`, schema `companies-analytics-ch-v2`:
+ * one pinned ONRC edition per release, `release.source`).
  *
  * Every count, sum and mean stays the API's decimal string: nothing here
  * turns money or a count into a number. An empty contributor set is a null
- * sum, never 0; an explicit zero stays "0.00". Shared by the analysis page
- * (`/companies/analytics`) and the chart builder's `companies-analytics`
- * series, which persists a scope in this shape.
+ * sum, never 0; an explicit zero stays "0.00". A source date stays the exact
+ * civil text the API sent (`YYYY-MM-DD`), never a `Date`. Shared by the
+ * analysis page (`/companies/analytics`) and the chart builder's
+ * `companies-analytics` series, which persists a scope in this shape.
  */
 
-export const COMPANY_ANALYSIS_SCHEMA_VERSION = 'companies-analytics-ch-v1'
+/** The only schema and population the API serves (a v1 release is refused there, never reinterpreted here). */
+export const COMPANY_ANALYSIS_SCHEMA_VERSION = 'companies-analytics-ch-v2'
+export const COMPANY_ANALYSIS_POPULATION_POLICY_VERSION = 'public-onrc-edition-legal-person-v2'
 
 export const COMPANY_ANALYSIS_METRICS = [
   'TURNOVER',
@@ -104,13 +108,121 @@ export type CompanyAnalysisGapReason = z.infer<typeof CompanyAnalysisGapReasonZ>
 /** A release id: a positive integer as text (the API's `BigInt`, which it only accepts as a string). */
 export const COMPANY_ANALYSIS_RELEASE_ID_RE = /^[1-9]\d{0,15}$/u
 
+// ──────────────────────────────────────────────────────── ONRC edition ──
+
+/**
+ * Why an ONRC edition consensus value (county, UAT, status, legal form,
+ * recorded date) is what it is — or why it is null. Only SINGLE_OBSERVATION
+ * and CONSISTENT_OBSERVATIONS are a known value.
+ */
+export const COMPANY_ANALYSIS_ONRC_BASES = ['SINGLE_OBSERVATION', 'CONSISTENT_OBSERVATIONS', 'PARTIAL_OBSERVATIONS', 'MULTIPLE_VALUES', 'MISSING', 'UNRESOLVED'] as const
+export const CompanyAnalysisOnrcBasisZ = z.enum(COMPANY_ANALYSIS_ONRC_BASES)
+export type CompanyAnalysisOnrcBasis = z.infer<typeof CompanyAnalysisOnrcBasisZ>
+
+/** Whether a company's ONRC status / CAEN evidence is complete: only COMPLETE and COMPLETE_EMPTY can prove an absence. */
+export const COMPANY_ANALYSIS_ONRC_COVERAGES = ['COMPLETE', 'COMPLETE_EMPTY', 'PARTIAL', 'UNRESOLVED'] as const
+export const CompanyAnalysisOnrcCoverageZ = z.enum(COMPANY_ANALYSIS_ONRC_COVERAGES)
+export type CompanyAnalysisOnrcCoverage = z.infer<typeof CompanyAnalysisOnrcCoverageZ>
+
+/**
+ * The key of a consensus bucket WITHOUT a value — county, UAT or observed
+ * status — as the API names it: its basis in parentheses, `(multiple_values)`.
+ * The same key filters exactly that bucket (`scope.county.in`).
+ */
+export function onrcBasisKey(basis: CompanyAnalysisOnrcBasis): string {
+  return `(${basis.toLowerCase()})`
+}
+
+const ONRC_BASIS_BY_KEY: ReadonlyMap<string, CompanyAnalysisOnrcBasis> = new Map(COMPANY_ANALYSIS_ONRC_BASES.map((basis) => [onrcBasisKey(basis), basis]))
+
+/** The basis a bucket key names, or null for a value key (a county code, a SIRUTA, a status code). */
+export function onrcBasisOfKey(key: string): CompanyAnalysisOnrcBasis | null {
+  return ONRC_BASIS_BY_KEY.get(key) ?? null
+}
+
+/** An exact civil date as the API writes a source date: `YYYY-MM-DD`, years 0001–9999. Text, never a `Date`. */
+export const CIVIL_DATE_RE = /^(?!0000)\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/u
+
+/** A day that exists in its month (Gregorian leap years), read from the text's own digits — no `Date`, no time zone. */
+export function isCivilDate(text: string): boolean {
+  if (!CIVIL_DATE_RE.test(text)) return false
+  const [year = 0, month = 0, day = 0] = text.split('-').map(Number)
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1] ?? 0
+  return day <= days
+}
+const civilDateZ = z.string().refine(isCivilDate, { message: 'an exact civil date YYYY-MM-DD (0001–9999)' })
+/** An ONRC id or epoch: canonical positive integer text. */
+const sourceIdZ = z.string().regex(/^[1-9]\d{0,18}$/u)
+const sourceTextZ = z.string().min(1)
+
+/**
+ * The ONRC edition a release's company dimensions were exported from —
+ * exactly the release's eight-key source pin. The release answers only while
+ * this edition is still ONRC's published source; `editionId` and
+ * `publicationEpoch` say whether the companies directory reads the same one.
+ */
+export const CompanyAnalysisSourceZ = z.object({
+  editionId: sourceIdZ,
+  publicationEpoch: sourceIdZ,
+  sourceSnapshotId: sourceTextZ,
+  /** ONRC's publication date of the edition's source files; null when unknown. */
+  sourcePublishedAt: civilDateZ.nullable(),
+  interpretationVersion: sourceTextZ,
+  privacyPolicyVersion: sourceTextZ,
+  dimensionPolicyVersion: sourceTextZ,
+  eligibilityPolicyVersion: sourceTextZ,
+})
+export type CompanyAnalysisSource = z.infer<typeof CompanyAnalysisSourceZ>
+
 // ─────────────────────────────────────────────────────────────── scope ──
 
+/**
+ * A CONSENSUS bucket selector (county, UAT, observed status) of the pinned
+ * edition: a value key, or a basis key `(multiple_values)` — exactly the
+ * breakdown bucket of that key. `includeUnknown` selects every basis bucket
+ * (no consensus value), never an absence.
+ */
 const keyFilterZ = z.object({
   in: z.array(z.string()).optional(),
   includeUnknown: z.boolean().optional(),
 })
 export type CompanyAnalysisKeyFilterInput = z.infer<typeof keyFilterZ>
+
+/**
+ * The supported ONRC exclusions. Each needs complete evidence: a company with
+ * partial or unresolved evidence abstains (is not selected), never counted as
+ * an absence. An exact `rev<N>:<code>` exclusion does not exist (a code of
+ * unknown revision may carry the same digits): a scope holding one is refused
+ * here rather than read without it.
+ */
+const onrcExcludeZ = z.strictObject({
+  /** No identifier carries these status codes (status coverage complete). */
+  status: z.array(z.string()).optional(),
+  /** No identifier carries these CAEN codes in any revision (CAEN coverage complete). */
+  caenCode: z.array(z.string()).optional(),
+  /** A known county consensus outside these codes. */
+  county: z.array(z.string()).optional(),
+  /** A known legal form outside these. */
+  legalForm: z.array(z.string()).optional(),
+})
+export type CompanyAnalysisOnrcExcludeInput = z.infer<typeof onrcExcludeZ>
+
+/**
+ * OBSERVATION filters over the edition's public resolved identifiers, all on
+ * the SAME identifier: OR within a field, AND across fields. A public 1048
+ * matches also next to a conflicting status; `caenCode` (4 digits) matches
+ * any revision, unknown included; `onrcCaen` (`rev2:6201`) is exact, and a
+ * code of unknown revision never matches it.
+ */
+export const CompanyAnalysisOnrcZ = z.strictObject({
+  status: z.array(z.string()).optional(),
+  county: z.array(z.string()).optional(),
+  caenCode: z.array(z.string()).optional(),
+  onrcCaen: z.array(z.string()).optional(),
+  exclude: onrcExcludeZ.optional(),
+})
+export type CompanyAnalysisOnrcInput = z.infer<typeof CompanyAnalysisOnrcZ>
 
 export const CompanyAnalysisRangeZ = z.object({
   metric: CompanyAnalysisMetricZ,
@@ -122,10 +234,10 @@ export type CompanyAnalysisRangeInput = z.infer<typeof CompanyAnalysisRangeZ>
 
 /**
  * The question, in the API's input shape (`CompanyAnalysisScopeInput`): OR
- * within a field, AND across fields. Company keys (where, what, fiscal flags)
- * describe the release snapshot; filing, ranges and size bands act on the
- * fiscal year's statement. Without `fiscalYear` (as a chart persists it,
- * beside its reference year).
+ * within a field, AND across fields. Company keys (where, what, fiscal flags,
+ * the ONRC observations) describe the release snapshot and its pinned
+ * edition; filing, ranges and size bands act on the fiscal year's statement.
+ * Without `fiscalYear` (as a chart persists it, beside its reference year).
  */
 export const CompanyAnalysisScopeZ = z.object({
   cuis: z.array(z.string()).optional(),
@@ -133,6 +245,7 @@ export const CompanyAnalysisScopeZ = z.object({
   uat: keyFilterZ.optional(),
   legalForms: z.array(z.string()).optional(),
   observedStatus: keyFilterZ.optional(),
+  onrc: CompanyAnalysisOnrcZ.optional(),
   vatPayer: z.array(CompanyAnalysisFlagValueZ).optional(),
   fiscallyInactive: z.array(CompanyAnalysisFlagValueZ).optional(),
   mainCaen: z.array(z.object({ code: z.string(), revision: z.string().optional() })).optional(),
@@ -169,14 +282,16 @@ const releaseRefZ = z.object({
   releaseId: z.string().regex(COMPANY_ANALYSIS_RELEASE_ID_RE),
   publishedAt: z.string().nullable(),
   active: z.boolean(),
+  /** The ONRC edition the release was exported from (its source pin). */
+  source: CompanyAnalysisSourceZ,
 })
 export type CompanyAnalysisReleaseRef = z.infer<typeof releaseRefZ>
 
 export const CompanyAnalysisReleaseZ = z.object({
   release: releaseRefZ,
   publicationId: countZ.nullable(),
-  schemaVersion: z.string(),
-  populationPolicyVersion: z.string(),
+  schemaVersion: z.literal(COMPANY_ANALYSIS_SCHEMA_VERSION),
+  populationPolicyVersion: z.literal(COMPANY_ANALYSIS_POPULATION_POLICY_VERSION),
   admissionPolicyVersion: z.string().nullable(),
   admissionPolicySha256: z.string().nullable(),
   inputSnapshotAt: z.string().nullable(),
@@ -278,8 +393,13 @@ export type CompanyAnalysisCaen = z.infer<typeof caenZ>
 
 export const CompanyAnalysisBucketZ = z.object({
   kind: z.enum(['GROUP', 'OTHER', 'UNKNOWN', 'TOTAL']),
+  /** GROUP only: the exact filter key — for COUNTY, UAT and OBSERVED_STATUS a consensus value, or `(<basis>)` for the companies without one. */
   key: z.string().nullable(),
   label: z.string().nullable(),
+  /** Where the label came from (`territory_hub`, `api_nomenclature`, `current_db_catalog`); null without a label. */
+  labelSource: z.string().nullable(),
+  /** A basis group's basis (COUNTY, UAT, OBSERVED_STATUS); null for a value group and every other bucket. */
+  basis: CompanyAnalysisOnrcBasisZ.nullable(),
   caen: caenZ.nullable(),
   groups: z.number().int(),
   companies: countZ,
@@ -327,31 +447,48 @@ export const CompanyAnalysisSeriesZ = z.object({
 })
 export type CompanyAnalysisSeries = z.infer<typeof CompanyAnalysisSeriesZ>
 
-const labelledZ = z.object({ code: z.string(), label: z.string().nullable() })
+const labelledZ = z.object({ code: z.string(), label: z.string().nullable(), labelSource: z.string().nullable() })
 
-export const CompanyAnalysisRecordZ = z.object({
-  cui: z.string(),
-  /** The current public name (not pinned to the release); null when the company is not publicly named. */
-  currentName: z.string().nullable(),
-  legalForm: z.string(),
-  county: labelledZ.nullable(),
-  uat: labelledZ.nullable(),
-  observedStatus: labelledZ.nullable(),
-  vatPayer: CompanyAnalysisFlagValueZ,
-  fiscallyInactive: CompanyAnalysisFlagValueZ,
-  mainCaen: caenZ.nullable(),
-  registrationYear: z.number().int().nullable(),
-  filed: z.boolean(),
-  employeeSizeBand: CompanyAnalysisSizeBandZ.nullable(),
-  values: z.array(
-    z.object({
-      metric: CompanyAnalysisMetricZ,
-      /** The reported value only; null for every other status, and for a company without a statement. */
-      value: decimalZ.nullable(),
-      status: CompanyAnalysisStatusZ.nullable(),
-    }),
-  ),
-})
+export const CompanyAnalysisRecordZ = z
+  .object({
+    cui: z.string(),
+    /** The current public name in the companies directory — not an edition or registry name, not pinned to the release; null when not publicly named. */
+    currentName: z.string().nullable(),
+    legalForm: z.string(),
+    legalFormBasis: CompanyAnalysisOnrcBasisZ,
+    /** The edition's county consensus; null when there is none (`countyBasis` says why). */
+    county: labelledZ.nullable(),
+    countyBasis: CompanyAnalysisOnrcBasisZ,
+    uat: labelledZ.nullable(),
+    uatBasis: CompanyAnalysisOnrcBasisZ,
+    /** The edition's complete status consensus; null otherwise (`observedStatusBasis` says why). */
+    observedStatus: labelledZ.nullable(),
+    observedStatusBasis: CompanyAnalysisOnrcBasisZ,
+    observedStatusCoverage: CompanyAnalysisOnrcCoverageZ,
+    onrcCaenCoverage: CompanyAnalysisOnrcCoverageZ,
+    /** The civil date ONRC RECORDED, exact text — never a founding date, an age or a market tenure. */
+    onrcRecordedDate: civilDateZ.nullable(),
+    /** The year of `onrcRecordedDate` only. */
+    onrcRecordedYear: z.number().int().nullable(),
+    onrcRecordedDateBasis: CompanyAnalysisOnrcBasisZ,
+    vatPayer: CompanyAnalysisFlagValueZ,
+    fiscallyInactive: CompanyAnalysisFlagValueZ,
+    mainCaen: caenZ.nullable(),
+    filed: z.boolean(),
+    employeeSizeBand: CompanyAnalysisSizeBandZ.nullable(),
+    values: z.array(
+      z.object({
+        metric: CompanyAnalysisMetricZ,
+        /** The reported value only; null for every other status, and for a company without a statement. */
+        value: decimalZ.nullable(),
+        status: CompanyAnalysisStatusZ.nullable(),
+      }),
+    ),
+  })
+  // Both null, or the year is the date's own: an answer that disagrees with itself is no answer.
+  .refine((record) => (record.onrcRecordedDate === null ? record.onrcRecordedYear === null : record.onrcRecordedYear === Number(record.onrcRecordedDate.slice(0, 4))), {
+    message: 'onrcRecordedYear must be the year of onrcRecordedDate',
+  })
 export type CompanyAnalysisRecord = z.infer<typeof CompanyAnalysisRecordZ>
 
 export const CompanyAnalysisRecordsZ = z.object({

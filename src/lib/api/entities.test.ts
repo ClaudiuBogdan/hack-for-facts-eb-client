@@ -800,6 +800,25 @@ describe("entities api", () => {
       vi.mocked(graphqlRequest).mockRejectedValue(new Error("API Error"));
       await expect(searchEntities("test")).rejects.toThrow("API Error");
     });
+
+    it.each([
+      ["no entities", { entities: null }],
+      ["no node list", { entities: { nodes: null } }],
+      ["no data at all", null],
+    ])(
+      "treats a response with %s as a failed read, never as an empty list",
+      async (_name, response) => {
+        vi.mocked(graphqlRequest).mockResolvedValue(response);
+        await expect(searchEntities("test")).rejects.toThrow(
+          "Entity search returned no result list",
+        );
+      },
+    );
+
+    it("keeps a real empty list empty", async () => {
+      vi.mocked(graphqlRequest).mockResolvedValue({ entities: { nodes: [] } });
+      await expect(searchEntities("test")).resolves.toEqual([]);
+    });
   });
 });
 

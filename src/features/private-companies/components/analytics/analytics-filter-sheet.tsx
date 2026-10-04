@@ -10,14 +10,15 @@ import type { UatIndex } from '../../hooks/use-uat-index'
 import { keyToggled, toggled } from '../../lib/company-analytics-filter-model'
 import { countText, localeOf } from '../../lib/company-analytics-format'
 import { filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
-import { CaenField, CodesField, CompanyField, CountyField, FilingField, FlagField, RangeField, SizeField, UatField } from './analytics-filter-fields'
+import { CaenField, CodesField, CompanyField, CountyField, FilingField, FlagField, OnrcField, RangeField, SizeField, UatField } from './analytics-filter-fields'
 
 /**
  * Every filter the question takes, in one panel, in a sheet: from the right
- * on a wide screen, from the bottom on a phone. Five groups — which
- * companies, where, what they are, what ANAF observed, what they filed for
- * the year — each row a label and its control; a change applies at once
- * (the address is the state). OR within a field, AND across fields.
+ * on a wide screen, from the bottom on a phone. Six groups — which
+ * companies, where (the edition's common value), what they are, what one ONRC
+ * entry observes, what ANAF observed, what they filed for the year — each row
+ * a label and its control; a change applies at once (the address is the
+ * state). OR within a field, AND across fields.
  */
 export function AnalyticsFilterSheet({
   state,
@@ -25,6 +26,7 @@ export function AnalyticsFilterSheet({
   question,
   stats,
   uats,
+  statusNames,
   locale,
   open,
   onOpenChange,
@@ -35,6 +37,8 @@ export function AnalyticsFilterSheet({
   readonly question: ResolvedQuestion | null
   readonly stats: CompanyAnalysisStats | undefined
   readonly uats: UatIndex
+  /** Observed status names by code, where read (the year's population). */
+  readonly statusNames: ReadonlyMap<string, string>
   readonly locale: string
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
@@ -62,16 +66,16 @@ export function AnalyticsFilterSheet({
         </div>
         <div className="min-h-0 flex-1 divide-y divide-border/70 overflow-y-auto px-4 py-4">
           <Group title={t`Ce firme`}>
-            <CompanyField scope={scope} max={limits?.maxSelectedCuis ?? 500} onChange={set} />
+            <CompanyField scope={scope} max={limits?.maxSelectedCuis ?? 500} source={release?.release.source ?? null} onChange={set} />
           </Group>
-          <Group title={t`Unde au sediul (la data ediției)`}>
+          <Group title={t`Unde au sediul (valoarea comună din ediția ONRC)`}>
             <CountyField scope={scope} onChange={set} />
             <UatField scope={scope} uats={uats} onChange={set} />
           </Group>
           <Group title={t`Ce sunt`}>
             <CodesField label={t`Formă juridică`} dimension="LEGAL_FORM" question={question} open={open} values={scope.legalForms ?? []} onToggle={(code) => set({ ...scope, legalForms: toggled(scope.legalForms, code) })} />
             <CodesField
-              label={t`Stare ONRC`}
+              label={t`Stare comună ONRC`}
               dimension="OBSERVED_STATUS"
               question={question}
               open={open}
@@ -80,8 +84,16 @@ export function AnalyticsFilterSheet({
               onToggle={(code) => set({ ...scope, observedStatus: keyToggled(scope.observedStatus, code) })}
               onUnknown={() => set({ ...scope, observedStatus: keyToggled(scope.observedStatus, null) })}
             />
-            <p className="text-xs text-muted-foreground">{t`Starea observată e cea mai avansată stare văzută în registru, nu dovada că firma e activă azi.`}</p>
+            <p className="text-xs text-muted-foreground">{t`Starea comună e cea pe care o au toate înscrierile firmei din ediția ONRC; nu e dovada că firma e activă azi. Pentru „are o înscriere cu starea 1048", folosește observațiile ONRC de mai jos.`}</p>
             <CaenField scope={scope} max={limits?.maxCaenCodes ?? 200} onChange={set} />
+          </Group>
+          <Group title={t`Observații ONRC (pe aceeași înscriere)`}>
+            <OnrcField
+              scope={scope}
+              limits={{ statuses: limits?.maxObservedStatuses ?? 60, counties: limits?.maxCounties ?? 60, caen: limits?.maxCaenCodes ?? 200, legalForms: limits?.maxLegalForms ?? 30 }}
+              statusNames={statusNames}
+              onChange={set}
+            />
           </Group>
           <Group title={t`Ce a observat ANAF`}>
             <FlagField label={t`Plătitor de TVA`} values={scope.vatPayer} onChange={(vatPayer) => set({ ...scope, vatPayer })} />

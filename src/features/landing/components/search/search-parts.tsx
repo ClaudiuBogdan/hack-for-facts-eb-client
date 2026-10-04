@@ -110,10 +110,24 @@ export function ResultRowContent({
   const registryStatus = entity.ngoRegistryStatus ? statusOf({ sourceRegistryStatus: entity.ngoRegistryStatus }) : null
   const closed = registryStatus !== null && registryStatus !== 'registered' && registryStatus !== 'unknown' ? statusLabel(registryStatus) : null
   // The registry's county as the registry writes it („BUCURESTI", „NEDETERMINAT") is said as the profile says it.
-  const county = entity.ngoRegistryNumber ? placeOf({ county: entity.countyName, locality: null }) : entity.countyName
+  // A company part's own county is the ONRC one; without it, the generic county of an
+  // identity with a company part is its institution's, and says so (shared-search r2 §4).
+  const company = entity.company ?? null
+  const onrcCounty = company?.countyName?.trim() || null
+  const genericCounty = entity.countyName
+  const county = entity.ngoRegistryNumber
+    ? placeOf({ county: entity.countyName, locality: null })
+    : onrcCounty ?? (company && genericCounty ? t`județul instituției: ${genericCounty}` : genericCounty)
+  // A company name the published edition does not hold is the directory's, and says so —
+  // only on a company document, whose title IS the company name (shared-search r4 §4). A
+  // mixed role keeps its own title, which the company part's name does not label.
+  const nameSource =
+    entity.docType === 'company' && company?.nameSource === 'core_organization'
+      ? t`denumire din directorul platformei, nu din ediția ONRC`
+      : null
   // A result no page holds says so where its link would have taken the reader.
   const unlinked = entity.href === '' ? t`fără profil pe platformă` : null
-  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, county, closed, unlinked].filter(Boolean).join(' · ')
+  const place = [showDocType ? getDocTypeMeta(entity.docType).label : null, county, closed, unlinked, nameSource].filter(Boolean).join(' · ')
 
   return (
     <>
@@ -368,8 +382,11 @@ export function announcement(status: SearchStatus, suggestionCount = 0) {
         few: '# rezultate.',
         other: '# de rezultate.',
       })
-      return count + suggested
+      const partial = status.partial ? ' ' + t`Partea de firme a căutării nu este la zi.` : ''
+      return count + partial + suggested
     }
+    case 'incomplete':
+      return t`Nu putem spune că nu există rezultate.` + suggested
     case 'scoped':
       return t`Scrie un nume sau un identificator pentru a căuta.`
     case 'short':

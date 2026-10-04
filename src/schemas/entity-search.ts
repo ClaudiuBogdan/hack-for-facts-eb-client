@@ -41,6 +41,50 @@ export type EntitySearchDocType = (typeof ENTITY_SEARCH_DOC_TYPES)[number]
 export type EntitySearchEngine = 'meili' | 'postgres' | 'none'
 
 /**
+ * Whether the company part of an answer is current (shared-search contract r2
+ * §3): `CURRENT` (candidates from a generation built for the published company
+ * scope, company values read fresh under it), `PARTIAL` (fresh values, but
+ * candidates, rank, facets and estimates from a generation built for another
+ * scope) or `UNAVAILABLE` (no company value served; company documents withheld).
+ */
+export type EntitySearchCompanyContribution = 'CURRENT' | 'PARTIAL' | 'UNAVAILABLE'
+
+/** Why the company contribution is not `CURRENT`; null exactly when it is. */
+export const ENTITY_SEARCH_CONTRIBUTION_REASONS = [
+  'no_search',
+  'engine_unavailable',
+  'control_missing',
+  'control_unreadable',
+  'control_unsupported',
+  'control_malformed',
+  'control_incoherent',
+  'company_check_unavailable',
+  'registry_not_published',
+  'generation_scope_stale',
+] as const
+
+export type EntitySearchContributionReason =
+  (typeof ENTITY_SEARCH_CONTRIBUTION_REASONS)[number]
+
+/**
+ * The company part of a hit, read fresh from the database for the request.
+ * `countyCode` / `countyName` are the ONRC company county only; the hit's
+ * generic `countyName` may be an institution's county instead.
+ */
+export interface EntitySearchHitCompany {
+  readonly registryState: 'IN_EDITION' | 'NOT_IN_EDITION'
+  readonly name: string
+  /** Where `name` comes from: the published ONRC edition or the directory's own name. */
+  readonly nameSource: 'onrc_edition' | 'core_organization'
+  readonly legalForm: string | null
+  readonly countyCode: string | null
+  readonly countyName: string | null
+  /** Null is unknown, never active or inactive. */
+  readonly active: boolean | null
+  readonly identifiers: readonly string[]
+}
+
+/**
  * A single search result row. `docType` is typed as `string` (not the enum) on
  * purpose: the server may grow new doc types and the UI must not crash on an
  * unknown one — the badge/routing layers degrade gracefully instead.
@@ -51,16 +95,19 @@ export interface EntitySearchHit {
   readonly title: string
   readonly subtitle: string | null
   readonly snippet: string | null
+  /** The generic county: for an identity with a company part it may be its institution's county, not the ONRC one. */
   readonly countyName: string | null
   /** Every role this identity plays (organization + pnrr_entity + …). */
   readonly roles: readonly string[]
-  /** False for struck-off companies and repealed acts. */
   readonly isUat?: boolean | null
   readonly entityTags?: readonly string[]
   /** On the NGO registry's organisations: the registry's number (its profile's address without a CUI) and status as written (`Radiat`). */
   readonly ngoRegistryNumber?: string | null
   readonly ngoRegistryStatus?: string | null
-  readonly isActive: boolean
+  /** False for struck-off companies and repealed acts; null is unknown, never active or inactive. */
+  readonly isActive: boolean | null
+  /** The fresh company part; absent on hits the server served none for. */
+  readonly company?: EntitySearchHitCompany | null
   readonly identifiers: readonly string[]
   readonly docId: string | null
   readonly docKey: string | null
@@ -87,9 +134,25 @@ export interface EntitySearchResult {
    * NOT "no matches" — say so rather than rendering an empty state.
    */
   readonly degraded: boolean
+  /** The index generation's candidate estimate: never a count of the hits shown. */
   readonly estimatedTotalHits: number
+  /** The generation's candidate facets: estimates, never counts of the hits shown. */
   readonly facets: readonly EntitySearchFacet[]
   readonly hits: readonly EntitySearchHit[]
+  /** The witnessed index generation of the candidates; null when none was witnessed. */
+  readonly generation: { readonly generationId: string; readonly registryScopeKey: string } | null
+  /** The request's company scope; null when none was captured. */
+  readonly companyScope: string | null
+  readonly companyContribution: EntitySearchCompanyContribution
+  readonly companyContributionReason: EntitySearchContributionReason | null
+  /**
+   * Candidate paging. `nextOffset` is the exact offset of the next page, or
+   * null when there is none; a page can show zero hits and still have one.
+   */
+  readonly continuation: {
+    readonly candidatesReturned: number
+    readonly nextOffset: number | null
+  }
 }
 
 /** Input passed to `searchEntitiesLive` / `useEntitySearch`. */

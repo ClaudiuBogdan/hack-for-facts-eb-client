@@ -14,6 +14,16 @@ export function buildPrivateCompanyDocumentTitle(
     : profile.legalName
 }
 
+/**
+ * The tab's title while no company is shown — loading, hidden under the
+ * registry pin, failed, not found: the CUI alone, as the route `head` writes
+ * it before a profile lands. Written explicitly, because a title left alone
+ * keeps the name of a company the page no longer shows.
+ */
+export function buildPrivateCompanyNeutralTitle(cui: string): string {
+  return `CUI ${cui}`
+}
+
 export function buildPrivateCompanyRouteHead(profile: PrivateCompanyProfile) {
   const title = buildPrivateCompanyDocumentTitle(profile)
 

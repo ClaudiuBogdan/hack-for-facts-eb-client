@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { companyRegistryEvidenceSchema } from './private-company-registry'
 
 export const privateCompanyMatchConfidenceSchema = z.enum([
   'safe',
@@ -10,16 +11,31 @@ export type PrivateCompanyMatchConfidence = z.infer<
   typeof privateCompanyMatchConfidenceSchema
 >
 
+/**
+ * The pinned ONRC edition's complete status consensus of the CUI (null on a
+ * conflict, partial or unresolved evidence, or a registry that cannot
+ * answer). `label` is this application's presentation name for the code, or
+ * the code itself (`labelSource`): never a label ONRC published.
+ */
 export const privateCompanyStatusSchema = z.object({
   code: z.string(),
   label: z.string(),
+  labelSource: z.enum(['api_nomenclature', 'code']).optional(),
 })
 
+/**
+ * One activity: a (revision, code) the pinned ONRC edition publicly observes
+ * (`onrc`), or ANAF's declared main activity (`anaf`, its own revision, often
+ * unknown). `label` is the current database catalog's name in the row's OWN
+ * known revision (`labelSource: current_db_catalog`); an unknown revision
+ * has none.
+ */
 export const privateCompanyCaenActivitySchema = z.object({
   code: z.string(),
   rev: z.string().nullable(),
   label: z.string().nullable(),
   source: z.enum(['onrc', 'anaf']),
+  labelSource: z.literal('current_db_catalog').nullable().optional(),
 })
 
 export const privateCompanyRepresentativeSchema = z.object({
@@ -64,21 +80,114 @@ export const privateCompanyFinancialSummarySchema = z.object({
   patrimonyRegie: z.number().nullable(),
 })
 
+/** Who published a statement: ANAF (FY2019+) or the Ministry of Finance (MFP, FY2008–2018). */
+export const privateCompanyStatementPublisherSchema = z.enum(['anaf', 'mfp'])
+
+/**
+ * The qualification evaluator's metrics (sql-v1): the 20 source metrics in
+ * the statements table's order, then the derived net result.
+ */
+export const FINANCIAL_SOURCE_METRICS = [
+  'turnover',
+  'net_profit',
+  'net_loss',
+  'employees',
+  'total_revenue',
+  'total_expenses',
+  'gross_profit',
+  'gross_loss',
+  'receivables',
+  'current_assets',
+  'fixed_assets',
+  'cash_and_bank',
+  'prepaid_expenses',
+  'deferred_income',
+  'subscribed_capital',
+  'inventories',
+  'debts',
+  'provisions',
+  'total_equity',
+  'patrimony_regie',
+] as const
+export const FINANCIAL_METRICS = [...FINANCIAL_SOURCE_METRICS, 'net_result'] as const
+export type FinancialSourceMetric = (typeof FINANCIAL_SOURCE_METRICS)[number]
+export type FinancialMetric = (typeof FINANCIAL_METRICS)[number]
+
+/**
+ * A metric's status under the published admission policy. Only `reported`
+ * may enter a figure, a chart or a comparison; every other status keeps the
+ * source value visible and out of them. `reported` means admitted by the
+ * policy's extraction and mapping rules, not that the figure is economically
+ * certified.
+ */
+export const privateCompanyMetricStatusSchema = z.enum([
+  'reported',
+  'missing',
+  'not_admitted',
+  'held_profile',
+  'held_observation',
+  'held_quality',
+  'held_component',
+])
+
+/**
+ * One statement's qualification. `not_assessed` (with a reason) is the state
+ * of a statement the evaluator did not or could not qualify, including a
+ * response that carried no qualification at all: never read as reported.
+ * Policy dates are approval dates, never source freshness.
+ */
+export const privateCompanyStatementQualificationSchema = z.object({
+  assessment: z.enum(['assessed', 'not_assessed']),
+  reason: z.string().nullable(),
+  releaseId: z.string().nullable(),
+  policyVersion: z.string().nullable(),
+  policySha256: z.string().nullable(),
+  policyApprovedOn: z.string().nullable(),
+  evaluatorVersion: z.string().nullable(),
+  /** All 21 statuses when assessed; null when not assessed. */
+  statuses: z.record(z.enum(FINANCIAL_METRICS), privateCompanyMetricStatusSchema).nullable(),
+  /** The evaluator's net result as exact text; set only when its status is `reported`. */
+  netResult: z.string().nullable(),
+  /** The reviewed reason of an observation hold on this statement. */
+  holdReason: z.string().nullable(),
+  holdDrift: z.array(z.string()),
+})
+
+/** Where the statement was published; the URL only when the API recorded it, never guessed. */
+export const privateCompanyStatementSourceSchema = z.object({
+  url: z.string().nullable(),
+  urlKind: z.enum(['anaf_statement', 'mfp_resource']).nullable(),
+  statementProfileHash: z.string().nullable(),
+  metricRuleVersion: z.string().nullable(),
+})
+
 export const privateCompanyFinancialYearSchema = z.object({
   fiscalYear: z.number().int(),
+  /** Null when the API did not name the publisher: never assumed to be ANAF. */
+  sourceSystem: privateCompanyStatementPublisherSchema.nullable(),
+  /**
+   * The source values as numbers, for display scale only. A figure, chart or
+   * comparison reads them through the qualification (`reportedNumber`), never
+   * directly: a held or unassessed value is a source observation, not a fact.
+   */
   turnover: z.number().nullable(),
+  /** A reported zero stays 0: a zero profit beside a zero loss is a break-even year, not a gap. */
   netProfit: z.number().nullable(),
   netLoss: z.number().nullable(),
   employees: z.number().nullable(),
   currency: z.literal('RON'),
   summary: privateCompanyFinancialSummarySchema.nullable(),
+  /** The exact source text of every source metric, as the API sent it (never re-printed from a number). */
+  originals: z.record(z.enum(FINANCIAL_SOURCE_METRICS), z.string().nullable()),
+  source: privateCompanyStatementSourceSchema.nullable(),
+  qualification: privateCompanyStatementQualificationSchema,
 })
 
 /**
  * Server-computed year-on-year deltas. The server owns this arithmetic on
- * purpose: a naive `netProfit - netLoss` propagates null where the authoritative
- * value treats a missing side as zero, and ANAF writes `net_profit = 0` rather
- * than null in a loss year.
+ * purpose: only values the evaluator REPORTED in both years, under one
+ * policy, enter a delta (the net from the evaluator's own net result); a
+ * null delta names its reason.
  */
 export const privateCompanyFinancialTrajectorySchema = z.object({
   fromYear: z.number().int().nullable(),
@@ -86,6 +195,9 @@ export const privateCompanyFinancialTrajectorySchema = z.object({
   turnoverDelta: z.number().nullable(),
   netResultDelta: z.number().nullable(),
   employeesDelta: z.number().nullable(),
+  turnoverDeltaReason: z.string().nullable(),
+  netResultDeltaReason: z.string().nullable(),
+  employeesDeltaReason: z.string().nullable(),
 })
 
 /**
@@ -130,8 +242,10 @@ export const privateCompanyPublicMoneySchema = z.object({
 export const privateCompanyFiscalSchema = z.object({
   vatPayer: z.boolean().nullable(),
   inactive: z.boolean().nullable(),
+  /** ANAF itself answered for the company: a fiscal record or an ANAF-published statement. */
   anafFound: z.boolean(),
-  asOfDate: z.string(),
+  /** ANAF's state date for the fiscal record; null when unknown, never another source's date. */
+  asOfDate: z.string().nullable(),
   fiscalCaen: z
     .object({
       code: z.string(),
@@ -140,18 +254,34 @@ export const privateCompanyFiscalSchema = z.object({
     .nullable(),
 })
 
+/**
+ * A source with the date of what it published: for ONRC the publication date
+ * of the open-data edition, for ANAF the state date of its answer — never the
+ * date the platform fetched or rebuilt it.
+ */
 export const privateCompanySourceSchema = z.object({
   id: z.enum(['onrc', 'anaf']),
   snapshotDate: z.string(),
   label: z.string().optional(),
 })
 
+/**
+ * A directory company. Its ONRC fields are the pinned edition's QUALIFIED
+ * values — null on conflict, absence, unresolved evidence or a registry that
+ * cannot answer — with every public observation under `registry`; fiscal
+ * (ANAF), financial and public-money sections are independent of the
+ * registry's state.
+ */
 export const privateCompanyProfileSchema = z.object({
   organizationId: z.string(),
   cui: z.string().nullable(),
+  /** The single public resolved identifier; null with none or several (see `registry.identifiers`). */
   codInmatriculare: z.string().nullable(),
   legalName: z.string(),
+  /** `onrc_edition`: the pinned edition's qualified name; `core_organization`: the platform directory's name, not an edition observation. */
+  nameSource: z.enum(['onrc_edition', 'core_organization']),
   legalForm: z.string().nullable(),
+  /** The civil date ONRC RECORDED (`YYYY-MM-DD`), qualified by its basis: never a founding date or an age. */
   registrationDate: z.string().nullable(),
   status: privateCompanyStatusSchema.nullable(),
   address: z.object({
@@ -169,9 +299,14 @@ export const privateCompanyProfileSchema = z.object({
   /** Null when the company received no public money at all. */
   publicMoney: privateCompanyPublicMoneySchema.nullable(),
   sources: z.array(privateCompanySourceSchema),
+  /** The pinned ONRC scope and this CUI's evidence in it. */
+  registry: companyRegistryEvidenceSchema,
 })
 
 export type PrivateCompanyProfile = z.infer<typeof privateCompanyProfileSchema>
+export type PrivateCompanyMetricStatus = z.infer<typeof privateCompanyMetricStatusSchema>
+export type PrivateCompanyStatementQualification = z.infer<typeof privateCompanyStatementQualificationSchema>
+export type PrivateCompanyStatementSource = z.infer<typeof privateCompanyStatementSourceSchema>
 export type PrivateCompanyCaenActivity = z.infer<
   typeof privateCompanyCaenActivitySchema
 >
@@ -181,6 +316,9 @@ export type PrivateCompanyGeography = z.infer<
 >
 export type PrivateCompanyFinancialYear = z.infer<
   typeof privateCompanyFinancialYearSchema
+>
+export type PrivateCompanyStatementPublisher = z.infer<
+  typeof privateCompanyStatementPublisherSchema
 >
 export type PrivateCompanyFinancialSummary = z.infer<
   typeof privateCompanyFinancialSummarySchema

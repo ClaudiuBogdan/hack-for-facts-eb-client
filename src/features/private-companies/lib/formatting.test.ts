@@ -23,6 +23,22 @@ describe('private company formatting', () => {
     expect(formatRonNetResultCompact(null, 50_000_000)).toMatch(/^−/)
   })
 
+  it('nets profit against loss: the zero profit beside a loss never hides the loss', () => {
+    // ANAF writes a zero profit in a loss year; first-non-null showed "0 RON".
+    expect(formatRonNetResultCompact(0, 1_200_000)).toBe(
+      `−${formatRonAmountCompact(1_200_000)}`,
+    )
+    expect(formatRonNetResultCompact(5_000_000, null)).toBe(
+      formatRonAmountCompact(5_000_000),
+    )
+  })
+
+  it('shows a reported 0/0 as a zero result, and only null/null as nothing', () => {
+    expect(formatRonNetResultCompact(0, 0)).toBe(formatRonAmountCompact(0))
+    expect(formatRonNetResultCompact(0, 0)).not.toBe('—')
+    expect(formatRonNetResultCompact(null, null)).toBe('—')
+  })
+
   it('signs a positive delta and leaves zero unsigned', () => {
     expect(formatSignedRonCompact(863_792_940)).toMatch(/^\+/)
     expect(formatSignedInteger(389)).toMatch(/^\+/)

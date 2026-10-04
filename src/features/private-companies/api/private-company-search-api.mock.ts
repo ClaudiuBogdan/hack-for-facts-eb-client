@@ -1,28 +1,31 @@
 /**
- * Mock implementations of the company search / resolve / group-profile APIs,
- * derived from the profile fixtures, so the directory and the profiles are
- * exercisable under `VITE_MOCK_DATASETS=private-companies` without a backend.
- * The hub's figures are the real snapshot, not fixtures: its county links
- * resolve here, but its ranked companies exist only in the live API.
+ * MOCK implementations of the company search and name resolve, derived from
+ * the profile fixtures, so the directory and the profiles are exercisable
+ * under `VITE_MOCK_DATASETS=private-companies` without a backend. Every page
+ * carries the mock registry envelope (`mode: 'mock'`); nothing here ever
+ * stands in for a live answer.
  *
- * The filter semantics here mirror the server's `CompaniesFilter`: multi-value
- * facets are OR-within / AND-across, `caen` matches by prefix below 4 digits,
- * and `regFrom`/`regTo` are an inclusive range.
+ * The filter semantics mirror the API's (API19), over each fixture's ONE
+ * identifier: `status` matches ANY observed status code, `county` a county
+ * code or name of the identifier, `caen` the digits in any revision of the
+ * edition's observations (a prefix below 4 digits), `onrcCaen` one code in
+ * one revision, the recorded-date range an inclusive range; the fiscal
+ * switches are ANAF's.
  */
 import type {
-  CompanyGroupByDim,
-  CompanyGroupSlice,
-  PrivateCompanyCountyFacet,
+  CompanyResolveHit,
+  CompanyResolveRequest,
+  CompanyResolveResult,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
 } from '@/schemas/private-company-search'
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
-import {
-  getMockPrivateCompanyProfile,
-  mockPrivateCompanyCuis,
-} from '../mocks/fixtures'
+import { getMockPrivateCompanyProfile, mockPrivateCompanyCuis } from '../mocks/fixtures'
+import { MOCK_REGISTRY_ENVELOPE } from '../mocks/fixtures/registry'
 import { foldCountyName } from '../lib/county-names'
-import type { CompanyResolveHit } from './private-company-api.live'
+import { countyName } from '../lib/hub-counties'
+import { parseCaenSelector } from '../lib/company-caen-selector'
+import { assertRegistryScope } from './company-registry-errors'
 
 function mockProfiles(): PrivateCompanyProfile[] {
   return mockPrivateCompanyCuis
@@ -30,175 +33,143 @@ function mockProfiles(): PrivateCompanyProfile[] {
     .filter((profile): profile is PrivateCompanyProfile => profile !== null)
 }
 
-function toResultItem(profile: PrivateCompanyProfile) {
+function toResultItem(profile: PrivateCompanyProfile): PrivateCompanySearchResultPage['items'][number] {
+  const evidence = profile.registry.profile
   return {
     cui: profile.cui ?? '',
     name: profile.legalName,
+    nameSource: profile.nameSource,
     legalForm: profile.legalForm,
-    status: profile.status,
-    county: profile.address.county,
+    status: profile.status ? { code: profile.status.code, label: profile.status.label } : null,
+    county: evidence?.countyName ?? null,
     vatPayer: profile.fiscal.vatPayer,
     declaredFiscallyInactive: profile.fiscal.inactive,
     registrationDate: profile.registrationDate,
+    registryCuiState: profile.registry.cuiState,
+    hasActiveObservation: profile.registry.identifiers.some((identifier) => identifier.hasActiveObservation),
+    statusBasis: evidence?.statusCode.basis ?? null,
+    countyBasis: evidence?.countyCode.basis ?? null,
+    recordedDateBasis: evidence?.recordedDate.basis ?? null,
   }
 }
 
-function matchesSet(
-  values: readonly string[] | undefined,
-  actual: string | null | undefined,
-): boolean {
-  if (!values || values.length === 0) return true
-  if (!actual) return false
-  return values.includes(actual)
-}
-
-function matchesCaen(caen: string | undefined, profile: PrivateCompanyProfile): boolean {
-  const trimmed = caen?.trim()
-  if (!trimmed) return true
-  return profile.caenActivities.some((activity) =>
-    trimmed.length < 4 ? activity.code.startsWith(trimmed) : activity.code === trimmed,
-  )
-}
-
-/** A county as the server compares it: no „Județul"/„Municipiul", no diacritics, any case. */
+/** A county as the server compares it: a code, or a name with no „Județul"/„Municipiul", no diacritics, any case. */
 function countyKey(name: string): string {
   return foldCountyName(name).replace(/^(judetul|municipiul)\s+/, '')
 }
 
-/** The server folds both sides and compares them whole, so `Cluj`, `CLUJ` and `Județul Cluj` agree and `Clu` matches nothing. */
-function matchesCounty(counties: readonly string[] | undefined, county: string | null): boolean {
+function matchesCounty(counties: readonly string[] | undefined, codes: readonly string[]): boolean {
   if (!counties || counties.length === 0) return true
-  if (!county) return false
-  const key = countyKey(county)
-  return counties.some((wanted) => key === countyKey(wanted))
+  const keys = new Set(codes.flatMap((code) => [code, countyKey(countyName(code))]))
+  return counties.some((wanted) => keys.has(wanted) || keys.has(countyKey(wanted)))
 }
 
-function matchesDateRange(
-  query: PrivateCompanySearchQuery,
-  registrationDate: string | null,
-): boolean {
-  if (!query.regFrom && !query.regTo) return true
-  if (!registrationDate) return false
-  if (query.regFrom && registrationDate < query.regFrom) return false
-  if (query.regTo && registrationDate > query.regTo) return false
-  return true
-}
-
-function matchesProfile(
-  profile: PrivateCompanyProfile,
-  query: PrivateCompanySearchQuery,
-): boolean {
+function matchesProfile(profile: PrivateCompanyProfile, query: PrivateCompanySearchQuery): boolean {
   const q = query.q?.trim().toLowerCase()
-  if (q && !profile.legalName.toLowerCase().includes(q) && profile.cui !== q) {
-    return false
-  }
-  if (!matchesCounty(query.county, profile.address.county)) return false
-  if (!matchesSet(query.status, profile.status?.code)) return false
-  if (!matchesSet(query.legalForm, profile.legalForm)) return false
-  if (!matchesCaen(query.caen, profile)) return false
-  if (!matchesDateRange(query, profile.registrationDate)) return false
-  if (typeof query.vat === 'boolean' && profile.fiscal.vatPayer !== query.vat) {
-    return false
-  }
-  if (
-    typeof query.inactive === 'boolean' &&
-    profile.fiscal.inactive !== query.inactive
-  ) {
-    return false
-  }
+  if (q && !profile.legalName.toLowerCase().includes(q) && profile.cui !== q) return false
+  const identifier = profile.registry.identifiers[0]
+  const caenRows = profile.registry.caenObservations
+  if (query.status?.length && !query.status.some((code) => identifier?.statusCodes.includes(code))) return false
+  if (!matchesCounty(query.county, identifier?.countyCodes ?? [])) return false
+  if (query.legalForm?.length && !query.legalForm.includes(profile.legalForm ?? '')) return false
+  const caen = query.caen?.trim()
+  if (caen && !caenRows.some((row) => row.code !== null && (caen.length < 4 ? row.code.startsWith(caen) : row.code === caen))) return false
+  const selectors = (query.onrcCaen ?? []).flatMap((value) => parseCaenSelector(value) ?? [])
+  if (selectors.length > 0 && !selectors.some((selector) => caenRows.some((row) => row.revision === selector.revision && row.code === selector.code))) return false
+  const recorded = profile.registrationDate
+  if ((query.regFrom || query.regTo) && !recorded) return false
+  if (recorded && query.regFrom && recorded < query.regFrom) return false
+  if (recorded && query.regTo && recorded > query.regTo) return false
+  if (typeof query.vat === 'boolean' && profile.fiscal.vatPayer !== query.vat) return false
+  if (typeof query.inactive === 'boolean' && profile.fiscal.inactive !== query.inactive) return false
   return true
 }
 
-function sortProfiles(
-  profiles: PrivateCompanyProfile[],
-  sort: PrivateCompanySearchQuery['sort'],
-): PrivateCompanyProfile[] {
+function sortProfiles(profiles: PrivateCompanyProfile[], sort: PrivateCompanySearchQuery['sort']): PrivateCompanyProfile[] {
   if (!sort) return profiles
   const sorted = [...profiles]
-  if (sort === 'name') {
-    sorted.sort((a, b) => a.legalName.localeCompare(b.legalName, 'ro'))
-  } else if (sort === 'cui') {
-    sorted.sort((a, b) => Number(a.cui ?? 0) - Number(b.cui ?? 0))
-  } else {
-    // Newest registrations first; companies without a date sink to the bottom.
-    sorted.sort((a, b) => (b.registrationDate ?? '').localeCompare(a.registrationDate ?? ''))
-  }
+  if (sort === 'name') sorted.sort((a, b) => a.legalName.localeCompare(b.legalName, 'ro'))
+  else if (sort === 'cui') sorted.sort((a, b) => Number(a.cui ?? 0) - Number(b.cui ?? 0))
+  // Newest recorded dates first; companies without one sink to the bottom.
+  else sorted.sort((a, b) => (b.registrationDate ?? '').localeCompare(a.registrationDate ?? ''))
   return sorted
 }
 
-export async function fetchPrivateCompanySearchMock(
-  query: PrivateCompanySearchQuery,
-): Promise<PrivateCompanySearchResultPage> {
+export async function fetchPrivateCompanySearchMock(query: PrivateCompanySearchQuery): Promise<PrivateCompanySearchResultPage> {
   await new Promise((resolve) => setTimeout(resolve, 100))
-
+  assertRegistryScope(MOCK_REGISTRY_ENVELOPE.scopeKey, query.scopeKey)
   const matched = mockProfiles().filter((profile) => matchesProfile(profile, query))
   const items = sortProfiles(matched, query.sort).map(toResultItem)
-
-  return {
-    items,
-    nextCursor: null,
-    totalCount: items.length,
-    totalEstimated: false,
-  }
+  return { items, nextCursor: null, totalCount: items.length, totalEstimated: false, registry: MOCK_REGISTRY_ENVELOPE }
 }
 
-export async function fetchPrivateCompanyCountiesMock(): Promise<
-  PrivateCompanyCountyFacet[]
-> {
-  const groups = await fetchCompanyGroupProfileMock('COUNTY')
-  return groups
-    .map((group) => ({ name: group.key, count: group.count }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
+/**
+ * `companyResolveResult` over the fixtures, in the API's terms: NAME and
+ * REGNUM under the mock registry scope — a `registryScope` it did not issue is
+ * refused as the API refuses it (a moved scope), zero hits still scoped;
+ * CAEN and COUNTY as catalogs with no scope, each CAEN row with its own
+ * revision and key and its label as the catalog's (or its key, unlabelled).
+ * The mock search engine is never down: `degraded` is false.
+ */
+export async function resolveCompaniesMock(request: CompanyResolveRequest): Promise<CompanyResolveResult> {
+  await new Promise((resolve) => setTimeout(resolve, 60))
+  const needle = request.q.trim().toLowerCase()
+  const limit = request.limit ?? 10
+  const take = (hits: CompanyResolveHit[]) => (limit > 0 ? hits.slice(0, limit) : [])
+  if (request.dim === 'NAME' || request.dim === 'REGNUM') {
+    assertRegistryScope(MOCK_REGISTRY_ENVELOPE.scopeKey, request.registryScope)
+    const matches =
+      request.dim === 'NAME'
+        ? mockProfiles().filter((profile) => needle.length > 0 && profile.legalName.toLowerCase().includes(needle))
+        : mockProfiles().filter((profile) => profile.registry.identifiers.some((identifier) => identifier.identifierKey.toLowerCase() === needle))
+    const hits = take(
+      matches.map((profile) => ({
+        dim: request.dim,
+        cui: profile.cui,
+        label: profile.legalName,
+        value: request.dim === 'NAME' ? (profile.cui ?? '') : (profile.registry.identifiers[0]?.identifierKey ?? ''),
+        confidence: 1,
+        revision: null,
+        key: null,
+        labelSource: profile.nameSource,
+      })),
+    )
+    return { hits, degraded: false, ambiguous: hits.length > 1, registry: MOCK_REGISTRY_ENVELOPE, scopeKey: MOCK_REGISTRY_ENVELOPE.scopeKey }
+  }
+  const catalog: CompanyResolveHit[] =
+    request.dim === 'CAEN'
+      ? uniqueBy(
+          mockProfiles().flatMap((profile) => profile.caenActivities.filter((activity) => activity.source === 'onrc' && activity.rev !== null)),
+          (activity) => `${activity.rev ?? ''}:${activity.code}`,
+        )
+          .filter((activity) => activity.code.startsWith(needle) || (activity.label ?? '').toLowerCase().includes(needle))
+          .map((activity) => ({
+            dim: 'CAEN' as const,
+            cui: null,
+            label: activity.label ?? `${activity.rev ?? ''}:${activity.code}`,
+            value: activity.code,
+            confidence: 1,
+            revision: activity.rev,
+            key: `${activity.rev ?? ''}:${activity.code}`,
+            labelSource: activity.label ? ('current_db_catalog' as const) : null,
+          }))
+      : uniqueBy(
+          mockProfiles().flatMap((profile) => profile.registry.identifiers.flatMap((identifier) => identifier.countyCodes)),
+          (code) => code,
+        )
+          .map(countyName)
+          .filter((name) => name.toLowerCase().includes(needle))
+          .map((name) => ({ dim: 'COUNTY' as const, cui: null, label: name, value: name, confidence: 1, revision: null, key: null, labelSource: 'territory_hub' as const }))
+  const hits = take(catalog)
+  return { hits, degraded: false, ambiguous: hits.length > 1, registry: null, scopeKey: null }
 }
 
-function groupKeyFor(
-  profile: PrivateCompanyProfile,
-  groupBy: CompanyGroupByDim,
-): { key: string; label: string | null } | null {
-  if (groupBy === 'COUNTY') {
-    return profile.address.county ? { key: profile.address.county, label: null } : null
-  }
-  if (groupBy === 'STATUS') {
-    return profile.status
-      ? { key: profile.status.code, label: profile.status.label }
-      : null
-  }
-  const caen = profile.caenActivities[0]
-  if (!caen) return null
-  return { key: caen.code.slice(0, 2), label: caen.label }
-}
-
-export async function fetchCompanyGroupProfileMock(
-  groupBy: CompanyGroupByDim,
-  profiles: PrivateCompanyProfile[] = mockProfiles(),
-): Promise<CompanyGroupSlice[]> {
-  const byKey = new Map<string, CompanyGroupSlice>()
-  for (const profile of profiles) {
-    const group = groupKeyFor(profile, groupBy)
-    if (!group) continue
-    const existing = byKey.get(group.key)
-    byKey.set(group.key, {
-      key: group.key,
-      label: existing?.label ?? group.label,
-      count: (existing?.count ?? 0) + 1,
-    })
-  }
-  return [...byKey.values()].sort((a, b) => b.count - a.count)
-}
-
-export async function resolveCompanyByNameMock(
-  q: string,
-  limit = 10,
-): Promise<CompanyResolveHit[]> {
-  const needle = q.trim().toLowerCase()
-  if (needle.length === 0) return []
-  return mockProfiles()
-    .filter((profile) => profile.legalName.toLowerCase().includes(needle))
-    .slice(0, limit)
-    .map((profile) => ({
-      cui: profile.cui,
-      label: profile.legalName,
-      value: profile.cui ?? '',
-      confidence: 1,
-    }))
+function uniqueBy<T>(items: readonly T[], keyOf: (item: T) => string): T[] {
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    const key = keyOf(item)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }

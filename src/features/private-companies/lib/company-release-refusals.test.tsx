@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useChartData } from '@/components/charts/hooks/useChartData'
 import type { CompaniesSeriesMappingResult } from '@/lib/companies-chart-series'
 import { ChartSchema, type Chart } from '@/schemas/charts'
-import { recordsFixture, releaseFixture, seriesFixture, statsFixture } from '../api/company-analytics.fixture'
+import { recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../api/company-analytics.fixture'
 import { CompanyAnalyticsPage } from '../components/analytics/company-analytics-page'
 import { releaseOfKey } from './company-analytics-keys'
 import { COMPANIES_CHART_QUERY_KEY, knownRefusedReleases, rememberRefusedRelease } from './company-release-refusals'
@@ -55,7 +55,7 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
       const held = call.op === 'CompanyAnalysisSeries' ? api.hold(call) : null
       if (held) await held
       if (api.refuse(call)) throw new actual.GraphQLRequestError('withdrawn', { graphQLErrors: [{ message: 'withdrawn', extensions: { code: 'INVALID_INPUT', field: 'release' } }] })
-      const release = { releaseId: String(variables.release ?? api.active), publishedAt: null, active: true }
+      const release = releaseRef(String(variables.release ?? api.active), { publishedAt: null })
       if (call.op === 'CompanyAnalysisRelease') return { companyAnalysisRelease: releaseFixture({ release }) }
       if (call.op === 'CompanyAnalysisStats') return { companyAnalysisStats: statsFixture({ release }) }
       if (call.op === 'CompanyAnalysisRecords') return { companyAnalysisRecords: recordsFixture({ release }) }

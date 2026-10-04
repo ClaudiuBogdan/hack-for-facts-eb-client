@@ -67,6 +67,7 @@ export function UATFinder({ locale, text, onSelect, finderId }: UATFinderProps) 
     setSearchTerm,
     searchResults,
     isSearching,
+    isSearchError,
     isDropdownOpen,
     activeIndex,
     selectedUAT,
@@ -89,8 +90,11 @@ export function UATFinder({ locale, text, onSelect, finderId }: UATFinderProps) 
   const inputRef = useRef<HTMLInputElement>(null)
 
   const showDropdown = isDropdownOpen && searchTerm.trim().length >= 2
-  const showResults = showDropdown && (isSearching || searchResults.length > 0)
-  const showNoResults = showDropdown && !isSearching && searchResults.length === 0
+  // A failed read found nothing because it read nothing: it says so, alone. The
+  // error takes precedence over rows a previous read left and over "no results".
+  const showSearchError = showDropdown && !isSearching && isSearchError
+  const showResults = showDropdown && !showSearchError && (isSearching || searchResults.length > 0)
+  const showNoResults = showDropdown && !isSearching && !isSearchError && searchResults.length === 0
   const showRecent = !searchTerm && recentUATs.length > 0 && !selectedUAT
 
   return (
@@ -189,6 +193,7 @@ export function UATFinder({ locale, text, onSelect, finderId }: UATFinderProps) 
                 {showNoResults && (
                   <NoResultsMessage message={text.noResultsMessage} searchTerm={searchTerm} />
                 )}
+                {showSearchError && <SearchErrorMessage message={text.errorMessage} />}
               </AnimatePresence>
             </div>
 
@@ -369,6 +374,25 @@ function NoResultsMessage({ message, searchTerm }: NoResultsMessageProps) {
       <p className="text-zinc-500 dark:text-zinc-400 font-medium">
         {message.replace('{searchTerm}', searchTerm)}
       </p>
+    </motion.div>
+  )
+}
+
+/**
+ * The search read failed: the same panel as an empty answer, saying what
+ * happened instead, in the lesson's own translated `errorMessage`.
+ */
+function SearchErrorMessage({ message }: { readonly message: string }) {
+  return (
+    <motion.div
+      role="alert"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: ANIMATION.duration.fast }}
+      className="absolute z-30 mt-4 w-full bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 shadow-xl rounded-[2rem] p-8 text-center"
+    >
+      <p className="text-zinc-500 dark:text-zinc-400 font-medium">{message}</p>
     </motion.div>
   )
 }

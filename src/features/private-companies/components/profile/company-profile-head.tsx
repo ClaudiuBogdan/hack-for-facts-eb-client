@@ -7,7 +7,6 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
-import { STATUS_ACTIVE } from '../../lib/company-status-codes'
 import type { CompanyProfileModel, StatusKind } from '../../lib/company-profile-model'
 import { companySentence, nameLength, statusNotice, statusText } from '../../lib/company-profile-text'
 import { countyDirectorySearch } from '../../lib/hub-counties'
@@ -27,7 +26,9 @@ const HEADING: Record<ReturnType<typeof nameLength>, string> = {
 }
 
 export function CompanyProfileHead({ model }: { readonly model: CompanyProfileModel }) {
-  const trend = model.latest !== null && model.recent.years.length > 0
+  // The trend plots reported values only: with none, there is nothing to draw.
+  const { recent } = model
+  const trend = model.latest !== null && [...recent.turnover, ...recent.netResult, ...recent.employees].some((value) => value !== null)
   return (
     <section className="relative border-b" aria-labelledby="company-profile-title">
       <TwoLayerLattice idPrefix="company-profile" />
@@ -60,9 +61,13 @@ export function CompanyProfileHead({ model }: { readonly model: CompanyProfileMo
   )
 }
 
-/** The way back to the directory, by the company's county and sector. */
+/**
+ * The way back to the directory, by the company's county (the edition's
+ * consensus). No „sector" link: ANAF's main activity is not a registry fact
+ * the directory filters by.
+ */
 export function CompanyKicker({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
-  const { place, mainActivity } = model
+  const { place } = model
   // Every text box trimmed to its capitals, so centring puts the arrow on the capitals' middle in any font.
   return (
     <MonoLabel className={cn('flex flex-wrap items-center gap-2 text-muted-foreground **:[text-box:trim-both_cap_alphabetic]', className)}>
@@ -80,14 +85,6 @@ export function CompanyKicker({ model, className }: { readonly model: CompanyPro
           </Link>
         </>
       ) : null}
-      {mainActivity?.division && mainActivity.divisionLabel ? (
-        <>
-          <span aria-hidden="true">/</span>
-          <Link to="/companies/search" search={{ caen: mainActivity.division, status: [STATUS_ACTIVE] }} className="hover:text-foreground">
-            {mainActivity.divisionLabel}
-          </Link>
-        </>
-      ) : null}
     </MonoLabel>
   )
 }
@@ -98,6 +95,8 @@ const STATUS_TONE: Record<StatusKind, string> = {
   dissolution: 'bg-amber-500',
   'struck-off': 'bg-destructive',
   other: 'bg-muted-foreground',
+  conflict: 'bg-amber-500',
+  unqualified: 'bg-muted-foreground',
 }
 
 export function StatusChips({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
@@ -113,6 +112,7 @@ export function StatusChips({ model, className }: { readonly model: CompanyProfi
           <Trans>Plătitoare de TVA</Trans>
         </li>
       ) : null}
+      {/* ANAF's list of declared inactive taxpayers: its absence is not an ONRC „în funcțiune". */}
       {fiscal.inactive ? (
         <li className="inline-flex items-center border border-destructive/40 px-2.5 py-1 text-xs font-medium text-destructive">
           <Trans>Inactivă fiscal la ANAF</Trans>

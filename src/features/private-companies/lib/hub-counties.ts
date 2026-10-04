@@ -40,13 +40,13 @@ export function registryCountyName(code: string): string {
 }
 
 /**
- * What a county opens, whatever the layer: the directory on its companies in
- * business. The map is a way into a place — its figure describes the place,
- * not a list — and the readout's link says where it leads („Firmele
- * județului").
+ * What a county opens: the directory on its companies with an „în funcțiune"
+ * observation in that county. By code — the API matches a county by its code
+ * (or name) on the same identifier as the status, and the directory's county
+ * options are codes.
  */
 export function countyDirectorySearch(code: string) {
-  return { county: [registryCountyName(code)], status: [STATUS_ACTIVE] }
+  return { county: [code], status: [STATUS_ACTIVE] }
 }
 
 /** Highest first; ties share the order they arrive in. */

@@ -350,6 +350,14 @@ export type SearchEntitiesOptions = {
 
 /**
  * Searches for entities based on a search term.
+ *
+ * This is the budget-entity list (`entities(filter: { search })` on the legacy
+ * GraphQL endpoint), not the shared `searchEntities` palette search: it has no
+ * company part, so it is never tied to the company registry's state. A blank
+ * term is no search and answers `[]` without a request; a response without its
+ * list is a failed read and throws, so a selector shows its error and retry
+ * instead of "nothing found".
+ *
  * @param searchTerm The term to search for.
  * @param limit The maximum number of results to return (default: 10).
  * @returns A promise that resolves to the search results.
@@ -395,17 +403,18 @@ export async function searchEntities(
       variables,
     );
 
-    // Check if response and response.entities and response.entities.nodes exist
-    if (response && response.entities && response.entities.nodes) {
-      if (!options.excludeCounty) {
-        return response.entities.nodes;
-      }
-
-      return response.entities.nodes.filter(
-        (entity) => entity.entity_type !== "admin_county_council",
-      );
+    const nodes = response?.entities?.nodes;
+    // A response without its list is unread, not empty.
+    if (!Array.isArray(nodes)) {
+      throw new Error("Entity search returned no result list");
     }
-    return []; // Return empty array if data is not in the expected shape
+    if (!options.excludeCounty) {
+      return nodes;
+    }
+
+    return nodes.filter(
+      (entity) => entity.entity_type !== "admin_county_council",
+    );
   } catch (error) {
     // `logger.error` ships a full Sentry EVENT, not just a breadcrumb, so the
     // raw term was landing on a real retained issue.

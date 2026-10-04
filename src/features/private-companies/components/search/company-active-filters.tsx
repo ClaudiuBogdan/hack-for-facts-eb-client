@@ -52,7 +52,7 @@ export function CompanyActiveFilters({ search, onChange, onClearAll }: Props) {
       data-testid="company-active-filters"
     >
       {chips.map((chip) => {
-        const label = chipLabel(chip, search)
+        const label = chip.invalid ? `${chipLabel(chip, search)} — ${t`selector CAEN invalid`}` : chipLabel(chip, search)
         return (
           <button
             key={chip.key}
@@ -60,7 +60,8 @@ export function CompanyActiveFilters({ search, onChange, onClearAll }: Props) {
             onClick={() => onChange(chip.patch)}
             aria-label={t`Remove filter ${label}`}
             data-testid={`company-filter-chip-${chip.key}`}
-            className="inline-flex items-center gap-1.5 rounded-none border-2 border-[#b1b4b6] bg-white px-2.5 py-1 text-xs font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:border-[var(--pnrr-border)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]"
+            data-invalid={chip.invalid ? 'true' : undefined}
+            className={`inline-flex items-center gap-1.5 rounded-none border-2 bg-white px-2.5 py-1 text-xs font-semibold text-[#0b0c0c] transition-colors hover:bg-[#f3f2f1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] dark:bg-[var(--pnrr-card)] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)] ${chip.invalid ? 'border-destructive' : 'border-[#b1b4b6] dark:border-[var(--pnrr-border)]'}`}
           >
             <span>{label}</span>
             <X aria-hidden className="h-3.5 w-3.5" />

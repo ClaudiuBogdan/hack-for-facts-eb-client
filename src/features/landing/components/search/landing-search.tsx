@@ -124,8 +124,35 @@ function SearchStatusView({ status, scope }: { readonly status: SearchStatus; re
       return <Skeleton />
 
     case 'results':
-      // The rows come from the always-mounted list below; nothing extra here.
-      return null
+      // The rows come from the always-mounted list below. A company part that
+      // is not current says so under them: the rows stand, companies may lack.
+      return status.partial && !status.stale ? (
+        <p className="border-t px-4 py-2 text-xs text-muted-foreground">
+          <Trans>Partea de firme a căutării nu este la zi acum: pot lipsi firme din listă.</Trans>
+        </p>
+      ) : null
+
+    case 'incomplete':
+      // Nothing shown is no answer here (shared-search contract r2 §3, r4).
+      return status.reason === 'not-current' ? (
+        <Message>
+          <Trans>
+            Nu putem spune că nu există rezultate pentru{' '}
+            <strong className="font-medium text-foreground">{status.term}</strong>: partea de firme a
+            căutării nu este la zi acum.{' '}
+            <span className="text-muted-foreground/55">Încearcă din nou într-un moment.</span>
+          </Trans>
+        </Message>
+      ) : (
+        <Message>
+          <Trans>
+            Primele rezultate pentru{' '}
+            <strong className="font-medium text-foreground">{status.term}</strong> nu pot fi afișate aici,
+            dar căutarea are mai multe.{' '}
+            <span className="text-muted-foreground/55">Încearcă numele complet sau identificatorul.</span>
+          </Trans>
+        </Message>
+      )
 
     case 'empty':
       return (

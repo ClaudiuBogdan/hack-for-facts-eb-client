@@ -1,13 +1,16 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
-import { privateCompanyProfileQueryOptions } from '@/features/private-companies/hooks/use-private-company-profile'
-import { buildCompanyProfileModel } from '@/features/private-companies/lib/company-profile-model'
+import { CompanyRegistryScopeNotice } from '@/features/private-companies/components/registry/company-registry-notices'
+import { CompanyRegistryScopeProvider } from '@/features/private-companies/components/registry/company-registry-scope-provider'
+import { useCompanyRegistryScope } from '@/features/private-companies/hooks/use-company-registry-scope'
+import { useScopedCompanyRecord } from '@/features/private-companies/hooks/use-scoped-company-record'
+import { buildCompanyProfileModel, displayCompanyName } from '@/features/private-companies/lib/company-profile-model'
+import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import { HubLoadError, HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
@@ -128,7 +131,31 @@ function supplierFacts(profile: SupplierProfile): HubFact[] {
   return facts
 }
 
-export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui: string; readonly search: ProcurementSupplierSearch; readonly initial: ProcurementSupplierInitialData }) {
+/**
+ * The supplier read with only the company facts the pinned ONRC registry
+ * scope allows; SEAP's figures are untouched. A hidden record (no pin yet,
+ * the registry moved, is being checked, or cannot be read) leaves the head
+ * silent about what the firm is — not even that no company profile is
+ * available — and names the firm by its records.
+ */
+function withScopedCompany(profile: SupplierProfile, record: PrivateCompanyProfile | null, hidden: boolean): SupplierProfile {
+  if (!hidden && record === profile.registry) return profile
+  const byRecords = profile.names.get(profile.cui) ?? profile.cui
+  // A record the page's read had, gone now: say nothing of the firm rather than that it has no company profile.
+  if (hidden || (record === null && profile.registry !== null)) return { ...profile, registry: null, registryFailed: true, name: byRecords }
+  return { ...profile, registry: record, registryFailed: record === null ? profile.registryFailed : false, name: record ? displayCompanyName(record.legalName) : byRecords }
+}
+
+/** One registry pin per supplier page: the firm's registry facts are shown only under it. */
+export function ProcurementSupplierPage(props: { readonly cui: string; readonly search: ProcurementSupplierSearch; readonly initial: ProcurementSupplierInitialData }) {
+  return (
+    <CompanyRegistryScopeProvider>
+      <ProcurementSupplierPageBody {...props} />
+    </CompanyRegistryScopeProvider>
+  )
+}
+
+function ProcurementSupplierPageBody({ cui, search, initial }: { readonly cui: string; readonly search: ProcurementSupplierSearch; readonly initial: ProcurementSupplierInitialData }) {
   // The rows open institutions' pages: have that route's code before the tap.
   useWarmRouteCode('/procurement/institutions/$cui')
   const navigate = useNavigate({ from: '/procurement/suppliers/$cui' })
@@ -136,17 +163,31 @@ export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui
   const { choice } = initial
   const profileQuery = useProcurementSupplier(cui, choice, initial.profile)
   const directQuery = useProcurementSupplierDirect(cui, choice, initial.direct)
-  const profile = profileQuery.data
+  const read = profileQuery.data
   // The last twelve months could not be told when the profile was read: it shows the last complete year, and says so. The largest
   // purchases, read for the period asked, never fall back — they wait; once they land, the cutoff reads again, and so is the profile.
-  const fellBack = profile !== undefined && !profileQuery.isPlaceholderData && choice === RECENT && profile.period.kind !== 'recent'
+  const fellBack = read !== undefined && !profileQuery.isPlaceholderData && choice === RECENT && read.period.kind !== 'recent'
   const { refetch: refetchProfile } = profileQuery
   useEffect(() => {
     if (fellBack && directQuery.dataUpdatedAt > profileQuery.dataUpdatedAt) void refetchProfile()
   }, [fellBack, directQuery.dataUpdatedAt, profileQuery.dataUpdatedAt, refetchProfile])
-  // While the profile loads, the registry — a quick read, the company page's own cache entry — names the firm in the head.
-  const registryQuery = useQuery({ ...privateCompanyProfileQueryOptions(cui), enabled: !profile })
-  const pendingCompany = !profile && registryQuery.data ? buildCompanyProfileModel(registryQuery.data) : null
+  // The firm's registry facts, under the page's pinned scope: the read's own record when it is current, else the company
+  // page's own read (also the head's name while the profile loads); before the pin only the record the server rendered
+  // into the document being hydrated; hidden while the registry is checked, when it moved or cannot be read.
+  const scope = useCompanyRegistryScope()
+  const company = useScopedCompanyRecord(cui, read ? read.registry : undefined, scope)
+  const companyHidden = company.status === 'moved' || company.status === 'checking' || company.status === 'unavailable'
+  const companyRecord = company.status === 'shown' || company.status === 'document' ? company.record : null
+  const profile = read ? withScopedCompany(read, companyRecord, companyHidden) : undefined
+  const pendingCompany = !profile && companyRecord ? buildCompanyProfileModel(companyRecord) : null
+  const companyNotice =
+    company.status === 'moved' ? (
+      <CompanyRegistryScopeNotice scope={scope} />
+    ) : company.status === 'unavailable' ? (
+      <p role="status" className="border-l-2 border-amber-500 py-1 pl-3 text-sm leading-relaxed text-foreground" data-testid="supplier-registry-unavailable">
+        <Trans>Datele firmei din registrul comerțului nu pot fi citite acum; vânzările către stat de mai jos nu depind de ele.</Trans>
+      </p>
+    ) : null
   // A client-side navigation mounts on skeletons: the blocks arrive, and count up, with the read.
   useRevealOnView(rootRef, startArrivalEffects, profile !== undefined)
   // The count-up driver is module state: an unmount mid-flight would leave it ticking.
@@ -173,10 +214,12 @@ export function ProcurementSupplierPage({ cui, search, initial }: { readonly cui
           search={search}
           choose={choose}
           onChoice={onChoice}
+          notice={companyNotice}
         />
       ) : (
         <>
           <SupplierHeadPending cui={cui} company={pendingCompany} choice={choice} onChoice={onChoice}>
+            {companyNotice ? <div className="mt-6 max-w-[60ch]">{companyNotice}</div> : null}
             {profileQuery.isError ? (
               <div className="mt-8">
                 <HubLoadError onRetry={() => void profileQuery.refetch()} />
@@ -203,6 +246,7 @@ function SupplierBody({
   choose,
   onChoice,
   fellBack,
+  notice,
 }: {
   readonly view: SupplierView
   /** The period asked for: the dropdown shows it at once. */
@@ -215,6 +259,8 @@ function SupplierBody({
   readonly onChoice: (choice: PeriodChoice) => void
   /** The last twelve months could not be told: the page shows the last complete year. */
   readonly fellBack: boolean
+  /** Why the firm's registry facts are not shown now (the registry moved, or cannot be read); null when they are. */
+  readonly notice: ReactNode
 }) {
   const { i18n } = useLingui()
   const facts = supplierFacts(view)
@@ -262,6 +308,11 @@ function SupplierBody({
           ) : null
         }
       />
+      {notice ? (
+        <div className="border-b">
+          <RuledFrame className="py-4">{notice}</RuledFrame>
+        </div>
+      ) : null}
       {sections.length > 1 ? <HomeSectionNav title={view.name} sections={sections} /> : null}
       <div aria-busy={busy} className={cn('transition-opacity duration-300 motion-reduce:transition-none', busy && 'opacity-50')}>
         {fellBack ? <ProfileFallbackNotice year={view.period.year} /> : null}

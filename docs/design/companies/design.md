@@ -4,6 +4,11 @@
 > [§ The hub reads the economy, not the register](#the-hub-reads-the-economy-not-the-register-2026-09-23)
 > at the end. The composition below stands; its figures, bands and data
 > source changed.
+>
+> **And again on 4 October 2026** for the figures: the snapshot's business
+> figures are retired and every hub figure is the pinned ONRC edition's — see
+> [§ The hub and the profile read the pinned ONRC edition](#the-hub-and-the-profile-read-the-pinned-onrc-edition-2026-10-04).
+> The 23 September record stays below as history.
 
 **Status:** promoted, 17 September 2026. The `editorial` variant is live at
 `/companies`; the prototypes under `/development/companies/hub` are deleted
@@ -13,10 +18,12 @@ with the promotion, losers included, per
 ## Where the code went
 
 > As promoted on 17 September. Since the 23 September rewrite, `hub-sections.tsx`,
-> `county-map.tsx` and `use-company-county-counts.ts` are gone: the hub is
-> `private-company-hub-page.tsx` over `hub-leaders`, `hub-sectors`,
-> `hub-county-band` (`company-county-map` + `company-county-rank`) and
-> `lib/hub-snapshot.ts`.
+> `county-map.tsx` and `use-company-county-counts.ts` are gone. Since 4 October
+> the 23 September views (`hub-leaders`, `hub-sectors`, `hub-county-band`,
+> `company-county-map`, `company-county-rank`, `lib/hub-view.ts`) are gone too:
+> the hub is `private-company-hub-page.tsx` over `company-hub-bands.tsx` and
+> `hooks/use-company-hub-stats.ts`. `lib/hub-snapshot.ts` stays only because
+> procurement reads its population.
 
 | Prototype | Promoted to |
 |---|---|
@@ -337,7 +344,7 @@ country moved to its own band near the end, only when a share reaches 1%.
 | sentences in `company-page.parts.tsx` | `lib/company-profile-text.ts` |
 | `company-page.format.ts` | `lib/company-profile-format.ts` |
 | `company-page.charts.tsx` | `components/profile/company-year-charts.tsx` |
-| `company-page.bands.tsx` + parts | `components/profile/company-profile-page.tsx` and one file per band (`company-profile-head`, `-business-`, `-money-`, `-activities-`, `-economy-`, `-litigation-`, `-registry-band`) |
+| `company-page.bands.tsx` + parts | `components/profile/company-profile-page.tsx` and one file per band (`company-profile-head`, `-business-`, `-money-`, `-activities-`, `-economy-` (removed 4 October 2026), `-litigation-`, `-registry-band`) |
 | `company-page.state.ts` | the route's search schema (`masura`, `plati`, `litPage` in `schemas/private-company.ts`) |
 | `company-page.fixtures.ts` | builders in `lib/company-profile.fixture.ts`; raw GraphQL for the integration spec in `tests/fixtures/companies-profile-flow/` |
 
@@ -400,3 +407,23 @@ Follow-ups:
   once the SEAP read is the only per-visit request.
 - Street addresses: the API serves an empty `address.display` for every
   company, so the registry band shows the locality.
+
+## The hub and the profile read the pinned ONRC edition (2026-10-04)
+
+The client contract is the record; in short:
+
+- **Hub.** Every figure is `companyHubStats` of ONE published edition, read in
+  the browser under the page's pinned scope and named under the figures; the
+  server HTML carries no registry figure. The snapshot's turnover, employees,
+  largest companies, new companies, survival, size classes and county layers
+  are retired until an edition-bound source exists. A registry that cannot
+  answer is a state, never a zero.
+- **Pin.** A page pins only its own successful `companyRegistry` read. A read
+  that meets another scope or a refusal hides the registry facts at once until
+  a later read answers; a different scope switches only when the reader asks.
+- **Profile.** Shown only under the pin when its own answer matches it; only
+  the server's answer for the document being hydrated stands in before the
+  first registry read. A comparison read that finds no directory company
+  withdraws the profile and reads it again, never as „not registered".
+- **Evidence.** The edition's original rows are listed with every value an
+  identity row carries, whether or not an identifier group was resolved.

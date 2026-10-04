@@ -113,7 +113,8 @@ export async function mapCompaniesSeriesToAnalyticsSeries(series: CompaniesAnaly
       data.push({ x, y });
       pointDetails[x] = {
         exact: sum,
-        note: t`reported by ${formatDecimal(point.metric.contributors, locale)} of ${formatDecimal(point.filers, locale)} companies with a statement`,
+        // The release's ONRC edition: the companies' county, status and form are that edition's.
+        note: t`reported by ${formatDecimal(point.metric.contributors, locale)} of ${formatDecimal(point.filers, locale)} companies with a statement · release ${answer.release.releaseId}, ONRC edition ${answer.release.source.editionId}`,
       };
     }
     const warnings: DataValidationError[] = data.length === 0 ? [{ type: 'missing_data', seriesId: series.id, message: t`No company reported this figure in the selected years.` }] : [];

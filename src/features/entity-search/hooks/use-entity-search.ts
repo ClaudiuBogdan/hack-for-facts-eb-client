@@ -9,9 +9,10 @@
  * - `keepPreviousData` so the list does not flash while typing/filtering
  *
  * Paging is OFFSET-based, not a growing `limit`: the server clamps `limit` to 50,
- * so raising it could never reach past the second page. It clamps `offset` to
- * 1000 because Meili stops scanning at `maxTotalHits`, which is why
- * `getNextPageParam` stops there rather than letting the user page into nothing.
+ * so raising it could never reach past the second page. The next offset is the
+ * server's own `continuation.nextOffset`, used exactly: hidden candidates make
+ * the visible hits fewer (even zero) than the page, so `hits.length` says
+ * nothing about where the next page starts or whether there is one.
  */
 import {
   keepPreviousData,
@@ -24,9 +25,6 @@ import type {
   EntitySearchInput,
   EntitySearchResult,
 } from '@/schemas/entity-search'
-
-/** Mirrors the server's own offset clamp (Meili maxTotalHits = 1000). */
-const OFFSET_MAX = 1000
 
 export function entitySearchQueryKey(input: EntitySearchInput) {
   return [
@@ -47,22 +45,13 @@ export function useEntitySearch(
   input: EntitySearchInput,
 ): UseInfiniteQueryResult<InfiniteData<EntitySearchResult, number>, Error> {
   const enabled = input.q.trim().length > 0
-  const limit = input.limit ?? 20
 
   return useInfiniteQuery({
     queryKey: entitySearchQueryKey(input),
     queryFn: ({ pageParam, signal }) =>
       searchEntitiesLive({ ...input, offset: pageParam }, signal),
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((sum, page) => sum + page.hits.length, 0)
-      const next = allPages.length * limit
-      // Stop on a short page (the engine has nothing more), when everything the
-      // engine will admit to is loaded, or at the engine's own scan ceiling.
-      if (lastPage.hits.length < limit) return undefined
-      if (loaded >= lastPage.estimatedTotalHits) return undefined
-      return next < OFFSET_MAX ? next : undefined
-    },
+    getNextPageParam: (lastPage) => lastPage.continuation.nextOffset ?? undefined,
     enabled,
     // Keep prior results visible while a new query/filter loads instead of
     // flashing the empty/loading state on every keystroke.
@@ -70,9 +59,10 @@ export function useEntitySearch(
     // NO automatic retry, overriding the global `retry: 1` (D5). A search-engine
     // outage is no longer an error here — the server answers `ok` with
     // `degraded: true` — so anything that DOES reach this branch is a real
-    // transport or server failure, and retrying it silently doubles the load on
-    // something already failing while the user waits through two backoffs for
-    // the same answer. The empty state offers an explicit retry instead.
+    // transport or server failure or a withheld answer, and retrying it
+    // silently doubles the load on something already failing while the user
+    // waits through two backoffs for the same answer. The page offers an
+    // explicit retry instead.
     retry: false,
   })
 }

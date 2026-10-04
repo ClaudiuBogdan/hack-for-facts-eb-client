@@ -1,5 +1,8 @@
 import { z } from 'zod'
 import { parseArraySearchParam } from './public-investments'
+import type { CompanyRegistryBasis, CompanyRegistryCuiState, CompanyRegistryEnvelope } from './private-company-registry'
+
+export type { CompanyGroupByDim } from './private-company-hub'
 
 /**
  * URL state for the /companies/search directory page. TanStack Router
@@ -8,9 +11,29 @@ import { parseArraySearchParam } from './public-investments'
  * deep-link form), a repeated param, a comma list or a JSON array. Filters map
  * onto the GraphQL `companies(filter, q, sort, first, after)` query (see
  * `api/graphql/company-filters.ts`).
+ *
+ * The registry filters (county, status, caen, onrcCaen, legal form, recorded
+ * date) are answered by the API from ONE pinned ONRC edition, on the SAME
+ * resolved identifier; the fiscal switches are ANAF's, independent of it. A
+ * filter the registry cannot answer now stays in the URL and the page says
+ * so — it is never dropped or answered as empty.
  */
 const stringArrayParam = z
   .preprocess((value) => parseArraySearchParam(value), z.array(z.string()).optional())
+  .catch(undefined)
+
+/**
+ * Exact CAEN selectors (`rev2:6201`), normalised to lower case. A value that
+ * is not one stays as given: the page names it invalid instead of dropping it.
+ */
+const caenSelectorParam = z
+  .preprocess(
+    (value) => parseArraySearchParam(value),
+    z
+      .array(z.string())
+      .transform((values) => values.map((value) => (/^rev[0-3]:\d{4}$/iu.test(value.trim()) ? value.trim().toLowerCase() : value.trim())))
+      .optional(),
+  )
   .catch(undefined)
 
 /** `?vat=true` arrives as a boolean; the raw string form must parse too. */
@@ -42,7 +65,10 @@ export const privateCompanyDirectorySearchSchema = z.object({
   q: z.coerce.string().optional().catch(undefined),
   county: stringArrayParam,
   status: stringArrayParam,
+  /** Broad: the digits in ANY revision of the current edition's observations (a prefix below 4 digits). */
   caen: z.coerce.string().optional().catch(undefined),
+  /** Exact: one code in one revision, `rev0`…`rev3`. */
+  onrcCaen: caenSelectorParam,
   legalForm: stringArrayParam,
   regFrom: isoDateParam,
   regTo: isoDateParam,
@@ -79,7 +105,7 @@ export function cleanPrivateCompanyDirectorySearch(
     }
   }
 
-  for (const key of ['county', 'status', 'legalForm'] as const) {
+  for (const key of ['county', 'status', 'onrcCaen', 'legalForm'] as const) {
     const value = cleaned[key]
     if (Array.isArray(value) && value.length === 0) delete cleaned[key]
   }
@@ -100,6 +126,7 @@ export type PrivateCompanySearchQuery = {
   readonly county?: readonly string[]
   readonly status?: readonly string[]
   readonly caen?: string
+  readonly onrcCaen?: readonly string[]
   readonly legalForm?: readonly string[]
   readonly regFrom?: string
   readonly regTo?: string
@@ -108,20 +135,28 @@ export type PrivateCompanySearchQuery = {
   readonly sort?: PrivateCompanySortValue
   readonly pageSize: number
   readonly cursor?: string | null
+  /** The registry scope the read is bound to: an answer under another is refused, never kept. */
+  readonly scopeKey: string
   readonly signal?: AbortSignal
 }
 
-/** A selectable county facet (display name + active-company count). */
+/**
+ * A selectable county: its code (what the URL and the API filter carry), its
+ * canonical name, and how many companies with an „în funcțiune" observation
+ * have it as their county consensus in the pinned edition.
+ */
 export type PrivateCompanyCountyFacet = {
+  readonly code: string
   readonly name: string
   readonly count: number
 }
 
 /**
- * Status-code options for the directory status filter, by descending company
- * count in prod (`companies.registrations.status_code`). Codes verified against
- * the production DB on 2026-06-17. Labels are ONRC registry vocabulary and are
- * deliberately left untranslated.
+ * Status-code options for the directory status filter. The status filter
+ * matches ANY public original observation of the code on a resolved
+ * identifier of the pinned edition (`1048` also beside a conflicting code).
+ * The labels are this application's presentation nomenclature for the codes,
+ * not labels ONRC publishes, and are deliberately left untranslated.
  */
 export const PRIVATE_COMPANY_STATUS_OPTIONS = [
   { code: '1084', label: 'radiată' },
@@ -155,36 +190,100 @@ export const PRIVATE_COMPANY_LEGAL_FORM_OPTIONS = [
   'RA',
 ] as const
 
-/** One result page from the GraphQL `companies` connection. */
+/**
+ * One result page from the GraphQL `companies` connection, bound to ONE
+ * registry scope (`registry`): rows, cursor and total all belong to it.
+ */
 export type PrivateCompanySearchResultPage = {
   readonly items: ReadonlyArray<{
     readonly cui: string
     readonly name: string
+    /** Whose name: the pinned edition's qualified one, or the platform directory's. */
+    readonly nameSource: 'onrc_edition' | 'core_organization'
     readonly legalForm: string | null
+    /** The edition's complete status consensus; null without one (see `statusBasis`). */
     readonly status: { code: string; label: string } | null
     readonly county: string | null
     readonly vatPayer: boolean | null
     readonly declaredFiscallyInactive: boolean | null
+    /** The civil date ONRC recorded; never a founding date. */
     readonly registrationDate: string | null
+    readonly registryCuiState: CompanyRegistryCuiState
+    /** Any public original 1048; null outside the edition. */
+    readonly hasActiveObservation: boolean | null
+    readonly statusBasis: CompanyRegistryBasis | null
+    readonly countyBasis: CompanyRegistryBasis | null
+    readonly recordedDateBasis: CompanyRegistryBasis | null
   }>
   readonly nextCursor: string | null
   readonly totalCount: number | null
   readonly totalEstimated: boolean
+  readonly registry: CompanyRegistryEnvelope
 }
 
 // ---------------------------------------------------------------------------
-// County and CAEN groupings — companyCountyProfile
+// Resolve — companyResolveResult(dim, q, limit, registryScope)
 // ---------------------------------------------------------------------------
 
-/** One row of a `companyCountyProfile`-style grouping. */
-export type CompanyGroupSlice = {
-  readonly key: string
-  readonly label: string | null
-  readonly count: number
+/**
+ * What a resolve answers. NAME (company names) and REGNUM (registration
+ * identifiers) are read under ONE registry scope — the page's own, sent as
+ * `registryScope` and checked on the answer, zero hits included. CAEN and
+ * COUNTY are catalogs independent of the ONRC publication: no scope is sent
+ * or answered, and their labels carry no ONRC provenance.
+ */
+export type CompanyResolveScopedDim = 'NAME' | 'REGNUM'
+export type CompanyResolveCatalogDim = 'CAEN' | 'COUNTY'
+export type CompanyResolveDim = CompanyResolveScopedDim | CompanyResolveCatalogDim
+
+/**
+ * Whose words a hit's label is: the pinned edition's qualified name, the
+ * platform directory's name, the current database CAEN catalog, the territory
+ * hub's county name. Null when the source labelled nothing (a CAEN row
+ * without a catalog label shows its own key) or named an attribution this
+ * client does not know — never another one guessed.
+ */
+export const COMPANY_RESOLVE_LABEL_SOURCES = ['onrc_edition', 'core_organization', 'current_db_catalog', 'territory_hub'] as const
+export type CompanyResolveLabelSource = (typeof COMPANY_RESOLVE_LABEL_SOURCES)[number]
+
+export type CompanyResolveHit = {
+  readonly dim: CompanyResolveDim
+  readonly cui: string | null
+  readonly label: string
+  readonly value: string
+  readonly confidence: number | null
+  /** A CAEN row's OWN revision, exactly as served; null for the other dimensions. */
+  readonly revision: string | null
+  /** A CAEN row's `<revision>:<code>`, exactly as served; null for the other dimensions. */
+  readonly key: string | null
+  readonly labelSource: CompanyResolveLabelSource | null
 }
 
-/** `companyCountyProfile(groupBy:)` dimensions exposed by the server SDL. */
-export type CompanyGroupByDim = 'COUNTY' | 'STATUS' | 'CAEN_DIVISION'
+export type CompanyResolveRequest =
+  | {
+      readonly dim: CompanyResolveScopedDim
+      readonly q: string
+      readonly limit?: number
+      /** The registry scope the page accepted: an answer under any other is refused, never kept. */
+      readonly registryScope: string
+    }
+  | { readonly dim: CompanyResolveCatalogDim; readonly q: string; readonly limit?: number }
+
+/**
+ * One resolve answer. `hits: []` with `degraded: false` is a genuine no
+ * match; `degraded: true` means the search engine was down and a capped
+ * fallback answered (NAME only) — never a synonym for zero hits. A failed
+ * read is neither: it is an error, never an empty answer.
+ */
+export type CompanyResolveResult = {
+  readonly hits: readonly CompanyResolveHit[]
+  readonly degraded: boolean
+  /** More than one hit. */
+  readonly ambiguous: boolean
+  /** NAME/REGNUM: the scope the hits were read under, the request's own; null for the CAEN/COUNTY catalogs. */
+  readonly registry: CompanyRegistryEnvelope | null
+  readonly scopeKey: string | null
+}
 
 // ---------------------------------------------------------------------------
 // Hub — /companies
@@ -203,8 +302,11 @@ export const COMPANY_HUB_RANKINGS = ['cifra-de-afaceri', 'salariati'] as const
 export type CompanyHubRanking = (typeof COMPANY_HUB_RANKINGS)[number]
 
 /**
- * The hub's three choices, each in the URL so a view can be shared. A value
- * the hub does not know is dropped, and the default is never written.
+ * The hub's three former choices (map layer, sector measure, ranking). The
+ * views they chose between were built on a static snapshot of business
+ * figures and are retired; the keys are still parsed so an old shared link
+ * opens the hub instead of failing, and a value the hub does not know is
+ * dropped.
  */
 export const companyHubSearchSchema = z
   .object({

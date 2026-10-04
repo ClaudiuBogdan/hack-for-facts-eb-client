@@ -27,6 +27,8 @@ interface UseUATFinderReturn {
   readonly debouncedSearchTerm: string
   readonly searchResults: readonly UATSearchResult[]
   readonly isSearching: boolean
+  /** The search read failed: `searchResults` is then empty because nothing was read, not because nothing matched. */
+  readonly isSearchError: boolean
   readonly isDropdownOpen: boolean
   readonly activeIndex: number
 
@@ -100,6 +102,7 @@ export function useUATFinder({
   const {
     data: rawSearchResults = [],
     isLoading: isSearching,
+    isError: isSearchError,
   } = useQuery<EntitySearchNode[], Error>({
     queryKey: ['uatSearch', debouncedSearchTerm],
     queryFn: () => searchEntities(debouncedSearchTerm, SEARCH_LIMIT),
@@ -107,8 +110,10 @@ export function useUATFinder({
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
-  // Filter and transform search results to UAT results
+  // Filter and transform search results to UAT results. A failed read keeps the
+  // query's previous data; none of it is shown or selectable beside the error.
   const searchResults = useMemo<UATSearchResult[]>(() => {
+    if (isSearchError) return []
     return rawSearchResults.map((entity): UATSearchResult => ({
       cui: entity.cui,
       name: entity.name,
@@ -116,7 +121,7 @@ export function useUATFinder({
       countyCode: null,
       countyName: entity.uat?.county_name ?? null,
     }))
-  }, [rawSearchResults])
+  }, [rawSearchResults, isSearchError])
 
   // ─────────────────────────────────────────────────────────────────────────
   // Detail Query (when UAT is selected)
@@ -277,6 +282,7 @@ export function useUATFinder({
     debouncedSearchTerm,
     searchResults,
     isSearching,
+    isSearchError,
     isDropdownOpen,
     activeIndex,
 

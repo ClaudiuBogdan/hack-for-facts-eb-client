@@ -1,14 +1,21 @@
 import { isDecimalString } from '@/lib/exact-decimal'
-import type { CompanyAnalysisBreakdown, CompanyAnalysisBucket, CompanyAnalysisRecords, CompanyAnalysisSeries } from '@/schemas/company-analytics'
+import type { CompanyAnalysisBreakdown, CompanyAnalysisBucket, CompanyAnalysisReleaseRef, CompanyAnalysisRecords, CompanyAnalysisSeries } from '@/schemas/company-analytics'
 import type { ResolvedQuestion } from '../api/company-analytics-plan'
 
 /**
  * What the page shows, as a file a reader can check: the API's own digits
  * (no rounding, no scale, no thousands separators), an empty cell where the
- * API has no value — never a 0 — and the release every row was read from.
- * Bounded by what the page read: one page of companies, a breakdown's rows,
- * a series' years.
+ * API has no value — never a 0 — the release every row was read from and the
+ * ONRC edition it was exported from, a date as the exact civil text the API
+ * sent. Bounded by what the page read: one page of companies, a breakdown's
+ * rows, a series' years.
  */
+
+const SOURCE_HEADER = ['source_edition_id', 'source_publication_epoch', 'source_published_at'] as const
+
+function sourceCells(release: CompanyAnalysisReleaseRef) {
+  return [release.source.editionId, release.source.publicationEpoch, release.source.sourcePublishedAt]
+}
 
 /** A cell, guarded against spreadsheet formulas; a number (negative included) is written as it is. */
 function cell(value: string | number | boolean | null | undefined): string {
@@ -25,16 +32,50 @@ export function csvOf(header: readonly string[], rows: readonly (readonly (strin
 
 export function recordsCsv(records: CompanyAnalysisRecords, question: ResolvedQuestion): string {
   const metrics = question.recordMetrics
-  const header = ['release_id', 'fiscal_year', 'cui', 'current_name', 'legal_form', 'county_code', 'uat_siruta', 'observed_status_code', 'vat_payer', 'fiscally_inactive', 'main_caen_code', 'main_caen_revision', 'filed', 'employee_size_band', ...metrics.flatMap((metric) => [metric.toLowerCase(), `${metric.toLowerCase()}_status`])]
+  const header = [
+    'release_id',
+    ...SOURCE_HEADER,
+    'fiscal_year',
+    'cui',
+    'current_name',
+    'legal_form',
+    'legal_form_basis',
+    'county_code',
+    'county_basis',
+    'uat_siruta',
+    'uat_basis',
+    'observed_status_code',
+    'observed_status_basis',
+    'observed_status_coverage',
+    'onrc_caen_coverage',
+    'onrc_recorded_date',
+    'onrc_recorded_date_basis',
+    'vat_payer',
+    'fiscally_inactive',
+    'main_caen_code',
+    'main_caen_revision',
+    'filed',
+    'employee_size_band',
+    ...metrics.flatMap((metric) => [metric.toLowerCase(), `${metric.toLowerCase()}_status`]),
+  ]
   const rows = records.edges.map(({ node }) => [
     records.release.releaseId,
+    ...sourceCells(records.release),
     records.fiscalYear,
     node.cui,
     node.currentName,
     node.legalForm,
+    node.legalFormBasis,
     node.county?.code,
+    node.countyBasis,
     node.uat?.code,
+    node.uatBasis,
     node.observedStatus?.code,
+    node.observedStatusBasis,
+    node.observedStatusCoverage,
+    node.onrcCaenCoverage,
+    node.onrcRecordedDate,
+    node.onrcRecordedDateBasis,
     node.vatPayer,
     node.fiscallyInactive,
     node.mainCaen?.code,
@@ -52,11 +93,14 @@ export function recordsCsv(records: CompanyAnalysisRecords, question: ResolvedQu
 function bucketRow(breakdown: CompanyAnalysisBreakdown, bucket: CompanyAnalysisBucket) {
   return [
     breakdown.release.releaseId,
+    ...sourceCells(breakdown.release),
     breakdown.fiscalYear,
     breakdown.dimension,
     bucket.kind,
     bucket.key,
+    bucket.basis,
     bucket.label ?? bucket.caen?.label ?? null,
+    bucket.labelSource,
     bucket.groups,
     bucket.companies,
     bucket.filers,
@@ -73,17 +117,19 @@ function bucketRow(breakdown: CompanyAnalysisBreakdown, bucket: CompanyAnalysisB
 }
 
 export function breakdownCsv(breakdown: CompanyAnalysisBreakdown): string {
-  const header = ['release_id', 'fiscal_year', 'dimension', 'bucket', 'key', 'label', 'groups', 'companies', 'filers', 'metric', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component']
+  const header = ['release_id', ...SOURCE_HEADER, 'fiscal_year', 'dimension', 'bucket', 'key', 'basis', 'label', 'label_source', 'groups', 'companies', 'filers', 'metric', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component']
+  // Every bucket the API answered, the empty unknown slot of a consensus grouping too: the file adds up as the API's does.
   const buckets = [...breakdown.groups, breakdown.other, breakdown.unknown, breakdown.totals]
   return csvOf(header, buckets.map((bucket) => bucketRow(breakdown, bucket)))
 }
 
 export function seriesCsv(series: CompanyAnalysisSeries): string {
-  const header = ['release_id', 'fiscal_year', 'metric', 'unit', 'cohort_mode', 'reference_year', 'available', 'gap_reason', 'companies', 'filers', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component']
+  const header = ['release_id', ...SOURCE_HEADER, 'fiscal_year', 'metric', 'unit', 'cohort_mode', 'reference_year', 'available', 'gap_reason', 'companies', 'filers', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component']
   return csvOf(
     header,
     series.points.map((point) => [
       series.release.releaseId,
+      ...sourceCells(series.release),
       point.fiscalYear,
       series.metric,
       series.unit,

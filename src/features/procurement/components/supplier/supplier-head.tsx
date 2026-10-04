@@ -105,13 +105,16 @@ function StatusRow({ cui, company }: { readonly cui: string; readonly company: C
 }
 
 /**
- * What the firm is, in the company profile's own sentence; a firm the
- * registry does not hold — usually a foreign one — says so; one it could not
- * read now says nothing, rather than call it foreign.
+ * What the firm is, in the company profile's own sentence. A successful answer
+ * with no company profile only says that none is available: the supplier is
+ * not a public company of the platform's directory — a public NGO, an
+ * institution, a non-public or unknown organisation answer the same — which
+ * proves neither absence from the trade register nor a foreign firm. A read
+ * that failed, or a record the registry scope hides, says nothing.
  */
 function firmSentence(profile: SupplierView): string | null {
   if (profile.company) return companySentence(profile.company)
-  return profile.registryFailed ? null : t`Firma nu are fișă în registrul comerțului; de regulă, e o firmă străină.`
+  return profile.registryFailed ? null : t`Profilul de companie nu este disponibil pentru acest furnizor.`
 }
 
 export function SupplierHead({

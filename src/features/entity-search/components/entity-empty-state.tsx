@@ -3,22 +3,51 @@ import { Search, SearchX } from 'lucide-react'
 import type { EntitySearchDocType } from '@/schemas/entity-search'
 import { cn } from '@/lib/utils'
 import { getDocTypeMeta } from '../lib/doc-type-meta'
+import type { EntitySearchIncompleteReason } from '../lib/entity-search-answer'
 
 /**
  * `degraded` is deliberately distinct from `zero`. The server answered
  * successfully, but from its reduced outage path — so "no results" would be a
  * claim we cannot support: we did not look, and the user must not conclude the
  * entity does not exist (SEARCH_LAYER_REVIEW_2026-08-25.md D5).
+ *
+ * The shared-search contract (r2) adds three more answers that are not a zero:
+ * `withheld` (the server refused the answer, or it was unreadable), `moved`
+ * (the index generation or company scope changed while paging) and
+ * `incomplete` (nothing shown, but more candidates follow, the company part is
+ * not current, or later pages were read and no further page is offered: r4).
  */
-type EmptyStateVariant = 'initial' | 'zero' | 'degraded' | 'error' | 'invalid'
+type EmptyStateVariant =
+  | 'initial'
+  | 'zero'
+  | 'degraded'
+  | 'error'
+  | 'invalid'
+  | 'withheld'
+  | 'moved'
+  | 'incomplete'
 
 type Props = {
   readonly variant: EmptyStateVariant
   readonly query?: string
   readonly selectedTypes?: readonly string[]
+  /** `incomplete` only: why the empty answer is not a "no match". */
+  readonly incompleteReason?: EntitySearchIncompleteReason
   readonly onSelectPopularType?: (docType: EntitySearchDocType) => void
   readonly onClearFilters?: () => void
   readonly onRetry?: () => void
+}
+
+function RetryButton({ onRetry }: { readonly onRetry?: () => void }) {
+  return onRetry ? (
+    <button
+      type="button"
+      onClick={onRetry}
+      className="mt-2 border-2 border-[var(--pnrr-border)] px-5 py-2.5 text-sm font-bold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)] motion-reduce:transition-none"
+    >
+      <Trans>Încearcă din nou</Trans>
+    </button>
+  ) : null
 }
 
 const POPULAR_DOC_TYPES = [
@@ -83,6 +112,7 @@ export function EntityEmptyState({
   variant,
   query = '',
   selectedTypes = [],
+  incompleteReason = 'not-current',
   onSelectPopularType,
   onClearFilters,
   onRetry,
@@ -161,6 +191,71 @@ export function EntityEmptyState({
               <Trans>Încearcă din nou</Trans>
             </button>
           ) : null}
+        </>
+      ) : null}
+
+      {variant === 'withheld' ? (
+        <>
+          <p className="text-base font-semibold text-[var(--pnrr-fg)]">
+            <Trans>Răspunsul căutării a fost reținut.</Trans>
+          </p>
+          <p className="mx-auto max-w-xl text-sm">
+            <Trans>
+              Serverul nu a putut confirma acum rezultatele pentru "{query}", așa
+              că nu le afișăm. Asta nu înseamnă că nu există rezultate.
+            </Trans>
+          </p>
+          <RetryButton onRetry={onRetry} />
+        </>
+      ) : null}
+
+      {variant === 'moved' ? (
+        <>
+          <p className="text-base font-semibold text-[var(--pnrr-fg)]">
+            <Trans>Căutarea s-a schimbat între pagini.</Trans>
+          </p>
+          <p className="mx-auto max-w-xl text-sm">
+            <Trans>
+              Indexul de căutare sau datele firmelor s-au schimbat, așa că
+              paginile încărcate nu mai pot fi arătate împreună. Reia căutarea
+              pentru "{query}" de la prima pagină.
+            </Trans>
+          </p>
+          <RetryButton onRetry={onRetry} />
+        </>
+      ) : null}
+
+      {variant === 'incomplete' ? (
+        <>
+          <p className="text-base font-semibold text-[var(--pnrr-fg)]">
+            <Trans>Nu putem spune că nu există rezultate pentru "{query}".</Trans>
+          </p>
+          {incompleteReason === 'more' ? (
+            <p className="mx-auto max-w-xl text-sm">
+              <Trans>
+                Pagina aceasta nu are rezultate afișabile, dar căutarea are o
+                pagină următoare.
+              </Trans>
+            </p>
+          ) : incompleteReason === 'no-further-page' ? (
+            <p className="mx-auto max-w-xl text-sm">
+              <Trans>
+                Paginile încărcate nu au rezultate afișabile, iar aici nu există
+                o pagină următoare pentru această căutare. Asta nu înseamnă că
+                nu există rezultate.
+              </Trans>
+            </p>
+          ) : (
+            <>
+              <p className="mx-auto max-w-xl text-sm">
+                <Trans>
+                  Partea de firme a căutării nu este la zi, așa că lipsa
+                  rezultatelor nu este un răspuns. Încearcă din nou mai târziu.
+                </Trans>
+              </p>
+              <RetryButton onRetry={onRetry} />
+            </>
+          )}
         </>
       ) : null}
 

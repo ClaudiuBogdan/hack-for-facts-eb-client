@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { PrivateCompanySearchQuery } from '@/schemas/private-company-search'
 import { buildCompaniesFilter } from './company-filters'
 
-const base: PrivateCompanySearchQuery = { pageSize: 25 }
+const base: PrivateCompanySearchQuery = { pageSize: 25, scopeKey: 'onrc:published:7:3:11' }
 
 describe('buildCompaniesFilter', () => {
   it('returns undefined when no filters are active', () => {
@@ -82,6 +82,20 @@ describe('buildCompaniesFilter', () => {
       vatPayer: { eq: true },
       declaredFiscallyInactive: { eq: false },
     })
+  })
+
+  it('sends exact CAEN selectors in every revision, Rev.0 included, apart from the broad code', () => {
+    expect(buildCompaniesFilter({ ...base, caen: '47', onrcCaen: ['rev0:1111'] })).toEqual({
+      caenCode: { prefix: '47' },
+      onrcCaen: { eq: 'rev0:1111' },
+    })
+    expect(buildCompaniesFilter({ ...base, onrcCaen: ['rev2:6201', 'rev3:6210', 'rev2:6201'] })).toEqual({
+      onrcCaen: { in: ['rev2:6201', 'rev3:6210'] },
+    })
+  })
+
+  it('never sends a malformed exact selector (the page refuses the read instead)', () => {
+    expect(buildCompaniesFilter({ ...base, onrcCaen: ['6201', 'rev9:6201', 'rev2:62'] })).toBeUndefined()
   })
 
   it('ignores blank/whitespace filter values', () => {

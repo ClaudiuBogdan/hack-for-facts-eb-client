@@ -10,7 +10,13 @@ import { getDocTypeMeta } from '../lib/doc-type-meta'
 type Props = {
   readonly facets: readonly EntitySearchFacet[]
   readonly selectedTypes: readonly string[]
+  /** Null hides the total (a non-current answer). */
   readonly estimatedTotalHits: number | null
+  /**
+   * Facet counts are the index generation's candidate estimates, never counts
+   * of the hits shown; a non-current answer shows the types without them.
+   */
+  readonly showCounts: boolean
   readonly onTypesChange: (types: readonly string[]) => void
 }
 
@@ -22,6 +28,7 @@ export function EntityFacetChips({
   facets,
   selectedTypes,
   estimatedTotalHits,
+  showCounts,
   onTypesChange,
 }: Props) {
   // Build the chip set from the server facets UNION the currently-selected
@@ -38,7 +45,7 @@ export function EntityFacetChips({
     const values = new Set<string>([...countByValue.keys(), ...selectedTypes])
 
     return [...values]
-      .map((value) => ({ value, count: countByValue.get(value) ?? null }))
+      .map((value) => ({ value, count: showCounts ? countByValue.get(value) ?? null : null }))
       .sort((left, right) => {
         const leftOrder = DOC_TYPE_ORDER.get(left.value) ?? Number.MAX_SAFE_INTEGER
         const rightOrder = DOC_TYPE_ORDER.get(right.value) ?? Number.MAX_SAFE_INTEGER
@@ -49,7 +56,7 @@ export function EntityFacetChips({
 
         return left.value.localeCompare(right.value)
       })
-  }, [facets, selectedTypes])
+  }, [facets, selectedTypes, showCounts])
 
   const clearTypes = () => onTypesChange([])
 
@@ -73,7 +80,7 @@ export function EntityFacetChips({
         <Trans>Toate</Trans>
         {estimatedTotalHits !== null ? (
           <span className="ml-1 tabular-nums opacity-70">
-            {formatInteger(estimatedTotalHits)}
+            ~{formatInteger(estimatedTotalHits)}
           </span>
         ) : null}
       </button>
@@ -114,7 +121,7 @@ export function EntityFacetChips({
             {meta.label}
             {chip.count !== null ? (
               <span className="ml-1 tabular-nums opacity-70">
-                {formatInteger(chip.count)}
+                ~{formatInteger(chip.count)}
               </span>
             ) : null}
           </button>

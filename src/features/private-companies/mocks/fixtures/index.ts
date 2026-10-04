@@ -1,4 +1,17 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import { qualifiedStatement } from './qualification'
+import { MOCK_REGISTRY_ENVELOPE, mockRegistryEvidence, registryStateEvidence } from './registry'
+
+/*
+ * MOCK companies, shaped like the live API (API19): the ONRC fields are the
+ * mock edition's qualified values with the evidence under `registry` (labelled
+ * `mode: 'mock'`), ANAF publishes no CAEN revision for the main activity
+ * (`fiscalCaen.rev` null), every statement names its publisher, and source
+ * dates are the source's own. No address, representative or branch is
+ * served by the API, so none is invented here.
+ */
+
+const ONRC_DATE = MOCK_REGISTRY_ENVELOPE.sourcePublishedAt ?? '2026-05-06'
 
 /** Dante International SA — active private, full bilant, VAT, UAT safe match. */
 export const danteInternationalProfile: PrivateCompanyProfile = {
@@ -6,15 +19,11 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
   cui: '14399840',
   codInmatriculare: 'J40/1234/2020',
   legalName: 'DANTE INTERNATIONAL SA',
+  nameSource: 'onrc_edition',
   legalForm: 'SA',
   registrationDate: '2002-06-15',
-  status: { code: '1048', label: 'funcțiune' },
-  address: {
-    display:
-      'Splaiul Unirii nr. 165, Timpuri Noi, Sector 3, București',
-    county: 'MUNICIPIUL BUCUREŞTI',
-    locality: 'București',
-  },
+  status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+  address: { display: '', county: 'București', locality: null },
   geography: {
     uatSirutaCode: '179141',
     uatName: 'Municipiul București',
@@ -27,41 +36,40 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
       rev: 'rev2',
       label: 'Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet',
       source: 'onrc',
+      labelSource: 'current_db_catalog',
     },
+    { code: '4791', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
-  representatives: [
-    {
-      name: 'Ionescu Maria',
-      role: 'administrator',
-    },
-  ],
+  representatives: [],
   euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: false,
     anafFound: true,
     asOfDate: '2026-05-16',
-    fiscalCaen: { code: '4791', rev: 'rev2' },
+    fiscalCaen: { code: '4791', rev: null },
   },
   financials: [
-    {
+    qualifiedStatement({
       fiscalYear: 2024,
+      sourceSystem: 'anaf',
       turnover: 12_450_000_000,
       netProfit: 890_000_000,
       netLoss: null,
       employees: 4_200,
       currency: 'RON',
       summary: null,
-    },
-    {
+    }),
+    qualifiedStatement({
       fiscalYear: 2022,
+      sourceSystem: 'anaf',
       turnover: 9_800_000_000,
       netProfit: 620_000_000,
       netLoss: null,
       employees: 3_900,
       currency: 'RON',
       summary: null,
-    },
+    }),
   ],
   financialTrajectory: {
     fromYear: 2022,
@@ -70,6 +78,9 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
     netResultDelta: -1_477_503,
     // A stable headcount is common; it must render as "no change", not "0".
     employeesDelta: 0,
+    turnoverDeltaReason: null,
+    netResultDeltaReason: null,
+    employeesDeltaReason: null,
   },
   publicMoney: {
     totalRon: 424_468_235.41,
@@ -95,50 +106,53 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
     ],
   },
   sources: [
-    { id: 'onrc', snapshotDate: '2026-05-06', label: 'firme-06-05-2026' },
+    { id: 'onrc', snapshotDate: ONRC_DATE },
     { id: 'anaf', snapshotDate: '2026-05-16' },
   ],
+  registry: mockRegistryEvidence({
+    identifier: 'J40/1234/2020',
+    name: 'DANTE INTERNATIONAL SA',
+    legalForm: 'SA',
+    recordedDate: '2002-06-15',
+    countyCode: 'B',
+    countyName: 'București',
+    uatSirutaCode: '179141',
+    uatName: 'Municipiul București',
+    statusCodes: ['1048'],
+    caen: [{ code: '4791', revision: 'rev2', label: 'Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet' }],
+  }),
 }
 
 /** Invalid CUI — ANAF notFound; used for 404 in mock registry. */
 export const invalidCuiProfile: PrivateCompanyProfile | null = null
 
-/** RegCult sample CUI — ANAF not found, empty bilant. */
+/** A directory company the mock edition holds no qualified profile for: its name is the directory's. */
 export const anafNotFoundProfile: PrivateCompanyProfile = {
   organizationId: 'cui:9718383',
   cui: '9718383',
-  codInmatriculare: 'J12/999/1990',
+  codInmatriculare: null,
   legalName: 'EXEMPLU REGISTRU CULTURAL',
-  legalForm: 'SRL',
-  registrationDate: '1990-01-10',
-  status: { code: '1048', label: 'funcțiune' },
-  address: {
-    display: 'Str. Exemplu nr. 1, Cluj-Napoca, Cluj',
-    county: 'CLUJ',
-    locality: 'Cluj-Napoca',
-  },
+  nameSource: 'core_organization',
+  legalForm: null,
+  registrationDate: null,
+  status: null,
+  address: { display: '', county: null, locality: null },
   geography: null,
-  caenActivities: [
-    {
-      code: '9001',
-      rev: 'rev2',
-      label: 'Activități de interpretare artistică',
-      source: 'onrc',
-    },
-  ],
+  caenActivities: [],
   representatives: [],
   euBranches: [],
   fiscal: {
     vatPayer: null,
     inactive: null,
     anafFound: false,
-    asOfDate: '2026-05-16',
+    asOfDate: null,
     fiscalCaen: null,
   },
   financials: [],
   financialTrajectory: null,
   publicMoney: null,
-  sources: [{ id: 'onrc', snapshotDate: '2026-05-06' }],
+  sources: [],
+  registry: registryStateEvidence(MOCK_REGISTRY_ENVELOPE, 'not_in_edition'),
 }
 
 /** Antibiotice SA — sparse bilant years (2020 and 2023 only). */
@@ -147,103 +161,101 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
   cui: '1973096',
   codInmatriculare: 'J35/1234/1998',
   legalName: 'ANTIBIOTICE SA',
+  nameSource: 'onrc_edition',
   legalForm: 'SA',
   registrationDate: '1998-03-20',
-  status: { code: '1048', label: 'funcțiune' },
-  address: {
-    display: 'Str. Valea Lupului nr. 1, Iași',
-    county: 'IAŞI',
-    locality: 'Iași',
-  },
+  status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+  address: { display: '', county: 'Iași', locality: null },
   geography: {
     uatSirutaCode: '95060',
     uatName: 'Municipiul Iași',
     countyName: 'Iași',
-    matchConfidence: 'manual-review',
+    matchConfidence: 'safe',
   },
   caenActivities: [
-    {
-      code: '2120',
-      rev: 'rev2',
-      label: 'Fabricarea preparatelor farmaceutice',
-      source: 'onrc',
-    },
+    { code: '2120', rev: 'rev2', label: 'Fabricarea preparatelor farmaceutice', source: 'onrc', labelSource: 'current_db_catalog' },
+    // The same digits in Rev.1, as the registry lists them: its own label, never Rev.2's.
+    { code: '2442', rev: 'rev1', label: 'Fabricarea preparatelor farmaceutice (Rev.1)', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '2120', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
-  representatives: [
-    { name: 'Popescu Andrei', role: 'administrator' },
-    { name: 'Ionescu Elena', role: 'administrator' },
-  ],
-  euBranches: [
-    {
-      name: 'Antibiotice Berlin GmbH',
-      country: 'DE',
-      type: 'sucursală',
-    },
-  ],
+  representatives: [],
+  euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: false,
     anafFound: true,
     asOfDate: '2026-05-16',
-    fiscalCaen: { code: '2120', rev: 'rev2' },
+    fiscalCaen: { code: '2120', rev: null },
   },
   financials: [
-    {
+    qualifiedStatement({
       fiscalYear: 2023,
+      sourceSystem: 'anaf',
       turnover: 580_000_000,
       netProfit: 42_000_000,
       netLoss: null,
       employees: 1_850,
       currency: 'RON',
       summary: null,
-    },
-    {
+    }),
+    qualifiedStatement({
       fiscalYear: 2020,
+      sourceSystem: 'anaf',
       turnover: 410_000_000,
       netProfit: null,
       netLoss: 12_000_000,
       employees: 1_720,
       currency: 'RON',
       summary: null,
-    },
+    }),
   ],
   financialTrajectory: null,
   publicMoney: null,
   sources: [
-    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'onrc', snapshotDate: ONRC_DATE },
     { id: 'anaf', snapshotDate: '2026-05-16' },
   ],
+  registry: mockRegistryEvidence({
+    identifier: 'J22/1234/1998',
+    name: 'ANTIBIOTICE SA',
+    legalForm: 'SA',
+    recordedDate: '1998-03-20',
+    countyCode: 'IS',
+    countyName: 'Iași',
+    uatSirutaCode: '95060',
+    uatName: 'Municipiul Iași',
+    statusCodes: ['1048'],
+    caen: [
+      { code: '2120', revision: 'rev2', label: 'Fabricarea preparatelor farmaceutice' },
+      { code: '2442', revision: 'rev1', label: 'Fabricarea preparatelor farmaceutice (Rev.1)' },
+    ],
+  }),
 }
 
 /**
- * The four fixtures below exist so the directory filters visibly change the
+ * The fixtures below exist so the directory filters visibly change the
  * result set under `VITE_MOCK_DATASETS=private-companies`: between them they
- * cover four counties, four registry statuses, four legal forms, four CAEN
- * divisions and both fiscal switches.
+ * cover several counties, statuses (one conflict), legal forms, CAEN
+ * revisions and both fiscal switches.
  */
 
-/** Radiată SRL, declared fiscally inactive, no VAT — Timiş, retail (47). */
+/** Radiată SRL, declared fiscally inactive, no VAT — Timiş, retail (47), a Rev.0 row and one with no revision. */
 export const struckOffProfile: PrivateCompanyProfile = {
   organizationId: 'cui:6553492',
   cui: '6553492',
   codInmatriculare: 'J35/210/1994',
   legalName: 'MAGAZINUL VECHI SRL',
+  nameSource: 'onrc_edition',
   legalForm: 'SRL',
   registrationDate: '1994-11-02',
-  status: { code: '1084', label: 'radiată' },
-  address: {
-    display: 'Str. Piața Unirii nr. 4, Timișoara, Timiș',
-    county: 'TIMIŞ',
-    locality: 'Timișoara',
-  },
+  status: { code: '1084', label: 'radiată', labelSource: 'api_nomenclature' },
+  address: { display: '', county: 'Timiș', locality: null },
   geography: null,
   caenActivities: [
-    {
-      code: '4711',
-      rev: 'rev2',
-      label: 'Comerț cu amănuntul în magazine nespecializate',
-      source: 'onrc',
-    },
+    { code: '4711', rev: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '5211', rev: 'rev0', label: 'Comerț cu amănuntul în magazine nespecializate (Rev.0)', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '4711', rev: null, label: null, source: 'onrc', labelSource: null },
+    { code: '4711', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
   representatives: [],
   euBranches: [],
@@ -252,15 +264,29 @@ export const struckOffProfile: PrivateCompanyProfile = {
     inactive: true,
     anafFound: true,
     asOfDate: '2026-05-16',
-    fiscalCaen: { code: '4711', rev: 'rev2' },
+    fiscalCaen: { code: '4711', rev: null },
   },
   financials: [],
   financialTrajectory: null,
   publicMoney: null,
   sources: [
-    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'onrc', snapshotDate: ONRC_DATE },
     { id: 'anaf', snapshotDate: '2026-05-16' },
   ],
+  registry: mockRegistryEvidence({
+    identifier: 'J35/210/1994',
+    name: 'MAGAZINUL VECHI SRL',
+    legalForm: 'SRL',
+    recordedDate: '1994-11-02',
+    countyCode: 'TM',
+    countyName: 'Timiș',
+    statusCodes: ['1084'],
+    caen: [
+      { code: '4711', revision: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate' },
+      { code: '5211', revision: 'rev0', label: 'Comerț cu amănuntul în magazine nespecializate (Rev.0)' },
+      { code: '4711', revision: null, label: null },
+    ],
+  }),
 }
 
 /** Insolvență SA — Braşov, construction (41). */
@@ -269,14 +295,11 @@ export const insolventProfile: PrivateCompanyProfile = {
   cui: '11223344',
   codInmatriculare: 'J08/77/2005',
   legalName: 'CONSTRUCT BRASOV SA',
+  nameSource: 'onrc_edition',
   legalForm: 'SA',
   registrationDate: '2005-07-19',
-  status: { code: '1107', label: 'insolvență' },
-  address: {
-    display: 'Bd. Griviței nr. 12, Brașov',
-    county: 'BRAŞOV',
-    locality: 'Brașov',
-  },
+  status: { code: '1107', label: 'insolvență', labelSource: 'api_nomenclature' },
+  address: { display: '', county: 'Brașov', locality: null },
   geography: null,
   caenActivities: [
     {
@@ -284,34 +307,47 @@ export const insolventProfile: PrivateCompanyProfile = {
       rev: 'rev2',
       label: 'Lucrări de construcții a clădirilor rezidențiale și nerezidențiale',
       source: 'onrc',
+      labelSource: 'current_db_catalog',
     },
+    { code: '4120', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
-  representatives: [{ name: 'Marin Vasile', role: 'administrator judiciar' }],
+  representatives: [],
   euBranches: [],
   fiscal: {
     vatPayer: true,
     inactive: false,
     anafFound: true,
     asOfDate: '2026-05-16',
-    fiscalCaen: { code: '4120', rev: 'rev2' },
+    fiscalCaen: { code: '4120', rev: null },
   },
   financials: [
-    {
+    qualifiedStatement({
       fiscalYear: 2023,
+      sourceSystem: 'anaf',
       turnover: 18_400_000,
       netProfit: null,
       netLoss: 3_100_000,
       employees: 96,
       currency: 'RON',
       summary: null,
-    },
+    }),
   ],
   financialTrajectory: null,
   publicMoney: null,
   sources: [
-    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'onrc', snapshotDate: ONRC_DATE },
     { id: 'anaf', snapshotDate: '2026-05-16' },
   ],
+  registry: mockRegistryEvidence({
+    identifier: 'J08/77/2005',
+    name: 'CONSTRUCT BRASOV SA',
+    legalForm: 'SA',
+    recordedDate: '2005-07-19',
+    countyCode: 'BV',
+    countyName: 'Brașov',
+    statusCodes: ['1107'],
+    caen: [{ code: '4120', revision: 'rev2', label: 'Lucrări de construcții a clădirilor rezidențiale și nerezidențiale' }],
+  }),
 }
 
 /** Active PFA — Cluj, software (62). Recent registration, not a VAT payer. */
@@ -320,22 +356,15 @@ export const pfaProfile: PrivateCompanyProfile = {
   cui: '44556677',
   codInmatriculare: 'F12/501/2021',
   legalName: 'POPA IOANA PFA',
+  nameSource: 'onrc_edition',
   legalForm: 'PFA',
   registrationDate: '2021-04-05',
-  status: { code: '1048', label: 'funcțiune' },
-  address: {
-    display: 'Str. Memorandumului nr. 9, Cluj-Napoca, Cluj',
-    county: 'CLUJ',
-    locality: 'Cluj-Napoca',
-  },
+  status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
+  address: { display: '', county: 'Cluj', locality: null },
   geography: null,
   caenActivities: [
-    {
-      code: '6201',
-      rev: 'rev2',
-      label: 'Activități de realizare a soft-ului la comandă',
-      source: 'onrc',
-    },
+    { code: '6201', rev: 'rev2', label: 'Activități de realizare a soft-ului la comandă', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '6201', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
   representatives: [],
   euBranches: [],
@@ -344,39 +373,46 @@ export const pfaProfile: PrivateCompanyProfile = {
     inactive: false,
     anafFound: true,
     asOfDate: '2026-05-16',
-    fiscalCaen: { code: '6201', rev: 'rev2' },
+    fiscalCaen: { code: '6201', rev: null },
   },
   financials: [],
   financialTrajectory: null,
   publicMoney: null,
   sources: [
-    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'onrc', snapshotDate: ONRC_DATE },
     { id: 'anaf', snapshotDate: '2026-05-16' },
   ],
+  registry: mockRegistryEvidence({
+    identifier: 'F12/501/2021',
+    name: 'POPA IOANA PFA',
+    legalForm: 'PFA',
+    recordedDate: '2021-04-05',
+    countyCode: 'CJ',
+    countyName: 'Cluj',
+    statusCodes: ['1048'],
+    caen: [{ code: '6201', revision: 'rev2', label: 'Activități de realizare a soft-ului la comandă' }],
+  }),
 }
 
-/** Faliment SNC — Dolj, freight transport (49). */
+/**
+ * SNC — Dolj, freight transport (49): ONE identifier with an „în funcțiune"
+ * (1048) observation beside a „faliment" (1070) one. No status consensus, so
+ * no headline status; it is active for the directory's status filter.
+ */
 export const bankruptProfile: PrivateCompanyProfile = {
   organizationId: 'cui:8877665',
   cui: '8877665',
   codInmatriculare: 'J16/44/1996',
   legalName: 'TRANSPORT OLTENIA SNC',
+  nameSource: 'onrc_edition',
   legalForm: 'SNC',
   registrationDate: '1996-02-28',
-  status: { code: '1070', label: 'faliment' },
-  address: {
-    display: 'Calea București nr. 121, Craiova, Dolj',
-    county: 'DOLJ',
-    locality: 'Craiova',
-  },
+  status: null,
+  address: { display: '', county: 'Dolj', locality: null },
   geography: null,
   caenActivities: [
-    {
-      code: '4941',
-      rev: 'rev2',
-      label: 'Transporturi rutiere de mărfuri',
-      source: 'onrc',
-    },
+    { code: '4941', rev: 'rev2', label: 'Transporturi rutiere de mărfuri', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '4941', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
   representatives: [],
   euBranches: [],
@@ -385,15 +421,25 @@ export const bankruptProfile: PrivateCompanyProfile = {
     inactive: true,
     anafFound: true,
     asOfDate: '2026-05-16',
-    fiscalCaen: { code: '4941', rev: 'rev2' },
+    fiscalCaen: { code: '4941', rev: null },
   },
   financials: [],
   financialTrajectory: null,
   publicMoney: null,
   sources: [
-    { id: 'onrc', snapshotDate: '2026-05-06' },
+    { id: 'onrc', snapshotDate: ONRC_DATE },
     { id: 'anaf', snapshotDate: '2026-05-16' },
   ],
+  registry: mockRegistryEvidence({
+    identifier: 'J16/44/1996',
+    name: 'TRANSPORT OLTENIA SNC',
+    legalForm: 'SNC',
+    recordedDate: '1996-02-28',
+    countyCode: 'DJ',
+    countyName: 'Dolj',
+    statusCodes: ['1048', '1070'],
+    caen: [{ code: '4941', revision: 'rev2', label: 'Transporturi rutiere de mărfuri' }],
+  }),
 }
 
 const mockProfilesByCui: Readonly<Record<string, PrivateCompanyProfile | null>> =

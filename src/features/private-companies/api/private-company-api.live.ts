@@ -1,33 +1,37 @@
 /**
- * Live company data via the redesign GraphQL API. Replaces the former throwing
- * stub. All requests go through the shared `graphqlQuery` transport; raw
- * responses are Zod-parsed then mapped onto the UI's `PrivateCompanyProfile` /
- * search types.
+ * Live company data via the redesign GraphQL API. All requests go through the
+ * shared `graphqlQuery` transport; raw responses are Zod-parsed then mapped
+ * onto the UI's `PrivateCompanyProfile` / search types.
+ *
+ * Registry-bound reads carry the scope the page pinned and refuse an answer
+ * under another one (`CompanyRegistryScopeMovedError`); a registry that cannot
+ * answer a filter or sort is `CompanyRegistryUnavailableError`, never an
+ * empty page.
  */
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
-import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
+import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
-  CompanyGroupByDim,
-  CompanyGroupSlice,
-  PrivateCompanyCountyFacet,
+  CompanyResolveRequest,
+  CompanyResolveResult,
   PrivateCompanySearchQuery,
   PrivateCompanySearchResultPage,
 } from '@/schemas/private-company-search'
 import {
   COMPANIES_SEARCH_QUERY,
-  COMPANY_GROUP_PROFILE_QUERY,
   COMPANY_PROFILE_QUERY,
-  COMPANY_RESOLVE_QUERY,
+  COMPANY_RESOLVE_RESULT_QUERY,
   companiesSearchResponseSchema,
-  companyGroupProfileResponseSchema,
   companyProfileResponseSchema,
-  companyResolveResponseSchema,
+  companyResolveResultResponseSchema,
 } from './graphql/company-queries'
 import {
   mapCompanyListItem,
   mapCompanyProfile,
+  mapCompanyResolveResult,
 } from './graphql/company-mappers'
 import { buildCompaniesFilter } from './graphql/company-filters'
+import { mapRegistryEnvelope } from './graphql/company-registry-graphql'
+import { assertRegistryScope, classifyRegistryError } from './company-registry-errors'
 
 export async function fetchPrivateCompanyProfileLive(
   cui: string,
@@ -64,81 +68,54 @@ export async function fetchPrivateCompanySearchLive(
     after: query.cursor ?? undefined,
   }
 
-  const data = await graphqlQuery<unknown>(COMPANIES_SEARCH_QUERY, variables, {
-    operationName: 'companies',
-    signal: query.signal,
-  })
+  let data: unknown
+  try {
+    data = await graphqlQuery<unknown>(COMPANIES_SEARCH_QUERY, variables, {
+      operationName: 'companies',
+      signal: query.signal,
+    })
+  } catch (error) {
+    // A continuation the server refuses means the scope moved: the list restarts, it does not mix editions.
+    throw classifyRegistryError(error, { continuation: Boolean(query.cursor) })
+  }
   const parsed = companiesSearchResponseSchema.parse(data)
+  const registry = mapRegistryEnvelope(parsed.companies.registry)
+  assertRegistryScope(registry.scopeKey, query.scopeKey)
 
   const { hasNextPage, endCursor } = parsed.companies.pageInfo
   return {
-    items: parsed.companies.edges.map((edge) => mapCompanyListItem(edge.node)),
+    items: parsed.companies.edges.map((edge) => mapCompanyListItem(edge.node, registry)),
     // Only advance when the server reports both another page AND a cursor.
     nextCursor: hasNextPage && endCursor ? endCursor : null,
     totalCount: parsed.companies.totalCount,
     totalEstimated: parsed.companies.totalEstimated,
+    registry,
   }
 }
 
-/** Active companies (status 1048 = funcțiune) — the default group-profile scope. */
-const ACTIVE_COMPANY_FILTER = { status: { eq: '1048' } } as const
-
-export async function fetchCompanyGroupProfileLive(
-  groupBy: CompanyGroupByDim,
-  filter: Record<string, unknown> = ACTIVE_COMPANY_FILTER,
-  signal?: AbortSignal,
-): Promise<CompanyGroupSlice[]> {
-  const data = await graphqlQuery<unknown>(
-    COMPANY_GROUP_PROFILE_QUERY,
-    { filter, groupBy },
-    { operationName: 'CompanyGroupProfile', signal },
-  )
-  const parsed = companyGroupProfileResponseSchema.parse(data)
-  return parsed.companyCountyProfile.groups.filter((group) => group.key !== '(none)')
-}
-
-export async function fetchPrivateCompanyCountiesLive(): Promise<
-  PrivateCompanyCountyFacet[]
-> {
-  // Enumerate counties over active companies; the profile requires at least one
-  // filter and active counties cover all 41 + Bucureşti.
-  const groups = await fetchCompanyGroupProfileLive('COUNTY')
-  return groups
-    .map((group) => ({ name: group.key, count: group.count }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'ro'))
-}
-
-export type CompanyResolveHit = {
-  readonly cui: string | null
-  readonly label: string
-  readonly value: string
-  readonly confidence: number | null
-}
-
-export async function resolveCompanyByNameLive(
-  q: string,
-  limit = 10,
-): Promise<CompanyResolveHit[]> {
-  const trimmed = q.trim()
-  if (trimmed.length === 0) return []
-
+/**
+ * `companyResolveResult`: NAME/REGNUM send the page's accepted registry scope,
+ * CAEN/COUNTY send none. A failure is a failure — the transport's error, or a
+ * registry refusal (`classifyRegistryError`: the scope key refused as stale,
+ * a scope that moved during the request) — never an empty answer; a
+ * cancelled request rejects as it came. Whether the answer may be used is
+ * checked by the caller (`acceptCompanyResolveResult`).
+ */
+export async function resolveCompaniesLive(request: CompanyResolveRequest, signal?: AbortSignal): Promise<CompanyResolveResult> {
+  const variables = {
+    dim: request.dim,
+    q: request.q,
+    limit: request.limit,
+    ...('registryScope' in request ? { registryScope: request.registryScope } : {}),
+  }
+  let data: unknown
   try {
-    const data = await graphqlQuery<unknown>(
-      COMPANY_RESOLVE_QUERY,
-      { dim: 'NAME', q: trimmed, limit },
-      { operationName: 'companyResolve' },
-    )
-    const parsed = companyResolveResponseSchema.parse(data)
-    return parsed.companyResolve.map((hit) => ({
-      cui: hit.cui,
-      label: hit.label,
-      value: hit.value,
-      confidence: hit.confidence,
-    }))
+    data = await graphqlQuery<unknown>(COMPANY_RESOLVE_RESULT_QUERY, variables, { operationName: 'companyResolveResult', signal })
   } catch (error) {
-    // Resolve is a best-effort autocomplete aid; a GraphQL/transport failure
-    // should not break the search page. Re-throw only programmer errors.
-    if (error instanceof GraphQLRequestError) return []
-    throw error
+    throw classifyRegistryError(error)
   }
+  const parsed = companyResolveResultResponseSchema.parse(data)
+  // Without an error the field is never null; if it is, nothing was answered — a failure, not zero hits.
+  if (parsed.companyResolveResult === null) throw new Error('companyResolveResult answered nothing')
+  return mapCompanyResolveResult(parsed.companyResolveResult)
 }

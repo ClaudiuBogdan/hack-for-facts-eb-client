@@ -14,12 +14,12 @@ import { companyAnalyticsKeys } from '@/features/private-companies/lib/company-a
 import { useRefusedReleases } from '@/features/private-companies/lib/company-release-refusals';
 import { localeOf } from '@/features/private-companies/lib/company-analytics-format';
 import { scopeChips } from '@/features/private-companies/lib/company-analytics-scope-text';
-import { cohortLabel, metricLabel } from '@/features/private-companies/lib/company-analytics-text';
+import { civilDateText, cohortLabel, metricLabel } from '@/features/private-companies/lib/company-analytics-text';
 import { DEFAULT_STATE, urlSearchOf } from '@/features/private-companies/lib/company-analytics-url';
 import { COMPANIES_CHART_TYPES, nonAnnualSeries } from '@/lib/companies-chart-guards';
 import { companiesPeriodYears } from '@/lib/companies-chart-series';
 import type { CompaniesAnalyticsSeriesConfiguration } from '@/schemas/charts';
-import { COMPANY_ANALYSIS_METRICS, type CompanyAnalysisCohortMode, type CompanyAnalysisMetric } from '@/schemas/company-analytics';
+import { COMPANY_ANALYSIS_METRICS, type CompanyAnalysisCohortMode, type CompanyAnalysisMetric, type CompanyAnalysisSource } from '@/schemas/company-analytics';
 import { useChartStore } from '../../hooks/useChartStore';
 
 /**
@@ -32,6 +32,13 @@ import { useChartStore } from '../../hooks/useChartStore';
  */
 
 const NONE = '__default__';
+
+/** The ONRC edition a release's company facts come from, as the reader cites it (the date as ONRC published it, no time zone). */
+function sourceText(source: CompanyAnalysisSource, locale: 'ro' | 'en'): string {
+  return source.sourcePublishedAt
+    ? t`Its counties, statuses and legal forms are those of ONRC edition ${source.editionId}, published by ONRC on ${civilDateText(source.sourcePublishedAt, locale)}.`
+    : t`Its counties, statuses and legal forms are those of ONRC edition ${source.editionId}.`;
+}
 
 function Notice({ children }: { readonly children: ReactNode }) {
   return (
@@ -220,6 +227,7 @@ export function CompaniesSeriesEditor({ series }: { readonly series: CompaniesAn
 
         <p className="text-xs text-muted-foreground">
           {series.release ? t`Pinned to release ${series.release.id}.` : t`Not pinned yet: the active release is read.`}
+          {release.data && !withdrawn ? ` ${sourceText(release.data.release.source, localeOf(i18n.locale))}` : ''}
         </p>
       </CardContent>
     </Card>

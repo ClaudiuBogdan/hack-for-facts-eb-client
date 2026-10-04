@@ -103,8 +103,8 @@ export function CompanyAnalyticsPage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   // Localities by name only once one is on screen or being looked for (the map's files weigh 3 MB).
   const uats = useUatIndex(filtersOpen || Boolean(state.scope.uat?.in?.length))
-  // Status labels for the chips, from the year's own population.
-  const statuses = useCompanyAnalysisOptions(question, 'OBSERVED_STATUS', Boolean(state.scope.observedStatus?.in?.length))
+  // Status labels for the chips (the consensus status and the ONRC observations), from the year's own population.
+  const statuses = useCompanyAnalysisOptions(question, 'OBSERVED_STATUS', Boolean(state.scope.observedStatus?.in?.length || state.scope.onrc?.status?.length || state.scope.onrc?.exclude?.status?.length))
   const names = {
     uats: uats.names,
     statuses: new Map((statuses.data?.groups ?? []).flatMap((group) => (group.key && group.label ? [[group.key, group.label] as const] : []))),
@@ -156,7 +156,7 @@ export function CompanyAnalyticsPage() {
       ) : null}
       {/* Its counts and option lists are the release's figures too: gone with it. */}
       {withdrawn ? null : (
-        <AnalyticsFilterSheet state={state} release={live} question={question} stats={stats.data} uats={uats} locale={i18n.locale} open={filtersOpen} onOpenChange={setFiltersOpen} onChange={move} />
+        <AnalyticsFilterSheet state={state} release={live} question={question} stats={stats.data} uats={uats} statusNames={names.statuses} locale={i18n.locale} open={filtersOpen} onOpenChange={setFiltersOpen} onChange={move} />
       )}
     </div>
   )

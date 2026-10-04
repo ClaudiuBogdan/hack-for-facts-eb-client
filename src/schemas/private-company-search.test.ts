@@ -52,6 +52,12 @@ describe('parsePrivateCompanyDirectorySearch', () => {
     expect(parsed.county).toBeUndefined()
   })
 
+  it('keeps exact CAEN selectors shareable: normalised when well formed, kept as given when not (never dropped)', () => {
+    expect(parsePrivateCompanyDirectorySearch({ onrcCaen: 'REV2:6201,rev0:1111' }).onrcCaen).toEqual(['rev2:6201', 'rev0:1111'])
+    expect(parsePrivateCompanyDirectorySearch({ onrcCaen: ['6201'] }).onrcCaen).toEqual(['6201'])
+    expect(cleanPrivateCompanyDirectorySearch({ onrcCaen: [] })).toEqual({})
+  })
+
   it('accepts a well-formed ISO registration-date range', () => {
     const parsed = parsePrivateCompanyDirectorySearch({
       regFrom: '2020-01-01',

@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { buildCompanyHubHead, companyHubSeoFigures } from '@/features/private-companies/seo/private-company-hub-seo'
+import { buildCompanyHubHead } from '@/features/private-companies/seo/private-company-hub-seo'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import {
   cleanPrivateCompanyDirectorySearch,
@@ -17,13 +17,12 @@ const HUB_KEYS = new Set(['indicator', 'domenii', 'clasament'])
  * `/procurement` → `/procurement/search` idiom — with the rest of what it
  * carried (the language, the currency), less the hub's own choices.
  *
- * Every figure is in the client's snapshot, so the page renders in full on
- * the server and is cached publicly. The render follows the locale and theme
- * cookies (language, number separators, the `html` class), so a shared cache
- * keys on the cookie, as `/pnrr` does, and the browser revalidates.
- *
- * The snapshot is imported by the loader, not at the top: this file is in
- * every route's entry chunk, and the head needs four of its figures.
+ * The server render carries no registry figure: the hub reads them in the
+ * browser under its pinned ONRC scope. So the page can still be cached
+ * publicly — its HTML can never hold a figure past a publication or a
+ * withdrawal. The render follows the locale and theme cookies (language,
+ * number separators, the `html` class), so a shared cache keys on the
+ * cookie, as `/pnrr` does, and the browser revalidates.
  */
 export const Route = createFileRoute('/companies/')({
   validateSearch: parseCompanyHubSearch,
@@ -39,10 +38,6 @@ export const Route = createFileRoute('/companies/')({
       })
     }
   },
-  loader: async () => {
-    const { COMPANY_HUB_SNAPSHOT } = await import('@/features/private-companies/lib/hub-snapshot')
-    return { seo: companyHubSeoFigures(COMPANY_HUB_SNAPSHOT) }
-  },
   headers: () =>
     createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 0,
@@ -50,5 +45,5 @@ export const Route = createFileRoute('/companies/')({
       staleWhileRevalidateSeconds: 604800,
       vary: ['Accept-Encoding', 'Cookie'],
     }),
-  head: ({ loaderData }) => buildCompanyHubHead(loaderData?.seo),
+  head: () => buildCompanyHubHead(),
 })

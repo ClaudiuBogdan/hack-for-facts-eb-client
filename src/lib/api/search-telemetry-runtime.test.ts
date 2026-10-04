@@ -31,6 +31,15 @@ vi.mock('../logger', () => ({
 
 vi.mock('./auth-token', () => ({ getAuthToken: async () => null }))
 
+// The transport must reach `fetch`: the global env mock has no base URL, so
+// without these every path here failed before the request was made.
+vi.mock('../auth', () => ({ getAuthToken: async () => null }))
+vi.mock('@/config/env', () => ({
+  env: { VITE_API_URL: 'http://api.test' },
+  getApiBaseUrl: () => 'http://api.test',
+  getSiteUrl: () => 'http://localhost:3000',
+}))
+
 const { searchEntities } = await import('./entities')
 
 /** Everything the logger was handed, flattened to one searchable string. */
@@ -62,7 +71,7 @@ describe('the raw search term never reaches the logger at runtime', () => {
       ),
     )
 
-    await searchEntities(SENTINEL, 5).catch(() => undefined)
+    await expect(searchEntities(SENTINEL, 5)).resolves.toEqual([])
 
     // The call sites must have logged SOMETHING, or this proves nothing.
     expect(logged.length).toBeGreaterThan(0)
@@ -78,6 +87,23 @@ describe('the raw search term never reaches the logger at runtime', () => {
     )
 
     await searchEntities(SENTINEL, 5).catch(() => undefined)
+
+    expect(logged.length).toBeGreaterThan(0)
+    expect(loggedText()).not.toContain(SENTINEL)
+  })
+
+  it('does not log it when a response without its list is refused', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        new Response(JSON.stringify({ data: { entities: null } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    )
+
+    await expect(searchEntities(SENTINEL, 5)).rejects.toThrow('no result list')
 
     expect(logged.length).toBeGreaterThan(0)
     expect(loggedText()).not.toContain(SENTINEL)

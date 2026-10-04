@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_STATE, stateOf } from '../lib/company-analytics-url'
 import { planBreakdown, planRecords, planSeries, planStats, resolveQuestion } from './company-analytics-plan'
-import { releaseFixture } from './company-analytics.fixture'
+import { releaseFixture, releaseRef } from './company-analytics.fixture'
 
 /**
  * A question against a release's capabilities: its year and measure from
@@ -42,7 +42,7 @@ describe('resolveQuestion', () => {
 
   it('pins every read’s key to the release, so one release’s answer never serves another', () => {
     const seven = resolveQuestion(DEFAULT_STATE, releaseFixture())
-    const eight = resolveQuestion(DEFAULT_STATE, releaseFixture({ release: { releaseId: '8', publishedAt: null, active: true } }))
+    const eight = resolveQuestion(DEFAULT_STATE, releaseFixture({ release: releaseRef('8', { publishedAt: null }) }))
     for (const plan of [planStats, (q: typeof seven) => planBreakdown(q, 'COUNTY', 25), (q: typeof seven) => planSeries(q, releaseFixture()), (q: typeof seven) => planRecords(q, null)]) {
       expect(plan(seven).key).toContain('7')
       expect(plan(seven).key).not.toEqual(plan(eight).key)

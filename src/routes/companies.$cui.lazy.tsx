@@ -7,7 +7,7 @@ import {
 } from '@/features/private-companies/components/profile/company-profile-states'
 import { usePrivateCompanyProfile } from '@/features/private-companies/hooks/use-private-company-profile'
 import { normalizeCompanyCui } from '@/features/private-companies/lib/normalize-company-cui'
-import { buildPrivateCompanyDocumentTitle } from '@/features/private-companies/seo/private-company-seo'
+import { buildPrivateCompanyNeutralTitle } from '@/features/private-companies/seo/private-company-seo'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 import type { PrivateCompanyRouteLoaderData } from './companies.$cui'
 
@@ -19,8 +19,11 @@ export const Route = createLazyFileRoute('/companies/$cui')({
 /** The server path's `notFound()` — a CUI no source knows, or one that is not a CUI — in the page's own frame. */
 function PrivateCompanyRouteNotFound() {
   const { cui } = useParams({ strict: false }) as { readonly cui?: string }
+  const companyCui = cui ? normalizeCompanyCui(cui) : null
+  // The tab names no company here, whatever an earlier page of this route wrote.
+  useClientDocumentTitle(buildPrivateCompanyNeutralTitle(companyCui ?? cui ?? ''))
   // Named only when it is a CUI: the path of a mistyped link is not one.
-  return <CompanyProfileNotFound cui={cui ? normalizeCompanyCui(cui) : null} />
+  return <CompanyProfileNotFound cui={companyCui} />
 }
 
 function PrivateCompanyRoutePage() {
@@ -34,12 +37,14 @@ function PrivateCompanyRoutePage() {
   const { data, isLoading, isSuccess, isError, isFetching, refetch } =
     usePrivateCompanyProfile(companyCui)
 
-  const profile = isSuccess ? data : loaderData?.profile
-  // The route `head` can only name the company on the SSR path; a client-side
-  // navigation lands here with a `CUI …` placeholder title.
-  useClientDocumentTitle(
-    profile ? buildPrivateCompanyDocumentTitle(profile) : null,
-  )
+  // The server's answer for this document stands in only until the browser's
+  // own read settles; a failed read leaves nothing to show. Whether either may
+  // be shown at all is the page's decision, under its registry pin — and so is
+  // the tab's title, which names the company only once it is shown.
+  const profile = isSuccess ? data : isError ? undefined : loaderData?.profile
+  // While the page is mounted it names the tab; in the route's own states — loading, failed, not found, including
+  // after the page unmounts — the tab says the CUI alone, never a company no longer shown.
+  useClientDocumentTitle(profile ? null : buildPrivateCompanyNeutralTitle(companyCui))
 
   if (isLoading && !profile) {
     return <CompanyProfileSkeleton />

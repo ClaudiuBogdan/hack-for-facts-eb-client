@@ -57,7 +57,21 @@ const CLUJ: EntitySearchHit = {
   ...IASI, id: 'organization:4305857', title: 'Municipiul Cluj-Napoca',
   href: '/entities/4305857', identifiers: ['4305857'], countyName: 'Cluj',
 }
-const response = (hits: readonly EntitySearchHit[]) => ({ hits, degraded: false })
+/**
+ * What `searchEntitiesLive` hands the field under the shared-search contract
+ * r4: an undegraded CURRENT initial page whose generation was built for its
+ * company scope, with no next page. Only such an answer's emptiness is a
+ * "no results"; the hook reads the contribution and the continuation.
+ */
+const response = (hits: readonly EntitySearchHit[]) => ({
+  hits,
+  degraded: false,
+  generation: { generationId: 'entities_build_1759593600000_k3x9q2', registryScopeKey: 'onrc:published:41:3:7' },
+  companyScope: 'onrc:published:41:3:7',
+  companyContribution: 'CURRENT',
+  companyContributionReason: null,
+  continuation: { candidatesReturned: hits.length, nextOffset: null },
+})
 
 function setup() {
   const user = userEvent.setup()

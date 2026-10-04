@@ -1,70 +1,41 @@
-import { plural, t } from '@lingui/core/macro'
+import { t } from '@lingui/core/macro'
 import { getSiteUrl } from '@/config/env'
 import { getUserLocale } from '@/lib/utils'
 import { serializeForInlineScript } from '@/lib/inline-script-json'
-import { formatHubNumber } from '../lib/hub-format'
-import type { CompanyHubSnapshot } from '../lib/hub-snapshot-types'
 
 const HUB_PATH = '/companies'
 const SHARE_IMAGE_PATH = '/assets/images/share-image.png'
 
-/** The few snapshot figures the head quotes: small enough for the route's loader to hand over. */
-export type CompanyHubSeoFigures = {
-  readonly activeFirms: number
-  readonly newFirms: number
-  readonly fiscalYear: number
-  readonly capturedAt: string
-}
-
-export function companyHubSeoFigures(snapshot: CompanyHubSnapshot): CompanyHubSeoFigures {
-  return {
-    activeFirms: snapshot.national.activeFirms,
-    newFirms: snapshot.national.newFirms,
-    fiscalYear: snapshot.fiscalYear,
-    capturedAt: snapshot.capturedAt,
-  }
-}
-
-/** One sentence, its count agreeing in Romanian („de" before 20–99, not before 01–19). */
-function describe(figures: CompanyHubSeoFigures): string {
-  const founded = formatHubNumber(figures.newFirms)
-  const year = figures.fiscalYear
-  return plural(figures.activeFirms, {
-    one: `O firmă în funcțiune, ${founded} înființate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
-    few: `# firme în funcțiune, ${founded} înființate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
-    other: `# de firme în funcțiune, ${founded} înființate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
-  })
-}
-
 /**
  * The hub's head: title, description, canonical and its language
  * alternates, social cards and a schema.org `Dataset`, all in the page's
- * language and from the snapshot the page draws, so a search result never
- * quotes a figure the page does not show.
+ * language. It quotes no figure: the hub's figures are bound to the ONRC
+ * edition the browser pins, and a search result or a cached head must never
+ * carry a count the page cannot vouch for (the former snapshot counts —
+ * companies in business, new companies, turnover, employees — are retired).
  *
  * The page renders in the reader's language at one path, so each language
  * gets its own canonical (`?lang=en` for English) and names the other, as the
  * campaign pages do; a shared English link then previews in English.
  */
-export function buildCompanyHubHead(figures: CompanyHubSeoFigures | undefined, siteUrl: string = getSiteUrl()) {
+export function buildCompanyHubHead(siteUrl: string = getSiteUrl()) {
   const english = getUserLocale() === 'en'
   const romanianUrl = `${siteUrl}${HUB_PATH}`
   const englishUrl = `${siteUrl}${HUB_PATH}?lang=en`
   const canonical = english ? englishUrl : romanianUrl
   const title = `${t`Firmele din România`} — Transparenta.eu`
-  const description = figures ? describe(figures) : t`Cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`
+  const description = t`Caută orice firmă din România după nume sau CUI: starea, județul și activitățile din ediția publicată a registrului comerțului (ONRC), datele fiscale ANAF și bilanțurile depuse, fiecare cu sursa și data ei.`
   const image = `${siteUrl}${SHARE_IMAGE_PATH}`
 
   const dataset = {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
-    name: figures ? t`Firmele din România, ${figures.fiscalYear}` : t`Firmele din România`,
+    name: t`Firmele din România`,
     description,
     url: canonical,
-    ...(figures ? { temporalCoverage: String(figures.fiscalYear), dateModified: figures.capturedAt } : {}),
     spatialCoverage: { '@type': 'Place', name: 'Romania' },
-    isBasedOn: ['https://www.onrc.ro', 'https://www.anaf.ro', 'https://insse.ro'],
-    variableMeasured: [t`firme în funcțiune`, t`firme înființate`, t`cifra de afaceri`, t`număr mediu de salariați`],
+    isBasedOn: ['https://www.onrc.ro', 'https://www.anaf.ro'],
+    variableMeasured: [t`stare în registrul comerțului`, t`județ`, t`activitate CAEN`],
     publisher: { '@type': 'Organization', '@id': `${siteUrl}#organization`, name: 'Transparenta.eu', url: siteUrl },
   }
   const webPage = {

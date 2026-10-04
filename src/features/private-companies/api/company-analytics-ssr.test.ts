@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { CompanyAnalysisRecords, CompanyAnalysisRelease } from '@/schemas/company-analytics'
 import { breakdownFixture, recordsFixture, releaseFixture, seriesFixture, statsFixture } from './company-analytics.fixture'
 
 /**
@@ -17,6 +18,8 @@ const api = vi.hoisted(() => ({
   refuse: new Set<string>(),
   /** The reads that fail for another reason. */
   fail: new Set<string>(),
+  /** The reads the API answers SERVICE_UNAVAILABLE (no v2 release published yet). */
+  unavailable: new Set<string>(),
   /** Milliseconds each read takes, to order mixed outcomes. */
   delay: {} as Record<string, number>,
 }))
@@ -37,6 +40,7 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
       api.calls.push({ op, release: variables.release })
       await new Promise((resolve) => setTimeout(resolve, api.delay[op] ?? 0))
       if (api.refuse.has(op)) throw new actual.GraphQLRequestError('gone', { graphQLErrors: [{ message: 'gone', extensions: { code: 'INVALID_INPUT', field: 'release' } }] })
+      if (api.unavailable.has(op)) throw new actual.GraphQLRequestError('unavailable', { graphQLErrors: [{ message: 'the active companies analytics release cannot be served', extensions: { code: 'SERVICE_UNAVAILABLE' } }] })
       if (api.fail.has(op)) throw new Error('down')
       return answer(op)
     },
@@ -51,6 +55,7 @@ beforeEach(() => {
   api.calls = []
   api.refuse = new Set()
   api.fail = new Set()
+  api.unavailable = new Set()
   api.delay = {}
 })
 
@@ -119,6 +124,21 @@ describe('readCompanyAnalyticsForSsr', () => {
   it('reads nothing past the release for a question the release cannot answer', async () => {
     const read = await readCompanyAnalyticsForSsr({ an: 2031 })
     expect(read.complete).toBe(true)
+    expect(calls('CompanyAnalysisStats')).toBe(0)
+  })
+
+  it('seeds the v2 answers as read — the ONRC source pin, a record’s bases and recorded date — under the keys of a basis-key and ONRC-observation question', async () => {
+    const read = await readCompanyAnalyticsForSsr({ an: 2024, judet: '(multiple_values)', onrc_stare: '1048', onrc_judet: 'CJ' })
+    expect(read.complete).toBe(true)
+    expect(read.seed.find((entry) => entry.key[2] === 'stats')?.key[4]).toEqual({ fiscalYear: 2024, county: { in: ['(multiple_values)'] }, onrc: { status: ['1048'], county: ['CJ'] } })
+    expect((read.seed[0]?.data as CompanyAnalysisRelease).release.source).toMatchObject({ editionId: '41', publicationEpoch: '3', sourcePublishedAt: '2026-09-30' })
+    const records = read.seed.find((entry) => entry.key[2] === 'records')?.data as CompanyAnalysisRecords
+    expect(records.edges[1]?.node).toMatchObject({ countyBasis: 'MULTIPLE_VALUES', observedStatusCoverage: 'PARTIAL', onrcRecordedDate: '0001-01-01' })
+  })
+
+  it('seeds nothing while no v2 release can be served: unavailable, never a zero', async () => {
+    api.unavailable = new Set(['CompanyAnalysisRelease'])
+    expect(await readCompanyAnalyticsForSsr({ an: 2024 })).toEqual({ seed: [], complete: false })
     expect(calls('CompanyAnalysisStats')).toBe(0)
   })
 })

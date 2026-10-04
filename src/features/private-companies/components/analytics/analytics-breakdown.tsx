@@ -17,14 +17,17 @@ import { breakdownCsv } from '../../lib/company-analytics-export'
 import { compactValueText, countText, exactValueText, localeOf, shareText } from '../../lib/company-analytics-format'
 import { dimensionLabel, metricLabel, rankLabel } from '../../lib/company-analytics-text'
 import { withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
-import { groupLabel } from '../../lib/company-analytics-view'
+import { breakdownRows, CONSENSUS_DIMENSIONS, groupLabel, labelSourcesOf } from '../../lib/company-analytics-view'
 
 /**
  * The question by one grouping: the top groups, every other group folded
  * into one row, the unknown group in its own, and the total — which is the
- * figures band's, so the rows add up to it. A group's row narrows the same
- * question to it (a filter the API reads exactly as the group was counted);
- * „other" and an unknown that no single filter names are not links.
+ * figures band's, so the rows add up to it. For a county, locality or status
+ * every company is in one group, a value or the reason it has none (a basis
+ * group, named as such), and the empty unknown slot is not drawn. A group's
+ * row narrows the same question to it (a filter the API reads exactly as the
+ * group was counted); „other" and an unknown that no single filter names are
+ * not links. Where the names come from is said under the table.
  */
 
 const TRIGGER = 'h-11 w-full rounded-none text-sm shadow-none sm:h-9 sm:w-auto'
@@ -128,7 +131,8 @@ export function AnalyticsBreakdown({
       </div>
     )
 
-  const rows = [...data.groups, ...(data.other.groups > 0 ? [data.other] : []), data.unknown]
+  const rows = breakdownRows(data)
+  const names = labelSourcesOf(data.groups.map((bucket) => bucket.labelSource))
   return (
     <div className={cn(className, breakdown.isFetching && 'opacity-70 transition-opacity')}>
       {controls}
@@ -187,7 +191,11 @@ export function AnalyticsBreakdown({
         </TableFooter>
       </Table>
       <div className="mt-2 flex flex-wrap items-baseline justify-between gap-2 text-xs text-muted-foreground">
-        <span>{state.dimension === 'EMPLOYEE_SIZE' ? t`Mărimea se citește din situația anului ${question.year}; celelalte grupări descriu firma la data ediției.` : t`Gruparea descrie firma la data ediției, nu în anul fiscal.`}</span>
+        <span>
+          {state.dimension === 'EMPLOYEE_SIZE' ? t`Mărimea se citește din situația anului ${question.year}; celelalte grupări descriu firma la data ediției.` : t`Gruparea descrie firma la data ediției, nu în anul fiscal.`}
+          {CONSENSUS_DIMENSIONS.has(state.dimension) ? ` ${t`Fiecare firmă e într-un singur grup: valoarea comună a înscrierilor ei sau motivul pentru care nu are una.`}` : ''}
+          {names.length > 0 ? ` ${t`Denumiri: ${names.join('; ')}.`}` : ''}
+        </span>
         {!expanded && data.groupCount > data.topN ? (
           <button type="button" onClick={() => setExpandedFor(questionKey)} className="min-h-11 font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0">
             {t`Primele ${BREAKDOWN_TOP_EXPANDED}`}

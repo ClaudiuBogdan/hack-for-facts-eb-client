@@ -1,0 +1,23 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "spital",
+      "engine": "meili",
+      "degraded": false,
+      "estimatedTotalHits": 140,
+      "facets": [
+        { "field": "doc_type", "value": "organization", "count": 120 },
+        { "field": "doc_type", "value": "legal_act", "count": 20 }
+      ],
+      "hits": [],
+      "generation": {
+        "generationId": "entities_build_1759593600000_k3x9q2",
+        "registryScopeKey": "onrc:published:41:3:7"
+      },
+      "companyScope": null,
+      "companyContribution": "UNAVAILABLE",
+      "companyContributionReason": "company_check_unavailable",
+      "continuation": { "candidatesReturned": 20, "nextOffset": 20 }
+    }
+  }
+}

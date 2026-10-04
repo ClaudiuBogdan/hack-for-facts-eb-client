@@ -8,7 +8,23 @@ type Props = {
   readonly company: CompanyResult
 }
 
+/**
+ * One directory row under the page's pinned edition: whose name it is, the
+ * edition's status consensus — or, without one, that the observations
+ * disagree (with an „în funcțiune" one among them when there is) or that the
+ * edition holds no profile for the CUI, which is not a legal fact.
+ */
+function RegistryState({ company }: Props) {
+  if (company.status?.label) return <>{company.status.label}</>
+  if (company.registryCuiState === 'not_in_edition') return <Trans>Fără profil în ediția ONRC</Trans>
+  if (company.statusBasis === 'multiple_values') {
+    return company.hasActiveObservation ? <Trans>Stări diferite, între care „în funcțiune”</Trans> : <Trans>Stări diferite</Trans>
+  }
+  return null
+}
+
 export function PrivateCompanyResultCard({ company }: Props) {
+  const state = <RegistryState company={company} />
   return (
     <li>
       <Link
@@ -26,13 +42,17 @@ export function PrivateCompanyResultCard({ company }: Props) {
               <Trans>CUI {company.cui}</Trans>
               {company.legalForm ? ` · ${company.legalForm}` : ''}
               {company.county ? ` · ${company.county}` : ''}
+              {company.nameSource === 'core_organization' ? (
+                <>
+                  {' · '}
+                  <Trans>nume din directorul platformei</Trans>
+                </>
+              ) : null}
             </p>
           </div>
-          {company.status?.label ? (
-            <p className="shrink-0 text-right text-sm font-semibold text-[var(--pnrr-muted)]">
-              {company.status.label}
-            </p>
-          ) : null}
+          <p className="shrink-0 text-right text-sm font-semibold text-[var(--pnrr-muted)]" data-testid="company-result-state">
+            {state}
+          </p>
         </div>
       </Link>
     </li>

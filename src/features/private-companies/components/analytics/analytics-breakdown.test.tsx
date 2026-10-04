@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CompanyAnalysisBreakdown, CompanyAnalysisBucket } from '@/schemas/company-analytics'
 import { resolveQuestion } from '../../api/company-analytics-plan'
@@ -23,7 +23,7 @@ vi.mock('../../hooks/use-company-analytics', () => ({
 const state = { ...DEFAULT_STATE, metric: 'NET_RESULT' as const, panel: 'defalcare' as const }
 
 function bucket(kind: CompanyAnalysisBucket['kind'], key: string | null, sum: string | null, extra: Partial<CompanyAnalysisBucket> = {}): CompanyAnalysisBucket {
-  return { kind, key, label: null, caen: null, groups: 1, companies: '10', filers: '5', metric: aggregate('NET_RESULT', sum, sum === null ? '0' : '5'), ...extra }
+  return { kind, key, label: null, labelSource: null, basis: null, caen: null, groups: 1, companies: '10', filers: '5', metric: aggregate('NET_RESULT', sum, sum === null ? '0' : '5'), ...extra }
 }
 
 function netResult(other: string | null, unknown: string | null, total: string): CompanyAnalysisBreakdown {
@@ -78,5 +78,29 @@ describe('AnalyticsBreakdown shares', () => {
     expect(screen.getByRole('columnheader', { name: 'Cota' })).toBeInTheDocument()
     expect(screen.getByText('100.0%')).toBeInTheDocument()
     expect(screen.getAllByText('0.0%')).toHaveLength(2)
+  })
+})
+
+describe('AnalyticsBreakdown — a consensus grouping (schema v2)', () => {
+  const county = { ...DEFAULT_STATE, panel: 'defalcare' as const }
+
+  it('shows a basis group by why, with its exact zero, draws no empty unknown slot, keeps the shares and says where the names come from', () => {
+    answer.data = breakdownFixture()
+    render(<AnalyticsBreakdown state={county} question={resolveQuestion(county, releaseFixture())} onChange={() => undefined} />)
+    expect(screen.getByRole('button', { name: 'Fără județ comun — valori diferite în înscrieri' })).toBeInTheDocument()
+    expect(screen.queryByText('Județ necunoscut')).not.toBeInTheDocument()
+    expect(screen.queryByText('(multiple_values)')).not.toBeInTheDocument()
+    // 700 + 200 + 0 + 100 of 1000: every shown row a non-negative part of a positive total.
+    expect(screen.getByText('70.0%')).toBeInTheDocument()
+    expect(screen.getByText('0.0%')).toBeInTheDocument()
+    expect(screen.getByText(/Denumiri: nomenclatorul teritorial al platformei\./u)).toBeInTheDocument()
+  })
+
+  it('narrows a click on a basis group to exactly that group, by its key', () => {
+    answer.data = breakdownFixture()
+    const onChange = vi.fn()
+    render(<AnalyticsBreakdown state={county} question={resolveQuestion(county, releaseFixture())} onChange={onChange} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Fără județ comun — valori diferite în înscrieri' }))
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ scope: { county: { in: ['(multiple_values)'] } }, dimension: 'UAT' }))
   })
 })

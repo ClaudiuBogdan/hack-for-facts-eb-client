@@ -12,8 +12,9 @@ export const STATUS_STRUCK_OFF = '1084'
 /**
  * Every status of the insolvency procedure: insolvency, judicial
  * reorganisation, bankruptcy, and the two "under Law 85/2014 / 85/2006"
- * flags. The hub counts these and links them, so the figure and the list agree
- * (`scripts/generate-companies-hub-snapshot.mjs` reads this array).
+ * flags. The hub links these to the directory, whose status filter matches
+ * ANY public observation of a code in the pinned ONRC edition
+ * (`scripts/generate-companies-hub-snapshot.mjs` still reads this array).
  */
 export const INSOLVENCY_STATUSES = ['1107', '1057', '1139', '1083', '1070']
 

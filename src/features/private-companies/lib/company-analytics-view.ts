@@ -15,7 +15,7 @@ import {
 import type { ResolvedQuestion } from '../api/company-analytics-plan'
 import { compactValue, countText, exactValueText, shareText } from './company-analytics-format'
 import type { ScopeNames } from './company-analytics-scope-text'
-import { caenText, countyLabel, flagLabel, gapReasonLabel, metricLabel, placePhrase, sizeBandLabel } from './company-analytics-text'
+import { basisGroupLabel, caenText, countyLabel, flagLabel, gapReasonLabel, labelSourceText, metricLabel, placePhrase, sizeBandLabel } from './company-analytics-text'
 import type { CompanyAnalyticsState } from './company-analytics-url'
 
 /**
@@ -89,9 +89,25 @@ export function factsOf(stats: CompanyAnalysisStats, question: ResolvedQuestion,
 
 // ────────────────────────────────────────────────────────────── breakdown ──
 
+/** County, locality and status are consensus groupings: every company is in a value group or a basis group, and their `unknown` is an empty slot. */
+export const CONSENSUS_DIMENSIONS: ReadonlySet<CompanyAnalysisDimension> = new Set(['COUNTY', 'UAT', 'OBSERVED_STATUS'])
+
+/**
+ * The rows a breakdown shows, in its order: the groups (basis groups among
+ * them, ranked like any), „other" when it folds any, and the unknown group —
+ * except a consensus grouping's, which the API keeps empty (shown only if it
+ * ever were not, so the rows still add up to the total).
+ */
+export function breakdownRows(breakdown: { readonly dimension: CompanyAnalysisDimension; readonly groups: readonly CompanyAnalysisBucket[]; readonly other: CompanyAnalysisBucket; readonly unknown: CompanyAnalysisBucket }): readonly CompanyAnalysisBucket[] {
+  const emptySlot = CONSENSUS_DIMENSIONS.has(breakdown.dimension) && breakdown.unknown.companies === '0'
+  return [...breakdown.groups, ...(breakdown.other.groups > 0 ? [breakdown.other] : []), ...(emptySlot ? [] : [breakdown.unknown])]
+}
+
 export function groupLabel(dimension: CompanyAnalysisDimension, bucket: CompanyAnalysisBucket): string {
   if (bucket.kind === 'OTHER') return t`Alte ${bucket.groups} grupuri`
   if (bucket.kind === 'TOTAL') return t`Total`
+  // A consensus group without a value: why it has none, never a key in parentheses or an „unknown".
+  if (bucket.kind === 'GROUP' && bucket.basis !== null) return basisGroupLabel(dimension, bucket.basis)
   if (bucket.kind === 'UNKNOWN') {
     switch (dimension) {
       case 'COUNTY':
@@ -125,6 +141,11 @@ export function groupLabel(dimension: CompanyAnalysisDimension, bucket: CompanyA
     default:
       return bucket.label ?? key
   }
+}
+
+/** The sources of the names a set of rows shows, each once, in words („nomenclatorul teritorial al platformei"). */
+export function labelSourcesOf(sources: readonly (string | null | undefined)[]): readonly string[] {
+  return [...new Set(sources.filter((source): source is string => typeof source === 'string' && source.length > 0))].map(labelSourceText)
 }
 
 // ───────────────────────────────────────────────────────────────── series ──

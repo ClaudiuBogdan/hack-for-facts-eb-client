@@ -1,4 +1,10 @@
 import { isSearchInputError } from '../api/search-input-error'
+import { isSearchWithheld } from '../api/search-withheld-error'
+import {
+  incompleteReasonOf,
+  readEntitySearchAnswer,
+  type EntitySearchAnswer,
+} from '../lib/entity-search-answer'
 import { t } from '@lingui/core/macro'
 import { useEntityTagLabel } from '@/hooks/filters/useFilterLabels'
 import { Button } from '@/components/ui/button'
@@ -17,6 +23,7 @@ import {
   entitySearchQueryKey,
   useEntitySearch,
 } from '../hooks/use-entity-search'
+import { EntityCompanyContribution } from './entity-company-contribution'
 import { EntityEmptyState } from './entity-empty-state'
 import { EntityFacetChips } from './entity-facet-chips'
 import { EntityLoadMore } from './entity-load-more'
@@ -52,7 +59,16 @@ function normalizeTypes(types: readonly string[] | undefined): readonly string[]
   return normalizedTypes.length > 0 ? normalizedTypes : EMPTY_TYPES
 }
 
+function errorVariant(error: unknown): 'invalid' | 'withheld' | 'error' {
+  if (isSearchInputError(error)) return 'invalid'
+  return isSearchWithheld(error) ? 'withheld' : 'error'
+}
 
+/** An empty answer is a "no match" only when the contract says so (r2 §3, r4). */
+function emptyVariant(answer: EntitySearchAnswer): 'degraded' | 'zero' | 'incomplete' {
+  if (answer.degraded) return 'degraded'
+  return answer.noMatch ? 'zero' : 'incomplete'
+}
 
 export function EntitySearchPage() {
   const searchParams = Route.useSearch()
@@ -87,27 +103,35 @@ export function EntitySearchPage() {
   )
 
   const search = useEntitySearch(queryInput)
-  // Infinite query: flatten loaded pages; the envelope fields (facets, engine,
-  // estimatedTotalHits) describe the whole result set, so read them off page 1.
-  const firstPage = search.data?.pages[0]
-  const hits = useMemo(
-    () => search.data?.pages.flatMap((page) => page.hits) ?? EMPTY_HITS,
-    [search.data],
-  )
-  const facets = firstPage?.facets ?? EMPTY_FACETS
   const hasQuery = normalizedQuery.length > 0
-  const hasResults = hits.length > 0
   /**
-   * ANY loaded page being degraded degrades the whole answer — not just page 1.
-   * The other envelope fields describe the result set and are read off the first
-   * page, but a Meili outage that starts between "load more" calls lands on a
-   * LATER page, and reading `firstPage` alone would keep presenting a partial
-   * list as complete (D5).
+   * Infinite query: the loaded pages read as one answer, and only if every
+   * page was read the same way — a Meili outage, a new index generation or a
+   * registry change that starts between "load more" calls lands on a LATER
+   * page (D5), and then the search starts again rather than mixing pages. An
+   * error or a refusal hides every page the query still holds: a failed
+   * re-read must not leave an older answer, or its counts, on screen. Without
+   * a query there is no answer at all, whatever the previous one was.
    */
-  const isDegraded =
-    search.data?.pages.some((page) => page.degraded) ?? false
-  const isInitialLoading =
-    hasQuery && search.isFetching && !search.data && !search.isError
+  const answer = useMemo(
+    () =>
+      hasQuery && !search.isError && search.data
+        ? readEntitySearchAnswer(search.data.pages)
+        : null,
+    [hasQuery, search.isError, search.data],
+  )
+  const hits = answer?.hits ?? EMPTY_HITS
+  const facets = answer?.facets ?? EMPTY_FACETS
+  const hasResults = hits.length > 0
+  const isDegraded = answer?.degraded ?? false
+  const isPlaceholder = Boolean(search.isPlaceholderData)
+  // An earlier query's answer kept on screen while this one loads says
+  // nothing about this one: its hits stay dimmed, but its emptiness, counts
+  // and company state are not shown as this query's answer.
+  const settledAnswer = answer !== null && !isPlaceholder ? answer : null
+  const isAwaitingAnswer =
+    hasQuery && !search.isError && (answer === null || (isPlaceholder && !hasResults))
+  const showsSkeleton = isAwaitingAnswer && search.isFetching
   const activeDescendantId =
     activeIndex >= 0 && activeIndex < hits.length
       ? getOptionId(activeIndex)
@@ -196,8 +220,10 @@ export function EntitySearchPage() {
     })
   }, [navigate])
 
+  // A retry starts the search again from its first page: the pages an error,
+  // a refusal or a moved index left behind are dropped, not re-read.
   const retrySearch = useCallback(() => {
-    void queryClient.invalidateQueries({
+    void queryClient.resetQueries({
       queryKey: entitySearchQueryKey(queryInput),
     })
   }, [queryClient, queryInput])
@@ -257,7 +283,11 @@ export function EntitySearchPage() {
   const shouldShowFacets =
     hasQuery || selectedTypes.length > 0 || facets.length > 0
   const shouldShowResultsHeader =
-    hasQuery && !search.isError && (search.isFetching || Boolean(search.data))
+    hasQuery &&
+    !search.isError &&
+    !answer?.moved &&
+    (search.isFetching || answer !== null)
+  const countsShown = settledAnswer?.countsShown ?? false
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:px-6 sm:py-10">
@@ -268,9 +298,9 @@ export function EntitySearchPage() {
         inputRef={inputRef}
         listboxId={LISTBOX_ID}
         activeDescendantId={activeDescendantId}
-        isListboxMounted={isInitialLoading || hasResults}
+        isListboxMounted={showsSkeleton || hasResults}
         isFetching={search.isFetching}
-        isPlaceholderData={Boolean(search.isPlaceholderData)}
+        isPlaceholderData={isPlaceholder}
         onQueryCommit={commitQuery}
         onClear={clearSearch}
         onKeyDown={handleInputKeyDown}
@@ -295,7 +325,8 @@ export function EntitySearchPage() {
         <EntityFacetChips
           facets={facets}
           selectedTypes={selectedTypes}
-          estimatedTotalHits={firstPage?.estimatedTotalHits ?? null}
+          estimatedTotalHits={countsShown && settledAnswer ? settledAnswer.estimatedTotalHits : null}
+          showCounts={countsShown}
           onTypesChange={setTypes}
         />
       ) : null}
@@ -306,10 +337,17 @@ export function EntitySearchPage() {
       >
         {shouldShowResultsHeader ? (
           <EntityResultsHeader
-            shownCount={hits.length}
-            estimatedTotalHits={firstPage?.estimatedTotalHits ?? null}
-            engine={firstPage?.engine ?? null}
+            shownCount={settledAnswer ? hits.length : null}
+            estimatedTotalHits={countsShown && settledAnswer ? settledAnswer.estimatedTotalHits : null}
+            engine={answer?.engine ?? null}
             degraded={isDegraded}
+          />
+        ) : null}
+
+        {settledAnswer && !settledAnswer.moved && !settledAnswer.degraded ? (
+          <EntityCompanyContribution
+            contribution={settledAnswer.contribution}
+            reason={settledAnswer.reason}
           />
         ) : null}
 
@@ -320,23 +358,45 @@ export function EntitySearchPage() {
             onSelectPopularType={selectPopularType}
           />
         ) : search.isError ? (
-          <EntityEmptyState variant={isSearchInputError(search.error) ? "invalid" : "error"} onRetry={retrySearch} />
-        ) : isInitialLoading ? (
-          <EntitySearchSkeleton listboxId={LISTBOX_ID} />
+          <EntityEmptyState
+            variant={errorVariant(search.error)}
+            query={normalizedQuery}
+            onRetry={retrySearch}
+          />
+        ) : answer === null || isAwaitingAnswer ? (
+          showsSkeleton ? <EntitySearchSkeleton listboxId={LISTBOX_ID} /> : null
+        ) : answer.moved ? (
+          <EntityEmptyState
+            variant="moved"
+            query={normalizedQuery}
+            onRetry={retrySearch}
+          />
         ) : hasResults ? (
           <EntitySearchResults
             hits={hits}
             listboxId={LISTBOX_ID}
             activeIndex={activeIndex}
             isFetching={search.isFetching}
-            isPlaceholderData={Boolean(search.isPlaceholderData)}
+            isPlaceholderData={isPlaceholder}
             getOptionId={getOptionId}
             setRowRef={setRowRef}
             setActionRef={setActionRef}
           />
-        ) : null}
+        ) : (
+          <EntityEmptyState
+            // "No results" is a claim about the world. When the engine could not
+            // be reached, or the company part is not current, or more candidates
+            // follow, we did not finish looking, so we must not make it (D5).
+            variant={emptyVariant(answer)}
+            query={normalizedQuery}
+            incompleteReason={incompleteReasonOf(answer, search.hasNextPage)}
+            onClearFilters={clearFilters}
+            onRetry={retrySearch}
+          />
+        )}
 
-        {hasResults && search.hasNextPage ? (
+        {/* The next page is the server's own offset: a page that shows nothing can still have one. */}
+        {answer && !answer.moved && !isPlaceholder && search.hasNextPage ? (
           <EntityLoadMore
             isLoading={search.isFetchingNextPage}
             disabled={!search.hasNextPage}
@@ -345,17 +405,6 @@ export function EntitySearchPage() {
             }}
           />
         ) : null}
-
-        {!hasQuery || search.isError || isInitialLoading || hasResults ? null : (
-          <EntityEmptyState
-            // "No results" is a claim about the world. When the engine could not
-            // be reached we did not look, so we must not make it (D5).
-            variant={isDegraded ? 'degraded' : 'zero'}
-            query={normalizedQuery}
-            onClearFilters={clearFilters}
-            onRetry={retrySearch}
-          />
-        )}
       </section>
     </main>
   )

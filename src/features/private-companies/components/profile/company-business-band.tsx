@@ -4,11 +4,18 @@ import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { COMPANY_FINANCIAL_MEASURES, type CompanyFinancialMeasure, type PrivateCompanyFinancialSummary } from '@/schemas/private-company'
+import {
+  COMPANY_FINANCIAL_MEASURES,
+  type CompanyFinancialMeasure,
+  type FinancialMetric,
+  type PrivateCompanyFinancialSummary,
+} from '@/schemas/private-company'
 import { count, moneyCell, moneyText, moneyTick, percent, yearRanges } from '../../lib/company-profile-format'
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
 import { debtSentence, financialLede, measureLabel } from '../../lib/company-profile-text'
+import { metricStatus, reportedSummary } from '../../lib/financial-qualification'
 import { BAND_GRID_CLASS, ProfileBand } from './company-profile-band'
+import { CompanyQualificationNote } from './company-qualification-note'
 import { CombinedYears, YearBars, type BarSeries } from './company-year-charts'
 
 const TITLE_ID = 'company-business-title'
@@ -48,6 +55,7 @@ export function CompanyBusinessBand({
           <div className="mt-8" data-reveal>
             <FinancialChart model={model} measure={measure} onMeasure={onMeasure} />
           </div>
+          <CompanyQualificationNote model={model} className="mt-8" />
         </div>
         <div className={cn('min-w-0 lg:col-span-5', HUB_BESIDE_TITLE_CLASS)} data-reveal>
           <BalanceSheet model={model} />
@@ -76,9 +84,27 @@ function FinancialChart({
   readonly measure: CompanyFinancialMeasure
   readonly onMeasure: (measure: CompanyFinancialMeasure) => void
 }) {
-  const missing = new Set(model.missingYears)
-  const emptyLabel = (index: number) =>
-    missing.has(model.span[index] ?? 0) ? t`Niciun bilanț publicat pentru acest an` : t`Nu apare în bilanț`
+  const statements = new Map(model.profile.financials.map((year) => [year.fiscalYear, year]))
+  const charted: Record<CompanyFinancialMeasure, readonly FinancialMetric[]> = {
+    toate: ['turnover', 'net_result', 'employees'],
+    'cifra-de-afaceri': ['turnover'],
+    profit: ['net_result'],
+    salariati: ['employees'],
+  }
+  // A gap says why: no statement, a statement that was not qualified or was
+  // qualified on another basis, a value held out of the chart, or a value the
+  // statement does not carry.
+  const emptyLabel = (index: number) => {
+    const statement = statements.get(model.span[index] ?? 0)
+    if (!statement) return t`Niciun bilanț publicat pentru acest an`
+    if (statement.qualification.assessment !== 'assessed') return t`Bilanț necalificat: valorile lui nu intră în grafic`
+    if (model.qualification.otherBasisYears.includes(statement.fiscalYear)) return t`Calificat după altă politică sau ediție: nu se compară cu ceilalți ani`
+    const held = charted[measure].some((metric) => {
+      const status = metricStatus(statement, metric)
+      return status !== 'reported' && status !== 'missing'
+    })
+    return held ? t`Valoare reținută: nu intră în grafic` : t`Nu apare în bilanț`
+  }
   return (
     <div>
       <div className="sm:w-fit">
@@ -166,16 +192,21 @@ function balanceRows(): readonly { readonly key: BalanceKey; readonly label: str
   ]
 }
 
-/** The newest balance sheet, and against the year before when there is one: a percent only between two positive figures. */
+/**
+ * The newest balance sheet, and against the year before when there is one:
+ * reported values only (a held one is listed apart, in the qualification
+ * note), a change only against a reported value of a statement qualified
+ * under the same policy, and a percent only between two positive figures.
+ */
 function BalanceSheet({ model }: { readonly model: CompanyProfileModel }) {
   const { latest, previous } = model
-  const current = latest?.summary
-  if (!latest || !current) return null
-  const before = previous?.summary ?? null
+  if (!latest) return null
+  const before = previous && model.comparable ? previous : null
+  const currentAssets = reportedSummary(latest, 'currentAssets')
   // The „din care" rows are parts of current assets: under any other row they would read as its parts.
   const rows = balanceRows().flatMap((row) => {
-    const value = current[row.key]
-    return value === null || (row.indent && current.currentAssets === null) ? [] : [{ ...row, value }]
+    const value = reportedSummary(latest, row.key)
+    return value === null || (row.indent && currentAssets === null) ? [] : [{ ...row, value }]
   })
   if (rows.length === 0) return null
   return (
@@ -192,10 +223,10 @@ function BalanceSheet({ model }: { readonly model: CompanyProfileModel }) {
               <Trans>lei</Trans>
             </MonoLabel>
           </th>
-          {before && previous ? (
+          {before ? (
             <th scope="col" className="pb-2 pl-3 text-right font-normal">
               <MonoLabel className="text-muted-foreground">
-                <Trans>față de {previous.fiscalYear}</Trans>
+                <Trans>față de {before.fiscalYear}</Trans>
               </MonoLabel>
             </th>
           ) : null}
@@ -203,7 +234,7 @@ function BalanceSheet({ model }: { readonly model: CompanyProfileModel }) {
       </thead>
       <tbody className="divide-y divide-border/70">
         {rows.map((row) => {
-          const earlier = before?.[row.key] ?? null
+          const earlier = before ? reportedSummary(before, row.key) : null
           const change = earlier !== null && earlier > 0 && row.value >= 0 ? (row.value - earlier) / earlier : null
           return (
             <tr key={row.key}>

@@ -1,23 +1,28 @@
 import { t } from '@lingui/core/macro'
 import { countyNameRo } from '@/lib/territory-counties'
-import type {
-  CompanyAnalysisCaenBasis,
-  CompanyAnalysisCohortMode,
-  CompanyAnalysisDimension,
-  CompanyAnalysisFlagValue,
-  CompanyAnalysisGapReason,
-  CompanyAnalysisMetric,
-  CompanyAnalysisRankBy,
-  CompanyAnalysisScope,
-  CompanyAnalysisSizeBand,
-  CompanyAnalysisStatus,
+import {
+  onrcBasisOfKey,
+  type CompanyAnalysisCaenBasis,
+  type CompanyAnalysisCohortMode,
+  type CompanyAnalysisDimension,
+  type CompanyAnalysisFlagValue,
+  type CompanyAnalysisGapReason,
+  type CompanyAnalysisMetric,
+  type CompanyAnalysisOnrcBasis,
+  type CompanyAnalysisOnrcCoverage,
+  type CompanyAnalysisRankBy,
+  type CompanyAnalysisScope,
+  type CompanyAnalysisSizeBand,
+  type CompanyAnalysisStatus,
 } from '@/schemas/company-analytics'
 
 /**
  * The analysis page's words for the API's vocabulary. Each says what the
- * figure is and no more: an observed status is the most advanced state seen
- * in the registry, not "active today"; an unknown revision stays unknown; a
- * held value is held, never zero.
+ * figure is and no more: a county, locality or status is the value all of a
+ * company's entries in the pinned ONRC edition agree on — and a company
+ * without one is grouped by why, never called unknown or absent; a status is
+ * not "active today"; an unknown revision stays unknown; a held value is
+ * held, never zero; a recorded date is ONRC's, never a founding date.
  */
 
 export function metricLabel(metric: CompanyAnalysisMetric): string {
@@ -86,7 +91,7 @@ export function dimensionLabel(dimension: CompanyAnalysisDimension): string {
     case 'LEGAL_FORM':
       return t`Formă juridică`
     case 'OBSERVED_STATUS':
-      return t`Stare ONRC observată`
+      return t`Stare comună în ediția ONRC`
     case 'VAT_PAYER':
       return t`Plătitor de TVA`
     case 'FISCALLY_INACTIVE':
@@ -181,12 +186,15 @@ export function caenText(caen: { readonly code: string; readonly revision: strin
 export function companyAnalyticsCaveats(): readonly string[] {
   return [
     t`Județul, localitatea, starea ONRC și atributele fiscale ANAF descriu firma la data ediției, nu în anul fiscal.`,
-    t`Starea observată este cea mai avansată stare văzută în capturile ONRC; nu înseamnă că firma este activă azi.`,
+    t`Județul, localitatea și starea sunt valoarea comună a tuturor înscrierilor firmei din ediția ONRC a analizei. O firmă fără valoare comună e numărată într-un grup care spune de ce (valori diferite, observații incomplete, lipsă, nerezolvat), nu ca „necunoscută” și nu ca absentă.`,
+    t`Starea comună nu înseamnă că firma este activă azi.`,
+    t`Filtrele de observații ONRC caută pe aceeași înscriere a firmei (stare, județ, CAEN). O excludere păstrează doar firmele cu dovezi complete: cele cu dovezi incomplete nu sunt nici păstrate, nici socotite fără acel cod.`,
+    t`Data înregistrată de ONRC este data din registru, nu data înființării și nici o vechime.`,
     t`Acoperirea numără situațiile financiare observate: un an recent cu mai puține situații este parțial și nu e prezentat ca fiind complet.`,
     t`Salariații sunt suma numărului mediu raportat de fiecare firmă, nu persoane distincte; soldurile și salariații sunt valori ale unui singur an și nu se adună peste ani.`,
     t`Valorile lipsă sau reținute (formular neverificat, verificare, semnal de calitate) nu intră în sume și nu sunt tratate ca zero.`,
     t`Codul CAEN principal declarat la ANAF își păstrează revizia publicată; când revizia nu e publicată, rămâne necunoscută.`,
-    t`Denumirile firmelor sunt cele publice actuale din registru, nu cele de la data ediției.`,
+    t`Denumirile firmelor sunt cele publice actuale din directorul platformei, nu cele din ediția ONRC a analizei.`,
     t`Sumele sunt în lei nominali, neajustate cu inflația.`,
   ]
 }
@@ -195,16 +203,104 @@ export function countyLabel(code: string): string {
   return countyNameRo(code) ?? code
 }
 
-/** The place the question asks about, for its headline: one county by name, several by count, the country otherwise. */
+// ──────────────────────────────────────────────────────── ONRC edition ──
+
+/** Why a company has (or lacks) a consensus value, as a phrase. */
+export function onrcBasisPhrase(basis: CompanyAnalysisOnrcBasis): string {
+  switch (basis) {
+    case 'SINGLE_OBSERVATION':
+      return t`o singură observație`
+    case 'CONSISTENT_OBSERVATIONS':
+      return t`observații concordante`
+    case 'PARTIAL_OBSERVATIONS':
+      return t`observații incomplete`
+    case 'MULTIPLE_VALUES':
+      return t`valori diferite în înscrieri`
+    case 'MISSING':
+      return t`nicio valoare în ediție`
+    case 'UNRESOLVED':
+      return t`înscrieri nerezolvate`
+  }
+}
+
+/** A consensus bucket without a value, named by its field and its basis: „Fără județ comun — valori diferite în înscrieri". */
+export function basisGroupLabel(dimension: CompanyAnalysisDimension, basis: CompanyAnalysisOnrcBasis): string {
+  const phrase = onrcBasisPhrase(basis)
+  if (dimension === 'COUNTY') return t`Fără județ comun — ${phrase}`
+  if (dimension === 'UAT') return t`Fără localitate comună — ${phrase}`
+  if (dimension === 'OBSERVED_STATUS') return t`Fără stare comună — ${phrase}`
+  return t`Fără valoare comună — ${phrase}`
+}
+
+/** Whether the edition's status / CAEN evidence for a company can prove an absence. */
+export function onrcCoverageLabel(coverage: CompanyAnalysisOnrcCoverage): string {
+  switch (coverage) {
+    case 'COMPLETE':
+      return t`dovezi complete`
+    case 'COMPLETE_EMPTY':
+      return t`dovezi complete, fără coduri`
+    case 'PARTIAL':
+      return t`dovezi incomplete`
+    case 'UNRESOLVED':
+      return t`înscrieri nerezolvate`
+  }
+}
+
+/** Where a county, locality, status or activity name came from, in plain words. */
+export function labelSourceText(source: string): string {
+  switch (source) {
+    case 'territory_hub':
+      return t`nomenclatorul teritorial al platformei`
+    case 'api_nomenclature':
+      return t`nomenclatorul stărilor al aplicației, nu etichete publicate de ONRC`
+    case 'current_db_catalog':
+      return t`catalogul CAEN actual al platformei, pe revizia codului`
+    default:
+      return source
+  }
+}
+
+/**
+ * A civil date as the API sent it (`YYYY-MM-DD`), in words — „26 noiembrie
+ * 2007" — from its own digits: no time zone, no two-digit year; text the
+ * page cannot read is shown as it came.
+ */
+export function civilDateText(text: string, locale: 'ro' | 'en'): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(text)
+  if (!match) return text
+  const [, year = '', month = '', day = ''] = match
+  // A fixed year and UTC: only the month's name is taken from the calendar.
+  const monthName = new Intl.DateTimeFormat(locale === 'en' ? 'en-GB' : 'ro-RO', { month: 'long', timeZone: 'UTC' }).format(Date.UTC(2000, Number(month) - 1, 1))
+  return `${Number(day)} ${monthName} ${year}`
+}
+
+/** A consensus selector's keys split into values and the basis buckets they name. */
+export function consensusKeysOf(keys: readonly string[]): { readonly values: readonly string[]; readonly bases: readonly CompanyAnalysisOnrcBasis[] } {
+  const values: string[] = []
+  const bases: CompanyAnalysisOnrcBasis[] = []
+  for (const key of keys) {
+    const basis = onrcBasisOfKey(key)
+    if (basis === null) values.push(key)
+    else bases.push(basis)
+  }
+  return { values, bases }
+}
+
+/**
+ * The place the question asks about, for its headline: one county or
+ * locality by name, several by count, the companies without a common one as
+ * such — never as an unidentified seat — and the country otherwise.
+ */
 export function placePhrase(scope: CompanyAnalysisScope, uatNames: ReadonlyMap<string, string>): string {
-  const uats = scope.uat?.in ?? []
-  const counties = scope.county?.in ?? []
-  const firstUat = uats[0]
-  if (uats.length === 1 && firstUat && !scope.uat?.includeUnknown) return t`în ${uatNames.get(firstUat) ?? firstUat}`
-  if (uats.length > 1) return t`în ${uats.length} localități`
-  const firstCounty = counties[0]
-  if (counties.length === 1 && firstCounty && !scope.county?.includeUnknown) return firstCounty === 'B' ? t`în București` : t`în județul ${countyLabel(firstCounty)}`
-  if (counties.length > 1) return t`în ${counties.length} județe`
-  if (scope.county?.includeUnknown || scope.uat?.includeUnknown) return t`cu sediul neidentificat`
+  const uats = consensusKeysOf(scope.uat?.in ?? [])
+  const counties = consensusKeysOf(scope.county?.in ?? [])
+  const uatGroups = uats.values.length + uats.bases.length + (scope.uat?.includeUnknown ? 1 : 0)
+  const countyGroups = counties.values.length + counties.bases.length + (scope.county?.includeUnknown ? 1 : 0)
+  const firstUat = uats.values[0]
+  if (uatGroups === 1 && firstUat) return t`în ${uatNames.get(firstUat) ?? firstUat}`
+  if (uatGroups > 0) return uats.values.length === 0 ? t`fără localitate comună` : uats.values.length === uatGroups ? t`în ${uats.values.length} localități` : t`în ${uatGroups} grupuri de localități`
+  const firstCounty = counties.values[0]
+  if (countyGroups === 1 && firstCounty) return firstCounty === 'B' ? t`în București` : t`în județul ${countyLabel(firstCounty)}`
+  if (countyGroups > 0) return counties.values.length === 0 ? t`fără județ comun` : counties.values.length === countyGroups ? t`în ${counties.values.length} județe` : t`în ${countyGroups} grupuri de județe`
   return t`în România`
 }

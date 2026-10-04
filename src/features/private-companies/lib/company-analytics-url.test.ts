@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyticsSearchOf, DEFAULT_STATE, recordsKeyOf, searchOf, siteSearchOf, stateOf, urlSearchOf, withScope, type CompanyAnalyticsState } from './company-analytics-url'
+import { analyticsSearchOf, DEFAULT_STATE, recordsKeyOf, SEARCH_KEYS, searchOf, siteSearchOf, stateOf, urlSearchOf, withScope, type CompanyAnalyticsState } from './company-analytics-url'
 
 /**
  * The address is the question: every choice round-trips through it (so Back
@@ -110,5 +110,62 @@ describe('company analytics address', () => {
     const next = withScope({ ...DEFAULT_STATE, unread: ['judet'] }, { county: { in: ['TM', 'CJ', 'TM'] }, legalForms: [] })
     expect(next.scope).toEqual({ county: { in: ['CJ', 'TM'] } })
     expect(next.unread).toEqual([])
+  })
+})
+
+describe('company analytics address — the ONRC edition’s two questions', () => {
+  /** Every consensus basis key and every ONRC observation key, written and read back exactly. */
+  const ONRC: CompanyAnalyticsState = {
+    ...DEFAULT_STATE,
+    scope: {
+      county: { in: ['(multiple_values)', 'CJ'] },
+      uat: { in: ['(partial_observations)', '(unresolved)'], includeUnknown: true },
+      observedStatus: { in: ['(missing)', '1048'] },
+      // One identifier with a public 1048, in Cluj, with 6201 in any revision (an unknown one included) and exactly rev2:6201.
+      onrc: { status: ['1048'], county: ['CJ'], caenCode: ['6201'], onrcCaen: ['rev2:6201'], exclude: { status: ['1070'], caenCode: ['4711'], county: ['B'], legalForm: ['SA'] } },
+    },
+  }
+
+  it('round-trips a consensus basis key and every ONRC observation and exclusion through the address', () => {
+    const search = searchOf(ONRC)
+    expect(search).toMatchObject({
+      judet: '(multiple_values),CJ',
+      uat: '(partial_observations),(unresolved),necunoscut',
+      stare: '(missing),1048',
+      onrc_stare: '1048',
+      onrc_judet: 'CJ',
+      onrc_caen: '6201',
+      onrc_caen_exact: 'rev2:6201',
+      onrc_fara_stare: '1070',
+      onrc_fara_caen: '4711',
+      onrc_fara_judet: 'B',
+      onrc_fara_forma: 'SA',
+    })
+    expect(stateOf(analyticsSearchOf(throughRouter(ONRC)))).toEqual(ONRC)
+  })
+
+  it('reads a basis key only as the API writes it, and a value key as before', () => {
+    expect(stateOf({ judet: '(MULTIPLE_VALUES)' }).unread).toEqual(['judet'])
+    expect(stateOf({ judet: '(nothing_like_it)' }).unread).toEqual(['judet'])
+    expect(stateOf({ stare: '(partial_observations)' }).scope.observedStatus).toEqual({ in: ['(partial_observations)'] })
+  })
+
+  it('never gives a code a revision: an exact CAEN without one is not read, a broad one matches every revision', () => {
+    const exact = stateOf({ onrc_caen_exact: '6201' })
+    expect(exact.unread).toEqual(['onrc_caen_exact'])
+    expect(exact.scope.onrc).toBeUndefined()
+    expect(stateOf({ onrc_caen: '6201' }).scope.onrc).toEqual({ caenCode: ['6201'] })
+    expect(stateOf({ onrc_caen_exact: 'REV2:6201,rev4:6201' })).toMatchObject({ scope: { onrc: { onrcCaen: ['rev2:6201'] } }, unread: ['onrc_caen_exact'] })
+  })
+
+  it('keeps the observations apart from the consensus keys of the same name', () => {
+    // A status every entry agrees on, and „has an entry with a public 1048": two filters, two keys.
+    const state = stateOf({ stare: '1048', onrc_stare: '1048' })
+    expect(state.scope.observedStatus).toEqual({ in: ['1048'] })
+    expect(state.scope.onrc).toEqual({ status: ['1048'] })
+  })
+
+  it('writes no exact-revision exclusion: the address has no key for one', () => {
+    expect(SEARCH_KEYS.filter((key) => key.startsWith('onrc_fara'))).toEqual(['onrc_fara_stare', 'onrc_fara_caen', 'onrc_fara_judet', 'onrc_fara_forma'])
   })
 })

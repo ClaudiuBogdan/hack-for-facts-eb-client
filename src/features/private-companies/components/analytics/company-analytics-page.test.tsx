@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { breakdownFixture, recordsFixture, releaseFixture, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
+import { breakdownFixture, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
 import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
 import { releaseOfKey } from '../../lib/company-analytics-keys'
 import { CompanyAnalyticsPage } from './company-analytics-page'
@@ -32,6 +32,8 @@ const api = vi.hoisted(() => ({
   refuseRelease: (() => false) as (call: Call) => boolean,
   /** Which reads the API refuses for their cursor. */
   refuseCursor: (() => false) as (call: Call) => boolean,
+  /** Which reads the API answers SERVICE_UNAVAILABLE (no v2 release published yet). */
+  unavailable: (() => false) as (call: Call) => boolean,
 }))
 
 vi.mock('@tanstack/react-router', () => ({
@@ -52,9 +54,11 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
     graphqlQuery: (_document: string, variables: Record<string, unknown>, options: { readonly operationName: string }) => {
       const call = { op: options.operationName, variables }
       api.calls.push(call)
+      if (api.unavailable(call))
+        return Promise.reject(new actual.GraphQLRequestError('unavailable', { graphQLErrors: [{ message: 'the active companies analytics release cannot be served: schema companies-analytics-ch-v1', extensions: { code: 'SERVICE_UNAVAILABLE' } }] }))
       if (api.refuseRelease(call)) return Promise.reject(refusal('release'))
       if (api.refuseCursor(call)) return Promise.reject(refusal('after'))
-      const release = { releaseId: String(variables.release ?? api.active), publishedAt: null, active: true }
+      const release = releaseRef(String(variables.release ?? api.active), { publishedAt: null })
       switch (call.op) {
         case 'CompanyAnalysisRelease':
           return Promise.resolve({ companyAnalysisRelease: releaseFixture({ release }) })
@@ -112,6 +116,7 @@ beforeEach(() => {
   api.active = '7'
   api.refuseRelease = () => false
   api.refuseCursor = () => false
+  api.unavailable = () => false
 })
 
 describe('CompanyAnalyticsPage', () => {
@@ -127,6 +132,42 @@ describe('CompanyAnalyticsPage', () => {
     expect(screen.getByText('reținut: semnal de calitate')).toBeInTheDocument()
     expect(screen.getAllByText('fără situație pentru 2024').length).toBeGreaterThan(0)
     await waitFor(() => expect(api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease').every((call) => call.variables.release === '7')).toBe(true))
+  })
+
+  it('lists each company with why it has no common county or status, the date ONRC recorded as its civil date, and where the names come from', async () => {
+    renderPage()
+    await screen.findByText('Firma 2')
+    const line = (cui: string) => screen.getByText(new RegExp(`^CUI ${cui} · `, 'u')).textContent
+    expect(line('1')).toBe('CUI 1 · SRL · Cluj-Napoca, Cluj · funcțiune · înregistrată la ONRC pe 15 March 2010')
+    expect(line('2')).toBe('CUI 2 · SRL · fără județ comun (valori diferite în înscrieri) · fără stare comună (observații incomplete) · înregistrată la ONRC pe 1 January 0001')
+    expect(line('3')).toBe('CUI 3 · SRL · Cluj-Napoca, Cluj · funcțiune')
+    expect(screen.getByText(/Denumirile firmelor sunt cele publice actuale din directorul platformei, nu cele din ediția ONRC\./u)).toHaveTextContent(
+      'Județe, localități, stări: nomenclatorul teritorial al platformei; nomenclatorul stărilor al aplicației, nu etichete publicate de ONRC.',
+    )
+    expect(document.body.textContent).not.toMatch(/registrationYear|anul înregistrării/u)
+  })
+
+  it('names the ONRC edition the release was exported from, with ONRC’s publication date as it was written', async () => {
+    renderPage()
+    expect(await screen.findByTestId('companies-analytics-source-edition')).toHaveTextContent('ediția ONRC 41, publicată de ONRC pe 30 September 2026')
+  })
+
+  it('says analytics is unavailable before a v2 release is published — never a zero, never a figure', async () => {
+    api.unavailable = (call) => call.op === 'CompanyAnalysisRelease'
+    renderPage()
+    expect(await screen.findByText('Analiza firmelor nu este disponibilă acum')).toBeInTheDocument()
+    expect(screen.queryByText(FIGURES)).not.toBeInTheDocument()
+    expect(screen.queryByText('Firme eligibile în selecție')).not.toBeInTheDocument()
+    // The release read is retried as any transient failure; nothing else is read.
+    expect(api.calls.every((call) => call.op === 'CompanyAnalysisRelease')).toBe(true)
+  })
+
+  it('withdraws every figure when the figures themselves are refused — as after a completed operation the release went stale', async () => {
+    api.refuseRelease = (call) => call.op === 'CompanyAnalysisStats'
+    renderPage()
+    await screen.findByText('Ediția 7 a analizei nu mai este disponibilă')
+    expectWithdrawn('7')
+    expect(activeReads()).toBe(1)
   })
 
   it('pins the release it answered from into the next question', async () => {
@@ -211,7 +252,7 @@ describe('CompanyAnalyticsPage', () => {
     const seeds = createSeedStore([
       { key: ['companies', 'analytics', 'stats', '7', {}, []], data: { seeded: true } },
       { key: ['companies', 'analytics', 'release', 'active'], data: releaseFixture() },
-      { key: ['companies', 'analytics', 'release', '8'], data: releaseFixture({ release: { releaseId: '8', publishedAt: null, active: true } }) },
+      { key: ['companies', 'analytics', 'release', '8'], data: releaseFixture({ release: releaseRef('8', { publishedAt: null }) }) },
     ])
     expect(seeds.take(['companies', 'analytics', 'stats', '7', {}, []])).toEqual({ found: true, data: { seeded: true } })
     expect(seeds.take(['companies', 'analytics', 'stats', '7', {}, []])).toEqual({ found: false })

@@ -3,10 +3,12 @@
  * (for the "Filtre" badge) and one removable chip per selected value. Params in,
  * plain data out — no React, no i18n — so both are unit-testable.
  *
- * A chip carries the raw `field`/`value` rather than a rendered label: county,
- * status and legal-form values are ONRC vocabulary and display as-is, while the
- * date range and the two fiscal switches need translated copy that only the
- * component can produce.
+ * A chip carries the raw `field`/`value` rather than a rendered label: a county
+ * code shows its canonical name, a status code this application's presentation
+ * name, legal forms display as-is, an exact CAEN selector its revision and
+ * code (an invalid one is flagged, never dropped), while the date range and
+ * the two fiscal switches need translated copy that only the component can
+ * produce.
  *
  * `q` and `sort` are not filters: they have their own controls and survive
  * "clear all".
@@ -15,6 +17,8 @@ import {
   PRIVATE_COMPANY_STATUS_OPTIONS,
   type PrivateCompanyDirectorySearchState,
 } from '@/schemas/private-company-search'
+import { parseCaenSelector } from './company-caen-selector'
+import { countyName } from './hub-counties'
 
 /** A patch merged into the search state and committed to the URL. */
 export type CompanyDirectoryFilterPatch = Partial<PrivateCompanyDirectorySearchState>
@@ -24,6 +28,7 @@ export type CompanyDirectoryChipField =
   | 'status'
   | 'legalForm'
   | 'caen'
+  | 'onrcCaen'
   | 'registrationDate'
   | 'vat'
   | 'inactive'
@@ -31,10 +36,12 @@ export type CompanyDirectoryChipField =
 export type CompanyDirectoryChip = {
   readonly key: string
   readonly field: CompanyDirectoryChipField
-  /** ONRC display label where the value has one; `null` for synthetic facets. */
+  /** Display label where the value has one; `null` for synthetic facets. */
   readonly label: string | null
   readonly value: string | boolean | null
   readonly patch: CompanyDirectoryFilterPatch
+  /** A URL value the API cannot read (a malformed exact CAEN selector): shown, flagged, never sent. */
+  readonly invalid?: boolean
 }
 
 const STATUS_LABEL_BY_CODE = new Map<string, string>(
@@ -57,6 +64,7 @@ export function countActiveCompanyDirectoryFilters(
   count += nonEmpty(state.county).length
   count += nonEmpty(state.status).length
   count += nonEmpty(state.legalForm).length
+  count += nonEmpty(state.onrcCaen).length
   if (state.caen && state.caen.trim().length > 0) count += 1
   if (state.regFrom || state.regTo) count += 1
   if (typeof state.vat === 'boolean') count += 1
@@ -87,7 +95,8 @@ export function buildCompanyDirectoryChips(
     chips.push({
       key: `county:${county}`,
       field: 'county',
-      label: county,
+      // A code (`CJ`) by its canonical name; a name from an older link as written.
+      label: countyName(county),
       value: county,
       patch: { county: withoutValue(state.county, county) },
     })
@@ -121,6 +130,18 @@ export function buildCompanyDirectoryChips(
       label: `CAEN ${caen}`,
       value: caen,
       patch: { caen: undefined },
+    })
+  }
+
+  for (const value of nonEmpty(state.onrcCaen)) {
+    const selector = parseCaenSelector(value)
+    chips.push({
+      key: `onrcCaen:${value}`,
+      field: 'onrcCaen',
+      label: selector ? `CAEN ${selector.code} · ${selector.revision.replace(/^rev/u, 'Rev.')}` : value,
+      value,
+      patch: { onrcCaen: withoutValue(state.onrcCaen, value) },
+      ...(selector ? {} : { invalid: true }),
     })
   }
 

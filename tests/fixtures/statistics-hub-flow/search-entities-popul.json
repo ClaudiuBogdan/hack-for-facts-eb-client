@@ -23,9 +23,20 @@
           "roles": null,
           "isActive": null,
           "isUat": null,
-          "entityTags": null
+          "entityTags": null,
+          "ngoRegistryNumber": null,
+          "ngoRegistryStatus": null,
+          "company": null
         }
-      ]
+      ],
+      "generation": {
+        "generationId": "entities_build_1759593600000_k3x9q2",
+        "registryScopeKey": "onrc:published:41:3:7"
+      },
+      "companyScope": "onrc:published:41:3:7",
+      "companyContribution": "CURRENT",
+      "companyContributionReason": null,
+      "continuation": { "candidatesReturned": 1, "nextOffset": null }
     }
   }
 }

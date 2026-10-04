@@ -28,18 +28,25 @@ export function formatRonAmountCompact(value: number | null): string {
   return formatCurrency(value, 'compact', 'RON')
 }
 
+/**
+ * Profit less loss as a display of two given numbers: a missing side counts as
+ * zero, so the zero profit ANAF writes beside a loss never hides the loss, and
+ * a reported 0/0 is a zero result. Only when neither side is reported is there
+ * nothing to show. Not a qualified figure: a company profile's net result is
+ * the evaluator's (`qualifiedNet`), never one computed here.
+ */
 export function formatRonNetResultCompact(
   netProfit: number | null,
   netLoss: number | null,
 ): string {
-  if (netProfit !== null && Number.isFinite(netProfit)) {
-    return formatRonAmountCompact(netProfit)
+  const profit = netProfit !== null && Number.isFinite(netProfit) ? netProfit : null
+  const loss = netLoss !== null && Number.isFinite(netLoss) ? netLoss : null
+  if (profit === null && loss === null) {
+    return '—'
   }
-  if (netLoss !== null && Number.isFinite(netLoss)) {
-    const formatted = formatRonAmountCompact(netLoss)
-    return formatted === '—' ? '—' : `−${formatted}`
-  }
-  return '—'
+  const net = (profit ?? 0) - (loss ?? 0)
+  const formatted = formatRonAmountCompact(Math.abs(net))
+  return net < 0 ? `−${formatted}` : formatted
 }
 
 export function formatEmployeesDisplay(value: number | null): string {

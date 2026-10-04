@@ -125,6 +125,29 @@ describe('useEntitySearch', () => {
     expect(searchEntitiesMock).toHaveBeenCalledTimes(1)
   })
 
+  it('reports a failed read as an error, without the previous term\'s results', async () => {
+    const { Wrapper } = createWrapper()
+    const { result } = renderHook(() => useEntitySearch(), { wrapper: Wrapper })
+
+    act(() => {
+      result.current.setSearchTerm('Cluj')
+    })
+    await waitFor(() => {
+      expect(result.current.results).toHaveLength(1)
+    })
+
+    searchEntitiesMock.mockRejectedValue(new Error('Entity search returned no result list'))
+    act(() => {
+      result.current.setSearchTerm('Sibiu')
+    })
+
+    // The selector shows its existing error, not "No entities found".
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true)
+    })
+    expect(result.current.results).toEqual([])
+  })
+
   it('routes preferred-entity searches to primarie for non-county UATs', async () => {
     searchEntitiesMock.mockResolvedValue([
       {

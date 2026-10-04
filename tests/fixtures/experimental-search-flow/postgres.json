@@ -2,30 +2,16 @@
   "data": {
     "searchEntities": {
       "query": "fallback",
-      "engine": "postgres",
+      "engine": "none",
       "degraded": true,
-      "estimatedTotalHits": 1,
+      "estimatedTotalHits": 0,
       "facets": [],
-      "hits": [
-        {
-          "id": "company_999_x",
-          "docType": "company",
-          "title": "FALLBACK EXEMPLU SRL",
-          "snippet": null,
-          "score": null,
-          "source": "postgres",
-          "docId": "company:999",
-          "docKey": "999",
-          "subtitle": null,
-          "countyName": null,
-          "url": null,
-          "rankBoost": null,
-          "cuis": ["999"],
-          "identifiers": null,
-          "roles": null,
-          "isActive": null
-        }
-      ]
+      "hits": [],
+      "generation": null,
+      "companyScope": null,
+      "companyContribution": "UNAVAILABLE",
+      "companyContributionReason": "engine_unavailable",
+      "continuation": { "candidatesReturned": 0, "nextOffset": null }
     }
   }
 }

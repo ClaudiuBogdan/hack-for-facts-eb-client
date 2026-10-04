@@ -15,7 +15,7 @@
           "score": 1,
           "docId": null,
           "docKey": "14399840",
-          "subtitle": "SA",
+          "subtitle": "SA, Ilfov",
           "countyName": "Ilfov",
           "url": null,
           "cuis": ["14399840"],
@@ -23,9 +23,29 @@
           "roles": ["company"],
           "isActive": true,
           "isUat": false,
-          "entityTags": []
+          "entityTags": [],
+          "ngoRegistryNumber": null,
+          "ngoRegistryStatus": null,
+          "company": {
+            "registryState": "IN_EDITION",
+            "name": "DANTE INTERNATIONAL SA",
+            "nameSource": "onrc_edition",
+            "legalForm": "SA",
+            "countyCode": "IF",
+            "countyName": "Ilfov",
+            "active": true,
+            "identifiers": []
+          }
         }
-      ]
+      ],
+      "generation": {
+        "generationId": "entities_build_1759593600000_k3x9q2",
+        "registryScopeKey": "onrc:published:41:3:7"
+      },
+      "companyScope": "onrc:published:41:3:7",
+      "companyContribution": "CURRENT",
+      "companyContributionReason": null,
+      "continuation": { "candidatesReturned": 1, "nextOffset": null }
     }
   }
 }

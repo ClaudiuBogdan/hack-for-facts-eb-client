@@ -11,13 +11,15 @@
 import type {
   EntitySearchFacet,
   EntitySearchHit,
+  EntitySearchHitCompany,
   EntitySearchResult,
 } from '@/schemas/entity-search'
 import { entityHref } from '../../lib/entity-search-routing'
 import type {
   RawSearchFacet,
   RawSearchHit,
-  SearchEntitiesResponse,
+  RawSearchHitCompany,
+  SearchEntitiesAnswer,
 } from './entity-search-queries'
 
 function toNumberOrNull(value: string | number | null): number | null {
@@ -29,6 +31,19 @@ function toNumberOrNull(value: string | number | null): number | null {
 function toStringOrNull(value: string | number | null): string | null {
   if (value == null) return null
   return typeof value === 'string' ? value : String(value)
+}
+
+function mapSearchHitCompany(raw: RawSearchHitCompany): EntitySearchHitCompany {
+  return {
+    registryState: raw.registryState,
+    name: raw.name,
+    nameSource: raw.nameSource,
+    legalForm: raw.legalForm,
+    countyCode: raw.countyCode,
+    countyName: raw.countyName,
+    active: raw.active,
+    identifiers: raw.identifiers,
+  }
 }
 
 export function mapSearchHit(raw: RawSearchHit): EntitySearchHit {
@@ -51,7 +66,9 @@ export function mapSearchHit(raw: RawSearchHit): EntitySearchHit {
     snippet: raw.snippet,
     countyName: raw.countyName,
     roles: raw.roles ?? [],
-    isActive: raw.isActive ?? true,
+    // Null stays unknown: neither active nor inactive (contract r2 §4).
+    isActive: raw.isActive,
+    company: raw.company === null ? null : mapSearchHitCompany(raw.company),
     isUat: raw.isUat ?? null,
     entityTags: raw.entityTags ?? [],
     ngoRegistryNumber: raw.ngoRegistryNumber ?? null,
@@ -72,9 +89,8 @@ function mapSearchFacet(raw: RawSearchFacet): EntitySearchFacet {
 }
 
 export function mapSearchResult(
-  response: SearchEntitiesResponse,
+  result: SearchEntitiesAnswer,
 ): EntitySearchResult {
-  const result = response.searchEntities
   return {
     query: result.query,
     engine: result.engine,
@@ -82,5 +98,10 @@ export function mapSearchResult(
     estimatedTotalHits: result.estimatedTotalHits,
     facets: result.facets.map(mapSearchFacet),
     hits: result.hits.map(mapSearchHit),
+    generation: result.generation,
+    companyScope: result.companyScope,
+    companyContribution: result.companyContribution,
+    companyContributionReason: result.companyContributionReason,
+    continuation: result.continuation,
   }
 }

@@ -3,8 +3,17 @@
  * `CompaniesFilter` input. Each filter is a small object with `eq` / `in` /
  * `prefix` / `between` operators (see the server SDL). Returns `undefined` when
  * no filters are active so the query omits the `filter` argument entirely.
+ *
+ * What the API does with them (API19): `status`, `county`, `caenCode` and
+ * `onrcCaen` must all hold on the SAME resolved identifier of the pinned ONRC
+ * edition; `status` matches ANY public original observation (1048 also beside
+ * a conflicting code); `caenCode` is the broad match — the digits in any
+ * revision of the current edition's observations, never older editions or
+ * ANAF's main activity; `onrcCaen` is one code in one revision. The fiscal
+ * switches are ANAF's own lists, independent of the registry.
  */
 import type { PrivateCompanySearchQuery } from '@/schemas/private-company-search'
+import { parseCaenSelector } from '../../lib/company-caen-selector'
 
 /** `between` serializes as `{ from, to }` in the server's filter kernel. */
 export type DateRangeFilter = { between: { from?: string; to?: string } }
@@ -13,6 +22,7 @@ export type CompaniesFilterInput = {
   county?: { eq?: string; in?: string[] }
   status?: { eq?: string; in?: string[] }
   caenCode?: { prefix?: string; eq?: string }
+  onrcCaen?: { eq?: string; in?: string[] }
   legalForm?: { eq?: string; in?: string[] }
   registrationDate?: DateRangeFilter
   vatPayer?: { eq: boolean }
@@ -74,6 +84,10 @@ export function buildCompaniesFilter(
     const caen = buildCaenFilter(query.caen)
     if (caen) filter.caenCode = caen
   }
+
+  // Only well-formed selectors reach the API; the page refuses to read with an invalid one.
+  const onrcCaen = buildSetFilter(query.onrcCaen?.filter((value) => parseCaenSelector(value) !== null))
+  if (onrcCaen) filter.onrcCaen = onrcCaen
 
   const registrationDate = buildRegistrationDateFilter(query.regFrom, query.regTo)
   if (registrationDate) filter.registrationDate = registrationDate

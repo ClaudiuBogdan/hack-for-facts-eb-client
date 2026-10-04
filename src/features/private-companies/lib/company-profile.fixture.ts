@@ -9,6 +9,8 @@ import type {
   ValueResolution,
 } from '@/schemas/procurement'
 import type { PrivateCompanyFinancialYear, PrivateCompanyProfile } from '@/schemas/private-company'
+import { admittedQualification, originalsOf } from '../mocks/fixtures/qualification'
+import { mockRegistryEvidence } from '../mocks/fixtures/registry'
 
 /**
  * Builders for the company profile's tests: a record shaped like the live
@@ -17,16 +19,30 @@ import type { PrivateCompanyFinancialYear, PrivateCompanyProfile } from '@/schem
  * Jack and A & B Ideatica — the companies the page was designed against.
  */
 
+/**
+ * A statement year; its publisher follows the source seam (MFP through FY2018,
+ * ANAF from FY2019) unless a test says otherwise. Unless a test passes its own,
+ * the exact texts follow the values and the qualification is the evaluator's
+ * for an admitted, unheld statement (every present value reported).
+ */
 export function financialYear(fiscalYear: number, fields: Partial<Omit<PrivateCompanyFinancialYear, 'fiscalYear'>> = {}): PrivateCompanyFinancialYear {
-  return {
+  const { originals, source, qualification, ...values } = fields
+  const year = {
     fiscalYear,
+    sourceSystem: fiscalYear >= 2019 ? ('anaf' as const) : ('mfp' as const),
     turnover: null,
     netProfit: null,
     netLoss: null,
     employees: null,
-    currency: 'RON',
+    currency: 'RON' as const,
     summary: null,
-    ...fields,
+    ...values,
+  }
+  return {
+    ...year,
+    originals: originals ?? originalsOf(year),
+    source: source ?? null,
+    qualification: qualification ?? admittedQualification(year),
   }
 }
 
@@ -52,23 +68,47 @@ export function balanceSummary(fields: Partial<NonNullable<PrivateCompanyFinanci
   }
 }
 
-/** An active SRL in Gherla, Cluj, with a main activity and nothing else: no statements, no public money. */
+/**
+ * An active SRL in Gherla, Cluj, with a main activity and nothing else: no
+ * statements, no public money. As live, ANAF's main activity carries no CAEN
+ * revision (so no name of its own) and the sources carry the source's dates:
+ * the ONRC edition published on 8 July, ANAF's state on 4 July. Its registry
+ * evidence is a MOCK edition's (one identifier, one status) agreeing with the
+ * qualified fields; a test that overrides those fields passes its own
+ * `registry` when the evidence matters to it.
+ */
 export function companyProfile(overrides: Partial<PrivateCompanyProfile> = {}): PrivateCompanyProfile {
   return {
     organizationId: 'cui:22202108',
     cui: '22202108',
     codInmatriculare: 'J12/3094/2007',
     legalName: '66 JACK SRL',
+    nameSource: 'onrc_edition',
     legalForm: 'SRL',
     registrationDate: '2007-11-26',
-    status: { code: '1048', label: 'funcțiune' },
+    status: { code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' },
     address: { display: '', county: 'Cluj', locality: 'Municipiul Gherla' },
     geography: { uatSirutaCode: '55384', uatName: 'Municipiul Gherla', countyName: 'Cluj', matchConfidence: 'safe' },
     caenActivities: [
       { code: '5610', rev: 'rev2', label: 'Restaurante', source: 'onrc' },
       { code: '5630', rev: 'rev2', label: 'Baruri și alte activități de servire a băuturilor', source: 'onrc' },
-      { code: '5610', rev: null, label: 'Restaurante', source: 'anaf' },
+      { code: '5610', rev: null, label: null, source: 'anaf' },
     ],
+    registry: mockRegistryEvidence({
+      identifier: 'J12/3094/2007',
+      name: '66 JACK SRL',
+      legalForm: 'SRL',
+      recordedDate: '2007-11-26',
+      countyCode: 'CJ',
+      countyName: 'Cluj',
+      uatSirutaCode: '55384',
+      uatName: 'Municipiul Gherla',
+      statusCodes: ['1048'],
+      caen: [
+        { code: '5610', revision: 'rev2', label: 'Restaurante' },
+        { code: '5630', revision: 'rev2', label: 'Baruri și alte activități de servire a băuturilor' },
+      ],
+    }),
     representatives: [],
     euBranches: [],
     fiscal: { vatPayer: false, inactive: false, anafFound: true, asOfDate: '2026-07-04', fiscalCaen: { code: '5610', rev: null } },
@@ -76,7 +116,7 @@ export function companyProfile(overrides: Partial<PrivateCompanyProfile> = {}): 
     financialTrajectory: null,
     publicMoney: null,
     sources: [
-      { id: 'onrc', snapshotDate: '2026-07-18' },
+      { id: 'onrc', snapshotDate: '2026-07-08' },
       { id: 'anaf', snapshotDate: '2026-07-04' },
     ],
     ...overrides,

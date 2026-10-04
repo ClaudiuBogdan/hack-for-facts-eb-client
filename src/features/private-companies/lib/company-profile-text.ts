@@ -1,7 +1,16 @@
 import { plural, t } from '@lingui/core/macro'
-import type { CompanyFinancialMeasure, CompanyPaymentGrain, PrivateCompanyFinancialYear } from '@/schemas/private-company'
-import { count, moneyText, percent } from './company-profile-format'
-import { netResultOf, type CompanyProfileModel, type SizeClass } from './company-profile-model'
+import type {
+  CompanyFinancialMeasure,
+  CompanyPaymentGrain,
+  FinancialSourceMetric,
+  PrivateCompanyFinancialYear,
+  PrivateCompanyMetricStatus,
+  PrivateCompanyStatementPublisher,
+} from '@/schemas/private-company'
+import { count, moneyText, percent, yearRanges } from './company-profile-format'
+import type { CompanyProfileModel, SizeClass, StatementValues } from './company-profile-model'
+import { cuiStateText } from './company-registry-text'
+import { comparable, qualifiedNet, reportedNumber, reportedSummary } from './financial-qualification'
 import { formatHubNumber } from './hub-format'
 
 /**
@@ -17,18 +26,18 @@ export function nameLength(name: string): 'short' | 'medium' | 'long' {
   return name.length <= 20 ? 'short' : name.length <= 36 ? 'medium' : 'long'
 }
 
-/** The company in one sentence: what it is, where, since when, what it does. */
+/**
+ * The company in one sentence: what it is, where, and what it declared to
+ * ANAF as its main activity. No year: the date ONRC recorded is not a
+ * founding date, and the registry facts with their date are in the registry
+ * band.
+ */
 export function companySentence(model: CompanyProfileModel): string {
   const form = model.legalFormName ?? t`Firmă`
   const where = model.place.label
-  const founded = model.foundedYear
-  const first =
-    where && founded ? t`${form} din ${where}, înregistrată în ${founded}.`
-    : where ? t`${form} din ${where}.`
-    : founded ? t`${form} înregistrată în ${founded}.`
-    : `${form}.`
+  const first = where ? t`${form} din ${where}.` : `${form}.`
   const activity = model.mainActivity?.label
-  return activity ? `${first} ${t`Activitatea principală: ${uncapitalised(activity)}.`}` : first
+  return activity ? `${first} ${t`Activitatea principală declarată la ANAF: ${uncapitalised(activity)}.`}` : first
 }
 
 export function capitalised(text: string): string {
@@ -43,18 +52,37 @@ function uncapitalised(text: string): string {
   return first.toLocaleLowerCase('ro-RO') + text.slice(1)
 }
 
-/** The registry's status as a chip says it. */
+/** The registry's status as a chip says it: the edition's consensus, or why there is none. */
 export function statusText(model: CompanyProfileModel): string {
-  if (model.status.kind === 'active') return t`În funcțiune`
-  return model.status.label ? capitalised(model.status.label) : t`Stare necunoscută`
+  switch (model.status.kind) {
+    case 'active':
+      return t`În funcțiune`
+    case 'conflict':
+      return t`Stări diferite în registru`
+    case 'unqualified': {
+      const state = model.registry.cuiState
+      if (state === 'not_in_edition') return t`Fără profil în ediția ONRC`
+      if (state !== 'in_edition') return t`Registru indisponibil`
+      return t`Stare neconfirmată în registru`
+    }
+    default:
+      return model.status.label ? capitalised(model.status.label) : t`Stare necunoscută`
+  }
 }
 
 /**
  * What the registry status means for the figures below it, for a company not
- * in business; null for one that is, or whose status says nothing.
+ * in business or whose observations disagree; for a CUI the edition holds no
+ * profile for, that this is not a legal fact; null otherwise.
  */
 export function statusNotice(model: CompanyProfileModel): string | null {
   const { kind, label } = model.status
+  if (kind === 'conflict') {
+    return model.activeObservation
+      ? t`Înscrierile din registru au stări diferite, între care una „în funcțiune”; toate sunt listate în secțiunea Registru, niciuna nu e aleasă.`
+      : t`Înscrierile din registru au stări diferite; toate sunt listate în secțiunea Registru, niciuna nu e aleasă.`
+  }
+  if (kind === 'unqualified') return cuiStateText(model.registry.cuiState)
   if (kind === 'active' || kind === 'other') return null
   // The registry's own word only when it says more than the notice („faliment", „reorganizare judiciară").
   const detail = label && !/^insolven|^dizolv/iu.test(label) ? label : null
@@ -80,12 +108,14 @@ export function changeNote(from: number | null | undefined, to: number | null | 
 
 /**
  * The change of a net result, in words where a percent would lie: a profit
- * turning into a loss is not „-12.840%".
+ * turning into a loss is not „-12.840%". Only between two reported net results
+ * of statements qualified under one policy.
  */
 export function netChangeNote(previous: PrivateCompanyFinancialYear | null, latest: PrivateCompanyFinancialYear): string | null {
-  const before = previous ? netResultOf(previous) : null
-  const now = netResultOf(latest)
-  if (!previous || before === null || now === null) return null
+  if (!previous || !comparable(previous, latest)) return null
+  const before = qualifiedNet(previous)
+  const now = qualifiedNet(latest)
+  if (before === null || now === null) return null
   const year = previous.fiscalYear
   if (before === 0) return now === 0 ? t`la fel ca în ${year}` : t`în ${year}: rezultat zero`
   if (before > 0 && now <= 0) return t`în ${year}: profit de ${moneyText(before)}`
@@ -136,51 +166,74 @@ export function sizeClassLabel(size: SizeClass): string {
   }
 }
 
-/** The newest year against the one before, then the long run when it says more. */
+/**
+ * The newest year against the one before, then the long run when it says
+ * more: every figure in it is a reported one, compared only within one policy.
+ */
 export function financialLede(model: CompanyProfileModel): string | null {
-  const { latest, previous, stale, lossYears, span } = model
+  const { latest, previous, stale, lossYears } = model
   if (!latest) return null
   const sentences: string[] = []
   if (stale) sentences.push(t`Ultimul bilanț publicat este pe ${latest.fiscalYear}.`)
-  if (previous?.turnover && previous.turnover > 0 && latest.turnover !== null) {
+  const before = previous && model.comparable ? reportedNumber(previous, 'turnover') : null
+  const after = reportedNumber(latest, 'turnover')
+  if (previous && before !== null && before > 0 && after !== null) {
     const year = latest.fiscalYear
-    const turnover = t`În ${year}, cifra de afaceri ${movement(previous.turnover, latest.turnover)}`
-    const before = netResultOf(previous)
-    const now = netResultOf(latest)
+    const turnover = t`În ${year}, cifra de afaceri ${movement(before, after)}`
+    const was = qualifiedNet(previous)
+    const now = qualifiedNet(latest)
     let net = ''
-    if (before !== null && now !== null) {
-      if (before > 0 && now < 0) net = t`, iar firma a trecut pe pierdere`
-      else if (before < 0 && now > 0) net = t`, iar firma a trecut pe profit`
-      else if (before !== 0 && now === 0) net = t`, iar rezultatul net a ajuns la zero`
-      else if (before === 0 && now !== 0) net = now > 0 ? t`, iar firma a trecut pe profit` : t`, iar firma a trecut pe pierdere`
-      else if (before > 0) net = t`, iar profitul net ${movement(before, now)}`
-      else if (before < 0) net = now < before ? t`, iar pierderea a crescut` : now > before ? t`, iar pierderea a scăzut` : t`, iar pierderea a rămas aceeași`
+    if (was !== null && now !== null) {
+      if (was > 0 && now < 0) net = t`, iar firma a trecut pe pierdere`
+      else if (was < 0 && now > 0) net = t`, iar firma a trecut pe profit`
+      else if (was !== 0 && now === 0) net = t`, iar rezultatul net a ajuns la zero`
+      else if (was === 0 && now !== 0) net = now > 0 ? t`, iar firma a trecut pe profit` : t`, iar firma a trecut pe pierdere`
+      else if (was > 0) net = t`, iar profitul net ${movement(was, now)}`
+      else if (was < 0) net = now < was ? t`, iar pierderea a crescut` : now > was ? t`, iar pierderea a scăzut` : t`, iar pierderea a rămas aceeași`
     }
     sentences.push(`${turnover}${net}.`)
   }
-  const filed = span.length - model.missingYears.length
-  if (lossYears >= 3 && filed > 0) {
+  // Out of the statements whose net result is admitted on the page's basis, and
+  // said so: a missing, held, unassessed or other-basis result is neither a loss
+  // nor a profit here, and the sentence names how many it leaves out.
+  const counted = model.series.netResult.filter((point) => point.value !== null).length
+  const uncounted = model.profile.financials.length - counted
+  if (lossYears >= 3 && counted > 0) {
     sentences.push(
       plural(lossYears, {
-        one: `A încheiat cu pierdere un an din ${filed}.`,
-        few: `A încheiat cu pierdere # ani din ${filed}.`,
-        other: `A încheiat cu pierdere # de ani din ${filed}.`,
+        one: `A încheiat cu pierdere un an din cei ${counted} cu rezultat net admis.`,
+        few: `A încheiat cu pierdere # ani din cei ${counted} cu rezultat net admis.`,
+        other: `A încheiat cu pierdere # de ani din cei ${counted} cu rezultat net admis.`,
       }),
     )
+    if (uncounted > 0) {
+      sentences.push(
+        plural(uncounted, {
+          one: 'Rezultatul net al încă unui bilanț nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+          few: 'Rezultatul net al altor # bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+          other: 'Rezultatul net al altor # de bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+        }),
+      )
+    }
   }
   return sentences.length > 0 ? sentences.join(' ') : null
 }
 
-/** Debts against equity, or against nothing when equity is gone: the one balance ratio a reader asks for. */
+/**
+ * Debts against equity, or against nothing when equity is gone: the one
+ * balance ratio a reader asks for, from reported values only.
+ */
 export function debtSentence(model: CompanyProfileModel): string | null {
-  const summary = model.latest?.summary
-  if (!model.latest || !summary?.debts || summary.debts <= 0) return null
-  const debts = moneyText(summary.debts)
-  const equity = summary.totalEquity
-  if (equity === null) return t`Datorii de ${debts} la sfârșitul lui ${model.latest.fiscalYear}.`
+  const { latest } = model
+  if (!latest) return null
+  const debtsValue = reportedSummary(latest, 'debts')
+  if (debtsValue === null || debtsValue <= 0) return null
+  const debts = moneyText(debtsValue)
+  const equity = reportedSummary(latest, 'totalEquity')
+  if (equity === null) return t`Datorii de ${debts} la sfârșitul lui ${latest.fiscalYear}.`
   if (equity === 0) return t`Datorii de ${debts}, cu capitaluri proprii zero.`
   if (equity < 0) return t`Datorii de ${debts}, cu capitalurile proprii negative (${moneyText(equity)}).`
-  const ratio = summary.debts / equity
+  const ratio = debtsValue / equity
   return ratio < 1
     ? t`Datoriile, de ${debts}, sunt ${percent(ratio)} din capitalurile proprii.`
     : t`Datoriile, de ${debts}, sunt de ${formatHubNumber(ratio, { digits: 1 })} ori capitalurile proprii.`
@@ -302,28 +355,160 @@ export function unvaluedNote(records: number): string {
   })
 }
 
-// ──────────────────────────────────────── in the economy ──
+// ──────────────────────────────────────── qualification ──
 
-export type EconomyShareKey = 'sector-turnover' | 'sector-employees' | 'county' | 'national'
-
-/**
- * The company's shares of its sector, county and country in the snapshot's
- * year, each only when it reaches 1% (the model leaves smaller ones out: for
- * most companies they would print „0,0%" four times) and when the page can
- * name what it is a share of.
- */
-export function economyShares(model: CompanyProfileModel): readonly { readonly key: EconomyShareKey; readonly share: number }[] {
-  const { context, mainActivity, place } = model
-  const rows: { key: EconomyShareKey; share: number }[] = []
-  if (context.sectorTurnoverShare !== null && mainActivity?.divisionLabel) rows.push({ key: 'sector-turnover', share: context.sectorTurnoverShare })
-  if (context.sectorEmployeesShare !== null && mainActivity?.divisionLabel) rows.push({ key: 'sector-employees', share: context.sectorEmployeesShare })
-  if (context.countyTurnoverShare !== null && place.county) rows.push({ key: 'county', share: context.countyTurnoverShare })
-  if (context.nationalTurnoverShare !== null) rows.push({ key: 'national', share: context.nationalTurnoverShare })
-  return rows
+/** A statement metric by its name on the page. */
+export function metricLabel(metric: FinancialSourceMetric): string {
+  switch (metric) {
+    case 'turnover':
+      return t`Cifra de afaceri`
+    case 'net_profit':
+      return t`Profit net`
+    case 'net_loss':
+      return t`Pierdere netă`
+    case 'employees':
+      return t`Salariați`
+    case 'total_revenue':
+      return t`Venituri totale`
+    case 'total_expenses':
+      return t`Cheltuieli totale`
+    case 'gross_profit':
+      return t`Profit brut`
+    case 'gross_loss':
+      return t`Pierdere brută`
+    case 'receivables':
+      return t`Creanțe`
+    case 'current_assets':
+      return t`Active circulante`
+    case 'fixed_assets':
+      return t`Active imobilizate`
+    case 'cash_and_bank':
+      return t`Numerar și conturi la bănci`
+    case 'prepaid_expenses':
+      return t`Cheltuieli în avans`
+    case 'deferred_income':
+      return t`Venituri în avans`
+    case 'subscribed_capital':
+      return t`Capital social`
+    case 'inventories':
+      return t`Stocuri`
+    case 'debts':
+      return t`Datorii`
+    case 'provisions':
+      return t`Provizioane`
+    case 'total_equity':
+      return t`Capitaluri proprii`
+    case 'patrimony_regie':
+      return t`Patrimoniul regiei`
+  }
 }
 
-/** What the shares are shares of, for the band's lede. */
-export function economyLede(model: CompanyProfileModel): string {
-  const year = model.context.year
-  return t`Cifrele firmei pe ${year}, față de totalurile bilanțurilor depuse pe ${year} de firmele din același domeniu, din același județ și din toată țara.`
+/** Why a source value is not in the figures, in a phrase; null for a statement that was not assessed. */
+export function metricStatusLabel(status: PrivateCompanyMetricStatus | null): string {
+  switch (status) {
+    case 'reported':
+      return t`admisă`
+    case 'missing':
+      return t`nepublicată`
+    case 'not_admitted':
+      return t`neadmisă pentru acest an`
+    case 'held_profile':
+      return t`reținută: forma bilanțului nu e admisă pentru acest indicator`
+    case 'held_observation':
+      return t`reținută după verificare`
+    case 'held_quality':
+      return t`reținută pentru un semnal de calitate`
+    case 'held_component':
+      return t`reținută: o componentă a rezultatului e reținută`
+    case null:
+      return t`necalificată`
+  }
+}
+
+/**
+ * What the evaluator made of the net result it derives from profit and loss.
+ * It is never a source value: a held one has no value at all, and its
+ * published components stay listed apart, each with its own state.
+ */
+export function netResultStatusLabel(status: PrivateCompanyMetricStatus): string {
+  switch (status) {
+    case 'reported':
+      return t`admis: profitul minus pierderea, cum le-a calculat evaluatorul`
+    case 'missing':
+      return t`nu se poate calcula: nici profitul, nici pierderea nu sunt publicate`
+    case 'not_admitted':
+      return t`neadmis pentru acest an`
+    case 'held_profile':
+      return t`reținut: pentru această formă de bilanț nu se calculează din profit și pierdere`
+    case 'held_component':
+      return t`reținut: profitul sau pierderea publicată e reținută`
+    case 'held_observation':
+      return t`reținut după verificare`
+    case 'held_quality':
+      return t`reținut pentru un semnal de calitate`
+  }
+}
+
+/** Who published a statement. */
+export function statementPublisherLabel(publisher: PrivateCompanyStatementPublisher | null): string {
+  if (publisher === 'anaf') return t`ANAF`
+  if (publisher === 'mfp') return t`Ministerul Finanțelor`
+  return t`sursă nenumită`
+}
+
+/** A statement's state in its list heading: unassessed and why, on another basis, or how much stays out of the figures. */
+export function statementStateLabel(statement: StatementValues): string {
+  if (statement.notAssessed !== null) return t`necalificat (${notAssessedLabel(statement.notAssessed)})`
+  if (statement.otherBasis) return t`calificat după altă politică sau altă ediție a datelor`
+  const kept = statement.keptOut
+  if (kept === 0) return statement.netHeld ? t`valorile publicate admise; rezultatul net reținut` : t`toate valorile admise`
+  return plural(kept, {
+    one: '# valoare ținută în afara cifrelor',
+    few: '# valori ținute în afara cifrelor',
+    other: '# de valori ținute în afara cifrelor',
+  })
+}
+
+/** Statements qualified on another basis than the page's: named, never mixed into a series. */
+export function otherBasisNotice(model: CompanyProfileModel): string | null {
+  const years = model.qualification.otherBasisYears
+  if (years.length === 0) return null
+  return t`Bilanțurile pe ${yearRanges(years)} au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt listate mai jos.`
+}
+
+/** Why a statement was not assessed, in a phrase. */
+export function notAssessedLabel(reason: string): string {
+  switch (reason) {
+    case 'qualification_unavailable':
+    case 'qualification_missing':
+    case 'qualification_malformed':
+      return t`calificarea nu este disponibilă acum`
+    case 'no_active_policy':
+    case 'policy_missing':
+      return t`nu există o politică de calificare publicată`
+    case 'policy_unqualified':
+      return t`politica de calificare nu este aprobată`
+    case 'unrepresentable_reported_value':
+    case 'net_result_out_of_range':
+      return t`o valoare nu poate fi reprezentată exact`
+    default:
+      return t`politica de calificare nu poate fi aplicată`
+  }
+}
+
+/** Under which policy the figures, series and comparisons on the page were admitted; null when no statement was assessed. */
+export function qualificationLede(model: CompanyProfileModel): string | null {
+  const policy = model.qualification.policy
+  if (!policy?.version) return null
+  return policy.approvedOn
+    ? t`Cifrele, graficele și comparațiile folosesc doar valorile admise de politica de calificare ${policy.version}, aprobată pe ${policy.approvedOn}. Admisă înseamnă extrasă și încadrată după regulile politicii, nu verificată economic.`
+    : t`Cifrele, graficele și comparațiile folosesc doar valorile admise de politica de calificare ${policy.version}. Admisă înseamnă extrasă și încadrată după regulile politicii, nu verificată economic.`
+}
+
+/** The newest statement could not be assessed: its values are the source's and stay out of every figure. */
+export function notAssessedNotice(model: CompanyProfileModel): string | null {
+  const { latest } = model
+  const reason = model.qualification.latestNotAssessed
+  if (!latest || reason === null) return null
+  return t`Bilanțul pe ${latest.fiscalYear} nu a putut fi calificat (${notAssessedLabel(reason)}): valorile lui sunt cele publicate de sursă și nu intră în cifre, grafice sau comparații.`
 }

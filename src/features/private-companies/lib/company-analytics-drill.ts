@@ -3,12 +3,15 @@ import { COMPANY_ANALYSIS_SIZE_BANDS, type CompanyAnalysisSizeBand } from '@/sch
 
 /**
  * A breakdown row clicked: the same question narrowed to that group, with a
- * filter the API reads exactly as the group was counted. A group is a key;
- * the unknown group is the field's own unknown value where the API has one
- * (a county, a UAT, a status, a fiscal flag, a missing main activity).
- * „Other" folds many groups and the unknown size band mixes companies
- * without a statement with statements without a headcount: neither narrows
- * to one filter, so neither is a drill.
+ * filter the API reads exactly as the group was counted. A group is a key —
+ * for a county, locality or status also a basis group's own key,
+ * `(multiple_values)`, never widened to every company without a value. The
+ * unknown group is the field's own unknown value where the API has one (a
+ * fiscal flag, a missing main activity); a consensus grouping's unknown is an
+ * empty slot (`includeUnknown` would select every basis group instead), so it
+ * is no drill. „Other" folds many groups and the unknown size band mixes
+ * companies without a statement with statements without a headcount: neither
+ * narrows to one filter, so neither is a drill.
  */
 export function drillScope(scope: CompanyAnalysisScope, dimension: CompanyAnalysisDimension, bucket: CompanyAnalysisBucket): CompanyAnalysisScope | null {
   if (bucket.kind === 'GROUP' && bucket.key !== null) return withGroup(scope, dimension, bucket.key)
@@ -45,12 +48,6 @@ function withGroup(scope: CompanyAnalysisScope, dimension: CompanyAnalysisDimens
 
 function withUnknown(scope: CompanyAnalysisScope, dimension: CompanyAnalysisDimension): CompanyAnalysisScope | null {
   switch (dimension) {
-    case 'COUNTY':
-      return { ...scope, county: { includeUnknown: true } }
-    case 'UAT':
-      return { ...scope, uat: { includeUnknown: true } }
-    case 'OBSERVED_STATUS':
-      return { ...scope, observedStatus: { includeUnknown: true } }
     case 'VAT_PAYER':
       return { ...scope, vatPayer: ['UNKNOWN'] }
     case 'FISCALLY_INACTIVE':

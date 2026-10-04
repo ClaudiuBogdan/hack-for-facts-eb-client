@@ -79,6 +79,7 @@ export function resolveQuestion(state: CompanyAnalyticsState, release: CompanyAn
   for (const range of state.scope.financialRanges ?? []) {
     if (yearKnown && !metricOfferedIn(release, year, range.metric)) problems.push({ kind: 'range', metric: range.metric })
   }
+  const onrc = state.scope.onrc
   const limits: readonly [string, number, number][] = [
     ['cui', state.scope.cuis?.length ?? 0, release.limits.maxSelectedCuis],
     ['judet', state.scope.county?.in?.length ?? 0, release.limits.maxCounties],
@@ -87,6 +88,15 @@ export function resolveQuestion(state: CompanyAnalyticsState, release: CompanyAn
     ['stare', state.scope.observedStatus?.in?.length ?? 0, release.limits.maxObservedStatuses],
     ['caen', state.scope.mainCaen?.length ?? 0, release.limits.maxCaenCodes],
     ['interval', state.scope.financialRanges?.length ?? 0, release.limits.maxFinancialRanges],
+    // The API's caps on the ONRC observation lists: the same as the consensus fields'.
+    ['onrc_stare', onrc?.status?.length ?? 0, release.limits.maxObservedStatuses],
+    ['onrc_judet', onrc?.county?.length ?? 0, release.limits.maxCounties],
+    ['onrc_caen', onrc?.caenCode?.length ?? 0, release.limits.maxCaenCodes],
+    ['onrc_caen_exact', onrc?.onrcCaen?.length ?? 0, release.limits.maxCaenCodes],
+    ['onrc_fara_stare', onrc?.exclude?.status?.length ?? 0, release.limits.maxObservedStatuses],
+    ['onrc_fara_caen', onrc?.exclude?.caenCode?.length ?? 0, release.limits.maxCaenCodes],
+    ['onrc_fara_judet', onrc?.exclude?.county?.length ?? 0, release.limits.maxCounties],
+    ['onrc_fara_forma', onrc?.exclude?.legalForm?.length ?? 0, release.limits.maxLegalForms],
   ]
   for (const [field, count, max] of limits) if (count > max) problems.push({ kind: 'limit', field, max })
 

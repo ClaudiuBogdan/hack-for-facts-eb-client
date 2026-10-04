@@ -5,6 +5,7 @@ import {
   COMPANY_ANALYSIS_RELEASE_ID_RE,
   COMPANY_ANALYSIS_SIZE_BANDS,
   companyMetricUnit,
+  onrcBasisOfKey,
   type CompanyAnalysisCaenBasis,
   type CompanyAnalysisCohortMode,
   type CompanyAnalysisDimension,
@@ -12,6 +13,8 @@ import {
   type CompanyAnalysisFlagValue,
   type CompanyAnalysisKeyFilterInput,
   type CompanyAnalysisMetric,
+  type CompanyAnalysisOnrcExcludeInput,
+  type CompanyAnalysisOnrcInput,
   type CompanyAnalysisRangeInput,
   type CompanyAnalysisRankBy,
   type CompanyAnalysisRecordSort,
@@ -140,6 +143,15 @@ export const SEARCH_KEYS = [
   'depunere',
   'interval',
   'marime',
+  // ONRC observations on one identifier (`scope.onrc`), apart from the consensus keys above.
+  'onrc_stare',
+  'onrc_judet',
+  'onrc_caen',
+  'onrc_caen_exact',
+  'onrc_fara_stare',
+  'onrc_fara_caen',
+  'onrc_fara_judet',
+  'onrc_fara_forma',
 ] as const
 export type SearchKey = (typeof SEARCH_KEYS)[number]
 
@@ -175,6 +187,15 @@ const CAEN_CODE_RE = /^[A-Za-z0-9.]{1,12}$/u
 const CAEN_REVISION_RE = /^[A-Za-z0-9._-]{1,16}$/u
 const MONEY_BOUND_RE = /^-?\d{1,16}(?:\.\d{1,2})?$/u
 const HEADCOUNT_BOUND_RE = /^-?\d{1,18}$/u
+/** The edition identifiers' own domain (the API's `onrc.*` keys). */
+const ONRC_STATUS_RE = /^\d{1,6}$/u
+const ONRC_COUNTY_RE = /^[A-Z0-9]{1,8}$/u
+const ONRC_CAEN_RE = /^\d{4}$/u
+/** An exact CAEN of a known revision; a code without one is never given a revision here. */
+const ONRC_CAEN_KEY_RE = /^rev[0-3]:\d{4}$/u
+
+/** The ONRC observation keys' domains, as the address and the filters panel read them (after upper-casing a county or form, lower-casing a revision). */
+export const ONRC_KEY_PATTERNS = { status: ONRC_STATUS_RE, county: ONRC_COUNTY_RE, caenCode: ONRC_CAEN_RE, onrcCaen: ONRC_CAEN_KEY_RE, legalForm: LEGAL_FORM_RE } as const
 
 const byText = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -204,6 +225,11 @@ function inVocabulary<T extends string>(values: readonly T[], vocabulary: readon
   return vocabulary.filter((value) => values.includes(value))
 }
 
+/**
+ * A consensus selector: value keys, the API's basis keys as they are written
+ * (`(multiple_values)` — exactly that bucket), and `necunoscut` for every
+ * company without a consensus value.
+ */
 function keyFilter(reader: Reader, key: SearchKey, text: string | undefined, pattern: RegExp, normalize: (token: string) => string = (token) => token): CompanyAnalysisKeyFilterInput | undefined {
   let includeUnknown = false
   const values = tokens(reader, key, text, (token) => {
@@ -211,6 +237,7 @@ function keyFilter(reader: Reader, key: SearchKey, text: string | undefined, pat
       includeUnknown = true
       return ''
     }
+    if (onrcBasisOfKey(token) !== null) return token
     const value = normalize(token)
     return pattern.test(value) ? value : null
   }).filter((value) => value !== '')
@@ -249,6 +276,37 @@ function one<T>(reader: Reader, key: SearchKey, text: string | undefined, read: 
   const value = read(text)
   if (value === undefined) reader.unread.add(key)
   return value
+}
+
+/** A comma list of codes in one domain, sorted and de-duplicated; a token outside it marks the key unread. */
+function codesOf(reader: Reader, key: SearchKey, text: string | undefined, pattern: RegExp, normalize: (token: string) => string = (token) => token): string[] {
+  return sortedUnique(
+    tokens(reader, key, text, (token) => {
+      const value = normalize(token)
+      return pattern.test(value) ? value : null
+    }),
+  )
+}
+
+/** The ONRC observation filters (`scope.onrc`): one identifier's status, county, broad and exact CAEN, and the supported exclusions. */
+function onrcOf(reader: Reader, search: CompanyAnalyticsSearch): CompanyAnalysisOnrcInput | undefined {
+  const upper = (token: string) => token.toUpperCase()
+  const fields: [keyof Omit<CompanyAnalysisOnrcInput, 'exclude'>, string[]][] = [
+    ['status', codesOf(reader, 'onrc_stare', search.onrc_stare, ONRC_STATUS_RE)],
+    ['county', codesOf(reader, 'onrc_judet', search.onrc_judet, ONRC_COUNTY_RE, upper)],
+    ['caenCode', codesOf(reader, 'onrc_caen', search.onrc_caen, ONRC_CAEN_RE)],
+    ['onrcCaen', codesOf(reader, 'onrc_caen_exact', search.onrc_caen_exact, ONRC_CAEN_KEY_RE, (token) => token.toLowerCase())],
+  ]
+  const excluded: [keyof CompanyAnalysisOnrcExcludeInput, string[]][] = [
+    ['status', codesOf(reader, 'onrc_fara_stare', search.onrc_fara_stare, ONRC_STATUS_RE)],
+    ['caenCode', codesOf(reader, 'onrc_fara_caen', search.onrc_fara_caen, ONRC_CAEN_RE)],
+    ['county', codesOf(reader, 'onrc_fara_judet', search.onrc_fara_judet, ONRC_COUNTY_RE, upper)],
+    ['legalForm', codesOf(reader, 'onrc_fara_forma', search.onrc_fara_forma, LEGAL_FORM_RE, upper)],
+  ]
+  const exclude = Object.fromEntries(excluded.filter(([, values]) => values.length > 0)) as CompanyAnalysisOnrcExcludeInput
+  const onrc = Object.fromEntries(fields.filter(([, values]) => values.length > 0)) as CompanyAnalysisOnrcInput
+  const out: CompanyAnalysisOnrcInput = { ...onrc, ...(Object.keys(exclude).length > 0 ? { exclude } : {}) }
+  return Object.keys(out).length > 0 ? out : undefined
 }
 
 /** The question an address holds. */
@@ -294,6 +352,8 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   if (ranges.size > 0) scope.financialRanges = COMPANY_ANALYSIS_METRICS.flatMap((item) => (ranges.has(item) ? [ranges.get(item)!] : []))
   const sizes = inVocabulary(tokens(reader, 'marime', search.marime, (token) => SIZE_BY_WORD.get(token) ?? null), COMPANY_ANALYSIS_SIZE_BANDS)
   if (sizes.length > 0) scope.employeeSizeBands = sizes
+  const onrc = onrcOf(reader, search)
+  if (onrc) scope.onrc = onrc
   // A company without a statement has no reported value or size band: the API refuses the pair, and so does the page.
   if (scope.filing === 'NOT_FILED' && (scope.financialRanges || scope.employeeSizeBands)) {
     reader.unread.add('depunere')
@@ -356,6 +416,14 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
     ['depunere', scope.filing === undefined ? undefined : scope.filing === 'FILED' ? 'da' : 'nu'],
     ['interval', list(scope.financialRanges?.map(rangeToken))],
     ['marime', list(scope.employeeSizeBands?.map((band) => SIZE_WORDS[band]))],
+    ['onrc_stare', list(scope.onrc?.status)],
+    ['onrc_judet', list(scope.onrc?.county)],
+    ['onrc_caen', list(scope.onrc?.caenCode)],
+    ['onrc_caen_exact', list(scope.onrc?.onrcCaen)],
+    ['onrc_fara_stare', list(scope.onrc?.exclude?.status)],
+    ['onrc_fara_caen', list(scope.onrc?.exclude?.caenCode)],
+    ['onrc_fara_judet', list(scope.onrc?.exclude?.county)],
+    ['onrc_fara_forma', list(scope.onrc?.exclude?.legalForm)],
   ]
   return Object.fromEntries(entries.filter(([, value]) => value !== undefined)) as CompanyAnalyticsSearch
 }

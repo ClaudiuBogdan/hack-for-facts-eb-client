@@ -1,0 +1,45 @@
+{
+  "data": {
+    "searchEntities": {
+      "query": "spital",
+      "engine": "meili",
+      "degraded": false,
+      "estimatedTotalHits": 140,
+      "facets": [
+        { "field": "doc_type", "value": "organization", "count": 120 },
+        { "field": "doc_type", "value": "legal_act", "count": 20 }
+      ],
+      "hits": [
+        {
+          "id": "legal_act_doc_95_x",
+          "docType": "legal_act",
+          "title": "Legea 95/2006 privind reforma în domeniul sănătății",
+          "snippet": "Monitorul Oficial",
+          "score": 0.42,
+          "docId": "95",
+          "docKey": "doc:95",
+          "subtitle": "Monitorul Oficial",
+          "countyName": null,
+          "url": "https://legislatie.just.ro/Public/DetaliiDocument/95",
+          "cuis": [],
+          "identifiers": ["Legea 95/2006"],
+          "roles": ["legal_act"],
+          "isActive": true,
+          "isUat": null,
+          "entityTags": [],
+          "ngoRegistryNumber": null,
+          "ngoRegistryStatus": null,
+          "company": null
+        }
+      ],
+      "generation": {
+        "generationId": "entities_build_1759593600000_k3x9q2",
+        "registryScopeKey": "onrc:published:41:3:7"
+      },
+      "companyScope": null,
+      "companyContribution": "UNAVAILABLE",
+      "companyContributionReason": "company_check_unavailable",
+      "continuation": { "candidatesReturned": 6, "nextOffset": null }
+    }
+  }
+}

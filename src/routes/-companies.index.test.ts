@@ -27,9 +27,9 @@ type Head = {
 type RouteOptions = {
   readonly validateSearch: (search: Record<string, unknown>) => unknown
   readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void
-  readonly loader: () => Promise<{ readonly seo: unknown }>
+  readonly loader?: unknown
   readonly headers: () => Record<string, string>
-  readonly head: (input: { readonly loaderData?: Awaited<ReturnType<RouteOptions['loader']>> }) => Head
+  readonly head: () => Head
 }
 
 async function route(): Promise<RouteOptions> {
@@ -37,10 +37,14 @@ async function route(): Promise<RouteOptions> {
   return (Route as unknown as { options: RouteOptions }).options
 }
 
+/** The head as the route builds it: from nothing but the page's language — no loader, no figures. */
 async function head(): Promise<Head> {
-  const options = await route()
-  return options.head({ loaderData: await options.loader() })
+  return (await route()).head()
 }
+
+/** The hub's description: what a reader can do and where the facts come from, with no count or year. */
+const HUB_DESCRIPTION =
+  'Caută orice firmă din România după nume sau CUI: starea, județul și activitățile din ediția publicată a registrului comerțului (ONRC), datele fiscale ANAF și bilanțurile depuse, fiecare cu sursa și data ei.'
 
 function metaOf(built: Head, key: string) {
   const entry = built.meta.find((item) => item.name === key || item.property === key || (key === 'title' && 'title' in item))
@@ -95,20 +99,31 @@ describe('/companies route', () => {
     })
   })
 
-  it('describes the page with its own figures, a canonical link and a dataset', async () => {
+  it('describes the hub by what a reader finds and where it comes from, quoting no figure it cannot vouch for', async () => {
+    // The route has no loader: the head is built from no data, so a cached page can never carry a count.
+    expect((await route()).loader).toBeUndefined()
     const built = await head()
     expect(metaOf(built, 'title')).toContain('Transparenta.eu')
     expect(metaOf(built, 'og:title')).toBe(metaOf(built, 'title'))
-    expect(metaOf(built, 'description')).toBe(metaOf(built, 'og:description'))
-    expect(metaOf(built, 'description')).toMatch(/^1\.749\.479 de firme în funcțiune, 153\.618 înființate în 2025/)
+    expect(metaOf(built, 'description')).toBe(HUB_DESCRIPTION)
+    expect(metaOf(built, 'og:description')).toBe(HUB_DESCRIPTION)
+    expect(metaOf(built, 'twitter:description')).toBe(HUB_DESCRIPTION)
+    // No count, share or year in anything a search result quotes.
+    for (const key of ['title', 'description', 'og:title', 'twitter:title']) expect(metaOf(built, key)).not.toMatch(/\d/u)
     expect(metaOf(built, 'robots')).toBe('index,follow')
     expect(metaOf(built, 'og:url')).toBe('https://transparenta.eu/companies')
 
     const [dataset, webPage] = built.scripts.map((script) => JSON.parse(script.children) as Record<string, unknown>)
     expect(dataset?.['@type']).toBe('Dataset')
-    expect(dataset?.temporalCoverage).toBe('2025')
-    expect(dataset?.isBasedOn).toContain('https://insse.ro')
+    // Its provenance is the two sources the hub reads, and nothing it does not (no population source).
+    expect(dataset?.isBasedOn).toEqual(['https://www.onrc.ro', 'https://www.anaf.ro'])
+    // No period or freshness the hub cannot show: the figures are the browser's pinned edition's.
+    expect(dataset).not.toHaveProperty('temporalCoverage')
+    expect(dataset).not.toHaveProperty('dateModified')
+    expect(dataset?.description).toBe(HUB_DESCRIPTION)
+    expect(JSON.stringify(dataset?.variableMeasured)).not.toMatch(/\d|cifra de afaceri|salariați|înființate/u)
     expect(webPage?.['@type']).toBe('WebPage')
+    expect(webPage?.description).toBe(HUB_DESCRIPTION)
   })
 
   it('gives each language its own canonical and names the other', async () => {

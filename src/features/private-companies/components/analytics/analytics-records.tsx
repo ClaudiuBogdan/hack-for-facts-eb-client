@@ -13,8 +13,9 @@ import { RECORDS_PAGE, type ResolvedQuestion } from '../../api/company-analytics
 import { useCompanyAnalysisRecords } from '../../hooks/use-company-analytics'
 import { recordsCsv } from '../../lib/company-analytics-export'
 import { compactValueText, countText, exactValueText, localeOf } from '../../lib/company-analytics-format'
-import { countyLabel, metricLabel, statusLabel } from '../../lib/company-analytics-text'
+import { civilDateText, countyLabel, metricLabel, onrcBasisPhrase, statusLabel } from '../../lib/company-analytics-text'
 import type { CompanyAnalyticsState } from '../../lib/company-analytics-url'
+import { labelSourcesOf } from '../../lib/company-analytics-view'
 
 /**
  * The companies the figures count, the first tab: the same scope, year and
@@ -22,7 +23,9 @@ import type { CompanyAnalyticsState } from '../../lib/company-analytics-url'
  * values last, the CUI breaking ties). The pages follow the API's own
  * cursors, kept here in a stack: a new scope, year, order or release is a
  * new list (the page keys this component by them), and a cursor the API
- * refuses starts the list over. Names are the registry's current ones.
+ * refuses starts the list over. Names are the companies directory's current
+ * public ones, not the edition's; a place or status without a consensus says
+ * why; the date ONRC recorded is its civil date, never a founding date.
  */
 
 const PAGER = 'inline-flex size-11 items-center justify-center border hover:bg-muted disabled:opacity-40 sm:size-8'
@@ -72,6 +75,7 @@ export function AnalyticsRecords({
   if (!records.data) return <div className={cn('h-72 animate-pulse bg-muted/30', className)} aria-hidden="true" />
   const { edges, pageInfo, totalCount } = records.data
   if (edges.length === 0) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio firmă în această selecție.`}</p>
+  const names = labelSourcesOf(edges.flatMap(({ node }) => [node.county?.labelSource, node.uat?.labelSource, node.observedStatus?.labelSource]))
   const first = (page - 1) * RECORDS_PAGE + 1
   const metricSorted = question.sortMetric !== null
   const Arrow = question.direction === 'DESC' ? ArrowDown : ArrowUp
@@ -104,6 +108,10 @@ export function AnalyticsRecords({
           {edges.map(({ node }, index) => {
             const main = valueCell(node, question.metric, question.year, locale)
             const place = [node.uat?.label, node.county ? (node.county.label ?? countyLabel(node.county.code)) : null].filter(Boolean).join(', ')
+            // Without a consensus value, why — never an empty place or an unknown status.
+            const where = place || t`fără județ comun (${onrcBasisPhrase(node.countyBasis)})`
+            const status = node.observedStatus ? (node.observedStatus.label ?? node.observedStatus.code) : t`fără stare comună (${onrcBasisPhrase(node.observedStatusBasis)})`
+            const recorded = node.onrcRecordedDate ? t`înregistrată la ONRC pe ${civilDateText(node.onrcRecordedDate, locale)}` : null
             return (
               <TableRow key={node.cui}>
                 <TableCell className="hidden align-top font-mono text-xs tabular-nums text-muted-foreground sm:table-cell">{first + index}</TableCell>
@@ -111,9 +119,7 @@ export function AnalyticsRecords({
                   <Link to="/companies/$cui" params={{ cui: node.cui }} className="block truncate font-medium text-foreground hover:underline">
                     {node.currentName ?? t`Fără denumire publică`}
                   </Link>
-                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {[`CUI ${node.cui}`, node.legalForm, place || null, node.observedStatus ? (node.observedStatus.label ?? node.observedStatus.code) : null].filter(Boolean).join(' · ')}
-                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">{[`CUI ${node.cui}`, node.legalForm, where, status, recorded].filter(Boolean).join(' · ')}</span>
                 </TableCell>
                 <TableCell className={cn('whitespace-nowrap text-right align-top tabular-nums', main.muted ? 'text-xs text-muted-foreground' : 'font-semibold text-foreground')} title={main.exact ?? undefined}>
                   {main.text}
@@ -132,6 +138,10 @@ export function AnalyticsRecords({
           })}
         </TableBody>
       </Table>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {t`Denumirile firmelor sunt cele publice actuale din directorul platformei, nu cele din ediția ONRC.`}
+        {names.length > 0 ? ` ${t`Județe, localități, stări: ${names.join('; ')}.`}` : ''}
+      </p>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <span className="tabular-nums">
           {t`${countText(String(first), locale)}–${countText(String(first + edges.length - 1), locale)} din ${countText(totalCount, locale)}`}

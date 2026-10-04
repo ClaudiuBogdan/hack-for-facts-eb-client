@@ -18,8 +18,8 @@ describe('hub counties', () => {
     expect(registryCountyName('CJ')).toBe('Cluj')
   })
 
-  it('opens the directory on the county’s companies in business', () => {
-    expect(countyDirectorySearch('CT')).toEqual({ county: ['Constanţa'], status: ['1048'] })
+  it('opens the directory on the county’s companies with an „în funcțiune" observation, by the county code the API matches', () => {
+    expect(countyDirectorySearch('CT')).toEqual({ county: ['CT'], status: ['1048'] })
   })
 
   it('names a county by its code and leaves an unknown code as itself', () => {

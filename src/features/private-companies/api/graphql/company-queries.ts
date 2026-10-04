@@ -9,6 +9,7 @@
  *   hack-for-facts-eb-server/src/modules/companies/shell/graphql/typedefs.ts
  */
 import { z } from 'zod'
+import { REGISTRY_ENVELOPE_FIELDS, REGISTRY_EVIDENCE_FIELDS, rawRegistryEnvelopeSchema, rawRegistryEvidenceSchema } from './company-registry-graphql'
 
 /** Money/BigInt scalars serialize as strings over the wire; coerce on parse. */
 const moneyString = z.union([z.string(), z.number()]).nullable()
@@ -19,12 +20,12 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
       cui
       orgId
       name
+      nameSource
       legalForm
       codInmatriculare
       registrationDate
       registrationDatePresent
-      headlineStatus { code label }
-      statusFlags { code label }
+      headlineStatus { code label labelSource }
       territory { sirutaCode uatName countyName matchConfidence }
       address { display county locality }
       fiscal {
@@ -35,9 +36,10 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
         registeredName
         asOf
       }
-      caenActivities { code rev label source }
+      caenActivities { code rev label source labelSource }
       representatives { name role }
       euBranches { branchName country euid fiscalCode }
+      registry { ${REGISTRY_EVIDENCE_FIELDS} }
       publicMoney {
         totalRon
         flowCount
@@ -49,11 +51,27 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
     companyFinancials(cui: $cui) {
       years {
         year
+        sourceSystem
         turnover
         netProfit
         netLoss
         employees
         summary
+        source { sourceSystem url urlKind statementProfileHash metricRuleVersion }
+        qualification {
+          assessment
+          reason
+          releaseId
+          policyVersion
+          policySha256
+          policyApprovedOn
+          evaluatorVersion
+          metrics { metric status }
+          netResultStatus
+          netResult
+          holdReason
+          holdDrift
+        }
       }
       trajectory {
         fromYear
@@ -61,25 +79,29 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
         turnoverDelta
         netResultDelta
         employeesDelta
+        turnoverDeltaReason
+        netResultDeltaReason
+        employeesDeltaReason
       }
     }
   }
 `
 
 const rawCompanyStatusSchema = z
-  .object({ code: z.string(), label: z.string().nullable() })
+  .object({ code: z.string(), label: z.string().nullable(), labelSource: z.string().nullish() })
   .nullable()
 
 const rawCompanySchema = z.object({
   cui: z.string(),
   orgId: z.union([z.string(), z.number()]),
   name: z.string(),
+  nameSource: z.string(),
   legalForm: z.string().nullable(),
   codInmatriculare: z.string().nullable(),
   registrationDate: z.string().nullable(),
   registrationDatePresent: z.boolean(),
   headlineStatus: rawCompanyStatusSchema,
-  statusFlags: z.array(z.object({ code: z.string(), label: z.string().nullable() })),
+  registry: rawRegistryEvidenceSchema,
   territory: z
     .object({
       sirutaCode: z.string().nullable(),
@@ -109,6 +131,7 @@ const rawCompanySchema = z.object({
       rev: z.string().nullable(),
       label: z.string().nullable(),
       source: z.string(),
+      labelSource: z.string().nullish(),
     }),
   ),
   representatives: z.array(z.object({ name: z.string(), role: z.string() })),
@@ -156,13 +179,46 @@ const rawFinancialSummarySchema = z.record(
   z.union([z.string(), z.number(), z.null()]),
 )
 
+/**
+ * The statement's qualification. Enum values stay strings here: an unknown
+ * status must make the statement not assessed in the mapper, not fail the
+ * whole profile parse.
+ */
+const rawQualificationSchema = z.object({
+  assessment: z.string(),
+  reason: z.string().nullable(),
+  releaseId: z.string().nullable(),
+  policyVersion: z.string().nullable(),
+  policySha256: z.string().nullable(),
+  policyApprovedOn: z.string().nullable(),
+  evaluatorVersion: z.string().nullable(),
+  metrics: z.array(z.object({ metric: z.string(), status: z.string() })),
+  netResultStatus: z.string().nullable(),
+  netResult: moneyString,
+  holdReason: z.string().nullable(),
+  holdDrift: z.array(z.string()),
+})
+
+const rawStatementSourceSchema = z.object({
+  sourceSystem: z.string(),
+  url: z.string().nullable(),
+  urlKind: z.string().nullable(),
+  statementProfileHash: z.string().nullable(),
+  metricRuleVersion: z.string().nullable(),
+})
+
 const rawFinancialYearSchema = z.object({
   year: z.number().int(),
+  /** 'anaf' | 'mfp' today; optional so a recorded response without it still parses. */
+  sourceSystem: z.string().nullish(),
   turnover: moneyString,
   netProfit: moneyString,
   netLoss: moneyString,
   employees: moneyString,
   summary: rawFinancialSummarySchema.nullable().optional(),
+  /** Optional so a response without them parses; the mapper then says „not assessed". */
+  source: rawStatementSourceSchema.nullish(),
+  qualification: rawQualificationSchema.nullish(),
 })
 
 const rawTrajectorySchema = z.object({
@@ -171,6 +227,9 @@ const rawTrajectorySchema = z.object({
   turnoverDelta: moneyString,
   netResultDelta: moneyString,
   employeesDelta: moneyString,
+  turnoverDeltaReason: z.string().nullish(),
+  netResultDeltaReason: z.string().nullish(),
+  employeesDeltaReason: z.string().nullish(),
 })
 
 export const companyProfileResponseSchema = z.object({
@@ -185,6 +244,7 @@ export const companyProfileResponseSchema = z.object({
 
 export type RawCompany = z.infer<typeof rawCompanySchema>
 export type RawCompanyFinancialYear = z.infer<typeof rawFinancialYearSchema>
+export type RawStatementQualification = z.infer<typeof rawQualificationSchema>
 export type CompanyProfileResponse = z.infer<typeof companyProfileResponseSchema>
 
 // ---------------------------------------------------------------------------
@@ -206,18 +266,25 @@ export const COMPANIES_SEARCH_QUERY = /* GraphQL */ `
           cui
           orgId
           name
+          nameSource
           legalForm
-          headlineStatus { code label }
+          headlineStatus { code label labelSource }
           county
           vatPayer
           declaredFiscallyInactive
           registrationDate
           registrationDatePresent
+          registryCuiState
+          hasActiveObservation
+          statusBasis
+          countyBasis
+          recordedDateBasis
         }
       }
       pageInfo { hasNextPage endCursor }
       totalCount
       totalEstimated
+      registry { ${REGISTRY_ENVELOPE_FIELDS} }
     }
   }
 `
@@ -226,6 +293,7 @@ const rawCompanyListItemSchema = z.object({
   cui: z.string(),
   orgId: z.union([z.string(), z.number()]),
   name: z.string(),
+  nameSource: z.string(),
   legalForm: z.string().nullable(),
   headlineStatus: rawCompanyStatusSchema,
   county: z.string().nullable(),
@@ -233,6 +301,11 @@ const rawCompanyListItemSchema = z.object({
   declaredFiscallyInactive: z.boolean().nullable(),
   registrationDate: z.string().nullable(),
   registrationDatePresent: z.boolean(),
+  registryCuiState: z.string(),
+  hasActiveObservation: z.boolean().nullable(),
+  statusBasis: z.string().nullable(),
+  countyBasis: z.string().nullable(),
+  recordedDateBasis: z.string().nullable(),
 })
 
 export const companiesSearchResponseSchema = z.object({
@@ -246,6 +319,7 @@ export const companiesSearchResponseSchema = z.object({
     }),
     totalCount: z.number().nullable(),
     totalEstimated: z.boolean(),
+    registry: rawRegistryEnvelopeSchema,
   }),
 })
 
@@ -253,17 +327,33 @@ export type RawCompanyListItem = z.infer<typeof rawCompanyListItemSchema>
 export type CompaniesSearchResponse = z.infer<typeof companiesSearchResponseSchema>
 
 // ---------------------------------------------------------------------------
-// Resolve — companyResolve(dim, q)
+// Resolve — companyResolveResult(dim, q, limit, registryScope)
 // ---------------------------------------------------------------------------
 
-export const COMPANY_RESOLVE_QUERY = /* GraphQL */ `
-  query CompanyResolve($dim: CompanyResolveDim!, $q: String!, $limit: Int) {
-    companyResolve(dim: $dim, q: $q, limit: $limit) {
-      dim
-      value
-      label
-      cui
-      confidence
+/**
+ * The resolve answer with its metadata (repair 04): the hits, whether the
+ * search engine was down (`degraded`), and — NAME/REGNUM — the registry scope
+ * they were read under. `$registryScope` is sent for NAME/REGNUM only (the
+ * page's accepted scope); left out, the variable leaves the argument unset,
+ * as the CAEN/COUNTY catalogs require.
+ */
+export const COMPANY_RESOLVE_RESULT_QUERY = /* GraphQL */ `
+  query CompanyResolveResult($dim: CompanyResolveDim!, $q: String!, $limit: Int, $registryScope: String) {
+    companyResolveResult(dim: $dim, q: $q, limit: $limit, registryScope: $registryScope) {
+      hits {
+        dim
+        value
+        label
+        cui
+        confidence
+        revision
+        key
+        labelSource
+      }
+      degraded
+      ambiguous
+      registry { ${REGISTRY_ENVELOPE_FIELDS} }
+      scopeKey
     }
   }
 `
@@ -274,49 +364,26 @@ const rawCompanyResolveHitSchema = z.object({
   label: z.string(),
   cui: z.string().nullable(),
   confidence: z.number().nullable(),
+  revision: z.string().nullish(),
+  key: z.string().nullish(),
+  labelSource: z.string().nullish(),
 })
 
-export const companyResolveResponseSchema = z.object({
-  companyResolve: z.array(rawCompanyResolveHitSchema),
+export const companyResolveResultResponseSchema = z.object({
+  // Nullable: a refusal nulls this field (and raises an error, which the transport throws).
+  companyResolveResult: z
+    .object({
+      hits: z.array(rawCompanyResolveHitSchema),
+      degraded: z.boolean(),
+      ambiguous: z.boolean(),
+      registry: rawRegistryEnvelopeSchema.nullable(),
+      scopeKey: z.string().nullable(),
+    })
+    .nullable(),
 })
 
 export type RawCompanyResolveHit = z.infer<typeof rawCompanyResolveHitSchema>
-export type CompanyResolveResponse = z.infer<typeof companyResolveResponseSchema>
+export type RawCompanyResolveResult = NonNullable<z.infer<typeof companyResolveResultResponseSchema>['companyResolveResult']>
 
-// ---------------------------------------------------------------------------
-// Group profile — companyCountyProfile(filter, groupBy)
-//
-// `companyCountyProfile` requires at least one filter. Callers pass the grouping
-// dimension explicitly (COUNTY | STATUS | CAEN_DIVISION); the county facet list
-// groups by COUNTY over active companies to enumerate the canonical display-form
-// names used by the `county.eq` filter.
-//
-// The CAEN_DIVISION leg is slow (~24s cold); never fan several of these out
-// from one page.
-// ---------------------------------------------------------------------------
-
-// Only the groups: the directory's facets read nothing else, and asking for
-// fields nobody reads would let a change to them break the facet list.
-export const COMPANY_GROUP_PROFILE_QUERY = /* GraphQL */ `
-  query CompanyGroupProfile($filter: CompaniesFilter, $groupBy: CompanyGroupBy!) {
-    companyCountyProfile(filter: $filter, groupBy: $groupBy) {
-      groups { key label count }
-    }
-  }
-`
-
-const rawCompanyGroupSchema = z.object({
-  key: z.string(),
-  label: z.string().nullable(),
-  count: z.number(),
-})
-
-export const companyGroupProfileResponseSchema = z.object({
-  companyCountyProfile: z.object({
-    groups: z.array(rawCompanyGroupSchema),
-  }),
-})
-
-export type CompanyGroupProfileResponse = z.infer<
-  typeof companyGroupProfileResponseSchema
->
+// The groupings (`companyCountyProfile`, `companyHubStats`) live in
+// `../company-groups-api.ts`, with their registry envelope.

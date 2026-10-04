@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mapSearchHit, mapSearchResult } from './entity-search-mappers'
-import type { RawSearchHit, SearchEntitiesResponse } from './entity-search-queries'
+import { searchEntitiesResponseSchema, type RawSearchHit, type SearchEntitiesAnswer } from './entity-search-queries'
+import { CURRENT_PAGE, DEGRADED_PAGE, MIXED_ENTERPRISE_HIT, UNAVAILABLE_PAGE } from './entity-search.fixtures'
 
 function rawHit(overrides: Partial<RawSearchHit>): RawSearchHit {
   return {
@@ -18,8 +19,16 @@ function rawHit(overrides: Partial<RawSearchHit>): RawSearchHit {
     identifiers: null,
     roles: null,
     isActive: null,
+    company: null,
     ...overrides,
   }
+}
+
+/** A fixture read the way the transport reads it. */
+function answerOf(page: unknown): SearchEntitiesAnswer {
+  const answer = searchEntitiesResponseSchema.parse({ searchEntities: page }).searchEntities
+  if (answer === null) throw new Error('fixture has no answer')
+  return answer
 }
 
 describe('mapSearchHit', () => {
@@ -58,9 +67,29 @@ describe('mapSearchHit', () => {
     expect(hit.roles).toEqual([])
   })
 
-  it('defaults a null isActive to true (absence is not inactivity)', () => {
-    expect(mapSearchHit(rawHit({ isActive: null })).isActive).toBe(true)
+  it('keeps a null isActive unknown: neither active nor inactive', () => {
+    expect(mapSearchHit(rawHit({ isActive: null })).isActive).toBeNull()
     expect(mapSearchHit(rawHit({ isActive: false })).isActive).toBe(false)
+    expect(mapSearchHit(rawHit({ isActive: true })).isActive).toBe(true)
+  })
+
+  it('carries the fresh company part apart from the generic fields', () => {
+    const hit = mapSearchHit(answerOf(CURRENT_PAGE).hits[1] ?? rawHit({}))
+    expect(hit.title).toBe(MIXED_ENTERPRISE_HIT.title)
+    // The generic county is the institution's; the ONRC one is unknown.
+    expect(hit.countyName).toBe('Ilfov')
+    expect(hit.company).toEqual({
+      registryState: 'NOT_IN_EDITION',
+      name: 'REGIA AUTONOMA EXEMPLU RA',
+      nameSource: 'core_organization',
+      legalForm: null,
+      countyCode: null,
+      countyName: null,
+      active: null,
+      identifiers: [],
+    })
+    expect(hit.roles).toEqual(['organization', 'public_enterprise'])
+    expect(hit.href).toBe('/intreprinderi-publice/10020943')
   })
 
   it('coerces a numeric docId to a string', () => {
@@ -98,67 +127,49 @@ describe('mapSearchHit', () => {
 })
 
 describe('mapSearchResult', () => {
-  it('maps the full result envelope including facets and hits', () => {
-    const response: SearchEntitiesResponse = {
-      searchEntities: {
-        query: 'acme',
-        engine: 'meili',
-        degraded: false,
-        estimatedTotalHits: 2,
-        facets: [{ field: 'doc_type', value: 'company', count: 2 }],
-        hits: [
-          rawHit({ id: 'h1', docType: 'company', cuis: ['111'] }),
-          rawHit({
-            id: 'h2',
-            docType: 'legal_act',
-            url: 'https://gov.test/x',
-          }),
-        ],
-      },
-    }
-    const result = mapSearchResult(response)
-    expect(result.query).toBe('acme')
+  it('maps the full envelope, the company metadata and the continuation included', () => {
+    const result = mapSearchResult(answerOf(CURRENT_PAGE))
+    expect(result.query).toBe('dedeman')
     expect(result.engine).toBe('meili')
-    expect(result.estimatedTotalHits).toBe(2)
+    expect(result.estimatedTotalHits).toBe(312)
     expect(result.facets).toEqual([
-      { field: 'doc_type', value: 'company', count: 2 },
+      { field: 'doc_type', value: 'company', count: 300 },
+      { field: 'doc_type', value: 'legal_act', count: 12 },
     ])
-    expect(result.hits).toHaveLength(2)
-    expect(result.hits[0]?.href).toBe('/companies/111')
-    expect(result.hits[1]?.isExternal).toBe(true)
+    expect(result.hits.map((hit) => hit.href)).toEqual([
+      '/companies/2816464',
+      '/intreprinderi-publice/10020943',
+      '/entities/4278337',
+      '/companies/31234567',
+    ])
+    expect(result.generation).toEqual({
+      generationId: 'entities_build_1759593600000_k3x9q2',
+      registryScopeKey: 'onrc:published:41:3:7',
+    })
+    expect(result.companyScope).toBe('onrc:published:41:3:7')
+    expect(result.companyContribution).toBe('CURRENT')
+    expect(result.companyContributionReason).toBeNull()
+    expect(result.continuation).toEqual({ candidatesReturned: 20, nextOffset: 20 })
   })
 
-  it('preserves the postgres engine AND the degraded flag', () => {
+  it('keeps an unavailable answer unavailable, with its reason', () => {
+    const result = mapSearchResult(answerOf(UNAVAILABLE_PAGE))
+    expect(result.companyContribution).toBe('UNAVAILABLE')
+    expect(result.companyContributionReason).toBe('control_missing')
+    expect(result.generation).toBeNull()
+    expect(result.hits.every((hit) => hit.company === null)).toBe(true)
+    expect(result.hits[0]?.isActive).toBeNull()
+  })
+
+  it('preserves the engine AND the degraded flag', () => {
     // The pair matters: `engine` says who answered, `degraded` says whether the
     // answer is complete. Mapping one and dropping the other is exactly how
     // `source` and `rankBoost` died — fetched, never mapped, never noticed.
-    const response: SearchEntitiesResponse = {
-      searchEntities: {
-        query: 'x',
-        engine: 'postgres',
-        degraded: true,
-        estimatedTotalHits: 0,
-        facets: [],
-        hits: [],
-      },
-    }
-    const result = mapSearchResult(response)
-    expect(result.engine).toBe('postgres')
+    const result = mapSearchResult(answerOf(DEGRADED_PAGE))
+    expect(result.engine).toBe('none')
     expect(result.degraded).toBe(true)
-  })
-
-  it('carries degraded=false through unchanged', () => {
-    const response: SearchEntitiesResponse = {
-      searchEntities: {
-        query: 'x',
-        engine: 'meili',
-        degraded: false,
-        estimatedTotalHits: 0,
-        facets: [],
-        hits: [],
-      },
-    }
-    expect(mapSearchResult(response).degraded).toBe(false)
+    expect(result.companyContributionReason).toBe('engine_unavailable')
+    expect(mapSearchResult(answerOf(CURRENT_PAGE)).degraded).toBe(false)
   })
 })
 

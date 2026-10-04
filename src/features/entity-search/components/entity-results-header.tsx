@@ -5,7 +5,13 @@ import type { EntitySearchEngine } from '@/schemas/entity-search'
 import { formatInteger } from '@/features/private-companies/lib/formatting'
 
 type Props = {
-  readonly shownCount: number
+  /** The hits on screen; null while no answer has arrived yet. */
+  readonly shownCount: number | null
+  /**
+   * The index generation's candidate estimate, or null when it must not be
+   * shown (a non-current answer). Never a count of the hits shown: hidden
+   * candidates make those fewer.
+   */
   readonly estimatedTotalHits: number | null
   readonly engine: EntitySearchEngine | null
   /**
@@ -22,8 +28,7 @@ export function EntityResultsHeader({
   engine,
   degraded,
 }: Props) {
-  const shownRange =
-    shownCount > 0 ? `1–${formatInteger(shownCount)}` : formatInteger(0)
+  const shownLabel = shownCount === null ? null : formatInteger(shownCount)
   const totalLabel =
     estimatedTotalHits === null ? null : formatInteger(estimatedTotalHits)
 
@@ -34,11 +39,14 @@ export function EntityResultsHeader({
         aria-live="polite"
         className="text-xs font-bold uppercase tracking-widest text-[var(--pnrr-muted)]"
       >
-        {totalLabel === null ? (
+        {shownLabel === null ? (
           <Trans>Rezultate</Trans>
+        ) : totalLabel === null ? (
+          <Trans>Rezultate — {shownLabel} afișate</Trans>
         ) : (
           <Trans>
-            Rezultate — {shownRange} din ~{totalLabel}
+            Rezultate — {shownLabel} afișate · ~{totalLabel} candidați estimați
+            în index
           </Trans>
         )}
       </h2>

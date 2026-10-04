@@ -3,7 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, ExternalLink, MapPin } from 'lucide-react'
 import type { MouseEvent, ReactNode } from 'react'
-import type { EntitySearchHit } from '@/schemas/entity-search'
+import type { EntitySearchHit, EntitySearchHitCompany } from '@/schemas/entity-search'
 import { cn } from '@/lib/utils'
 import { EntityTypeBadge } from './entity-type-badge'
 
@@ -38,13 +38,24 @@ function isSafeExternalHref(href: string): boolean {
   }
 }
 
+/** A company document whose values are its fresh company part (contract r2 §4). */
+function companyDocumentOf(hit: EntitySearchHit): EntitySearchHitCompany | null {
+  return hit.docType === 'company' ? hit.company ?? null : null
+}
+
 function getHitMetaPieces(hit: EntitySearchHit): readonly MetaPiece[] {
   const pieces: MetaPiece[] = []
+  const company = hit.company ?? null
+  const companyDocument = companyDocumentOf(hit)
 
   // The server maps snippet = subtitle for palette hits, so rendering both
-  // printed every secondary line twice ("uat, uat_municipality" ×2).
+  // printed every secondary line twice ("uat, uat_municipality" ×2). A company
+  // document's line is derived from its company part, shown field by field.
   const subtitle = hit.subtitle?.trim()
-  if (subtitle && subtitle !== hit.snippet?.trim()) {
+  if (companyDocument) {
+    const legalForm = companyDocument.legalForm?.trim()
+    if (legalForm) pieces.push({ key: 'legal-form', label: legalForm })
+  } else if (subtitle && subtitle !== hit.snippet?.trim()) {
     pieces.push({ key: 'subtitle', label: subtitle })
   }
 
@@ -54,18 +65,29 @@ function getHitMetaPieces(hit: EntitySearchHit): readonly MetaPiece[] {
     pieces.push({ key: 'cui', label: t`CUI ${cui}` })
   }
 
-  if (hit.countyName?.trim()) {
+  // The ONRC county is the company's own; without it, the generic county of an
+  // identity with a company part is its institution's county, and says so.
+  const onrcCounty = company?.countyName?.trim()
+  const genericCounty = hit.countyName?.trim()
+  if (onrcCounty) {
+    pieces.push({ key: 'county', label: onrcCounty, icon: 'map-pin' })
+  } else if (genericCounty && company) {
     pieces.push({
       key: 'county',
-      label: hit.countyName.trim(),
+      label: t`județul instituției: ${genericCounty}`,
       icon: 'map-pin',
     })
+  } else if (genericCounty) {
+    pieces.push({ key: 'county', label: genericCounty, icon: 'map-pin' })
   }
 
   // Struck-off companies and repealed acts are half the corpus; say so rather
-  // than letting a dead entity look identical to a live one.
-  if (!hit.isActive) {
+  // than letting a dead entity look identical to a live one. Null is unknown:
+  // neither active nor inactive.
+  if (hit.isActive === false) {
     pieces.push({ key: 'inactive', label: t`Inactiv` })
+  } else if (hit.isActive === null) {
+    pieces.push({ key: 'activity-unknown', label: t`activitate necunoscută` })
   }
 
   // An organisation outside the NGO registry has no page here: the row says why it opens nothing.
@@ -73,6 +95,28 @@ function getHitMetaPieces(hit: EntitySearchHit): readonly MetaPiece[] {
     pieces.push({ key: 'profileless', label: t`fără profil pe platformă` })
   }
 
+  return pieces
+}
+
+/**
+ * Where the company values come from: the published ONRC edition, or the
+ * platform directory when the edition has no profile. On an identity whose
+ * own name is another role's (an institution, an enterprise), it also names
+ * the company part.
+ */
+function getCompanyAttribution(hit: EntitySearchHit): readonly string[] {
+  const company = hit.company ?? null
+  if (company === null) return []
+  const pieces: string[] = []
+  if (hit.docType !== 'company') pieces.push(t`Firmă: ${company.name}`)
+  pieces.push(
+    company.nameSource === 'onrc_edition'
+      ? t`denumire din ediția ONRC publicată`
+      : t`denumire din directorul platformei, nu din ediția ONRC`,
+  )
+  if (company.registryState === 'NOT_IN_EDITION') {
+    pieces.push(t`fără profil în ediția ONRC`)
+  }
   return pieces
 }
 
@@ -107,15 +151,19 @@ function RowContent({
   readonly hit: EntitySearchHit
   readonly linkable: boolean
 }) {
-  const snippet = hit.snippet?.trim()
+  const companyDocument = companyDocumentOf(hit)
+  // A company document's snippet is derived from its company part, which the
+  // meta line already shows from the company fields.
+  const snippet = companyDocument ? undefined : hit.snippet?.trim()
   const metaPieces = getHitMetaPieces(hit)
+  const attribution = getCompanyAttribution(hit)
 
   return (
     <>
       <EntityTypeBadge docType={hit.docType} className="mt-0.5 shrink-0" />
       <div className="min-w-0 flex-1 space-y-1">
         <p className="truncate text-sm font-bold text-[var(--pnrr-fg)] group-hover:underline group-data-[active=true]:underline sm:text-base">
-          {hit.title}
+          {companyDocument ? companyDocument.name : hit.title}
         </p>
         {snippet ? (
           <p className="line-clamp-2 text-xs leading-snug text-[var(--pnrr-muted)] sm:text-sm">
@@ -123,6 +171,11 @@ function RowContent({
           </p>
         ) : null}
         <HitMeta pieces={metaPieces} />
+        {attribution.length > 0 ? (
+          <p className="truncate text-xs text-[var(--pnrr-muted)]">
+            {attribution.join(' · ')}
+          </p>
+        ) : null}
       </div>
       {linkable ? (
         hit.isExternal ? (

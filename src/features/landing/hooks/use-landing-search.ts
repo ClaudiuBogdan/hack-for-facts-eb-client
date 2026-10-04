@@ -17,8 +17,16 @@ export type SearchStatus =
   | { readonly kind: 'short'; readonly remaining: number }
   | { readonly kind: 'pending' }
   | { readonly kind: 'loading' }
-  | { readonly kind: 'results'; readonly results: readonly EntitySearchHit[]; readonly stale: boolean }
+  /** `partial`: the company part of this answer is not current, so companies may be missing. */
+  | { readonly kind: 'results'; readonly results: readonly EntitySearchHit[]; readonly stale: boolean; readonly partial: boolean }
+  /** A current answer with nothing to show and no next page: the only "no results". */
   | { readonly kind: 'empty'; readonly term: string }
+  /**
+   * Nothing to show, and no claim either (shared-search contract r2 §3, r4):
+   * the company part is not current, or the server has more candidates than
+   * this field asks for.
+   */
+  | { readonly kind: 'incomplete'; readonly term: string; readonly reason: 'not-current' | 'more' }
   | { readonly kind: 'error' }
   | { readonly kind: 'invalid' }
 
@@ -42,6 +50,22 @@ export function isProfileless(hit: Pick<EntitySearchHit, 'docType' | 'href'>): b
 }
 
 const NO_TAGS: readonly string[] = []
+const NO_RESULTS: readonly EntitySearchHit[] = []
+
+/** How long an answer is trusted from the cache; a non-current one is asked again at once. */
+const CURRENT_STALE_MS = 1000 * 60 * 5
+
+/**
+ * One request's answer, as the field reads it. The field asks for the first
+ * page only and pages nowhere, so `complete` is whether this page is the whole
+ * answer: a current company part and no next page. Hits are the server's own
+ * objects, company part and attribution included.
+ */
+type LandingAnswer = {
+  readonly hits: readonly EntitySearchHit[]
+  readonly current: boolean
+  readonly complete: boolean
+}
 
 export function useSearchResults({
   debounceMs = SEARCH_DEBOUNCE_MS,
@@ -87,30 +111,42 @@ export function useSearchResults({
   const scopeKey = entityTags.length > 0 ? `${docTypes.join(',')}|${entityTags.join(',')}` : docTypes.join(',')
   const { data, error, isError, isFetching, isPlaceholderData, isSuccess, refetch } = useQuery({
     queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters],
-    queryFn: async ({ signal }) => {
+    queryFn: async ({ signal }): Promise<LandingAnswer> => {
       const tags = [...entityTags, ...(serverFilters.entityTags ?? [])]
       const response = await searchEntitiesLive({
         q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }), limit: SEARCH_LIMIT,
       }, signal)
+      // The engine could not look: an error to retry, never an empty answer.
       if (response.degraded) throw new Error('Search unavailable')
-      return response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit))
+      const current = response.companyContribution === 'CURRENT'
+      return {
+        hits: response.hits.filter((hit) => (hit.href.startsWith('/') && !hit.isExternal) || isProfileless(hit)),
+        current,
+        // The initial page is the whole answer only when it is current and the
+        // server offers no next page; otherwise its emptiness proves nothing.
+        complete: current && response.continuation.nextOffset === null,
+      }
     },
     enabled: isQueryable,
     retry: false,
-    staleTime: 1000 * 60 * 5,
+    // A non-current answer is not kept as the answer to come back to.
+    staleTime: (query) => (query.state.data?.current === false ? 0 : CURRENT_STALE_MS),
     gcTime: 1000 * 60 * 30,
   })
-  const results = useMemo(() => data ?? [], [data])
+  const results = data?.hits ?? NO_RESULTS
   const isCurrent = isQueryable && normalized === trimmed && isSuccess && !isPlaceholderData && !isFetching
 
   const status: SearchStatus = useMemo(() => {
     if (!trimmed) return filters.length > 0 ? { kind: 'scoped' } : { kind: 'idle' }
     if (trimmed.length < MIN_QUERY_CHARS) return { kind: 'short', remaining: MIN_QUERY_CHARS - trimmed.length }
     if (isError && normalized === trimmed) return { kind: isSearchInputError(error) ? 'invalid' : 'error' }
-    if (results.length) return { kind: 'results', results, stale: !isCurrent }
-    if (isCurrent) return { kind: 'empty', term: trimmed }
+    if (results.length) return { kind: 'results', results, stale: !isCurrent, partial: data?.current === false }
+    if (isCurrent) {
+      if (data?.complete) return { kind: 'empty', term: trimmed }
+      return { kind: 'incomplete', term: trimmed, reason: data?.current ? 'more' : 'not-current' }
+    }
     return normalized === trimmed && isFetching ? { kind: 'loading' } : { kind: 'pending' }
-  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, filters])
+  }, [trimmed, normalized, error, isError, isFetching, results, isCurrent, filters, data])
 
   const suggestions = useMemo(
     () => (suggestionsEnabled ? suggestFilters(term, filters, tagFilters) : []),

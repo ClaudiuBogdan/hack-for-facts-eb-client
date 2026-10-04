@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet'
 import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { COMPANY_CAEN_REVISIONS } from '@/schemas/private-company-registry'
 import {
   PRIVATE_COMPANY_LEGAL_FORM_OPTIONS,
   PRIVATE_COMPANY_STATUS_OPTIONS,
@@ -19,6 +20,8 @@ import {
   type PrivateCompanyDirectorySearchState,
 } from '@/schemas/private-company-search'
 import { formatInteger } from '../../lib/formatting'
+import { foldCountyName } from '../../lib/county-names'
+import { caenRevisionText } from '../../lib/company-registry-text'
 import {
   countActiveCompanyDirectoryFilters,
   type CompanyDirectoryFilterPatch,
@@ -37,7 +40,10 @@ type Props = {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
   readonly search: PrivateCompanyDirectorySearchState
+  /** The pinned edition's county options; empty while they load or when the registry cannot answer (`countiesNote`). */
   readonly counties: ReadonlyArray<PrivateCompanyCountyFacet>
+  /** Why there are no county options now, when there are none; null when they are the edition's. */
+  readonly countiesNote: string | null
   readonly onChange: (patch: CompanyDirectoryFilterPatch) => void
   readonly onClearAll: () => void
 }
@@ -47,17 +53,25 @@ function toFacet(values: string[]): string[] | undefined {
   return values.length > 0 ? values : undefined
 }
 
+/** A selected county value — a code, or a name from an older link — is this option. */
+function selects(value: string, county: PrivateCompanyCountyFacet): boolean {
+  return value === county.code || foldCountyName(value) === foldCountyName(county.name)
+}
+
 /** GOV.UK-light side panel for the company directory filters. */
 export function CompanyFilterSheet({
   open,
   onOpenChange,
   search,
   counties,
+  countiesNote,
   onChange,
   onClearAll,
 }: Props) {
   const activeCount = countActiveCompanyDirectoryFilters(search)
   const [countyFilter, setCountyFilter] = useState('')
+  const [exactCode, setExactCode] = useState('')
+  const [exactRevision, setExactRevision] = useState<(typeof COMPANY_CAEN_REVISIONS)[number]>('rev2')
 
   const visibleCounties = useMemo(() => {
     const needle = countyFilter.trim().toLowerCase()
@@ -66,11 +80,21 @@ export function CompanyFilterSheet({
   }, [counties, countyFilter])
 
   const selectedCounties = search.county ?? []
-  const toggleCounty = (name: string) => {
-    const next = selectedCounties.includes(name)
-      ? selectedCounties.filter((item) => item !== name)
-      : [...selectedCounties, name]
+  const toggleCounty = (county: PrivateCompanyCountyFacet) => {
+    const selected = selectedCounties.some((value) => selects(value, county))
+    const next = selected
+      ? selectedCounties.filter((value) => !selects(value, county))
+      : [...selectedCounties, county.code]
     onChange({ county: toFacet(next) })
+  }
+
+  const selectors = search.onrcCaen ?? []
+  const exactValid = /^\d{4}$/u.test(exactCode)
+  const addExact = () => {
+    if (!exactValid) return
+    const selector = `${exactRevision}:${exactCode}`
+    if (!selectors.includes(selector)) onChange({ onrcCaen: [...selectors, selector] })
+    setExactCode('')
   }
 
   return (
@@ -104,15 +128,15 @@ export function CompanyFilterSheet({
             />
             <ul className="max-h-56 space-y-1 overflow-y-auto">
               {visibleCounties.map((county) => {
-                const checked = selectedCounties.includes(county.name)
+                const checked = selectedCounties.some((value) => selects(value, county))
                 return (
-                  <li key={county.name}>
+                  <li key={county.code}>
                     <label className="flex cursor-pointer items-center justify-between gap-3 border-2 border-transparent px-2 py-1.5 text-sm text-[#0b0c0c] hover:bg-[#f3f2f1] dark:text-[var(--pnrr-fg)] dark:hover:bg-[var(--pnrr-subtle)]">
                       <span className="flex min-w-0 items-center gap-2">
                         <input
                           type="checkbox"
                           checked={checked}
-                          onChange={() => toggleCounty(county.name)}
+                          onChange={() => toggleCounty(county)}
                           className="h-4 w-4 shrink-0 accent-[#1d70b8]"
                         />
                         <span className="truncate font-semibold">{county.name}</span>
@@ -124,18 +148,31 @@ export function CompanyFilterSheet({
                   </li>
                 )
               })}
-              {visibleCounties.length === 0 ? (
+              {countiesNote ? (
+                <li className="px-2 py-1.5 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">{countiesNote}</li>
+              ) : visibleCounties.length === 0 ? (
                 <li className="px-2 py-1.5 text-sm text-[#505a5f] dark:text-[var(--pnrr-muted)]">
                   <Trans>No county matches.</Trans>
                 </li>
               ) : null}
             </ul>
+            <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <Trans>
+                Numărul de lângă județ: firmele cu o înscriere „în funcțiune” care au acel județ în toate înscrierile, în ediția ONRC afișată.
+              </Trans>
+            </p>
           </section>
 
           <section className="space-y-2">
             <Label className={SECTION_LABEL_CLASS}>
               <Trans>Registry status</Trans>
             </Label>
+            <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <Trans>
+                O firmă se potrivește dacă are starea pe oricare înscriere publică din ediția ONRC (de exemplu „în funcțiune” chiar și lângă
+                o altă stare). Denumirile sunt din nomenclatorul aplicației.
+              </Trans>
+            </p>
             <ToggleGroup
               type="multiple"
               value={[...(search.status ?? [])]}
@@ -173,6 +210,57 @@ export function CompanyFilterSheet({
                 that exact code.
               </Trans>
             </p>
+            <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <Trans>
+                Potrivire largă: codul în orice revizie CAEN, printre activitățile înscrise în ediția ONRC afișată (nu din ediții mai vechi și
+                nu activitatea principală declarată la ANAF). Aceleași cifre pot însemna activități diferite în revizii diferite.
+              </Trans>
+            </p>
+            <div className="space-y-1 pt-2">
+              <Label htmlFor="company-filter-caen-exact" className="text-xs font-normal text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <Trans>Cod CAEN exact, într-o revizie</Trans>
+              </Label>
+              <div className="flex gap-2">
+                <div className="w-36 shrink-0">
+                  <select
+                    aria-label={t`Revizia CAEN`}
+                    value={exactRevision}
+                    onChange={(event) => {
+                      const revision = COMPANY_CAEN_REVISIONS.find((entry) => entry === event.target.value)
+                      if (revision) setExactRevision(revision)
+                    }}
+                    className={INPUT_CLASS}
+                  >
+                    {COMPANY_CAEN_REVISIONS.map((revision) => (
+                      <option key={revision} value={revision}>
+                        {caenRevisionText(revision)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <input
+                  id="company-filter-caen-exact"
+                  type="text"
+                  inputMode="numeric"
+                  className={INPUT_CLASS}
+                  value={exactCode}
+                  placeholder={t`ex. 6201`}
+                  onChange={(event) => setExactCode(event.target.value.trim())}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') addExact()
+                  }}
+                />
+                <Button type="button" variant="outline" className="h-10 rounded-none" disabled={!exactValid} onClick={addExact}>
+                  <Trans>Adaugă</Trans>
+                </Button>
+              </div>
+              <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+                <Trans>
+                  Potrivire exactă: cele patru cifre în revizia aleasă (Rev.0 inclusiv), pe același identificator cu celelalte filtre de
+                  registru.
+                </Trans>
+              </p>
+            </div>
           </section>
 
           <section className="space-y-2">
@@ -203,6 +291,9 @@ export function CompanyFilterSheet({
             <Label className={SECTION_LABEL_CLASS}>
               <Trans>Registration date</Trans>
             </Label>
+            <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
+              <Trans>Data înregistrată de ONRC, comună tuturor înscrierilor; nu este data înființării.</Trans>
+            </p>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label

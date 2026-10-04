@@ -59,6 +59,22 @@ describe('buildCompanyDirectoryChips', () => {
     expect(chip).toMatchObject({ field: 'caen', label: 'CAEN 47', value: '47' })
   })
 
+  it('names a county code by its canonical name, keeping the code as the value', () => {
+    const [chip] = buildCompanyDirectoryChips({ county: ['CJ'] })
+    expect(chip).toMatchObject({ field: 'county', label: 'Cluj', value: 'CJ' })
+  })
+
+  it('shows an exact CAEN selector by revision and code, Rev.0 included, and flags a malformed one instead of dropping it', () => {
+    const chips = buildCompanyDirectoryChips({ onrcCaen: ['rev0:1111', 'rev2:6201', '6201'] })
+    expect(chips.map((chip) => [chip.label, chip.invalid ?? false])).toEqual([
+      ['CAEN 1111 · Rev.0', false],
+      ['CAEN 6201 · Rev.2', false],
+      ['6201', true],
+    ])
+    expect(chips[2]?.patch).toEqual({ onrcCaen: ['rev0:1111', 'rev2:6201'] })
+    expect(countActiveCompanyDirectoryFilters({ onrcCaen: ['rev0:1111', 'rev2:6201'] })).toBe(2)
+  })
+
   it('renders the date range as a single chip that clears both bounds', () => {
     const chips = buildCompanyDirectoryChips({
       regFrom: '2020-01-01',

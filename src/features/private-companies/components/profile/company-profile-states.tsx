@@ -81,15 +81,25 @@ function StateFrame({ title, children, alert = false }: { readonly title: ReactN
   )
 }
 
-/** A CUI neither the registry nor ANAF knows — said as a finding about the identifier, with the way to search. */
+/**
+ * A CUI the platform's company directory does not hold (or does not show
+ * publicly) — said as a finding about the directory, never as a fact about the
+ * company's legal registration, with the way to search.
+ */
 export function CompanyProfileNotFound({ cui }: { readonly cui: string | null }) {
   return (
     <StateFrame title={<Trans>Firma nu a fost găsită</Trans>}>
       <p className="mt-4 text-base leading-relaxed text-muted-foreground">
         {cui ? (
-          <Trans>Nicio firmă cu CUI {cui} în registrul comerțului sau la ANAF. Verifică codul, sau caută firma după nume.</Trans>
+          <Trans>
+            Directorul de firme al platformei nu are o firmă publică cu CUI {cui}. Asta nu spune dacă firma este înregistrată la registrul
+            comerțului. Verifică codul, sau caută firma după nume.
+          </Trans>
         ) : (
-          <Trans>Nicio firmă cu acest CUI în registrul comerțului sau la ANAF. Verifică codul, sau caută firma după nume.</Trans>
+          <Trans>
+            Directorul de firme al platformei nu are o firmă publică cu acest CUI. Asta nu spune dacă firma este înregistrată la registrul
+            comerțului. Verifică codul, sau caută firma după nume.
+          </Trans>
         )}
       </p>
       <Link
@@ -98,6 +108,31 @@ export function CompanyProfileNotFound({ cui }: { readonly cui: string | null })
       >
         <Trans>Caută în firme</Trans>
       </Link>
+    </StateFrame>
+  )
+}
+
+/**
+ * The ONRC registry moved while the profile was open (a new edition, a
+ * withdrawal or an access change): what was read before is no longer shown,
+ * and the current record is read only when the reader asks.
+ */
+export function CompanyProfileRegistryMoved({ onAccept }: { readonly onAccept: () => void }) {
+  return (
+    <StateFrame title={<Trans>Registrul s-a schimbat</Trans>}>
+      <p className="mt-4 text-base leading-relaxed text-muted-foreground" data-testid="company-profile-registry-moved">
+        <Trans>
+          Registrul comerțului s-a schimbat de când ai deschis pagina (o ediție nouă sau o schimbare de acces). Datele citite înainte nu mai
+          sunt afișate.
+        </Trans>
+      </p>
+      <button
+        type="button"
+        onClick={onAccept}
+        className="mt-6 inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        <Trans>Arată datele actuale</Trans>
+      </button>
     </StateFrame>
   )
 }
