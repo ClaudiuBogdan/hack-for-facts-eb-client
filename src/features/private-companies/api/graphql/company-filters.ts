@@ -19,6 +19,8 @@ import { parseCaenSelector } from '../../lib/company-caen-selector'
 export type DateRangeFilter = { between: { from?: string; to?: string } }
 
 export type CompaniesFilterInput = {
+  /** The exact company: a typed canonical CUI (the live list adapter sets it; no URL facet does). */
+  cui?: { eq: string }
   county?: { eq?: string; in?: string[] }
   status?: { eq?: string; in?: string[] }
   caenCode?: { prefix?: string; eq?: string }

@@ -29,7 +29,7 @@ import {
   mapCompanyProfile,
   mapCompanyResolveResult,
 } from './graphql/company-mappers'
-import { buildCompaniesFilter } from './graphql/company-filters'
+import { buildCompaniesFilter, type CompaniesFilterInput } from './graphql/company-filters'
 import { mapRegistryEnvelope } from './graphql/company-registry-graphql'
 import { assertRegistryScope, classifyRegistryError } from './company-registry-errors'
 
@@ -55,14 +55,20 @@ const SORT_MAP: Record<
   cui: 'CUI',
 }
 
+/** A canonical CUI: 2–10 digits, no leading zero (the analytics company picker's grammar), nothing else. */
+const CANONICAL_CUI = /^[1-9]\d{1,9}$/u
+
 export async function fetchPrivateCompanySearchLive(
   query: PrivateCompanySearchQuery,
 ): Promise<PrivateCompanySearchResultPage> {
-  const filter = buildCompaniesFilter(query)
   const trimmedQ = query.q?.trim()
+  // The API's `q` searches names only: a typed canonical CUI asks for that exact company instead.
+  const cui = trimmedQ && CANONICAL_CUI.test(trimmedQ) ? trimmedQ : undefined
+  const facets = buildCompaniesFilter(query)
+  const filter: CompaniesFilterInput | undefined = cui ? { cui: { eq: cui }, ...facets } : facets
   const variables = {
     filter,
-    q: trimmedQ && trimmedQ.length > 0 ? trimmedQ : undefined,
+    q: !cui && trimmedQ && trimmedQ.length > 0 ? trimmedQ : undefined,
     sort: query.sort ? SORT_MAP[query.sort] : undefined,
     first: query.pageSize,
     after: query.cursor ?? undefined,
