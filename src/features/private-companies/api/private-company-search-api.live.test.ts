@@ -12,10 +12,8 @@ vi.mock('@/lib/logger', () => ({
   createLogger: vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() })),
 }))
 vi.mock('@/lib/auth', () => ({ getAuthToken: vi.fn(async () => null) }))
-vi.mock('@/config/env', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/config/env')>()),
-  getApiBaseUrl: () => 'https://api.example.com',
-}))
+// Self-contained: the real module validates the app's env when imported, and CI has none.
+vi.mock('@/config/env', () => ({ getApiBaseUrl: () => 'https://api.example.com' }))
 
 import type { PrivateCompanySearchQuery } from '@/schemas/private-company-search'
 import { normalizeCompanyCui } from '../lib/normalize-company-cui'

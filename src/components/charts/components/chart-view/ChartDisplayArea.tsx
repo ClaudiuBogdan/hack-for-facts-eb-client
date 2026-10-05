@@ -4,7 +4,9 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Chart } from "@/schemas/charts";
+import { Chart, Series } from "@/schemas/charts";
+import { getAllDependencies } from "@/lib/chart-calculation-utils";
+import { getCompaniesDependentSeriesIds } from "@/lib/companies-chart-guards";
 import { getChartTypeIcon } from "../../utils";
 import { ChartRenderer } from "../chart-renderer/components/ChartRenderer";
 import { AnnotationPositionChange, ChartMargins } from "../chart-renderer/components/interfaces";
@@ -90,7 +92,7 @@ export const ChartDisplayArea = React.memo(
           {content}
         </div>
         {chart.series.some(series => series.type === 'line-items-aggregated-yearly') && <PopulationMethodologyNote />}
-        <ChartFooter />
+        <ChartFooter series={chart.series} />
       </Card>
     );
   }
@@ -187,21 +189,48 @@ const ChartContent = React.memo(
 );
 
 /**
+ * Whose data the chart draws: its enabled series and every series an enabled
+ * calculation reads, at any depth (a disabled operand included).
+ */
+function chartSources(series: Series[]): { readonly budget: boolean; readonly companies: boolean } {
+  const drawn = series.filter((item) => item.enabled);
+  const read = drawn.flatMap((item) => (item.type === "aggregated-series-calculation" ? [item, ...getAllDependencies(item, { series })] : [item]));
+  const companies = getCompaniesDependentSeriesIds(series);
+  return {
+    budget: read.some((item) => item.type === "line-items-aggregated-yearly" || item.type === "commitments-analytics"),
+    companies: drawn.some((item) => companies.has(item.id)),
+  };
+}
+
+/**
  * Footer component displaying chart attribution and source.
  * Uses current URL to ensure exported images contain the latest chart configuration.
+ * Budget data cites the Ministry of Finance's budget site; company figures name
+ * their own publishers, unlinked (no single file holds them).
  */
-const ChartFooter = () => {
+const ChartFooter = ({ series }: { series: Series[] }) => {
   // Get current URL on every render to ensure it's always up-to-date
   const currentUrl = typeof window !== "undefined" ? window.location.href : getSiteUrl();
+  const sources = chartSources(series);
+  const budgetSource = (
+    <a href="https://mfinante.gov.ro/transparenta-bugetara" target="_blank" rel="noopener noreferrer">
+      <Trans>Source: </Trans><span className="font-bold">Ministerul Finanțelor</span>
+    </a>
+  );
 
   return (
     <p className="flex items-center justify-between text-sm text-muted-foreground bg-muted/20 w-full p-4">
       <a href={currentUrl} target="_blank" rel="noopener noreferrer" id="chart-footer-link">
         <span className="font-bold">Transparenta.eu</span>
       </a>
-      <a href="https://mfinante.gov.ro/transparenta-bugetara" target="_blank" rel="noopener noreferrer">
-        <Trans>Source: </Trans><span className="font-bold">Ministerul Finanțelor</span>
-      </a>
+      {sources.companies ? (
+        <span className="flex flex-col items-end gap-1 text-right">
+          <span>{t`Surse: registrul ONRC, declarațiile fiscale ANAF, situațiile financiare depuse la Ministerul Finanțelor (2008–2018) și la ANAF (2019 încoace)`}</span>
+          {sources.budget ? budgetSource : null}
+        </span>
+      ) : (
+        budgetSource
+      )}
     </p>
   );
 };
