@@ -8,16 +8,23 @@
             "cui": "9718383",
             "orgId": "9718383",
             "name": "EXEMPLU REGISTRU CULTURAL",
+            "nameSource": "ONRC_EDITION",
             "legalForm": "SRL",
             "headlineStatus": {
               "code": "1048",
-              "label": "funcțiune"
+              "label": "funcțiune",
+              "labelSource": "API_NOMENCLATURE"
             },
             "county": "CLUJ",
             "vatPayer": true,
             "declaredFiscallyInactive": false,
             "registrationDate": "2002-06-15",
-            "registrationDatePresent": true
+            "registrationDatePresent": true,
+            "registryCuiState": "IN_EDITION",
+            "hasActiveObservation": true,
+            "statusBasis": "SINGLE_OBSERVATION",
+            "countyBasis": "SINGLE_OBSERVATION",
+            "recordedDateBasis": "SINGLE_OBSERVATION"
           }
         },
         {
@@ -26,16 +33,23 @@
             "cui": "44556677",
             "orgId": "44556677",
             "name": "POPA IOANA PFA",
+            "nameSource": "ONRC_EDITION",
             "legalForm": "PFA",
             "headlineStatus": {
               "code": "1048",
-              "label": "funcțiune"
+              "label": "funcțiune",
+              "labelSource": "API_NOMENCLATURE"
             },
             "county": "CLUJ",
             "vatPayer": true,
             "declaredFiscallyInactive": false,
             "registrationDate": "2002-06-15",
-            "registrationDatePresent": true
+            "registrationDatePresent": true,
+            "registryCuiState": "IN_EDITION",
+            "hasActiveObservation": true,
+            "statusBasis": "SINGLE_OBSERVATION",
+            "countyBasis": "SINGLE_OBSERVATION",
+            "recordedDateBasis": "SINGLE_OBSERVATION"
           }
         }
       ],
@@ -44,7 +58,21 @@
         "endCursor": null
       },
       "totalCount": 2,
-      "totalEstimated": false
+      "totalEstimated": false,
+      "registry": {
+        "source": "onrc",
+        "state": "PUBLISHED",
+        "editionId": "41",
+        "sourceSnapshotId": "fixture-onrc-2026-07-18",
+        "sourcePublishedAt": "2026-07-18",
+        "interpretationVersion": "onrc-edition-v1",
+        "dimensionPolicyVersion": "onrc-dimensions-v1",
+        "eligibilityPolicyVersion": "public-legal-person-v1",
+        "publicationEpoch": "3",
+        "accessEpoch": "7",
+        "reason": null,
+        "scopeKey": "onrc:published:41:3:7"
+      }
     }
   }
 }

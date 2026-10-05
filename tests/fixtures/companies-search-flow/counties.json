@@ -1,34 +1,48 @@
 {
   "data": {
     "companyCountyProfile": {
+      "groupBy": "COUNTY",
       "denominator": 1724391,
-      "coverage": {
-        "territoryMatched": 1046512,
-        "territoryUnmatched": 677879,
-        "note": "Județul provine din registrul ONRC; firmele fără județ în registru nu apar în clasament."
-      },
       "groups": [
         {
           "key": "BUCUREŞTI",
           "label": null,
-          "count": 340299
+          "count": 340299,
+          "basis": null
         },
         {
           "key": "CLUJ",
           "label": null,
-          "count": 63301
+          "count": 63301,
+          "basis": null
         },
         {
           "key": "TIMIŞ",
           "label": null,
-          "count": 50111
+          "count": 50111,
+          "basis": null
         },
         {
           "key": "IAŞI",
           "label": null,
-          "count": 40456
+          "count": 40456,
+          "basis": null
         }
-      ]
+      ],
+      "registry": {
+        "source": "onrc",
+        "state": "PUBLISHED",
+        "editionId": "41",
+        "sourceSnapshotId": "fixture-onrc-2026-07-18",
+        "sourcePublishedAt": "2026-07-18",
+        "interpretationVersion": "onrc-edition-v1",
+        "dimensionPolicyVersion": "onrc-dimensions-v1",
+        "eligibilityPolicyVersion": "public-legal-person-v1",
+        "publicationEpoch": "3",
+        "accessEpoch": "7",
+        "reason": null,
+        "scopeKey": "onrc:published:41:3:7"
+      }
     }
   }
 }

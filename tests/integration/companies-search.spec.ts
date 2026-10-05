@@ -3,18 +3,30 @@
  * autocomplete (no submit button), the filter sheet, chips, sort and
  * deep-link hydration.
  *
- * GraphQL is mocked (fixtures under tests/fixtures/companies-search-flow/).
- * Variables-specific `CompaniesSearch` fixtures are registered first; the
- * unfiltered fallback is registered last so any unlisted filter combination
- * still resolves.
+ * GraphQL is mocked (fixtures under tests/fixtures/companies-search-flow/,
+ * authored test data with curated synthetic registry metadata, as that
+ * folder's README says). The page first pins the registry scope of its own
+ * `CompanyRegistry` read; the list, the county options and the name
+ * suggestions are read only under that scope, so every answer here carries
+ * the same synthetic one. Variables-specific `CompaniesSearch` fixtures are
+ * registered first; the unfiltered fallback is registered last so any
+ * unlisted filter combination still resolves.
  */
 
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady } from '../utils/test-helpers'
 import type { MockApiFixture } from '../utils/types'
 
+/** The synthetic registry scope every answer of this flow carries. */
+const REGISTRY_SCOPE = 'onrc:published:41:3:7'
+
 async function setupMocks(mockApi: MockApiFixture): Promise<void> {
-  await mockApi.mockGraphQL('CompanyGroupProfile', 'counties')
+  // The page's registry pin: one read, no variables.
+  await mockApi.mockGraphQL('CompanyRegistry', 'company-registry')
+  // The county options: the companies with an „în funcțiune" observation, by county.
+  await mockApi.mockGraphQL('CompanyGroupProfile', 'counties', {
+    variables: { filter: { status: { eq: '1048' } }, groupBy: 'COUNTY' },
+  })
 
   await mockApi.mockGraphQL('CompaniesSearch', 'search-cluj', {
     variables: { filter: { county: { eq: 'CLUJ' } } },
@@ -33,10 +45,13 @@ async function setupMocks(mockApi: MockApiFixture): Promise<void> {
   })
   await mockApi.mockGraphQL('CompaniesSearch', 'search')
 
-  await mockApi.mockGraphQL('CompanyResolve', 'resolve-dante', {
-    variables: { q: 'dante' },
+  // Name suggestions under the pinned scope: DANTE for „dante”, no match for any other name.
+  await mockApi.mockGraphQL('CompanyResolveResult', 'resolve-dante', {
+    variables: { dim: 'NAME', q: 'dante', limit: 8, registryScope: REGISTRY_SCOPE },
   })
-  await mockApi.mockGraphQL('CompanyResolve', 'resolve')
+  await mockApi.mockGraphQL('CompanyResolveResult', 'resolve', {
+    variables: { dim: 'NAME', registryScope: REGISTRY_SCOPE },
+  })
 }
 
 function searchParam(url: string, key: string): string | null {

@@ -1,0 +1,45 @@
+{
+  "data": {
+    "companyRegistry": {
+      "registry": {
+        "source": "onrc",
+        "state": "PUBLISHED",
+        "editionId": "41",
+        "sourceSnapshotId": "fixture-onrc-2026-07-18",
+        "sourcePublishedAt": "2026-07-18",
+        "interpretationVersion": "onrc-edition-v1",
+        "dimensionPolicyVersion": "onrc-dimensions-v1",
+        "eligibilityPolicyVersion": "public-legal-person-v1",
+        "publicationEpoch": "3",
+        "accessEpoch": "7",
+        "reason": null,
+        "scopeKey": "onrc:published:41:3:7"
+      },
+      "editions": [
+        {
+          "editionId": "41",
+          "sourceSnapshotId": "fixture-onrc-2026-07-18",
+          "sourcePublishedAt": "2026-07-18",
+          "interpretationVersion": "onrc-edition-v1",
+          "dimensionPolicyVersion": "onrc-dimensions-v1",
+          "current": true
+        }
+      ],
+      "registryFilterFields": [
+        "status",
+        "county",
+        "caenCode",
+        "onrcCaen",
+        "legalForm",
+        "registrationDate",
+        "registrationDatePresent"
+      ],
+      "caenRevisions": [
+        "rev0",
+        "rev1",
+        "rev2",
+        "rev3"
+      ]
+    }
+  }
+}

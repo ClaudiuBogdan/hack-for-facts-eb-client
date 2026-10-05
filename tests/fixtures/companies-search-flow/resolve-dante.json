@@ -1,13 +1,35 @@
 {
   "data": {
-    "companyResolve": [
-      {
-        "dim": "NAME",
-        "value": "14399840",
-        "label": "DANTE INTERNATIONAL SA",
-        "cui": "14399840",
-        "confidence": 0.99
-      }
-    ]
+    "companyResolveResult": {
+      "hits": [
+        {
+          "dim": "NAME",
+          "value": "14399840",
+          "label": "DANTE INTERNATIONAL SA",
+          "cui": "14399840",
+          "confidence": 0.99,
+          "revision": null,
+          "key": null,
+          "labelSource": "onrc_edition"
+        }
+      ],
+      "degraded": false,
+      "ambiguous": false,
+      "registry": {
+        "source": "onrc",
+        "state": "PUBLISHED",
+        "editionId": "41",
+        "sourceSnapshotId": "fixture-onrc-2026-07-18",
+        "sourcePublishedAt": "2026-07-18",
+        "interpretationVersion": "onrc-edition-v1",
+        "dimensionPolicyVersion": "onrc-dimensions-v1",
+        "eligibilityPolicyVersion": "public-legal-person-v1",
+        "publicationEpoch": "3",
+        "accessEpoch": "7",
+        "reason": null,
+        "scopeKey": "onrc:published:41:3:7"
+      },
+      "scopeKey": "onrc:published:41:3:7"
+    }
   }
 }
