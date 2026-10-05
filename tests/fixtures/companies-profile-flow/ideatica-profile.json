@@ -4,20 +4,16 @@
       "cui": "47387800",
       "orgId": "3167065",
       "name": "A & B IDEATICA S.R.L.",
+      "nameSource": "ONRC_EDITION",
       "legalForm": "SRL",
       "codInmatriculare": "J12/7541/2022",
       "registrationDate": "2022-12-29",
       "registrationDatePresent": true,
       "headlineStatus": {
         "code": "1048",
-        "label": "funcțiune"
+        "label": "funcțiune",
+        "labelSource": "API_NOMENCLATURE"
       },
-      "statusFlags": [
-        {
-          "code": "1048",
-          "label": "funcțiune"
-        }
-      ],
       "territory": {
         "sirutaCode": "54975",
         "uatName": "Municipiul Cluj-Napoca",
@@ -27,7 +23,7 @@
       "address": {
         "display": "",
         "county": "Cluj",
-        "locality": "Municipiul Cluj-Napoca"
+        "locality": null
       },
       "fiscal": {
         "vatPayer": false,
@@ -42,383 +38,1855 @@
           "code": "1399",
           "rev": "rev2",
           "label": "Fabricarea altor articole textile n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "1812",
           "rev": "rev2",
           "label": "Alte activități de tipărire n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "1813",
           "rev": "rev2",
           "label": "Servicii pregătitoare pentru pretipărire",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "1814",
           "rev": "rev2",
           "label": "Legătorie și servicii conexe",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "3299",
           "rev": "rev2",
           "label": "Fabricarea altor produse manufacturiere n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4311",
           "rev": "rev2",
           "label": "Lucrări de demolare a construcțiilor",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4312",
           "rev": "rev2",
           "label": "Lucrări de pregătire a terenului",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4322",
           "rev": "rev2",
           "label": "Lucrări de instalații sanitare, de încălzire și de aer condiționat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4329",
           "rev": "rev2",
           "label": "Alte lucrări de instalații pentru construcții",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4331",
           "rev": "rev2",
           "label": "Lucrări de ipsoserie",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4332",
           "rev": "rev2",
           "label": "Lucrări de tâmplărie și dulgherie",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4333",
           "rev": "rev2",
           "label": "Lucrări de pardosire și placare a pereților",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4334",
           "rev": "rev2",
           "label": "Lucrări de vopsitorie, zugrăveli și montări de geamuri",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4339",
           "rev": "rev2",
           "label": "Alte lucrări de finisare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4399",
           "rev": "rev2",
           "label": "Alte lucrări speciale de construcții n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4520",
           "rev": "rev2",
           "label": "Întreținerea și repararea autovehiculelor",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4690",
           "rev": "rev2",
           "label": "Comerț cu ridicata nespecializat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4781",
           "rev": "rev2",
           "label": "Comerț cu amănuntul al produselor alimentare, băuturilor și produselor din tutun efectuat prin standuri, chioșcuri și piețe",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4782",
           "rev": "rev2",
           "label": "Comerț cu amănuntul al textilelor, îmbrăcămintei și încălțămintei efectuat prin standuri, chioșcuri și piețe",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4791",
           "rev": "rev2",
           "label": "Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4799",
           "rev": "rev2",
           "label": "Comerț cu amănuntul efectuat în afara  magazinelor, standurilor, chioșcurilor și piețelor",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4932",
           "rev": "rev2",
           "label": "Transporturi cu taxiuri",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4939",
           "rev": "rev2",
           "label": "Alte transporturi terestre de călători n.c.a",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4941",
           "rev": "rev2",
           "label": "Transporturi rutiere de mărfuri",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4942",
           "rev": "rev2",
           "label": "Servicii de mutare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "5221",
           "rev": "rev2",
           "label": "Activități de servicii anexe pentru transporturi terestre",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "5320",
           "rev": "rev2",
           "label": "Alte activități poștale și de curier",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "5610",
           "rev": "rev2",
           "label": "Restaurante",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "5819",
           "rev": "rev2",
           "label": "Alte activități de editare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6201",
           "rev": "rev2",
           "label": "Activități de realizare a soft-ului la comandă (software orientat client)",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6202",
           "rev": "rev2",
           "label": "Activități de consultanță în tehnologia informației",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6311",
           "rev": "rev2",
           "label": "Prelucrarea datelor, administrarea paginilor web și activități conexe",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6312",
           "rev": "rev2",
           "label": "Activități ale portalurilor web",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6399",
           "rev": "rev2",
           "label": "Alte activități de servicii informaționale n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6810",
           "rev": "rev2",
           "label": "Cumpărarea și vânzarea de bunuri imobiliare proprii",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6820",
           "rev": "rev2",
           "label": "Închirierea și subînchirierea bunurilor imobiliare proprii sau închiriate",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6831",
           "rev": "rev2",
           "label": "Agenții imobiliare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "6832",
           "rev": "rev2",
           "label": "Administrarea imobilelor pe bază de comision sau contract",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7022",
           "rev": "rev2",
           "label": "Activități de consultanță pentru afaceri și management",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7120",
           "rev": "rev2",
           "label": "Activități de testări și analize tehnice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7311",
           "rev": null,
           "label": null,
-          "source": "anaf"
+          "source": "anaf",
+          "labelSource": null
         },
         {
           "code": "7311",
           "rev": "rev2",
           "label": "Activități ale agențiilor de publicitate",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7320",
           "rev": "rev2",
           "label": "Activități de studiere a pieței și de sondare a opiniei publice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7410",
           "rev": "rev2",
           "label": "Activități de design specializat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7420",
           "rev": "rev2",
           "label": "Activități fotografice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7490",
           "rev": "rev2",
           "label": "Alte activități profesionale, științifice și tehnice n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7711",
           "rev": "rev2",
           "label": "Activități de închiriere și leasing cu autoturisme și autovehicule rutiere ușoare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7830",
           "rev": "rev2",
           "label": "Servicii de furnizare și management a forței de muncă",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7911",
           "rev": "rev2",
           "label": "Activități ale agențiilor turistice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7990",
           "rev": "rev2",
           "label": "Alte servicii de rezervare și asistență turistică",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8121",
           "rev": "rev2",
           "label": "Activități generale de curățenie a clădirilor",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8122",
           "rev": "rev2",
           "label": "Activități specializate de curățenie",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8129",
           "rev": "rev2",
           "label": "Alte activități de curățenie",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8130",
           "rev": "rev2",
           "label": "Activități de întreținere peisagistică",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8211",
           "rev": "rev2",
           "label": "Activități combinate de secretariat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8219",
           "rev": "rev2",
           "label": "Activități de fotocopiere, de pregătire a documentelor și alte activități specializate de secretariat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8292",
           "rev": "rev2",
           "label": "Activități de ambalare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8299",
           "rev": "rev2",
           "label": "Alte activități de servicii suport pentru întreprinderi n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8551",
           "rev": "rev2",
           "label": "Învățământ în domeniul sportiv și recreațional",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8559",
           "rev": "rev2",
           "label": "Alte forme de învățământ n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "9602",
           "rev": "rev2",
           "label": "Coafură și alte activități de înfrumusețare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "9604",
           "rev": "rev2",
           "label": "Activități de întreținere corporală",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "9609",
           "rev": "rev2",
           "label": "Alte activități de servicii n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         }
       ],
       "representatives": [],
       "euBranches": [],
+      "registry": {
+        "registry": {
+          "source": "onrc",
+          "state": "PUBLISHED",
+          "editionId": "41",
+          "sourceSnapshotId": "fixture-onrc-2026-07-18",
+          "sourcePublishedAt": "2026-07-18",
+          "interpretationVersion": "onrc-edition-v1",
+          "dimensionPolicyVersion": "onrc-dimensions-v1",
+          "eligibilityPolicyVersion": "public-legal-person-v1",
+          "publicationEpoch": "3",
+          "accessEpoch": "7",
+          "reason": null,
+          "scopeKey": "onrc:published:41:3:7"
+        },
+        "cuiState": "IN_EDITION",
+        "profile": {
+          "identityObservations": 1,
+          "identifierCount": 1,
+          "unresolvedIdentifierCount": 0,
+          "unidentifiedObservations": 0,
+          "name": {
+            "value": "A & B IDEATICA S.R.L.",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "legalForm": {
+            "value": "SRL",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "recordedDate": {
+            "value": "2022-12-29",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "countyCode": {
+            "value": "CJ",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "countyName": "Cluj",
+          "uatSirutaCode": {
+            "value": "54975",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "uatName": "Municipiul Cluj-Napoca",
+          "statusCode": {
+            "value": "1048",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "caenCoverage": "COMPLETE",
+          "statusCoverage": "COMPLETE"
+        },
+        "identifiers": [
+          {
+            "id": "41:J12/7541/2022",
+            "identifierKey": "J12/7541/2022",
+            "identityRowCount": 1,
+            "statusCodes": [
+              "1048"
+            ],
+            "hasActiveObservation": true,
+            "countyCodes": [
+              "CJ"
+            ],
+            "countyBasis": "single_observation",
+            "caenObservations": 62,
+            "unknownRevisionCaenObservations": 0
+          }
+        ],
+        "identityObservations": [
+          {
+            "id": "41:OD_FIRME:2000001",
+            "identifierKey": "J12/7541/2022",
+            "name": "A & B IDEATICA S.R.L.",
+            "legalForm": "SRL",
+            "recordedDate": "2022-12-29",
+            "recordedDateState": "date",
+            "countyCode": "CJ",
+            "provenance": {
+              "resourceKey": "OD_FIRME",
+              "sourceRowNumber": 2000001,
+              "sourceRowSha256": "a2f69fa7d03d831559d62a13e83e5340e2aa72bd326acdc5df8897858dc85d11",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          }
+        ],
+        "caenObservations": [
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000001",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "1399",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Fabricarea altor articole textile n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000001,
+              "sourceRowSha256": "39cfb0e2da7d3de5a4d9f772765904cc3ba29a119cbaf6ba55b549f3d26da451",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000002",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "1812",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități de tipărire n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000002,
+              "sourceRowSha256": "67443a61ef1e5e6b7e11dc2b9275a7444e033f779cefa8d4c19ebfd154d27c80",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000003",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "1813",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Servicii pregătitoare pentru pretipărire",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000003,
+              "sourceRowSha256": "293d05cbf850ce4e61e5ea3e68c9a1778fc049e6866fb3c5a539e732def552c1",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000004",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "1814",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Legătorie și servicii conexe",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000004,
+              "sourceRowSha256": "3452d3c9c285a7c4c6a6d21498cfbddfc114ba36dd71880109aa2abdfb216269",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000005",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "3299",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Fabricarea altor produse manufacturiere n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000005,
+              "sourceRowSha256": "d62858aaf274ae0bbc07af83fce452b2113a107f96bdb35f393af98710475929",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000006",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4311",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de demolare a construcțiilor",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000006,
+              "sourceRowSha256": "29abd615b175f7f1d909d7bfecc59d490788947cd26351cef12a5923c5b251a6",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000007",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4312",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de pregătire a terenului",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000007,
+              "sourceRowSha256": "c92f39481f710f00f41185e70c03d4a1d085f5f6cbac106e41ea686dd5a101dd",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000008",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4322",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de instalații sanitare, de încălzire și de aer condiționat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000008,
+              "sourceRowSha256": "dbf5d9dd5acabed369a834dfab9297824360a0d116cf369b98a160a478c0092a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000009",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4329",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte lucrări de instalații pentru construcții",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000009,
+              "sourceRowSha256": "d1397d421d3e19791af4c5874dce54bf530ece1ee1152b1c64805beb31ee962b",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000010",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4331",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de ipsoserie",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000010,
+              "sourceRowSha256": "7d053f122bd4f5058e2ea14141b71001f33d0e6457db51f601a2fb6f1feb0f1e",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000011",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4332",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de tâmplărie și dulgherie",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000011,
+              "sourceRowSha256": "d348bcb99bfd662e837bb6c2493835fc329d5999d881a09f7bfcaa3d5d0f1646",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000012",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4333",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de pardosire și placare a pereților",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000012,
+              "sourceRowSha256": "d6587dd3e6d7688aa58fdc71d379c8b59b74c7cec2176b96e8fc3fec98b46b32",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000013",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4334",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de vopsitorie, zugrăveli și montări de geamuri",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000013,
+              "sourceRowSha256": "dadc0dd5d62b82ab6019a07563a89b7fc2d95a41992503fc00af5fccd07004bd",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000014",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4339",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte lucrări de finisare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000014,
+              "sourceRowSha256": "b80d24518df6be068fa0405f6ae2d4e9204d3b7b6bb15bb78bdc33606d0ff27a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000015",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4399",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte lucrări speciale de construcții n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000015,
+              "sourceRowSha256": "dc58c0eab489aeb19fabecd8d25d71b3217cdc41e3cd23ef0732ea5ad4f1c9ec",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000016",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4520",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Întreținerea și repararea autovehiculelor",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000016,
+              "sourceRowSha256": "5a28f33ab4dfa8f160dc3683069eeaff6928e6ada3d643e4910b2eb90a4bbcb1",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000017",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4690",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu ridicata nespecializat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000017,
+              "sourceRowSha256": "bb0a493cae5b7456cfc43357da99f8485da1d5763a21b7ee1a5c3d8ae5900fd3",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000018",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4781",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu amănuntul al produselor alimentare, băuturilor și produselor din tutun efectuat prin standuri, chioșcuri și piețe",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000018,
+              "sourceRowSha256": "2dcf0ef2e1e147f1356f49c0239036f3c1c34f18cca89372c89e2f94f2761b3f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000019",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4782",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu amănuntul al textilelor, îmbrăcămintei și încălțămintei efectuat prin standuri, chioșcuri și piețe",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000019,
+              "sourceRowSha256": "ee5b87f1de3bb7ac3a1512a78305751a552eed9873ae5985892ed959d6a3cc80",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000020",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4791",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000020,
+              "sourceRowSha256": "09da81948d025fba0881ff4b2520a70b7f02d13541099f2447b76119e03c5f9f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000021",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4799",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu amănuntul efectuat în afara  magazinelor, standurilor, chioșcurilor și piețelor",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000021,
+              "sourceRowSha256": "cd25554e29ab18389f4bb029621121a43828ed190a7f32846b3c5afb339ef02b",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000022",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4932",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Transporturi cu taxiuri",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000022,
+              "sourceRowSha256": "495b75bd2d36b0dc53d03b76d6d2802a0570ca0a93f956187d949f9b903c9d8a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000023",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4939",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte transporturi terestre de călători n.c.a",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000023,
+              "sourceRowSha256": "c3ecbf343989c62af229b3fcb586970ac1f2d677ac2ce51b6912edf797069387",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000024",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4941",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Transporturi rutiere de mărfuri",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000024,
+              "sourceRowSha256": "98b3346e23cdd5861edf771067331466dbcbb2e45e1b06adaf78f95f66b1050a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000025",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "4942",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Servicii de mutare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000025,
+              "sourceRowSha256": "8229abbcd21a82eccd01a7acc8f3051d75241df04bae2b12550066d29e4f3ee6",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000026",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "5221",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de servicii anexe pentru transporturi terestre",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000026,
+              "sourceRowSha256": "2f1f468e26f9306f98b0bd757978eeb1237855c597e5f1ed603d22944f74faae",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000027",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "5320",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități poștale și de curier",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000027,
+              "sourceRowSha256": "fe970072f34cee966548f175f8d1da9e77ada1852e28210dd015f430fc6ac994",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000028",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "5610",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Restaurante",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000028,
+              "sourceRowSha256": "364da7a7895a172947be572a99dfebbba78ff3d46d158a92366c4b04331cadfb",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000029",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "5819",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități de editare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000029,
+              "sourceRowSha256": "1fdc723bbe87c4ca5b542dd624ea66c1913e4c12a0fef1be60646caab19bd96e",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000030",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6201",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de realizare a soft-ului la comandă (software orientat client)",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000030,
+              "sourceRowSha256": "807444267959984440d88e029b3ec0454d457db1365e9aabada955efa85ba26a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000031",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6202",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de consultanță în tehnologia informației",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000031,
+              "sourceRowSha256": "8b5136b22087b22eb81881bf054a7a97f12d732fd9c91ca9673d77344f794681",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000032",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6311",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Prelucrarea datelor, administrarea paginilor web și activități conexe",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000032,
+              "sourceRowSha256": "a416524a48f69630a3143b2116cdfb85142c88bf50e0a36921c61a3e45dc4ce2",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000033",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6312",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități ale portalurilor web",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000033,
+              "sourceRowSha256": "f9d3467832a63b2aea4dd4c9c760303c08bb44a9fea60363c44e4f677abb4469",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000034",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6399",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități de servicii informaționale n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000034,
+              "sourceRowSha256": "81a2dede2c0372294f86ab464586ab734f6825b8edc64870f00d70cba2a4712d",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000035",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6810",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Cumpărarea și vânzarea de bunuri imobiliare proprii",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000035,
+              "sourceRowSha256": "4578a8781519b6cf3372b4838ee4b674d4ec248dbfe19e4007f817c838b47991",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000036",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6820",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Închirierea și subînchirierea bunurilor imobiliare proprii sau închiriate",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000036,
+              "sourceRowSha256": "4cbf63a7682846768e95561e61a18640be1ff4bf7e17561fde4f43748027be65",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000037",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6831",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Agenții imobiliare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000037,
+              "sourceRowSha256": "7def9ae6a182a5ca22c50f8c04382eceedba691698823763b03728cfe6f8dedc",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000038",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "6832",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Administrarea imobilelor pe bază de comision sau contract",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000038,
+              "sourceRowSha256": "f18bede60e824897f83d4de8c02c32488408e618b3b42062c5b4d05b86ef26d6",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000039",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7022",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de consultanță pentru afaceri și management",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000039,
+              "sourceRowSha256": "c4356d7c1b99e84930d2bbb03e1d8e2899c485a9131865f301adef627044c450",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000040",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7120",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de testări și analize tehnice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000040,
+              "sourceRowSha256": "73212e0f2a01a2f9df3201742e2316848e2f33596324606f9d0708fd73782b14",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000041",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7311",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități ale agențiilor de publicitate",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000041,
+              "sourceRowSha256": "a1f901037257ff58260a7e59010df4f9219e1f5c678e2567923c97ac07ddb7cd",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000042",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7320",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de studiere a pieței și de sondare a opiniei publice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000042,
+              "sourceRowSha256": "c2709e387ab5baf42926dec03b74cfd302eb05ef95daa94c15ca64d12efa2e6f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000043",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7410",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de design specializat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000043,
+              "sourceRowSha256": "5e9c71fff3f83657e7b7ee7bd3a659b75490207b74668f1f1d8aa769361e5b60",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000044",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7420",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități fotografice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000044,
+              "sourceRowSha256": "957ea06664c8493fc5ec6687847e7eca56d7b94fdc24bdf752446611aac309d7",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000045",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7490",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități profesionale, științifice și tehnice n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000045,
+              "sourceRowSha256": "71a209cda0c3b5fcdf080d5b4788e14f79ad61bff10e4b48d260f508cff5cb11",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000046",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7711",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de închiriere și leasing cu autoturisme și autovehicule rutiere ușoare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000046,
+              "sourceRowSha256": "6e263f424faba4e697c9e08f1b27633c3416f7ef811b75123ef096375439034f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000047",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7830",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Servicii de furnizare și management a forței de muncă",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000047,
+              "sourceRowSha256": "7432e269e36f2f4da8b2c79c74869a75672f59fac6b1d157583719e575921054",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000048",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7911",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități ale agențiilor turistice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000048,
+              "sourceRowSha256": "fc5ebd6c8db3bf9b9e28b1b925f604b755cb8b3b2abab421b2a19a8ea7c1f132",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000049",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "7990",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte servicii de rezervare și asistență turistică",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000049,
+              "sourceRowSha256": "0b5b5250692c1ee5b85e0e95fb2352f42e64ff40a2ae6f00ebfc2ce50980ebe6",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000050",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8121",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități generale de curățenie a clădirilor",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000050,
+              "sourceRowSha256": "983cf31e697d81985d78787b08a7c9df5b826040fb0840929690d1952a26c9a7",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000051",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8122",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități specializate de curățenie",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000051,
+              "sourceRowSha256": "62fee2f786406d14d03e7bffe9744de32245b2e068d616b3d7e38e4aa8500182",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000052",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8129",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități de curățenie",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000052,
+              "sourceRowSha256": "fb030aae00dc944ce5d4db378f98b361d67ceabec14aae585911f74361dd3da2",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000053",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8130",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de întreținere peisagistică",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000053,
+              "sourceRowSha256": "4806a13f2ab004283099ac03c1ecf8f9ca4014576a49105ba33e2c2965dbf4cc",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000054",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8211",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități combinate de secretariat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000054,
+              "sourceRowSha256": "0d11bf608b4627ae616d958c4434223f47bd15eb0ab3b398607622f28fb91572",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000055",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8219",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de fotocopiere, de pregătire a documentelor și alte activități specializate de secretariat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000055,
+              "sourceRowSha256": "cd25e3c4141921e6b66e872a9b5e7f25beb70a6c9c2da649097361b3cb63423d",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000056",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8292",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de ambalare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000056,
+              "sourceRowSha256": "02ca76605c7adf98e668b800145903ed0f922113f43c2fb1cc0581e91a53907e",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000057",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8299",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități de servicii suport pentru întreprinderi n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000057,
+              "sourceRowSha256": "368160ee5cf5aa8ff050202743b3ebbc3a024c8fd5d8b831f89e112b50a4a10b",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000058",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8551",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Învățământ în domeniul sportiv și recreațional",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000058,
+              "sourceRowSha256": "af8013a8ed1f5a066ebbaf48e0f740b7aa5c383c5fe059796f6df4677fc61a99",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000059",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "8559",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte forme de învățământ n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000059,
+              "sourceRowSha256": "930ec49631da58d9e248674d23d0fd9dd8446e851fd0d0172bfb6102c1d6d06a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000060",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "9602",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Coafură și alte activități de înfrumusețare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000060,
+              "sourceRowSha256": "9b7725de522295d3deac1c3b9ad1e046cb299e50d13903e54be97187066cf5e1",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000061",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "9604",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de întreținere corporală",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000061,
+              "sourceRowSha256": "6c957c3a2840f42d32f479f34c37fdb8dd681b9ba3f6740e351f86b1f11f2b21",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:2000062",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "9609",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități de servicii n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 2000062,
+              "sourceRowSha256": "19ac8d2492b265b19fc09f9b27cb9a18e0161462b0c980f80a66faaf59374cb2",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          }
+        ],
+        "statusObservations": [
+          {
+            "id": "41:OD_STARE_FIRMA:2000001",
+            "identifierKey": "J12/7541/2022",
+            "parseState": "code",
+            "code": "1048",
+            "label": null,
+            "provenance": {
+              "resourceKey": "OD_STARE_FIRMA",
+              "sourceRowNumber": 2000001,
+              "sourceRowSha256": "40b9ed15e56522c2ae82c56d1e6ccae4391e84e37a5b737121ba7311a21b769e",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          }
+        ],
+        "observationsTruncated": false
+      },
       "publicMoney": null,
       "asOf": {
         "onrc": "2026-07-18",

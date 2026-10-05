@@ -4,24 +4,16 @@
       "cui": "23617561",
       "orgId": "1088776",
       "name": "ABC-CON-INTERNAŢIONAL SRL",
+      "nameSource": "ONRC_EDITION",
       "legalForm": "SRL",
       "codInmatriculare": "J07/226/2008",
       "registrationDate": "2008-03-31",
       "registrationDatePresent": true,
       "headlineStatus": {
         "code": "1107",
-        "label": "insolvență"
+        "label": "insolvență",
+        "labelSource": "API_NOMENCLATURE"
       },
-      "statusFlags": [
-        {
-          "code": "1107",
-          "label": "insolvență"
-        },
-        {
-          "code": "1139",
-          "label": "este sub incidența Legii nr. 85/2014"
-        }
-      ],
       "territory": {
         "sirutaCode": "35731",
         "uatName": "Municipiul Botoşani",
@@ -31,7 +23,7 @@
       "address": {
         "display": "",
         "county": "Botoşani",
-        "locality": "Municipiul Botoşani"
+        "locality": null
       },
       "fiscal": {
         "vatPayer": true,
@@ -46,227 +38,1127 @@
           "code": "1623",
           "rev": "rev2",
           "label": "Fabricarea altor elemente de dulgherie și tâmplărie, pentru construcții",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "2511",
           "rev": "rev2",
           "label": "Fabricarea de construcții metalice și părți componente ale structurilor metalice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4110",
           "rev": "rev2",
           "label": "Dezvoltare (promovare) imobiliară",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4120",
           "rev": null,
           "label": null,
-          "source": "anaf"
+          "source": "anaf",
+          "labelSource": null
         },
         {
           "code": "4120",
           "rev": "rev2",
           "label": "Lucrări de construcții a clădirilor rezidențiale și nerezidențiale",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4211",
           "rev": "rev2",
           "label": "Lucrări de construcții a drumurilor și autostrăzilor",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4212",
           "rev": "rev2",
           "label": "Lucrări de construcții a căilor ferate de suprafață  și subterane",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4213",
           "rev": "rev2",
           "label": "Construcția de poduri și tuneluri",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4221",
           "rev": "rev2",
           "label": "Lucrări de construcții a proiectelor utilitare pentru fluide",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4222",
           "rev": "rev2",
           "label": "Lucrări de construcții a proiectelor utilitare pentru electricitate și telecomunicații",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4291",
           "rev": "rev2",
           "label": "Construcții hidrotehnice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4299",
           "rev": "rev2",
           "label": "Lucrări de construcții a altor proiecte inginerești n.c.a",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4311",
           "rev": "rev2",
           "label": "Lucrări de demolare a construcțiilor",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4312",
           "rev": "rev2",
           "label": "Lucrări de pregătire a terenului",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4313",
           "rev": "rev2",
           "label": "Lucrări de foraj și sondaj pentru construcții",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4321",
           "rev": "rev2",
           "label": "Lucrări de instalații electrice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4322",
           "rev": "rev2",
           "label": "Lucrări de instalații sanitare, de încălzire și de aer condiționat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4329",
           "rev": "rev2",
           "label": "Alte lucrări de instalații pentru construcții",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4331",
           "rev": "rev2",
           "label": "Lucrări de ipsoserie",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4333",
           "rev": "rev2",
           "label": "Lucrări de pardosire și placare a pereților",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4334",
           "rev": "rev2",
           "label": "Lucrări de vopsitorie, zugrăveli și montări de geamuri",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4339",
           "rev": "rev2",
           "label": "Alte lucrări de finisare",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4391",
           "rev": "rev2",
           "label": "Lucrări de învelitori, șarpante și terase la construcții",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4399",
           "rev": "rev2",
           "label": "Alte lucrări speciale de construcții n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4647",
           "rev": "rev2",
           "label": "Comerț cu ridicata al mobilei, covoarelor și a articolelor de iluminat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4669",
           "rev": "rev2",
           "label": "Comerț cu ridicata al altor mașini și echipamente",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "4690",
           "rev": "rev2",
           "label": "Comerț cu ridicata nespecializat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "5210",
           "rev": "rev2",
           "label": "Depozitări",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "5224",
           "rev": "rev2",
           "label": "Manipulări",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7022",
           "rev": "rev2",
           "label": "Activități de consultanță pentru afaceri și management",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7112",
           "rev": "rev2",
           "label": "Activități de inginerie și consultanță tehnică legate de acestea",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7120",
           "rev": "rev2",
           "label": "Activități de testări și analize tehnice",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7490",
           "rev": "rev2",
           "label": "Alte activități profesionale, științifice și tehnice n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7820",
           "rev": "rev2",
           "label": "Activități de contractare, pe baze temporare, a personalului",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "7830",
           "rev": "rev2",
           "label": "Servicii de furnizare și management a forței de muncă",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8219",
           "rev": "rev2",
           "label": "Activități de fotocopiere, de pregătire a documentelor și alte activități specializate de secretariat",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         },
         {
           "code": "8559",
           "rev": "rev2",
           "label": "Alte forme de învățământ n.c.a.",
-          "source": "onrc"
+          "source": "onrc",
+          "labelSource": "current_db_catalog"
         }
       ],
       "representatives": [],
       "euBranches": [],
+      "registry": {
+        "registry": {
+          "source": "onrc",
+          "state": "PUBLISHED",
+          "editionId": "41",
+          "sourceSnapshotId": "fixture-onrc-2026-07-18",
+          "sourcePublishedAt": "2026-07-18",
+          "interpretationVersion": "onrc-edition-v1",
+          "dimensionPolicyVersion": "onrc-dimensions-v1",
+          "eligibilityPolicyVersion": "public-legal-person-v1",
+          "publicationEpoch": "3",
+          "accessEpoch": "7",
+          "reason": null,
+          "scopeKey": "onrc:published:41:3:7"
+        },
+        "cuiState": "IN_EDITION",
+        "profile": {
+          "identityObservations": 1,
+          "identifierCount": 1,
+          "unresolvedIdentifierCount": 0,
+          "unidentifiedObservations": 0,
+          "name": {
+            "value": "ABC-CON-INTERNAŢIONAL SRL",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "legalForm": {
+            "value": "SRL",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "recordedDate": {
+            "value": "2008-03-31",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "countyCode": {
+            "value": "BT",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "countyName": "Botoşani",
+          "uatSirutaCode": {
+            "value": "35731",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "uatName": "Municipiul Botoşani",
+          "statusCode": {
+            "value": "1107",
+            "basis": "SINGLE_OBSERVATION"
+          },
+          "caenCoverage": "COMPLETE",
+          "statusCoverage": "COMPLETE"
+        },
+        "identifiers": [
+          {
+            "id": "41:J07/226/2008",
+            "identifierKey": "J07/226/2008",
+            "identityRowCount": 1,
+            "statusCodes": [
+              "1107"
+            ],
+            "hasActiveObservation": false,
+            "countyCodes": [
+              "BT"
+            ],
+            "countyBasis": "single_observation",
+            "caenObservations": 36,
+            "unknownRevisionCaenObservations": 0
+          }
+        ],
+        "identityObservations": [
+          {
+            "id": "41:OD_FIRME:1000001",
+            "identifierKey": "J07/226/2008",
+            "name": "ABC-CON-INTERNAŢIONAL SRL",
+            "legalForm": "SRL",
+            "recordedDate": "2008-03-31",
+            "recordedDateState": "date",
+            "countyCode": "BT",
+            "provenance": {
+              "resourceKey": "OD_FIRME",
+              "sourceRowNumber": 1000001,
+              "sourceRowSha256": "f34b1b018b6d0267ca29a51b7e70479877cba71c70161969989c937fc87b0565",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          }
+        ],
+        "caenObservations": [
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000001",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "1623",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Fabricarea altor elemente de dulgherie și tâmplărie, pentru construcții",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000001,
+              "sourceRowSha256": "33fa8be353523ae9e269f873a9e85be2be1c976b641a82c2bd574327c0d7192a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000002",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "2511",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Fabricarea de construcții metalice și părți componente ale structurilor metalice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000002,
+              "sourceRowSha256": "dbac4ec71f407868f48c1e5c752e1299554019633f51a47a41ea2d955a65de77",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000003",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4110",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Dezvoltare (promovare) imobiliară",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000003,
+              "sourceRowSha256": "71ee01ac332668e1d91e28881b9e046a967a153595f45df1e87dc167b1f76cd2",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000004",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4120",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de construcții a clădirilor rezidențiale și nerezidențiale",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000004,
+              "sourceRowSha256": "17f87bce147471d3b881009503f5c4aa485bfb90b06955758f2f954f67826251",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000005",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4211",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de construcții a drumurilor și autostrăzilor",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000005,
+              "sourceRowSha256": "809699982c58b56c7e7ef8ee41afeb2506abfb16e0547a88d999b3f227f07649",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000006",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4212",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de construcții a căilor ferate de suprafață  și subterane",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000006,
+              "sourceRowSha256": "6c2945b0aa1c68772c16f815bc4526da86305bda09a4bad43ff957b1533b1fa2",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000007",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4213",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Construcția de poduri și tuneluri",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000007,
+              "sourceRowSha256": "8c1ea7b49f0c25133d147de40b820535ec25cad3ff924e62609affabe1aff7e7",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000008",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4221",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de construcții a proiectelor utilitare pentru fluide",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000008,
+              "sourceRowSha256": "45de073a98ac828e53a2f4b268a2b8dda84d13639c2ad015e3c1650eb9a5863a",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000009",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4222",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de construcții a proiectelor utilitare pentru electricitate și telecomunicații",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000009,
+              "sourceRowSha256": "696b5cc3007eb8fd8293a2034cd07335f04be3ec52d8d3486d8f042996036ea2",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000010",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4291",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Construcții hidrotehnice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000010,
+              "sourceRowSha256": "63ab44eab85627e3b4501c54a31bf01d74b3f06bf1f8a903560eda68938cae1f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000011",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4299",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de construcții a altor proiecte inginerești n.c.a",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000011,
+              "sourceRowSha256": "852ab0c8973063cc6f4e561d1f48fbc47e0d852378a8aa1d112fddbd06c87936",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000012",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4311",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de demolare a construcțiilor",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000012,
+              "sourceRowSha256": "751590eb4d9d61bc7493f35d5ca5c5bdf369cec183cfbb3a00d2bb6565ec8e96",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000013",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4312",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de pregătire a terenului",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000013,
+              "sourceRowSha256": "b576124e338b741b36656f68ce94c5d5d5476af71e49121922aa4f2715668150",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000014",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4313",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de foraj și sondaj pentru construcții",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000014,
+              "sourceRowSha256": "6cdf937e6e3a3ada2dc3b67c1fb600fde39d3c5a92191eee09e351a7fcc81a9d",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000015",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4321",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de instalații electrice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000015,
+              "sourceRowSha256": "68328b0b8b27e1ed801927cec6aa87fa372286b3279462f218aaa8766f1c8b32",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000016",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4322",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de instalații sanitare, de încălzire și de aer condiționat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000016,
+              "sourceRowSha256": "dae1747e1aa0ebfa77f44c14f8a847f636198bc9c0a29f499d2b5d8076783d50",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000017",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4329",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte lucrări de instalații pentru construcții",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000017,
+              "sourceRowSha256": "406c3340f9e0d6cb7e816e4df9ffb39735336f3a4e817083d5b9ef8d9d162f9c",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000018",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4331",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de ipsoserie",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000018,
+              "sourceRowSha256": "2efd1dc361ace7c3ff4705cd7f35bbd95589323b325af35d76da82d82ab620a9",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000019",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4333",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de pardosire și placare a pereților",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000019,
+              "sourceRowSha256": "640ba7d802baca050b2252e89cef18d4cb97d2a508f24aeaa3371c12f5ccc047",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000020",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4334",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de vopsitorie, zugrăveli și montări de geamuri",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000020,
+              "sourceRowSha256": "bfb993e32b501c181c691ab783cf8b15cfc04cf84a36db5ea6a99a9856b7fd1f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000021",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4339",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte lucrări de finisare",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000021,
+              "sourceRowSha256": "6efcc8311a4bc91742252330d5eba8b90647d2aa9fe8703ca6a6e514459afcef",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000022",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4391",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Lucrări de învelitori, șarpante și terase la construcții",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000022,
+              "sourceRowSha256": "419e6871423ddc1079658ca717ea89f08d8566919424754f5a46490a70b071d7",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000023",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4399",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte lucrări speciale de construcții n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000023,
+              "sourceRowSha256": "a6782a15c9c061b2fb5230d383e2a9e77748154bb0ab608154ca9d88200bae21",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000024",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4647",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu ridicata al mobilei, covoarelor și a articolelor de iluminat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000024,
+              "sourceRowSha256": "69e9e5539c6c5a01ebedbfc4ffcc2b81059c820481c9270b8bafd841c8025177",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000025",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4669",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu ridicata al altor mașini și echipamente",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000025,
+              "sourceRowSha256": "84101ed00ac47c7a2528bf4e90c74e63685a5a133e7c039dbae4b0042f9ae9ca",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000026",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "4690",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Comerț cu ridicata nespecializat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000026,
+              "sourceRowSha256": "a39e71df959d18a6adecdac6ad2f22d5ba2680b51e4a32365434fe38ca3106d3",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000027",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "5210",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Depozitări",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000027,
+              "sourceRowSha256": "d7806b42f2f5e30c86ba2b5776e15be04bf874b8652f39f7a9f71925ea75fc0d",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000028",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "5224",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Manipulări",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000028,
+              "sourceRowSha256": "5606804083ddfb29384df770ace3d3fbbffd5ce2b534e91eae40a7eb0fd21f7d",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000029",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "7022",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de consultanță pentru afaceri și management",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000029,
+              "sourceRowSha256": "31953bad785ef5ec032318b656e6b735d5470b9b7ae32425b73f9ef748cee8e3",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000030",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "7112",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de inginerie și consultanță tehnică legate de acestea",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000030,
+              "sourceRowSha256": "eb2f3525e1baa0f5473fde111a90817320c6fc445983404069e3b6b8ac061b7e",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000031",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "7120",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de testări și analize tehnice",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000031,
+              "sourceRowSha256": "631dad18bb538ce9a7d79769483211a76ecbe3ac36fbb94f294bd621090198df",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000032",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "7490",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte activități profesionale, științifice și tehnice n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000032,
+              "sourceRowSha256": "8da0b20d6faa3087cc2e60470ace11e37b8e86d7fd43fdcfa133ae55236a0fdf",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000033",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "7820",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de contractare, pe baze temporare, a personalului",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000033,
+              "sourceRowSha256": "d3287a87e866b0f7ccb7e8eadde22dd280c7556966ce5d6ac6a90894692dda15",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000034",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "7830",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Servicii de furnizare și management a forței de muncă",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000034,
+              "sourceRowSha256": "23656e37d37afb367e7a5dc1a0f57e09d64a7baf6409aa2b40f04ac9e69702c6",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000035",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "8219",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Activități de fotocopiere, de pregătire a documentelor și alte activități specializate de secretariat",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000035,
+              "sourceRowSha256": "eff66ea568e957ff9bb29bd179ca315ff1e48a0a2048cde73043ac5bc582c848",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          },
+          {
+            "id": "41:OD_CAEN_AUTORIZAT:1000036",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "8559",
+            "revisionState": "known",
+            "revision": "rev2",
+            "catalogLabel": {
+              "label": "Alte forme de învățământ n.c.a.",
+              "system": "caen_rev2",
+              "source": "current_db_catalog"
+            },
+            "provenance": {
+              "resourceKey": "OD_CAEN_AUTORIZAT",
+              "sourceRowNumber": 1000036,
+              "sourceRowSha256": "11ddf179fbd6d1a442013ad272781a2caffd9ad3094cea4cc7d0ecc30e42de3f",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          }
+        ],
+        "statusObservations": [
+          {
+            "id": "41:OD_STARE_FIRMA:1000001",
+            "identifierKey": "J07/226/2008",
+            "parseState": "code",
+            "code": "1107",
+            "label": null,
+            "provenance": {
+              "resourceKey": "OD_STARE_FIRMA",
+              "sourceRowNumber": 1000001,
+              "sourceRowSha256": "efe18287980ec8a979534980d4cb3aba168c203b07b34252476db5568a56deb0",
+              "sourceUrl": null,
+              "sourceFileSha256": null,
+              "sourcePublishedAt": "2026-07-18"
+            }
+          }
+        ],
+        "observationsTruncated": false
+      },
       "publicMoney": {
         "totalRon": "517828448.99",
         "flowCount": 99,
@@ -450,6 +1342,7 @@
       "years": [
         {
           "year": 2025,
+          "sourceSystem": "anaf",
           "turnover": "21735594",
           "netProfit": "0",
           "netLoss": "27758430",
@@ -474,10 +1367,117 @@
             "provisions": "0",
             "totalEquity": "-22562817",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "-27758430",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2024,
+          "sourceSystem": "anaf",
           "turnover": "47252195",
           "netProfit": "217879",
           "netLoss": "0",
@@ -502,10 +1502,117 @@
             "provisions": "0",
             "totalEquity": "6432607",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "217879",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2023,
+          "sourceSystem": "anaf",
           "turnover": "54913794",
           "netProfit": "3110283",
           "netLoss": "0",
@@ -530,10 +1637,117 @@
             "provisions": "0",
             "totalEquity": "5996918",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "3110283",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2022,
+          "sourceSystem": "anaf",
           "turnover": "42602634",
           "netProfit": "1699761",
           "netLoss": "0",
@@ -558,10 +1772,117 @@
             "provisions": "0",
             "totalEquity": "4604027",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "1699761",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2021,
+          "sourceSystem": "anaf",
           "turnover": "19378018",
           "netProfit": "1050059",
           "netLoss": "0",
@@ -586,10 +1907,117 @@
             "provisions": "0",
             "totalEquity": "2784465",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "1050059",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2020,
+          "sourceSystem": "anaf",
           "turnover": "26418461",
           "netProfit": "1615459",
           "netLoss": "0",
@@ -614,10 +2042,117 @@
             "provisions": "0",
             "totalEquity": "3134628",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "1615459",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2019,
+          "sourceSystem": "anaf",
           "turnover": "22664975",
           "netProfit": "694232",
           "netLoss": "0",
@@ -642,10 +2177,117 @@
             "provisions": "0",
             "totalEquity": "2247037",
             "patrimonyRegie": "0"
+          },
+          "source": {
+            "sourceSystem": "anaf",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "694232",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2018,
+          "sourceSystem": "mfp",
           "turnover": "14611113",
           "netProfit": "548594",
           "netLoss": "0",
@@ -670,10 +2312,117 @@
             "provisions": null,
             "totalEquity": "2094590",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "548594",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2017,
+          "sourceSystem": "mfp",
           "turnover": "12710969",
           "netProfit": "324782",
           "netLoss": "0",
@@ -698,10 +2447,117 @@
             "provisions": null,
             "totalEquity": "1564412",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "324782",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2016,
+          "sourceSystem": "mfp",
           "turnover": "11870088",
           "netProfit": "70582",
           "netLoss": "0",
@@ -726,10 +2582,117 @@
             "provisions": null,
             "totalEquity": "1424886",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "70582",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2015,
+          "sourceSystem": "mfp",
           "turnover": "6856440",
           "netProfit": "2994",
           "netLoss": "0",
@@ -754,10 +2717,117 @@
             "provisions": null,
             "totalEquity": "1033518",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "2994",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2014,
+          "sourceSystem": "mfp",
           "turnover": "8985962",
           "netProfit": "18717",
           "netLoss": "0",
@@ -782,10 +2852,117 @@
             "provisions": null,
             "totalEquity": "1030524",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "18717",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2013,
+          "sourceSystem": "mfp",
           "turnover": "5348411",
           "netProfit": "109400",
           "netLoss": "0",
@@ -810,10 +2987,117 @@
             "provisions": null,
             "totalEquity": "778891",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "109400",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2012,
+          "sourceSystem": "mfp",
           "turnover": "10746591",
           "netProfit": "128515",
           "netLoss": "0",
@@ -838,10 +3122,117 @@
             "provisions": null,
             "totalEquity": "669491",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "128515",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2011,
+          "sourceSystem": "mfp",
           "turnover": "8653374",
           "netProfit": "106519",
           "netLoss": "0",
@@ -866,10 +3257,117 @@
             "provisions": null,
             "totalEquity": "540976",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "106519",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2010,
+          "sourceSystem": "mfp",
           "turnover": "3246457",
           "netProfit": "51261",
           "netLoss": null,
@@ -894,10 +3392,117 @@
             "provisions": null,
             "totalEquity": "434457",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "MISSING"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "MISSING"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "51261",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2009,
+          "sourceSystem": "mfp",
           "turnover": "5233798",
           "netProfit": "53164",
           "netLoss": null,
@@ -922,10 +3527,117 @@
             "provisions": null,
             "totalEquity": "364028",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "MISSING"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "MISSING"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "53164",
+            "holdReason": null,
+            "holdDrift": []
           }
         },
         {
           "year": 2008,
+          "sourceSystem": "mfp",
           "turnover": "2434837",
           "netProfit": "309864",
           "netLoss": null,
@@ -950,6 +3662,112 @@
             "provisions": null,
             "totalEquity": "310864",
             "patrimonyRegie": null
+          },
+          "source": {
+            "sourceSystem": "mfp",
+            "url": null,
+            "urlKind": null,
+            "statementProfileHash": null,
+            "metricRuleVersion": "companies-profile-flow-synthetic-v1"
+          },
+          "qualification": {
+            "assessment": "ASSESSED",
+            "reason": null,
+            "releaseId": "fixture-1",
+            "policyVersion": "companies-profile-flow-synthetic-admission-v1",
+            "policySha256": "1da3f9138dc4cc2ec524b231dd6ddbf627728b237e3770c84e01ec54db5fcc8b",
+            "policyApprovedOn": "2026-10-02",
+            "evaluatorVersion": "sql-v1",
+            "metrics": [
+              {
+                "metric": "turnover",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "net_loss",
+                "status": "MISSING"
+              },
+              {
+                "metric": "employees",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_revenue",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "total_expenses",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_profit",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "gross_loss",
+                "status": "MISSING"
+              },
+              {
+                "metric": "receivables",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "current_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "fixed_assets",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "cash_and_bank",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "prepaid_expenses",
+                "status": "MISSING"
+              },
+              {
+                "metric": "deferred_income",
+                "status": "MISSING"
+              },
+              {
+                "metric": "subscribed_capital",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "inventories",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "debts",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "provisions",
+                "status": "MISSING"
+              },
+              {
+                "metric": "total_equity",
+                "status": "REPORTED"
+              },
+              {
+                "metric": "patrimony_regie",
+                "status": "MISSING"
+              },
+              {
+                "metric": "net_result",
+                "status": "REPORTED"
+              }
+            ],
+            "netResultStatus": "REPORTED",
+            "netResult": "309864",
+            "holdReason": null,
+            "holdDrift": []
           }
         }
       ],
@@ -958,7 +3776,10 @@
         "toYear": 2025,
         "turnoverDelta": "-25516601.00",
         "netResultDelta": "-27976309.00",
-        "employeesDelta": "-90"
+        "employeesDelta": "-90",
+        "turnoverDeltaReason": null,
+        "netResultDeltaReason": null,
+        "employeesDeltaReason": null
       }
     }
   }

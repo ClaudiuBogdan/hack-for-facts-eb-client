@@ -6,9 +6,14 @@
  *
  * The browser's GraphQL is mocked (fixtures under
  * tests/fixtures/companies-profile-flow/, read from the dev API on
- * 24 September 2026). The first render is the server's, which reads the
- * profile from `VITE_API_URL`, as on every server-rendered profile here; the
- * page's own query then reads the mocked one.
+ * 24 September 2026 and refreshed to the current contract with curated
+ * synthetic additions — registry evidence, statement qualification and
+ * source metadata — as that folder's README says). The first render is the
+ * server's, which reads the profile from `VITE_API_URL`, as on every
+ * server-rendered profile here; it stands only until the page's own registry
+ * read answers. The page then pins the mocked registry scope and shows the
+ * mocked profile under it, so every browser read the page makes is mocked:
+ * the registry, the profile, its registration diff and the SEAP slice.
  */
 
 import type { Page } from '@playwright/test'
@@ -19,9 +24,10 @@ import type { MockApiFixture } from '../utils/types'
 const ABC = '23617561'
 const IDEATICA = '47387800'
 
-/** The profile and the five reads behind the supplier slice, for one company. */
+/** The profile, its registration diff under the pinned scope and the five reads behind the supplier slice, for one company. */
 async function mockCompany(mockApi: MockApiFixture, name: 'abc' | 'ideatica', cui: string): Promise<void> {
   await mockApi.mockGraphQL('CompanyProfile', `${name}-profile`, { variables: { cui } })
+  await mockApi.mockGraphQL('CompanyRegistrationDiff', `${name}-registration-diff`, { variables: { cui } })
   await mockApi.mockGraphQL('ProcurementAggregates', `${name}-aggregates`, { variables: { scope: { supplierCui: cui } } })
   await mockApi.mockGraphQL('ProcurementSupplierRecords', `${name}-records`, { variables: { supplierCui: cui } })
   await mockApi.mockGraphQL('ProcurementPartyNames', `${name}-supplier-name`, { variables: { supplierCuis: [cui] } })
@@ -46,6 +52,8 @@ function recordOperations(page: Page): string[] {
 
 test.describe('Company profile', () => {
   test.beforeEach(async ({ mockApi }) => {
+    // The page's registry pin: one read, no variables, the scope every profile fixture answers under.
+    await mockApi.mockGraphQL('CompanyRegistry', 'company-registry')
     await mockCompany(mockApi, 'abc', ABC)
     await mockCompany(mockApi, 'ideatica', IDEATICA)
   })
