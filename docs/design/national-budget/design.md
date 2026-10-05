@@ -748,3 +748,139 @@ findings, all fixed before the commit:
   - the mock-era `analize` page no longer sums an opened line's rows into a
     total.
 
+## 9. The page in production (5 October 2026)
+
+The `avansat` prototype is now a real page at **`/national-budget/analytics`**,
+next to `/companies/analytics` and `/procurement/analytics`. The prototype
+stays in `src/development/` as the design record, ANAF tab included.
+
+### 9.1 Decisions
+
+- **Rendered on the server, with no loader.**
+  - The page's suspense reads run on the server and reach the browser through
+    the router's query integration (`setupRouterSsrQueryIntegration`). The
+    document carries every number of the view, and the browser doesn't read
+    them again. Checked on six views: no read after hydration, and every
+    server node kept by hydration (recoverable errors go to Sentry, not to the
+    console: a test watches the nodes, not the console).
+  - A failed server read sends the page's skeleton, and the browser reads the
+    view itself. The integration ends the streamed read with a rejected
+    promise, which the browser logs as an unhandled `Error: redacted`. That is
+    the integration's behaviour, not the page's.
+- **Never cached** (`no-store`, also for the CDN), as on the companies page. A
+  render whose read failed carries the error, and the snapshots move whenever
+  a bulletin or a law lands.
+- **Head:**
+  - the bare page is indexed under its canonical address;
+  - a question (any page key in the address) is `noindex, follow`.
+- **The ANAF „Plătit" tab is not in production.** It is another source with
+  another identity (CUI), read through the mock-era hub hooks as a snapshot.
+  The ministries population has one tab („Aprobat") until server ask 15
+  brings a live read.
+- **The breadcrumb is text** („Bugetul național / Analize avansate") until
+  the citizens' page has a route.
+- **An opened ministry has its own figures** (closing the open point in
+  §8.11):
+  - its approved total (row 5001);
+  - its share of the state budget, divided exactly;
+  - its rank among the principal authorising officers;
+  - its estimate for the next year, from the same law.
+  
+  All four are printed rows of one law, read through the ministries table's
+  own queries.
+- **Codes travel as numbers:** `rand=25`, not `rand="25"`. A code with a
+  leading zero stays text; the router writes it bare (`rand=0100`), since it
+  can't read as a number, and the zero survives.
+
+### 9.2 Code
+
+- `src/features/national-budget/analytics/`:
+  - `components/` holds the page, ported from `avansat.*`;
+  - `lib/analytics-{state,view,format}.ts` hold the address, the words and the
+    formats;
+  - `hooks/use-analytics-state.ts` is the router binding.
+- **Translations:** the names the page gives the bulletin's lines and the
+  law's chapters and titles are translated (`() => t\`…\``). A quarter's
+  column head is `T2 '26` in Romanian and `Q2 '26` in English. Both catalogs
+  are filled.
+- **Exact decimals:** `lib/exact.ts` now runs on the app's
+  `@/lib/exact-decimal`, with `exactText` in the reader's notation.
+  `thousandToLei` keeps its own decimal-point move, because `shiftDecimal`
+  only divides.
+- **Tests:**
+  - unit tests for the address (parse, write, the tab rule, codes);
+  - unit tests for the route (search validation, headers, head);
+  - a Playwright integration spec that holds the page to its structure and
+    its address, never to a number. In CI the server reads the dev API, and
+    the browser can't (the API answers no CORS preflight).
+
+### 9.3 Server ask added
+
+15. **The ministries' ANAF payments by year, in one live read** (extends asks
+    4 and 8). This is what the „Plătit" tab needs to come back. Asks 7
+    (authority code → CUI) and 13 (authority identity across editions) would
+    then let a ministry be followed from the law to its payments.
+
+### 9.4 The review before the commit (5 October 2026)
+
+Opus 5.5 (xhigh) and Codex `gpt-6.1-sol` (xhigh) reviewed the promotion.
+Fixed before the commit:
+
+- **An opened ministry's headline broke hydration.** Its name was a
+  non-suspense read, so the server wrote the code and the browser the name.
+  React then dropped the page's server render and drew it again.
+  - The console never said so: recoverable errors go to Sentry. So the
+    tests now check that the server's heading node survives hydration.
+  - The name is now a suspense read in its own boundary; while it reads, or
+    if it fails, the headline names the code.
+  - The law and the credit type it reads are deferred, so the name shown
+    stays until the new one is in.
+- **An address the page couldn't read broke the next control** (`tip=altceva`,
+  then a tab). The next address is now rebuilt from what the page read, so
+  an unreadable value leaves at the first change.
+- **Amounts on screen were rounded through floats.** `moneyText`,
+  `billionsText` and the figures now take the exact string and round on its
+  digits. A float rounds 2.049999999… bn up to 2,1.
+- **The schema's decimal forms** (`+12.5`, `.5`, `12.`) are normalised before
+  the shared library reads them, so a value the server vouches for is no
+  longer shown as a gap.
+- **The integration spec skips itself, with its reason,** where the API it
+  is given doesn't serve the national budget. That is the nightly run
+  against production, which has no `/api/v1/graphql`.
+- **Smaller fixes:**
+  - no clock in a render (the law year falls back to the bulletins' newest
+    year);
+  - the English time headline asks about the trend;
+  - the evidence's codes are translated;
+  - the alerts count has a plural;
+  - a law year's gap names its status in words;
+  - the unreachable „Ce cuprind" headlines are gone;
+  - the ministries table and its figures share one read.
+- **A second round** (the same two reviewers, on the fixes) found:
+  - the chart's bar labels were still rounded through floats; they now round
+    on the exact digits too;
+  - the headline's quiet error never cleared. Sentry's boundary renders its
+    fallback as a new component type each time, so the failed question is
+    kept by the boundary's owner, and a new question is read again;
+  - the spec's probe used schema introspection, which the deployed APIs
+    refuse; it now asks for the catalog and skips only on a missing endpoint
+    or field;
+  - the hydration test could pass by catching React's own replacement
+    heading; it now records only nodes React hasn't touched. It fails on a
+    forced server/browser mismatch, which was checked;
+  - a ministry the law prints no value for fell back to the overall figures;
+    the band now says its status, and the count and rank are the table's.
+- **Not fixed here, app-wide:** the server renders every page with one
+  shared Lingui instance, activated per request in the root's `beforeLoad`.
+  A render that resumes after an await (a loader, a suspense read) can find
+  another request's language. This page renders after its reads, so it is
+  as exposed as the loader pages. The fix is a per-request i18n instance at
+  the root.
+
+### 9.5 Open points
+
+- **No page links here yet.** The citizens' page (`hub`) is the front door
+  and has no route yet.
+- **Server ask 11 (component series)** would let the budgets view read
+  quarters and single months.
+

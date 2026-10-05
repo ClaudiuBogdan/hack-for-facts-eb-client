@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { exactChange, exactPercent, exactText, plotOf, thousandToLei } from './exact'
+import { canonicalDecimal, exactBillions, exactChange, exactCompact, exactPercent, exactRounded, exactText, plotOf, thousandToLei } from './exact'
 import { LINE_TREE, SECTION_ROOT, cutLines, opens, rankedTree, treeLines } from './lines'
 import { lastWholeQuarter, periodTypeOf, periodsBetween, quarterOf, shiftYears, toAnalyticsSeries } from './series'
 import fixture from './bgc-full-year.fixture.json'
@@ -15,13 +15,13 @@ describe('exact decimals', () => {
   })
 
   it('writes the exact digits in Romanian notation, rounding half up on the string', () => {
-    expect(exactText('310520639938.72993')).toBe('310.520.639.938,73')
-    expect(exactText('321131375868.97821165621280670166015625')).toBe('321.131.375.868,98')
-    expect(exactText('999.995')).toBe('1.000,00')
-    expect(exactText('-48300190426.7598874866962432861328125', 0)).toBe('−48.300.190.427')
-    expect(exactText('0')).toBe('0,00')
-    expect(exactText('-0.001')).toBe('0,00')
-    expect(exactText('167715883910', 0)).toBe('167.715.883.910')
+    expect(exactText('310520639938.72993', 2, 'ro')).toBe('310.520.639.938,73')
+    expect(exactText('321131375868.97821165621280670166015625', 2, 'ro')).toBe('321.131.375.868,98')
+    expect(exactText('999.995', 2, 'ro')).toBe('1.000,00')
+    expect(exactText('-48300190426.7598874866962432861328125', 0, 'ro')).toBe('−48.300.190.427')
+    expect(exactText('0', 2, 'ro')).toBe('0,00')
+    expect(exactText('-0.001', 2, 'ro')).toBe('0,00')
+    expect(exactText('167715883910', 0, 'ro')).toBe('167.715.883.910')
   })
 
   it('turns thousand lei into lei by moving the point, not by a float', () => {
@@ -30,6 +30,32 @@ describe('exact decimals', () => {
     expect(thousandToLei('0.0425')).toBe('42.5')
     expect(thousandToLei('-1352876')).toBe('-1352876000')
     expect(thousandToLei('0')).toBe('0')
+  })
+
+  it('reads every decimal form the API schema accepts', () => {
+    expect(canonicalDecimal('+12.5')).toBe('12.5')
+    expect(canonicalDecimal('.5')).toBe('0.5')
+    expect(canonicalDecimal('-.5')).toBe('-0.5')
+    expect(canonicalDecimal('12.')).toBe('12')
+    expect(canonicalDecimal('abc')).toBe('abc')
+    expect(plotOf('.5')).toBe(0.5)
+    expect(plotOf('+12.')).toBe(12)
+    expect(thousandToLei('.5')).toBe('500')
+    expect(exactText('+1234.5', 2, 'ro')).toBe('1.234,50')
+    expect(exactPercent('.5', '2.', 1)).toBe(25)
+  })
+
+  it('rounds a compact amount on its digits, never through a float', () => {
+    // As a float this is 2050000000, which would round up to 2,1 bn.
+    expect(exactCompact('2049999999.99999999', 'ro')).toEqual({ value: '2,0', scale: 'billion' })
+    expect(exactCompact('966900000', 'en')).toEqual({ value: '966.9', scale: 'million' })
+    expect(exactCompact('-1700000000', 'ro')).toEqual({ value: '−1,7', scale: 'billion' })
+    expect(exactCompact('8948.4', 'ro')).toEqual({ value: '8.948', scale: null })
+    expect(exactCompact('x', 'ro')).toBeNull()
+    expect(exactBillions('2049999999.99999999', 'ro')).toBe('2,0')
+    expect(exactBillions('-48300190426.76', 'en')).toBe('−48.3')
+    expect(exactRounded('2049999999.99999999', 9, 1)).toBe(2)
+    expect(exactRounded('146612345678', 9, 1)).toBe(146.6)
   })
 })
 

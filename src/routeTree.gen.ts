@@ -67,6 +67,7 @@ import { Route as LegislationChangesRouteImport } from './routes/legislation/cha
 import { Route as LegislationGazetteRouteImport } from './routes/legislation/gazette'
 import { Route as LegislationGuideRouteImport } from './routes/legislation/guide'
 import { Route as LegislationSearchRouteImport } from './routes/legislation/search'
+import { Route as NationalBudgetAnalyticsRouteImport } from './routes/national-budget.analytics'
 import { Route as NgosIndexRouteImport } from './routes/ngos/index'
 import { Route as NgosCuiRouteImport } from './routes/ngos.$cui'
 import { Route as ParlamentIndexRouteImport } from './routes/parlament/index'
@@ -526,6 +527,13 @@ const LegislationSearchRoute = LegislationSearchRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/legislation/search.lazy').then((d) => d.Route),
+)
+const NationalBudgetAnalyticsRoute = NationalBudgetAnalyticsRouteImport.update({
+  id: '/national-budget/analytics',
+  path: '/national-budget/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/national-budget.analytics.lazy').then((d) => d.Route),
 )
 const NgosIndexRoute = NgosIndexRouteImport.update({
   id: '/',
@@ -1495,6 +1503,7 @@ export interface FileRoutesByFullPath {
   '/legislation/gazette': typeof LegislationGazetteRoute
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
+  '/national-budget/analytics': typeof NationalBudgetAnalyticsRoute
   '/ngos/$cui': typeof NgosCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr/judete': typeof PnrrJudeteRoute
@@ -1667,6 +1676,7 @@ export interface FileRoutesByTo {
   '/legislation/gazette': typeof LegislationGazetteRoute
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
+  '/national-budget/analytics': typeof NationalBudgetAnalyticsRoute
   '/ngos/$cui': typeof NgosCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr/judete': typeof PnrrJudeteRoute
@@ -1846,6 +1856,7 @@ export interface FileRoutesById {
   '/legislation/gazette': typeof LegislationGazetteRoute
   '/legislation/guide': typeof LegislationGuideRoute
   '/legislation/search': typeof LegislationSearchRoute
+  '/national-budget/analytics': typeof NationalBudgetAnalyticsRoute
   '/ngos/$cui': typeof NgosCuiRoute
   '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/pnrr_/judete': typeof PnrrJudeteRoute
@@ -2031,6 +2042,7 @@ export interface FileRouteTypes {
     | '/legislation/gazette'
     | '/legislation/guide'
     | '/legislation/search'
+    | '/national-budget/analytics'
     | '/ngos/$cui'
     | '/pnrr/share-image.png'
     | '/pnrr/judete'
@@ -2203,6 +2215,7 @@ export interface FileRouteTypes {
     | '/legislation/gazette'
     | '/legislation/guide'
     | '/legislation/search'
+    | '/national-budget/analytics'
     | '/ngos/$cui'
     | '/pnrr/share-image.png'
     | '/pnrr/judete'
@@ -2381,6 +2394,7 @@ export interface FileRouteTypes {
     | '/legislation/gazette'
     | '/legislation/guide'
     | '/legislation/search'
+    | '/national-budget/analytics'
     | '/ngos/$cui'
     | '/pnrr/share-image.png'
     | '/pnrr_/judete'
@@ -2558,6 +2572,7 @@ export interface RootRouteChildren {
   LegislationGazetteRoute: typeof LegislationGazetteRoute
   LegislationGuideRoute: typeof LegislationGuideRoute
   LegislationSearchRoute: typeof LegislationSearchRoute
+  NationalBudgetAnalyticsRoute: typeof NationalBudgetAnalyticsRoute
   PnrrJudeteRoute: typeof PnrrJudeteRoute
   PnrrOrganizatiiRoute: typeof PnrrOrganizatiiRoute
   PnrrProiecteRoute: typeof PnrrProiecteRoute
@@ -3030,6 +3045,13 @@ declare module '@tanstack/react-router' {
       path: '/legislation/search'
       fullPath: '/legislation/search'
       preLoaderRoute: typeof LegislationSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national-budget/analytics': {
+      id: '/national-budget/analytics'
+      path: '/national-budget/analytics'
+      fullPath: '/national-budget/analytics'
+      preLoaderRoute: typeof NationalBudgetAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ngos/': {
@@ -4341,6 +4363,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegislationGazetteRoute: LegislationGazetteRoute,
   LegislationGuideRoute: LegislationGuideRoute,
   LegislationSearchRoute: LegislationSearchRoute,
+  NationalBudgetAnalyticsRoute: NationalBudgetAnalyticsRoute,
   PnrrJudeteRoute: PnrrJudeteRoute,
   PnrrOrganizatiiRoute: PnrrOrganizatiiRoute,
   PnrrProiecteRoute: PnrrProiecteRoute,
