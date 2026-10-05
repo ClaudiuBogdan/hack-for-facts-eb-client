@@ -1,0 +1,3942 @@
+{
+ "kind": "real_api_snapshot",
+ "source": "ANAF, execuția bugetară raportată de ordonatorii principali (budget sector 1, funding source 1, PRINCIPAL_AGGREGATED, ch)",
+ "api": "https://dev-chronos-api.transparenta.eu/api/v1/graphql",
+ "fetchedAt": "2026-10-02T15:33:06.247Z",
+ "lastMonth": "2026-08",
+ "lastCompleteYear": 2025,
+ "years": [
+  {
+   "year": 2016,
+   "lei": "130083137779.97",
+   "throughMonth": "2016-12",
+   "lines": 2742
+  },
+  {
+   "year": 2017,
+   "lei": "144418741944.60",
+   "throughMonth": "2017-12",
+   "lines": 2832
+  },
+  {
+   "year": 2018,
+   "lei": "174674158678.94",
+   "throughMonth": "2018-12",
+   "lines": 3103
+  },
+  {
+   "year": 2019,
+   "lei": "200556575337.68",
+   "throughMonth": "2019-12",
+   "lines": 3092
+  },
+  {
+   "year": 2020,
+   "lei": "246929902026.80",
+   "throughMonth": "2020-12",
+   "lines": 3140
+  },
+  {
+   "year": 2021,
+   "lei": "264230715997.05",
+   "throughMonth": "2021-12",
+   "lines": 3096
+  },
+  {
+   "year": 2022,
+   "lei": "315367379385.78",
+   "throughMonth": "2022-12",
+   "lines": 3165
+  },
+  {
+   "year": 2023,
+   "lei": "345681766774.83",
+   "throughMonth": "2023-12",
+   "lines": 3291
+  },
+  {
+   "year": 2024,
+   "lei": "435196330555.20",
+   "throughMonth": "2024-12",
+   "lines": 3186
+  },
+  {
+   "year": 2025,
+   "lei": "499435115870.93",
+   "throughMonth": "2025-12",
+   "lines": 3159
+  },
+  {
+   "year": 2026,
+   "lei": "312785679589.57",
+   "throughMonth": "2026-08",
+   "lines": 2897
+  }
+ ],
+ "authorities": {
+  "2016": {
+   "throughMonth": "2016-12",
+   "totalCount": 56,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "35290767597.65"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "20168604521.05"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "11344304299.79"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "10582923145.49"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "8575476921.37"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "6945509311.72"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "6352808901.77"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "6066876871.00"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "5855130316.02"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "3938555549.58"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "3016546844.50"
+    },
+    {
+     "cui": "20897750",
+     "name": "MINISTERUL FONDURILOR EUROPENE",
+     "type": "central_authority",
+     "lei": "2001853790.12"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "1871543065.85"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "916049841.85"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "872861005.19"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "762156237.17"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "629966230.32"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "588432342.60"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "491312212.46"
+    },
+    {
+     "cui": "33933936",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "438086353.30"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "402007944.47"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "315375017.62"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "294876776.46"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "293158432.03"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "274312862.14"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "242611623.23"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "237448589.30"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "192841581.10"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "171961495.85"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "146292657.04"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "129187546.75"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "124684792.81"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "100007439.23"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "81981822.16"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "48238411.30"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "46165487.67"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "34468033.84"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "29308941.82"
+    },
+    {
+     "cui": "4220947",
+     "name": "MINISTERUL COMUNICATIILOR SI SOCIETATII INFORMATIONALE",
+     "type": "central_authority",
+     "lei": "26433341.87"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "19292982.15"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "18208196.79"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "18114341.31"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "18074780.43"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "15366506.68"
+    },
+    {
+     "cui": "11806010",
+     "name": "OFICIUL NATIONAL DE PREVENIRE SI COMBATERE A SPALARII BANILOR",
+     "type": "public_entity",
+     "lei": "13936448.32"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "13819191.40"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "11074155.73"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "9976832.73"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "9547959.33"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "8528786.65"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "7161286.66"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "5011331.16"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "4765628.12"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "4652860.72"
+    },
+    {
+     "cui": "35264919",
+     "name": "MINISTERUL PENTRU CONSULTARE PUBLICA SI DIALOG CIVIC",
+     "type": "central_authority",
+     "lei": "2433733.19"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "2044603.11"
+    }
+   ]
+  },
+  "2017": {
+   "throughMonth": "2017-12",
+   "totalCount": 62,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "36447474985.71"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "19626552001.06"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "16540860667.14"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "14655098312.52"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "12421793759.94"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "8197900358.43"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "6770707313.10"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "4901091714.86"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "3932511812.17"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "3713323490.66"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "3572976636.99"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "2031078669.21"
+    },
+    {
+     "cui": "36904048",
+     "name": "MINISTERUL CERCETARII SI INOVARII",
+     "type": "central_authority",
+     "lei": "1387596946.53"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1209445556.27"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "1022226537.28"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "952804231.37"
+    },
+    {
+     "cui": "36904021",
+     "name": "MINISTERUL PENTRU MEDIUL DE AFACERI COMERT SI ANTREPRENORIAT",
+     "type": "central_authority",
+     "lei": "817654162.83"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "716509379.07"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "642341250.10"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "608748157.08"
+    },
+    {
+     "cui": "33933936",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "376513700.41"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "332277778.46"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "324548225.63"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "322016765.41"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "304474500.74"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "270995441.31"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "270103735.11"
+    },
+    {
+     "cui": "36904099",
+     "name": "MINISTERUL APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "256508570.53"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "253861542.30"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "243882558.60"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "161693261.65"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "161248011.11"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "146798663.10"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "132475393.89"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "119652850.36"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "116592093.42"
+    },
+    {
+     "cui": "4220947",
+     "name": "MINISTERUL COMUNICATIILOR SI SOCIETATII INFORMATIONALE",
+     "type": "central_authority",
+     "lei": "50152991.47"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "46096713.13"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "44311033.95"
+    },
+    {
+     "cui": "36904080",
+     "name": "MINISTERUL TURISMULUI",
+     "type": "central_authority",
+     "lei": "38131869.43"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "30594048.20"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "30520511.20"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "21412066.83"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "20644960.10"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "18674461.39"
+    },
+    {
+     "cui": "36904072",
+     "name": "Ministerul pentru Romanii de Pretutindeni",
+     "type": "central_authority",
+     "lei": "16728427.00"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "16557418.83"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "15559330.10"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "14207754.09"
+    },
+    {
+     "cui": "11806010",
+     "name": "OFICIUL NATIONAL DE PREVENIRE SI COMBATERE A SPALARII BANILOR",
+     "type": "public_entity",
+     "lei": "13342419.65"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "11060846.16"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "9727493.29"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "9372724.30"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "8952703.20"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "8267302.66"
+    },
+    {
+     "cui": "36904056",
+     "name": "MINISTERUL PENTRU RELATIA CU PARLAMENTUL",
+     "type": "central_authority",
+     "lei": "6823124.84"
+    },
+    {
+     "cui": "36903964",
+     "name": "MINISTERUL CONSULTARII PUBLICE SI DIALOGULUI SOCIAL",
+     "type": "central_authority",
+     "lei": "6340802.36"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "5916344.36"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "5423617.47"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "4267245.14"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "2291601.89"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "1025099.21"
+    }
+   ]
+  },
+  "2018": {
+   "throughMonth": "2018-12",
+   "totalCount": 62,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "29794564231.16"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "26384996890.99"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "21011262419.97"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "19778477122.32"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "17007245982.45"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "15199486486.55"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "7526035747.19"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "7495459115.85"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "5352467453.85"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "4925123170.62"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "4000160172.04"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "2331994753.75"
+    },
+    {
+     "cui": "36904048",
+     "name": "MINISTERUL CERCETARII SI INOVARII",
+     "type": "central_authority",
+     "lei": "1410919030.29"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "1351902798.20"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1246521414.40"
+    },
+    {
+     "cui": "36904021",
+     "name": "MINISTERUL PENTRU MEDIUL DE AFACERI COMERT SI ANTREPRENORIAT",
+     "type": "central_authority",
+     "lei": "919637308.42"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "867015243.07"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "823618721.34"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "802778514.04"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "740159143.56"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "406643370.31"
+    },
+    {
+     "cui": "36904099",
+     "name": "MINISTERUL APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "405575672.87"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "403275300.19"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "368711477.66"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "363026615.11"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "356517207.84"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "336794484.91"
+    },
+    {
+     "cui": "4220947",
+     "name": "MINISTERUL COMUNICATIILOR SI SOCIETATII INFORMATIONALE",
+     "type": "central_authority",
+     "lei": "327496650.48"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "312143491.72"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "292712131.44"
+    },
+    {
+     "cui": "33933936",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "287375099.29"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "285330402.34"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "235971665.40"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "221087570.00"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "193597268.87"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "192129575.91"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "148663550.57"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "132224829.75"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "53287645.61"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "53249011.37"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "41090495.32"
+    },
+    {
+     "cui": "36904080",
+     "name": "MINISTERUL TURISMULUI",
+     "type": "central_authority",
+     "lei": "36781192.38"
+    },
+    {
+     "cui": "36904072",
+     "name": "Ministerul pentru Romanii de Pretutindeni",
+     "type": "central_authority",
+     "lei": "24726727.87"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "23048574.33"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "19893346.94"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "19506874.82"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "17877836.74"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "17034908.45"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "16875716.75"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "14580492.14"
+    },
+    {
+     "cui": "11806010",
+     "name": "OFICIUL NATIONAL DE PREVENIRE SI COMBATERE A SPALARII BANILOR",
+     "type": "public_entity",
+     "lei": "14421178.79"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "11704490.09"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "10888642.98"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "10144882.56"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "9937117.30"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "9890233.98"
+    },
+    {
+     "cui": "36904056",
+     "name": "MINISTERUL PENTRU RELATIA CU PARLAMENTUL",
+     "type": "central_authority",
+     "lei": "7342698.01"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "6743688.30"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "6438631.84"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "4601898.24"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "2863227.31"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "2127082.10"
+    }
+   ]
+  },
+  "2019": {
+   "throughMonth": "2019-12",
+   "totalCount": 63,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "31601302612.14"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "27335872382.16"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "22503430116.30"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "20758960618.74"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "17654366979.76"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "16900608581.93"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "14594286393.42"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "10979991134.95"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "8714600150.03"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "5730353663.45"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "4567629232.82"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "2411286759.10"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "2319787687.82"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "1602566452.44"
+    },
+    {
+     "cui": "36904048",
+     "name": "MINISTERUL CERCETARII SI INOVARII",
+     "type": "central_authority",
+     "lei": "1429923801.64"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1381664985.09"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1137005314.59"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "787037191.00"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "752578286.91"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "703459721.39"
+    },
+    {
+     "cui": "36904021",
+     "name": "MINISTERUL PENTRU MEDIUL DE AFACERI COMERT SI ANTREPRENORIAT",
+     "type": "central_authority",
+     "lei": "611674732.20"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "593459213.48"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "550183449.94"
+    },
+    {
+     "cui": "36904099",
+     "name": "MINISTERUL APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "471524083.29"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "434261719.11"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "382383109.03"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "381331969.66"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "364965834.79"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "355020584.05"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "344843005.95"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "330305253.32"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "319997160.05"
+    },
+    {
+     "cui": "33933936",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "226614687.88"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "222550858.12"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "205264294.13"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "149753514.37"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "131809710.08"
+    },
+    {
+     "cui": "4220947",
+     "name": "MINISTERUL COMUNICATIILOR SI SOCIETATII INFORMATIONALE",
+     "type": "central_authority",
+     "lei": "68579628.04"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "63684199.68"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "63570538.32"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "49761685.10"
+    },
+    {
+     "cui": "30246121",
+     "name": "INSPECTIA JUDICIARA",
+     "type": "public_entity",
+     "lei": "42472629.58"
+    },
+    {
+     "cui": "36904080",
+     "name": "MINISTERUL TURISMULUI",
+     "type": "central_authority",
+     "lei": "38388041.59"
+    },
+    {
+     "cui": "36904072",
+     "name": "Ministerul pentru Romanii de Pretutindeni",
+     "type": "central_authority",
+     "lei": "27577694.58"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "26405977.41"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "23688807.25"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "22243986.08"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "20180924.64"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "19986156.94"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "19598070.32"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "19219698.80"
+    },
+    {
+     "cui": "11806010",
+     "name": "OFICIUL NATIONAL DE PREVENIRE SI COMBATERE A SPALARII BANILOR",
+     "type": "public_entity",
+     "lei": "14992985.19"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "13552852.76"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "12891173.08"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "11291595.18"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "10649184.55"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "10363748.79"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "8405906.93"
+    },
+    {
+     "cui": "36904056",
+     "name": "MINISTERUL PENTRU RELATIA CU PARLAMENTUL",
+     "type": "central_authority",
+     "lei": "7818069.66"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "7491114.50"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "5088909.28"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "3259033.05"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "2757481.25"
+    }
+   ]
+  },
+  "2020": {
+   "throughMonth": "2020-12",
+   "totalCount": 53,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "48807413915.71"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "33636155994.87"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "29596392814.04"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "23246093090.27"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "20554339504.87"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "19547484258.77"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "19386940158.17"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "12912247438.44"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "8854505582.99"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "5496496066.40"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "4809154187.95"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "2913109749.76"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "2715414655.29"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "1998109371.78"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "1809158257.59"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1510094170.56"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1099551538.74"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "1063238299.22"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "956232506.99"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "792440711.76"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "689809166.24"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "524808037.94"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "492840728.02"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "410968985.39"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "407910529.00"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "390835499.33"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "371435849.67"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "358746881.48"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "347953491.87"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "265714885.89"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "201044064.01"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "180912982.06"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "136423437.73"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "69247596.93"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "58572010.72"
+    },
+    {
+     "cui": "30246121",
+     "name": "INSPECTIA JUDICIARA",
+     "type": "public_entity",
+     "lei": "36683308.56"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "35126611.13"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "30091389.86"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "27330328.07"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "24364912.45"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "23116094.60"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "22674904.37"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "22149304.22"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "16740891.03"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "14314890.84"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "13968405.19"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "11633148.08"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "11487290.98"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "8436736.30"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "8123640.02"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "4808498.28"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "4096333.48"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "2958918.89"
+    }
+   ]
+  },
+  "2021": {
+   "throughMonth": "2021-12",
+   "totalCount": 56,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "51250959197.48"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "36668734219.53"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "27695232381.02"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "23580682163.72"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "21459183859.14"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "20047911212.97"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "19823481328.96"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "14192280209.45"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "9413187508.17"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "6893577860.38"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "5292596213.95"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "4718700735.96"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "2923742388.58"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "2439637707.38"
+    },
+    {
+     "cui": "43507695",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "2060770904.91"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "1848706351.74"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1824596757.66"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "1806264649.97"
+    },
+    {
+     "cui": "43516588",
+     "name": "MINISTERUL CERCETARII INOVARII SI DIGITALIZARII",
+     "type": "central_authority",
+     "lei": "1722703111.62"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "1258358283.71"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1085126314.67"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "843622785.94"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "683994556.91"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "607677119.50"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "471326102.27"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "422438972.22"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "421979850.13"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "414635260.91"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "372397879.61"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "355631880.83"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "332217341.76"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "296954015.82"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "206344850.39"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "168366830.83"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "160714020.85"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "78345009.63"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "69071208.47"
+    },
+    {
+     "cui": "30246121",
+     "name": "INSPECTIA JUDICIARA",
+     "type": "public_entity",
+     "lei": "36891066.68"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "33953334.99"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "26179024.51"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "26037054.29"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "23939564.23"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "23340601.71"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "22459272.26"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "22435547.23"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "16692584.23"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "16641714.80"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "14047275.38"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "13381887.06"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "11089678.79"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "8639545.34"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "8474940.84"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "4537765.57"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "3639982.60"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "3207758.48"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "2976351.02"
+    }
+   ]
+  },
+  "2022": {
+   "throughMonth": "2022-12",
+   "totalCount": 58,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "64539755532.57"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "52344071539.74"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "29648784638.99"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "23673429625.93"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "22406166888.69"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "21973990703.53"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "20849135641.78"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "19576076960.05"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "8936262830.68"
+    },
+    {
+     "cui": "43507695",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "8898448485.08"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "6184342537.79"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "5948579457.43"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "5869912027.66"
+    },
+    {
+     "cui": "45336915",
+     "name": "MINISTERUL ANTREPRENORIATULUI SI TURISMULUI",
+     "type": "central_authority",
+     "lei": "3300339352.27"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "3221467157.52"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "2593848347.27"
+    },
+    {
+     "cui": "43516588",
+     "name": "MINISTERUL CERCETARII INOVARII SI DIGITALIZARII",
+     "type": "central_authority",
+     "lei": "1808040017.19"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "1735901701.11"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1735018370.70"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "1308740933.32"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1299845321.24"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "1039311238.68"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "711976207.61"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "654260983.09"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "606136002.95"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "588621850.88"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "519411398.19"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "430879709.48"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "405737203.89"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "394049578.06"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "372080927.61"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "352327780.04"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "316176560.54"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "215164004.47"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "162952910.55"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "160434257.60"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "92693070.69"
+    },
+    {
+     "cui": "45340622",
+     "name": "MINISTERUL FAMILIEI TINERETULUI SI EGALITATII DE SANSE",
+     "type": "central_authority",
+     "lei": "70604860.93"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "66895112.78"
+    },
+    {
+     "cui": "30246121",
+     "name": "INSPECTIA JUDICIARA",
+     "type": "public_entity",
+     "lei": "39350525.34"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "30118910.32"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "29840644.95"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "29573076.90"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "28938159.05"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "24479645.11"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "24342886.75"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "22555380.57"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "21391296.60"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "19811222.29"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "14757696.17"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "14697397.84"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "11609222.64"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "11513142.66"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "10022167.33"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "9496129.04"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "5537496.95"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "3886202.65"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "3586454.04"
+    }
+   ]
+  },
+  "2023": {
+   "throughMonth": "2023-12",
+   "totalCount": 57,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "66819043109.84"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "55130583991.20"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "36195731407.95"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "27769892917.98"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "23529971357.63"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "23026006582.75"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "22302026294.34"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "21686613417.52"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "13872220737.43"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "9723348690.39"
+    },
+    {
+     "cui": "43507695",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "7901516926.31"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "5736706543.04"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "3972919733.63"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "3710594288.80"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "3552385925.43"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "3086578464.18"
+    },
+    {
+     "cui": "43516588",
+     "name": "MINISTERUL CERCETARII INOVARII SI DIGITALIZARII",
+     "type": "central_authority",
+     "lei": "2262900044.28"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "2211953243.09"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1926407272.76"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "1283078930.43"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1270434828.02"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "1156343787.93"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "1068938562.83"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "1040738580.64"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "677099994.48"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "546324090.13"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "487183992.44"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "466285034.57"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "444815060.70"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "417385547.97"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "397835576.44"
+    },
+    {
+     "cui": "26604620",
+     "name": "AGENTIA NATIONALA PENTRU SPORT",
+     "type": "central_authority",
+     "lei": "374962981.85"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "314320727.38"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "284770463.94"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "281165125.48"
+    },
+    {
+     "cui": "45340622",
+     "name": "MINISTERUL FAMILIEI TINERETULUI SI EGALITATII DE SANSE",
+     "type": "central_authority",
+     "lei": "231320940.67"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "116179297.52"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "69214463.06"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "38437797.50"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "32828375.39"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "29462270.03"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "28976690.52"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "26832476.54"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "25822820.99"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "23749982.46"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "23567792.86"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "18569561.18"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "16668955.03"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "14469143.00"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "11901095.67"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "10655132.91"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "10249230.65"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "9995558.56"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "5486080.72"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "4258102.09"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "4036773.70"
+    },
+    {
+     "cui": "45336915",
+     "name": "MINISTERUL ANTREPRENORIATULUI SI TURISMULUI",
+     "type": "central_authority",
+     "lei": "0.00"
+    }
+   ]
+  },
+  "2024": {
+   "throughMonth": "2024-12",
+   "totalCount": 56,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "81900843003.11"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "61512876451.19"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "52797493204.33"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "36098532792.32"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "34820422926.62"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "32761760762.14"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "27260773884.48"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "24530373919.19"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "20134651032.26"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "11410104807.84"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "8677135209.65"
+    },
+    {
+     "cui": "43507695",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "5327834354.34"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "4634598867.85"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "3965344222.14"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "3489346637.12"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "3069504899.69"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "2579443305.09"
+    },
+    {
+     "cui": "43516588",
+     "name": "MINISTERUL CERCETARII INOVARII SI DIGITALIZARII",
+     "type": "central_authority",
+     "lei": "2562360652.59"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "2374386488.15"
+    },
+    {
+     "cui": "26429279",
+     "name": "Secretariatul de Stat pentru Culte",
+     "type": "public_entity",
+     "lei": "2049760834.64"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1800010480.78"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "1604199781.87"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "1370856167.07"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "1316326107.05"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "1164792617.97"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "1033480183.76"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "764749532.21"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "603826050.42"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "479595351.08"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "473152399.10"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "432688362.77"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "415350304.09"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "383728460.73"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "300978526.43"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "291460874.04"
+    },
+    {
+     "cui": "45340622",
+     "name": "MINISTERUL FAMILIEI TINERETULUI SI EGALITATII DE SANSE",
+     "type": "central_authority",
+     "lei": "245820405.55"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "114567327.99"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "73125997.67"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "56781211.76"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "38735630.41"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "31511458.92"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "28410739.63"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "28048694.25"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "26491226.95"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "25238899.50"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "23674544.98"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "18697791.62"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "17183226.97"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "15398156.65"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "12184514.65"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "11265657.74"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "11107543.10"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "10948683.59"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "5597627.98"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "4837223.56"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "3960537.62"
+    }
+   ]
+  },
+  "2025": {
+   "throughMonth": "2025-12",
+   "totalCount": 55,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "99253573606.45"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "87114871356.14"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "56888048362.90"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "43195269063.56"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "38192221093.42"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "33188318699.23"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "28491799704.89"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "26324111355.88"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "26068747741.24"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "11119307873.14"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "6700749344.62"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "5144458451.77"
+    },
+    {
+     "cui": "43507695",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "4608994567.11"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "4561225980.87"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "4104067852.30"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "3347807198.54"
+    },
+    {
+     "cui": "26429279",
+     "name": "Secretariatul de Stat pentru Culte",
+     "type": "public_entity",
+     "lei": "2827672883.25"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "2283468355.29"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "2157965173.11"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "2043781482.37"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1737388955.58"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1683363791.88"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "1393152196.61"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "1288726824.34"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "793349919.50"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "770268309.87"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "532184746.94"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "505608448.26"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "493948818.54"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "483854822.59"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "450272687.59"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "445699948.33"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "255816545.48"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "252420044.44"
+    },
+    {
+     "cui": "26288978",
+     "name": "ADMINISTRATIA NATIONALA A REZERVELOR DE STAT SI PROBLEME SPECIALE",
+     "type": "public_entity",
+     "lei": "188816202.03"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "73618453.73"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "71345863.70"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "71333119.19"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "42451304.46"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "35398595.90"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "30323801.49"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "28414611.17"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "27911763.60"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "24967779.71"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "22793352.52"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "21080416.47"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "17381121.51"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "14757815.52"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "14294772.66"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "11130705.89"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "10984751.86"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "10815259.63"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "5901306.61"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "4808750.36"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "4069916.89"
+    }
+   ]
+  },
+  "2026": {
+   "throughMonth": "2026-08",
+   "totalCount": 55,
+   "rows": [
+    {
+     "cui": "4266669",
+     "name": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
+     "type": "central_authority",
+     "lei": "60502832513.61"
+    },
+    {
+     "cui": "8609468",
+     "name": "Ministerul Finantelor - actiuni generale",
+     "type": "central_authority",
+     "lei": "57287997730.71"
+    },
+    {
+     "cui": "13729380",
+     "name": "MINISTERUL EDUCATIEI SI CERCETARII",
+     "type": "education",
+     "lei": "36817671627.78"
+    },
+    {
+     "cui": "13633330",
+     "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "type": "central_authority",
+     "lei": "28370104900.19"
+    },
+    {
+     "cui": "11424532",
+     "name": "Ministerul Apararii Nationale",
+     "type": "central_authority",
+     "lei": "23893384758.97"
+    },
+    {
+     "cui": "4267095",
+     "name": "MINISTERUL AFACERILOR INTERNE",
+     "type": "public_entity",
+     "lei": "22642488499.09"
+    },
+    {
+     "cui": "26369185",
+     "name": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
+     "type": "central_authority",
+     "lei": "14548023427.22"
+    },
+    {
+     "cui": "4266456",
+     "name": "MINISTERUL SANATATII",
+     "type": "central_authority",
+     "lei": "12912310009.94"
+    },
+    {
+     "cui": "4221187",
+     "name": "Ministerul Agriculturii si Dezvoltarii Rurale",
+     "type": "central_authority",
+     "lei": "11992220453.90"
+    },
+    {
+     "cui": "38918422",
+     "name": "MINISTERUL INVESTITIILOR SI PROIECTELOR EUROPENE",
+     "type": "central_authority",
+     "lei": "10688422838.55"
+    },
+    {
+     "cui": "4221306",
+     "name": "MINISTERUL FINANTELOR",
+     "type": "central_authority",
+     "lei": "6382387794.62"
+    },
+    {
+     "cui": "16335444",
+     "name": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
+     "type": "central_authority",
+     "lei": "3875359971.04"
+    },
+    {
+     "cui": "4204291",
+     "name": "SERVICIUL ROMAN DE INFORMATII",
+     "type": "public_entity",
+     "lei": "3787435997.71"
+    },
+    {
+     "cui": "4265841",
+     "name": "MINISTERUL JUSTITIEI",
+     "type": "central_authority",
+     "lei": "2724055247.07"
+    },
+    {
+     "cui": "4340587",
+     "name": "INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "public_entity",
+     "lei": "2190600686.82"
+    },
+    {
+     "cui": "26429279",
+     "name": "Secretariatul de Stat pentru Culte",
+     "type": "public_entity",
+     "lei": "1916482083.82"
+    },
+    {
+     "cui": "43507695",
+     "name": "MINISTERUL ENERGIEI",
+     "type": "public_entity",
+     "lei": "1777166583.18"
+    },
+    {
+     "cui": "4364748",
+     "name": "PARCHETUL DE PE LANGA INALTA CURTE DE CASATIE SI JUSTITIE",
+     "type": "justice",
+     "lei": "1460751603.01"
+    },
+    {
+     "cui": "4283422",
+     "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "type": "public_entity",
+     "lei": "1215786382.80"
+    },
+    {
+     "cui": "4267230",
+     "name": "SERVICIUL DE TELECOMUNICATII SPECIALE",
+     "type": "public_order",
+     "lei": "1081607330.80"
+    },
+    {
+     "cui": "4266863",
+     "name": "MINISTERUL AFACERILOR EXTERNE",
+     "type": "public_entity",
+     "lei": "1075583820.60"
+    },
+    {
+     "cui": "16277408",
+     "name": "AUTORITATEA NATIONALA SANITARA VETERINARA SI PENTRU SIGURANTA ALIMENTELOR",
+     "type": "public_entity",
+     "lei": "838783479.04"
+    },
+    {
+     "cui": "4192812",
+     "name": "MINISTERUL CULTURII",
+     "type": "public_entity",
+     "lei": "733872982.55"
+    },
+    {
+     "cui": "24931499",
+     "name": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
+     "type": "central_authority",
+     "lei": "719656738.38"
+    },
+    {
+     "cui": "10668016",
+     "name": "SERVICIUL DE INFORMATII EXTERNE",
+     "type": "public_order",
+     "lei": "543987448.92"
+    },
+    {
+     "cui": "4192472",
+     "name": "ACADEMIA ROMANA",
+     "type": "research",
+     "lei": "354431563.59"
+    },
+    {
+     "cui": "4265795",
+     "name": "CAMERA DEPUTATILOR",
+     "type": "public_entity",
+     "lei": "325814223.49"
+    },
+    {
+     "cui": "8468440",
+     "name": "SOCIETATEA ROMANA DE TELEVIZIUNE",
+     "type": "public_entity",
+     "lei": "322640934.95"
+    },
+    {
+     "cui": "8296093",
+     "name": "SOCIETATEA ROMANA DE RADIODIFUZIUNE",
+     "type": "public_entity",
+     "lei": "304281072.80"
+    },
+    {
+     "cui": "4265922",
+     "name": "CURTEA DE CONTURI A ROMANIEI",
+     "type": "public_entity",
+     "lei": "298732593.68"
+    },
+    {
+     "cui": "4283635",
+     "name": "SERVICIUL DE PROTECTIE SI PAZA - UM 0149F BUCURESTI",
+     "type": "public_entity",
+     "lei": "269252451.98"
+    },
+    {
+     "cui": "16460641",
+     "name": "AUTORITATEA ELECTORALA PERMANENTA",
+     "type": "public_entity",
+     "lei": "169586995.19"
+    },
+    {
+     "cui": "16973795",
+     "name": "CONSILIUL SUPERIOR AL MAGISTRATURII",
+     "type": "public_entity",
+     "lei": "168650196.45"
+    },
+    {
+     "cui": "4284070",
+     "name": "Senatul Romaniei",
+     "type": "public_entity",
+     "lei": "154109642.00"
+    },
+    {
+     "cui": "26288978",
+     "name": "ADMINISTRATIA NATIONALA A REZERVELOR DE STAT SI PROBLEME SPECIALE",
+     "type": "public_entity",
+     "lei": "98840805.83"
+    },
+    {
+     "cui": "4283732",
+     "name": "ADMINISTRATIA PREZIDENTIALA",
+     "type": "public_entity",
+     "lei": "53259932.23"
+    },
+    {
+     "cui": "8844560",
+     "name": "CONSILIUL CONCURENTEI",
+     "type": "public_entity",
+     "lei": "47963312.41"
+    },
+    {
+     "cui": "22838777",
+     "name": "AGENTIA NATIONALA DE INTEGRITATE",
+     "type": "central_authority",
+     "lei": "35487804.57"
+    },
+    {
+     "cui": "4265850",
+     "name": "CURTEA CONSTITUTIONALA A ROMANIEI",
+     "type": "public_entity",
+     "lei": "27489998.98"
+    },
+    {
+     "cui": "15726657",
+     "name": "INSTITUTUL CULTURAL ROMAN",
+     "type": "research",
+     "lei": "21936462.88"
+    },
+    {
+     "cui": "22464311",
+     "name": "AUTORITATEA NATIONALA PENTRU RESTITUIREA PROPRIETATILOR",
+     "type": "public_entity",
+     "lei": "19398294.86"
+    },
+    {
+     "cui": "4266448",
+     "name": "AGENTIA NATIONALA DE PRESA AGERPRES",
+     "type": "central_authority",
+     "lei": "17857621.70"
+    },
+    {
+     "cui": "12932750",
+     "name": "CONSILIUL NATIONAL PENTRU STUDIEREA ARHIVELOR SECURITATII",
+     "type": "public_entity",
+     "lei": "16917738.81"
+    },
+    {
+     "cui": "9766550",
+     "name": "AVOCATUL POPORULUI",
+     "type": "public_entity",
+     "lei": "15542542.03"
+    },
+    {
+     "cui": "11795573",
+     "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "type": "public_entity",
+     "lei": "15349849.57"
+    },
+    {
+     "cui": "20329980",
+     "name": "CONSILIUL NATIONAL DE SOLUTIONARE A CONTESTATIILOR",
+     "type": "public_entity",
+     "lei": "11895620.79"
+    },
+    {
+     "cui": "4266189",
+     "name": "CONSILIUL NATIONAL AL AUDIOVIZUALULUI",
+     "type": "public_entity",
+     "lei": "11096323.59"
+    },
+    {
+     "cui": "15085226",
+     "name": "OFICIUL REGISTRULUI NATIONAL AL INFORMATIILOR SECRETE DE STAT",
+     "type": "public_entity",
+     "lei": "8601659.89"
+    },
+    {
+     "cui": "7901650",
+     "name": "CONSILIUL LEGISLATIV",
+     "type": "public_entity",
+     "lei": "8394561.16"
+    },
+    {
+     "cui": "10464660",
+     "name": "CONSILIUL ECONOMIC SI SOCIAL",
+     "type": "public_entity",
+     "lei": "7785464.54"
+    },
+    {
+     "cui": "5091859",
+     "name": "ACADEMIA OAMENILOR DE STIINTA DIN ROMANIA",
+     "type": "public_entity",
+     "lei": "6883164.67"
+    },
+    {
+     "cui": "14818035",
+     "name": "CONSILIUL NATIONAL PENTRU COMBATEREA DISCRIMINARII",
+     "type": "public_entity",
+     "lei": "5847346.41"
+    },
+    {
+     "cui": "18073706",
+     "name": "AUTORITATEA NATIONALA DE SUPRAVEGHERE A PRELUCRARII DATELOR CU CARACTER PERSONAL",
+     "type": "public_entity",
+     "lei": "3908603.29"
+    },
+    {
+     "cui": "36401992",
+     "name": "CONSILIUL DE MONITORIZARE",
+     "type": "public_entity",
+     "lei": "2779851.85"
+    },
+    {
+     "cui": "4266499",
+     "name": "SECRETARIATUL DE STAT PENTRU RECNOASTEREA MERITELOR LUPTATORILOR IMPOTRIVA REGIMULUI COMUNIST INSTAU",
+     "type": "public_entity",
+     "lei": "1968045.06"
+    }
+   ]
+  }
+ }
+}

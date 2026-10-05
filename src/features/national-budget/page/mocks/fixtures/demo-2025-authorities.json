@@ -1,0 +1,934 @@
+{
+ "kind": "synthetic_demo",
+ "warning": "Valori inventate pentru machetă. Numele sunt reale (lista proiectului 2026), sumele nu.",
+ "seed": 20261002,
+ "method": "Weights: the March 2026 draft proposal per authority × lognormal noise (σ 0.3), drifted per target year (σ 0.08); budget credits apportioned in whole thousands to the real 2025-edition state total minus the real Administrația Prezidențială row, per target year; commitment credits = budget credits × U(1, 1.3), not anchored. Codes D01… are invented.",
+ "edition": "2025",
+ "unit": "thousand_lei",
+ "anchors": {
+  "2025": "499582980",
+  "2026": "486466732",
+  "2027": "487383426",
+  "2028": "500083194"
+ },
+ "authorities": [
+  {
+   "key": "demo-ministerul-finantelor-actiunigenerale",
+   "code": "D01",
+   "name": "Min. Finantelor - Actiuni Generale",
+   "budgetCredits": {
+    "2025": "65680390",
+    "2026": "69396780",
+    "2027": "69196074",
+    "2028": "63712645"
+   },
+   "commitmentCredits": {
+    "2025": "78552609",
+    "2026": "82997347",
+    "2027": "82757306",
+    "2028": "76199220"
+   }
+  },
+  {
+   "key": "demo-ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+   "code": "D02",
+   "name": "Ministerul Muncii",
+   "budgetCredits": {
+    "2025": "65372949",
+    "2026": "64543153",
+    "2027": "60422267",
+    "2028": "73755025"
+   },
+   "commitmentCredits": {
+    "2025": "68342223",
+    "2026": "67474737",
+    "2027": "63166678",
+    "2028": "77105017"
+   }
+  },
+  {
+   "key": "demo-ministerul-educatiei-cercetarii",
+   "code": "D03",
+   "name": "Ministerul Educatiei",
+   "budgetCredits": {
+    "2025": "54769017",
+    "2026": "55495499",
+    "2027": "56006180",
+    "2028": "44782731"
+   },
+   "commitmentCredits": {
+    "2025": "56353861",
+    "2026": "57101365",
+    "2027": "57626824",
+    "2028": "46078603"
+   }
+  },
+  {
+   "key": "demo-ministerul-apararii-nationale",
+   "code": "D04",
+   "name": "Ministerul Apararii Nationale",
+   "budgetCredits": {
+    "2025": "51104733",
+    "2026": "48358667",
+    "2027": "49949248",
+    "2028": "48298451"
+   },
+   "commitmentCredits": {
+    "2025": "59628394",
+    "2026": "56424317",
+    "2027": "58280188",
+    "2028": "56354058"
+   }
+  },
+  {
+   "key": "demo-ministerul-afacerilor-interne",
+   "code": "D05",
+   "name": "Ministerul Afacerilor Interne",
+   "budgetCredits": {
+    "2025": "43319880",
+    "2026": "46119824",
+    "2027": "42986827",
+    "2028": "48282872"
+   },
+   "commitmentCredits": {
+    "2025": "47795714",
+    "2026": "50884950",
+    "2027": "47428250",
+    "2028": "53271486"
+   }
+  },
+  {
+   "key": "demo-ministerul-transporturilor-infrastructurii",
+   "code": "D06",
+   "name": "Ministerul Transporturilor",
+   "budgetCredits": {
+    "2025": "42663393",
+    "2026": "41960156",
+    "2027": "41966875",
+    "2028": "42909234"
+   },
+   "commitmentCredits": {
+    "2025": "49173650",
+    "2026": "48363102",
+    "2027": "48370846",
+    "2028": "49457006"
+   }
+  },
+  {
+   "key": "demo-ministerul-dezvoltarii-lucrarilorpublice-adm",
+   "code": "D07",
+   "name": "Ministerul Dezvoltarii",
+   "budgetCredits": {
+    "2025": "42101670",
+    "2026": "35185724",
+    "2027": "38300732",
+    "2028": "41921202"
+   },
+   "commitmentCredits": {
+    "2025": "49374229",
+    "2026": "41263636",
+    "2027": "44916725",
+    "2028": "49162587"
+   }
+  },
+  {
+   "key": "demo-ministerul-agriculturii-dezvoltarii-rurale",
+   "code": "D08",
+   "name": "Ministerul Agriculturii",
+   "budgetCredits": {
+    "2025": "28932488",
+    "2026": "25557598",
+    "2027": "29184433",
+    "2028": "28477069"
+   },
+   "commitmentCredits": {
+    "2025": "32612315",
+    "2026": "28808184",
+    "2027": "32896304",
+    "2028": "32098973"
+   }
+  },
+  {
+   "key": "demo-ministerul-sanatatii",
+   "code": "D09",
+   "name": "Ministerul Sanatatii",
+   "budgetCredits": {
+    "2025": "21455591",
+    "2026": "20450512",
+    "2027": "18079849",
+    "2028": "24669918"
+   },
+   "commitmentCredits": {
+    "2025": "23073067",
+    "2026": "21992218",
+    "2027": "19442837",
+    "2028": "26529713"
+   }
+  },
+  {
+   "key": "demo-ministerul-finantelor",
+   "code": "D10",
+   "name": "Ministerul Finantelor",
+   "budgetCredits": {
+    "2025": "19079769",
+    "2026": "17688985",
+    "2027": "16947893",
+    "2028": "17827080"
+   },
+   "commitmentCredits": {
+    "2025": "23781313",
+    "2026": "22047818",
+    "2027": "21124110",
+    "2028": "22219942"
+   }
+  },
+  {
+   "key": "demo-ministerul-investitiilor-proiectelor-europene",
+   "code": "D11",
+   "name": "Min. Investitiilor si Proiectelor Europene",
+   "budgetCredits": {
+    "2025": "11216562",
+    "2026": "10657333",
+    "2027": "12058622",
+    "2028": "11085601"
+   },
+   "commitmentCredits": {
+    "2025": "13246221",
+    "2026": "12585798",
+    "2027": "14240653",
+    "2028": "13091562"
+   }
+  },
+  {
+   "key": "demo-ministerul-mediului-apelor-padurilor",
+   "code": "D12",
+   "name": "Ministerul Mediului",
+   "budgetCredits": {
+    "2025": "5588145",
+    "2026": "5559913",
+    "2027": "5347640",
+    "2028": "6022518"
+   },
+   "commitmentCredits": {
+    "2025": "5784051",
+    "2026": "5754829",
+    "2027": "5535114",
+    "2028": "6233652"
+   }
+  },
+  {
+   "key": "demo-inalta-curte-de-casatie-si-justitie",
+   "code": "D13",
+   "name": "Inalta Curte",
+   "budgetCredits": {
+    "2025": "5334230",
+    "2026": "4880913",
+    "2027": "5096344",
+    "2028": "4941411"
+   },
+   "commitmentCredits": {
+    "2025": "6106118",
+    "2026": "5587204",
+    "2027": "5833809",
+    "2028": "5656456"
+   }
+  },
+  {
+   "key": "demo-ministerul-justitiei",
+   "code": "D14",
+   "name": "Ministerul Justitiei",
+   "budgetCredits": {
+    "2025": "5194012",
+    "2026": "5218842",
+    "2027": "4398499",
+    "2028": "5676760"
+   },
+   "commitmentCredits": {
+    "2025": "6416000",
+    "2026": "6446672",
+    "2027": "5433328",
+    "2028": "7012324"
+   }
+  },
+  {
+   "key": "demo-ministerul-economiei-digitalizarii-antreprenoriat-turism",
+   "code": "D15",
+   "name": "Ministerul Economiei",
+   "budgetCredits": {
+    "2025": "5117057",
+    "2026": "5093317",
+    "2027": "4856787",
+    "2028": "4846383"
+   },
+   "commitmentCredits": {
+    "2025": "6068090",
+    "2026": "6039938",
+    "2027": "5759447",
+    "2028": "5747110"
+   }
+  },
+  {
+   "key": "demo-ministerul-energiei",
+   "code": "D16",
+   "name": "Ministerul Energiei",
+   "budgetCredits": {
+    "2025": "4768071",
+    "2026": "4004985",
+    "2027": "4775550",
+    "2028": "5125098"
+   },
+   "commitmentCredits": {
+    "2025": "6093011",
+    "2026": "5117881",
+    "2027": "6102568",
+    "2028": "6549248"
+   }
+  },
+  {
+   "key": "demo-ministerul-public",
+   "code": "D17",
+   "name": "Ministerul Public",
+   "budgetCredits": {
+    "2025": "4179105",
+    "2026": "3526555",
+    "2027": "4275320",
+    "2028": "3981238"
+   },
+   "commitmentCredits": {
+    "2025": "5093971",
+    "2026": "4298569",
+    "2027": "5211249",
+    "2028": "4852788"
+   }
+  },
+  {
+   "key": "demo-secretariatul-general-guvernului",
+   "code": "D18",
+   "name": "Secretariatul General al Guvernului",
+   "budgetCredits": {
+    "2025": "4178021",
+    "2026": "3373698",
+    "2027": "4191829",
+    "2028": "4120365"
+   },
+   "commitmentCredits": {
+    "2025": "4489864",
+    "2026": "3625507",
+    "2027": "4504702",
+    "2028": "4427904"
+   }
+  },
+  {
+   "key": "demo-sri",
+   "code": "D19",
+   "name": "SRI",
+   "budgetCredits": {
+    "2025": "4145842",
+    "2026": "3612241",
+    "2027": "4374889",
+    "2028": "4026049"
+   },
+   "commitmentCredits": {
+    "2025": "4997200",
+    "2026": "4354023",
+    "2027": "5273282",
+    "2028": "4852807"
+   }
+  },
+  {
+   "key": "demo-ss-culte",
+   "code": "D20",
+   "name": "Secretariatul de Stat pentru Culte",
+   "budgetCredits": {
+    "2025": "2923073",
+    "2026": "3482460",
+    "2027": "2622423",
+    "2028": "3340274"
+   },
+   "commitmentCredits": {
+    "2025": "3451653",
+    "2026": "4112194",
+    "2027": "3096636",
+    "2028": "3944297"
+   }
+  },
+  {
+   "key": "demo-ansanitara-veterinara-siguranta-alimentelor",
+   "code": "D21",
+   "name": "ANSVSA",
+   "budgetCredits": {
+    "2025": "1778998",
+    "2026": "1827730",
+    "2027": "1761446",
+    "2028": "1554527"
+   },
+   "commitmentCredits": {
+    "2025": "2020542",
+    "2026": "2075890",
+    "2027": "2000607",
+    "2028": "1765593"
+   }
+  },
+  {
+   "key": "demo-ministerul-afacerilor-externe",
+   "code": "D22",
+   "name": "Ministerul Afacerilor Externe",
+   "budgetCredits": {
+    "2025": "1746848",
+    "2026": "1878973",
+    "2027": "1679412",
+    "2028": "1822499"
+   },
+   "commitmentCredits": {
+    "2025": "2174115",
+    "2026": "2338557",
+    "2027": "2090185",
+    "2028": "2268270"
+   }
+  },
+  {
+   "key": "demo-sts",
+   "code": "D23",
+   "name": "STS",
+   "budgetCredits": {
+    "2025": "1401697",
+    "2026": "1359162",
+    "2027": "1436635",
+    "2028": "1402858"
+   },
+   "commitmentCredits": {
+    "2025": "1459539",
+    "2026": "1415249",
+    "2027": "1495919",
+    "2028": "1460748"
+   }
+  },
+  {
+   "key": "demo-ministerul-culturii",
+   "code": "D24",
+   "name": "Ministerul Culturii",
+   "budgetCredits": {
+    "2025": "1396960",
+    "2026": "1219924",
+    "2027": "1266461",
+    "2028": "1284702"
+   },
+   "commitmentCredits": {
+    "2025": "1791250",
+    "2026": "1564246",
+    "2027": "1623918",
+    "2028": "1647307"
+   }
+  },
+  {
+   "key": "demo-sie",
+   "code": "D25",
+   "name": "SIE",
+   "budgetCredits": {
+    "2025": "1188874",
+    "2026": "1151228",
+    "2027": "1237874",
+    "2028": "1194224"
+   },
+   "commitmentCredits": {
+    "2025": "1195997",
+    "2026": "1158125",
+    "2027": "1245290",
+    "2028": "1201379"
+   }
+  },
+  {
+   "key": "demo-spp",
+   "code": "D26",
+   "name": "SPP",
+   "budgetCredits": {
+    "2025": "611185",
+    "2026": "603336",
+    "2027": "649081",
+    "2028": "598050"
+   },
+   "commitmentCredits": {
+    "2025": "639185",
+    "2026": "630976",
+    "2027": "678817",
+    "2028": "625448"
+   }
+  },
+  {
+   "key": "demo-academia-romana",
+   "code": "D27",
+   "name": "Academia Romana",
+   "budgetCredits": {
+    "2025": "586793",
+    "2026": "563233",
+    "2027": "612942",
+    "2028": "524030"
+   },
+   "commitmentCredits": {
+    "2025": "760819",
+    "2026": "730272",
+    "2027": "794723",
+    "2028": "679442"
+   }
+  },
+  {
+   "key": "demo-societatea-romana-radiodifuziune",
+   "code": "D28",
+   "name": "SRR",
+   "budgetCredits": {
+    "2025": "485934",
+    "2026": "468019",
+    "2027": "512578",
+    "2028": "443055"
+   },
+   "commitmentCredits": {
+    "2025": "500853",
+    "2026": "482388",
+    "2027": "528315",
+    "2028": "456657"
+   }
+  },
+  {
+   "key": "demo-curtea-conturi",
+   "code": "D29",
+   "name": "Curtea de Conturi",
+   "budgetCredits": {
+    "2025": "469606",
+    "2026": "471248",
+    "2027": "488753",
+    "2028": "458095"
+   },
+   "commitmentCredits": {
+    "2025": "544004",
+    "2026": "545906",
+    "2027": "566184",
+    "2028": "530669"
+   }
+  },
+  {
+   "key": "demo-societatea-romana-televiziune",
+   "code": "D30",
+   "name": "TVR",
+   "budgetCredits": {
+    "2025": "447599",
+    "2026": "402854",
+    "2027": "408965",
+    "2028": "475318"
+   },
+   "commitmentCredits": {
+    "2025": "528856",
+    "2026": "475988",
+    "2027": "483208",
+    "2028": "561607"
+   }
+  },
+  {
+   "key": "demo-camera-deputatilor",
+   "code": "D31",
+   "name": "Camera Deputatilor",
+   "budgetCredits": {
+    "2025": "415346",
+    "2026": "422799",
+    "2027": "403446",
+    "2028": "396371"
+   },
+   "commitmentCredits": {
+    "2025": "531873",
+    "2026": "541417",
+    "2027": "516635",
+    "2028": "507575"
+   }
+  },
+  {
+   "key": "demo-autoritatea-electorala-permanenta",
+   "code": "D32",
+   "name": "Autoritatea Electorala Permanenta",
+   "budgetCredits": {
+    "2025": "353378",
+    "2026": "337060",
+    "2027": "323796",
+    "2028": "447863"
+   },
+   "commitmentCredits": {
+    "2025": "387264",
+    "2026": "369381",
+    "2027": "354845",
+    "2028": "490809"
+   }
+  },
+  {
+   "key": "demo-consiliul-superior-magistraturii",
+   "code": "D33",
+   "name": "CSM",
+   "budgetCredits": {
+    "2025": "345179",
+    "2026": "334999",
+    "2027": "380782",
+    "2028": "394104"
+   },
+   "commitmentCredits": {
+    "2025": "402361",
+    "2026": "390495",
+    "2027": "443862",
+    "2028": "459391"
+   }
+  },
+  {
+   "key": "demo-senatul-romaniei",
+   "code": "D34",
+   "name": "Senatul Romaniei",
+   "budgetCredits": {
+    "2025": "243188",
+    "2026": "219809",
+    "2027": "228369",
+    "2028": "276587"
+   },
+   "commitmentCredits": {
+    "2025": "263408",
+    "2026": "238085",
+    "2027": "247357",
+    "2028": "299584"
+   }
+  },
+  {
+   "key": "demo-anrsps",
+   "code": "D35",
+   "name": "ANRSPS",
+   "budgetCredits": {
+    "2025": "189338",
+    "2026": "228562",
+    "2027": "181973",
+    "2028": "220162"
+   },
+   "commitmentCredits": {
+    "2025": "218036",
+    "2026": "263205",
+    "2027": "209555",
+    "2028": "253532"
+   }
+  },
+  {
+   "key": "demo-consiliul-concurentei",
+   "code": "D36",
+   "name": "Consiliul Concurentei",
+   "budgetCredits": {
+    "2025": "188366",
+    "2026": "193822",
+    "2027": "181845",
+    "2028": "180614"
+   },
+   "commitmentCredits": {
+    "2025": "225155",
+    "2026": "231676",
+    "2027": "217360",
+    "2028": "215889"
+   }
+  },
+  {
+   "key": "demo-curtea-constitutionala",
+   "code": "D37",
+   "name": "Curtea Constitutionala",
+   "budgetCredits": {
+    "2025": "66478",
+    "2026": "65359",
+    "2027": "61807",
+    "2028": "59751"
+   },
+   "commitmentCredits": {
+    "2025": "85031",
+    "2026": "83600",
+    "2027": "79057",
+    "2028": "76427"
+   }
+  },
+  {
+   "key": "demo-consiliul-national-audiovizualului",
+   "code": "D38",
+   "name": "CNA",
+   "budgetCredits": {
+    "2025": "52670",
+    "2026": "47481",
+    "2027": "48013",
+    "2028": "55149"
+   },
+   "commitmentCredits": {
+    "2025": "55005",
+    "2026": "49586",
+    "2027": "50142",
+    "2028": "57594"
+   }
+  },
+  {
+   "key": "demo-anrp",
+   "code": "D39",
+   "name": "ANRP",
+   "budgetCredits": {
+    "2025": "49008",
+    "2026": "48707",
+    "2027": "47292",
+    "2028": "53379"
+   },
+   "commitmentCredits": {
+    "2025": "57164",
+    "2026": "56813",
+    "2027": "55162",
+    "2028": "62262"
+   }
+  },
+  {
+   "key": "demo-agentia-nationala-integritate",
+   "code": "D40",
+   "name": "Agentia Nationala de Integritate",
+   "budgetCredits": {
+    "2025": "48520",
+    "2026": "54675",
+    "2027": "46245",
+    "2028": "40704"
+   },
+   "commitmentCredits": {
+    "2025": "54039",
+    "2026": "60894",
+    "2027": "51505",
+    "2028": "45334"
+   }
+  },
+  {
+   "key": "demo-consiliul-national-studierea-arhivelor-securitatii",
+   "code": "D41",
+   "name": "CNSAS",
+   "budgetCredits": {
+    "2025": "39194",
+    "2026": "39492",
+    "2027": "37772",
+    "2028": "33434"
+   },
+   "commitmentCredits": {
+    "2025": "45132",
+    "2026": "45475",
+    "2027": "43495",
+    "2028": "38499"
+   }
+  },
+  {
+   "key": "demo-autoritatea-administrarea-activelor-statului",
+   "code": "D42",
+   "name": "AAAS",
+   "budgetCredits": {
+    "2025": "35883",
+    "2026": "35725",
+    "2027": "35836",
+    "2028": "38387"
+   },
+   "commitmentCredits": {
+    "2025": "42431",
+    "2026": "42244",
+    "2027": "42375",
+    "2028": "45392"
+   }
+  },
+  {
+   "key": "demo-consiliul-national-combaterea-discriminarii",
+   "code": "D43",
+   "name": "CNCD",
+   "budgetCredits": {
+    "2025": "34765",
+    "2026": "35115",
+    "2027": "33343",
+    "2028": "32551"
+   },
+   "commitmentCredits": {
+    "2025": "39539",
+    "2026": "39937",
+    "2027": "37922",
+    "2028": "37021"
+   }
+  },
+  {
+   "key": "demo-agentia-nationala-presaagerpres",
+   "code": "D44",
+   "name": "AGERPRES",
+   "budgetCredits": {
+    "2025": "30297",
+    "2026": "29890",
+    "2027": "26670",
+    "2028": "28212"
+   },
+   "commitmentCredits": {
+    "2025": "36493",
+    "2026": "36002",
+    "2027": "32124",
+    "2028": "33981"
+   }
+  },
+  {
+   "key": "demo-avocatul-poporului",
+   "code": "D45",
+   "name": "Avocatul Poporului",
+   "budgetCredits": {
+    "2025": "27004",
+    "2026": "25413",
+    "2027": "23575",
+    "2028": "28163"
+   },
+   "commitmentCredits": {
+    "2025": "28585",
+    "2026": "26901",
+    "2027": "24955",
+    "2028": "29812"
+   }
+  },
+  {
+   "key": "demo-consiliul-national-solutionare-contestatiilor",
+   "code": "D46",
+   "name": "CNSC",
+   "budgetCredits": {
+    "2025": "26715",
+    "2026": "27619",
+    "2027": "27220",
+    "2028": "22257"
+   },
+   "commitmentCredits": {
+    "2025": "33646",
+    "2026": "34784",
+    "2027": "34282",
+    "2028": "28031"
+   }
+  },
+  {
+   "key": "demo-institutul-cultural-roman",
+   "code": "D47",
+   "name": "Institutul Cultural Roman",
+   "budgetCredits": {
+    "2025": "25205",
+    "2026": "24826",
+    "2027": "23433",
+    "2028": "24765"
+   },
+   "commitmentCredits": {
+    "2025": "28336",
+    "2026": "27910",
+    "2027": "26344",
+    "2028": "27842"
+   }
+  },
+  {
+   "key": "demo-academia-oamenilor-de-stiinta-din-romania",
+   "code": "D48",
+   "name": "Academia Oamenilor de Stiinta",
+   "budgetCredits": {
+    "2025": "16363",
+    "2026": "16526",
+    "2027": "15919",
+    "2028": "17735"
+   },
+   "commitmentCredits": {
+    "2025": "21252",
+    "2026": "21463",
+    "2027": "20675",
+    "2028": "23034"
+   }
+  },
+  {
+   "key": "demo-consiliul-economic-social",
+   "code": "D49",
+   "name": "Consiliul Economic si Social",
+   "budgetCredits": {
+    "2025": "13809",
+    "2026": "14259",
+    "2027": "11257",
+    "2028": "14573"
+   },
+   "commitmentCredits": {
+    "2025": "17392",
+    "2026": "17959",
+    "2027": "14178",
+    "2028": "18354"
+   }
+  },
+  {
+   "key": "demo-consiliul-legislativ",
+   "code": "D50",
+   "name": "Consiliul Legislativ",
+   "budgetCredits": {
+    "2025": "12926",
+    "2026": "15056",
+    "2027": "12055",
+    "2028": "13216"
+   },
+   "commitmentCredits": {
+    "2025": "14730",
+    "2026": "17157",
+    "2027": "13738",
+    "2028": "15061"
+   }
+  },
+  {
+   "key": "demo-oficiul-registrului-national-informatiilor-secrete-de-stat",
+   "code": "D51",
+   "name": "ORNISS",
+   "budgetCredits": {
+    "2025": "12330",
+    "2026": "12044",
+    "2027": "13686",
+    "2028": "13254"
+   },
+   "commitmentCredits": {
+    "2025": "12448",
+    "2026": "12159",
+    "2027": "13817",
+    "2028": "13381"
+   }
+  },
+  {
+   "key": "demo-anspdcp",
+   "code": "D52",
+   "name": "ANSPDCP",
+   "budgetCredits": {
+    "2025": "7180",
+    "2026": "7873",
+    "2027": "6479",
+    "2028": "7168"
+   },
+   "commitmentCredits": {
+    "2025": "7516",
+    "2026": "8242",
+    "2027": "6782",
+    "2028": "7504"
+   }
+  },
+  {
+   "key": "demo-consiliul-monitorizare-implementare-conventie",
+   "code": "D53",
+   "name": "Consiliul de Monitorizare",
+   "budgetCredits": {
+    "2025": "4417",
+    "2026": "4518",
+    "2027": "4341",
+    "2028": "4510"
+   },
+   "commitmentCredits": {
+    "2025": "4734",
+    "2026": "4842",
+    "2027": "4653",
+    "2028": "4834"
+   }
+  },
+  {
+   "key": "demo-ssprdecembrie1989",
+   "code": "D54",
+   "name": "Secretariatul de Stat pentru Revolutionari",
+   "budgetCredits": {
+    "2025": "4214",
+    "2026": "4203",
+    "2027": "3854",
+    "2028": "3970"
+   },
+   "commitmentCredits": {
+    "2025": "5077",
+    "2026": "5064",
+    "2027": "4643",
+    "2028": "4783"
+   }
+  }
+ ]
+}
