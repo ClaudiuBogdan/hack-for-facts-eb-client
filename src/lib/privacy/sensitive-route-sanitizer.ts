@@ -1,3 +1,5 @@
+import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
+
 /**
  * Sanitizes sensitive route URLs for analytics / error reporting.
  *
@@ -10,8 +12,9 @@
  * so this covers the manual pageview URL + Sentry scrubbing.
  *
  * The sanitizer is a closed allowlist: only `SAFE_JUSTICE_QUERY_PARAMS` are
- * preserved on justice URLs; everything else (including `partyKey`,
- * `caseNumber`, `from`, and any unknown param) is stripped. A case page's
+ * preserved on justice URLs, the pages' own keys only with a value from
+ * their closed list (`SAFE_JUSTICE_VALUES`); everything else (including
+ * `partyKey`, `caseNumber`, `from`, and any unknown param) is stripped. A case page's
  * path carries the case number (`/justice/cases/<court>/<number>`): it is
  * reported as `/justice/cases/<court>/:caseNumber`.
  */
@@ -22,6 +25,13 @@ export const SAFE_JUSTICE_QUERY_PARAMS = [
   'instante',
   'materii',
   'nivel',
+  // The analysis page's question: counties, matters, stages, the grouping and the measure. Its courts (`instanta`) are not
+  // kept: a court's code has no closed list here, and a crafted one could carry a name.
+  'judet',
+  'materie',
+  'etapa',
+  'dupa',
+  'masura',
   'court',
   'tier',
   'category',
@@ -44,6 +54,46 @@ export const STRIPPED_JUSTICE_QUERY_PARAMS = [
   'caseNumber',
   'from',
 ] as const
+
+/** A value — or each value of a comma list — from a closed set. */
+function oneOf(values: readonly string[]): (value: string) => boolean {
+  const allowed = new Set(values)
+  return (value) => value.split(',').every((item) => allowed.has(item))
+}
+
+const LEVELS = ['judecatorie', 'tribunal', 'curte_de_apel', 'inalta_curte', 'militare']
+
+/**
+ * What the justice pages' own keys may hold: a year, the codes the pages
+ * define (`justice/lib/analysis-codes.ts`, the front door's choices), a
+ * county's code — each from a closed list, never free text. A key whose
+ * value is anything else is dropped whole: `?materie=656/1/2025` never
+ * reaches telemetry.
+ */
+export const SAFE_JUSTICE_VALUES: Readonly<Partial<Record<(typeof SAFE_JUSTICE_QUERY_PARAMS)[number], (value: string) => boolean>>> = {
+  an: (value) => /^\d{4}$/u.test(value),
+  instante: oneOf(LEVELS),
+  materii: oneOf(['toate', ...LEVELS]),
+  nivel: oneOf(LEVELS),
+  judet: oneOf(ROMANIA_COUNTIES.map((county) => county.code)),
+  materie: oneOf([
+    'civil',
+    'penal',
+    'litigiicuprofesionistii',
+    'contenciosadministrativsifiscal',
+    'minorisifamilie',
+    'asigurarisociale',
+    'litigiidemunca',
+    'faliment',
+    'proprietateintelectuala',
+    'insolventapersoaneifizice',
+    'dreptmaritimsifluvial',
+    'altematerii',
+  ]),
+  etapa: oneOf(['fond', 'apel', 'recurs', 'contestatie', 'extraordinare']),
+  dupa: oneOf(['instante', 'judete', 'materii', 'etape', 'niveluri']),
+  masura: oneOf(['dosare', 'locuitori']),
+}
 
 const SAFE_PARAM_SET = new Set<string>(SAFE_JUSTICE_QUERY_PARAMS)
 const STRIPPED_PARAM_SET = new Set<string>(STRIPPED_JUSTICE_QUERY_PARAMS)
@@ -265,9 +315,13 @@ export function sanitizeJusticeQueryString(
   }
   const params = new URLSearchParams(raw)
   const kept = new URLSearchParams()
-  for (const key of params.keys()) {
+  // Each key once: `keys()` repeats a key for each of its values.
+  for (const key of new Set(params.keys())) {
     if (SAFE_PARAM_SET.has(key) && !STRIPPED_PARAM_SET.has(key)) {
       const values = params.getAll(key)
+      const check = SAFE_JUSTICE_VALUES[key as keyof typeof SAFE_JUSTICE_VALUES]
+      // A value the key cannot hold drops the key whole: no part of free text is kept.
+      if (check && !values.every(check)) continue
       for (const value of values) {
         kept.append(key, value)
       }

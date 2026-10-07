@@ -12,8 +12,8 @@ import {
 } from '@/features/justice/components/hub/justice-hub-bands'
 import { JusticeHubHero } from '@/features/justice/components/hub/justice-hub-hero'
 import { JusticeHub, type JusticeHubChoices } from '@/features/justice/components/hub/justice-hub-page'
-import { COMPANY_HUB_SNAPSHOT } from '@/features/private-companies/lib/hub-snapshot'
 import { HomeSectionNav } from '@/features/procurement/components/home/home-chrome'
+import { COUNTY_POPULATION } from '@/features/justice/lib/county-population'
 import { JUSTICE_HUB_SNAPSHOT } from '@/features/justice/lib/hub-snapshot'
 import { countText, millionsText } from '@/features/justice/lib/judicial-format'
 import { JUSTICE_HUB_DEFAULTS } from '@/schemas/judicial'
@@ -27,11 +27,6 @@ import { HundredPanel, PathPanel, PROTOTYPE_MARKER } from './hub.parts'
  */
 
 const snapshot = JUSTICE_HUB_SNAPSHOT
-const POPULATION = {
-  year: COMPANY_HUB_SNAPSHOT.fiscalYear,
-  national: COMPANY_HUB_SNAPSHOT.national.population,
-  byCounty: new Map(COMPANY_HUB_SNAPSHOT.counties.map((county) => [county.code, county.population])),
-}
 
 function useChoices() {
   const [choices, setChoices] = useState<JusticeHubChoices>({ ...JUSTICE_HUB_DEFAULTS })
@@ -72,7 +67,7 @@ function Bands({ order }: { readonly order: readonly BandId[] }) {
   const { choices, choose } = useChoices()
   const index = (id: BandId) => `${String(order.indexOf(id) + 1).padStart(2, '0')} / ${bandLabel(id)}`
   const band: Record<BandId, ReactNode> = {
-    judete: <JusticeCountiesBand snapshot={snapshot} population={POPULATION} index={index('judete')} />,
+    judete: <JusticeCountiesBand snapshot={snapshot} population={COUNTY_POPULATION} index={index('judete')} />,
     materii: <JusticeMattersBand snapshot={snapshot} index={index('materii')} scope={choices.materii} onScope={(scope) => choose('materii', scope)} />,
     trepte: <JusticeLevelsBand snapshot={snapshot} index={index('trepte')} />,
     instante: <JusticeCourtsBand snapshot={snapshot} index={index('instante')} level={choices.nivel} onLevel={(level) => choose('nivel', level)} />,

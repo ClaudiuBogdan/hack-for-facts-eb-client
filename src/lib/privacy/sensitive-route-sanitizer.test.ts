@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { COUNTY_CODES, GROUPINGS, LEVEL_KEYS, MATTER_KEYS } from '@/features/justice/lib/analysis-model'
+import { STAGE_KEYS } from '@/features/justice/lib/judicial-model'
 import {
   SAFE_JUSTICE_QUERY_PARAMS,
+  SAFE_JUSTICE_VALUES,
   STRIPPED_JUSTICE_QUERY_PARAMS,
   isJusticePath,
   sanitizeJusticeEventProperties,
@@ -27,8 +30,31 @@ describe('the /justice pages', () => {
   })
 
   it('keep the front door’s and the court page’s own choices and drop anything else', () => {
-    expect(sanitizeJusticeQueryString('/justice', 'instante=tribunal&materii=penal&nivel=curte_de_apel&q=Popescu')).toBe('instante=tribunal&materii=penal&nivel=curte_de_apel')
+    expect(sanitizeJusticeQueryString('/justice', 'instante=tribunal&materii=curte_de_apel&nivel=curte_de_apel&q=Popescu')).toBe('instante=tribunal&materii=curte_de_apel&nivel=curte_de_apel')
     expect(sanitizeJusticeUrlFragment('/justice/courts/TribunalulCLUJ?an=2024&caseNumber=1')).toBe('/justice/courts/TribunalulCLUJ?an=2024')
+  })
+
+  it('keep the analysis page’s question — counties, matters, stages, the grouping — and drop anything else, its courts too', () => {
+    const question = 'an=2024&nivel=tribunal&materie=faliment&etapa=apel&judet=CJ&dupa=materii&masura=locuitori'
+    expect(sanitizeJusticeUrlFragment(`/justice/analytics?${question}&instanta=TribunalulCLUJ&q=Popescu&partyKey=7`)).toBe(`/justice/analytics?${question}`)
+    expect(sanitizeJusticeUrlFragment('/justice/analytics?materie=civil%2Cpenal&judet=CJ%2CB')).toBe('/justice/analytics?materie=civil%2Cpenal&judet=CJ%2CB')
+  })
+
+  it('drop a page key whose value is not one of its codes: no case number, no name, no free text', () => {
+    expect(sanitizeJusticeUrlFragment('/justice/analytics?materie=656/1/2025&instanta=TribunalulIonPopescu&an=2024')).toBe('/justice/analytics?an=2024')
+    expect(sanitizeJusticeUrlFragment('/justice/analytics?nivel=tribunal,popescu&judet=XX&dupa=persoane&an=24/2025')).toBe('/justice/analytics')
+    expect(sanitizeJusticeUrl('https://transparenta.eu/justice/analytics?etapa=Ion%20Popescu&masura=dosare')).toBe('https://transparenta.eu/justice/analytics?masura=dosare')
+  })
+
+  it('accept every code the pages write, and no name in their place', () => {
+    const accepts = (key: keyof typeof SAFE_JUSTICE_VALUES, value: string) => SAFE_JUSTICE_VALUES[key]!(value)
+    for (const level of LEVEL_KEYS) expect(accepts('nivel', level)).toBe(true)
+    for (const matter of MATTER_KEYS) expect(accepts('materie', matter)).toBe(true)
+    for (const stage of STAGE_KEYS) expect(accepts('etapa', stage)).toBe(true)
+    for (const grouping of GROUPINGS) expect(accepts('dupa', grouping)).toBe(true)
+    for (const county of COUNTY_CODES) expect(accepts('judet', county)).toBe(true)
+    for (const [key, name] of [['materie', 'popescu'], ['judet', 'PO'], ['nivel', 'popescu'], ['an', 'Ion']] as const) expect(accepts(key, name)).toBe(false)
+    expect(SAFE_JUSTICE_QUERY_PARAMS).not.toContain('instanta')
   })
 
   it('read a path encoded twice, an encoded query inside it, and capitals as the router does', () => {
@@ -110,13 +136,24 @@ describe('sanitizeJusticeQueryString', () => {
   })
 
   it('preserves all safe aggregate params', () => {
-    const safeQuery = SAFE_JUSTICE_QUERY_PARAMS.map(
-      (key) => `${key}=value-${key}`,
-    ).join('&')
+    // The keys whose values are checked carry one of their codes; the others, anything.
+    const sample: Partial<Record<(typeof SAFE_JUSTICE_QUERY_PARAMS)[number], string>> = {
+      an: '2025',
+      instante: 'tribunal',
+      materii: 'toate',
+      nivel: 'tribunal',
+      judet: 'CJ',
+      materie: 'faliment',
+      etapa: 'apel',
+      dupa: 'judete',
+      masura: 'dosare',
+    }
+    const valueOf = (key: (typeof SAFE_JUSTICE_QUERY_PARAMS)[number]) => sample[key] ?? `value-${key}`
+    const safeQuery = SAFE_JUSTICE_QUERY_PARAMS.map((key) => `${key}=${valueOf(key)}`).join('&')
     const sanitized = sanitizeJusticeQueryString('/justitie/cautare', safeQuery)
     const params = new URLSearchParams(sanitized)
     for (const key of SAFE_JUSTICE_QUERY_PARAMS) {
-      expect(params.get(key)).toBe(`value-${key}`)
+      expect(params.get(key)).toBe(valueOf(key))
     }
   })
 

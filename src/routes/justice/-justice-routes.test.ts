@@ -17,6 +17,8 @@ vi.mock('@/features/justice/api/justice-ssr', () => ({
   readCourtForSsr: (...args: unknown[]) => readCourt(...args),
   readCaseForSsr: (...args: unknown[]) => readCase(...args),
 }))
+const readAnalysis = vi.fn()
+vi.mock('@/features/justice/api/justice-analysis-ssr', () => ({ readAnalysisForSsr: (...args: unknown[]) => readAnalysis(...args) }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the macros already give the message as its source text.
 vi.mock('@/lib/i18n', () => ({ translatorFor: () => ({ _: (descriptor: unknown) => (typeof descriptor === 'string' ? descriptor : JSON.stringify(descriptor)) }) }))
@@ -63,6 +65,7 @@ const caseRoute = (await import('./cases/$code/$')).Route as unknown as {
 beforeEach(() => {
   readCourt.mockReset()
   readCase.mockReset()
+  readAnalysis.mockReset()
   redirectMock.mockClear()
 })
 
@@ -188,5 +191,55 @@ describe('/justitie', () => {
       expect(options).toEqual({ to: '/justice', replace: true, statusCode: 301 })
     }
     expect(redirectMock).toHaveBeenCalledTimes(2)
+  })
+})
+
+const analysisRoute = (await import('./analytics')).Route as unknown as {
+  readonly validateSearch: (search: Record<string, unknown>) => Record<string, string | number>
+  readonly loaderDeps: (input: { readonly search: Record<string, unknown> }) => { readonly search: Record<string, unknown> }
+  readonly loader: (input: { readonly deps: { readonly search: Record<string, unknown> } }) => Promise<Record<string, unknown>>
+  readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
+  readonly head: (input: { readonly match: Match & { readonly search: Record<string, unknown> } }) => Head
+}
+
+describe('/justice/analytics', () => {
+  const analysisMatch = (search: Record<string, unknown>) => ({ ...match(), search })
+
+  it('keeps the page’s keys only, a value the router parsed as something else as text', () => {
+    expect(analysisRoute.validateSearch({ an: 2024, materie: 'faliment', utm_source: 'x', nivel: ['tribunal'] })).toEqual({ an: 2024, materie: 'faliment', nivel: '["tribunal"]' })
+  })
+
+  it('hands the page’s keys to the server read, which takes the question they ask', () => {
+    expect(analysisRoute.loaderDeps({ search: { materie: 'faliment,Popescu', an: 2025 } }).search).toEqual({ materie: 'faliment,Popescu', an: 2025 })
+  })
+
+  it('reads the answer while server-rendering, and never holds a client-side navigation', async () => {
+    readAnalysis.mockResolvedValueOnce({ seed: [], complete: true })
+    await asServerRender(() => analysisRoute.loader({ deps: { search: { materie: 'faliment' } } }))
+    expect(readAnalysis).toHaveBeenCalledWith({ materie: 'faliment' })
+    await expect(analysisRoute.loader({ deps: { search: {} } })).resolves.toEqual({ seed: [], complete: true })
+    expect(readAnalysis).toHaveBeenCalledTimes(1)
+  })
+
+  it('caches only a whole render', () => {
+    vi.stubEnv('DEV', false)
+    try {
+      expect(analysisRoute.headers({ loaderData: { seed: [], complete: true } })['CDN-Cache-Control']).toContain('s-maxage=600')
+      expect(analysisRoute.headers({ loaderData: { seed: [], complete: false } })['CDN-Cache-Control']).toBe('no-store')
+      expect(analysisRoute.headers({})['CDN-Cache-Control']).toBe('no-store')
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('indexes the bare page at its own address; any other question is a reader’s own, followed but not indexed', () => {
+    const bare = analysisRoute.head({ match: analysisMatch({}) })
+    expect(metaOf(bare).title).toContain('Analize ale dosarelor')
+    expect(metaOf(bare).robots).toBeUndefined()
+    expect(bare.links).toEqual([{ rel: 'canonical', href: 'http://localhost:3000/justice/analytics' }])
+    const asked = analysisRoute.head({ match: analysisMatch({ materie: 'faliment' }) })
+    expect(metaOf(asked).robots).toBe('noindex, follow')
+    expect(asked.links).toEqual([])
+    expect(metaOf(asked)['og:url']).toBeUndefined()
   })
 })

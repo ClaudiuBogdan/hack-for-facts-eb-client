@@ -1,10 +1,19 @@
-import { plural, t } from '@lingui/core/macro'
-import { caseCategoryLabel, courtLevelLabel, courtName, stageLabel } from '@/features/justice/lib/judicial-labels'
-import type { StageKey } from '@/features/justice/lib/judicial-model'
+import type { I18n } from '@lingui/core'
+import { msg, plural, t } from '@lingui/core/macro'
 import { countyNameRo } from '@/lib/territory-counties'
-import { COURTS, MATTER_CODES, NO_COUNTY, type Columns, type Grouping, type LevelKey, type MatterKey, type Question } from './analize.model'
+import { COURTS, filterCount, MATTER_CODES, NO_COUNTY, OTHER_STAGES, type AnalysisSource, type Grouping, type LevelKey, type MatterKey, type Question } from './analysis-model'
+import { lastMonthText } from './analysis-notes'
+import { JUSTICE_LAST_CAPTURE_YEAR } from './hub-years'
+import { caseCategoryLabel, courtLevelLabel, courtName, stageLabel } from './judicial-labels'
+import type { StageKey } from './judicial-model'
+import { buildAnalysisPageTitle } from './justice-page-titles'
 
-/** The analysis page's words: the groups' and filters' names, and the question as one sentence. */
+/** The analysis page's words: the groups' and filters' names, the question as one sentence, the page's titles. */
+
+/** A year as the year menu names it: the capture's last one with the month the question's source stops in. */
+export function yearText(year: number, source: AnalysisSource): string {
+  return year === JUSTICE_LAST_CAPTURE_YEAR ? t`${year} (până în ${lastMonthText(source)})` : String(year)
+}
 
 export function groupingLabel(grouping: Grouping): string {
   switch (grouping) {
@@ -14,17 +23,6 @@ export function groupingLabel(grouping: Grouping): string {
       return t`Județe`
     case 'materii':
       return t`Materii`
-    case 'etape':
-      return t`Etape`
-    case 'niveluri':
-      return t`Niveluri`
-  }
-}
-
-export function columnsLabel(columns: Columns): string {
-  switch (columns) {
-    case 'ani':
-      return t`Ani`
     case 'etape':
       return t`Etape`
     case 'niveluri':
@@ -57,8 +55,8 @@ export function countyLabel(code: string): string {
   return countyNameRo(code) ?? code
 }
 
-export function stageName(stage: StageKey | 'alte'): string {
-  return stageLabel(stage === 'alte' ? 'other' : stage)
+export function stageName(stage: StageKey | typeof OTHER_STAGES): string {
+  return stageLabel(stage === OTHER_STAGES ? 'other' : stage)
 }
 
 /** A row's name under a grouping, and the quiet line under it (a court's level and county). */
@@ -67,35 +65,17 @@ export function rowLabel(grouping: Grouping, key: string): { readonly label: str
   switch (grouping) {
     case 'instante': {
       const court = COURTS.get(key)
-      return {
-        label: courtName(key),
-        sub: [court ? courtLevelLabel(court.apiLevel) : null, court?.county ? countyLabel(court.county) : null].filter(Boolean).join(' · ') || null,
-      }
+      return { label: courtName(key), sub: [court ? courtLevelLabel(court.apiLevel) : null, court?.county ? countyLabel(court.county) : null].filter(Boolean).join(' · ') || null }
     }
     case 'judete':
       return { label: countyLabel(key), sub: null }
     case 'materii':
-      return {
-        label: key in MATTER_CODES ? matterLabel(key as MatterKey) : (caseCategoryLabel(key) ?? key),
-        sub: null,
-      }
+      return { label: key in MATTER_CODES ? matterLabel(key as MatterKey) : (caseCategoryLabel(key) ?? key), sub: null }
     case 'etape':
-      return { label: stageName(key as StageKey | 'alte'), sub: null }
+      return { label: stageName(key as StageKey | typeof OTHER_STAGES), sub: null }
     case 'niveluri':
       return { label: levelLabel(key as LevelKey), sub: null }
   }
-}
-
-/** A column's head in the cross table; `short` where a long name would widen its column („Căi extraordinare"). */
-export function columnLabel(columns: Columns, key: string, length: 'full' | 'short' = 'full'): string {
-  if (columns === 'ani') return key
-  if (columns === 'etape') {
-    if (length === 'short' && key === 'extraordinare') return t`Căi extraordinare`
-    if (length === 'short' && key === 'alte') return t`Altele`
-    return stageName(key as StageKey | 'alte')
-  }
-  if (length === 'short' && key === 'militare') return t`Militare`
-  return levelLabel(key as LevelKey)
 }
 
 // ─────────────────────────────────────────────────────────── headline ──
@@ -193,68 +173,25 @@ function joined(items: readonly string[]): string {
  * reader can open or drop: „Dosarele de faliment la tribunalele din județul
  * Cluj, pe instanțe". The year is the period menu's, as the other analysis
  * pages keep theirs; a court picked says the place, its county and level
- * then stay as chips.
+ * then stay as chips (`unsaidChips`).
  */
 export function headlineOf(question: Question): readonly Phrase[] {
   const phrases: Phrase[] = [{ role: 'base', before: '', text: t`Dosarele` }]
   const { matters, stages, levels, counties, courts } = question
-  if (matters.length > 0)
-    phrases.push({
-      role: 'matters',
-      before: ' ',
-      text: matters.length <= 2 ? joined(matters.map(matterPhrase)) : plural(matters.length, { other: 'din # materii' }),
-    })
-  if (stages.length > 0)
-    phrases.push({
-      role: 'stages',
-      before: ' ',
-      text:
-        stages.length <= 2
-          ? joined(stages.map(stagePhrase))
-          : plural(stages.length, {
-              few: 'în # etape',
-              other: 'în # de etape',
-            }),
-    })
+  if (matters.length > 0) phrases.push({ role: 'matters', before: ' ', text: matters.length <= 2 ? joined(matters.map(matterPhrase)) : plural(matters.length, { other: 'din # materii' }) })
+  if (stages.length > 0) phrases.push({ role: 'stages', before: ' ', text: stages.length <= 2 ? joined(stages.map(stagePhrase)) : plural(stages.length, { other: 'în # etape' }) })
   if (courts.length > 0) {
-    phrases.push({
-      role: 'courts',
-      before: ' ',
-      text:
-        courts.length === 1
-          ? t`la ${courtName(courts[0]!)}`
-          : plural(courts.length, {
-              few: 'la # instanțe',
-              other: 'la # de instanțe',
-            }),
-    })
+    phrases.push({ role: 'courts', before: ' ', text: courts.length === 1 ? t`la ${courtName(courts[0]!)}` : plural(courts.length, { few: 'la # instanțe', other: 'la # de instanțe' }) })
   } else {
-    if (levels.length > 0)
-      phrases.push({
-        role: 'levels',
-        before: ' ',
-        text: levels.length === 1 ? levelPhrase(levels[0]!, counties.length > 0) : plural(levels.length, { other: 'la # niveluri de instanță' }),
-      })
-    if (counties.length > 0)
-      phrases.push({
-        role: 'counties',
-        before: ' ',
-        text:
-          counties.length === 1
-            ? counties[0] === 'B'
-              ? t`din București`
-              : t`din județul ${countyLabel(counties[0]!)}`
-            : plural(counties.length, {
-                few: 'din # județe',
-                other: 'din # de județe',
-              }),
-      })
+    if (levels.length > 0) phrases.push({ role: 'levels', before: ' ', text: levels.length === 1 ? levelPhrase(levels[0]!, counties.length > 0) : plural(levels.length, { other: 'la # niveluri de instanță' }) })
+    if (counties.length > 0) {
+      const county = counties[0]!
+      // A place the question's cases are judged in: its own message, which a language may say otherwise than a provenance.
+      const one = county === 'B' ? t({ message: 'din București', context: 'the place a question asks about' }) : t`din județul ${countyLabel(county)}`
+      phrases.push({ role: 'counties', before: ' ', text: counties.length === 1 ? one : plural(counties.length, { few: 'din # județe', other: 'din # de județe' }) })
+    }
   }
-  phrases.push({
-    role: 'dupa',
-    before: ', ',
-    text: groupingPhrase(question.dupa),
-  })
+  phrases.push({ role: 'dupa', before: ', ', text: groupingPhrase(question.dupa) })
   return phrases
 }
 
@@ -265,22 +202,18 @@ export function headlineText(question: Question): string {
 }
 
 /** The filters the sentence does not say (a court's county and level), as chips. */
-export function unsaidChips(question: Question): readonly {
-  readonly role: 'levels' | 'counties'
-  readonly key: string
-  readonly label: string
-}[] {
+export function unsaidChips(question: Question): readonly { readonly role: 'levels' | 'counties'; readonly key: string; readonly label: string }[] {
   if (question.courts.length === 0) return []
   return [
-    ...question.levels.map((level) => ({
-      role: 'levels' as const,
-      key: level,
-      label: levelLabel(level),
-    })),
-    ...question.counties.map((county) => ({
-      role: 'counties' as const,
-      key: county,
-      label: countyLabel(county),
-    })),
+    ...question.levels.map((level) => ({ role: 'levels' as const, key: level, label: levelLabel(level) })),
+    ...question.counties.map((county) => ({ role: 'counties' as const, key: county, label: countyLabel(county) })),
   ]
+}
+
+// ───────────────────────────────────────────────────────────── titles ──
+
+/** The browser tab's title for a question: the bare page by the page's title (the route head's), any other by its headline. */
+export function analysisDocumentTitle(i18n: I18n, question: Question): string {
+  if (filterCount(question) === 0 && question.dupa === 'instante') return buildAnalysisPageTitle(i18n)
+  return `${headlineText(question)} — ${i18n._(msg`Justiție`)} — Transparenta.eu`
 }

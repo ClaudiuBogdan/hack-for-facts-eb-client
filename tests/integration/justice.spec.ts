@@ -59,6 +59,29 @@ test.describe('Justice pages', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Dosarul 656/1/2025')
   })
 
+  test('the analysis answers its bare question on the server, the courts ranked with the year before', async ({ page }) => {
+    const response = await page.goto('/justice/analytics')
+    await waitForPageReady(page)
+
+    expect(response?.status()).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Dosarele,\s*pe instanțe/u)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/justice\/analytics$/u)
+    await expect(page.getByRole('navigation', { name: 'Ce instanțe' })).toContainText('1.677.596')
+    const first = page.locator('tbody tr').first()
+    await expect(first).toContainText('Tribunalul București')
+    await expect(first.locator('a')).toHaveAttribute('href', '/justice/courts/TribunalulBUCURESTI?an=2025')
+  })
+
+  test('a question in the analysis address is answered as asked, and not indexed', async ({ page }) => {
+    const response = await page.goto('/justice/analytics?materie=faliment&dupa=judete')
+    await waitForPageReady(page)
+
+    expect(response?.status()).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Dosarele de faliment,\s*pe județe/u)
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, follow')
+    await expect(page.locator('tbody tr').first()).toContainText('București')
+  })
+
   test('a court or a case the portal does not have is a 404', async ({ page }) => {
     expect((await page.goto('/justice/courts/TribunalulNIMIC'))?.status()).toBe(404)
     expect((await page.goto('/justice/cases/TribunalulSALAJ/1/1/1900'))?.status()).toBe(404)

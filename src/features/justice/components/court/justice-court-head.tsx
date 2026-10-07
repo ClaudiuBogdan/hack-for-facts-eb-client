@@ -10,6 +10,7 @@ import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/comp
 import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { countyNameRo } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
+import { levelKeyOf } from '../../lib/analysis-codes'
 import type { CourtSheet } from '../../lib/court-model'
 import { monthText, percentText } from '../../lib/judicial-format'
 import { casesCount, caseCategoryLabel, courtLevelLabel, courtName } from '../../lib/judicial-labels'
@@ -149,6 +150,7 @@ export function JusticeCourtHead({
   readonly aside: ReactNode
 }) {
   const name = courtName(sheet.code)
+  const level = levelKeyOf(sheet.level)
   return (
     <section className="relative border-b" aria-labelledby="justice-court-title">
       <TwoLayerLattice idPrefix="justice-court" />
@@ -164,14 +166,21 @@ export function JusticeCourtHead({
               {name}
             </h1>
             <p className="mt-4 max-w-[60ch] text-base leading-relaxed text-muted-foreground sm:text-lg">{headSentence(sheet)}</p>
-            {sheet.parent ? (
-              <p className="mt-3 text-sm">
+            <p className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+              {sheet.parent ? (
                 <Link to="/justice/courts/$code" params={{ code: sheet.parent }} className={OUT_LINK}>
                   <Trans>În circumscripția: {courtName(sheet.parent)}</Trans>
                   <ArrowUpRight className="size-3.5" aria-hidden="true" />
                 </Link>
-              </p>
-            ) : null}
+              ) : null}
+              {level && level !== 'inalta_curte' ? (
+                // The analysis of the court's level in the same year: where it stands among its peers (the ÎCCJ has none).
+                <Link to="/justice/analytics" search={{ nivel: level, an: sheet.year }} className={OUT_LINK}>
+                  <Trans>Compară cu instanțele de același nivel</Trans>
+                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                </Link>
+              ) : null}
+            </p>
             <JusticeCaseLookup code={sheet.code} className="mt-6" />
           </div>
           <div className="min-w-0 lg:col-span-5 lg:border-l lg:pl-8">{aside}</div>

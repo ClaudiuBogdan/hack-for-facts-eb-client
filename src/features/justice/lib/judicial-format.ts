@@ -80,6 +80,12 @@ export function percentText(share: number): string {
   return `${new Intl.NumberFormat(localeTag(), { maximumFractionDigits: 0 }).format(share * 100)}%`
 }
 
+/** A change as a signed share: „+5%", „−12%", „+<1%"; no change has no sign. */
+export function signedPercentText(change: number): string {
+  const text = percentText(Math.abs(change))
+  return change > 0 ? `+${text}` : change < 0 ? `−${text}` : text
+}
+
 /** A one-decimal rate („60,8"). */
 export function rateText(value: number): string {
   return new Intl.NumberFormat(localeTag(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)

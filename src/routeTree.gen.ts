@@ -60,6 +60,7 @@ import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprind
 import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
 import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investitii-publice/cautare'
 import { Route as JusticeIndexRouteImport } from './routes/justice/index'
+import { Route as JusticeAnalyticsRouteImport } from './routes/justice/analytics'
 import { Route as JustitieIndexRouteImport } from './routes/justitie/index'
 import { Route as JustitieSplatRouteImport } from './routes/justitie/$'
 import { Route as LegislationIndexRouteImport } from './routes/legislation/index'
@@ -479,6 +480,13 @@ const JusticeIndexRoute = JusticeIndexRouteImport.update({
   path: '/',
   getParentRoute: () => JusticeRouteRoute,
 } as any).lazy(() => import('./routes/justice/index.lazy').then((d) => d.Route))
+const JusticeAnalyticsRoute = JusticeAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => JusticeRouteRoute,
+} as any).lazy(() =>
+  import('./routes/justice/analytics.lazy').then((d) => d.Route),
+)
 const JustitieIndexRoute = JustitieIndexRouteImport.update({
   id: '/justitie/',
   path: '/justitie/',
@@ -1525,6 +1533,7 @@ export interface FileRoutesByFullPath {
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
+  '/justice/analytics': typeof JusticeAnalyticsRoute
   '/justitie/$': typeof JustitieSplatRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
@@ -1702,6 +1711,7 @@ export interface FileRoutesByTo {
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
+  '/justice/analytics': typeof JusticeAnalyticsRoute
   '/justitie/$': typeof JustitieSplatRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
@@ -1886,6 +1896,7 @@ export interface FileRoutesById {
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
+  '/justice/analytics': typeof JusticeAnalyticsRoute
   '/justitie/$': typeof JustitieSplatRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
@@ -2076,6 +2087,7 @@ export interface FileRouteTypes {
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
     | '/investitii-publice/cautare'
+    | '/justice/analytics'
     | '/justitie/$'
     | '/legislation/analytics'
     | '/legislation/changes'
@@ -2253,6 +2265,7 @@ export interface FileRouteTypes {
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
     | '/investitii-publice/cautare'
+    | '/justice/analytics'
     | '/justitie/$'
     | '/legislation/analytics'
     | '/legislation/changes'
@@ -2436,6 +2449,7 @@ export interface FileRouteTypes {
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
     | '/investitii-publice/cautare'
+    | '/justice/analytics'
     | '/justitie/$'
     | '/legislation/analytics'
     | '/legislation/changes'
@@ -3053,6 +3067,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/justice/'
       preLoaderRoute: typeof JusticeIndexRouteImport
+      parentRoute: typeof JusticeRouteRoute
+    }
+    '/justice/analytics': {
+      id: '/justice/analytics'
+      path: '/analytics'
+      fullPath: '/justice/analytics'
+      preLoaderRoute: typeof JusticeAnalyticsRouteImport
       parentRoute: typeof JusticeRouteRoute
     }
     '/justitie/': {
@@ -4078,12 +4099,14 @@ const InvestitiiPubliceRouteRouteWithChildren =
   )
 
 interface JusticeRouteRouteChildren {
+  JusticeAnalyticsRoute: typeof JusticeAnalyticsRoute
   JusticeIndexRoute: typeof JusticeIndexRoute
   JusticeCourtsCodeRoute: typeof JusticeCourtsCodeRoute
   JusticeCasesCodeSplatRoute: typeof JusticeCasesCodeSplatRoute
 }
 
 const JusticeRouteRouteChildren: JusticeRouteRouteChildren = {
+  JusticeAnalyticsRoute: JusticeAnalyticsRoute,
   JusticeIndexRoute: JusticeIndexRoute,
   JusticeCourtsCodeRoute: JusticeCourtsCodeRoute,
   JusticeCasesCodeSplatRoute: JusticeCasesCodeSplatRoute,

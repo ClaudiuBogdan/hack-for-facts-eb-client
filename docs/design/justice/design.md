@@ -862,3 +862,75 @@ the year before) — stages 12 (a read per stage per year, ask 3); a cross 4–6
 **Open for the owner:** which variant, or both (the cross as a „Coloane"
 option of the ranking); the address; whether the page lists the cases
 themselves (the cross-court case list exists in the API, bounded by a year).
+
+## 16. The live analysis page (2026-10-07)
+
+The owner picked `clasament`; it is live at `/justice/analytics`. The cross
+table (`incrucisat`) stays as a prototype over the live parts; the page
+lists no cases.
+
+**Code.** `src/features/justice/lib/analysis-{codes,model,plans,text,notes,questions}.ts`
+(pure: the codes each filter sends, the question and its address, the read
+plans, the words), `api/judicial-analysis-api.ts` (the one read),
+`api/justice-analysis-ssr.ts`, `hooks/use-justice-analysis.ts`,
+`components/analysis/*`, routes `src/routes/justice/analytics{,.lazy}.tsx`.
+The prototype `analize` is an adapter over them, as the hub's is.
+
+**Decisions.**
+
+- **Read on the server, seeded in the browser.** The loader reads every read
+  the question's answer needs (the levels' counts, the figures, the grouping
+  and the year before, the years — 6 to 18 reads), each kept ten minutes in
+  the server process under its own 4 s deadline and shared by every question
+  that makes it; the page's queries start from them under the same keys, so
+  hydration reads nothing again. A render with a failed read goes out
+  `no-store`; the page reads what is missing in the browser.
+- **The address is the question** (`an`, `nivel`, `materie`, `etapa`,
+  `judet`, `instanta`, `dupa`, `masura`); a value the page does not know is
+  dropped; the loader keys on the normalized question. The share link writes
+  the year out, so it does not move when the default year does.
+- **Search engines see the bare page only** (canonical at
+  `/justice/analytics`); any question is `noindex, follow`, without a
+  canonical. The server's title is the page's, in the request's language;
+  the browser's tab says the question.
+- **The rate per 1,000 residents** is offered for counties in 2025 only (the
+  residents' year, INS, 1 January 2025); the ready question that asks for it
+  sets that year.
+- **The ÎCCJ's archive never compares with itself.** It is a recent, partial
+  set (153 cases dated 2023, 523 dated 2024, 3,641 dated 2025, 4,986 to July
+  2026), not a year's intake: a question that reads it alone makes no
+  year-before read and shows no change; its own rows among others (its court,
+  its level, its countyless county row) show their count without a change;
+  the caveats say that in mixed totals it inflates the change slightly. Its
+  cases run to 24 July 2026: every date of a question says its source's
+  cutoff, both of them when it reads both („Date până la 22 iunie 2026
+  (Înalta Curte: 24 iulie 2026)").
+- **The year before's column adds up to its total**: the groups that had
+  cases then and none now are in „Restul".
+- **Telemetry** keeps the question's keys (`judet`, `materie`, `etapa`,
+  `dupa`, `masura` join `an`, `nivel` in the sanitizer's safe list), each only
+  with a value from its closed list (`SAFE_JUSTICE_VALUES`): a key carrying
+  anything else is dropped whole. The courts picked (`instanta`) are not
+  kept: a court's code has no closed list in the sanitizer, and a crafted
+  one could carry a name.
+- **The route module loads no snapshot** (it is in the entry every page
+  loads): the address's keys live in `analysis-codes.ts`, the titles in
+  `justice-page-titles.ts`; `-justice-analytics-entry.test.ts` guards it.
+- **The grouping tabs** are Radix tabs activated manually (the arrows move
+  the focus, Enter asks), the table their panel; a partial year in the band
+  takes the focus and shows its figures but cannot be chosen.
+- **Entry points:** the front door's shortcuts („Analize") and each court
+  page („Compară cu instanțele de același nivel", the court's level in its
+  year). The codes a court page needs for that link live in
+  `analysis-codes.ts`, apart from the courts' list, so the court page does
+  not load the hub snapshot.
+- **The county population** (`lib/county-population.ts`) is the front door's
+  and the analysis page's one source.
+
+**Tests.** The model, the plans on recorded answers
+(`fixtures/analysis-reads.json`, `scripts/record-justice-fixtures.ts`: the
+rows, levels and stages add up to the read's total), the words, the server
+read (keys, one read each, a failed read), the page's server markup, the
+route (search, deps, loader, headers, head), the sanitizer, and
+`tests/integration/justice.spec.ts` (the bare page and a question rendered
+on the server).

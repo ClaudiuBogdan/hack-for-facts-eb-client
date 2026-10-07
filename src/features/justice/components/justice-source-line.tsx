@@ -29,12 +29,15 @@ function SourceLink({ href, children }: { readonly href: string; readonly childr
  */
 export function JusticeSourceLine({
   asOf,
+  archiveAsOf = null,
   source,
   notes,
   className,
 }: {
   /** The newest date the data carries; null when the source stores none. */
   readonly asOf: string | null
+  /** With both sources, the ÎCCJ archive's own newest date, said beside the portal's. */
+  readonly archiveAsOf?: string | null
   readonly source: JusticeSource
   readonly notes: readonly ReactNode[]
   readonly className?: string
@@ -56,7 +59,7 @@ export function JusticeSourceLine({
             <Trans>și arhiva ÎCCJ</Trans>
           </>
         ) : null}
-        {asOf ? <>, {t`date până la ${dayText(asOf)}`}</> : null}
+        {asOf ? <>, {source === 'both' && archiveAsOf ? t`date până la ${dayText(asOf)} (arhiva ÎCCJ: ${dayText(archiveAsOf)})` : t`date până la ${dayText(asOf)}`}</> : null}
       </span>
       {notes.length > 0 ? <CaveatsMarker notes={notes} /> : null}
     </p>

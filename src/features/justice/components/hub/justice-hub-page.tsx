@@ -4,11 +4,10 @@ import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
-import { COMPANY_HUB_SNAPSHOT } from '@/features/private-companies/lib/hub-snapshot'
 import { HomeSectionNav } from '@/features/procurement/components/home/home-chrome'
 import { useWarmRouteCode } from '@/hooks/use-warm-route-code'
 import { JUSTICE_HUB_DEFAULTS, parseJusticeHubSearch, type JusticeHubSearch } from '@/schemas/judicial'
-import type { CountyPopulation } from '../../lib/hub-model'
+import { COUNTY_POPULATION } from '../../lib/county-population'
 import { JUSTICE_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
 import type { JusticeHubSnapshot } from '../../lib/hub-snapshot-types'
 import { countText, millionsText } from '../../lib/judicial-format'
@@ -22,13 +21,6 @@ import {
   JusticeYearsBand,
 } from './justice-hub-bands'
 import { JusticeHubHero, JusticeTopCourtsPanel } from './justice-hub-hero'
-
-/** Residents on 1 January of the population year, by county, from the companies hub's INS read (POP105A). */
-const POPULATION: CountyPopulation = {
-  year: COMPANY_HUB_SNAPSHOT.fiscalYear,
-  national: COMPANY_HUB_SNAPSHOT.national.population,
-  byCounty: new Map(COMPANY_HUB_SNAPSHOT.counties.map((county) => [county.code, county.population])),
-}
 
 function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
@@ -117,7 +109,7 @@ export function JusticeHub({
       />
       <HomeSectionNav title={t`Justiție`} sections={sections} />
       <JusticeHubFigures snapshot={snapshot} />
-      <JusticeCountiesBand snapshot={snapshot} population={POPULATION} index={indexOf('judete')} />
+      <JusticeCountiesBand snapshot={snapshot} population={COUNTY_POPULATION} index={indexOf('judete')} />
       <JusticeMattersBand snapshot={snapshot} index={indexOf('materii')} scope={choices.materii} onScope={(scope) => onChoose('materii', scope)} />
       <JusticeLevelsBand snapshot={snapshot} index={indexOf('trepte')} />
       <JusticeCourtsBand snapshot={snapshot} index={indexOf('instante')} level={choices.nivel} onLevel={(level) => onChoose('nivel', level)} />

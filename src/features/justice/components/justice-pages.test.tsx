@@ -81,8 +81,9 @@ describe('the front door', () => {
     ])
   })
 
-  it('links each court it names to its page', () => {
+  it('links each court it names to its page, and leads to the analysis', () => {
     expect(html).toContain('href="/justice/courts/JudecatoriaSECTORUL1BUCURESTI"')
+    expect(html).toContain('href="/justice/analytics"')
   })
 
   it('shows each choice’s default when the address holds it unset or invalid', () => {
@@ -103,6 +104,7 @@ describe('a court', () => {
       'Tribunal din județul Sălaj.',
       'Pe portal are 2.632 de dosare cu data din 2025',
       'În circumscripția: Curtea de Apel Cluj',
+      'Compară cu instanțele de același nivel',
       'Sursa:',
       'Dosare cu data din 2025',
       'Ce se judecă',

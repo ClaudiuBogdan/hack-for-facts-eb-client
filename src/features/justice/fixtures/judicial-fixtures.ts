@@ -1,8 +1,11 @@
 import type { JudicialCaseDetail } from '@/schemas/judicial'
+import { caseloadOf } from '../api/judicial-analysis-api'
 import { caseDetailOf, relatedReadOf } from '../api/judicial-case-api'
 import { childrenReadOf, courtReadsOf } from '../api/judicial-court-api'
+import { caseloadKey, type AnalysisSeed, type Caseload, type CaseloadRead } from '../lib/analysis-plans'
 import { caseSheetOf, otherCaseIds, type CaseSheet } from '../lib/case-model'
 import { courtSheetOf, type CourtSheet } from '../lib/court-model'
+import analysisReads from './analysis-reads.json'
 import casePage from './case-page.json'
 import caseRelated from './case-related.json'
 import courtChildren from './court-children.json'
@@ -33,6 +36,17 @@ export function caseDetailFixture(): JudicialCaseDetail {
   const detail = caseDetailOf(rawCasePage)
   if (detail === null) throw new Error('the case fixture holds no case')
   return detail
+}
+
+/**
+ * The analysis page's reads for two questions — the bare page, and the
+ * contentious-administrative cases by stage — each with the API's answer.
+ */
+export const analysisFixtureReads: readonly (CaseloadRead & { readonly answer: Caseload })[] = (analysisReads as readonly (CaseloadRead & { readonly data: unknown })[]).map(({ data, ...read }) => ({ ...read, answer: caseloadOf(data) }))
+
+/** Those reads as the server seeds them, by the page's query keys. */
+export function analysisSeedFixture(): AnalysisSeed {
+  return analysisFixtureReads.map((read) => ({ key: caseloadKey({ groupBy: read.groupBy, filter: read.filter }), data: read.answer }))
 }
 
 export function caseSheetFixture(related: 'read' | 'failed' = 'read', detail: JudicialCaseDetail = caseDetailFixture()): CaseSheet {

@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
@@ -52,6 +53,9 @@ export function JusticeHubHero({
                 <Trans>Sau mergi direct la</Trans>
               </MonoLabel>
               <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
+                <Link to="/justice/analytics" className={HUB_SHORTCUT_LINK_CLASS}>
+                  <Trans>Analize</Trans>
+                </Link>
                 <a href="#instante" className={HUB_SHORTCUT_LINK_CLASS}>
                   <Trans>Toate instanțele</Trans>
                 </a>

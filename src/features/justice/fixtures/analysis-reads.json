@@ -1,0 +1,3267 @@
+[
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1677596,
+    "groups": [
+     {
+      "key": "judecatorie",
+      "caseCount": 1157463
+     },
+     {
+      "key": "tribunal",
+      "caseCount": 377433
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 138004
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 3641
+     },
+     {
+      "key": "tribunal_militar",
+      "caseCount": 870
+     },
+     {
+      "key": "curte_militara_apel",
+      "caseCount": 185
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "court",
+  "filter": {
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1677596,
+    "groups": [
+     {
+      "key": "TribunalulBUCURESTI",
+      "caseCount": 86858
+     },
+     {
+      "key": "JudecatoriaSECTORUL1BUCURESTI",
+      "caseCount": 46197
+     },
+     {
+      "key": "CurteadeApelBUCURESTI",
+      "caseCount": 41331
+     },
+     {
+      "key": "JudecatoriaTIMISOARA",
+      "caseCount": 37497
+     },
+     {
+      "key": "JudecatoriaBUFTEA",
+      "caseCount": 32774
+     },
+     {
+      "key": "JudecatoriaSECTORUL2BUCURESTI",
+      "caseCount": 30666
+     },
+     {
+      "key": "JudecatoriaIASI",
+      "caseCount": 30441
+     },
+     {
+      "key": "JudecatoriaSECTORUL3BUCURESTI",
+      "caseCount": 30071
+     },
+     {
+      "key": "JudecatoriaCLUJNAPOCA",
+      "caseCount": 27029
+     },
+     {
+      "key": "JudecatoriaCRAIOVA",
+      "caseCount": 25918
+     },
+     {
+      "key": "JudecatoriaCONSTANTA",
+      "caseCount": 24497
+     },
+     {
+      "key": "JudecatoriaSECTORUL5BUCURESTI",
+      "caseCount": 22119
+     },
+     {
+      "key": "JudecatoriaBRASOV",
+      "caseCount": 22064
+     },
+     {
+      "key": "JudecatoriaBAIAMARE",
+      "caseCount": 19897
+     },
+     {
+      "key": "JudecatoriaSECTORUL4BUCURESTI",
+      "caseCount": 19707
+     },
+     {
+      "key": "JudecatoriaSECTORUL6BUCURESTI",
+      "caseCount": 18825
+     },
+     {
+      "key": "JudecatoriaFOCSANI",
+      "caseCount": 16468
+     },
+     {
+      "key": "JudecatoriaPITESTI",
+      "caseCount": 16204
+     },
+     {
+      "key": "JudecatoriaPLOIESTI",
+      "caseCount": 15994
+     },
+     {
+      "key": "JudecatoriaGALATI",
+      "caseCount": 15804
+     },
+     {
+      "key": "JudecatoriaARAD",
+      "caseCount": 15212
+     },
+     {
+      "key": "JudecatoriaBACAU",
+      "caseCount": 15103
+     },
+     {
+      "key": "JudecatoriaORADEA",
+      "caseCount": 14770
+     },
+     {
+      "key": "TribunalulILFOV",
+      "caseCount": 14573
+     },
+     {
+      "key": "TribunalulCONSTANTA",
+      "caseCount": 14445
+     },
+     {
+      "key": "JudecatoriaTARGUJIU",
+      "caseCount": 14161
+     },
+     {
+      "key": "TribunalulIASI",
+      "caseCount": 14158
+     },
+     {
+      "key": "JudecatoriaCORNETU",
+      "caseCount": 13669
+     },
+     {
+      "key": "JudecatoriaTURDA",
+      "caseCount": 13549
+     },
+     {
+      "key": "TribunalulTIMIS",
+      "caseCount": 13019
+     },
+     {
+      "key": "JudecatoriaGIURGIU",
+      "caseCount": 12972
+     },
+     {
+      "key": "JudecatoriaBOTOSANI",
+      "caseCount": 12955
+     },
+     {
+      "key": "JudecatoriaBRAILA",
+      "caseCount": 12927
+     },
+     {
+      "key": "JudecatoriaSIBIU",
+      "caseCount": 12525
+     },
+     {
+      "key": "TribunalulDOLJ",
+      "caseCount": 12482
+     },
+     {
+      "key": "JudecatoriaBUZAU",
+      "caseCount": 12479
+     },
+     {
+      "key": "CurteadeApelCRAIOVA",
+      "caseCount": 12456
+     },
+     {
+      "key": "JudecatoriaTARGUMURES",
+      "caseCount": 11473
+     },
+     {
+      "key": "JudecatoriaDROBETATURNUSEVERIN",
+      "caseCount": 11448
+     },
+     {
+      "key": "JudecatoriaRAMNICUVALCEA",
+      "caseCount": 10598
+     },
+     {
+      "key": "JudecatoriaSATUMARE",
+      "caseCount": 10488
+     },
+     {
+      "key": "TribunalulCLUJ",
+      "caseCount": 10345
+     },
+     {
+      "key": "JudecatoriaSUCEAVA",
+      "caseCount": 10305
+     },
+     {
+      "key": "TribunalulSUCEAVA",
+      "caseCount": 10068
+     },
+     {
+      "key": "JudecatoriaVASLUI",
+      "caseCount": 10016
+     },
+     {
+      "key": "TribunalulBRASOV",
+      "caseCount": 9745
+     },
+     {
+      "key": "TribunalulPRAHOVA",
+      "caseCount": 9743
+     },
+     {
+      "key": "CurteadeApelCLUJ",
+      "caseCount": 9709
+     },
+     {
+      "key": "TribunalulARGES",
+      "caseCount": 9319
+     },
+     {
+      "key": "JudecatoriaTARGOVISTE",
+      "caseCount": 9273
+     },
+     {
+      "key": "JudecatoriaPIATRANEAMT",
+      "caseCount": 9272
+     },
+     {
+      "key": "TribunalulGORJ",
+      "caseCount": 9103
+     },
+     {
+      "key": "TribunalulMURES",
+      "caseCount": 9080
+     },
+     {
+      "key": "TribunalulBACAU",
+      "caseCount": 9026
+     },
+     {
+      "key": "JudecatoriaSLATINA",
+      "caseCount": 8766
+     },
+     {
+      "key": "TribunalulBIHOR",
+      "caseCount": 8719
+     },
+     {
+      "key": "JudecatoriaBISTRITA",
+      "caseCount": 8566
+     },
+     {
+      "key": "JudecatoriaMEDGIDIA",
+      "caseCount": 8462
+     },
+     {
+      "key": "CurteadeApelALBAIULIA",
+      "caseCount": 8203
+     },
+     {
+      "key": "TribunalulARAD",
+      "caseCount": 7581
+     },
+     {
+      "key": "JudecatoriaPETROSANI",
+      "caseCount": 7534
+     },
+     {
+      "key": "JudecatoriaBARLAD",
+      "caseCount": 7494
+     },
+     {
+      "key": "CurteadeApelTIMISOARA",
+      "caseCount": 7378
+     },
+     {
+      "key": "TribunalulDAMBOVITA",
+      "caseCount": 7342
+     },
+     {
+      "key": "JudecatoriaDEVA",
+      "caseCount": 7337
+     },
+     {
+      "key": "TribunalulGALATI",
+      "caseCount": 7273
+     },
+     {
+      "key": "JudecatoriaALBAIULIA",
+      "caseCount": 7251
+     },
+     {
+      "key": "CurteadeApelPLOIESTI",
+      "caseCount": 7114
+     },
+     {
+      "key": "CurteadeApelPITESTI",
+      "caseCount": 7099
+     },
+     {
+      "key": "JudecatoriaTULCEA",
+      "caseCount": 6976
+     },
+     {
+      "key": "JudecatoriaROMAN",
+      "caseCount": 6846
+     },
+     {
+      "key": "JudecatoriaONESTI",
+      "caseCount": 6596
+     },
+     {
+      "key": "TribunalulVALCEA",
+      "caseCount": 6575
+     },
+     {
+      "key": "JudecatoriaOLTENITA",
+      "caseCount": 6475
+     },
+     {
+      "key": "TribunalulHUNEDOARA",
+      "caseCount": 6390
+     },
+     {
+      "key": "JudecatoriaCAMPINA",
+      "caseCount": 6268
+     },
+     {
+      "key": "TribunalulMARAMURES",
+      "caseCount": 6266
+     },
+     {
+      "key": "JudecatoriaCALARASI",
+      "caseCount": 6263
+     },
+     {
+      "key": "JudecatoriaPASCANI",
+      "caseCount": 6230
+     },
+     {
+      "key": "CurteadeApelIASI",
+      "caseCount": 6220
+     },
+     {
+      "key": "CurteadeApelCONSTANTA",
+      "caseCount": 6184
+     },
+     {
+      "key": "TribunalulMEHEDINTI",
+      "caseCount": 6145
+     },
+     {
+      "key": "JudecatoriaSLOBOZIA",
+      "caseCount": 6106
+     },
+     {
+      "key": "CurteadeApelTARGUMURES",
+      "caseCount": 5995
+     },
+     {
+      "key": "JudecatoriaRADAUTI",
+      "caseCount": 5965
+     },
+     {
+      "key": "JudecatoriaRESITA",
+      "caseCount": 5928
+     },
+     {
+      "key": "JudecatoriaBOLINTINVALE",
+      "caseCount": 5866
+     },
+     {
+      "key": "CurteadeApelSUCEAVA",
+      "caseCount": 5809
+     },
+     {
+      "key": "TribunalulNEAMT",
+      "caseCount": 5679
+     },
+     {
+      "key": "JudecatoriaSFANTUGHEORGHE",
+      "caseCount": 5644
+     },
+     {
+      "key": "CurteadeApelBRASOV",
+      "caseCount": 5567
+     },
+     {
+      "key": "TribunalulALBA",
+      "caseCount": 5423
+     },
+     {
+      "key": "TribunalulBUZAU",
+      "caseCount": 5403
+     },
+     {
+      "key": "CurteadeApelGALATI",
+      "caseCount": 5378
+     },
+     {
+      "key": "JudecatoriaCAMPULUNG",
+      "caseCount": 5355
+     },
+     {
+      "key": "TribunalulSIBIU",
+      "caseCount": 5320
+     },
+     {
+      "key": "JudecatoriaTECUCI",
+      "caseCount": 5313
+     },
+     {
+      "key": "JudecatoriaSIGHETUMARMATIEI",
+      "caseCount": 5262
+     },
+     {
+      "key": "TribunalulBOTOSANI",
+      "caseCount": 5221
+     },
+     {
+      "key": "JudecatoriaCARACAL",
+      "caseCount": 5216
+     },
+     {
+      "key": "TribunalulVASLUI",
+      "caseCount": 5210
+     },
+     {
+      "key": "JudecatoriaGAESTI",
+      "caseCount": 5203
+     },
+     {
+      "key": "JudecatoriaALEXANDRIA",
+      "caseCount": 5180
+     },
+     {
+      "key": "JudecatoriaMANGALIA",
+      "caseCount": 5092
+     },
+     {
+      "key": "JudecatoriaURZICENI",
+      "caseCount": 4933
+     },
+     {
+      "key": "TribunalulVRANCEA",
+      "caseCount": 4882
+     },
+     {
+      "key": "JudecatoriaGHERLA",
+      "caseCount": 4836
+     },
+     {
+      "key": "TribunalulBRAILA",
+      "caseCount": 4816
+     },
+     {
+      "key": "CurteadeApelBACAU",
+      "caseCount": 4786
+     },
+     {
+      "key": "CurteadeApelORADEA",
+      "caseCount": 4775
+     },
+     {
+      "key": "JudecatoriaTARGUCARBUNESTI",
+      "caseCount": 4753
+     },
+     {
+      "key": "TribunalulOLT",
+      "caseCount": 4563
+     },
+     {
+      "key": "TribunalulSATUMARE",
+      "caseCount": 4552
+     },
+     {
+      "key": "JudecatoriaTARGUBUJOR",
+      "caseCount": 4505
+     },
+     {
+      "key": "JudecatoriaMEDIAS",
+      "caseCount": 4501
+     },
+     {
+      "key": "JudecatoriaHUNEDOARA",
+      "caseCount": 4429
+     },
+     {
+      "key": "TribunalulBISTRITANASAUD",
+      "caseCount": 4408
+     },
+     {
+      "key": "JudecatoriaZALAU",
+      "caseCount": 4365
+     },
+     {
+      "key": "JudecatoriaROSIORIDEVEDE",
+      "caseCount": 4361
+     },
+     {
+      "key": "JudecatoriaRAMNICUSARAT",
+      "caseCount": 4342
+     },
+     {
+      "key": "JudecatoriaHARLAU",
+      "caseCount": 4303
+     },
+     {
+      "key": "JudecatoriaCARANSEBES",
+      "caseCount": 4298
+     },
+     {
+      "key": "JudecatoriaMOINESTI",
+      "caseCount": 4274
+     },
+     {
+      "key": "JudecatoriaBAILESTI",
+      "caseCount": 4190
+     },
+     {
+      "key": "JudecatoriaLUGOJ",
+      "caseCount": 4024
+     },
+     {
+      "key": "JudecatoriaFALTICENI",
+      "caseCount": 3881
+     },
+     {
+      "key": "TribunalulGIURGIU",
+      "caseCount": 3876
+     },
+     {
+      "key": "JudecatoriaMIERCUREACIUC",
+      "caseCount": 3870
+     },
+     {
+      "key": "JudecatoriaCURTEADEARGES",
+      "caseCount": 3840
+     },
+     {
+      "key": "JudecatoriaAIUD",
+      "caseCount": 3768
+     },
+     {
+      "key": "TribunalulTELEORMAN",
+      "caseCount": 3741
+     },
+     {
+      "key": "JudecatoriaRACARI",
+      "caseCount": 3733
+     },
+     {
+      "key": "JudecatoriaDOROHOI",
+      "caseCount": 3657
+     },
+     {
+      "key": "InaltaCurtedeCasatiesiJustitie",
+      "caseCount": 3641
+     },
+     {
+      "key": "JudecatoriaTARGUNEAMT",
+      "caseCount": 3617
+     },
+     {
+      "key": "JudecatoriaHUSI",
+      "caseCount": 3610
+     },
+     {
+      "key": "JudecatoriaFAGARAS",
+      "caseCount": 3581
+     },
+     {
+      "key": "JudecatoriaSIGHISOARA",
+      "caseCount": 3570
+     },
+     {
+      "key": "JudecatoriaNASAUD",
+      "caseCount": 3516
+     },
+     {
+      "key": "JudecatoriaFETESTI",
+      "caseCount": 3483
+     },
+     {
+      "key": "TribunalulCARASSEVERIN",
+      "caseCount": 3451
+     },
+     {
+      "key": "JudecatoriaVIDELE",
+      "caseCount": 3435
+     },
+     {
+      "key": "JudecatoriaDEJ",
+      "caseCount": 3413
+     },
+     {
+      "key": "JudecatoriaGURAHUMORULUI",
+      "caseCount": 3340
+     },
+     {
+      "key": "JudecatoriaREGHIN",
+      "caseCount": 3330
+     },
+     {
+      "key": "JudecatoriaPOGOANELE",
+      "caseCount": 3313
+     },
+     {
+      "key": "TribunalulCALARASI",
+      "caseCount": 3274
+     },
+     {
+      "key": "JudecatoriaSANNICOLAULMARE",
+      "caseCount": 3209
+     },
+     {
+      "key": "JudecatoriaHOREZU",
+      "caseCount": 3193
+     },
+     {
+      "key": "JudecatoriaCAREI",
+      "caseCount": 3167
+     },
+     {
+      "key": "JudecatoriaLEHLIUGARA",
+      "caseCount": 3135
+     },
+     {
+      "key": "JudecatoriaVALENIIDEMUNTE",
+      "caseCount": 3094
+     },
+     {
+      "key": "JudecatoriaLUDUS",
+      "caseCount": 3088
+     },
+     {
+      "key": "JudecatoriaDRAGASANI",
+      "caseCount": 3079
+     },
+     {
+      "key": "JudecatoriaMIZIL",
+      "caseCount": 3074
+     },
+     {
+      "key": "JudecatoriaBECLEAN",
+      "caseCount": 3062
+     },
+     {
+      "key": "TribunalulTULCEA",
+      "caseCount": 3058
+     },
+     {
+      "key": "JudecatoriaZARNESTI",
+      "caseCount": 3047
+     },
+     {
+      "key": "JudecatoriaBALS",
+      "caseCount": 3041
+     },
+     {
+      "key": "JudecatoriaCOSTESTI",
+      "caseCount": 2956
+     },
+     {
+      "key": "TribunalulComercialCLUJ",
+      "caseCount": 2950
+     },
+     {
+      "key": "JudecatoriaSTREHAIA",
+      "caseCount": 2949
+     },
+     {
+      "key": "JudecatoriaSEGARCEA",
+      "caseCount": 2938
+     },
+     {
+      "key": "JudecatoriaBEIUS",
+      "caseCount": 2921
+     },
+     {
+      "key": "JudecatoriaTURNUMAGURELE",
+      "caseCount": 2837
+     },
+     {
+      "key": "JudecatoriaVISEUDESUS",
+      "caseCount": 2829
+     },
+     {
+      "key": "JudecatoriaVANJUMARE",
+      "caseCount": 2806
+     },
+     {
+      "key": "JudecatoriaFAUREI",
+      "caseCount": 2787
+     },
+     {
+      "key": "JudecatoriaPATARLAGELE",
+      "caseCount": 2750
+     },
+     {
+      "key": "JudecatoriaMOTRU",
+      "caseCount": 2741
+     },
+     {
+      "key": "JudecatoriaCALAFAT",
+      "caseCount": 2704
+     },
+     {
+      "key": "JudecatoriaJIBOU",
+      "caseCount": 2684
+     },
+     {
+      "key": "JudecatoriaMORENI",
+      "caseCount": 2674
+     },
+     {
+      "key": "JudecatoriaCAMPULUNGMOLDOVENESC",
+      "caseCount": 2670
+     },
+     {
+      "key": "JudecatoriaSALONTA",
+      "caseCount": 2640
+     },
+     {
+      "key": "TribunalulSALAJ",
+      "caseCount": 2632
+     },
+     {
+      "key": "JudecatoriaRUPEA",
+      "caseCount": 2618
+     },
+     {
+      "key": "JudecatoriaSIMLEULSILVANIEI",
+      "caseCount": 2617
+     },
+     {
+      "key": "TribunalulIALOMITA",
+      "caseCount": 2610
+     },
+     {
+      "key": "JudecatoriaDETA",
+      "caseCount": 2586
+     },
+     {
+      "key": "JudecatoriaMARGHITA",
+      "caseCount": 2564
+     },
+     {
+      "key": "JudecatoriaINEU",
+      "caseCount": 2523
+     },
+     {
+      "key": "JudecatoriaSEBES",
+      "caseCount": 2503
+     },
+     {
+      "key": "JudecatoriaTARNAVENI",
+      "caseCount": 2501
+     },
+     {
+      "key": "JudecatoriaFILIASI",
+      "caseCount": 2460
+     },
+     {
+      "key": "JudecatoriaHUEDIN",
+      "caseCount": 2447
+     },
+     {
+      "key": "JudecatoriaADJUD",
+      "caseCount": 2437
+     },
+     {
+      "key": "JudecatoriaALESD",
+      "caseCount": 2424
+     },
+     {
+      "key": "JudecatoriaTOPOLOVENI",
+      "caseCount": 2388
+     },
+     {
+      "key": "JudecatoriaSAVENI",
+      "caseCount": 2372
+     },
+     {
+      "key": "JudecatoriaMACIN",
+      "caseCount": 2338
+     },
+     {
+      "key": "JudecatoriaCORABIA",
+      "caseCount": 2325
+     },
+     {
+      "key": "JudecatoriaTARGUSECUIESC",
+      "caseCount": 2325
+     },
+     {
+      "key": "JudecatoriaLIESTI",
+      "caseCount": 2318
+     },
+     {
+      "key": "JudecatoriaCHISINEUCRIS",
+      "caseCount": 2312
+     },
+     {
+      "key": "TribunalulHARGHITA",
+      "caseCount": 2230
+     },
+     {
+      "key": "JudecatoriaORAVITA",
+      "caseCount": 2195
+     },
+     {
+      "key": "JudecatoriaCAMPENI",
+      "caseCount": 2175
+     },
+     {
+      "key": "JudecatoriaPUCIOASA",
+      "caseCount": 2168
+     },
+     {
+      "key": "JudecatoriaBABADAG",
+      "caseCount": 2141
+     },
+     {
+      "key": "JudecatoriaPANCIU",
+      "caseCount": 2047
+     },
+     {
+      "key": "JudecatoriaNEGRESTIOAS",
+      "caseCount": 2045
+     },
+     {
+      "key": "JudecatoriaBLAJ",
+      "caseCount": 2036
+     },
+     {
+      "key": "JudecatoriaLIPOVA",
+      "caseCount": 2035
+     },
+     {
+      "key": "JudecatoriaNOVACI",
+      "caseCount": 2025
+     },
+     {
+      "key": "TribunalulCOVASNA",
+      "caseCount": 2020
+     },
+     {
+      "key": "JudecatoriaORASTIE",
+      "caseCount": 2016
+     },
+     {
+      "key": "JudecatoriaBICAZ",
+      "caseCount": 2011
+     },
+     {
+      "key": "JudecatoriaZIMNICEA",
+      "caseCount": 1960
+     },
+     {
+      "key": "JudecatoriaVATRADORNEI",
+      "caseCount": 1803
+     },
+     {
+      "key": "JudecatoriaGHEORGHENI",
+      "caseCount": 1781
+     },
+     {
+      "key": "JudecatoriaBUHUSI",
+      "caseCount": 1775
+     },
+     {
+      "key": "JudecatoriaDarabani",
+      "caseCount": 1756
+     },
+     {
+      "key": "JudecatoriaODORHEIULSECUIESC",
+      "caseCount": 1751
+     },
+     {
+      "key": "JudecatoriaAVRIG",
+      "caseCount": 1723
+     },
+     {
+      "key": "JudecatoriaHATEG",
+      "caseCount": 1700
+     },
+     {
+      "key": "JudecatoriaTOPLITA",
+      "caseCount": 1679
+     },
+     {
+      "key": "JudecatoriaRADUCANENI",
+      "caseCount": 1621
+     },
+     {
+      "key": "JudecatoriaHARSOVA",
+      "caseCount": 1608
+     },
+     {
+      "key": "JudecatoriaBREZOI",
+      "caseCount": 1574
+     },
+     {
+      "key": "JudecatoriaTARGULAPUS",
+      "caseCount": 1568
+     },
+     {
+      "key": "JudecatoriaBRAD",
+      "caseCount": 1559
+     },
+     {
+      "key": "JudecatoriaAGNITA",
+      "caseCount": 1531
+     },
+     {
+      "key": "JudecatoriaGURAHONT",
+      "caseCount": 1519
+     },
+     {
+      "key": "JudecatoriaPODUTURCULUI",
+      "caseCount": 1483
+     },
+     {
+      "key": "TribunalulComercialMURES",
+      "caseCount": 1468
+     },
+     {
+      "key": "JudecatoriaSALISTE",
+      "caseCount": 1410
+     },
+     {
+      "key": "TribunalulComercialARGES",
+      "caseCount": 1396
+     },
+     {
+      "key": "JudecatoriaSINAIA",
+      "caseCount": 1394
+     },
+     {
+      "key": "JudecatoriaORSOVA",
+      "caseCount": 1346
+     },
+     {
+      "key": "JudecatoriaBALCESTI",
+      "caseCount": 1268
+     },
+     {
+      "key": "JudecatoriaFAGET",
+      "caseCount": 1208
+     },
+     {
+      "key": "JudecatoriaDRAGOMIRESTI",
+      "caseCount": 1020
+     },
+     {
+      "key": "JudecatoriaBAIADEARAMA",
+      "caseCount": 1017
+     },
+     {
+      "key": "TribunalulpentruminoriSifamilieBRASOV",
+      "caseCount": 995
+     },
+     {
+      "key": "JudecatoriaMOLDOVANOUA",
+      "caseCount": 995
+     },
+     {
+      "key": "JudecatoriaINTORSURABUZAULUI",
+      "caseCount": 755
+     },
+     {
+      "key": "TribunalulMilitarTeritorialBUCURESTI",
+      "caseCount": 406
+     },
+     {
+      "key": "CurteaMilitaradeApelBUCURESTI",
+      "caseCount": 185
+     },
+     {
+      "key": "TribunalulMilitarCLUJNAPOCA",
+      "caseCount": 183
+     },
+     {
+      "key": "TribunalulMilitarIASI",
+      "caseCount": 146
+     },
+     {
+      "key": "TribunalulMilitarTIMISOARA",
+      "caseCount": 135
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "category",
+  "filter": {
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1677596,
+    "groups": [
+     {
+      "key": "Civil",
+      "caseCount": 608505
+     },
+     {
+      "key": "Penal",
+      "caseCount": 431336
+     },
+     {
+      "key": "Litigiicuprofesionistii",
+      "caseCount": 254722
+     },
+     {
+      "key": "Contenciosadministrativsifiscal",
+      "caseCount": 150289
+     },
+     {
+      "key": "Minorisifamilie",
+      "caseCount": 114846
+     },
+     {
+      "key": "Asigurarisociale",
+      "caseCount": 45516
+     },
+     {
+      "key": "Litigiidemunca",
+      "caseCount": 38180
+     },
+     {
+      "key": "Faliment",
+      "caseCount": 29712
+     },
+     {
+      "key": "Contencios administrativ şi fiscal",
+      "caseCount": 2549
+     },
+     {
+      "key": "ProprietateIntelectuala",
+      "caseCount": 1241
+     },
+     {
+      "key": "Insolventapersoaneifizice",
+      "caseCount": 241
+     },
+     {
+      "key": "Litigii cu profesioniştii",
+      "caseCount": 197
+     },
+     {
+      "key": "Dreptmaritimsifluvial",
+      "caseCount": 174
+     },
+     {
+      "key": "Proprietate Intelectuală",
+      "caseCount": 58
+     },
+     {
+      "key": "Litigii de muncă",
+      "caseCount": 16
+     },
+     {
+      "key": "Minori şi familie",
+      "caseCount": 8
+     },
+     {
+      "key": "Asigurări sociale",
+      "caseCount": 6
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1727486,
+    "groups": [
+     {
+      "key": "judecatorie",
+      "caseCount": 1178349
+     },
+     {
+      "key": "tribunal",
+      "caseCount": 406595
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 140919
+     },
+     {
+      "key": "tribunal_militar",
+      "caseCount": 882
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 523
+     },
+     {
+      "key": "curte_militara_apel",
+      "caseCount": 218
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "court",
+  "filter": {
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1727486,
+    "groups": [
+     {
+      "key": "TribunalulBUCURESTI",
+      "caseCount": 82720
+     },
+     {
+      "key": "JudecatoriaTIMISOARA",
+      "caseCount": 52849
+     },
+     {
+      "key": "CurteadeApelBUCURESTI",
+      "caseCount": 37101
+     },
+     {
+      "key": "JudecatoriaSECTORUL1BUCURESTI",
+      "caseCount": 36580
+     },
+     {
+      "key": "JudecatoriaIASI",
+      "caseCount": 32211
+     },
+     {
+      "key": "JudecatoriaSECTORUL2BUCURESTI",
+      "caseCount": 31390
+     },
+     {
+      "key": "JudecatoriaSECTORUL3BUCURESTI",
+      "caseCount": 26420
+     },
+     {
+      "key": "JudecatoriaCRAIOVA",
+      "caseCount": 25174
+     },
+     {
+      "key": "JudecatoriaCONSTANTA",
+      "caseCount": 23953
+     },
+     {
+      "key": "JudecatoriaCLUJNAPOCA",
+      "caseCount": 22966
+     },
+     {
+      "key": "JudecatoriaSECTORUL5BUCURESTI",
+      "caseCount": 22363
+     },
+     {
+      "key": "JudecatoriaBRASOV",
+      "caseCount": 22307
+     },
+     {
+      "key": "JudecatoriaBUFTEA",
+      "caseCount": 21126
+     },
+     {
+      "key": "JudecatoriaBAIAMARE",
+      "caseCount": 20417
+     },
+     {
+      "key": "JudecatoriaSECTORUL4BUCURESTI",
+      "caseCount": 19492
+     },
+     {
+      "key": "JudecatoriaPLOIESTI",
+      "caseCount": 17514
+     },
+     {
+      "key": "JudecatoriaPITESTI",
+      "caseCount": 17508
+     },
+     {
+      "key": "JudecatoriaGALATI",
+      "caseCount": 16854
+     },
+     {
+      "key": "JudecatoriaSECTORUL6BUCURESTI",
+      "caseCount": 16852
+     },
+     {
+      "key": "JudecatoriaFOCSANI",
+      "caseCount": 16662
+     },
+     {
+      "key": "TribunalulCONSTANTA",
+      "caseCount": 16111
+     },
+     {
+      "key": "JudecatoriaORADEA",
+      "caseCount": 15422
+     },
+     {
+      "key": "JudecatoriaARAD",
+      "caseCount": 15362
+     },
+     {
+      "key": "JudecatoriaBRAILA",
+      "caseCount": 14998
+     },
+     {
+      "key": "JudecatoriaBACAU",
+      "caseCount": 14773
+     },
+     {
+      "key": "TribunalulDOLJ",
+      "caseCount": 14682
+     },
+     {
+      "key": "JudecatoriaTARGUJIU",
+      "caseCount": 14024
+     },
+     {
+      "key": "JudecatoriaTURDA",
+      "caseCount": 13974
+     },
+     {
+      "key": "TribunalulTIMIS",
+      "caseCount": 13966
+     },
+     {
+      "key": "JudecatoriaTARGUMURES",
+      "caseCount": 13103
+     },
+     {
+      "key": "JudecatoriaDROBETATURNUSEVERIN",
+      "caseCount": 13024
+     },
+     {
+      "key": "TribunalulIASI",
+      "caseCount": 12979
+     },
+     {
+      "key": "JudecatoriaSIBIU",
+      "caseCount": 12977
+     },
+     {
+      "key": "JudecatoriaBOTOSANI",
+      "caseCount": 12847
+     },
+     {
+      "key": "JudecatoriaCORNETU",
+      "caseCount": 12746
+     },
+     {
+      "key": "JudecatoriaGIURGIU",
+      "caseCount": 12700
+     },
+     {
+      "key": "CurteadeApelCRAIOVA",
+      "caseCount": 12666
+     },
+     {
+      "key": "TribunalulHUNEDOARA",
+      "caseCount": 12447
+     },
+     {
+      "key": "TribunalulARGES",
+      "caseCount": 11921
+     },
+     {
+      "key": "JudecatoriaSATUMARE",
+      "caseCount": 11747
+     },
+     {
+      "key": "JudecatoriaBUZAU",
+      "caseCount": 11521
+     },
+     {
+      "key": "TribunalulCLUJ",
+      "caseCount": 11333
+     },
+     {
+      "key": "TribunalulMURES",
+      "caseCount": 11199
+     },
+     {
+      "key": "TribunalulGORJ",
+      "caseCount": 10966
+     },
+     {
+      "key": "JudecatoriaPIATRANEAMT",
+      "caseCount": 10951
+     },
+     {
+      "key": "TribunalulPRAHOVA",
+      "caseCount": 10845
+     },
+     {
+      "key": "TribunalulSUCEAVA",
+      "caseCount": 10838
+     },
+     {
+      "key": "TribunalulBRASOV",
+      "caseCount": 10832
+     },
+     {
+      "key": "JudecatoriaVASLUI",
+      "caseCount": 10816
+     },
+     {
+      "key": "JudecatoriaRAMNICUVALCEA",
+      "caseCount": 10804
+     },
+     {
+      "key": "JudecatoriaSLATINA",
+      "caseCount": 10471
+     },
+     {
+      "key": "JudecatoriaSUCEAVA",
+      "caseCount": 10284
+     },
+     {
+      "key": "TribunalulILFOV",
+      "caseCount": 10016
+     },
+     {
+      "key": "CurteadeApelCLUJ",
+      "caseCount": 9764
+     },
+     {
+      "key": "JudecatoriaBISTRITA",
+      "caseCount": 9758
+     },
+     {
+      "key": "CurteadeApelPITESTI",
+      "caseCount": 9683
+     },
+     {
+      "key": "TribunalulBIHOR",
+      "caseCount": 9536
+     },
+     {
+      "key": "TribunalulMEHEDINTI",
+      "caseCount": 9477
+     },
+     {
+      "key": "TribunalulARAD",
+      "caseCount": 9223
+     },
+     {
+      "key": "CurteadeApelALBAIULIA",
+      "caseCount": 9207
+     },
+     {
+      "key": "JudecatoriaMEDGIDIA",
+      "caseCount": 8606
+     },
+     {
+      "key": "CurteadeApelTIMISOARA",
+      "caseCount": 8249
+     },
+     {
+      "key": "JudecatoriaCAMPINA",
+      "caseCount": 8230
+     },
+     {
+      "key": "JudecatoriaTARGOVISTE",
+      "caseCount": 8154
+     },
+     {
+      "key": "TribunalulDAMBOVITA",
+      "caseCount": 8134
+     },
+     {
+      "key": "TribunalulGALATI",
+      "caseCount": 7921
+     },
+     {
+      "key": "TribunalulMARAMURES",
+      "caseCount": 7907
+     },
+     {
+      "key": "TribunalulBACAU",
+      "caseCount": 7877
+     },
+     {
+      "key": "CurteadeApelPLOIESTI",
+      "caseCount": 7765
+     },
+     {
+      "key": "TribunalulVALCEA",
+      "caseCount": 7681
+     },
+     {
+      "key": "TribunalulALBA",
+      "caseCount": 7500
+     },
+     {
+      "key": "JudecatoriaDEVA",
+      "caseCount": 7490
+     },
+     {
+      "key": "JudecatoriaTULCEA",
+      "caseCount": 7470
+     },
+     {
+      "key": "JudecatoriaBARLAD",
+      "caseCount": 7313
+     },
+     {
+      "key": "JudecatoriaLUGOJ",
+      "caseCount": 7305
+     },
+     {
+      "key": "CurteadeApelCONSTANTA",
+      "caseCount": 6992
+     },
+     {
+      "key": "JudecatoriaALBAIULIA",
+      "caseCount": 6876
+     },
+     {
+      "key": "JudecatoriaROMAN",
+      "caseCount": 6790
+     },
+     {
+      "key": "JudecatoriaCALARASI",
+      "caseCount": 6747
+     },
+     {
+      "key": "JudecatoriaPETROSANI",
+      "caseCount": 6665
+     },
+     {
+      "key": "JudecatoriaONESTI",
+      "caseCount": 6569
+     },
+     {
+      "key": "JudecatoriaCAMPULUNG",
+      "caseCount": 6431
+     },
+     {
+      "key": "JudecatoriaRESITA",
+      "caseCount": 6302
+     },
+     {
+      "key": "CurteadeApelTARGUMURES",
+      "caseCount": 6240
+     },
+     {
+      "key": "TribunalulBISTRITANASAUD",
+      "caseCount": 6175
+     },
+     {
+      "key": "JudecatoriaRADAUTI",
+      "caseCount": 6083
+     },
+     {
+      "key": "TribunalulSIBIU",
+      "caseCount": 5989
+     },
+     {
+      "key": "CurteadeApelGALATI",
+      "caseCount": 5915
+     },
+     {
+      "key": "CurteadeApelIASI",
+      "caseCount": 5909
+     },
+     {
+      "key": "TribunalulNEAMT",
+      "caseCount": 5833
+     },
+     {
+      "key": "JudecatoriaOLTENITA",
+      "caseCount": 5799
+     },
+     {
+      "key": "CurteadeApelSUCEAVA",
+      "caseCount": 5785
+     },
+     {
+      "key": "TribunalulBUZAU",
+      "caseCount": 5781
+     },
+     {
+      "key": "JudecatoriaBOLINTINVALE",
+      "caseCount": 5739
+     },
+     {
+      "key": "JudecatoriaSLOBOZIA",
+      "caseCount": 5705
+     },
+     {
+      "key": "CurteadeApelBRASOV",
+      "caseCount": 5642
+     },
+     {
+      "key": "JudecatoriaMANGALIA",
+      "caseCount": 5543
+     },
+     {
+      "key": "TribunalulOLT",
+      "caseCount": 5537
+     },
+     {
+      "key": "JudecatoriaSFANTUGHEORGHE",
+      "caseCount": 5503
+     },
+     {
+      "key": "JudecatoriaTECUCI",
+      "caseCount": 5467
+     },
+     {
+      "key": "TribunalulBOTOSANI",
+      "caseCount": 5452
+     },
+     {
+      "key": "JudecatoriaPASCANI",
+      "caseCount": 5434
+     },
+     {
+      "key": "JudecatoriaSIGHETUMARMATIEI",
+      "caseCount": 5302
+     },
+     {
+      "key": "CurteadeApelORADEA",
+      "caseCount": 5174
+     },
+     {
+      "key": "TribunalulVRANCEA",
+      "caseCount": 5151
+     },
+     {
+      "key": "TribunalulSATUMARE",
+      "caseCount": 5137
+     },
+     {
+      "key": "JudecatoriaDETA",
+      "caseCount": 5104
+     },
+     {
+      "key": "JudecatoriaMEDIAS",
+      "caseCount": 5072
+     },
+     {
+      "key": "JudecatoriaGHERLA",
+      "caseCount": 5052
+     },
+     {
+      "key": "JudecatoriaCARACAL",
+      "caseCount": 5037
+     },
+     {
+      "key": "JudecatoriaZALAU",
+      "caseCount": 4926
+     },
+     {
+      "key": "JudecatoriaTARGUBUJOR",
+      "caseCount": 4906
+     },
+     {
+      "key": "CurteadeApelBACAU",
+      "caseCount": 4827
+     },
+     {
+      "key": "JudecatoriaMOINESTI",
+      "caseCount": 4805
+     },
+     {
+      "key": "TribunalulVASLUI",
+      "caseCount": 4634
+     },
+     {
+      "key": "JudecatoriaURZICENI",
+      "caseCount": 4623
+     },
+     {
+      "key": "JudecatoriaBAILESTI",
+      "caseCount": 4472
+     },
+     {
+      "key": "JudecatoriaSIGHISOARA",
+      "caseCount": 4466
+     },
+     {
+      "key": "TribunalulBRAILA",
+      "caseCount": 4406
+     },
+     {
+      "key": "JudecatoriaGAESTI",
+      "caseCount": 4377
+     },
+     {
+      "key": "JudecatoriaFALTICENI",
+      "caseCount": 4299
+     },
+     {
+      "key": "JudecatoriaCARANSEBES",
+      "caseCount": 4296
+     },
+     {
+      "key": "JudecatoriaREGHIN",
+      "caseCount": 4248
+     },
+     {
+      "key": "JudecatoriaDOROHOI",
+      "caseCount": 4181
+     },
+     {
+      "key": "TribunalulGIURGIU",
+      "caseCount": 4178
+     },
+     {
+      "key": "JudecatoriaALEXANDRIA",
+      "caseCount": 4138
+     },
+     {
+      "key": "JudecatoriaAIUD",
+      "caseCount": 4128
+     },
+     {
+      "key": "TribunalulTELEORMAN",
+      "caseCount": 4119
+     },
+     {
+      "key": "TribunalulCARASSEVERIN",
+      "caseCount": 4060
+     },
+     {
+      "key": "JudecatoriaRAMNICUSARAT",
+      "caseCount": 4054
+     },
+     {
+      "key": "JudecatoriaTARGUCARBUNESTI",
+      "caseCount": 4013
+     },
+     {
+      "key": "JudecatoriaTARGUNEAMT",
+      "caseCount": 3902
+     },
+     {
+      "key": "JudecatoriaHUNEDOARA",
+      "caseCount": 3848
+     },
+     {
+      "key": "JudecatoriaVIDELE",
+      "caseCount": 3844
+     },
+     {
+      "key": "JudecatoriaCURTEADEARGES",
+      "caseCount": 3831
+     },
+     {
+      "key": "JudecatoriaROSIORIDEVEDE",
+      "caseCount": 3781
+     },
+     {
+      "key": "JudecatoriaHARLAU",
+      "caseCount": 3626
+     },
+     {
+      "key": "JudecatoriaMIERCUREACIUC",
+      "caseCount": 3625
+     },
+     {
+      "key": "JudecatoriaLUDUS",
+      "caseCount": 3599
+     },
+     {
+      "key": "JudecatoriaRACARI",
+      "caseCount": 3484
+     },
+     {
+      "key": "JudecatoriaGURAHUMORULUI",
+      "caseCount": 3420
+     },
+     {
+      "key": "JudecatoriaHOREZU",
+      "caseCount": 3406
+     },
+     {
+      "key": "JudecatoriaVANJUMARE",
+      "caseCount": 3397
+     },
+     {
+      "key": "JudecatoriaPOGOANELE",
+      "caseCount": 3393
+     },
+     {
+      "key": "JudecatoriaCAREI",
+      "caseCount": 3367
+     },
+     {
+      "key": "JudecatoriaNASAUD",
+      "caseCount": 3355
+     },
+     {
+      "key": "JudecatoriaBECLEAN",
+      "caseCount": 3355
+     },
+     {
+      "key": "JudecatoriaFAGARAS",
+      "caseCount": 3343
+     },
+     {
+      "key": "JudecatoriaVALENIIDEMUNTE",
+      "caseCount": 3336
+     },
+     {
+      "key": "JudecatoriaDEJ",
+      "caseCount": 3308
+     },
+     {
+      "key": "JudecatoriaBEIUS",
+      "caseCount": 3305
+     },
+     {
+      "key": "TribunalulCALARASI",
+      "caseCount": 3261
+     },
+     {
+      "key": "TribunalulTULCEA",
+      "caseCount": 3237
+     },
+     {
+      "key": "JudecatoriaCOSTESTI",
+      "caseCount": 3229
+     },
+     {
+      "key": "JudecatoriaMIZIL",
+      "caseCount": 3207
+     },
+     {
+      "key": "JudecatoriaZARNESTI",
+      "caseCount": 3204
+     },
+     {
+      "key": "JudecatoriaMOTRU",
+      "caseCount": 3197
+     },
+     {
+      "key": "JudecatoriaMARGHITA",
+      "caseCount": 3170
+     },
+     {
+      "key": "JudecatoriaFETESTI",
+      "caseCount": 3159
+     },
+     {
+      "key": "JudecatoriaJIBOU",
+      "caseCount": 3155
+     },
+     {
+      "key": "JudecatoriaSANNICOLAULMARE",
+      "caseCount": 3134
+     },
+     {
+      "key": "JudecatoriaCALAFAT",
+      "caseCount": 3120
+     },
+     {
+      "key": "JudecatoriaDRAGASANI",
+      "caseCount": 3101
+     },
+     {
+      "key": "JudecatoriaALESD",
+      "caseCount": 3089
+     },
+     {
+      "key": "JudecatoriaCAMPULUNGMOLDOVENESC",
+      "caseCount": 3074
+     },
+     {
+      "key": "JudecatoriaLEHLIUGARA",
+      "caseCount": 3038
+     },
+     {
+      "key": "JudecatoriaBALS",
+      "caseCount": 2955
+     },
+     {
+      "key": "TribunalulSALAJ",
+      "caseCount": 2946
+     },
+     {
+      "key": "JudecatoriaSEGARCEA",
+      "caseCount": 2926
+     },
+     {
+      "key": "JudecatoriaHUSI",
+      "caseCount": 2918
+     },
+     {
+      "key": "JudecatoriaSTREHAIA",
+      "caseCount": 2916
+     },
+     {
+      "key": "JudecatoriaSAVENI",
+      "caseCount": 2888
+     },
+     {
+      "key": "JudecatoriaFAUREI",
+      "caseCount": 2853
+     },
+     {
+      "key": "JudecatoriaCHISINEUCRIS",
+      "caseCount": 2823
+     },
+     {
+      "key": "JudecatoriaCORABIA",
+      "caseCount": 2798
+     },
+     {
+      "key": "TribunalulCOVASNA",
+      "caseCount": 2785
+     },
+     {
+      "key": "JudecatoriaPATARLAGELE",
+      "caseCount": 2773
+     },
+     {
+      "key": "TribunalulComercialCLUJ",
+      "caseCount": 2757
+     },
+     {
+      "key": "JudecatoriaSEBES",
+      "caseCount": 2737
+     },
+     {
+      "key": "JudecatoriaINEU",
+      "caseCount": 2734
+     },
+     {
+      "key": "JudecatoriaVISEUDESUS",
+      "caseCount": 2727
+     },
+     {
+      "key": "JudecatoriaBUHUSI",
+      "caseCount": 2708
+     },
+     {
+      "key": "JudecatoriaSIMLEULSILVANIEI",
+      "caseCount": 2685
+     },
+     {
+      "key": "TribunalulHARGHITA",
+      "caseCount": 2680
+     },
+     {
+      "key": "JudecatoriaHUEDIN",
+      "caseCount": 2678
+     },
+     {
+      "key": "JudecatoriaTURNUMAGURELE",
+      "caseCount": 2674
+     },
+     {
+      "key": "JudecatoriaSALONTA",
+      "caseCount": 2626
+     },
+     {
+      "key": "JudecatoriaTOPOLOVENI",
+      "caseCount": 2607
+     },
+     {
+      "key": "TribunalulIALOMITA",
+      "caseCount": 2600
+     },
+     {
+      "key": "JudecatoriaMORENI",
+      "caseCount": 2580
+     },
+     {
+      "key": "JudecatoriaCAMPENI",
+      "caseCount": 2574
+     },
+     {
+      "key": "JudecatoriaFILIASI",
+      "caseCount": 2574
+     },
+     {
+      "key": "JudecatoriaORAVITA",
+      "caseCount": 2516
+     },
+     {
+      "key": "JudecatoriaRUPEA",
+      "caseCount": 2494
+     },
+     {
+      "key": "JudecatoriaTARNAVENI",
+      "caseCount": 2483
+     },
+     {
+      "key": "JudecatoriaADJUD",
+      "caseCount": 2471
+     },
+     {
+      "key": "JudecatoriaMACIN",
+      "caseCount": 2458
+     },
+     {
+      "key": "JudecatoriaTARGUSECUIESC",
+      "caseCount": 2456
+     },
+     {
+      "key": "JudecatoriaPANCIU",
+      "caseCount": 2431
+     },
+     {
+      "key": "JudecatoriaBABADAG",
+      "caseCount": 2384
+     },
+     {
+      "key": "JudecatoriaLIESTI",
+      "caseCount": 2293
+     },
+     {
+      "key": "JudecatoriaBLAJ",
+      "caseCount": 2292
+     },
+     {
+      "key": "JudecatoriaVATRADORNEI",
+      "caseCount": 2278
+     },
+     {
+      "key": "JudecatoriaBICAZ",
+      "caseCount": 2141
+     },
+     {
+      "key": "JudecatoriaNOVACI",
+      "caseCount": 2119
+     },
+     {
+      "key": "JudecatoriaLIPOVA",
+      "caseCount": 2116
+     },
+     {
+      "key": "JudecatoriaNEGRESTIOAS",
+      "caseCount": 2106
+     },
+     {
+      "key": "JudecatoriaORASTIE",
+      "caseCount": 2074
+     },
+     {
+      "key": "JudecatoriaPUCIOASA",
+      "caseCount": 2034
+     },
+     {
+      "key": "JudecatoriaPODUTURCULUI",
+      "caseCount": 1990
+     },
+     {
+      "key": "JudecatoriaDarabani",
+      "caseCount": 1915
+     },
+     {
+      "key": "JudecatoriaZIMNICEA",
+      "caseCount": 1914
+     },
+     {
+      "key": "JudecatoriaTOPLITA",
+      "caseCount": 1854
+     },
+     {
+      "key": "JudecatoriaHATEG",
+      "caseCount": 1821
+     },
+     {
+      "key": "JudecatoriaAVRIG",
+      "caseCount": 1816
+     },
+     {
+      "key": "JudecatoriaRADUCANENI",
+      "caseCount": 1784
+     },
+     {
+      "key": "JudecatoriaAGNITA",
+      "caseCount": 1776
+     },
+     {
+      "key": "JudecatoriaBREZOI",
+      "caseCount": 1725
+     },
+     {
+      "key": "JudecatoriaHARSOVA",
+      "caseCount": 1715
+     },
+     {
+      "key": "JudecatoriaGHEORGHENI",
+      "caseCount": 1684
+     },
+     {
+      "key": "TribunalulComercialMURES",
+      "caseCount": 1656
+     },
+     {
+      "key": "JudecatoriaGURAHONT",
+      "caseCount": 1615
+     },
+     {
+      "key": "JudecatoriaSALISTE",
+      "caseCount": 1597
+     },
+     {
+      "key": "JudecatoriaBRAD",
+      "caseCount": 1596
+     },
+     {
+      "key": "JudecatoriaTARGULAPUS",
+      "caseCount": 1578
+     },
+     {
+      "key": "JudecatoriaORSOVA",
+      "caseCount": 1560
+     },
+     {
+      "key": "JudecatoriaSINAIA",
+      "caseCount": 1474
+     },
+     {
+      "key": "JudecatoriaODORHEIULSECUIESC",
+      "caseCount": 1437
+     },
+     {
+      "key": "JudecatoriaBALCESTI",
+      "caseCount": 1434
+     },
+     {
+      "key": "JudecatoriaFAGET",
+      "caseCount": 1190
+     },
+     {
+      "key": "JudecatoriaDRAGOMIRESTI",
+      "caseCount": 1186
+     },
+     {
+      "key": "TribunalulComercialARGES",
+      "caseCount": 1128
+     },
+     {
+      "key": "JudecatoriaBAIADEARAMA",
+      "caseCount": 1057
+     },
+     {
+      "key": "TribunalulpentruminoriSifamilieBRASOV",
+      "caseCount": 982
+     },
+     {
+      "key": "JudecatoriaMOLDOVANOUA",
+      "caseCount": 971
+     },
+     {
+      "key": "JudecatoriaINTORSURABUZAULUI",
+      "caseCount": 698
+     },
+     {
+      "key": "InaltaCurtedeCasatiesiJustitie",
+      "caseCount": 523
+     },
+     {
+      "key": "TribunalulMilitarTeritorialBUCURESTI",
+      "caseCount": 408
+     },
+     {
+      "key": "CurteaMilitaradeApelBUCURESTI",
+      "caseCount": 218
+     },
+     {
+      "key": "TribunalulMilitarCLUJNAPOCA",
+      "caseCount": 211
+     },
+     {
+      "key": "TribunalulMilitarIASI",
+      "caseCount": 139
+     },
+     {
+      "key": "TribunalulMilitarTIMISOARA",
+      "caseCount": 124
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "year",
+  "filter": {
+   "year": {
+    "gte": 2013
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 6302738,
+    "groups": [
+     {
+      "key": "2024",
+      "caseCount": 1727486
+     },
+     {
+      "key": "2025",
+      "caseCount": 1677596
+     },
+     {
+      "key": "2023",
+      "caseCount": 1467075
+     },
+     {
+      "key": "2026",
+      "caseCount": 805189
+     },
+     {
+      "key": "2022",
+      "caseCount": 334885
+     },
+     {
+      "key": "2021",
+      "caseCount": 105059
+     },
+     {
+      "key": "2020",
+      "caseCount": 37737
+     },
+     {
+      "key": "2019",
+      "caseCount": 25670
+     },
+     {
+      "key": "2014",
+      "caseCount": 25343
+     },
+     {
+      "key": "2015",
+      "caseCount": 23885
+     },
+     {
+      "key": "2016",
+      "caseCount": 20295
+     },
+     {
+      "key": "2018",
+      "caseCount": 19637
+     },
+     {
+      "key": "2017",
+      "caseCount": 18823
+     },
+     {
+      "key": "2013",
+      "caseCount": 14058
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 152838,
+    "groups": [
+     {
+      "key": "tribunal",
+      "caseCount": 88583
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 36865
+     },
+     {
+      "key": "judecatorie",
+      "caseCount": 24841
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 2549
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "court",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 152838,
+    "groups": [
+     {
+      "key": "TribunalulBUCURESTI",
+      "caseCount": 18609
+     },
+     {
+      "key": "CurteadeApelBUCURESTI",
+      "caseCount": 16136
+     },
+     {
+      "key": "JudecatoriaSECTORUL1BUCURESTI",
+      "caseCount": 4209
+     },
+     {
+      "key": "TribunalulCONSTANTA",
+      "caseCount": 3408
+     },
+     {
+      "key": "TribunalulDOLJ",
+      "caseCount": 3235
+     },
+     {
+      "key": "TribunalulTIMIS",
+      "caseCount": 3207
+     },
+     {
+      "key": "TribunalulIASI",
+      "caseCount": 3203
+     },
+     {
+      "key": "TribunalulILFOV",
+      "caseCount": 3171
+     },
+     {
+      "key": "TribunalulSUCEAVA",
+      "caseCount": 3091
+     },
+     {
+      "key": "TribunalulBACAU",
+      "caseCount": 2955
+     },
+     {
+      "key": "JudecatoriaGALATI",
+      "caseCount": 2739
+     },
+     {
+      "key": "CurteadeApelCRAIOVA",
+      "caseCount": 2607
+     },
+     {
+      "key": "JudecatoriaBRASOV",
+      "caseCount": 2593
+     },
+     {
+      "key": "InaltaCurtedeCasatiesiJustitie",
+      "caseCount": 2549
+     },
+     {
+      "key": "TribunalulCLUJ",
+      "caseCount": 2514
+     },
+     {
+      "key": "TribunalulPRAHOVA",
+      "caseCount": 2374
+     },
+     {
+      "key": "TribunalulARGES",
+      "caseCount": 2324
+     },
+     {
+      "key": "TribunalulBIHOR",
+      "caseCount": 2271
+     },
+     {
+      "key": "TribunalulGORJ",
+      "caseCount": 2137
+     },
+     {
+      "key": "JudecatoriaSECTORUL5BUCURESTI",
+      "caseCount": 2107
+     },
+     {
+      "key": "TribunalulGALATI",
+      "caseCount": 2060
+     },
+     {
+      "key": "CurteadeApelTIMISOARA",
+      "caseCount": 2047
+     },
+     {
+      "key": "TribunalulMURES",
+      "caseCount": 1945
+     },
+     {
+      "key": "TribunalulBRASOV",
+      "caseCount": 1934
+     },
+     {
+      "key": "JudecatoriaSECTORUL4BUCURESTI",
+      "caseCount": 1865
+     },
+     {
+      "key": "CurteadeApelCLUJ",
+      "caseCount": 1855
+     },
+     {
+      "key": "TribunalulVALCEA",
+      "caseCount": 1834
+     },
+     {
+      "key": "CurteadeApelPLOIESTI",
+      "caseCount": 1791
+     },
+     {
+      "key": "TribunalulARAD",
+      "caseCount": 1769
+     },
+     {
+      "key": "TribunalulNEAMT",
+      "caseCount": 1740
+     },
+     {
+      "key": "TribunalulMEHEDINTI",
+      "caseCount": 1727
+     },
+     {
+      "key": "TribunalulVRANCEA",
+      "caseCount": 1650
+     },
+     {
+      "key": "TribunalulDAMBOVITA",
+      "caseCount": 1614
+     },
+     {
+      "key": "JudecatoriaBUZAU",
+      "caseCount": 1592
+     },
+     {
+      "key": "TribunalulBUZAU",
+      "caseCount": 1566
+     },
+     {
+      "key": "TribunalulMARAMURES",
+      "caseCount": 1542
+     },
+     {
+      "key": "TribunalulSIBIU",
+      "caseCount": 1479
+     },
+     {
+      "key": "CurteadeApelTARGUMURES",
+      "caseCount": 1460
+     },
+     {
+      "key": "CurteadeApelALBAIULIA",
+      "caseCount": 1453
+     },
+     {
+      "key": "TribunalulOLT",
+      "caseCount": 1443
+     },
+     {
+      "key": "CurteadeApelCONSTANTA",
+      "caseCount": 1429
+     },
+     {
+      "key": "TribunalulSATUMARE",
+      "caseCount": 1410
+     },
+     {
+      "key": "JudecatoriaBRAILA",
+      "caseCount": 1399
+     },
+     {
+      "key": "TribunalulBRAILA",
+      "caseCount": 1305
+     },
+     {
+      "key": "CurteadeApelSUCEAVA",
+      "caseCount": 1291
+     },
+     {
+      "key": "TribunalulBOTOSANI",
+      "caseCount": 1249
+     },
+     {
+      "key": "TribunalulALBA",
+      "caseCount": 1243
+     },
+     {
+      "key": "CurteadeApelGALATI",
+      "caseCount": 1201
+     },
+     {
+      "key": "CurteadeApelBACAU",
+      "caseCount": 1160
+     },
+     {
+      "key": "TribunalulTELEORMAN",
+      "caseCount": 1150
+     },
+     {
+      "key": "TribunalulHUNEDOARA",
+      "caseCount": 1145
+     },
+     {
+      "key": "CurteadeApelPITESTI",
+      "caseCount": 1143
+     },
+     {
+      "key": "CurteadeApelORADEA",
+      "caseCount": 1133
+     },
+     {
+      "key": "CurteadeApelIASI",
+      "caseCount": 1125
+     },
+     {
+      "key": "CurteadeApelBRASOV",
+      "caseCount": 1034
+     },
+     {
+      "key": "TribunalulCARASSEVERIN",
+      "caseCount": 1027
+     },
+     {
+      "key": "TribunalulCALARASI",
+      "caseCount": 950
+     },
+     {
+      "key": "TribunalulGIURGIU",
+      "caseCount": 864
+     },
+     {
+      "key": "TribunalulBISTRITANASAUD",
+      "caseCount": 836
+     },
+     {
+      "key": "JudecatoriaRADAUTI",
+      "caseCount": 793
+     },
+     {
+      "key": "TribunalulIALOMITA",
+      "caseCount": 712
+     },
+     {
+      "key": "JudecatoriaALEXANDRIA",
+      "caseCount": 652
+     },
+     {
+      "key": "JudecatoriaALBAIULIA",
+      "caseCount": 639
+     },
+     {
+      "key": "TribunalulHARGHITA",
+      "caseCount": 611
+     },
+     {
+      "key": "JudecatoriaDEVA",
+      "caseCount": 587
+     },
+     {
+      "key": "JudecatoriaDRAGASANI",
+      "caseCount": 557
+     },
+     {
+      "key": "JudecatoriaHOREZU",
+      "caseCount": 541
+     },
+     {
+      "key": "JudecatoriaNASAUD",
+      "caseCount": 534
+     },
+     {
+      "key": "JudecatoriaFALTICENI",
+      "caseCount": 493
+     },
+     {
+      "key": "JudecatoriaSUCEAVA",
+      "caseCount": 457
+     },
+     {
+      "key": "TribunalulVASLUI",
+      "caseCount": 451
+     },
+     {
+      "key": "JudecatoriaPETROSANI",
+      "caseCount": 418
+     },
+     {
+      "key": "TribunalulTULCEA",
+      "caseCount": 387
+     },
+     {
+      "key": "JudecatoriaCAMPENI",
+      "caseCount": 297
+     },
+     {
+      "key": "JudecatoriaVIDELE",
+      "caseCount": 256
+     },
+     {
+      "key": "JudecatoriaBREZOI",
+      "caseCount": 253
+     },
+     {
+      "key": "TribunalulSALAJ",
+      "caseCount": 246
+     },
+     {
+      "key": "JudecatoriaHUNEDOARA",
+      "caseCount": 212
+     },
+     {
+      "key": "JudecatoriaSECTORUL2BUCURESTI",
+      "caseCount": 197
+     },
+     {
+      "key": "TribunalulCOVASNA",
+      "caseCount": 195
+     },
+     {
+      "key": "JudecatoriaFAUREI",
+      "caseCount": 176
+     },
+     {
+      "key": "JudecatoriaSEBES",
+      "caseCount": 165
+     },
+     {
+      "key": "JudecatoriaINEU",
+      "caseCount": 152
+     },
+     {
+      "key": "JudecatoriaHATEG",
+      "caseCount": 127
+     },
+     {
+      "key": "JudecatoriaBRAD",
+      "caseCount": 120
+     },
+     {
+      "key": "JudecatoriaBLAJ",
+      "caseCount": 119
+     },
+     {
+      "key": "JudecatoriaBISTRITA",
+      "caseCount": 102
+     },
+     {
+      "key": "JudecatoriaBACAU",
+      "caseCount": 99
+     },
+     {
+      "key": "JudecatoriaBECLEAN",
+      "caseCount": 62
+     },
+     {
+      "key": "JudecatoriaBOLINTINVALE",
+      "caseCount": 54
+     },
+     {
+      "key": "JudecatoriaTIMISOARA",
+      "caseCount": 51
+     },
+     {
+      "key": "JudecatoriaGURAHONT",
+      "caseCount": 48
+     },
+     {
+      "key": "JudecatoriaSALONTA",
+      "caseCount": 45
+     },
+     {
+      "key": "JudecatoriaCAMPULUNGMOLDOVENESC",
+      "caseCount": 31
+     },
+     {
+      "key": "JudecatoriaRAMNICUVALCEA",
+      "caseCount": 20
+     },
+     {
+      "key": "JudecatoriaORASTIE",
+      "caseCount": 10
+     },
+     {
+      "key": "JudecatoriaGIURGIU",
+      "caseCount": 8
+     },
+     {
+      "key": "JudecatoriaLUGOJ",
+      "caseCount": 6
+     },
+     {
+      "key": "JudecatoriaBALCESTI",
+      "caseCount": 6
+     },
+     {
+      "key": "JudecatoriaTECUCI",
+      "caseCount": 5
+     },
+     {
+      "key": "JudecatoriaBAIAMARE",
+      "caseCount": 4
+     },
+     {
+      "key": "JudecatoriaGHEORGHENI",
+      "caseCount": 4
+     },
+     {
+      "key": "JudecatoriaTARGUSECUIESC",
+      "caseCount": 4
+     },
+     {
+      "key": "JudecatoriaURZICENI",
+      "caseCount": 4
+     },
+     {
+      "key": "JudecatoriaINTORSURABUZAULUI",
+      "caseCount": 4
+     },
+     {
+      "key": "JudecatoriaFAGARAS",
+      "caseCount": 3
+     },
+     {
+      "key": "JudecatoriaCHISINEUCRIS",
+      "caseCount": 2
+     },
+     {
+      "key": "JudecatoriaVATRADORNEI",
+      "caseCount": 2
+     },
+     {
+      "key": "JudecatoriaALESD",
+      "caseCount": 2
+     },
+     {
+      "key": "JudecatoriaSANNICOLAULMARE",
+      "caseCount": 2
+     },
+     {
+      "key": "JudecatoriaROMAN",
+      "caseCount": 2
+     },
+     {
+      "key": "JudecatoriaPIATRANEAMT",
+      "caseCount": 2
+     },
+     {
+      "key": "JudecatoriaMIERCUREACIUC",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaMANGALIA",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaORADEA",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaRUPEA",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaSECTORUL3BUCURESTI",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaBUHUSI",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaTARGULAPUS",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaARAD",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaBARLAD",
+      "caseCount": 1
+     },
+     {
+      "key": "JudecatoriaDEJ",
+      "caseCount": 1
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "category",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 152838,
+    "groups": [
+     {
+      "key": "Contenciosadministrativsifiscal",
+      "caseCount": 150289
+     },
+     {
+      "key": "Contencios administrativ şi fiscal",
+      "caseCount": 2549
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 145417,
+    "groups": [
+     {
+      "key": "tribunal",
+      "caseCount": 86004
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 31778
+     },
+     {
+      "key": "judecatorie",
+      "caseCount": 27222
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 413
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "Fond"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 79929,
+    "groups": [
+     {
+      "key": "tribunal",
+      "caseCount": 44050
+     },
+     {
+      "key": "judecatorie",
+      "caseCount": 24827
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 10971
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 81
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "Apel"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 44441,
+    "groups": [
+     {
+      "key": "tribunal",
+      "caseCount": 43518
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 923
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "Recurs"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 26670,
+    "groups": [
+     {
+      "key": "curte_de_apel",
+      "caseCount": 24105
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 2327
+     },
+     {
+      "key": "tribunal",
+      "caseCount": 238
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "ContestaţieNCPP"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 0,
+    "groups": []
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "RevizuireFond",
+     "ContestatieinanulareApel",
+     "RevizuireApel",
+     "ContestatieinanulareFond",
+     "RevizuireRecurs",
+     "ContestatieinanulareRecurs",
+     "ContestatieInAnulareNCPP",
+     "RevizuireContestatieNCPP",
+     "Recurs în interesul legii"
+    ]
+   },
+   "year": {
+    "eq": 2025
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1661,
+    "groups": [
+     {
+      "key": "curte_de_apel",
+      "caseCount": 866
+     },
+     {
+      "key": "tribunal",
+      "caseCount": 777
+     },
+     {
+      "key": "judecatorie",
+      "caseCount": 14
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 4
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "Fond"
+    ]
+   },
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 87022,
+    "groups": [
+     {
+      "key": "tribunal",
+      "caseCount": 48206
+     },
+     {
+      "key": "judecatorie",
+      "caseCount": 27211
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 11576
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 29
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "Apel"
+    ]
+   },
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 37656,
+    "groups": [
+     {
+      "key": "tribunal",
+      "caseCount": 36775
+     },
+     {
+      "key": "curte_de_apel",
+      "caseCount": 881
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "Recurs"
+    ]
+   },
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 18914,
+    "groups": [
+     {
+      "key": "curte_de_apel",
+      "caseCount": 18329
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 355
+     },
+     {
+      "key": "tribunal",
+      "caseCount": 230
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "ContestaţieNCPP"
+    ]
+   },
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 0,
+    "groups": []
+   }
+  }
+ },
+ {
+  "groupBy": "courtLevel",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "stage": {
+    "in": [
+     "RevizuireFond",
+     "ContestatieinanulareApel",
+     "RevizuireApel",
+     "ContestatieinanulareFond",
+     "RevizuireRecurs",
+     "ContestatieinanulareRecurs",
+     "ContestatieInAnulareNCPP",
+     "RevizuireContestatieNCPP",
+     "Recurs în interesul legii"
+    ]
+   },
+   "year": {
+    "eq": 2024
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 1801,
+    "groups": [
+     {
+      "key": "curte_de_apel",
+      "caseCount": 991
+     },
+     {
+      "key": "tribunal",
+      "caseCount": 793
+     },
+     {
+      "key": "judecatorie",
+      "caseCount": 11
+     },
+     {
+      "key": "inalta_curte",
+      "caseCount": 6
+     }
+    ]
+   }
+  }
+ },
+ {
+  "groupBy": "year",
+  "filter": {
+   "category": {
+    "in": [
+     "Contenciosadministrativsifiscal",
+     "Contencios administrativ şi fiscal"
+    ]
+   },
+   "year": {
+    "gte": 2013
+   }
+  },
+  "data": {
+   "judicialCaseload": {
+    "denominator": 553315,
+    "groups": [
+     {
+      "key": "2025",
+      "caseCount": 152838
+     },
+     {
+      "key": "2024",
+      "caseCount": 145417
+     },
+     {
+      "key": "2023",
+      "caseCount": 125869
+     },
+     {
+      "key": "2026",
+      "caseCount": 69235
+     },
+     {
+      "key": "2022",
+      "caseCount": 33821
+     },
+     {
+      "key": "2021",
+      "caseCount": 7099
+     },
+     {
+      "key": "2017",
+      "caseCount": 3161
+     },
+     {
+      "key": "2015",
+      "caseCount": 2994
+     },
+     {
+      "key": "2020",
+      "caseCount": 2469
+     },
+     {
+      "key": "2014",
+      "caseCount": 2417
+     },
+     {
+      "key": "2016",
+      "caseCount": 2409
+     },
+     {
+      "key": "2018",
+      "caseCount": 1937
+     },
+     {
+      "key": "2019",
+      "caseCount": 1863
+     },
+     {
+      "key": "2013",
+      "caseCount": 1786
+     }
+    ]
+   }
+  }
+ }
+]

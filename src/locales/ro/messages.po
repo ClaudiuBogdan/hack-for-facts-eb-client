@@ -188,6 +188,7 @@ msgstr ""
 msgid "„CJ\""
 msgstr "„CJ\""
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:153
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:261
 msgid "„Cluj\", „IS\""
 msgstr "„Cluj\", „IS\""
@@ -231,6 +232,10 @@ msgstr "„SRL\""
 #: src/features/procurement/components/analytics/analytics-controls.tsx:378
 msgid "„Titlul conține\" caută în titlu, fără diacritice ignorate: „deszăpezire\" și „deszapezire\" dau răspunsuri diferite."
 msgstr "„Titlul conține\" caută în titlu, fără diacritice ignorate: „deszăpezire\" și „deszapezire\" dau răspunsuri diferite."
+
+#: src/features/justice/components/analysis/analysis-filters.tsx:159
+msgid "„Tribunalul Cluj\", „Sectorul 1\""
+msgstr "„Tribunalul Cluj\", „Sectorul 1\""
 
 #: src/components/entities/views/ins-stats-view.derived.ts:126
 msgid "((Immigrants − Emigrants) / Population) × 1,000"
@@ -340,6 +345,16 @@ msgstr "(ultimele 200 de observații)"
 msgid "(Σ POP307A − Σ POP308A) / Σ POP108D × 1.000"
 msgstr "(Σ POP307A − Σ POP308A) / Σ POP108D × 1.000"
 
+#. placeholder {0}: counties.length
+#: src/features/justice/lib/analysis-text.ts:191
+msgid "{0, plural, few {din # județe} other {din # de județe}}"
+msgstr "{0, plural, few {din # județe} other {din # de județe}}"
+
+#. placeholder {0}: courts.length
+#: src/features/justice/lib/analysis-text.ts:184
+msgid "{0, plural, few {la # instanțe} other {la # de instanțe}}"
+msgstr "{0, plural, few {la # instanțe} other {la # de instanțe}}"
+
 #. placeholder {0}: rows.length
 #: src/features/procurement/components/home/home-money-bands.tsx:100
 msgid "{0, plural, few {Toate cele # categorii} other {Toate cele # de categorii}}"
@@ -371,6 +386,11 @@ msgstr "{0, plural, one {# anulat} few {# anulate} other {# de anulate}}"
 #: src/features/national-budget/analytics/components/analytics-parts.tsx:117
 msgid "{0, plural, one {# atenționare} few {# atenționări} other {# de atenționări}}"
 msgstr "{0, plural, one {# atenționare} few {# atenționări} other {# de atenționări}}"
+
+#. placeholder {0}: warnings.length
+#: src/features/justice/components/analysis/analysis-controls.tsx:176
+msgid "{0, plural, one {# atenționare} other {# atenționări}}"
+msgstr "{0, plural, one {# atenționare} other {# atenționări}}"
 
 #. placeholder {0}: keyDates.length
 #: src/features/legal/components/act-key-dates.tsx:37
@@ -676,6 +696,21 @@ msgstr "{0, plural, one {unul s-a anulat} few {# s-au anulat} other {# s-au anul
 msgid "{0, plural, one {Vezi setul} few {Vezi toate cele # seturi} other {Vezi toate cele # de seturi}}"
 msgstr "{0, plural, one {Vezi setul} few {Vezi toate cele # seturi} other {Vezi toate cele # de seturi}}"
 
+#. placeholder {0}: matters.length
+#: src/features/justice/lib/analysis-text.ts:181
+msgid "{0, plural, other {din # materii}}"
+msgstr "{0, plural, other {din # materii}}"
+
+#. placeholder {0}: stages.length
+#: src/features/justice/lib/analysis-text.ts:182
+msgid "{0, plural, other {în # etape}}"
+msgstr "{0, plural, other {în # etape}}"
+
+#. placeholder {0}: levels.length
+#: src/features/justice/lib/analysis-text.ts:186
+msgid "{0, plural, other {la # niveluri de instanță}}"
+msgstr "{0, plural, other {la # niveluri de instanță}}"
+
 #. placeholder {0}: format(from)
 #. placeholder {1}: format(to)
 #: src/features/statistics/components/uat-map/uat-map-class-label.ts:40
@@ -713,6 +748,12 @@ msgstr "{0} · locul {rank} din {total}"
 #: src/features/private-companies/components/profile/company-registry-band.tsx:135
 msgid "{0} · revizie CAEN nepublicată de ANAF"
 msgstr "{0} · revizie CAEN nepublicată de ANAF"
+
+#. placeholder {0}: dayText(PORTAL_AS_OF)
+#. placeholder {1}: dayText(ICCJ_AS_OF)
+#: src/features/justice/lib/analysis-notes.ts:20
+msgid "{0} (Înalta Curte: {1})"
+msgstr "{0} (Înalta Curte: {1})"
 
 #. placeholder {0}: shown.name
 #: src/features/public-enterprises/lib/enterprise-text.ts:101
@@ -875,7 +916,7 @@ msgstr "{0} de achiziții directe"
 
 #. placeholder {0}: millionsText(snapshot.cases.total)
 #. placeholder {1}: countText(courtsWithCases)
-#: src/features/justice/components/hub/justice-hub-page.tsx:111
+#: src/features/justice/components/hub/justice-hub-page.tsx:103
 msgid "{0} de dosare de pe portalul instanțelor și din arhiva Înaltei Curți, la {1} de instanțe: ce se judecă, unde și pe ce treaptă. Persoanele nu sunt numite."
 msgstr "{0} de dosare de pe portalul instanțelor și din arhiva Înaltei Curți, la {1} de instanțe: ce se judecă, unde și pe ce treaptă. Persoanele nu sunt numite."
 
@@ -901,6 +942,7 @@ msgstr "{0} de dosare în total, cu arhiva ÎCCJ"
 #~ msgstr "{0} de dosare publicate pe portalul instanțelor, la {1} de instanțe: ce se judecă, unde și pe ce treaptă. Persoanele nu sunt numite."
 
 #. placeholder {0}: countText(residents)
+#: src/features/justice/components/analysis/analysis-table.tsx:181
 #: src/features/procurement/components/analytics/analytics-answer.tsx:263
 msgid "{0} de locuitori"
 msgstr "{0} de locuitori"
@@ -974,6 +1016,12 @@ msgstr "{0} dintre dosarele din {1} sunt judecate în fond la judecătorii. Apel
 msgid "{0} dintre firmele de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 msgstr "{0} dintre firmele de mai jos i-au vândut aproape în fiecare an din {DIRECT_COMPARABLE_FROM} încoace."
 
+#. placeholder {0}: question.year
+#. placeholder {1}: cutoffText(source)
+#: src/features/justice/lib/analysis-notes.ts:39
+msgid "{0} e un an parțial: datele se opresc la {1}. Nu se compară cu un an întreg."
+msgstr "{0} e un an parțial: datele se opresc la {1}. Nu se compară cu un an întreg."
+
 #. placeholder {0}: formatLegalNumber(total, i18n.locale)
 #: src/features/legal/components/legislation-gazette-directory.tsx:164
 msgid "{0} ediții în {partLabel}, {year}"
@@ -1019,7 +1067,12 @@ msgid "{0} fără situație pentru {1}"
 msgstr "{0} fără situație pentru {1}"
 
 #. placeholder {0}: formatHubPeriod(inflation.period)
+#. placeholder {0}: signedPercentText(change)
 #. placeholder {1}: formatHubPeriod(inflationBase)
+#. placeholder {1}: previous.year
+#. placeholder {1}: question.year - 1
+#: src/features/justice/components/analysis/analysis-view.tsx:28
+#: src/features/justice/components/analysis/analysis-years.tsx:65
 #: src/features/statistics/components/hub/hub-facts.tsx:65
 msgid "{0} față de {1}"
 msgstr "{0} față de {1}"
@@ -1413,8 +1466,11 @@ msgstr "Au fost lipite {0} serii"
 #~ msgid "{0} seturi doar în catalog — cere încărcarea lor"
 #~ msgstr "{0} seturi doar în catalog — cere încărcarea lor"
 
+#. placeholder {0}: items[0]
 #. placeholder {0}: parts[0]
+#. placeholder {1}: items[1]
 #. placeholder {1}: parts[1]
+#: src/features/justice/lib/analysis-text.ts:168
 #: src/features/procurement/lib/contract-text.ts:277
 msgid "{0} și {1}"
 msgstr "{0} și {1}"
@@ -1571,6 +1627,11 @@ msgstr "{0}, an întreg, bugetul general consolidat"
 msgid "{0}, aprobat pentru {1}"
 msgstr "{0}, aprobat pentru {1}"
 
+#. placeholder {0}: rowLabel('materii', first[0]).label
+#: src/features/justice/components/analysis/analysis-view.tsx:37
+msgid "{0}, din dosare"
+msgstr "{0}, din dosare"
+
 #. placeholder {0}: row.label
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:348
 msgid "{0}, în timp"
@@ -1616,6 +1677,12 @@ msgstr "{0}, rândul 5001"
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:193
 msgid "{0}, schimbarea față de {1}"
 msgstr "{0}, schimbarea față de {1}"
+
+#. placeholder {0}: monthOf(PORTAL_AS_OF)
+#. placeholder {1}: monthOf(ICCJ_AS_OF)
+#: src/features/justice/lib/analysis-notes.ts:32
+msgid "{0}; ÎCCJ: {1}"
+msgstr "{0}; ÎCCJ: {1}"
 
 #. placeholder {0}: point.fiscalYear
 #. placeholder {0}: previousText(period)
@@ -1954,7 +2021,7 @@ msgid "{change} față de legea pe {year}"
 msgstr "{change} față de legea pe {year}"
 
 #. placeholder {0}: monthText(lastMonth, 'long')
-#: src/features/justice/components/court/justice-court-head.tsx:71
+#: src/features/justice/components/court/justice-court-head.tsx:72
 msgid "{choice}, până în {0}"
 msgstr "{choice}, până în {0}"
 
@@ -2442,15 +2509,15 @@ msgstr "{lastPage, plural, one {Rezultatele încap pe o singură pagină.} few {
 msgid "{length} observations in this selection"
 msgstr "{length} observații în această selecție"
 
-#: src/features/justice/components/court/justice-court-head.tsx:98
+#: src/features/justice/components/court/justice-court-head.tsx:99
 msgid "{level} din București."
 msgstr "{level} din București."
 
-#: src/features/justice/components/court/justice-court-head.tsx:100
+#: src/features/justice/components/court/justice-court-head.tsx:101
 msgid "{level} din județul {county}."
 msgstr "{level} din județul {county}."
 
-#: src/features/justice/components/court/justice-court-head.tsx:96
+#: src/features/justice/components/court/justice-court-head.tsx:97
 msgid "{level}."
 msgstr "{level}."
 
@@ -3105,6 +3172,11 @@ msgstr "{withRevenue} cu venituri"
 #: src/features/ngos/organization/components/profile-parts.tsx:411
 msgid "{year} — fără situație"
 msgstr "{year} — fără situație"
+
+#. placeholder {0}: lastMonthText(source)
+#: src/features/justice/lib/analysis-text.ts:15
+msgid "{year} (până în {0})"
+msgstr "{year} (până în {0})"
 
 #: src/features/procurement/lib/direct-purchase-text.ts:372
 msgid "{year} (până în {month})"
@@ -4632,6 +4704,10 @@ msgstr "Adaugă"
 msgid "Adaugă o firmă"
 msgstr "Adaugă o firmă"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:159
+msgid "Adaugă o instanță"
+msgstr "Adaugă o instanță"
+
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:286
 msgid "Adaugă o localitate"
 msgstr "Adaugă o localitate"
@@ -4644,11 +4720,14 @@ msgstr "Adaugă seria într-un grafic"
 msgid "Adaugă teritorii"
 msgstr "Adaugă teritorii"
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:68
+#: src/features/justice/components/analysis/analysis-controls.tsx:71
 #: src/features/ngos/registry/components/registry-head.tsx:340
 #: src/features/procurement/components/analytics/analytics-head.tsx:218
 msgid "Adaugă un filtru"
 msgstr "Adaugă un filtru"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:153
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:261
 msgid "Adaugă un județ"
 msgstr "Adaugă un județ"
@@ -5451,7 +5530,7 @@ msgctxt "national budget classification"
 msgid "Alte impozite și taxe pe bunuri și servicii"
 msgstr "Alte impozite și taxe pe bunuri și servicii"
 
-#: src/features/justice/components/hub/justice-hub-page.tsx:89
+#: src/features/justice/components/hub/justice-hub-page.tsx:81
 msgid "Alte instanțe"
 msgstr "Alte instanțe"
 
@@ -5869,6 +5948,8 @@ msgstr ""
 msgid "Analiza nu s-a putut încărca"
 msgstr "Analiza nu s-a putut încărca"
 
+#: src/features/justice/components/analysis/analysis-head.tsx:106
+#: src/features/justice/components/hub/justice-hub-hero.tsx:57
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:95
 #: src/features/private-companies/components/analytics/analytics-head.tsx:144
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:129
@@ -5880,6 +5961,10 @@ msgstr "Analize"
 #: src/features/procurement/lib/analytics-head.ts:65
 msgid "Analize ale achizițiilor publice"
 msgstr "Analize ale achizițiilor publice"
+
+#: src/features/justice/lib/justice-page-titles.ts:23
+msgid "Analize ale dosarelor"
+msgstr "Analize ale dosarelor"
 
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:363
 #: src/features/national-budget/home/components/home-head.tsx:76
@@ -6014,6 +6099,10 @@ msgstr "Anii {0}–{1} din adresă sunt în afara seriei; se arată tot interval
 msgid "Anii cu bilanț"
 msgstr "Anii cu bilanț"
 
+#: src/features/justice/lib/analysis-notes.ts:49
+msgid "Anii dinainte de {JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele încă active după 2013, când a început preluarea: nu sunt volumul instanțelor."
+msgstr "Anii dinainte de {JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele încă active după 2013, când a început preluarea: nu sunt volumul instanțelor."
+
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:117
 msgid "Anii dinainte, pe pagina de achiziții"
 msgstr "Anii dinainte, pe pagina de achiziții"
@@ -6102,6 +6191,7 @@ msgstr "anual"
 #~ msgid "Anual"
 #~ msgstr "Anual"
 
+#: src/features/justice/components/analysis/analysis-head.tsx:112
 #: src/features/legal/components/legislation-acts-directory.tsx:251
 #: src/features/legal/components/legislation-gazette-directory.tsx:209
 #: src/features/national-budget/home/components/home-head.tsx:64
@@ -6124,15 +6214,20 @@ msgstr "Anul {0} din adresă este în afara seriei; se arată tot intervalul {1}
 msgid "Anul {0} nu s-a încheiat: lunile lui sunt în secțiunea „Anul în curs\"."
 msgstr "Anul {0} nu s-a încheiat: lunile lui sunt în secțiunea „Anul în curs\"."
 
+#: src/features/justice/components/analysis/analysis-years.tsx:118
 #: src/features/procurement/components/analytics/analytics-years.tsx:209
 msgid "Anul ales"
 msgstr "Anul ales"
+
+#: src/features/justice/components/analysis/analysis-controls.tsx:35
+msgid "Anul datei dosarului"
+msgstr "Anul datei dosarului"
 
 #: src/features/procurement/components/analytics/analytics-month-field.tsx:76
 msgid "Anul de după"
 msgstr "Anul de după"
 
-#: src/features/justice/components/court/justice-court-head.tsx:74
+#: src/features/justice/components/court/justice-court-head.tsx:75
 msgid "Anul descris"
 msgstr "Anul descris"
 
@@ -6172,7 +6267,11 @@ msgstr "Anul legii"
 msgid "Anul ședințelor: {label}"
 msgstr ""
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:82
+#: src/features/justice/lib/analysis-notes.ts:48
+msgid "Anul unui dosar e anul datei lui din sursă — antetul de pe portal sau data din arhiva ÎCCJ —, nu neapărat data înregistrării."
+msgstr "Anul unui dosar e anul datei lui din sursă — antetul de pe portal sau data din arhiva ÎCCJ —, nu neapărat data înregistrării."
+
+#: src/features/justice/components/hub/justice-hub-hero.tsx:86
 msgid "Anul unui dosar e data din antetul lui pe portal (pentru Înalta Curte, data din arhiva ei), nu o dată de înregistrare verificată."
 msgstr "Anul unui dosar e data din antetul lui pe portal (pentru Înalta Curte, data din arhiva ei), nu o dată de înregistrare verificată."
 
@@ -6187,6 +6286,11 @@ msgstr "Anul unui dosar e data lui din arhiva Înaltei Curți, al cărei înțel
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:129
 msgid "Anul următor"
 msgstr "Anul următor"
+
+#. placeholder {0}: yearText(question.year, source)
+#: src/features/justice/components/analysis/analysis-controls.tsx:30
+msgid "Anul: {0}"
+msgstr "Anul: {0}"
 
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:222
 msgid "Anul: {year}"
@@ -6563,6 +6667,7 @@ msgstr "Apropie"
 msgid "ar fi socotiți de două ori: o dată la bugetul care dă, o dată la cel care cheltuie"
 msgstr "ar fi socotiți de două ori: o dată la bugetul care dă, o dată la cel care cheltuie"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:186
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:638
 #: src/features/ngos/registry/components/registry-filters.tsx:435
 #: src/features/parliament/components/member-interventii-tab.tsx:226
@@ -6574,7 +6679,9 @@ msgstr "ar fi socotiți de două ori: o dată la bugetul care dă, o dată la ce
 msgid "Arată"
 msgstr "Arată"
 
+#. placeholder {0}: casesCount(figures.data.total)
 #. placeholder {0}: countText(records)
+#: src/features/justice/components/analysis/analysis-filters.tsx:186
 #: src/features/procurement/components/analytics/analytics-filters.tsx:529
 msgid "Arată {0}"
 msgstr "Arată {0}"
@@ -6613,7 +6720,7 @@ msgstr "Arată frecvența publicată"
 msgid "Arată județele ca"
 msgstr "Arată județele ca"
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:128
+#: src/features/justice/components/hub/justice-hub-hero.tsx:132
 #: src/features/ngos/hub/ngo-hub-page.tsx:170
 #: src/features/ngos/organization/components/purpose-section.tsx:127
 #: src/features/ngos/registry/components/registry-filters.tsx:103
@@ -6631,7 +6738,7 @@ msgid "Arată mai puțin"
 msgstr "Arată mai puțin"
 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:326
-#: src/features/justice/components/hub/justice-hub-hero.tsx:128
+#: src/features/justice/components/hub/justice-hub-hero.tsx:132
 #: src/features/legal/components/act-timeline-band.tsx:96
 #: src/features/ngos/hub/ngo-hub-page.tsx:170
 #: src/features/ngos/organization/components/purpose-section.tsx:127
@@ -6704,9 +6811,17 @@ msgstr "Arhitectură și inginerie"
 msgid "Arhiva Curții nu dă părțile, ședințele detaliate și nici obiectul dosarelor."
 msgstr "Arhiva Curții nu dă părțile, ședințele detaliate și nici obiectul dosarelor."
 
-#: src/features/justice/components/justice-source-line.tsx:48
+#: src/features/justice/components/justice-source-line.tsx:51
 msgid "arhiva Înaltei Curți de Casație și Justiție"
 msgstr "arhiva Înaltei Curți de Casație și Justiție"
+
+#: src/features/justice/lib/analysis-notes.ts:51
+msgid "Arhiva Înaltei Curți e parțială și mai plină în anii recenți: nu i se arată o schimbare față de anul trecut, iar în totaluri mărește puțin schimbarea."
+msgstr "Arhiva Înaltei Curți e parțială și mai plină în anii recenți: nu i se arată o schimbare față de anul trecut, iar în totaluri mărește puțin schimbarea."
+
+#: src/features/justice/lib/analysis-notes.ts:44
+msgid "Arhiva Înaltei Curți e un set parțial, mai plin în anii recenți: anii ei nu se compară între ei."
+msgstr "Arhiva Înaltei Curți e un set parțial, mai plin în anii recenți: anii ei nu se compară între ei."
 
 #: src/features/justice/components/case/justice-case-page.tsx:194
 msgid "Arhiva Înaltei Curți nu dă căile de atac ale dosarelor ei."
@@ -7570,6 +7685,7 @@ msgstr "Răsfoiți seturile dvs. de date sau pe cele partajate, apoi previzualiz
 msgid "Browser storage is unavailable. Opening the dataset copy in the current tab instead."
 msgstr "Stocarea din browser nu este disponibilă. Se deschide în schimb copia setului de date în fila curentă."
 
+#: src/features/justice/lib/analysis-text.ts:54
 #: src/features/procurement/lib/buyer-text.ts:28
 msgid "București"
 msgstr "București"
@@ -8379,6 +8495,10 @@ msgstr ""
 msgid "Care"
 msgstr "Care"
 
+#: src/features/justice/lib/analysis-questions.ts:36
+msgid "Care sunt cele mai încărcate instanțe din județul Cluj?"
+msgstr "Care sunt cele mai încărcate instanțe din județul Cluj?"
+
 #: src/features/national-budget/home/lib/home-format.ts:20
 msgid "CAS și CASS: pensii și sănătate, reținute din salarii"
 msgstr "CAS și CASS: pensii și sănătate, reținute din salarii"
@@ -8581,6 +8701,10 @@ msgstr "Catalogul SEAP listează fișiere de export pentru {family} până în {
 msgid "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 msgstr "Câte achiziții, contracte și acorduri-cadru, pentru câți lei, la ce instituții, firme, categorii și locuri: întreabă și compară, din SEAP, din 2019."
 
+#: src/features/justice/lib/justice-page-titles.ts:27
+msgid "Câte dosare au instanțele din România, pe instanțe, județe, materii, etape și ani: întreabă și compară, de pe portalul instanțelor. Persoanele nu sunt numite."
+msgstr "Câte dosare au instanțele din România, pe instanțe, județe, materii, etape și ani: întreabă și compară, de pe portalul instanțelor. Persoanele nu sunt numite."
+
 #: src/routes/companies.analytics.tsx:56
 msgid "Câte firme, câte au depus bilanț și cât au raportat — cifra de afaceri, rezultatul net, salariații — pe județe, activități, forme juridice și ani fiscali, din 2008. Date ONRC, ANAF și Ministerul Finanțelor."
 msgstr "Câte firme, câte au depus bilanț și cât au raportat — cifra de afaceri, rezultatul net, salariații — pe județe, activități, forme juridice și ani fiscali, din 2008. Date ONRC, ANAF și Ministerul Finanțelor."
@@ -8723,6 +8847,7 @@ msgstr "Cauciuc și mase plastice"
 #~ msgid "Cauta"
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:55
 #: src/features/landing/components/search/landing-search.tsx:679
 #: src/features/legal/components/legislation-act-finder.tsx:232
 #: src/features/legal/components/legislation-search-band.tsx:65
@@ -8807,6 +8932,7 @@ msgstr "Caută firmele în funcțiune după județ →"
 #~ msgid "Cauta furnizori ONG, servicii licentiate, capacitati si acoperire judeteana pe baza instantaneelor mock."
 #~ msgstr "Caută furnizori ONG, servicii licențiate, capacități și acoperire județeană pe baza instantaneelor mock."
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:55
 #: src/features/statistics/components/detail/detail-option-list.tsx:196
 msgid "Caută în {label}"
 msgstr "Caută în {label}"
@@ -9160,6 +9286,10 @@ msgstr "Ce a primit de la stat"
 msgid "Ce activități au autorizate"
 msgstr "Ce activități au autorizate"
 
+#: src/features/justice/lib/analysis-questions.ts:41
+msgid "Ce ajunge la Înalta Curte?"
+msgstr "Ce ajunge la Înalta Curte?"
+
 #: src/features/national-budget/analytics/lib/analytics-view.ts:457
 msgid "Ce aprobă legea bugetului pe {year}?"
 msgstr "Ce aprobă legea bugetului pe {year}?"
@@ -9290,6 +9420,14 @@ msgstr "Ce înregistrări"
 #~ msgid "Ce înseamnă indicatorii?"
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-levels.tsx:25
+msgid "Ce instanțe"
+msgstr "Ce instanțe"
+
+#: src/features/justice/lib/analysis-questions.ts:28
+msgid "Ce instanțe au cele mai multe dosare?"
+msgstr "Ce instanțe au cele mai multe dosare?"
+
 #: src/features/procurement/lib/analytics-questions.ts:44
 msgid "Ce instituții atribuie cele mai multe contracte?"
 msgstr "Ce instituții atribuie cele mai multe contracte?"
@@ -9306,7 +9444,11 @@ msgstr "Ce intră în cifre"
 msgid "Ce își propune"
 msgstr "Ce își propune"
 
-#: src/features/justice/components/hub/justice-hub-page.tsx:104
+#: src/features/justice/lib/analysis-questions.ts:40
+msgid "Ce judecă curțile de apel?"
+msgstr "Ce judecă curțile de apel?"
+
+#: src/features/justice/components/hub/justice-hub-page.tsx:96
 msgid "Ce judecă<0/>instanțele"
 msgstr "Ce judecă<0/>instanțele"
 
@@ -9386,13 +9528,19 @@ msgstr "Ce se cumpără"
 msgid "Ce se cumpără cel mai des prin contracte?"
 msgstr "Ce se cumpără cel mai des prin contracte?"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:162
 #: src/features/justice/components/court/justice-court-page.tsx:97
 #: src/features/justice/components/court/justice-court-page.tsx:251
 #: src/features/justice/components/hub/justice-hub-bands.tsx:160
-#: src/features/justice/components/hub/justice-hub-hero.tsx:59
-#: src/features/justice/components/hub/justice-hub-page.tsx:85
+#: src/features/justice/components/hub/justice-hub-hero.tsx:63
+#: src/features/justice/components/hub/justice-hub-page.tsx:77
+#: src/features/justice/lib/analysis-questions.ts:23
 msgid "Ce se judecă"
 msgstr "Ce se judecă"
+
+#: src/features/justice/lib/analysis-questions.ts:39
+msgid "Ce se judecă în România?"
+msgstr "Ce se judecă în România?"
 
 #: src/features/ngos/organization/components/ngo-organization-page.tsx:266
 msgid "Ce spun ANAF și registrul"
@@ -9426,12 +9574,12 @@ msgstr "Ce ține minte browserul tău"
 msgid "Ce trebuie știut"
 msgstr "Ce trebuie știut"
 
-#: src/features/justice/components/justice-source-line.tsx:78
+#: src/features/justice/components/justice-source-line.tsx:81
 msgid "Ce trebuie știut despre aceste date"
 msgstr "Ce trebuie știut despre aceste date"
 
 #. placeholder {0}: notes.length
-#: src/features/justice/components/justice-source-line.tsx:71
+#: src/features/justice/components/justice-source-line.tsx:74
 msgid "Ce trebuie știut despre aceste date ({0} note)"
 msgstr "Ce trebuie știut despre aceste date ({0} note)"
 
@@ -9599,7 +9747,7 @@ msgid "Cele 17 obiective ONU, până în 2030"
 msgstr "Cele 17 obiective ONU, până în 2030"
 
 #. placeholder {0}: snapshot.year
-#: src/features/justice/components/hub/justice-hub-hero.tsx:117
+#: src/features/justice/components/hub/justice-hub-hero.tsx:121
 msgid "Cele mai încărcate instanțe, {0}"
 msgstr "Cele mai încărcate instanțe, {0}"
 
@@ -10187,6 +10335,7 @@ msgstr "cifra tipărită de buletinul din {0}, de la 1 ianuarie"
 msgid "Cifre de ansamblu"
 msgstr ""
 
+#: src/features/justice/components/analysis/analysis-figures.tsx:15
 #: src/features/justice/components/court/justice-court-page.tsx:234
 #: src/features/justice/components/hub/justice-hub-bands.tsx:93
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:676
@@ -10461,6 +10610,10 @@ msgstr "Site-ul primăriei"
 msgid "Civil"
 msgstr "Civil"
 
+#: src/features/justice/lib/analysis-text.ts:95
+msgid "civile"
+msgstr "civile"
+
 #: src/features/ngos/organization/components/purpose-section.tsx:28
 msgid "clădire"
 msgstr "clădire"
@@ -10653,6 +10806,8 @@ msgid "Clic: arată anul acesta pe pagină"
 msgstr "Clic: arată anul acesta pe pagină"
 
 #. placeholder {0}: point.bucket
+#. placeholder {0}: point.year
+#: src/features/justice/components/analysis/analysis-years.tsx:118
 #: src/features/procurement/components/analytics/analytics-years.tsx:209
 msgid "Clic: doar {0}"
 msgstr "Clic: doar {0}"
@@ -11142,6 +11297,10 @@ msgstr "Căutare firme"
 #: src/features/statistics/components/territory/territory-tile-parts.tsx:127
 #~ msgid "Compară {name}"
 #~ msgstr "Compară {name}"
+
+#: src/features/justice/components/court/justice-court-head.tsx:179
+msgid "Compară cu instanțele de același nivel"
+msgstr "Compară cu instanțele de același nivel"
 
 #: src/features/statistics/components/territory/territory-tile-parts.tsx:109
 msgid "Compară cu județul și țara"
@@ -12087,6 +12246,8 @@ msgstr "Este necesar consimțământul pentru cookie-uri"
 #~ msgstr "Coordonatele INS și filtrul teritorial canonic se intersectează. Nicio observație nu corespunde ambelor selecții."
 
 #: src/components/ui/copy-button.tsx:22
+#: src/features/justice/components/analysis/analysis-controls.tsx:163
+#: src/features/justice/components/analysis/analysis-controls.tsx:163
 #: src/features/national-budget/analytics/components/analytics-parts.tsx:100
 #: src/features/national-budget/analytics/components/analytics-parts.tsx:101
 #: src/features/ngos/registry/components/registry-head.tsx:106
@@ -12114,6 +12275,8 @@ msgstr "Copiază CUI {cui}"
 msgid "Copiază hash-ul rândului"
 msgstr ""
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:163
+#: src/features/justice/components/analysis/analysis-controls.tsx:163
 #: src/features/national-budget/analytics/components/analytics-parts.tsx:100
 #: src/features/national-budget/analytics/components/analytics-parts.tsx:101
 #: src/features/ngos/registry/components/registry-head.tsx:106
@@ -12289,6 +12452,7 @@ msgstr "costul cel mai scăzut"
 msgid "Coșul"
 msgstr "Coșul"
 
+#: src/features/justice/components/analysis/analysis-table.tsx:166
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:148
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:315
 #: src/features/national-budget/analytics/components/analytics-law.tsx:302
@@ -13154,6 +13318,10 @@ msgstr "Cum se citește luna"
 msgid "Cum se cumpără"
 msgstr "Cum se cumpără"
 
+#: src/features/justice/lib/analysis-questions.ts:44
+msgid "Cum se împart dosarele pe niveluri de instanță?"
+msgstr "Cum se împart dosarele pe niveluri de instanță?"
+
 #: src/features/procurement/components/procurement-info-sheet.tsx:139
 #~ msgid "Cum sunt calculate sumele"
 #~ msgstr ""
@@ -13277,6 +13445,7 @@ msgstr ""
 msgid "Curtea Militară de Apel"
 msgstr "Curtea Militară de Apel"
 
+#: src/features/justice/lib/analysis-text.ts:40
 #: src/features/justice/lib/judicial-labels.ts:74
 msgid "Curți de apel"
 msgstr "Curți de apel"
@@ -13750,10 +13919,21 @@ msgstr ""
 
 #. placeholder {0}: dayText(asOf)
 #. placeholder {0}: formatDate(measuredAt)
-#: src/features/justice/components/justice-source-line.tsx:59
+#: src/features/justice/components/justice-source-line.tsx:62
 #: src/features/legal/components/legislation-shell.tsx:113
 msgid "date până la {0}"
 msgstr "date până la {0}"
+
+#. placeholder {0}: cutoffText(source)
+#: src/features/justice/lib/analysis-notes.ts:25
+msgid "Date până la {0}"
+msgstr "Date până la {0}"
+
+#. placeholder {0}: dayText(asOf)
+#. placeholder {1}: dayText(archiveAsOf)
+#: src/features/justice/components/justice-source-line.tsx:62
+msgid "date până la {0} (arhiva ÎCCJ: {1})"
+msgstr "date până la {0} (arhiva ÎCCJ: {1})"
 
 #: src/features/justice/lib/justice-format.ts:105
 #~ msgid "Date parțiale"
@@ -13983,6 +14163,10 @@ msgstr "De aici poți începe"
 msgid "De angajament"
 msgstr "De angajament"
 
+#: src/features/justice/lib/analysis-text.ts:105
+msgid "de asigurări sociale"
+msgstr "de asigurări sociale"
+
 #: src/features/statistics/components/request-dataset-action.tsx:98
 msgid "De ce ai nevoie de acest set?"
 msgstr "De ce ai nevoie de acest set?"
@@ -13996,6 +14180,22 @@ msgstr "de cel mult {0}"
 #: src/features/procurement/lib/analytics-text.ts:219
 msgid "de cel puțin {0}"
 msgstr "de cel puțin {0}"
+
+#: src/features/justice/lib/analysis-text.ts:101
+msgid "de contencios administrativ și fiscal"
+msgstr "de contencios administrativ și fiscal"
+
+#: src/features/justice/lib/analysis-text.ts:115
+msgid "de drept maritim și fluvial"
+msgstr "de drept maritim și fluvial"
+
+#: src/features/justice/lib/analysis-text.ts:109
+msgid "de faliment"
+msgstr "de faliment"
+
+#: src/features/justice/lib/analysis-text.ts:113
+msgid "de insolvență a persoanei fizice"
+msgstr "de insolvență a persoanei fizice"
 
 #: src/features/procurement/lib/analytics-text.ts:189
 msgid "de instituțiile {where}"
@@ -14075,6 +14275,22 @@ msgstr "De la primul client"
 #: src/features/procurement/lib/contract-text.ts:70
 msgid "de la un IMM"
 msgstr "de la un IMM"
+
+#: src/features/justice/lib/analysis-text.ts:99
+msgid "de litigii cu profesioniștii"
+msgstr "de litigii cu profesioniștii"
+
+#: src/features/justice/lib/analysis-text.ts:107
+msgid "de litigii de muncă"
+msgstr "de litigii de muncă"
+
+#: src/features/justice/lib/analysis-text.ts:103
+msgid "de minori și familie"
+msgstr "de minori și familie"
+
+#: src/features/justice/lib/analysis-text.ts:111
+msgid "de proprietate intelectuală"
+msgstr "de proprietate intelectuală"
 
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:475
 msgid "De stat"
@@ -14795,6 +15011,7 @@ msgstr "despre"
 msgid "Despre acest set de date"
 msgstr "Despre acest set de date"
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:176
 #: src/features/national-budget/analytics/components/analytics-parts.tsx:117
 #: src/features/ngos/registry/components/registry-head.tsx:72
 #: src/features/procurement/components/analytics/analytics-answer.tsx:55
@@ -15109,12 +15326,21 @@ msgstr "Din adresă n-am putut folosi: {0}. Răspunsul de mai jos nu ține seama
 msgid "Din adresă n-am putut folosi: {list}. Lista de mai jos nu ține seama de ele."
 msgstr "Din adresă n-am putut folosi: {list}. Lista de mai jos nu ține seama de ele."
 
+#: src/features/justice/lib/analysis-text.ts:117
+msgid "din alte materii"
+msgstr "din alte materii"
+
 #: src/features/privacy/components/cookie-settings-page.tsx:142
 msgid "din browserul tău"
 msgstr "din browserul tău"
 
 #: src/features/ngos/registry/model.ts:279
 #: src/features/procurement/lib/analytics-text.ts:209
+msgid "din București"
+msgstr "din București"
+
+#: src/features/justice/lib/analysis-text.ts:190
+msgctxt "the place a question asks about"
 msgid "din București"
 msgstr "din București"
 
@@ -15224,6 +15450,11 @@ msgstr "Din fiecare 100 de lei încasați în {0}, {one} au venit din {1} și {t
 #: src/features/national-budget/home/lib/home-format.ts:38
 msgid "din granturile PNRR"
 msgstr "din granturile PNRR"
+
+#. placeholder {0}: countyLabel(county)
+#: src/features/justice/lib/analysis-text.ts:190
+msgid "din județul {0}"
+msgstr "din județul {0}"
 
 #: src/features/ngos/registry/model.ts:279
 #: src/features/procurement/lib/analytics-text.ts:209
@@ -15566,6 +15797,7 @@ msgstr "Doar {0}: {1} {2}, județul {3}, România {4}. Fereastra de trei ani net
 msgid "Doar {0}: {1} {2}, România {3}. Fereastra de trei ani netezește anii mici și întârzie o schimbare rapidă."
 msgstr "Doar {0}: {1} {2}, România {3}. Fereastra de trei ani netezește anii mici și întârzie o schimbare rapidă."
 
+#: src/features/justice/components/analysis/analysis-table.tsx:101
 #: src/features/private-companies/components/analytics/analytics-breakdown.tsx:160
 #: src/features/procurement/components/analytics/analytics-filters.tsx:232
 #: src/features/procurement/components/analytics/analytics-head.tsx:117
@@ -15810,6 +16042,20 @@ msgstr "Finalizat"
 #~ msgid "Dosar justiție"
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-years.tsx:19
+msgid "dosare"
+msgstr "dosare"
+
+#: src/features/justice/components/analysis/analysis-table.tsx:71
+#: src/features/justice/components/analysis/analysis-view.tsx:27
+msgid "Dosare"
+msgstr "Dosare"
+
+#. placeholder {0}: question.year
+#: src/features/justice/components/analysis/analysis-table.tsx:163
+msgid "Dosare {0}"
+msgstr "Dosare {0}"
+
 #: src/features/justice/components/case/justice-case-page.tsx:317
 msgid "Dosare cu același număr de bază la alte instanțe: de obicei același proces, în altă etapă. Legătura e dedusă din număr, nu verificată."
 msgstr "Dosare cu același număr de bază la alte instanțe: de obicei același proces, în altă etapă. Legătura e dedusă din număr, nu verificată."
@@ -15841,6 +16087,7 @@ msgstr "Dosare la judecătorii la 1.000 de locuitori, {year}"
 
 #: src/features/justice/components/court/justice-court-page.tsx:100
 #: src/features/justice/components/court/justice-court-page.tsx:135
+#: src/features/justice/lib/analysis-text.ts:179
 msgid "Dosarele"
 msgstr "Dosarele"
 
@@ -16078,6 +16325,7 @@ msgstr "După anul din numărul de registru; media țării cuprinde și intrări
 msgid "După anul din numărul de registru. Registrul există din 2000; organizațiile mai vechi au fost preluate atunci."
 msgstr "După anul din numărul de registru. Registrul există din 2000; organizațiile mai vechi au fost preluate atunci."
 
+#: src/features/justice/components/analysis/analysis-table.tsx:43
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:429
 #: src/features/procurement/components/analytics/analytics-controls.tsx:307
 msgid "După ce"
@@ -16116,7 +16364,7 @@ msgid "După numărul de contracte atribuite."
 msgstr "După numărul de contracte atribuite."
 
 #. placeholder {0}: snapshot.year
-#: src/features/justice/components/hub/justice-hub-hero.tsx:131
+#: src/features/justice/components/hub/justice-hub-hero.tsx:135
 msgid "După numărul de dosare cu data din {0}."
 msgstr "După numărul de dosare cu data din {0}."
 
@@ -16988,6 +17236,11 @@ msgstr "valorile estimate"
 msgid "Etapa"
 msgstr "Etapa"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:171
+#: src/features/justice/components/analysis/analysis-filters.tsx:172
+msgid "Etapă"
+msgstr "Etapă"
+
 #: src/features/justice/components/court/justice-court-page.tsx:165
 msgid "Etapa e cea de acum a dosarului, nu tot drumul lui."
 msgstr "Etapa e cea de acum a dosarului, nu tot drumul lui."
@@ -17002,6 +17255,11 @@ msgstr "Etapa e cea de acum a dosarului, nu tot drumul lui. Instanțele militare
 #: src/features/justice/components/court/justice-court-page.tsx:289
 msgid "Etapa în care sunt acum dosarele cu data din {0}: la fond, în apel, în recurs sau în contestație."
 msgstr "Etapa în care sunt acum dosarele cu data din {0}: la fond, în apel, în recurs sau în contestație."
+
+#: src/features/justice/components/analysis/analysis-controls.tsx:82
+#: src/features/justice/lib/analysis-text.ts:27
+msgid "Etape"
+msgstr "Etape"
 
 #: src/features/elections/components/election-shared.tsx:156
 msgid "Eticheta candidatului sau competitorului este preluata din sursa; nu implica identitate de persoana rezolvata."
@@ -18717,6 +18975,9 @@ msgstr "Filtrează punctele lipsă sau non-numerice înainte de maparea graficul
 msgid "Filtrat"
 msgstr "Filtrat"
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:73
+#: src/features/justice/components/analysis/analysis-filters.tsx:144
+#: src/features/justice/components/analysis/analysis-head.tsx:140
 #: src/features/legal/components/legislation-acts-directory.tsx:205
 #: src/features/legal/components/legislation-changes-feed.tsx:300
 #: src/features/legal/components/legislation-gazette-directory.tsx:203
@@ -18743,6 +19004,7 @@ msgstr "Filtre ({activeCount} active)"
 msgid "Filtre active"
 msgstr "Filtre active"
 
+#: src/features/justice/components/analysis/analysis-head.tsx:120
 #: src/features/private-companies/components/analytics/analytics-head.tsx:159
 msgid "Filtre aplicate"
 msgstr "Filtre aplicate"
@@ -20404,7 +20666,7 @@ msgstr "Hotărâri CEDO în cauze cu România"
 msgid "Hotărâri CEDO, pe ani"
 msgstr "Hotărâri CEDO, pe ani"
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:62
+#: src/features/justice/components/hub/justice-hub-hero.tsx:66
 msgid "Hotărârile CEDO"
 msgstr "Hotărârile CEDO"
 
@@ -21089,17 +21351,21 @@ msgstr "în afara intervalului istoric publicat de sursă"
 msgid "În anii fără formular ({0}), AMEPIP are totuși valori pentru dividende, investiții și cercetare; nu sunt arătate: un 0 de acolo poate fi o căsuță goală."
 msgstr "În anii fără formular ({0}), AMEPIP are totuși valori pentru dividende, investiții și cercetare; nu sunt arătate: un 0 de acolo poate fi o căsuță goală."
 
+#: src/features/justice/lib/analysis-text.ts:126
+msgid "în apel"
+msgstr "în apel"
+
 #. placeholder {0}: casesCount(sheet.inYear)
 #. placeholder {1}: sheet.year
 #. placeholder {2}: caseCategoryLabel(top.key) ?? top.key
 #. placeholder {3}: percentText(top.share)
-#: src/features/justice/components/court/justice-court-head.tsx:117
+#: src/features/justice/components/court/justice-court-head.tsx:118
 msgid "În arhiva ei are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
 msgstr "În arhiva ei are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
 
 #. placeholder {0}: casesCount(sheet.inYear)
 #. placeholder {1}: sheet.year
-#: src/features/justice/components/court/justice-court-head.tsx:122
+#: src/features/justice/components/court/justice-court-head.tsx:123
 msgid "În arhiva ei are {0} cu data din {1}."
 msgstr "În arhiva ei are {0} cu data din {1}."
 
@@ -21123,6 +21389,10 @@ msgstr "în browserul tău"
 msgid "în București"
 msgstr "în București"
 
+#: src/features/justice/lib/analysis-questions.ts:43
+msgid "În ce etapă sunt dosarele penale?"
+msgstr "În ce etapă sunt dosarele penale?"
+
 #: src/features/public-enterprises/lib/hub-sections.ts:15
 msgid "În ce stare"
 msgstr "În ce stare"
@@ -21132,13 +21402,17 @@ msgid "În ce stare <0/>sunt"
 msgstr "În ce stare <0/>sunt"
 
 #. placeholder {0}: courtName(sheet.parent)
-#: src/features/justice/components/court/justice-court-head.tsx:170
+#: src/features/justice/components/court/justice-court-head.tsx:172
 msgid "În circumscripția: {0}"
 msgstr "În circumscripția: {0}"
 
 #: src/features/statistics/components/county-map/county-map.tsx:380
 msgid "în comparație"
 msgstr "în comparație"
+
+#: src/features/justice/lib/analysis-text.ts:130
+msgid "în contestație"
+msgstr "în contestație"
 
 #: src/features/procurement/components/buyer/buyer-bands.tsx:398
 msgid "În context"
@@ -21197,6 +21471,10 @@ msgstr ""
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:470
 #~ msgid "în exemplu"
 #~ msgstr ""
+
+#: src/features/justice/lib/analysis-text.ts:124
+msgid "în fond"
+msgstr "în fond"
 
 #. placeholder {0}: tables.form.years[tables.form.years.length - 1] ?? ''
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:219
@@ -21323,6 +21601,10 @@ msgstr "În procedura insolvenței."
 msgid "In progress"
 msgstr "În desfășurare"
 
+#: src/features/justice/lib/analysis-text.ts:128
+msgid "în recurs"
+msgstr "în recurs"
+
 #: src/features/ngos/hub/ngo-hub-sections.ts:12
 msgid "În registru"
 msgstr "În registru"
@@ -21339,6 +21621,10 @@ msgstr "În registru"
 #: src/components/provenance/source-provenance.tsx:445
 #~ msgid "în revizuire"
 #~ msgstr ""
+
+#: src/features/justice/lib/analysis-text.ts:132
+msgid "în revizuire sau contestație în anulare"
+msgstr "în revizuire sau contestație în anulare"
 
 #: src/features/private-companies/lib/company-analytics-text.ts:305
 msgid "în România"
@@ -21360,7 +21646,7 @@ msgstr "În SEAP: {count}. Valorile raportate nu se potrivesc cu textul actelor:
 msgid "În textul din registru, semnul <0>{token}</0> ține locul unuia sau mai multor cuvinte, ascunse ca date personale. Semnul nu spune ce a înlocuit: uneori e un cuvânt obișnuit. Textul ascuns nu se poate citi pe platformă."
 msgstr "În textul din registru, semnul <0>{token}</0> ține locul unuia sau mai multor cuvinte, ascunse ca date personale. Semnul nu spune ce a înlocuit: uneori e un cuvânt obișnuit. Textul ascuns nu se poate citi pe platformă."
 
-#: src/features/justice/components/hub/justice-hub-page.tsx:88
+#: src/features/justice/components/hub/justice-hub-page.tsx:80
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:108
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:337
 #: src/features/national-budget/analytics/lib/analytics-view.ts:489
@@ -21448,6 +21734,11 @@ msgstr "Inactivă fiscal: ce înseamnă"
 msgid "Înainte"
 msgstr ""
 
+#. placeholder {0}: lastMonthText(source)
+#: src/features/justice/components/analysis/analysis-years.tsx:138
+msgid "înainte de {JUSTICE_FIRST_WHOLE_YEAR}: preluare parțială; {JUSTICE_LAST_CAPTURE_YEAR}: până în {0}"
+msgstr "înainte de {JUSTICE_FIRST_WHOLE_YEAR}: preluare parțială; {JUSTICE_LAST_CAPTURE_YEAR}: până în {0}"
+
 #: src/features/procurement/lib/analytics-text.ts:116
 msgid "Înainte de 2019, achizițiile directe din SEAP le cuprind și pe cele refuzate: numărul și banii acelor ani nu se compară cu anii de după."
 msgstr "Înainte de 2019, achizițiile directe din SEAP le cuprind și pe cele refuzate: numărul și banii acelor ani nu se compară cu anii de după."
@@ -21467,6 +21758,14 @@ msgstr "înainte de transferurile dintre ele"
 #: src/features/legal/components/legislation-guide.tsx:135
 msgid "Înainte să te bazezi pe un articol, deschide fișa actului și verifică ce versiune afișăm și din ce dată este — statutul singur nu îți spune dacă articolul care te interesează mai e în forma pe care o citești."
 msgstr ""
+
+#: src/features/justice/lib/analysis-text.ts:42
+msgid "Înalta Curte"
+msgstr "Înalta Curte"
+
+#: src/features/justice/lib/analysis-text.ts:53
+msgid "Înalta Curte (toată țara)"
+msgstr "Înalta Curte (toată țara)"
 
 #: src/features/justice/lib/judicial-labels.ts:32
 #: src/features/legal/lib/legal-vocabulary.ts:191
@@ -22419,12 +22718,9 @@ msgstr "instanța"
 msgid "Instanța"
 msgstr "Instanța"
 
-#: src/features/justice/components/case-results-table.tsx:34
-#: src/features/justice/components/litigation-slice-section.tsx:272
-#: src/routes/justitie.cautare.tsx:239
-#: src/routes/justitie.cautare.tsx:340
-#~ msgid "Instanță"
-#~ msgstr "Instanță"
+#: src/features/justice/components/analysis/analysis-filters.tsx:155
+msgid "Instanță"
+msgstr "Instanță"
 
 #: src/features/justice/components/company-litigation.tsx:103
 msgid "Instanța · materia"
@@ -22446,6 +22742,10 @@ msgstr "Instanța nu a fost găsită"
 #~ msgid "Instanța nu este în acoperirea curentă"
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:72
+msgid "Instanță, județ, materie, etapă…"
+msgstr "Instanță, județ, materie, etapă…"
+
 #: src/features/ngos/components/ngo-profile-page.tsx:1140
 #~ msgid "instantanee cu baza identitate CUI"
 #~ msgstr ""
@@ -22458,7 +22758,10 @@ msgstr "Instanța nu a fost găsită"
 #~ msgid "instanțe"
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:103
+#: src/features/justice/components/analysis/analysis-view.tsx:31
 #: src/features/justice/components/hub/justice-court-search.tsx:66
+#: src/features/justice/lib/analysis-text.ts:21
 msgid "Instanțe"
 msgstr "Instanțe"
 
@@ -22470,6 +22773,10 @@ msgstr "Instanțe"
 msgid "Instanțe în circumscripție"
 msgstr "Instanțe în circumscripție"
 
+#: src/features/justice/lib/analysis-text.ts:44
+msgid "Instanțe militare"
+msgstr "Instanțe militare"
+
 #: src/features/justice/components/litigation-slice-section.tsx:201
 #~ msgid "Instanțe principale"
 #~ msgstr "Instanțe principale"
@@ -22480,7 +22787,7 @@ msgstr "Instanțe, condamnări, criminalitate"
 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:173
 #: src/features/justice/components/hub/justice-hub-bands.tsx:302
-#: src/features/justice/components/hub/justice-hub-page.tsx:87
+#: src/features/justice/components/hub/justice-hub-page.tsx:79
 msgid "Instanțele"
 msgstr "Instanțele"
 
@@ -22854,6 +23161,7 @@ msgstr "Între timp, o negociere fără anunț"
 msgid "Întrebarea nu are răspuns în această ediție"
 msgstr "Întrebarea nu are răspuns în această ediție"
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:125
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:652
 #: src/features/ngos/registry/components/registry-head.tsx:194
 #: src/features/procurement/components/analytics/analytics-controls.tsx:246
@@ -23212,6 +23520,7 @@ msgstr "Jud. {name} (instituțiile județului)"
 msgid "Judecătorie"
 msgstr "Judecătorie"
 
+#: src/features/justice/lib/analysis-text.ts:36
 #: src/features/justice/lib/judicial-labels.ts:70
 msgid "Judecătorii"
 msgstr "Judecătorii"
@@ -23237,6 +23546,7 @@ msgstr "judecătoriilor"
 msgid "județ"
 msgstr "județ"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:149
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:257
 #: src/features/private-companies/lib/company-analytics-text.ts:86
 #: src/features/procurement/components/home/home-context-bands.tsx:190
@@ -23292,6 +23602,8 @@ msgstr "Județ: nume sau cod („CJ”)"
 msgid "județe"
 msgstr "județe"
 
+#: src/features/justice/components/analysis/analysis-controls.tsx:96
+#: src/features/justice/lib/analysis-text.ts:23
 #: src/features/ngos/registry/components/registry-filters.tsx:222
 #: src/features/ngos/registry/components/registry-filters.tsx:224
 #: src/features/ngos/registry/components/registry-head.tsx:115
@@ -23448,8 +23760,11 @@ msgstr "Juridic și contabilitate"
 msgid "Justice"
 msgstr "Justiție"
 
-#: src/features/justice/components/court/justice-court-head.tsx:38
-#: src/features/justice/components/hub/justice-hub-page.tsx:118
+#: src/features/justice/components/analysis/analysis-head.tsx:102
+#: src/features/justice/components/court/justice-court-head.tsx:39
+#: src/features/justice/components/hub/justice-hub-page.tsx:110
+#: src/features/justice/lib/analysis-text.ts:218
+#: src/features/justice/lib/justice-page-titles.ts:23
 #: src/features/landing/lib/landing-groups.ts:128
 #: src/features/legal/lib/legal-domains.ts:39
 #: src/features/statistics/lib/landing-constants.ts:32
@@ -23457,7 +23772,7 @@ msgstr "Justiție"
 msgid "Justiție"
 msgstr "Justiție"
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:43
+#: src/features/justice/components/hub/justice-hub-hero.tsx:44
 msgid "Justiție / Portalul instanțelor"
 msgstr "Justiție / Portalul instanțelor"
 
@@ -23513,6 +23828,11 @@ msgstr "km de străzi orășenești (GOS104A)"
 msgid "l/locuitor/zi"
 msgstr "l/locuitor/zi"
 
+#. placeholder {0}: courtName(courts[0]!)
+#: src/features/justice/lib/analysis-text.ts:184
+msgid "la {0}"
+msgstr "la {0}"
+
 #. placeholder {0}: contractsCount(contracts.togetherValued)
 #. placeholder {1}: contracts.togetherContracts
 #: src/features/procurement/components/supplier/supplier-bands.tsx:307
@@ -23541,9 +23861,18 @@ msgstr "la 1 ianuarie {0}"
 msgid "la 1.000 de locuitori"
 msgstr "la 1.000 de locuitori"
 
-#: src/features/private-companies/components/hub/private-company-hub-page.tsx:160
-#~ msgid "La 1.000 de locuitori"
-#~ msgstr "La 1.000 de locuitori"
+#: src/features/justice/components/analysis/analysis-table.tsx:72
+msgid "La 1.000 de locuitori"
+msgstr "La 1.000 de locuitori"
+
+#. placeholder {0}: COUNTY_POPULATION.year
+#: src/features/justice/lib/analysis-notes.ts:42
+msgid "La 1.000 de locuitori: dosarele instanțelor din județ, la locuitorii lui la 1 ianuarie {0} (INS), calculat de Transparenta.eu. O instanță judecă și pentru alte județe, iar un dosar e judecat unde e competentă instanța, nu unde locuiesc părțile."
+msgstr "La 1.000 de locuitori: dosarele instanțelor din județ, la locuitorii lui la 1 ianuarie {0} (INS), calculat de Transparenta.eu. O instanță judecă și pentru alte județe, iar un dosar e judecat unde e competentă instanța, nu unde locuiesc părțile."
+
+#: src/features/justice/components/analysis/analysis-table.tsx:162
+msgid "La 1.000 loc."
+msgstr "La 1.000 loc."
 
 #: src/features/statistics/lib/territory-derived.ts:158
 #: src/features/statistics/lib/territory-derived.ts:172
@@ -23594,6 +23923,10 @@ msgstr "La achizițiile directe, cei mai mulți bani merg pe {0} ({1})."
 msgid "La alte instanțe"
 msgstr "La alte instanțe"
 
+#: src/features/justice/lib/analysis-text.ts:144
+msgid "la curțile de apel"
+msgstr "la curțile de apel"
+
 #. placeholder {0}: before.bucket
 #: src/features/procurement/components/analytics/analytics-years.tsx:122
 msgid "la fel ca în {0}"
@@ -23618,9 +23951,25 @@ msgstr "La fel pe fiecare lot."
 msgid "La fond, {0}"
 msgstr "La fond, {0}"
 
+#: src/features/justice/lib/analysis-text.ts:146
+msgid "la Înalta Curte"
+msgstr "la Înalta Curte"
+
+#: src/features/justice/lib/analysis-text.ts:148
+msgid "la instanțele militare"
+msgstr "la instanțele militare"
+
+#: src/features/justice/lib/analysis-text.ts:140
+msgid "la judecătorii"
+msgstr "la judecătorii"
+
 #: src/features/justice/components/hub/justice-hub-bands.tsx:71
 msgid "La judecătorii"
 msgstr "La judecătorii"
+
+#: src/features/justice/lib/analysis-text.ts:140
+msgid "la judecătoriile"
+msgstr "la judecătoriile"
 
 #. placeholder {0}: rateText(layer.national)
 #. placeholder {1}: top.name
@@ -23653,6 +24002,14 @@ msgstr "la o dată nepublicată"
 #: src/features/justice/components/company-litigation.tsx:53
 msgid "La o instanță necunoscută"
 msgstr "La o instanță necunoscută"
+
+#: src/features/justice/lib/analysis-text.ts:142
+msgid "la tribunale"
+msgstr "la tribunale"
+
+#: src/features/justice/lib/analysis-text.ts:142
+msgid "la tribunalele"
+msgstr "la tribunalele"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:146
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:344
@@ -25830,6 +26187,7 @@ msgstr "Preferința principală pentru notificările campaniei de dezbatere publ
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Stăpânește aplicația cu aceste comenzi rapide puternice de la tastatură"
 
+#: src/features/justice/components/analysis/analysis-table.tsx:67
 #: src/features/procurement/components/analytics/analytics-controls.tsx:331
 #: src/features/procurement/components/analytics/analytics-years.tsx:42
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:207
@@ -25849,9 +26207,19 @@ msgstr "Materia"
 msgid "Materiale de construcții"
 msgstr "Materiale de construcții"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:163
+#: src/features/justice/components/analysis/analysis-filters.tsx:164
+msgid "Materie"
+msgstr "Materie"
+
 #: src/features/justice/components/company-litigation.tsx:119
 msgid "Materie nedeclarată"
 msgstr "Materie nedeclarată"
+
+#: src/features/justice/components/analysis/analysis-controls.tsx:75
+#: src/features/justice/lib/analysis-text.ts:25
+msgid "Materii"
+msgstr "Materii"
 
 #: src/features/statistics/components/request-dataset-action.tsx:86
 msgid "Matrice"
@@ -26108,6 +26476,10 @@ msgstr "mii"
 msgid "mii de {noun}"
 msgstr "mii de {noun}"
 
+#: src/features/justice/components/analysis/analysis-years.tsx:18
+msgid "mii de dosare"
+msgstr "mii de dosare"
+
 #: src/features/procurement/components/analytics/analytics-years.tsx:70
 msgid "mii lei"
 msgstr "mii lei"
@@ -26151,6 +26523,10 @@ msgstr "miliarde de {noun}"
 #: src/features/procurement/components/analytics/analytics-years.tsx:69
 msgid "milioane de {noun}"
 msgstr "milioane de {noun}"
+
+#: src/features/justice/components/analysis/analysis-years.tsx:17
+msgid "milioane de dosare"
+msgstr "milioane de dosare"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:405
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:277
@@ -27633,6 +28009,10 @@ msgstr "niciun dosar"
 msgid "Niciun dosar cu data din {0}."
 msgstr "Niciun dosar cu data din {0}."
 
+#: src/features/justice/components/analysis/analysis-table.tsx:152
+msgid "Niciun dosar pentru această întrebare."
+msgstr "Niciun dosar pentru această întrebare."
+
 #: src/features/statistics/components/comparison-dataset-picker.tsx:81
 #~ msgid "Niciun indicator cu date încărcate nu se potrivește căutării."
 #~ msgstr "Niciun indicator cu date încărcate nu se potrivește căutării."
@@ -27790,6 +28170,7 @@ msgstr "nimic între ele"
 #~ msgid "Nimic pentru „{0}\"."
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:40
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:60
 #: src/features/procurement/components/analytics/analytics-filters.tsx:175
 #: src/features/procurement/components/analytics/analytics-filters.tsx:191
@@ -27798,6 +28179,15 @@ msgstr "nimic între ele"
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:137
 msgid "Nimic pentru „{term}\"."
 msgstr "Nimic pentru „{term}\"."
+
+#: src/features/justice/components/analysis/analysis-controls.tsx:74
+msgid "Nimic potrivit."
+msgstr "Nimic potrivit."
+
+#: src/features/justice/components/analysis/analysis-filters.tsx:168
+#: src/features/justice/components/analysis/analysis-filters.tsx:169
+msgid "Nivel"
+msgstr "Nivel"
 
 #: src/features/public-enterprises/lib/enterprise-text.ts:57
 msgid "nivel central"
@@ -27820,9 +28210,14 @@ msgid "Nivelul"
 msgstr "Nivelul"
 
 #: src/features/justice/components/hub/justice-hub-bands.tsx:315
-#: src/features/justice/components/hub/justice-hub-hero.tsx:120
+#: src/features/justice/components/hub/justice-hub-hero.tsx:124
 msgid "Nivelul instanțelor"
 msgstr "Nivelul instanțelor"
+
+#: src/features/justice/components/analysis/analysis-controls.tsx:89
+#: src/features/justice/lib/analysis-text.ts:29
+msgid "Niveluri"
+msgstr "Niveluri"
 
 #: src/components/filters/flags-filter/index.tsx:24
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
@@ -29670,7 +30065,7 @@ msgid "Numele părților și soluțiile din ședințe nu sunt publicate."
 msgstr "Numele părților și soluțiile din ședințe nu sunt publicate."
 
 #: src/features/justice/components/case/justice-case-page.tsx:108
-#: src/features/justice/components/hub/justice-hub-hero.tsx:93
+#: src/features/justice/components/hub/justice-hub-hero.tsx:97
 msgid "Numele părților și soluțiile din ședințe nu sunt publicate. Persoanele sunt doar numărate."
 msgstr "Numele părților și soluțiile din ședințe nu sunt publicate. Persoanele sunt doar numărate."
 
@@ -30816,6 +31211,10 @@ msgstr ""
 msgid "Pagina firmei"
 msgstr "Pagina firmei"
 
+#: src/features/justice/components/analysis/analysis-table.tsx:115
+msgid "Pagina instanței {label}"
+msgstr "Pagina instanței {label}"
+
 #: src/features/national-budget/home/components/home-ministries.tsx:120
 msgid "Pagina instituției"
 msgstr "Pagina instituției"
@@ -30878,8 +31277,11 @@ msgstr "Paginile încărcate nu au rezultate afișabile, iar aici nu există o p
 #~ msgid "până în"
 #~ msgstr "până în"
 
+#. placeholder {0}: lastMonthText(source)
+#. placeholder {0}: lastMonthText(sourceOf(question))
 #. placeholder {0}: monthText(cutoff.contract)
-#. placeholder {0}: monthText(cutoff.direct)
+#: src/features/justice/components/analysis/analysis-view.tsx:28
+#: src/features/justice/components/analysis/analysis-years.tsx:66
 #: src/features/procurement/components/profile/profile-years-chart.tsx:103
 #: src/features/procurement/components/profile/profile-years-chart.tsx:105
 msgid "până în {0}"
@@ -31253,6 +31655,7 @@ msgstr "Pe an, după anul contractului sau al achiziției"
 msgid "pe ani"
 msgstr "pe ani"
 
+#: src/features/justice/components/analysis/analysis-years.tsx:48
 #: src/features/national-budget/analytics/components/analytics-budgets.tsx:240
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:960
 #: src/features/ngos/registry/model.ts:426
@@ -31355,6 +31758,10 @@ msgstr "Pe ce se duc banii publici"
 msgid "Pe ce se duc<0/>banii publici"
 msgstr "Pe ce se duc<0/>banii publici"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:167
+msgid "Pe ce treaptă"
+msgstr "Pe ce treaptă"
+
 #: src/features/justice/components/hub/justice-hub-bands.tsx:208
 msgid "Pe ce treaptă sunt dosarele"
 msgstr "Pe ce treaptă sunt dosarele"
@@ -31384,6 +31791,10 @@ msgstr "Pe domenii"
 #: src/features/national-budget/analytics/components/analytics-law.tsx:658
 msgid "Pe domenii (capitole)"
 msgstr "Pe domenii (capitole)"
+
+#: src/features/justice/lib/analysis-text.ts:161
+msgid "pe etape"
+msgstr "pe etape"
 
 #: src/features/justice/components/court/justice-court-page.tsx:98
 #: src/features/justice/components/court/justice-court-page.tsx:288
@@ -31418,15 +31829,20 @@ msgstr "Pe forme"
 msgid "pe grupe de categorii"
 msgstr "pe grupe de categorii"
 
+#: src/features/justice/lib/analysis-text.ts:155
+msgid "pe instanțe"
+msgstr "pe instanțe"
+
 #: src/features/procurement/lib/analytics-text.ts:228
 msgid "pe instituții"
 msgstr "pe instituții"
 
+#: src/features/justice/lib/analysis-text.ts:157
 #: src/features/procurement/lib/analytics-text.ts:236
 msgid "pe județe"
 msgstr "pe județe"
 
-#: src/features/justice/components/hub/justice-hub-page.tsx:84
+#: src/features/justice/components/hub/justice-hub-page.tsx:76
 #: src/features/ngos/hub/ngo-hub-sections.ts:9
 #: src/features/ngos/registry/model.ts:418
 #: src/features/procurement/components/home/procurement-home-page.tsx:108
@@ -31479,6 +31895,14 @@ msgstr "pe lună"
 msgid "pe luni"
 msgstr "pe luni"
 
+#: src/features/justice/lib/analysis-text.ts:159
+msgid "pe materii"
+msgstr "pe materii"
+
+#: src/features/justice/lib/analysis-text.ts:163
+msgid "pe niveluri de instanță"
+msgstr "pe niveluri de instanță"
+
 #: src/features/statistics/lib/territory-derived.ts:279
 msgid "Pe populația după domiciliu, nu pe cea rezidentă a indicatorului european. Fără vizitatorii de o zi. Lipsa datelor nu înseamnă lipsa turismului."
 msgstr "Pe populația după domiciliu, nu pe cea rezidentă a indicatorului european. Fără vizitatorii de o zi. Lipsa datelor nu înseamnă lipsa turismului."
@@ -31487,13 +31911,13 @@ msgstr "Pe populația după domiciliu, nu pe cea rezidentă a indicatorului euro
 #. placeholder {1}: sheet.year
 #. placeholder {2}: caseCategoryLabel(top.key) ?? top.key
 #. placeholder {3}: percentText(top.share)
-#: src/features/justice/components/court/justice-court-head.tsx:127
+#: src/features/justice/components/court/justice-court-head.tsx:128
 msgid "Pe portal are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
 msgstr "Pe portal are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
 
 #. placeholder {0}: casesCount(sheet.inYear)
 #. placeholder {1}: sheet.year
-#: src/features/justice/components/court/justice-court-head.tsx:132
+#: src/features/justice/components/court/justice-court-head.tsx:133
 msgid "Pe portal are {0} cu data din {1}."
 msgstr "Pe portal are {0} cu data din {1}."
 
@@ -31527,7 +31951,8 @@ msgstr "pe subcategorii"
 msgid "Pe tipuri (titluri)"
 msgstr "Pe tipuri (titluri)"
 
-#: src/features/justice/components/hub/justice-hub-page.tsx:86
+#: src/features/justice/components/hub/justice-hub-page.tsx:78
+#: src/features/justice/lib/analysis-questions.ts:24
 msgid "Pe trepte"
 msgstr "Pe trepte"
 
@@ -31557,6 +31982,10 @@ msgstr "Pe un buget, buletinul tipărește doar cifre de la 1 ianuarie: un trime
 #: src/features/justice/lib/judicial-labels.ts:46
 msgid "Penal"
 msgstr "Penal"
+
+#: src/features/justice/lib/analysis-text.ts:97
+msgid "penale"
+msgstr "penale"
 
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:142
 msgid "Pending review"
@@ -32518,7 +32947,7 @@ msgstr ""
 msgid "Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {FIRST_WHOLE_YEAR} sunt doar dosarele încă active după aceea."
 msgstr "Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {FIRST_WHOLE_YEAR} sunt doar dosarele încă active după aceea."
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:85
+#: src/features/justice/components/hub/justice-hub-hero.tsx:89
 msgid "Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {firstWhole} sunt doar dosarele încă active după aceea, nu tot ce au judecat instanțele."
 msgstr "Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {firstWhole} sunt doar dosarele încă active după aceea, nu tot ce au judecat instanțele."
 
@@ -32533,7 +32962,7 @@ msgid "Portalul instanțelor nu are o instanță cu codul {code}."
 msgstr "Portalul instanțelor nu are o instanță cu codul {code}."
 
 #. placeholder {0}: sheet.year
-#: src/features/justice/components/court/justice-court-head.tsx:107
+#: src/features/justice/components/court/justice-court-head.tsx:108
 msgid "Portalul nu are dosare ale ei cu data din {0}."
 msgstr "Portalul nu are dosare ale ei cu data din {0}."
 
@@ -32557,6 +32986,10 @@ msgstr "Portalul nu are niciun dosar al acestei instanțe."
 #: src/features/justice/components/case/justice-case-page.tsx:236
 msgid "Portalul nu listează nicio parte a acestui dosar."
 msgstr "Portalul nu listează nicio parte a acestui dosar."
+
+#: src/features/justice/lib/analysis-notes.ts:52
+msgid "Portalul nu publică soluțiile, iar părțile nu sunt numite: datele nu conțin persoane."
+msgstr "Portalul nu publică soluțiile, iar părțile nu sunt numite: datele nu conțin persoane."
 
 #: src/features/justice/components/case/justice-case-head.tsx:65
 msgid "Portalul nu spune obiectul dosarului."
@@ -32701,6 +33134,7 @@ msgstr "preliminar"
 #~ msgid "Preliminar"
 #~ msgstr ""
 
+#: src/features/justice/components/analysis/analysis-years.tsx:66
 #: src/features/justice/components/justice-years-chart.tsx:56
 msgid "preluare parțială"
 msgstr "preluare parțială"
@@ -32717,7 +33151,7 @@ msgstr "Preluarea s-a oprit: cea mai nouă dată din arhiva Înaltei Curți e di
 
 #. placeholder {0}: dayText(snapshot.asOf.portalModifiedAt)
 #. placeholder {1}: dayText(snapshot.asOf.iccjArchiveDate)
-#: src/features/justice/components/hub/justice-hub-hero.tsx:89
+#: src/features/justice/components/hub/justice-hub-hero.tsx:93
 msgid "Preluarea s-a oprit: ultima modificare de pe portal e din {0}, ultima dată din arhiva Înaltei Curți din {1}."
 msgstr "Preluarea s-a oprit: ultima modificare de pe portal e din {0}, ultima dată din arhiva Înaltei Curți din {1}."
 
@@ -32958,6 +33392,10 @@ msgstr "Primele {BREAKDOWN_TOP_EXPANDED}"
 #: src/features/legal/components/legislation-gazette-directory.tsx:540
 msgid "primele {GAZETTE_CONTENTS_FIRST} publicări din cuprins — lista completă rămâne în PDF-ul oficial."
 msgstr ""
+
+#: src/features/justice/components/analysis/analysis-table.tsx:215
+msgid "Primele {TOP_EXPANDED}"
+msgstr "Primele {TOP_EXPANDED}"
 
 #: src/features/procurement/components/analytics/analytics-answer.tsx:284
 msgid "Primele 100"
@@ -34100,6 +34538,7 @@ msgstr "Răspuns parțial: {undated, plural, one {# rând} few {# rânduri} othe
 msgid "Răspuns parțial: sursa nu acoperă toată selecția."
 msgstr "Răspuns parțial: sursa nu acoperă toată selecția."
 
+#: src/features/justice/components/analysis/justice-analysis-page.tsx:54
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:188
 #: src/features/ngos/registry/components/registry-list-page.tsx:90
 #: src/features/private-companies/components/analytics/company-analytics-page.tsx:60
@@ -35222,6 +35661,7 @@ msgstr "Restrânge selecția pentru a exporta toate observațiile."
 msgid "Restrânge toate grupele"
 msgstr "Restrânge toate grupele"
 
+#: src/features/justice/lib/analysis-text.ts:64
 #: src/features/procurement/components/analytics/analytics-view.ts:156
 msgid "Restul"
 msgstr "Restul"
@@ -35903,7 +36343,7 @@ msgstr "sau atinge-o încă o dată pe hartă"
 #~ msgid "Sau localitatea ta"
 #~ msgstr ""
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:52
+#: src/features/justice/components/hub/justice-hub-hero.tsx:53
 #: src/features/landing/components/landing-page.tsx:280
 #: src/features/national-budget/home/components/home-head.tsx:73
 #: src/features/ngos/hub/ngo-hub-hero.tsx:62
@@ -35970,6 +36410,7 @@ msgstr "Scade din"
 msgid "scara nu e spusă de sursă"
 msgstr "scara nu e spusă de sursă"
 
+#: src/features/justice/components/analysis/analysis-table.tsx:165
 #: src/features/statistics/components/comparison/comparison-result-band.tsx:186
 #: src/features/statistics/components/comparison/comparison-standings.tsx:94
 #: src/features/statistics/components/comparison/comparison-standings.tsx:136
@@ -35993,6 +36434,8 @@ msgid "Scoate"
 msgstr "Scoate"
 
 #. placeholder {0}: part.text
+#. placeholder {0}: phrase.text
+#: src/features/justice/components/analysis/analysis-head.tsx:75
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:500
 #: src/features/procurement/components/analytics/analytics-head.tsx:71
 msgid "Scoate „{0}\""
@@ -36002,10 +36445,10 @@ msgstr "Scoate „{0}\""
 msgid "Scoate „{phrase}”"
 msgstr "Scoate „{phrase}”"
 
-#. placeholder {0}: chip.text
-#: src/features/private-companies/components/analytics/analytics-head.tsx:158
-#~ msgid "Scoate {0}"
-#~ msgstr ""
+#. placeholder {0}: chip.label
+#: src/features/justice/components/analysis/analysis-head.tsx:127
+msgid "Scoate {0}"
+msgstr "Scoate {0}"
 
 #. placeholder {0}: territory.name
 #: src/features/statistics/components/comparison/comparison-rail.tsx:216
@@ -36140,7 +36583,7 @@ msgstr "Zoom la scroll: Activat"
 msgid "Scrutin negasit"
 msgstr ""
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:50
+#: src/features/justice/components/hub/justice-hub-hero.tsx:51
 #: src/features/landing/components/landing-page.tsx:278
 #: src/features/national-budget/home/components/home-head.tsx:72
 #: src/features/ngos/hub/ngo-hub-hero.tsx:60
@@ -38003,7 +38446,7 @@ msgstr "și {0} în recurs"
 msgid "și alte {others}"
 msgstr "și alte {others}"
 
-#: src/features/justice/components/justice-source-line.tsx:56
+#: src/features/justice/components/justice-source-line.tsx:59
 msgid "și arhiva ÎCCJ"
 msgstr "și arhiva ÎCCJ"
 
@@ -39190,6 +39633,7 @@ msgstr "Șterge teritoriul invalid"
 msgid "Șterge toate filtrele"
 msgstr "Șterge toate filtrele"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:183
 #: src/features/national-budget/analytics/components/analytics-controls.tsx:635
 #: src/features/ngos/registry/components/registry-filters.tsx:428
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:113
@@ -39628,7 +40072,7 @@ msgstr "Sursa regulii"
 msgid "Sursa, referința colectorului, datele de preluare și notele de parsare pentru această înregistrare."
 msgstr ""
 
-#: src/features/justice/components/justice-source-line.tsx:45
+#: src/features/justice/components/justice-source-line.tsx:48
 #: src/features/procurement/components/contract/contract-block.tsx:483
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:362
 #: src/features/procurement/components/home/home-chrome.tsx:102
@@ -41087,6 +41531,7 @@ msgid "toate"
 msgstr ""
 
 #: src/features/entity-search/components/entity-facet-chips.tsx:80
+#: src/features/justice/components/analysis/analysis-levels.tsx:43
 #: src/features/justice/components/hub/justice-hub-bands.tsx:174
 #: src/features/ngos/registry/model.ts:178
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:544
@@ -41271,7 +41716,7 @@ msgstr "Toate formele"
 msgid "Toate înregistrările din județ, din toți anii"
 msgstr "Toate înregistrările din județ, din toți anii"
 
-#: src/features/justice/components/hub/justice-hub-hero.tsx:56
+#: src/features/justice/components/hub/justice-hub-hero.tsx:60
 msgid "Toate instanțele"
 msgstr "Toate instanțele"
 
@@ -41468,6 +41913,10 @@ msgstr "Top 5 firme"
 msgid "Top 5 firme, din lei"
 msgstr "Top 5 firme, din lei"
 
+#: src/features/justice/components/analysis/analysis-view.tsx:33
+msgid "Top 5 instanțe, din dosare"
+msgstr "Top 5 instanțe, din dosare"
+
 #: src/features/procurement/components/procurement-rankings-view.tsx:315
 #~ msgid "Top CPV categories"
 #~ msgstr "Principalele categorii CPV"
@@ -41541,6 +41990,7 @@ msgstr "total"
 #: src/components/entities/views/ins-stats-view.formatters.ts:103
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:13
 #: src/components/normalization/normalization-mode-select.tsx:40
+#: src/features/justice/components/analysis/analysis-table.tsx:203
 #: src/features/justice/components/hub/justice-hub-bands.tsx:235
 #: src/features/national-budget/analytics/components/analytics-law.tsx:367
 #: src/features/parliament/components/vote-group-votes-table.tsx:318
@@ -41813,6 +42263,7 @@ msgstr "Tribunal"
 msgid "Tribunal militar"
 msgstr "Tribunal militar"
 
+#: src/features/justice/lib/analysis-text.ts:38
 #: src/features/justice/lib/judicial-labels.ts:72
 msgid "Tribunale"
 msgstr "Tribunale"
@@ -42263,6 +42714,10 @@ msgstr "Un dosar al acestei instanțe, după numărul lui de pe portal."
 msgid "Un dosar de la {court}, de pe portalul instanțelor."
 msgstr "Un dosar de la {court}, de pe portalul instanțelor."
 
+#: src/features/justice/lib/analysis-notes.ts:50
+msgid "Un dosar e numărat la fiecare instanță unde e înregistrat: același dosar, ajuns în apel, apare și la instanța de apel, sub același număr."
+msgstr "Un dosar e numărat la fiecare instanță unde e înregistrat: același dosar, ajuns în apel, apare și la instanța de apel, sub același număr."
+
 #. placeholder {0}: moneyText(balance)
 #: src/features/national-budget/home/components/home-balance.tsx:45
 msgid "un excedent de {0}"
@@ -42350,6 +42805,8 @@ msgstr "Indisponibil"
 #~ msgid "unavailable under the current answerability policy"
 #~ msgstr "indisponibil conform politicii actuale de răspuns"
 
+#: src/features/justice/components/analysis/analysis-filters.tsx:148
+#: src/features/justice/lib/analysis-questions.ts:22
 #: src/features/ngos/registry/components/registry-filters.tsx:366
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:281
 #: src/features/procurement/lib/analytics-questions.ts:36
@@ -42359,6 +42816,10 @@ msgstr "Unde"
 #: src/features/legal/components/act-publication-band.tsx:49
 msgid "Unde a fost publicat"
 msgstr ""
+
+#: src/features/justice/lib/analysis-questions.ts:42
+msgid "Unde ajung apelurile?"
+msgstr "Unde ajung apelurile?"
 
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:67
 #~ msgid "Unde au sediul (la data ediției)"
@@ -42388,6 +42849,14 @@ msgstr "Unde își au <0/>sediul"
 msgid "Unde se cumpără cel mai mult, pe locuitor?"
 msgstr "Unde se cumpără cel mai mult, pe locuitor?"
 
+#: src/features/justice/lib/analysis-questions.ts:38
+msgid "Unde se judecă cele mai multe litigii de muncă?"
+msgstr "Unde se judecă cele mai multe litigii de muncă?"
+
+#: src/features/justice/lib/analysis-questions.ts:37
+msgid "Unde se judecă falimentele?"
+msgstr "Unde se judecă falimentele?"
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:260
 msgid "Unde se situează județul tău"
 msgstr "Unde se situează județul tău"
@@ -42399,6 +42868,10 @@ msgstr "Unde se situează localitatea ta"
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:313
 #~ msgid "Unde stă județul tău"
 #~ msgstr "Unde stă județul tău"
+
+#: src/features/justice/lib/analysis-questions.ts:32
+msgid "Unde sunt cele mai multe dosare la 1.000 de locuitori?"
+msgstr "Unde sunt cele mai multe dosare la 1.000 de locuitori?"
 
 #: src/features/procurement/components/supplier/supplier-bands.tsx:208
 msgid "Unde sunt clienții"

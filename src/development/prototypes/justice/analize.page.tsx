@@ -2,66 +2,70 @@ import { useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { AnalyzeSource, CrossTable, GroupBar, RankTable, YearsBand } from './analize.answer'
-import { FilterSheet } from './analize.filters'
-import { AnalyzeFigures, AnalyzeHead, LevelNav } from './analize.head'
-import { questionOf, SEARCH_KEYS, searchOf, type Question } from './analize.model'
+import { AnalysisFigures } from '@/features/justice/components/analysis/analysis-figures'
+import { AnalysisFilters } from '@/features/justice/components/analysis/analysis-filters'
+import { AnalysisHead } from '@/features/justice/components/analysis/analysis-head'
+import { AnalysisLevels } from '@/features/justice/components/analysis/analysis-levels'
+import { AnalysisYears } from '@/features/justice/components/analysis/analysis-years'
+import { JusticeAnalysis } from '@/features/justice/components/analysis/justice-analysis-page'
+import { JusticeSourceLine } from '@/features/justice/components/justice-source-line'
+import { ANALYSIS_SEARCH_KEYS, questionOf, searchOf, sourceOf, type Question } from '@/features/justice/lib/analysis-model'
+import { asOfOf } from '@/features/justice/lib/analysis-notes'
+import { COLUMNS, CrossBar, CrossTable, type Columns } from './analize.cross'
 import { PROTOTYPE_MARKER } from './hub.parts'
 
 /**
- * The justice analysis page (`/development/justice/analize`), in the
- * procurement analysis's language: the head with the question as the
- * headline, the levels in the pinned bar, the figures, the answer by a
- * grouping's tabs, the years, the source; every filter in a sheet. The
- * question lives in the address, as the live page's would: a question is a
- * link. Two variants differ in the answer's table only.
+ * The justice analysis page's two variants over the live components
+ * (design.md §15). `clasament` (the owner's pick, 7 October 2026) is the
+ * live page itself, its question in the prototype's address; `incrucisat`
+ * keeps its cross table on the live head, bar, figures, years and panel.
  */
 
-type Variant = 'clasament' | 'incrucisat'
-
-function useQuestion(): readonly [Question, (next: Question) => void] {
+/** The prototype's address: the live page's keys, the cross's columns, and the harness's own (`v`, `layout`) kept. */
+function usePrototypeQuestion(): { readonly question: Question; readonly columns: Columns; readonly move: (next: Question, columns?: Columns) => void } {
   const search = useSearch({ strict: false }) as Record<string, unknown>
   const navigate = useNavigate()
-  const move = (next: Question) =>
+  const columns = COLUMNS.find((key) => key === search.coloane) ?? 'ani'
+  const move = (next: Question, nextColumns: Columns = columns) =>
     void navigate({
       to: '.',
       search: (previous: Record<string, unknown>) => {
-        // The harness's own keys (`v`, `layout`) stay; the question's are written whole, its defaults left out.
-        const kept = Object.fromEntries(Object.entries(previous).filter(([key]) => !(SEARCH_KEYS as readonly string[]).includes(key)))
-        const written = Object.fromEntries(Object.entries(searchOf(next)).filter(([, value]) => value !== undefined))
-        return { ...kept, ...written }
+        const kept = Object.fromEntries(Object.entries(previous).filter(([key]) => !(ANALYSIS_SEARCH_KEYS as readonly string[]).includes(key) && key !== 'coloane'))
+        return { ...kept, ...searchOf(next), ...(nextColumns === 'ani' ? {} : { coloane: nextColumns }) }
       },
       resetScroll: false,
     })
-  return [questionOf(search), move] as const
+  return { question: questionOf(search), columns, move }
 }
 
-function AnalyzePage({ variant }: { readonly variant: Variant }) {
-  const [question, move] = useQuestion()
-  const [filters, setFilters] = useState(false)
+export function AnalyzeRanking() {
+  const { question, move } = usePrototypeQuestion()
   return (
-    // Clip, not hide: the crux marks overhang the frame, and a hidden overflow would unstick the bar.
-    <div data-dev-marker={PROTOTYPE_MARKER} className="relative w-full overflow-x-clip bg-background">
-      <AnalyzeHead question={question} onChange={move} onFilters={() => setFilters(true)} />
-      <LevelNav question={question} onChange={move} />
-      <AnalyzeFigures question={question} />
-      <section className="border-b" aria-label={t`Răspunsul`}>
-        <RuledFrame className="py-12 sm:py-16">
-          <GroupBar question={question} onChange={move} cross={variant === 'incrucisat'} />
-          {variant === 'clasament' ? <RankTable question={question} onChange={move} /> : <CrossTable question={question} onChange={move} />}
-        </RuledFrame>
-      </section>
-      <YearsBand question={question} onChange={move} />
-      <AnalyzeSource question={question} />
-      <FilterSheet question={question} open={filters} onOpenChange={setFilters} onChange={move} />
+    <div data-dev-marker={PROTOTYPE_MARKER}>
+      <JusticeAnalysis question={question} onChange={move} />
     </div>
   )
 }
 
-export function AnalyzeRanking() {
-  return <AnalyzePage variant="clasament" />
-}
-
 export function AnalyzeCross() {
-  return <AnalyzePage variant="incrucisat" />
+  const { question, columns, move } = usePrototypeQuestion()
+  const [filters, setFilters] = useState(false)
+  return (
+    <div data-dev-marker={PROTOTYPE_MARKER} className="relative w-full overflow-x-clip bg-background">
+      <AnalysisHead question={question} onChange={move} onFilters={() => setFilters(true)} />
+      <AnalysisLevels question={question} onChange={move} />
+      <AnalysisFigures question={question} />
+      <section className="border-b" aria-label={t`Răspunsul`}>
+        <RuledFrame className="py-12 sm:py-16">
+          <CrossBar question={question} columns={columns} onChange={move} onColumns={(next) => move(question, next)} />
+          <CrossTable question={question} columns={columns} onChange={move} />
+        </RuledFrame>
+      </section>
+      <AnalysisYears question={question} onChange={move} />
+      <RuledFrame className="py-8">
+        <JusticeSourceLine asOf={asOfOf(sourceOf(question))} archiveAsOf={asOfOf('iccj')} source={sourceOf(question)} notes={[]} />
+      </RuledFrame>
+      <AnalysisFilters question={question} open={filters} onOpenChange={setFilters} onChange={move} />
+    </div>
+  )
 }

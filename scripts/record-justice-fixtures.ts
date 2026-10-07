@@ -16,6 +16,8 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { CASE_QUERY, CHILDREN_QUERY, COURT_CASES_PAGE_SIZE, COURT_QUERY, relatedCasesQuery } from '../src/features/justice/api/judicial-queries'
+import { DEFAULT_QUESTION, type Question } from '../src/features/justice/lib/analysis-model'
+import { analysisReads } from '../src/features/justice/lib/analysis-plans'
 import { MAIN_STAGES } from '../src/features/justice/lib/judicial-model'
 
 const { values } = parseArgs({ options: { api: { type: 'string', default: 'https://dev-chronos-api.transparenta.eu/api/v1/graphql' } } })
@@ -64,3 +66,17 @@ write('case-page.json', casePage)
 const detail = casePage.judicialCase as { case: { caseId: string }; lineage: { fromCaseId: string; toCaseId: string | null }[] }
 const ids = [...new Set(detail.lineage.map((edge) => (edge.fromCaseId === detail.case.caseId ? edge.toCaseId : edge.fromCaseId)).filter((id): id is string => id !== null))]
 write('case-related.json', await gql(relatedCasesQuery(ids), Object.fromEntries(ids.map((id, index) => [`id${index}`, id]))))
+
+// The analysis page's reads, as the page plans them (`analysis-plans.ts`), each with the API's answer: the
+// bare page (courts in 2025 and 2024), and contentious-administrative cases by stage (a matter the ÎCCJ spells its own way).
+const ANALYSIS_QUESTIONS: readonly Question[] = [DEFAULT_QUESTION, { ...DEFAULT_QUESTION, matters: ['contenciosadministrativsifiscal'], dupa: 'etape' }]
+const AGGREGATE = 'query($groupBy: JudicialAggregateGroupBy!, $filter: JudicialCasesFilter) { judicialCaseload(groupBy: $groupBy, filter: $filter) { denominator groups { key caseCount } } }'
+const analysisRecords: unknown[] = []
+const recorded = new Set<string>()
+for (const read of ANALYSIS_QUESTIONS.flatMap(analysisReads)) {
+  const key = JSON.stringify(read)
+  if (read.filter === null || recorded.has(key)) continue
+  recorded.add(key)
+  analysisRecords.push({ ...read, data: await gql(AGGREGATE, { groupBy: read.groupBy, filter: read.filter }) })
+}
+write('analysis-reads.json', analysisRecords)
