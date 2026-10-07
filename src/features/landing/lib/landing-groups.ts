@@ -3,6 +3,7 @@ import {
   BarChart2,
   Boxes,
   Briefcase,
+  Building2,
   FileStack,
   Gavel,
   HeartHandshake,
@@ -98,6 +99,12 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
         blurb: msg`Firme private, cu situația fiscală și legăturile cu banul public.`,
         to: '/companies',
         icon: Briefcase,
+      },
+      {
+        title: msg`Întreprinderi publice`,
+        blurb: msg`Firmele statului și ale primăriilor: cine le controlează, ce fac și cum le merge.`,
+        to: '/public-enterprises',
+        icon: Building2,
       },
       {
         title: msg`ONG-uri`,

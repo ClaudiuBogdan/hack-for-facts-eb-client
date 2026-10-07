@@ -37,6 +37,7 @@ vi.mock('lucide-react', () => ({
   Boxes: () => <span data-testid="icon-budget-explorer" />,
   Landmark: () => <span data-testid="icon-achizitii" />,
   Scale: () => <span data-testid="icon-legislation" />,
+  Building2: () => <span data-testid="icon-public-enterprises" />,
   Briefcase: () => <span data-testid="icon-companies" />,
   Vote: () => <span data-testid="icon-elections" />,
   HeartHandshake: () => <span data-testid="icon-ngos" />,
@@ -179,7 +180,16 @@ describe('NavMain', () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(11)
+      expect(menuItems).toHaveLength(12)
+    })
+
+    it('renders the public enterprises link, after the companies', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('link-/public-enterprises')).toBeInTheDocument()
+      expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
+      const links = screen.getAllByRole('link').map((link) => link.getAttribute('href'))
+      expect(links.indexOf('/public-enterprises')).toBe(links.indexOf('/companies') + 1)
     })
   })
 
@@ -206,6 +216,12 @@ describe('NavMain', () => {
       await renderNavMain()
 
       expect(screen.getByTestId('icon-achizitii')).toBeInTheDocument()
+    })
+
+    it('renders public enterprises icon', async () => {
+      await renderNavMain()
+
+      expect(screen.getByTestId('icon-public-enterprises')).toBeInTheDocument()
     })
 
     it('renders companies icon', async () => {
@@ -264,6 +280,14 @@ describe('NavMain', () => {
 
       const chartsLink = screen.getByTestId('link-/charts')
       expect(chartsLink).toHaveClass('bg-muted')
+    })
+
+    it('marks public enterprises as active on the hub', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/public-enterprises' }])
+      await renderNavMain()
+
+      expect(screen.getByTestId('link-/public-enterprises')).toHaveClass('bg-muted')
+      expect(screen.getByTestId('link-/companies')).not.toHaveClass('bg-muted')
     })
 
     it('marks ONG-uri as active when on /ngos subpath', async () => {

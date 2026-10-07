@@ -86,6 +86,7 @@ import { Route as ProcurementAnalyticsRouteImport } from './routes/procurement/a
 import { Route as ProcurementSearchRouteImport } from './routes/procurement/search'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
+import { Route as PublicEnterprisesIndexRouteImport } from './routes/public-enterprises/index'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
@@ -646,6 +647,13 @@ const ProvocareTermeniSiConditiiRoute =
   } as any).lazy(() =>
     import('./routes/provocare_.termeni-si-conditii.lazy').then((d) => d.Route),
   )
+const PublicEnterprisesIndexRoute = PublicEnterprisesIndexRouteImport.update({
+  id: '/public-enterprises/',
+  path: '/public-enterprises/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/public-enterprises/index.lazy').then((d) => d.Route),
+)
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
     id: '/research/employees-data',
@@ -1550,6 +1558,7 @@ export interface FileRoutesByFullPath {
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
+  '/public-enterprises/': typeof PublicEnterprisesIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -1725,6 +1734,7 @@ export interface FileRoutesByTo {
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/procurement': typeof ProcurementIndexRoute
+  '/public-enterprises': typeof PublicEnterprisesIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/achizitii/achizitii-directe/$id': typeof AchizitiiAchizitiiDirecteIdRoute
@@ -1907,6 +1917,7 @@ export interface FileRoutesById {
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/procurement/': typeof ProcurementIndexRoute
+  '/public-enterprises/': typeof PublicEnterprisesIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -2095,6 +2106,7 @@ export interface FileRouteTypes {
     | '/parlament/'
     | '/primarie/'
     | '/procurement/'
+    | '/public-enterprises/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -2270,6 +2282,7 @@ export interface FileRouteTypes {
     | '/parlament'
     | '/primarie'
     | '/procurement'
+    | '/public-enterprises'
     | '/charts'
     | '/$lang/learning/onboarding'
     | '/achizitii/achizitii-directe/$id'
@@ -2451,6 +2464,7 @@ export interface FileRouteTypes {
     | '/parlament/'
     | '/primarie/'
     | '/procurement/'
+    | '/public-enterprises/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -2619,6 +2633,7 @@ export interface RootRouteChildren {
   NationalBudgetIndexRoute: typeof NationalBudgetIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
+  PublicEnterprisesIndexRoute: typeof PublicEnterprisesIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
@@ -3205,6 +3220,13 @@ declare module '@tanstack/react-router' {
       path: '/provocare/termeni-si-conditii'
       fullPath: '/provocare/termeni-si-conditii'
       preLoaderRoute: typeof ProvocareTermeniSiConditiiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public-enterprises/': {
+      id: '/public-enterprises/'
+      path: '/public-enterprises'
+      fullPath: '/public-enterprises/'
+      preLoaderRoute: typeof PublicEnterprisesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/research/employees-data': {
@@ -4425,6 +4447,7 @@ const rootRouteChildren: RootRouteChildren = {
   NationalBudgetIndexRoute: NationalBudgetIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
+  PublicEnterprisesIndexRoute: PublicEnterprisesIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   AdminCampaignsCampaignKeyRouteRoute:
     AdminCampaignsCampaignKeyRouteRouteWithChildren,

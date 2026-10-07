@@ -17,7 +17,6 @@ import { HubFiguresBand, type HubFact } from '@/features/statistics/components/h
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import {
-  CENTRAL_KINDS,
   HUB,
   NO_COUNTY,
   companyHref,
@@ -398,7 +397,7 @@ function Figures({ variant }: { readonly variant: Variant }) {
     { key: 'members', value: HUB.members.current, digits: 0, label: t`Întreprinderi publice`, note: t`în lista ANAF sau în registrul AMEPIP`, link: toHash(variant === 'control' ? HERO_ID : 'control') },
     { key: 'local', value: HUB.control.local, digits: 0, label: t`Ale autorităților locale`, note: t`${n(HUB.control.central)} ale statului central`, link: toHash('control') },
     { key: 'active', value: active, digits: 0, label: t`Active în lista ANAF`, note: t`${n(inactive)} inactive`, link: toHash('stare') },
-    { key: 'loss', value: HUB.financials.loss, digits: 0, label: t`Cu pierdere în ${year}`, note: t`din ${n(HUB.financials.filed)} cu bilanț pe ${year}`, link: toHash(variant === 'marime' ? HERO_ID : 'marime') },
+    { key: 'loss', value: HUB.financials.loss, digits: 0, label: t`Cu pierdere în ${year}`, note: t`din ${n(HUB.financials.netReported)} cu rezultatul net admis`, link: toHash(variant === 'marime' ? HERO_ID : 'marime') },
   ]
   return (
     <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
@@ -473,9 +472,9 @@ function ControlBand({ index, kindsOnly, state, set }: { readonly index: string;
         {view === 'tipuri' ? (
           <RankedRows
             rows={kinds.map((row) => ({
-              key: row.kind,
+              key: `${row.kind}-${row.level}`,
               label: kindLabel(row.kind, row.enterprises),
-              caption: `${CENTRAL_KINDS.includes(row.kind) ? t`stat` : row.kind === 'unresolved' ? t`central sau local` : t`local`} · ${percent(row.enterprises, listed, i18n.locale)}`,
+              caption: `${row.level === 'central' ? t`stat` : t`local`} · ${percent(row.enterprises, listed, i18n.locale)}`,
               value: n(row.enterprises),
               fraction: row.enterprises / topKind,
             }))}
@@ -614,7 +613,7 @@ function SizeBand({ index, measure, onMeasure }: { readonly index: string; reado
         lede={
           <>
             {leader ? t`${nameOf(leader.name)} a avut cea mai mare cifră de afaceri în ${year}: ${lei(leader.value, i18n.locale)}.` : null}{' '}
-            {t`${n(HUB.financials.loss)} din cele ${n(HUB.financials.filed)} cu bilanț pe ${year} au încheiat anul cu pierdere.`}
+            {t`${n(HUB.financials.loss)} din cele ${n(HUB.financials.netReported)} cu rezultatul net admis pe ${year} au încheiat anul cu pierdere.`}
           </>
         }
       >
@@ -629,7 +628,7 @@ function SizeBand({ index, measure, onMeasure }: { readonly index: string; reado
   )
 }
 
-const s1001Label = (status: string | null) => (status === 'ACTIV' ? t`Activă` : status === 'INACTIV' ? t`Inactivă` : t`Nu e în listă`)
+const s1001Label = (status: string | null) => (status === 'ACTIV' ? t`Activă` : status === 'INACTIV' ? t`Inactivă` : t`Fără stare în sursă`)
 const statusLabel = (status: string | null) => {
   if (status === null) return t`Fără stare în sursă`
   if (/^\d+$/.test(status)) return t`Cod ${status}, fără nume`
@@ -669,8 +668,16 @@ function StatusBand({ index }: { readonly index: string }) {
         lede={t`În lista ANAF, ${n(active)} sunt active și ${n(inactive)} inactive. Celelalte registre nu spun mereu la fel: ${n(HUB.status.crossings.radiatedButS1001Active)} radiate din registrul comerțului sunt active în listă.`}
       >
         <div className="grid gap-8">
-          <StatusGroup title={t`Lista ANAF`} locale={i18n.locale} rows={HUB.status.s1001.map((row) => ({ label: s1001Label(row.status), value: row.enterprises }))} />
-          <StatusGroup title={t`Registrul comerțului`} locale={i18n.locale} rows={HUB.status.onrc.map((row) => ({ label: statusLabel(row.status), value: row.enterprises }))} />
+          <StatusGroup
+            title={t`Lista ANAF`}
+            locale={i18n.locale}
+            rows={[...HUB.status.s1001.map((row) => ({ label: s1001Label(row.status), value: row.enterprises })), { label: t`Nu e în listă`, value: HUB.status.s1001NotListed }]}
+          />
+          <StatusGroup
+            title={t`Registrul comerțului`}
+            locale={i18n.locale}
+            rows={[...HUB.status.onrc.map((row) => ({ label: statusLabel(row.status), value: row.enterprises })), { label: t`Fără fișă de firmă`, value: HUB.status.onrcMissing }]}
+          />
           <StatusGroup
             title={t`AMEPIP, ${year}`}
             locale={i18n.locale}

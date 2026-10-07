@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Regenerates `src/development/prototypes/public-companies/hub.fixture.json`:
- * the figures the public-enterprise hub prototypes read, computed from the
- * deployed dev API. The public-enterprise module serves a list and a profile
+ * Regenerates the public-enterprise hub's figures, computed from the deployed
+ * dev API: `src/features/public-enterprises/lib/hub-snapshot.ts` (the page at
+ * `/public-enterprises`) and `src/development/prototypes/public-companies/hub.fixture.json`
+ * (its prototype). The public-enterprise module serves a list and a profile
  * but no aggregate (design note §12.3, ask 1), so this script reads every
  * anchor and counts on its own; the result is the shape a server aggregate
  * would have to serve.
@@ -27,6 +28,8 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
+import { admittedNet, admittedValue } from '../src/features/public-enterprises/lib/financial-admission.ts'
+
 const { values } = parseArgs({
   options: {
     api: { type: 'string', default: 'https://dev-chronos-api.transparenta.eu/api/v1/graphql' },
@@ -35,12 +38,21 @@ const { values } = parseArgs({
 })
 const API = values.api
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const out = resolve(root, 'src/development/prototypes/public-companies/hub.fixture.json')
+const prototypeOut = resolve(root, 'src/development/prototypes/public-companies/hub.fixture.json')
+const snapshotOut = resolve(root, 'src/features/public-enterprises/lib/hub-snapshot.ts')
 const CONCURRENCY = 6
 /** The last complete financial year: 2025 is still being filed. */
 const FINANCIAL_YEAR = 2024
 const SEAP_SPAN = { from: '2019-01', to: '2026-12' }
-const RANKED = 30
+const RANKED = 20
+/** The head ranks at most ten authorities a group. */
+const AUTHORITY_RANKED = 10
+/**
+ * The company read's cache file, named for the query that wrote it: bump it
+ * whenever `readCompany` asks for more, so a cache from an older query is
+ * never read as if it held the new fields (qualification, publisher).
+ */
+const COMPANY_CACHE = 'companies-v3.json'
 /** A headcount past this is a data error (EXIM 25252500 reports 92,149,177 for 2024), kept out of the ranking and named. */
 const MAX_PLAUSIBLE_EMPLOYEES = 200_000
 
@@ -125,7 +137,7 @@ async function readCompany(cui) {
   const data = await gql(
     `query C($cui: CUI!) {
       company(cui: $cui) { name legalForm headlineStatus { code label } territory { countyName } fiscal { mainCaenCode declaredFiscallyInactive } }
-      companyFinancials(cui: $cui) { years { year turnover netProfit netLoss employees } }
+      companyFinancials(cui: $cui) { years { year sourceSystem turnover netProfit netLoss employees qualification { assessment evaluatorVersion metrics { metric status } netResultStatus netResult } } }
     }`,
     { cui },
   )
@@ -171,15 +183,27 @@ function authorityKind(entity) {
   return 'unresolved'
 }
 
+/** The JSON-APT blob writes some names with HTML entities (`&quot;`): text, not markup. */
+const decodeEntities = (text) =>
+  text.replace(/&(quot|amp|apos|#39|lt|gt);/gu, (_, entity) => ({ quot: '"', amp: '&', apos: "'", '#39': "'", lt: '<', gt: '>' })[entity])
+
+const mostFrequent = (names) => [...names.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? null
+
 /**
- * A display name: the source's own words, its most frequent spelling (the
- * source names the council that controls, „CONSILIUL JUDETEAN VALCEA"; the
- * budget record names the territory, „JUDETUL VALCEA"); the budget record's
- * name only when the source gave none.
+ * An authority's display name, and where it came from: ANAF's list's own
+ * words, its most frequent spelling (it names the council that controls,
+ * „CONSILIUL JUDETEAN VALCEA"; the budget record names the territory,
+ * „JUDETUL VALCEA"). Only where the list gave no name: the AMEPIP
+ * announcements' spelling, else the budget record's name; the source is kept,
+ * so the page can say a name is not the list's.
  */
-function authorityName(entity, reported) {
+function authorityName(entity, s1001Names, otherNames) {
+  const listed = mostFrequent(s1001Names)
+  if (listed) return { name: listed, nameSource: 's1001' }
+  const announced = mostFrequent(otherNames)
+  if (announced) return { name: decodeEntities(announced), nameSource: 'json_apt' }
   const own = entity?.organization?.name
-  return reported ?? (own && !/^\d+$/.test(own) ? own : null)
+  return own && !/^\d+$/.test(own) ? { name: own, nameSource: 'budget' } : { name: null, nameSource: null }
 }
 
 const mainS1001Edge = (profile) => profile.authorityEdges.find((edge) => edge.sourceFamily === 's1001') ?? null
@@ -193,7 +217,7 @@ async function main() {
   const profiles = await cached('profiles.json', () => pool(cuis, readProfile))
   const authorityCuis = [...new Set(profiles.flatMap((profile) => (profile.authorityEdges ?? []).map((edge) => edge.authorityCui)).filter(Boolean))]
   const entities = await cached('authorities.json', () => readAuthorities(authorityCuis))
-  const companies = await cached('companies.json', () => pool(cuis, readCompany))
+  const companies = await cached(COMPANY_CACHE, () => pool(cuis, readCompany))
   const current = anchors.filter((anchor) => anchor.isCurrentMember)
   const procurement = await cached('procurement.json', () => readProcurement(current.map((anchor) => anchor.cui)))
 
@@ -204,9 +228,8 @@ async function main() {
     const entry = companyOf.get(anchor.cui)
     const edge = mainS1001Edge(profile)
     const s1001 = profile.registryObservations.find((observation) => observation.sourceFamily === 's1001') ?? null
-    const amepip = profile.registryObservations
-      .filter((observation) => observation.sourceFamily === 'amepip_company_year')
-      .sort((a, b) => (b.observedYear ?? 0) - (a.observedYear ?? 0))[0]
+    // The financial year's own row: a later year's row says nothing of this one.
+    const amepip = profile.registryObservations.find((observation) => observation.sourceFamily === 'amepip_company_year' && observation.observedYear === FINANCIAL_YEAR) ?? null
     return {
       cui: anchor.cui,
       name: entry?.company?.name ?? anchor.organization?.name ?? null,
@@ -215,6 +238,7 @@ async function main() {
       authorityCui: edge?.authorityCui ?? null,
       authorityKind: edge ? authorityKind(entities[edge.authorityCui]) : null,
       edges: profile.authorityEdges,
+      listed: s1001 !== null,
       s1001Status: s1001?.statusRaw ?? null,
       amepipStatus: amepip ? { year: amepip.observedYear, raw: amepip.statusRaw, normalized: amepip.statusNormalized } : null,
       company: entry?.company ?? null,
@@ -224,12 +248,15 @@ async function main() {
     }
   })
 
+  const memberOf = new Map(members.map((member) => [member.cui, member]))
+
   // Who controls them: one row per authority CUI, by the S1001 edges of current members.
   const authorities = new Map()
   for (const member of members) {
     for (const edge of member.edges) {
-      const row = authorities.get(edge.authorityCui) ?? { cui: edge.authorityCui, names: new Map(), s1001: new Set(), jsonApt: new Set(), levels: new Set() }
-      if (edge.authorityName) row.names.set(edge.authorityName, (row.names.get(edge.authorityName) ?? 0) + 1)
+      const row = authorities.get(edge.authorityCui) ?? { cui: edge.authorityCui, s1001Names: new Map(), otherNames: new Map(), s1001: new Set(), jsonApt: new Set(), levels: new Set() }
+      const names = edge.sourceFamily === 's1001' ? row.s1001Names : row.otherNames
+      if (edge.authorityName) names.set(edge.authorityName, (names.get(edge.authorityName) ?? 0) + 1)
       ;(edge.sourceFamily === 's1001' ? row.s1001 : row.jsonApt).add(member.cui)
       if (edge.sourceFamily === 's1001') row.levels.add(edge.authorityLevel)
       authorities.set(edge.authorityCui, row)
@@ -239,34 +266,44 @@ async function main() {
     .filter((row) => row.s1001.size > 0)
     .map((row) => {
       const entity = entities[row.cui]
-      const reported = [...row.names.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
       const enterprises = [...row.s1001]
       return {
         cui: row.cui,
-        name: authorityName(entity, reported),
-        entityName: entity?.organization?.name && !/^\d+$/.test(entity.organization.name) ? entity.organization.name : null,
-        spellings: row.names.size,
+        ...authorityName(entity, row.s1001Names, row.otherNames),
         level: [...row.levels][0] ?? null,
         kind: authorityKind(entity),
         county: entity?.territory?.countyName ?? null,
         hasBudget: entity?.budget?.presence === true,
         enterprises: enterprises.length,
-        inactive: enterprises.filter((cui) => members.find((member) => member.cui === cui)?.s1001Status === 'INACTIV').length,
+        inactive: enterprises.filter((cui) => memberOf.get(cui)?.s1001Status === 'INACTIV').length,
       }
     })
     .sort((a, b) => b.enterprises - a.enterprises || a.cui.localeCompare(b.cui))
 
-  const ranked = (level, kinds) => authorityRows.filter((row) => row.level === level && kinds.includes(row.kind)).slice(0, RANKED)
-  const enterpriseRow = (member, value) => ({
-    cui: member.cui,
-    name: member.name,
-    value,
-    level: member.level,
-    authority: member.authorityCui ? (authorityRows.find((row) => row.cui === member.authorityCui)?.name ?? null) : null,
-    county: member.company?.territory?.countyName ?? null,
-  })
+  const ranked = (level, kinds) => authorityRows.filter((row) => row.level === level && kinds.includes(row.kind)).slice(0, AUTHORITY_RANKED)
+  const authorityOf = new Map(authorityRows.map((row) => [row.cui, row]))
+  const enterpriseRow = (member, value) => {
+    const authority = member.authorityCui ? authorityOf.get(member.authorityCui) : undefined
+    return {
+      cui: member.cui,
+      name: member.name,
+      value,
+      level: member.level,
+      authority: authority?.name ?? null,
+      authorityNameSource: authority?.nameSource ?? null,
+      county: member.company?.territory?.countyName ?? null,
+    }
+  }
   const withYear = members.map((member) => ({ member, row: yearRow(member, FINANCIAL_YEAR) })).filter(({ row }) => row)
-  const implausible = withYear.filter(({ row }) => row.employees !== null && Number(row.employees) > MAX_PLAUSIBLE_EMPLOYEES)
+  const qualified = withYear.map(({ member, row }) => ({
+    member,
+    sourceSystem: row.sourceSystem ?? null,
+    turnover: admittedValue(row, 'turnover'),
+    employees: admittedValue(row, 'employees'),
+    net: admittedNet(row),
+  }))
+  const implausible = qualified.filter(({ employees }) => employees !== null && Number(employees) > MAX_PLAUSIBLE_EMPLOYEES)
+  const withNet = qualified.filter(({ net }) => net !== null)
 
   const byLevel = (member) => (member.level === 'central' ? 'central' : member.level === 'local' ? 'local' : 'none')
   const split = (key) => {
@@ -326,7 +363,11 @@ async function main() {
         const jsonApt = new Set(member.edges.filter((edge) => edge.sourceFamily === 'json_apt').map((edge) => edge.authorityCui))
         return s1001.size > 0 && jsonApt.size > 0 && [...jsonApt].some((cui) => !s1001.has(cui))
       }).length,
-      kinds: tally(members.filter((member) => member.authorityKind).map((member) => member.authorityKind)).map(([kind, enterprises]) => ({ kind, enterprises })),
+      // By the authority's kind and ANAF's level together: an authority with no budget record is central or local by the list's word.
+      kinds: tally(members.filter((member) => member.authorityKind).map((member) => `${member.authorityKind}|${member.level}`)).map(([key, enterprises]) => {
+        const [kind, level] = key.split('|')
+        return { kind, level, enterprises }
+      }),
       ranking: {
         central: ranked('central', ['central_authority', 'public_entity', 'education', 'unresolved']),
         county: ranked('local', ['county']),
@@ -334,16 +375,22 @@ async function main() {
       },
     },
     status: {
-      s1001: tally(members.map((member) => member.s1001Status)).map(([status, enterprises]) => ({ status, enterprises })),
-      onrc: tally(members.map((member) => member.company?.headlineStatus?.label ?? null)).map(([status, enterprises]) => ({ status, enterprises })),
+      s1001: tally(members.filter((member) => member.listed).map((member) => member.s1001Status)).map(([status, enterprises]) => ({ status, enterprises })),
+      onrc: tally(members.filter((member) => member.company).map((member) => member.company.headlineStatus?.label ?? null)).map(([status, enterprises]) => ({ status, enterprises })),
+      /** Members with no company record at all: apart from a record whose status is uncertain (null in `onrc`). */
+      onrcMissing: members.filter((member) => !member.company).length,
+      /** Members ANAF's list does not hold: apart from a listed member whose status cell is blank (null in `s1001`). */
+      s1001NotListed: members.filter((member) => !member.listed).length,
       anafInactive: members.filter((member) => member.company?.fiscal?.declaredFiscallyInactive === true).length,
       /** Where the sources disagree: deregistered at ONRC, or fiscally inactive at ANAF, yet ACTIV on ANAF's S1001 list. */
       crossings: {
         radiatedButS1001Active: members.filter((member) => member.company?.headlineStatus?.label === 'radiată' && member.s1001Status === 'ACTIV').length,
-        radiatedOnS1001: members.filter((member) => member.company?.headlineStatus?.label === 'radiată' && member.s1001Status !== null).length,
+        radiatedOnS1001: members.filter((member) => member.company?.headlineStatus?.label === 'radiată' && member.listed).length,
         fiscallyInactiveButS1001Active: members.filter((member) => member.company?.fiscal?.declaredFiscallyInactive === true && member.s1001Status === 'ACTIV').length,
       },
-      amepip: tally(members.filter((member) => member.amepipStatus?.year === FINANCIAL_YEAR).map((member) => member.amepipStatus.raw)).map(([status, enterprises]) => ({ status, enterprises })),
+      amepip: tally(members.filter((member) => member.amepipStatus).map((member) => member.amepipStatus.raw)).map(([status, enterprises]) => ({ status, enterprises })),
+      /** Members with no AMEPIP company-year row for the financial year: no observation, not a blank status. */
+      amepipMissing: members.filter((member) => !member.amepipStatus).length,
     },
     legalForms: tally(members.map((member) => member.company?.legalForm ?? null)).map(([form, enterprises]) => ({ form, enterprises })),
     counties: split((member) => member.company?.territory?.countyName ?? null).map(({ key, ...row }) => ({ county: key, ...row })),
@@ -352,33 +399,96 @@ async function main() {
       year: FINANCIAL_YEAR,
       withAny: members.filter((member) => (member.financials?.years ?? []).length > 0).length,
       years: [...years.values()].sort((a, b) => a.year - b.year),
+      /** Members with a statement for the year, admitted or not. */
       filed: withYear.length,
-      profit: withYear.filter(({ row }) => positive(row.netProfit)).length,
-      loss: withYear.filter(({ row }) => positive(row.netLoss)).length,
-      implausibleEmployees: implausible.map(({ member, row }) => ({ cui: member.cui, name: member.name, employees: row.employees })),
+      /** Who published the year's statements (`anaf`, `mfp`): the page names its publisher from this, never assumes it. */
+      publishers: [...new Set(qualified.map(({ sourceSystem }) => sourceSystem).filter(Boolean))].sort(),
+      /** Statements already filed for the year after: a count, not a claim of completeness. */
+      nextYearFiled: members.filter((member) => yearRow(member, FINANCIAL_YEAR + 1)).length,
+      /** Of those, the statements whose net result the evaluator reported: the base of `profit` and `loss`. */
+      netReported: withNet.length,
+      profit: withNet.filter(({ net }) => Number(net) > 0).length,
+      loss: withNet.filter(({ net }) => Number(net) < 0).length,
+      implausibleEmployees: implausible.map(({ member, employees }) => ({ cui: member.cui, name: member.name, employees })),
       largest: {
-        turnover: withYear.filter(({ row }) => positive(row.turnover)).sort((a, b) => Number(b.row.turnover) - Number(a.row.turnover)).slice(0, RANKED).map(({ member, row }) => enterpriseRow(member, row.turnover)),
-        employees: withYear
-          .filter(({ row }) => positive(row.employees) && Number(row.employees) <= MAX_PLAUSIBLE_EMPLOYEES)
-          .sort((a, b) => Number(b.row.employees) - Number(a.row.employees))
+        turnover: qualified.filter(({ turnover }) => positive(turnover)).sort((a, b) => Number(b.turnover) - Number(a.turnover)).slice(0, RANKED).map(({ member, turnover }) => enterpriseRow(member, turnover)),
+        employees: qualified
+          .filter(({ employees }) => positive(employees) && Number(employees) <= MAX_PLAUSIBLE_EMPLOYEES)
+          .sort((a, b) => Number(b.employees) - Number(a.employees))
           .slice(0, RANKED)
-          .map(({ member, row }) => enterpriseRow(member, row.employees)),
-        loss: withYear.filter(({ row }) => positive(row.netLoss)).sort((a, b) => Number(b.row.netLoss) - Number(a.row.netLoss)).slice(0, RANKED).map(({ member, row }) => enterpriseRow(member, row.netLoss)),
+          .map(({ member, employees }) => enterpriseRow(member, employees)),
+        // The loss is the reported net result's size, exact text without its sign.
+        loss: withNet.filter(({ net }) => Number(net) < 0).sort((a, b) => Number(a.net) - Number(b.net)).slice(0, RANKED).map(({ member, net }) => enterpriseRow(member, net.replace(/^-/u, ''))),
       },
     },
+    // A count SEAP did not answer (null, or a CUI too long to ask) is unknown, never a zero: the figures are floors and say how many are unknown.
     procurement: {
       from: SEAP_SPAN.from,
       to: SEAP_SPAN.to,
-      buyers: members.filter((member) => (member.procurement?.buyerDirect ?? 0) + (member.procurement?.buyerAwards ?? 0) > 0).length,
+      buyers: members.filter((member) => (member.procurement?.buyerDirect ?? 0) > 0 || (member.procurement?.buyerAwards ?? 0) > 0).length,
       buyerDirect: members.filter((member) => (member.procurement?.buyerDirect ?? 0) > 0).length,
       buyerAwards: members.filter((member) => (member.procurement?.buyerAwards ?? 0) > 0).length,
       sellers: members.filter((member) => (member.procurement?.supplierDirect ?? 0) > 0).length,
+      unknown: members.filter((member) => !member.procurement || member.procurement.buyerDirect === null || member.procurement.buyerAwards === null || member.procurement.supplierDirect === null).length,
     },
     indicators: { calculated: indicatorYears('amepip_company_year'), form: indicatorYears('amepip_form_group') },
   }
-  mkdirSync(dirname(out), { recursive: true })
-  writeFileSync(out, `${JSON.stringify(fixture, null, 1)}\n`)
-  console.log(`wrote ${out}: ${fixture.members.current} members, ${authorityRows.length} authorities, ${fixture.counties.length} counties, ${fixture.sectors.length} divisions`)
+  mkdirSync(dirname(prototypeOut), { recursive: true })
+  writeFileSync(prototypeOut, `${JSON.stringify(fixture, null, 1)}\n`)
+  // The page's chunk carries only what the page reads; the prototype's fixture keeps the rest.
+  const { control, status, financials } = fixture
+  const snapshot = {
+    generatedAt: fixture.generatedAt,
+    sources: fixture.sources,
+    members: fixture.members,
+    control: {
+      central: control.central,
+      local: control.local,
+      noS1001: control.noS1001,
+      s1001Authorities: control.s1001Authorities,
+      s1001AuthoritiesWithBudget: control.s1001AuthoritiesWithBudget,
+      disagreements: control.disagreements,
+      kinds: control.kinds,
+      ranking: Object.fromEntries(Object.entries(control.ranking).map(([group, rows]) => [group, rows.map(({ kind: _kind, ...row }) => row)])),
+    },
+    status: {
+      s1001: status.s1001,
+      s1001NotListed: status.s1001NotListed,
+      onrc: status.onrc,
+      onrcMissing: status.onrcMissing,
+      anafInactive: status.anafInactive,
+      crossings: { radiatedButS1001Active: status.crossings.radiatedButS1001Active, fiscallyInactiveButS1001Active: status.crossings.fiscallyInactiveButS1001Active },
+      amepip: status.amepip,
+      amepipMissing: status.amepipMissing,
+    },
+    counties: fixture.counties,
+    sectors: fixture.sectors,
+    financials: {
+      year: financials.year,
+      filed: financials.filed,
+      publishers: financials.publishers,
+      nextYearFiled: financials.nextYearFiled,
+      netReported: financials.netReported,
+      loss: financials.loss,
+      implausibleEmployees: financials.implausibleEmployees,
+      largest: Object.fromEntries(
+        Object.entries(financials.largest).map(([measure, rows]) => [measure, rows.map(({ cui, name, value, authority, authorityNameSource }) => ({ cui, name, value, authority, authorityNameSource }))]),
+      ),
+    },
+    procurement: fixture.procurement,
+  }
+  writeFileSync(
+    snapshotOut,
+    [
+      '// Generated by scripts/generate-public-enterprise-hub-fixture.mjs — do not edit by hand.',
+      `// Read from the public-enterprise, entity, company and procurement API on ${fixture.generatedAt.slice(0, 10)}.`,
+      "import type { PublicEnterpriseHubSnapshot } from './hub-snapshot-types'",
+      '',
+      `export const PUBLIC_ENTERPRISE_HUB_SNAPSHOT: PublicEnterpriseHubSnapshot = ${JSON.stringify(snapshot, null, 2)}`,
+      '',
+    ].join('\n'),
+  )
+  console.log(`wrote ${snapshotOut} and ${prototypeOut}: ${fixture.members.current} members, ${authorityRows.length} authorities, ${fixture.counties.length} counties, ${fixture.sectors.length} divisions`)
 }
 
 await main()

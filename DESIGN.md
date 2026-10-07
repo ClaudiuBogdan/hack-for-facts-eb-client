@@ -848,7 +848,7 @@ here.
 | Domain              | Route                  | Spec                                   | Anchor / signature concern                          |
 | ------------------- | ---------------------- | -------------------------------------- | --------------------------------------------------- |
 | NGOs                | `/ngos`                | `docs/design/ngos/`                    | Identity tiers; name-only refs zone; CUI spine      |
-| Public companies    | (redesign; `/intreprinderi-publice` → `/companies`, 2026-10-07) | `docs/design/public-companies/` §12 | Control edge ≠ ownership; missing ≠ zero; no national totals |
+| Public companies    | `/public-enterprises`  | `docs/design/public-companies/` §12 | Control edge ≠ ownership; missing ≠ zero; no national totals |
 | Legal               | `/legislation`         | `docs/design/legal/`                   | Monitorul Oficial evidence; citation resolution honesty |
 | Elections           | `/alegeri`             | `docs/design/elections/`               | Results ≠ roll-call votes; candidate names as source only |
 | Justice             | `/justice`             | `docs/design/justice/`                 | Structural privacy: no party named, persons counted; case pages unindexed |
@@ -1233,8 +1233,9 @@ Append-only. Newest first. Each entry: date · decision · why.
   *Since reversed for procurement (`/procurement`) and NGOs (`/ngos`, 2026-09-30):
   English paths beside `/companies`, Romanian UI copy, the old paths 301s —
   the NGO ones removed on 2026-10-02, never having had readers. The mock-era
-  `/intreprinderi-publice` pages were retired on 2026-10-07 (302 to `/companies`
-  until the redesigned public-enterprise pages ship).*
+  `/intreprinderi-publice` pages were retired on 2026-10-07: the front door 301s
+  to `/public-enterprises`, an old profile 302s to its company page until the
+  enterprise page ships.*
 - **2026-06-26 — PNRR keeps its brutalist token set**, quarantined to PNRR
   surfaces. *Why:* it predates this system and tested well; isolating it avoids a
   disruptive reskin while keeping the rest of the app on the neutral system.

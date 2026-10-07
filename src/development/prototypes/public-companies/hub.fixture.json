@@ -1,6 +1,6 @@
 {
- "generatedAt": "2026-10-07T16:35:55.930Z",
- "api": "http://127.0.0.1:3010/api/v1/graphql",
+ "generatedAt": "2026-10-07T18:38:18.023Z",
+ "api": "https://dev-chronos-api.transparenta.eu/api/v1/graphql",
  "sources": [
   {
    "family": "amepip",
@@ -47,38 +47,52 @@
   "kinds": [
    {
     "kind": "commune",
+    "level": "local",
     "enterprises": 684
    },
    {
     "kind": "municipality",
+    "level": "local",
     "enterprises": 320
    },
    {
     "kind": "town",
+    "level": "local",
     "enterprises": 183
    },
    {
     "kind": "central_authority",
+    "level": "central",
     "enterprises": 134
    },
    {
     "kind": "public_entity",
+    "level": "central",
     "enterprises": 116
    },
    {
     "kind": "county",
+    "level": "local",
     "enterprises": 100
    },
    {
     "kind": "unresolved",
-    "enterprises": 91
+    "level": "local",
+    "enterprises": 57
    },
    {
     "kind": "education",
+    "level": "central",
     "enterprises": 50
    },
    {
+    "kind": "unresolved",
+    "level": "central",
+    "enterprises": 34
+   },
+   {
     "kind": "sector",
+    "level": "local",
     "enterprises": 16
    }
   ],
@@ -87,8 +101,7 @@
     {
      "cui": "11795573",
      "name": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
-     "entityName": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "public_entity",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -99,8 +112,7 @@
     {
      "cui": "24931499",
      "name": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
-     "entityName": "Ministerul Economiei Digitalizarii Antreprenoriatului si Turismului",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "central_authority",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -111,8 +123,7 @@
     {
      "cui": "13729380",
      "name": "MINISTERUL EDUCATIEI SI CERCETARII",
-     "entityName": "MINISTERUL EDUCATIEI SI CERCETARII",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "education",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -123,8 +134,7 @@
     {
      "cui": "43507695",
      "name": "MINISTERUL ENERGIEI",
-     "entityName": "MINISTERUL ENERGIEI",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "public_entity",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -135,8 +145,7 @@
     {
      "cui": "14818116",
      "name": "AGENTIA DOMENIILOR STATULUI",
-     "entityName": null,
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "unresolved",
      "county": null,
@@ -147,8 +156,7 @@
     {
      "cui": "13633330",
      "name": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "entityName": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "central_authority",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -159,8 +167,7 @@
     {
      "cui": "16335444",
      "name": "MINISTERUL MEDIULUI, APELOR SI PADURILOR",
-     "entityName": "MINISTERUL MEDIULUI APELOR SI PADURILOR",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "central_authority",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -171,8 +178,7 @@
     {
      "cui": "4283422",
      "name": "SECRETARIATUL GENERAL AL GUVERNULUI",
-     "entityName": "SECRETARIATUL GENERAL AL GUVERNULUI",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "public_entity",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -183,8 +189,7 @@
     {
      "cui": "4266669",
      "name": "MINISTERUL MUNCII, FAMILIEI, TINERETULUI Bucuresti SI SOLIDARITATII SOCIALE",
-     "entityName": "MINISTERUL MUNCII FAMILIEI TINERETULUI SI SOLIDARITATII SOCIALE",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "central_authority",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -195,130 +200,20 @@
     {
      "cui": "11424532",
      "name": "MINISTERUL APARARII NATIONALE",
-     "entityName": "Ministerul Apararii Nationale",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "central",
      "kind": "central_authority",
      "county": "MUNICIPIUL BUCUREȘTI",
      "hasBudget": true,
      "enterprises": 3,
      "inactive": 1
-    },
-    {
-     "cui": "4192812",
-     "name": "MINISTERUL CULTURII",
-     "entityName": "MINISTERUL CULTURII",
-     "spellings": 1,
-     "level": "central",
-     "kind": "public_entity",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 3,
-     "inactive": 2
-    },
-    {
-     "cui": "4221187",
-     "name": "MINISTERUL AGRICULTURII SI DEZVOLTARII RURALE",
-     "entityName": "Ministerul Agriculturii si Dezvoltarii Rurale",
-     "spellings": 1,
-     "level": "central",
-     "kind": "central_authority",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 3,
-     "inactive": 0
-    },
-    {
-     "cui": "4221306",
-     "name": "MINISTERUL FINANTELOR",
-     "entityName": "MINISTERUL FINANTELOR",
-     "spellings": 1,
-     "level": "central",
-     "kind": "central_authority",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 3,
-     "inactive": 0
-    },
-    {
-     "cui": "361684",
-     "name": "BANCA NATIONALA A ROMANIEI",
-     "entityName": null,
-     "spellings": 1,
-     "level": "central",
-     "kind": "unresolved",
-     "county": null,
-     "hasBudget": false,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4265795",
-     "name": "CAMERA DEPUTATILOR",
-     "entityName": "CAMERA DEPUTATILOR",
-     "spellings": 2,
-     "level": "central",
-     "kind": "public_entity",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 1
-    },
-    {
-     "cui": "4266456",
-     "name": "MINISTERUL SANATATII",
-     "entityName": "MINISTERUL SANATATII",
-     "spellings": 1,
-     "level": "central",
-     "kind": "central_authority",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "17344491",
-     "name": "AGENTIA NATIONALA PENTRU PESCUIT SI ACVACULTURA",
-     "entityName": "AGENTIA NATIONALA PENTRU PESCUIT SI ACVACULTURA",
-     "spellings": 1,
-     "level": "central",
-     "kind": "central_authority",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 1,
-     "inactive": 0
-    },
-    {
-     "cui": "26369185",
-     "name": "MINISTERUL DEZVOLTARII, LUCRARILOR PUBLICE SI ADMINISTRATIEI",
-     "entityName": "MINISTERUL DEZVOLTARII LUCRARILOR PUBLICE SI ADMINISTRATIEI",
-     "spellings": 1,
-     "level": "central",
-     "kind": "central_authority",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 1,
-     "inactive": 0
-    },
-    {
-     "cui": "4204291",
-     "name": "SERVICIUL ROMAN DE INFORMATII",
-     "entityName": "SERVICIUL ROMAN DE INFORMATII",
-     "spellings": 1,
-     "level": "central",
-     "kind": "public_entity",
-     "county": "MUNICIPIUL BUCUREȘTI",
-     "hasBudget": true,
-     "enterprises": 1,
-     "inactive": 0
     }
    ],
    "county": [
     {
      "cui": "2540929",
      "name": "CONSILIUL JUDETEAN VALCEA",
-     "entityName": "JUDETUL VALCEA",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "VÂLCEA",
@@ -329,8 +224,7 @@
     {
      "cui": "4288110",
      "name": "CONSILIUL JUDETEAN CLUJ",
-     "entityName": "JUDETUL CLUJ",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "CLUJ",
@@ -341,8 +235,7 @@
     {
      "cui": "4417150",
      "name": "CONSILIUL JUDETEAN DOLJ",
-     "entityName": "JUDETUL DOLJ",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "DOLJ",
@@ -353,8 +246,7 @@
     {
      "cui": "2842889",
      "name": "CONSILIUL JUDETEAN PRAHOVA",
-     "entityName": "JUDETUL PRAHOVA",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "PRAHOVA",
@@ -365,8 +257,7 @@
     {
      "cui": "4229512",
      "name": "CONSILIUL JUDETEAN ARGES",
-     "entityName": "JUDETUL ARGES",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "ARGEȘ",
@@ -377,8 +268,7 @@
     {
      "cui": "4280205",
      "name": "CONSILIUL JUDETEAN DAMBOVITA",
-     "entityName": "JUDETUL DAMBOVITA",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "DÂMBOVIȚA",
@@ -389,8 +279,7 @@
     {
      "cui": "4384150",
      "name": "CONSILIUL JUDETEAN BRASOV",
-     "entityName": "JUDETUL BRASOV",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "BRAȘOV",
@@ -401,8 +290,7 @@
     {
      "cui": "4562583",
      "name": "CONSILIUL JUDETEAN ALBA",
-     "entityName": "JUDETUL ALBA",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "ALBA",
@@ -413,8 +301,7 @@
     {
      "cui": "2612839",
      "name": "CONSILIUL JUDETEAN NEAMT",
-     "entityName": "JUDETUL NEAMT",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "NEAMȚ",
@@ -425,253 +312,12 @@
     {
      "cui": "3627315",
      "name": "CONSILIUL JUDETEAN MARAMURES",
-     "entityName": "Judetul Maramures",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "county",
      "county": "MARAMUREȘ",
      "hasBudget": true,
      "enterprises": 3,
-     "inactive": 0
-    },
-    {
-     "cui": "4231776",
-     "name": "CONSILIUL JUDETEAN IALOMITA",
-     "entityName": "JUDETUL IALOMITA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "IALOMIȚA",
-     "hasBudget": true,
-     "enterprises": 3,
-     "inactive": 0
-    },
-    {
-     "cui": "4244997",
-     "name": "CONSILIUL JUDETEAN BIHOR",
-     "entityName": "JUDETUL BIHOR",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "BIHOR",
-     "hasBudget": true,
-     "enterprises": 3,
-     "inactive": 0
-    },
-    {
-     "cui": "4374474",
-     "name": "CONSILIUL JUDETEAN HUNEDOARA",
-     "entityName": "JUDETUL HUNEDOARA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "HUNEDOARA",
-     "hasBudget": true,
-     "enterprises": 3,
-     "inactive": 1
-    },
-    {
-     "cui": "3127476",
-     "name": "CONSILIUL JUDETEAN GALATI",
-     "entityName": "JUDETUL GALATI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "GALAȚI",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 1
-    },
-    {
-     "cui": "3227890",
-     "name": "CONSILIUL JUDETEAN CARAS SEVERIN",
-     "entityName": "JUDETUL CARAS-SEVERIN",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "CARAȘ-SEVERIN",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "3372955",
-     "name": "CONSILIUL JUDETEAN BOTOSANI",
-     "entityName": "JUDETUL BOTOSANI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "BOTOȘANI",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 1
-    },
-    {
-     "cui": "3394171",
-     "name": "CONSILIUL JUDETEAN VASLUI",
-     "entityName": "JUDETUL VASLUI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "VASLUI",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "3519941",
-     "name": "CONSILIUL JUDETEAN ARAD",
-     "entityName": "JUDETUL ARAD",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "ARAD",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "3897378",
-     "name": "CONSILIUL JUDETEAN SATU MARE",
-     "entityName": "JUDETUL SATU MARE",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "SATU MARE",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4201988",
-     "name": "CONSILIUL JUDETEAN COVASNA",
-     "entityName": "JUDETUL COVASNA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "COVASNA",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4244512",
-     "name": "CONSILIUL JUDETEAN SUCEAVA",
-     "entityName": "JUDETUL SUCEAVA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "SUCEAVA",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4245763",
-     "name": "CONSILIUL JUDETEAN HARGHITA",
-     "entityName": "JUDETUL HARGHITA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "HARGHITA",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4321607",
-     "name": "CONSILIUL JUDETEAN TULCEA",
-     "entityName": "JUDETUL TULCEA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "TULCEA",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4322980",
-     "name": "CONSILIUL JUDETEAN MURES",
-     "entityName": "JUDETUL MURES",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "MUREȘ",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4347550",
-     "name": "CONSILIUL JUDETEAN BISTRITA NASAUD",
-     "entityName": "JUDETUL BISTRITA-NASAUD",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "BISTRIȚA-NĂSĂUD",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 1
-    },
-    {
-     "cui": "4358029",
-     "name": "CONSILIUL JUDETEAN TIMIS",
-     "entityName": "JUDETUL TIMIS",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "TIMIȘ",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 1
-    },
-    {
-     "cui": "4394706",
-     "name": "CONSILIUL JUDETEAN OLT",
-     "entityName": "JUDETUL OLT",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "OLT",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4406223",
-     "name": "CONSILIUL JUDETEAN SIBIU",
-     "entityName": "JUDETUL SIBIU",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "SIBIU",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4540712",
-     "name": "CONSILIUL JUDETEAN IASI",
-     "entityName": "JUDETUL IASI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "IAȘI",
-     "hasBudget": true,
-     "enterprises": 2,
-     "inactive": 0
-    },
-    {
-     "cui": "4652686",
-     "name": "CONSILIUL JUDETEAN TELEORMAN",
-     "entityName": "JUDETUL TELEORMAN",
-     "spellings": 1,
-     "level": "local",
-     "kind": "county",
-     "county": "TELEORMAN",
-     "hasBudget": true,
-     "enterprises": 2,
      "inactive": 0
     }
    ],
@@ -679,8 +325,7 @@
     {
      "cui": "4267117",
      "name": "CONSILIUL GENERAL AL MUNICIPIULUI BUCURESTI",
-     "entityName": "MUNICIPIUL BUCURESTI",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -691,8 +336,7 @@
     {
      "cui": "4283481",
      "name": "CONSILIUL LOCAL VOLUNTARI",
-     "entityName": "ORAS VOLUNTARI",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "town",
      "county": "ILFOV",
@@ -703,8 +347,7 @@
     {
      "cui": "14756536",
      "name": "CONSILIUL LOCAL TIMISOARA",
-     "entityName": "MUNICIPIUL TIMISOARA",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "TIMIȘ",
@@ -715,8 +358,7 @@
     {
      "cui": "4652660",
      "name": "CONSILIUL LOCAL ALEXANDRIA",
-     "entityName": "MUNICIPIUL ALEXANDRIA",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "TELEORMAN",
@@ -727,8 +369,7 @@
     {
      "cui": "3228764",
      "name": "CONSILIUL LOCAL RESITA",
-     "entityName": "MUNICIPIUL RESITA",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "CARAȘ-SEVERIN",
@@ -739,8 +380,7 @@
     {
      "cui": "4541580",
      "name": "CONSILIUL LOCAL IASI",
-     "entityName": "MUNICIPIUL IASI",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "IAȘI",
@@ -751,8 +391,7 @@
     {
      "cui": "4404605",
      "name": "CONSILIUL LOCAL SFANTUL GHEORGHE",
-     "entityName": "MUNICIPIUL SFANTU GHEORGHE",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "COVASNA",
@@ -763,8 +402,7 @@
     {
      "cui": "4420465",
      "name": "CONSILIUL LOCAL AL SECTORULUI BUCURESTI",
-     "entityName": "SECTORUL 3 AL MUNICIPIULUI BUCURESTI",
-     "spellings": 2,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "sector",
      "county": "MUNICIPIUL BUCUREȘTI",
@@ -775,8 +413,7 @@
     {
      "cui": "4852455",
      "name": "CONSILIUL LOCAL GIURGIU",
-     "entityName": "MUNICIPIUL GIURGIU",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "GIURGIU",
@@ -787,254 +424,13 @@
     {
      "cui": "3814810",
      "name": "CONSILIUL LOCAL GALATI",
-     "entityName": "MUNICIPIUL GALATI",
-     "spellings": 1,
+     "nameSource": "s1001",
      "level": "local",
      "kind": "municipality",
      "county": "GALAȚI",
      "hasBudget": true,
      "enterprises": 7,
      "inactive": 1
-    },
-    {
-     "cui": "4230487",
-     "name": "CONSILIUL LOCAL MUNICIPIUL ORADEA",
-     "entityName": "MUNICIPIUL ORADEA",
-     "spellings": 2,
-     "level": "local",
-     "kind": "municipality",
-     "county": "BIHOR",
-     "hasBudget": true,
-     "enterprises": 7,
-     "inactive": 1
-    },
-    {
-     "cui": "4305857",
-     "name": "CONSILIUL LOCAL CLUJ NAPOCA",
-     "entityName": "MUNICIPIUL CLUJ-NAPOCA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "CLUJ",
-     "hasBudget": true,
-     "enterprises": 7,
-     "inactive": 1
-    },
-    {
-     "cui": "4785631",
-     "name": "CONSILIUL LOCAL CONSTANTA",
-     "entityName": "MUNICIPIUL CONSTANTA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "CONSTANȚA",
-     "hasBudget": true,
-     "enterprises": 7,
-     "inactive": 2
-    },
-    {
-     "cui": "2612790",
-     "name": "CONSILIUL LOCAL PIATRA NEAMT",
-     "entityName": "MUNICIPIUL PIATRA-NEAMT",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "NEAMȚ",
-     "hasBudget": true,
-     "enterprises": 6,
-     "inactive": 3
-    },
-    {
-     "cui": "4205670",
-     "name": "CONSILIUL LOCAL BRAILA",
-     "entityName": "Municipiul Braila",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "BRĂILA",
-     "hasBudget": true,
-     "enterprises": 6,
-     "inactive": 1
-    },
-    {
-     "cui": "4417214",
-     "name": "CONSILIUL LOCAL CRAIOVA",
-     "entityName": "MUNICIPIUL CRAIOVA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "DOLJ",
-     "hasBudget": true,
-     "enterprises": 6,
-     "inactive": 1
-    },
-    {
-     "cui": "2127028",
-     "name": "CONSILIUL LOCAL HUNEDOARA",
-     "entityName": "MUNICIPIUL HUNEDOARA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "HUNEDOARA",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 0
-    },
-    {
-     "cui": "2844855",
-     "name": "CONSILIUL LOCAL PLOIESTI",
-     "entityName": "MUNICIPIUL PLOIESTI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "PRAHOVA",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 0
-    },
-    {
-     "cui": "3227920",
-     "name": "CONSILIUL LOCAL BAILE HERCULANE",
-     "entityName": "ORASUL BAILE HERCULANE",
-     "spellings": 1,
-     "level": "local",
-     "kind": "town",
-     "county": "CARAȘ-SEVERIN",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 0
-    },
-    {
-     "cui": "3337532",
-     "name": "CONSILIUL LOCAL VASLUI",
-     "entityName": "MUNICIPIUL VASLUI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "VASLUI",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 2
-    },
-    {
-     "cui": "3372882",
-     "name": "CONSILIUL LOCAL BOTOSANI",
-     "entityName": "Municipiul Botosani",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "BOTOȘANI",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 1
-    },
-    {
-     "cui": "3519925",
-     "name": "CONSILIUL LOCAL ARAD",
-     "entityName": "MUNICIPIUL ARAD",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "ARAD",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 1
-    },
-    {
-     "cui": "4245747",
-     "name": "CONSILIUL LOCAL MIERCUREA CIUC",
-     "entityName": "Primăria Municipiului Miercurea Ciuc - Direcția de Asistență Socială",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "HARGHITA",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 0
-    },
-    {
-     "cui": "4279944",
-     "name": "CONSILIUL LOCAL TARGOVISTE",
-     "entityName": "MUNICIPIUL TARGOVISTE",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "DÂMBOVIȚA",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 1
-    },
-    {
-     "cui": "4317967",
-     "name": "CONSILIUL LOCAL PITESTI",
-     "entityName": "MUNICIPIUL PITESTI",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "ARGEȘ",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 0
-    },
-    {
-     "cui": "4321429",
-     "name": "CONSILIUL LOCAL TULCEA",
-     "entityName": "MUNICIPIUL TULCEA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "TULCEA",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 1
-    },
-    {
-     "cui": "4322823",
-     "name": "CONSILIUL LOCAL TARGU MURES",
-     "entityName": "MUNICIPIUL TARGU MURES",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "MUREȘ",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 1
-    },
-    {
-     "cui": "4353269",
-     "name": "CONSILIUL LOCAL COMANESTI",
-     "entityName": "Primăria Orașului Comănești - Direcția de Asistență Socială",
-     "spellings": 2,
-     "level": "local",
-     "kind": "town",
-     "county": "BACĂU",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 2
-    },
-    {
-     "cui": "4378930",
-     "name": "CONSILIUL LOCAL TURDA",
-     "entityName": "UAT MUNICIPIUL TURDA - CCOFM",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "CLUJ",
-     "hasBudget": true,
-     "enterprises": 5,
-     "inactive": 0
-    },
-    {
-     "cui": "2540813",
-     "name": "CONSILIUL LOCAL RAMNICU VALCEA",
-     "entityName": "MUNICIPIUL RAMNICU VALCEA",
-     "spellings": 1,
-     "level": "local",
-     "kind": "municipality",
-     "county": "VÂLCEA",
-     "hasBudget": true,
-     "enterprises": 4,
-     "inactive": 0
     }
    ]
   }
@@ -1048,10 +444,6 @@
    {
     "status": "INACTIV",
     "enterprises": 274
-   },
-   {
-    "status": null,
-    "enterprises": 27
    }
   ],
   "onrc": [
@@ -1061,7 +453,7 @@
    },
    {
     "status": null,
-    "enterprises": 744
+    "enterprises": 742
    },
    {
     "status": "radiată",
@@ -1096,6 +488,8 @@
     "enterprises": 1
    }
   ],
+  "onrcMissing": 2,
+  "s1001NotListed": 27,
   "anafInactive": 286,
   "crossings": {
    "radiatedButS1001Active": 18,
@@ -1155,7 +549,8 @@
     "status": "reorganizare - divizare partială",
     "enterprises": 1
    }
-  ]
+  ],
+  "amepipMissing": 560
  },
  "legalForms": [
   {
@@ -2141,15 +1536,14 @@
    }
   ],
   "filed": 1421,
-  "profit": 893,
-  "loss": 440,
-  "implausibleEmployees": [
-   {
-    "cui": "25252500",
-    "name": "COMPANIA DE ASIGURARI-REASIGURARI EXIM ROMANIA (CARE-ROMANIA) SA",
-    "employees": "92149177"
-   }
+  "publishers": [
+   "anaf"
   ],
+  "nextYearFiled": 1325,
+  "netReported": 1386,
+  "profit": 871,
+  "loss": 439,
+  "implausibleEmployees": [],
   "largest": {
    "turnover": [
     {
@@ -2158,6 +1552,7 @@
      "value": "9659879145",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2166,6 +1561,7 @@
      "value": "7639092966",
      "level": "central",
      "authority": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2174,15 +1570,8 @@
      "value": "7531970469",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "Sibiu"
-    },
-    {
-     "cui": "361897",
-     "name": "CEC BANK SA",
-     "value": "5806490751",
-     "level": null,
-     "authority": null,
-     "county": "București"
     },
     {
      "cui": "10874881",
@@ -2190,6 +1579,7 @@
      "value": "4680533991",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2198,6 +1588,7 @@
      "value": "3486819881",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2206,6 +1597,7 @@
      "value": "3266120740",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "Gorj"
     },
     {
@@ -2214,6 +1606,7 @@
      "value": "2986336165",
      "level": "central",
      "authority": "MINISTERUL MEDIULUI, APELOR SI PADURILOR",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2222,6 +1615,7 @@
      "value": "2506399064",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2230,6 +1624,7 @@
      "value": "2299216758",
      "level": "local",
      "authority": "ASOCIATIA DE DEZVOLTARE INTRACOMUNITARA TERMOENERGETICA BUCURESTI-ILFOV",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2238,6 +1633,7 @@
      "value": "2212225271",
      "level": "central",
      "authority": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "authorityNameSource": "s1001",
      "county": "Sibiu"
     },
     {
@@ -2246,14 +1642,7 @@
      "value": "2019261859",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "361560",
-     "name": "EXIM BANCA ROMÂNEASCĂ S.A.",
-     "value": "1870376188",
-     "level": null,
-     "authority": null,
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2262,6 +1651,7 @@
      "value": "1718832902",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2270,6 +1660,7 @@
      "value": "1692481412",
      "level": "local",
      "authority": "CONSILIUL GENERAL AL MUNICIPIULUI BUCURESTI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2278,6 +1669,7 @@
      "value": "1632295189",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2286,6 +1678,7 @@
      "value": "1383970846",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "Ilfov"
     },
     {
@@ -2294,6 +1687,7 @@
      "value": "1291086094",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2302,6 +1696,7 @@
      "value": "1226498739",
      "level": null,
      "authority": null,
+     "authorityNameSource": null,
      "county": null
     },
     {
@@ -2310,6 +1705,7 @@
      "value": "1209451651",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2318,6 +1714,7 @@
      "value": "1166476200",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2326,71 +1723,8 @@
      "value": "860381791",
      "level": "central",
      "authority": "MINISTERUL APARARII NATIONALE",
+     "authorityNameSource": "s1001",
      "county": "București"
-    },
-    {
-     "cui": "11054537",
-     "name": "SOCIETATEA NATIONALA DE TRANSPORT FEROVIAR DE MARFA CFR - MARFA SA",
-     "value": "677188337",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "1973096",
-     "name": "ANTIBIOTICE SA",
-     "value": "675010971",
-     "level": "central",
-     "authority": "MINISTERUL SANATATII",
-     "county": "Iași"
-    },
-    {
-     "cui": "16828396",
-     "name": "Electrificare C.F.R. SA",
-     "value": "643563061",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "7061781",
-     "name": "RASIROM RA",
-     "value": "606857298",
-     "level": "central",
-     "authority": "SERVICIUL ROMAN DE INFORMATII",
-     "county": "București"
-    },
-    {
-     "cui": "1590236",
-     "name": "REGISTRUL AUTO ROMAN RA",
-     "value": "592515302",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "1890420",
-     "name": "RAJA SA",
-     "value": "577692759",
-     "level": "local",
-     "authority": "ASOCIATIA DE DEZVOLTARE INTERCOMUNITARA APA - CANAL CONSTANTA",
-     "county": "Constanța"
-    },
-    {
-     "cui": "34915261",
-     "name": "SNGN ROMGAZ SA-FILIALA DE ÎNMAGAZINARE GAZE NATURALE DEPOGAZ PLOIEŞTI SRL",
-     "value": "573603696",
-     "level": "central",
-     "authority": "MINISTERUL ENERGIEI",
-     "county": "Prahova"
-    },
-    {
-     "cui": "1350020",
-     "name": "CONPET SA",
-     "value": "533618409",
-     "level": "central",
-     "authority": "MINISTERUL ENERGIEI",
-     "county": "Prahova"
     }
    ],
    "employees": [
@@ -2400,6 +1734,7 @@
      "value": "24493",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2408,6 +1743,7 @@
      "value": "20154",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2416,6 +1752,7 @@
      "value": "13625",
      "level": "central",
      "authority": "MINISTERUL MEDIULUI, APELOR SI PADURILOR",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2424,6 +1761,7 @@
      "value": "10597",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2432,6 +1770,7 @@
      "value": "9826",
      "level": "local",
      "authority": "CONSILIUL GENERAL AL MUNICIPIULUI BUCURESTI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2440,6 +1779,7 @@
      "value": "8565",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "Gorj"
     },
     {
@@ -2448,6 +1788,7 @@
      "value": "6913",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2456,6 +1797,7 @@
      "value": "5291",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "Sibiu"
     },
     {
@@ -2464,6 +1806,7 @@
      "value": "4882",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2472,6 +1815,7 @@
      "value": "3996",
      "level": "central",
      "authority": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "authorityNameSource": "s1001",
      "county": "Sibiu"
     },
     {
@@ -2480,6 +1824,7 @@
      "value": "3537",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2488,6 +1833,7 @@
      "value": "3409",
      "level": "local",
      "authority": "ASOCIATIA DE DEZVOLTARE INTRACOMUNITARA TERMOENERGETICA BUCURESTI-ILFOV",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2496,6 +1842,7 @@
      "value": "3049",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2504,6 +1851,7 @@
      "value": "2391",
      "level": "local",
      "authority": "ASOCIATIA DE DEZVOLTARE INTERCOMUNITARA APA - CANAL CONSTANTA",
+     "authorityNameSource": "s1001",
      "county": "Constanța"
     },
     {
@@ -2512,6 +1860,7 @@
      "value": "2351",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2520,6 +1869,7 @@
      "value": "2300",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2528,6 +1878,7 @@
      "value": "2075",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "Hunedoara"
     },
     {
@@ -2536,6 +1887,7 @@
      "value": "2056",
      "level": "central",
      "authority": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2544,6 +1896,7 @@
      "value": "1976",
      "level": "central",
      "authority": "SECRETARIATUL GENERAL AL GUVERNULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2552,87 +1905,8 @@
      "value": "1922",
      "level": "local",
      "authority": "ASOCIATIA REGIONALA PENTRU DEZVOLTAREA INFRASTRUCTURII DIN BAZINUL HIDROGRAFIC SOMES-TISA",
+     "authorityNameSource": "json_apt",
      "county": "Cluj"
-    },
-    {
-     "cui": "15189596",
-     "name": "ELECTROCENTRALE BUCURESTI SA",
-     "value": "1738",
-     "level": "central",
-     "authority": "MINISTERUL ENERGIEI",
-     "county": "București"
-    },
-    {
-     "cui": "1590236",
-     "name": "REGISTRUL AUTO ROMAN RA",
-     "value": "1657",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "1589932",
-     "name": "ADMINISTRATIA ROMANA A SERVICIILOR DE TRAFIC AERIAN ROMATSA RA",
-     "value": "1643",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "1959768",
-     "name": "APAVITAL SA",
-     "value": "1542",
-     "level": "local",
-     "authority": "ASOCIATIA REGIONALA A SERVICIILOR PUBLICE DE APA CANAL IASI",
-     "county": "Iași"
-    },
-    {
-     "cui": "14257595",
-     "name": "SOCIETATEA DE REPARATII LOCOMOTIVE C.F.R.- S.C.R.L. BRASOV S.A.",
-     "value": "1412",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "Brașov"
-    },
-    {
-     "cui": "1350020",
-     "name": "CONPET SA",
-     "value": "1387",
-     "level": "central",
-     "authority": "MINISTERUL ENERGIEI",
-     "county": "Prahova"
-    },
-    {
-     "cui": "26490194",
-     "name": "COMPANIA NATIONALA AEROPORTURI BUCURESTI SA",
-     "value": "1386",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "Ilfov"
-    },
-    {
-     "cui": "1973096",
-     "name": "ANTIBIOTICE SA",
-     "value": "1350",
-     "level": "central",
-     "authority": "MINISTERUL SANATATII",
-     "county": "Iași"
-    },
-    {
-     "cui": "1590430",
-     "name": "SOCIETATEA NATIONALA A SARII SA",
-     "value": "1345",
-     "level": "central",
-     "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
-     "county": null
-    },
-    {
-     "cui": "32175213",
-     "name": "COMPANIA DE TRANSPORT PUBLIC IAŞI  S.A.",
-     "value": "1247",
-     "level": "local",
-     "authority": "CONSILIUL LOCAL IASI",
-     "county": "Iași"
     }
    ],
    "loss": [
@@ -2642,6 +1916,7 @@
      "value": "354232258",
      "level": "central",
      "authority": "MINISTERUL SANATATII",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2650,6 +1925,7 @@
      "value": "275436396",
      "level": "local",
      "authority": "CONSILIUL JUDETEAN VALCEA",
+     "authorityNameSource": "s1001",
      "county": "Vâlcea"
     },
     {
@@ -2658,6 +1934,7 @@
      "value": "208204253",
      "level": "local",
      "authority": "ASOCIATIA DE DEZVOLTARE INTRACOMUNITARA TERMOENERGETICA BUCURESTI-ILFOV",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2666,6 +1943,7 @@
      "value": "160415303",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "Hunedoara"
     },
     {
@@ -2674,14 +1952,7 @@
      "value": "126613726",
      "level": "central",
      "authority": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
-     "county": "București"
-    },
-    {
-     "cui": "25252500",
-     "name": "COMPANIA DE ASIGURARI-REASIGURARI EXIM ROMANIA (CARE-ROMANIA) SA",
-     "value": "112806909",
-     "level": null,
-     "authority": null,
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2690,6 +1961,7 @@
      "value": "83612954",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "Constanța"
     },
     {
@@ -2698,6 +1970,7 @@
      "value": "44867135",
      "level": "central",
      "authority": "AUTORITATEA PENTRU ADMINISTRAREA ACTIVELOR STATULUI",
+     "authorityNameSource": "s1001",
      "county": "Brașov"
     },
     {
@@ -2706,6 +1979,7 @@
      "value": "39668659",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2714,6 +1988,7 @@
      "value": "29669003",
      "level": "local",
      "authority": "CONSILIUL LOCAL MOTRU",
+     "authorityNameSource": "s1001",
      "county": "Gorj"
     },
     {
@@ -2721,7 +1996,8 @@
      "name": "TERMOFICARE ORADEA S.A.",
      "value": "28345790",
      "level": "local",
-     "authority": "CONSILIUL LOCAL MUNICIPIUL ORADEA",
+     "authority": "CONSILIUL LOCAL ORADEA",
+     "authorityNameSource": "s1001",
      "county": "Bihor"
     },
     {
@@ -2730,6 +2006,7 @@
      "value": "27035688",
      "level": "local",
      "authority": "CONSILIUL LOCAL AL SECTORULUI BUCURESTI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2738,6 +2015,7 @@
      "value": "25087798",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "Dâmbovița"
     },
     {
@@ -2746,6 +2024,7 @@
      "value": "24791714",
      "level": "central",
      "authority": "MINISTERUL ENERGIEI",
+     "authorityNameSource": "s1001",
      "county": "București"
     },
     {
@@ -2754,6 +2033,7 @@
      "value": "24629383",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "Gorj"
     },
     {
@@ -2762,6 +2042,7 @@
      "value": "22066878",
      "level": "local",
      "authority": "CONSILIUL LOCAL PLOIESTI",
+     "authorityNameSource": "s1001",
      "county": "Prahova"
     },
     {
@@ -2770,6 +2051,7 @@
      "value": "19586904",
      "level": "local",
      "authority": "CONSILIUL LOCAL FOCSANI",
+     "authorityNameSource": "s1001",
      "county": "Vrancea"
     },
     {
@@ -2778,6 +2060,7 @@
      "value": "14502737",
      "level": "local",
      "authority": "CONSILIUL LOCAL BACAU",
+     "authorityNameSource": "s1001",
      "county": "Bacău"
     },
     {
@@ -2786,6 +2069,7 @@
      "value": "14384669",
      "level": "central",
      "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
+     "authorityNameSource": "s1001",
      "county": "Timiș"
     },
     {
@@ -2794,6 +2078,7 @@
      "value": "12799878",
      "level": "central",
      "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
+     "authorityNameSource": "s1001",
      "county": "Alba"
     },
     {
@@ -2802,79 +2087,8 @@
      "value": "11578802",
      "level": "local",
      "authority": "CONSILIUL LOCAL AL SECTORULUI BUCURESTI",
+     "authorityNameSource": "s1001",
      "county": "București"
-    },
-    {
-     "cui": "14531223",
-     "name": "COMPANIA NATIONALA ROMARM S.A. FILIALA SOCIETATEA METROM S.A.",
-     "value": "11146032",
-     "level": "central",
-     "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
-     "county": "Brașov"
-    },
-    {
-     "cui": "1355770",
-     "name": "TRANSPORT CĂLĂTORI EXPRESS S.A.",
-     "value": "10429271",
-     "level": "local",
-     "authority": "CONSILIUL LOCAL PLOIESTI",
-     "county": "Prahova"
-    },
-    {
-     "cui": "15034095",
-     "name": "Telecomunicatii C.F.R. SA",
-     "value": "9952814",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "București"
-    },
-    {
-     "cui": "14512353",
-     "name": "PETROTRANS SA",
-     "value": "9054499",
-     "level": "central",
-     "authority": "MINISTERUL ENERGIEI",
-     "county": "Prahova"
-    },
-    {
-     "cui": "11212645",
-     "name": "SOCIETATEA NAŢIONALĂ AEROPORTUL INTERNAŢIONAL MIHAIL KOGĂLNICEANU-CONSTANŢA SA",
-     "value": "8897190",
-     "level": "central",
-     "authority": "MINISTERUL TRANSPORTURILOR SI INFRASTRUCTURII",
-     "county": "Constanța"
-    },
-    {
-     "cui": "11932018",
-     "name": "MOLDOMIN SA",
-     "value": "7298494",
-     "level": "central",
-     "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
-     "county": "Caraș-Severin"
-    },
-    {
-     "cui": "15657042",
-     "name": "UZINA MECANICA ORASTIE SA",
-     "value": "6527318",
-     "level": "central",
-     "authority": "MINISTERUL ECONOMIEI, DIGITALIZARII, ANTREPRENORIATULUI ŞI TURISMULUI",
-     "county": "Hunedoara"
-    },
-    {
-     "cui": "41629998",
-     "name": "PUBLIVOL CREATIV S.A.",
-     "value": "6515878",
-     "level": "local",
-     "authority": "CONSILIUL LOCAL VOLUNTARI",
-     "county": "Ilfov"
-    },
-    {
-     "cui": "14790708",
-     "name": "ELECTROCENTRALE ORADEA SA",
-     "value": "6373416",
-     "level": "local",
-     "authority": "CONSILIUL LOCAL MUNICIPIUL ORADEA",
-     "county": "Bihor"
     }
    ]
   }
@@ -2885,7 +2099,8 @@
   "buyers": 778,
   "buyerDirect": 769,
   "buyerAwards": 488,
-  "sellers": 822
+  "sellers": 822,
+  "unknown": 0
  },
  "indicators": {
   "calculated": [

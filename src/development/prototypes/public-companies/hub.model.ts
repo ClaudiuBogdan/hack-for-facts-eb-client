@@ -22,9 +22,8 @@ export type AuthorityRow = {
   readonly cui: string
   /** The source's own words, its most frequent spelling. */
   readonly name: string | null
-  /** The authority's budget record's name, when it has one. */
-  readonly entityName: string | null
-  readonly spellings: number
+  /** Where `name` came from: ANAF's list, or another source where it gave none. */
+  readonly nameSource: 's1001' | 'json_apt' | 'budget' | null
   readonly level: Level | null
   readonly kind: AuthorityKind
   readonly county: string | null
@@ -65,12 +64,16 @@ export type HubFixture = {
     readonly s1001Authorities: number
     readonly s1001AuthoritiesWithBudget: number
     readonly disagreements: number
-    readonly kinds: readonly { readonly kind: AuthorityKind; readonly enterprises: number }[]
+    readonly kinds: readonly { readonly kind: AuthorityKind; readonly level: Level; readonly enterprises: number }[]
     readonly ranking: { readonly central: readonly AuthorityRow[]; readonly county: readonly AuthorityRow[]; readonly local: readonly AuthorityRow[] }
   }
   readonly status: {
     readonly s1001: readonly { readonly status: string | null; readonly enterprises: number }[]
+    /** Members ANAF's list does not hold. */
+    readonly s1001NotListed: number
     readonly onrc: readonly { readonly status: string | null; readonly enterprises: number }[]
+    /** Members with no company record. */
+    readonly onrcMissing: number
     readonly anafInactive: number
     readonly crossings: { readonly radiatedButS1001Active: number; readonly radiatedOnS1001: number; readonly fiscallyInactiveButS1001Active: number }
     readonly amepip: readonly { readonly status: string | null; readonly enterprises: number }[]
@@ -83,6 +86,8 @@ export type HubFixture = {
     readonly withAny: number
     readonly years: readonly { readonly year: number; readonly filed: number; readonly turnover: number; readonly employees: number }[]
     readonly filed: number
+    /** The statements whose net result the companies module's evaluator reported: the base of `profit` and `loss`. */
+    readonly netReported: number
     readonly profit: number
     readonly loss: number
     readonly implausibleEmployees: readonly { readonly cui: string; readonly name: string | null; readonly employees: string }[]
@@ -149,7 +154,6 @@ export function kindLabel(kind: AuthorityKind, enterprisesCount: number): string
 }
 
 export const LOCAL_KINDS: readonly AuthorityKind[] = ['commune', 'municipality', 'town', 'county', 'sector']
-export const CENTRAL_KINDS: readonly AuthorityKind[] = ['central_authority', 'public_entity', 'education']
 
 // ───────────────────────────────────────────────────────── counties ──
 

@@ -24,16 +24,10 @@ describe('the retired mock-era public-enterprise pages', () => {
     redirectMock.mockClear()
   })
 
-  it('sends the front door to the companies hub, keeping only the language', async () => {
+  it('sends the front door to its new address for good, keeping only the language', async () => {
     const route = await frontDoor()
     expect(() => route.beforeLoad({ search: { lang: 'en', q: 'apa', county: ['CJ'], status: ['active'] } })).toThrow()
-    expect(redirectMock).toHaveBeenCalledWith({
-      to: '/companies',
-      search: { lang: 'en' },
-      replace: true,
-      statusCode: 302,
-      headers: { 'Cache-Control': 'no-store', 'CDN-Cache-Control': 'no-store' },
-    })
+    expect(redirectMock).toHaveBeenCalledWith({ to: '/public-enterprises', search: { lang: 'en' }, replace: true, statusCode: 301 })
   })
 
   it('sends a profile to the enterprise company page, its tab left behind', async () => {

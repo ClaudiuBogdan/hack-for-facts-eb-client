@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
-  LEGACY_PUBLIC_ENTERPRISE_REDIRECT,
+  LEGACY_PROFILE_REDIRECT,
   legacyProfileCui,
   legacyPublicEnterpriseSearch,
 } from '@/features/public-enterprises/lib/legacy-redirect'
@@ -16,7 +16,7 @@ export const Route = createFileRoute('/intreprinderi-publice/$cui')({
       params: { cui: legacyProfileCui(params.cui) },
       search: legacyPublicEnterpriseSearch(search as Record<string, unknown>) as never,
       replace: true,
-      ...LEGACY_PUBLIC_ENTERPRISE_REDIRECT,
+      ...LEGACY_PROFILE_REDIRECT,
     })
   },
 })

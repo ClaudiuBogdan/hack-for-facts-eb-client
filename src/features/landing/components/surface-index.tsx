@@ -91,9 +91,8 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // On the right, so the three pictures alternate down the page rather than
   // stacking along one edge.
   //
-  // The span is derived from the visible entry count rather than written here,
-  // which matters most for this group: it is three entries tall today and four
-  // once Întreprinderi publice returns with its redesigned pages.
+  // The span is derived from the visible entry count rather than written here:
+  // a gated entry in this group would change its height.
   institutii: {
     src: atlas,
     avif: atlasAvif,
