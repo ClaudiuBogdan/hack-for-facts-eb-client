@@ -1,8 +1,25 @@
 import { describe, expect, it } from 'vitest'
 
-import type { BudgetApprovedRecord, BudgetNationalCatalog } from '@/schemas/national-budget-api'
-import { ANAF_FIRST_YEAR, anafFilter, anafTotal, chaptersOf, defaultYear, lawEditionOf, previousView, readKey, siteKeys, viewOfYear, yearViews } from './home-data'
+import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
+import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries } from '@/schemas/national-budget-api'
+import {
+  ANAF_FIRST_YEAR,
+  TOTAL_ITEMS,
+  anafFilter,
+  anafTotal,
+  chaptersOf,
+  defaultYear,
+  lawEditionOf,
+  previousView,
+  readKey,
+  siteKeys,
+  unfinishedYearsOf,
+  viewOfYear,
+  yearTotalsOf,
+  yearViews,
+} from './home-data'
 import { comparableWithAnaf } from '../hooks/use-home-data'
+import { partsOfWhole } from '../hooks/use-whole-of'
 import { authorityName, gdpNumber, gdpSizeText, restOf, shareNumber, shareOf } from './home-format'
 import { cellsOutOfHundred, namedCount, squarify, toneOf, type Part } from './home-geometry'
 import { lawChaptersOf, planTotalsInput, previousEdition } from './home-law'
@@ -11,7 +28,7 @@ import { lawChaptersOf, planTotalsInput, previousEdition } from './home-law'
 const catalog = {
   snapshots: { approved: 'a1', execution: 'e1' },
   execution: {
-    coverage: { firstMonth: '2006-01', lastMonth: '2026-07', missingMonths: ['2008-12', '2025-05'] },
+    coverage: { firstMonth: '2006-01', lastMonth: '2026-07', missingMonths: ['2012-09', '2012-11', '2019-07', '2024-01', '2025-05'] },
     seriesItems: [],
   },
   approved: {
@@ -22,6 +39,39 @@ const catalog = {
     totals: [],
   },
 } as unknown as BudgetNationalCatalog
+
+/**
+ * A FULL_YEAR read of the three totals as the API serves it. 2008, 2011 and
+ * 2013 carry the dev API's values (snapshot e1.a772b18006ed4f2ffec74bd4d1ccbe31);
+ * 2012 stands for a year the bulletins don't finish and 2014 for a balance of
+ * exactly zero (neither is the API's answer for those years).
+ */
+const yearsRead = (() => {
+  const years: Record<string, { revenue: string; spending: string; balance: string } | { reason: string }> = {
+    '2008': { revenue: '164466800000', spending: '189121700000', balance: '-24654900000' },
+    '2011': { revenue: '181566900000', spending: '205403600000', balance: '-23836700000' },
+    '2012': { reason: 'missing_selected_release' },
+    // The bulletin's own balance: spending less revenue is 15.771,2 million; it prints 15.771,3.
+    '2013': { revenue: '200045700000', spending: '215816900000', balance: '-15771300000' },
+    '2014': { revenue: '100', spending: '100', balance: '0' },
+  }
+  const series = (itemId: string, key: 'revenue' | 'spending' | 'balance'): BudgetNationalSeries => ({
+    item: { itemId },
+    component: 'TOTAL',
+    basis: 'FULL_YEAR',
+    unit: 'RON',
+    series: { data: Object.entries(years).flatMap(([date, year]) => ('reason' in year ? [] : [{ date, value: year[key] }])) },
+    periods: Object.entries(years).map(([date, year]) => ({
+      date,
+      periodStart: `${date}-01-01`,
+      periodEnd: `${date}-12-31`,
+      status: 'reason' in year ? ('UNAVAILABLE' as const) : ('AVAILABLE' as const),
+      reason: 'reason' in year ? year.reason : null,
+      valueBasis: 'reason' in year ? null : ('REPORTED_CUMULATIVE' as const),
+    })),
+  })
+  return [series(TOTAL_ITEMS.revenue, 'revenue'), series(TOTAL_ITEMS.spending, 'spending'), series(TOTAL_ITEMS.balance, 'balance')]
+})()
 
 const part = (key: string, share: number, rest = false): Part => ({ key, label: key, amount: '', share, shareWhole: Math.round(share), shareLabel: '', shareDecimal: '', rest })
 
@@ -43,6 +93,36 @@ describe('the year', () => {
   it('compares a year in progress with the same months a year earlier', () => {
     const view = viewOfYear(catalog, 2026)
     expect(previousView(view)).toMatchObject({ year: 2025, month: '2025-07', label: '2025-07', partial: true })
+  })
+
+  it('offers every full year the API vouches for, 2008, 2011 and 2013 among them; withholds only those it does not', () => {
+    expect(unfinishedYearsOf(yearsRead)).toEqual([['2012', 'missing_selected_release']])
+    for (const year of [2008, 2011, 2013]) expect(viewOfYear(catalog, year)).toMatchObject({ year, partial: false, label: String(year), basis: 'FULL_YEAR' })
+    // A balance of zero is an answer, not a gap.
+    expect(unfinishedYearsOf(yearsRead).map(([year]) => year)).not.toContain('2014')
+  })
+})
+
+describe('the totals, year by year', () => {
+  const cells = new Map(yearsRead.map((result) => [result.item.itemId, cellsOf(result)]))
+  const rows = yearTotalsOf(cells, 2008, 2014)
+
+  it('plots each year the API vouches for, and leaves a year it does not as a gap that says why', () => {
+    expect(rows.map((row) => row.year)).toEqual([2008, 2009, 2010, 2011, 2012, 2013, 2014])
+    expect(rows.find((row) => row.year === 2008)).toEqual({ year: 2008, revenue: '164466800000', spending: '189121700000', balance: '-24654900000', gap: null })
+    expect(rows.find((row) => row.year === 2011)).toEqual({ year: 2011, revenue: '181566900000', spending: '205403600000', balance: '-23836700000', gap: null })
+    expect(rows.find((row) => row.year === 2012)).toEqual({ year: 2012, revenue: null, spending: null, balance: null, gap: { reason: 'missing_selected_release' } })
+    // A year the read doesn't hold at all is a gap too, with no reason to give.
+    expect(rows.find((row) => row.year === 2009)).toEqual({ year: 2009, revenue: null, spending: null, balance: null, gap: { reason: null } })
+  })
+
+  it('takes the balance the bulletin prints, not spending less revenue (2013: 15.771,3 million, not 15.771,2)', () => {
+    expect(rows.find((row) => row.year === 2013)?.balance).toBe('-15771300000')
+  })
+
+  it('keeps a balance of exactly zero as a value', () => {
+    expect(rows.find((row) => row.year === 2014)).toEqual({ year: 2014, revenue: '100', spending: '100', balance: '0', gap: null })
+    expect(cells.get(TOTAL_ITEMS.balance)?.get('2014')?.value).toBe(0)
   })
 })
 
@@ -94,6 +174,26 @@ describe('ANAF over the bulletin window', () => {
 })
 
 describe('the parts of a whole', () => {
+  const ITEMS = ['mfin.bgc.expenditure.personnel', 'mfin.bgc.expenditure.interest']
+  const whole = (now: Record<string, string | null>) =>
+    partsOfWhole({ whole: '215816900000', items: ITEMS, now: (itemId) => now[itemId] ?? null, before: () => null, restLabel: () => 'rest', restHint: () => '' })
+
+  it('has no breakdown when no line has a value for the year (2013): not a whole that is all „rest"', () => {
+    expect(whole({})).toBeNull()
+  })
+
+  it('counts a line of exactly zero as a value, and the rest as what the lines leave', () => {
+    const parts = whole({ 'mfin.bgc.expenditure.interest': '0' })
+    expect(parts?.map((entry) => entry.key)).toEqual(['mfin.bgc.expenditure.interest', 'rest'])
+    expect(parts?.find((entry) => entry.key === 'mfin.bgc.expenditure.interest')?.share).toBe(0)
+    expect(parts?.find((entry) => entry.rest)?.share).toBe(100)
+  })
+
+  it('ranks the lines by size and leaves the rest last', () => {
+    const parts = whole({ 'mfin.bgc.expenditure.personnel': '50000000000', 'mfin.bgc.expenditure.interest': '100000000000' })
+    expect(parts?.map((entry) => entry.key)).toEqual(['mfin.bgc.expenditure.interest', 'mfin.bgc.expenditure.personnel', 'rest'])
+  })
+
   it('gives whole lei out of a hundred that always make a hundred', () => {
     const counts = cellsOutOfHundred([part('a', 31.4), part('b', 20.2), part('c', 8.9), part('d', 33.33), part('rest', 6.17, true)])
     expect(counts.reduce((sum, value) => sum + value, 0)).toBe(100)

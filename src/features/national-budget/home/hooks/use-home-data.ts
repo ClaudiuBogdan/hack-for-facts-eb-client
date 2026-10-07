@@ -32,6 +32,7 @@ import {
   gdpOf,
   lawEditionOf,
   previousView,
+  unfinishedYearsOf,
   type YearView,
 } from '../lib/home-data'
 import { lawChaptersOf, lawDeficitInput, planTotalsInput, previousEdition } from '../lib/home-law'
@@ -126,9 +127,9 @@ export function useTotalsHistory() {
 
 /**
  * The full years the bulletins don't answer, each with the server's reason
- * (2008: no December release; 2011, 2013: a release covering another period):
- * the year menus list them but don't offer them. The same read as the years
- * of `useTotalsHistory`.
+ * (`unfinishedYearsOf`): the year menus list them but don't offer them. Which
+ * years these are is the API's answer for the snapshot, never a list kept
+ * here. The same read as the years of `useTotalsHistory`.
  */
 export function useUnfinishedYears(views: readonly YearView[]): ReadonlyMap<number, string | null> {
   const catalog = useNationalCatalog()
@@ -141,10 +142,7 @@ export function useUnfinishedYears(views: readonly YearView[]): ReadonlyMap<numb
     queryFn: () =>
       client
         .fetchQuery(years)
-        .then((grid): readonly (readonly [string, string | null])[] => {
-          const cells = cellsOf(grid.results.find((result) => result.item.itemId === TOTAL_ITEMS.spending))
-          return [...cells].filter(([, cell]) => !cell.exact).map(([label, cell]) => [label, cell.reason] as const)
-        })
+        .then((grid) => unfinishedYearsOf(grid.results))
         .catch(() => []),
     staleTime: 5 * 60_000,
   })

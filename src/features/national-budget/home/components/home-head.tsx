@@ -247,9 +247,9 @@ function Figures({ view }: { readonly view: YearView }) {
   return (
     <>
       <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
-      {/* A release that prints no GDP shares (before 2019, December 2023): the band says so rather than losing a figure silently. */}
+      {/* A year whose served data has no GDP shares: the band says so rather than losing a figure silently. */}
       {percent === null ? (
-        <p className="border-t px-5 py-3 text-xs text-muted-foreground">{t`Buletinul pentru ${view.text} nu tipărește ponderile în PIB.`}</p>
+        <p className="border-t px-5 py-3 text-xs text-muted-foreground">{t`Ponderile în PIB pentru ${view.text} nu sunt disponibile în datele noastre.`}</p>
       ) : null}
     </>
   )

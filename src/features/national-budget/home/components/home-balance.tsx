@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { ReadingRow, TimeLines } from './home-time-chart'
 import { useTotalsHistory } from '../hooks/use-home-data'
 import { useHomeYear } from '../hooks/use-home-year'
-import { TOTAL_ITEMS, type YearView } from '../lib/home-data'
+import { yearTotalsOf, type YearTotals, type YearView } from '../lib/home-data'
 import { deficitOf, moneyText, sizeText } from '../lib/home-format'
 import { AnalyticsLink, SourceNote, type BandProps } from './home-shell'
 
@@ -19,31 +19,15 @@ import { AnalyticsLink, SourceNote, type BandProps } from './home-shell'
  * year it doesn't is a gap that says why.
  */
 
-type YearRow = {
-  readonly year: number
-  readonly revenue: string | null
-  readonly spending: string | null
-  readonly balance: string | null
+type YearRow = Omit<YearTotals, 'gap'> & {
   /** Why the bulletins answer nothing for this year. */
   readonly gap: string | null
 }
 
-/** Every finished year, oldest first, with its three totals; then the year in progress to its newest bulletin. */
+/** Every finished year since 2006, oldest first, with its three printed totals. */
 function useYearRows(): { readonly rows: readonly YearRow[] } {
   const history = useTotalsHistory()
-  const cellOf = (itemId: string, year: number) => history.yearCells.get(itemId)?.get(String(year)) ?? null
-  const rows: YearRow[] = []
-  for (let year = 2006; year <= history.complete; year += 1) {
-    const balance = cellOf(TOTAL_ITEMS.balance, year)
-    const vouched = balance?.exact != null
-    rows.push({
-      year,
-      revenue: cellOf(TOTAL_ITEMS.revenue, year)?.exact ?? null,
-      spending: cellOf(TOTAL_ITEMS.spending, year)?.exact ?? null,
-      balance: balance?.exact ?? null,
-      gap: vouched ? null : reasonText(balance?.reason ?? null),
-    })
-  }
+  const rows = yearTotalsOf(history.yearCells, 2006, history.complete).map((row) => ({ ...row, gap: row.gap ? reasonText(row.gap.reason) : null }))
   return { rows }
 }
 

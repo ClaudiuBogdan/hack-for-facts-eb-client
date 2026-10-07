@@ -16,11 +16,37 @@ export function useWholeOf(view: YearView, total: string, items: readonly string
   const lines = useYearLines(view, [total, ...items])
   const whole = lines.now(total)?.exact ?? null
   const before = lines.before(total)?.exact ?? null
-  if (!whole) return { whole: null, before, parts: [] as readonly Part[] }
-  const present = items.flatMap((itemId) => {
-    const exact = lines.now(itemId)?.exact ?? null
-    return exact ? [{ itemId, exact }] : []
+  if (!whole) return { whole: null, before, parts: [] as readonly Part[], breakdown: false }
+  const parts = partsOfWhole({
+    whole,
+    items,
+    now: (itemId) => lines.now(itemId)?.exact ?? null,
+    before: (itemId) => lines.before(itemId)?.exact ?? null,
+    restLabel,
+    restHint,
   })
+  return { whole, before, parts: parts ?? [], breakdown: parts !== null }
+}
+
+/**
+ * The parts of a whole, ranked, the rest last; null when none of the lines
+ * has a value for the year — the breakdown is then unavailable, not a whole
+ * that is all „rest". A line of exactly zero is a value.
+ */
+export function partsOfWhole(input: {
+  readonly whole: string
+  readonly items: readonly string[]
+  readonly now: (itemId: string) => string | null
+  readonly before: (itemId: string) => string | null
+  readonly restLabel: () => string
+  readonly restHint: () => string
+}): readonly Part[] | null {
+  const { whole } = input
+  const present = input.items.flatMap((itemId) => {
+    const exact = input.now(itemId)
+    return exact === null ? [] : [{ itemId, exact }]
+  })
+  if (present.length === 0) return null
   const named: Part[] = present
     .map(({ itemId, exact }) => ({
       key: itemId,
@@ -28,15 +54,16 @@ export function useWholeOf(view: YearView, total: string, items: readonly string
       hint: partHint(itemId),
       amount: moneyText(exact),
       ...shareOf(exact, whole),
-      change: changeText(exact, lines.before(itemId)?.exact ?? null),
+      change: changeText(exact, input.before(itemId)),
     }))
     .sort((a, b) => b.share - a.share)
   const rest = restOf(
     whole,
     present.map((entry) => entry.exact),
   )
-  const parts: Part[] = rest && (shareNumber(rest, whole) ?? 0) > 0.05 ? [...named, { key: 'rest', label: restLabel(), hint: restHint(), amount: moneyText(rest), ...shareOf(rest, whole), rest: true }] : named
-  return { whole, before, parts }
+  return rest && (shareNumber(rest, whole) ?? 0) > 0.05
+    ? [...named, { key: 'rest', label: input.restLabel(), hint: input.restHint(), amount: moneyText(rest), ...shareOf(rest, whole), rest: true }]
+    : named
 }
 
 export const restRevenue = () => t`Alte venituri`

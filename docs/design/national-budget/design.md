@@ -344,6 +344,11 @@ its newest month.
   2008-12, 2012-09, 2012-11, 2019-07, 2024-01, 2025-05. As full years, 2008
   is unavailable (no December release), and so are 2011 and 2013 (the release
   covers another period).
+  **Since 7 October** (snapshot `e1.a772b180…`) the December 2008, 2011 and
+  2013 bulletins are read: every full year 2006–2025 is AVAILABLE, and
+  2008-12 is no longer a missing month. 2013's balance is the bulletin's own
+  (−15.771,3 million lei; spending less revenue is 15.771,2). December and
+  Q4 2013 as periods stay unavailable (their predecessor's finality differs).
 - **The tree holds in the workbook years.** In every year from 2019 to 2025
   except 2023, each parent equals its children; a test checks this with a live
   fixture.
@@ -973,8 +978,10 @@ bulletins. Removing them is part of the promotion.
   „2026 (până în iulie)" and every band reads it as January–July, against
   the same months a year earlier.
 - Chosen from a dropdown in the head and the same select in the pinned bar
-  (every year, newest first; 2008, 2011 and 2013 have no full-year bulletin
-  and are disabled), or by clicking a year's column in the time charts.
+  (every year, newest first; a year the API doesn't vouch for in full is
+  listed, disabled, with its reason — 2008, 2011 and 2013 were, until their
+  December bulletins were read on 7 October), or by clicking a year's column
+  in the time charts.
   **Owner, 6 October:** the head's year buttons were too much text; one
   dropdown replaces them.
 - **The head's source line is a few words** (owner, 6 October): „Surse:
@@ -1060,8 +1067,10 @@ The prototype stays in `src/development/` as the design record.
   skeleton. Their read is also summarised in its query function, so the
   cache holds some twenty chapters, not the law's rows: the document went
   from 1,24 MB to 435 KB.
-- **The years the bulletins don't finish** (2008, 2011, 2013) are listed but
-  can't be chosen; the head and the pinned bar carry the same year dropdown.
+- **The years the bulletins don't finish** are listed but can't be chosen;
+  which they are is the API's answer for the snapshot (2008, 2011 and 2013
+  until 7 October; none since). The head and the pinned bar carry the same
+  year dropdown.
 - **The old pages:**
   - `/buget-national-2026` (the March 2026 draft as static JSON) is deleted
     and redirects here; its data files stay for the prototype fixtures.
@@ -1162,3 +1171,31 @@ Fixed before the commit:
   ignored before this change too).
 - The shared Lingui instance during streamed SSR (§9.4) applies here too.
 
+
+### 11.5 The 2008, 2011 and 2013 full years (7 October 2026)
+
+The API now answers the three years the bulletins didn't finish (snapshot
+`e1.a772b18006ed4f2ffec74bd4d1ccbe31`; December releases of 2008, 2011 and
+2013, URLs and hashes in the lane's provenance). The page needed no data
+change: the year menu withholds only the years the API's FULL_YEAR read
+doesn't vouch for, and the deficit band plots what it reads, so the three
+years became selectable and plotted with the new snapshot.
+
+- The two derivations moved out of their components into pure functions
+  with tests (`unfinishedYearsOf`, `yearTotalsOf` in `home/lib/home-data.ts`):
+  an AVAILABLE year is offered and plotted; a year the read lacks or marks
+  unavailable stays a gap with its reason; a balance of zero is a value.
+- The balance is the bulletin's printed line, never spending less revenue:
+  2013 shows −15.771,3 million lei, the printed figure (the difference of the
+  printed totals is 15.771,2).
+- What stays unavailable for those years, said as what the served data
+  lacks — not as what the bulletin prints (the 2008 annual table has budget
+  columns; the qualified lane publishes only its national column): the
+  spending and revenue lines, GDP shares, the budgets' columns, ANAF's
+  ministries and domains (from 2016), the law (2016–2025), and December/Q4
+  2013 as periods.
+- **A total without its lines is not a whole that is all „other"** (primary
+  review): where none of a band's lines has a value for the year, the
+  spending and revenue bands keep the verified total and say the breakdown
+  isn't available, with no grid and no „other" row (`partsOfWhole` returns
+  null). A line of exactly zero is a value, so the breakdown stands.
