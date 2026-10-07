@@ -40,18 +40,18 @@ export type RankedRow = {
   readonly value: string
   /** Against the list's top row; null draws no bar. */
   readonly fraction: number | null
-  /** The row's page: an enterprise's company page or an authority's budget page. */
+  /** The row's page: an enterprise's own page or an authority's budget page. */
   readonly link?: RowLink
   /** The full name, where the row cuts it. */
   readonly title?: string
 }
 
-export type RowLink = { readonly page: 'company' | 'entity'; readonly cui: string }
+export type RowLink = { readonly page: 'enterprise' | 'entity'; readonly cui: string }
 
 /** A row's link through the router: preloaded on intent, its chunk's wait drawn by the app's progress bar. */
 function RowLinkTo({ link, className, children }: { readonly link: RowLink; readonly className: string; readonly children: ReactNode }) {
-  return link.page === 'company' ? (
-    <Link to="/companies/$cui" params={{ cui: link.cui }} preload="intent" className={className}>
+  return link.page === 'enterprise' ? (
+    <Link to="/public-enterprises/$cui" params={{ cui: link.cui }} preload="intent" className={className}>
       {children}
     </Link>
   ) : (

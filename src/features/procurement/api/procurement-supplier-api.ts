@@ -414,6 +414,8 @@ export async function fetchProcurementSupplier(cui: string, choice: PeriodChoice
   const cutoffRead = untilAborted(readCutoffOutcome(latest), signal)
   // `undefined` for a failed read: the page names the firm by its own records and says nothing of its status. No period: it starts at once.
   const registryRead = REGISTRY_CUI.test(cui) ? untilAborted(fetchPrivateCompanyProfile(cui).catch(() => undefined), signal) : Promise.resolve(null)
+  // Handled at once: it is awaited only after the cutoff, so a reader who leaves meanwhile would leave its rejection unhandled.
+  registryRead.catch(() => undefined)
   // The last twelve months and the year in progress wait for the cutoff, which bounds their reads; a complete year starts at once.
   const period = periodOf(choice, latest, needsCutoff(choice, latest) ? (await cutoffRead).cutoff : null)
   // Three analysis requests: more, smaller ones queue behind each other on the API and come back later (measured 2026-09-28).

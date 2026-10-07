@@ -149,7 +149,7 @@ describe('a current answer', () => {
     expect(enterprise).toHaveTextContent('Firmă: REGIA AUTONOMA EXEMPLU RA')
     expect(enterprise).toHaveTextContent('denumire din directorul platformei, nu din ediția ONRC')
     expect(enterprise).toHaveTextContent('fără profil în ediția ONRC')
-    expect(enterprise.querySelector('a')).toHaveAttribute('href', '/intreprinderi-publice/10020943')
+    expect(enterprise.querySelector('a')).toHaveAttribute('href', '/public-enterprises/10020943')
 
     // An institution without a company part keeps its plain county.
     const institution = optionNamed('MUNICIPIUL BACĂU')

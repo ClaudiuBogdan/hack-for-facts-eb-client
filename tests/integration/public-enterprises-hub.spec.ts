@@ -110,12 +110,12 @@ test.describe('Public enterprises — the address', () => {
     await expect(counties).toContainText('Întreprinderi ale statului central, după sediu')
   })
 
-  test('the largest enterprises open their company pages', async ({ page }) => {
+  test('the largest enterprises open their own pages', async ({ page }) => {
     await page.goto(ROUTE)
     await waitForPageReady(page)
 
     const first = page.locator('section#marime ol a').first()
-    await expect(first).toHaveAttribute('href', /^\/companies\/\d+$/u)
+    await expect(first).toHaveAttribute('href', /^\/public-enterprises\/\d+$/u)
   })
 })
 
@@ -126,11 +126,10 @@ test.describe('Public enterprises — the ways in', () => {
     expect(response.headers().location).toMatch(/\/public-enterprises\?lang=en$/u)
   })
 
-  test('a retired profile address leads to the enterprise’s company page, for now', async ({ page }) => {
+  test('a retired profile address leads to the enterprise’s page for good', async ({ page }) => {
     const response = await page.request.get('/intreprinderi-publice/RO10020943', { maxRedirects: 0 })
-    expect(response.status()).toBe(302)
-    expect(response.headers().location).toMatch(/\/companies\/10020943$/u)
-    expect(response.headers()['cache-control']).toBe('no-store')
+    expect(response.status()).toBe(301)
+    expect(response.headers().location).toMatch(/\/public-enterprises\/10020943$/u)
   })
 
   test('the sidebar lists the page, on a page that does not link it otherwise', async ({ page }) => {

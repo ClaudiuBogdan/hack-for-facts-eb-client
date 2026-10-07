@@ -87,6 +87,7 @@ import { Route as ProcurementSearchRouteImport } from './routes/procurement/sear
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as PublicEnterprisesIndexRouteImport } from './routes/public-enterprises/index'
+import { Route as PublicEnterprisesCuiRouteImport } from './routes/public-enterprises/$cui'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
@@ -653,6 +654,13 @@ const PublicEnterprisesIndexRoute = PublicEnterprisesIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/public-enterprises/index.lazy').then((d) => d.Route),
+)
+const PublicEnterprisesCuiRoute = PublicEnterprisesCuiRouteImport.update({
+  id: '/public-enterprises/$cui',
+  path: '/public-enterprises/$cui',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/public-enterprises/$cui.lazy').then((d) => d.Route),
 )
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
@@ -1535,6 +1543,7 @@ export interface FileRoutesByFullPath {
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
+  '/public-enterprises/$cui': typeof PublicEnterprisesCuiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -1711,6 +1720,7 @@ export interface FileRoutesByTo {
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
+  '/public-enterprises/$cui': typeof PublicEnterprisesCuiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -1894,6 +1904,7 @@ export interface FileRoutesById {
   '/procurement/search': typeof ProcurementSearchRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
+  '/public-enterprises/$cui': typeof PublicEnterprisesCuiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -2083,6 +2094,7 @@ export interface FileRouteTypes {
     | '/procurement/search'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
+    | '/public-enterprises/$cui'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -2259,6 +2271,7 @@ export interface FileRouteTypes {
     | '/procurement/search'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
+    | '/public-enterprises/$cui'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -2441,6 +2454,7 @@ export interface FileRouteTypes {
     | '/procurement/search'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
+    | '/public-enterprises/$cui'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -2619,6 +2633,7 @@ export interface RootRouteChildren {
   PnrrVerificareRoute: typeof PnrrVerificareRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
+  PublicEnterprisesCuiRoute: typeof PublicEnterprisesCuiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   ShareCodeRoute: typeof ShareCodeRoute
@@ -3227,6 +3242,13 @@ declare module '@tanstack/react-router' {
       path: '/public-enterprises'
       fullPath: '/public-enterprises/'
       preLoaderRoute: typeof PublicEnterprisesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public-enterprises/$cui': {
+      id: '/public-enterprises/$cui'
+      path: '/public-enterprises/$cui'
+      fullPath: '/public-enterprises/$cui'
+      preLoaderRoute: typeof PublicEnterprisesCuiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/research/employees-data': {
@@ -4433,6 +4455,7 @@ const rootRouteChildren: RootRouteChildren = {
   PnrrVerificareRoute: PnrrVerificareRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
+  PublicEnterprisesCuiRoute: PublicEnterprisesCuiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   ShareCodeRoute: ShareCodeRoute,

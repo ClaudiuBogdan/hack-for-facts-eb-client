@@ -15,6 +15,7 @@ Base URL:
 - /national-budget/analytics: The national budget in depth: every bulletin line, budget and period, the budget laws and the ministries
 - /budget-explorer: Budget exploration by categories (functional/economic), with filters (a bare link goes to /national-budget)
 - /public-enterprises: Romania's public enterprises as ANAF's S1001 list and the AMEPIP register list them: the authorities the sources name as controlling them, their seat, activity, size, status by source, and their part in public procurement
+- /public-enterprises/{cui}: One public enterprise: the authority each source names as controlling it, its status in each source, its company figures, its AMEPIP indicators as written, and what it buys and sells in public procurement
 - /pnrr: PNRR project dashboard by component, geography, beneficiary, progress, and risk signals
 
 ## Entities Page (/entities/{cui})

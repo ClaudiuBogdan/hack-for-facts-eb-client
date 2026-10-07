@@ -89,7 +89,7 @@ describe('mapSearchHit', () => {
       identifiers: [],
     })
     expect(hit.roles).toEqual(['organization', 'public_enterprise'])
-    expect(hit.href).toBe('/intreprinderi-publice/10020943')
+    expect(hit.href).toBe('/public-enterprises/10020943')
   })
 
   it('coerces a numeric docId to a string', () => {
@@ -138,7 +138,7 @@ describe('mapSearchResult', () => {
     ])
     expect(result.hits.map((hit) => hit.href)).toEqual([
       '/companies/2816464',
-      '/intreprinderi-publice/10020943',
+      '/public-enterprises/10020943',
       '/entities/4278337',
       '/companies/31234567',
     ])

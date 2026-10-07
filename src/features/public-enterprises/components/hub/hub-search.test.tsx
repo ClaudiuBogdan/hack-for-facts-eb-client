@@ -22,11 +22,11 @@ describe('EnterpriseSearch', () => {
     state.props = []
   })
 
-  it('searches public enterprises only, a hit opening its company page', () => {
+  it('searches public enterprises only, a hit opening its enterprise page', () => {
     render(<EnterpriseSearch />)
     expect(last().docTypes).toEqual(['public_enterprise'])
     const hrefOf = last().hrefOf as (hit: { readonly href: string }) => string | null
-    expect(hrefOf({ href: '/intreprinderi-publice/36210321' })).toBe('/companies/36210321')
+    expect(hrefOf({ href: '/public-enterprises/36210321' })).toBe('/public-enterprises/36210321')
   })
 
   it('takes the focus on a desktop’s first view', () => {

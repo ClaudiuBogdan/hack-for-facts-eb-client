@@ -652,16 +652,16 @@ net and headcount; direct purchases made, when there are any), and bands.
 - **Public money:** SEAP counts as buyer and as seller, each linked to its
   procurement page; sums stay on those pages.
 
-**AMEPIP's scale, checked.** The calculated sheet's „%" ratios are fractions:
-net margin, ROE and turnover growth equal the statements' own ratios (net ÷
-turnover, net ÷ equity, turnover ÷ last year's − 1) as fractions in 523 of
-526 enterprise-years (40 enterprises, 2020–2024; the misses are one
-enterprise's ROE in two years and one growth rate). The prototype shows them
-as percents, moving the point two places exactly. Market share (largest value
-283,2) and the form are not checked and stay as written, the „%" in amber: the
-form mixes scales within one KPI (Tursib's dividend rate 0,5 in 2023, 50 in
-2024; Hidroelectrica's „fixed components" 721.164 %). This answers ask 11 for
-the calculated sheet; the form still needs it.
+**AMEPIP's scale, checked.** Five of the calculated sheet's „%" ratios are fractions: each equals
+the statements' own ratio as a fraction in 809 of 818 enterprise-years (40 enterprises, 2020–2024):
+net margin (net ÷ turnover, 168 of 168), ROE (net ÷ equity, 187 of 189), ROA (net ÷ (fixed assets +
+current assets + prepaid expenses), 182 of 185), turnover growth (turnover ÷ last year's − 1, 168 of
+169) and profit growth (net ÷ last year's net − 1, checked on the years with a profit both years, 104
+of 107). The page shows these five as percents, moving the point two places exactly. The operating
+margin (the statements carry no operating result), market share (largest value 283,2) and the form
+are not checked and stay as written, the „%" in amber and said in words: the form mixes scales within
+one KPI (Tursib's dividend rate 0,5 in 2023, 50 in 2024; Hidroelectrica's „fixed components" 721.164
+%). This answers ask 11 for those five ratios; the rest still need it.
 
 **The form trap (ask 9) applied.** A form year is shown only when a KPI other
 than FIN-DP, FIN-RCC and FIN-RCCD has a value; the years held back are named
@@ -687,8 +687,70 @@ Râșnov), ratios only (Ocolul Silvic Sebeș), inactive with no statements
 
 **Server asks this adds.**
 15. **Scale per KPI.** Serve the scale (fraction, percent, as reported) with
-    each KPI; the calculated sheet is fractions (checked above), market share
-    and the form are unknown.
+    each KPI; five calculated ratios are fractions (checked above), the
+    operating margin, market share and the form are unknown.
 16. **Authority on the edge.** The control edge could carry the authority's
     kernel name and kind, so a page needs no `entity` read per authority (asks
     6 and 13).
+
+### 12.7 The enterprise page in production: `/public-enterprises/$cui` (2026-10-08)
+
+**Decision (owner, 2026-10-07):** promote the prototype's `afacerea` variant, with three changes the owner
+agreed to: what the enterprise spends replaces the bare SEAP counts; the AMEPIP band opens on the board's
+answers, the tables one click away; the bands run control → public money → AMEPIP → status, context last.
+
+- **Reads.** Three, each its own query, each its own part of the page when it is pending or failed:
+  - the enterprise (`api/public-enterprise-api.ts`): the profile and every indicator page (a cursor is
+    pinned to the AMEPIP snapshot: a change mid-read, a failed page or more than ten pages leave the
+    indicators unknown), then each authority's budget record and its enterprises in one aliased request with
+    variables. A failed indicator or authority read is `null` and the read `partial`;
+  - the company page's own read (`fetchPrivateCompanyProfile`), so the head's chart, the figures and the
+    registry status are the company page's, admission included;
+  - the procurement institution page's last twelve months (`fetchProcurementBuyer(cui, 'recent')`), so the
+    spending is the institution page's, in its words.
+- **Server render.** The loader reads the three side by side (`api/public-enterprise-ssr.ts`: each kept ten
+  minutes, bounded to 500 CUIs, each under a 6 s deadline) and seeds the queries; the browser reads nothing
+  on mount after a whole render (checked). A render is cached publicly (`s-maxage=600`) only when all three
+  answered in full; otherwise `no-store`. A CUI no list holds is a 404 with its company page's link; a path
+  that is not a canonical CUI (2–10 digits, no leading zero, as the API takes it) is a 404; the legacy
+  redirect and every link drop a `RO` prefix and leading zeros, and make no link a 404 would answer. The head
+  (title, a description naming the authority as ANAF's list spells it, else as the announcements do,
+  canonical with `?lang=en` and hreflang, an `Organization` JSON-LD with the tax id) is built from facts the
+  loader works out (`lib/enterprise-seo.ts`), so the route's eager file imports no model. An enterprise no
+  list holds any more, or no source names (it is said „Întreprinderea cu CUI …", never named by its CUI),
+  is `noindex`; so is a render without the enterprise read.
+- **The page.** Head: kicker, the name, the company sentence then who controls it, one chip per source's
+  status, the CUI, the company page, one source line; beside it, the company page's five-year chart. Figures:
+  the company page's turnover, net result and headcount, then the 12-month direct-purchase value. Bands:
+  - *Cine o controlează*: one row per authority CUI with the sources that name it; the lede says only whether
+    the two sources agree (who controls it is the head's sentence, said once); the authority's other
+    enterprises link to their pages.
+  - *Banii publici*: the institution page's activity sentence, its top five direct-purchase categories and
+    suppliers (by value, without VAT; contracts counted only, their money being provisional), the link to the
+    institution page; what it sells, the company page's own figure and link.
+  - *Ce raportează la AMEPIP*: the newest form's board answers (FTE staff, board meetings, independent and
+    women members, pay package, dividend rate), else the newest ratios; *Toate valorile AMEPIP, pe ani* opens
+    both tables. The fraction rule (§12.6) and the form-trap rule apply.
+  - *Ce spune fiecare sursă*: a row per source with its date, no lede (the chips and the table say it).
+- **Ways in.** `/intreprinderi-publice/$cui` answers **301** to the page. The hub's largest enterprises and its
+  search, global search (`entity-search-routing`) and `buildPreferredEntityPath` lead to it; procurement's
+  search reads the new address as a buyer too. `llms.txt` lists it.
+- **Review (Opus 5.5 xhigh, Codex gpt-6.1-sol xhigh, three rounds each), what it changed:**
+  - A deadline on a later read leaves that part unknown and the profile standing; only a reader who left
+    aborts the read. The company read takes the deadline's signal, so a stalled request is stopped.
+  - A lane the API reports unavailable is said unread, never „none", and the render is not cached; each lane
+    is said for itself (in ANAF's list and the list naming no authority are two facts).
+  - An unread count is never „no purchases"; „no direct purchase" is said once, in the lede; an empty
+    breakdown beside a positive count is said unread.
+  - Names: each source's own spelling, under its own source when they differ; a source that gave none is
+    named by the other source's spelling (credited), then the budget record's (credited, it names the
+    territory), else by its CUI as a CUI. Agreement needs both CUIs known and equal.
+  - The fraction rule covers only the five ratios checked against the statements (§12.6).
+  - Facts said once: the control band shows only with an authority to show, its lede only that the
+    sources agree; AMEPIP's notes live behind the head's marker; the ANAF status left the control caption.
+  - Tables: a tbody per form section; the scroll box is focusable and named by its title; an unchecked
+    „%" says so in words.
+- **Found on the way:** leaving the page while procurement's last twelve months waited for SEAP's cutoff left
+  the buyer's identity read rejected with no handler (an unhandled `AbortError`, also on the institution
+  page's default view), and the supplier read's registry read likewise. Each is handled at once now, with a
+  regression test.

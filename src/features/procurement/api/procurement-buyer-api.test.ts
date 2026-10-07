@@ -279,6 +279,23 @@ describe('fetchProcurementBuyer', () => {
     })
     await expect(fetchProcurementBuyer('4364446', 2025, controller.signal)).rejects.toThrow('aborted')
   })
+
+  it('leaves no rejection unhandled when the reader leaves while the last twelve months wait for the cutoff', async () => {
+    const unhandled = vi.fn()
+    process.on('unhandledRejection', unhandled)
+    const controller = new AbortController()
+    let release: () => void = () => undefined
+    cutoffRead.mockReturnValue(new Promise<Cutoff>((resolve) => (release = () => resolve(CUTOFF))))
+    // Every request settles only when the reader leaves, as a fetch with its signal does.
+    graphqlQuery.mockImplementation((_query: string, _variables: unknown, options: { readonly signal?: AbortSignal }) => new Promise((_resolve, reject) => options.signal?.addEventListener('abort', () => reject(options.signal?.reason), { once: true })))
+    const read = fetchProcurementBuyer('4364446', 'recent', controller.signal)
+    controller.abort()
+    await expect(read).rejects.toBeDefined()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    process.off('unhandledRejection', unhandled)
+    release()
+    expect(unhandled).not.toHaveBeenCalled()
+  })
 })
 
 describe('fetchProcurementBuyerRecords', () => {

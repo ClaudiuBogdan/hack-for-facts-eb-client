@@ -109,13 +109,13 @@ describe('PublicEnterpriseHubPage', () => {
     expect(written({ domenii: 'centrale' })).toEqual({ domenii: undefined })
   })
 
-  it('ranks the largest enterprises by the measure asked, each opening its company page', () => {
+  it('ranks the largest enterprises by the measure asked, each opening its enterprise page', () => {
     render(<PublicEnterpriseHubPage snapshot={SNAPSHOT} search={{ marime: 'pierdere' }} />)
     const size = band('marime')
     const [first] = within(size).getAllByRole('listitem')
     expect(first).toHaveTextContent('Compania Nationala Unifarm SA')
     expect(first).toHaveTextContent('354,2 mil. lei')
-    expect(within(first!).getByRole('link')).toHaveAttribute('href', '/companies/11653560')
+    expect(within(first!).getByRole('link')).toHaveAttribute('href', '/public-enterprises/11653560')
     fireEvent.click(within(size).getByRole('radio', { name: 'Salariați' }))
     expect(written({})).toEqual({ marime: 'salariati' })
     expect(size).toHaveTextContent('Bilanțurile pe 2024 depuse la ANAF, doar valorile admise de verificarea firmelor. Pe 2025 sunt deocamdată 21.')

@@ -24,13 +24,15 @@ import {
 
 export type { CompanyResolveHit, CompanyResolveResult } from '@/schemas/private-company-search'
 
+/** `signal` lets a server read with a deadline stop the request it gives up on. */
 export async function fetchPrivateCompanyProfile(
   cui: string,
+  signal?: AbortSignal,
 ): Promise<PrivateCompanyProfile | null> {
   if (isPrivateCompanyMockEnabled()) {
     return fetchPrivateCompanyProfileMock(cui)
   }
-  return fetchPrivateCompanyProfileLive(cui)
+  return fetchPrivateCompanyProfileLive(cui, signal)
 }
 
 export async function fetchPrivateCompanySearch(

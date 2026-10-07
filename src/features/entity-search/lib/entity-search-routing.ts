@@ -8,8 +8,7 @@
  *   ------------------  -------------------------------------------------------
  *   company             /companies/$cui          (internal, cuis[0])
  *   organization        /entities/$cui           (internal, cuis[0])
- *   public_enterprise   /intreprinderi-publice/$cui (internal, cuis[0]; redirects
- *                       to /companies/$cui until the redesigned pages ship)
+ *   public_enterprise   /public-enterprises/$cui (internal, cuis[0])
  *   ngo                 /ngos/$cui            (internal, cuis[0]; without one,
  *                       /ngos/registry/$number from ngoRegistryNumber)
  *   organization_unclassified  none           (no page holds it: a plain row)
@@ -29,6 +28,7 @@
  */
 import { ngoProfileHref } from '@/features/ngos/lib/ngo-address'
 import { normalizeNgoCui } from '@/features/ngos/lib/normalize-ngo-cui'
+import { canonicalCuiOf } from '@/features/public-enterprises/lib/enterprise-cui'
 import { normalizePublicEnterpriseCui } from '@/features/public-enterprises/lib/normalize-public-enterprise-cui'
 
 /** The subset of a hit `entityHref` needs to compute a deep-link. */
@@ -55,11 +55,11 @@ type RouteBuilder = (id: string) => string | null
 const CUI_SPINE_ROUTES: Readonly<Record<string, RouteBuilder>> = {
   company: (cui) => `/companies/${encodeURIComponent(cui)}`,
   organization: (cui) => `/entities/${encodeURIComponent(cui)}`,
+  // A CUI the enterprise page cannot take (one digit, past ten) gets no link rather than one to a 404.
   public_enterprise: (cui) => {
     const normalized = normalizePublicEnterpriseCui(cui)
-    return normalized
-      ? `/intreprinderi-publice/${encodeURIComponent(normalized)}`
-      : null
+    const canonical = normalized ? canonicalCuiOf(normalized) : null
+    return canonical ? `/public-enterprises/${encodeURIComponent(canonical)}` : null
   },
 }
 

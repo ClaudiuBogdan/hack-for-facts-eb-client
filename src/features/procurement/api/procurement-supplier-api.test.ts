@@ -372,6 +372,26 @@ describe('fetchProcurementSupplier', () => {
     controller.abort(new Error('left'))
     await expect(read).rejects.toThrow('left')
   })
+
+  it('leaves no rejection unhandled when the reader leaves while the last twelve months wait for the cutoff', async () => {
+    const unhandled = vi.fn()
+    process.on('unhandledRejection', unhandled)
+    const { forgetProcurementCutoff } = await import('./procurement-cutoff')
+    forgetProcurementCutoff(LATEST)
+    const controller = new AbortController()
+    // The cutoff never answers and the registry read cannot be cancelled: the reader leaves while both wait.
+    graphqlQuery.mockImplementation((_query: string, _variables: unknown, options: { readonly operationName: string }) =>
+      options.operationName === 'ProcurementCutoff' ? new Promise(() => undefined) : Promise.reject(new Error('unexpected')),
+    )
+    fetchPrivateCompanyProfile.mockImplementation(() => new Promise(() => undefined))
+    const read = fetchProcurementSupplier('103029862', 'recent', controller.signal)
+    controller.abort(new Error('left'))
+    await expect(read).rejects.toThrow('left')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    process.off('unhandledRejection', unhandled)
+    forgetProcurementCutoff(LATEST)
+    expect(unhandled).not.toHaveBeenCalled()
+  })
 })
 
 describe('fetchProcurementSupplierDirect', () => {

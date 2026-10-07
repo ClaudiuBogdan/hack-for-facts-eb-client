@@ -57,7 +57,7 @@ describe('entity-navigation', () => {
         entityType: 'public_enterprise',
         isUat: false,
       }),
-    ).toBe('/intreprinderi-publice/10020943')
+    ).toBe('/public-enterprises/10020943')
   })
 
   it('allows explicit selection behavior to override the preferred path', () => {
@@ -74,7 +74,7 @@ describe('entity-navigation', () => {
 
     expect(buildEntityDetailsPath(' 4305857 ')).toBe('/entities/4305857')
     expect(buildPublicEnterprisePath(' 10020943 ')).toBe(
-      '/intreprinderi-publice/10020943',
+      '/public-enterprises/10020943',
     )
   })
 })

@@ -35,11 +35,12 @@ import { assertRegistryScope, classifyRegistryError } from './company-registry-e
 
 export async function fetchPrivateCompanyProfileLive(
   cui: string,
+  signal?: AbortSignal,
 ): Promise<PrivateCompanyProfile | null> {
   const data = await graphqlQuery<unknown>(
     COMPANY_PROFILE_QUERY,
     { cui },
-    { operationName: 'company' },
+    { operationName: 'company', signal },
   )
   const parsed = companyProfileResponseSchema.parse(data)
   // company(cui) returns null for an unknown CUI → surface as 404 upstream.

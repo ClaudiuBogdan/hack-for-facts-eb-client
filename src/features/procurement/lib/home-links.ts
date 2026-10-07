@@ -17,14 +17,15 @@ export function sectionIndex(sections: readonly HomeSection[], id: string): stri
 
 /**
  * A search hit's procurement page, read off its route: an institution
- * (`/entities/4305857`) or a state company (`/intreprinderi-publice/16054368`,
- * which buys under the procurement law) opens its buyer page, a company
+ * (`/entities/4305857`) or a state company (`/public-enterprises/16054368`, or
+ * the retired `/intreprinderi-publice/…` an older index may hold; it buys under
+ * the procurement law) opens its buyer page, a company
  * (`/companies/14399840`) its supplier page. Anything else keeps its own link
  * (null).
  */
 export function procurementHrefOf(hit: { readonly href: string; readonly isExternal: boolean }): string | null {
   if (hit.isExternal) return null
-  const match = /^\/(entities|intreprinderi-publice|companies)\/(\d+)(?:[/?#]|$)/.exec(hit.href)
+  const match = /^\/(entities|public-enterprises|intreprinderi-publice|companies)\/(\d+)(?:[/?#]|$)/.exec(hit.href)
   if (!match?.[2]) return null
   return match[1] === 'companies' ? `/procurement/suppliers/${match[2]}` : `/procurement/institutions/${match[2]}`
 }

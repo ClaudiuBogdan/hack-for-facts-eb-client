@@ -26,12 +26,17 @@ describe('entityHref', () => {
       expect(result).toEqual({ href: '/entities/4305857', isExternal: false })
     })
 
-    it('routes public_enterprise to its retired profile address, which redirects to the company page', () => {
+    it('gives a public_enterprise hit no link when its CUI cannot address the enterprise page', () => {
+      expect(entityHref(input({ docType: 'public_enterprise', cuis: ['5'] }))).toBeNull()
+      expect(entityHref(input({ docType: 'public_enterprise', cuis: ['0010020943'] }))?.href).toBe('/public-enterprises/10020943')
+    })
+
+    it('routes public_enterprise to its enterprise page via cuis[0]', () => {
       const result = entityHref(
         input({ docType: 'public_enterprise', cuis: ['RO-12345'] }),
       )
       expect(result).toEqual({
-        href: '/intreprinderi-publice/12345',
+        href: '/public-enterprises/12345',
         isExternal: false,
       })
     })

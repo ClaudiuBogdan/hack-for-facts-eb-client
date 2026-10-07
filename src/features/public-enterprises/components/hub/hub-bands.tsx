@@ -253,7 +253,7 @@ export function SizeBand({ snapshot, index, measure, onMeasure }: BandProps & { 
             caption: row.authority ? [row.authorityNameSource !== 's1001' ? t`nume din altă sursă` : null, displayName(row.authority)].filter(Boolean).join(' · ') : undefined,
             value: measure === 'salariati' ? formatCount(Number(row.value), i18n.locale) : formatLei(row.value, i18n.locale),
             fraction: top > 0 ? Number(row.value) / top : null,
-            link: { page: 'company', cui: row.cui },
+            link: { page: 'enterprise', cui: row.cui },
           }))}
         />
         {rows.length > BAND_ROWS ? <ShowMore open={open} onToggle={() => setOpen(!open)} /> : null}

@@ -389,6 +389,8 @@ export async function fetchProcurementBuyer(cui: string, choice: PeriodChoice, s
   // The budget platform's record needs no period — the population is the last complete year's for any period reaching past it —
   // so it starts at once.
   const identityRead = readBuyerIdentity(cui, choice === RECENT ? latest : Math.min(choice, latest), signal)
+  // Handled at once: it is awaited only with the rest, after the cutoff, so a reader who leaves meanwhile would leave its rejection unhandled.
+  identityRead.catch(() => undefined)
   // The last twelve months and the year in progress wait for the cutoff, which bounds their reads; a complete year starts at once.
   const period = periodOf(choice, latest, needsCutoff(choice, latest) ? (await cutoffRead).cutoff : null)
   // The last twelve months could not be told (no cutoff): the page describes the last complete year, served once and read again.

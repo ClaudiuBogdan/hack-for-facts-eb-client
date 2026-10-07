@@ -17,7 +17,7 @@ export function buildEntityDetailsPath(cui: string): string {
 }
 
 export function buildPublicEnterprisePath(cui: string): string {
-  return `/intreprinderi-publice/${encodeURIComponent(cui.trim())}`
+  return `/public-enterprises/${encodeURIComponent(cui.trim())}`
 }
 
 export function isNonCountyUatEntity(

@@ -20,6 +20,7 @@ describe('procurementHrefOf', () => {
     expect(procurementHrefOf({ href: '/entities/4305857', isExternal: false })).toBe('/procurement/institutions/4305857')
     expect(procurementHrefOf({ href: '/companies/14399840?tab=x', isExternal: false })).toBe('/procurement/suppliers/14399840')
     // A state company buys under the procurement law.
+    expect(procurementHrefOf({ href: '/public-enterprises/16054368', isExternal: false })).toBe('/procurement/institutions/16054368')
     expect(procurementHrefOf({ href: '/intreprinderi-publice/16054368', isExternal: false })).toBe('/procurement/institutions/16054368')
   })
 
