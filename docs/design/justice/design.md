@@ -934,3 +934,66 @@ read (keys, one read each, a failed read), the page's server markup, the
 route (search, deps, loader, headers, head), the sanitizer, and
 `tests/integration/justice.spec.ts` (the bare page and a question rendered
 on the server).
+
+## 17. ECHR page prototypes (2026-10-07)
+
+`/development/justice/cedo` (`src/development/prototypes/justice/cedo.*`): the
+European Court of Human Rights' judgments in cases against Romania, the next
+page after the analysis page. Data: `src/features/justice/lib/echr-snapshot.ts`,
+written by `scripts/generate-justice-echr-snapshot.mjs` from the judicial API's
+HUDOC rows (`judicialDecisions`, `sourceSystem: hudoc_decision`; 7,350 rows,
+every one `public`, paged whole in ~7 s); model `lib/echr-model.ts`.
+
+**What a row holds.** Date, HUDOC document type (`hejud`/`hfjud` judgments,
+`hedec`/`hfdec` decisions, `hecom`/`hfcom` communicated cases, then
+`heres54`/`hfres54`, `clin`/`clinf` legal summaries and four Protocol 16
+requests), ECLI (judgments only), the application numbers (`;`-joined, up to
+81 on one judgment), the respondent states, the language and the HUDOC item
+id. **No title, no applicant's name, no article, no outcome** — the API
+stores none, and the page looks for none.
+
+**Checked against HUDOC** (its public search, 7 October 2026): every year
+from 2010 to 2026 holds HUDOC's judgments against Romania ECLI for ECLI
+(2025: 29, 2024: 58, 2023: 74 …); 2009 holds 153 of 168 (the capture starts
+in 2009). Decisions and communicated cases from 2010: 1,981 of HUDOC's 1,983
+English decisions, 914 of 918 French, 722 of 725 and 669 of 670 communicated
+— a few published after the capture. HUDOC publishes every judgment in English
+and French; the capture holds one version for most (1,480 documents for 1,442
+judgments).
+
+**Data rules.**
+
+- **One judgment per ECLI**; a decision or a communicated case once per date
+  and applications (they carry no ECLI). Resolutions, legal summaries and
+  advisory requests are not counted.
+- **2010 on is whole** (`ECHR_FIRST_WHOLE_YEAR`); 2009 is drawn dashed
+  („preluare parțială"), 2026 runs to the newest document (16 July). A change
+  on the year before is said only between two whole years.
+- **The wait** („de la cerere la hotărâre") is the judgment's year minus the
+  year the oldest of its applications was lodged (the number's suffix):
+  median 6 years over all judgments (p25 4, p75 8). Computed by
+  Transparenta.eu and labelled so; not the Court's statistic.
+- **Applications** are public identifiers on the Court's own site; a joined
+  judgment shows its first number and „+N cereri" (the rest in a popover).
+- **The text** is a link to the HUDOC document captured, in its language's
+  interface (`hudoc.echr.coe.int/eng?i=001-…`). The applicant's name is
+  HUDOC's to show, on HUDOC; the page never reads or repeats it.
+
+**Variants.** Both share the head (the year in the address `an`, the bare
+page the last whole year), four figures (judgments and their change, the
+applications they decide with the joined judgments, the median wait, the
+cases communicated with the decisions), the year's judgments (date,
+application, wait, HUDOC link) and one source line with five notes behind
+the marker.
+
+- `ani`: the year's judgments first, then the judgments of every year as
+  columns (2009 and 2026 dashed); a column takes its year.
+- `flux`: the years first, as rows of what reached the Court's steps —
+  communicated, decisions, judgments, applications decided, the median wait —
+  each a bar of its column's largest; a row takes its year; then the
+  year's judgments.
+
+**For promotion.** The snapshot is 265 KB: the route reads it on the server
+and sends the chosen year's judgments only, never the whole list to the
+browser; `JusticeSourceLine` gains a HUDOC source; the hub's decisions band
+links to the page.
