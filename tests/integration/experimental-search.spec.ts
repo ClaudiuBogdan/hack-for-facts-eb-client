@@ -54,12 +54,12 @@ test.describe('Experimental entity search — desktop', () => {
     await expect(listbox.getByRole('option')).toHaveCount(4)
 
     await expect(listbox.locator('a[href="/companies/2816464"]')).toHaveCount(1)
-    // public_enterprise → internal /intreprinderi-publice/$cui (by cuis[0]). Its
+    // public_enterprise → internal /public-enterprises/$cui (by cuis[0]). Its
     // docKey is the namespaced `core:10020943:2019`, not a CUI, so this link
     // proves routing reads the dedicated cuis[] field, not docKey or the
     // contract's CUI-first identifiers[].
     await expect(
-      listbox.locator('a[href="/intreprinderi-publice/10020943"]'),
+      listbox.locator('a[href="/public-enterprises/10020943"]'),
     ).toHaveCount(1)
     // The identity-collapsed palette keeps organizations on the CUI spine and
     // routes legal acts through the internal reader using the numeric act ID.

@@ -54,7 +54,10 @@ test.describe('Public enterprise page — the server render', () => {
       await expect(bar.getByRole('link').nth(position)).toHaveAttribute('href', `#${id}`)
       await expect(page.locator(`section#${id} h2`).first()).toBeVisible()
     }
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/public-enterprises\/789401$/u)
+    // The canonical a crawler reads is the server's. (Without VITE_SITE_URL, as in CI, the browser's head
+    // re-run adds its own origin's: deployed builds set the variable, so the two agree there.)
+    const html = await (await page.request.get(ROUTE)).text()
+    expect(html).toMatch(/<link rel="canonical" href="[^"]*\/public-enterprises\/789401"/u)
   })
 
   test('the server’s HTML carries the page, its nodes survive hydration, and the browser reads nothing', async ({ page }) => {
