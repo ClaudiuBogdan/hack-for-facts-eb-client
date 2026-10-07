@@ -604,3 +604,91 @@ prototype first.
     for its query (`companies-v3.json`) so an older read is never reused; the
     publisher wording is derived everywhere (neutral when none is recorded);
     counts of one agree with their verbs.
+
+### 12.6 The enterprise page prototype (2026-10-07)
+
+`/development/public-companies/enterprise` (`?v=control|afacerea|fisa`, `?cui=`,
+ten samples picked above the page), on the live API: no snapshot, since one
+profile is one read. It is the target of every enterprise link once it ships
+(the hub's rows, the hub's search, global search, `/intreprinderi-publice/$cui`).
+
+**What it reads.**
+- `publicEnterprise(cui)` with every indicator page (258 cells, three pages)
+  and four SEAP counts, 2019–2026: direct purchases and contract awards, as
+  buyer and as seller.
+- For each authority the edges name, its budget record (`entity`) and the
+  other enterprises the lists give it: `publicEnterprises(filter:
+  { authorityCuis: { in: [cui] } })` works today (Consiliul Local Sibiu 4,
+  the Ministry of Energy 33, AAAS 69).
+- The company side is the company page's own read
+  (`usePrivateCompanyProfile` + `buildCompanyProfileModel`), so status, the
+  figures and the five-year chart are the company page's, admission included.
+
+**The page.** The company page's rhythm: kicker (front door / county), the
+name, a sentence (the company sentence, then who controls it with the
+authority as the subject: „Consiliul Local Sibiu o controlează, după lista
+ANAF…", so no participle has to agree with the legal form), one chip per
+source's status (ANAF's list, AMEPIP's latest year when not in business, the
+trade registry, ANAF's inactive list), the CUI, the company page link, one
+source line. Then the pinned bar, four figures (the company page's turnover,
+net and headcount; direct purchases made, when there are any), and bands.
+
+- **Control:** one row per authority; two sources naming the same CUI share
+  the row and both are named (Hidroelectrica: the list and the announcements
+  both name the Ministry of Energy); different CUIs are two rows (Tursib:
+  Consiliul Local Sibiu vs ADI Transport Metropolitan Sibiu). The kind (județ,
+  municipiu, oraș, comună, sector) is shown only for local authorities: the
+  budget record calls the Ministry of Energy a „public_entity", which misleads
+  as a caption.
+- **Status by source:** a row per source with its date; AMEPIP's years run
+  together while their words are the same („2019–2024 este sub incidența
+  Legii nr. 85/2014, faliment" for Goscom Râșnov, active in ANAF's list).
+- **The business:** the company page's chart and a link to it; the company
+  page keeps the statements.
+- **AMEPIP:** both sheets as tables, full width, KPI rows by year, the unit
+  beside the name and the code after it; an empty cell is a dash. The form is
+  grouped by its own code prefixes (Finanțe, Conducere, Angajați, Egalitate de
+  gen, Mediu, Inovare, Clienți).
+- **Public money:** SEAP counts as buyer and as seller, each linked to its
+  procurement page; sums stay on those pages.
+
+**AMEPIP's scale, checked.** The calculated sheet's „%" ratios are fractions:
+net margin, ROE and turnover growth equal the statements' own ratios (net ÷
+turnover, net ÷ equity, turnover ÷ last year's − 1) as fractions in 523 of
+526 enterprise-years (40 enterprises, 2020–2024; the misses are one
+enterprise's ROE in two years and one growth rate). The prototype shows them
+as percents, moving the point two places exactly. Market share (largest value
+283,2) and the form are not checked and stay as written, the „%" in amber: the
+form mixes scales within one KPI (Tursib's dividend rate 0,5 in 2023, 50 in
+2024; Hidroelectrica's „fixed components" 721.164 %). This answers ask 11 for
+the calculated sheet; the form still needs it.
+
+**The form trap (ask 9) applied.** A form year is shown only when a KPI other
+than FIN-DP, FIN-RCC and FIN-RCCD has a value; the years held back are named
+under the table. Tursib's form has 2023–2024; its 2019–2022 rows carry only
+those three.
+
+**Variants.**
+- `control` — the head names each source's authority; a band lists the
+  same authority's other enterprises.
+- `afacerea` — the head carries the company page's five-year chart; the control
+  band carries the other enterprises.
+- `fisa` — the head shows six answers from the newest form (headcount, board
+  meetings, independent and women board members, the remuneration package,
+  the dividend rate), or four ratios when there is no form; the AMEPIP band
+  still has everything, so those values appear twice.
+
+**Edge cases the samples cover:** sources naming different authorities
+(Tursib), ANAF's list dropping a sector number (ADPB), a county council
+(Aeroportul Oradea), active in the list but bankrupt in AMEPIP (Goscom
+Râșnov), ratios only (Ocolul Silvic Sebeș), inactive with no statements
+(Infosistem), not in ANAF's list and no authority (EXIM), no company record
+(1558391), historical (Utilserv'96).
+
+**Server asks this adds.**
+15. **Scale per KPI.** Serve the scale (fraction, percent, as reported) with
+    each KPI; the calculated sheet is fractions (checked above), market share
+    and the form are unknown.
+16. **Authority on the edge.** The control edge could carry the authority's
+    kernel name and kind, so a page needs no `entity` read per authority (asks
+    6 and 13).
