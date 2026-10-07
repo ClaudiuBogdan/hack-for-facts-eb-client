@@ -34,7 +34,7 @@ import { CompanyRegistryBand } from './company-registry-band'
  * last five years with a statement on one chart; the figures band with the
  * newest values; then one numbered band per question — how the business goes,
  * what it received from the state, what it does, its court cases (only when
- * the justice read answers), the registry record. A bar pins under the head
+ * published name-to-CUI links count one), the registry record. A bar pins under the head
  * with the name and the bands.
  *
  * Every figure and sentence is computed from the record, so the page holds
@@ -174,14 +174,9 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
       <CompanyMoneyBand model={model} index={indexOf('bani-publici')} procurement={procurement} onGrain={onGrain} />
       <CompanyActivitiesBand model={model} index={indexOf('activitati')} />
       {litigation ? (
-        <CompanyLitigationBand
-          cui={cui}
-          index={indexOf('litigii')}
-          page={search.litPage ?? 1}
-          onPage={(page) => choose({ litPage: page === 1 ? undefined : page }, false)}
-        />
+        <CompanyLitigationBand cui={cui} index={indexOf('litigii')} litigation={litigation} />
       ) : null}
-      <CompanyRegistryBand model={model} index={indexOf('registru')} procurement={read} diffText={diffText} last />
+      <CompanyRegistryBand model={model} index={indexOf('registru')} procurement={read} diffText={diffText} courts={litigation !== null} last />
     </div>
   )
 }

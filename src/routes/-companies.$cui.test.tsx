@@ -83,7 +83,7 @@ vi.mock('@/features/private-companies/lib/mock-mode', () => ({ isPrivateCompanyM
 vi.mock('@/features/procurement/hooks/use-procurement-data', () => ({
   useProcurementSupplierSlice: () => ({ data: undefined, isError: false, isPending: true, refetch: vi.fn() }),
 }))
-vi.mock('@/features/private-companies/hooks/use-company-litigation-shown', () => ({ useCompanyLitigationShown: () => false }))
+vi.mock('@/features/private-companies/hooks/use-company-litigation-shown', () => ({ useCompanyLitigationShown: () => null }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 const envelope = (scopeKey: string) => ({

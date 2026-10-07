@@ -357,14 +357,12 @@ export type CompanyPaymentGrain = (typeof COMPANY_PAYMENT_GRAINS)[number]
  *
  * - `masura`: the business chart's measure (unset: `toate`);
  * - `plati`: contracts or direct purchases (unset: whichever the company has,
- *   contracts first);
- * - `litPage`: the litigation list's page.
+ *   contracts first).
  */
 export const privateCompanySearchSchema = z
   .object({
     masura: z.enum(COMPANY_FINANCIAL_MEASURES).optional().catch(undefined),
     plati: z.enum(COMPANY_PAYMENT_GRAINS).optional().catch(undefined),
-    litPage: z.coerce.number().int().min(1).optional().catch(undefined),
   })
   .catch({})
 

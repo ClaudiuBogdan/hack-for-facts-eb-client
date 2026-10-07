@@ -35,7 +35,7 @@ const router = {
   subscribe: vi.fn(() => () => undefined),
   getMatchedRoutes: vi.fn((path: string) => {
     if (path.startsWith('/ins/seturi/')) return { foundRoute: detailRoute, matchedRoutes: [rootRoute, detailRoute] }
-    if (path.startsWith('/justitie')) return { foundRoute: splitRoute, matchedRoutes: [rootRoute, splitRoute] }
+    if (path.startsWith('/legislation')) return { foundRoute: splitRoute, matchedRoutes: [rootRoute, splitRoute] }
     return { foundRoute: undefined, matchedRoutes: [rootRoute] }
   }),
 }
@@ -45,7 +45,7 @@ beforeEach(() => {
   // Fresh routes per test: the hook remembers which routes it has warmed.
   rootRoute = { id: '__root__', options: {} }
   detailRoute = { id: '/ins/seturi/$cod', lazyFn: vi.fn(() => Promise.resolve({})), options: {} }
-  splitRoute = { id: '/justitie/', options: { component: { preload: vi.fn(() => Promise.resolve()) } } }
+  splitRoute = { id: '/legislation/', options: { component: { preload: vi.fn(() => Promise.resolve()) } } }
   router.routesById = { '/ins/seturi/$cod': detailRoute }
   router.getMatchedRoutes.mockClear()
 })
@@ -58,7 +58,7 @@ function IntentProbe() {
         <svg data-testid="icon" />
         <span>serie</span>
       </a>
-      <a href="/justitie/">justiție</a>
+      <a href="/legislation/">legislație</a>
       <a href="/ins/seturi/SOM103B" target="_blank" rel="noreferrer">
         filă nouă
       </a>
@@ -112,7 +112,7 @@ describe('useWarmRouteCodeOnIntent', () => {
 
   it('preloads the component the bundler split out, for a route with no lazy file', () => {
     render(<IntentProbe />)
-    touch('justiție')
+    touch('legislație')
     expect(splitRoute.options.component?.preload).toHaveBeenCalledTimes(1)
   })
 

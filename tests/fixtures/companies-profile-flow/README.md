@@ -7,6 +7,7 @@ Browser GraphQL answers for `tests/integration/companies-profile.spec.ts`. The p
 **Recorded** from the dev API on 24 September 2026 and kept byte for byte:
 - `abc-aggregates`, `abc-authority-names`, `abc-records`, `abc-supplier-name`, `cpv-divisions`;
 - `ideatica-aggregates`, `ideatica-records`, `ideatica-supplier-name`;
+- `abc-litigation`, `ideatica-litigation`: the judicial API's company-litigation summary, recorded on 7 October 2026 (no link published: `caseCount` 0, `coverage` 0, so the page shows no litigation band);
 - in the two `*-profile.json`, every company value: CUI, organisation id, name, legal form, registration code and recorded date, headline status code and label, territory, fiscal record, CAEN rows, public money and as-of dates;
 - every financial statement value of ABC's 18 years (turnover, profit, loss, employees and the balance-sheet summary), and the trajectory deltas.
 

@@ -42,7 +42,7 @@ vi.mock('@/features/procurement/hooks/use-procurement-data', () => ({
   useProcurementSupplierSlice: () => ({ data: undefined, isError: false, isPending: false, refetch: vi.fn() }),
 }))
 
-vi.mock('../../hooks/use-company-litigation-shown', () => ({ useCompanyLitigationShown: () => false }))
+vi.mock('../../hooks/use-company-litigation-shown', () => ({ useCompanyLitigationShown: () => null }))
 
 vi.mock('@/lib/utils', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/utils')>()),

@@ -1,5 +1,10 @@
 # Feature: Company / Entity Litigation Slice (`Litigii`)
 
+> **Superseded (2026-10-07).** The mock-era slice (`LitigationSliceSection`,
+> `litPage`) was removed; the company band now reads the live
+> `judicialCompanyLitigation` API and stands only when published links count a
+> case. See [`../design.md` §12.1](../design.md#121-what-went-2026-10-07).
+
 Domain: Justice · Priority: **MVP #1** (highest value-to-risk) · Status: build-ready
 Companion: `../design.md`, `../ux.md` · Source: `docs/ux-research/justice.md` §13.1,
 §10.2, §17

@@ -28,6 +28,7 @@ export function CompanyRegistryBand({
   index,
   procurement,
   diffText,
+  courts = false,
   last = false,
 }: {
   readonly model: CompanyProfileModel
@@ -36,6 +37,8 @@ export function CompanyRegistryBand({
   readonly procurement: CompanyProcurementRead | null
   /** The comparison with the previous edition, in a sentence; null when not asked. */
   readonly diffText: string | null
+  /** Whether the page shows court cases: the sources line then names the courts' portal. */
+  readonly courts?: boolean
   readonly last?: boolean
 }) {
   const stateText = cuiStateText(model.registry.cuiState)
@@ -50,7 +53,7 @@ export function CompanyRegistryBand({
       <RegistryFacts model={model} />
       <CompanyRegistryEvidenceList evidence={model.registry} className="mt-8 max-w-[68ch]" />
       {diffText ? <p className="mt-4 max-w-[68ch] text-sm text-muted-foreground" data-testid="company-registry-diff">{diffText}</p> : null}
-      <SourcesLine model={model} procurement={procurement} />
+      <SourcesLine model={model} procurement={procurement} courts={courts} />
     </ProfileBand>
   )
 }
@@ -144,7 +147,15 @@ function statementsText({ publisher, first, last }: CompanyProfileModel['stateme
  * pinned ONRC edition (id, ONRC's publication date, versions) and ANAF's
  * state date, never when the platform fetched or rebuilt them.
  */
-function SourcesLine({ model, procurement }: { readonly model: CompanyProfileModel; readonly procurement: CompanyProcurementRead | null }) {
+function SourcesLine({
+  model,
+  procurement,
+  courts,
+}: {
+  readonly model: CompanyProfileModel
+  readonly procurement: CompanyProcurementRead | null
+  readonly courts: boolean
+}) {
   const { profile, statementSources } = model
   const anaf = profile.sources.find((source) => source.id === 'anaf')
   const seapFrom = procurement?.window.from?.slice(0, 4)
@@ -153,6 +164,7 @@ function SourcesLine({ model, procurement }: { readonly model: CompanyProfileMod
     anaf ? t`ANAF, situația la ${dateText(anaf.snapshotDate)}` : null,
     ...statementSources.map(statementsText),
     seapFrom ? t`înregistrările firmei în SEAP din ${seapFrom}` : null,
+    courts ? t`dosarele de pe portalul instanțelor (portal.just.ro)` : null,
   ].filter((part): part is string => part !== null)
   return (
     <MonoLabel className="mt-6 block leading-relaxed text-muted-foreground" data-testid="company-sources-line">

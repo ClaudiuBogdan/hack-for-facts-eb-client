@@ -23,7 +23,6 @@ import { Route as DevelopmentRouteImport } from './routes/development'
 import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as InvestitiiPubliceRouteRouteImport } from './routes/investitii-publice/route'
-import { Route as JustitieRouteImport } from './routes/justitie'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as NgosRouteImport } from './routes/ngos'
 import { Route as PnrrRouteImport } from './routes/pnrr'
@@ -59,8 +58,6 @@ import { Route as IntreprinderiPubliceIndexRouteImport } from './routes/intrepri
 import { Route as IntreprinderiPubliceCuiRouteImport } from './routes/intreprinderi-publice/$cui'
 import { Route as InvestitiiPubliceIndexRouteImport } from './routes/investitii-publice/index'
 import { Route as InvestitiiPubliceCautareRouteImport } from './routes/investitii-publice/cautare'
-import { Route as JustitieIndexRouteImport } from './routes/justitie.index'
-import { Route as JustitieCautareRouteImport } from './routes/justitie.cautare'
 import { Route as LegislationIndexRouteImport } from './routes/legislation/index'
 import { Route as LegislationAnalyticsRouteImport } from './routes/legislation/analytics'
 import { Route as LegislationChangesRouteImport } from './routes/legislation/changes'
@@ -112,8 +109,6 @@ import { Route as InsTeritoriiSirutaRouteImport } from './routes/ins/teritorii/$
 import { Route as InvestitiiPubliceJudeteCountyCodeRouteImport } from './routes/investitii-publice/judete.$countyCode'
 import { Route as InvestitiiPubliceLocalitatiSirutaRouteImport } from './routes/investitii-publice/localitati.$siruta'
 import { Route as InvestitiiPubliceObiectiveIdRouteImport } from './routes/investitii-publice/obiective.$id'
-import { Route as JustitieDosareCaseIdRouteImport } from './routes/justitie.dosare.$caseId'
-import { Route as JustitieInstanteCourtIdRouteImport } from './routes/justitie.instante.$courtId'
 import { Route as LegislationActsIndexRouteImport } from './routes/legislation/acts/index'
 import { Route as LegislationActsActIdRouteImport } from './routes/legislation/acts/$actId'
 import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
@@ -260,11 +255,6 @@ const EntityAnalyticsRoute = EntityAnalyticsRouteImport.update({
 const InvestitiiPubliceRouteRoute = InvestitiiPubliceRouteRouteImport.update({
   id: '/investitii-publice',
   path: '/investitii-publice',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JustitieRoute = JustitieRouteImport.update({
-  id: '/justitie',
-  path: '/justitie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -475,16 +465,6 @@ const InvestitiiPubliceCautareRoute =
     path: '/cautare',
     getParentRoute: () => InvestitiiPubliceRouteRoute,
   } as any)
-const JustitieIndexRoute = JustitieIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => JustitieRoute,
-} as any)
-const JustitieCautareRoute = JustitieCautareRouteImport.update({
-  id: '/cautare',
-  path: '/cautare',
-  getParentRoute: () => JustitieRoute,
-} as any)
 const LegislationIndexRoute = LegislationIndexRouteImport.update({
   id: '/legislation/',
   path: '/legislation/',
@@ -838,16 +818,6 @@ const InvestitiiPubliceObiectiveIdRoute =
     path: '/obiective/$id',
     getParentRoute: () => InvestitiiPubliceRouteRoute,
   } as any)
-const JustitieDosareCaseIdRoute = JustitieDosareCaseIdRouteImport.update({
-  id: '/dosare/$caseId',
-  path: '/dosare/$caseId',
-  getParentRoute: () => JustitieRoute,
-} as any)
-const JustitieInstanteCourtIdRoute = JustitieInstanteCourtIdRouteImport.update({
-  id: '/instante/$courtId',
-  path: '/instante/$courtId',
-  getParentRoute: () => JustitieRoute,
-} as any)
 const LegislationActsIndexRoute = LegislationActsIndexRouteImport.update({
   id: '/legislation/acts/',
   path: '/legislation/acts/',
@@ -1474,7 +1444,6 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/development': typeof DevelopmentRouteWithChildren
   '/entity-analytics': typeof EntityAnalyticsRoute
-  '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
   '/ngos': typeof NgosRouteWithChildren
   '/pnrr': typeof PnrrRouteWithChildren
@@ -1503,7 +1472,6 @@ export interface FileRoutesByFullPath {
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
-  '/justitie/cautare': typeof JustitieCautareRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
   '/legislation/gazette': typeof LegislationGazetteRoute
@@ -1536,7 +1504,6 @@ export interface FileRoutesByFullPath {
   '/ins/': typeof InsIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
-  '/justitie/': typeof JustitieIndexRoute
   '/legislation/': typeof LegislationIndexRoute
   '/national-budget/': typeof NationalBudgetIndexRoute
   '/ngos/': typeof NgosIndexRoute
@@ -1563,8 +1530,6 @@ export interface FileRoutesByFullPath {
   '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
   '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
-  '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
-  '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislation/acts/$actId': typeof LegislationActsActIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
@@ -1677,7 +1642,6 @@ export interface FileRoutesByTo {
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
-  '/justitie/cautare': typeof JustitieCautareRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
   '/legislation/gazette': typeof LegislationGazetteRoute
@@ -1710,7 +1674,6 @@ export interface FileRoutesByTo {
   '/ins': typeof InsIndexRoute
   '/intreprinderi-publice': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice': typeof InvestitiiPubliceIndexRoute
-  '/justitie': typeof JustitieIndexRoute
   '/legislation': typeof LegislationIndexRoute
   '/national-budget': typeof NationalBudgetIndexRoute
   '/ngos': typeof NgosIndexRoute
@@ -1733,8 +1696,6 @@ export interface FileRoutesByTo {
   '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
   '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
-  '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
-  '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislation/acts/$actId': typeof LegislationActsActIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
@@ -1829,7 +1790,6 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/development': typeof DevelopmentRouteWithChildren
   '/entity-analytics': typeof EntityAnalyticsRoute
-  '/justitie': typeof JustitieRouteWithChildren
   '/map': typeof MapRoute
   '/ngos': typeof NgosRouteWithChildren
   '/pnrr': typeof PnrrRouteWithChildren
@@ -1858,7 +1818,6 @@ export interface FileRoutesById {
   '/experimental/search': typeof ExperimentalSearchRoute
   '/intreprinderi-publice/$cui': typeof IntreprinderiPubliceCuiRoute
   '/investitii-publice/cautare': typeof InvestitiiPubliceCautareRoute
-  '/justitie/cautare': typeof JustitieCautareRoute
   '/legislation/analytics': typeof LegislationAnalyticsRoute
   '/legislation/changes': typeof LegislationChangesRoute
   '/legislation/gazette': typeof LegislationGazetteRoute
@@ -1891,7 +1850,6 @@ export interface FileRoutesById {
   '/ins/': typeof InsIndexRoute
   '/intreprinderi-publice/': typeof IntreprinderiPubliceIndexRoute
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
-  '/justitie/': typeof JustitieIndexRoute
   '/legislation/': typeof LegislationIndexRoute
   '/national-budget/': typeof NationalBudgetIndexRoute
   '/ngos/': typeof NgosIndexRoute
@@ -1918,8 +1876,6 @@ export interface FileRoutesById {
   '/investitii-publice/judete/$countyCode': typeof InvestitiiPubliceJudeteCountyCodeRoute
   '/investitii-publice/localitati/$siruta': typeof InvestitiiPubliceLocalitatiSirutaRoute
   '/investitii-publice/obiective/$id': typeof InvestitiiPubliceObiectiveIdRoute
-  '/justitie/dosare/$caseId': typeof JustitieDosareCaseIdRoute
-  '/justitie/instante/$courtId': typeof JustitieInstanteCourtIdRoute
   '/legislation/acts/$actId': typeof LegislationActsActIdRoute
   '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
   '/maps/datasets/new': typeof MapsDatasetsNewRoute
@@ -2016,7 +1972,6 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/development'
     | '/entity-analytics'
-    | '/justitie'
     | '/map'
     | '/ngos'
     | '/pnrr'
@@ -2045,7 +2000,6 @@ export interface FileRouteTypes {
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
     | '/investitii-publice/cautare'
-    | '/justitie/cautare'
     | '/legislation/analytics'
     | '/legislation/changes'
     | '/legislation/gazette'
@@ -2078,7 +2032,6 @@ export interface FileRouteTypes {
     | '/ins/'
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
-    | '/justitie/'
     | '/legislation/'
     | '/national-budget/'
     | '/ngos/'
@@ -2105,8 +2058,6 @@ export interface FileRouteTypes {
     | '/investitii-publice/judete/$countyCode'
     | '/investitii-publice/localitati/$siruta'
     | '/investitii-publice/obiective/$id'
-    | '/justitie/dosare/$caseId'
-    | '/justitie/instante/$courtId'
     | '/legislation/acts/$actId'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
@@ -2219,7 +2170,6 @@ export interface FileRouteTypes {
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
     | '/investitii-publice/cautare'
-    | '/justitie/cautare'
     | '/legislation/analytics'
     | '/legislation/changes'
     | '/legislation/gazette'
@@ -2252,7 +2202,6 @@ export interface FileRouteTypes {
     | '/ins'
     | '/intreprinderi-publice'
     | '/investitii-publice'
-    | '/justitie'
     | '/legislation'
     | '/national-budget'
     | '/ngos'
@@ -2275,8 +2224,6 @@ export interface FileRouteTypes {
     | '/investitii-publice/judete/$countyCode'
     | '/investitii-publice/localitati/$siruta'
     | '/investitii-publice/obiective/$id'
-    | '/justitie/dosare/$caseId'
-    | '/justitie/instante/$courtId'
     | '/legislation/acts/$actId'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
@@ -2370,7 +2317,6 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/development'
     | '/entity-analytics'
-    | '/justitie'
     | '/map'
     | '/ngos'
     | '/pnrr'
@@ -2399,7 +2345,6 @@ export interface FileRouteTypes {
     | '/experimental/search'
     | '/intreprinderi-publice/$cui'
     | '/investitii-publice/cautare'
-    | '/justitie/cautare'
     | '/legislation/analytics'
     | '/legislation/changes'
     | '/legislation/gazette'
@@ -2432,7 +2377,6 @@ export interface FileRouteTypes {
     | '/ins/'
     | '/intreprinderi-publice/'
     | '/investitii-publice/'
-    | '/justitie/'
     | '/legislation/'
     | '/national-budget/'
     | '/ngos/'
@@ -2459,8 +2403,6 @@ export interface FileRouteTypes {
     | '/investitii-publice/judete/$countyCode'
     | '/investitii-publice/localitati/$siruta'
     | '/investitii-publice/obiective/$id'
-    | '/justitie/dosare/$caseId'
-    | '/justitie/instante/$courtId'
     | '/legislation/acts/$actId'
     | '/maps/datasets/$datasetId'
     | '/maps/datasets/new'
@@ -2556,7 +2498,6 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   DevelopmentRoute: typeof DevelopmentRouteWithChildren
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
-  JustitieRoute: typeof JustitieRouteWithChildren
   MapRoute: typeof MapRoute
   NgosRoute: typeof NgosRouteWithChildren
   PnrrRoute: typeof PnrrRouteWithChildren
@@ -2736,13 +2677,6 @@ declare module '@tanstack/react-router' {
       path: '/investitii-publice'
       fullPath: '/investitii-publice'
       preLoaderRoute: typeof InvestitiiPubliceRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/justitie': {
-      id: '/justitie'
-      path: '/justitie'
-      fullPath: '/justitie'
-      preLoaderRoute: typeof JustitieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -3003,20 +2937,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/investitii-publice/cautare'
       preLoaderRoute: typeof InvestitiiPubliceCautareRouteImport
       parentRoute: typeof InvestitiiPubliceRouteRoute
-    }
-    '/justitie/': {
-      id: '/justitie/'
-      path: '/'
-      fullPath: '/justitie/'
-      preLoaderRoute: typeof JustitieIndexRouteImport
-      parentRoute: typeof JustitieRoute
-    }
-    '/justitie/cautare': {
-      id: '/justitie/cautare'
-      path: '/cautare'
-      fullPath: '/justitie/cautare'
-      preLoaderRoute: typeof JustitieCautareRouteImport
-      parentRoute: typeof JustitieRoute
     }
     '/legislation/': {
       id: '/legislation/'
@@ -3395,20 +3315,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/investitii-publice/obiective/$id'
       preLoaderRoute: typeof InvestitiiPubliceObiectiveIdRouteImport
       parentRoute: typeof InvestitiiPubliceRouteRoute
-    }
-    '/justitie/dosare/$caseId': {
-      id: '/justitie/dosare/$caseId'
-      path: '/dosare/$caseId'
-      fullPath: '/justitie/dosare/$caseId'
-      preLoaderRoute: typeof JustitieDosareCaseIdRouteImport
-      parentRoute: typeof JustitieRoute
-    }
-    '/justitie/instante/$courtId': {
-      id: '/justitie/instante/$courtId'
-      path: '/instante/$courtId'
-      fullPath: '/justitie/instante/$courtId'
-      preLoaderRoute: typeof JustitieInstanteCourtIdRouteImport
-      parentRoute: typeof JustitieRoute
     }
     '/legislation/acts/': {
       id: '/legislation/acts/'
@@ -4065,24 +3971,6 @@ const DevelopmentRouteWithChildren = DevelopmentRoute._addFileChildren(
   DevelopmentRouteChildren,
 )
 
-interface JustitieRouteChildren {
-  JustitieCautareRoute: typeof JustitieCautareRoute
-  JustitieIndexRoute: typeof JustitieIndexRoute
-  JustitieDosareCaseIdRoute: typeof JustitieDosareCaseIdRoute
-  JustitieInstanteCourtIdRoute: typeof JustitieInstanteCourtIdRoute
-}
-
-const JustitieRouteChildren: JustitieRouteChildren = {
-  JustitieCautareRoute: JustitieCautareRoute,
-  JustitieIndexRoute: JustitieIndexRoute,
-  JustitieDosareCaseIdRoute: JustitieDosareCaseIdRoute,
-  JustitieInstanteCourtIdRoute: JustitieInstanteCourtIdRoute,
-}
-
-const JustitieRouteWithChildren = JustitieRoute._addFileChildren(
-  JustitieRouteChildren,
-)
-
 interface NgosRouteChildren {
   NgosCuiRoute: typeof NgosCuiRoute
   NgosIndexRoute: typeof NgosIndexRoute
@@ -4355,7 +4243,6 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   DevelopmentRoute: DevelopmentRouteWithChildren,
   EntityAnalyticsRoute: EntityAnalyticsRoute,
-  JustitieRoute: JustitieRouteWithChildren,
   MapRoute: MapRoute,
   NgosRoute: NgosRouteWithChildren,
   PnrrRoute: PnrrRouteWithChildren,

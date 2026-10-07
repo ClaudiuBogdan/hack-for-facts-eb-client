@@ -37,7 +37,7 @@ const navigate = vi.fn()
 const slice = vi.hoisted(() => ({
   current: { data: undefined as SupplierProcurementSlice | undefined, isError: false, refetch: vi.fn() },
 }))
-const litigation = vi.hoisted(() => ({ shown: false }))
+const litigation = vi.hoisted(() => ({ current: null as import('@/schemas/judicial').JudicialCompanyLitigation | null }))
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
@@ -86,16 +86,12 @@ vi.mock('../../api/company-registry-api', async () => {
 })
 
 vi.mock('../../hooks/use-company-litigation-shown', () => ({
-  useCompanyLitigationShown: () => litigation.shown,
+  useCompanyLitigationShown: () => litigation.current,
 }))
 
-vi.mock('@/features/justice/components/litigation-slice-section', () => ({
-  LITIGATION_PAGE_SIZE: 10,
-  LitigationSliceSection: ({ page, onPageChange }: { readonly page: number; readonly onPageChange: (page: number) => void }) => (
-    <button type="button" onClick={() => onPageChange(page + 1)}>
-      litigation page {page}
-    </button>
-  ),
+vi.mock('@/features/justice/components/company-litigation', () => ({
+  CompanyLitigationSummary: ({ litigation: read }: { readonly litigation: { readonly caseCount: number } }) => <p>litigation summary {read.caseCount}</p>,
+  CompanyLitigationCases: ({ cui }: { readonly cui: string }) => <p>litigation cases {cui}</p>,
 }))
 
 // The page's language, pinned: the test environment activates English.
@@ -188,7 +184,7 @@ describe('CompanyProfilePage', () => {
   beforeEach(() => {
     navigate.mockClear()
     slice.current = { data: undefined, isError: false, refetch: vi.fn() }
-    litigation.shown = false
+    litigation.current = null
   })
 
   it('sends the whole company in the server HTML, the SEAP names pending', () => {
@@ -217,14 +213,14 @@ describe('CompanyProfilePage', () => {
     expect(screen.queryByText('Cât cântărește în economie')).toBeNull()
   })
 
-  it('shows litigation when the justice read answers, paged in the URL', async () => {
-    litigation.shown = true
-    render(page(builder(), { litPage: 2 }))
+  it('shows litigation when published links count a case', async () => {
+    litigation.current = { cui: '123', caseCount: 3, courtLevels: [{ courtLevel: 'tribunal', count: 3 }], years: [{ year: 2025, count: 3 }], coverage: 1, caveats: [] }
+    render(page(builder()))
     await registryPinned()
     expect(sectionLinks()).toEqual(['#afacerea', '#bani-publici', '#activitati', '#litigii', '#registru'])
-    fireEvent.click(screen.getByRole('button', { name: 'litigation page 2' }))
-    // A page of cases is a place to go back to: it is pushed, not replaced.
-    expect(navigated({ litPage: 2 }, false)).toEqual({ litPage: 3 })
+    const band = document.getElementById('litigii') as HTMLElement
+    expect(within(band).getByText('litigation summary 3')).toBeInTheDocument()
+    expect(within(band).getByText(/^litigation cases /)).toBeInTheDocument()
   })
 
   it('names who paid, for what, and the newest records once SEAP answers', async () => {
@@ -479,7 +475,7 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
   beforeEach(() => {
     navigate.mockClear()
     slice.current = { data: undefined, isError: false, refetch: vi.fn() }
-    litigation.shown = false
+    litigation.current = null
   })
 
   const qualification = () => screen.getByRole('region', { name: 'Ce intră în cifre' })

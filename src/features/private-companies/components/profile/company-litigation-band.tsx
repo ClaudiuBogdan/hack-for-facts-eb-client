@@ -1,31 +1,35 @@
 import { Trans } from '@lingui/react/macro'
-import { LitigationSliceSection } from '@/features/justice/components/litigation-slice-section'
-import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import { ProfileBand } from './company-profile-band'
+import { CompanyLitigationCases, CompanyLitigationSummary } from '@/features/justice/components/company-litigation'
+import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { cn } from '@/lib/utils'
+import type { JudicialCompanyLitigation } from '@/schemas/judicial'
+import { BAND_GRID_CLASS, ProfileBand } from './company-profile-band'
 
 const TITLE_ID = 'company-litigation-title'
 
 /**
- * „În instanță": the court cases the justice read links to the company, paged
- * in the URL (`litPage`). The page shows the band only when that read answers
- * (`useCompanyLitigationShown`); the justice case page links back to it.
+ * „În instanță": the court cases the judicial API links to the company
+ * through a published name-to-CUI match — a floor, with no party named. The
+ * page shows the band only when such links count a case
+ * (`useCompanyLitigationShown`).
  */
 export function CompanyLitigationBand({
   cui,
   index,
-  page,
-  onPage,
+  litigation,
 }: {
   readonly cui: string
   readonly index: string
-  readonly page: number
-  readonly onPage: (page: number) => void
+  readonly litigation: JudicialCompanyLitigation
 }) {
   return (
     <ProfileBand id="litigii" titleId={TITLE_ID}>
-      <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>În instanță</Trans>} />
-      <div className="mt-8">
-        <LitigationSliceSection cui={cui} page={page} onPageChange={onPage} showTitle={false} />
+      <div className={BAND_GRID_CLASS}>
+        <div className="min-w-0 lg:col-span-5">
+          <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>În instanță</Trans>} />
+          <CompanyLitigationSummary litigation={litigation} className="mt-8" />
+        </div>
+        <CompanyLitigationCases cui={cui} className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} />
       </div>
     </ProfileBand>
   )

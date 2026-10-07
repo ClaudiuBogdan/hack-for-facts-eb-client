@@ -7,6 +7,10 @@ This document defines domain-level patterns, routes, the shared data contract at
 the UI boundary, and the feature map. Feature files in `./features/` are
 self-sufficient and reference the contract here.
 
+> **Sections 1–11 are the mock era (2026-06-26):** background, not decisions to
+> keep. The pages they describe were removed on 2026-10-07. The redesign on the
+> live API starts at [§12](#12-redesign-on-the-live-api-2026-10-07).
+
 ---
 
 ## 1. Domain purpose and scope
@@ -390,3 +394,256 @@ None block MVP. Gated-lane product decisions (publication fork threshold for gat
 #9; citation-status exposure for gate #11; global-search participation) only change
 the behavior of already-gated states and are handled by the lane-availability flag;
 they do not block building the populated, privacy-safe MVP.
+
+---
+
+## 12. Redesign on the live API (2026-10-07)
+
+The court portal's data now has a live API on Chronos dev (GraphQL roots
+`judicialCourts`, `judicialCourt`, `judicialCase`, `judicialCases`,
+`judicialCaseload`, `judicialCompanyLitigation(Cases)`, `judicialCasesCitingAct`,
+`judicialCaseLegalReferences`, `judicialCaseLineage`, `judicialResolve`, plus the
+decisions lane: `judicialIssuingBodies`, `judicialDecision(s)`,
+`judicialDecisionBySource`, `judicialDecisionSubjectLinks`,
+`judicialDecisionResolve`). Schema: the server's
+`src/modules/judicial/shell/graphql/typedefs.ts` and
+`docs/server-redesign/08-judicial-cases.md` (read from the server's `dev`; an
+older checkout branch lacked ~5,000 lines). Every figure below was read from the
+live API through the worktree's Vite proxy on 2026-10-07 unless marked
+otherwise.
+
+### 12.1 What went (2026-10-07)
+
+The mock-era client was removed, at the owner's call („everything now"):
+`src/features/justice/{api,hooks,components,mocks,lib}`, the five `/justitie`
+routes and their tests (the privacy-guardrails test included),
+`src/schemas/justice.ts`, the `legal-judicial-cases` catalog entry (the
+homepage's dataset count drops by one) and the landing page's ungated
+„Justiție" tile. `/justitie*` answers 404 until the new pages ship; the new
+pages take English paths and the old URLs redirect to them then.
+
+Kept on purpose: `src/lib/privacy/sensitive-route-sanitizer.ts` and the
+Sentry/analytics scrubbing of `/justitie` and of the company page's
+`tab=litigii`/`partyKey`/`caseNumber` parameters. **The new pages must extend
+it to their own paths** (case numbers and court codes out of telemetry), and
+their tests carry the old guardrail's intent: no identifier in a telemetry URL,
+no typed free text in the URL.
+
+The company profile's litigation band (companies area) was rewired, at the
+owner's call, to `judicialCompanyLitigation` / `judicialCompanyLitigationCases`
+(`src/features/justice/{api,hooks,components}/company-litigation*`). The API is
+published-only and **no company link is published** (0 of 283,382 candidates,
+scrapper J3), so every CUI answers `caseCount 0, coverage 0` with the caveat
+„company-litigation links not yet published". The band stands only when
+published links count a case, says its count is a floor, and names no party;
+until then it is absent — never „no cases".
+
+### 12.2 What the data holds
+
+**Courts — 247.** 179 judecătorii, 46 tribunals (42 general, 3 commercial —
+Argeș, Cluj, Mureș — and the Brașov minors-and-family tribunal), 15 courts of
+appeal, 5 military tribunals, the Military Court of Appeal and the ÎCCJ
+(`inalta_curte`, appended last to the level enum). A court has an institution
+code (`JudecatoriaSECTORUL4BUCURESTI`), level, specialisation, locality,
+`countyCode` (a county abbreviation, not SIRUTA; `countySirutaCode` is its
+deprecated alias), parent court and `children`. The API has **no readable
+name**: the client generates one per code
+(`scripts/generate-justice-court-names.mjs` → `court-names.generated.ts`, from
+the county list and the INS UAT names; three codes spell a town with its old
+article). 243 courts have cases; four have none: Tribunalul Militar București
+and the suspended judecătorii Bozovici, Murgeni and Șomcuta Mare (Însurăței,
+suspended in 2016, has 97).
+
+**Cases — 6,344,711** = 6,334,798 from portal.just.ro (`sourceSlug
+portal_just`) + 9,913 from the ÎCCJ's own archive (`iccj`, bulk ZIPs on scj.ro).
+A case is the current projection, not its history: court, number (+ old
+number), department, matter (`category`), stage, the procedural object
+(`object`, free text), a source date (`sourceOpenedAt`, whose meaning depends on
+the source: the Portal header's date or the ICCJ archive's case date — neither
+is a verified filing date) and the last source modification. Natural key: court
+\+ case number (the number alone repeats across courts: an appeal keeps the
+first court's number). Use it for durable links: `caseId` can change on a
+reload.
+
+| Level | Cases | Leading matters |
+|---|---:|---|
+| Judecătorie | 4,352,547 | civil 2.16M, penal 998k, professionals 718k, minors & family 372k, administrative 102k |
+| Tribunal | 1,491,942 | administrative & tax 321k, penal 284k, civil 232k, professionals 194k, labour 156k, social insurance 155k, insolvency 100k |
+| Curte de apel | 486,576 | penal 148k, administrative & tax 126k, social insurance 67k, labour 49k, civil 47k |
+| ÎCCJ | 9,913 | administrative & tax 5,658, civil 1,732, penal 1,094 |
+| Military | 3,733 | — |
+
+Matters: 12 Portal codes (Civil 2.44M, Penal 1.43M, Litigii cu profesioniștii
+937k, Contencios administrativ și fiscal 549k, Minori și familie 419k, Asigurări
+sociale 223k, Litigii de muncă 205k, Faliment 123k, Proprietate intelectuală
+5k, Insolvența persoanei fizice 706, Drept maritim și fluvial 493, Alte
+materii 9); the ÎCCJ's cases carry the same matters as raw labels with cedilla
+diacritics, so a `groupBy: category` returns two keys for one matter (ask 2).
+Stages (aggregate filtered by `stage`): Fond 5,306,243 (judecătorii 4.34M,
+tribunals 893k), Apel 702,502 (tribunals 452k, courts of appeal 250k),
+ContestaţieNCPP 154,043, Recurs 128,924 (courts of appeal 105k, ÎCCJ 6.9k),
+recurs în interesul legii 239 (ÎCCJ), then revision and annulment variants; 19
+values in all.
+
+**Years.** The source date clusters in the capture window: 2023 1.47M, 2024
+1.73M, 2025 1.68M, 2026 805k (to June), 2022 335k, 2021 105k, then tens of
+thousands a year back to 2013 and a tail to 1956. The crawl reached cases by
+**last modification** from about May 2013 (scrapper notes), so older years hold
+only cases still active later: **a per-year count before 2023 is a capture
+artefact, not the courts' caseload**, and 2026 is a part-year.
+
+**Freshness.** Portal cases were last modified 2026-06-22 15:37 (stored clock,
+time zone unknown); ICCJ dates run to 2026-07-24. Recurrent capture is
+suspended. Every page must date its data („date până în iunie 2026"), never
+imply live data.
+
+**Hearings — 18.6M; appeals — 2.25M** (scrapper counts; the API has no
+aggregate for them). In a sample of 660 cases opened in 2024 across 66 courts
+(the first ten opened that year at every court of appeal, the ÎCCJ, the
+military courts, the 15 largest tribunals and 30 judecătorii spread over the
+size ranking — a convenience sample, so its shares are indicative):
+
+- hearings per case p50 2, p90 5, max 32; the ÎCCJ's archive cases have none;
+  a hearing has its time, panel (`C9`, `Complet 9 penal`, …), pronouncement
+  date, and a decision document number and date — **no outcome**: `solution`
+  and `solutionSummary` are withheld (privacy, server §2.1). 558/660 cases have
+  at least one decision document;
+- 19 hearings are dated after the capture: scheduled, not held;
+- opened → last decision document: p25 36 days, p50 98, p75 272, p90 442
+  (cases opened early in 2024; open cases excluded, so this is not a duration
+  statistic of the courts);
+- 235/660 cases list an appeal declaration (Apel 200, Contestație NCPP 59,
+  Recurs 52);
+- 17 cases list no party.
+
+**Parties.** Only kind, normalised role and, for publishable organisations, a
+dictionary key and legal form — **no name for anyone** (the case detail
+withholds even company and institution names until a permission layer exists).
+Sample: 1,797 parties, person 58%, unknown 12%, public entity 17%, company 12%;
+roles intimat, pârât, reclamant, apelant, petent, inculpat, recurent,
+contestator, creditor, debitor, intervenient. Every public entity and 188 of 220
+companies carry a `nameKeyId`. `personPartyCount` equals the person + unknown
+parties.
+
+**Links.**
+
+- *Companies:* published-only, none published (§12.1).
+- *Legislation:* `legalReferences` are served (the readiness analysis predates
+  this): 218/660 sampled cases cite something, 229 citations, from the object
+  (222) or a hearing's solution field (7, the token only). 53 resolve to an act
+  in `legal.acts` (`targetActId`; e.g. Legea 302/2004, Legea 254/2013, Legea
+  85/2006, OUG 119/2007, OUG 195/2002); 176 are unresolved code aliases
+  (`art.X ncpp`, `ncp`, `cpc`). The reverse read works:
+  `judicialCasesCitingAct(32557)` pages the cases citing Legea 302/2004.
+  Scrapper totals: 3.23M citations over 1.72M cases.
+- *Other courts:* `lineage` edges link a case to the same file at another court
+  (`same_dossier_cross_institution`, method `shared_base_cross_institution`,
+  confidence 0.6 candidate / 0.3 needs_review): 236/660 sampled cases have one.
+  They are candidates, never shown as fact; their direction audit is pending.
+- *Territory:* a court's county; a case inherits it from its court (never a
+  party's residence).
+
+**Decisions lane (included at the owner's call, 2026-10-07).** 66,343 stored
+decisions, every row read: CCR 765 (public; no date, year only), ECHR/HUDOC
+7,350 (public; 2,835 are not judgments — communications, Article 54
+resolutions, information notes, Protocol 16; judgments against Romania
+deduplicated by ECLI: 2009 153 … 2025 29), CNSC 1,496 (restricted;
+June 2025 – June 2026; 1,496 of 10,119 captured), CNCD 4,189 (restricted;
+partial, 2022 missing, `publication_date` is an upload date), ANSPDCP 294
+(restricted; sanction counts, amounts misparsed) and ANAF tax appeals 52,249
+(restricted; no date, year or number). `outcomeNormalized` is null everywhere.
+Only CNSC has subject links: 2,137 candidate CUI links on 1,391 decisions
+(contestant → company 1,330, authority → public entity 807), all confidence
+0.995, unverified. ancom, anre, cna, consiliul_concurentei and curia have no
+rows. The API serves this lane „as stored", the restricted class included,
+with its privacy work deferred.
+
+### 12.3 Privacy (hard rules for every justice page)
+
+- Show only what the API publishes; never request `name`, `solution` or
+  `solutionSummary`; never use `judicialResolve(companyName)` (which returns
+  dictionary names) to name a case's parties: that would rebuild what the case
+  detail withholds.
+- Parties are counted and described by kind and role („Pârât: 2 persoane
+  fizice"), never named.
+- `object` is served as safe but has not passed a current privacy audit
+  (readiness analysis JC26-PRIV-01). Sample: 650 objects, no person name; four
+  title-case fragments, all institutional („Codul Silvic", „Curții
+  Constituționale"). Showing it on a case page is the owner's decision (asked
+  when the case page is designed); aggregates never need it.
+- Case numbers and court codes stay out of telemetry (§12.1).
+- Decisions: restricted rows are shown as metadata (body, number, year, kind,
+  CUI links as candidates), never as narrative or documents; ANSPDCP source
+  references can embed organisation names and are not displayed.
+
+### 12.4 What the data supports
+
+- **Front door (hub):** the caseload by level, matter and year; the courts by
+  size; stages; the law and other-court links as entry points; the decisions
+  lane's series (ECHR judgments, CCR decisions, CNSC).
+- **Court page** (the strongest): caseload by year, matter and stage from the
+  aggregate; its place in the hierarchy (parent, children); its county.
+- **Case page:** header, hearings timeline (dates, panels, decision numbers —
+  no outcomes), appeals, parties by role and kind (no names), cited laws
+  (linked to legislation when resolved), the same file at other courts
+  (candidates).
+- **Analytics page:** `judicialCaseload` is a cube — `groupBy` court, matter,
+  year or level, filtered by court(s), level(s), matter(s), stage(s), years,
+  modification dates and an object-text search, with `denominator` as the
+  total of the filtered set. One read per view; a stage split needs one read
+  per stage (ask 3).
+- **Law ↔ cases:** the cases citing an act (a band on legislation act pages
+  belongs to the legal area).
+
+### 12.5 Server asks (justice)
+
+Numbered for the owner to route to the server session; evidence from the live
+API on 2026-10-07.
+
+1. **Court names.** `JudicialCourt` has no readable name; add `name`
+   (Romanian, with diacritics, as the court calls itself). The client
+   generates names from codes meanwhile (247/247, three historical spellings
+   aliased).
+2. **One code per matter.** ÎCCJ cases carry raw labels with cedilla
+   (`Contencios administrativ şi fiscal` 5,658, `Civil` 1,732 …) beside the
+   Portal codes (`Contenciosadministrativsifiscal`), so `groupBy: category` and
+   `judicialResolve(category)` list 19 keys for 12 matters. Serve one code per
+   matter plus its label.
+3. **Stage as an aggregate dimension** (`groupBy: stage`) and a stage
+   resolver: today the 19 stage values are found by sampling and counted one
+   aggregate read each. `stageName` is null on ÎCCJ cases (10/10 sampled).
+4. **Two-dimensional aggregates** (court × year, matter × year, stage ×
+   level) so an analysis table is one read, and **opened month** for the
+   current year.
+5. **Hearing and appeal aggregates** (hearings, decision documents and appeal
+   declarations by year, level, court): 18.6M hearings and 2.25M appeals have
+   none today.
+6. **Citations:** an aggregate of cases per cited act (the most-cited laws),
+   and resolution of the code aliases (`ncpp`, `ncp`, `cpc`, `ncpc`; 176 of 229
+   sampled citations) to the codes' acts.
+7. **Lineage edges with the other end's court and number**, so the same file
+   at other courts lists without a read per edge; and the direction audit (#10)
+   before anything reads as an appeal path.
+8. **Dataset freshness.** `asOf` exists only inside a case detail; add a
+   per-source watermark to the courts or aggregate reads so a page can date its
+   figures („până la 22 iunie 2026") without reading a case.
+9. **Company litigation is empty for every CUI** (no published link); the
+   company band stays hidden until links are published (gate #9).
+10. **Name policy consistency:** `judicialResolve(companyName)` returns
+    dictionary names while the case detail withholds them; the client uses
+    neither to name parties until the permission layer exists.
+11. **`object` privacy audit** verdict (JC26-PRIV-01), so case pages can say
+    what a case is about.
+12. **Decisions lane:** (a) an aggregate by source, year, kind and privacy
+    class (counting ANAF takes 1,045 pages); (b) CNSC outcome (admis/respins),
+    notice, value, CPV and case number — the placeholder attrs are null in
+    1,496/1,496; (c) CNSC `decisionNo` is not chronological — confirm its
+    meaning; (d) ANAF `attrs.categories` keys are misaligned (`judet` holds
+    topics, `materie` counties); (e) ANSPDCP amounts misparsed (e.g. 27202:
+    4.98 lei; 26958: 2,000 EUR / 985,100 lei); (f) CCR `decisionDate` null in
+    765/765; (g) CNCD: no 2022 rows, 7 rows without year and number; (h) CNSC
+    link anomalies: 3–5-digit CUIs (links 1214, 1422, 1573), four CUIs both
+    contestant and authority, and the rounding defect's affected links to be
+    listed; (i) drop or label the five issuing bodies with no rows; (j)
+    decision ↔ case links (no `ecris_case`, `contract` or `notice` link
+    exists).

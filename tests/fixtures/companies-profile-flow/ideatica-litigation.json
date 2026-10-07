@@ -1,0 +1,14 @@
+{
+ "data": {
+  "judicialCompanyLitigation": {
+   "cui": "47387800",
+   "caseCount": 0,
+   "courtLevels": [],
+   "years": [],
+   "coverage": 0,
+   "caveats": [
+    "company-litigation links not yet published"
+   ]
+  }
+ }
+}

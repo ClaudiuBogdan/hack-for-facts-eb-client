@@ -13,7 +13,8 @@
  * server-rendered profile here; it stands only until the page's own registry
  * read answers. The page then pins the mocked registry scope and shows the
  * mocked profile under it, so every browser read the page makes is mocked:
- * the registry, the profile, its registration diff and the SEAP slice.
+ * the registry, the profile, its registration diff, the SEAP slice and the
+ * court-litigation summary (no link published, so no litigation band).
  */
 
 import type { Page } from '@playwright/test'
@@ -33,6 +34,7 @@ async function mockCompany(mockApi: MockApiFixture, name: 'abc' | 'ideatica', cu
   await mockApi.mockGraphQL('ProcurementPartyNames', `${name}-supplier-name`, { variables: { supplierCuis: [cui] } })
   if (name === 'abc') await mockApi.mockGraphQL('ProcurementPartyNames', 'abc-authority-names', { variables: { supplierCuis: [] } })
   await mockApi.mockGraphQL('ProcurementCpvDivisions', 'cpv-divisions')
+  await mockApi.mockGraphQL('JudicialCompanyLitigation', `${name}-litigation`, { variables: { cui } })
 }
 
 /** The GraphQL operations the page's browser asks for, by name. */
