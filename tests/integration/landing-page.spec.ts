@@ -46,13 +46,13 @@ test.describe('Landing Page', () => {
     const links = shortcuts.getByRole('link')
     await expect(links).toHaveCount(3)
     await expect(links.nth(0)).toHaveAttribute('href', '/procurement')
-    await expect(links.nth(1)).toHaveAttribute('href', '/budget-explorer')
+    await expect(links.nth(1)).toHaveAttribute('href', '/national-budget')
     await expect(links.nth(2)).toHaveAttribute('href', '/legislation')
   })
 
   test('displays the grouped index of surfaces', async ({ page }) => {
     const groups: ReadonlyArray<readonly [RegExp, readonly string[]]> = [
-      [/banii publici|public money/i, ['/budget-explorer', '/procurement', '/investitii-publice', '/pnrr']],
+      [/banii publici|public money/i, ['/national-budget', '/procurement', '/investitii-publice', '/pnrr']],
       [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/ngos']],
       [/lege și justiție|law and justice/i, ['/legislation', '/justitie']],
       [/^politică$|^politics$/i, ['/alegeri']],

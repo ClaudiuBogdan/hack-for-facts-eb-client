@@ -139,10 +139,10 @@ describe('NavMain', () => {
       expect(screen.getByText('Charts')).toBeInTheDocument()
     })
 
-    it('renders Budget Explorer link', async () => {
+    it('renders the National Budget link', async () => {
       await renderNavMain()
 
-      expect(screen.getByTestId('link-/budget-explorer')).toBeInTheDocument()
+      expect(screen.getByTestId('link-/national-budget')).toBeInTheDocument()
       expect(screen.getByText('National Budget')).toBeInTheDocument()
     })
 

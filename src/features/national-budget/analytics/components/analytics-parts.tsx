@@ -25,12 +25,15 @@ export function BandRead({
   framed = false,
   quiet,
   resetKey,
+  renderError,
 }: {
   readonly fallback: ReactNode
   readonly children: ReactNode
   readonly framed?: boolean
   readonly quiet?: ReactNode
   readonly resetKey?: string
+  /** The error as the caller draws it (a band that keeps its heading), given the retry. */
+  readonly renderError?: (retry: () => void) => ReactNode
 }) {
   // The question a read failed for. The boundary renders its fallback as a component of a new type each time, so the
   // fallback can't remember it: the boundary's owner does.
@@ -52,7 +55,7 @@ export function BandRead({
                 </QuietError>
               )
             }
-            const error = <HubLoadError onRetry={retry} />
+            const error = renderError ? <>{renderError(retry)}</> : <HubLoadError onRetry={retry} />
             return framed ? <RuledFrame className="py-10">{error}</RuledFrame> : error
           }}
         >

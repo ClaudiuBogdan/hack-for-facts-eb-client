@@ -11,7 +11,9 @@ Base URL:
 ## Routes Overview
 - /entities/{cui}: Single entity details and analytics
 - /entity-analytics: Cross-entity analytics (table, treemap, line-items)
-- /budget-explorer: Budget exploration by categories (functional/economic)
+- /national-budget: The national budget for citizens: revenue, spending, deficit, ministries and the budget law, by year
+- /national-budget/analytics: The national budget in depth: every bulletin line, budget and period, the budget laws and the ministries
+- /budget-explorer: Budget exploration by categories (functional/economic), with filters (a bare link goes to /national-budget)
 - /pnrr: PNRR project dashboard by component, geography, beneficiary, progress, and risk signals
 
 ## Entities Page (/entities/{cui})

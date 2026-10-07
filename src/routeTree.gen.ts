@@ -67,6 +67,7 @@ import { Route as LegislationChangesRouteImport } from './routes/legislation/cha
 import { Route as LegislationGazetteRouteImport } from './routes/legislation/gazette'
 import { Route as LegislationGuideRouteImport } from './routes/legislation/guide'
 import { Route as LegislationSearchRouteImport } from './routes/legislation/search'
+import { Route as NationalBudgetIndexRouteImport } from './routes/national-budget.index'
 import { Route as NationalBudgetAnalyticsRouteImport } from './routes/national-budget.analytics'
 import { Route as NgosIndexRouteImport } from './routes/ngos/index'
 import { Route as NgosCuiRouteImport } from './routes/ngos.$cui'
@@ -223,9 +224,7 @@ const BugetNational2026Route = BugetNational2026RouteImport.update({
   id: '/buget-national-2026',
   path: '/buget-national-2026',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/buget-national-2026.lazy').then((d) => d.Route),
-)
+} as any)
 const BugeteLocale2026Route = BugeteLocale2026RouteImport.update({
   id: '/bugete-locale-2026',
   path: '/bugete-locale-2026',
@@ -527,6 +526,13 @@ const LegislationSearchRoute = LegislationSearchRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/legislation/search.lazy').then((d) => d.Route),
+)
+const NationalBudgetIndexRoute = NationalBudgetIndexRouteImport.update({
+  id: '/national-budget/',
+  path: '/national-budget/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/national-budget.index.lazy').then((d) => d.Route),
 )
 const NationalBudgetAnalyticsRoute = NationalBudgetAnalyticsRouteImport.update({
   id: '/national-budget/analytics',
@@ -1532,6 +1538,7 @@ export interface FileRoutesByFullPath {
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
   '/legislation/': typeof LegislationIndexRoute
+  '/national-budget/': typeof NationalBudgetIndexRoute
   '/ngos/': typeof NgosIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -1705,6 +1712,7 @@ export interface FileRoutesByTo {
   '/investitii-publice': typeof InvestitiiPubliceIndexRoute
   '/justitie': typeof JustitieIndexRoute
   '/legislation': typeof LegislationIndexRoute
+  '/national-budget': typeof NationalBudgetIndexRoute
   '/ngos': typeof NgosIndexRoute
   '/parlament': typeof ParlamentIndexRoute
   '/primarie': typeof PrimarieIndexRoute
@@ -1885,6 +1893,7 @@ export interface FileRoutesById {
   '/investitii-publice/': typeof InvestitiiPubliceIndexRoute
   '/justitie/': typeof JustitieIndexRoute
   '/legislation/': typeof LegislationIndexRoute
+  '/national-budget/': typeof NationalBudgetIndexRoute
   '/ngos/': typeof NgosIndexRoute
   '/parlament/': typeof ParlamentIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -2071,6 +2080,7 @@ export interface FileRouteTypes {
     | '/investitii-publice/'
     | '/justitie/'
     | '/legislation/'
+    | '/national-budget/'
     | '/ngos/'
     | '/parlament/'
     | '/primarie/'
@@ -2244,6 +2254,7 @@ export interface FileRouteTypes {
     | '/investitii-publice'
     | '/justitie'
     | '/legislation'
+    | '/national-budget'
     | '/ngos'
     | '/parlament'
     | '/primarie'
@@ -2423,6 +2434,7 @@ export interface FileRouteTypes {
     | '/investitii-publice/'
     | '/justitie/'
     | '/legislation/'
+    | '/national-budget/'
     | '/ngos/'
     | '/parlament/'
     | '/primarie/'
@@ -2590,6 +2602,7 @@ export interface RootRouteChildren {
   InsIndexRoute: typeof InsIndexRoute
   IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
   LegislationIndexRoute: typeof LegislationIndexRoute
+  NationalBudgetIndexRoute: typeof NationalBudgetIndexRoute
   ParlamentIndexRoute: typeof ParlamentIndexRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
@@ -3045,6 +3058,13 @@ declare module '@tanstack/react-router' {
       path: '/legislation/search'
       fullPath: '/legislation/search'
       preLoaderRoute: typeof LegislationSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/national-budget/': {
+      id: '/national-budget/'
+      path: '/national-budget'
+      fullPath: '/national-budget/'
+      preLoaderRoute: typeof NationalBudgetIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/national-budget/analytics': {
@@ -4381,6 +4401,7 @@ const rootRouteChildren: RootRouteChildren = {
   InsIndexRoute: InsIndexRoute,
   IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
   LegislationIndexRoute: LegislationIndexRoute,
+  NationalBudgetIndexRoute: NationalBudgetIndexRoute,
   ParlamentIndexRoute: ParlamentIndexRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,

@@ -16,7 +16,7 @@ type MainItemUrl =
   | "/"
   | "/map"
   | "/charts"
-  | "/budget-explorer"
+  | "/national-budget"
   | "/entity-analytics"
   | "/procurement"
   | "/companies"
@@ -53,7 +53,7 @@ const mainItems: ReadonlyArray<{
   },
   {
     title: <Trans>National Budget</Trans>,
-    url: "/budget-explorer",
+    url: "/national-budget",
     icon: Boxes,
   },
   {

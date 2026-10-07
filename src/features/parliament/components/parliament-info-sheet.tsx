@@ -75,7 +75,7 @@ export function ParliamentInfoSheet({
             </li>
             <li>
               <a
-                href="/buget-national-2026"
+                href="/national-budget/analytics?tip=ministere"
                 className="text-foreground underline-offset-4 hover:underline"
               >
                 Bugetul instituțiilor parlamentare

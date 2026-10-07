@@ -1006,9 +1006,13 @@ bulletins. Removing them is part of the promotion.
   The GDP views start in 2019 and say why. For the year in progress the
   bulletin prints the share against the full-year GDP estimate (2,3% for the
   deficit, January–July 2026), labelled as such.
-- **The 2016 and 2017 laws print no 5001 total** (`NO_MATCHING_RECORD`); 2017
-  also has no 5000 totals for the other funds and no chapter rows. The law
-  band says so for those years.
+- **The 2016 and 2017 syntheses list their rows without a credit type**
+  (corrected after the review, 7 October): a read of budget credits finds
+  no 5001 total (`NO_MATCHING_RECORD`) and no chapter rows, though the
+  rows exist as untyped descriptors (2016: 5001 = 132.233.926 thousand lei;
+  2017: 150.159.505). The law band says the rows aren't marked as budget
+  credits rather than that the law lacks them. Whether those untyped rows
+  are budget credits is for the scrapper to confirm (a server ask).
 - **December 2023 has no budget columns:** the budgets band says so for 2023.
 - **ANAF:** „Finanțe — acțiuni generale" pays the debt interest (50,1 bn
   lei in 2025), the EU contribution and EU co-financing; the transfer to the
@@ -1028,4 +1032,133 @@ bulletins. Removing them is part of the promotion.
   „National Budget" entry move to the new page).
 - The names of the ministries outside the twelve largest keep ANAF's spelling
   without diacritics; a reviewed CUI → name list would fix that.
+
+## 11. The citizens' page in production (7 October 2026)
+
+**Owner:** „This prototype is ready for full implementation
+(`?v=pagina&domenii=harta`) … get it done, reviewed and deployed to dev." The
+picks: the first design of every band — head A (the question and the year's
+balance), spending and revenue as „100 de lei", domains and the law's chapters
+as the treemap, the ministries as rows that open, the deficit as two lines,
+the year in progress month by month, the budgets' bridge, the law as a plan.
+The prototype stays in `src/development/` as the design record.
+
+### 11.1 Decisions
+
+- **Route `/national-budget`** (`src/routes/national-budget.index.tsx`),
+  code in `src/features/national-budget/home/`. Rendered on the server with no
+  loader, like the analysis page; one search key, `an` (the year), the default
+  year left out of the address; never cached; the bare page indexed under its
+  canonical address, a chosen year `noindex, follow`.
+- **Every read of the year starts at once** (`useHomePrefetch`): a band whose
+  reads run one after another finds them in flight. Each read's options are
+  one function shared by the band and the prefetch, so they share a key.
+- **The law's chapters are read in the browser.** The synthesis' credit rows
+  come in five pages of 100, read one after another (~5,5 s): on the server
+  they held the whole document (8,6 s for a year, down to 1,2–2,1 s without
+  them). They are the last thing on the page; the server sends their
+  skeleton. Their read is also summarised in its query function, so the
+  cache holds some twenty chapters, not the law's rows: the document went
+  from 1,24 MB to 435 KB.
+- **The years the bulletins don't finish** (2008, 2011, 2013) are listed but
+  can't be chosen; the head and the pinned bar carry the same year dropdown.
+- **The old pages:**
+  - `/buget-national-2026` (the March 2026 draft as static JSON) is deleted
+    and redirects here; its data files stay for the prototype fixtures.
+  - `/budget-explorer` redirects here **only when bare** (a `year` becomes
+    `an`). It is still the site's filtered explorer — the INS territory pages,
+    the learning content and the AI route metadata link to it with filters —
+    so it stays for those links. Removing it for good is the owner's call.
+  - The sidebar, the landing page, the sitemap, `llms.txt` and the learning
+    content point here; the parliament sheet's budget link opens the law's
+    ministries on the analysis page (the two chambers are principal
+    authorising officers there).
+- **The analysis page's breadcrumb** links back here (closing §9.5).
+- **Numbers in the reader's notation:** shares and percentages go through the
+  hubs' formatter (the prototype hard-coded Romanian notation); names inside
+  sentences through `inSentence` (it keeps „TVA"/„VAT").
+- **Translations:** both catalogs filled (255 entries); the English uses the
+  site's terms („budget appropriations" for „credite bugetare").
+
+### 11.2 Code
+
+- `components/`: the page, the head and figures, one file per band, the
+  charts, the shell (band frame, pinned bar, year options, links).
+- `hooks/`: `use-home-data.ts` (the reads and the prefetch),
+  `use-home-year.ts` (the route binding), `use-whole-of.ts` (a total and its
+  named lines as parts).
+- `lib/`: `home-data.ts` (the year model, the line sets, ANAF's filter and
+  chapter sums), `home-law.ts` (the law's chapters and inputs),
+  `home-geometry.ts` (tones, lei out of 100, the treemap), `home-format.ts`.
+- Tests: `lib/home-lib.test.ts`, `src/routes/-national-budget.index.test.ts`,
+  `src/routes/-national-budget-legacy-redirects.test.ts`,
+  `tests/integration/national-budget-home.spec.ts` (structure and address
+  only: in CI the browser cannot reach the API).
+
+### 11.3 The review before the commit (7 October 2026)
+
+Opus 5.5 (xhigh) and Codex `gpt-6.1-sol` (xhigh) reviewed the promotion.
+Fixed before the commit:
+
+- **EU money was understated** (Opus, high). „Fonduri europene" and „Proiecte
+  cu fonduri UE" were only the post-2014–2020 lines; the 2014–2020 lines fell
+  into „the rest" (in 2019 the page named 0,2 bn of EU revenue while ~25 bn
+  sat in the rest). Each framework's printed line is now its own part, its
+  hint naming the framework.
+- **A failing band lost its heading, and kept its error for the next year.**
+  Each band now keeps its question as its head while it reads or if it fails,
+  and its boundary is keyed by the year. The law's chapters (read in the
+  browser) have their own boundary: their failure leaves the plan standing.
+  A CI run had caught the law band's heading missing after a transient
+  server-side read failure.
+- **The year menu's read could take the page down;** it now has its own
+  boundary (every year offered if it fails). A year the bulletins don't
+  finish, asked in the address, opens the default year with a notice; the
+  menus list such years with the server's reason.
+- **Incomplete reads looked complete:** ANAF's authorities fail on a cut list,
+  its chapters use the explorer's complete-or-fail reader, and a law read cut
+  short fails instead of pushing unread chapters into „the rest".
+- **Rounding:** shares carry six decimals so a label rounds once; the „100 de
+  lei" sentences use the grid's own counts.
+- **2016 compared with a 2015 ANAF doesn't cover:** no previous window is
+  read for ANAF's first year, and no change is claimed.
+- **Links:** they carry `lang`; the law links carry the page's year.
+- **Smaller:** the deficit band's unused GDP read and Romanian month list; the
+  GDP read narrowed from fifty rows to four; a partial year's deficit share
+  named against the full-year GDP estimate; a release without GDP shares says
+  so; plurals; treemap cells announced; the law's missing 5001 total told
+  apart from missing chapters; the learning tour and a lesson's mission point
+  back at the explorer (their steps describe it).
+- **A second round** (the same two reviewers, on the fixes) found:
+  - the year menu's availability read could still blank the server's render
+    (a server render has no error boundaries): it now never fails — without
+    it every year is offered;
+  - the head's balance and the figures kept an error across years, and no
+    boundary reset when a lane moved: every read boundary is keyed by its
+    year and the lanes' snapshots (the year-in-progress band by the
+    snapshots only, so its toggle survives a change of year);
+  - a ministry's own read, failing, wiped the ranking: it has its own
+    boundary under its row;
+  - a failed year was answered from the cache with its old error on a
+    return visit: a change of year drops the page's failed reads first;
+  - double rounding remained possible at the edges (14,4999…% → 15%): every
+    shown share is now rounded once from the exact amounts (`shareOf`);
+  - the entity links dropped `lang`;
+  - the 2016–2017 wording (the rows aren't marked as budget credits; see
+    §10.5) and a cut-short law read is no longer retried.
+
+### 11.4 Open points
+
+- **Server asks:** the 2016–2017 syntheses' untyped rows (are they budget
+  credits?); a level filter on the law's records (ask 9) would let the law's
+  chapters render on the server; ANAF's ministries in the national budget
+  API (ask 15) and a code ↔ CUI map (ask 7).
+- An unfinished year asked in the address prefetches its own reads before
+  falling back to the default year (only odd links reach it).
+- `/budget-explorer` with filters stays; removing it is the owner's call,
+  with its inbound links (INS territory pages, learning content, AI route
+  metadata) to move first. The revenue mission's spending/revenue switch
+  (`accountCategory`) is not part of the explorer's search schema (it was
+  ignored before this change too).
+- The shared Lingui instance during streamed SSR (§9.4) applies here too.
 

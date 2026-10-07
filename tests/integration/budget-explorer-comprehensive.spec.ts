@@ -63,7 +63,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('loads segmented national budget sections with disclaimer', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
 
     await expect(page.getByRole('heading', { name: SELECTORS.nationalBudgetHeading })).toBeVisible()
@@ -83,7 +83,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('persists collapsed top disclaimer and moves it to disclaimer section', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
 
     await page.getByRole('button', { name: SELECTORS.dismissDisclaimer }).click()
@@ -99,7 +99,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('renders sector and document budget sections in expected order', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
 
     const sectorCards = page.locator('[id^="sector-"]')
@@ -124,7 +124,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('shows deep links to entity analytics line items for each section', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
     await waitForBudgetExplorerSections(page)
 
@@ -173,7 +173,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('switches to income mode and keeps segmented layout', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
     await waitForBudgetExplorerSections(page)
 
@@ -213,7 +213,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('keeps expenses selected by default', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
 
     const expensesToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.expensesLabel }).first()
@@ -223,7 +223,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('updates URL when treemap grouping and detail controls change', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
     await waitForBudgetExplorerSections(page)
 
@@ -249,7 +249,7 @@ test.describe('National Budget Page', () => {
   })
 
   test('shows quick switch button before explanation cards', async ({ page }) => {
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
 
     await page.locator('#budget-explanations').scrollIntoViewIfNeeded()
@@ -266,7 +266,7 @@ test.describe('National Budget Page', () => {
 
   test('renders stacked sections on mobile without horizontal overflow', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    await page.goto('/budget-explorer')
+    await page.goto('/budget-explorer?view=treemap')
     await waitForPageReady(page)
     await waitForBudgetExplorerSections(page)
 

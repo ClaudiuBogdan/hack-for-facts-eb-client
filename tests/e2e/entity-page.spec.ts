@@ -18,7 +18,8 @@ const TEST_YEAR = '2023'
 const TEST_ENTITY_CUI = '4305857' // MUNICIPIUL CLUJ-NAPOCA
 
 async function waitForBudgetExplorer(page: Page) {
-  await page.goto(`/budget-explorer?year=${TEST_YEAR}`)
+  // An explorer key keeps the explorer: a bare link (or one with only a year) goes to /national-budget.
+  await page.goto(`/budget-explorer?view=treemap&year=${TEST_YEAR}`)
 
   await expect(
     page.getByRole('heading', { level: 1, name: /buget național|national budget/i })

@@ -3,7 +3,8 @@ import { t } from '@lingui/core/macro'
 import { useLingui } from '@lingui/react/macro'
 import { ErrorBoundary } from '@sentry/react'
 import { QueryErrorResetBoundary, useQueryClient, useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
-import { Coins, Landmark, Scale, ScrollText, Wallet, X, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, Coins, Landmark, Scale, ScrollText, Wallet, X, type LucideIcon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -353,7 +354,10 @@ function Head({
         <CornerTicks />
         <div className="flex items-center justify-between gap-4">
           <MonoLabel className="flex flex-wrap items-center gap-2 text-muted-foreground">
-            <span>{t`Bugetul național`}</span>
+            <Link to="/national-budget" search={((previous: Record<string, unknown>) => (typeof previous.lang === 'string' ? { lang: previous.lang } : {})) as never} className="group inline-flex items-center gap-1.5 hover:text-foreground">
+              <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
+              <span>{t`Bugetul național`}</span>
+            </Link>
             <span className="hidden items-center gap-2 sm:flex">
               <span aria-hidden="true">/</span>
               <span>{t`Analize avansate`}</span>

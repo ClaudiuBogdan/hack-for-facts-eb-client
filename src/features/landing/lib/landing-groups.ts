@@ -63,7 +63,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       {
         title: msg`Buget național`,
         blurb: msg`Cheltuielile statului pe capitole, de la minister la linie bugetară.`,
-        to: '/budget-explorer',
+        to: '/national-budget',
         icon: Boxes,
       },
       {

@@ -248,7 +248,8 @@ function Celebration({ onReset }: CelebrationProps) {
 // ═══════════════════════════════════════════════════════════════════
 
 export function GuidedPlatformTour({
-  budgetExplorerUrl = '/budget-explorer',
+  // The explorer's own view: a bare /budget-explorer now opens the national budget page, which has none of these steps.
+  budgetExplorerUrl = '/budget-explorer?view=treemap',
   locale = 'en',
   onComplete,
 }: GuidedPlatformTourProps) {

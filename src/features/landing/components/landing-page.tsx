@@ -68,7 +68,7 @@ import { SurfaceIndex } from './surface-index'
 /** The three heaviest surfaces, reachable without scrolling. */
 const SHORTCUTS: readonly { readonly label: MessageDescriptor; readonly to: LinkProps['to'] }[] = [
   { label: msg`Achiziții publice`, to: '/procurement' },
-  { label: msg`Buget național`, to: '/budget-explorer' },
+  { label: msg`Buget național`, to: '/national-budget' },
   { label: msg`Legislație`, to: '/legislation' },
 ]
 
