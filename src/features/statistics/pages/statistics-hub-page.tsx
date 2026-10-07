@@ -25,6 +25,7 @@ import { UatMapSection } from '../components/uat-map/uat-map-section'
 import { useStatisticsHub } from '../hooks/use-statistics-hub'
 import { deathsExceedBirthsSince, nationalLedeHolds } from '../lib/hub-indicators'
 import { HUB_COUNTY_LAYERS, HUB_FIGURE_CODES } from '../lib/landing-constants'
+import { hubInLocale } from '../lib/units'
 
 /**
  * `/ins` — the statistics hub, in the landing's visual language, one
@@ -74,7 +75,9 @@ export function StatisticsHubPage({ search, initialHub }: StatisticsHubPageProps
   // again: the gaps it has are pending, not failed, until that read lands.
   // Should that read fail, the figures the server did render stay, with the
   // sections it could not read as the retries they are.
-  const hub = query.data ?? (query.isError && initialHub?.nativeContract === 'hub-v1' ? initialHub : undefined)
+  const read = query.data ?? (query.isError && initialHub?.nativeContract === 'hub-v1' ? initialHub : undefined)
+  // Each unit's name in the reader's language, picked here: the read is cached once for both.
+  const hub = useMemo(() => (read ? hubInLocale(read, i18n.locale) : undefined), [read, i18n.locale])
   // A client-side navigation mounts on skeletons; the figures' blocks arrive
   // with the read, and are armed — and counted up — then.
   useRevealOnView(rootRef, startArrivalEffects, hub !== undefined)

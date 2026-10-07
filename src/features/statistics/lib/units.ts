@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
-import type { StatisticsHubIndicator, StatisticsHubUnit } from '@/schemas/statistics'
+import type { StatisticsHubData, StatisticsHubIndicator, StatisticsHubUnit } from '@/schemas/statistics'
+import { insText } from './ins-english'
 import { formatHubNumber } from './numbers'
 import { tileUnit } from './territory-groups'
 
@@ -36,6 +37,23 @@ export function hubUnitWord(unit: StatisticsHubUnit, unitLabel: string | null): 
     case 'other':
       // INS spells its currency „Lei RON"; the reader says „lei".
       return unitLabel && /^lei\b/i.test(unitLabel.trim()) ? t`lei` : (unitLabel ?? '')
+  }
+}
+
+/**
+ * Select unit labels when the page renders so one cached read serves both
+ * languages. Use INS's English labels with the existing glossary corrections;
+ * retain the Romanian label when no English label is available.
+ */
+export function hubInLocale(hub: StatisticsHubData, locale: string): StatisticsHubData {
+  const named = <T extends { readonly unitLabel: string | null; readonly unitLabelEn?: string | null }>(entry: T): T => ({
+    ...entry,
+    unitLabel: insText(entry.unitLabel, entry.unitLabelEn, locale),
+  })
+  return {
+    ...hub,
+    indicators: hub.indicators?.map(named) ?? null,
+    counties: hub.counties?.map(named) ?? null,
   }
 }
 

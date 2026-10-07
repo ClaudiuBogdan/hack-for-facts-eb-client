@@ -2,14 +2,15 @@ import type { StatisticsHubSeriesPoint } from '@/schemas/statistics'
 
 /**
  * National annual histories for the hub's charts, captured from INS Tempo
- * through the Chronos API on 2026-09-22 and kept in the client.
+ * through the Chronos API on 2026-09-22 and kept in the client. Read again in
+ * full on 2026-10-07, after the selective INS refresh of 2–7 October: every
+ * point equal but three revised 2023 figures, now INS's — births 164,004 →
+ * 168,079, deaths 244,624 → 245,115, life expectancy 75.52 → 75.50.
  *
- * Why static: these are closed years of official statistics — INS revises
- * them rarely and never silently — and reading 35 years of six datasets on
- * every page view is a cost with no information in it. The hub reads the
- * *latest* value live and appends it when it is newer than the last point
- * here, so the charts stay current at the edge without the history being
- * re-fetched.
+ * Static snapshots avoid fetching 35 years of six datasets on every page
+ * view. INS can revise closed years, so re-read each complete history after
+ * a data refresh. The live latest value only appends a newer year; it does
+ * not replace revised points already saved here.
  *
  * Each block is the total cell of its dataset at RO/NATIONAL, annual cadence,
  * the same cell `insLatestDatasetValues` resolves with `TOTAL_FALLBACK`.
@@ -23,7 +24,7 @@ import type { StatisticsHubSeriesPoint } from '@/schemas/statistics'
  * worth of history and mis-stated tourism's growth base.
  * `HUB_SERIES_CAPTURED_AT` records when the read was taken.
  */
-export const HUB_SERIES_CAPTURED_AT = '2026-09-22'
+export const HUB_SERIES_CAPTURED_AT = '2026-10-07'
 
 interface HubStaticSeries {
   readonly code: string
@@ -162,7 +163,7 @@ const POP201D_RO: HubStaticSeries = {
     { period: '2020', value: 211273 },
     { period: '2021', value: 203418 },
     { period: '2022', value: 188322 },
-    { period: '2023', value: 164004 },
+    { period: '2023', value: 168079 },
     { period: '2024', value: 157270 },
     { period: '2025', value: 145725 },
   ],
@@ -206,7 +207,7 @@ const POP206D_RO: HubStaticSeries = {
     { period: '2020', value: 300114 },
     { period: '2021', value: 336678 },
     { period: '2022', value: 273980 },
-    { period: '2023', value: 244624 },
+    { period: '2023', value: 245115 },
     { period: '2024', value: 245698 },
     { period: '2025', value: 239691 },
   ],
@@ -250,7 +251,7 @@ const POP217A_RO: HubStaticSeries = {
     { period: '2020', value: 76 },
     { period: '2021', value: 75.87 },
     { period: '2022', value: 74.26 },
-    { period: '2023', value: 75.52 },
+    { period: '2023', value: 75.5 },
     { period: '2024', value: 77.07 },
     { period: '2025', value: 77.45 },
   ],

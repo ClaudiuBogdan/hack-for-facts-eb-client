@@ -219,6 +219,7 @@ export function DetailScopeSentence({
       frecventa: undefined,
       din: undefined,
       pana: undefined,
+      perioada: undefined,
     })
   }
 
@@ -305,7 +306,9 @@ export function DetailScopeSentence({
  * the address, not from the sections on screen — a year window pinned while
  * the series is still loading has no section yet, and the reset must still
  * offer to drop it. `din` and `pana` are one axis; a malformed `clasificari`
- * is one pin to drop.
+ * is one pin to drop. The year a locality page chose (`perioada`) is one too:
+ * it is the mark on the chart, and a page reached with only that mark must
+ * still offer the way back to the plain series.
  */
 function countPins(search: StatisticsDatasetDetailSearch): number {
   const classifications = Array.isArray(search.clasificari)
@@ -317,7 +320,8 @@ function countPins(search: StatisticsDatasetDetailSearch): number {
     classifications +
     (search.unitate === undefined ? 0 : 1) +
     (search.frecventa === undefined ? 0 : 1) +
-    (search.din === undefined && search.pana === undefined ? 0 : 1)
+    (search.din === undefined && search.pana === undefined ? 0 : 1) +
+    (search.perioada === undefined ? 0 : 1)
   )
 }
 

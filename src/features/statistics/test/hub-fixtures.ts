@@ -14,15 +14,26 @@ import { hubStaticSeries } from '../lib/hub-national-series'
  * geography at RO/NATIONAL — or, for a matrix with no geography axis, none.
  */
 
-type UnitSpec = { readonly code: string; readonly symbol: string; readonly name_ro: string; readonly kind: StatisticsHubUnit }
+type UnitSpec = {
+  readonly code: string
+  readonly symbol: string
+  readonly name_ro: string
+  readonly name_en: string
+  readonly kind: StatisticsHubUnit
+}
 
+/**
+ * Units in both languages. `persons`, `count`, `percent` and `years` are as the
+ * API serves them (2026-10-07); `lei` and `rate` are stand-ins with INS-style
+ * names, not any one served unit (FOM106G's is 17612 `currency` „Lei RON").
+ */
 export const HUB_UNITS = {
-  persons: { code: '9685', symbol: 'persons', name_ro: 'Numar persoane', kind: 'persons' },
-  count: { code: '9669', symbol: 'count', name_ro: 'Numar', kind: 'count' },
-  percent: { code: '10225', symbol: 'percent', name_ro: 'Procente', kind: 'percent' },
-  years: { code: '9361', symbol: 'other', name_ro: 'Ani', kind: 'years' },
-  lei: { code: '9718', symbol: 'other', name_ro: 'Lei RON', kind: 'other' },
-  rate: { code: '9502', symbol: 'other', name_ro: 'Rata la 1000 locuitori', kind: 'other' },
+  persons: { code: '9685', symbol: 'persons', name_ro: 'Numar persoane', name_en: 'Number of persons', kind: 'persons' },
+  count: { code: '9669', symbol: 'count', name_ro: 'Numar', name_en: 'Number', kind: 'count' },
+  percent: { code: '10225', symbol: 'percent', name_ro: 'Procente', name_en: 'Percentage', kind: 'percent' },
+  years: { code: '9361', symbol: 'other', name_ro: 'Ani', name_en: 'Years', kind: 'years' },
+  lei: { code: '9718', symbol: 'other', name_ro: 'Lei RON', name_en: 'Lei RON', kind: 'other' },
+  rate: { code: '9502', symbol: 'other', name_ro: 'Rata la 1000 locuitori', name_en: 'Rate per 1000 inhabitants', kind: 'other' },
 } as const satisfies Record<string, UnitSpec>
 
 export interface HubNationalSpec {
@@ -98,7 +109,7 @@ export function nationalObservation(spec: HubNationalSpec) {
     value_status: null,
     time_period: timePeriod(spec.period, spec.periodicity),
     territory: spec.nationalOnly ? null : { code: 'RO', siruta_code: null, level: 'NATIONAL', name_ro: 'Romania' },
-    unit: { code: spec.unit.code, symbol: spec.unit.symbol, name_ro: spec.unit.name_ro },
+    unit: { code: spec.unit.code, symbol: spec.unit.symbol, name_ro: spec.unit.name_ro, name_en: spec.unit.name_en },
     classifications: spec.members.map((member, index) => ({ id: `${spec.code}-${index}`, type_code: `D${index}`, code: member, name_ro: member })),
     dimensions: {
       geography: spec.nationalOnly ? null : {
@@ -169,7 +180,7 @@ export function hubCountyResponse(spec: HubNationalSpec, rows: readonly HubCount
       value_status: null,
       time_period: timePeriod(spec.period, row.periodicity ?? 'ANNUAL'),
       territory: { code: row.county.code, siruta_code: null, level: 'NUTS3', name_ro: row.county.name },
-      unit: { code: unit.code, symbol: unit.symbol, name_ro: unit.name_ro },
+      unit: { code: unit.code, symbol: unit.symbol, name_ro: unit.name_ro, name_en: unit.name_en },
       classifications: members.map((member, axis) => ({ id: `${spec.code}-${row.county.code}-${axis}`, type_code: `D${axis}`, code: member, name_ro: member })),
       dimensions: { geography: null },
     }
@@ -195,6 +206,7 @@ export function hubIndicator(spec: HubNationalSpec): StatisticsHubIndicator {
     valueStatus: null,
     unit: spec.unit.kind,
     unitLabel: spec.unit.name_ro,
+    unitLabelEn: spec.unit.name_en,
     unitCode: spec.unit.code,
     period: spec.period,
     periodicity: spec.periodicity,

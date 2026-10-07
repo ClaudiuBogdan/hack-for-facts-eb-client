@@ -475,6 +475,8 @@ export interface StatisticsHubIndicator {
   readonly valueStatus: string | null
   readonly unit: StatisticsHubUnit
   readonly unitLabel: string | null
+  /** The unit's English name, for an English page to pick when it renders (`hubInLocale`). */
+  readonly unitLabelEn?: string | null
   readonly unitCode: string | null
   readonly period: string | null
   readonly periodicity: InsPeriodicity | null

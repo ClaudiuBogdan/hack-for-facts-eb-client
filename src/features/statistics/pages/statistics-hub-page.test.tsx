@@ -4,7 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HUB_NATIONAL_SPECS, hubData, hubIndicator } from '../test/hub-fixtures'
 import { StatisticsHubPage } from './statistics-hub-page'
 
-const { navigateMock, useStatisticsHubMock } = vi.hoisted(() => ({
+const { lingui, navigateMock, useStatisticsHubMock } = vi.hoisted(() => ({
+  lingui: { locale: 'ro' },
   navigateMock: vi.fn(),
   useStatisticsHubMock: vi.fn(),
 }))
@@ -69,7 +70,7 @@ vi.mock('@lingui/react/macro', () => ({
   Trans: ({ children }: { readonly children?: ReactNode }) => <>{children}</>,
   useLingui: () => ({
     i18n: {
-      locale: 'ro',
+      locale: lingui.locale,
       _: (message: string | { readonly id: string; readonly message?: string }) =>
         typeof message === 'string' ? message : (message.message ?? message.id),
     },
@@ -94,6 +95,7 @@ function stub(
 
 describe('StatisticsHubPage', () => {
   beforeEach(() => {
+    lingui.locale = 'ro'
     navigateMock.mockReset()
     useStatisticsHubMock.mockReset()
   })
@@ -219,6 +221,35 @@ describe('StatisticsHubPage', () => {
 
     fireEvent.click(within(counties).getByRole('radio', { name: 'Speranța de viață' }))
     expect(searchOf()({ indicator: 'salariu', harta: 'apa' })).toEqual({ indicator: undefined, harta: 'apa' })
+  })
+
+  it('names an unusual unit in the reader’s language: INS’s English on an English page', () => {
+    const data = hubData()
+    const named = data.counties!.map((layer) =>
+      layer.code === 'FOM106E'
+        ? { ...layer, unit: 'other' as const, unitLabel: 'Milioane kilowati-ora', unitLabelEn: 'Millions kilowatts-hour' }
+        : layer,
+    )
+    // One cached read, the same object on every render: the reader switches language on the mounted page.
+    stub(hubData({ counties: named }))
+    const section = () => screen.getByRole('heading', { name: /Unde se situează județul tău/ }).closest('section')!
+    const english = () => {
+      expect(within(section()).getAllByText(/Million kilowatt-hours/).length).toBeGreaterThan(0)
+      expect(within(section()).queryByText(/Milioane kilowati-ora/)).not.toBeInTheDocument()
+    }
+    const romanian = () => {
+      expect(within(section()).getAllByText(/Milioane kilowati-ora/).length).toBeGreaterThan(0)
+      expect(within(section()).queryByText(/Million kilowatt-hours/)).not.toBeInTheDocument()
+    }
+    lingui.locale = 'en'
+    const { rerender } = render(<StatisticsHubPage search={{ indicator: 'salariu' }} />)
+    english()
+    lingui.locale = 'ro'
+    rerender(<StatisticsHubPage search={{ indicator: 'salariu' }} />)
+    romanian()
+    lingui.locale = 'en'
+    rerender(<StatisticsHubPage search={{ indicator: 'salariu' }} />)
+    english()
   })
 
   it('names an empty county layer instead of drawing a blank ranking', () => {

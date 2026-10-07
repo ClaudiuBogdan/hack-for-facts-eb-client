@@ -2299,6 +2299,42 @@ it from options:
 Before and after screenshots of each fix were taken on the dev server
 (2026-10-02).
 
+## 6am. After the INS reload: what the client re-read (2026-10-07)
+
+The selective INS refresh of 2–7 October loaded in Chronos on 6 October and
+was verified on the 7th (844 datasets refreshed; 14 held, POP108D among
+them). The client was checked against the
+API it serves (dev-chronos-api), not against the audit's expected dates:
+
+- **Headlines** read live, as before: inflation July 2026 (IPC102E 108.16,
+  8.16%), net earnings July 2026 (FOM106G, 5,820 lei), registered
+  unemployment July 2026 (SOM103B, 3.2%), resident population 1 January 2026
+  (POP105A, 19,041,322). FOM106G still answers `NO_DATA` for `TOTAL` alone,
+  while explicit member 103475 (TOTAL ECONOMIE) returns the salary. Keep that
+  member in `national-latest.ts` until the deployed API resolves the total;
+  every other hub cell reads the same with or without it.
+- **The saved national histories** (`hub-national-series.ts`) were read again
+  in full and compared point by point: every point equal but the three
+  revised 2023 figures (births 168,079, deaths 245,115, life expectancy
+  75.50), now replaced. Natural change for 2023 reads −77,036 (was −80,620);
+  deaths have exceeded births in every year since 1992 either way.
+- **The localities map's figures** were regenerated with
+  `yarn ins:uat-map --only values`. Five layers are identical; water moves
+  to 2025 (2,654 places with a domestic-use cell, national 607,313 thousand
+  m³). A place without that cell stays hatched as missing data, never read as
+  a place without a network: thirteen of them report a positive total
+  distribution for 2025. POP108D, held, has a positive population for all
+  3,181 UATs in 2024 and 2025, between the two 1 January counts, so it gates
+  the figures as before. Geometry is unchanged.
+
+Two small gaps from §6al were closed: the selection's reset also drops the
+year a locality page marked (`?perioada=`), which counts as one pin — a page
+reached with only that mark offered no reset; and the hub's units are named
+in the reader's language when the page renders (`hubInLocale`). Today every
+hub unit is a word the page words itself (persoane, ani, %, lei, ‰), so
+nothing on screen changes; an unusual unit added later will not print its
+Romanian name on an English page.
+
 ## 7. Data model expectations at the UI boundary
 
 **Fact — canonical shapes from `src/schemas/ins.ts`** (reuse verbatim):

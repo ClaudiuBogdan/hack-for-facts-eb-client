@@ -224,7 +224,7 @@ describe('the panel', () => {
     render(
       <DetailScopeSentence
         dataset={dataset}
-        search={{ clasificari: ['D0:1', 'D1:2'], unitate: '0', din: 2000, pana: 2010 }}
+        search={{ clasificari: ['D0:1', 'D1:2'], unitate: '0', din: 2000, pana: 2010, perioada: '2005' }}
         scope={{
           territory: null,
           territoryMode: 'national-default',
@@ -251,7 +251,7 @@ describe('the panel', () => {
         onChange={change}
       />,
     )
-    const reset = screen.getByRole('button', { name: 'Resetează (4)' })
+    const reset = screen.getByRole('button', { name: 'Resetează (5)' })
     await userEvent.click(reset)
     expect(change).toHaveBeenCalledWith({
       clasificari: undefined,
@@ -259,9 +259,46 @@ describe('the panel', () => {
       frecventa: undefined,
       din: undefined,
       pana: undefined,
+      perioada: undefined,
     })
+    // An undefined value matches a missing key: the patch must name the mark to drop it.
+    expect('perioada' in change.mock.lastCall![0]).toBe(true)
     // The button that held the focus is going; the focus goes to the panel.
     expect(screen.getByRole('button', { name: /^Categorie: 1/ })).toHaveFocus()
+  })
+
+  it('offers to drop the year a locality page chose, the mark on the chart, when it is the only pin', async () => {
+    const change = vi.fn()
+    render(
+      <DetailScopeSentence
+        dataset={dataset}
+        search={{ perioada: '2020' }}
+        scope={{
+          territory: null,
+          territoryMode: 'national-default',
+          territoryDefaulted: true,
+          classifications: new Map([
+            ['D0', '1'],
+            ['D1', '2'],
+            ['D2', '3'],
+          ]),
+          defaultedTypes: new Set(['D0', 'D1', 'D2']),
+          unitCode: '0',
+          unitDefaulted: true,
+          periodicity: 'ANNUAL',
+        }}
+        canDerive
+        unresolvedDimensions={[]}
+        territoryLabel="România"
+        classificationLabels={new Map()}
+        unitLabel="Persoane"
+        observedSpan={null}
+        yearWindow={null}
+        onChange={change}
+      />,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Resetează (1)' }))
+    expect('perioada' in change.mock.lastCall![0]).toBe(true)
   })
 })
 

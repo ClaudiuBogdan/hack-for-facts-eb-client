@@ -82,6 +82,19 @@ describe('fetchStatisticsHub', () => {
     expect(earnings).toMatchObject({ value: 5684, unit: 'other', unitLabel: 'Lei RON', period: '2026-05', hasGeography: false })
   })
 
+  it('keeps both names of each unit, for the page to pick in the reader’s language when it renders', async () => {
+    answer()
+    const hub = await fetchStatisticsHub()
+    expect(hub.indicators?.find((indicator) => indicator.code === 'FOM104D')).toMatchObject({
+      unitLabel: 'Numar persoane',
+      unitLabelEn: 'Number of persons',
+    })
+    expect(hub.counties?.find((layer) => layer.code === 'POP215A')).toMatchObject({
+      unitLabel: 'Rata la 1000 locuitori',
+      unitLabelEn: 'Rate per 1000 inhabitants',
+    })
+  })
+
   it('refuses a national-only cell that names a territory', async () => {
     const tiles = hubTilesResponse()
     const inflation = tiles.latest.find((entry) => entry.dataset.code === 'IPC102E')
@@ -149,7 +162,7 @@ describe('fetchStatisticsHub', () => {
           { county: { code: 'CJ', name: 'Cluj' }, value: '75.1', countyAxis: 2, memberOverrides: { 1: '1' } },
           { county: { code: 'CJ', name: 'Cluj' }, value: '78.71', countyAxis: 2 },
           // Another unit is another number.
-          { county: { code: 'B', name: 'București' }, value: '1', countyAxis: 2, unit: { code: '0', symbol: 'x', name_ro: 'x', kind: 'other' } },
+          { county: { code: 'B', name: 'București' }, value: '1', countyAxis: 2, unit: { code: '0', symbol: 'x', name_ro: 'x', name_en: 'x', kind: 'other' } },
         ]),
       },
     })

@@ -108,6 +108,7 @@ function toIndicator(latest: StatisticsLatestValue): StatisticsHubIndicator {
     valueStatus: latest.valueStatus,
     unit: hubUnitOf(latest),
     unitLabel: latest.unitNameRo ?? latest.unitSymbol,
+    unitLabelEn: latest.unitNameEn,
     unitCode: latest.unitCode,
     period: latest.period,
     periodicity: latest.resolvedPeriodicity,
@@ -208,6 +209,7 @@ async function fetchCountyLayer(
     period: year,
     unit: hubUnitOf(latest),
     unitLabel: latest.unitNameRo ?? latest.unitSymbol,
+    unitLabelEn: latest.unitNameEn,
     values: [...values.values()],
     missingCounties: ROMANIA_COUNTIES.map((county) => county.code).filter((countyCode) => !values.has(countyCode)),
     // The reference the ranking measures each county against. A monthly
