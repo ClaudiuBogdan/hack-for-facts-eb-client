@@ -884,3 +884,148 @@ Fixed before the commit:
 - **Server ask 11 (component series)** would let the budgets view read
   quarters and single months.
 
+## 10. The citizens' page (5 October 2026)
+
+**Owner:** „start working on the main page of the budget … easy to read and
+understand, with good visual graphics, but first decide what is the most
+relevant information, how to present it … allow selecting the year, and have
+links to the advanced page from different components … The plan is to
+remove the old national budget page, so decide if you want to use the
+execuții bugetare data, especially for ministries. The layout style similar
+to INS, procurement, companies … design different versions of the sections
+so I can pick the best of them."
+
+Prototype: `/development/national-budget/principal` (`?v=pagina`, and
+`?v=galerie` for every design of every band in one column, `&banda=<id>` for
+one band). An amber ribbon over each band switches its design and keeps the
+choice in the address (`?cheltuieli=bon&venituri=treemap`), so a set of picks
+is a link. Record of the designs: `principal.RATIONALE.md`.
+
+### 10.1 What a citizen asks, in order
+
+1. **How big is it?** The head and the figures band: spending, revenue, the
+   deficit and its share of GDP, spending as a share of GDP, for the year.
+2. **What is the money spent on?** (`cheltuieli`) By nature: pensions and
+   benefits, salaries, goods and services, investments, interest, EU and
+   PNRR projects.
+3. **On which domains?** (`domenii`) Education, defence, police, roads,
+   health — the state budget's payments by functional chapter.
+4. **Who spends it?** (`ministere`) The ministries and central bodies,
+   ranked, each opening on what it paid for and linking to its entity page.
+5. **Where does it come from?** (`venituri`) Contributions, VAT, income
+   tax, excise, profit tax, non-tax revenue, EU money, PNRR grants.
+6. **How much is borrowed?** (`deficit`) The deficit year by year, in lei and
+   as a share of GDP, against the EU's 3% threshold.
+7. **How is this year going?** (`anul`) The year in progress against the
+   same months of the year before.
+8. **Through which budgets does it pass?** (`bugete`) The state budget,
+   local budgets, pensions, health … and the transfers between them, which
+   is why the budgets add up to more than what is spent.
+9. **What did Parliament approve?** (`lege`) The law's four funds, its
+   chapters, and the law year after year.
+10. **Where to go next** — ready questions into `/national-budget/analytics`.
+
+Spending comes before revenue: it is what most readers come for. Every
+band links to the analysis page's matching view (`nextSearch` of the
+analytics state), and every ministry to its entity page.
+
+### 10.2 Data: three sources, kept apart
+
+- **The MF bulletins** (the national budget API) answer for the whole
+  public purse: the consolidated general budget's totals, lines, GDP shares,
+  budget columns and months. 2006 → the newest month.
+- **ANAF's budget execution** (`entityAnalytics`, `aggregatedLineItems`;
+  state budget = sector 1, source 1, principal aggregated reports) answers
+  for the state budget's detail. **Decision: yes, the citizens' page uses
+  it for the ministries and the domains.**
+  - It is live, fast (0.05–0.9 s a read) and reaches August 2026.
+  - It is the only source of payments by ministry (by CUI, so each links to
+    its entity page) and by functional chapter (education, defence …): the
+    bulletin is economic only, and the law is a plan.
+  - Its total reconciles with the bulletin: ANAF's state budget equals the
+    bulletin's state-budget column, 499,44 bn lei in 2025 and 271,98 bn in
+    January–July 2026.
+  - It is read over the **bulletin's own window**: a year in progress is
+    January to the bulletin's newest month (July), not ANAF's (August), so
+    both sources describe the same months.
+  - **Not for an all-budgets view by domain.** Sectors 1–5 summed give
+    991 bn lei for 2025 against the bulletin's 808,7 consolidated; taking
+    out the transfers between units (economic 51) still leaves ~871. That
+    view would not reconcile with the page's own headline, so the domains
+    band is the state budget's, and says that pensions and hospitals are
+    paid mostly from their own budgets (the budgets band).
+  - ANAF's reports start in 2016: an earlier year's ANAF bands say so.
+- **The budget laws** answer for the plan, in their own band, 2016–2025;
+  2026's law is not loaded yet. Never a rate of execution against the law,
+  never law and execution in one chart.
+
+The old pages this replaces: `/budget-explorer` (ANAF treemaps per sector,
+read in the browser, no head) and `/buget-national-2026` (the March 2026
+draft as static JSON). The citizens' page covers the explorer's question
+(where the money goes, by domain and by ministry) with the reconciled
+sources above; the draft page's numbers are superseded by the laws and the
+bulletins. Removing them is part of the promotion.
+
+### 10.3 The year
+
+- **One year for the whole page**, `?an=`; the bare page opens on the newest
+  year the bulletins finish (2025). The year in progress is offered as
+  „2026 (până în iulie)" and every band reads it as January–July, against
+  the same months a year earlier.
+- Chosen from a dropdown in the head and the same select in the pinned bar
+  (every year, newest first; 2008, 2011 and 2013 have no full-year bulletin
+  and are disabled), or by clicking a year's column in the time charts.
+  **Owner, 6 October:** the head's year buttons were too much text; one
+  dropdown replaces them.
+- **The head's source line is a few words** (owner, 6 October): „Surse:
+  Ministerul Finanțelor ↗, ANAF ↗, date până în iulie 2026", each source a
+  link (MF's execution page, the budget transparency portal), the date the
+  bulletins' newest month. It closes the head as on `/procurement`: at the
+  head's foot, just above the pinned bar, from a wide screen; under the panel
+  on a phone. The bands keep their own fuller source notes.
+- „Anul în curs" always shows the newest year, whatever year is chosen, and
+  says so.
+
+### 10.4 Rules added
+
+- **„The rest" is the printed total less the lines shown,** computed on the
+  exact decimals and drawn hatched, last. In the PDF years (2006–2018, 2023)
+  it also holds the lines the bulletin printed without an item.
+- **Lei out of 100** (the hundred squares, the receipt) are whole lei by the
+  largest remainder, so they always make exactly 100; the shares beside them
+  keep one decimal.
+- **ANAF amounts** are summed per chapter on their two-decimal strings, never
+  as floats.
+- **A band reads, waits and fails on its own** (`BandRead`, keyed by the band,
+  its design and the year).
+
+### 10.5 Data findings (live, 5 October 2026)
+
+- **GDP shares exist only in the workbook Decembers:** 2019–2022, 2024,
+  2025. December 2023 is a PDF and prints none; there are none before 2019.
+  The GDP views start in 2019 and say why. For the year in progress the
+  bulletin prints the share against the full-year GDP estimate (2,3% for the
+  deficit, January–July 2026), labelled as such.
+- **The 2016 and 2017 laws print no 5001 total** (`NO_MATCHING_RECORD`); 2017
+  also has no 5000 totals for the other funds and no chapter rows. The law
+  band says so for those years.
+- **December 2023 has no budget columns:** the budgets band says so for 2023.
+- **ANAF:** „Finanțe — acțiuni generale" pays the debt interest (50,1 bn
+  lei in 2025), the EU contribution and EU co-financing; the transfer to the
+  pensions budget (39,2 bn) is paid by the Labour ministry. Chapter 51 is
+  two-thirds EU contribution and co-financing, not „authorities". Ministries
+  reorganised under a new CUI have no change on the year before (shown as
+  new), and a few swings (Investments, Finance in 2026) may come from that.
+- **January–July 2026 against 2025:** revenue +11,2%, spending +2,9%, the
+  deficit 48,1 bn lei against 76,4.
+
+### 10.6 Open points
+
+- **The owner picks one design per band** (the prototype's ribbon); then the
+  page is promoted to `/national-budget` with the full review gate, the
+  analytics page's breadcrumb links back to it, and `/budget-explorer` and
+  `/buget-national-2026` are removed (their inbound links and the sidebar's
+  „National Budget" entry move to the new page).
+- The names of the ministries outside the twelve largest keep ANAF's spelling
+  without diacritics; a reviewed CUI → name list would fix that.
+
