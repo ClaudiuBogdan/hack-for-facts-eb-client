@@ -8,6 +8,10 @@ Every nontrivial statement is labelled **Fact** (grounded in the UX research /
 scraper inventory / shipped client code), **Decision** (made here, binding for
 implementation), or **Assumption** (defensible, to confirm but not blocking).
 
+> **October 2026: superseded by §12.** Sections 1–11 were written for the mock
+> era, before the API existed. They are background, not decisions to keep. The
+> redesign on the live API starts at §12.
+
 ---
 
 ## 1. Domain purpose and scope
@@ -295,3 +299,42 @@ Order is MVP first, then high-value next (README rule).
   is the deploy unblock (PC-3) and the backend module ownership decision (UX Open
   Q2/Q3). Until then those tabs ship in mock/gated mode. Each gated feature file
   restates its single blocker.
+
+---
+
+## 12. Redesign on the live API (October 2026)
+
+The public-enterprises module is live on Chronos dev (GraphQL and MCP, no REST):
+`publicEnterprise(cui)`, `publicEnterprises(filter, page, pageSize)` and
+`publicEnterpriseSources`, over the five public read views of scrapper migration
+`20261006T180000__public_enterprises_public_read_views`. Server contract:
+`docs/server-redesign/15-public-enterprises.md` on the server's `origin/dev`.
+
+### 12.1 The mock-era pages are retired (2026-10-07)
+
+**Fact.** The old pages (`/intreprinderi-publice`, `/intreprinderi-publice/$cui`)
+rendered only from fixtures. Their live adapter threw, so the profile answered
+500 in every deployed environment, while global search already linked
+`public_enterprise` hits there (160 hits for „apa" on 2026-10-07).
+
+**Decision (owner, 2026-10-07).** Remove everything old now, not at promotion:
+
+- Deleted: the mocks (`mocks/fixtures.ts`), the mock and live adapters, mock-mode,
+  the hooks, the pages (`public-enterprises-pages.tsx`), their formatting/tab/KPI
+  helpers, `src/schemas/public-enterprise.ts`, and every test of those.
+- Kept: `lib/normalize-public-enterprise-cui.ts`. Global search routing uses it,
+  and the new pages will too.
+- `/intreprinderi-publice/$cui` → `/companies/$cui`, and `/intreprinderi-publice`
+  → `/companies`. Both are **302** with `Cache-Control`/`CDN-Cache-Control:
+  no-store` (the target changes at promotion, and a thrown redirect skips the
+  routes' own headers), keeping only `lang`. A CUI is read as `RO`-prefix plus
+  digits only, so `abc1` never lands on company 1. Search hits keep the old URL, so procurement's front door still
+  reads a state company as a buyer (`procurementHrefOf`).
+- The sidebar and landing entries (hidden behind the mock flag everywhere) are
+  removed; they come back pointing at the new hub when it is promoted.
+- Catalog: `soe-amepip` and `soe-controlling-authority` are `apiReady`, with no
+  mock. RegAS, BVB, sanctions and governance documents stay registered as loaded
+  but not served, with no mock and no client surface. The landing's provenance
+  band now counts 8 datasets served live, not 6: `apiReady` means live on
+  Chronos dev, as for `ngo-core` (the server flag is on only there).
+

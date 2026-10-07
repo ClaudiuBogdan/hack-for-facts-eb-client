@@ -1,8 +1,7 @@
-import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Building2, Briefcase, Vote, HeartHandshake } from "lucide-react";
+import { Activity, LayoutDashboard, BarChart2, Map, ListOrdered, Boxes, Landmark, Scale, Briefcase, Vote, HeartHandshake } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button-variants";
-import { isPublicEnterpriseMockEnabled } from "@/features/public-enterprises/lib/mock-mode";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -21,7 +20,6 @@ type MainItemUrl =
   | "/procurement"
   | "/companies"
   | "/legislation"
-  | "/intreprinderi-publice"
   | "/alegeri"
   | "/ngos"
   | "/ins";
@@ -72,8 +70,8 @@ const mainItems: ReadonlyArray<{
     icon: Landmark,
   },
   {
-    // Building2 already stands for "Întreprinderi publice"; private companies
-    // need their own mark.
+    // Building2 is kept for "Întreprinderi publice" (back when its redesigned
+    // pages ship); private companies need their own mark.
     title: <Trans>Firme</Trans>,
     url: "/companies",
     icon: Briefcase,
@@ -83,15 +81,6 @@ const mainItems: ReadonlyArray<{
     url: "/legislation",
     icon: Scale,
   },
-  ...(isPublicEnterpriseMockEnabled()
-    ? [
-        {
-          title: <Trans>Întreprinderi publice</Trans>,
-          url: "/intreprinderi-publice" as const,
-          icon: Building2,
-        },
-      ]
-    : []),
   {
     title: <Trans>Alegeri</Trans>,
     url: "/alegeri",

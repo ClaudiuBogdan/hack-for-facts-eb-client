@@ -50,11 +50,6 @@ describe('scraper-references', () => {
         'src/features/public-investments/',
         'src/schemas/public-investments.ts',
       ],
-      [
-        'soe-amepip',
-        'src/features/public-enterprises/',
-        'src/schemas/public-enterprise.ts',
-      ],
       ['elections', 'src/features/elections/', 'src/schemas/elections.ts'],
     ] as const
 
@@ -65,6 +60,22 @@ describe('scraper-references', () => {
       expect(entry?.mockDataAvailable, datasetId).toBe(true)
       expect(entry?.clientFeaturePaths, datasetId).toContain(featurePath)
       expect(entry?.clientSchemaPaths, datasetId).toContain(schemaPath)
+    }
+  })
+
+  it('registers the public-enterprise lanes the API serves as live, without mocks', () => {
+    for (const datasetId of ['soe-amepip', 'soe-controlling-authority']) {
+      const entry = getScraperDatasetById(datasetId)
+
+      expect(entry?.apiReady, datasetId).toBe(true)
+      expect(entry?.mockDataAvailable, datasetId).toBe(false)
+      expect(entry?.clientFeaturePaths, datasetId).toContain('src/features/public-enterprises/')
+    }
+    for (const datasetId of ['soe-regas-state-aid', 'soe-bvb-market', 'soe-sanctions', 'soe-governance-docs']) {
+      const entry = getScraperDatasetById(datasetId)
+
+      expect(entry?.apiReady, datasetId).toBe(false)
+      expect(entry?.mockDataAvailable, datasetId).toBe(false)
     }
   })
 

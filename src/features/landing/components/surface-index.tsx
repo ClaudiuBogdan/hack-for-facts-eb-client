@@ -92,9 +92,8 @@ const GROUP_IMAGES: Record<string, GroupImage | undefined> = {
   // stacking along one edge.
   //
   // The span is derived from the visible entry count rather than written here,
-  // which matters most for this group: Întreprinderi publice sits behind a
-  // mock-data gate, so it is three entries tall today and four when that gate
-  // opens.
+  // which matters most for this group: it is three entries tall today and four
+  // once Întreprinderi publice returns with its redesigned pages.
   institutii: {
     src: atlas,
     avif: atlasAvif,

@@ -8,7 +8,8 @@
  *   ------------------  -------------------------------------------------------
  *   company             /companies/$cui          (internal, cuis[0])
  *   organization        /entities/$cui           (internal, cuis[0])
- *   public_enterprise   /intreprinderi-publice/$cui (internal, cuis[0])
+ *   public_enterprise   /intreprinderi-publice/$cui (internal, cuis[0]; redirects
+ *                       to /companies/$cui until the redesigned pages ship)
  *   ngo                 /ngos/$cui            (internal, cuis[0]; without one,
  *                       /ngos/registry/$number from ngoRegistryNumber)
  *   organization_unclassified  none           (no page holds it: a plain row)

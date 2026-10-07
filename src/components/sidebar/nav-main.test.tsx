@@ -28,12 +28,6 @@ vi.mock('@lingui/core/macro', () => ({
   msg: (strings: TemplateStringsArray) => strings[0],
 }))
 
-const publicEnterpriseMockEnabled = vi.fn()
-
-vi.mock('@/features/public-enterprises/lib/mock-mode', () => ({
-  isPublicEnterpriseMockEnabled: () => publicEnterpriseMockEnabled(),
-}))
-
 // Mock lucide-react icons
 vi.mock('lucide-react', () => ({
   LayoutDashboard: () => <span data-testid="icon-dashboard" />,
@@ -43,7 +37,6 @@ vi.mock('lucide-react', () => ({
   Boxes: () => <span data-testid="icon-budget-explorer" />,
   Landmark: () => <span data-testid="icon-achizitii" />,
   Scale: () => <span data-testid="icon-legislation" />,
-  Building2: () => <span data-testid="icon-public-enterprises" />,
   Briefcase: () => <span data-testid="icon-companies" />,
   Vote: () => <span data-testid="icon-elections" />,
   HeartHandshake: () => <span data-testid="icon-ngos" />,
@@ -95,12 +88,7 @@ vi.mock('@/components/ui/sidebar', () => ({
 // TESTS
 // ============================================================================
 
-async function renderNavMain(options?: { readonly mockPublicEnterprises?: boolean }) {
-  if (options?.mockPublicEnterprises !== undefined) {
-    publicEnterpriseMockEnabled.mockReturnValue(options.mockPublicEnterprises)
-    vi.resetModules()
-  }
-
+async function renderNavMain() {
   const { NavMain } = await import('./nav-main')
   return render(<NavMain />)
 }
@@ -108,7 +96,6 @@ async function renderNavMain(options?: { readonly mockPublicEnterprises?: boolea
 describe('NavMain', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    publicEnterpriseMockEnabled.mockReturnValue(false)
     mockMatches.mockReturnValue([{ pathname: '/' }])
     mockSidebarState.mockReturnValue({
       state: 'expanded',
@@ -194,14 +181,6 @@ describe('NavMain', () => {
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
       expect(menuItems).toHaveLength(11)
     })
-
-    it('shows public enterprises navigation only while mock mode is enabled', async () => {
-      await renderNavMain({ mockPublicEnterprises: true })
-
-      expect(screen.getByTestId('link-/intreprinderi-publice')).toBeInTheDocument()
-      expect(screen.getByText('Întreprinderi publice')).toBeInTheDocument()
-      expect(screen.getAllByTestId('sidebar-menu-item')).toHaveLength(12)
-    })
   })
 
   describe('icons', () => {
@@ -227,12 +206,6 @@ describe('NavMain', () => {
       await renderNavMain()
 
       expect(screen.getByTestId('icon-achizitii')).toBeInTheDocument()
-    })
-
-    it('renders public enterprises icon when mock mode is enabled', async () => {
-      await renderNavMain({ mockPublicEnterprises: true })
-
-      expect(screen.getByTestId('icon-public-enterprises')).toBeInTheDocument()
     })
 
     it('renders companies icon', async () => {
@@ -291,13 +264,6 @@ describe('NavMain', () => {
 
       const chartsLink = screen.getByTestId('link-/charts')
       expect(chartsLink).toHaveClass('bg-muted')
-    })
-
-    it('marks public enterprises as active on profile routes when mock mode is enabled', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/intreprinderi-publice/10020943' }])
-      await renderNavMain({ mockPublicEnterprises: true })
-
-      expect(screen.getByTestId('link-/intreprinderi-publice')).toHaveClass('bg-muted')
     })
 
     it('marks ONG-uri as active when on /ngos subpath', async () => {

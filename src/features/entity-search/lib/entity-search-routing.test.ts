@@ -26,7 +26,7 @@ describe('entityHref', () => {
       expect(result).toEqual({ href: '/entities/4305857', isExternal: false })
     })
 
-    it('routes public_enterprise to the dedicated public-enterprise profile', () => {
+    it('routes public_enterprise to its retired profile address, which redirects to the company page', () => {
       const result = entityHref(
         input({ docType: 'public_enterprise', cuis: ['RO-12345'] }),
       )

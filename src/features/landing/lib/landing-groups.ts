@@ -3,7 +3,6 @@ import {
   BarChart2,
   Boxes,
   Briefcase,
-  Building2,
   FileStack,
   Gavel,
   HeartHandshake,
@@ -19,7 +18,6 @@ import type { LinkProps } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
 import { isMockDataEnabled } from '@/lib/scraper-references'
-import { isPublicEnterpriseMockEnabled } from '@/features/public-enterprises/lib/mock-mode'
 
 /**
  * The surfaces the landing page can offer, and the gates that decide whether it
@@ -33,9 +31,8 @@ import { isPublicEnterpriseMockEnabled } from '@/features/public-enterprises/lib
  * `to` is typed against the generated route tree — a path that stops existing
  * fails `yarn run check` rather than 404-ing in someone's browser.
  *
- * Gates mirror the shipped ones verbatim: `nav-main.tsx` hides
- * `/intreprinderi-publice` behind `isPublicEnterpriseMockEnabled()`, and
- * `ParliamentPromoCard` returns null unless `political-parliament` is mocked.
+ * Gates mirror the shipped ones verbatim: `ParliamentPromoCard` returns null
+ * unless `political-parliament` is mocked.
  * Hiding, not badging: the sidebar's precedent, and a homepage that advertises
  * a surface the reader cannot use costs more trust than an absent tile.
  */
@@ -95,13 +92,6 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
         blurb: msg`Clasamente și comparații între instituții, pe valori agregate.`,
         to: '/entity-analytics',
         icon: ListOrdered,
-      },
-      {
-        title: msg`Întreprinderi publice`,
-        blurb: msg`Companii de stat: indicatori AMEPIP, guvernanță și proveniență.`,
-        to: '/intreprinderi-publice',
-        icon: Building2,
-        gate: isPublicEnterpriseMockEnabled,
       },
       {
         title: msg`Firme`,

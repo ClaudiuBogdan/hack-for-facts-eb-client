@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mockMode = vi.hoisted(() => ({ parliament: false, publicEnterprise: false }))
+const mockMode = vi.hoisted(() => ({ parliament: false }))
 
 vi.mock('@/lib/scraper-references', () => ({
   isMockDataEnabled: (id: string) => id === 'political-parliament' && mockMode.parliament,
@@ -11,14 +11,9 @@ vi.mock('@/lib/scraper-references', () => ({
   ],
 }))
 
-vi.mock('@/features/public-enterprises/lib/mock-mode', () => ({
-  isPublicEnterpriseMockEnabled: () => mockMode.publicEnterprise,
-}))
-
 describe('platform coverage', () => {
   beforeEach(() => {
     mockMode.parliament = false
-    mockMode.publicEnterprise = false
   })
 
   it('derives every figure from the visible groups and the catalog', async () => {
@@ -38,7 +33,6 @@ describe('platform coverage', () => {
 
   it('counts a gated surface once its gate opens', async () => {
     mockMode.parliament = true
-    mockMode.publicEnterprise = true
     const { getPlatformCoverage } = await import('./platform-coverage')
     const { LANDING_GROUPS } = await import('./landing-groups')
 
