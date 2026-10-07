@@ -786,3 +786,79 @@ the models, the adapters (what each read sends; no document asks for a name or
 a solution), the pages' server markup, the routes (404s, cache headers, heads,
 redirects) and the sanitizer. `tests/integration/justice.spec.ts` asserts what
 the server renders on the dev API.
+
+## 15. Analysis page prototypes (2026-10-07)
+
+`/development/justice/analize` (`src/development/prototypes/justice/analize.*`),
+on the live API, in `/procurement/analytics`'s language and parts (the
+lattice head, the pinned bar, `HubFiguresBand`, the grouping tabs over a
+shadcn `Table`, the years band, `filter-sheet-parts`). The proposed live
+address is `/justice/analytics`.
+
+**The page.**
+
+- **The question is the headline**, generated, each filter a phrase that opens
+  the panel and whose ✕ drops it: „Dosarele de faliment la tribunalele din
+  județul Cluj, pe instanțe". The year is the period menu's, at the top right
+  with „Date până la 22 iunie 2026"; the menu offers the capture's whole years
+  (2023–2025) and its part-year (2026, „până în iunie"), never the partial
+  years before.
+- **The pinned bar holds the court levels** with their counts for the
+  question's other filters (Toate, Judecătorii, Tribunale, Curți de apel,
+  Înalta Curte, Instanțe militare): procurement's populations bar.
+- **Four figures:** the cases and their change on the year before (only
+  between two whole years), the courts with cases, the five busiest courts'
+  share, the largest matter's share.
+- **The answer** groups by courts, counties, matters, stages or levels. A
+  group's row narrows the question to it and groups by what is left open
+  (county → its courts, court → its matters, matter/stage/level → courts); a
+  court's arrow opens its page in the same year.
+- **The years band** draws 2013–2026, the years before 2023 dashed
+  („preluare parțială") and 2026 as a part-year; a whole year's bar makes it
+  the question's year, a partial one cannot be chosen.
+- **„+ Adaugă un filtru"** searches the page's own names (matters, stages,
+  levels, counties, courts); „Filtre" opens the sheet (places by search,
+  matters with a search past eight values, levels and stages one column); the
+  ready questions sit under „Întrebări".
+- **One marker** holds the caveats: amber for a part-year or a rate, an „i"
+  otherwise (the year is the source date's; years before 2023 are partial; a
+  case counts at every court where it is registered; no outcomes, no names).
+- **The address is the question** (`an`, `nivel`, `materie`, `etapa`,
+  `judet`, `instanta`, `dupa`, `masura`, `coloane`; defaults left out, values
+  the page does not know dropped). None carries a person; the sanitizer's
+  safe keys take them at promotion.
+
+**Two variants**, differing in the answer's table:
+
+- `clasament` — the year's groups ranked, the year before, the change, the
+  share bar, „Restul" and the total; counties also per 1,000 residents
+  (2025 only: the residents are counted on 1 January 2025).
+- `incrucisat` — the same groups as rows, crossed with the years 2023–2026,
+  the stages or the levels as columns; a stage or level cell tinted by its
+  share of the row (none under 5%), the year's column bold with the change
+  from the year before.
+
+**Data rules.**
+
+- Every figure is a `judicialCaseload` count, a sum of them, or a share. A
+  matter filter sends the Portal's code and the ÎCCJ's raw label (19 keys,
+  12 matters); a stage filter sends the raw stage values grouped as fond,
+  apel, recurs, contestație and the extraordinary remedies (13 values hold all
+  but some 1,500 of 6.34 million cases); „Alte etape" is the rest of the
+  total, so the stages add up.
+- Counties come from the courts (the API has no county filter or grouping): a
+  county filter is the list of its courts, a county row the sum of its
+  courts. The ÎCCJ has no county: it is drawn after the counties, never
+  ranked among them.
+- A court picked outside the county picked matches nothing: no read is made
+  and the answer is zero.
+
+**Reads per view** (one HTTP request each, deduplicated across the page,
+0.1–1.9 s each on the dev API; kept for the page's life, the capture being
+frozen): the bar 1, the figures 2–3, the years 1; a grouping 2 (the year and
+the year before) — stages 12 (a read per stage per year, ask 3); a cross 4–6
+(a read per column, ask 4).
+
+**Open for the owner:** which variant, or both (the cross as a „Coloane"
+option of the ranking); the address; whether the page lists the cases
+themselves (the cross-court case list exists in the API, bounded by a year).
