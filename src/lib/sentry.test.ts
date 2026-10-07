@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { sanitizeSentryEventPayload } from './sentry'
+import { sanitizeSentryEventPayload, sanitizeSentryTransaction } from './sentry'
 
 const sentryMock = vi.hoisted(() => ({
   browserTracingIntegration: vi.fn(),
@@ -31,6 +31,25 @@ vi.mock('@/lib/consent', () => ({
   hasAnalyticsConsent: () => false,
   hasSentryConsent: () => true,
 }))
+
+describe('sanitizeSentryTransaction', () => {
+  it('drops a transaction that touches a justice page, the route params with it', () => {
+    const caseLoad = {
+      type: 'transaction',
+      transaction: '/justice/cases/$code/$',
+      spans: [{ data: { 'url.path.params._splat': '5180/118/2021/a3', 'url.path': '/justice/cases/CurteadeApelCONSTANTA/5180/118/2021/a3' } }],
+    }
+    expect(sanitizeSentryTransaction(caseLoad)).toBeNull()
+    expect(sanitizeSentryTransaction({ type: 'transaction', transaction: '/justice' })).toBeNull()
+    expect(sanitizeSentryTransaction({ type: 'transaction', transaction: '/justitie/$' })).toBeNull()
+  })
+
+  it('keeps every other transaction, scrubbed', () => {
+    const procurement = { type: 'transaction', transaction: '/procurement', request: { url: 'https://transparenta.eu/procurement?x=1' } }
+    expect(sanitizeSentryTransaction(procurement)).toEqual(procurement)
+    expect(sanitizeSentryTransaction({ type: 'transaction', transaction: '/justice-league' })).not.toBeNull()
+  })
+})
 
 describe('sanitizeSentryEventPayload', () => {
   it('scrubs justice URLs, breadcrumbs, extra, contexts, messages, and exception strings', () => {

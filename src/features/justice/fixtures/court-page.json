@@ -1,0 +1,420 @@
+{
+ "court": {
+  "institutionCode": "TribunalulSALAJ",
+  "courtLevel": "tribunal",
+  "specialization": null,
+  "locality": "ZALAU",
+  "countyCode": "SJ",
+  "parentInstitutionCode": "CurteadeApelCLUJ",
+  "children": [
+   {
+    "institutionCode": "JudecatoriaSIMLEULSILVANIEI",
+    "courtLevel": "judecatorie"
+   },
+   {
+    "institutionCode": "JudecatoriaZALAU",
+    "courtLevel": "judecatorie"
+   },
+   {
+    "institutionCode": "JudecatoriaJIBOU",
+    "courtLevel": "judecatorie"
+   }
+  ]
+ },
+ "newestModified": {
+  "edges": [
+   {
+    "node": {
+     "latestSourceModifiedAt": "2026-06-15T11:00:11.673Z"
+    }
+   }
+  ]
+ },
+ "newestOpened": {
+  "edges": [
+   {
+    "node": {
+     "sourceOpenedAt": "2026-06-15"
+    }
+   }
+  ]
+ },
+ "years": {
+  "denominator": 9999,
+  "groups": [
+   {
+    "key": "2024",
+    "caseCount": 2946
+   },
+   {
+    "key": "2025",
+    "caseCount": 2632
+   },
+   {
+    "key": "2023",
+    "caseCount": 2375
+   },
+   {
+    "key": "2026",
+    "caseCount": 1270
+   },
+   {
+    "key": "2022",
+    "caseCount": 409
+   },
+   {
+    "key": "2021",
+    "caseCount": 152
+   },
+   {
+    "key": "2020",
+    "caseCount": 38
+   },
+   {
+    "key": "2019",
+    "caseCount": 30
+   },
+   {
+    "key": "2011",
+    "caseCount": 21
+   },
+   {
+    "key": "2013",
+    "caseCount": 20
+   },
+   {
+    "key": "2015",
+    "caseCount": 17
+   },
+   {
+    "key": "2016",
+    "caseCount": 17
+   },
+   {
+    "key": "2012",
+    "caseCount": 15
+   },
+   {
+    "key": "2018",
+    "caseCount": 14
+   },
+   {
+    "key": "2017",
+    "caseCount": 13
+   },
+   {
+    "key": "2014",
+    "caseCount": 8
+   },
+   {
+    "key": "2010",
+    "caseCount": 8
+   },
+   {
+    "key": "2009",
+    "caseCount": 7
+   },
+   {
+    "key": "2007",
+    "caseCount": 3
+   },
+   {
+    "key": "2006",
+    "caseCount": 2
+   },
+   {
+    "key": "2008",
+    "caseCount": 1
+   },
+   {
+    "key": "2005",
+    "caseCount": 1
+   }
+  ]
+ },
+ "matters": {
+  "denominator": 2632,
+  "groups": [
+   {
+    "key": "Civil",
+    "caseCount": 1127
+   },
+   {
+    "key": "Penal",
+    "caseCount": 530
+   },
+   {
+    "key": "Contenciosadministrativsifiscal",
+    "caseCount": 246
+   },
+   {
+    "key": "Faliment",
+    "caseCount": 230
+   },
+   {
+    "key": "Asigurarisociale",
+    "caseCount": 219
+   },
+   {
+    "key": "Litigiidemunca",
+    "caseCount": 113
+   },
+   {
+    "key": "Minorisifamilie",
+    "caseCount": 102
+   },
+   {
+    "key": "Litigiicuprofesionistii",
+    "caseCount": 62
+   },
+   {
+    "key": "Insolventapersoaneifizice",
+    "caseCount": 2
+   },
+   {
+    "key": "ProprietateIntelectuala",
+    "caseCount": 1
+   }
+  ]
+ },
+ "stage0": {
+  "denominator": 1274
+ },
+ "stage1": {
+  "denominator": 1104
+ },
+ "stage2": {
+  "denominator": 29
+ },
+ "stage3": {
+  "denominator": 190
+ },
+ "cases": {
+  "edges": [
+   {
+    "node": {
+     "caseId": "6344428",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "659/84/2021",
+     "category": "Contenciosadministrativsifiscal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2021-06-09",
+     "latestSourceModifiedAt": "2026-06-15T11:00:11.673Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "1224963",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "184/84/2025",
+     "category": "Contenciosadministrativsifiscal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2025-02-28",
+     "latestSourceModifiedAt": "2026-06-15T11:00:09.540Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "207917",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "5366/337/2025",
+     "category": "Civil",
+     "stageName": "Apel",
+     "sourceOpenedAt": "2026-03-19",
+     "latestSourceModifiedAt": "2026-06-15T10:58:35.650Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "1224982",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "683/84/2025",
+     "category": "Contenciosadministrativsifiscal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2025-07-02",
+     "latestSourceModifiedAt": "2026-06-15T10:58:33.413Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344414",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "635/84/2026",
+     "category": "Contenciosadministrativsifiscal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-06-15",
+     "latestSourceModifiedAt": "2026-06-15T10:58:31.197Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344412",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "642/84/2026",
+     "category": "Litigiidemunca",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-06-15",
+     "latestSourceModifiedAt": "2026-06-15T10:54:02.237Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344411",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "637/84/2026",
+     "category": "Contenciosadministrativsifiscal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-06-15",
+     "latestSourceModifiedAt": "2026-06-15T10:54:01.180Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344407",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "196/1752/2025",
+     "category": "Civil",
+     "stageName": "Apel",
+     "sourceOpenedAt": "2025-07-01",
+     "latestSourceModifiedAt": "2026-06-15T10:53:59.813Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "758173",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "39/84/2025",
+     "category": "Civil",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2025-01-17",
+     "latestSourceModifiedAt": "2026-06-15T10:53:58.327Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "754583",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "340/84/2026",
+     "category": "Faliment",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-03-26",
+     "latestSourceModifiedAt": "2026-06-15T10:53:57.917Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344397",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "641/84/2026",
+     "category": "Asigurarisociale",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-06-15",
+     "latestSourceModifiedAt": "2026-06-15T10:53:57.030Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "895035",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "538/84/2023",
+     "category": "Civil",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2023-04-21",
+     "latestSourceModifiedAt": "2026-06-15T10:53:56.090Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344386",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "2287/337/2026/a1.2",
+     "category": "Penal",
+     "stageName": "Contestaţie(NCPP)",
+     "sourceOpenedAt": "2026-06-11",
+     "latestSourceModifiedAt": "2026-06-15T10:53:55.030Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344383",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "1159/337/2026/a2",
+     "category": "Penal",
+     "stageName": "Contestaţie(NCPP)",
+     "sourceOpenedAt": "2026-06-09",
+     "latestSourceModifiedAt": "2026-06-15T10:53:54.617Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "207943",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "2920/309/2025",
+     "category": "Civil",
+     "stageName": "Apel",
+     "sourceOpenedAt": "2026-03-17",
+     "latestSourceModifiedAt": "2026-06-15T10:53:54.230Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344378",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "638/84/2026",
+     "category": "Asigurarisociale",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-06-15",
+     "latestSourceModifiedAt": "2026-06-15T10:53:53.490Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "1169791",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "373/84/2026",
+     "category": "Penal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-04-02",
+     "latestSourceModifiedAt": "2026-06-15T10:53:51.813Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344373",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "640/84/2026",
+     "category": "Asigurarisociale",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-06-15",
+     "latestSourceModifiedAt": "2026-06-15T10:53:50.833Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "6344372",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "910/1285/2025*/a2",
+     "category": "Faliment",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2026-05-28",
+     "latestSourceModifiedAt": "2026-06-15T10:53:49.170Z"
+    }
+   },
+   {
+    "node": {
+     "caseId": "1224989",
+     "institutionCode": "TribunalulSALAJ",
+     "caseNumber": "544/84/2025",
+     "category": "Contenciosadministrativsifiscal",
+     "stageName": "Fond",
+     "sourceOpenedAt": "2025-06-11",
+     "latestSourceModifiedAt": "2026-06-15T10:53:47.110Z"
+    }
+   }
+  ],
+  "pageInfo": {
+   "hasNextPage": true,
+   "endCursor": "eyJ2IjoxLCJzb3J0IjoibW9kaWZpZWRBdCIsImRpciI6ImRlc2MiLCJmaGFzaCI6Imp1ZGljaWFsX2Nhc2VzOmN1cnNvci12MjpmaWx0ZXJzLWEzOjduazQ0bDFhdGxuZzEiLCJrZXlzIjpbIjIwMjYtMDYtMTVUMTA6NTM6NDcuMTEwMDAwKzAwIEFEIiwiMTIyNDk4OSJdfQ"
+  }
+ }
+}

@@ -1,61 +1,62 @@
+import { useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { countText, millionsText } from './hub.format'
-import { HUB } from './hub.model'
 import {
-  CountiesBand,
-  CourtsBand,
-  DecisionsBand,
-  FiguresBand,
-  HubHero,
-  HubPage,
-  HundredPanel,
-  LevelsBand,
-  MattersBand,
-  PathPanel,
-  SectionNav,
-  TopCourtsPanel,
-  YearsBand,
-  indexOf,
-  type Section,
-} from './hub.parts'
+  JusticeCountiesBand,
+  JusticeCourtsBand,
+  JusticeDecisionsBand,
+  JusticeHubFigures,
+  JusticeLevelsBand,
+  JusticeMattersBand,
+  JusticeYearsBand,
+} from '@/features/justice/components/hub/justice-hub-bands'
+import { JusticeHubHero } from '@/features/justice/components/hub/justice-hub-hero'
+import { JusticeHub, type JusticeHubChoices } from '@/features/justice/components/hub/justice-hub-page'
+import { COMPANY_HUB_SNAPSHOT } from '@/features/private-companies/lib/hub-snapshot'
+import { HomeSectionNav } from '@/features/procurement/components/home/home-chrome'
+import { JUSTICE_HUB_SNAPSHOT } from '@/features/justice/lib/hub-snapshot'
+import { countText, millionsText } from '@/features/justice/lib/judicial-format'
+import { JUSTICE_HUB_DEFAULTS } from '@/schemas/judicial'
+import { HundredPanel, PathPanel, PROTOTYPE_MARKER } from './hub.parts'
 
 /**
- * Three front doors for the court portal's data, in the procurement, INS and
- * companies hubs' language, on the live API's figures (`hub.data.json`). They
- * share every band and differ in what stands beside the headline and in the
- * order the questions come.
+ * The front door's three variants over the live components and snapshot.
+ * `registru` (the owner's pick, 2026-10-07) is the live page itself, its
+ * choices held here instead of the URL; `drum` and `materii` keep their own
+ * hero panels and band order as the design record.
  */
 
-const COURTS_WITH_CASES = HUB.courts.filter((court) => court.cases > 0).length
+const snapshot = JUSTICE_HUB_SNAPSHOT
+const POPULATION = {
+  year: COMPANY_HUB_SNAPSHOT.fiscalYear,
+  national: COMPANY_HUB_SNAPSHOT.national.population,
+  byCounty: new Map(COMPANY_HUB_SNAPSHOT.counties.map((county) => [county.code, county.population])),
+}
 
-function Lede() {
+function useChoices() {
+  const [choices, setChoices] = useState<JusticeHubChoices>({ ...JUSTICE_HUB_DEFAULTS })
+  const choose = <K extends keyof JusticeHubChoices>(key: K, value: JusticeHubChoices[K]) => setChoices((previous) => ({ ...previous, [key]: value }))
+  return { choices, choose }
+}
+
+export function HubRegistru() {
+  const { choices, choose } = useChoices()
   return (
-    <Trans>
-      {millionsText(HUB.cases.total)} de dosare publicate pe portalul instanțelor, la {countText(COURTS_WITH_CASES)} de instanțe: ce se judecă, unde și pe ce
-      treaptă. Persoanele nu sunt numite.
-    </Trans>
+    <div data-dev-marker={PROTOTYPE_MARKER}>
+      <JusticeHub snapshot={snapshot} choices={choices} onChoose={choose} />
+    </div>
   )
 }
 
-const BANDS = {
-  judete: CountiesBand,
-  materii: MattersBand,
-  niveluri: LevelsBand,
-  instante: CourtsBand,
-  timp: YearsBand,
-  decizii: DecisionsBand,
-} as const
+type BandId = 'judete' | 'materii' | 'trepte' | 'instante' | 'timp' | 'decizii'
 
-type BandId = keyof typeof BANDS
-
-function sectionLabel(id: BandId): string {
+function bandLabel(id: BandId): string {
   switch (id) {
     case 'judete':
       return t`Pe județe`
     case 'materii':
       return t`Ce se judecă`
-    case 'niveluri':
+    case 'trepte':
       return t`Pe trepte`
     case 'instante':
       return t`Instanțele`
@@ -66,45 +67,44 @@ function sectionLabel(id: BandId): string {
   }
 }
 
+/** The bands in a variant's order, numbered as they come. */
 function Bands({ order }: { readonly order: readonly BandId[] }) {
-  const sections: readonly Section[] = order.map((id) => ({ id, label: sectionLabel(id) }))
+  const { choices, choose } = useChoices()
+  const index = (id: BandId) => `${String(order.indexOf(id) + 1).padStart(2, '0')} / ${bandLabel(id)}`
+  const band: Record<BandId, ReactNode> = {
+    judete: <JusticeCountiesBand snapshot={snapshot} population={POPULATION} index={index('judete')} />,
+    materii: <JusticeMattersBand snapshot={snapshot} index={index('materii')} scope={choices.materii} onScope={(scope) => choose('materii', scope)} />,
+    trepte: <JusticeLevelsBand snapshot={snapshot} index={index('trepte')} />,
+    instante: <JusticeCourtsBand snapshot={snapshot} index={index('instante')} level={choices.nivel} onLevel={(level) => choose('nivel', level)} />,
+    timp: <JusticeYearsBand snapshot={snapshot} index={index('timp')} />,
+    decizii: <JusticeDecisionsBand snapshot={snapshot} index={index('decizii')} />,
+  }
   return (
     <>
-      <SectionNav sections={sections} />
-      <FiguresBand />
-      {order.map((id) => {
-        const Band = BANDS[id]
-        return <Band key={id} index={indexOf(sections, id)} />
-      })}
+      <HomeSectionNav title={t`Justiție`} sections={order.map((id) => ({ id, label: bandLabel(id) }))} />
+      <JusticeHubFigures snapshot={snapshot} />
+      {order.map((id) => (
+        <div key={id}>{band[id]}</div>
+      ))}
     </>
   )
 }
 
-/** `registru`: the procurement front door's shape — the busiest courts beside the headline, the map first. */
-export function HubRegistru() {
+function Lede() {
+  const courts = snapshot.courts.filter((court) => court.cases > 0).length
   return (
-    <HubPage>
-      <HubHero
-        headline={
-          <Trans>
-            Ce judecă
-            <br />
-            instanțele
-          </Trans>
-        }
-        lede={<Lede />}
-        panel={<TopCourtsPanel />}
-      />
-      <Bands order={['judete', 'materii', 'niveluri', 'instante', 'timp', 'decizii']} />
-    </HubPage>
+    <Trans>
+      {millionsText(snapshot.cases.total)} de dosare publicate pe portalul instanțelor, la {countText(courts)} de instanțe: ce se judecă, unde și pe ce treaptă.
+      Persoanele nu sunt numite.
+    </Trans>
   )
 }
 
-/** `drum`: a case's way up the courts beside the headline; what is judged first, then where. */
 export function HubDrum() {
   return (
-    <HubPage>
-      <HubHero
+    <div className="relative w-full overflow-x-clip bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+      <JusticeHubHero
+        snapshot={snapshot}
         headline={
           <Trans>
             Dosarele
@@ -113,18 +113,18 @@ export function HubDrum() {
           </Trans>
         }
         lede={<Lede />}
-        panel={<PathPanel />}
+        panel={<PathPanel snapshot={snapshot} />}
       />
-      <Bands order={['materii', 'niveluri', 'instante', 'judete', 'timp', 'decizii']} />
-    </HubPage>
+      <Bands order={['materii', 'trepte', 'instante', 'judete', 'timp', 'decizii']} />
+    </div>
   )
 }
 
-/** `materii`: a hundred of the year's cases by matter beside the headline — the most graphical door. */
 export function HubMaterii() {
   return (
-    <HubPage>
-      <HubHero
+    <div className="relative w-full overflow-x-clip bg-background" data-dev-marker={PROTOTYPE_MARKER}>
+      <JusticeHubHero
+        snapshot={snapshot}
         headline={
           <Trans>
             Instanțele,
@@ -133,9 +133,9 @@ export function HubMaterii() {
           </Trans>
         }
         lede={<Lede />}
-        panel={<HundredPanel />}
+        panel={<HundredPanel snapshot={snapshot} />}
       />
-      <Bands order={['materii', 'judete', 'niveluri', 'instante', 'timp', 'decizii']} />
-    </HubPage>
+      <Bands order={['materii', 'judete', 'trepte', 'instante', 'timp', 'decizii']} />
+    </div>
   )
 }

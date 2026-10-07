@@ -851,7 +851,7 @@ here.
 | Public companies    | `/intreprinderi-publice`| `docs/design/public-companies/`       | AMEPIP live lane; gated tabs; KPI-vs-currency guard |
 | Legal               | `/legislation`         | `docs/design/legal/`                   | Monitorul Oficial evidence; citation resolution honesty |
 | Elections           | `/alegeri`             | `docs/design/elections/`               | Results ≠ roll-call votes; candidate names as source only |
-| Justice             | `/justitie`            | `docs/design/justice/`                 | Structural privacy; entities named, persons aggregated |
+| Justice             | `/justice`             | `docs/design/justice/`                 | Structural privacy: no party named, persons counted; case pages unindexed |
 | Procurement         | `/achizitii`           | `docs/design/procurement/`             | Grain selector; honest money; neutral review signals|
 | Public investments  | `/investitii-publice`  | `docs/design/public-investments/`      | SIRUTA spine; `AmountWithEvidence`; map+list         |
 | Statistics (INS)    | `/ins`          | `docs/design/statistics/`              | 27-vs-1,898 dataset gap; coverage-gated map levels   |

@@ -1,0 +1,19 @@
+{
+ "judicialCaseload": {
+  "denominator": 9666,
+  "groups": [
+   {
+    "key": "JudecatoriaZALAU",
+    "caseCount": 4365
+   },
+   {
+    "key": "JudecatoriaJIBOU",
+    "caseCount": 2684
+   },
+   {
+    "key": "JudecatoriaSIMLEULSILVANIEI",
+    "caseCount": 2617
+   }
+  ]
+ }
+}

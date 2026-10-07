@@ -94,6 +94,20 @@ export function sanitizeSentryEventPayload<T extends SentryTelemetryEventLike>(
   return sanitizeJusticeTelemetryValue(event);
 }
 
+/** A justice route anywhere in a performance event: its name, its URL, its spans' attributes. */
+const JUSTICE_ROUTE_IN_EVENT = /\/(?:justice|justitie)(?=[/"?#\s]|$)/;
+
+/**
+ * A performance transaction as it leaves. One that touches a justice page is
+ * dropped whole: the router's spans carry its route params — a case page's
+ * splat is the case number — under keys the URL sanitizer does not read.
+ * Any other is scrubbed like an error event.
+ */
+export function sanitizeSentryTransaction<T extends SentryTelemetryEventLike>(event: T): T | null {
+  if (JUSTICE_ROUTE_IN_EVENT.test(JSON.stringify(event))) return null;
+  return sanitizeSentryEventPayload(event);
+}
+
 function isFacebookInAppBrowserUserAgent(): boolean {
   if (!isBrowser) return false;
   const userAgent = window.navigator?.userAgent?.toLowerCase() ?? "";
@@ -281,7 +295,7 @@ export function initSentry(router: unknown): void {
         maskAllInputs: true,
         blockAllMedia: true,
         networkDetailDenyUrls: [
-          /\/justitie(?:\/|$)/,
+          /\/(?:justice|justitie)(?:\/|$)/,
           /\/(?:companies|entities)\/[^?#]+(?:\?[^#]*(?:\btab=litigii\b|\b(?:partyKey|caseNumber|from)=))/,
         ],
         beforeAddRecordingEvent: sanitizeReplayRecordingEvent,
@@ -372,6 +386,7 @@ export function initSentry(router: unknown): void {
       replaysOnErrorSampleRate: currentJusticeSensitiveLocation ? 0 : 1.0,
       replaysSessionSampleRate:
         analyticsConsent && !currentJusticeSensitiveLocation ? 0.1 : 0,
+      beforeSendTransaction: (event) => sanitizeSentryTransaction(event as unknown as SentryTelemetryEventLike) as unknown as typeof event | null,
       // Respect privacy consent
       beforeSend(event) {
         if (

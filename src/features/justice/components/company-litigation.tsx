@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { plural } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
@@ -107,13 +108,19 @@ export function CompanyLitigationCases({ cui, className }: { readonly cui: strin
           </div>
           <ul className="divide-y divide-border/70 border-b border-border/70">
             {cases.map((item) => (
-              <li key={item.caseId} className={`${ROW_GRID} py-2.5 text-sm`}>
-                <span className="min-w-0 truncate text-foreground">{courtName(item.institutionCode)}</span>
-                <span className="text-right font-mono text-xs tabular-nums text-foreground">{item.caseNumber}</span>
-                <span className="min-w-0 truncate text-muted-foreground">{caseCategoryLabel(item.category) ?? <Trans>Materie nedeclarată</Trans>}</span>
-                <span className="text-right text-xs tabular-nums text-muted-foreground">
-                  {formatJudicialDate(item.sourceOpenedAt) ?? <Trans>fără dată</Trans>}
-                </span>
+              <li key={item.caseId}>
+                <Link
+                  to="/justice/cases/$code/$"
+                  params={{ code: item.institutionCode, _splat: item.caseNumber }}
+                  className={`${ROW_GRID} py-2.5 text-sm transition-colors hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none`}
+                >
+                  <span className="min-w-0 truncate text-foreground">{courtName(item.institutionCode)}</span>
+                  <span className="text-right font-mono text-xs tabular-nums text-foreground">{item.caseNumber}</span>
+                  <span className="min-w-0 truncate text-muted-foreground">{caseCategoryLabel(item.category) ?? <Trans>Materie nedeclarată</Trans>}</span>
+                  <span className="text-right text-xs tabular-nums text-muted-foreground">
+                    {formatJudicialDate(item.sourceOpenedAt) ?? <Trans>fără dată</Trans>}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>

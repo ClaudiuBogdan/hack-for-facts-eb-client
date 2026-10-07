@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { CompanyLitigationCases, CompanyLitigationSummary } from './company-litigation'
@@ -26,6 +27,14 @@ const cases = vi.hoisted(() => ({
   },
 }))
 vi.mock('../hooks/use-company-litigation', () => ({ useCompanyLitigationCases: () => cases.current }))
+// A row opens its case page; the address is the router's to build.
+vi.mock('@tanstack/react-router', () => ({
+  Link: ({ children, params, className }: { readonly children: ReactNode; readonly params: { readonly code: string; readonly _splat: string }; readonly className?: string }) => (
+    <a href={`/justice/cases/${params.code}/${params._splat}`} className={className}>
+      {children}
+    </a>
+  ),
+}))
 
 describe('CompanyLitigationSummary', () => {
   it('says the count is a floor, by level, and names no party', () => {
@@ -63,6 +72,8 @@ describe('CompanyLitigationCases', () => {
     expect(screen.getByText('33517/3/2021/a85')).toBeInTheDocument()
     expect(screen.getByText('Faliment')).toBeInTheDocument()
     expect(screen.getByText('Judecătoria Sectorului 4 București')).toBeInTheDocument()
+    // Each case opens its page, at its court and number.
+    expect(screen.getByText('33517/3/2021/a85').closest('a')?.getAttribute('href')).toBe('/justice/cases/TribunalulBUCURESTI/33517/3/2021/a85')
     // A placeholder or missing date reads as missing.
     expect(screen.getByText('fără dată')).toBeInTheDocument()
     screen.getByRole('button', { name: 'Mai multe dosare' }).click()

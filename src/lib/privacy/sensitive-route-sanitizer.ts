@@ -1,7 +1,8 @@
 /**
  * Sanitizes sensitive route URLs for analytics / error reporting.
  *
- * Justice routes (`/justitie*`) and justice litigation tabs on company/entity
+ * Justice routes (`/justice*`, and the retired `/justitie*` that redirect
+ * there) and justice litigation tabs on company/entity
  * profiles can carry privacy-sensitive query params (`partyKey`, `caseNumber`,
  * `from`) and arbitrary unknown params. These must never reach PostHog
  * pageviews or Sentry breadcrumbs/request URLs, even when analytics/Sentry
@@ -9,12 +10,18 @@
  * so this covers the manual pageview URL + Sentry scrubbing.
  *
  * The sanitizer is a closed allowlist: only `SAFE_JUSTICE_QUERY_PARAMS` are
- * preserved on `/justitie*` URLs; everything else (including `partyKey`,
- * `caseNumber`, `from`, and any unknown param) is stripped.
+ * preserved on justice URLs; everything else (including `partyKey`,
+ * `caseNumber`, `from`, and any unknown param) is stripped. A case page's
+ * path carries the case number (`/justice/cases/<court>/<number>`): it is
+ * reported as `/justice/cases/<court>/:caseNumber`.
  */
 
-/** Safe aggregate-routing params allowed on `/justitie*` URLs. */
+/** Safe aggregate-routing params allowed on justice URLs. */
 export const SAFE_JUSTICE_QUERY_PARAMS = [
+  'an',
+  'instante',
+  'materii',
+  'nivel',
   'court',
   'tier',
   'category',
@@ -42,6 +49,9 @@ const SAFE_PARAM_SET = new Set<string>(SAFE_JUSTICE_QUERY_PARAMS)
 const STRIPPED_PARAM_SET = new Set<string>(STRIPPED_JUSTICE_QUERY_PARAMS)
 const JUSTICE_CASE_DETAIL_PREFIX = '/justitie/dosare/'
 const REDACTED_JUSTICE_CASE_ID_SEGMENT = ':caseId'
+/** `/justice/cases/<court>/<number…>`: the court stays (a public institution), the number goes. */
+const JUSTICE_CASE_PAGE_PATTERN = /^(\/justice\/cases\/[^/]+)\/.+$/i
+const REDACTED_JUSTICE_CASE_NUMBER_SEGMENT = ':caseNumber'
 const REDACTED_JUSTICE_VALUE = '[scrubbed]'
 const SENSITIVE_JUSTICE_PAYLOAD_KEYS = new Set([
   'caseid',
@@ -51,18 +61,39 @@ const SENSITIVE_JUSTICE_PAYLOAD_KEYS = new Set([
 const JUSTICE_SOURCE_HINT_PATTERN =
   /^(?:cautare|justitie|dosare|companies:\d+|entities:\d+)$/i
 const ABSOLUTE_URL_PATTERN = /\bhttps?:\/\/[^\s"'<>]+/gi
-const RELATIVE_ROUTE_PATTERN = /\/(?:justitie|companies|entities)\/[^\s"'<>]*/g
+const RELATIVE_ROUTE_PATTERN = /\/(?:justice|justitie|companies|entities)\/[^\s"'<>]*/gi
 const SENSITIVE_FIELD_ASSIGNMENT_PATTERN =
   /\b(caseNumber|case_number|case-id|caseId|partyKey|party_key|party-key)\s*[:=]\s*["']?[^"',\s&})]+["']?/gi
 
 /**
+ * A path as the router reads it, decoded until it stops changing
+ * (`/justice/%2563ases/…` is a case page too), and cut at a query or a
+ * fragment that was encoded into it. Undecodable input stays as it is.
+ */
+function decodedPath(pathname: string): string {
+  let path = pathname
+  for (let round = 0; round < 4; round += 1) {
+    let next: string
+    try {
+      next = decodeURIComponent(path)
+    } catch {
+      break
+    }
+    if (next === path) break
+    path = next
+  }
+  return path.split(/[?#]/u)[0] ?? path
+}
+
+/**
  * Returns true when a path belongs to the justice domain and must be
- * sanitized. Matches `/justitie`, `/justitie/...`, but not unrelated paths
- * that merely contain the substring.
+ * sanitized. Matches `/justice`, `/justice/...`, `/justitie`, `/justitie/...`,
+ * but not unrelated paths that merely contain the substring.
  */
 export function isJusticePath(pathname: string): boolean {
   if (!pathname) return false
-  return pathname === '/justitie' || pathname.startsWith('/justitie/')
+  const path = decodedPath(pathname).toLowerCase()
+  return ['/justice', '/justitie'].some((root) => path === root || path.startsWith(`${root}/`))
 }
 
 function normalizePayloadKey(key: string): string {
@@ -93,6 +124,11 @@ export function isJusticeLitigationProfilePath(
 }
 
 export function sanitizeJusticePathname(pathname: string): string {
+  const decoded = decodedPath(pathname)
+  const casePage = JUSTICE_CASE_PAGE_PATTERN.exec(decoded)
+  if (casePage) return `${casePage[1]}/${REDACTED_JUSTICE_CASE_NUMBER_SEGMENT}`
+  // A justice path is reported as the router reads it: anything encoded into it after a query mark is gone.
+  if (isJusticePath(pathname) && decoded !== pathname && !decoded.toLowerCase().startsWith(JUSTICE_CASE_DETAIL_PREFIX)) return decoded
   if (!pathname.startsWith(JUSTICE_CASE_DETAIL_PREFIX)) return pathname
   const suffix = pathname.slice(JUSTICE_CASE_DETAIL_PREFIX.length)
   if (suffix.length === 0) return pathname
@@ -172,6 +208,39 @@ export function sanitizeJusticeTelemetryValue<T>(
     next[entryKey] = sanitized
   }
   return (changed ? next : value) as T
+}
+
+/** A case number inside a page title („Dosarul 1234/117/2024 — …"): the titles name the case they show. */
+const CASE_NUMBER_IN_TITLE = /\b\d{1,7}(?:[.,]\d{0,3}\.?)?\/[^\s—–,;)]+/gu
+const TITLE_KEYS = new Set(['title', '$title'])
+
+/**
+ * An analytics event's properties as the SDK is about to send them: every
+ * URL, path and keyed identifier scrubbed as above, and a page title's case
+ * number replaced. The SDK adds its own properties after a capture call —
+ * the current and previous URLs, the referrer, the document title — so this
+ * runs on the final payload (`before_send`), not only on what the app passes.
+ */
+export function sanitizeJusticeEventProperties<T extends Record<string, unknown>>(properties: T): T {
+  return redactTitles(sanitizeJusticeTelemetryValue(properties), 0) as T
+}
+
+/** Every title at any depth (`$set.title` too), its case number replaced. */
+function redactTitles(value: unknown, depth: number): unknown {
+  if (depth > 8 || !value || typeof value !== 'object') return value
+  if (Array.isArray(value)) {
+    const next = value.map((item) => redactTitles(item, depth + 1))
+    return next.some((item, index) => item !== value[index]) ? next : value
+  }
+  let changed = false
+  const out: Record<string, unknown> = {}
+  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+    const next =
+      TITLE_KEYS.has(key) && typeof entry === 'string' ? entry.replace(CASE_NUMBER_IN_TITLE, REDACTED_JUSTICE_CASE_NUMBER_SEGMENT) : redactTitles(entry, depth + 1)
+    if (next !== entry) changed = true
+    out[key] = next
+  }
+  return changed ? out : value
 }
 
 /**

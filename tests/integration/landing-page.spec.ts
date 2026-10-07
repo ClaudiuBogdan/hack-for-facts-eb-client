@@ -54,7 +54,7 @@ test.describe('Landing Page', () => {
     const groups: ReadonlyArray<readonly [RegExp, readonly string[]]> = [
       [/banii publici|public money/i, ['/national-budget', '/procurement', '/investitii-publice', '/pnrr']],
       [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/ngos']],
-      [/lege și justiție|law and justice/i, ['/legislation']],
+      [/lege și justiție|law and justice/i, ['/legislation', '/justice']],
       [/^politică$|^politics$/i, ['/alegeri']],
       [/instrumente|tools/i, ['/map', '/charts', '/ins']],
     ]

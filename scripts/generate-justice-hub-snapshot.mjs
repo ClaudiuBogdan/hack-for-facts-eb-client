@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Regenerates `src/development/prototypes/justice/hub.data.json`: the court
- * portal's figures the justice hub prototypes draw, read from the deployed
- * dev API's judicial roots. Prototypes only; nothing in `src/features` reads
- * this file.
+ * Regenerates `src/features/justice/lib/hub-snapshot.ts`: the court portal's
+ * figures the justice front door (`/justice`) and its prototypes draw, read
+ * from the deployed dev API's judicial roots. The capture of portal.just.ro
+ * stopped in June 2026; rerun this when it resumes.
  *
- *   node scripts/generate-justice-hub-fixtures.mjs [--api <graphql url>]
+ *   node scripts/generate-justice-hub-snapshot.mjs [--api <graphql url>]
  *
  * Every count is the API's: `judicialCaseload` for cases (by level, court,
  * matter, year and stage), the decision lists paged whole for the ECHR, CCR
@@ -20,7 +20,7 @@ import { parseArgs } from 'node:util'
 
 const { values } = parseArgs({ options: { api: { type: 'string', default: 'https://dev-chronos-api.transparenta.eu/api/v1/graphql' } } })
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const out = resolve(root, 'src/development/prototypes/justice/hub.data.json')
+const out = resolve(root, 'src/features/justice/lib/hub-snapshot.ts')
 
 async function gql(query, variables) {
   for (let attempt = 1; ; attempt += 1) {
@@ -74,36 +74,25 @@ console.log(`Portal newest modification ${portalModifiedAt}; ÎCCJ newest archiv
 // ── cases ──
 const all = levelFilter(LEVELS)
 const inYear = { ...all, year: { eq: year } }
-const byLevel = await caseload('courtLevel', all)
+const total = (await caseload('courtLevel', all)).total
 const byLevelInYear = await caseload('courtLevel', inYear)
 const byCourt = asMap((await caseload('court', all)).groups)
 const byCourtInYear = asMap((await caseload('court', inYear)).groups)
 const byYear = (await caseload('year', all)).groups
-const byYearLevel = {}
-for (const level of LEVELS) byYearLevel[level] = (await caseload('year', { ...levelFilter([level]), year: { gte: 2013 } })).groups
-const matters = { all: (await caseload('category', all)).groups, inYear: (await caseload('category', inYear)).groups, byLevel: {}, byLevelInYear: {} }
-for (const level of LEVELS) {
-  matters.byLevel[level] = (await caseload('category', levelFilter([level]))).groups
-  matters.byLevelInYear[level] = (await caseload('category', { ...levelFilter([level]), year: { eq: year } })).groups
-}
+const matters = { inYear: (await caseload('category', inYear)).groups, byLevelInYear: {} }
+for (const level of LEVELS) matters.byLevelInYear[level] = (await caseload('category', { ...levelFilter([level]), year: { eq: year } })).groups
 const stages = []
 for (const stage of STAGES) {
-  const levels = await caseload('courtLevel', { ...all, stage: { in: [stage] } })
   const levelsInYear = await caseload('courtLevel', { ...inYear, stage: { in: [stage] } })
-  stages.push({ stage, total: levels.total, byLevel: asMap(levels.groups), inYear: levelsInYear.total, byLevelInYear: asMap(levelsInYear.groups) })
+  stages.push({ stage, byLevelInYear: asMap(levelsInYear.groups) })
 }
-// Matters by year for the years the capture holds densely.
-const matterYears = {}
-for (const y of [year - 2, year - 1, year, year + 1]) matterYears[y] = (await caseload('category', { ...all, year: { eq: y } })).groups
 
 // ── courts ──
-const courtList = (await gql(`{ judicialCourts { institutionCode courtLevel specialization locality countyCode parentInstitutionCode } }`)).judicialCourts
+const courtList = (await gql(`{ judicialCourts { institutionCode courtLevel countyCode } }`)).judicialCourts
 const courts = courtList.map((court) => ({
   code: court.institutionCode,
   level: court.courtLevel,
-  specialization: court.specialization,
   county: court.countyCode,
-  parent: court.parentInstitutionCode,
   cases: byCourt[court.institutionCode] ?? 0,
   casesInYear: byCourtInYear[court.institutionCode] ?? 0,
 }))
@@ -126,36 +115,38 @@ const hudoc = await decisions('hudoc_decision')
 // Judgments (HEJUD/HFJUD), one per ECLI: a judgment published in English and French is one judgment.
 const judgments = new Map()
 for (const row of hudoc) if (/^h[ef]jud$/.test(row.decisionKind ?? '') && row.ecli) judgments.set(row.ecli, row)
-const admissibility = new Map()
-for (const row of hudoc) if (/^h[ef]dec$/.test(row.decisionKind ?? '') && row.ecli) admissibility.set(row.ecli, row)
 const ccr = await decisions('ccr_decision')
 const cnsc = await decisions('cnsc_decision')
 
-const data = {
+const snapshot = {
   capturedAt: new Date().toISOString().slice(0, 10),
-  api: values.api,
   asOf: { portalModifiedAt, iccjArchiveDate: iccjNewest.sourceOpenedAt },
   year,
-  cases: {
-    total: byLevel.total,
-    byLevel: asMap(byLevel.groups),
-    inYear: byLevelInYear.total,
-    byLevelInYear: asMap(byLevelInYear.groups),
-    byYear,
-    byYearLevel,
-  },
+  cases: { total, inYear: byLevelInYear.total, byLevelInYear: asMap(byLevelInYear.groups), byYear },
   matters,
-  matterYears,
   stages,
   courts,
   decisions: {
     echrJudgments: tally([...judgments.values()].map((row) => row.decisionDate.slice(0, 4))),
-    echrAdmissibility: tally([...admissibility.values()].map((row) => row.decisionDate.slice(0, 4))),
-    echrRows: hudoc.length,
     ccrByYear: tally(ccr.map((row) => String(row.decisionYear))),
     cnscByMonth: tally(cnsc.map((row) => row.decisionDate.slice(0, 7))),
-    cnscTotal: cnsc.length,
   },
 }
-writeFileSync(out, `${JSON.stringify(data, null, 1)}\n`)
-console.log(`wrote ${out}: ${data.cases.total} cases, ${courts.length} courts, ${stages.length} stages, ${judgments.size} ECHR judgments, ${ccr.length} CCR, ${cnsc.length} CNSC`)
+// JSON with bare identifier keys and single-quoted strings, as the other generated snapshots read.
+const literal = JSON.stringify(snapshot, null, 2)
+  .replace(/"([A-Za-z_][A-Za-z0-9_]*)":/g, '$1:')
+  .replace(/"((?:[^"\\]|\\.)*)"/g, (_, text) => `'${text.replace(/'/g, "\\'")}'`)
+  // A flat object on one line: a court, a count.
+  .replace(/\{\n\s*([^{}[\]]*?)\n\s*\}/g, (_, inner) => `{ ${inner.replace(/\n\s*/g, ' ')} }`)
+writeFileSync(
+  out,
+  `/**\n * The court portal's figures for the justice front door, read from the judicial API on ${snapshot.capturedAt}.\n *\n * Generated by \`scripts/generate-justice-hub-snapshot.mjs\`; never edit a figure by hand.\n */\nimport type { JusticeHubSnapshot } from './hub-snapshot-types'\n\nexport const JUSTICE_HUB_SNAPSHOT: JusticeHubSnapshot = ${literal}\n`,
+)
+// The years alone, for the routes: a route that imported the snapshot would load it on every page.
+const firstWhole = year - 2
+const lastCapture = Number(portalModifiedAt.slice(0, 4))
+writeFileSync(
+  resolve(root, 'src/features/justice/lib/hub-years.ts'),
+  `/**\n * The court portal capture's years, from the front door's snapshot read on ${snapshot.capturedAt}.\n *\n * Generated by \`scripts/generate-justice-hub-snapshot.mjs\` beside \`hub-snapshot.ts\`, so a route can know them without\n * loading the snapshot; never edit by hand.\n */\n\n/** The last calendar year the capture covers whole: the pages describe it by default. */\nexport const JUSTICE_REFERENCE_YEAR = ${year}\n/** The first year the capture holds whole; the years before hold only cases still active later. */\nexport const JUSTICE_FIRST_WHOLE_YEAR = ${firstWhole}\n/** The year the capture stops in: a part-year. */\nexport const JUSTICE_LAST_CAPTURE_YEAR = ${lastCapture}\n`,
+)
+console.log(`wrote ${out}: ${total} cases, ${courts.length} courts, ${stages.length} stages, ${judgments.size} ECHR judgments, ${ccr.length} CCR, ${cnsc.length} CNSC`)

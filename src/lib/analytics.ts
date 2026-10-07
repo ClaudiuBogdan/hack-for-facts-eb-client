@@ -4,6 +4,7 @@ import { useLocation } from "@tanstack/react-router";
 import { env } from "@/config/env";
 import { hasAnalyticsConsent } from "@/lib/consent";
 import {
+  sanitizeJusticeEventProperties,
   sanitizeJusticeTelemetryValue,
   sanitizeJusticeUrlFragment,
 } from "@/lib/privacy/sensitive-route-sanitizer";
@@ -124,6 +125,14 @@ function ensurePostHogInitialized(): void {
       capture_pageleave: true,
       disable_session_recording: true,
       person_profiles: env.VITE_POSTHOG_PERSON_PROFILES ?? "identified_only",
+      // The SDK adds its own properties after `capture` (the current and previous
+      // URLs, the referrer, the document title): scrub the payload it sends.
+      before_send: sanitizePostHogEvent,
+      // The app uses no feature flags, and the flags request carries the initial
+      // URL (a justice case number) without passing `before_send`.
+      advanced_disable_flags: true,
+      // Heatmap data is keyed by the raw page URL, which no property hook reaches.
+      capture_heatmaps: false,
     });
     posthogInitialized = true;
   } catch {
@@ -139,6 +148,19 @@ function ensurePostHogInitialized(): void {
   } catch {
     // Ignore PostHog registration failures.
   }
+}
+
+/** A PostHog event as it leaves: its properties and person properties scrubbed of justice identifiers. */
+export function sanitizePostHogEvent<T extends { properties?: Record<string, unknown>; $set?: Record<string, unknown>; $set_once?: Record<string, unknown> }>(
+  event: T | null,
+): T | null {
+  if (!event) return event;
+  return {
+    ...event,
+    ...(event.properties ? { properties: sanitizeJusticeEventProperties(event.properties) } : {}),
+    ...(event.$set ? { $set: sanitizeJusticeEventProperties(event.$set) } : {}),
+    ...(event.$set_once ? { $set_once: sanitizeJusticeEventProperties(event.$set_once) } : {}),
+  };
 }
 
 let _lastEventKey = "";

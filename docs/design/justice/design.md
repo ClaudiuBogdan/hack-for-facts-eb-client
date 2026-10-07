@@ -660,8 +660,9 @@ variants in the procurement, INS and companies hubs' language, sharing their
 bands: `registru` (the busiest courts of the year beside the headline, the map
 first), `drum` (a case's way up the levels with its stage counts beside the
 headline) and `materii` (a hundred of the year's cases by matter). Figures come
-from `hub.data.json`, regenerated from the live API by
-`scripts/generate-justice-hub-fixtures.mjs` (never edited by hand).
+from the live API through a generated snapshot (first `hub.data.json`, since
+§14 `src/features/justice/lib/hub-snapshot.ts`, by
+`scripts/generate-justice-hub-snapshot.mjs`; never edited by hand).
 
 Data rules the hub keeps:
 
@@ -683,6 +684,105 @@ Data rules the hub keeps:
 - One source line with the caveats behind one amber marker (four notes:
   source date, partial capture, frozen capture, privacy).
 
-Not yet: the court search lists courts but has no court page to open;
-toggles are component state, not URL state; no link leads to an analysis
-page yet.
+The prototype is now an adapter over the live components (§14): `registru`
+renders the live front door with its choices in local state; `drum` and
+`materii` keep their own hero panels on the live model.
+
+## 14. The live pages (2026-10-07)
+
+The owner picked `registru`, English paths and, for this round, the front
+door, a court page and a case page; the analysis page comes next with its own
+prototype. They allowed the case's object on the case page.
+
+**Routes.**
+
+| Path | What | Data |
+|---|---|---|
+| `/justice` | the front door (`registru`) | `hub-snapshot.ts`, no read |
+| `/justice/courts/$code` (`?an=`) | one court in one year | live, server-read, memo 10 min |
+| `/justice/cases/$code/$` | one case, its number the splat with its slashes | live, server-read, memo 10 min |
+| `/justitie`, `/justitie/*` | the mock-era pages | 301 to `/justice`, carrying nothing |
+
+Code: `src/features/justice/{api,hooks,lib,components/{hub,court,case}}`,
+routes `src/routes/justice/` and `src/routes/justitie/`. The record pages follow
+procurement's procedure (loader → server memo under a 6 s deadline → seeded
+query; a 404 from the loader for a code or number that cannot exist and for a
+record the API does not have; `no-store` on a failed or partial read; the head
+through `translatorFor`).
+
+**Decisions.**
+
+- **The front door reads a snapshot.** The portal's capture stopped in June
+  2026, and its figures take some forty aggregate reads (the ECHR series pages
+  through 7,350 rows), so `scripts/generate-justice-hub-snapshot.mjs` reads
+  them once into `hub-snapshot.ts`, dated in the source line. Rerun it when
+  the capture resumes. The court and case pages read live.
+- **The court page opens on the front door's year** (the capture's last
+  whole year, 2025); the year list offers the whole years of the capture and
+  its last part-year, never the partial ones before 2023. Its stages are the
+  four counted ones plus „Alte etape" as the rest of the year's total, so they
+  add up. Its children's counts are a second read; when it fails the children
+  show with a dash and a note, never zero, and the page is served once.
+- **The court's case list never carries what a case is about**: the owner
+  allowed the object on the case page only, so the list's selection leaves it
+  out (the server-rendered HTML holds no object either).
+- **A case is addressed by its court and number**, never by `caseId` (which a
+  reload can change). Its page is `noindex, follow`: it describes one dispute,
+  and a search engine is no place to find a person's case.
+- **The case lookup accepts only a number's shape** (digits, a slash, the
+  rest): a name typed by mistake never reaches an address. Telemetry reports
+  a case page as `/justice/cases/<court>/:caseNumber`
+  (`sensitive-route-sanitizer.ts`, Sentry replay off on `/justice*`).
+- **Parties** are counted by role and kind, a legal form beside its own kind
+  („1 firmă (SRL), 1 persoană fizică"); a sole-trader form (PFA, II, IF) is
+  never shown, as it points at a person.
+- **Hearings** show their time as the portal stores it (no time zone is
+  claimed), the panel, the decision document and the pronouncement; one dated
+  after the capture is „programată". No outcome: the API withholds it.
+- **Laws**: a resolved citation links to `/legislation/acts/$actId`, labelled
+  from the citation's own type, number and year as the registry writes them
+  („Legea nr. 85/2014"); an unresolved one keeps its token, with the code's
+  name for `ncp`, `ncpp`, `ncpc`, `ncc`.
+- **The same file at other courts** lists up to ten linked cases, each
+  labelled „posibil" (candidate) or „de verificat" (needs review), and counts
+  the links it does not list.
+- **The landing tile** „Justiție" leads to `/justice` again.
+
+- **The court page's year** is one the capture holds whole (2023 on) or its
+  last part-year; any other `?an=` describes the default year — a year the
+  picker never offers is no page of its own.
+- **Telemetry never carries a case number.** PostHog's SDK adds the current
+  and previous URLs, the referrer and the document title after a capture
+  call, so a `before_send` hook scrubs the final payload (URLs and paths to
+  `/justice/cases/<court>/:caseNumber`, titles' numbers redacted, person
+  properties too). Sentry's router tracing puts the route params — a case
+  page's splat — on its spans, so a transaction that touches a justice page
+  is never sent (`beforeSendTransaction`); replays stay off on `/justice*`.
+- **The ÎCCJ's cases are read in the browser**, not on the server (ask 15);
+  their pages say what the ÎCCJ archive does not carry as the archive's
+  (no hearings, appeals, parties or object), never as the portal's, and
+  name the archive (scj.ro) as their source.
+- **Same-file links** list only `same_dossier_cross_institution` edges that
+  are candidates or awaiting review; a rejected link or another kind is
+  never shown.
+- **The court route** imports the capture's years from `hub-years.ts`, never
+  the snapshot, so the snapshot loads with the front door only.
+
+**Server ask 15.** `judicialCase` takes 6.2–7.0 s for any ÎCCJ case (by
+natural key or by `caseId`, even selecting `case { caseId }` alone; e.g.
+`InaltaCurtedeCasatiesiJustitie` `656/1/2025`), against ~0.25 s for a Portal
+case — past a server render's 6 s deadline. The ÎCCJ lookup path needs an
+index.
+
+**Server ask 14.** `targetAct { displayCitation }` inside `judicialCase` fails
+with „Internal server error" (case `CurteadeApelCONSTANTA` `5180/118/2021/a3`,
+path `judicialCase.legalReferences.0.targetAct.displayCitation`), which fails
+the whole case read; `targetAct { actId }` works. The client reads the scalar
+`targetActId` meanwhile.
+
+**Tests.** Unit tests on answers recorded from the live API
+(`scripts/record-justice-fixtures.ts` → `src/features/justice/fixtures/`):
+the models, the adapters (what each read sends; no document asks for a name or
+a solution), the pages' server markup, the routes (404s, cache headers, heads,
+redirects) and the sanitizer. `tests/integration/justice.spec.ts` asserts what
+the server renders on the dev API.

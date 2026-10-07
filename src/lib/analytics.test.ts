@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { Analytics } from './analytics'
+import { Analytics, sanitizePostHogEvent } from './analytics'
 
 const posthogMock = vi.hoisted(() => ({
   init: vi.fn(),
@@ -32,6 +32,42 @@ describe('analytics privacy sanitization', () => {
     posthogMock.register.mockClear()
     posthogMock.capture.mockClear()
     window.history.pushState({}, '', '/')
+  })
+
+  it('scrubs what the SDK adds itself: the current and previous URLs, the referrer, the title, the person properties', () => {
+    Analytics.capturePageview({ pathname: '/justice' })
+    const init = posthogMock.init.mock.calls[0]?.[1] as { before_send?: unknown } | undefined
+    expect(init?.before_send).toBe(sanitizePostHogEvent)
+
+    const event = sanitizePostHogEvent({
+      event: '$pageleave',
+      properties: {
+        $current_url: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/1234/117/2024*?an=2025',
+        $pathname: '/justice/cases/TribunalulCLUJ/1234/117/2024*',
+        $prev_pageview_pathname: '/justice/cases/TribunalulCLUJ/99/117/2023',
+        $referrer: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/5/117/2022',
+        title: 'Dosarul 1234/117/2024* — Tribunalul Cluj — Justiție — Transparenta.eu',
+        $session_entry_url: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/1234/117/2024',
+        $session_entry_pathname: '/justice/cases/TribunalulCLUJ/1234/117/2024',
+        $browser: 'Chrome',
+      },
+      $set_once: { $initial_current_url: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/1234/117/2024' },
+    })
+    expect(event).toEqual({
+      event: '$pageleave',
+      properties: {
+        $current_url: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber?an=2025',
+        $pathname: '/justice/cases/TribunalulCLUJ/:caseNumber',
+        $prev_pageview_pathname: '/justice/cases/TribunalulCLUJ/:caseNumber',
+        $referrer: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber',
+        title: 'Dosarul :caseNumber — Tribunalul Cluj — Justiție — Transparenta.eu',
+        $session_entry_url: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber',
+        $session_entry_pathname: '/justice/cases/TribunalulCLUJ/:caseNumber',
+        $browser: 'Chrome',
+      },
+      $set_once: { $initial_current_url: 'https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber' },
+    })
+    expect(sanitizePostHogEvent(null)).toBeNull()
   })
 
   it('scrubs justice case path and query identifiers from pageviews', () => {

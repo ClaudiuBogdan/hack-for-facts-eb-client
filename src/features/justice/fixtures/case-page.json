@@ -1,0 +1,118 @@
+{
+ "judicialCase": {
+  "case": {
+   "caseId": "5482183",
+   "sourceSlug": "portal_just",
+   "institutionCode": "CurteadeApelCONSTANTA",
+   "caseNumber": "5180/118/2021/a3",
+   "caseNumberOld": null,
+   "department": "Secţia a II-a Civilă, de insolvenţă şi litigii cu profesionişti şi societăţi",
+   "category": "Faliment",
+   "stage": "Apel",
+   "stageName": "Apel",
+   "object": "procedura insolvenţei – societăţi cu răspundere limitată Deschidere procedură - Legea 85/2014",
+   "sourceOpenedAt": "2024-01-03",
+   "latestSourceModifiedAt": "2024-04-25T15:15:49.970Z"
+  },
+  "hearings": [
+   {
+    "hearingIndex": 0,
+    "hearingAt": "2024-03-22T09:00:00.000Z",
+    "panel": "C3AI",
+    "pronouncementDate": "2024-03-22",
+    "documentNumber": "75/2024",
+    "documentDate": "2024-03-22"
+   }
+  ],
+  "appeals": [
+   {
+    "appealIndex": 0,
+    "appealDeclaredAt": "2023-12-15",
+    "appealType": "Apel"
+   }
+  ],
+  "parties": [
+   {
+    "partyIndex": 0,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": "SRL"
+   },
+   {
+    "partyIndex": 1,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": null
+   },
+   {
+    "partyIndex": 2,
+    "partyKind": "public_entity",
+    "roleNormalized": "apelant",
+    "legalForm": null
+   },
+   {
+    "partyIndex": 3,
+    "partyKind": "public_entity",
+    "roleNormalized": "intimat",
+    "legalForm": null
+   },
+   {
+    "partyIndex": 4,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": null
+   },
+   {
+    "partyIndex": 5,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": "SRL"
+   },
+   {
+    "partyIndex": 6,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": "SRL"
+   },
+   {
+    "partyIndex": 7,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": "SRL"
+   },
+   {
+    "partyIndex": 8,
+    "partyKind": "company",
+    "roleNormalized": "intimat",
+    "legalForm": null
+   }
+  ],
+  "personPartyCount": 0,
+  "legalReferences": [
+   {
+    "caseLegalReferenceId": "6025717",
+    "sourceField": "object",
+    "citation": "legea 85/2014",
+    "actType": "lege",
+    "actNumber": "85",
+    "actYear": 2014,
+    "articleFragment": null,
+    "resolutionStatus": "unique",
+    "targetActId": "56661"
+   }
+  ],
+  "lineage": [
+   {
+    "fromCaseId": "2776390",
+    "toCaseId": "5482183",
+    "lineageType": "same_dossier_cross_institution",
+    "confidenceScore": "0.600",
+    "validationStatus": "candidate"
+   }
+  ],
+  "asOf": {
+   "asOf": "2026-06-22T15:37:22.000Z",
+   "sourceSlug": "portal_just"
+  }
+ }
+}

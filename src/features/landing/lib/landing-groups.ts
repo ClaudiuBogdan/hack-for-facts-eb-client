@@ -5,6 +5,7 @@ import {
   Briefcase,
   Building2,
   FileStack,
+  Gavel,
   HeartHandshake,
   Landmark,
   ListOrdered,
@@ -126,7 +127,12 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
         to: '/legislation',
         icon: Scale,
       },
-      // Justiție returns with the court portal's new pages (the mock-era /justitie pages were removed 2026-10-07).
+      {
+        title: msg`Justiție`,
+        blurb: msg`Dosarele instanțelor, pe materii, trepte și județe. Persoanele nu sunt numite.`,
+        to: '/justice',
+        icon: Gavel,
+      },
     ],
   },
   {

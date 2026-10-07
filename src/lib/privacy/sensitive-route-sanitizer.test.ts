@@ -3,6 +3,7 @@ import {
   SAFE_JUSTICE_QUERY_PARAMS,
   STRIPPED_JUSTICE_QUERY_PARAMS,
   isJusticePath,
+  sanitizeJusticeEventProperties,
   sanitizeJusticePathname,
   sanitizeJusticeQueryString,
   sanitizeJusticeTelemetryString,
@@ -10,6 +11,59 @@ import {
   sanitizeJusticeUrl,
   sanitizeJusticeUrlFragment,
 } from './sensitive-route-sanitizer'
+
+describe('the /justice pages', () => {
+  it('are justice paths, the front door, a court and a case alike', () => {
+    for (const path of ['/justice', '/justice/', '/justice/courts/TribunalulCLUJ', '/justice/cases/TribunalulCLUJ/1234/117/2024']) expect(isJusticePath(path)).toBe(true)
+    expect(isJusticePath('/justice-league')).toBe(false)
+  })
+
+  it('report a case page by its court, never its number', () => {
+    expect(sanitizeJusticePathname('/justice/cases/TribunalulBUCURESTI/33517/3/2021/a85')).toBe('/justice/cases/TribunalulBUCURESTI/:caseNumber')
+    expect(sanitizeJusticePathname('/justice/courts/TribunalulCLUJ')).toBe('/justice/courts/TribunalulCLUJ')
+    expect(sanitizeJusticeUrl('https://transparenta.eu/justice/cases/TribunalulCLUJ/1234/117/2024*?an=2025&q=x')).toBe(
+      'https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber?an=2025',
+    )
+  })
+
+  it('keep the front door’s and the court page’s own choices and drop anything else', () => {
+    expect(sanitizeJusticeQueryString('/justice', 'instante=tribunal&materii=penal&nivel=curte_de_apel&q=Popescu')).toBe('instante=tribunal&materii=penal&nivel=curte_de_apel')
+    expect(sanitizeJusticeUrlFragment('/justice/courts/TribunalulCLUJ?an=2024&caseNumber=1')).toBe('/justice/courts/TribunalulCLUJ?an=2024')
+  })
+
+  it('read a path encoded twice, an encoded query inside it, and capitals as the router does', () => {
+    expect(sanitizeJusticePathname('/justice/%2563ases/TribunalulCLUJ/1234/117/2024')).toBe('/justice/cases/TribunalulCLUJ/:caseNumber')
+    expect(sanitizeJusticeUrl('https://transparenta.eu/justice/%2563ases/TribunalulCLUJ/1234/117/2024')).toBe('https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber')
+    expect(sanitizeJusticePathname('/justice/courts/TribunalulCLUJ%3FcaseNumber%3D1234%2F117%2F2024')).toBe('/justice/courts/TribunalulCLUJ')
+    expect(sanitizeJusticeTelemetryString('failed to load /JUSTICE/CASES/TribunalulCLUJ/1234/117/2024')).not.toContain('1234/117/2024')
+  })
+
+  it('read an encoded path as the router does', () => {
+    expect(isJusticePath('/%6Austice/cases/X/1/2/2024')).toBe(true)
+    expect(sanitizeJusticePathname('/justice/%63ases/TribunalulCLUJ/1234/117/2024')).toBe('/justice/cases/TribunalulCLUJ/:caseNumber')
+    expect(sanitizeJusticeUrl('https://transparenta.eu/justice/%63ases/TribunalulCLUJ/1234%2F117%2F2024')).toBe('https://transparenta.eu/justice/cases/TribunalulCLUJ/:caseNumber')
+  })
+
+  it('redact a case number from a title at any depth of an analytics payload', () => {
+    expect(
+      sanitizeJusticeEventProperties({
+        title: 'Dosarul 17020,/245/2008 — X',
+        $set: { title: 'Dosarul 340.1/832/2007 — X' },
+        $set_once: { nested: { $title: 'Dosarul 9/9/2023 — Y' } },
+        count: 2,
+      }),
+    ).toEqual({
+      title: 'Dosarul :caseNumber — X',
+      $set: { title: 'Dosarul :caseNumber — X' },
+      $set_once: { nested: { $title: 'Dosarul :caseNumber — Y' } },
+      count: 2,
+    })
+  })
+
+  it('scrub a case address quoted inside telemetry text', () => {
+    expect(sanitizeJusticeTelemetryString('failed to load /justice/cases/TribunalulCLUJ/1234/117/2024')).toBe('failed to load /justice/cases/TribunalulCLUJ/:caseNumber')
+  })
+})
 
 describe('isJusticePath', () => {
   it('matches /justitie and /justitie/... but not substring-only paths', () => {

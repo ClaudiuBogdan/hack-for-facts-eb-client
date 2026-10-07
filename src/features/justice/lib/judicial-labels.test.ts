@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { JUDICIAL_COURT_LEVELS } from '@/schemas/judicial'
 import { COURT_NAMES } from './court-names.generated'
-import { formatJudicialDate } from './judicial-format'
+import { compactCountText, formatJudicialDate } from './judicial-format'
 import { caseCategoryLabel, courtLevelLabel, courtName } from './judicial-labels'
+
+// The page's language, pinned: the test environment activates none.
+vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 
 describe('courtName', () => {
   it('names a court by its place, with diacritics', () => {
@@ -42,6 +45,21 @@ describe('caseCategoryLabel', () => {
   it('keeps an unknown matter as spelled, and null as null', () => {
     expect(caseCategoryLabel('Materie nouă')).toBe('Materie nouă')
     expect(caseCategoryLabel(null)).toBeNull()
+  })
+})
+
+describe('compactCountText', () => {
+  it('writes thousands as Romanian counts them', () => {
+    expect([523, 1000, 1500, 3641, 20000, 101000, 120000].map(compactCountText)).toEqual([
+      '523',
+      '1 mie',
+      '1,5 mii',
+      '3,6 mii',
+      '20 de mii',
+      '101 mii',
+      '120 de mii',
+    ])
+    expect(compactCountText(2_000_000)).toBe('2 milioane')
   })
 })
 
