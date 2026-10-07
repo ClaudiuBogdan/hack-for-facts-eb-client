@@ -647,3 +647,42 @@ API on 2026-10-07.
     listed; (i) drop or label the five issuing bodies with no rows; (j)
     decision ↔ case links (no `ecris_case`, `contract` or `notice` link
     exists).
+13. **Case lookup by number alone.** A reader knows a case number
+    (`1234/3/2024`), rarely the court code; `judicialCase` needs both. Serve
+    the courts a number exists at (the number's middle segment is the
+    originating court's ECRIS id, which the API does not map to an
+    institution code).
+
+## 13. Front door prototypes (2026-10-07)
+
+`/development/justice/hub` (`src/development/prototypes/justice/hub.*`), three
+variants in the procurement, INS and companies hubs' language, sharing their
+bands: `registru` (the busiest courts of the year beside the headline, the map
+first), `drum` (a case's way up the levels with its stage counts beside the
+headline) and `materii` (a hundred of the year's cases by matter). Figures come
+from `hub.data.json`, regenerated from the live API by
+`scripts/generate-justice-hub-fixtures.mjs` (never edited by hand).
+
+Data rules the hub keeps:
+
+- **The reference year is the last whole year of the capture** (2025: the
+  Portal's newest modification is 22 June 2026). Its cases are counted by
+  their source date („dosare cu data din 2025"), never called new filings.
+- **One matter, one row:** the ÎCCJ's raw labels are merged into the Portal's
+  codes by name.
+- **Stages:** the stage table adds an „Alte etape" column so each level's
+  row adds up to its total (13 stage values are counted; ask 3).
+- **Years before 2023 are drawn dashed** („preluare parțială") and the last
+  year as a part-year; the lede says why.
+- **County map:** cases dated 2025 at the county's judecătorii per 1,000
+  residents (INS, 1 January 2025), the country on the same basis; computed by
+  Transparenta.eu and labelled so; a case is judged where the court is
+  competent, not where its parties live.
+- **Decisions:** ECHR judgments only, one per ECLI; CCR and CNSC counted as
+  „preluate" (captured), never as the bodies' totals.
+- One source line with the caveats behind one amber marker (four notes:
+  source date, partial capture, frozen capture, privacy).
+
+Not yet: the court search lists courts but has no court page to open;
+toggles are component state, not URL state; no link leads to an analysis
+page yet.
