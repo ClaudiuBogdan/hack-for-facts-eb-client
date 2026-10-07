@@ -54,20 +54,30 @@ function Links({ view }: { readonly view: YearView }) {
 /** a hundred squares, each a leu out of every hundred spent; the list is the legend. */
 export function SpendingBand(props: BandProps) {
   const { view } = props
-  const { whole, parts } = useSpending(view)
+  const { whole, parts, breakdown } = useSpending(view)
   const [active, setActive] = useState<string | null>(null)
+  // The total without its lines: said plainly, not drawn as a whole that is all „other".
+  const unbroken = whole !== null && !breakdown
   return (
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-5">
         <Head {...props} whole={whole} />
-        <p className="mt-4 max-w-[52ch] text-base leading-relaxed text-muted-foreground">{lede(parts, view)}</p>
-        <div className="mt-8 max-w-sm">
-          <MonoLabel className="mb-3 block text-muted-foreground">{t`Din fiecare 100 de lei cheltuiți`}</MonoLabel>
-          <HundredGrid parts={parts} active={active} onActive={setActive} />
-        </div>
+        {unbroken ? (
+          <p className="mt-4 max-w-[52ch] text-base leading-relaxed text-muted-foreground">
+            {t`Pentru ${view.text}, datele disponibile au doar totalul cheltuielilor, nu și împărțirea lor după natura cheltuielii.`}
+          </p>
+        ) : (
+          <>
+            <p className="mt-4 max-w-[52ch] text-base leading-relaxed text-muted-foreground">{lede(parts, view)}</p>
+            <div className="mt-8 max-w-sm">
+              <MonoLabel className="mb-3 block text-muted-foreground">{t`Din fiecare 100 de lei cheltuiți`}</MonoLabel>
+              <HundredGrid parts={parts} active={active} onActive={setActive} />
+            </div>
+          </>
+        )}
       </div>
       <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)}>
-        <PartRows parts={parts} active={active} onActive={setActive} showBars={false} />
+        {unbroken ? null : <PartRows parts={parts} active={active} onActive={setActive} showBars={false} />}
         <Links view={view} />
         <Sources view={view} />
       </div>

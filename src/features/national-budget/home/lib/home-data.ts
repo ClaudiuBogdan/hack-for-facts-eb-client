@@ -17,13 +17,14 @@
  */
 import { queryOptions } from '@tanstack/react-query'
 
+import { cellsOf, type Cell } from '@/features/national-budget/analytics/lib/analytics-data'
 import { lastCompleteYear, periodText } from '@/features/national-budget/analytics/lib/analytics-view'
 import { canonicalDecimal } from '@/features/national-budget/analytics/lib/exact'
 import { yearOf } from '@/features/national-budget/analytics/lib/series'
 import { fetchCompleteAggregatedLineItems, fetchEntityAnalytics } from '@/lib/api/entity-analytics'
 import { sumDecimals } from '@/lib/exact-decimal'
 import type { AnalyticsFilterType } from '@/schemas/charts'
-import type { BudgetApprovedEdition, BudgetNationalCatalog, BudgetObservation } from '@/schemas/national-budget-api'
+import type { BudgetApprovedEdition, BudgetNationalCatalog, BudgetNationalSeries, BudgetObservation } from '@/schemas/national-budget-api'
 
 // ──────────────────────────────────────────────────────────────── the year ──
 
@@ -103,6 +104,43 @@ export const TOTAL_ITEMS = {
   spending: 'mfin.bgc.expenditure.total',
   balance: 'mfin.bgc.balance.surplus_deficit',
 } as const
+
+/**
+ * The full years the bulletins don't vouch for, with the server's reason, from
+ * the years' read of the totals: the year menus list them but don't offer
+ * them. Which years these are is the API's answer, never a list kept here.
+ */
+export function unfinishedYearsOf(results: readonly BudgetNationalSeries[]): readonly (readonly [string, string | null])[] {
+  const cells = cellsOf(results.find((result) => result.item.itemId === TOTAL_ITEMS.spending))
+  return [...cells].filter(([, cell]) => cell.exact === null).map(([label, cell]) => [label, cell.reason] as const)
+}
+
+/** A year's three totals as the bulletin prints them: the balance its own line, never revenue less spending. */
+export type YearTotals = {
+  readonly year: number
+  readonly revenue: string | null
+  readonly spending: string | null
+  readonly balance: string | null
+  /** Why the bulletins answer no balance for the year; null when they do. */
+  readonly gap: { readonly reason: string | null } | null
+}
+
+/** Every year from `first` to `last`, oldest first, from the years' read of the totals by item and year. */
+export function yearTotalsOf(cells: ReadonlyMap<string, ReadonlyMap<string, Cell>>, first: number, last: number): readonly YearTotals[] {
+  const cellOf = (itemId: string, year: number) => cells.get(itemId)?.get(String(year)) ?? null
+  const rows: YearTotals[] = []
+  for (let year = first; year <= last; year += 1) {
+    const balance = cellOf(TOTAL_ITEMS.balance, year)
+    rows.push({
+      year,
+      revenue: cellOf(TOTAL_ITEMS.revenue, year)?.exact ?? null,
+      spending: cellOf(TOTAL_ITEMS.spending, year)?.exact ?? null,
+      balance: balance?.exact ?? null,
+      gap: balance?.exact == null ? { reason: balance?.reason ?? null } : null,
+    })
+  }
+  return rows
+}
 
 const E = (key: string) => `mfin.bgc.expenditure.${key}`
 const R = (key: string) => `mfin.bgc.revenue.${key}`

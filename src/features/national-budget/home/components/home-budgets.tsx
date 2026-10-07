@@ -106,7 +106,7 @@ function useBudgets(view: YearView, side: Side) {
 function NoColumns({ view }: { readonly view: YearView }) {
   return (
     <p className="max-w-[60ch] text-base leading-relaxed text-muted-foreground">
-      {t`Buletinul pentru ${view.text} e un PDF fără coloanele bugetelor, așa că nu le putem arăta separat. Le au buletinele în format de tabel: câteva luni din 2019–2023 și, din 2024, aproape fiecare lună.`}
+      {t`Pentru ${view.text}, datele disponibile nu au coloanele bugetelor, așa că nu le putem arăta separat. Le avem pentru câteva luni din 2019–2023 și, din 2024, pentru aproape fiecare lună.`}
     </p>
   )
 }
