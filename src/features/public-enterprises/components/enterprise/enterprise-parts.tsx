@@ -1,7 +1,7 @@
 import { useId, type ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowLeft, ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import type { CompanyProfileModel, StatusKind } from '@/features/private-companies/lib/company-profile-model'
@@ -28,7 +28,9 @@ import {
   type IndicatorTable,
 } from '../../lib/enterprise-model'
 import { groupLabel, kindLabel, levelLabel, listDateText, originMark, peersText, s1001Word, shownName, sourceLabel, type ShownName } from '../../lib/enterprise-text'
+import { hasPortfolio } from '../../lib/authority-portfolio-links'
 import { displayName, formatDate } from '../../lib/hub-format'
+import { TEXT_LINK } from './enterprise-links'
 
 /**
  * The enterprise page's parts: the head's chips, the control rows, the
@@ -37,54 +39,11 @@ import { displayName, formatDate } from '../../lib/hub-format'
  */
 
 export const LIST = 'divide-y divide-border/70 border-y border-border/70'
-export const TEXT_LINK = 'underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
 // ──────────────────────────────────────────────────────────── links ──
 
-/** A link to another page, its arrow saying it leaves this one. */
-export function OutLink({ children, className, ...to }: { readonly children: ReactNode; readonly className?: string } & OutTarget) {
-  const body = (
-    <>
-      {children}
-      <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
-    </>
-  )
-  const style = cn(TEXT_LINK, 'inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground sm:min-h-0', className)
-  switch (to.page) {
-    case 'company':
-      return (
-        <Link to="/companies/$cui" params={{ cui: to.cui }} hash={to.hash} preload="intent" className={style}>
-          {body}
-        </Link>
-      )
-    case 'buyer':
-      return (
-        <Link to="/procurement/institutions/$cui" params={{ cui: to.cui }} preload="intent" className={style}>
-          {body}
-        </Link>
-      )
-  }
-}
-
-type OutTarget = { readonly page: 'company'; readonly cui: string; readonly hash?: string } | { readonly page: 'buyer'; readonly cui: string }
-
-/** The way back: the front door, then the enterprise's county as the company page names it. */
-export function Kicker({ county }: { readonly county: string | null }) {
-  return (
-    <MonoLabel className="flex flex-wrap items-center gap-2 text-muted-foreground **:[text-box:trim-both_cap_alphabetic]">
-      <Link to="/public-enterprises" preload="intent" className="group inline-flex min-h-11 items-center gap-1.5 hover:text-foreground sm:min-h-0">
-        <ArrowLeft className="size-3 transition-transform group-hover:-translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
-        <span>{t`Întreprinderi publice`}</span>
-      </Link>
-      {county ? (
-        <>
-          <span aria-hidden="true">/</span>
-          <span>{county}</span>
-        </>
-      ) : null}
-    </MonoLabel>
-  )
-}
+// The way back and the links that leave live in a light file, so a route's eager not-found page can use them.
+export { Kicker, OutLink, TEXT_LINK } from './enterprise-links'
 
 // ──────────────────────────────────────────────────────────── chips ──
 
@@ -219,24 +178,46 @@ export function ControlList({ groups, read, locale }: { readonly groups: readonl
   )
 }
 
-/** The other enterprises one authority has in the lists, by name, each to its page. */
+/**
+ * The authority's other enterprises, as the live lists give them, then its
+ * portfolio: every one with its status and figures. The portfolio is linked
+ * only when the snapshot holds it (a link to any other would answer 404) and
+ * the authority has more than this one, or the lists could not be read.
+ */
 export function PeerList({ row, limit = 8 }: { readonly row: ControlRow; readonly limit?: number }) {
-  if (!row.peers || row.peers.others.length === 0) return null
-  const shown = row.peers.others.slice(0, limit)
-  const rest = row.peers.others.length - shown.length + Math.max(row.peers.total - 1 - row.peers.others.length, 0)
+  const others = row.peers?.others ?? []
+  const portfolio = hasPortfolio(row.authorityCui) && (row.peers === null || row.peers.total > 1) ? row.authorityCui : null
+  if (others.length === 0 && !portfolio) return null
+  const shown = others.slice(0, limit)
+  const rest = row.peers ? others.length - shown.length + Math.max(row.peers.total - 1 - others.length, 0) : 0
   return (
     <div className="mt-3">
-      <MonoLabel className="block text-muted-foreground">{t`Aceeași autoritate mai are`}</MonoLabel>
-      <ul className="mt-1 flex flex-wrap gap-x-4 text-sm sm:mt-2 sm:gap-y-1.5">
-        {shown.map((peer) => (
-          <li key={peer.cui}>
-            <Link to="/public-enterprises/$cui" params={{ cui: peer.cui }} preload="intent" className={cn(TEXT_LINK, 'inline-flex min-h-11 items-center text-foreground sm:min-h-0')}>
-              {peer.name ? displayName(peer.name) : <span className="text-muted-foreground">{t`Întreprinderea cu CUI ${peer.cui}`}</span>}
-            </Link>
-          </li>
-        ))}
-        {rest > 0 ? <li className="inline-flex min-h-11 items-center text-muted-foreground sm:min-h-0">{t`și încă ${rest}`}</li> : null}
-      </ul>
+      {shown.length > 0 ? (
+        <>
+          <MonoLabel className="block text-muted-foreground">{t`Aceeași autoritate mai are`}</MonoLabel>
+          <ul className="mt-1 flex flex-wrap gap-x-4 text-sm sm:mt-2 sm:gap-y-1.5">
+            {shown.map((peer) => (
+              <li key={peer.cui}>
+                <Link to="/public-enterprises/$cui" params={{ cui: peer.cui }} preload="intent" className={cn(TEXT_LINK, 'inline-flex min-h-11 items-center text-foreground sm:min-h-0')}>
+                  {peer.name ? displayName(peer.name) : <span className="text-muted-foreground">{t`Întreprinderea cu CUI ${peer.cui}`}</span>}
+                </Link>
+              </li>
+            ))}
+            {rest > 0 ? <li className="inline-flex min-h-11 items-center text-muted-foreground sm:min-h-0">{t`și încă ${rest}`}</li> : null}
+          </ul>
+        </>
+      ) : null}
+      {portfolio ? (
+        <Link
+          to="/public-enterprises/authorities/$cui"
+          params={{ cui: portfolio }}
+          preload="intent"
+          className={cn(TEXT_LINK, 'inline-flex min-h-11 items-center gap-1 text-sm font-medium text-foreground sm:mt-2 sm:min-h-0')}
+        >
+          {t`Toate întreprinderile autorității, cu starea și cifrele lor`}
+          <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+        </Link>
+      ) : null}
     </div>
   )
 }

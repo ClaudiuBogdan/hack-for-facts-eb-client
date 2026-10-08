@@ -1,4 +1,4 @@
-import { createLazyFileRoute, useParams } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import type { PublicEnterpriseRouteLoaderData } from './$cui'
 import type { ReadState } from '@/features/public-enterprises/components/enterprise/enterprise-bands'
@@ -8,21 +8,11 @@ import { PublicEnterprisePage } from '@/features/public-enterprises/components/e
 import { useEnterpriseBuyer, useEnterpriseCompany, usePublicEnterprise } from '@/features/public-enterprises/hooks/use-public-enterprise'
 import { neutralEnterpriseTitle } from '@/features/public-enterprises/lib/enterprise-head'
 import { enterpriseName } from '@/features/public-enterprises/lib/enterprise-seo'
-import { parsePublicEnterpriseCuiParam } from '@/features/public-enterprises/lib/enterprise-cui'
 import { useClientDocumentTitle } from '@/hooks/use-client-document-title'
 
 export const Route = createLazyFileRoute('/public-enterprises/$cui')({
   component: PublicEnterpriseRoutePage,
-  notFoundComponent: PublicEnterpriseRouteNotFound,
 })
-
-/** The server's `notFound()` — a CUI no list holds, or a path that is not a CUI — in the page's own frame. */
-function PublicEnterpriseRouteNotFound() {
-  const { cui } = useParams({ strict: false }) as { readonly cui?: string }
-  const parsed = cui ? parsePublicEnterpriseCuiParam(cui) : null
-  useClientDocumentTitle(parsed ? neutralEnterpriseTitle(parsed) : null)
-  return <PublicEnterpriseNotFound cui={parsed} />
-}
 
 /** A query's answer as a band reads it: seeded data stands even when a later read failed. */
 function stateOf<T>(query: { readonly data: T | undefined; readonly isError: boolean; readonly refetch: () => unknown }): ReadState<T> {

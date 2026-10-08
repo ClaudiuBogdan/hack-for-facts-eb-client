@@ -829,3 +829,96 @@ Sibiu transport ADIs); a list that drops the sector's number (Sector 3); two spe
 18. **Company reads under load.** Ten aliased `company` + `companyFinancials` reads take 10–12 s and fail
     with `Database` errors when a few run side by side (2026-10-08): a batch read (`companies(cuis:)`) or
     summary figures on a list row.
+
+### 12.9 The authority portfolio in production: `/public-enterprises/authorities/$cui` (2026-10-08)
+
+**Decision (owner, 2026-10-08):** promote the prototype's `tabel` variant.
+
+- **Data.** `scripts/generate-public-enterprise-hub-fixture.mjs` writes
+  `src/features/public-enterprises/lib/portfolio-snapshot.json`: all 946 authorities a current member's edge
+  names (keyed by CUI) and their 1,709 enterprises, one line each, 1.4 MB. It comes from the same run as the
+  hub's snapshot, so the hub's authority rows and the portfolios agree; both are dated by that run's reads
+  (2026-10-07). The prototype's fixture keeps its fourteen samples. A test holds the snapshot to its schema
+  (`src/schemas/public-enterprise-portfolio.ts`): every authority's CUI is one an address takes, every
+  enterprise it names is in the file.
+- **Reads.** Only server code imports the snapshot. The route's loader reads it behind `import.meta.env.SSR`
+  (`api/authority-portfolio-server.ts`), so the client bundle drops the read and the file. A client-side
+  navigation fetches the authority's part from `/public-enterprises/authorities/$cui/portfolio.json`, a server
+  route (`$cui/portfolio[.]json.ts`), and parses it against the schema. That path is outside `/api`, which the
+  dev server proxies to the API. The router keeps a portfolio once read (`staleTime: Infinity`); the page caches
+  publicly (`s-maxage=3600`), the JSON likewise. An authority the snapshot does not hold, or a path that is not
+  a canonical CUI, is a 404 with the way back, and offers no link a 404 might answer.
+- **The page.** The prototype's `tabel`:
+  - *Head:* the way back, the county or „Autoritate centrală", the name (its source credited when it is not
+    ANAF's list), the sentence of what each source gives it, the CUI, the budget page (or „Fără fișă în
+    buget"), one source line with the read date; beside it, a bar per source.
+  - *Figures:* four counts of enterprises. The SEAP pair says „cel puțin" when SEAP left a count unanswered and
+    goes when it answered for none.
+  - *Bands:* the table, then the disagreements (only when there are some), then activities and seats (from
+    five enterprises on).
+  - *Table:* the order (`?ordine=cifra|salariati|rezultat|nume`) and the filter by the list's word
+    (`?lista=toate|active|inactive|altele`) are in the address, defaults left out, every key returned (§12.5).
+    Changing them never reads again.
+  - *Missing values:* a row with no statement for the year says so once, in its turnover cell, with dashes
+    after; a held value says „reținut", its reason under the table, once.
+  - *Words:* a lane down at read time is said down, never read as „none".
+- **Ways in.** The hub's "Cine controlează cele mai multe" rows now open the authority's portfolio (they opened
+  its budget page, and only when it had one). On the enterprise page, the control band's "Aceeași autoritate
+  mai are" list ends with „Toate întreprinderile autorității, cu starea și cifrele lor". The authority's name
+  there still opens its budget page. `llms.txt` lists the page.
+- **Freshness.** The enterprise page is live; the portfolio is the snapshot. The two can differ by the
+  snapshot's age, and the portfolio says its date. Regenerating the snapshot regenerates the hub (about 15
+  minutes, design note §12.4).
+- **Review (Opus 5.5 xhigh, Codex gpt-6.1-sol xhigh), what it changed:**
+  - *A lane down at read time* is one part, „not read", in its source's row of the panel and in the table's list
+    column, and no disagreement is computed with it (the head sentence already said so).
+  - *The panel's ANAF row* counts the list's word over the enterprises the list puts under this authority, and
+    says where it has the others (under another authority, listed with none named, not listed), so the row
+    agrees with the head's count (CJ Hunedoara: 3, plus 2 under other authorities).
+  - *Links:* the generator also writes `lib/portfolio-index.ts`, the snapshot's version and the authorities it
+    holds, and every link to a portfolio (the hub's rows, the enterprise page's control band, the other
+    authorities in the disagreements) checks it, so no link answers 404 (the enterprise page is live and may
+    name an authority the snapshot predates). The enterprise page links the portfolio even when the live lists
+    could not be read; with one enterprise known, it does not.
+  - *The JSON address carries the snapshot's version* (`?v=`), so a cache never serves another snapshot's copy;
+    it is cached a day (`no-store` in dev), its 404 never, and it is `noindex`.
+  - *Not found:* both routes (this one and `/public-enterprises/$cui`) register their not-found page in the eager
+    file; a path the params reject fails before the lazy file loads and used to land on the root's page.
+    `Kicker` and `OutLink` moved to the light `enterprise-links.tsx`.
+  - *Words:* each count agrees with its noun and pronoun („o întreprindere, pe care lista nu o pune"); the sales
+    figure is „Vând prin achiziții directe" (supplier contract awards are not read); each SEAP count is a floor
+    by its own unanswered reads, and stays when one field is missing; a company record without its fiscal flag
+    is „Fără stare fiscală în fișă", not „no record"; a missing statement is „ultimul bilanț: {year}" whatever
+    that year is; „În funcțiune" and the filter's labels have their own messages (context), not other pages'.
+  - *Facts said once:* the filter shows no counts (the panel has them); the read date is the source line's only;
+    a row no longer repeats that the announcements name another authority (the disagreements band says it).
+  - *The page* remounts per authority (keyed), every row is in the server's HTML (past two dozen hidden until
+    „all"), ties sort in Romanian collation on server and browser alike, and the held-value note follows the
+    filtered rows.
+  - *Second round:*
+    - the table's „Lista ANAF" column and its filter read each row as the panel does: „Active" are the list's own
+      active enterprises here, and one the list puts under another authority says so in the column and falls
+      under „Altele";
+    - the sentence picks its form by how many the list gives the authority („o numesc și ele pentru ea",
+      „pentru toate", „Pentru ea, anunțurile numesc altă autoritate");
+    - the version is the snapshot's content hash; the JSON route answers only for its own (another is a 409
+      nothing caches; no version, served uncached), and the error page's retry reloads the document, which the
+      server renders whole;
+    - with the list published in part, absence is „Nu apare în listă"; with it unread, a row is „numită în
+      anunțurile AMEPIP", not „doar";
+    - an order by a column a phone hides says itself above the table;
+    - a failed snapshot load is not kept;
+    - the enterprise page's note for unread authority records no longer says the other enterprises are
+      unavailable (the portfolio link stands);
+    - `/public-enterprises/authorities` leads to the hub's control band (302, its `?lang=` kept).
+  - *Third round:*
+    - an enterprise whose only "name" is its CUI (two in the snapshot) is „Întreprinderea cu CUI …": the
+      generator drops the placeholder, and the link checks for it too;
+    - the row chip „doar în anunțurile AMEPIP" is gone, since the list column says where the list has it;
+    - the sentence says „Pentru cea din listă" / „Pentru fiecare dintre cele din listă", so its referent cannot be
+      the announcements' own enterprises named just before;
+    - the JSON route's 404 and 409 also send `CDN-Cache-Control: no-store`;
+    - the English „Does not appear on the list" keeps the partial-copy nuance.
+  - *Left as is, on purpose:* the hub („Nu e în listă" in its status band) and the enterprise page („nu e în
+    listă") still word absence from ANAF's list flatly. Bringing them to „nu apare" is a follow-up for both pages
+    together, so one change carries the wording across.

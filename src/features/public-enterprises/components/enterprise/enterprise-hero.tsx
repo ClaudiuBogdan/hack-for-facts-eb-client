@@ -86,7 +86,7 @@ export function EnterpriseHero({
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           <div className="min-w-0 lg:col-span-7">
             <div className="flex min-h-11 items-center justify-between gap-4 sm:min-h-0">
-              <Kicker county={model?.place.county ?? null} />
+              <Kicker place={model?.place.county ?? null} />
               <CaveatsMarker notes={pageCaveats(read, rows, tables)} />
             </div>
             <h1

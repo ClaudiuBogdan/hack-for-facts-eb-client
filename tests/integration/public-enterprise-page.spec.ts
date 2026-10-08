@@ -128,8 +128,11 @@ test.describe('Public enterprise page — the ways in', () => {
     await expect(page.getByRole('heading', { name: 'Nu e o întreprindere publică' })).toBeVisible()
   })
 
-  test('an address that is not a CUI is a 404', async ({ page }) => {
-    const response = await page.request.get('/public-enterprises/RO789401')
-    expect(response.status()).toBe(404)
+  test('an address that is not a CUI is a 404, in the page’s own frame', async ({ page }) => {
+    const response = await page.goto('/public-enterprises/RO789401')
+    expect(response?.status()).toBe(404)
+    // The params fail before the page's lazy file loads: the not-found page is the route's own all the same.
+    await expect(page.getByRole('heading', { name: 'Nu e o întreprindere publică' })).toBeVisible()
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/u)
   })
 })

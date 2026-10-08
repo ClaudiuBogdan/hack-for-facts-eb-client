@@ -848,7 +848,7 @@ here.
 | Domain              | Route                  | Spec                                   | Anchor / signature concern                          |
 | ------------------- | ---------------------- | -------------------------------------- | --------------------------------------------------- |
 | NGOs                | `/ngos`                | `docs/design/ngos/`                    | Identity tiers; name-only refs zone; CUI spine      |
-| Public companies    | `/public-enterprises`, `/public-enterprises/$cui` | `docs/design/public-companies/` §12 | Control edge ≠ ownership; missing ≠ zero; no national totals |
+| Public companies    | `/public-enterprises`, `/public-enterprises/$cui`, `/public-enterprises/authorities/$cui` | `docs/design/public-companies/` §12 | Control edge ≠ ownership; missing ≠ zero; no national totals |
 | Legal               | `/legislation`         | `docs/design/legal/`                   | Monitorul Oficial evidence; citation resolution honesty |
 | Elections           | `/alegeri`             | `docs/design/elections/`               | Results ≠ roll-call votes; candidate names as source only |
 | Justice             | `/justice`             | `docs/design/justice/`                 | Structural privacy: no party named, persons counted; case pages unindexed |

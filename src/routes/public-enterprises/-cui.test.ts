@@ -28,6 +28,7 @@ import { enterpriseReadFixture } from '@/features/public-enterprises/lib/test/en
 type QueryOptionsArg = { readonly queryKey: readonly unknown[] }
 
 interface RouteUnderTest {
+  readonly notFoundComponent: unknown
   readonly params: { readonly parse: (params: { readonly cui: string }) => { readonly cui: string } }
   readonly loader: (input: { readonly context: { readonly queryClient: unknown }; readonly params: { readonly cui: string } }) => Promise<Record<string, unknown>>
   readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
@@ -69,8 +70,10 @@ describe('/public-enterprises/$cui', () => {
     vi.resetModules()
   })
 
-  it('takes a canonical CUI only: 2–10 digits, no leading zero', async () => {
+  it('takes a canonical CUI only: 2–10 digits, no leading zero; a path it rejects lands on its own not-found page', async () => {
     const route = await importRoute()
+    // Registered here, not in the lazy file: the params fail before that file loads.
+    expect(route.notFoundComponent).toEqual(expect.any(Function))
     expect(route.params.parse({ cui: '789401' })).toEqual({ cui: '789401' })
     expect(route.params.parse({ cui: '10' })).toEqual({ cui: '10' })
     for (const cui of ['RO789401', ' 789401', '0789401', 'abc', '', '1', '12345678901']) expect(() => route.params.parse({ cui })).toThrow('not-found')

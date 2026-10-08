@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import type { PublicEnterpriseServerRead } from '@/features/public-enterprises/api/public-enterprise-ssr'
 import { PublicEnterprisePending } from '@/features/public-enterprises/components/enterprise/enterprise-pending'
+import { PublicEnterpriseRouteNotFound } from '@/features/public-enterprises/components/enterprise/enterprise-states'
 import { buildPublicEnterpriseHead, neutralEnterpriseTitle, type PublicEnterpriseSeo } from '@/features/public-enterprises/lib/enterprise-head'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
@@ -33,6 +34,8 @@ export const Route = createFileRoute('/public-enterprises/$cui')({
     },
   },
   pendingComponent: PublicEnterprisePending,
+  // Here, not in the lazy file: a path the params reject fails before that file loads.
+  notFoundComponent: PublicEnterpriseRouteNotFound,
   loader: async ({ context, params }): Promise<PublicEnterpriseRouteLoaderData> => {
     if (!shouldBlockLoaderForSsr()) {
       // Imported here, not at the top: this file is in every route's entry chunk, and the reads belong to the page's.

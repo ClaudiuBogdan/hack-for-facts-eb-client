@@ -75,12 +75,14 @@ describe('PublicEnterprisePage', () => {
     expect(ids).toEqual(['control', 'bani', 'amepip', 'stare'])
   })
 
-  it('links the authority to its budget page and its other enterprises to theirs', () => {
+  it('links the authority to its budget page, its other enterprises to theirs and all of them to its portfolio', () => {
     renderPage()
     const control = band('control')
     expect(within(control).getByRole('link', { name: 'Consiliul Local Sibiu' })).toHaveAttribute('href', '/entities/4270740')
     expect(within(control).getByRole('link', { name: 'Urbana SA' })).toHaveAttribute('href', '/public-enterprises/2684932')
-    // The association has no budget record: its name is plain text, its count its own.
+    expect(within(control).getByRole('link', { name: /Toate întreprinderile autorității/u })).toHaveAttribute('href', '/public-enterprises/authorities/4270740')
+    // The association has no budget record: its name is plain text, its count its own; with one enterprise, no portfolio link.
+    expect(within(control).getAllByRole('link', { name: /Toate întreprinderile autorității/u })).toHaveLength(1)
     expect(within(control).queryByRole('link', { name: /Asociatia/u })).toBeNull()
     expect(within(control).getByText(/o întreprindere în liste/iu)).toBeInTheDocument()
   })
@@ -127,6 +129,11 @@ describe('PublicEnterprisePage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tursib SA')
     expect(within(band('amepip')).getByText('Indicatorii AMEPIP nu s-au putut citi acum.')).toBeInTheDocument()
     expect(within(band('control')).getByText(/Fișele autorităților nu s-au putut citi acum/u)).toBeInTheDocument()
+    // The live lists failed, but the snapshot holds both authorities' portfolios: each still linked, its size unknown here.
+    expect(within(band('control')).getAllByRole('link', { name: /Toate întreprinderile autorității/u }).map((link) => link.getAttribute('href'))).toEqual([
+      '/public-enterprises/authorities/4270740',
+      '/public-enterprises/authorities/45699112',
+    ])
     fireEvent.click(within(band('bani')).getByRole('button', { name: 'Încearcă din nou' }))
     expect(retry).toHaveBeenCalled()
   })

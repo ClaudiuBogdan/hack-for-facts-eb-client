@@ -155,6 +155,8 @@ import { Route as ProcurementDirectAcquisitionsIdRouteImport } from './routes/pr
 import { Route as ProcurementInstitutionsCuiRouteImport } from './routes/procurement/institutions/$cui'
 import { Route as ProcurementProceduresIdRouteImport } from './routes/procurement/procedures/$id'
 import { Route as ProcurementSuppliersCuiRouteImport } from './routes/procurement/suppliers/$cui'
+import { Route as PublicEnterprisesAuthoritiesIndexRouteImport } from './routes/public-enterprises/authorities/index'
+import { Route as PublicEnterprisesAuthoritiesCuiRouteImport } from './routes/public-enterprises/authorities/$cui'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as AdminCampaignsCampaignKeyIndexRouteImport } from './routes/admin/campaigns/$campaignKey/index'
@@ -188,6 +190,7 @@ import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cu
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
+import { Route as PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport } from './routes/public-enterprises/authorities/$cui/portfolio[.]json'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
 import { Route as AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport } from './routes/admin/campaigns/$campaignKey/entities.$entityCui'
 import { Route as AdminCampaignsCampaignKeyUsersUserIdRouteImport } from './routes/admin/campaigns/$campaignKey/users.$userId'
@@ -1144,6 +1147,22 @@ const ProcurementSuppliersCuiRoute = ProcurementSuppliersCuiRouteImport.update({
 } as any).lazy(() =>
   import('./routes/procurement/suppliers/$cui.lazy').then((d) => d.Route),
 )
+const PublicEnterprisesAuthoritiesIndexRoute =
+  PublicEnterprisesAuthoritiesIndexRouteImport.update({
+    id: '/public-enterprises/authorities/',
+    path: '/public-enterprises/authorities/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PublicEnterprisesAuthoritiesCuiRoute =
+  PublicEnterprisesAuthoritiesCuiRouteImport.update({
+    id: '/public-enterprises/authorities/$cui',
+    path: '/public-enterprises/authorities/$cui',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/public-enterprises/authorities/$cui.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
   id: '/$pathId/',
   path: '/$pathId/',
@@ -1435,6 +1454,12 @@ const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
 )
+const PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute =
+  PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport.update({
+    id: '/portfolio.json',
+    path: '/portfolio.json',
+    getParentRoute: () => PublicEnterprisesAuthoritiesCuiRoute,
+  } as any)
 const LangLearningPathIdModuleIdLessonIdRoute =
   LangLearningPathIdModuleIdLessonIdRouteImport.update({
     id: '/$pathId/$moduleId/$lessonId',
@@ -1626,6 +1651,7 @@ export interface FileRoutesByFullPath {
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
+  '/public-enterprises/authorities/$cui': typeof PublicEnterprisesAuthoritiesCuiRouteWithChildren
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -1644,6 +1670,7 @@ export interface FileRoutesByFullPath {
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
+  '/public-enterprises/authorities/': typeof PublicEnterprisesAuthoritiesIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
@@ -1674,6 +1701,7 @@ export interface FileRoutesByFullPath {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
   '/parlament/membri/$memberId/': typeof ParlamentMembriMemberIdIndexRoute
@@ -1801,6 +1829,7 @@ export interface FileRoutesByTo {
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
+  '/public-enterprises/authorities/$cui': typeof PublicEnterprisesAuthoritiesCuiRouteWithChildren
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
@@ -1819,6 +1848,7 @@ export interface FileRoutesByTo {
   '/parlament/voturi': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui': typeof PrimarieCuiIndexRoute
   '/primarie/harta': typeof PrimarieHartaIndexRoute
+  '/public-enterprises/authorities': typeof PublicEnterprisesAuthoritiesIndexRoute
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
@@ -1848,6 +1878,7 @@ export interface FileRoutesByTo {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyIndexRoute
   '/parlament/membri/$memberId': typeof ParlamentMembriMemberIdIndexRoute
@@ -1991,6 +2022,7 @@ export interface FileRoutesById {
   '/procurement/institutions/$cui': typeof ProcurementInstitutionsCuiRoute
   '/procurement/procedures/$id': typeof ProcurementProceduresIdRoute
   '/procurement/suppliers/$cui': typeof ProcurementSuppliersCuiRoute
+  '/public-enterprises/authorities/$cui': typeof PublicEnterprisesAuthoritiesCuiRouteWithChildren
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -2009,6 +2041,7 @@ export interface FileRoutesById {
   '/parlament/voturi/': typeof ParlamentVoturiIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
+  '/public-enterprises/authorities/': typeof PublicEnterprisesAuthoritiesIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
@@ -2039,6 +2072,7 @@ export interface FileRoutesById {
   '/parlament/voturi/$chamber/$voteId': typeof ParlamentVoturiChamberVoteIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
+  '/public-enterprises/authorities/$cui/portfolio.json': typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/admin/campaigns/$campaignKey/': typeof AdminCampaignsCampaignKeyIndexRoute
   '/parlament/membri/$memberId/': typeof ParlamentMembriMemberIdIndexRoute
@@ -2183,6 +2217,7 @@ export interface FileRouteTypes {
     | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
     | '/procurement/suppliers/$cui'
+    | '/public-enterprises/authorities/$cui'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -2201,6 +2236,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
+    | '/public-enterprises/authorities/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
@@ -2231,6 +2267,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
     | '/parlament/membri/$memberId/'
@@ -2358,6 +2395,7 @@ export interface FileRouteTypes {
     | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
     | '/procurement/suppliers/$cui'
+    | '/public-enterprises/authorities/$cui'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
@@ -2376,6 +2414,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi'
     | '/primarie/$cui'
     | '/primarie/harta'
+    | '/public-enterprises/authorities'
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
@@ -2405,6 +2444,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId'
     | '/admin/campaigns/$campaignKey'
     | '/parlament/membri/$memberId'
@@ -2547,6 +2587,7 @@ export interface FileRouteTypes {
     | '/procurement/institutions/$cui'
     | '/procurement/procedures/$id'
     | '/procurement/suppliers/$cui'
+    | '/public-enterprises/authorities/$cui'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -2565,6 +2606,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
+    | '/public-enterprises/authorities/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
@@ -2595,6 +2637,7 @@ export interface FileRouteTypes {
     | '/parlament/voturi/$chamber/$voteId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
+    | '/public-enterprises/authorities/$cui/portfolio.json'
     | '/$lang/learning/$pathId/'
     | '/admin/campaigns/$campaignKey/'
     | '/parlament/membri/$memberId/'
@@ -2698,6 +2741,7 @@ export interface RootRouteChildren {
   PnrrJudeteCountySirutaRoute: typeof PnrrJudeteCountySirutaRoute
   PnrrOrganizatiiCuiRoute: typeof PnrrOrganizatiiCuiRoute
   PnrrProiecteProjectKeyRoute: typeof PnrrProiecteProjectKeyRoute
+  PublicEnterprisesAuthoritiesCuiRoute: typeof PublicEnterprisesAuthoritiesCuiRouteWithChildren
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
   InsComparatiiIndexRoute: typeof InsComparatiiIndexRoute
@@ -2713,6 +2757,7 @@ export interface RootRouteChildren {
   ParlamentStenogrameIndexRoute: typeof ParlamentStenogrameIndexRoute
   ParlamentVoturiIndexRoute: typeof ParlamentVoturiIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
+  PublicEnterprisesAuthoritiesIndexRoute: typeof PublicEnterprisesAuthoritiesIndexRoute
   ApiPnrrRawIndicatorsRoute: typeof ApiPnrrRawIndicatorsRoute
   ApiPnrrRawPaymentsRoute: typeof ApiPnrrRawPaymentsRoute
   ApiPnrrRawProjectsRoute: typeof ApiPnrrRawProjectsRoute
@@ -3767,6 +3812,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProcurementSuppliersCuiRouteImport
       parentRoute: typeof ProcurementRouteRoute
     }
+    '/public-enterprises/authorities/': {
+      id: '/public-enterprises/authorities/'
+      path: '/public-enterprises/authorities'
+      fullPath: '/public-enterprises/authorities/'
+      preLoaderRoute: typeof PublicEnterprisesAuthoritiesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public-enterprises/authorities/$cui': {
+      id: '/public-enterprises/authorities/$cui'
+      path: '/public-enterprises/authorities/$cui'
+      fullPath: '/public-enterprises/authorities/$cui'
+      preLoaderRoute: typeof PublicEnterprisesAuthoritiesCuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$lang/learning/$pathId/': {
       id: '/$lang/learning/$pathId/'
       path: '/$pathId'
@@ -3997,6 +4056,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/buget/resurse'
       preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
       parentRoute: typeof PrimarieCuiBugetRouteRoute
+    }
+    '/public-enterprises/authorities/$cui/portfolio.json': {
+      id: '/public-enterprises/authorities/$cui/portfolio.json'
+      path: '/portfolio.json'
+      fullPath: '/public-enterprises/authorities/$cui/portfolio.json'
+      preLoaderRoute: typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRouteImport
+      parentRoute: typeof PublicEnterprisesAuthoritiesCuiRoute
     }
     '/$lang/learning/$pathId/$moduleId/$lessonId': {
       id: '/$lang/learning/$pathId/$moduleId/$lessonId'
@@ -4448,6 +4514,21 @@ const ParlamentProiecteBillIdRouteRouteWithChildren =
     ParlamentProiecteBillIdRouteRouteChildren,
   )
 
+interface PublicEnterprisesAuthoritiesCuiRouteChildren {
+  PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute: typeof PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute
+}
+
+const PublicEnterprisesAuthoritiesCuiRouteChildren: PublicEnterprisesAuthoritiesCuiRouteChildren =
+  {
+    PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute:
+      PublicEnterprisesAuthoritiesCuiPortfolioDotjsonRoute,
+  }
+
+const PublicEnterprisesAuthoritiesCuiRouteWithChildren =
+  PublicEnterprisesAuthoritiesCuiRoute._addFileChildren(
+    PublicEnterprisesAuthoritiesCuiRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchizitiiRouteRoute: AchizitiiRouteRouteWithChildren,
@@ -4541,6 +4622,8 @@ const rootRouteChildren: RootRouteChildren = {
   PnrrJudeteCountySirutaRoute: PnrrJudeteCountySirutaRoute,
   PnrrOrganizatiiCuiRoute: PnrrOrganizatiiCuiRoute,
   PnrrProiecteProjectKeyRoute: PnrrProiecteProjectKeyRoute,
+  PublicEnterprisesAuthoritiesCuiRoute:
+    PublicEnterprisesAuthoritiesCuiRouteWithChildren,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
   InsComparatiiIndexRoute: InsComparatiiIndexRoute,
@@ -4556,6 +4639,8 @@ const rootRouteChildren: RootRouteChildren = {
   ParlamentStenogrameIndexRoute: ParlamentStenogrameIndexRoute,
   ParlamentVoturiIndexRoute: ParlamentVoturiIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
+  PublicEnterprisesAuthoritiesIndexRoute:
+    PublicEnterprisesAuthoritiesIndexRoute,
   ApiPnrrRawIndicatorsRoute: ApiPnrrRawIndicatorsRoute,
   ApiPnrrRawPaymentsRoute: ApiPnrrRawPaymentsRoute,
   ApiPnrrRawProjectsRoute: ApiPnrrRawProjectsRoute,

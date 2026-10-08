@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parsePublicEnterpriseHubSearch, resolvePublicEnterpriseHubSearch } from './public-enterprises'
+import { parsePublicEnterpriseHubSearch, parsePublicEnterprisePortfolioSearch, resolvePublicEnterpriseHubSearch, resolvePublicEnterprisePortfolioSearch } from './public-enterprises'
 
 describe('parsePublicEnterpriseHubSearch', () => {
   it('reads every choice the hub writes', () => {
@@ -36,5 +36,15 @@ describe('parsePublicEnterpriseHubSearch', () => {
 
   it('resolves a missing choice to its default', () => {
     expect(resolvePublicEnterpriseHubSearch({ marime: 'pierdere' })).toEqual({ autoritati: 'stat', judete: 'toate', domenii: 'toate', marime: 'pierdere' })
+  })
+})
+
+describe('the portfolio’s address', () => {
+  it('keeps the table’s order and filter, an unknown or default value empty, both keys back', () => {
+    expect(parsePublicEnterprisePortfolioSearch({ ordine: 'salariati', lista: 'altele' })).toEqual({ ordine: 'salariati', lista: 'altele' })
+    expect(parsePublicEnterprisePortfolioSearch({ ordine: 'pierdere', lista: 'toate' })).toEqual({ ordine: undefined, lista: undefined })
+    expect(parsePublicEnterprisePortfolioSearch({ ordine: ['nume'], lista: 7 })).toEqual({ ordine: undefined, lista: undefined })
+    expect(resolvePublicEnterprisePortfolioSearch({})).toEqual({ ordine: 'cifra', lista: 'toate' })
+    expect(resolvePublicEnterprisePortfolioSearch({ ordine: 'nume' })).toEqual({ ordine: 'nume', lista: 'toate' })
   })
 })

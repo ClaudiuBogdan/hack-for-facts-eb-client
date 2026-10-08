@@ -3,7 +3,7 @@
 import type { PublicEnterpriseHubSnapshot } from './hub-snapshot-types'
 
 export const PUBLIC_ENTERPRISE_HUB_SNAPSHOT: PublicEnterpriseHubSnapshot = {
-  "generatedAt": "2026-10-07T18:38:18.023Z",
+  "generatedAt": "2026-10-07T16:47:56.800Z",
   "sources": [
     {
       "family": "amepip",

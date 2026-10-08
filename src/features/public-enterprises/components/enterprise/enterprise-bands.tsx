@@ -58,7 +58,8 @@ export function ControlBand({
             </li>
           ))}
         </ul>
-        {read.authorities === null ? <BandNote>{t`Fișele autorităților nu s-au putut citi acum: fără tipul lor și fără celelalte întreprinderi pe care le au.`}</BandNote> : null}
+        {/* The portfolio pages still list each authority's enterprises (the link under it): only this page's live lists are missing. */}
+        {read.authorities === null ? <BandNote>{t`Fișele autorităților nu s-au putut citi acum: tipul lor și celelalte întreprinderi pe care le au lipsesc de aici.`}</BandNote> : null}
       </BandColumns>
     </HomeBand>
   )

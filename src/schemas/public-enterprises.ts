@@ -63,3 +63,39 @@ export function resolvePublicEnterpriseHubSearch(search: PublicEnterpriseHubSear
     marime: search.marime ?? PUBLIC_ENTERPRISE_HUB_DEFAULTS.marime,
   }
 }
+
+// --- /public-enterprises/authorities/$cui (an authority's portfolio) ------
+
+/** The table's order: 2024 turnover, headcount, net result (the lowest first), name. */
+export const PUBLIC_ENTERPRISE_PORTFOLIO_SORTS = ['cifra', 'salariati', 'rezultat', 'nume'] as const
+export type PublicEnterprisePortfolioSort = (typeof PUBLIC_ENTERPRISE_PORTFOLIO_SORTS)[number]
+
+/** Which rows by ANAF's list's word here: all, active, inactive, the rest (a blank cell, under another authority, none named, not in it, or the list unread). */
+export const PUBLIC_ENTERPRISE_PORTFOLIO_FILTERS = ['toate', 'active', 'inactive', 'altele'] as const
+export type PublicEnterprisePortfolioFilter = (typeof PUBLIC_ENTERPRISE_PORTFOLIO_FILTERS)[number]
+
+export type PublicEnterprisePortfolioSearch = {
+  readonly ordine?: PublicEnterprisePortfolioSort
+  readonly lista?: PublicEnterprisePortfolioFilter
+}
+
+export const PUBLIC_ENTERPRISE_PORTFOLIO_DEFAULTS = { ordine: 'cifra', lista: 'toate' } as const satisfies Required<PublicEnterprisePortfolioSearch>
+
+export const publicEnterprisePortfolioSearchSchema = z
+  .object({
+    ordine: choice(PUBLIC_ENTERPRISE_PORTFOLIO_SORTS, PUBLIC_ENTERPRISE_PORTFOLIO_DEFAULTS.ordine),
+    lista: choice(PUBLIC_ENTERPRISE_PORTFOLIO_FILTERS, PUBLIC_ENTERPRISE_PORTFOLIO_DEFAULTS.lista),
+  })
+  .catch(() => ({ ordine: undefined, lista: undefined }))
+
+/** Both keys come back, an unreadable or default one as `undefined` (the root keeps unknown keys; see the hub's parser). */
+export function parsePublicEnterprisePortfolioSearch(search: Record<string, unknown>): PublicEnterprisePortfolioSearch {
+  return publicEnterprisePortfolioSearchSchema.parse(search)
+}
+
+export function resolvePublicEnterprisePortfolioSearch(search: PublicEnterprisePortfolioSearch): Required<PublicEnterprisePortfolioSearch> {
+  return {
+    ordine: search.ordine ?? PUBLIC_ENTERPRISE_PORTFOLIO_DEFAULTS.ordine,
+    lista: search.lista ?? PUBLIC_ENTERPRISE_PORTFOLIO_DEFAULTS.lista,
+  }
+}

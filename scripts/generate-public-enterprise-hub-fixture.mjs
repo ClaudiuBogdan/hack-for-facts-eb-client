@@ -2,9 +2,13 @@
 /**
  * Regenerates the public-enterprise hub's figures, computed from the deployed
  * dev API: `src/features/public-enterprises/lib/hub-snapshot.ts` (the page at
- * `/public-enterprises`), `src/development/prototypes/public-companies/hub.fixture.json`
- * (its prototype) and `…/portfolio.fixture.json` (the authority portfolio
- * prototype: the sampled authorities and their enterprises, row by row).
+ * `/public-enterprises`), `src/features/public-enterprises/lib/portfolio-snapshot.json`
+ * (every authority's enterprises, row by row, for `/public-enterprises/authorities/$cui`;
+ * read on the server only) with its index `…/lib/portfolio-index.ts` (the snapshot's
+ * version and the authorities that have a page, for the browser),
+ * `src/development/prototypes/public-companies/hub.fixture.json`
+ * (the hub's prototype) and `…/portfolio.fixture.json` (the portfolio prototype's
+ * fourteen sampled authorities).
  * The public-enterprise module serves a list and a profile
  * but no aggregate (design note §12.3, ask 1), so this script reads every
  * anchor and counts on its own; the result is the shape a server aggregate
@@ -26,6 +30,7 @@
  * figures are then dated by the cache's first read, not by the run.
  * Money stays exact decimal text; a missing value stays null, never zero.
  */
+import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -44,6 +49,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const prototypeOut = resolve(root, 'src/development/prototypes/public-companies/hub.fixture.json')
 const snapshotOut = resolve(root, 'src/features/public-enterprises/lib/hub-snapshot.ts')
 const portfolioOut = resolve(root, 'src/development/prototypes/public-companies/portfolio.fixture.json')
+const portfolioSnapshotOut = resolve(root, 'src/features/public-enterprises/lib/portfolio-snapshot.json')
+const portfolioIndexOut = resolve(root, 'src/features/public-enterprises/lib/portfolio-index.ts')
 const CONCURRENCY = 6
 /** The last complete financial year: 2025 is still being filed. */
 const FINANCIAL_YEAR = 2024
@@ -543,7 +550,8 @@ async function main() {
     const filedYears = (member.financials?.years ?? []).map((statement) => statement.year)
     return {
       cui: member.cui,
-      name: member.name,
+      // A source that knows no name answers with the CUI itself: that is no name.
+      name: member.name && !/^\d+$/u.test(member.name.trim()) ? member.name : null,
       legalForm: member.company?.legalForm ?? null,
       county: member.company?.territory?.countyName ?? null,
       caen: member.company?.fiscal?.mainCaenCode ?? null,
@@ -585,25 +593,44 @@ async function main() {
       jsonApt: [...row.jsonApt].sort(),
     }
   }
-  const sampled = PORTFOLIO_SAMPLES.filter((cui) => authorities.has(cui)).map(portfolioAuthority)
-  const portfolio = {
-    generatedAt,
-    financialYear: FINANCIAL_YEAR,
-    seapSpan: SEAP_SPAN,
-    sources: fixture.sources,
-    authorities: sampled,
-    enterprises: Object.fromEntries(
-      [...new Set(sampled.flatMap((authority) => [...authority.s1001, ...authority.jsonApt]))].sort().map((cui) => [cui, portfolioEnterprise(memberOf.get(cui))]),
-    ),
-  }
+  const portfolioHead = { generatedAt, financialYear: FINANCIAL_YEAR, seapSpan: SEAP_SPAN, sources: fixture.sources }
+  const enterprisesOf = (rows) =>
+    Object.fromEntries([...new Set(rows.flatMap((authority) => [...authority.s1001, ...authority.jsonApt]))].sort().map((cui) => [cui, portfolioEnterprise(memberOf.get(cui))]))
   // One line per authority and per enterprise: small, and a regeneration diffs row by row.
   const lines = (entries) => entries.map((entry) => `  ${entry}`).join(',\n')
-  const { authorities: sampledRows, enterprises: rows, ...head } = portfolio
+  const keyed = (rows) => lines(Object.entries(rows).map(([cui, row]) => `${JSON.stringify(cui)}: ${JSON.stringify(row)}`))
+  const head = `${JSON.stringify(portfolioHead).slice(0, -1)},\n`
+  // The prototype: the sampled authorities, in the picker's order.
+  const sampled = PORTFOLIO_SAMPLES.filter((cui) => authorities.has(cui)).map(portfolioAuthority)
+  const sampledEnterprises = enterprisesOf(sampled)
+  writeFileSync(portfolioOut, `${head} "authorities": [\n${lines(sampled.map((row) => JSON.stringify(row)))}\n ],\n "enterprises": {\n${keyed(sampledEnterprises)}\n }\n}\n`)
+  console.log(`wrote ${portfolioOut}: ${sampled.length} authorities, ${Object.keys(sampledEnterprises).length} enterprises`)
+  // The page: every authority a current member's edge names, keyed by CUI, and every enterprise under one.
+  const every = [...authorities.keys()].sort().map(portfolioAuthority)
+  const uncanonical = every.filter((authority) => !/^[1-9]\d{1,9}$/u.test(authority.cui)).map((authority) => authority.cui)
+  if (uncanonical.length > 0) console.warn(`authorities whose CUI the page's address cannot take: ${uncanonical.join(', ')}`)
+  const everyEnterprise = enterprisesOf(every)
+  const snapshotText = `${head} "authorities": {\n${keyed(Object.fromEntries(every.map((row) => [row.cui, row])))}\n },\n "enterprises": {\n${keyed(everyEnterprise)}\n }\n}\n`
+  writeFileSync(portfolioSnapshotOut, snapshotText)
+  // The version is the snapshot's content: a regeneration that changes a byte changes it, whatever its read date.
+  const snapshotVersion = createHash('sha256').update(snapshotText).digest('hex').slice(0, 12)
+  console.log(`wrote ${portfolioSnapshotOut}: ${every.length} authorities, ${Object.keys(everyEnterprise).length} enterprises`)
+  // What the browser may know of the snapshot without loading it: its version (the JSON address carries it, so a cached copy of
+  // another snapshot is never read) and the authorities with a page (a link to any other would answer 404).
   writeFileSync(
-    portfolioOut,
-    `${JSON.stringify(head).slice(0, -1)},\n "authorities": [\n${lines(sampledRows.map((row) => JSON.stringify(row)))}\n ],\n "enterprises": {\n${lines(Object.entries(rows).map(([cui, row]) => `${JSON.stringify(cui)}: ${JSON.stringify(row)}`))}\n }\n}\n`,
+    portfolioIndexOut,
+    [
+      '// Generated by scripts/generate-public-enterprise-hub-fixture.mjs — do not edit by hand.',
+      `// The index of \`portfolio-snapshot.json\`, read from the API on ${generatedAt.slice(0, 10)}.`,
+      '',
+      '/** The snapshot\'s content (its sha256, cut to 12): the version a portfolio\'s JSON address carries and its server checks. */',
+      `export const PORTFOLIO_SNAPSHOT_VERSION = ${JSON.stringify(snapshotVersion)}`,
+      '',
+      '/** Every authority the snapshot holds a portfolio for: a link to any other would answer 404. */',
+      `export const PORTFOLIO_AUTHORITY_CUIS: ReadonlySet<string> = new Set(${JSON.stringify(every.map((row) => row.cui).join(' '))}.split(' '))`,
+      '',
+    ].join('\n'),
   )
-  console.log(`wrote ${portfolioOut}: ${sampled.length} authorities, ${Object.keys(portfolio.enterprises).length} enterprises`)
   console.log(`wrote ${snapshotOut} and ${prototypeOut}: ${fixture.members.current} members, ${authorityRows.length} authorities, ${fixture.counties.length} counties, ${fixture.sectors.length} divisions`)
 }
 

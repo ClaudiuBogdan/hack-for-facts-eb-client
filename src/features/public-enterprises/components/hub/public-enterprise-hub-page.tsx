@@ -17,6 +17,7 @@ import {
   type PublicEnterpriseAuthorityGroup,
   type PublicEnterpriseHubSearch,
 } from '@/schemas/public-enterprises'
+import { hasPortfolio } from '../../lib/authority-portfolio-links'
 import { displayName, formatCount, formatDate, s1001ListDate } from '../../lib/hub-format'
 import { authorityRanking, s1001Count, sourceOf } from '../../lib/hub-model'
 import { HUB_BAND_IDS, HUB_HEAD_ROWS, HUB_HEAD_ROWS_OPEN, HUB_RANKING_ID, hubSections, type HubBandId } from '../../lib/hub-sections'
@@ -123,7 +124,8 @@ function HeadRanking({ snapshot, group, onGroup }: { readonly snapshot: PublicEn
               .join(' · ') || undefined,
           value: formatCount(row.enterprises, i18n.locale),
           fraction: top > 0 ? row.enterprises / top : null,
-          link: row.hasBudget ? { page: 'entity' as const, cui: row.cui } : undefined,
+          // The hub's snapshot and the portfolios come from one generator run; the index still decides, so no row leads to a 404.
+          link: hasPortfolio(row.cui) ? { page: 'authority' as const, cui: row.cui } : undefined,
         }))}
       />
       {rows.length > HUB_HEAD_ROWS ? <ShowMore open={open} onToggle={() => setOpen(!open)} /> : null}

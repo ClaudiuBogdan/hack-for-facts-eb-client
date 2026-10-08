@@ -56,12 +56,13 @@ describe('PublicEnterpriseHubPage', () => {
     expect(sources).toHaveTextContent('citite pe 7 octombrie 2026')
   })
 
-  it('ranks the state’s authorities first, each opening its budget page, an authority without one a plain row', () => {
+  it('ranks the state’s authorities first, each opening its portfolio', () => {
     render(<PublicEnterpriseHubPage snapshot={SNAPSHOT} search={{}} />)
     const ranking = screen.getByRole('region', { name: 'Cine controlează cele mai multe' })
     const rows = within(ranking).getAllByRole('listitem')
     expect(rows).toHaveLength(2)
-    expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', '/entities/11795573')
+    expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', '/public-enterprises/authorities/11795573')
+    expect(within(rows[1]!).getByRole('link')).toHaveAttribute('href', expect.stringMatching(/^\/public-enterprises\/authorities\/[1-9]\d+$/u))
     expect(rows[0]).toHaveTextContent('Autoritatea pentru Administrarea Activelor Statului')
     expect(rows[0]).toHaveTextContent('5 inactive')
     expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toHaveTextContent('4 inactive')
@@ -72,8 +73,9 @@ describe('PublicEnterpriseHubPage', () => {
     const ranking = screen.getByRole('region', { name: 'Cine controlează cele mai multe' })
     const rows = within(ranking).getAllByRole('listitem')
     expect(rows[0]).toHaveTextContent('Consiliul General al Municipiului Bucuresti')
+    // An authority no source names still has its portfolio: the row opens it, its name said missing.
     expect(rows[2]).toHaveTextContent('Fără nume în sursă')
-    expect(within(rows[2]!).queryByRole('link')).toBeNull()
+    expect(within(rows[2]!).getByRole('link')).toHaveAttribute('href', expect.stringMatching(/^\/public-enterprises\/authorities\/\d+$/u))
 
     expect(within(ranking).getByRole('radio', { name: 'Locale' })).toHaveAttribute('aria-checked', 'true')
     fireEvent.click(within(ranking).getByRole('radio', { name: 'Județele' }))
