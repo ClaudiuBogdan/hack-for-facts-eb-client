@@ -79,7 +79,8 @@ jobs:
     name: Integration Tests (${{ matrix.shard }}/${{ matrix.total_shards }})
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Shard 4 runs about 11 minutes of specs after 3–4 minutes of setup; 15 cancelled it on slow runners.
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
