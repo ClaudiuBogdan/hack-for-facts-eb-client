@@ -18,6 +18,7 @@ import {
 import type { LinkProps } from '@tanstack/react-router'
 import { msg } from '@lingui/core/macro'
 import type { MessageDescriptor } from '@lingui/core'
+import { isFeatureEnabled } from '@/config/feature-flags'
 import { isMockDataEnabled } from '@/lib/scraper-references'
 
 /**
@@ -75,6 +76,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
         blurb: msg`Obiective de investiții, etape și plăți, pe județ și localitate.`,
         to: '/investitii-publice',
         icon: Wrench,
+        gate: () => isFeatureEnabled('publicInvestments'),
       },
       {
         title: msg`PNRR`,
@@ -148,6 +150,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
         blurb: msg`Rezultate pe scrutin și geografie. Rezultatele nu sunt voturi în plen.`,
         to: '/alegeri',
         icon: Vote,
+        gate: () => isFeatureEnabled('elections'),
       },
     ],
   },

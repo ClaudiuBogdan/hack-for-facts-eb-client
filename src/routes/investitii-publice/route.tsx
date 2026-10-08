@@ -1,6 +1,7 @@
 import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { BarChart3, Search } from 'lucide-react'
 import { Trans } from '@lingui/react/macro'
+import { assertFeatureEnabled } from '@/config/feature-flags'
 import { parseLayoutSearch } from '@/schemas/public-investments'
 import {
   HowToReadData,
@@ -10,6 +11,8 @@ import {
 import type { EvidenceRef } from '@/features/public-investments/lib/types'
 
 export const Route = createFileRoute('/investitii-publice')({
+  // Public investments are off in this build (`src/config/feature-flags.ts`): every page under this layout answers 404.
+  beforeLoad: () => assertFeatureEnabled('publicInvestments'),
   validateSearch: parseLayoutSearch,
   component: PublicInvestmentsLayout,
 })

@@ -14,6 +14,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AchizitiiRouteRouteImport } from './routes/achizitii/route'
 import { Route as AgentRouteImport } from './routes/agent'
+import { Route as AlegeriRouteRouteImport } from './routes/alegeri/route'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
@@ -221,6 +222,11 @@ const AgentRoute = AgentRouteImport.update({
   path: '/agent',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/agent.lazy').then((d) => d.Route))
+const AlegeriRouteRoute = AlegeriRouteRouteImport.update({
+  id: '/alegeri',
+  path: '/alegeri',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
   id: '/budget-explorer',
   path: '/budget-explorer',
@@ -350,14 +356,14 @@ const AchizitiiMetodologieRoute = AchizitiiMetodologieRouteImport.update({
   import('./routes/achizitii/metodologie.lazy').then((d) => d.Route),
 )
 const AlegeriIndexRoute = AlegeriIndexRouteImport.update({
-  id: '/alegeri/',
-  path: '/alegeri/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AlegeriRouteRoute,
 } as any).lazy(() => import('./routes/alegeri/index.lazy').then((d) => d.Route))
 const AlegeriElectionKeyRoute = AlegeriElectionKeyRouteImport.update({
-  id: '/alegeri/$electionKey',
-  path: '/alegeri/$electionKey',
-  getParentRoute: () => rootRouteImport,
+  id: '/$electionKey',
+  path: '/$electionKey',
+  getParentRoute: () => AlegeriRouteRoute,
 } as any).lazy(() =>
   import('./routes/alegeri/$electionKey.lazy').then((d) => d.Route),
 )
@@ -760,9 +766,9 @@ const AdminCampaignsCampaignKeyRouteRoute =
   } as any)
 const AlegeriContestContestKeyRoute =
   AlegeriContestContestKeyRouteImport.update({
-    id: '/alegeri/contest/$contestKey',
-    path: '/alegeri/contest/$contestKey',
-    getParentRoute: () => rootRouteImport,
+    id: '/contest/$contestKey',
+    path: '/contest/$contestKey',
+    getParentRoute: () => AlegeriRouteRoute,
   } as any).lazy(() =>
     import('./routes/alegeri/contest/$contestKey.lazy').then((d) => d.Route),
   )
@@ -1524,6 +1530,7 @@ const PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
+  '/alegeri': typeof AlegeriRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/justice': typeof JusticeRouteRouteWithChildren
@@ -1895,6 +1902,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/achizitii': typeof AchizitiiRouteRouteWithChildren
+  '/alegeri': typeof AlegeriRouteRouteWithChildren
   '/entities': typeof EntitiesRouteRouteWithChildren
   '/investitii-publice': typeof InvestitiiPubliceRouteRouteWithChildren
   '/justice': typeof JusticeRouteRouteWithChildren
@@ -2090,6 +2098,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/achizitii'
+    | '/alegeri'
     | '/entities'
     | '/investitii-publice'
     | '/justice'
@@ -2460,6 +2469,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/achizitii'
+    | '/alegeri'
     | '/entities'
     | '/investitii-publice'
     | '/justice'
@@ -2654,6 +2664,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AchizitiiRouteRoute: typeof AchizitiiRouteRouteWithChildren
+  AlegeriRouteRoute: typeof AlegeriRouteRouteWithChildren
   EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
   InvestitiiPubliceRouteRoute: typeof InvestitiiPubliceRouteRouteWithChildren
   JusticeRouteRoute: typeof JusticeRouteRouteWithChildren
@@ -2679,7 +2690,6 @@ export interface RootRouteChildren {
   AlertsAlertIdRouteRoute: typeof AlertsAlertIdRouteRouteWithChildren
   ChartsChartIdRouteRoute: typeof ChartsChartIdRouteRouteWithChildren
   PrimarieCuiRouteRoute: typeof PrimarieCuiRouteRouteWithChildren
-  AlegeriElectionKeyRoute: typeof AlegeriElectionKeyRoute
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
@@ -2708,7 +2718,6 @@ export interface RootRouteChildren {
   ShareCodeRoute: typeof ShareCodeRoute
   UnsubscribeTokenRoute: typeof UnsubscribeTokenRoute
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
-  AlegeriIndexRoute: typeof AlegeriIndexRoute
   CompaniesIndexRoute: typeof CompaniesIndexRoute
   InsIndexRoute: typeof InsIndexRoute
   IntreprinderiPubliceIndexRoute: typeof IntreprinderiPubliceIndexRoute
@@ -2722,7 +2731,6 @@ export interface RootRouteChildren {
   AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ParlamentMembriMemberIdRouteRoute: typeof ParlamentMembriMemberIdRouteRouteWithChildren
   ParlamentProiecteBillIdRouteRoute: typeof ParlamentProiecteBillIdRouteRouteWithChildren
-  AlegeriContestContestKeyRoute: typeof AlegeriContestContestKeyRoute
   ApiV1GraphqlRoute: typeof ApiV1GraphqlRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
@@ -2788,6 +2796,13 @@ declare module '@tanstack/react-router' {
       path: '/agent'
       fullPath: '/agent'
       preLoaderRoute: typeof AgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alegeri': {
+      id: '/alegeri'
+      path: '/alegeri'
+      fullPath: '/alegeri'
+      preLoaderRoute: typeof AlegeriRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/budget-explorer': {
@@ -2960,17 +2975,17 @@ declare module '@tanstack/react-router' {
     }
     '/alegeri/': {
       id: '/alegeri/'
-      path: '/alegeri'
+      path: '/'
       fullPath: '/alegeri/'
       preLoaderRoute: typeof AlegeriIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AlegeriRouteRoute
     }
     '/alegeri/$electionKey': {
       id: '/alegeri/$electionKey'
-      path: '/alegeri/$electionKey'
+      path: '/$electionKey'
       fullPath: '/alegeri/$electionKey'
       preLoaderRoute: typeof AlegeriElectionKeyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AlegeriRouteRoute
     }
     '/alerts/$alertId': {
       id: '/alerts/$alertId'
@@ -3436,10 +3451,10 @@ declare module '@tanstack/react-router' {
     }
     '/alegeri/contest/$contestKey': {
       id: '/alegeri/contest/$contestKey'
-      path: '/alegeri/contest/$contestKey'
+      path: '/contest/$contestKey'
       fullPath: '/alegeri/contest/$contestKey'
       preLoaderRoute: typeof AlegeriContestContestKeyRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AlegeriRouteRoute
     }
     '/alerts/$alertId/': {
       id: '/alerts/$alertId/'
@@ -4133,6 +4148,22 @@ const AchizitiiRouteRouteWithChildren = AchizitiiRouteRoute._addFileChildren(
   AchizitiiRouteRouteChildren,
 )
 
+interface AlegeriRouteRouteChildren {
+  AlegeriElectionKeyRoute: typeof AlegeriElectionKeyRoute
+  AlegeriIndexRoute: typeof AlegeriIndexRoute
+  AlegeriContestContestKeyRoute: typeof AlegeriContestContestKeyRoute
+}
+
+const AlegeriRouteRouteChildren: AlegeriRouteRouteChildren = {
+  AlegeriElectionKeyRoute: AlegeriElectionKeyRoute,
+  AlegeriIndexRoute: AlegeriIndexRoute,
+  AlegeriContestContestKeyRoute: AlegeriContestContestKeyRoute,
+}
+
+const AlegeriRouteRouteWithChildren = AlegeriRouteRoute._addFileChildren(
+  AlegeriRouteRouteChildren,
+)
+
 interface EntitiesCuiRouteChildren {
   EntitiesCuiShareImageDotpngRoute: typeof EntitiesCuiShareImageDotpngRoute
 }
@@ -4532,6 +4563,7 @@ const PublicEnterprisesAuthoritiesCuiRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AchizitiiRouteRoute: AchizitiiRouteRouteWithChildren,
+  AlegeriRouteRoute: AlegeriRouteRouteWithChildren,
   EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
   InvestitiiPubliceRouteRoute: InvestitiiPubliceRouteRouteWithChildren,
   JusticeRouteRoute: JusticeRouteRouteWithChildren,
@@ -4557,7 +4589,6 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsAlertIdRouteRoute: AlertsAlertIdRouteRouteWithChildren,
   ChartsChartIdRouteRoute: ChartsChartIdRouteRouteWithChildren,
   PrimarieCuiRouteRoute: PrimarieCuiRouteRouteWithChildren,
-  AlegeriElectionKeyRoute: AlegeriElectionKeyRoute,
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
@@ -4586,7 +4617,6 @@ const rootRouteChildren: RootRouteChildren = {
   ShareCodeRoute: ShareCodeRoute,
   UnsubscribeTokenRoute: UnsubscribeTokenRoute,
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
-  AlegeriIndexRoute: AlegeriIndexRoute,
   CompaniesIndexRoute: CompaniesIndexRoute,
   InsIndexRoute: InsIndexRoute,
   IntreprinderiPubliceIndexRoute: IntreprinderiPubliceIndexRoute,
@@ -4603,7 +4633,6 @@ const rootRouteChildren: RootRouteChildren = {
     ParlamentMembriMemberIdRouteRouteWithChildren,
   ParlamentProiecteBillIdRouteRoute:
     ParlamentProiecteBillIdRouteRouteWithChildren,
-  AlegeriContestContestKeyRoute: AlegeriContestContestKeyRoute,
   ApiV1GraphqlRoute: ApiV1GraphqlRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,

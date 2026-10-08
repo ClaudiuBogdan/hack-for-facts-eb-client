@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mockMode = vi.hoisted(() => ({ parliament: false }))
+const mockMode = vi.hoisted(() => ({ parliament: false, features: false }))
+
+vi.mock('@/config/feature-flags', () => ({ isFeatureEnabled: () => mockMode.features }))
 
 vi.mock('@/lib/scraper-references', () => ({
   isMockDataEnabled: (id: string) => id === 'political-parliament' && mockMode.parliament,
@@ -14,6 +16,7 @@ vi.mock('@/lib/scraper-references', () => ({
 describe('platform coverage', () => {
   beforeEach(() => {
     mockMode.parliament = false
+    mockMode.features = false
   })
 
   it('derives every figure from the visible groups and the catalog', async () => {
@@ -26,13 +29,15 @@ describe('platform coverage', () => {
     expect(gated.length).toBeGreaterThan(0)
 
     expect(coverage.surfaces).toBe(allEntries.length - gated.length)
-    expect(coverage.groups.length).toBe(LANDING_GROUPS.length)
+    // A group every gate empties (politics: parliament mocked off, elections switched off) is not counted.
+    expect(coverage.groups.length).toBe(LANDING_GROUPS.filter((group) => group.entries.some((entry) => entry.gate === undefined)).length)
     expect(coverage.datasets).toBe(3)
     expect(coverage.servedLive).toBe(2)
   })
 
   it('counts a gated surface once its gate opens', async () => {
     mockMode.parliament = true
+    mockMode.features = true
     const { getPlatformCoverage } = await import('./platform-coverage')
     const { LANDING_GROUPS } = await import('./landing-groups')
 
