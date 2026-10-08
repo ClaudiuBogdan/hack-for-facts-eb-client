@@ -81,9 +81,11 @@ describe('the front door', () => {
     ])
   })
 
-  it('links each court it names to its page, and leads to the analysis', () => {
+  it('links each court it names to its page, and leads to the analysis and the ECHR’s judgments', () => {
     expect(html).toContain('href="/justice/courts/JudecatoriaSECTORUL1BUCURESTI"')
     expect(html).toContain('href="/justice/analytics"')
+    // The shortcut and the ECHR series' own link.
+    expect(html.match(/href="\/justice\/echr"/gu)).toHaveLength(2)
   })
 
   it('shows each choice’s default when the address holds it unset or invalid', () => {

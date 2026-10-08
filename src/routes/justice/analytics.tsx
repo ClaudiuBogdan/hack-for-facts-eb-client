@@ -5,24 +5,9 @@ import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import type { JusticeAnalysisServerRead } from '@/features/justice/api/justice-analysis-ssr'
 // No module that loads a snapshot: a route module is in the entry every page loads (`-justice-analytics-entry.test.ts`).
-import { ANALYSIS_SEARCH_KEYS, type AnalysisSearchKey } from '@/features/justice/lib/analysis-codes'
+import { ANALYSIS_SEARCH_KEYS } from '@/features/justice/lib/analysis-codes'
 import { buildAnalysisPageDescription, buildAnalysisPageTitle } from '@/features/justice/lib/justice-page-titles'
-
-/**
- * The keys the page reads, each a string or the number the year travels
- * as; any other key is dropped. A key the router parsed as something else
- * (`judet=1`, an array) stays as text, for the question to drop it: the
- * address then is not the bare page, and is not indexed as one.
- */
-function validateAnalysisSearch(search: Record<string, unknown>): Partial<Record<AnalysisSearchKey, string | number>> {
-  const valid: Partial<Record<AnalysisSearchKey, string | number>> = {}
-  for (const key of ANALYSIS_SEARCH_KEYS) {
-    const value = search[key]
-    if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) valid[key] = value
-    else if (value !== undefined && value !== null) valid[key] = typeof value === 'object' ? JSON.stringify(value) : String(value)
-  }
-  return valid
-}
+import { validatePageSearch } from '@/features/justice/lib/page-search'
 
 /**
  * `/justice/analytics` (design.md §15): one question about the courts'
@@ -36,7 +21,8 @@ function validateAnalysisSearch(search: Record<string, unknown>): Partial<Record
  */
 export const Route = createFileRoute('/justice/analytics')({
   ssr: true,
-  validateSearch: validateAnalysisSearch,
+  // The question's keys, for the question to read (`questionOf`) and drop what it does not know.
+  validateSearch: validatePageSearch(ANALYSIS_SEARCH_KEYS),
   // The page's keys; the server read takes the question they ask (`questionOf`), and shares each of its reads with every question that makes it.
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ deps }): Promise<JusticeAnalysisServerRead> => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { i18n } from '@lingui/core'
 import { plural, t } from '@lingui/core/macro'
 import { Check, ChevronDown, Info, Link2, Plus, TriangleAlert } from 'lucide-react'
@@ -24,6 +24,7 @@ const TRIGGER = 'inline-flex h-9 items-center gap-2 whitespace-nowrap border bor
 /** The year: the capture's whole years and its part-year; the years before 2023 are the band's, never a question's. */
 export function YearMenu({ question, onChange }: { readonly question: Question; readonly onChange: Change }) {
   const [open, setOpen] = useState(false)
+  const captionId = useId()
   const source = sourceOf(question)
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -31,8 +32,10 @@ export function YearMenu({ question, onChange }: { readonly question: Question; 
         {yearText(question.year, source)}
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-64 p-2">
-        <MonoLabel className="block px-2 text-muted-foreground">{t`Anul datei dosarului`}</MonoLabel>
+      <PopoverContent align="end" className="w-64 p-2" aria-labelledby={captionId}>
+        <MonoLabel id={captionId} className="block px-2 text-muted-foreground">
+          {t`Anul datei dosarului`}
+        </MonoLabel>
         <div className="mt-1 grid grid-cols-2 gap-1">
           {YEARS.map((year) => (
             <button
@@ -67,7 +70,7 @@ export function AddFilter({ question, onChange }: { readonly question: Question;
         <Plus className="size-3.5" aria-hidden="true" />
         {t`Adaugă un filtru`}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(92vw,24rem)] p-0">
+      <PopoverContent align="start" className="w-[min(92vw,24rem)] p-0" aria-label={t`Adaugă un filtru`}>
         <Command label={t`Adaugă un filtru`}>
           <CommandInput placeholder={t`Instanță, județ, materie, etapă…`} />
           <CommandList label={t`Filtre`} className="max-h-80">
@@ -125,7 +128,7 @@ export function QuestionsMenu({ question, onChange }: { readonly question: Quest
         {t`Întrebări`}
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent align="end" className="max-h-[70vh] w-[min(92vw,26rem)] space-y-4 overflow-y-auto p-3">
+      <PopoverContent align="end" className="max-h-[70vh] w-[min(92vw,26rem)] space-y-4 overflow-y-auto p-3" aria-label={t`Întrebări`}>
         {QUESTION_GROUPS.map((group) => (
           <div key={group.id}>
             <MonoLabel className="block text-muted-foreground">{i18n._(group.title)}</MonoLabel>
@@ -178,7 +181,7 @@ export function NotesMarker({ question }: { readonly question: Question }) {
         {warnings.length > 0 ? <TriangleAlert className="size-3.5" aria-hidden="true" /> : <Info className="size-3.5" aria-hidden="true" />}
         {warnings.length > 0 ? warnings.length : null}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(92vw,26rem)] space-y-2 text-sm">
+      <PopoverContent align="start" className="w-[min(92vw,26rem)] space-y-2 text-sm" aria-label={t`Despre aceste cifre`}>
         {warnings.map((warning) => (
           <p key={warning} className="border-l-2 border-amber-600/60 pl-3 text-foreground">
             {warning}

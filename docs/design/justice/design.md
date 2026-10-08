@@ -1006,3 +1006,80 @@ under one answer, like procurement analytics).
 and sends the chosen year's judgments only, never the whole list to the
 browser; `JusticeSourceLine` gains a HUDOC source; the hub's decisions band
 links to the page.
+
+## 18. The live ECHR page (2026-10-08)
+
+The owner picked `flux` as two tabs and asked for the full implementation:
+`/justice/echr`. The applicants are never named; the HUDOC links stay (each
+opens the Court's own public page, which names the applicant; the owner
+accepted the recommendation to keep them).
+
+**Routes and code.** `src/routes/justice/echr.tsx` (+ `.lazy.tsx`);
+`src/features/justice/components/echr/` (`justice-echr-page.tsx`: the
+route's binding and the presentational page; `echr-head.tsx`: the head,
+the year menu, the figures; `echr-answer.tsx`: the tabs, the years table,
+the judgments table; `echr-view.tsx`: the figures' facts);
+`lib/echr-{model,address,text,snapshot,snapshot-types,years}.ts`. The
+prototype is an adapter: `flux` renders the live page, `ani` keeps its bars
+over the live head, figures, table and source.
+
+**Decisions.**
+
+- **The snapshot ships with the page, not through the server.** §17 planned
+  a server read sending one year's judgments; measured, the whole snapshot
+  is 38 KB gzipped, the capture is frozen, and the page then reads nothing:
+  a year or a tab changes at once, with no loading or failed state and no
+  endpoint. It loads with the lazy page only — the route module reads the
+  address through `echr-address.ts` and `echr-years.ts` (generated beside
+  the snapshot), and `-justice-echr-entry.test.ts` fails if it ever loads a
+  snapshot. The page is cached publicly like the front door (an hour shared,
+  a week stale-while-revalidate, keyed on the cookie its render follows).
+- **The address:** `an` (a year the snapshot holds, 2009–2026; anything else
+  is the default, 2025) and `vedere` (`hotarari`; the years are the
+  default), each left out at its default. The bare page is indexed with its
+  canonical; any other year or tab is `noindex, follow`, as the analysis
+  page's questions. Telemetry keeps `vedere` only with one of its two
+  values (`SAFE_JUSTICE_VALUES`); `an` was already a four-digit key.
+- **The words count in Romanian:** „de" from twenty up, but not after
+  101–119 („114 decizii", „125 de decizii"), through Lingui's plural rules.
+- **An application is counted once**, in the year of its first judgment in
+  the capture. 96 of the 1,442 judgments decide only applications an earlier
+  judgment decided (later judgments in the same case — just satisfaction,
+  revision; none mixes new and judged applications, and the generator fails
+  if one ever does): they count as judgments, are marked „hotărâre
+  ulterioară" in the list, and stay out of the applications, the joined
+  count and the median wait. The applications fall from 5,057 references to
+  4,383 (2025: 100 → 49). Found by the Opus review.
+- **A judgment's HUDOC link** is named by its visible language and date in
+  text („EN, hotărârea din 9 ianuarie 2018 pe HUDOC…", WCAG 2.5.3) and
+  described by the row's first application through `aria-describedby`
+  (several judgments share a day). Never an `aria-label`: Sentry's click
+  breadcrumbs record a clicked element's `aria-label`, and an application
+  number must stay out of telemetry (found by the Codex review; a test reads
+  every recorded attribute of the page for one).
+- **A year's row** opens its year on a click anywhere (the row's handler)
+  and its button is the keyboard's (`aria-current` on the chosen year). Not
+  a stretched overlay: WebKit (every iOS browser) never made a table row the
+  containing block one needs, so each row's overlay would cover the whole
+  section. The focus moves to the judgments' tab once the navigation lands.
+- **Every popover is a named dialog** (its caption by `aria-labelledby`, or a
+  label): the page's year menu and applications list, the source line's
+  notes, and the analysis page's four menus.
+- **One `validateSearch` helper** (`lib/page-search.ts`) for the analysis
+  and the ECHR routes.
+- **Entry points:** the front door's shortcut „Hotărârile CEDO" (was an
+  anchor to its decisions band) and a link under the band's ECHR chart
+  („Toate hotărârile, an de an").
+- **The source line** gains a HUDOC source („Sursa: Curtea Europeană a
+  Drepturilor Omului, HUDOC, documente până la 16 iulie 2026") with the
+  page's notes behind its marker: one count per document, the computed
+  wait, communicated cases are pending, no names, 2009 partial against
+  HUDOC; the running year's cutoff when it is the year asked.
+
+**Tests.** The model on the snapshot (one judgment per ECLI, every year
+adding up, no field beyond the five, application numbers and item ids of
+their shape), the address, the words (plurals, the notes, the tab title,
+every other state named), the page's server markup (the order a reader
+meets it, 82 judgments and their HUDOC links in 2018, no name pattern), the
+route (keys, headers, head), the entry, the sanitizer, the front door's
+links, and `tests/integration/justice.spec.ts`.

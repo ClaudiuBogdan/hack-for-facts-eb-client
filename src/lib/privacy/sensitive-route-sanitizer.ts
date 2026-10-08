@@ -32,6 +32,8 @@ export const SAFE_JUSTICE_QUERY_PARAMS = [
   'etapa',
   'dupa',
   'masura',
+  // The ECHR page's tab (its year is `an`).
+  'vedere',
   'court',
   'tier',
   'category',
@@ -93,6 +95,7 @@ export const SAFE_JUSTICE_VALUES: Readonly<Partial<Record<(typeof SAFE_JUSTICE_Q
   etapa: oneOf(['fond', 'apel', 'recurs', 'contestatie', 'extraordinare']),
   dupa: oneOf(['instante', 'judete', 'materii', 'etape', 'niveluri']),
   masura: oneOf(['dosare', 'locuitori']),
+  vedere: oneOf(['ani', 'hotarari']),
 }
 
 const SAFE_PARAM_SET = new Set<string>(SAFE_JUSTICE_QUERY_PARAMS)

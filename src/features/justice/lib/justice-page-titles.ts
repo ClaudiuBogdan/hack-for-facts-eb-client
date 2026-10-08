@@ -27,6 +27,17 @@ export function buildAnalysisPageDescription(i18n: I18n): string {
   return i18n._(msg`Câte dosare au instanțele din România, pe instanțe, județe, materii, etape și ani: întreabă și compară, de pe portalul instanțelor. Persoanele nu sunt numite.`)
 }
 
+/** The ECHR page's own title, in a request's language: the route's head gives it to every year. */
+export function buildEchrPageTitle(i18n: I18n): string {
+  return `${i18n._(msg`Hotărârile CEDO în cauze cu România`)} — ${i18n._(msg`Justiție`)} — Transparenta.eu`
+}
+
+export function buildEchrPageDescription(i18n: I18n): string {
+  return i18n._(
+    msg`Hotărârile Curții Europene a Drepturilor Omului în cauze cu România, din 2009: câte pe an, câte cereri soluționează, cât au așteptat, cu legătura la textul de pe HUDOC. Reclamanții nu sunt numiți.`,
+  )
+}
+
 export function buildCaseDocumentTitle(code: string, number: string): string {
   return `Dosarul ${number} — ${courtName(code)} — ${JUSTICE_TITLE_SUFFIX}`
 }

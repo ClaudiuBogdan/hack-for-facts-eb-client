@@ -16,12 +16,15 @@ export type EchrJudgment = {
   readonly versions: readonly EchrVersion[]
   /** The other respondent states, by ISO code, when the judgment names more than Romania. */
   readonly alsoAgainst?: readonly string[]
+  /** A later judgment in a case already judged: every application it decides, an earlier judgment in the capture decided. */
+  readonly followUp?: true
 }
 
-/** A year's documents: judgments (and the applications they decide), decisions and communicated cases, each counted once. */
+/** A year's documents: judgments, the applications first judged, decisions and communicated cases, each counted once. */
 export type EchrYear = {
   readonly year: number
   readonly judgments: number
+  /** The applications whose first judgment in the capture falls in the year: an application is counted once. */
   readonly applications: number
   readonly decisions: number
   readonly communicated: number

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { askedYear, ECHR_FIRST_WHOLE_YEAR, figuresOf, hudocUrl, judgmentsIn, lodgedYear, median, referenceYear, waitYears, yearState } from './echr-model'
+import { ECHR_FIRST_WHOLE_YEAR, figuresOf, hudocUrl, judgmentsIn, lodgedYear, median, referenceYear, waitYears, yearsOf, yearState } from './echr-model'
+import { ECHR_FIRST_YEAR, ECHR_LAST_YEAR, ECHR_REFERENCE_YEAR } from './echr-years'
 import { ECHR_SNAPSHOT } from './echr-snapshot'
 import type { EchrSnapshot } from './echr-snapshot-types'
 
@@ -39,13 +40,8 @@ describe('the waits', () => {
 })
 
 describe('the years', () => {
-  it('describes the last whole year by default, and only a year the snapshot holds', () => {
+  it('takes the last whole year as the one before the newest document’s', () => {
     expect(referenceYear(snapshot)).toBe(2025)
-    expect(askedYear(snapshot, undefined)).toBe(2025)
-    expect(askedYear(snapshot, '2024')).toBe(2024)
-    expect(askedYear(snapshot, 2026)).toBe(2026)
-    expect(askedYear(snapshot, '2019')).toBe(2025)
-    expect(askedYear(snapshot, 'Ion Popescu')).toBe(2025)
   })
 
   it('marks the years before the capture went whole and its running year, and compares only two whole years', () => {
@@ -57,6 +53,14 @@ describe('the years', () => {
     expect(figuresOf(snapshot, ECHR_FIRST_WHOLE_YEAR).change).toBeNull()
   })
 
+  it('leaves a later judgment in a judged case out of the waits and the joined count, but counts it as a judgment', () => {
+    const later: EchrSnapshot = {
+      ...snapshot,
+      judgments: [{ ecli: 'ECLI:CE:ECHR:2025:1201JUD000000123', date: '2025-12-01', applications: ['1/23', '2/10'], versions: [{ language: 'en', item: '001-3' }], followUp: true }, ...snapshot.judgments],
+    }
+    expect(figuresOf(later, 2025)).toMatchObject({ joined: 1, followUps: 1, medianWait: 14 })
+  })
+
   it('adds up a year from the snapshot: its judgments, applications, joined judgments and median wait', () => {
     expect(judgmentsIn(snapshot, 2025).map((judgment) => judgment.date)).toEqual(['2025-12-15', '2025-01-01'])
     expect(figuresOf(snapshot, 2025)).toMatchObject({ judgments: 2, applications: 4, joined: 1, communicated: 6, decisions: 5, medianWait: 14 })
@@ -64,6 +68,26 @@ describe('the years', () => {
 })
 
 describe('the snapshot', () => {
+  it('counts an application once, in the year of its first judgment; a later judgment in a judged case decides none anew', () => {
+    const judged = new Set<string>()
+    const first = new Map<number, number>()
+    for (const judgment of [...ECHR_SNAPSHOT.judgments].reverse()) {
+      const fresh = judgment.applications.filter((application) => !judged.has(application))
+      // Every judgment decides either only new applications or only judged ones.
+      expect([0, judgment.applications.length], judgment.ecli).toContain(fresh.length)
+      expect(judgment.followUp === true, judgment.ecli).toBe(fresh.length === 0)
+      const year = Number(judgment.date.slice(0, 4))
+      first.set(year, (first.get(year) ?? 0) + fresh.length)
+      for (const application of judgment.applications) judged.add(application)
+    }
+    for (const entry of ECHR_SNAPSHOT.years) expect(entry.applications, String(entry.year)).toBe(first.get(entry.year) ?? 0)
+  })
+
+  it('agrees with the years the route knows it by, every year between its first and last held', () => {
+    expect(referenceYear(ECHR_SNAPSHOT)).toBe(ECHR_REFERENCE_YEAR)
+    expect(yearsOf(ECHR_SNAPSHOT)).toEqual(Array.from({ length: ECHR_LAST_YEAR - ECHR_FIRST_YEAR + 1 }, (_, index) => ECHR_FIRST_YEAR + index))
+  })
+
   it('holds one judgment per ECLI, each with a HUDOC document, its years adding up to its list', () => {
     const eclis = new Set(ECHR_SNAPSHOT.judgments.map((judgment) => judgment.ecli))
     expect(eclis.size).toBe(ECHR_SNAPSHOT.judgments.length)
@@ -74,7 +98,7 @@ describe('the snapshot', () => {
   it('carries no name: an application is a number, a version a HUDOC item', () => {
     for (const judgment of ECHR_SNAPSHOT.judgments) {
       expect(Object.keys(judgment).sort()).toEqual(expect.arrayContaining(['applications', 'date', 'ecli', 'versions']))
-      expect(Object.keys(judgment).every((key) => ['alsoAgainst', 'applications', 'date', 'ecli', 'versions'].includes(key))).toBe(true)
+      expect(Object.keys(judgment).every((key) => ['alsoAgainst', 'applications', 'date', 'ecli', 'followUp', 'versions'].includes(key))).toBe(true)
       expect(judgment.applications.every((application) => /^\d+\/\d{2}$/u.test(application))).toBe(true)
       expect(judgment.versions.every((version) => /^001-\d+$/u.test(version.item))).toBe(true)
     }

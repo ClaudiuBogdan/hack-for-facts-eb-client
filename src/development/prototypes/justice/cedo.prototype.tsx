@@ -8,7 +8,8 @@ import { EchrByYear, EchrFlow } from './cedo.page'
  * `scripts/generate-justice-echr-snapshot.mjs`). The head with the year, four
  * figures, the year's judgments with their applications and links to HUDOC,
  * one source line. The variants differ in how the years are drawn.
- * Decisions and data rules: `docs/design/justice/design.md` §17.
+ * The owner picked `flux` as two tabs, promoted to `/justice/echr`. Decisions and
+ * data rules: `docs/design/justice/design.md` §17–18.
  */
 export const prototype = {
   title: 'Justiție — CEDO',

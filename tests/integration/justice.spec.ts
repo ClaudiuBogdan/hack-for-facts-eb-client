@@ -82,6 +82,33 @@ test.describe('Justice pages', () => {
     await expect(page.locator('tbody tr').first()).toContainText('București')
   })
 
+  test('the ECHR page answers the last whole year with its figures and the years, and a year row opens its judgments', async ({ page }) => {
+    const response = await page.goto('/justice/echr')
+    await waitForPageReady(page)
+
+    expect(response?.status()).toBe(200)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hotărârile CEDO în cauze cu România, în 2025')
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/justice\/echr$/u)
+    await expect(page.getByRole('tab', { name: 'Pe ani, 2009–2026' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('tabpanel').locator('tbody tr')).toHaveCount(18)
+    await page.getByRole('button', { name: '2018: hotărârile anului' }).click()
+    await expect(page).toHaveURL(/an=2018&vedere=hotarari/u)
+    await expect(page.getByRole('tab', { name: 'Hotărârile din 2018' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('tabpanel').locator('tbody tr')).toHaveCount(82)
+  })
+
+  test('a year’s judgments in the ECHR address are rendered on the server, linked to HUDOC, and not indexed', async ({ request }) => {
+    // The document as the server sends it, before any script: the rows and their links are in it.
+    const response = await request.get('/justice/echr?an=2018&vedere=hotarari')
+    expect(response.status()).toBe(200)
+    const html = await response.text()
+    expect(html).toMatch(/<meta name="robots" content="noindex, follow"/u)
+    expect(html).toContain('Hotărârile CEDO în cauze cu România, în 2018')
+    const links = html.match(/href="https:\/\/hudoc\.echr\.coe\.int\/(?:eng|fre)\?i=001-\d+"/gu) ?? []
+    // 82 judgments, one of them linked in both languages.
+    expect(links).toHaveLength(83)
+  })
+
   test('a court or a case the portal does not have is a 404', async ({ page }) => {
     expect((await page.goto('/justice/courts/TribunalulNIMIC'))?.status()).toBe(404)
     expect((await page.goto('/justice/cases/TribunalulSALAJ/1/1/1900'))?.status()).toBe(404)

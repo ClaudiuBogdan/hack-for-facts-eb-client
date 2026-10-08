@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
@@ -366,11 +367,14 @@ function SeriesBars({
   series,
   label,
   caveat,
+  more = null,
 }: {
   readonly title: ReactNode
   readonly series: readonly { readonly key: string; readonly count: number }[]
   readonly label: (key: string) => string
   readonly caveat: ReactNode
+  /** Where the series continues: a page of its own. */
+  readonly more?: ReactNode
 }) {
   const top = Math.max(...series.map((entry) => entry.count), 1)
   const total = series.reduce((sum, entry) => sum + entry.count, 0)
@@ -396,6 +400,7 @@ function SeriesBars({
         <MonoLabel className="tabular-nums text-muted-foreground">{last ? label(last.key) : ''}</MonoLabel>
       </div>
       <figcaption className="mt-3 text-xs leading-relaxed text-muted-foreground">{caveat}</figcaption>
+      {more}
     </figure>
   )
 }
@@ -425,6 +430,12 @@ export function JusticeDecisionsBand({ snapshot, index }: { readonly snapshot: J
           series={echr}
           label={(key) => key}
           caveat={<Trans>Doar hotărârile, câte una (nu și traducerea), fără deciziile de admisibilitate și comunicări.</Trans>}
+          more={
+            <Link to="/justice/echr" className={SHOW_MORE_CLASS}>
+              <Trans>Toate hotărârile, an de an</Trans>
+              <span aria-hidden="true">&nbsp;→</span>
+            </Link>
+          }
         />
         <SeriesBars
           title={<Trans>Decizii CCR preluate, pe ani</Trans>}

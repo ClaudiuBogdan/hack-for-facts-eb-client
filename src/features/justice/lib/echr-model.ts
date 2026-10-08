@@ -24,7 +24,7 @@ export function waitYears(judgment: Pick<EchrJudgment, 'date' | 'applications'>)
   return Number(judgment.date.slice(0, 4)) - Math.min(...years)
 }
 
-/** The median of whole years, the lower middle for an even count; null for none. */
+/** The median, the two middle values' mean for an even count; null for none. */
 export function median(values: readonly number[]): number | null {
   if (values.length === 0) return null
   const sorted = [...values].sort((a, b) => a - b)
@@ -48,6 +48,8 @@ export function yearSpan(snapshot: EchrSnapshot): string {
  * ECLI for ECLI; 2009 holds 153 of its 168.
  */
 export const ECHR_FIRST_WHOLE_YEAR = 2010
+/** HUDOC's judgments against Romania in the year before (2009), of which the capture holds fewer. */
+export const ECHR_HUDOC_JUDGMENTS_BEFORE_WHOLE = 168
 
 /** The last year the capture holds whole: the one before its newest document's. */
 export function referenceYear(snapshot: EchrSnapshot): number {
@@ -60,12 +62,6 @@ export function yearState(snapshot: EchrSnapshot, year: number): 'partial' | 'ru
   return year > referenceYear(snapshot) ? 'running' : 'whole'
 }
 
-/** A year the page can describe, or the reference year for any other. */
-export function askedYear(snapshot: EchrSnapshot, value: unknown): number {
-  const year = typeof value === 'number' ? value : typeof value === 'string' && /^\d{4}$/u.test(value) ? Number(value) : NaN
-  return yearsOf(snapshot).includes(year) ? year : referenceYear(snapshot)
-}
-
 export function judgmentsIn(snapshot: EchrSnapshot, year: number): readonly EchrJudgment[] {
   const prefix = `${year}-`
   return snapshot.judgments.filter((judgment) => judgment.date.startsWith(prefix))
@@ -75,16 +71,27 @@ export function yearEntry(snapshot: EchrSnapshot, year: number): EchrYear | null
   return snapshot.years.find((entry) => entry.year === year) ?? null
 }
 
+/** The year's judgments that decide applications for the first time: the waits are theirs, not a later judgment's in the same case. */
+export function firstJudgmentsIn(snapshot: EchrSnapshot, year: number): readonly EchrJudgment[] {
+  return judgmentsIn(snapshot, year).filter((judgment) => !judgment.followUp)
+}
+
+function medianWaitOf(judgments: readonly EchrJudgment[]): number | null {
+  return median(judgments.map(waitYears).filter((wait): wait is number => wait !== null))
+}
+
 export type EchrFigures = {
   readonly year: number
   readonly judgments: number
   /** The judgments of the year before; null when the snapshot has none. */
   readonly judgmentsBefore: number | null
   readonly applications: number
-  /** The median wait of the year's judgments, in years; null with no judgment. */
+  /** The median wait of the year's first judgments, in years; null with none. */
   readonly medianWait: number | null
-  /** The judgments deciding more than one application. */
+  /** The first judgments deciding more than one application. */
   readonly joined: number
+  /** The later judgments in cases already judged. */
+  readonly followUps: number
   readonly communicated: number
   readonly decisions: number
   readonly state: 'partial' | 'running' | 'whole'
@@ -94,8 +101,7 @@ export type EchrFigures = {
 
 export function figuresOf(snapshot: EchrSnapshot, year: number): EchrFigures {
   const entry = yearEntry(snapshot, year)
-  const judgments = judgmentsIn(snapshot, year)
-  const waits = judgments.map(waitYears).filter((wait): wait is number => wait !== null)
+  const first = firstJudgmentsIn(snapshot, year)
   const before = yearEntry(snapshot, year - 1)?.judgments ?? null
   const count = entry?.judgments ?? 0
   const compares = yearState(snapshot, year) === 'whole' && yearState(snapshot, year - 1) === 'whole' && before !== null && before > 0
@@ -104,8 +110,9 @@ export function figuresOf(snapshot: EchrSnapshot, year: number): EchrFigures {
     judgments: count,
     judgmentsBefore: before,
     applications: entry?.applications ?? 0,
-    medianWait: median(waits),
-    joined: judgments.filter((judgment) => judgment.applications.length > 1).length,
+    medianWait: medianWaitOf(first),
+    joined: first.filter((judgment) => judgment.applications.length > 1).length,
+    followUps: judgmentsIn(snapshot, year).length - first.length,
     communicated: entry?.communicated ?? 0,
     decisions: entry?.decisions ?? 0,
     state: yearState(snapshot, year),
@@ -115,7 +122,7 @@ export function figuresOf(snapshot: EchrSnapshot, year: number): EchrFigures {
 
 /** Every year's median wait, for the years band. */
 export function medianWaitByYear(snapshot: EchrSnapshot): ReadonlyMap<number, number | null> {
-  return new Map(yearsOf(snapshot).map((year) => [year, median(judgmentsIn(snapshot, year).map(waitYears).filter((wait): wait is number => wait !== null))]))
+  return new Map(yearsOf(snapshot).map((year) => [year, medianWaitOf(firstJudgmentsIn(snapshot, year))]))
 }
 
 /** A judgment's page on HUDOC, in its language's interface. */

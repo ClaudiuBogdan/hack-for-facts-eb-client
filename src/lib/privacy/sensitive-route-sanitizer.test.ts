@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { COUNTY_CODES, GROUPINGS, LEVEL_KEYS, MATTER_KEYS } from '@/features/justice/lib/analysis-model'
+import { ECHR_VIEWS } from '@/features/justice/lib/echr-address'
 import { STAGE_KEYS } from '@/features/justice/lib/judicial-model'
 import {
   SAFE_JUSTICE_QUERY_PARAMS,
@@ -44,6 +45,12 @@ describe('the /justice pages', () => {
     expect(sanitizeJusticeUrlFragment('/justice/analytics?materie=656/1/2025&instanta=TribunalulIonPopescu&an=2024')).toBe('/justice/analytics?an=2024')
     expect(sanitizeJusticeUrlFragment('/justice/analytics?nivel=tribunal,popescu&judet=XX&dupa=persoane&an=24/2025')).toBe('/justice/analytics')
     expect(sanitizeJusticeUrl('https://transparenta.eu/justice/analytics?etapa=Ion%20Popescu&masura=dosare')).toBe('https://transparenta.eu/justice/analytics?masura=dosare')
+  })
+
+  it('keep the ECHR page’s year and tab, and drop an application number or anything else in their place', () => {
+    expect(sanitizeJusticeUrlFragment('/justice/echr?an=2018&vedere=hotarari&q=Popescu')).toBe('/justice/echr?an=2018&vedere=hotarari')
+    expect(sanitizeJusticeUrlFragment('/justice/echr?vedere=6946/03&an=6946/03')).toBe('/justice/echr')
+    for (const view of ECHR_VIEWS) expect(SAFE_JUSTICE_VALUES.vedere!(view)).toBe(true)
   })
 
   it('accept every code the pages write, and no name in their place', () => {
@@ -147,6 +154,7 @@ describe('sanitizeJusticeQueryString', () => {
       etapa: 'apel',
       dupa: 'judete',
       masura: 'dosare',
+      vedere: 'hotarari',
     }
     const valueOf = (key: (typeof SAFE_JUSTICE_QUERY_PARAMS)[number]) => sample[key] ?? `value-${key}`
     const safeQuery = SAFE_JUSTICE_QUERY_PARAMS.map((key) => `${key}=${valueOf(key)}`).join('&')

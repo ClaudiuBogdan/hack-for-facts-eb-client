@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Info } from 'lucide-react'
@@ -7,8 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { dayText } from '../lib/judicial-format'
 
-/** Where a page's cases come from: portal.just.ro, the ÎCCJ's own archive (scj.ro), or both (the front door). */
-export type JusticeSource = 'portal' | 'iccj' | 'both'
+/** Where a page's records come from: portal.just.ro, the ÎCCJ's own archive (scj.ro), both (the front door), or the ECHR's HUDOC. */
+export type JusticeSource = 'portal' | 'iccj' | 'both' | 'hudoc'
 
 const LINK = 'font-medium text-foreground underline-offset-4 hover:underline'
 
@@ -44,29 +44,44 @@ export function JusticeSourceLine({
 }) {
   return (
     <p className={cn('flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground', className)}>
-      <span>
-        <Trans>Sursa:</Trans>{' '}
-        {source === 'iccj' ? (
-          <>
-            <Trans>arhiva Înaltei Curți de Casație și Justiție</Trans> (<SourceLink href="https://www.scj.ro">scj.ro</SourceLink>)
-          </>
-        ) : (
-          <SourceLink href="https://portal.just.ro">portal.just.ro</SourceLink>
-        )}
-        {source === 'both' ? (
-          <>
-            {' '}
-            <Trans>și arhiva ÎCCJ</Trans>
-          </>
-        ) : null}
-        {asOf ? <>, {source === 'both' && archiveAsOf ? t`date până la ${dayText(asOf)} (arhiva ÎCCJ: ${dayText(archiveAsOf)})` : t`date până la ${dayText(asOf)}`}</> : null}
-      </span>
+      {source === 'hudoc' ? (
+        <span>
+          {asOf ? (
+            <Trans>
+              Sursa: Curtea Europeană a Drepturilor Omului, <SourceLink href="https://hudoc.echr.coe.int">HUDOC</SourceLink>, documente până la {dayText(asOf)}
+            </Trans>
+          ) : (
+            <Trans>
+              Sursa: Curtea Europeană a Drepturilor Omului, <SourceLink href="https://hudoc.echr.coe.int">HUDOC</SourceLink>
+            </Trans>
+          )}
+        </span>
+      ) : (
+        <span>
+          <Trans>Sursa:</Trans>{' '}
+          {source === 'iccj' ? (
+            <>
+              <Trans>arhiva Înaltei Curți de Casație și Justiție</Trans> (<SourceLink href="https://www.scj.ro">scj.ro</SourceLink>)
+            </>
+          ) : (
+            <SourceLink href="https://portal.just.ro">portal.just.ro</SourceLink>
+          )}
+          {source === 'both' ? (
+            <>
+              {' '}
+              <Trans>și arhiva ÎCCJ</Trans>
+            </>
+          ) : null}
+          {asOf ? <>, {source === 'both' && archiveAsOf ? t`date până la ${dayText(asOf)} (arhiva ÎCCJ: ${dayText(archiveAsOf)})` : t`date până la ${dayText(asOf)}`}</> : null}
+        </span>
+      )}
       {notes.length > 0 ? <CaveatsMarker notes={notes} /> : null}
     </p>
   )
 }
 
 function CaveatsMarker({ notes }: { readonly notes: readonly ReactNode[] }) {
+  const captionId = useId()
   return (
     <Popover>
       <PopoverTrigger
@@ -76,8 +91,8 @@ function CaveatsMarker({ notes }: { readonly notes: readonly ReactNode[] }) {
         <Info className="size-4" aria-hidden="true" />
         {notes.length}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(26rem,calc(100vw-2rem))] text-sm leading-relaxed">
-        <MonoLabel className="block text-muted-foreground">
+      <PopoverContent align="start" className="w-[min(26rem,calc(100vw-2rem))] text-sm leading-relaxed" aria-labelledby={captionId}>
+        <MonoLabel id={captionId} className="block text-muted-foreground">
           <Trans>Ce trebuie știut despre aceste date</Trans>
         </MonoLabel>
         <ul className="mt-3 list-disc space-y-2 pl-4 text-foreground">

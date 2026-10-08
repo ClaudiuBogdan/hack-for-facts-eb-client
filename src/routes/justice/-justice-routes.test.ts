@@ -243,3 +243,42 @@ describe('/justice/analytics', () => {
     expect(metaOf(asked)['og:url']).toBeUndefined()
   })
 })
+
+const echrRoute = (await import('./echr')).Route as unknown as {
+  readonly validateSearch: (search: Record<string, unknown>) => Record<string, string | number>
+  readonly headers: () => Record<string, string>
+  readonly head: (input: { readonly match: Match & { readonly search: Record<string, unknown> } }) => Head
+}
+
+describe('/justice/echr', () => {
+  const echrMatch = (search: Record<string, unknown>) => ({ ...match(), search })
+
+  it('keeps the page’s keys only, a value the router parsed as something else as text', () => {
+    expect(echrRoute.validateSearch({ an: 2018, vedere: 'hotarari', utm_source: 'x' })).toEqual({ an: 2018, vedere: 'hotarari' })
+    expect(echrRoute.validateSearch({ an: ['2018'] })).toEqual({ an: '["2018"]' })
+  })
+
+  it('is cached publicly: it reads nothing, and keys on the cookie its render follows', () => {
+    vi.stubEnv('DEV', false)
+    try {
+      const headers = echrRoute.headers()
+      expect(headers['CDN-Cache-Control']).toContain('s-maxage=3600')
+      expect(headers.Vary).toContain('Cookie')
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('indexes the bare page at its own address; another year or tab is followed but not indexed', () => {
+    const bare = echrRoute.head({ match: echrMatch({}) })
+    expect(metaOf(bare).title).toContain('Hotărârile CEDO în cauze cu România')
+    expect(metaOf(bare).robots).toBeUndefined()
+    expect(bare.links).toEqual([{ rel: 'canonical', href: 'http://localhost:3000/justice/echr' }])
+    for (const search of [{ an: 2018 }, { vedere: 'hotarari' }]) {
+      const asked = echrRoute.head({ match: echrMatch(search) })
+      expect(metaOf(asked).robots).toBe('noindex, follow')
+      expect(asked.links).toEqual([])
+      expect(metaOf(asked)['og:url']).toBeUndefined()
+    }
+  })
+})

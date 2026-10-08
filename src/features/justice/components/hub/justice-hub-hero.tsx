@@ -62,9 +62,9 @@ export function JusticeHubHero({
                 <a href="#materii" className={HUB_SHORTCUT_LINK_CLASS}>
                   <Trans>Ce se judecă</Trans>
                 </a>
-                <a href="#decizii" className={HUB_SHORTCUT_LINK_CLASS}>
+                <Link to="/justice/echr" className={HUB_SHORTCUT_LINK_CLASS}>
                   <Trans>Hotărârile CEDO</Trans>
-                </a>
+                </Link>
               </span>
             </nav>
           </div>
