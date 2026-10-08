@@ -20,9 +20,9 @@ export const prototype = {
       note: 'The analysis page’s order: the year’s judgments first, then the judgments of every year as columns; a column takes its year.',
     },
     flux: {
-      title: 'Flux — anii ca tabel: comunicate, decizii, hotărâri',
+      title: 'Flux — două taburi: anii (comunicate, decizii, hotărâri) și hotărârile anului',
       component: EchrFlow,
-      note: 'The years first, as rows of what reached the Court’s steps (communicated, decided, judged, applications, wait), then the chosen year’s judgments.',
+      note: 'The answer under two tabs, as the analysis page’s groupings: the years as rows of what reached the Court’s steps (communicated, decided, judged, applications, wait), a row opening its judgments; and the chosen year’s judgments. The tab is in the address (vedere).',
     },
   },
   compare: ['ani', 'flux'],

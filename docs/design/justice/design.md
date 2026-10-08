@@ -988,10 +988,19 @@ the marker.
 
 - `ani`: the year's judgments first, then the judgments of every year as
   columns (2009 and 2026 dashed); a column takes its year.
-- `flux`: the years first, as rows of what reached the Court's steps —
-  communicated, decisions, judgments, applications decided, the median wait —
-  each a bar of its column's largest; a row takes its year; then the
-  year's judgments.
+- `flux`: the answer under two tabs, as the analysis page's groupings
+  (Radix tabs, manual activation, the tab in the address as `vedere`):
+  „Pe ani" (the default) — the years as rows of what reached the Court's
+  steps: communicated, decisions, judgments, applications decided, the
+  median wait, each with a bar of its column's largest from `sm` — and
+  „Hotărârile din {an}". A year's row (the whole row) opens that year's
+  judgments: the tabs scroll back into view and the focus moves to the tab
+  now chosen. On a phone the columns keep a word each and drop their bars,
+  so all of them fit; the partial years are dashed under their number, one
+  legend under the table.
+
+**The owner's pick (2026-10-08):** `flux`, as tabs („the two components"
+under one answer, like procurement analytics).
 
 **For promotion.** The snapshot is 265 KB: the route reads it on the server
 and sends the chosen year's judgments only, never the whole list to the

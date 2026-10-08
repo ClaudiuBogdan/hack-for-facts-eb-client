@@ -116,14 +116,7 @@ export function echrFacts(snapshot: EchrSnapshot, year: number): readonly HubFac
       value: figures.judgments,
       digits: 0,
       label: t`Hotărâri`,
-      note:
-        change !== null
-          ? t`${signedPercentText(change)} față de ${year - 1}`
-          : figures.state === 'running'
-            ? t`până în ${monthText(snapshot.newest.slice(0, 7), 'long')}`
-            : figures.state === 'partial'
-              ? t`preluare parțială`
-              : null,
+      note: change !== null ? t`${signedPercentText(change)} față de ${year - 1}` : figures.state === 'running' ? t`până în ${monthText(snapshot.newest.slice(0, 7), 'long')}` : figures.state === 'partial' ? t`preluare parțială` : null,
       link: plain,
     },
     {
@@ -135,7 +128,8 @@ export function echrFacts(snapshot: EchrSnapshot, year: number): readonly HubFac
       link: plain,
     },
   ]
-  if (figures.medianWait !== null) facts.push({ key: 'asteptare', value: figures.medianWait, digits: Number.isInteger(figures.medianWait) ? 0 : 1, unit: t`ani`, label: t`De la cerere la hotărâre`, note: t`mediană, din anul depunerii cererii`, link: plain })
+  if (figures.medianWait !== null)
+    facts.push({ key: 'asteptare', value: figures.medianWait, digits: Number.isInteger(figures.medianWait) ? 0 : 1, unit: t`ani`, label: t`De la cerere la hotărâre`, note: t`mediană, din anul depunerii cererii`, link: plain })
   facts.push({ key: 'comunicate', value: figures.communicated, digits: 0, label: t`Cauze comunicate Guvernului`, note: t`și ${countText(figures.decisions)} decizii`, link: plain })
   return facts
 }
@@ -175,63 +169,70 @@ function Applications({ judgment }: { readonly judgment: EchrJudgment }) {
   )
 }
 
-/** The year's judgments, newest first: the date, the applications, the wait and the text on HUDOC. */
-export function EchrJudgments({ snapshot, year, className }: { readonly snapshot: EchrSnapshot; readonly year: number; readonly className?: string }) {
+/** The year's judgments in a section of their own (`ani`). */
+export function EchrJudgments({ snapshot, year }: { readonly snapshot: EchrSnapshot; readonly year: number }) {
   const titleId = useId()
-  const judgments = judgmentsIn(snapshot, year)
   return (
-    <section className={cn('border-b', className)} aria-labelledby={titleId}>
+    <section className="border-b" aria-labelledby={titleId}>
       <RuledFrame className="py-12 sm:py-16">
         <HubSectionHead titleId={titleId} index={String(year)} title={t`Hotărârile anului`} />
-        <table className="mt-8 w-full text-sm">
-          <thead>
-            <tr className="border-b border-foreground/20 text-left">
-              <th scope="col" className="py-2 pr-4 font-normal">
-                <MonoLabel className="text-muted-foreground">{t`Data`}</MonoLabel>
-              </th>
-              <th scope="col" className="py-2 pr-4 font-normal">
-                <MonoLabel className="text-muted-foreground">{t`Cererea`}</MonoLabel>
-              </th>
-              <th scope="col" className="hidden py-2 pr-4 text-right font-normal sm:table-cell">
-                <MonoLabel className="text-muted-foreground">{t`De la cerere`}</MonoLabel>
-              </th>
-              <th scope="col" className="py-2 text-right font-normal">
-                <MonoLabel className="text-muted-foreground">{t`Textul pe HUDOC`}</MonoLabel>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {judgments.map((judgment) => {
-              const wait = waitYears(judgment)
-              return (
-                <tr key={judgment.ecli} className="border-b border-border/70 align-baseline">
-                  <td className="whitespace-nowrap py-3 pr-4 tabular-nums">{dayText(judgment.date)}</td>
-                  <td className="py-3 pr-4">
-                    <Applications judgment={judgment} />
-                  </td>
-                  <td className="hidden py-3 pr-4 text-right tabular-nums text-muted-foreground sm:table-cell">{wait === null ? '—' : wait === 1 ? t`1 an` : t`${wait} ani`}</td>
-                  <td className="whitespace-nowrap py-3 text-right">
-                    {judgment.versions.map((version) => (
-                      <a
-                        key={version.item}
-                        href={hudocUrl(version)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-3 font-medium underline-offset-4 hover:underline"
-                        aria-label={version.language === 'fr' ? t`Hotărârea din ${dayText(judgment.date)}, în franceză, pe HUDOC` : t`Hotărârea din ${dayText(judgment.date)}, în engleză, pe HUDOC`}
-                      >
-                        {version.language === 'fr' ? 'FR' : 'EN'}
-                        <span aria-hidden="true"> ↗</span>
-                      </a>
-                    ))}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+        <EchrJudgmentsTable snapshot={snapshot} year={year} className="mt-8" />
       </RuledFrame>
     </section>
+  )
+}
+
+/** The year's judgments, newest first: the date, the applications, the wait and the text on HUDOC. */
+export function EchrJudgmentsTable({ snapshot, year, className }: { readonly snapshot: EchrSnapshot; readonly year: number; readonly className?: string }) {
+  const judgments = judgmentsIn(snapshot, year)
+  return (
+    <table className={cn('w-full text-sm', className)}>
+      <thead>
+        <tr className="border-b border-foreground/20 text-left">
+          <th scope="col" className="py-2 pr-4 font-normal">
+            <MonoLabel className="text-muted-foreground">{t`Data`}</MonoLabel>
+          </th>
+          <th scope="col" className="py-2 pr-4 font-normal">
+            <MonoLabel className="text-muted-foreground">{t`Cererea`}</MonoLabel>
+          </th>
+          <th scope="col" className="hidden py-2 pr-4 text-right font-normal sm:table-cell">
+            <MonoLabel className="text-muted-foreground">{t`De la cerere`}</MonoLabel>
+          </th>
+          <th scope="col" className="py-2 text-right font-normal">
+            <MonoLabel className="text-muted-foreground">{t`Textul pe HUDOC`}</MonoLabel>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {judgments.map((judgment) => {
+          const wait = waitYears(judgment)
+          return (
+            <tr key={judgment.ecli} className="border-b border-border/70 align-baseline">
+              <td className="whitespace-nowrap py-3 pr-4 tabular-nums">{dayText(judgment.date)}</td>
+              <td className="py-3 pr-4">
+                <Applications judgment={judgment} />
+              </td>
+              <td className="hidden py-3 pr-4 text-right tabular-nums text-muted-foreground sm:table-cell">{wait === null ? '—' : wait === 1 ? t`1 an` : t`${wait} ani`}</td>
+              <td className="whitespace-nowrap py-3 text-right">
+                {judgment.versions.map((version) => (
+                  <a
+                    key={version.item}
+                    href={hudocUrl(version)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-3 font-medium underline-offset-4 hover:underline"
+                    aria-label={version.language === 'fr' ? t`Hotărârea din ${dayText(judgment.date)}, în franceză, pe HUDOC` : t`Hotărârea din ${dayText(judgment.date)}, în engleză, pe HUDOC`}
+                  >
+                    {version.language === 'fr' ? 'FR' : 'EN'}
+                    <span aria-hidden="true"> ↗</span>
+                  </a>
+                ))}
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
   )
 }
 
