@@ -10,6 +10,7 @@ vi.mock('@/config/env', () => ({
   getSiteUrl: () => 'http://localhost:3000',
 }))
 
+import { getAuthToken } from '@/lib/auth'
 import { searchEntitiesLive } from './entity-search-api.live'
 import { isSearchInputError } from './search-input-error'
 import { EntitySearchWithheldError, isSearchWithheld } from './search-withheld-error'
@@ -45,6 +46,17 @@ afterEach(() => {
 })
 
 describe('searchEntitiesLive under the shared-search contract', () => {
+  it('sends the public search anonymously, without waiting for an auth session', async () => {
+    vi.mocked(getAuthToken).mockClear()
+    fetchMock.mockResolvedValue(respond(answerBody(CURRENT_PAGE)))
+
+    await searchEntitiesLive({ q: 'dedeman' })
+
+    expect(getAuthToken).not.toHaveBeenCalled()
+    const headers = new Headers(fetchMock.mock.calls[0]?.[1]?.headers)
+    expect(headers.has('Authorization')).toBe(false)
+  })
+
   it('reads a current answer with its company parts and exact continuation', async () => {
     fetchMock.mockResolvedValue(respond(answerBody(CURRENT_PAGE)))
 

@@ -74,8 +74,11 @@ export async function searchEntitiesLive(
 
   let data: unknown
   try {
+    // Public, anonymous search: never wait for the optional auth session
+    // (up to 10s while Clerk initializes) before sending the request.
     data = await graphqlQuery<unknown>(SEARCH_ENTITIES_QUERY, variables, {
       operationName: 'searchEntities',
+      auth: 'none',
       signal,
     })
   } catch (error) {
