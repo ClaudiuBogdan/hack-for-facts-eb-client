@@ -65,7 +65,9 @@ test.describe('Justice pages', () => {
 
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Dosarele,\s*pe instanțe/u)
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/justice\/analytics$/u)
+    // The canonical a crawler reads is the server's. (Without VITE_SITE_URL, as in CI, the browser's head re-run adds one on
+    // its own origin beside it; deployed builds set the variable.)
+    expect(await response?.text()).toMatch(/<link rel="canonical" href="[^"]*\/justice\/analytics"/u)
     await expect(page.getByRole('navigation', { name: 'Ce instanțe' })).toContainText('1.677.596')
     const first = page.locator('tbody tr').first()
     await expect(first).toContainText('Tribunalul București')
@@ -88,7 +90,8 @@ test.describe('Justice pages', () => {
 
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Hotărârile CEDO în cauze cu România, în 2025')
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/justice\/echr$/u)
+    // The server's canonical, as the analysis page's test reads it.
+    expect(await response?.text()).toMatch(/<link rel="canonical" href="[^"]*\/justice\/echr"/u)
     await expect(page.getByRole('tab', { name: 'Pe ani, 2009–2026' })).toHaveAttribute('aria-selected', 'true')
     await expect(page.getByRole('tabpanel').locator('tbody tr')).toHaveCount(18)
     await page.getByRole('button', { name: '2018: hotărârile anului' }).click()
