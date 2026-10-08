@@ -754,3 +754,78 @@ answers, the tables one click away; the bands run control → public money → A
   the buyer's identity read rejected with no handler (an unhandled `AbortError`, also on the institution
   page's default view), and the supplier read's registry read likewise. Each is handled at once now, with a
   regression test.
+
+### 12.8 The authority portfolio prototype (2026-10-08)
+
+`/development/public-companies/portfolio` (`?v=tabel|stare|marime`, `?cui=`, fourteen samples picked above
+the page): one controlling authority's public enterprises, the page the hub's "who controls the most" rows
+and the enterprise page's "the same authority's other enterprises" would lead to (proposed address
+`/public-enterprises/authorities/$cui`). The owner asked for it on 2026-10-08.
+
+**Why a snapshot.** Measured on dev-chronos on 2026-10-08 for AAAS (69 enterprises): the list by authority
+answers in 0.2 s and the 69 profiles in three aliased requests of 0.2–0.3 s each, but the company records
+(`company` + `companyFinancials`, 10 CUIs a request, 7 requests side by side) took 10–12 s, and 5 of the 7
+returned `INTERNAL_SERVER_ERROR` (`Database`) for some aliases. A live page cannot read a large portfolio's
+statuses and figures, so the prototype reads what `scripts/generate-public-enterprise-hub-fixture.mjs` already
+reads for the hub: it now also writes `src/development/prototypes/public-companies/portfolio.fixture.json`
+(the sampled authorities and their enterprises, one line each, 184 KB), and with `--cache` it dates every
+output by the cache's first read rather than by the run. The hub's outputs are unchanged by it (checked: a
+run on the 2026-10-07 cache differs only in that date).
+
+**What the snapshot holds.**
+- *An authority:* its name as ANAF's list spells it most often (else the announcements', else the budget
+  record's, the source kept), every spelling by source, the budget record's own name (it names the territory),
+  ANAF's level, its kind from the budget record, its county, whether it has a budget, and the enterprises each
+  source puts under it.
+- *An enterprise:* name, legal form, seat county, main CAEN code; ANAF's list's status (or not in the list),
+  AMEPIP's newest company-year row in its own words, the trade registry's headline code and label (or none,
+  or no record), ANAF's inactive list; every control edge; the 2024 statement's admitted turnover, headcount
+  and net result with each value's evaluator status (`reported`, `held_profile`, …), the newest year it filed;
+  SEAP record counts 2019–2026.
+
+**The page.** The enterprise page's rhythm. Head: the way back and the county (or „Autoritate centrală"), the
+name, a sentence of what each source gives it („După lista ANAF a întreprinderilor publice, controlează 4
+întreprinderi. Anunțurile de selecție AMEPIP o numesc pentru 2 dintre ele. Pentru una dintre cele din listă,
+anunțurile numesc altă autoritate."), the CUI, the budget page (or „Fără fișă în buget"), one source line.
+Figures: four counts of enterprises (with a 2024 statement, with a 2024 loss, buying and selling through SEAP),
+never money. Bands: the enterprises (the variant's form), where the sources disagree (only when they do),
+what they do and where (from five enterprises on; the county list only when they are in more than one).
+
+**Variants.**
+- `tabel` — head: each source's word on the enterprises, a bar per source (never one stacked status). Band:
+  one table of every enterprise, sortable by 2024 turnover, headcount, net result or name, filtered by the
+  list's word; on a phone, the name (with the list's word under it) and the turnover.
+- `stare` — head: the five largest by 2024 turnover. Band: groups by ANAF's list (active, inactive, blank, not
+  in the list), the active ones another source contradicts first; at the right, the 2024 turnover or the last
+  year with a statement.
+- `marime` — head: each source's word. Band: a ranking by 2024 turnover, headcount or loss, with bars against
+  the top row; then those with no admitted figure, each with why.
+
+**Data rules applied.**
+- The page's enterprises are those either source puts under the authority: ANAF's list's first, then those
+  only the announcements name, marked. Every count says its source.
+- Each source's status stays its own: a row flags AMEPIP's newest year when it is not „funcţiune", the
+  registry when it says struck off, insolvency, dissolution or another code, and ANAF's inactive list; a
+  registry with conflicting evidence flags nothing.
+- A disagreement is read from this authority's side: in the list under it while the announcements name only
+  another; or named only by the announcements while the list names another or none. The announcements naming
+  no one is not one: they cover only the selections AMEPIP published.
+- A missing figure is never a zero, and a zero is shown: no statement ever, the last statement's year, a
+  statement only for a later year, or a value the evaluator held back („reținut", with its reason under the
+  list), left blank or did not admit. 15 of the sampled enterprises' 2024 net results are `held_profile`
+  (Poșta Română, Conpet, Oil Terminal, Hidroelectrica, Romgaz, Nuclearelectrica, …), as on the company pages.
+- Nothing is summed across enterprises; sizes are a ranking.
+
+**Edge cases the samples cover:** the largest companies (Ministry of Energy); a portfolio mostly inactive
+(AAAS 56 of 69, ADS 30 of 32, ADS with no budget record); research institutes (Education, 40 INCD); one more
+enterprise only in the announcements (CGMB) or two (Hunedoara); the announcements naming another authority
+(Consiliul Local Sibiu for Tursib); authorities named only by the announcements (the Bucharest-Ilfov and
+Sibiu transport ADIs); a list that drops the sector's number (Sector 3); two spellings (Borș).
+
+**Server asks this adds.**
+17. **Portfolio read.** One read per authority: its kernel identity, kind and level, and its enterprises as
+    summary rows (each source's status, seat county, main CAEN code, the latest admitted figures with their
+    statuses). Today a page needs a profile and a company read per enterprise (asks 2 and 16).
+18. **Company reads under load.** Ten aliased `company` + `companyFinancials` reads take 10–12 s and fail
+    with `Database` errors when a few run side by side (2026-10-08): a batch read (`companies(cuis:)`) or
+    summary figures on a list row.

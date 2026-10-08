@@ -2,8 +2,10 @@
 /**
  * Regenerates the public-enterprise hub's figures, computed from the deployed
  * dev API: `src/features/public-enterprises/lib/hub-snapshot.ts` (the page at
- * `/public-enterprises`) and `src/development/prototypes/public-companies/hub.fixture.json`
- * (its prototype). The public-enterprise module serves a list and a profile
+ * `/public-enterprises`), `src/development/prototypes/public-companies/hub.fixture.json`
+ * (its prototype) and `…/portfolio.fixture.json` (the authority portfolio
+ * prototype: the sampled authorities and their enterprises, row by row).
+ * The public-enterprise module serves a list and a profile
  * but no aggregate (design note §12.3, ask 1), so this script reads every
  * anchor and counts on its own; the result is the shape a server aggregate
  * would have to serve.
@@ -20,15 +22,16 @@
  *   ONRC and ANAF statuses, filed financial years;
  * - `procurementStats` counts: buyer and seller in SEAP, 2019–2026.
  *
- * `--cache <dir>` keeps each read as JSON and reuses it on the next run.
+ * `--cache <dir>` keeps each read as JSON and reuses it on the next run; the
+ * figures are then dated by the cache's first read, not by the run.
  * Money stays exact decimal text; a missing value stays null, never zero.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
-import { admittedNet, admittedValue } from '../src/features/public-enterprises/lib/financial-admission.ts'
+import { admittedNet, admittedValue, assessed } from '../src/features/public-enterprises/lib/financial-admission.ts'
 
 const { values } = parseArgs({
   options: {
@@ -40,6 +43,7 @@ const API = values.api
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const prototypeOut = resolve(root, 'src/development/prototypes/public-companies/hub.fixture.json')
 const snapshotOut = resolve(root, 'src/features/public-enterprises/lib/hub-snapshot.ts')
+const portfolioOut = resolve(root, 'src/development/prototypes/public-companies/portfolio.fixture.json')
 const CONCURRENCY = 6
 /** The last complete financial year: 2025 is still being filed. */
 const FINANCIAL_YEAR = 2024
@@ -55,6 +59,29 @@ const AUTHORITY_RANKED = 10
 const COMPANY_CACHE = 'companies-v3.json'
 /** A headcount past this is a data error (EXIM 25252500 reports 92,149,177 for 2024), kept out of the ranking and named. */
 const MAX_PLAUSIBLE_EMPLOYEES = 200_000
+/**
+ * The authorities the portfolio prototype samples (design note §12.8): the
+ * largest, one of each kind, and the cases a page must say apart — no budget
+ * record (ADS), named only by AMEPIP's announcements (two ADIs), a list that
+ * drops the sector's number (Sector 3), two spellings (Borș), enterprises
+ * only the announcements put under it (Hunedoara, Bucharest).
+ */
+const PORTFOLIO_SAMPLES = [
+  '11795573', // AAAS
+  '43507695', // Ministerul Energiei
+  '24931499', // Ministerul Economiei
+  '13729380', // Ministerul Educației
+  '14818116', // Agenția Domeniilor Statului
+  '4267117', // Consiliul General al Municipiului București
+  '4283481', // Consiliul Local Voluntari
+  '4288110', // Consiliul Județean Cluj
+  '4374474', // Consiliul Județean Hunedoara
+  '4270740', // Consiliul Local Sibiu
+  '4420465', // Consiliul Local al Sectorului 3
+  '4390526', // Consiliul Local Borș
+  '38474532', // ADI Transport Public București-Ilfov
+  '45699112', // ADI Transport Metropolitan Sibiu
+]
 
 // ───────────────────────────────────────────────────────────── reading ──
 
@@ -210,7 +237,17 @@ const mainS1001Edge = (profile) => profile.authorityEdges.find((edge) => edge.so
 const yearRow = (company, year) => (company?.financials?.years ?? []).find((row) => row.year === year) ?? null
 const positive = (decimal) => decimal !== null && decimal !== undefined && Number(decimal) > 0
 
+/** When the figures were read: the run, or the cache's first read when the run reuses one. */
+function readAt() {
+  const anchors = values.cache ? resolve(values.cache, 'anchors.json') : null
+  return (anchors && existsSync(anchors) ? statSync(anchors).mtime : new Date()).toISOString()
+}
+
+const latestAmepip = (observations) =>
+  observations.filter((observation) => observation.sourceFamily === 'amepip_company_year' && observation.observedYear !== null).sort((a, b) => b.observedYear - a.observedYear)[0] ?? null
+
 async function main() {
+  const generatedAt = readAt()
   const anchors = await cached('anchors.json', readAnchors)
   const sources = await cached('sources.json', async () => (await gql('{ publicEnterpriseSources { family laneStatus snapshotId rawStatus sourceUrl observedAt sourceLastModifiedAt acceptedAt } }')).publicEnterpriseSources)
   const cuis = anchors.map((anchor) => anchor.cui)
@@ -334,7 +371,7 @@ async function main() {
       .sort((a, b) => a.year - b.year)
 
   const fixture = {
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     api: API,
     sources: sources.map((source) => ({
       family: source.family,
@@ -488,6 +525,85 @@ async function main() {
       '',
     ].join('\n'),
   )
+
+  // The portfolio prototype: each sampled authority with the enterprises each source puts under it, and those
+  // enterprises row by row — each source's status apart, the financial year's admitted figures, SEAP counts.
+  /** Why a statement's value is or is not on the page, in the evaluator's words (lower case): `reported`, `missing`, `held_profile`, …, or `unassessed`. */
+  const metricStatus = (row, metric) => {
+    if (!row) return null
+    if (!assessed(row)) return 'unassessed'
+    const raw = metric === 'net_result' ? row.qualification.netResultStatus : row.qualification.metrics.find((entry) => entry.metric === metric)?.status
+    return raw?.toLowerCase() ?? null
+  }
+  const portfolioEnterprise = (member) => {
+    const row = yearRow(member, FINANCIAL_YEAR)
+    const employees = row ? admittedValue(row, 'employees') : null
+    const implausible = employees !== null && Number(employees) > MAX_PLAUSIBLE_EMPLOYEES
+    const amepip = latestAmepip(member.observations)
+    const filedYears = (member.financials?.years ?? []).map((statement) => statement.year)
+    return {
+      cui: member.cui,
+      name: member.name,
+      legalForm: member.company?.legalForm ?? null,
+      county: member.company?.territory?.countyName ?? null,
+      caen: member.company?.fiscal?.mainCaenCode ?? null,
+      /** Null: not in ANAF's list; a null status: listed with a blank status cell. */
+      s1001: member.listed ? { status: member.s1001Status } : null,
+      /** AMEPIP's newest company-year row, in its own words. */
+      amepip: amepip ? { year: amepip.observedYear, status: amepip.statusRaw } : null,
+      /** Null: no company record; a null code: the registry's evidence conflicts or is partial. */
+      registry: member.company ? { code: member.company.headlineStatus?.code ?? null, label: member.company.headlineStatus?.label ?? null } : null,
+      fiscallyInactive: member.company?.fiscal?.declaredFiscallyInactive ?? null,
+      edges: member.edges.map((edge) => ({ source: edge.sourceFamily, cui: edge.authorityCui, name: edge.authorityName ? decodeEntities(edge.authorityName) : null })),
+      financials: {
+        filed: row !== null,
+        turnover: row ? admittedValue(row, 'turnover') : null,
+        employees: implausible ? null : employees,
+        implausibleEmployees: implausible ? employees : null,
+        net: row ? admittedNet(row) : null,
+        newestYear: filedYears.length > 0 ? Math.max(...filedYears) : null,
+        statuses: { turnover: metricStatus(row, 'turnover'), employees: metricStatus(row, 'employees'), net: metricStatus(row, 'net_result') },
+      },
+      seap: member.procurement,
+    }
+  }
+  const portfolioAuthority = (cui) => {
+    const row = authorities.get(cui)
+    const entity = entities[cui]
+    const own = entity?.organization?.name ?? null
+    return {
+      cui,
+      ...authorityName(entity, row.s1001Names, row.otherNames),
+      spellings: { s1001: [...row.s1001Names.keys()], json_apt: [...row.otherNames.keys()].map(decodeEntities) },
+      /** The budget record's own name: it names the territory („JUDETUL CLUJ"), not the council. */
+      budgetName: own && !/^\d+$/u.test(own) ? own : null,
+      level: [...row.levels][0] ?? null,
+      kind: authorityKind(entity),
+      county: entity?.territory?.countyName ?? null,
+      hasBudget: entity?.budget?.presence === true,
+      s1001: [...row.s1001].sort(),
+      jsonApt: [...row.jsonApt].sort(),
+    }
+  }
+  const sampled = PORTFOLIO_SAMPLES.filter((cui) => authorities.has(cui)).map(portfolioAuthority)
+  const portfolio = {
+    generatedAt,
+    financialYear: FINANCIAL_YEAR,
+    seapSpan: SEAP_SPAN,
+    sources: fixture.sources,
+    authorities: sampled,
+    enterprises: Object.fromEntries(
+      [...new Set(sampled.flatMap((authority) => [...authority.s1001, ...authority.jsonApt]))].sort().map((cui) => [cui, portfolioEnterprise(memberOf.get(cui))]),
+    ),
+  }
+  // One line per authority and per enterprise: small, and a regeneration diffs row by row.
+  const lines = (entries) => entries.map((entry) => `  ${entry}`).join(',\n')
+  const { authorities: sampledRows, enterprises: rows, ...head } = portfolio
+  writeFileSync(
+    portfolioOut,
+    `${JSON.stringify(head).slice(0, -1)},\n "authorities": [\n${lines(sampledRows.map((row) => JSON.stringify(row)))}\n ],\n "enterprises": {\n${lines(Object.entries(rows).map(([cui, row]) => `${JSON.stringify(cui)}: ${JSON.stringify(row)}`))}\n }\n}\n`,
+  )
+  console.log(`wrote ${portfolioOut}: ${sampled.length} authorities, ${Object.keys(portfolio.enterprises).length} enterprises`)
   console.log(`wrote ${snapshotOut} and ${prototypeOut}: ${fixture.members.current} members, ${authorityRows.length} authorities, ${fixture.counties.length} counties, ${fixture.sectors.length} divisions`)
 }
 
