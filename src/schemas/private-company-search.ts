@@ -289,11 +289,17 @@ export type CompanyResolveResult = {
 // Hub — /companies
 // ---------------------------------------------------------------------------
 
-/** What the county map is coloured by. */
-export const COMPANY_HUB_MAP_INDICATORS = ['densitate', 'infiintari', 'cifra-de-afaceri'] as const
+/**
+ * What the county map is coloured by: reported turnover, the average
+ * headcount, or the companies with a financial statement for the year. The
+ * retired layers (companies per 1,000 residents, companies founded in the
+ * year) have no source in the analytics release; an old link that names one
+ * opens the default layer.
+ */
+export const COMPANY_HUB_MAP_INDICATORS = ['cifra-de-afaceri', 'salariati', 'firme'] as const
 export type CompanyHubMapIndicator = (typeof COMPANY_HUB_MAP_INDICATORS)[number]
 
-/** What the sectors are ranked by. */
+/** What the main activities are ranked by. */
 export const COMPANY_HUB_SECTOR_METRICS = ['cifra-de-afaceri', 'salariati', 'firme'] as const
 export type CompanyHubSectorMetric = (typeof COMPANY_HUB_SECTOR_METRICS)[number]
 
@@ -302,11 +308,10 @@ export const COMPANY_HUB_RANKINGS = ['cifra-de-afaceri', 'salariati'] as const
 export type CompanyHubRanking = (typeof COMPANY_HUB_RANKINGS)[number]
 
 /**
- * The hub's three former choices (map layer, sector measure, ranking). The
- * views they chose between were built on a static snapshot of business
- * figures and are retired; the keys are still parsed so an old shared link
- * opens the hub instead of failing, and a value the hub does not know is
- * dropped.
+ * The hub's three choices (map layer, activity measure, ranking), each a
+ * measure of the analytics release's default fiscal year. A value the hub
+ * does not know — a retired layer included — is dropped, so an old shared
+ * link opens the hub on its defaults instead of failing.
  */
 export const companyHubSearchSchema = z
   .object({

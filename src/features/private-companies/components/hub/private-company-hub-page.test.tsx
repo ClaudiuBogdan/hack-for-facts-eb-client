@@ -1,465 +1,430 @@
-import { Profiler, type ReactNode } from 'react'
-import { QueryClientProvider, type QueryClient } from '@tanstack/react-query'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import type { FeatureCollection, Polygon } from 'geojson'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
-import { createQueryClient } from '@/lib/queryClient'
-import { createTestQueryClient } from '@/test/test-utils'
-import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
+import {
+  companyMetricKind,
+  companyMetricUnit,
+  type CompanyAnalysisBreakdown,
+  type CompanyAnalysisBucket,
+  type CompanyAnalysisMetric,
+} from '@/schemas/company-analytics'
+import type { CompanyHubSearch } from '@/schemas/private-company-search'
+import { breakdownFixture, bucket, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
+import { readCompanyHubForSsr } from '../../api/company-hub-analytics'
+import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
 import { PrivateCompanyHubPage } from './private-company-hub-page'
 
 /**
- * The hub's contract: no static business figure anywhere; every figure is
- * `companyHubStats` of the edition the page pinned, read in the browser (the
- * publicly cached server HTML carries none), with that edition named; a
- * registry that cannot answer is a state, never a zero; a registry that moves
- * hides the figures until the reader asks for the current ones. Only the
- * transport is replaced: the answers go through the real parsing, mapping and
- * scope checks.
+ * The hub against a scripted analytics API: every figure is ONE release's —
+ * the active one, resolved once — and its default fiscal year, each section
+ * its own read pinned to it; nothing asks the registry, its hub stats or its
+ * county profile. One section that fails says so beside the others; a
+ * release the API refuses, on any read, withdraws every figure of it and
+ * only the reader moves on; the server render seeds the page and the browser
+ * reads nothing again. Only the transport is replaced: the answers go
+ * through the real parsing, plans, keys and refusal tracking.
  */
 
-type RawEnvelope = Record<string, unknown> & { readonly scopeKey: string }
+interface Call {
+  readonly op: string
+  readonly variables: Record<string, unknown>
+}
 
-const envelope = (state: string, editionId: string | null, publication: string | null, access: string): RawEnvelope => ({
-  source: 'onrc',
-  state,
-  editionId,
-  sourceSnapshotId: editionId ? `firme-${editionId}` : null,
-  sourcePublishedAt: editionId === '8' ? '2026-10-02' : editionId ? '2026-09-30' : null,
-  interpretationVersion: 'onrc-interp-v1',
-  dimensionPolicyVersion: 'onrc-dim-v1',
-  eligibilityPolicyVersion: editionId ? 'onrc-elig-v1' : null,
-  publicationEpoch: publication,
-  accessEpoch: access,
-  reason: state === 'PUBLISHED' ? null : 'no accessible published edition',
-  scopeKey: `onrc:${state.toLowerCase()}:${editionId ?? '-'}:${publication ?? '-'}:${access}`,
-})
-
-const EDITION_7 = envelope('PUBLISHED', '7', '3', '11')
-const EDITION_8 = envelope('PUBLISHED', '8', '4', '12')
-const UNPUBLISHED = envelope('UNPUBLISHED', null, null, '11')
-const WITHDRAWN = envelope('WITHDRAWN', null, '5', '13')
-
-const capabilities = (registry: RawEnvelope) => ({
-  registry,
-  editions: [],
-  registryFilterFields: ['status', 'county', 'caenCode', 'onrcCaen'],
-  caenRevisions: ['rev0', 'rev1', 'rev2', 'rev3'],
-})
-
-const hubStats = (registry: RawEnvelope, total: number) => ({
-  totalCompanies: total,
-  activeCompanies: 2_400,
-  statusMix: [
-    { key: '1048', label: 'funcțiune', count: total - 700, basis: null },
-    { key: '(multiple_values)', label: null, count: 300, basis: 'MULTIPLE_VALUES' },
-    { key: '(not_in_edition)', label: null, count: 400, basis: 'NOT_IN_EDITION' },
-  ],
-  topCounties: [
-    { key: 'CJ', label: 'Cluj', count: 900, basis: null },
-    { key: 'B', label: 'București', count: 800, basis: null },
-  ],
-  caenDivisions: [
-    { key: 'rev2:47', label: null, count: 1_200, basis: null },
-    { key: 'rev0:52', label: null, count: 700, basis: null },
-    { key: 'unknown:47', label: null, count: 50, basis: null },
-  ],
-  coverage: { territoryMatched: null, territoryUnmatched: null },
-  registry,
-  computedAt: '2026-10-04T08:00:00.000Z',
-})
+const router = vi.hoisted(() => ({ navigate: vi.fn() }))
 
 const api = vi.hoisted(() => ({
-  /** The capabilities answer, or a promise of it: a registry read the test holds open. */
-  registry: null as unknown,
-  hub: (_registryKey: string): unknown => null,
-  hubCalls: 0,
-  registryCalls: 0,
+  calls: [] as Call[],
+  active: '7',
+  refuse: (() => false) as (call: Call) => boolean,
+  fail: (() => false) as (call: Call) => boolean,
+  unavailable: (() => false) as (call: Call) => boolean,
 }))
-
-vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/lib/graphql/graphql-client')>()
-  return {
-    ...actual,
-    graphqlQuery: vi.fn(async (query: string) => {
-      if (query.includes('companyRegistry {')) {
-        api.registryCalls += 1
-        return { companyRegistry: await api.registry }
-      }
-      if (query.includes('companyHubStats {')) {
-        api.hubCalls += 1
-        // An answer or a promise of it: a read the test holds open.
-        return { companyHubStats: await api.hub((api.registry as { registry?: RawEnvelope } | null)?.registry?.scopeKey ?? '') }
-      }
-      throw new Error(`unexpected query: ${query.slice(0, 60)}`)
-    }),
-  }
-})
-
-vi.mock('../../lib/mock-mode', () => ({ isPrivateCompanyMockEnabled: () => false }))
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
     to,
     search,
+    params,
     preload: _preload,
+    resetScroll: _resetScroll,
+    hash: _hash,
     ...props
   }: {
     readonly children: ReactNode
     readonly to: string
     readonly search?: unknown
+    readonly params?: unknown
     readonly preload?: unknown
+    readonly resetScroll?: unknown
+    readonly hash?: unknown
   }) => (
-    <a href={to} data-search={JSON.stringify(search ?? {})} {...props}>
+    <a href={to} data-search={JSON.stringify(search ?? {})} data-params={JSON.stringify(params ?? {})} {...props}>
       {children}
     </a>
   ),
-  useNavigate: () => vi.fn(),
+  useNavigate: () => router.navigate,
   useLocation: () => ({ hash: '' }),
 }))
 
-vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({
-  searchEntitiesLive: vi.fn(),
-}))
+vi.mock('@/features/entity-search/api/entity-search-api.live', () => ({ searchEntitiesLive: vi.fn() }))
 
-let client: QueryClient
+const square = (x: number, y: number, size: number) => [
+  [x, y],
+  [x + size, y],
+  [x + size, y + size],
+  [x, y + size],
+  [x, y],
+]
 
-function page() {
+const COUNTIES: FeatureCollection<Polygon, { name: string; mnemonic: string }> = {
+  type: 'FeatureCollection',
+  features: [
+    { type: 'Feature', properties: { name: 'Cluj', mnemonic: 'CJ' }, geometry: { type: 'Polygon', coordinates: [square(23, 46, 1)] } },
+    { type: 'Feature', properties: { name: 'Vaslui', mnemonic: 'VS' }, geometry: { type: 'Polygon', coordinates: [square(27, 46, 1)] } },
+    { type: 'Feature', properties: { name: 'București', mnemonic: 'B' }, geometry: { type: 'Polygon', coordinates: [square(26, 44.4, 0.3)] } },
+  ],
+}
+
+vi.mock('@/hooks/useGeoJson', () => ({ useGeoJsonData: () => ({ data: COUNTIES, isError: false, refetch: vi.fn() }) }))
+
+/** The main activities: one of a published revision with its catalogue label, one whose revision ANAF did not publish. */
+const CAEN: CompanyAnalysisBreakdown = breakdownFixture({
+  dimension: 'MAIN_CAEN',
+  groups: [
+    bucket('GROUP', 'rev2:4711', '700.00', { caen: { code: '4711', revision: 'rev2', basis: 'REVISION_KNOWN', label: 'Comerț cu amănuntul' }, labelSource: 'current_db_catalog' }),
+    bucket('GROUP', '6201', '200.00', { caen: { code: '6201', revision: null, basis: 'REVISION_UNKNOWN', label: null } }),
+  ],
+})
+
+const SIZES: CompanyAnalysisBreakdown = breakdownFixture({
+  dimension: 'EMPLOYEE_SIZE',
+  groups: [bucket('GROUP', 'FROM_250', '600.00', { filers: '2' }), bucket('GROUP', 'FROM_1_TO_9', '400.00', { filers: '18' })],
+  other: bucket('OTHER', null, null, { groups: 0, companies: '0', filers: '0' }),
+  totals: bucket('TOTAL', null, '1000.00', { filers: '20', companies: '40' }),
+})
+
+/** The answer's buckets in the metric the read asked for, as the API sums them. */
+function breakdownFor(variables: Record<string, unknown>): CompanyAnalysisBreakdown {
+  const metric = (variables.metric as CompanyAnalysisMetric | undefined) ?? 'TURNOVER'
+  const base = variables.dimension === 'MAIN_CAEN' ? CAEN : variables.dimension === 'EMPLOYEE_SIZE' ? SIZES : breakdownFixture()
+  const inMetric = (group: CompanyAnalysisBucket): CompanyAnalysisBucket =>
+    group.metric ? { ...group, metric: { ...group.metric, metric, unit: companyMetricUnit(metric), kind: companyMetricKind(metric) } } : group
+  return {
+    ...base,
+    metric,
+    rankBy: variables.rankBy as CompanyAnalysisBreakdown['rankBy'],
+    rankedBy: variables.rankBy as CompanyAnalysisBreakdown['rankBy'],
+    groups: base.groups.map(inMetric),
+    other: inMetric(base.other),
+    unknown: inMetric(base.unknown),
+    totals: inMetric(base.totals),
+  }
+}
+
+vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/graphql/graphql-client')>()
+  return {
+    ...actual,
+    graphqlQuery: (_document: string, variables: Record<string, unknown>, options: { readonly operationName: string }) => {
+      const call = { op: options.operationName, variables }
+      api.calls.push(call)
+      if (api.unavailable(call)) return Promise.reject(new actual.GraphQLRequestError('unavailable', { graphQLErrors: [{ message: 'unavailable', extensions: { code: 'SERVICE_UNAVAILABLE' } }] }))
+      if (api.refuse(call)) return Promise.reject(new actual.GraphQLRequestError('refused', { graphQLErrors: [{ message: 'refused', extensions: { code: 'INVALID_INPUT', field: 'release' } }] }))
+      if (api.fail(call)) return Promise.reject(new Error('network down'))
+      const release = releaseRef(String(variables.release ?? api.active), { publishedAt: null })
+      switch (call.op) {
+        case 'CompanyAnalysisRelease':
+          return Promise.resolve({ companyAnalysisRelease: releaseFixture({ release }) })
+        case 'CompanyAnalysisStats':
+          return Promise.resolve({ companyAnalysisStats: statsFixture({ release }) })
+        case 'CompanyAnalysisRecords':
+          return Promise.resolve({ companyAnalysisRecords: recordsFixture({ release, sortMetric: (variables.sortMetric as CompanyAnalysisMetric | undefined) ?? null }) })
+        case 'CompanyAnalysisBreakdown':
+          return Promise.resolve({ companyAnalysisBreakdown: { ...breakdownFor(variables), release } })
+        case 'CompanyAnalysisSeries':
+          return Promise.resolve({ companyAnalysisSeries: seriesFixture({ release }) })
+        default:
+          // Anything else — the registry, its hub stats, a county profile — is not the hub's to ask.
+          return Promise.reject(new Error(`unexpected operation ${call.op}`))
+      }
+    },
+  }
+})
+
+type Seed = readonly { readonly key: readonly unknown[]; readonly data: unknown }[]
+
+function tree(client: QueryClient, search: CompanyHubSearch, seed: Seed) {
   return (
     <QueryClientProvider client={client}>
-      <PrivateCompanyHubPage />
+      <CompanyAnalyticsSeedContext value={createSeedStore(seed)}>
+        <PrivateCompanyHubPage search={search} />
+      </CompanyAnalyticsSeedContext>
     </QueryClientProvider>
   )
 }
 
+/** The app's retry rules stand (the hooks set them); a retry is immediate, so a failure is said at once. */
+const newClient = () => new QueryClient({ defaultOptions: { queries: { retry: false, retryDelay: 0 } } })
+
+function renderHub(search: CompanyHubSearch = {}, seed: Seed = []) {
+  const client = newClient()
+  const view = render(tree(client, search, seed))
+  return { client, view }
+}
+
+const ANALYTICS_OPS = ['CompanyAnalysisRelease', 'CompanyAnalysisStats', 'CompanyAnalysisBreakdown', 'CompanyAnalysisSeries', 'CompanyAnalysisRecords']
 const figures = () => within(screen.getByTestId('company-hub-figures'))
-const counted = (value: number) => document.querySelector(`[data-count-value="${String(value)}"]`)
+const band = (id: string) => within(document.getElementById(id)!)
+const loaded = async () => {
+  await screen.findByTestId('company-hub-leaders')
+  await screen.findByTestId('company-hub-sectors')
+  await screen.findByTestId('company-hub-county-map')
+  await screen.findByTestId('company-hub-trend')
+  await figures().findByText('965,213')
+}
+const dataSearch = (element: Element) => JSON.parse(element.getAttribute('data-search') ?? '{}') as Record<string, unknown>
+
+beforeEach(() => {
+  router.navigate.mockReset()
+  api.calls = []
+  api.active = '7'
+  api.refuse = () => false
+  api.fail = () => false
+  api.unavailable = () => false
+})
 
 describe('PrivateCompanyHubPage', () => {
-  beforeEach(() => {
-    client = createTestQueryClient()
-    api.registry = capabilities(EDITION_7)
-    api.hub = () => hubStats(EDITION_7, 3_000)
-    api.hubCalls = 0
-    api.registryCalls = 0
+  it('reads the analytics release once and each section pinned to it — never the hub stats, the registry or a county profile', async () => {
+    renderHub()
+    await loaded()
+    const ops = api.calls.map((call) => call.op)
+    expect(ops.every((op) => ANALYTICS_OPS.includes(op))).toBe(true)
+    expect(ops.filter((op) => op === 'CompanyAnalysisRelease')).toHaveLength(1)
+    expect(api.calls.find((call) => call.op === 'CompanyAnalysisRelease')?.variables).toEqual({})
+    // Six sections, each read once, each pinned to the release and its default year.
+    const sections = api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease')
+    expect(sections).toHaveLength(6)
+    expect(sections.every((call) => call.variables.release === '7' && (call.variables.scope as { fiscalYear?: number }).fiscalYear === 2024)).toBe(true)
+    expect(sections.filter((call) => call.op === 'CompanyAnalysisBreakdown').map((call) => call.variables.dimension).sort()).toEqual(['COUNTY', 'EMPLOYEE_SIZE', 'MAIN_CAEN'])
+    expect(api.calls.find((call) => call.op === 'CompanyAnalysisSeries')?.variables).toMatchObject({ cohortMode: 'EACH_YEAR', metric: 'TURNOVER', fromYear: 2008, toYear: 2025 })
   })
 
-  it('sends no registry figure and no static business figure in the server HTML', () => {
-    const html = renderToStaticMarkup(page())
-    for (const retired of [COMPANY_HUB_SNAPSHOT.national.activeFirms, COMPANY_HUB_SNAPSHOT.national.newFirms, COMPANY_HUB_SNAPSHOT.national.employees]) {
-      expect(html).not.toContain(`data-count-value="${String(retired)}"`)
-    }
-    expect(html).not.toContain(COMPANY_HUB_SNAPSHOT.leaders.turnover[0]?.name ?? '—')
-    for (const retired of ['Cele mai mari firme', 'Firme noi', 'Cifra de afaceri', 'Salariați', 'mai sunt în funcțiune']) expect(html).not.toContain(retired)
-    // The ways in are there without any figure.
-    expect(html).toContain('De aici poți începe')
-    expect(api.hubCalls).toBe(0)
+  it('shows the year’s national figures in the API’s digits, and names the year’s coverage, the release and its ONRC edition', async () => {
+    renderHub()
+    await loaded()
+    const turnover = document.querySelector('[data-figure="TURNOVER"]')!
+    expect(turnover).toHaveTextContent('9,007,199.3mld. lei')
+    expect(turnover.getAttribute('title')).toMatch(/^9,007,199,254,741,973\.32\slei$/u)
+    expect(dataSearch(within(turnover as HTMLElement).getByRole('link'))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma' })
+    // The companies with a statement open as that very list.
+    const filers = document.querySelector('[data-figure="filers"]') as HTMLElement
+    expect(dataSearch(within(filers).getByRole('link'))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', depunere: 'da' })
+    // Nothing reported: said as such, never a 0. Reported as zero: 0.
+    expect(document.querySelector('[data-figure="EMPLOYEES"] dd')?.textContent).toBe('—')
+    expect(document.querySelector('[data-figure="EMPLOYEES"]')).toHaveTextContent('nicio firmă nu a raportat o valoare')
+    expect(document.querySelector('[data-figure="NET_RESULT"] dd')?.textContent).toBe('0lei')
+    expect(document.querySelector('[data-figure="filers"]')).toHaveTextContent('din 2,718,250 firme eligibile din registru, în orice stare')
+    const source = screen.getByTestId('company-hub-source')
+    expect(source).toHaveTextContent('Anul fiscal 2024: 965,213 situații financiare')
+    expect(source).toHaveTextContent('Valorile lipsă sau reținute nu intră în sume și nu sunt socotite zero.')
+    expect(source).toHaveTextContent('ediția 7')
+    expect(within(source).getByTestId('companies-analytics-source-edition')).toHaveTextContent('ediția ONRC 41')
   })
 
-  it('shows the pinned edition’s counts, names the edition, and keeps every company in one status bucket', async () => {
-    render(page())
-    expect(await figures().findByText('Firme în directorul platformei')).toBeInTheDocument()
-    expect(counted(3_000)).not.toBeNull()
-    expect(counted(2_400)).not.toBeNull()
-    // The conflict bucket is its own count, never folded into „în funcțiune".
-    expect(counted(300)).not.toBeNull()
-    expect(screen.getByTestId('company-hub-source')).toHaveTextContent(/ediția 7 publicată pe/u)
-    const status = within(screen.getByTestId('company-hub-status'))
-    expect(status.getByText('1048 · funcțiune')).toBeInTheDocument()
-    expect(status.getByText('Înscrieri cu valori diferite')).toBeInTheDocument()
-    expect(status.getByText('Fără profil în ediția ONRC')).toBeInTheDocument()
-    expect(within(screen.getByTestId('company-hub-counties')).getByText('Cluj')).toBeInTheDocument()
+  it('ranks the largest companies, a held value by its status and an unnamed company as such, each opening its profile', async () => {
+    renderHub()
+    const leaders = within(await screen.findByTestId('company-hub-leaders'))
+    expect(leaders.getByText('Firma 1')).toBeInTheDocument()
+    expect(leaders.getByText('reținut: semnal de calitate')).toBeInTheDocument()
+    expect(leaders.getByText('Fără denumire publică · CUI 3')).toBeInTheDocument()
+    expect(leaders.getAllByText(/6201 \(revizie necunoscută\)/u).length).toBeGreaterThan(0)
+    expect(JSON.parse(leaders.getAllByRole('link')[0]!.getAttribute('data-params') ?? '{}')).toEqual({ cui: '1' })
+    expect(dataSearch(screen.getByRole('link', { name: 'Toate firmele, în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma' })
   })
 
-  it('lists activity divisions by their own revision, Rev.0 included, as overlapping counts with no share', async () => {
-    render(page())
-    const rev0 = within(await screen.findByTestId('company-hub-divisions-rev0'))
-    expect(rev0.getByText('Diviziunea 52 (CAEN Rev.0)')).toBeInTheDocument()
-    const unknown = within(screen.getByTestId('company-hub-divisions-unknown'))
-    expect(unknown.getByText('Diviziunea 47 (fără revizie CAEN)')).toBeInTheDocument()
-    // Overlapping buckets carry no percentage.
-    expect(screen.getByTestId('company-hub-divisions-rev2').textContent).not.toMatch(/%/u)
+  it('lists main activities in their own revision — an unknown one kept unknown — with shares of the year’s total and the size bands beside', async () => {
+    renderHub()
+    const sectors = within(await screen.findByTestId('company-hub-sectors'))
+    expect(sectors.getByText('4711 · Comerț cu amănuntul')).toBeInTheDocument()
+    expect(sectors.getByText('CAEN rev2')).toBeInTheDocument()
+    expect(sectors.getByText('6201 (revizie necunoscută)')).toBeInTheDocument()
+    expect(sectors.getByText('70.0%')).toBeInTheDocument()
+    expect(sectors.getByText(/Nu sunt activitățile autorizate în registrul comerțului\./u)).toBeInTheDocument()
+    // The folded groups come with the full list.
+    fireEvent.click(sectors.getByRole('button', { name: 'Toată lista' }))
+    expect(screen.getByTestId('company-hub-sectors-other')).toHaveTextContent('Alte 1 activități')
+    const sizes = within(await screen.findByTestId('company-hub-sizes'))
+    expect(sizes.getAllByRole('row').map((row) => row.textContent)).toEqual(['FirmeCifra de afaceri', '1–9 salariați90.0%40.0%', '250 de salariați sau mai mulți10.0%60.0%'])
+    expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', vedere: 'defalcare', dupa: 'caen' })
   })
 
-  it('says an unpublished registry as a state and asks for no figure', async () => {
-    api.registry = capabilities(UNPUBLISHED)
-    render(page())
-    expect(await screen.findByTestId('company-registry-state')).toHaveTextContent(/nu are încă o ediție publicată/u)
-    expect(api.hubCalls).toBe(0)
-    expect(counted(0)).toBeNull()
+  it('maps the counties by their exact figures and lists the companies without a common county apart', async () => {
+    renderHub()
+    const map = within(await screen.findByTestId('company-hub-county-map'))
+    expect(map.getByText('România')).toBeInTheDocument()
+    // At rest, the year's total: every company, those without a common county included.
+    expect(screen.getByTestId('company-hub-county-readout')).toHaveTextContent('România1,000 lei')
+    expect(within(screen.getByTestId('company-hub-county-rank')).getAllByRole('link').map((row) => row.textContent)).toEqual(['01București700', '02Cluj200'])
+    expect(screen.getByTestId('company-hub-county-outside')).toHaveTextContent('Fără județ comun — valori diferite în înscrieri')
+    expect(screen.getByTestId('company-hub-county-outside')).toHaveTextContent('Alte 1 grupuri')
+    // Vaslui has no value in the answer: hatched and named, never zero.
+    expect(screen.getByTestId('company-hub-county-missing')).toHaveTextContent('Vaslui')
+    fireEvent.pointerEnter(map.getByRole('link', { name: /Cluj/u }), { pointerType: 'mouse' })
+    expect(within(screen.getByTestId('company-hub-county-readout')).getByText('20.0% din total')).toBeInTheDocument()
+    // A county opens the analysis's list of the companies the map counted there: pinned, with a statement, by the county the edition agrees on.
+    const drill = { an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', judet: 'CJ', depunere: 'da' }
+    expect(map.getByRole('link', { name: /Cluj/u })).toHaveAttribute('href', '/companies/analytics')
+    expect(dataSearch(map.getByRole('link', { name: /Cluj/u }))).toEqual(drill)
+    const rankCluj = within(screen.getByTestId('company-hub-county-rank')).getByRole('link', { name: /Cluj/u })
+    expect(rankCluj).toHaveAttribute('href', '/companies/analytics')
+    expect(dataSearch(rankCluj)).toEqual(drill)
+    expect(dataSearch(band('judete').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', vedere: 'defalcare' })
   })
 
-  it('never shows figures the server answered under another scope than the one pinned', async () => {
-    // The server re-pinned during the request: the answer carries edition 8 while the page pinned 7.
-    api.hub = () => hubStats(EDITION_8, 5_000)
-    render(page())
-    await vi.waitFor(() => expect(api.hubCalls).toBeGreaterThan(0))
-    expect(counted(5_000)).toBeNull()
-    expect(screen.queryByText('Firme în directorul platformei')).toBeNull()
+  it('links the companies-with-a-statement layer by that ranking, never the release’s default sum', async () => {
+    renderHub({ indicator: 'firme', domenii: 'firme' })
+    await loaded()
+    expect(dataSearch(band('judete').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'depuneri', vedere: 'defalcare' })
+    expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'depuneri', vedere: 'defalcare', dupa: 'caen' })
+    expect(dataSearch(within(screen.getByTestId('company-hub-county-rank')).getByRole('link', { name: /Cluj/u }))).toMatchObject({ clasare: 'depuneri', judet: 'CJ', depunere: 'da' })
   })
 
-  it('hides the figures when the registry moves, and shows the new edition only when asked', async () => {
-    render(page())
-    await figures().findByText('Firme în directorul platformei')
-    expect(counted(3_000)).not.toBeNull()
-
-    // A new edition is published while the page is open.
-    api.registry = capabilities(EDITION_8)
-    api.hub = (key) => hubStats(key === EDITION_8.scopeKey ? EDITION_8 : EDITION_7, 5_000)
-    await act(async () => {
-      await client.invalidateQueries({ queryKey: ['company-registry'] })
+  it('draws every fiscal year of the release, a year without values as a gap with its reason', async () => {
+    renderHub()
+    const trend = await screen.findByTestId('company-hub-trend')
+    const bars = within(trend).getAllByRole('button')
+    expect(bars).toHaveLength(4)
+    expect(bars[1]).toHaveAttribute('data-gap', 'true')
+    expect(bars[1]).toHaveAccessibleName('2009: indicatorul nu e admis pentru acest an')
+    expect(bars[3]).toHaveAccessibleName('2011: nicio valoare raportată')
+    // A reported zero is no gap and no bar: zero height, a mark on the zero line.
+    expect(bars[2]).not.toHaveAttribute('data-gap')
+    expect(bars[2]).toHaveAccessibleName(/^2010: 0\.00\slei/u)
+    const zero = bars[2]!.querySelector('[data-zero]') as HTMLElement
+    expect(zero).not.toBeNull()
+    expect(zero.style.height).toBe('')
+    expect(zero.className).toContain('h-0')
+    expect(dataSearch(band('ani').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({
+      an: 2024,
+      editie: 7,
+      indicator: 'turnover',
+      clasare: 'suma',
+      vedere: 'evolutie',
+      cohorta: 'fiecare-an',
     })
-    expect(await screen.findByTestId('company-registry-moved')).toBeInTheDocument()
-    expect(counted(3_000)).toBeNull()
-    expect(counted(5_000)).toBeNull()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Arată datele actuale' }))
-    await figures().findByText('Firme în directorul platformei')
-    expect(counted(5_000)).not.toBeNull()
-    expect(screen.getByTestId('company-hub-source')).toHaveTextContent(/ediția 8/u)
   })
 
-  it('drops the figures on an access withdrawal and does not bring them back by itself', async () => {
-    render(page())
-    await figures().findByText('Firme în directorul platformei')
-    api.registry = capabilities(WITHDRAWN)
-    await act(async () => {
-      await client.invalidateQueries({ queryKey: ['company-registry'] })
-    })
-    expect(await screen.findByTestId('company-registry-moved')).toBeInTheDocument()
-    expect(counted(3_000)).toBeNull()
-    // Recovery: the edition is public again, still under the old pin — nothing switches until asked.
-    api.registry = capabilities(EDITION_8)
-    api.hub = () => hubStats(EDITION_8, 5_000)
-    await act(async () => {
-      await client.invalidateQueries({ queryKey: ['company-registry'] })
-    })
-    expect(screen.getByTestId('company-registry-moved')).toBeInTheDocument()
-    expect(counted(5_000)).toBeNull()
-  })
-})
-
-/**
- * One accepted answer governs every figure and band (C20-R4): after a
- * successful answer, a refetch the registry refuses — the scope moved during
- * the request, or the registry cannot answer — clears the figures AND the
- * status, county and activity bands at once, though the cache still holds the
- * earlier answer, and re-reads the registry. While that re-read is pending,
- * and after it fails, nothing of the earlier answer returns; the ways in stay.
- */
-describe('PrivateCompanyHubPage — a refused refetch after a shown answer', () => {
-  const MOVED_DURING_REQUEST = 'company registry scope changed during the request; retry'
-  const NOT_PUBLISHED = 'the company registry has no accessible published edition'
-
-  beforeEach(() => {
-    client = createTestQueryClient()
-    api.registry = capabilities(EDITION_7)
-    api.hub = () => hubStats(EDITION_7, 3_000)
-    api.hubCalls = 0
-    api.registryCalls = 0
+  it('keeps a section that failed to itself: its retry beside the others’ figures', async () => {
+    let failing = true
+    api.fail = (call) => failing && call.op === 'CompanyAnalysisBreakdown' && call.variables.dimension === 'COUNTY'
+    renderHub()
+    await screen.findByTestId('company-hub-sectors')
+    expect(await band('judete').findByText('Cifrele nu s-au încărcat.')).toBeInTheDocument()
+    // Every other section stands.
+    expect(figures().getByText('965,213')).toBeInTheDocument()
+    expect(screen.getByTestId('company-hub-leaders')).toBeInTheDocument()
+    expect(await screen.findByTestId('company-hub-trend')).toBeInTheDocument()
+    expect(screen.queryByTestId('company-hub-county-map')).toBeNull()
+    failing = false
+    fireEvent.click(band('judete').getByRole('button', { name: 'Încearcă din nou' }))
+    expect(await screen.findByTestId('company-hub-county-map')).toBeInTheDocument()
   })
 
-  const noFigureOrBand = () => {
-    expect(counted(3_000)).toBeNull()
-    expect(counted(2_400)).toBeNull()
-    expect(screen.queryByTestId('company-hub-status')).toBeNull()
-    expect(screen.queryByTestId('company-hub-counties')).toBeNull()
-    expect(document.querySelector('[data-testid^="company-hub-divisions"]')).toBeNull()
-    expect(screen.queryByTestId('company-hub-source')).toBeNull()
-  }
-
-  it.each([
-    ['moved during the request', MOVED_DURING_REQUEST],
-    ['unavailable', NOT_PUBLISHED],
-  ])('clears every figure and band when the refetch is refused (%s), while the registry is re-read and after that fails', async (_case, message) => {
-    const { GraphQLRequestError } = await import('@/lib/graphql/graphql-client')
-    render(page())
-    await figures().findByText('Firme în directorul platformei')
-    expect(screen.getByTestId('company-hub-status')).toBeInTheDocument()
-    expect(api.registryCalls).toBe(1)
-
-    // The registry's re-read is held open; the hub's own refetch is refused.
-    let failRegistry: (error: Error) => void = () => undefined
-    api.registry = new Promise((_resolve, reject) => {
-      failRegistry = reject
-    })
-    api.hub = () => {
-      throw new GraphQLRequestError('refused', { graphQLErrors: [{ message, extensions: { code: 'SERVICE_UNAVAILABLE' } }] })
-    }
-    await act(async () => {
-      await client.refetchQueries({ queryKey: ['company-hub-stats'] })
-    })
-    // The refusal re-reads the registry (once the page has seen it); by then, and while it is pending, nothing of the
-    // earlier answer is on screen.
-    await vi.waitFor(() => expect(api.registryCalls).toBe(2))
-    noFigureOrBand()
-    // The ways in stay: the search, the shortcuts and the analyses.
+  it('withdraws every figure of a release the API refuses on any read, and moves on only when the reader asks', async () => {
+    api.refuse = (call) => call.variables.release === '7' && call.op === 'CompanyAnalysisSeries'
+    renderHub()
+    expect(await screen.findByText('Ediția 7 a analizei nu mai este disponibilă')).toBeInTheDocument()
+    for (const id of ['company-hub-figures', 'company-hub-leaders', 'company-hub-sectors', 'company-hub-sizes', 'company-hub-county-map', 'company-hub-trend']) expect(screen.queryByTestId(id)).toBeNull()
+    expect(screen.queryByText('965,213')).toBeNull()
+    // The ways in stay: the search, the shortcuts, the places to start.
     expect(screen.getByRole('link', { name: 'Achiziții publice' })).toBeInTheDocument()
     expect(screen.getByText('De aici poți începe')).toBeInTheDocument()
+    // A refusal is not retried, and nothing is read in the release's place.
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisSeries')).toHaveLength(1)
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease')).toHaveLength(1)
 
-    await act(async () => failRegistry(new Error('registry read failed')))
-    expect(await screen.findByTestId('company-registry-scope-error')).toBeInTheDocument()
-    noFigureOrBand()
+    api.active = '8'
+    const before = api.calls.length
+    fireEvent.click(screen.getByRole('button', { name: 'Deschide ediția curentă' }))
+    await loaded()
+    const after = api.calls.slice(before)
+    expect(after[0]).toMatchObject({ op: 'CompanyAnalysisRelease', variables: {} })
+    expect(after.slice(1).every((call) => call.variables.release === '8')).toBe(true)
+    expect(screen.queryByText('Ediția 7 a analizei nu mai este disponibilă')).toBeNull()
   })
 
-  it('shows none of the earlier answer when an ordinary refetch fails: the figures say so, and no band keeps the old numbers', async () => {
-    render(page())
-    await figures().findByText('Firme în directorul platformei')
-    // Not a registry refusal: the scope stays pinned and the registry is not re-read; the cache keeps the old answer.
-    api.hub = () => {
-      throw new Error('network down')
-    }
-    await act(async () => {
-      await client.refetchQueries({ queryKey: ['company-hub-stats'] })
-    })
-    expect(await figures().findByText('Cifrele nu s-au încărcat.')).toBeInTheDocument()
-    expect(client.getQueryData(['company-hub-stats', EDITION_7.scopeKey])).toBeDefined()
-    expect(api.registryCalls).toBe(1)
-    noFigureOrBand()
+  it('says an analytics service that cannot answer as such — never a zero — and keeps the ways in', async () => {
+    api.unavailable = (call) => call.op === 'CompanyAnalysisRelease'
+    renderHub()
+    expect(await screen.findByText('Analiza firmelor nu este disponibilă acum')).toBeInTheDocument()
+    expect(screen.queryByTestId('company-hub-figures')).toBeNull()
+    expect(screen.queryByText(/^0$/u)).toBeNull()
+    expect(screen.getByText('De aici poți începe')).toBeInTheDocument()
+    expect(api.calls.every((call) => call.op === 'CompanyAnalysisRelease')).toBe(true)
+  })
+
+  it('reads the choices the address holds, and writes a new one in the address', async () => {
+    renderHub({ clasament: 'salariati', domenii: 'firme', indicator: 'salariati' })
+    await loaded()
+    expect(api.calls.find((call) => call.op === 'CompanyAnalysisRecords')?.variables).toMatchObject({ sortMetric: 'EMPLOYEES' })
+    const breakdown = (dimension: string) => api.calls.find((call) => call.op === 'CompanyAnalysisBreakdown' && call.variables.dimension === dimension)?.variables
+    expect(breakdown('MAIN_CAEN')).toMatchObject({ rankBy: 'FILERS' })
+    expect(breakdown('COUNTY')).toMatchObject({ metric: 'EMPLOYEES', rankBy: 'METRIC_SUM' })
+    expect(screen.getByTestId('company-hub-sizes')).toHaveTextContent('Firme')
+    expect(screen.getByTestId('company-hub-sizes')).not.toHaveTextContent('Cifra de afaceri')
+
+    const layers = screen.getByRole('radiogroup', { name: 'Indicatorul de pe hartă' })
+    expect(within(layers).getByRole('radio', { name: 'Salariați' })).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(within(layers).getByRole('radio', { name: 'Cifra de afaceri' }))
+    const move = router.navigate.mock.calls[0]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown>; readonly replace: boolean }
+    expect(move.replace).toBe(true)
+    // The default is not written; the other choices and the site's keys stay.
+    expect(move.search({ indicator: 'salariati', clasament: 'salariati', lang: 'en' })).toEqual({ indicator: undefined, clasament: 'salariati', lang: 'en' })
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Domeniile după' })).getByRole('radio', { name: 'Salariați' }))
+    const sectors = router.navigate.mock.calls[1]?.[0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    expect(sectors.search({})).toEqual({ domenii: 'salariati' })
+  })
+
+  it('keeps the site’s search, scoped to companies', async () => {
+    renderHub()
+    await loaded()
+    expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0)
   })
 })
 
-/**
- * Refusal episodes: a refused read retires the scope's figures and re-reads
- * the registry once per episode; a read started after it and accepted under
- * the same scope ends the episode, so the next, independent refusal is acted
- * on again — the figures' gate (`!isError`) is unchanged. Through the app's
- * own query client, the real provider, adapter and page; only the transport
- * is scripted, a read held where a step needs it. Every commit's markup is
- * recorded; nothing here re-reads the registry for the page.
- */
-describe('PrivateCompanyHubPage — refusal episodes', () => {
-  const S1 = EDITION_7.scopeKey
-  const ACCESS = 'company access (core organization privacy) could not be rechecked by this runtime; the response is withheld'
+describe('PrivateCompanyHubPage — the server render', () => {
+  it('renders the release’s figures from the loader’s seed, and the browser reads nothing again', async () => {
+    const read = await readCompanyHubForSsr({})
+    expect(read.complete).toBe(true)
+    const html = renderToStaticMarkup(tree(newClient(), {}, read.seed))
+    for (const text of ['965,213', '9,007,199.3', 'Firma 1', '4711 · Comerț cu amănuntul', 'Anul fiscal 2024', 'company-hub-county-map', 'company-hub-trend']) expect(html).toContain(text)
 
-  let commits: string[] = []
-  let answers: (() => unknown)[] = []
-  let unscripted = 0
-
-  const refusal = (message: string) => new GraphQLRequestError('refused', { graphQLErrors: [{ message, extensions: { code: 'SERVICE_UNAVAILABLE' } }] })
-  const shownSince = (mark: number, pattern: RegExp) => commits.slice(mark).filter((html) => pattern.test(html)).length
-
-  function deferred<T>() {
-    let resolve!: (value: T) => void
-    let reject!: (reason: unknown) => void
-    const promise = new Promise<T>((done, fail) => {
-      resolve = done
-      reject = fail
+    api.calls = []
+    renderHub({}, read.seed)
+    // Hydrated from the seed: everything is there on the first render.
+    expect(figures().getByText('965,213')).toBeInTheDocument()
+    expect(screen.getByTestId('company-hub-leaders')).toBeInTheDocument()
+    expect(screen.getByTestId('company-hub-county-map')).toBeInTheDocument()
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 20))
     })
-    return { promise, resolve, reject }
-  }
-
-  function observed() {
-    return <Profiler id="hub" onRender={() => commits.push(document.body.innerHTML)}>{page()}</Profiler>
-  }
-
-  /** A few turns of the event loop: the query cache notifies on a zero timeout. */
-  async function settle() {
-    for (let turn = 0; turn < 5; turn += 1) {
-      await act(async () => {
-        await new Promise((done) => setTimeout(done, 0))
-      })
-    }
-  }
-
-  const revalidate = () =>
-    act(async () => {
-      void client.refetchQueries({ queryKey: ['company-hub-stats', S1], exact: true })
-    })
-
-  beforeEach(() => {
-    client = createQueryClient()
-    client.setDefaultOptions({ queries: { ...client.getDefaultOptions().queries, retry: false } })
-    api.registry = capabilities(EDITION_7)
-    api.hubCalls = 0
-    api.registryCalls = 0
-    commits = []
-    answers = []
-    unscripted = 0
-    api.hub = () => {
-      const next = answers.shift()
-      if (next) return next()
-      unscripted += 1
-      return new Promise(() => undefined)
-    }
+    expect(api.calls).toEqual([])
   })
 
-  it('re-reads the registry at a later, independent refusal after an accepted recovery, and shows S2 figures only when asked', async () => {
-    const first = deferred<never>()
-    const fresh = deferred<unknown>()
-    const moved = deferred<unknown>()
-    answers.push(() => hubStats(EDITION_7, 3_000), () => first.promise, () => fresh.promise, () => moved.promise)
-    render(observed())
-    await figures().findByText('Firme în directorul platformei')
-    expect(counted(3_000)).not.toBeNull()
-
-    // 1. A revalidation is refused: access could not be rechecked. The registry is re-read and confirms S1; the
-    //    figures are read afresh (held), and nothing of the earlier answer is on screen meanwhile.
-    await revalidate()
-    await vi.waitFor(() => expect(api.hubCalls).toBe(2))
-    const refusedAt = commits.length
-    await act(async () => first.reject(refusal(ACCESS)))
-    await vi.waitFor(() => expect(api.hubCalls).toBe(3))
-    expect(api.registryCalls).toBe(2)
-    expect(shownSince(refusedAt, /data-count-value="3000"/u)).toBe(0)
-    // The fresh read is accepted under S1: the episode is over.
-    await act(async () => fresh.resolve(hubStats(EDITION_7, 3_100)))
-    await vi.waitFor(() => expect(counted(3_100)).not.toBeNull())
-
-    // 2. The server moves to S2: the next revalidation answers under S2, and the adapter refuses it for S1.
-    api.registry = capabilities(EDITION_8)
-    await revalidate()
-    await vi.waitFor(() => expect(api.hubCalls).toBe(4))
-    const movedAt = commits.length
-    await act(async () => moved.resolve(hubStats(EDITION_8, 5_000)))
-    expect(await screen.findByTestId('company-registry-moved')).toBeInTheDocument()
-    await settle()
-    // The third registry read is the page's own report; the S1 figures are retired; nothing more is read until asked.
-    expect(api.registryCalls).toBe(3)
-    expect(api.hubCalls).toBe(4)
-    expect(client.getQueriesData({ queryKey: ['company-hub-stats', S1] })).toEqual([])
-    expect(shownSince(movedAt, /data-count-value="(3000|3100|5000)"/u)).toBe(0)
-
-    answers.push(() => hubStats(EDITION_8, 5_000))
-    fireEvent.click(screen.getByRole('button', { name: 'Arată datele actuale' }))
-    await vi.waitFor(() => expect(counted(5_000)).not.toBeNull())
-    expect(screen.getByTestId('company-hub-source')).toHaveTextContent(/ediția 8/u)
-    expect(shownSince(movedAt, /data-count-value="(3000|3100)"/u)).toBe(0)
-    expect(unscripted).toBe(0)
-  })
-
-  it('asks the registry first when the reader retries a refused read, so a scope that moved since is said — never asked again under S1', async () => {
-    // The server re-pinned: it answers under S2 while the registry still says S1, and the adapter refuses both answers.
-    answers.push(
-      () => hubStats(EDITION_7, 3_000),
-      () => hubStats(EDITION_8, 5_000),
-      () => hubStats(EDITION_8, 5_000),
-    )
-    render(observed())
-    await figures().findByText('Firme în directorul platformei')
-    await revalidate()
-    // The episode's one registry re-read confirms S1; the re-ask is refused again: a state with a retry, no loop.
-    await vi.waitFor(() => expect(api.hubCalls).toBe(3))
-    await settle()
-    expect(api.registryCalls).toBe(2)
-    expect(figures().getByText('Cifrele nu s-au încărcat.')).toBeInTheDocument()
-
-    // The registry now says S2. The reader's retry asks it first: the move is said, nothing is asked under S1.
-    api.registry = capabilities(EDITION_8)
-    fireEvent.click(figures().getByRole('button', { name: 'Încearcă din nou' }))
-    expect(await screen.findByTestId('company-registry-moved')).toBeInTheDocument()
-    expect(api.registryCalls).toBe(3)
-    expect(api.hubCalls).toBe(3)
-
-    // No S2 figure before the reader asks; then the S2 answer.
-    const askedAt = commits.length
-    expect(commits.slice(0, askedAt).some((html) => html.includes('data-count-value="5000"'))).toBe(false)
-    answers.push(() => hubStats(EDITION_8, 5_000))
-    fireEvent.click(screen.getByRole('button', { name: 'Arată datele actuale' }))
-    await vi.waitFor(() => expect(counted(5_000)).not.toBeNull())
-    expect(api.hubCalls).toBe(4)
-    expect(unscripted).toBe(0)
+  it('renders no figure of a release refused on the server — the browser reads, and says the refusal', async () => {
+    api.refuse = (call) => call.op === 'CompanyAnalysisStats'
+    const read = await readCompanyHubForSsr({})
+    expect(read).toEqual({ seed: [], complete: false })
+    const html = renderToStaticMarkup(tree(newClient(), {}, read.seed))
+    expect(html).not.toContain('965,213')
+    expect(html).not.toContain('Firma 1')
+    expect(html).toContain('Economia')
+    renderHub({}, read.seed)
+    expect(await screen.findByText('Ediția 7 a analizei nu mai este disponibilă')).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByTestId('company-hub-figures')).toBeNull())
   })
 })

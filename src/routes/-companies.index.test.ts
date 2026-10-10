@@ -16,7 +16,13 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
 }))
 
 const createPublicPageCacheHeaders = vi.hoisted(() => vi.fn(() => ({ 'Cache-Control': 'public' })))
-vi.mock('@/lib/http-cache', () => ({ createPublicPageCacheHeaders }))
+vi.mock('@/lib/http-cache', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/http-cache')>()), createPublicPageCacheHeaders }))
+
+const ssr = vi.hoisted(() => ({ server: false }))
+vi.mock('@/lib/ssr/loader-blocking', () => ({ shouldBlockLoaderForSsr: () => ssr.server }))
+
+const serverRead = vi.hoisted(() => vi.fn(async () => ({ seed: [{ key: ['companies', 'analytics', 'release', 'active'], data: {} }], complete: true })))
+vi.mock('@/features/private-companies/api/company-hub-analytics', () => ({ readCompanyHubForSsr: serverRead }))
 
 type Head = {
   readonly meta: readonly Record<string, string>[]
@@ -25,9 +31,11 @@ type Head = {
 }
 
 type RouteOptions = {
+  readonly ssr: unknown
   readonly validateSearch: (search: Record<string, unknown>) => unknown
   readonly beforeLoad: (input: { readonly location: { readonly search: Record<string, unknown> } }) => void
-  readonly loader?: unknown
+  readonly loaderDeps: (input: { readonly search: unknown }) => { readonly search: unknown }
+  readonly loader: (input: { readonly deps: { readonly search: unknown } }) => Promise<{ readonly seed: readonly unknown[]; readonly complete: boolean }>
   readonly headers: () => Record<string, string>
   readonly head: () => Head
 }
@@ -63,15 +71,20 @@ function thrownBy(run: () => void): unknown {
 describe('/companies route', () => {
   afterEach(() => {
     locale.current = 'ro'
+    ssr.server = false
+    serverRead.mockClear()
   })
 
   it('keeps the hub’s own choices and drops values it does not know', async () => {
     const { validateSearch } = await route()
-    expect(validateSearch({ indicator: 'infiintari', clasament: 'salariati', domenii: 'nope' })).toEqual({
-      indicator: 'infiintari',
+    expect(validateSearch({ indicator: 'salariati', clasament: 'salariati', domenii: 'nope' })).toEqual({
+      indicator: 'salariati',
       clasament: 'salariati',
       domenii: undefined,
     })
+    // The registry-era map layers have no source in the analytics release: an old link opens the default.
+    expect(validateSearch({ indicator: 'densitate' })).toEqual({ indicator: undefined })
+    expect(validateSearch({ indicator: 'infiintari', domenii: 'firme' })).toEqual({ indicator: undefined, domenii: 'firme' })
   })
 
   it('sends an old directory deep link to the directory, with the language it carried', async () => {
@@ -83,25 +96,40 @@ describe('/companies route', () => {
 
   it('stays on the hub for a link that carries only the hub’s choices', async () => {
     const { beforeLoad } = await route()
+    expect(thrownBy(() => beforeLoad({ location: { search: { indicator: 'firme', lang: 'en' } } }))).toBeUndefined()
     expect(thrownBy(() => beforeLoad({ location: { search: { indicator: 'densitate', lang: 'en' } } }))).toBeUndefined()
   })
 
-  it('is cached publicly, keyed on the cookies the render follows', async () => {
-    const { headers } = await route()
-    headers()
-    // The locale and theme cookies change the HTML: a shared cache that
-    // ignored them would serve one reader's language to another.
-    expect(createPublicPageCacheHeaders).toHaveBeenCalledWith({
-      browserMaxAgeSeconds: 0,
-      sharedMaxAgeSeconds: 3600,
-      staleWhileRevalidateSeconds: 604800,
-      vary: ['Accept-Encoding', 'Cookie'],
-    })
+  it('never lets a CDN or a browser keep any response: its HTML holds a release’s figures', async () => {
+    vi.stubEnv('DEV', false)
+    try {
+      const headers = (await route()).headers()
+      expect(headers['Cache-Control']).toBe('no-store')
+      expect(headers['CDN-Cache-Control']).toBe('no-store')
+      expect(Object.values(headers).join(' ')).not.toMatch(/max-age|stale-while-revalidate|public/u)
+      expect(createPublicPageCacheHeaders).not.toHaveBeenCalled()
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
+  it('reads the hub’s figures on the server only, for the choices in the address — a client navigation reads in the browser', async () => {
+    const options = await route()
+    expect(options.ssr).toBe(true)
+    const deps = options.loaderDeps({ search: { clasament: 'salariati' } })
+    expect(deps).toEqual({ search: { clasament: 'salariati' } })
+
+    expect(await options.loader({ deps })).toEqual({ seed: [], complete: true })
+    expect(serverRead).not.toHaveBeenCalled()
+
+    ssr.server = true
+    const read = await options.loader({ deps })
+    expect(serverRead).toHaveBeenCalledWith({ clasament: 'salariati' })
+    expect(read.seed).toHaveLength(1)
   })
 
   it('describes the hub by what a reader finds and where it comes from, quoting no figure it cannot vouch for', async () => {
-    // The route has no loader: the head is built from no data, so a cached page can never carry a count.
-    expect((await route()).loader).toBeUndefined()
+    // The head is built from no data: the loader's figures never reach a title, a description or the structured data.
     const built = await head()
     expect(metaOf(built, 'title')).toContain('Transparenta.eu')
     expect(metaOf(built, 'og:title')).toBe(metaOf(built, 'title'))
