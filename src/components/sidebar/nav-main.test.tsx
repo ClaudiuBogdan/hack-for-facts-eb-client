@@ -155,11 +155,12 @@ describe('NavMain', () => {
       expect(screen.getByText('Legislație')).toBeInTheDocument()
     })
 
-    it('renders Elections link', async () => {
+    it('does not link Elections while the area is off in this build', async () => {
       await renderNavMain()
 
-      expect(screen.getByTestId('link-/alegeri')).toBeInTheDocument()
-      expect(screen.getByText('Alegeri')).toBeInTheDocument()
+      // `src/config/feature-flags.ts`: elections are not implemented yet.
+      expect(screen.queryByTestId('link-/alegeri')).not.toBeInTheDocument()
+      expect(screen.queryByText('Alegeri')).not.toBeInTheDocument()
     })
 
     it('renders ONG-uri link', async () => {
@@ -180,7 +181,8 @@ describe('NavMain', () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      expect(menuItems).toHaveLength(12)
+      // Twelve declared, Elections switched off.
+      expect(menuItems).toHaveLength(11)
     })
 
     it('renders the public enterprises link, after the companies', async () => {
@@ -230,10 +232,10 @@ describe('NavMain', () => {
       expect(screen.getByTestId('icon-companies')).toBeInTheDocument()
     })
 
-    it('renders elections icon', async () => {
+    it('draws no elections icon while the area is off', async () => {
       await renderNavMain()
 
-      expect(screen.getByTestId('icon-elections')).toBeInTheDocument()
+      expect(screen.queryByTestId('icon-elections')).not.toBeInTheDocument()
     })
 
     it('renders ONG-uri icon', async () => {
@@ -322,12 +324,11 @@ describe('NavMain', () => {
       expect(achizitiiLink).toHaveClass('bg-muted')
     })
 
-    it('marks Elections as active when on /alegeri subpath', async () => {
+    it('marks nothing active on a path of an area that is off', async () => {
       mockMatches.mockReturnValue([{ pathname: '/alegeri/contest/local-2024-cluj-napoca-primar' }])
       await renderNavMain()
 
-      const electionsLink = screen.getByTestId('link-/alegeri')
-      expect(electionsLink).toHaveClass('bg-muted')
+      expect(screen.getAllByRole('link').filter((link) => link.classList.contains('bg-muted'))).toHaveLength(0)
     })
   })
 

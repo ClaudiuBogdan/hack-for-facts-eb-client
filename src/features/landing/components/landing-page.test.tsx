@@ -3,7 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient, render, screen, within } from '@/test/test-utils'
-import { LANDING_GROUPS } from '@/features/landing/lib/landing-groups'
+import { LANDING_GROUPS, visibleGroups } from '@/features/landing/lib/landing-groups'
 import { NATIONAL_FACTS, formatFact, formatValue } from '@/features/landing/lib/national-facts'
 import { ANGELS, FOUNDER } from '@/features/landing/lib/people'
 import { getUserLocale } from '@/lib/utils'
@@ -93,10 +93,12 @@ describe('LandingPage', () => {
 
     // Every group is a labelled section whose heading carries its real title.
     // Under test the `msg` macro is mocked to the source string itself.
-    for (const group of LANDING_GROUPS) {
+    for (const group of visibleGroups()) {
       const title = group.title as unknown as string
       expect(screen.getByRole('region', { name: title })).toBeInTheDocument()
     }
+    // The areas switched off in this build (`src/config/feature-flags.ts`) are not linked.
+    for (const href of ['/investitii-publice', '/alegeri']) expect(document.querySelector(`a[href="${href}"]`)).toBeNull()
   })
 
   it('omits the institution count until it is served', async () => {

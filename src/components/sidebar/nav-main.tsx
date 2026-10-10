@@ -10,6 +10,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Trans } from "@lingui/react/macro";
+import { isFeatureEnabled, type FeatureFlag } from "@/config/feature-flags";
 
 type MainItemUrl =
   | "/"
@@ -29,6 +30,8 @@ const mainItems: ReadonlyArray<{
   title: React.ReactNode;
   url: MainItemUrl;
   icon: typeof LayoutDashboard;
+  /** An area switched off in this build (`src/config/feature-flags.ts`) is not linked. */
+  feature?: FeatureFlag;
 }> = [
   {
     title: <Trans>Dashboard</Trans>,
@@ -91,6 +94,7 @@ const mainItems: ReadonlyArray<{
     title: <Trans>Alegeri</Trans>,
     url: "/alegeri",
     icon: Vote,
+    feature: "elections",
   },
   {
     title: <Trans>Statistici</Trans>,
@@ -125,7 +129,7 @@ export function NavMain() {
       <div className="flex-1 py-2">
         <SidebarGroup>
           <SidebarMenu>
-            {mainItems.map((item) => (
+            {mainItems.filter((item) => item.feature === undefined || isFeatureEnabled(item.feature)).map((item) => (
               <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton asChild>
                   <Link

@@ -52,10 +52,9 @@ test.describe('Landing Page', () => {
 
   test('displays the grouped index of surfaces', async ({ page }) => {
     const groups: ReadonlyArray<readonly [RegExp, readonly string[]]> = [
-      [/banii publici|public money/i, ['/national-budget', '/procurement', '/investitii-publice', '/pnrr']],
-      [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/ngos']],
+      [/banii publici|public money/i, ['/national-budget', '/procurement', '/pnrr']],
+      [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/public-enterprises', '/ngos']],
       [/lege și justiție|law and justice/i, ['/legislation', '/justice']],
-      [/^politică$|^politics$/i, ['/alegeri']],
       [/instrumente|tools/i, ['/map', '/charts', '/ins']],
     ]
 
@@ -66,6 +65,17 @@ test.describe('Landing Page', () => {
       for (const href of hrefs) {
         await expect(region.locator(`a[href="${href}"]`)).toBeVisible()
       }
+    }
+  })
+
+  test('links no area switched off in this build, and each of them answers 404', async ({ page }) => {
+    // `src/config/feature-flags.ts`: public investments and elections are not implemented yet.
+    for (const href of ['/investitii-publice', '/alegeri']) {
+      await expect(page.locator(`a[href="${href}"]`)).toHaveCount(0)
+    }
+    // The elections landing first writes its search defaults into the address; wherever it lands, the answer is 404.
+    for (const path of ['/investitii-publice', '/investitii-publice/cautare', '/alegeri', '/alegeri/contest/local-2024-cluj-napoca-primar']) {
+      expect((await page.request.get(path)).status(), path).toBe(404)
     }
   })
 
