@@ -388,6 +388,8 @@ const caenZ = z.object({
   revision: z.string().nullable(),
   basis: CompanyAnalysisCaenBasisZ,
   label: z.string().nullable(),
+  descriptionStatus: z.enum(['EXACT', 'CONSENSUS', 'CONFLICT', 'MISSING']).optional(),
+  descriptions: z.array(z.object({ revision: z.enum(['rev0', 'rev1', 'rev2', 'rev3']), label: z.string().nullable() })).optional(),
 })
 export type CompanyAnalysisCaen = z.infer<typeof caenZ>
 

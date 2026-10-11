@@ -73,7 +73,8 @@ const STATS_QUERY = /* GraphQL */ `
   }
 `
 
-const BUCKET = `kind key label labelSource basis caen { code revision basis label } groups companies filers metric { ${AGGREGATE} }`
+const CAEN = `code revision basis label descriptionStatus descriptions { revision label }`
+const BUCKET = `kind key label labelSource basis caen { ${CAEN} } groups companies filers metric { ${AGGREGATE} }`
 
 const BREAKDOWN_QUERY = /* GraphQL */ `
   query CompanyAnalysisBreakdown($release: BigInt!, $scope: CompanyAnalysisScopeInput, $dimension: CompanyAnalysisDimension!, $metric: CompanyAnalysisMetric, $rankBy: CompanyAnalysisRankBy, $topN: Int) {
@@ -138,7 +139,7 @@ const RECORDS_QUERY = /* GraphQL */ `
           onrcRecordedDateBasis
           vatPayer
           fiscallyInactive
-          mainCaen { code revision basis label }
+          mainCaen { ${CAEN} }
           filed
           employeeSizeBand
           values { metric value status }

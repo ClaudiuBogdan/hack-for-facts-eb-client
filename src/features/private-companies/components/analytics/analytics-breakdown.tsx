@@ -1,3 +1,4 @@
+import { CaenDescription } from '../caen-description'
 import { useState } from 'react'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
@@ -132,7 +133,7 @@ export function AnalyticsBreakdown({
     )
 
   const rows = breakdownRows(data)
-  const names = labelSourcesOf(data.groups.map((bucket) => bucket.labelSource))
+  const names = labelSourcesOf(data.groups.map((bucket) => bucket.labelSource ?? (bucket.caen?.descriptions?.length ? 'current_db_catalog' : null)))
   return (
     <div className={cn(className, breakdown.isFetching && 'opacity-70 transition-opacity')}>
       {controls}
@@ -157,12 +158,12 @@ export function AnalyticsBreakdown({
               <TableRow key={`${bucket.kind}-${bucket.key ?? ''}`} className={cn(bucket.kind !== 'GROUP' && 'text-muted-foreground')}>
                 <TableCell className="max-w-[12rem] sm:max-w-md">
                   {onDrill ? (
-                    <button type="button" onClick={onDrill} className="block max-w-full truncate text-left font-medium text-foreground underline-offset-4 hover:underline" title={t`Doar ${label}`}>
-                      {label}
+                    <button type="button" onClick={onDrill} className={cn('block max-w-full text-left font-medium text-foreground underline-offset-4 hover:underline', bucket.caen ? 'whitespace-normal' : 'truncate')} title={t`Doar ${label}`}>
+                      {bucket.caen ? <CaenDescription caen={bucket.caen} /> : label}
                     </button>
                   ) : (
-                    <span className="block truncate" title={label}>
-                      {label}
+                    <span className={cn('block', bucket.caen ? 'whitespace-normal' : 'truncate')} title={label}>
+                      {bucket.caen ? <CaenDescription caen={bucket.caen} /> : label}
                     </span>
                   )}
                 </TableCell>

@@ -304,7 +304,7 @@ export function hubRankingOf(breakdown: CompanyAnalysisBreakdown, measure: HubMe
   }
 }
 
-/** A main activity: its code with the catalogue label of its OWN revision, or marked as of unknown revision — never given one. */
+/** A main activity: its exact source code, shared catalog description or explicit revision-qualified alternatives. */
 export function caenRowLabel(bucket: CompanyAnalysisBucket): string {
   return bucket.caen ? caenText(bucket.caen) : (bucket.label ?? bucket.key ?? '—')
 }

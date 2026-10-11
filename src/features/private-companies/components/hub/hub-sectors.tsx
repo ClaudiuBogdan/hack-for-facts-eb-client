@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CaenDescription } from '../caen-description'
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -60,7 +61,7 @@ export function HubSectors({
   const ranking = hubRankingOf(breakdown, measure, locale)
   const shown = expanded ? ranking.rows : ranking.rows.slice(0, limit)
   const tail = expanded ? [ranking.other, ranking.unknown].filter((row): row is HubRow => row !== null) : []
-  const sources = labelSourcesOf(breakdown.groups.map((bucket) => bucket.labelSource))
+  const sources = labelSourcesOf(breakdown.groups.map((bucket) => bucket.labelSource ?? (bucket.caen?.descriptions?.length ? 'current_db_catalog' : null)))
   if (ranking.rows.length === 0) {
     return (
       <p className={cn('text-sm text-muted-foreground', className)} data-testid="company-hub-sectors-empty">
@@ -78,7 +79,7 @@ export function HubSectors({
               <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
               <span className="min-w-0">
                 <span className="flex items-baseline justify-between gap-3">
-                  <span className="text-sm text-foreground sm:truncate">{caenRowLabel(row.bucket)}</span>
+                  <span className="min-w-0 break-words text-sm text-foreground" title={caenRowLabel(row.bucket)}>{row.bucket.caen ? <CaenDescription caen={row.bucket.caen} /> : caenRowLabel(row.bucket)}</span>
                   <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{row.share ?? '—'}</MonoLabel>
                 </span>
                 <span className="mt-1.5 flex items-center gap-2">
@@ -122,6 +123,8 @@ export function HubSectors({
           Activitatea principală ANAF din instantaneul ediției analizei, nu istoricul ei pe ani, în revizia CAEN publicată pentru ea; un cod fără revizie
           publicată rămâne cu revizia necunoscută. Nu sunt activitățile autorizate în registrul comerțului.
         </Trans>
+        {' '}
+        <Trans>Denumirile sunt din nomenclatorul CAEN. Când diferă între revizii, fiecare variantă este însoțită de revizia sa.</Trans>
         {sources.length > 0 ? ` ${t`Denumiri: ${sources.join(', ')}.`}` : null}
       </MonoLabel>
     </div>

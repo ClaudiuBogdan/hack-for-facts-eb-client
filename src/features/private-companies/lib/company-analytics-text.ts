@@ -2,6 +2,7 @@ import { t } from '@lingui/core/macro'
 import { countyNameRo } from '@/lib/territory-counties'
 import {
   onrcBasisOfKey,
+  type CompanyAnalysisCaen,
   type CompanyAnalysisCaenBasis,
   type CompanyAnalysisCohortMode,
   type CompanyAnalysisDimension,
@@ -176,10 +177,32 @@ export function caenBasisLabel(basis: CompanyAnalysisCaenBasis): string {
   return t`fără activitate principală`
 }
 
-/** A main activity code: with its catalogue label when ANAF published its revision, else marked as of unknown revision. */
-export function caenText(caen: { readonly code: string; readonly revision: string | null; readonly label: string | null }): string {
-  if (caen.revision === null) return t`${caen.code} (revizie necunoscută)`
-  return caen.label ? `${caen.code} · ${caen.label}` : `${caen.code} (${caen.revision})`
+type CaenDisplayValue = Pick<CompanyAnalysisCaen, 'code' | 'revision' | 'label' | 'descriptionStatus' | 'descriptions'>
+
+/** Every distinct catalog text, qualified by all revisions that give exactly that text. */
+export function caenDescriptionLines(caen: CaenDisplayValue): readonly { readonly revisions: readonly string[]; readonly label: string | null }[] {
+  const descriptions = caen.descriptions ?? []
+  const first = descriptions[0]?.label
+  const consensus = caen.descriptionStatus === 'CONSENSUS' && first && descriptions.every((description) => description.label === first)
+  if (caen.revision !== null || (!consensus && caen.descriptionStatus !== 'CONFLICT')) return []
+  const alternatives = new Map<string | null, string[]>()
+  for (const description of descriptions) {
+    const revisions = alternatives.get(description.label) ?? []
+    revisions.push(description.revision.replace('rev', 'Rev.'))
+    alternatives.set(description.label, revisions)
+  }
+  return [...alternatives].map(([label, revisions]) => ({ label, revisions }))
+}
+
+/** A flattened accessible description; unknown source revisions and catalog conflicts remain explicit. */
+export function caenText(caen: CaenDisplayValue): string {
+  if (caen.revision !== null) return caen.label ? `${caen.code} · ${caen.label}` : `${caen.code} (${caen.revision})`
+  const lines = caenDescriptionLines(caen)
+  if (caen.descriptionStatus === 'CONSENSUS' && lines[0]?.label)
+    return `${caen.code} · ${lines[0].label} (${t`revizie nepublicată`})`
+  if (caen.descriptionStatus === 'CONFLICT' && lines.length > 0)
+    return `${caen.code} (${t`revizie nepublicată; denumiri diferite`}) · ${lines.map((line) => `${line.revisions.join(', ')}: ${line.label ?? t`fără denumire în nomenclator`}`).join(' / ')}`
+  return t`${caen.code} (revizie necunoscută)`
 }
 
 /** What a reader should know before citing a figure, in the page's language. */
@@ -254,7 +277,7 @@ export function labelSourceText(source: string): string {
     case 'api_nomenclature':
       return t`nomenclatorul stărilor al aplicației, nu etichete publicate de ONRC`
     case 'current_db_catalog':
-      return t`catalogul CAEN actual al platformei, pe revizia codului`
+      return t`nomenclatorul CAEN al platformei, cu reviziile denumirilor indicate`
     default:
       return source
   }

@@ -42,7 +42,7 @@ export function HubLeaders({
               <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium text-foreground">{leader.name ?? t`Fără denumire publică · CUI ${leader.cui}`}</span>
-                {meta.length > 0 ? <MonoLabel className="mt-0.5 block truncate text-muted-foreground">{meta.join(' · ')}</MonoLabel> : null}
+                {meta.length > 0 ? <MonoLabel className="mt-0.5 block truncate text-muted-foreground" title={meta.join(' · ')}>{meta.join(' · ')}</MonoLabel> : null}
               </span>
               <span className="text-right">
                 {figure ? (

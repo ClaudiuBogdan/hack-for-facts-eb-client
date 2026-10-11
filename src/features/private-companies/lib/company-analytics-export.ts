@@ -113,11 +113,13 @@ function bucketRow(breakdown: CompanyAnalysisBreakdown, bucket: CompanyAnalysisB
     bucket.metric?.coverage.heldObservation ?? null,
     bucket.metric?.coverage.heldQuality ?? null,
     bucket.metric?.coverage.heldComponent ?? null,
+    bucket.caen?.descriptionStatus ?? null,
+    bucket.caen?.descriptions ? JSON.stringify(bucket.caen.descriptions) : null,
   ]
 }
 
 export function breakdownCsv(breakdown: CompanyAnalysisBreakdown): string {
-  const header = ['release_id', ...SOURCE_HEADER, 'fiscal_year', 'dimension', 'bucket', 'key', 'basis', 'label', 'label_source', 'groups', 'companies', 'filers', 'metric', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component']
+  const header = ['release_id', ...SOURCE_HEADER, 'fiscal_year', 'dimension', 'bucket', 'key', 'basis', 'label', 'label_source', 'groups', 'companies', 'filers', 'metric', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component', 'caen_description_status', 'caen_descriptions']
   // Every bucket the API answered, the empty unknown slot of a consensus grouping too: the file adds up as the API's does.
   const buckets = [...breakdown.groups, breakdown.other, breakdown.unknown, breakdown.totals]
   return csvOf(header, buckets.map((bucket) => bucketRow(breakdown, bucket)))
