@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { hubYearsFrom, type HubSeriesPoint, type HubYearSeries } from './hub-years'
+import { hubYearsFrom, rawDeparture, type HubSeriesPoint, type HubYearSeries } from './hub-years'
 
 /**
  * The generator writes the hub's years only from an answer these rules
@@ -64,6 +64,31 @@ describe('the hub snapshot’s years', () => {
     expect(hubYearsFrom(answer(), 2026, CEILING).problems).toContain('the years are not a run ending in 2026')
     const skipped = answer({ turnover: [point(2023, '900.00', 9), point(2025, '1100.00', 8)] })
     expect(hubYearsFrom(skipped, 2025, CEILING).problems).toContain('the years are not a run ending in 2025')
+  })
+
+  it('rejects a year twice, or a year turnover has not', () => {
+    const twice = answer({ netResult: [point(2024, '-20.00', 9), point(2024, '-25.00', 9), point(2025, '15.00', 8)] })
+    expect(hubYearsFrom(twice, 2025, CEILING).problems).toContain("netResult's years differ from turnover's")
+    const extra = answer({ employees: [point(2023, '40', 9, 9), point(2024, '40', 9, 9), point(2025, '44', 8, 8)] })
+    expect(hubYearsFrom(extra, 2025, CEILING).problems).toContain("employees's years differ from turnover's")
+  })
+
+  it('rejects contradictory points: a value with a gap reason, an offered year without a sum, reporters for a year without a value', () => {
+    const problems = (patch: Partial<HubSeriesPoint>) => hubYearsFrom(answer({ netResult: [point(2024, '-20.00', 9, 10, patch), point(2025, '15.00', 8)] }), 2025, CEILING).problems
+    expect(problems({ gapReason: 'NOT_ADMITTED' })).toContain('netResult 2024: available, with a gap reason (NOT_ADMITTED)')
+    expect(problems({ metric: { sum: null, contributors: '9' } })).toContain('netResult 2024: available, with no sum')
+    expect(problems({ available: false, gapReason: 'NOT_ADMITTED', metric: { sum: null, contributors: '3' } })).toContain('netResult 2024: 3 reported for a year without a value')
+  })
+
+  it('rejects more companies within the headcount ceiling than with a statement', () => {
+    expect(hubYearsFrom(answer({ employees: [point(2024, '40', 9, 11), point(2025, '44', 8, 8)] }), 2025, CEILING).problems).toContain("employees 2024: more companies than turnover's")
+  })
+
+  it('measures how far a raw sum strays from the release’s: the gate the generator holds at 5%', () => {
+    // 2025 as read on 12 October 2026: 2.2% on turnover; insurers' 2024 headcounts would be 27%.
+    expect(rawDeparture(2_841_237_823_768, 2_780_302_718_022)).toBeLessThan(0.05)
+    expect(rawDeparture(5_324_102, 4_186_301)).toBeGreaterThan(0.05)
+    expect(rawDeparture(1, null)).toBe(Infinity)
   })
 
   it('rejects series whose companies differ, except the range-filtered employees', () => {

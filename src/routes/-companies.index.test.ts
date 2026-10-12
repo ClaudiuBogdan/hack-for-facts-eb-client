@@ -75,11 +75,16 @@ describe('/companies route', () => {
     expect(thrownBy(() => beforeLoad({ location: { search: { county: 'CLUJ', clasament: 'salariati', lang: 'en' } } }))).toEqual({
       redirect: { to: '/companies/search', search: { lang: 'en', county: ['CLUJ'] }, replace: true },
     })
+    // Every one of the hub's choices stays behind, the years' measure too.
+    expect(thrownBy(() => beforeLoad({ location: { search: { county: 'CLUJ', evolutie: 'salariati' } } }))).toEqual({
+      redirect: { to: '/companies/search', search: { county: ['CLUJ'] }, replace: true },
+    })
   })
 
   it('stays on the hub for a link that carries only the hub’s choices', async () => {
     const { beforeLoad } = await route()
     expect(thrownBy(() => beforeLoad({ location: { search: { indicator: 'densitate', lang: 'en' } } }))).toBeUndefined()
+    expect(thrownBy(() => beforeLoad({ location: { search: { evolutie: 'rezultat-net' } } }))).toBeUndefined()
   })
 
   it('is cached publicly, keyed on the cookies the render follows', async () => {

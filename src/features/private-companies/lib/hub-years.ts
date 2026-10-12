@@ -41,6 +41,12 @@ export function hubYearsFrom(series: HubYearSeries, year: number, ceiling: numbe
   if (fiscalYears.length < 2 || fiscalYears[fiscalYears.length - 1] !== year || fiscalYears.some((value, index) => index > 0 && value !== (fiscalYears[index - 1] ?? 0) + 1)) {
     problems.push(`the years are not a run ending in ${year}`)
   }
+  for (const key of ['netResult', 'employees'] as const) {
+    const years = series[key].filter((point) => point.fiscalYear <= year).map((point) => point.fiscalYear)
+    if (years.length !== new Set(years).size || years.length !== fiscalYears.length || years.some((value, index) => value !== fiscalYears[index])) {
+      problems.push(`${key}'s years differ from turnover's`)
+    }
+  }
   const count = (value: string | number, what: string): number => {
     const parsed = Number(value)
     if (!Number.isInteger(parsed) || parsed < 0) problems.push(`${what} is not a count: ${value}`)
@@ -54,12 +60,16 @@ export function hubYearsFrom(series: HubYearSeries, year: number, ceiling: numbe
     const where = `${key} ${point.fiscalYear}`
     const reported = count(point.metric.contributors, `${where} contributors`)
     if (reported > filers) problems.push(`${where}: ${reported} reported of ${filers} companies with a statement`)
-    if (!point.available || point.metric.sum === null) {
-      if (point.available === false && point.metric.sum !== null) problems.push(`${where}: a sum for a year the release does not offer`)
+    if (point.available && point.gapReason !== null) problems.push(`${where}: available, with a gap reason (${point.gapReason})`)
+    if (point.available && point.metric.sum === null) problems.push(`${where}: available, with no sum`)
+    if (!point.available) {
+      if (point.metric.sum !== null) problems.push(`${where}: a sum for a year the release does not offer`)
+      if (reported > 0) problems.push(`${where}: ${reported} reported for a year without a value`)
       const gap = point.gapReason
-      if (!point.available && (gap === null || !GAP_REASONS.has(gap))) problems.push(`${where}: no sum and no known reason (${gap})`)
-      return { sum: null, gap: point.available ? null : (gap as CompanyAnalysisGapReason), reported }
+      if (gap === null || !GAP_REASONS.has(gap)) problems.push(`${where}: no sum and no known reason (${gap})`)
+      return { sum: null, gap: gap as CompanyAnalysisGapReason, reported }
     }
+    if (point.metric.sum === null) return { sum: null, gap: null, reported }
     const sum = Number(point.metric.sum)
     if (!Number.isFinite(sum)) problems.push(`${where}: the sum is not a number: ${point.metric.sum}`)
     if (key === 'employees' && (sum < 0 || sum > reported * ceiling)) problems.push(`${where}: ${sum} employees from ${reported} companies, past the ceiling of ${ceiling}`)
@@ -74,6 +84,7 @@ export function hubYearsFrom(series: HubYearSeries, year: number, ceiling: numbe
       return other
     }
     const employees = aligned('employees')
+    if (employees && count(employees.filers, `employees ${point.fiscalYear} filers`) > filers) problems.push(`employees ${point.fiscalYear}: more companies than turnover's`)
     return {
       year: point.fiscalYear,
       filers,
@@ -83,4 +94,14 @@ export function hubYearsFrom(series: HubYearSeries, year: number, ceiling: numbe
     }
   })
   return { years, problems }
+}
+
+/**
+ * How far the year's raw sum (every statement) strays from the release's
+ * qualified one, as a fraction of the latter; `Infinity` without a qualified
+ * figure. The generator refuses a snapshot past its tolerance: a raw figure
+ * far off is a form or a keying error the release held back.
+ */
+export function rawDeparture(raw: number, qualified: number | null | undefined): number {
+  return qualified ? Math.abs(raw - qualified) / qualified : Infinity
 }

@@ -14,9 +14,9 @@ import type { CompanyHubSnapshot } from './hub-snapshot-types'
  *   carry no date) the year in the registration code.
  * - **Statements** (`companies_v2.financials`, FY2025, public rows):
  *   turnover and average employees as filed with ANAF. Employee counts above
- *   50,000 (1 this year) are keying errors and are dropped
+ *   50,000 or below zero (1 this year) are keying errors and are dropped
  *   from every employee figure. Banks and insurers file with the BNR and ASF.
- * - **Sector** = the main CAEN activity declared to ANAF, as a Rev.2 division
+ * - **Sector** = the ANAF fiscal CAEN code (a source observation, not a main activity), as a Rev.2 division
  *   (Rev.3 classes mapped to theirs, vehicle repair back to 45), so every
  *   company sits in one division; those with no recognised code are the rest.
  * - **County** = the registered office's county; turnover follows the head

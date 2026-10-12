@@ -29,7 +29,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 // Node strips the types: the years' checks are the app's, and its tests'.
-import { hubYearsFrom } from '../src/features/private-companies/lib/hub-years.ts'
+import { hubYearsFrom, rawDeparture } from '../src/features/private-companies/lib/hub-years.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = resolve(ROOT, 'src/features/private-companies/lib/hub-snapshot.ts')
@@ -125,8 +125,8 @@ const MAIN_DIVISION = `
 // counts), an impossible headcount turned into an unknown one.
 const FY = `
   select f.cui, f.turnover,
-         case when f.employees > ${EMPLOYEE_CEILING} then null else f.employees end as employees,
-         coalesce(f.employees > ${EMPLOYEE_CEILING}, false) as employee_outlier
+         case when f.employees > ${EMPLOYEE_CEILING} or f.employees < 0 then null else f.employees end as employees,
+         coalesce(f.employees > ${EMPLOYEE_CEILING} or f.employees < 0, false) as employee_outlier
   from companies_v2.financials f
   join core.organizations o on o.cui = f.cui and o.kind = 'company'
   where f.privacy_class = 'public' and length(f.cui) <= 10 and f.year = ${YEAR}`
@@ -135,7 +135,7 @@ const leaders = (metric) => `
   with fy as (${FY}), md as (${MAIN_DIVISION})
   select fy.cui, r.legal_name as name, r.selected_county_name as county, r.onrc_lifecycle_status_code as status,
          md.division, fy.${metric}::text as value,
-         (case when p.employees > ${EMPLOYEE_CEILING} and '${metric}' = 'employees' then null else p.${metric} end)::text as previous
+         (case when (p.employees > ${EMPLOYEE_CEILING} or p.employees < 0) and '${metric}' = 'employees' then null else p.${metric} end)::text as previous
   from fy
   left join companies_v2.registrations r on r.cui = fy.cui
   left join md on md.cui = fy.cui
@@ -359,7 +359,7 @@ function reconcile(rows, population, years) {
   // (insurers' 2024 forms put an amount where the headcount goes: +27%), and it would ship in the figures band.
   const released = years.rows.at(-1)
   for (const [name, raw, qualified] of [['turnover', int(national.turnover), released?.turnover.sum], ['employees', int(national.employees), released?.employees.sum]]) {
-    const off = qualified ? Math.abs(raw - qualified) / qualified : Infinity
+    const off = rawDeparture(raw, qualified)
     check(off <= RAW_TOLERANCE, `the year's raw ${name} (${raw}) is ${(off * 100).toFixed(1)}% off the release's (${qualified})`)
   }
   if (problems.length > 0) throw new Error(`The read does not reconcile:\n- ${problems.join('\n- ')}`)
@@ -408,9 +408,9 @@ function render(rows, population, years) {
     ' *   carry no date) the year in the registration code.',
     ` * - **Statements** (\`companies_v2.financials\`, FY${YEAR}, public rows):`,
     ' *   turnover and average employees as filed with ANAF. Employee counts above',
-    ` *   ${EMPLOYEE_CEILING.toLocaleString('en-US')} (${int(national.outliers)} this year) are keying errors and are dropped`,
+    ` *   ${EMPLOYEE_CEILING.toLocaleString('en-US')} or below zero (${int(national.outliers)} this year) are keying errors and are dropped`,
     ' *   from every employee figure. Banks and insurers file with the BNR and ASF.',
-    ' * - **Sector** = the main CAEN activity declared to ANAF, as a Rev.2 division',
+    ' * - **Sector** = the ANAF fiscal CAEN code (a source observation, not a main activity), as a Rev.2 division',
     ' *   (Rev.3 classes mapped to theirs, vehicle repair back to 45), so every',
     ' *   company sits in one division; those with no recognised code are the rest.',
     " * - **County** = the registered office's county; turnover follows the head",

@@ -81,6 +81,18 @@ describe('companies hub snapshot', () => {
     expect(SNAPSHOT.yearsSource.releaseId).toMatch(/^\d+$/)
   })
 
+  it('holds each year’s measure as a finite sum or a gap with its reason, never both or neither', () => {
+    for (const entry of SNAPSHOT.years) {
+      for (const measure of [entry.turnover, entry.netResult, entry.employees]) {
+        if (measure.sum === null) expect(measure.gap).not.toBeNull()
+        else {
+          expect(Number.isFinite(measure.sum)).toBe(true)
+          expect(measure.gap).toBeNull()
+        }
+      }
+    }
+  })
+
   it('keeps an impossible headcount out of the years', () => {
     const last = SNAPSHOT.years[SNAPSHOT.years.length - 1]
     // The release counts fewer companies (legal persons, one ONRC edition) than the year's raw figures: never more

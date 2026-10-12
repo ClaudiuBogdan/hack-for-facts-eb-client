@@ -273,12 +273,15 @@ export function HubEconomySpan({
   const to = last[measure].sum ?? 0
   const change = economyChange(from, to, measure)
   const figure = (year: HubFiscalYear) => {
-    const value = formatHubValue(year[measure].sum ?? 0, unit)
+    const formatted = formatHubValue(year[measure].sum ?? 0, unit)
+    // „2.687,7 mld." and „lei" → „2.687,7" over „mld. lei": the number alone never runs past a narrow column.
+    const [number = formatted.value, scale] = formatted.value.split('\u00a0')
+    const value = { value: number, unit: scale ? `${scale} ${formatted.unit}` : formatted.unit }
     // The unit under the figure: two figures and an arrow fit a phone and the band's narrow column.
     return (
       <div className="min-w-0">
         <MonoLabel className="block text-muted-foreground">{year.year}</MonoLabel>
-        <p className="mt-1 text-xl font-semibold tabular-nums tracking-tight text-foreground sm:text-2xl xl:text-3xl">{value.value}</p>
+        <p className="mt-1 text-xl font-semibold tabular-nums tracking-tight text-foreground sm:text-2xl lg:text-xl xl:text-3xl">{value.value}</p>
         <p className="text-sm text-muted-foreground">{value.unit}</p>
       </div>
     )
