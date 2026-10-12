@@ -3,6 +3,7 @@ import { aggregate, breakdownFixture, bucket, releaseFixture, seriesFixture, sta
 import { resolveQuestion } from '../api/company-analytics-plan'
 import { drillScope, nextDimension } from './company-analytics-drill'
 import { boundOf } from './company-analytics-filter-model'
+import { placeName } from './company-analytics-text'
 import { DEFAULT_STATE, stateOf } from './company-analytics-url'
 import { breakdownRows, factsOf, groupLabel, headlineOf, metricFact, partialYears, pointText } from './company-analytics-view'
 
@@ -63,7 +64,9 @@ describe('headline and breakdown', () => {
   it('names the unknown group by what is unknown, and a main activity of unknown revision as such', () => {
     const breakdown = breakdownFixture()
     expect(groupLabel('COUNTY', breakdown.unknown)).toBe('Județ necunoscut')
-    expect(groupLabel('COUNTY', breakdown.other)).toBe('Alte 1 grupuri')
+    expect(groupLabel('COUNTY', breakdown.other)).toBe('Încă un grup')
+    expect(groupLabel('COUNTY', { ...breakdown.other, groups: 3 })).toBe('Alte 3 grupuri')
+    expect(groupLabel('COUNTY', { ...breakdown.other, groups: 35 })).toBe('Alte 35 de grupuri')
     expect(groupLabel('MAIN_CAEN', { ...breakdown.groups[0]!, key: '?:6201', caen: { code: '6201', revision: null, basis: 'REVISION_UNKNOWN', label: null } })).toBe('6201 (revizie necunoscută)')
   })
 
@@ -99,6 +102,23 @@ describe('headline and breakdown', () => {
     expect(drillScope({}, 'COUNTY', groups.other)).toBeNull()
     expect(nextDimension('COUNTY', { county: { in: ['CJ'] } })).toBe('UAT')
   })
+
+  it('names a place by its name, not the registry’s capitals', () => {
+    const group = { ...breakdownFixture().groups[0]!, basis: null }
+    expect(groupLabel('COUNTY', { ...group, key: 'CJ', label: 'CLUJ' })).toBe('Cluj')
+    expect(groupLabel('COUNTY', { ...group, key: 'B', label: 'MUNICIPIUL BUCUREȘTI' })).toBe('București')
+    expect(groupLabel('UAT', { ...group, key: '54975', label: 'MUNICIPIUL CLUJ-NAPOCA' })).toBe('Cluj-Napoca')
+    expect(groupLabel('UAT', { ...group, key: '179132', label: 'SECTORUL 1' })).toBe('Sectorul 1')
+  })
+})
+
+describe('place words', () => {
+  it('title-cases the registry’s capitals and leaves the kind of place to the name', () => {
+    expect(placeName('ORAȘ MIOVENI')).toBe('Mioveni')
+    expect(placeName('COMUNA BAIA DE ARIEȘ')).toBe('Baia de Arieș')
+    expect(placeName('MUNICIPIUL TÂRGU MUREȘ')).toBe('Târgu Mureș')
+  })
+
 })
 
 describe('years', () => {

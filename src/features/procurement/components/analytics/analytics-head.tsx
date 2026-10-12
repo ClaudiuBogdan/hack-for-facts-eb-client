@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { ArrowLeft, ChevronRight, FileSignature, Layers, Plus, ShoppingCart, X, type LucideIcon } from 'lucide-react'
+import { HeadlinePhrase } from '@/components/filters/filter-sheet/headline-phrase'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
@@ -26,7 +27,6 @@ import { figuresOf, filterChipLabel, type Figure } from './analytics-view'
  * opens the panel, its ✕ drops it), the populations in the pinned bar under
  * it, the figures in the profiles' band.
  */
-const PHRASE = 'text-left underline decoration-muted-foreground/35 decoration-dotted decoration-2 underline-offset-[0.18em] transition-colors hover:decoration-foreground'
 /** Each population's mark: a purchase from the catalogue, a signed contract, a framework's layers (the contract page's own two). */
 const POPULATION_ICON: Readonly<Record<PopulationId, LucideIcon>> = { directe: ShoppingCart, contracte: FileSignature, acorduri: Layers }
 
@@ -60,21 +60,7 @@ function SentencePart({ part, query, onChange, onFilters }: { readonly part: Hea
   // The population is chosen in the bar under the head, the group-by above the table: here they are words.
   if (part.role === 'tip' || part.role === 'dupa') return <span>{part.text}</span>
   const key = part.role
-  return (
-    <span className="group/phrase relative">
-      <button type="button" onClick={onFilters} className={PHRASE}>
-        {part.text}
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange(without(query, key))}
-        aria-label={t`Scoate „${part.text}"`}
-        className="ml-0.5 inline-flex size-[0.7em] items-center justify-center align-[0.05em] text-muted-foreground/70 transition-opacity hover:text-foreground focus-visible:opacity-100 sm:absolute sm:-right-[0.5em] sm:-top-[0.1em] sm:ml-0 sm:size-[0.5em] sm:bg-background sm:opacity-0 sm:group-hover/phrase:opacity-100"
-      >
-        <X className="size-[0.55em] sm:size-full" aria-hidden="true" />
-      </button>
-    </span>
-  )
+  return <HeadlinePhrase text={part.text} removeLabel={t`Scoate „${part.text}"`} onOpen={onFilters} onRemove={() => onChange(without(query, key))} />
 }
 
 /** The headline's size by its length, as the profiles size a name: a short question large, a long one a step down. */

@@ -91,5 +91,8 @@ export function useCompanyNameSuggestions(draft: string) {
   }, [refusal, scopeKey, report, queryClient])
 
   const answer = query.isError ? undefined : query.data
-  return { ...query, data: answer?.hits, degraded: answer?.degraded ?? false }
+  // Whether the hits answer what is typed now: while the next term waits out the debounce or loads, the
+  // previous term's hits are still the data — fine to show, wrong to pick by Enter.
+  const current = debounced === draft.trim() && !query.isPlaceholderData
+  return { ...query, data: answer?.hits, degraded: answer?.degraded ?? false, current }
 }

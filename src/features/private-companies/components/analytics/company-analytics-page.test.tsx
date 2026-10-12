@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { breakdownFixture, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
 import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
-import { releaseOfKey } from '../../lib/company-analytics-keys'
+import { companyAnalyticsKeys, releaseOfKey } from '../../lib/company-analytics-keys'
 import { CompanyAnalyticsPage } from './company-analytics-page'
 
 /**
@@ -80,14 +80,17 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
 function renderPage(seed: readonly { readonly key: readonly unknown[]; readonly data: unknown }[] = []) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const seeds = createSeedStore(seed)
-  const view = render(
+  const tree = () => (
     <QueryClientProvider client={client}>
       <CompanyAnalyticsSeedContext value={seeds}>
         <CompanyAnalyticsPage />
       </CompanyAnalyticsSeedContext>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   )
-  return { client, view }
+  const view = render(tree())
+  // The address changed (the mocked router's search): the page as the router would render it again.
+  const rerender = () => view.rerender(tree())
+  return { client, view, rerender }
 }
 
 /** The figures of a loaded answer, as a reader sees them. */
@@ -129,8 +132,13 @@ describe('CompanyAnalyticsPage', () => {
     expect(screen.getAllByText('nicio firmă nu a raportat o valoare').length).toBeGreaterThan(0)
     expect(await screen.findByText('Firma 1')).toBeInTheDocument()
     expect(screen.getByText('Fără denumire publică')).toBeInTheDocument()
-    expect(screen.getByText('reținut: semnal de calitate')).toBeInTheDocument()
-    expect(screen.getAllByText('fără situație pentru 2024').length).toBeGreaterThan(0)
+    // A held value is a marked dash, its reason said in the cell (to a screen reader) and once under the table.
+    const held = screen.getAllByText('reținut: semnal de calitate')
+    expect(held.map((element) => element.tagName)).toEqual(['SPAN', 'LI'])
+    expect(held[0]).toHaveClass('sr-only')
+    expect(held[1]).toHaveTextContent('1reținut: semnal de calitate')
+    // A company without a statement says so once, in the measure's column.
+    expect(screen.getAllByText('fără bilanț')).toHaveLength(1)
     await waitFor(() => expect(api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease').every((call) => call.variables.release === '7')).toBe(true))
   })
 
@@ -177,6 +185,67 @@ describe('CompanyAnalyticsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Evoluție/u }))
     const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
     expect(search(router.search)).toEqual({ lang: 'ro', vedere: 'evolutie', editie: 7 })
+  })
+
+  it('answers the first pinned question from the release it already read: nothing is read again, nothing empties', async () => {
+    const { rerender } = renderPage()
+    await screen.findByText(FIGURES)
+    fireEvent.click(screen.getByRole('button', { name: /^Filtre/u }))
+    const sheet = await screen.findByRole('dialog')
+    // The first question asked pins the release it was answered from (above): the same question, now pinned.
+    router.search = { editie: 7 }
+    rerender()
+    // Not a frame without the figures, nor without the panel's statement fields (a pick there would jump under the pointer).
+    expect(screen.getByText(FIGURES)).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBe(sheet)
+    expect(screen.getByRole('group', { name: 'Mărime' })).toBeInTheDocument()
+    await waitFor(() => expect(api.calls.some((call) => call.op === 'CompanyAnalysisStats')).toBe(true))
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease').map((call) => call.variables.release)).toEqual([undefined])
+  })
+
+  it('never answers a refused pin from the release the page read before it was refused', async () => {
+    const { client, rerender } = renderPage()
+    await screen.findByText(FIGURES)
+    await screen.findByText('Firma 1')
+    api.refuseRelease = (call) => call.variables.release === '7'
+    fireEvent.click(screen.getByRole('button', { name: 'Pagina următoare' }))
+    await screen.findByText('Ediția 7 a analizei nu mai este disponibilă')
+    router.search = { editie: 7 }
+    rerender()
+    expectWithdrawn('7')
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease').map((call) => call.variables.release)).toEqual([undefined])
+    // Nor kept under its pin, for a later render to find.
+    expect(client.getQueryData(companyAnalyticsKeys.release('7'))).toBeUndefined()
+  })
+
+  it('hands the release it read over to its pin once: a pinned answer dropped since is read from the API', async () => {
+    const { client, rerender } = renderPage()
+    await screen.findByText(FIGURES)
+    router.search = { editie: 7 }
+    rerender()
+    expect(screen.getByText(FIGURES)).toBeInTheDocument()
+    // Back to the unpinned question, long enough for the pinned answer to be collected.
+    router.search = {}
+    rerender()
+    client.removeQueries({ queryKey: companyAnalyticsKeys.release('7'), exact: true })
+    router.search = { editie: 7 }
+    rerender()
+    await waitFor(() => expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease').map((call) => call.variables.release)).toEqual([undefined, '7']))
+  })
+
+  it('clears a list’s search on Escape, and closes the filters on the next', async () => {
+    renderPage()
+    await screen.findByText(FIGURES)
+    fireEvent.click(screen.getByRole('button', { name: /^Filtre/u }))
+    const search = await screen.findByRole('textbox', { name: 'Caută: Formă juridică' })
+    // Typed into, as a reader does: the field has the focus.
+    act(() => search.focus())
+    fireEvent.change(search, { target: { value: 'srl' } })
+    fireEvent.keyDown(search, { key: 'Escape' })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(search).toHaveValue('')
+    fireEvent.keyDown(search, { key: 'Escape' })
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   it('says a pinned release is gone when the release itself is refused, and reads nothing else', async () => {

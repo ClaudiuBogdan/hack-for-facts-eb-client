@@ -427,3 +427,158 @@ The client contract is the record; in short:
   withdraws the profile and reads it again, never as „not registered".
 - **Evidence.** The edition's original rows are listed with every value an
   identity row carries, whether or not an identifier group was resolved.
+
+## The analysis filters panel's lists (3 October 2026)
+
+The owner, looking at the „Filtre" panel of `/companies/analytics`: no two
+columns of options past four, one column; a long list gets a search and
+scrolls. Then, picking a size band: the list jumped under the pointer. The
+rules the panel keeps since (`analytics-filter-fields.tsx`):
+
+- **Up to four short values side by side** („Da / Nu / Necunoscut", „Toate /
+  Au depus / N-au depus"), each as wide as its word, so none is cut or wraps.
+  **Past four, one column** of rows with their boxes. **Past eight, a search**
+  over names and codes above it, and the list scrolls (about six rows):
+  legal forms (12) and ONRC statuses (43 and the unknown group). Size bands
+  (7) and the CAEN revision (3) are one column without a search.
+- **A legal form by its code and its name** („SRL Societate cu răspundere
+  limitată"); the six codes that had no name got one (SC, SCE, SE, GIE,
+  GEIE, INCD), which the profile's head and its page title use too. The
+  registry's statuses start with a capital in a list, and stay in lower case
+  in a sentence.
+- **Nothing above a list changes when it is picked from.** What was picked
+  when the panel opened comes first; a pick made now stays where it was
+  clicked. The note that value and size filters keep only the filers sits
+  under the size list, not under „Situație" above it, and only while
+  „Toate" is chosen. The page's first question pins the release it was
+  answered from (`editie`); that pin is answered from the release already
+  read, so the page and the panel never empty while the same answer is read
+  again (the panel's statement fields used to remount with the pick on top).
+- **Escape clears a list's search before it closes the panel.**
+- **The panel is 448 px wide on a wide screen** (procurement's is 384): the
+  registry's status names run to 97 characters.
+- **Not a list: the main activity.** The API counts 1,290 CAEN codes, gives
+  at most 100 a read and no names for codes of an unpublished revision, so a
+  list would be incomplete; it stays a typed code until the server serves the
+  catalogue.
+
+The headline's filter phrases are inline text with a button's role
+(`HeadlinePhrase`, shared with procurement's analytics and the NGO
+registry): a `<button>` is laid out as an inline block, so a phrase that
+wrapped took the line's whole width and pushed „, în 2024" onto a line of
+its own.
+
+Reviewed by Opus 5.5 (xhigh) and Codex `gpt-6.1-sol` (xhigh). Fixed from them:
+the release is handed to its pin once (a pinned answer collected since is
+read from the API, as a server seed is); the filers note keeps its room when
+it says nothing (unticking at the panel's end shortened it, and the panel
+scrolled back); a pick changes no weight (a bolder value moved its
+neighbours, a bolder status name could take another line); the long lists
+have their search before their values arrive; „Necunoscută" stays when the
+statuses cannot be read; the three short values wrap on a 320 px phone. The
+headline phrase's ✕ has an anchor of its own at the phrase's end (against a
+wrapped phrase it landed on the phrase's first line), and Space opens the
+panel on its release, as a button's does (on the press, the panel's close
+button took the release and shut it). The new names of groups and institutes
+are not feminine: the profile's sentence says „Grup de interes economic din
+…, înregistrat în …".
+
+## The analysis prototype's anatomy (12 October 2026)
+
+The owner, comparing `/companies/analytics` with the prototype at
+`/development/companies/analytics`: keep `propozitie`, fold `stare` into it,
+then three rounds on the same day. Where it stands:
+
+- **The head is the question.** The selection as the headline („Firmele SRL
+  în funcțiune din Cluj, în 2024"); a state that is one of the reader's
+  groups (în funcțiune, cu activitatea întreruptă, în insolvență, în
+  dizolvare sau lichidare, radiate, cu starea neclară în registru) joins the
+  subject, any other set of statuses follows as „cu starea „…"". Under it one
+  row: **the fiscal year and the measure as dropdowns** — every measure the
+  release offers, grouped as flows of the year, the headcount, the balance
+  sheet at the year's end — then add a filter, the filters, the ready
+  questions, the link, the notes. The state is a filter, in the panel; a
+  state dropdown with counts beside the year was tried and dropped.
+- **The pinned bar says how the answer is shown: Tabel · Hartă · Grafice**
+  (the prototype's own `mod` key; the page's URL model does not know it yet).
+- **The tabs stay on the table** and say what is shown: the companies, each
+  open axis (Județe, Localități, Activitate, Mărime, Formă juridică, Stare,
+  TVA, Inactive fiscal), the years. The same tabs serve the charts. A views
+  bar in their place (Firmele · Defalcare · Hartă · În timp, the axis in a
+  dropdown) was tried and dropped: the owner wants the axes one click away.
+- **Tabel:** the companies' table, each axis ranked (sizes smallest first),
+  the years as a table (a year opens the page on it).
+- **Grafice:** the largest 15 companies as bars; each axis as two shares per
+  group — of the companies with a statement and of the measure — so a group
+  whose weight differs from its number shows it („1–9 salariați": 53 % of the
+  filers, 17 % of the turnover); a measure with losses in a group is drawn
+  either side of zero instead; the years' bars.
+- **Hartă:** the measure by county on the hub's map; once the selection is in
+  one county, by locality on that county's outline. A county narrows the
+  selection (and shows its localities), a locality opens its companies. The
+  companies the edition gives no single place, and the localities folded into
+  „altele" past the API's 100 groups, are said under the legend, never drawn
+  as zero.
+- **The companies' table** (shared with the live page): one-line column
+  names („Salariați"), the scale quieter than the digits, a headcount bare;
+  a held or missing value is a dash with a numbered mark, the marks explained
+  once under the table (it used to print „reținut: formular neverificat" in
+  the cell); a company without a statement says „fără bilanț" once; places in
+  title case without their kind („Mioveni, Argeș"); a state other than „în
+  funcțiune" in amber.
+
+The head, polished after the NGO registry's the same day:
+
+- **The NGO head's chrome**: the way back and the data's date at the top
+  („Date actualizate pe 11 octombrie 2026", the release's publication; the
+  ONRC edition's date on hover), the quiet controls (text-sm, the filters'
+  count in the accent's square, an „i" or an amber count for the notes), the
+  blue crux on the head's bottom rule, the selection on the pinned bar's
+  left with the modes at its right.
+- **„+ Adaugă un filtru" is a search box**, as the registry's: a county, a
+  locality, a legal form, a state, a size, a fiscal flag, the filing, a
+  company by name (the name search) or a CUI — each answer the selection with
+  that filter added; words match at their start. The panel stays „Filtre".
+- **The head keeps its height** whatever the headline's length: the headline
+  has a room of two 48 px lines on a wide frame (three 32 px lines on a
+  phone), stands at its foot, and steps its type down by the sentence's
+  length to fit; the steps are shares of the frame's width (`cqi`, capped),
+  so a line holds as many letters at any width. Measured: 311 px on a desktop
+  and 356 px on a phone for headlines of 16 to 149 letters (a phone grows
+  21 px past some 125 letters rather than set the headline under 20 px).
+- **The places read as places**: „din județul Sibiu", „din județele Cluj,
+  Timiș", „din București"; with a locality, the county follows it („din
+  Sibiu, județul Sibiu"). A CUI keeps its capitals („cu CUI 36804600"); a
+  size range never parts at its dash.
+- **The filters panel opens on the financial situation** (owner): the
+  fiscal year and the measure as in the head (one shared dropdown each), then
+  a range of values that starts on that measure — no second dropdown naming
+  it, another measure a click away („Pe alt indicator") — the filing and the
+  size; then which companies, where, what they are, what ANAF observed. The
+  measure and a range stay two controls: the measure is what is summed and
+  ranked, a range which companies are kept (ranked by turnover, kept by a
+  profit above zero).
+- **The dropdowns in the panel** (the owner found them hard to open and
+  close): the sheet's overlay spans the screen and kept the pointer while a
+  list was open, so the click that closed the list closed the panel too — the
+  overlay now closes the sheet only when the sheet was the layer dismissed
+  (`SheetContent`, shared). On a touch screen the year and the measures are
+  the phone's own picker under the same box: Radix's list closes on a window
+  resize (a keyboard going away) and placed itself under an open keyboard.
+  The panel's fields are 16 px on a phone, so iOS does not zoom on focus.
+  Known follow-up: the live page's head keeps its own year and measure
+  dropdowns (the years with their statement counts) beside the panel's
+  shared ones until the prototype's head is promoted.
+- **A phrase's ✕** (shared with the registry and procurement): the
+  registry's look — Lucide's X, muted, no ring, no shadow — on a round patch
+  of the page's background, in front of the text (a chip with a ring and a
+  shadow was tried and dropped). From `sm` it shows on hover, centred on the
+  phrase's end and lifted above the line; on a phone it follows the phrase. The chip and the X are empty inlines, not
+  buttons: a line may break on either side of an inline block, so a `<button>`
+  ✕ could start a line beside the next phrase (or leave its comma to start
+  one); inline, it breaks with its last word.
+
+The companies with no common county, locality or state in the ONRC edition
+are the API's basis groups (`bucket.basis`), named and drilled as the
+section of 4 October says; the prototype draws them muted and leaves them
+off the maps, counted under the legend.

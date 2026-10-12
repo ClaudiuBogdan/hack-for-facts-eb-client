@@ -111,6 +111,9 @@ export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string 
 
 // ─────────────────────────────────────────────────────────────── release ──
 
+/** The active release's answers already handed to their pin (`useCompanyAnalysisRelease`): each stands in for it once. */
+const handedToPin = new WeakSet<CompanyAnalysisRelease>()
+
 /**
  * The release's capabilities, read once for the page's life: a publication
  * meanwhile does not move the page under the reader. A pin the API refuses
@@ -119,6 +122,7 @@ export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string 
 export function useCompanyAnalysisRelease(pin: string | null) {
   const seeded = useSeeded()
   const refused = useRefusedReleases()
+  const client = useQueryClient()
   const key = companyAnalyticsKeys.release(pin)
   return useQuery({
     queryKey: key,
@@ -127,6 +131,17 @@ export function useCompanyAnalysisRelease(pin: string | null) {
     enabled: pin === null || !refused.has(pin),
     staleTime: Infinity,
     retry: (count, error) => !isReleaseRefused(error) && count < 2,
+    // The active release read unpinned is its own pin's answer: the first question asked pins it, and reading it
+    // again would empty the page (and the open filters panel, under the pointer) until the same answer came back.
+    // Handed over once, as a server seed is: a pinned query dropped later (collected, forgotten) reads the API
+    // again. Never a refused pin's: the page says that release is gone, and its last answer must not stand in.
+    initialData: () => {
+      if (pin === null || refused.has(pin)) return undefined
+      const active = client.getQueryData<CompanyAnalysisRelease>(companyAnalyticsKeys.release(null))
+      if (active?.release.releaseId !== pin || handedToPin.has(active)) return undefined
+      handedToPin.add(active)
+      return active
+    },
     ...seeded<CompanyAnalysisRelease>({ key }),
   })
 }

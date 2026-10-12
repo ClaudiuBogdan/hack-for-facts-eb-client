@@ -1,9 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
+import { Check } from 'lucide-react'
 import { Announce, CELL, Chip, FIELD, Notice, OPTION, Options, Row, TALL } from '@/components/filters/filter-sheet/filter-sheet-parts'
 import { useActiveOption } from '@/components/filters/filter-sheet/use-active-option'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { placeKey, searchPlaces } from '@/features/procurement/lib/analytics-places'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
@@ -14,6 +14,7 @@ import {
   companyMetricUnit,
   onrcBasisOfKey,
   type CompanyAnalysisDimension,
+  type CompanyAnalysisCaenBasis,
   type CompanyAnalysisFlagValue,
   type CompanyAnalysisMetric,
   type CompanyAnalysisOnrcExcludeInput,
@@ -21,6 +22,7 @@ import {
   type CompanyAnalysisRangeInput,
   type CompanyAnalysisScope,
   type CompanyAnalysisSource,
+  type CompanyAnalysisSizeBand,
 } from '@/schemas/company-analytics'
 import type { ResolvedQuestion } from '../../api/company-analytics-plan'
 import { useCompanyAnalysisOptions } from '../../hooks/use-company-analytics'
@@ -28,14 +30,16 @@ import { useCompanyNameSuggestions } from '../../hooks/use-company-name-suggesti
 import { useCompanyRegistryScope } from '../../hooks/use-company-registry-scope'
 import type { UatIndex } from '../../hooks/use-uat-index'
 import { activityBasisLabel, activitySelectorText } from '../../lib/company-activity-text'
-import { boundOf, keyToggled, toggled } from '../../lib/company-analytics-filter-model'
+import { amongFilers, boundOf, keyToggled, toggled, withFiling } from '../../lib/company-analytics-filter-model'
 import { localeOf } from '../../lib/company-analytics-format'
 import { rangeText } from '../../lib/company-analytics-scope-text'
 import { directoryReadsSource } from '../../lib/company-analytics-source'
 import { basisGroupLabel, caenBasisLabel, countyLabel, flagLabel, metricLabel, sizeBandLabel } from '../../lib/company-analytics-text'
 import { activitySelectorOf, activityToken, caenToken, ONRC_KEY_PATTERNS } from '../../lib/company-analytics-url'
+import { legalFormName } from '../../lib/company-legal-forms'
 import { CompanyRegistryScopeNotice } from '../registry/company-registry-notices'
 import { CompanyRegistryScopeProvider } from '../registry/company-registry-scope-provider'
+import { ChoiceSelect } from './analytics-choices'
 
 /**
  * The filters panel's fields. Each writes the scope at once (the address is
@@ -52,7 +56,13 @@ const PRESSED = 'border-primary bg-primary/5 font-semibold'
 function Toggle({ pressed, onClick, children, className }: { readonly pressed: boolean; readonly onClick: () => void; readonly children: ReactNode; readonly className?: string }) {
   return (
     <button type="button" aria-pressed={pressed} onClick={onClick} className={cn(CELL, 'text-left leading-tight', pressed && PRESSED, className)}>
-      {children}
+      {/* As wide in every state as in its pressed weight: a pick never moves the values beside it. */}
+      <span className="inline-grid">
+        <span aria-hidden="true" className="invisible col-start-1 row-start-1 font-semibold">
+          {children}
+        </span>
+        <span className="col-start-1 row-start-1">{children}</span>
+      </span>
     </button>
   )
 }
@@ -60,6 +70,101 @@ function Toggle({ pressed, onClick, children, className }: { readonly pressed: b
 /** What an empty list says, in the procurement filters' own words. */
 function nothingFor(term: string): string {
   return t`Nimic pentru „${term}".`
+}
+
+/** A list's value as the API words it in lower case, with its capital in a list of its own. */
+function capitalized(text: string): string {
+  return text.charAt(0).toLocaleUpperCase('ro-RO') + text.slice(1)
+}
+
+/**
+ * Up to four short values side by side — „Da", „Nu", „Necunoscut" — each as
+ * wide as its word, the rest of the row shared out, so none is cut or wraps.
+ * More values take one column (`CheckList`).
+ */
+function Segments({ children }: { readonly children: ReactNode }) {
+  // On the narrowest phones (320 px) the three words do not fit one row: the last goes to a second.
+  return <div className="flex flex-wrap gap-1.5 [&>button]:flex-auto [&>button]:whitespace-nowrap [&>button]:px-2 [&>button]:text-center">{children}</div>
+}
+
+/** One value of a list: its box, its code when the code is what readers know it by, its name. The box alone says it is picked: a heavier name could take another line and move the list. */
+function CheckRow({ checked, onClick, title, code, className }: { readonly checked: boolean; readonly onClick: () => void; readonly title: string; readonly code?: string | null; readonly className?: string }) {
+  return (
+    // A name on two lines keeps its box and code on the first (the padding centres a line in the row's height).
+    <button type="button" role="checkbox" aria-checked={checked} onClick={onClick} className={cn(TALL, 'flex w-full items-start gap-2.5 px-2.5 py-3 text-left text-sm leading-5 hover:bg-muted sm:py-2.5', className)}>
+      <span aria-hidden="true" className={cn('mt-0.5 flex size-4 shrink-0 items-center justify-center border', checked ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-background')}>
+        {checked ? <Check className="size-3" strokeWidth={3} /> : null}
+      </span>
+      {code ? <span className="w-10 shrink-0 font-mono text-xs font-medium leading-5">{code}</span> : null}
+      {/* Out of the flex layout, but in the name a screen reader hears: „SA Societate pe acțiuni", not „SASocietate". */}
+      {code ? ' ' : null}
+      <span className="min-w-0 flex-1">{title}</span>
+    </button>
+  )
+}
+
+type Choice = { readonly id: string; readonly title: string; readonly code?: string | null }
+
+/** Past this many values a list takes a search and scrolls (the owner, 3 October 2026). */
+const LIST_SEARCHED_PAST = 8
+
+/**
+ * A field's values in one column, each with its box (the owner, 3 October
+ * 2026: no two columns past four values). Past eight, a search over names
+ * and codes above it, and the list scrolls. What was picked when the panel
+ * opened comes first; a pick made now stays where it was clicked.
+ */
+function CheckList({
+  label,
+  choices,
+  picked,
+  onToggle,
+  long = false,
+}: {
+  readonly label: string
+  readonly choices: readonly Choice[]
+  readonly picked: readonly string[]
+  readonly onToggle: (id: string) => void
+  /** A list known to be long before its values arrive: its search is there from the start, not inserted above it once they load. */
+  readonly long?: boolean
+}) {
+  const [term, setTerm] = useState('')
+  const [first] = useState(() => new Set(picked))
+  const searched = long || choices.length > LIST_SEARCHED_PAST
+  const key = placeKey(term)
+  const ordered = [...choices.filter((choice) => first.has(choice.id)), ...choices.filter((choice) => !first.has(choice.id))]
+  const shown = key === '' ? ordered : ordered.filter((choice) => placeKey(`${choice.code ?? ''} ${choice.title}`).includes(key))
+  return (
+    <>
+      {searched ? (
+        <input
+          value={term}
+          onChange={(event) => setTerm(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') setTerm('')
+          }}
+          // The sheet keeps Escape while there is a search to clear (`keepEscapeForSearch`).
+          data-clears-on-escape={term === '' ? undefined : 'true'}
+          placeholder={t`Caută printre ${choices.length}`}
+          aria-label={t`Caută: ${label}`}
+          className={FIELD}
+        />
+      ) : null}
+      {/* Out of the Tab order: Chrome makes a scroller a stop of its own. */}
+      <div role="group" aria-label={label} tabIndex={-1} className={cn('border bg-background', searched && 'max-h-64 overflow-y-auto overscroll-contain')}>
+        {shown.map((choice) => (
+          <CheckRow key={choice.id} checked={picked.includes(choice.id)} onClick={() => onToggle(choice.id)} title={choice.title} code={choice.code} />
+        ))}
+        {shown.length === 0 ? <Notice kind="empty">{nothingFor(term.trim())}</Notice> : null}
+      </div>
+      <Announce text={shown.length === 0 && key !== '' ? nothingFor(term.trim()) : ''} />
+    </>
+  )
+}
+
+/** A small print under a row's control, in its column; `hidden`, it keeps its room (and is not read). */
+function RowNote({ children, hidden = false }: { readonly children: ReactNode; readonly hidden?: boolean }) {
+  return <p className={cn('text-xs text-muted-foreground', hidden && 'invisible')}>{children}</p>
 }
 
 /** A search field with its list: the arrow keys over the options, Enter the first, Escape clears. */
@@ -182,10 +287,11 @@ interface PickProps {
 /** Names and CUIs: mounted only while the directory reads the analysis's edition, so no name is asked of another. */
 function NamePick({ term, onTerm, chosen, onPick }: PickProps) {
   const suggestions = useCompanyNameSuggestions(term)
-  const hits = (suggestions.data ?? []).flatMap((hit) => (hit.cui ? [{ id: hit.cui, title: hit.label, sub: `CUI ${hit.cui}` }] : []))
+  // Only hits for what is typed now: another term's, picked by Enter, would add a company the reader did not ask for.
+  const hits = suggestions.current ? (suggestions.data ?? []).flatMap((hit) => (hit.cui ? [{ id: hit.cui, title: hit.label, sub: `CUI ${hit.cui}` }] : [])) : []
   const { options, typed } = pickOptions(term, hits, chosen)
   const asked = term.trim().length >= 2
-  const state = !asked && !typed ? 'idle' : suggestions.isError && !typed ? 'error' : suggestions.isFetching && options.length === 0 ? 'loading' : 'results'
+  const state = !asked && !typed ? 'idle' : suggestions.isError && !typed ? 'error' : (suggestions.isFetching || !suggestions.current) && options.length === 0 ? 'loading' : 'results'
   return (
     <PickField
       label={t`Adaugă o firmă`}
@@ -298,7 +404,14 @@ export function UatField({ scope, uats, onChange }: { readonly scope: CompanyAna
 
 // ───────────────────────────────────────────────────────────────── what ──
 
-/** Codes from the year's own population (legal forms, observed statuses), the most common first. */
+/** The unknown group's place in a codes list: no code the API sends is empty. */
+const UNKNOWN_CHOICE = ''
+
+/**
+ * Codes from the year's own population (legal forms, observed statuses), the
+ * most common first: a legal form by its code and its name, a status by the
+ * registry's words.
+ */
 export function CodesField({
   label,
   dimension,
@@ -308,6 +421,7 @@ export function CodesField({
   unknown,
   onToggle,
   onUnknown,
+  note,
 }: {
   readonly label: string
   readonly dimension: 'LEGAL_FORM' | 'OBSERVED_STATUS'
@@ -317,17 +431,24 @@ export function CodesField({
   readonly unknown?: boolean
   readonly onToggle: (code: string) => void
   readonly onUnknown?: () => void
+  readonly note?: string
 }) {
+  const { i18n } = useLingui()
   const options = useCompanyAnalysisOptions(question, dimension, open)
   const groups = options.data?.groups ?? []
   const codes = [...new Set([...groups.map((group) => group.key ?? ''), ...values])].filter(Boolean)
-  // A status option may be a basis group (the companies without a common status, by why): its key filters exactly it.
-  const labelOf = (code: string) => {
+  const choiceOf = (code: string): Choice => {
+    // A status option may be a basis group (the companies without a common status, by why): its key filters exactly it.
     const basis = onrcBasisOfKey(code)
-    if (basis !== null) return basisGroupLabel(dimension, basis)
+    if (basis !== null) return { id: code, title: basisGroupLabel(dimension, basis) }
+    if (dimension === 'LEGAL_FORM') {
+      const name = legalFormName(code, (descriptor) => i18n._(descriptor)) ?? code
+      return { id: code, title: name, code: name === code ? null : code }
+    }
     const group = groups.find((item) => item.key === code)
-    return group?.label ? `${group.label}` : code
+    return { id: code, title: group?.label ? capitalized(group.label) : code }
   }
+  const choices = [...codes.map(choiceOf), ...(onUnknown ? [{ id: UNKNOWN_CHOICE, title: t`Fără stare comună (orice motiv)` }] : [])]
   return (
     <Row label={label}>
       {options.isError ? (
@@ -337,18 +458,17 @@ export function CodesField({
       ) : options.isPending && values.length === 0 ? (
         <Notice kind="loading">{t`Se citește lista…`}</Notice>
       ) : null}
-      <div className="grid grid-cols-2 gap-1.5">
-        {codes.map((code) => (
-          <Toggle key={code} pressed={values.includes(code)} onClick={() => onToggle(code)}>
-            {labelOf(code)}
-          </Toggle>
-        ))}
-        {onUnknown ? (
-          <Toggle pressed={Boolean(unknown)} onClick={onUnknown}>
-            {t`Fără stare comună (orice motiv)`}
-          </Toggle>
-        ) : null}
-      </div>
+      {/* While the list is read, only a picked unknown group (to be cleared); once read — or failed — the unknown group always. */}
+      {codes.length > 0 || unknown || (onUnknown && !options.isPending) ? (
+        <CheckList
+          label={label}
+          long
+          choices={choices}
+          picked={[...values, ...(unknown ? [UNKNOWN_CHOICE] : [])]}
+          onToggle={(id) => (id === UNKNOWN_CHOICE ? onUnknown?.() : onToggle(id))}
+        />
+      ) : null}
+      {note ? <RowNote>{note}</RowNote> : null}
     </Row>
   )
 }
@@ -387,13 +507,12 @@ export function CaenField({ scope, max, onChange }: { readonly scope: CompanyAna
         <p className="text-xs text-muted-foreground">{t`Codul CAEN fiscal ANAF e o observație din sursă, nu o activitate principală. ANAF nu publică revizia lui: un cod caută firmele cu revizia nepublicată, fără a o ghici.`}</p>
       </Row>
       <Row label={t`Revizia`}>
-        <div className="grid grid-cols-1 gap-1.5">
-          {(['REVISION_KNOWN', 'REVISION_UNKNOWN', 'MISSING'] as const).map((basis) => (
-            <Toggle key={basis} pressed={scope.mainCaenBasis?.includes(basis) ?? false} onClick={() => onChange({ ...scope, mainCaenBasis: toggled(scope.mainCaenBasis, basis) })}>
-              {caenBasisLabel(basis)}
-            </Toggle>
-          ))}
-        </div>
+        <CheckList
+          label={t`Revizia`}
+          choices={(['REVISION_KNOWN', 'REVISION_UNKNOWN', 'MISSING'] as const).map((basis) => ({ id: basis, title: capitalized(caenBasisLabel(basis)) }))}
+          picked={scope.mainCaenBasis ?? []}
+          onToggle={(basis) => onChange({ ...scope, mainCaenBasis: toggled(scope.mainCaenBasis, basis as CompanyAnalysisCaenBasis) })}
+        />
       </Row>
     </>
   )
@@ -588,16 +707,17 @@ export function OnrcField({ scope, limits, statusNames, onChange }: { readonly s
 
 // ──────────────────────────────────────────────────────────────── fiscal ──
 
-export function FlagField({ label, values, onChange }: { readonly label: string; readonly values: readonly CompanyAnalysisFlagValue[] | undefined; readonly onChange: (values: CompanyAnalysisFlagValue[] | undefined) => void }) {
+export function FlagField({ label, values, onChange, note }: { readonly label: string; readonly values: readonly CompanyAnalysisFlagValue[] | undefined; readonly onChange: (values: CompanyAnalysisFlagValue[] | undefined) => void; readonly note?: string }) {
   return (
     <Row label={label}>
-      <div className="grid grid-cols-3 gap-1.5">
+      <Segments>
         {COMPANY_ANALYSIS_FLAG_VALUES.map((flag) => (
           <Toggle key={flag} pressed={values?.includes(flag) ?? false} onClick={() => onChange(toggled(values, flag))}>
             {flagLabel(flag)}
           </Toggle>
         ))}
-      </div>
+      </Segments>
+      {note ? <RowNote>{note}</RowNote> : null}
     </Row>
   )
 }
@@ -605,27 +725,37 @@ export function FlagField({ label, values, onChange }: { readonly label: string;
 // ───────────────────────────────────────────────────────────── statements ──
 
 export function FilingField({ scope, year, onChange }: { readonly scope: CompanyAnalysisScope; readonly year: number; readonly onChange: ScopeChange }) {
-  const statementFilters = Boolean(scope.financialRanges || scope.employeeSizeBands)
   return (
     <Row label={t`Situație ${year}`}>
-      <div className="grid grid-cols-3 gap-1.5">
-        <Toggle pressed={scope.filing === undefined} onClick={() => onChange({ ...scope, filing: undefined })}>
+      <Segments>
+        <Toggle pressed={scope.filing === undefined} onClick={() => onChange(withFiling(scope, undefined))}>
           {t`Toate`}
         </Toggle>
-        <Toggle pressed={scope.filing === 'FILED'} onClick={() => onChange({ ...scope, filing: 'FILED' })}>
+        <Toggle pressed={scope.filing === 'FILED'} onClick={() => onChange(withFiling(scope, 'FILED'))}>
           {t`Au depus`}
         </Toggle>
-        {/* A company without a statement has no value or size band to filter on: the API refuses the pair. */}
-        <Toggle pressed={scope.filing === 'NOT_FILED'} onClick={() => onChange({ ...scope, filing: 'NOT_FILED', financialRanges: undefined, employeeSizeBands: undefined })}>
+        <Toggle pressed={scope.filing === 'NOT_FILED'} onClick={() => onChange(withFiling(scope, 'NOT_FILED'))}>
           {t`N-au depus`}
         </Toggle>
-      </div>
-      {statementFilters ? <p className="text-xs text-muted-foreground">{t`Filtrele pe valori și pe mărime păstrează doar firmele care au depus.`}</p> : null}
+      </Segments>
     </Row>
   )
 }
 
-export function RangeField({ scope, offered, max, onChange }: { readonly scope: CompanyAnalysisScope; readonly offered: readonly CompanyAnalysisMetric[]; readonly max: number; readonly onChange: ScopeChange }) {
+/** Ranges of reported values; a new one starts on the measure the answer is in (`preferred`), any other offered one a pick away. */
+export function RangeField({
+  scope,
+  offered,
+  preferred,
+  max,
+  onChange,
+}: {
+  readonly scope: CompanyAnalysisScope
+  readonly offered: readonly CompanyAnalysisMetric[]
+  readonly preferred?: CompanyAnalysisMetric | null
+  readonly max: number
+  readonly onChange: ScopeChange
+}) {
   const { i18n } = useLingui()
   const locale = localeOf(i18n.locale)
   const ranges = scope.financialRanges ?? []
@@ -634,7 +764,24 @@ export function RangeField({ scope, offered, max, onChange }: { readonly scope: 
   const [min, setMin] = useState('')
   const [maxText, setMaxText] = useState('')
   const [invalid, setInvalid] = useState(false)
-  const chosen = metric && free.includes(metric) ? metric : (free[0] ?? null)
+  const [other, setOther] = useState(false)
+  const chosen = metric && free.includes(metric) ? metric : preferred && free.includes(preferred) ? preferred : (free[0] ?? null)
+  // On the answer's measure, the row above already names it: no second dropdown until another measure is asked for.
+  const onMeasure = !other && Boolean(preferred) && chosen === preferred
+  // Bounds typed for one measure would mean another once it changes (100 000 lei, then 100 000 employees): they go.
+  // „Pe alt indicator" goes as it is pressed, with the focus: it lands on the dropdown it reveals. This runs after
+  // the row's own rescue (a child's effect runs first), which would have put it on the first field.
+  const otherBox = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (other) otherBox.current?.querySelector<HTMLElement>('button, select')?.focus()
+  }, [other])
+  const [draftFor, setDraftFor] = useState(chosen)
+  if (draftFor !== chosen) {
+    setDraftFor(chosen)
+    setMin('')
+    setMaxText('')
+    setInvalid(false)
+  }
   const add = () => {
     if (!chosen) return
     const low = min.trim() === '' ? null : boundOf(min, chosen)
@@ -645,7 +792,7 @@ export function RangeField({ scope, offered, max, onChange }: { readonly scope: 
     const range: CompanyAnalysisRangeInput = { metric: chosen, ...(low !== null ? { min: low } : {}), ...(high !== null ? { max: high } : {}) }
     setMin('')
     setMaxText('')
-    onChange({ ...scope, filing: scope.filing === 'NOT_FILED' ? undefined : scope.filing, financialRanges: [...ranges, range] })
+    onChange({ ...amongFilers(scope), financialRanges: [...ranges, range] })
   }
   return (
     <Row label={t`Valori`}>
@@ -660,21 +807,20 @@ export function RangeField({ scope, offered, max, onChange }: { readonly scope: 
             add()
           }}
         >
-          <Select value={chosen} onValueChange={(value) => setMetric(value as CompanyAnalysisMetric)}>
-            <SelectTrigger className="h-11 rounded-none px-2.5 text-sm shadow-none sm:h-10" aria-label={t`Indicatorul filtrului`}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {free.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {metricLabel(item)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {onMeasure ? null : (
+            <div ref={otherBox}>
+              <ChoiceSelect
+                value={chosen}
+                groups={[{ options: free.map((item) => ({ value: item, label: metricLabel(item) })) }]}
+                onChange={(value) => setMetric(value as CompanyAnalysisMetric)}
+                label={t`Indicatorul filtrului`}
+                triggerClassName="h-11 rounded-none px-2.5 text-sm shadow-none sm:h-10"
+              />
+            </div>
+          )}
           <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5">
-            <input inputMode="decimal" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`Valoarea minimă`} className={FIELD} />
-            <input inputMode="decimal" value={maxText} onChange={(event) => setMaxText(event.target.value)} placeholder={t`până la`} aria-label={t`Valoarea maximă`} className={FIELD} />
+            <input inputMode="decimal" value={min} onChange={(event) => setMin(event.target.value)} placeholder={t`de la`} aria-label={t`${metricLabel(chosen)}: valoarea minimă`} className={FIELD} />
+            <input inputMode="decimal" value={maxText} onChange={(event) => setMaxText(event.target.value)} placeholder={t`până la`} aria-label={t`${metricLabel(chosen)}: valoarea maximă`} className={FIELD} />
             <button type="submit" className={cn(TALL, 'border px-3 text-sm hover:bg-muted')}>
               {t`Adaugă`}
             </button>
@@ -684,6 +830,11 @@ export function RangeField({ scope, offered, max, onChange }: { readonly scope: 
               {companyMetricUnit(chosen) === 'RON' ? t`Scrie o sumă în lei, cu cel mult două zecimale.` : t`Scrie un număr întreg de salariați.`}
             </p>
           ) : null}
+          {onMeasure && free.length > 1 ? (
+            <button type="button" onClick={() => setOther(true)} className="inline-flex min-h-11 items-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground sm:min-h-0">
+              {t`Pe alt indicator`}
+            </button>
+          ) : null}
         </form>
       ) : null}
       <p className="text-xs text-muted-foreground">{t`Limitele sunt incluse și se aplică valorilor raportate în anul ales; firmele fără valoare raportată nu trec filtrul.`}</p>
@@ -691,16 +842,24 @@ export function RangeField({ scope, offered, max, onChange }: { readonly scope: 
   )
 }
 
+/** The bands by size, then what the statement could not place: no headcount, a negative one. */
+const SIZE_BANDS_LISTED: readonly CompanyAnalysisSizeBand[] = [...COMPANY_ANALYSIS_SIZE_BANDS.filter((band) => band !== 'UNAVAILABLE' && band !== 'NEGATIVE'), 'UNAVAILABLE', 'NEGATIVE']
+
 export function SizeField({ scope, onChange }: { readonly scope: CompanyAnalysisScope; readonly onChange: ScopeChange }) {
   return (
     <Row label={t`Mărime`}>
-      <div className="grid grid-cols-1 gap-1.5">
-        {COMPANY_ANALYSIS_SIZE_BANDS.map((band) => (
-          <Toggle key={band} pressed={scope.employeeSizeBands?.includes(band) ?? false} onClick={() => onChange({ ...scope, filing: scope.filing === 'NOT_FILED' ? undefined : scope.filing, employeeSizeBands: toggled(scope.employeeSizeBands, band) })}>
-            {sizeBandLabel(band)}
-          </Toggle>
-        ))}
-      </div>
+      <CheckList
+        label={t`Mărime`}
+        choices={SIZE_BANDS_LISTED.map((band) => ({ id: band, title: sizeBandLabel(band) }))}
+        picked={scope.employeeSizeBands ?? []}
+        onToggle={(band) => onChange({ ...amongFilers(scope), employeeSizeBands: toggled(scope.employeeSizeBands, band as CompanyAnalysisSizeBand) })}
+      />
+      {/*
+        Under the last field it is about, never above one, and its room kept when it says nothing: a note
+        that came with a pick higher up pushed the list under the pointer; one that left at the panel's
+        end shortened it, and the panel scrolled back to fit.
+      */}
+      <RowNote hidden={!(scope.filing === undefined && (scope.financialRanges || scope.employeeSizeBands))}>{t`Filtrele pe valori și pe mărime păstrează doar firmele care au depus.`}</RowNote>
     </Row>
   )
 }

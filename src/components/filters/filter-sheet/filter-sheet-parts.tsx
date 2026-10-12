@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils'
 
 /** A control's height: 44 px on a phone, 40 px from `sm`. */
 export const TALL = 'min-h-11 sm:min-h-10'
-export const FIELD = `${TALL} w-full min-w-0 border bg-background px-2.5 text-sm placeholder:text-muted-foreground/70`
+/** A field's look: 16 px on a phone, where a smaller field makes iOS zoom the page when it takes the focus. */
+export const FIELD = `${TALL} w-full min-w-0 border bg-background px-2.5 text-base placeholder:text-muted-foreground/70 sm:text-sm`
 export const OPTION = `flex ${TALL} w-full items-center justify-between gap-3 px-2.5 py-1 text-left text-sm hover:bg-muted aria-selected:bg-muted`
 export const CELL = `${TALL} border bg-background px-2 text-sm hover:bg-muted`
 /** The sheet's close (`SheetContent`'s `closeClassName`): as tall as the header, a whole tap target on a phone, its ring for the keyboard only. */

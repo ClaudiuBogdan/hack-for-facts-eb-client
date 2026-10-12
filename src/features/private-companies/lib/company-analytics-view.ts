@@ -1,5 +1,6 @@
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { compareDecimal, sumDecimals, type DecimalLocale } from '@/lib/exact-decimal'
+import { countyNameRo } from '@/lib/territory-counties'
 import {
   COMPANY_ANALYSIS_SELECTING_BASES,
   COMPANY_ANALYSIS_SIZE_BANDS,
@@ -17,7 +18,7 @@ import type { ResolvedQuestion } from '../api/company-analytics-plan'
 import { activityText, unclassifiedActivityLabel, unclassifiedBasisOf } from './company-activity-text'
 import { compactValue, countText, exactValueText, shareText } from './company-analytics-format'
 import type { ScopeNames } from './company-analytics-scope-text'
-import { basisGroupLabel, caenText, countyLabel, flagLabel, gapReasonLabel, labelSourceText, metricLabel, placePhrase, sizeBandLabel } from './company-analytics-text'
+import { basisGroupLabel, caenText, flagLabel, gapReasonLabel, labelSourceText, metricLabel, placeName, placePhrase, sizeBandLabel } from './company-analytics-text'
 import type { CompanyAnalyticsState } from './company-analytics-url'
 
 /**
@@ -136,7 +137,7 @@ export function activityTail(breakdown: { readonly dimension: CompanyAnalysisDim
 }
 
 export function groupLabel(dimension: CompanyAnalysisDimension, bucket: CompanyAnalysisBucket): string {
-  if (bucket.kind === 'OTHER') return t`Alte ${bucket.groups} grupuri`
+  if (bucket.kind === 'OTHER') return plural(bucket.groups, { one: 'Încă un grup', few: 'Alte # grupuri', other: 'Alte # de grupuri' })
   if (bucket.kind === 'TOTAL') return t`Total`
   // A consensus group without a value: why it has none, never a key in parentheses or an „unknown".
   if (bucket.kind === 'GROUP' && bucket.basis !== null) return basisGroupLabel(dimension, bucket.basis)
@@ -163,8 +164,11 @@ export function groupLabel(dimension: CompanyAnalysisDimension, bucket: CompanyA
   }
   const key = bucket.key ?? ''
   switch (dimension) {
+    // A place by its name, not the registry's capitals („Cluj", „Sectorul 1").
     case 'COUNTY':
-      return bucket.label ?? countyLabel(key)
+      return countyNameRo(key) ?? (bucket.label ? placeName(bucket.label) : key)
+    case 'UAT':
+      return bucket.label ? placeName(bucket.label) : key
     case 'MAIN_CAEN':
       return bucket.caen ? caenText(bucket.caen) : key
     case 'ACTIVITY':

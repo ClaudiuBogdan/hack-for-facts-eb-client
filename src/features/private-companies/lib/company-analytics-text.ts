@@ -224,6 +224,19 @@ export function companyAnalyticsCaveats(): readonly string[] {
   ]
 }
 
+/** Words a place's name keeps lower-case after its first („Baia de Arieș"). */
+const PLACE_SMALL_WORDS: ReadonlySet<string> = new Set(['de', 'din', 'la', 'lui', 'pe', 'cu', 'și', 'sub'])
+
+/**
+ * A locality as a line of text reads it: the registry's capitals in title
+ * case, its kind left to the name („ORAȘ MIOVENI" → „Mioveni",
+ * „MUNICIPIUL CLUJ-NAPOCA" → „Cluj-Napoca", „SECTORUL 1" kept).
+ */
+export function placeName(label: string): string {
+  const lower = label.trim().toLocaleLowerCase('ro-RO').replace(/^(municipiul|orașul|oraș|comuna)\s+/u, '')
+  return lower.replace(/\p{L}+/gu, (word, offset: number) => (offset > 0 && PLACE_SMALL_WORDS.has(word) ? word : word.charAt(0).toLocaleUpperCase('ro-RO') + word.slice(1)))
+}
+
 export function countyLabel(code: string): string {
   return countyNameRo(code) ?? code
 }

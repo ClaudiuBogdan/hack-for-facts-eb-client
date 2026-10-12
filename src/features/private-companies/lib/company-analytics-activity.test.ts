@@ -101,7 +101,7 @@ describe('the rows', () => {
       '6201 · Activități de realizare a soft-ului la comandă (software orientat client)',
       '6201 · Activități de programare a calculatoarelor',
       '4711 · Comerț cu amănuntul în magazine nespecializate (revizie nepublicată)',
-      'Alte 1 grupuri',
+      'Încă un grup',
       'Mai multe activități clasificate ONRC, niciuna selectată',
       'Cod CAEN fiscal ANAF necatalogat (observație din sursă, nu un domeniu)',
       'Fără selecție calificată (nu înseamnă fără activitate)',
