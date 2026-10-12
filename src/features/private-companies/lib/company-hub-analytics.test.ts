@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CompanyAnalysisBucket } from '@/schemas/company-analytics'
 import { parseCompanyHubSearch } from '@/schemas/private-company-search'
-import { aggregate, breakdownFixture, bucket, recordNode, recordsFixture, releaseFixture, statsFixture } from '../api/company-analytics.fixture'
+import { activity, aggregate, breakdownFixture, bucket, recordNode, recordsFixture, releaseFixture, statsFixture } from '../api/company-analytics.fixture'
 import { resolveQuestion } from '../api/company-analytics-plan'
 import { DEFAULT_STATE, analyticsSearchOf, stateOf } from './company-analytics-url'
 import {
@@ -23,6 +23,7 @@ import {
   hubShare,
   hubSizeRowsOf,
   hubYearOf,
+  leaderActivityText,
   rankHubCounties,
 } from './company-hub-analytics'
 
@@ -260,6 +261,90 @@ describe('the leaders and the links', () => {
     expect(leaders[1]).toMatchObject({ cui: '2', county: null, value: null, status: 'HELD_QUALITY' })
     expect(leaders[2]).toMatchObject({ cui: '3', name: null, value: null, status: null })
     expect(hubLeadersOf(recordsFixture({ edges: [{ cursor: 'c', node: recordNode('9', '5.00', 'REPORTED') }] }), 'TURNOVER', 10)).toHaveLength(1)
+  })
+
+  it('says a v3 record’s derived selection, never the legacy ANAF code it contradicts', () => {
+    // ANAF's 4711 has different catalog labels per revision; ONRC selected Rev.3 4711 with its own exact label.
+    const lidl = recordNode('4711', '9.00', 'REPORTED', true, {
+      mainCaen: {
+        code: '4711',
+        revision: null,
+        basis: 'REVISION_UNKNOWN',
+        label: null,
+        descriptionStatus: 'CONFLICT',
+        descriptions: [
+          { revision: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate, cu vânzare predominantă de produse alimentare, băuturi și tutun' },
+          { revision: 'rev3', label: 'Comerț cu amănuntul nespecializat, cu vânzare predominantă de produse alimentare, băuturi și tutun' },
+        ],
+      },
+      activity: activity({ code: '4711', revision: 'rev3', label: 'Comerț cu amănuntul nespecializat, cu vânzare predominantă de produse alimentare, băuturi și tutun' }),
+    })
+    expect(leaderActivityText(lidl)).toBe('4711 · Comerț cu amănuntul nespecializat, cu vânzare predominantă de produse alimentare, băuturi și tutun · ONRC Rev.3')
+    // An ancient catalog label of ANAF's digits never reaches the line when ONRC selected its own class.
+    const refinery = recordNode('1920', '8.00', 'REPORTED', true, {
+      mainCaen: {
+        code: '1920',
+        revision: null,
+        basis: 'REVISION_UNKNOWN',
+        label: null,
+        descriptionStatus: 'CONFLICT',
+        descriptions: [
+          { revision: 'rev1', label: 'Producția articolelor de voiaj și marochinărie' },
+          { revision: 'rev2', label: 'Fabricarea produselor obținute din prelucrarea țițeiului' },
+        ],
+      },
+      activity: activity({ basis: 'ONRC_CLASS_ANAF_NUMERIC_MATCH', code: '1920', revision: 'rev2', label: 'Fabricarea produselor obținute din prelucrarea țițeiului' }),
+    })
+    const line = leaderActivityText(refinery)
+    expect(line).toBe('1920 · Fabricarea produselor obținute din prelucrarea țițeiului · ONRC Rev.2')
+    expect(line).not.toMatch(/voiaj|Rev\.1/iu)
+    const [first] = hubLeadersOf(recordsFixture({ edges: [{ cursor: 'c', node: lidl }] }), 'TURNOVER', 10)
+    expect(first?.caen).toBe(leaderActivityText(lidl))
+  })
+
+  it.each([
+    ['ONRC_MULTIPLE_CLASSES', 'Mai multe activități clasificate ONRC, niciuna selectată'],
+    ['ANAF_FISCAL_UNCATALOGUED', 'Cod CAEN fiscal ANAF necatalogat (observație din sursă, nu un domeniu)'],
+    ['NO_QUALIFIED_SELECTION', 'Fără selecție calificată (nu înseamnă fără activitate)'],
+  ] as const)('says why a %s selection names no activity, never falling back to the ANAF code', (basis, text) => {
+    const node = recordNode('5', '1.00', 'REPORTED', true, {
+      mainCaen: { code: '4711', revision: null, basis: 'REVISION_UNKNOWN', label: null, descriptionStatus: 'CONSENSUS', descriptions: [{ revision: 'rev2', label: 'Comerț cu amănuntul' }] },
+      activity: activity({ basis, source: basis === 'ANAF_FISCAL_UNCATALOGUED' ? 'ANAF' : null, code: basis === 'ANAF_FISCAL_UNCATALOGUED' ? '0011' : null, revision: null, label: null, descriptionStatus: null }),
+    })
+    expect(leaderActivityText(node)).toBe(text)
+    expect(leaderActivityText(node)).not.toMatch(/4711/u)
+  })
+
+  it('says an ANAF selection with its revision unpublished, its catalog alternatives apart, never a revision of its own', () => {
+    const anaf = (overrides: Parameters<typeof activity>[0]) =>
+      leaderActivityText({ mainCaen: null, activity: activity({ basis: 'ANAF_FISCAL_CODE', source: 'ANAF', code: '6201', revision: null, label: null, descriptionStatus: 'MISSING', descriptions: [], ...overrides }) })
+    expect(anaf({})).toBe('6201 (cod CAEN fiscal ANAF, revizie nepublicată)')
+    expect(anaf({ descriptionStatus: 'CONSENSUS', label: 'Activități de realizare a soft-ului la comandă', descriptions: [{ revision: 'rev2', label: 'Activități de realizare a soft-ului la comandă' }] })).toBe(
+      '6201 · Activități de realizare a soft-ului la comandă (revizie nepublicată) · ANAF',
+    )
+    const conflict = anaf({
+      descriptionStatus: 'CONFLICT',
+      descriptions: [
+        { revision: 'rev2', label: 'Activități de realizare a soft-ului la comandă' },
+        { revision: 'rev3', label: 'Activități de programare a calculatoarelor' },
+      ],
+    })
+    expect(conflict).toBe('6201 (revizie nepublicată; denumiri diferite) · Rev.2: Activități de realizare a soft-ului la comandă / Rev.3: Activități de programare a calculatoarelor · ANAF')
+    expect(conflict).not.toMatch(/ONRC/u)
+  })
+
+  it('keeps ANAF’s fiscal code as observed on a v2 record or an older API that sends no selection', () => {
+    const v2 = recordNode('6', '1.00', 'REPORTED')
+    expect('activity' in v2).toBe(false)
+    expect(leaderActivityText(v2)).toBe('6201 (revizie necunoscută)')
+    expect(leaderActivityText({ ...v2, activity: null })).toBe('6201 (revizie necunoscută)')
+    expect(
+      leaderActivityText({
+        activity: undefined,
+        mainCaen: { code: '4711', revision: null, basis: 'REVISION_UNKNOWN', label: null, descriptionStatus: 'CONSENSUS', descriptions: [{ revision: 'rev2', label: 'Comerț cu amănuntul' }] },
+      }),
+    ).toBe('4711 · Comerț cu amănuntul (revizie nepublicată)')
+    expect(leaderActivityText({ ...v2, mainCaen: { code: '', revision: null, basis: 'MISSING', label: null } })).toBeNull()
   })
 
   it.each(['TURNOVER', 'EMPLOYEES', 'FILERS'] as const)('links the %s question so the analysis resolves the very same one, its ranking written out', (measure) => {

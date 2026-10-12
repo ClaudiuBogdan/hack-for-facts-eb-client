@@ -10,9 +10,10 @@ import {
   type CompanyAnalysisBreakdown,
   type CompanyAnalysisBucket,
   type CompanyAnalysisMetric,
+  type CompanyAnalysisRecord,
 } from '@/schemas/company-analytics'
 import type { CompanyHubSearch } from '@/schemas/private-company-search'
-import { activityBreakdownFixture, breakdownFixture, bucket, recordsFixture, releaseFixture, releaseRef, releaseV3Fixture, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
+import { activity, activityBreakdownFixture, breakdownFixture, bucket, recordNode, recordsFixture, releaseFixture, releaseRef, releaseV3Fixture, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
 import { readCompanyHubForSsr } from '../../api/company-hub-analytics'
 import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
 import { PrivateCompanyHubPage } from './private-company-hub-page'
@@ -31,6 +32,8 @@ import { PrivateCompanyHubPage } from './private-company-hub-page'
 interface Call {
   readonly op: string
   readonly variables: Record<string, unknown>
+  /** The GraphQL document sent: which fields the read selects. */
+  readonly document: string
 }
 
 const router = vi.hoisted(() => ({ navigate: vi.fn() }))
@@ -45,6 +48,8 @@ const api = vi.hoisted(() => ({
   v3: false,
   /** The API refuses the derived activity by type (RELEASE_CAPABILITY_UNAVAILABLE). */
   refuseActivity: false,
+  /** The records page's companies, when a test names them (else the fixture's). */
+  records: null as readonly CompanyAnalysisRecord[] | null,
 }))
 
 vi.mock('@tanstack/react-router', () => ({
@@ -133,8 +138,8 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/graphql/graphql-client')>()
   return {
     ...actual,
-    graphqlQuery: (_document: string, variables: Record<string, unknown>, options: { readonly operationName: string }) => {
-      const call = { op: options.operationName, variables }
+    graphqlQuery: (document: string, variables: Record<string, unknown>, options: { readonly operationName: string }) => {
+      const call = { op: options.operationName, variables, document }
       api.calls.push(call)
       if (api.unavailable(call)) return Promise.reject(new actual.GraphQLRequestError('unavailable', { graphQLErrors: [{ message: 'unavailable', extensions: { code: 'SERVICE_UNAVAILABLE' } }] }))
       if (api.refuse(call)) return Promise.reject(new actual.GraphQLRequestError('refused', { graphQLErrors: [{ message: 'refused', extensions: { code: 'INVALID_INPUT', field: 'release' } }] }))
@@ -150,7 +155,13 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
         case 'CompanyAnalysisStats':
           return Promise.resolve({ companyAnalysisStats: statsFixture({ release }) })
         case 'CompanyAnalysisRecords':
-          return Promise.resolve({ companyAnalysisRecords: recordsFixture({ release, sortMetric: (variables.sortMetric as CompanyAnalysisMetric | undefined) ?? null }) })
+          return Promise.resolve({
+            companyAnalysisRecords: recordsFixture({
+              release,
+              sortMetric: (variables.sortMetric as CompanyAnalysisMetric | undefined) ?? null,
+              ...(api.records ? { edges: api.records.map((node, index) => ({ cursor: `r${index}`, node })) } : {}),
+            }),
+          })
         case 'CompanyAnalysisBreakdown':
           return Promise.resolve({ companyAnalysisBreakdown: { ...breakdownFor(variables), release } })
         case 'CompanyAnalysisSeries':
@@ -205,6 +216,7 @@ beforeEach(() => {
   api.unavailable = () => false
   api.v3 = false
   api.refuseActivity = false
+  api.records = null
 })
 
 describe('PrivateCompanyHubPage', () => {
@@ -293,6 +305,42 @@ describe('PrivateCompanyHubPage', () => {
     expect(note.textContent).not.toMatch(/principal/iu)
     expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toMatchObject({ vedere: 'defalcare', dupa: 'activitate', editie: 7 })
     expect(dataSearch(screen.getByTestId('company-hub-sectors-legacy'))).toMatchObject({ vedere: 'defalcare', dupa: 'caen', editie: 7 })
+  })
+
+  it('on a v3 release, names each leader by its derived selection — ONRC first, an unclassified one by why — never the contradicting ANAF code', async () => {
+    api.v3 = true
+    const conflicting: NonNullable<CompanyAnalysisRecord['mainCaen']> = {
+      code: '4711',
+      revision: null,
+      basis: 'REVISION_UNKNOWN',
+      label: null,
+      descriptionStatus: 'CONFLICT',
+      descriptions: [
+        { revision: 'rev1', label: 'Producția articolelor de voiaj' },
+        { revision: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate' },
+      ],
+    }
+    api.records = [
+      recordNode('1', '900.00', 'REPORTED', true, { mainCaen: conflicting, activity: activity({ code: '4711', revision: 'rev3', label: 'Comerț cu amănuntul nespecializat' }) }),
+      recordNode('2', '800.00', 'REPORTED', true, { mainCaen: conflicting, activity: activity({ basis: 'ONRC_MULTIPLE_CLASSES', source: null, code: null, revision: null, label: null, descriptionStatus: null }) }),
+    ]
+    renderHub()
+    const leaders = within(await screen.findByTestId('company-hub-leaders'))
+    const records = api.calls.filter((call) => call.op === 'CompanyAnalysisRecords')
+    expect(records.length).toBeGreaterThan(0)
+    for (const call of records) expect(call.document).toMatch(/\bactivity \{ basis source code revision label descriptionStatus descriptions \{ revision label \} derived \}/u)
+    expect(leaders.getByText('Cluj · 4711 · Comerț cu amănuntul nespecializat · ONRC Rev.3')).toBeInTheDocument()
+    expect(leaders.getByText('Cluj · Mai multe activități clasificate ONRC, niciuna selectată')).toBeInTheDocument()
+    expect(screen.getByTestId('company-hub-leaders').textContent).not.toMatch(/voiaj|denumiri diferite|revizie nepublicată/u)
+  })
+
+  it('on a v2 release, asks no selection and names each leader by ANAF’s fiscal code as observed', async () => {
+    renderHub()
+    const leaders = within(await screen.findByTestId('company-hub-leaders'))
+    const records = api.calls.filter((call) => call.op === 'CompanyAnalysisRecords')
+    expect(records.length).toBeGreaterThan(0)
+    for (const call of records) expect(call.document).not.toMatch(/\bactivity \{/u)
+    expect(leaders.getAllByText('Cluj · 6201 (revizie necunoscută)').length).toBeGreaterThan(0)
   })
 
   it('on a v3 release the API refuses the derived activity for, falls back to the main activity — the release and the other sections stand', async () => {

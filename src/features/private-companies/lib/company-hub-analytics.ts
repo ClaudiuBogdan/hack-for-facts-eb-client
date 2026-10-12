@@ -2,6 +2,7 @@ import { t } from '@lingui/core/macro'
 import { compareDecimal, decimalSign, decimalToPlot, type DecimalLocale } from '@/lib/exact-decimal'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import {
+  COMPANY_ANALYSIS_SELECTING_BASES,
   COMPANY_ANALYSIS_SIZE_BANDS,
   metricOfferedIn,
   yearCapabilityOf,
@@ -9,6 +10,7 @@ import {
   type CompanyAnalysisBucket,
   type CompanyAnalysisDimension,
   type CompanyAnalysisMetric,
+  type CompanyAnalysisRecord,
   type CompanyAnalysisRecords,
   type CompanyAnalysisRelease,
   type CompanyAnalysisScope,
@@ -424,10 +426,33 @@ export interface HubLeader {
   /** The current public name in the directory; null when the company is not publicly named. */
   readonly name: string | null
   readonly county: string | null
+  /** The company's activity in one line (`leaderActivityText`); null when a v2 record has no ANAF fiscal code. */
   readonly caen: string | null
   /** The reported value; null for any other status. */
   readonly value: string | null
   readonly status: CompanyAnalysisStatus | null
+}
+
+/**
+ * A ranked company's activity in one line. A v3 record carries the derived
+ * selection, and only it is said: an ONRC class with the exact label of its
+ * own revision and that revision; ANAF's fiscal code with its revision
+ * unpublished; and, when the selection names no activity, why — never the
+ * ANAF code it did not select. Only a record without the selection (a v2
+ * release, an older API) says ANAF's fiscal code as observed.
+ */
+export function leaderActivityText(node: Pick<CompanyAnalysisRecord, 'activity' | 'mainCaen'>): string | null {
+  const activity = node.activity
+  if (activity) {
+    if (activity.code === null || (activity.basis !== null && !COMPANY_ANALYSIS_SELECTING_BASES.has(activity.basis))) return unclassifiedActivityLabel(activity.basis)
+    if (activity.source === 'ANAF') {
+      // The text says the revision is unpublished; the source is named where the text does not name it.
+      return activity.descriptionStatus === 'CONSENSUS' || activity.descriptionStatus === 'CONFLICT' ? `${activityText(activity)} · ANAF` : activityText(activity)
+    }
+    const tag = activitySourceTag(activity)
+    return tag ? `${activityText(activity)} · ${tag}` : activityText(activity)
+  }
+  return node.mainCaen && node.mainCaen.basis !== 'MISSING' ? caenText(node.mainCaen) : null
 }
 
 /** The first companies of a records page ranked by one metric, each with its value of that metric only. */
@@ -438,7 +463,7 @@ export function hubLeadersOf(records: CompanyAnalysisRecords, metric: CompanyAna
       cui: node.cui,
       name: node.currentName,
       county: node.county ? (node.county.label ?? countyLabel(node.county.code)) : null,
-      caen: node.mainCaen && node.mainCaen.basis !== 'MISSING' ? caenText(node.mainCaen) : null,
+      caen: leaderActivityText(node),
       value: entry?.status === 'REPORTED' ? entry.value : null,
       status: entry?.status ?? null,
     }
