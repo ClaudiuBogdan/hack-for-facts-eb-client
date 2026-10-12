@@ -15,10 +15,10 @@ import {
   Search,
   SlidersHorizontal,
   TriangleAlert,
-  X,
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
+import { HeadlinePhrase } from '@/components/filters/filter-sheet/headline-phrase'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -51,8 +51,6 @@ import {
  * ngos/registry, variant intrebare (design.md §15).
  */
 
-const PHRASE =
-  'text-left underline decoration-muted-foreground/35 decoration-dotted decoration-2 underline-offset-[0.18em] transition-colors hover:decoration-foreground'
 const LINK = 'inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-0'
 const CHIP = 'inline-flex min-h-9 items-center gap-1.5 border px-2.5 text-sm transition-colors hover:bg-muted/60'
 
@@ -250,21 +248,7 @@ function SentencePart({
   if (part.role === 'subject' && query.category === null) return <span>{part.text}</span>
   const key: FilterKey = part.role === 'subject' ? 'category' : part.role
   const phrase = part.text
-  return (
-    <span className="group/phrase relative">
-      <button type="button" onClick={onFilters} className={PHRASE}>
-        {part.text}
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange(without(query, key))}
-        aria-label={t`Scoate „${phrase}”`}
-        className="ml-0.5 inline-flex size-[0.7em] items-center justify-center align-[0.05em] text-muted-foreground/70 transition-opacity hover:text-foreground focus-visible:opacity-100 sm:absolute sm:-right-[0.5em] sm:-top-[0.1em] sm:ml-0 sm:size-[0.5em] sm:bg-background sm:opacity-0 sm:group-hover/phrase:opacity-100"
-      >
-        <X className="size-[0.55em] sm:size-full" aria-hidden="true" />
-      </button>
-    </span>
-  )
+  return <HeadlinePhrase text={phrase} removeLabel={t`Scoate „${phrase}”`} onOpen={onFilters} onRemove={() => onChange(without(query, key))} />
 }
 
 /** The headline's size by its length, as the profiles size a name. */

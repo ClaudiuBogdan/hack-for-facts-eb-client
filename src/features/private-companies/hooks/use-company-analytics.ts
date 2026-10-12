@@ -7,7 +7,7 @@ import { planBreakdown, planOptions, planRecords, planSeries, planStats, resolve
 import type { CompanyAnalyticsSeed } from '../api/company-analytics-ssr'
 import { companyAnalyticsKeys, releaseOfKey } from '../lib/company-analytics-keys'
 import { useRefusedReleases } from '../lib/company-release-refusals'
-import { analyticsSearchOf, siteSearchOf, stateOf, urlSearchOf, type CompanyAnalyticsState } from '../lib/company-analytics-url'
+import { siteSearchOf, urlSearchOf, type CompanyAnalyticsState } from '../lib/company-analytics-url'
 
 /**
  * The companies analysis page's state and reads. The address holds the
@@ -71,20 +71,36 @@ function useSeeded(): <T>(read: { readonly key: readonly unknown[] }) => { reado
 
 // ───────────────────────────────────────────────────────────────── state ──
 
-/** The question the address holds. */
-export function useCompanyAnalyticsState(): CompanyAnalyticsState {
-  return stateOf(analyticsSearchOf(useSearch({ from: '/companies/analytics' })))
+/**
+ * Where the page's question lives and how another one is asked: the route's
+ * address, or the design harness's. Each keeps its own keys — the site's
+ * (`lang`), the harness's — across a change of question.
+ */
+export interface CompanyAnalyticsAddress {
+  /** The address's search: the page reads its own keys from it. */
+  readonly search: Readonly<Record<string, unknown>>
+  /** Asks the question, answered in place (pushed: Back undoes it). */
+  readonly go: (next: CompanyAnalyticsState) => Promise<void>
+  /** A link to the question, for a place on the page that is a link. */
+  readonly link: (next: CompanyAnalyticsState) => CompanyAnalyticsLink
 }
 
-/**
- * A way to ask another question (pushed: Back undoes it). Every question
- * asked from the page names the release it was answered from, so a shared
- * link reads the same figures; the site's own keys (`lang`) stay with it.
- */
-export function useCompanyAnalyticsMove(pinned: string | null): (next: CompanyAnalyticsState) => void {
+export interface CompanyAnalyticsLink {
+  readonly to: '/companies/analytics' | '.'
+  readonly search: (previous: Record<string, unknown>) => Record<string, unknown>
+  readonly resetScroll: false
+}
+
+/** `/companies/analytics`'s own address: its question asked again in place, the site's keys kept. */
+export function useCompanyAnalyticsRouteAddress(): CompanyAnalyticsAddress {
+  const search = useSearch({ from: '/companies/analytics' })
   const navigate = useNavigate({ from: '/companies/analytics' })
-  return (next: CompanyAnalyticsState) =>
-    void navigate({ search: (previous) => ({ ...siteSearchOf(previous), ...urlSearchOf({ ...next, release: next.release ?? pinned }) }), resetScroll: false })
+  const searchFor = (next: CompanyAnalyticsState) => (previous: Record<string, unknown>) => ({ ...siteSearchOf(previous), ...urlSearchOf(next) })
+  return {
+    search,
+    go: (next) => navigate({ search: searchFor(next), resetScroll: false }),
+    link: (next) => ({ to: '/companies/analytics', search: searchFor(next), resetScroll: false }),
+  }
 }
 
 /**
@@ -94,15 +110,14 @@ export function useCompanyAnalyticsMove(pinned: string | null): (next: CompanyAn
  * one. The refusal itself stays known: going back to that release finds it
  * withdrawn.
  */
-export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string | null) {
+export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string | null, go: CompanyAnalyticsAddress['go']) {
   const client = useQueryClient()
   const seeds = useContext(CompanyAnalyticsSeedContext)
-  const navigate = useNavigate({ from: '/companies/analytics' })
   return () => {
     seeds.clear()
     // Read again where the page shows it (the page moves when it lands), and on its next showing where it does not.
     void client.invalidateQueries({ queryKey: companyAnalyticsKeys.release(null) })
-    void navigate({ search: (previous) => ({ ...siteSearchOf(previous), ...urlSearchOf({ ...state, release: null }) }), resetScroll: false }).then(() => {
+    void go({ ...state, release: null }).then(() => {
       // Once the page has left it: forgotten whole, refusals included.
       if (refused !== null) client.removeQueries({ predicate: (query) => releaseOfKey(query.queryKey) === refused })
     })
@@ -110,6 +125,9 @@ export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string 
 }
 
 // ─────────────────────────────────────────────────────────────── release ──
+
+/** The active release's answers already handed to their pin (`useCompanyAnalysisRelease`): each stands in for it once. */
+const handedToPin = new WeakSet<CompanyAnalysisRelease>()
 
 /**
  * The release's capabilities, read once for the page's life: a publication
@@ -119,6 +137,7 @@ export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string 
 export function useCompanyAnalysisRelease(pin: string | null) {
   const seeded = useSeeded()
   const refused = useRefusedReleases()
+  const client = useQueryClient()
   const key = companyAnalyticsKeys.release(pin)
   return useQuery({
     queryKey: key,
@@ -127,6 +146,17 @@ export function useCompanyAnalysisRelease(pin: string | null) {
     enabled: pin === null || !refused.has(pin),
     staleTime: Infinity,
     retry: (count, error) => !isReleaseRefused(error) && count < 2,
+    // The active release read unpinned is its own pin's answer: the first question asked pins it, and reading it
+    // again would empty the page (and the open filters panel, under the pointer) until the same answer came back.
+    // Handed over once, as a server seed is: a pinned query dropped later (collected, forgotten) reads the API
+    // again. Never a refused pin's: the page says that release is gone, and its last answer must not stand in.
+    initialData: () => {
+      if (pin === null || refused.has(pin)) return undefined
+      const active = client.getQueryData<CompanyAnalysisRelease>(companyAnalyticsKeys.release(null))
+      if (active?.release.releaseId !== pin || handedToPin.has(active)) return undefined
+      handedToPin.add(active)
+      return active
+    },
     ...seeded<CompanyAnalysisRelease>({ key }),
   })
 }

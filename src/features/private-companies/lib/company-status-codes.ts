@@ -8,6 +8,8 @@
  */
 export const STATUS_ACTIVE = '1048'
 export const STATUS_STRUCK_OFF = '1084'
+/** Activity temporarily interrupted (întrerupere temporară de activitate). */
+export const STATUS_SUSPENDED = '1074'
 
 /**
  * Every status of the insolvency procedure: insolvency, judicial

@@ -1,4 +1,4 @@
-import { companyMetricUnit, type CompanyAnalysisKeyFilterInput, type CompanyAnalysisMetric } from '@/schemas/company-analytics'
+import { companyMetricUnit, type CompanyAnalysisFiling, type CompanyAnalysisKeyFilterInput, type CompanyAnalysisMetric, type CompanyAnalysisScope } from '@/schemas/company-analytics'
 
 /**
  * The filters panel's changes, as pure steps: a value toggled in or out of
@@ -11,6 +11,20 @@ export function toggled<T>(values: readonly T[] | undefined, value: T): T[] | un
   const current = values ?? []
   const next = current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
   return next.length > 0 ? next : undefined
+}
+
+/**
+ * The filing chosen. A company without a statement has no value or size band
+ * to filter on — the API refuses the pair, and the address drops the filing
+ * from it — so „N-au depus" lets the ranges and the sizes go.
+ */
+export function withFiling(scope: CompanyAnalysisScope, filing: CompanyAnalysisFiling | undefined): CompanyAnalysisScope {
+  return filing === 'NOT_FILED' ? { ...scope, filing, financialRanges: undefined, employeeSizeBands: undefined } : { ...scope, filing }
+}
+
+/** A range or a size band added: it keeps only the filers, so „N-au depus" goes. */
+export function amongFilers(scope: CompanyAnalysisScope): CompanyAnalysisScope {
+  return scope.filing === 'NOT_FILED' ? { ...scope, filing: undefined } : scope
 }
 
 /** A key toggled in or out; `null` toggles the unknown group. */

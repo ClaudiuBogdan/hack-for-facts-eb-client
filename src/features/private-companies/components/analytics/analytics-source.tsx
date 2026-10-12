@@ -1,12 +1,10 @@
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
-import { Info } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisRelease } from '@/schemas/company-analytics'
 import { countText, localeOf } from '../../lib/company-analytics-format'
 import { sourceEditionText } from '../../lib/company-analytics-source'
-import { companyAnalyticsCaveats } from '../../lib/company-analytics-text'
 
 /**
  * Where the figures come from, at the foot: the sources, the release and
@@ -22,31 +20,6 @@ function dateText(value: string | null, locale: string): string | null {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return date.toLocaleDateString(locale === 'en' ? 'en-GB' : 'ro-RO', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Bucharest' })
-}
-
-function CaveatsSource({ release }: { readonly release: CompanyAnalysisRelease }) {
-  const { i18n } = useLingui()
-  return <p className="text-muted-foreground">{t`Județul, localitatea, starea și forma juridică sunt cele din ${sourceEditionText(release.release, localeOf(i18n.locale))}.`}</p>
-}
-
-export function CaveatsMarker({ release, className }: { readonly release: CompanyAnalysisRelease; readonly className?: string }) {
-  return (
-    <Popover>
-      <PopoverTrigger className={cn('inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground sm:min-h-0', className)}>
-        <Info className="size-3.5" aria-hidden="true" />
-        {t`Ce trebuie știut`}
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(92vw,28rem)] space-y-2 text-sm">
-        {companyAnalyticsCaveats().map((caveat) => (
-          <p key={caveat} className="border-l-2 border-amber-600/60 pl-3 text-foreground">
-            {caveat}
-          </p>
-        ))}
-        <p className="text-muted-foreground">{t`Ediția ${release.release.releaseId} cuprinde ${release.fiscalYears.length} ani fiscali.`}</p>
-        <CaveatsSource release={release} />
-      </PopoverContent>
-    </Popover>
-  )
 }
 
 export function SourceLine({ release, className }: { readonly release: CompanyAnalysisRelease; readonly className?: string }) {

@@ -1,10 +1,10 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { breakdownFixture, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
 import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
-import { releaseOfKey } from '../../lib/company-analytics-keys'
+import { companyAnalyticsKeys, releaseOfKey } from '../../lib/company-analytics-keys'
 import { CompanyAnalyticsPage } from './company-analytics-page'
 
 /**
@@ -80,14 +80,17 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
 function renderPage(seed: readonly { readonly key: readonly unknown[]; readonly data: unknown }[] = []) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const seeds = createSeedStore(seed)
-  const view = render(
+  const tree = () => (
     <QueryClientProvider client={client}>
       <CompanyAnalyticsSeedContext value={seeds}>
         <CompanyAnalyticsPage />
       </CompanyAnalyticsSeedContext>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   )
-  return { client, view }
+  const view = render(tree())
+  // The address changed (the mocked router's search): the page as the router would render it again.
+  const rerender = () => view.rerender(tree())
+  return { client, view, rerender }
 }
 
 /** The figures of a loaded answer, as a reader sees them. */
@@ -123,15 +126,28 @@ describe('CompanyAnalyticsPage', () => {
   it('answers with exact figures, a figure nobody reported as such, and the companies themselves', async () => {
     renderPage()
     expect(await screen.findByText(FIGURES)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cifra de afaceri în România, anul fiscal 2024')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Firmele, în 2024')
     // The turnover sum past 2^53, every digit (the matcher reads the no-break space as a space).
-    expect(screen.getByText('9,007,199,254,741,973.32 lei')).toBeInTheDocument()
-    expect(screen.getAllByText('nicio firmă nu a raportat o valoare').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('9,007,199,254,741,973.32 lei').length).toBeGreaterThan(0)
     expect(await screen.findByText('Firma 1')).toBeInTheDocument()
     expect(screen.getByText('Fără denumire publică')).toBeInTheDocument()
-    expect(screen.getByText('reținut: semnal de calitate')).toBeInTheDocument()
-    expect(screen.getAllByText('fără situație pentru 2024').length).toBeGreaterThan(0)
+    // A held value is a marked dash, its reason said in the cell (to a screen reader) and once under the table.
+    const held = screen.getAllByText('reținut: semnal de calitate')
+    expect(held.map((element) => element.tagName)).toEqual(['SPAN', 'LI'])
+    expect(held[0]).toHaveClass('sr-only')
+    expect(held[1]).toHaveTextContent('1reținut: semnal de calitate')
+    // A company without a statement says so once, in the measure's column.
+    expect(screen.getAllByText('fără bilanț')).toHaveLength(1)
     await waitFor(() => expect(api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease').every((call) => call.variables.release === '7')).toBe(true))
+  })
+
+  it('says a measure nobody reported is not reported — a dash with its reason, never a zero', async () => {
+    router.search = { indicator: 'employees' }
+    renderPage()
+    expect(await screen.findByText(FIGURES)).toBeInTheDocument()
+    const figures = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(within(figures).getAllByText('nicio firmă nu a raportat o valoare').length).toBe(2)
+    expect(within(figures).queryByText(/^0$/u)).not.toBeInTheDocument()
   })
 
   it('lists each company with why it has no common county or status, the date ONRC recorded as its civil date, and where the names come from', async () => {
@@ -174,9 +190,100 @@ describe('CompanyAnalyticsPage', () => {
     router.search = { lang: 'ro' }
     renderPage()
     await screen.findByText(FIGURES)
-    fireEvent.click(screen.getByRole('button', { name: /Evoluție/u }))
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'În timp' }))
     const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
     expect(search(router.search)).toEqual({ lang: 'ro', vedere: 'evolutie', editie: 7 })
+  })
+
+  it('walks the answer’s tabs by keyboard: an arrow moves the focus only, Enter opens the tab', async () => {
+    router.search = { lang: 'ro' }
+    renderPage()
+    await screen.findByText(FIGURES)
+    const first = screen.getByRole('tab', { name: 'Firmele' })
+    expect(first).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', first.id)
+    // One stop for Tab, not one per tab (the list hands its focus to the tab shown).
+    expect(screen.getAllByRole('tab').filter((tab) => tab.tabIndex === 0).length).toBeLessThanOrEqual(1)
+    first.focus()
+    fireEvent.keyDown(first, { key: 'ArrowRight' })
+    const next = screen.getByRole('tab', { name: 'Județe' })
+    await waitFor(() => expect(next).toHaveFocus())
+    expect(router.navigate).not.toHaveBeenCalled()
+    fireEvent.keyDown(next, { key: 'Enter' })
+    const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    expect(search(router.search)).toEqual({ lang: 'ro', vedere: 'defalcare', editie: 7 })
+  })
+
+  it('shows the answer as a table, a map or charts from the pinned bar, the choice written in the address', async () => {
+    router.search = { lang: 'ro' }
+    renderPage()
+    await screen.findByText(FIGURES)
+    const modes = screen.getByRole('navigation', { name: 'Cum se arată răspunsul' })
+    expect(within(modes).getByRole('button', { name: 'Tabel' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(within(modes).getByRole('button', { name: 'Hartă' }))
+    const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    expect(search(router.search)).toEqual({ lang: 'ro', mod: 'harta', editie: 7 })
+  })
+
+  it('answers the first pinned question from the release it already read: nothing is read again, nothing empties', async () => {
+    const { rerender } = renderPage()
+    await screen.findByText(FIGURES)
+    fireEvent.click(screen.getByRole('button', { name: /^Filtre/u }))
+    const sheet = await screen.findByRole('dialog')
+    // The first question asked pins the release it was answered from (above): the same question, now pinned.
+    router.search = { editie: 7 }
+    rerender()
+    // Not a frame without the figures, nor without the panel's statement fields (a pick there would jump under the pointer).
+    expect(screen.getByText(FIGURES)).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBe(sheet)
+    expect(screen.getByRole('group', { name: 'Mărime' })).toBeInTheDocument()
+    await waitFor(() => expect(api.calls.some((call) => call.op === 'CompanyAnalysisStats')).toBe(true))
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease').map((call) => call.variables.release)).toEqual([undefined])
+  })
+
+  it('never answers a refused pin from the release the page read before it was refused', async () => {
+    const { client, rerender } = renderPage()
+    await screen.findByText(FIGURES)
+    await screen.findByText('Firma 1')
+    api.refuseRelease = (call) => call.variables.release === '7'
+    fireEvent.click(screen.getByRole('button', { name: 'Pagina următoare' }))
+    await screen.findByText('Ediția 7 a analizei nu mai este disponibilă')
+    router.search = { editie: 7 }
+    rerender()
+    expectWithdrawn('7')
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease').map((call) => call.variables.release)).toEqual([undefined])
+    // Nor kept under its pin, for a later render to find.
+    expect(client.getQueryData(companyAnalyticsKeys.release('7'))).toBeUndefined()
+  })
+
+  it('hands the release it read over to its pin once: a pinned answer dropped since is read from the API', async () => {
+    const { client, rerender } = renderPage()
+    await screen.findByText(FIGURES)
+    router.search = { editie: 7 }
+    rerender()
+    expect(screen.getByText(FIGURES)).toBeInTheDocument()
+    // Back to the unpinned question, long enough for the pinned answer to be collected.
+    router.search = {}
+    rerender()
+    client.removeQueries({ queryKey: companyAnalyticsKeys.release('7'), exact: true })
+    router.search = { editie: 7 }
+    rerender()
+    await waitFor(() => expect(api.calls.filter((call) => call.op === 'CompanyAnalysisRelease').map((call) => call.variables.release)).toEqual([undefined, '7']))
+  })
+
+  it('clears a list’s search on Escape, and closes the filters on the next', async () => {
+    renderPage()
+    await screen.findByText(FIGURES)
+    fireEvent.click(screen.getByRole('button', { name: /^Filtre/u }))
+    const search = await screen.findByRole('textbox', { name: 'Caută: Formă juridică' })
+    // Typed into, as a reader does: the field has the focus.
+    act(() => search.focus())
+    fireEvent.change(search, { target: { value: 'srl' } })
+    fireEvent.keyDown(search, { key: 'Escape' })
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(search).toHaveValue('')
+    fireEvent.keyDown(search, { key: 'Escape' })
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
   })
 
   it('says a pinned release is gone when the release itself is refused, and reads nothing else', async () => {

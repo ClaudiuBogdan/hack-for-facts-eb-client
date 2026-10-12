@@ -378,7 +378,7 @@ describe('PrivateCompanyHubPage', () => {
     const rankCluj = within(screen.getByTestId('company-hub-county-rank')).getByRole('link', { name: /Cluj/u })
     expect(rankCluj).toHaveAttribute('href', '/companies/analytics')
     expect(dataSearch(rankCluj)).toEqual(drill)
-    expect(dataSearch(band('judete').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', vedere: 'defalcare' })
+    expect(dataSearch(band('judete').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', mod: 'harta', vedere: 'defalcare' })
   })
 
   it('links the companies-with-a-statement layer by that ranking, never the release’s default sum', async () => {
@@ -409,6 +409,7 @@ describe('PrivateCompanyHubPage', () => {
       editie: 7,
       indicator: 'turnover',
       clasare: 'suma',
+      mod: 'grafice',
       vedere: 'evolutie',
       cohorta: 'fiecare-an',
     })

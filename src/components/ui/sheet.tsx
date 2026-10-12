@@ -60,12 +60,25 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, onOverlayClick, closeLabel = t`Închide`, closeClassName, ...props }, ref) => (
+>(({ side = "right", className, children, onOverlayClick, onPointerDownOutside, closeLabel = t`Închide`, closeClassName, ...props }, ref) => {
+  // A press on the overlay is the sheet's to answer only when the sheet is the layer on top. With a select or
+  // a menu open over it, Radix keeps the page from the pointer but not the overlay, which spans the screen: the
+  // press that closes the list lands there, and the overlay's own click would close the sheet too. Radix calls
+  // the sheet's onPointerDownOutside only when the sheet is on top (on the click, for a primary press).
+  const overlay = React.useRef<HTMLDivElement>(null)
+  return (
   <SheetPortal>
-    <SheetOverlay onClick={onOverlayClick} />
+    <SheetOverlay ref={overlay} />
     <SheetPrimitive.Content
       ref={ref}
       className={cn(sheetVariants({ side }), className)}
+      onPointerDownOutside={(event) => {
+        onPointerDownOutside?.(event)
+        // A plain primary press only: Radix keeps the sheet open on a right or ctrl click, after this handler runs.
+        const original = event.detail.originalEvent
+        const primary = original.button === 0 && !original.ctrlKey
+        if (!event.defaultPrevented && primary && original.target instanceof Node && overlay.current?.contains(original.target)) onOverlayClick?.()
+      }}
       {...props}
     >
       <SheetPrimitive.Close className={cn("absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary", closeClassName)}>
@@ -75,7 +88,8 @@ const SheetContent = React.forwardRef<
       {children}
     </SheetPrimitive.Content>
   </SheetPortal>
-));
+  )
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
 const SheetHeader = ({

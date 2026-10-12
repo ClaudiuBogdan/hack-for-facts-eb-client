@@ -11,6 +11,7 @@ import { analyticsSearchOf, DEFAULT_STATE, recordsKeyOf, SEARCH_KEYS, searchOf, 
 const FULL: CompanyAnalyticsState = {
   year: 2008,
   metric: 'NET_RESULT',
+  mode: 'grafice',
   panel: 'defalcare',
   dimension: 'MAIN_CAEN',
   rankBy: 'CONTRIBUTORS',
@@ -51,6 +52,16 @@ describe('company analytics address', () => {
   it('writes nothing for the defaults: the bare page is the bare address', () => {
     expect(searchOf(DEFAULT_STATE)).toEqual({})
     expect(stateOf({})).toEqual(DEFAULT_STATE)
+  })
+
+  it('reads how the answer is shown: a table without the key, a map, charts; another word is said, not guessed', () => {
+    expect(stateOf({}).mode).toBe('tabel')
+    expect(stateOf({ mod: 'harta' }).mode).toBe('harta')
+    expect(stateOf({ mod: 'grafice' }).mode).toBe('grafice')
+    expect(searchOf({ ...DEFAULT_STATE, mode: 'tabel' })).toEqual({})
+    const unknown = stateOf({ mod: 'pie' })
+    expect(unknown.mode).toBe('tabel')
+    expect(unknown.unread).toEqual(['mod'])
   })
 
   it('writes digits-only values as numbers so the router does not quote them', () => {

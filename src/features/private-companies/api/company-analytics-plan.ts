@@ -142,6 +142,27 @@ export const BREAKDOWN_TOP = 25
 export const BREAKDOWN_TOP_EXPANDED = 100
 export const RECORDS_PAGE = 25
 
+/** The analysis page's ranked axis: its first groups; on demand, as many as the API serves. */
+export const ANSWER_TOP = 15
+export const ANSWER_TOP_EXPANDED = BREAKDOWN_TOP_EXPANDED
+/** The analysis page's share charts: their first groups. */
+export const CHART_TOP = 10
+
+/**
+ * The companies chart's question: the records sorted by the measure — the
+ * largest first, or the smallest where the table is read from the smallest
+ * of this measure (the largest losses).
+ */
+export function chartRecordsQuestion(question: ResolvedQuestion): ResolvedQuestion {
+  const ascending = question.sortMetric === question.metric && question.direction === 'ASC'
+  return { ...question, sortMetric: question.metric, direction: ascending ? 'ASC' : 'DESC' }
+}
+
+/** The map's groups: as many as the release lets one breakdown hold, so every county — and most localities — is drawn. */
+export function mapTopOf(release: CompanyAnalysisRelease): number {
+  return release.limits.maxTopN
+}
+
 export function planStats(question: ResolvedQuestion): PlannedRead<CompanyAnalysisStats> {
   const request = { release: question.release, scope: question.scope, metrics: question.figureMetrics }
   return {
