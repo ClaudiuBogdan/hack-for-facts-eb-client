@@ -37,7 +37,7 @@ export function companySentence(model: CompanyProfileModel): string {
   const where = model.place.label
   const first = where ? t`${form} din ${where}.` : `${form}.`
   const activity = model.mainActivity?.label
-  return activity ? `${first} ${t`Activitatea principală declarată la ANAF: ${uncapitalised(activity)}.`}` : first
+  return activity ? `${first} ${t`Cod CAEN fiscal ANAF: ${uncapitalised(activity)}.`}` : first
 }
 
 export function capitalised(text: string): string {

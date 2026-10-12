@@ -90,8 +90,8 @@ export function companyProfile(overrides: Partial<PrivateCompanyProfile> = {}): 
     address: { display: '', county: 'Cluj', locality: 'Municipiul Gherla' },
     geography: { uatSirutaCode: '55384', uatName: 'Municipiul Gherla', countyName: 'Cluj', matchConfidence: 'safe' },
     caenActivities: [
-      { code: '5610', rev: 'rev2', label: 'Restaurante', source: 'onrc' },
-      { code: '5630', rev: 'rev2', label: 'Baruri și alte activități de servire a băuturilor', source: 'onrc' },
+      { code: '5610', rev: 'rev2', label: 'Restaurante', source: 'onrc', classState: 'class' },
+      { code: '5630', rev: 'rev2', label: 'Baruri și alte activități de servire a băuturilor', source: 'onrc', classState: 'class' },
       { code: '5610', rev: null, label: null, source: 'anaf' },
     ],
     registry: mockRegistryEvidence({

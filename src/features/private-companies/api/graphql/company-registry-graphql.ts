@@ -6,7 +6,8 @@
  * Every mapper fails closed. An unknown state reads as `unavailable`, an
  * unknown basis as `unresolved` with no value, an unknown revision as none
  * (so no catalog label), a catalog label only for the row's own known
- * revision from the current database catalog, and a source link only when it
+ * revision from the current database catalog — and, where the API names the
+ * row's class state, only on a `class` row — and a source link only when it
  * is an https URL. Enum values stay strings in the raw schemas so one new
  * server value degrades one field instead of failing the whole page.
  *
@@ -15,12 +16,14 @@
  */
 import { z } from 'zod'
 import {
+  COMPANY_CAEN_CLASS_STATES,
   COMPANY_CAEN_REVISIONS,
   COMPANY_REGISTRY_BASES,
   COMPANY_REGISTRY_COVERAGES,
   COMPANY_REGISTRY_CUI_STATES,
   COMPANY_REGISTRY_DIFF_STATUSES,
   COMPANY_REGISTRY_STATES,
+  type CompanyCaenClassState,
   type CompanyCaenRevision,
   type CompanyRegistrationDiff,
   type CompanyRegistryBasis,
@@ -45,8 +48,11 @@ const PROVENANCE_FIELDS = /* GraphQL */ `
   provenance { resourceKey sourceRowNumber sourceRowSha256 sourceUrl sourceFileSha256 sourcePublishedAt }
 `
 
-/** `Company.registry`: the envelope, the CUI's state, its qualified profile and every public observation. */
-export const REGISTRY_EVIDENCE_FIELDS = /* GraphQL */ `
+/**
+ * `Company.registry`: the envelope, the CUI's state, its qualified profile and every public observation.
+ * `classState` is asked unless `legacy` (an API from before the CAEN class state, which rejects the field).
+ */
+export const registryEvidenceFields = (legacy = false) => /* GraphQL */ `
   registry { ${REGISTRY_ENVELOPE_FIELDS} }
   cuiState
   profile {
@@ -60,10 +66,12 @@ export const REGISTRY_EVIDENCE_FIELDS = /* GraphQL */ `
     caenObservations unknownRevisionCaenObservations
   }
   identityObservations { id identifierKey name legalForm recordedDate recordedDateState countyCode ${PROVENANCE_FIELDS} }
-  caenObservations { id identifierKey parseState code revisionState revision catalogLabel { label system source } ${PROVENANCE_FIELDS} }
+  caenObservations { id identifierKey parseState code revisionState revision catalogLabel { label system source } ${legacy ? '' : 'classState'} ${PROVENANCE_FIELDS} }
   statusObservations { id identifierKey parseState code label ${PROVENANCE_FIELDS} }
   observationsTruncated
 `
+
+export const REGISTRY_EVIDENCE_FIELDS = registryEvidenceFields()
 
 export const COMPANY_REGISTRY_QUERY = /* GraphQL */ `
   query CompanyRegistry {
@@ -179,6 +187,8 @@ export const rawRegistryEvidenceSchema = z.object({
       revisionState: z.string(),
       revision: z.string().nullable(),
       catalogLabel: z.object({ label: z.string(), system: z.string(), source: z.string() }).nullable(),
+      /** Optional: a recorded or mocked answer without it still parses (the row is then read as before). */
+      classState: z.string().nullish(),
       provenance: rawProvenanceSchema,
     }),
   ),
@@ -306,6 +316,16 @@ export function mapCaenRevision(raw: string | null | undefined): CompanyCaenRevi
 }
 
 /**
+ * A row's class state as the API names it (`CLASS`, `SHORT_TOKEN`, …). Not
+ * sent (an older API): null, and the row reads as before. Sent but unknown:
+ * `unparsed` — a row this client cannot qualify is never taken for a class.
+ */
+export function mapCaenClassState(raw: string | null | undefined): CompanyCaenClassState | null {
+  if (raw === null || raw === undefined) return null
+  return member(COMPANY_CAEN_CLASS_STATES, raw) ?? 'unparsed'
+}
+
+/**
  * The CUI's state in the pinned scope. The server's word is taken, but it
  * cannot claim more than its envelope: a non-published registry never yields
  * `in_edition`, and a profile is only believed `in_edition`.
@@ -361,8 +381,10 @@ export function mapRegistryEvidence(raw: RawRegistryEvidence, mode: CompanyRegis
       ? raw.caenObservations.map((row) => {
           const revision = mapCaenRevision(row.revision)
           const catalog = row.catalogLabel
-          // A label only from the current catalog of the row's OWN known revision.
-          const attributed = revision !== null && catalog !== null && catalog.system === `caen_${revision}` && catalog.source === 'current_db_catalog'
+          const classState = mapCaenClassState(row.classState)
+          // A label only from the current catalog of the row's OWN known revision, and only on a class row when the API says which.
+          const attributed =
+            revision !== null && catalog !== null && catalog.system === `caen_${revision}` && catalog.source === 'current_db_catalog' && (classState === null || classState === 'class')
           return {
             id: row.id,
             identifierKey: row.identifierKey,
@@ -371,6 +393,7 @@ export function mapRegistryEvidence(raw: RawRegistryEvidence, mode: CompanyRegis
             revisionState: row.revisionState,
             revision,
             catalogLabel: attributed ? catalog.label : null,
+            classState,
             provenance: mapProvenance(row.provenance),
           }
         })

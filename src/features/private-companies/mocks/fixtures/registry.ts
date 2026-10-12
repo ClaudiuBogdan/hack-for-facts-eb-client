@@ -1,4 +1,5 @@
 import type {
+  CompanyCaenClassState,
   CompanyCaenRevision,
   CompanyRegistryCapabilities,
   CompanyRegistryEnvelope,
@@ -64,7 +65,10 @@ export interface MockRegistrySpec {
   readonly uatName?: string | null
   /** Every public status code on the identifier; two different codes are a conflict. */
   readonly statusCodes: readonly string[]
-  readonly caen: readonly { readonly code: string; readonly revision: CompanyCaenRevision | null; readonly label: string | null }[]
+  /** `classState` defaults to `class` for a row with a revision, `unknown_revision` without one; only a class row keeps its label. */
+  readonly caen: readonly { readonly code: string; readonly revision: CompanyCaenRevision | null; readonly label: string | null; readonly classState?: CompanyCaenClassState }[]
+  /** The edition holds more rows than the bounded list carries. */
+  readonly observationsTruncated?: boolean
 }
 
 /** One mock CUI in the mock edition: a single identifier, its rows and their consensus. */
@@ -116,16 +120,20 @@ export function mockRegistryEvidence(spec: MockRegistrySpec, registry: CompanyRe
         provenance: mockProvenance('OD_FIRME', 1),
       },
     ],
-    caenObservations: spec.caen.map((row, index) => ({
-      id: `${registry.editionId ?? 'mock'}:OD_CAEN_AUTORIZAT:${String(index + 1)}`,
-      identifierKey: spec.identifier,
-      parseState: 'code',
-      code: row.code,
-      revisionState: row.revision ? 'known' : 'missing',
-      revision: row.revision,
-      catalogLabel: row.revision ? row.label : null,
-      provenance: mockProvenance('OD_CAEN_AUTORIZAT', index + 1),
-    })),
+    caenObservations: spec.caen.map((row, index) => {
+      const classState = row.classState ?? (row.revision ? 'class' : 'unknown_revision')
+      return {
+        id: `${registry.editionId ?? 'mock'}:OD_CAEN_AUTORIZAT:${String(index + 1)}`,
+        identifierKey: spec.identifier,
+        parseState: classState === 'unparsed' ? 'invalid' : 'code',
+        code: classState === 'unparsed' ? null : row.code,
+        revisionState: row.revision ? 'known' : 'missing',
+        revision: row.revision,
+        catalogLabel: row.revision && classState === 'class' ? row.label : null,
+        classState,
+        provenance: mockProvenance('OD_CAEN_AUTORIZAT', index + 1),
+      }
+    }),
     statusObservations: statuses.map((code, index) => ({
       id: `${registry.editionId ?? 'mock'}:OD_STARE_FIRMA:${String(index + 1)}`,
       identifierKey: spec.identifier,
@@ -134,7 +142,7 @@ export function mockRegistryEvidence(spec: MockRegistrySpec, registry: CompanyRe
       label: null,
       provenance: mockProvenance('OD_STARE_FIRMA', index + 1),
     })),
-    observationsTruncated: false,
+    observationsTruncated: spec.observationsTruncated ?? false,
   }
 }
 

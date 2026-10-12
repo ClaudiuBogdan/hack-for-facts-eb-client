@@ -14,7 +14,7 @@ import type { DecimalLocale } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisBreakdown, CompanyAnalysisRecords, CompanyAnalysisRelease, CompanyAnalysisSeries, CompanyAnalysisStats } from '@/schemas/company-analytics'
 import type { CompanyHubMapIndicator, CompanyHubRanking, CompanyHubSearch, CompanyHubSectorMetric } from '@/schemas/private-company-search'
-import { isAnalyticsUnavailable, isReleaseRefused } from '../../api/company-analytics-api'
+import { isAnalyticsUnavailable, isCapabilityRefused, isReleaseRefused } from '../../api/company-analytics-api'
 import type { PlannedRead } from '../../api/company-analytics-plan'
 import { HUB_LEADERS, planCompanyHub, type CompanyHubPlan } from '../../api/company-hub-analytics'
 import { useCompanyAnalysisRelease } from '../../hooks/use-company-analytics'
@@ -88,7 +88,12 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
   const plan = live ? planCompanyHub(live, search) : null
   const stats = useCompanyHubRead(plan?.stats ?? null)
   const leaders = useCompanyHubRead(plan?.leaders ?? null)
-  const sectors = useCompanyHubRead(plan?.sectors ?? null)
+  const activitySectors = useCompanyHubRead(plan?.sectors ?? null)
+  // The derived activity refused by type (a release without it): the main-activity grouping, as before — the release stands.
+  const fellBack = Boolean(plan?.legacySectors) && activitySectors.isError && isCapabilityRefused(activitySectors.error)
+  const legacySectors = useCompanyHubRead(fellBack ? (plan?.legacySectors ?? null) : null)
+  const sectors = fellBack ? legacySectors : activitySectors
+  const sectorsRead = fellBack ? (plan?.legacySectors ?? null) : (plan?.sectors ?? null)
   const sizes = useCompanyHubRead(plan?.sizes ?? null)
   const counties = useCompanyHubRead(plan?.counties ?? null)
   const trend = useCompanyHubRead(plan?.trend ?? null)
@@ -186,7 +191,16 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       {open ? (
         <>
-          <SectorsBand plan={plan} sectors={sectors} sizes={sizes} release={live} locale={locale} onMeasure={(key) => choose('domenii', key)} />
+          <SectorsBand
+            plan={plan}
+            read={sectorsRead}
+            dimension={fellBack ? 'MAIN_CAEN' : (plan?.sectorsDimension ?? 'MAIN_CAEN')}
+            sectors={sectors}
+            sizes={sizes}
+            release={live}
+            locale={locale}
+            onMeasure={(key) => choose('domenii', key)}
+          />
           <CountiesBand plan={plan} counties={counties} release={live} locale={locale} onMeasure={(key) => choose('indicator', key)} />
           <TrendBand plan={plan} trend={trend} release={live} locale={locale} />
         </>
@@ -331,6 +345,8 @@ function LeadersPanel({
 
 function SectorsBand({
   plan,
+  read,
+  dimension,
   sectors,
   sizes,
   release,
@@ -338,6 +354,9 @@ function SectorsBand({
   onMeasure,
 }: {
   readonly plan: CompanyHubPlan | null
+  /** The sectors' read: the derived activity, or the main-activity grouping it fell back to. */
+  readonly read: PlannedRead<CompanyAnalysisBreakdown> | null
+  readonly dimension: 'ACTIVITY' | 'MAIN_CAEN'
   readonly sectors: UseQueryResult<CompanyAnalysisBreakdown>
   readonly sizes: UseQueryResult<CompanyAnalysisBreakdown>
   readonly release: CompanyAnalysisRelease | undefined
@@ -363,7 +382,9 @@ function SectorsBand({
               }
               lede={
                 plan
-                  ? t`Situațiile financiare pe ${plan.year}, după activitatea principală ANAF din instantaneul ediției analizei — nu activitatea pe care o avea firma în ${plan.year}. Fiecare firmă e numărată o dată.`
+                  ? dimension === 'ACTIVITY'
+                    ? t`Situațiile financiare pe ${plan.year}, după activitatea selectată a firmei (o selecție derivată, cu prioritate ONRC) din ediția analizei — nu activitatea pe care o avea firma în ${plan.year}. Fiecare firmă e numărată o dată.`
+                    : t`Situațiile financiare pe ${plan.year}, după codul CAEN fiscal ANAF din instantaneul ediției analizei — nu activitatea pe care o avea firma în ${plan.year}. Fiecare firmă e numărată o dată.`
                   : null
               }
             />
@@ -386,11 +407,22 @@ function SectorsBand({
             ) : null}
             <div className="mt-5">
               {plan && measure ? (
-                <SectionRead read={plan.sectors} query={sectors}>
+                <SectionRead read={read} query={sectors}>
                   {(data) => (
                     <>
                       <HubSectors breakdown={data} measure={measure} locale={locale} />
-                      <AnalyticsLink search={hubAnalyticsLink(plan.questions.sectors, { panel: 'defalcare', dimension: 'MAIN_CAEN' })} />
+                      <AnalyticsLink search={hubAnalyticsLink(plan.questions.sectors, { panel: 'defalcare', dimension: data.dimension === 'ACTIVITY' ? 'ACTIVITY' : 'MAIN_CAEN' })} />
+                      {data.dimension === 'ACTIVITY' ? (
+                        // The grouping the hub showed before the derived activity, kept one click away.
+                        <Link
+                          to="/companies/analytics"
+                          search={hubAnalyticsLink(plan.questions.sectors, { panel: 'defalcare', dimension: 'MAIN_CAEN' })}
+                          className={cn('mt-2', HUB_SHORTCUT_LINK_CLASS)}
+                          data-testid="company-hub-sectors-legacy"
+                        >
+                          {t`După codul CAEN fiscal ANAF (gruparea anterioară) →`}
+                        </Link>
+                      ) : null}
                     </>
                   )}
                 </SectionRead>

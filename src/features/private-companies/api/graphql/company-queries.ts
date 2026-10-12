@@ -9,12 +9,33 @@
  *   hack-for-facts-eb-server/src/modules/companies/shell/graphql/typedefs.ts
  */
 import { z } from 'zod'
-import { REGISTRY_ENVELOPE_FIELDS, REGISTRY_EVIDENCE_FIELDS, rawRegistryEnvelopeSchema, rawRegistryEvidenceSchema } from './company-registry-graphql'
+import { REGISTRY_ENVELOPE_FIELDS, rawRegistryEnvelopeSchema, rawRegistryEvidenceSchema, registryEvidenceFields } from './company-registry-graphql'
 
 /** Money/BigInt scalars serialize as strings over the wire; coerce on parse. */
 const moneyString = z.union([z.string(), z.number()]).nullable()
 
-export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
+/**
+ * `Company.activitySelection`. It can be refused on its own (a company with
+ * more observation groups than the server's bound: one error at
+ * `company.activitySelection`, the rest served) — and any error fails a whole
+ * read here — so the profile asks again without it (`fetchPrivateCompanyProfileLive`).
+ */
+const ACTIVITY_SELECTION_FIELDS = /* GraphQL */ `
+      activitySelection {
+        basis source code revision label descriptionStatus descriptions { revision label } derived
+        classKeyCount unqualifiedObservationCount observationCount caenCoverage
+        editionId editionSourceDate anafCode anafCodeForm anafCodeUsable anafCaenFormPolicy anafStatusDate agreement
+      }`
+
+/**
+ * The profile document in three shapes: `current` (the derived activity and
+ * the CAEN class states), `without-selection` (the selection alone was
+ * refused), `legacy` (an API from before them, which rejects those fields at
+ * validation — the profile then reads exactly as it did).
+ */
+type ProfileShape = 'current' | 'without-selection' | 'legacy'
+
+const companyProfileQuery = (shape: ProfileShape) => /* GraphQL */ `
   query CompanyProfile($cui: CUI!) {
     company(cui: $cui) {
       cui
@@ -36,10 +57,10 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
         registeredName
         asOf
       }
-      caenActivities { code rev label source labelSource }
+      caenActivities { code rev label source labelSource${shape === 'legacy' ? '' : ' classState'} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}
       representatives { name role }
       euBranches { branchName country euid fiscalCode }
-      registry { ${REGISTRY_EVIDENCE_FIELDS} }
+      registry { ${registryEvidenceFields(shape === 'legacy')} }
       publicMoney {
         totalRon
         flowCount
@@ -87,9 +108,45 @@ export const COMPANY_PROFILE_QUERY = /* GraphQL */ `
   }
 `
 
+export const COMPANY_PROFILE_QUERY = companyProfileQuery('current')
+/** The same profile without the derived activity: asked only when the selection alone was refused. */
+export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION = companyProfileQuery('without-selection')
+/** The profile as an API from before the derived activity serves it: asked only when that API rejected the new fields. */
+export const COMPANY_PROFILE_QUERY_LEGACY = companyProfileQuery('legacy')
+
 const rawCompanyStatusSchema = z
   .object({ code: z.string(), label: z.string().nullable(), labelSource: z.string().nullish() })
   .nullable()
+
+/**
+ * `Company.activitySelection` (the derived activity). Enum values stay
+ * strings: an unknown one is refused by the mapper (no selection shown),
+ * never forced into a known one. Optional as well as nullable, for recorded
+ * and mocked answers without it — NOT for an older server, which rejects
+ * the field at validation: the server ships before this client.
+ */
+const rawActivitySelectionSchema = z.object({
+  basis: z.string(),
+  source: z.string().nullable(),
+  code: z.string().nullable(),
+  revision: z.string().nullable(),
+  label: z.string().nullable(),
+  descriptionStatus: z.string().nullable(),
+  descriptions: z.array(z.object({ revision: z.string(), label: z.string().nullable() })),
+  derived: z.boolean(),
+  classKeyCount: z.number().int(),
+  unqualifiedObservationCount: z.number().int(),
+  observationCount: z.number().int(),
+  caenCoverage: z.string(),
+  editionId: z.union([z.string(), z.number()]).transform((value) => String(value)),
+  editionSourceDate: z.string().nullable(),
+  anafCode: z.string().nullable(),
+  anafCodeForm: z.string(),
+  anafCodeUsable: z.boolean().nullish(),
+  anafCaenFormPolicy: z.string().nullish(),
+  anafStatusDate: z.string().nullable(),
+  agreement: z.string(),
+})
 
 const rawCompanySchema = z.object({
   cui: z.string(),
@@ -132,8 +189,10 @@ const rawCompanySchema = z.object({
       label: z.string().nullable(),
       source: z.string(),
       labelSource: z.string().nullish(),
+      classState: z.string().nullish(),
     }),
   ),
+  activitySelection: rawActivitySelectionSchema.nullish(),
   representatives: z.array(z.object({ name: z.string(), role: z.string() })),
   euBranches: z.array(
     z.object({
@@ -243,6 +302,7 @@ export const companyProfileResponseSchema = z.object({
 })
 
 export type RawCompany = z.infer<typeof rawCompanySchema>
+export type RawActivitySelection = z.infer<typeof rawActivitySelectionSchema>
 export type RawCompanyFinancialYear = z.infer<typeof rawFinancialYearSchema>
 export type RawStatementQualification = z.infer<typeof rawQualificationSchema>
 export type CompanyProfileResponse = z.infer<typeof companyProfileResponseSchema>

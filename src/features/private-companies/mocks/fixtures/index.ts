@@ -1,11 +1,12 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import { activitySelectionFixture } from './activity-selection'
 import { qualifiedStatement } from './qualification'
 import { MOCK_REGISTRY_ENVELOPE, mockRegistryEvidence, registryStateEvidence } from './registry'
 
 /*
  * MOCK companies, shaped like the live API (API19): the ONRC fields are the
  * mock edition's qualified values with the evidence under `registry` (labelled
- * `mode: 'mock'`), ANAF publishes no CAEN revision for the main activity
+ * `mode: 'mock'`), ANAF publishes no CAEN revision for its fiscal CAEN code
  * (`fiscalCaen.rev` null), every statement names its publisher, and source
  * dates are the source's own. No address, representative or branch is
  * served by the API, so none is invented here.
@@ -37,9 +38,15 @@ export const danteInternationalProfile: PrivateCompanyProfile = {
       label: 'Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet',
       source: 'onrc',
       labelSource: 'current_db_catalog',
+      classState: 'class',
     },
     { code: '4791', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
+  activitySelection: activitySelectionFixture({
+    code: '4791',
+    label: 'Comerț cu amănuntul prin intermediul caselor de comenzi sau prin Internet',
+    anafCode: '4791',
+  }),
   representatives: [],
   euBranches: [],
   fiscal: {
@@ -173,11 +180,20 @@ export const sparseBilantProfile: PrivateCompanyProfile = {
     matchConfidence: 'safe',
   },
   caenActivities: [
-    { code: '2120', rev: 'rev2', label: 'Fabricarea preparatelor farmaceutice', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '2120', rev: 'rev2', label: 'Fabricarea preparatelor farmaceutice', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
     // The same digits in Rev.1, as the registry lists them: its own label, never Rev.2's.
-    { code: '2442', rev: 'rev1', label: 'Fabricarea preparatelor farmaceutice (Rev.1)', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '2442', rev: 'rev1', label: 'Fabricarea preparatelor farmaceutice (Rev.1)', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
     { code: '2120', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
+  // Two classes in two revisions; ANAF's 2120 has the digits of exactly one.
+  activitySelection: activitySelectionFixture({
+    basis: 'onrc_class_anaf_numeric_match',
+    code: '2120',
+    label: 'Fabricarea preparatelor farmaceutice',
+    classKeyCount: 2,
+    observationCount: 2,
+    anafCode: '2120',
+  }),
   representatives: [],
   euBranches: [],
   fiscal: {
@@ -252,11 +268,22 @@ export const struckOffProfile: PrivateCompanyProfile = {
   address: { display: '', county: 'Timiș', locality: null },
   geography: null,
   caenActivities: [
-    { code: '4711', rev: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate', source: 'onrc', labelSource: 'current_db_catalog' },
-    { code: '5211', rev: 'rev0', label: 'Comerț cu amănuntul în magazine nespecializate (Rev.0)', source: 'onrc', labelSource: 'current_db_catalog' },
-    { code: '4711', rev: null, label: null, source: 'onrc', labelSource: null },
+    { code: '4711', rev: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
+    { code: '5211', rev: 'rev0', label: 'Comerț cu amănuntul în magazine nespecializate (Rev.0)', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
+    { code: '4711', rev: null, label: null, source: 'onrc', labelSource: null, classState: 'unknown_revision' },
+    { code: '4700', rev: 'rev2', label: null, source: 'onrc', labelSource: null, classState: 'short_token' },
     { code: '4711', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
+  // Two classes (Rev.2 4711, Rev.0 5211), a row of unknown revision and a short source code beside them.
+  activitySelection: activitySelectionFixture({
+    basis: 'onrc_class_anaf_numeric_match',
+    code: '4711',
+    label: 'Comerț cu amănuntul în magazine nespecializate',
+    classKeyCount: 2,
+    unqualifiedObservationCount: 2,
+    observationCount: 4,
+    anafCode: '4711',
+  }),
   representatives: [],
   euBranches: [],
   fiscal: {
@@ -285,6 +312,7 @@ export const struckOffProfile: PrivateCompanyProfile = {
       { code: '4711', revision: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate' },
       { code: '5211', revision: 'rev0', label: 'Comerț cu amănuntul în magazine nespecializate (Rev.0)' },
       { code: '4711', revision: null, label: null },
+      { code: '4700', revision: 'rev2', label: null, classState: 'short_token' },
     ],
   }),
 }
@@ -308,6 +336,7 @@ export const insolventProfile: PrivateCompanyProfile = {
       label: 'Lucrări de construcții a clădirilor rezidențiale și nerezidențiale',
       source: 'onrc',
       labelSource: 'current_db_catalog',
+      classState: 'class',
     },
     { code: '4120', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
@@ -363,7 +392,7 @@ export const pfaProfile: PrivateCompanyProfile = {
   address: { display: '', county: 'Cluj', locality: null },
   geography: null,
   caenActivities: [
-    { code: '6201', rev: 'rev2', label: 'Activități de realizare a soft-ului la comandă', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '6201', rev: 'rev2', label: 'Activități de realizare a soft-ului la comandă', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
     { code: '6201', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
   representatives: [],
@@ -411,7 +440,7 @@ export const bankruptProfile: PrivateCompanyProfile = {
   address: { display: '', county: 'Dolj', locality: null },
   geography: null,
   caenActivities: [
-    { code: '4941', rev: 'rev2', label: 'Transporturi rutiere de mărfuri', source: 'onrc', labelSource: 'current_db_catalog' },
+    { code: '4941', rev: 'rev2', label: 'Transporturi rutiere de mărfuri', source: 'onrc', labelSource: 'current_db_catalog', classState: 'class' },
     { code: '4941', rev: null, label: null, source: 'anaf', labelSource: null },
   ],
   representatives: [],

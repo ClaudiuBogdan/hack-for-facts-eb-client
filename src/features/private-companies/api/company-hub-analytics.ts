@@ -1,10 +1,10 @@
 import { withDeadline } from '@/lib/ssr/deadline-signal'
-import type { CompanyAnalysisBreakdown, CompanyAnalysisRecords, CompanyAnalysisRelease, CompanyAnalysisSeries, CompanyAnalysisStats } from '@/schemas/company-analytics'
+import { releaseOffersActivity, type CompanyAnalysisBreakdown, type CompanyAnalysisRecords, type CompanyAnalysisRelease, type CompanyAnalysisSeries, type CompanyAnalysisStats } from '@/schemas/company-analytics'
 import type { CompanyHubSearch } from '@/schemas/private-company-search'
 import { companyAnalyticsKeys } from '../lib/company-analytics-keys'
 import { DEFAULT_STATE, type CompanyAnalyticsState } from '../lib/company-analytics-url'
 import { hubChoicesOf, hubQuestionState, hubYearOf, offeredRankings, type HubChoices, type HubSumMeasure } from '../lib/company-hub-analytics'
-import { isReleaseRefused, readCompanyAnalysisRelease } from './company-analytics-api'
+import { isCapabilityRefused, isReleaseRefused, readCompanyAnalysisRelease } from './company-analytics-api'
 import { BREAKDOWN_TOP, BREAKDOWN_TOP_EXPANDED, planBreakdown, planRecords, planSeries, planStats, resolveQuestion, type PlannedRead, type ResolvedQuestion } from './company-analytics-plan'
 import type { CompanyAnalyticsServerRead } from './company-analytics-ssr'
 
@@ -16,6 +16,12 @@ import type { CompanyAnalyticsServerRead } from './company-analytics-ssr'
  * hub link into the analysis finds them read. Nothing here calls the
  * registry or the nation-wide registry aggregates; every figure is the
  * analytics release's.
+ *
+ * The sectors are the derived activity (`ACTIVITY`) when the release lists
+ * it, else the ANAF fiscal CAEN code (`MAIN_CAEN`) — exactly as before
+ * on a v2 release. A typed refusal of the derived activity
+ * (`RELEASE_CAPABILITY_UNAVAILABLE`) falls back to `MAIN_CAEN`, which the
+ * plan holds ready; it never withdraws the release.
  */
 
 /** The largest companies the hero lists (of the records page the analysis page reads). */
@@ -36,7 +42,11 @@ export interface CompanyHubPlan {
   readonly stats: PlannedRead<CompanyAnalysisStats>
   /** Null when the year offers neither turnover nor employees to rank by. */
   readonly leaders: PlannedRead<CompanyAnalysisRecords> | null
+  /** The grouping the sectors are read by: the derived activity where the release offers it, else the ANAF fiscal CAEN code. */
+  readonly sectorsDimension: 'ACTIVITY' | 'MAIN_CAEN'
   readonly sectors: PlannedRead<CompanyAnalysisBreakdown>
+  /** ACTIVITY plans only: the main-activity grouping a typed refusal of the derived activity falls back to. Not read otherwise. */
+  readonly legacySectors: PlannedRead<CompanyAnalysisBreakdown> | null
   readonly sizes: PlannedRead<CompanyAnalysisBreakdown>
   readonly counties: PlannedRead<CompanyAnalysisBreakdown>
   /** The years of the first sum the year offers (turnover, else employees); null when it offers neither. */
@@ -56,6 +66,7 @@ export function planCompanyHub(release: CompanyAnalysisRelease, search: CompanyH
   const choices = hubChoicesOf(search, release, year)
   const ask = (state: CompanyAnalyticsState) => resolveQuestion(state, release)
   const trendMetric = offeredRankings(release, year)[0] ?? null
+  const sectorsDimension = releaseOffersActivity(release) ? 'ACTIVITY' : 'MAIN_CAEN'
   const questions = {
     // The page's bare question for the year: its figures band reads the same companies, filers and sums.
     stats: ask({ ...DEFAULT_STATE, year }),
@@ -71,7 +82,9 @@ export function planCompanyHub(release: CompanyAnalysisRelease, search: CompanyH
     questions,
     stats: planStats(questions.stats),
     leaders: questions.leaders ? planRecords(questions.leaders, null) : null,
-    sectors: planBreakdown(questions.sectors, 'MAIN_CAEN', topOf(release, BREAKDOWN_TOP)),
+    sectorsDimension,
+    sectors: planBreakdown(questions.sectors, sectorsDimension, topOf(release, BREAKDOWN_TOP)),
+    legacySectors: sectorsDimension === 'ACTIVITY' ? planBreakdown(questions.sectors, 'MAIN_CAEN', topOf(release, BREAKDOWN_TOP)) : null,
     sizes: planBreakdown(questions.sectors, 'EMPLOYEE_SIZE', topOf(release, BREAKDOWN_TOP)),
     // Every county and every group without one in a single answer: the map is never a top slice.
     counties: planBreakdown(questions.counties, 'COUNTY', topOf(release, BREAKDOWN_TOP_EXPANDED)),
@@ -80,7 +93,7 @@ export function planCompanyHub(release: CompanyAnalysisRelease, search: CompanyH
   }
 }
 
-/** Every read a plan makes, in the page's order. */
+/** Every read a plan makes, in the page's order (the fallback grouping only when it is needed). */
 export function hubReadsOf(plan: CompanyHubPlan): readonly PlannedRead<unknown>[] {
   const reads: readonly (PlannedRead<unknown> | null)[] = [plan.stats, plan.leaders, plan.sectors, plan.sizes, plan.counties, plan.trend]
   return reads.filter((read): read is PlannedRead<unknown> => read !== null)
@@ -120,6 +133,15 @@ export async function readCompanyHubForSsr(search: CompanyHubSearch): Promise<Co
   for (const read of settled) {
     if (read.status === 'fulfilled') seed.push(read.value)
     else complete = false
+  }
+  // The derived activity refused by type: its fallback grouping, read now, so the browser draws the same sectors.
+  const sectors = settled[reads.indexOf(plan.sectors)]
+  if (plan.legacySectors && sectors?.status === 'rejected' && isCapabilityRefused(sectors.reason)) {
+    try {
+      seed.push({ key: plan.legacySectors.key, data: await plan.legacySectors.read(budget) })
+    } catch (error) {
+      if (isReleaseRefused(error)) return FAILED_CLOSED
+    }
   }
   return { seed, complete }
 }

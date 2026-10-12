@@ -51,7 +51,7 @@ export function CompanyRegistryBand({
         </p>
       ) : null}
       <RegistryFacts model={model} />
-      <CompanyRegistryEvidenceList evidence={model.registry} className="mt-8 max-w-[68ch]" />
+      <CompanyRegistryEvidenceList evidence={model.registry} caenObservationCount={model.selection?.observationCount ?? null} className="mt-8 max-w-[68ch]" />
       {diffText ? <p className="mt-4 max-w-[68ch] text-sm text-muted-foreground" data-testid="company-registry-diff">{diffText}</p> : null}
       <SourcesLine model={model} procurement={procurement} courts={courts} />
     </ProfileBand>
@@ -101,7 +101,7 @@ function RegistryFacts({ model }: { readonly model: CompanyProfileModel }) {
       : []),
     ...(inEdition ? [{ term: t`Stare în registru`, detail: qualified(statusText(model), evidence?.statusCode) }] : []),
     ...(inEdition ? [{ term: t`Sediu, după înscrieri`, detail: qualified(place.label ?? '—', evidence?.countyCode) }] : []),
-    ...(mainActivity ? [{ term: t`Activitate principală (ANAF)`, detail: mainActivityDetail(mainActivity) }] : []),
+    ...(mainActivity ? [{ term: t`Cod CAEN fiscal (ANAF)`, detail: mainActivityDetail(mainActivity, model.selection !== null) }] : []),
     { term: t`TVA (ANAF)`, detail: fiscal.vatPayer ? t`Plătitoare` : fiscal.vatPayer === false ? t`Neplătitoare` : '—' },
     {
       term: t`Lista contribuabililor inactivi (ANAF)`,
@@ -125,11 +125,14 @@ function RegistryFacts({ model }: { readonly model: CompanyProfileModel }) {
 }
 
 /**
- * The main activity's code with what its source says about it: the name from
+ * ANAF's fiscal CAEN code with what its source says about it: the name from
  * its own CAEN revision; a known edition when that revision gives no name;
  * and only when ANAF's data identifies no revision at all, that it does not.
+ * Beside the derived selection (`derived`), ANAF's code never carries a
+ * revision or a catalog name: ANAF publishes none.
  */
-function mainActivityDetail(mainActivity: NonNullable<CompanyProfileModel['mainActivity']>): string {
+function mainActivityDetail(mainActivity: NonNullable<CompanyProfileModel['mainActivity']>, derived: boolean): string {
+  if (derived) return t`${mainActivity.code} · revizie CAEN nepublicată de ANAF`
   if (mainActivity.label) return `${mainActivity.code} · ${mainActivity.label}`
   if (mainActivity.revision) return `${mainActivity.code} · CAEN ${caenEdition(mainActivity.revision)}`
   return t`${mainActivity.code} · revizie CAEN nepublicată de ANAF`

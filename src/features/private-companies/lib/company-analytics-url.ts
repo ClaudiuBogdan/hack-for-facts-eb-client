@@ -1,4 +1,5 @@
 import {
+  COMPANY_ANALYSIS_ACTIVITY_BASES,
   COMPANY_ANALYSIS_CAEN_BASES,
   COMPANY_ANALYSIS_FLAG_VALUES,
   COMPANY_ANALYSIS_METRICS,
@@ -6,6 +7,8 @@ import {
   COMPANY_ANALYSIS_SIZE_BANDS,
   companyMetricUnit,
   onrcBasisOfKey,
+  type CompanyAnalysisActivityBasis,
+  type CompanyAnalysisActivitySource,
   type CompanyAnalysisCaenBasis,
   type CompanyAnalysisCohortMode,
   type CompanyAnalysisDimension,
@@ -81,6 +84,7 @@ export const DIMENSION_WORDS: Readonly<Record<CompanyAnalysisDimension, string>>
   COUNTY: 'judet',
   UAT: 'uat',
   MAIN_CAEN: 'caen',
+  ACTIVITY: 'activitate',
   LEGAL_FORM: 'forma',
   OBSERVED_STATUS: 'stare',
   VAT_PAYER: 'tva',
@@ -92,6 +96,14 @@ const RANK_WORDS: Readonly<Record<CompanyAnalysisRankBy, string>> = { METRIC_SUM
 const COHORT_WORDS: Readonly<Record<CompanyAnalysisCohortMode, string>> = { REFERENCE_YEAR: 'an-referinta', EACH_YEAR: 'fiecare-an' }
 const FLAG_WORDS: Readonly<Record<CompanyAnalysisFlagValue, string>> = { YES: 'da', NO: 'nu', UNKNOWN: UNKNOWN }
 const BASIS_WORDS: Readonly<Record<CompanyAnalysisCaenBasis, string>> = { REVISION_KNOWN: 'cunoscuta', REVISION_UNKNOWN: 'necunoscuta', MISSING: 'lipsa' }
+const ACTIVITY_BASIS_WORDS: Readonly<Record<CompanyAnalysisActivityBasis, string>> = {
+  ONRC_SINGLE_CLASS: 'onrc-unica',
+  ONRC_CLASS_ANAF_NUMERIC_MATCH: 'onrc-anaf',
+  ONRC_MULTIPLE_CLASSES: 'onrc-multiple',
+  ANAF_FISCAL_CODE: 'anaf',
+  ANAF_FISCAL_UNCATALOGUED: 'anaf-necatalogat',
+  NO_QUALIFIED_SELECTION: 'fara-selectie',
+}
 const SIZE_WORDS: Readonly<Record<CompanyAnalysisSizeBand, string>> = {
   UNAVAILABLE: 'indisponibil',
   NEGATIVE: 'negativ',
@@ -117,6 +129,7 @@ const RANK_BY_WORD = invert(RANK_WORDS)
 const COHORT_BY_WORD = invert(COHORT_WORDS)
 const FLAG_BY_WORD = invert(FLAG_WORDS)
 const BASIS_BY_WORD = invert(BASIS_WORDS)
+const ACTIVITY_BASIS_BY_WORD = invert(ACTIVITY_BASIS_WORDS)
 const SIZE_BY_WORD = invert(SIZE_WORDS)
 const METRIC_BY_WORD = new Map(COMPANY_ANALYSIS_METRICS.map((metric) => [metricWord(metric), metric]))
 
@@ -140,6 +153,9 @@ export const SEARCH_KEYS = [
   'inactiv',
   'caen',
   'caen_baza',
+  // The derived activity selection (v3): exact `onrc:rev2:6201` / `anaf:6201`, and its basis.
+  'activitate',
+  'activitate_baza',
   'depunere',
   'interval',
   'marime',
@@ -271,6 +287,29 @@ export function caenToken(selector: { readonly code: string; readonly revision?:
   return selector.revision ? `${selector.revision}:${selector.code}` : selector.code
 }
 
+/** An exact selected activity as the API takes it: ONRC with its revision, ANAF without one. */
+export interface ActivitySelector {
+  readonly source: CompanyAnalysisActivitySource
+  readonly code: string
+  readonly revision?: string
+}
+
+const ONRC_ACTIVITY_RE = /^onrc:(rev[0-3]):(\d{4})$/u
+const ANAF_ACTIVITY_RE = /^anaf:(\d{4})$/u
+
+/** `onrc:rev2:6201` (ONRC, its own revision) or `anaf:6201` (ANAF, which publishes none); anything else is not read — never a revision guessed for ANAF. */
+export function activitySelectorOf(token: string): ActivitySelector | null {
+  const lowered = token.toLowerCase()
+  const onrc = ONRC_ACTIVITY_RE.exec(lowered)
+  if (onrc?.[1] && onrc[2]) return { source: 'ONRC', code: onrc[2], revision: onrc[1] }
+  const anaf = ANAF_ACTIVITY_RE.exec(lowered)
+  return anaf?.[1] ? { source: 'ANAF', code: anaf[1] } : null
+}
+
+export function activityToken(selector: ActivitySelector): string {
+  return selector.source === 'ONRC' ? `onrc:${selector.revision ?? ''}:${selector.code}` : `anaf:${selector.code}`
+}
+
 function one<T>(reader: Reader, key: SearchKey, text: string | undefined, read: (text: string) => T | undefined): T | undefined {
   if (text === undefined || text === '') return undefined
   const value = read(text)
@@ -341,6 +380,10 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   if (caen.size > 0) scope.mainCaen = [...caen.entries()].sort(([a], [b]) => byText(a, b)).map(([, selector]) => selector)
   const bases = inVocabulary(tokens(reader, 'caen_baza', search.caen_baza, (token) => BASIS_BY_WORD.get(token) ?? null), COMPANY_ANALYSIS_CAEN_BASES)
   if (bases.length > 0) scope.mainCaenBasis = bases
+  const activity = new Map(tokens(reader, 'activitate', search.activitate, activitySelectorOf).map((selector) => [activityToken(selector), selector]))
+  if (activity.size > 0) scope.activity = [...activity.entries()].sort(([a], [b]) => byText(a, b)).map(([, selector]) => ({ ...selector }))
+  const activityBases = inVocabulary(tokens(reader, 'activitate_baza', search.activitate_baza, (token) => ACTIVITY_BASIS_BY_WORD.get(token) ?? null), COMPANY_ANALYSIS_ACTIVITY_BASES)
+  if (activityBases.length > 0) scope.activityBasis = activityBases
   const filing = one(reader, 'depunere', search.depunere, (text) => (text === 'da' ? ('FILED' as const) : text === 'nu' ? ('NOT_FILED' as const) : undefined))
   if (filing) scope.filing = filing
   const ranges = new Map<CompanyAnalysisMetric, CompanyAnalysisRangeInput>()
@@ -413,6 +456,8 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
     ['inactiv', list(scope.fiscallyInactive?.map((flag) => FLAG_WORDS[flag]))],
     ['caen', list(scope.mainCaen?.map(caenToken))],
     ['caen_baza', list(scope.mainCaenBasis?.map((basis) => BASIS_WORDS[basis]))],
+    ['activitate', list(scope.activity?.map(activityToken))],
+    ['activitate_baza', list(scope.activityBasis?.map((basis) => ACTIVITY_BASIS_WORDS[basis]))],
     ['depunere', scope.filing === undefined ? undefined : scope.filing === 'FILED' ? 'da' : 'nu'],
     ['interval', list(scope.financialRanges?.map(rangeToken))],
     ['marime', list(scope.employeeSizeBands?.map((band) => SIZE_WORDS[band]))],

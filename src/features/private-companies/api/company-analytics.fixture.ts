@@ -1,7 +1,10 @@
 import {
   COMPANY_ANALYSIS_METRICS,
+  type CompanyAnalysisActivity,
+  type CompanyAnalysisActivityQuality,
   COMPANY_ANALYSIS_POPULATION_POLICY_VERSION,
   COMPANY_ANALYSIS_SCHEMA_VERSION,
+  COMPANY_ANALYSIS_SCHEMA_VERSION_V3,
   companyMetricKind,
   companyMetricUnit,
   type CompanyAnalysisBreakdown,
@@ -113,6 +116,20 @@ export function releaseFixture(overrides: Partial<CompanyAnalysisRelease> = {}):
     caveats: [],
     ...overrides,
   }
+}
+
+/**
+ * A v3 release: release 8, the same edition, schema
+ * `companies-analytics-ch-v3`, the derived activity among its dimensions.
+ */
+export function releaseV3Fixture(overrides: Partial<CompanyAnalysisRelease> = {}): CompanyAnalysisRelease {
+  const base = releaseFixture()
+  return releaseFixture({
+    release: releaseRef('8'),
+    schemaVersion: COMPANY_ANALYSIS_SCHEMA_VERSION_V3,
+    dimensions: [...base.dimensions, { dimension: 'ACTIVITY', yearScoped: false, labelSource: 'current_db_catalog' }],
+    ...overrides,
+  })
 }
 
 const answerBase = { release: releaseRef(), scope: { fiscalYear: 2024 }, scopeHash: 'h', fiscalYear: 2024, caveats: [] }
@@ -242,4 +259,82 @@ export function recordsFixture(overrides: Partial<CompanyAnalysisRecords> = {}):
     pageInfo: { hasNextPage: true, endCursor: 'c3' },
     ...overrides,
   }
+}
+
+// ──────────────────────────────────────────── derived activity (v3) ──
+
+/** A selected activity as a bucket or record carries it: ONRC 6201 in Rev.2 by default. */
+export function activity(overrides: Partial<CompanyAnalysisActivity> = {}): CompanyAnalysisActivity {
+  return {
+    basis: 'ONRC_SINGLE_CLASS',
+    source: 'ONRC',
+    code: '6201',
+    revision: 'rev2',
+    label: 'Activități de realizare a soft-ului la comandă (software orientat client)',
+    descriptionStatus: 'EXACT',
+    descriptions: [],
+    derived: true,
+    ...overrides,
+  }
+}
+
+export function activityQuality(overrides: Partial<CompanyAnalysisActivityQuality> = {}): CompanyAnalysisActivityQuality {
+  return { numericMatchSelected: '0', incompleteCoverage: '0', withUnqualifiedRows: '0', anafObservedFrom: '2026-05-01', anafObservedTo: '2026-05-16', ...overrides }
+}
+
+const unclassifiedActivity = (basis: CompanyAnalysisActivity['basis'], source: CompanyAnalysisActivity['source'] = null) =>
+  activity({ basis, source, code: null, revision: null, label: null, descriptionStatus: null })
+
+/**
+ * The derived activity's breakdown on release 8 (v3): the same code 6201 in
+ * Rev.2 (single-class and numeric-match selections together: basis null)
+ * and in Rev.3 — two buckets, revisions never mixed — and ANAF's 4711 whose
+ * text every catalog revision agrees on; one group folded; the three
+ * unclassified buckets (several classes, an uncatalogued ANAF code, no
+ * qualified selection), never ranked; the empty unknown slot.
+ * 400 + 300 + 100 + 50 + 100 + 30 + 20 = 1000; 7 × 10 = 70 companies.
+ */
+export function activityBreakdownFixture(overrides: Partial<CompanyAnalysisBreakdown> = {}): CompanyAnalysisBreakdown {
+  return breakdownFixture({
+    release: releaseRef('8'),
+    dimension: 'ACTIVITY',
+    groupCount: 4,
+    groups: [
+      bucket('GROUP', 'onrc:rev2:6201', '400.00', {
+        labelSource: 'current_db_catalog',
+        activity: activity({ basis: null }),
+        activityQuality: activityQuality({ numericMatchSelected: '3', incompleteCoverage: '1', withUnqualifiedRows: '2' }),
+      }),
+      bucket('GROUP', 'onrc:rev3:6201', '300.00', {
+        labelSource: 'current_db_catalog',
+        activity: activity({ revision: 'rev3', label: 'Activități de programare a calculatoarelor' }),
+        activityQuality: activityQuality(),
+      }),
+      bucket('GROUP', 'anaf:4711', '100.00', {
+        labelSource: 'current_db_catalog',
+        activity: activity({
+          basis: 'ANAF_FISCAL_CODE',
+          source: 'ANAF',
+          code: '4711',
+          revision: null,
+          label: 'Comerț cu amănuntul în magazine nespecializate',
+          descriptionStatus: 'CONSENSUS',
+          descriptions: [
+            { revision: 'rev2', label: 'Comerț cu amănuntul în magazine nespecializate' },
+            { revision: 'rev3', label: 'Comerț cu amănuntul în magazine nespecializate' },
+          ],
+        }),
+        activityQuality: activityQuality({ anafObservedFrom: '2026-04-30', anafObservedTo: '2026-05-16' }),
+      }),
+    ],
+    other: bucket('OTHER', null, '50.00', { groups: 1 }),
+    unclassified: [
+      bucket('GROUP', '(onrc_multiple_classes)', '100.00', { activity: unclassifiedActivity('ONRC_MULTIPLE_CLASSES'), activityQuality: activityQuality() }),
+      bucket('GROUP', '(anaf_fiscal_uncatalogued)', '30.00', { activity: unclassifiedActivity('ANAF_FISCAL_UNCATALOGUED', 'ANAF'), activityQuality: activityQuality() }),
+      bucket('GROUP', '(no_qualified_selection)', '20.00', { activity: unclassifiedActivity('NO_QUALIFIED_SELECTION'), activityQuality: activityQuality({ incompleteCoverage: '4' }) }),
+    ],
+    unknown: bucket('UNKNOWN', null, null, { groups: 0, companies: '0', filers: '0' }),
+    totals: bucket('TOTAL', null, '1000.00', { groups: 4, companies: '70', filers: '35', activityQuality: activityQuality({ anafObservedFrom: '2026-04-30' }) }),
+    ...overrides,
+  })
 }

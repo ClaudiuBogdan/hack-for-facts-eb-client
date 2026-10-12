@@ -72,6 +72,8 @@ function problemText(problem: QuestionProblem): string {
       return t`Filtrul pe „${metricLabel(problem.metric)}" nu se poate aplica în anul ales: indicatorul nu este disponibil.`
     case 'limit':
       return t`Filtrul „${problem.field}" are mai mult de ${problem.max} valori, cât primește analiza.`
+    case 'capability':
+      return t`Filtrul „${problem.field}" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității.`
   }
 }
 

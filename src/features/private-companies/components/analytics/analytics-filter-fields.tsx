@@ -8,6 +8,7 @@ import { placeKey, searchPlaces } from '@/features/procurement/lib/analytics-pla
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import { cn } from '@/lib/utils'
 import {
+  COMPANY_ANALYSIS_ACTIVITY_BASES,
   COMPANY_ANALYSIS_FLAG_VALUES,
   COMPANY_ANALYSIS_SIZE_BANDS,
   companyMetricUnit,
@@ -26,12 +27,13 @@ import { useCompanyAnalysisOptions } from '../../hooks/use-company-analytics'
 import { useCompanyNameSuggestions } from '../../hooks/use-company-name-suggestions'
 import { useCompanyRegistryScope } from '../../hooks/use-company-registry-scope'
 import type { UatIndex } from '../../hooks/use-uat-index'
+import { activityBasisLabel, activitySelectorText } from '../../lib/company-activity-text'
 import { boundOf, keyToggled, toggled } from '../../lib/company-analytics-filter-model'
 import { localeOf } from '../../lib/company-analytics-format'
 import { rangeText } from '../../lib/company-analytics-scope-text'
 import { directoryReadsSource } from '../../lib/company-analytics-source'
 import { basisGroupLabel, caenBasisLabel, countyLabel, flagLabel, metricLabel, sizeBandLabel } from '../../lib/company-analytics-text'
-import { caenToken, ONRC_KEY_PATTERNS } from '../../lib/company-analytics-url'
+import { activitySelectorOf, activityToken, caenToken, ONRC_KEY_PATTERNS } from '../../lib/company-analytics-url'
 import { CompanyRegistryScopeNotice } from '../registry/company-registry-notices'
 import { CompanyRegistryScopeProvider } from '../registry/company-registry-scope-provider'
 
@@ -366,7 +368,7 @@ export function CaenField({ scope, max, onChange }: { readonly scope: CompanyAna
   }
   return (
     <>
-      <Row label={t`CAEN principal`}>
+      <Row label={t`Cod CAEN fiscal ANAF`}>
         {selectors.map((selector) => (
           <Chip key={caenToken(selector)} label={selector.revision ? caenToken(selector) : t`${selector.code} (revizie necunoscută)`} onClear={() => onChange({ ...scope, mainCaen: selectors.filter((item) => caenToken(item) !== caenToken(selector)) })} />
         ))}
@@ -377,12 +379,12 @@ export function CaenField({ scope, max, onChange }: { readonly scope: CompanyAna
             add()
           }}
         >
-          <input value={text} onChange={(event) => setText(event.target.value)} placeholder={t`„6201"`} aria-label={t`Cod CAEN principal`} className={FIELD} />
+          <input value={text} onChange={(event) => setText(event.target.value)} placeholder={t`„6201"`} aria-label={t`Cod CAEN fiscal ANAF`} className={FIELD} />
           <button type="submit" className={cn(TALL, 'border px-3 text-sm hover:bg-muted')}>
             {t`Adaugă`}
           </button>
         </form>
-        <p className="text-xs text-muted-foreground">{t`ANAF nu publică revizia CAEN a activității principale: un cod caută firmele cu revizia nepublicată, fără a o ghici.`}</p>
+        <p className="text-xs text-muted-foreground">{t`Codul CAEN fiscal ANAF e o observație din sursă, nu o activitate principală. ANAF nu publică revizia lui: un cod caută firmele cu revizia nepublicată, fără a o ghici.`}</p>
       </Row>
       <Row label={t`Revizia`}>
         <div className="grid grid-cols-1 gap-1.5">
@@ -393,6 +395,73 @@ export function CaenField({ scope, max, onChange }: { readonly scope: CompanyAna
           ))}
         </div>
       </Row>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────────── derived activity ──
+
+/**
+ * The derived activity selection (v3): an exact selected activity — ONRC with
+ * its revision (`onrc:rev2:6201`), ANAF without one (`anaf:6201`), never a
+ * revision guessed for ANAF — and the basis it was selected on. Offered only
+ * by a release that has it.
+ */
+export function ActivityField({ scope, max, onChange }: { readonly scope: CompanyAnalysisScope; readonly max: number; readonly onChange: ScopeChange }) {
+  const [text, setText] = useState('')
+  const [invalid, setInvalid] = useState(false)
+  const selectors = scope.activity ?? []
+  const add = () => {
+    const selector = activitySelectorOf(text.trim())
+    if (!selector) {
+      setInvalid(true)
+      return
+    }
+    setInvalid(false)
+    setText('')
+    if (selectors.length < max && !selectors.some((item) => activityToken(item) === activityToken(selector))) onChange({ ...scope, activity: [...selectors, selector] })
+  }
+  return (
+    <>
+      <Row label={t`Activitate selectată`}>
+        {selectors.map((selector) => (
+          <Chip
+            key={activityToken(selector)}
+            label={activitySelectorText(selector)}
+            onClear={() => {
+              const next = selectors.filter((item) => activityToken(item) !== activityToken(selector))
+              onChange({ ...scope, activity: next.length > 0 ? next : undefined })
+            }}
+          />
+        ))}
+        <form
+          className="grid grid-cols-[minmax(0,1fr)_auto] gap-1.5"
+          onSubmit={(event) => {
+            event.preventDefault()
+            add()
+          }}
+        >
+          <input value={text} onChange={(event) => setText(event.target.value)} placeholder={t`„onrc:rev2:6201" sau „anaf:6201"`} aria-label={t`Activitate selectată exactă`} className={FIELD} />
+          <button type="submit" className={cn(TALL, 'border px-3 text-sm hover:bg-muted')}>
+            {t`Adaugă`}
+          </button>
+        </form>
+        {invalid ? (
+          <p role="alert" className="text-xs text-destructive">
+            {t`Scrie sursa, revizia și codul, de exemplu onrc:rev2:6201, sau un cod ANAF, de exemplu anaf:6201. ANAF nu publică revizia, așa că un cod ANAF nu are una.`}
+          </p>
+        ) : null}
+      </Row>
+      <Row label={t`Cum a fost selectată`}>
+        <div className="grid grid-cols-1 gap-1.5">
+          {COMPANY_ANALYSIS_ACTIVITY_BASES.map((basis) => (
+            <Toggle key={basis} pressed={scope.activityBasis?.includes(basis) ?? false} onClick={() => onChange({ ...scope, activityBasis: toggled(scope.activityBasis, basis) })}>
+              {activityBasisLabel(basis)}
+            </Toggle>
+          ))}
+        </div>
+      </Row>
+      <p className="text-xs text-muted-foreground">{t`Activitatea selectată e o selecție derivată de platformă, nu o informație publicată de ONRC sau ANAF. Un cod ONRC nu găsește firmele selectate după codul ANAF și invers.`}</p>
     </>
   )
 }

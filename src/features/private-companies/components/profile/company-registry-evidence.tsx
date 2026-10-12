@@ -3,6 +3,7 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import type { CompanyRegistryEvidence, CompanyRegistryIdentityObservation, CompanyRegistryProvenance } from '@/schemas/private-company-registry'
+import { caenClassStateText, truncatedObservationsText } from '../../lib/company-activity-text'
 import { dateText } from '../../lib/company-profile-format'
 import { caenRevisionText, statusCodeText } from '../../lib/company-registry-text'
 import { countyName } from '../../lib/hub-counties'
@@ -17,20 +18,37 @@ import { countyName } from '../../lib/hub-counties'
  * form, recorded date, county, identifier), so two rows that disagree read
  * apart; a value the row lacks is shown as lacking, never filled in. No
  * address, contact, raw token or storage locator is shown — the API serves
- * none.
+ * none. A CAEN row says what it is when it is no class (a short source code,
+ * an unknown revision, a key no catalog names, an unreadable code), never
+ * with a catalog name. The list is bounded: when the API cut it, the
+ * edition's exact count of CAEN observations (`caenObservationCount`) is
+ * said beside what is shown, never the list passed off as all of them.
  */
-export function CompanyRegistryEvidenceList({ evidence, className }: { readonly evidence: CompanyRegistryEvidence; readonly className?: string }) {
+export function CompanyRegistryEvidenceList({
+  evidence,
+  caenObservationCount = null,
+  className,
+}: {
+  readonly evidence: CompanyRegistryEvidence
+  /** The edition's exact number of the CUI's CAEN observations, when the API serves it. */
+  readonly caenObservationCount?: number | null
+  readonly className?: string
+}) {
   const { identifiers } = evidence
   if (evidence.cuiState !== 'in_edition') return null
   const rows = [
     ...evidence.identityObservations.map((row) => ({ id: row.id, provenance: row.provenance, text: row.name ?? '—', detail: identityDetail(row) })),
     ...evidence.statusObservations.map((row) => ({ id: row.id, provenance: row.provenance, text: row.code ? statusCodeText(row.code) : '—', detail: null })),
-    ...evidence.caenObservations.map((row) => ({
-      id: row.id,
-      provenance: row.provenance,
-      text: row.code ? `${row.code} · ${caenRevisionText(row.revision)}${row.catalogLabel ? ` · ${row.catalogLabel}` : ''}` : '—',
-      detail: null,
-    })),
+    ...evidence.caenObservations.map((row) => {
+      const state = caenClassStateText(row.classState)
+      const named = row.catalogLabel ?? state
+      return {
+        id: row.id,
+        provenance: row.provenance,
+        text: row.code ? `${row.code} · ${caenRevisionText(row.revision)}${named ? ` · ${named}` : ''}` : state ? `— · ${state}` : '—',
+        detail: null,
+      }
+    }),
   ]
   if (identifiers.length === 0 && rows.length === 0) return null
   return (
@@ -83,8 +101,9 @@ export function CompanyRegistryEvidenceList({ evidence, className }: { readonly 
             ))}
           </ul>
           {evidence.observationsTruncated ? (
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-muted-foreground" data-testid="company-registry-truncated">
               <Trans>Lista e scurtată: ediția are mai multe înscrieri decât cele afișate aici.</Trans>
+              {caenObservationCount !== null ? ` ${truncatedObservationsText(caenObservationCount, evidence.caenObservations.length)}` : null}
             </p>
           ) : null}
         </details>

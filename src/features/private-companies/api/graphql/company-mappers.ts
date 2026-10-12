@@ -16,12 +16,19 @@
  * - the ONRC fields are the pinned edition's qualified values: outside the
  *   edition (or with a registry that cannot answer) they are null here even if
  *   a response carried one, so no older scalar is ever read as current.
+ * - the derived activity selection is kept only for the pinned edition, and
+ *   only when it holds together (see `mapActivitySelection`); otherwise the
+ *   profile reads as an older API's did.
  */
 import {
+  COMPANY_ACTIVITY_BASES,
+  COMPANY_ANAF_CAEN_FORMS,
+  COMPANY_ANAF_ONRC_AGREEMENTS,
   FINANCIAL_METRICS,
   FINANCIAL_SOURCE_METRICS,
   privateCompanyMetricStatusSchema,
   type FinancialSourceMetric,
+  type PrivateCompanyActivitySelection,
   type PrivateCompanyCaenActivity,
   type PrivateCompanyFinancialSummary,
   type PrivateCompanyFinancialTrajectory,
@@ -35,7 +42,7 @@ import {
   type PrivateCompanyStatementQualification,
   type PrivateCompanyStatementSource,
 } from '@/schemas/private-company'
-import type { CompanyRegistryCuiState, CompanyRegistryEnvelope } from '@/schemas/private-company-registry'
+import { COMPANY_REGISTRY_COVERAGES, type CompanyRegistryCuiState, type CompanyRegistryEnvelope } from '@/schemas/private-company-registry'
 import {
   COMPANY_RESOLVE_LABEL_SOURCES,
   type CompanyResolveDim,
@@ -46,13 +53,14 @@ import {
 import { notAssessed, QUALIFICATION_EVALUATOR, SUMMARY_METRICS } from '../../lib/financial-qualification'
 import type {
   CompanyProfileResponse,
+  RawActivitySelection,
   RawCompany,
   RawCompanyFinancialYear,
   RawCompanyListItem,
   RawCompanyResolveResult,
   RawStatementQualification,
 } from './company-queries'
-import { mapRegistryBasis, mapRegistryEnvelope, mapRegistryEvidence } from './company-registry-graphql'
+import { mapCaenClassState, mapCaenRevision, mapRegistryBasis, mapRegistryEnvelope, mapRegistryEvidence } from './company-registry-graphql'
 
 /** Whose name the API gave: an unknown answer is never credited to the ONRC edition. */
 function mapNameSource(raw: string): 'onrc_edition' | 'core_organization' {
@@ -96,6 +104,77 @@ function mapMatchConfidence(raw: string): PrivateCompanyMatchConfidence {
 function mapCaenSource(raw: string): PrivateCompanyCaenActivity['source'] | null {
   const source = raw.toLowerCase()
   return source === 'anaf' || source === 'onrc' ? source : null
+}
+
+function memberOf<T extends string>(values: readonly T[], raw: string | null | undefined): T | null {
+  const lowered = raw?.toLowerCase()
+  return values.find((value) => value === lowered) ?? null
+}
+
+const FOUR_DIGITS = /^\d{4}$/u
+
+/**
+ * The derived activity selection, fail closed: kept only for the edition the
+ * page is pinned to, with a basis, coverage, form and agreement this client
+ * knows, marked derived, and holding together — an ONRC selection with its
+ * own known revision and four-digit code, an ANAF one with no revision at all
+ * (ANAF publishes none) and a label only where every catalog revision agrees,
+ * an uncatalogued ANAF code with no catalog text, and no code for a basis that
+ * selects nothing. Anything else is no selection: the band then reads as an
+ * older API's did, never with a guessed revision or label.
+ */
+export function mapActivitySelection(raw: RawActivitySelection | null | undefined, registry: CompanyRegistryEnvelope): PrivateCompanyActivitySelection | null {
+  if (!raw) return null
+  if (registry.state !== 'published' || registry.editionId === null || raw.editionId !== registry.editionId) return null
+  const basis = memberOf(COMPANY_ACTIVITY_BASES, raw.basis)
+  const caenCoverage = memberOf(COMPANY_REGISTRY_COVERAGES, raw.caenCoverage)
+  // A form this client does not know reads as unqualified: said generically, never guessed usable.
+  const anafCodeForm = memberOf(COMPANY_ANAF_CAEN_FORMS, raw.anafCodeForm) ?? 'unqualified'
+  const agreement = memberOf(COMPANY_ANAF_ONRC_AGREEMENTS, raw.agreement)
+  if (basis === null || caenCoverage === null || agreement === null || !raw.derived) return null
+  const source = raw.source?.toLowerCase() ?? null
+  const counts = {
+    classKeyCount: raw.classKeyCount,
+    unqualifiedObservationCount: raw.unqualifiedObservationCount,
+    observationCount: raw.observationCount,
+    caenCoverage,
+    editionId: raw.editionId,
+    editionSourceDate: raw.editionSourceDate,
+    anafCode: raw.anafCode,
+    anafCodeForm,
+    // The database's verdict, as sent; this client holds no usable set of its own.
+    anafCodeUsable: raw.anafCodeUsable ?? null,
+    anafCaenFormPolicy: raw.anafCaenFormPolicy ?? null,
+    anafStatusDate: raw.anafStatusDate,
+    agreement,
+  }
+  const none = { source: null, code: null, revision: null, label: null, descriptionStatus: null, descriptions: [] }
+  switch (basis) {
+    case 'onrc_single_class':
+    case 'onrc_class_anaf_numeric_match': {
+      const revision = mapCaenRevision(raw.revision)
+      const fits = basis === 'onrc_single_class' ? raw.classKeyCount === 1 : raw.classKeyCount >= 2 && agreement === 'match_one_key'
+      if (source !== 'onrc' || revision === null || raw.code === null || !FOUR_DIGITS.test(raw.code) || !fits) return null
+      return { basis, ...counts, source, code: raw.code, revision, label: raw.label, descriptionStatus: raw.label ? 'exact' : 'missing', descriptions: [] }
+    }
+    case 'anaf_fiscal_code': {
+      if (source !== 'anaf' || raw.code === null || !FOUR_DIGITS.test(raw.code) || raw.classKeyCount !== 0) return null
+      const status = memberOf(['consensus', 'conflict', 'missing'] as const, raw.descriptionStatus) ?? 'missing'
+      const descriptions = raw.descriptions.flatMap((entry) => {
+        const revision = mapCaenRevision(entry.revision)
+        return revision === null ? [] : [{ revision, label: entry.label }]
+      })
+      return { basis, ...counts, source, code: raw.code, revision: null, label: status === 'consensus' ? raw.label : null, descriptionStatus: status, descriptions }
+    }
+    case 'anaf_fiscal_uncatalogued':
+      // A source observation: its digits, never a catalog text or a revision.
+      if (source !== 'anaf' || raw.code === null || raw.classKeyCount !== 0) return null
+      return { basis, ...counts, ...none, source, code: raw.code, descriptionStatus: 'missing' }
+    case 'onrc_multiple_classes':
+    case 'no_qualified_selection':
+      if (basis === 'onrc_multiple_classes' && raw.classKeyCount < 2) return null
+      return { basis, ...counts, ...none }
+  }
 }
 
 /**
@@ -369,16 +448,19 @@ export function mapCompanyProfile(
       const source = mapCaenSource(activity.source)
       // ANAF's declared activity is its own source and stays; the edition's only inside it.
       if (source === null || (source === 'onrc' && !inEdition)) return []
-      // A label only beside the row's own known revision, from the current catalog.
-      const labelled = Boolean(activity.rev) && activity.label !== null
+      const classState = source === 'onrc' ? mapCaenClassState(activity.classState) : null
+      // A label only beside the row's own known revision, from the current catalog — and only on a class row when the API says which.
+      const labelled = Boolean(activity.rev) && activity.label !== null && (classState === null || classState === 'class')
       return [{
         code: activity.code,
         rev: activity.rev || null,
         label: labelled ? activity.label : null,
         source,
         labelSource: labelled ? ('current_db_catalog' as const) : null,
+        classState,
       }]
     }),
+    activitySelection: mapActivitySelection(company.activitySelection, registry.registry),
     representatives: company.representatives.map((rep) => ({
       name: rep.name,
       role: rep.role,

@@ -4,15 +4,25 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
+import type { PrivateCompanyActivitySelection } from '@/schemas/private-company'
+import { activityRowStateText, activitySelectionTexts } from '../../lib/company-activity-text'
 import { caenEdition, type ActivityGroup, type CompanyProfileModel } from '../../lib/company-profile-model'
+import { CaenDescription } from '../caen-description'
 import { BAND_GRID_CLASS, ProfileBand, ROW_LINK_CLASS } from './company-profile-band'
 
 const TITLE_ID = 'company-activities-title'
 
 /**
- * „Ce face firma": the main activity declared to ANAF, and the activities the
- * pinned ONRC edition observes, by revision and division — a division opens on
- * its classes. Each statement keeps its source: ANAF's code is named only from
+ * „Ce face firma": the derived activity selection — ONRC first, ANAF's
+ * fiscal code only when the edition holds no class — with how it was
+ * selected, each source's date and the edition's coverage; from an older API
+ * that serves none, the ANAF fiscal CAEN code, as before. Then the
+ * activities the pinned ONRC edition observes, by revision and division — a
+ * division opens on its classes; the rows that are no class (a short source
+ * code, an unknown revision, a key no catalog names, an unparsed code) close
+ * their revision as one group of unqualified observations, with no division
+ * number or sector, each row its code as served and what it is, unlabelled.
+ * Each statement keeps its source: ANAF's code is named only from
  * its own CAEN revision (its published data may identify none) and is never a
  * current ONRC fact; the registry's meaning of the same digits is said as the
  * registry's. Every revision the edition lists is shown, Rev.0 included, each
@@ -25,7 +35,15 @@ export function CompanyActivitiesBand({ model, index }: { readonly model: Compan
       <div className={BAND_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-5">
           <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>Ce face firma</Trans>} />
-          <MainActivity model={model} className="mt-8" />
+          {model.selection ? (
+            <ActivitySelection selection={model.selection} className="mt-8" />
+          ) : model.selectionUnavailable ? (
+            <p role="status" className="mt-8 border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="company-activity-selection-unavailable">
+              <Trans>Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos.</Trans>
+            </p>
+          ) : (
+            <MainActivity model={model} className="mt-8" />
+          )}
         </div>
         {model.activities.total > 0 ? (
           <div className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
@@ -45,7 +63,7 @@ function MainActivity({ model, className }: { readonly model: CompanyProfileMode
   if (!mainActivity) {
     return (
       <p className={cn('text-sm text-muted-foreground', className)}>
-        <Trans>Activitatea principală nu e declarată la ANAF.</Trans>
+        <Trans>ANAF nu are un cod CAEN fiscal pentru firmă.</Trans>
       </p>
     )
   }
@@ -54,16 +72,16 @@ function MainActivity({ model, className }: { readonly model: CompanyProfileMode
   return (
     <div className={cn('border-l-2 border-primary pl-4', className)}>
       <MonoLabel className="block text-primary">
-        <Trans>Activitatea principală · CAEN {mainActivity.code}</Trans>
+        <Trans>Cod CAEN fiscal ANAF · {mainActivity.code}</Trans>
       </MonoLabel>
       <p className="mt-2 text-lg font-semibold leading-snug text-foreground">{label ?? <Trans>Codul CAEN {code}</Trans>}</p>
       <p className="mt-1 text-sm text-muted-foreground">
         {edition ? (
-          <Trans>Declarată la ANAF, CAEN {edition}.</Trans>
+          <Trans>Din datele fiscale ANAF, CAEN {edition}. O observație din sursă, nu o activitate principală.</Trans>
         ) : (
           <Trans>
-            Declarată la ANAF. Datele publicate de ANAF nu indică revizia CAEN, iar aceleași cifre pot însemna activități diferite în revizii
-            diferite, așa că nu îi dăm o denumire.
+            Din datele fiscale ANAF: o observație din sursă, nu o activitate principală. ANAF nu publică revizia CAEN, iar aceleași cifre pot
+            însemna activități diferite în revizii diferite, așa că nu îi dăm o denumire.
           </Trans>
         )}
       </p>
@@ -78,6 +96,61 @@ function MainActivity({ model, className }: { readonly model: CompanyProfileMode
         : null}
     </div>
   )
+}
+
+/**
+ * The derived selection: what was selected (an ONRC class with its own exact
+ * label; ANAF's fiscal code with the catalog's text only where every revision
+ * agrees, its revision unpublished; or nothing selected), how, each source's
+ * date, and how complete the edition's evidence is.
+ */
+function ActivitySelection({ selection, className }: { readonly selection: PrivateCompanyActivitySelection; readonly className?: string }) {
+  const texts = activitySelectionTexts(selection)
+  const incomplete = selection.caenCoverage === 'partial' || selection.caenCoverage === 'unresolved'
+  return (
+    <div className={cn('border-l-2 border-primary pl-4', className)} data-testid="company-activity-selection">
+      <MonoLabel className="block text-primary">{texts.kicker}</MonoLabel>
+      <div className="mt-2 text-lg font-semibold leading-snug text-foreground">
+        <SelectionTitle selection={selection} />
+      </div>
+      {selection.source === 'onrc' && selection.revision ? (
+        <MonoLabel className="mt-1 block text-muted-foreground">
+          <Trans>CAEN {caenEdition(selection.revision)} · ediția ONRC</Trans>
+        </MonoLabel>
+      ) : null}
+      <p className="mt-2 text-sm text-muted-foreground">{texts.basis}</p>
+      {texts.agreement ? <p className="mt-1 text-sm text-muted-foreground">{texts.agreement}</p> : null}
+      <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground" data-testid="company-activity-selection-dates">
+        {texts.dates}
+      </MonoLabel>
+      <p className={cn('mt-3 text-xs leading-relaxed', incomplete ? 'text-foreground' : 'text-muted-foreground')} data-testid="company-activity-selection-coverage">
+        {texts.coverage}
+      </p>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{texts.counts}</p>
+    </div>
+  )
+}
+
+function SelectionTitle({ selection }: { readonly selection: PrivateCompanyActivitySelection }) {
+  const { code } = selection
+  if (code === null) return selection.basis === 'onrc_multiple_classes' ? <Trans>Nicio activitate selectată</Trans> : <Trans>Nicio selecție calificată</Trans>
+  if (selection.source === 'onrc') return <>{selection.label ? `${code} · ${selection.label}` : <Trans>Codul CAEN {code}</Trans>}</>
+  // ANAF: the catalog's text as candidates of catalog revisions, never as the company's revision.
+  if (selection.basis === 'anaf_fiscal_code' && (selection.descriptionStatus === 'consensus' || selection.descriptionStatus === 'conflict')) {
+    return (
+      <CaenDescription
+        caen={{
+          code,
+          revision: null,
+          basis: 'REVISION_UNKNOWN',
+          label: selection.label,
+          descriptionStatus: selection.descriptionStatus === 'consensus' ? 'CONSENSUS' : 'CONFLICT',
+          descriptions: selection.descriptions.map((entry) => ({ revision: entry.revision, label: entry.label })),
+        }}
+      />
+    )
+  }
+  return <Trans>Codul CAEN {code}</Trans>
 }
 
 /** A revision as the page names it: its edition, or the plain fact that the row names none. */
@@ -118,7 +191,7 @@ function ActivityGroups({ model, limit = 8, className }: { readonly model: Compa
                     onClick={() => setOpen(expanded ? null : group.key)}
                     className={cn('grid w-full grid-cols-[2rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5 text-left', ROW_LINK_CLASS)}
                   >
-                    <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{group.division}</MonoLabel>
+                    <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{group.division ?? ''}</MonoLabel>
                     <span className="text-sm text-foreground">{group.label}</span>
                     <span className="pr-1 text-sm tabular-nums text-muted-foreground">{group.activities.length}</span>
                   </button>
@@ -128,7 +201,7 @@ function ActivityGroups({ model, limit = 8, className }: { readonly model: Compa
                         // A row may repeat (the transport carries no row identifier): its position keeps it.
                         <li key={`${activity.code}-${String(row)}`} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2 text-sm">
                           <span className="font-mono text-xs tabular-nums text-muted-foreground">{activity.code}</span>
-                          <span className="text-muted-foreground">{activity.label}</span>
+                          <span className="text-muted-foreground">{activity.label ?? activityRowStateText(activity.classState)}</span>
                         </li>
                       ))}
                     </ul>
@@ -180,6 +253,12 @@ function ActivityGroups({ model, limit = 8, className }: { readonly model: Compa
           Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere
           fără revizie cunoscută nu are denumire.
         </Trans>
+        {groups.some((group) => group.activities.some((activity) => activity.classState !== null && activity.classState !== 'class')) ? (
+          <>
+            {' '}
+            <Trans>O înscriere neclasificată (cod scurt, cod fără denumire în nomenclator, cod neinterpretabil) nu are denumire și nu e o activitate clasificată.</Trans>
+          </>
+        ) : null}
       </p>
     </div>
   )

@@ -9,7 +9,7 @@
  * empty page.
  */
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
-import { graphqlQuery } from '@/lib/graphql/graphql-client'
+import { GraphQLRequestError, graphqlQuery } from '@/lib/graphql/graphql-client'
 import type {
   CompanyResolveRequest,
   CompanyResolveResult,
@@ -19,6 +19,8 @@ import type {
 import {
   COMPANIES_SEARCH_QUERY,
   COMPANY_PROFILE_QUERY,
+  COMPANY_PROFILE_QUERY_LEGACY,
+  COMPANY_PROFILE_QUERY_WITHOUT_SELECTION,
   COMPANY_RESOLVE_RESULT_QUERY,
   companiesSearchResponseSchema,
   companyProfileResponseSchema,
@@ -33,18 +35,47 @@ import { buildCompaniesFilter, type CompaniesFilterInput } from './graphql/compa
 import { mapRegistryEnvelope } from './graphql/company-registry-graphql'
 import { assertRegistryScope, classifyRegistryError } from './company-registry-errors'
 
+/** Every error the API sent is the derived activity's alone (`company.activitySelection`): the rest of the company was served. */
+export function isActivitySelectionOnlyError(error: unknown): boolean {
+  if (!(error instanceof GraphQLRequestError) || error.graphQLErrors.length === 0) return false
+  return error.graphQLErrors.every((entry) => entry.path?.length === 2 && entry.path[0] === 'company' && entry.path[1] === 'activitySelection')
+}
+
+/**
+ * An API from before the derived activity rejected the document at validation
+ * (`Cannot query field "activitySelection" | "classState"`): nothing was read,
+ * and the older document is the answer it can give.
+ */
+export function isPreActivityApiError(error: unknown): boolean {
+  if (!(error instanceof GraphQLRequestError) || error.graphQLErrors.length === 0) return false
+  return error.graphQLErrors.every((entry) => /^Cannot query field "(activitySelection|classState)" on type "(Company|CompanyCaenActivity|CompanyRegistryCaenObservation)"/u.test(entry.message))
+}
+
 export async function fetchPrivateCompanyProfileLive(
   cui: string,
   signal?: AbortSignal,
 ): Promise<PrivateCompanyProfile | null> {
-  const data = await graphqlQuery<unknown>(
-    COMPANY_PROFILE_QUERY,
-    { cui },
-    { operationName: 'company', signal },
-  )
+  let data: unknown
+  let selectionUnavailable = false
+  try {
+    data = await graphqlQuery<unknown>(COMPANY_PROFILE_QUERY, { cui }, { operationName: 'company', signal })
+  } catch (error) {
+    if (isPreActivityApiError(error)) {
+      // An older API: the profile exactly as it read before (no selection, no class states).
+      data = await graphqlQuery<unknown>(COMPANY_PROFILE_QUERY_LEGACY, { cui }, { operationName: 'company', signal })
+    } else if (isActivitySelectionOnlyError(error)) {
+      // The selection alone was refused (an edition holding more observation groups than the
+      // server bounds): the company again without it, the selection said to be unavailable.
+      data = await graphqlQuery<unknown>(COMPANY_PROFILE_QUERY_WITHOUT_SELECTION, { cui }, { operationName: 'company', signal })
+      selectionUnavailable = true
+    } else {
+      throw error
+    }
+  }
   const parsed = companyProfileResponseSchema.parse(data)
   // company(cui) returns null for an unknown CUI → surface as 404 upstream.
-  return mapCompanyProfile(parsed)
+  const profile = mapCompanyProfile(parsed)
+  return profile && selectionUnavailable ? { ...profile, activitySelectionUnavailable: true } : profile
 }
 
 const SORT_MAP: Record<

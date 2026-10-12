@@ -12,7 +12,7 @@ import {
   type CompanyAnalysisMetric,
 } from '@/schemas/company-analytics'
 import type { CompanyHubSearch } from '@/schemas/private-company-search'
-import { breakdownFixture, bucket, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
+import { activityBreakdownFixture, breakdownFixture, bucket, recordsFixture, releaseFixture, releaseRef, releaseV3Fixture, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
 import { readCompanyHubForSsr } from '../../api/company-hub-analytics'
 import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
 import { PrivateCompanyHubPage } from './private-company-hub-page'
@@ -41,6 +41,10 @@ const api = vi.hoisted(() => ({
   refuse: (() => false) as (call: Call) => boolean,
   fail: (() => false) as (call: Call) => boolean,
   unavailable: (() => false) as (call: Call) => boolean,
+  /** The active release is a v3 one (it lists the derived activity). */
+  v3: false,
+  /** The API refuses the derived activity by type (RELEASE_CAPABILITY_UNAVAILABLE). */
+  refuseActivity: false,
 }))
 
 vi.mock('@tanstack/react-router', () => ({
@@ -135,10 +139,14 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
       if (api.unavailable(call)) return Promise.reject(new actual.GraphQLRequestError('unavailable', { graphQLErrors: [{ message: 'unavailable', extensions: { code: 'SERVICE_UNAVAILABLE' } }] }))
       if (api.refuse(call)) return Promise.reject(new actual.GraphQLRequestError('refused', { graphQLErrors: [{ message: 'refused', extensions: { code: 'INVALID_INPUT', field: 'release' } }] }))
       if (api.fail(call)) return Promise.reject(new Error('network down'))
+      if (api.refuseActivity && call.op === 'CompanyAnalysisActivityBreakdown')
+        return Promise.reject(new actual.GraphQLRequestError('no activity', { graphQLErrors: [{ message: 'no activity', extensions: { code: 'RELEASE_CAPABILITY_UNAVAILABLE' } }] }))
       const release = releaseRef(String(variables.release ?? api.active), { publishedAt: null })
       switch (call.op) {
         case 'CompanyAnalysisRelease':
-          return Promise.resolve({ companyAnalysisRelease: releaseFixture({ release }) })
+          return Promise.resolve({ companyAnalysisRelease: api.v3 ? releaseV3Fixture({ release }) : releaseFixture({ release }) })
+        case 'CompanyAnalysisActivityBreakdown':
+          return Promise.resolve({ companyAnalysisBreakdown: { ...activityBreakdownFixture(), release } })
         case 'CompanyAnalysisStats':
           return Promise.resolve({ companyAnalysisStats: statsFixture({ release }) })
         case 'CompanyAnalysisRecords':
@@ -195,6 +203,8 @@ beforeEach(() => {
   api.refuse = () => false
   api.fail = () => false
   api.unavailable = () => false
+  api.v3 = false
+  api.refuseActivity = false
 })
 
 describe('PrivateCompanyHubPage', () => {
@@ -260,6 +270,44 @@ describe('PrivateCompanyHubPage', () => {
     const sizes = within(await screen.findByTestId('company-hub-sizes'))
     expect(sizes.getAllByRole('row').map((row) => row.textContent)).toEqual(['FirmeCifra de afaceri', '1–9 salariați90.0%40.0%', '250 de salariați sau mai mulți10.0%60.0%'])
     expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'suma', vedere: 'defalcare', dupa: 'caen' })
+  })
+
+  it('on a v3 release, lists the derived activity: each source tagged, the unclassified apart and unranked, the main activity one link away', async () => {
+    api.v3 = true
+    renderHub()
+    const sectors = within(await screen.findByTestId('company-hub-sectors'))
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisActivityBreakdown').map((call) => call.variables.dimension)).toEqual(['ACTIVITY'])
+    // No main-activity read: nothing to fall back from.
+    expect(api.calls.some((call) => call.op === 'CompanyAnalysisBreakdown' && call.variables.dimension === 'MAIN_CAEN')).toBe(false)
+    expect(sectors.getByText('6201 · Activități de programare a calculatoarelor')).toBeInTheDocument()
+    expect(sectors.getByText('ONRC Rev.2')).toBeInTheDocument()
+    expect(sectors.getByText('ONRC Rev.3')).toBeInTheDocument()
+    expect(sectors.getByText('ANAF · revizie nepublicată')).toBeInTheDocument()
+    // Ranked: the named activities only, numbered; the unclassified follow without a rank, shown without opening the list.
+    expect(sectors.getAllByText(/^0\d$/u).map((rank) => rank.textContent)).toEqual(['01', '02', '03'])
+    expect(screen.getByTestId('company-hub-sectors-unclassified-(onrc_multiple_classes)')).toHaveTextContent('Mai multe activități clasificate ONRC, niciuna selectată')
+    expect(screen.getByTestId('company-hub-sectors-unclassified-(anaf_fiscal_uncatalogued)')).toHaveTextContent('nu un domeniu')
+    expect(screen.getByTestId('company-hub-sectors-unclassified-(no_qualified_selection)')).toHaveTextContent('nu înseamnă fără activitate')
+    const note = screen.getByTestId('company-hub-sectors-note')
+    expect(note).toHaveTextContent('selecție derivată de platformă')
+    expect(note.textContent).not.toMatch(/principal/iu)
+    expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toMatchObject({ vedere: 'defalcare', dupa: 'activitate', editie: 7 })
+    expect(dataSearch(screen.getByTestId('company-hub-sectors-legacy'))).toMatchObject({ vedere: 'defalcare', dupa: 'caen', editie: 7 })
+  })
+
+  it('on a v3 release the API refuses the derived activity for, falls back to the main activity — the release and the other sections stand', async () => {
+    api.v3 = true
+    api.refuseActivity = true
+    renderHub()
+    const sectors = within(await screen.findByTestId('company-hub-sectors'))
+    expect(sectors.getByText('4711 · Comerț cu amănuntul')).toBeInTheDocument()
+    expect(sectors.getByText(/Nu sunt activitățile autorizate în registrul comerțului\./u)).toBeInTheDocument()
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisActivityBreakdown')).toHaveLength(1)
+    expect(api.calls.filter((call) => call.op === 'CompanyAnalysisBreakdown' && call.variables.dimension === 'MAIN_CAEN')).toHaveLength(1)
+    expect(screen.queryByTestId('company-hub-sectors-legacy')).toBeNull()
+    expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toMatchObject({ dupa: 'caen' })
+    // Not a withdrawal: the figures are still shown.
+    await figures().findByText('965,213')
   })
 
   it('maps the counties by their exact figures and lists the companies without a common county apart', async () => {
@@ -413,6 +461,19 @@ describe('PrivateCompanyHubPage — the server render', () => {
       await new Promise((resolve) => setTimeout(resolve, 20))
     })
     expect(api.calls).toEqual([])
+  })
+
+  it('seeds the main-activity fallback when the server is refused the derived activity by type', async () => {
+    api.v3 = true
+    api.refuseActivity = true
+    const read = await readCompanyHubForSsr({})
+    // The refused read is the browser's to make again; the fallback is already read.
+    expect(read.complete).toBe(false)
+    expect(read.seed.some((entry) => entry.key.includes('MAIN_CAEN'))).toBe(true)
+    expect(read.seed.some((entry) => entry.key.includes('ACTIVITY'))).toBe(false)
+    renderHub({}, read.seed)
+    expect(await within(await screen.findByTestId('company-hub-sectors')).findByText('4711 · Comerț cu amănuntul')).toBeInTheDocument()
+    expect(screen.queryByText(/nu mai este disponibilă/u)).toBeNull()
   })
 
   it('renders no figure of a release refused on the server — the browser reads, and says the refusal', async () => {

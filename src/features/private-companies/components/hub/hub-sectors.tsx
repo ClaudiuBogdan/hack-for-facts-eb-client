@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ActivityDescription } from '../activity-description'
 import { CaenDescription } from '../caen-description'
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
@@ -7,9 +8,11 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import type { DecimalLocale } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisBreakdown } from '@/schemas/company-analytics'
+import { activityDerivationText, unclassifiedActivityLabel, unclassifiedBasisOf } from '../../lib/company-activity-text'
 import { countText } from '../../lib/company-analytics-format'
 import { sizeBandLabel } from '../../lib/company-analytics-text'
-import { labelSourcesOf } from '../../lib/company-analytics-view'
+import { isUnclassifiedActivity, labelSourcesOf } from '../../lib/company-analytics-view'
+import { dateText } from '../../lib/company-profile-format'
 import {
   caenRevisionTag,
   caenRowLabel,
@@ -27,9 +30,16 @@ import {
  * counts once, in the activity it declared as its main one to ANAF — in the
  * CAEN revision ANAF published for it, or of unknown revision when it
  * published none (never given one) — so the shares add up, with the folded
- * groups and the companies without a declared main activity as the last rows
+ * groups and the companies without an ANAF fiscal CAEN code as the last rows
  * of the full list. These are not the activities authorised in the trade
  * register (ONRC), which overlap.
+ *
+ * On a release that offers it, the activities are the derived selection
+ * instead (`ACTIVITY`): ONRC first, ANAF's fiscal code when the edition holds
+ * no class — each row tagged with its source — and the companies with no
+ * named activity (several classes, an uncatalogued ANAF code, no qualified
+ * selection) as unranked rows under the ranked ones, always shown, so the
+ * shares are read against the same whole.
  */
 
 const COLLAPSED = 10
@@ -58,14 +68,18 @@ export function HubSectors({
 }) {
   const [expanded, setExpanded] = useState(false)
   const limit = COLLAPSED
+  const activity = breakdown.dimension === 'ACTIVITY'
   const ranking = hubRankingOf(breakdown, measure, locale)
   const shown = expanded ? ranking.rows : ranking.rows.slice(0, limit)
-  const tail = expanded ? [ranking.other, ranking.unknown].filter((row): row is HubRow => row !== null) : []
-  const sources = labelSourcesOf(breakdown.groups.map((bucket) => bucket.labelSource ?? (bucket.caen?.descriptions?.length ? 'current_db_catalog' : null)))
-  if (ranking.rows.length === 0) {
+  const tail = [...(expanded && ranking.other ? [ranking.other] : []), ...ranking.unclassified, ...(expanded && ranking.unknown ? [ranking.unknown] : [])]
+  const sources = labelSourcesOf(
+    breakdown.groups.map((bucket) => bucket.labelSource ?? (bucket.caen?.descriptions?.length || bucket.activity?.label || bucket.activity?.descriptions.length ? 'current_db_catalog' : null)),
+  )
+  const anaf = breakdown.totals.activityQuality
+  if (ranking.rows.length === 0 && ranking.unclassified.length === 0) {
     return (
       <p className={cn('text-sm text-muted-foreground', className)} data-testid="company-hub-sectors-empty">
-        {t`Nicio activitate principală declarată pentru anul ales.`}
+        {activity ? t`Nicio activitate selectată pentru anul ales.` : t`Niciun cod CAEN fiscal ANAF pentru anul ales.`}
       </p>
     )
   }
@@ -79,7 +93,9 @@ export function HubSectors({
               <MonoLabel className="pl-1 tabular-nums text-muted-foreground">{String(index + 1).padStart(2, '0')}</MonoLabel>
               <span className="min-w-0">
                 <span className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 break-words text-sm text-foreground" title={caenRowLabel(row.bucket)}>{row.bucket.caen ? <CaenDescription caen={row.bucket.caen} /> : caenRowLabel(row.bucket)}</span>
+                  <span className="min-w-0 break-words text-sm text-foreground" title={caenRowLabel(row.bucket)}>
+                    {row.bucket.activity?.code ? <ActivityDescription activity={row.bucket.activity} /> : row.bucket.caen ? <CaenDescription caen={row.bucket.caen} /> : caenRowLabel(row.bucket)}
+                  </span>
                   <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{row.share ?? '—'}</MonoLabel>
                 </span>
                 <span className="mt-1.5 flex items-center gap-2">
@@ -99,7 +115,15 @@ export function HubSectors({
           <li key={row.key} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-baseline gap-x-3 py-2.5" data-testid={`company-hub-sectors-${row.key}`}>
             <span aria-hidden="true" />
             <span className="flex items-baseline justify-between gap-3">
-              <span className="text-sm text-muted-foreground">{row.key === 'other' ? t`Alte ${row.bucket.groups} activități` : t`Fără activitate principală declarată`}</span>
+              <span className="text-sm text-muted-foreground">
+                {row.key === 'other'
+                  ? t`Alte ${row.bucket.groups} activități`
+                  : isUnclassifiedActivity(row.bucket)
+                    ? unclassifiedActivityLabel(unclassifiedBasisOf(row.bucket))
+                    : activity
+                      ? t`Fără activitate selectată`
+                      : t`Fără cod CAEN fiscal ANAF`}
+              </span>
               <MonoLabel className="shrink-0 tabular-nums text-muted-foreground">{row.share ?? '—'}</MonoLabel>
             </span>
             <span className="w-24 text-right text-sm tabular-nums text-muted-foreground sm:w-28">
@@ -118,11 +142,20 @@ export function HubSectors({
           {expanded ? <Trans>Doar primele {limit}</Trans> : <Trans>Toată lista</Trans>}
         </button>
       ) : null}
-      <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">
-        <Trans>
-          Activitatea principală ANAF din instantaneul ediției analizei, nu istoricul ei pe ani, în revizia CAEN publicată pentru ea; un cod fără revizie
-          publicată rămâne cu revizia necunoscută. Nu sunt activitățile autorizate în registrul comerțului.
-        </Trans>
+      <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground" data-testid="company-hub-sectors-note">
+        {activity ? (
+          <>
+            {activityDerivationText(breakdown.release.source.sourcePublishedAt)}
+            {anaf?.anafObservedFrom && anaf.anafObservedTo
+              ? ` ${anaf.anafObservedFrom === anaf.anafObservedTo ? t`Codurile ANAF: situația la ${dateText(anaf.anafObservedFrom)}.` : t`Codurile ANAF: situații între ${dateText(anaf.anafObservedFrom)} și ${dateText(anaf.anafObservedTo)}.`}`
+              : null}
+          </>
+        ) : (
+          <Trans>
+            Codul CAEN fiscal ANAF din instantaneul ediției analizei: o observație din sursă, nu o activitate principală și nu istoricul lui pe ani.
+            ANAF nu publică revizia lui, așa că rămâne necunoscută. Nu sunt activitățile autorizate în registrul comerțului.
+          </Trans>
+        )}
         {' '}
         <Trans>Denumirile sunt din nomenclatorul CAEN. Când diferă între revizii, fiecare variantă este însoțită de revizia sa.</Trans>
         {sources.length > 0 ? ` ${t`Denumiri: ${sources.join(', ')}.`}` : null}

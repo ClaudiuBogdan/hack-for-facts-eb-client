@@ -44,7 +44,7 @@ describe('the company in a sentence', () => {
     expect(companySentence(buildCompanyProfileModel(companyProfile()))).toBe('Societate cu răspundere limitată din Gherla, Cluj.')
     expect(
       companySentence(buildCompanyProfileModel(companyProfile({ fiscal: { ...companyProfile().fiscal, fiscalCaen: { code: '5610', rev: 'rev2' } } }))),
-    ).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: restaurante.')
+    ).toBe('Societate cu răspundere limitată din Gherla, Cluj. Cod CAEN fiscal ANAF: restaurante.')
     expect(
       companySentence(
         buildCompanyProfileModel(
@@ -59,14 +59,14 @@ describe('the company in a sentence', () => {
       companySentence(
         buildCompanyProfileModel(
           companyProfile({
-            caenActivities: [{ code: '5610', rev: 'rev2', label, source: 'onrc' }],
+            caenActivities: [{ code: '5610', rev: 'rev2', label, source: 'onrc', classState: 'class' }],
             fiscal: { ...companyProfile().fiscal, fiscalCaen: { code: '5610', rev: 'rev2' } },
             registrationDate: null,
           }),
         ),
       )
-    expect(withLabel('Restaurante cu PVC')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: restaurante cu PVC.')
-    expect(withLabel('TIC pentru restaurante')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: TIC pentru restaurante.')
+    expect(withLabel('Restaurante cu PVC')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Cod CAEN fiscal ANAF: restaurante cu PVC.')
+    expect(withLabel('TIC pentru restaurante')).toBe('Societate cu răspundere limitată din Gherla, Cluj. Cod CAEN fiscal ANAF: TIC pentru restaurante.')
   })
 
   it('sizes the heading by the name', () => {

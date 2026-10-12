@@ -42,6 +42,17 @@ export type CompanyRegistryCoverage = (typeof COMPANY_REGISTRY_COVERAGES)[number
 export const COMPANY_CAEN_REVISIONS = ['rev0', 'rev1', 'rev2', 'rev3'] as const
 export type CompanyCaenRevision = (typeof COMPANY_CAEN_REVISIONS)[number]
 
+/**
+ * What one ONRC CAEN observation can say, in this order: `unparsed` (no code
+ * read), `short_token` (a source code shorter than four digits, padded — so
+ * ambiguous between a class and a group), `unknown_revision`,
+ * `unlabeled_key` (no catalog row names the key), `class`. Only a `class`
+ * row carries a catalog label or counts as a classified activity; the others
+ * stay listed as evidence, unlabelled.
+ */
+export const COMPANY_CAEN_CLASS_STATES = ['class', 'short_token', 'unknown_revision', 'unlabeled_key', 'unparsed'] as const
+export type CompanyCaenClassState = (typeof COMPANY_CAEN_CLASS_STATES)[number]
+
 /** An exact CAEN selector, `<revision>:<4 digits>` (`rev2:6201`, `rev0:1111`). */
 export const ONRC_CAEN_SELECTOR = /^rev[0-3]:\d{4}$/u
 
@@ -137,8 +148,10 @@ export const companyRegistryCaenObservationSchema = z.object({
   revisionState: z.string(),
   /** Only a known revision; an unknown one stays null and gets no label. */
   revision: z.enum(COMPANY_CAEN_REVISIONS).nullable(),
-  /** The CURRENT database catalog's label for (revision, code): attributed, never frozen in the edition. */
+  /** The CURRENT database catalog's label for (revision, code): attributed, never frozen in the edition; only on a `class` row. */
   catalogLabel: z.string().nullable(),
+  /** Null when the API did not say (an older API): the row is then shown as before, never assumed a class. */
+  classState: z.enum(COMPANY_CAEN_CLASS_STATES).nullable(),
   provenance: companyRegistryProvenanceSchema,
 })
 export type CompanyRegistryCaenObservation = z.infer<typeof companyRegistryCaenObservationSchema>

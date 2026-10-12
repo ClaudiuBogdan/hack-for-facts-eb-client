@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import type { SupplierProcurementSlice } from '@/schemas/procurement'
 import { FINANCIAL_METRICS, type PrivateCompanyProfile, type PrivateCompanySearchState } from '@/schemas/private-company'
+import type { CompanyCaenClassState } from '@/schemas/private-company-registry'
 import { mapCompanyProfile } from '../../api/graphql/company-mappers'
 import type { RawCompanyFinancialYear, RawStatementQualification } from '../../api/graphql/company-queries'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
@@ -21,7 +22,9 @@ import {
   supplierSlice,
 } from '../../lib/company-profile.fixture'
 import { notAssessed } from '../../lib/financial-qualification'
+import { ACTIVITY_SELECTIONS } from '../../mocks/fixtures/activity-selection'
 import { admittedQualification } from '../../mocks/fixtures/qualification'
+import { mockRegistryEvidence } from '../../mocks/fixtures/registry'
 import { CompanyProfilePage } from './company-profile-page'
 
 /**
@@ -358,10 +361,10 @@ describe('CompanyProfilePage — the main activity', () => {
   it('keeps a known revision’s edition when it gives no name, never calling it unpublished', async () => {
     render(page(vehicleRepair()))
     await registryPinned()
-    expect(registryFact('Activitate principală (ANAF)')).toBe('9531 · CAEN Rev.3')
+    expect(registryFact('Cod CAEN fiscal (ANAF)')).toBe('9531 · CAEN Rev.3')
     expect(screen.queryByText(/revizie CAEN nepublicată/)).toBeNull()
     expect(within(activities()).getByText('Codul CAEN 9531')).toBeInTheDocument()
-    expect(within(activities()).getByText('Declarată la ANAF, CAEN Rev.3.')).toBeInTheDocument()
+    expect(within(activities()).getByText('Din datele fiscale ANAF, CAEN Rev.3. O observație din sursă, nu o activitate principală.')).toBeInTheDocument()
     expect(within(activities()).queryByText(/nu indică revizia CAEN/)).toBeNull()
   })
 
@@ -369,10 +372,10 @@ describe('CompanyProfilePage — the main activity', () => {
     // 66 Jack: ANAF 5610 with no revision; the registry authorises 5610 in Rev.2.
     render(page(companyProfile()))
     await registryPinned()
-    expect(registryFact('Activitate principală (ANAF)')).toBe('5610 · revizie CAEN nepublicată de ANAF')
+    expect(registryFact('Cod CAEN fiscal (ANAF)')).toBe('5610 · revizie CAEN nepublicată de ANAF')
     expect(
       within(activities()).getByText(
-        'Declarată la ANAF. Datele publicate de ANAF nu indică revizia CAEN, iar aceleași cifre pot însemna activități diferite în revizii diferite, așa că nu îi dăm o denumire.',
+        'Din datele fiscale ANAF: o observație din sursă, nu o activitate principală. ANAF nu publică revizia CAEN, iar aceleași cifre pot însemna activități diferite în revizii diferite, așa că nu îi dăm o denumire.',
       ),
     ).toBeInTheDocument()
     // Not a claim about the company's declaration, and not "always a different meaning".
@@ -390,6 +393,170 @@ describe('CompanyProfilePage — the main activity', () => {
 })
 
 /**
+ * The derived activity selection heads „Ce face firma" when the API serves
+ * one: what was selected and how — a derived selection, never a principal
+ * activity — each source's date, the edition's coverage and counts; ANAF's
+ * code beside it as the fiscal code, revision unpublished; a row that is no
+ * class said as such; a bounded list said to be bounded. An older API's
+ * profile (no selection) reads as before (see above).
+ */
+describe('CompanyProfilePage — the derived activity selection', () => {
+  const registryFact = (term: string) => screen.getByText(term, { selector: 'dt' }).nextElementSibling?.textContent
+  const selection = () => screen.getByTestId('company-activity-selection')
+
+  beforeEach(() => {
+    slice.current = { data: undefined, isError: false, refetch: vi.fn() }
+  })
+
+  it('heads the band with the only classified ONRC observation, its revision, each source’s date and the coverage — never as principal', async () => {
+    render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcSingleClass })))
+    await registryPinned()
+    const block = within(selection())
+    expect(block.getByText('Activitate selectată (derivată) · CAEN 6201')).toBeInTheDocument()
+    expect(block.getByText('6201 · Activități de realizare a soft-ului la comandă (software orientat client)')).toBeInTheDocument()
+    expect(block.getByText('CAEN Rev.2 · ediția ONRC')).toBeInTheDocument()
+    expect(block.getByText(/Singura activitate clasificată observată în ediția ONRC/u)).toBeInTheDocument()
+    expect(screen.getByTestId('company-activity-selection-dates').textContent).toMatch(/^ediția ONRC publicată pe .+ · ANAF, situația la .+$/u)
+    expect(screen.getByTestId('company-activity-selection-coverage')).toHaveTextContent('Înscrierile CAEN ale firmei din ediție sunt complete.')
+    expect(selection().textContent).not.toMatch(/principal/iu)
+    // The legacy headline is not there; ANAF's code is its fiscal code, revision unpublished.
+    expect(screen.queryByText(/Cod CAEN fiscal ANAF ·/u)).toBeNull()
+    expect(registryFact('Cod CAEN fiscal (ANAF)')).toBe('5610 · revizie CAEN nepublicată de ANAF')
+  })
+
+  it('says the selection cannot be computed when the API refused it alone, instead of the older headline', async () => {
+    render(page(companyProfile({ activitySelection: null, activitySelectionUnavailable: true })))
+    await registryPinned()
+    expect(screen.getByTestId('company-activity-selection-unavailable')).toHaveTextContent('Activitatea selectată nu poate fi calculată acum pentru această firmă')
+    expect(screen.queryByText(/Cod CAEN fiscal ANAF ·/u)).toBeNull()
+  })
+
+  it('shows ANAF’s code with the catalog’s alternatives, never a revision of the company’s', async () => {
+    render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.anafConflict })))
+    await registryPinned()
+    const block = within(selection())
+    expect(block.getByText('Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată')).toBeInTheDocument()
+    expect(block.getByText('Activități de programare a calculatoarelor')).toBeInTheDocument()
+    expect(block.queryByText(/ediția ONRC$/u)).toBeNull()
+    expect(screen.getByTestId('company-activity-selection-coverage').textContent).toMatch(/^Nicio activitate observată în ediția ONRC publicată pe /u)
+  })
+
+  it('says a company without a qualified selection is not without activity, and that an unresolved list may be incomplete', async () => {
+    render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.unresolvedPlaceholder })))
+    await registryPinned()
+    const block = within(selection())
+    expect(block.getByText('Nicio selecție calificată')).toBeInTheDocument()
+    expect(block.getByText(/nu înseamnă că firma nu are activitate/u)).toBeInTheDocument()
+    expect(block.getByText('Codul CAEN fiscal ANAF 0000 este un cod substitut și nu e folosit la selecție.')).toBeInTheDocument()
+    expect(screen.getByTestId('company-activity-selection-coverage')).toHaveTextContent('Legături nerezolvate: lista poate fi incompletă.')
+  })
+
+  it('names a short source code as ambiguous, unlabelled, and says the list is bounded with the edition’s exact count', async () => {
+    const profile = companyProfile({
+      activitySelection: { ...ACTIVITY_SELECTIONS.truncated, editionId: 'mock-1' },
+      caenActivities: [
+        { code: '5610', rev: 'rev2', label: 'Restaurante', source: 'onrc', classState: 'class' },
+        { code: '5600', rev: 'rev2', label: null, source: 'onrc', classState: 'short_token' },
+        { code: '5610', rev: null, label: null, source: 'anaf' },
+      ],
+      registry: mockRegistryEvidence({
+        identifier: 'J12/3094/2007',
+        name: '66 JACK SRL',
+        legalForm: 'SRL',
+        recordedDate: '2007-11-26',
+        countyCode: 'CJ',
+        countyName: 'Cluj',
+        statusCodes: ['1048'],
+        caen: [
+          { code: '5610', revision: 'rev2', label: 'Restaurante' },
+          { code: '5600', revision: 'rev2', label: 'Împrumutat', classState: 'short_token' },
+        ],
+        observationsTruncated: true,
+      }),
+    })
+    render(page(profile))
+    await registryPinned()
+    // The evidence list: the short row unlabelled, the edition's count beside the rows shown.
+    expect(screen.getByText('5600 · CAEN Rev.2 · cod scurt în sursă — clasă/grupă ambiguă')).toBeInTheDocument()
+    expect(screen.queryByText(/Împrumutat/u)).toBeNull()
+    expect(screen.getByTestId('company-registry-truncated').textContent).toMatch(/observații CAEN în ediție; se afișează 2\.$/u)
+    // The activities: the division holds the class alone; the short row sits with the unqualified observations, said for what it is.
+    const activities = within(document.getElementById('activitati') as HTMLElement)
+    const division = activities.getByRole('button', { name: /Restaurante și baruri/u })
+    fireEvent.click(division)
+    const classes = within(document.getElementById(division.getAttribute('aria-controls') ?? '') as HTMLElement)
+    expect(classes.getByText('5610')).toBeInTheDocument()
+    expect(classes.queryByText('5600')).toBeNull()
+    const unqualified = activities.getByRole('button', { name: /Observații necalificate/u })
+    fireEvent.click(unqualified)
+    const rows = within(document.getElementById(unqualified.getAttribute('aria-controls') ?? '') as HTMLElement)
+    expect(rows.getByText('5600')).toBeInTheDocument()
+    expect(rows.getByText('cod scurt în sursă — clasă/grupă ambiguă')).toBeInTheDocument()
+    expect(activities.getByText(/O înscriere neclasificată/u)).toBeInTheDocument()
+  })
+
+  it('never heads short source codes with the division their padded digits name (the six-row short-token company)', async () => {
+    const row = (code: string, classState: 'class' | 'short_token' | 'unlabeled_key', label: string | null = null) => ({
+      code,
+      rev: 'rev2',
+      label,
+      source: 'onrc' as const,
+      classState,
+    })
+    render(
+      page(
+        companyProfile({
+          caenActivities: [
+            row('0201', 'short_token'),
+            row('0111', 'short_token'),
+            row('0112', 'short_token'),
+            row('6201', 'class', 'Activități de realizare a soft-ului la comandă'),
+            row('4711', 'class', 'Comerț cu amănuntul în magazine nespecializate'),
+            row('9999', 'unlabeled_key'),
+          ],
+        }),
+      ),
+    )
+    await registryPinned()
+    const band = document.getElementById('activitati') as HTMLElement
+    const activities = within(band)
+    // Was: „02 Silvicultură" and „01 Agricultură" headings for 0201, 0111 and 0112.
+    expect(band.textContent).not.toMatch(/Silvicultur|Agricultur/u)
+    const groups = activities.getAllByRole('button', { expanded: false }).filter((button) => button.hasAttribute('aria-controls'))
+    expect(groups.map((button) => button.textContent)).toEqual(['47Comerț cu amănuntul1', '62Software și servicii IT1', 'Observații necalificate4'])
+    fireEvent.click(activities.getByRole('button', { name: /Observații necalificate/u }))
+    const panel = within(document.getElementById(activities.getByRole('button', { name: /Observații necalificate/u }).getAttribute('aria-controls') ?? '') as HTMLElement)
+    for (const code of ['0111', '0112', '0201', '9999']) expect(panel.getByText(code)).toBeInTheDocument()
+    expect(panel.getAllByText('cod scurt în sursă — clasă/grupă ambiguă')).toHaveLength(3)
+    expect(panel.getByText('cod fără denumire în nomenclatorul CAEN')).toBeInTheDocument()
+    // Every row counted, the classes' nomenclature kept.
+    expect(activities.getByText('6 activități autorizate în registrul comerțului (CAEN Rev.2).')).toBeInTheDocument()
+  })
+
+  it('never infers a class for an older API row without class state: Rev.1 0201 gets no division 02 and no forestry name', async () => {
+    render(
+      page(
+        companyProfile({
+          // The legacy fallback: no classState, a catalog label riding along.
+          caenActivities: [{ code: '0201', rev: 'rev1', label: 'Silvicultură și exploatare forestieră', source: 'onrc' as const }],
+        }),
+      ),
+    )
+    await registryPinned()
+    const band = document.getElementById('activitati') as HTMLElement
+    const activities = within(band)
+    expect(band.textContent).not.toMatch(/Silvicultur|forestier|Diviziunea 02/u)
+    const groups = activities.getAllByRole('button', { expanded: false }).filter((button) => button.hasAttribute('aria-controls'))
+    expect(groups.map((button) => button.textContent)).toEqual(['Calificare indisponibilă1'])
+    fireEvent.click(groups[0] as HTMLElement)
+    const panel = within(document.getElementById(groups[0]?.getAttribute('aria-controls') ?? '') as HTMLElement)
+    // The code as served, said to be unassessed — not invalid, not a class.
+    expect(panel.getByText('0201')).toBeInTheDocument()
+    expect(panel.getByText('calificarea codului nu e disponibilă')).toBeInTheDocument()
+  })
+})
+
+/**
  * Every revision the registry lists is on the page, each under its own name:
  * Rev.0 included, rows with no revision as a group of their own with only
  * their codes, and the same digits in two revisions as two divisions that
@@ -397,7 +564,16 @@ describe('CompanyProfilePage — the main activity', () => {
  */
 describe('CompanyProfilePage — every registry revision (CD-23)', () => {
   const activities = () => within(document.getElementById('activitati') as HTMLElement)
-  const onrc = (code: string, rev: string | null, label: string | null) => ({ code, rev, label, source: 'onrc' as const })
+  // A current-API row: a qualified class by default. The server serves a
+  // CLASS row only with a known revision, so a row without one is passed as
+  // `unknown_revision` explicitly.
+  const onrc = (code: string, rev: string | null, label: string | null, classState: CompanyCaenClassState = 'class') => ({
+    code,
+    rev,
+    label,
+    source: 'onrc' as const,
+    classState,
+  })
   const division = (name: RegExp) => activities().getByRole('button', { name })
 
   beforeEach(() => {
@@ -425,7 +601,7 @@ describe('CompanyProfilePage — every registry revision (CD-23)', () => {
             onrc('6210', 'rev1', 'Transporturi aeriene regulate'),
             onrc('5610', 'rev2', 'Restaurante'),
             onrc('0111', 'rev0', 'Cultivarea cerealelor'),
-            onrc('4711', null, null),
+            onrc('4711', null, null, 'unknown_revision'),
             { code: '6210', rev: null, label: null, source: 'anaf' },
           ],
           fiscal: { ...companyProfile().fiscal, fiscalCaen: { code: '6210', rev: null } },
@@ -457,12 +633,14 @@ describe('CompanyProfilePage — every registry revision (CD-23)', () => {
     expect(within(air).getByText('6210')).toBeInTheDocument()
     expect(within(air).getByText('Transporturi aeriene regulate')).toBeInTheDocument()
 
-    // A row with no revision: its code, no name.
-    const unknown = division(/Diviziunea 47 \(fără revizie CAEN\)/)
+    // A row with no revision (unknown_revision): unqualified, no division,
+    // its code and its state, no name.
+    expect(activities().queryByText(/Diviziunea 47/u)).toBeNull()
+    const unknown = division(/Observații necalificate/)
     fireEvent.click(unknown)
     const unnamed = document.getElementById(unknown.getAttribute('aria-controls') ?? '') as HTMLElement
     expect(within(unnamed).getByText('4711')).toBeInTheDocument()
-    expect(unnamed.querySelector('li')?.textContent).toBe('4711')
+    expect(unnamed.querySelector('li')?.textContent).toBe('4711revizie CAEN necunoscută')
 
     // ANAF's main activity, with no revision, stays apart: its code, no borrowed name; the registry's meanings as the registry's.
     expect(activities().getByText('Codul CAEN 6210')).toBeInTheDocument()

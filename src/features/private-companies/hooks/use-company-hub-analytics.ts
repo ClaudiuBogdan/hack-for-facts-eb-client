@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { isReleaseRefused } from '../api/company-analytics-api'
+import { isCapabilityRefused, isReleaseRefused } from '../api/company-analytics-api'
 import type { PlannedRead } from '../api/company-analytics-plan'
 import { companyAnalyticsKeys } from '../lib/company-analytics-keys'
 import { CompanyAnalyticsSeedContext } from './use-company-analytics'
@@ -24,7 +24,8 @@ export function useCompanyHubRead<T>(read: PlannedRead<T> | null) {
     queryFn: ({ signal }) => read!.read(signal),
     enabled: read?.enabled ?? false,
     staleTime: STALE,
-    retry: (count, error) => !isReleaseRefused(error) && count < 2,
+    // A typed refusal is an answer, not a failure: the release's withdrawal, or a grouping it does not offer (the hub falls back).
+    retry: (count, error) => !isReleaseRefused(error) && !isCapabilityRefused(error) && count < 2,
     ...(seed?.found ? { initialData: seed.data as T } : {}),
   })
 }

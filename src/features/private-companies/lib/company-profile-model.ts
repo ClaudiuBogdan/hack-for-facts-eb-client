@@ -1,12 +1,13 @@
 import { t } from '@lingui/core/macro'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type {
+  PrivateCompanyActivitySelection,
   PrivateCompanyFinancialYear,
   PrivateCompanyMetricStatus,
   PrivateCompanyProfile,
   PrivateCompanyStatementPublisher,
 } from '@/schemas/private-company'
-import type { CompanyRegistryEvidence, CompanyRegistryValue } from '@/schemas/private-company-registry'
+import type { CompanyCaenClassState, CompanyRegistryEvidence, CompanyRegistryValue } from '@/schemas/private-company-registry'
 import { divisionLabel } from './caen-divisions'
 import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK_OFF } from './company-status-codes'
 import { foldCountyName } from './county-names'
@@ -40,15 +41,29 @@ export interface YearValue {
  * One division of the registry's activities in one CAEN revision: `revision`
  * is the rows' own (`rev0`…`rev3`, or another the source names), null for
  * rows that name none. `key` is unique per revision and division, so the same
- * digits in two revisions stay two groups.
+ * digits in two revisions stay two groups. A division is derived only from a
+ * row the API qualifies as a `class`. The rows that are no class — a short
+ * source code, an unknown revision, a key no catalog names, an unparsed code
+ * — sit in one group of unqualified observations per revision; the rows of an
+ * older API that names no class state sit in one group per revision whose
+ * qualification is unavailable (its padded `0201` may be a short token `201`,
+ * so it is never read as division 02). Both have `division` null, no label,
+ * and are never recoded into a sector.
  */
 export interface ActivityGroup {
   readonly key: string
   readonly revision: string | null
-  readonly division: string
+  /** The two-digit division of a classified group; null for the revision's unqualified or unassessed observations. */
+  readonly division: string | null
+  /** `class`: a division of qualified classes; `unqualified`: rows qualified as no class; `unassessed`: no class state served (older API). */
+  readonly kind: 'class' | 'unqualified' | 'unassessed'
   readonly label: string
-  /** Every row provided, repeats kept; `label` only from the row's own revision, null when it gives none. */
-  readonly activities: readonly { readonly code: string; readonly label: string | null }[]
+  /**
+   * Every row provided, repeats kept; `label` only from the row's own revision, null when it gives none.
+   * `classState` where the API names it: only a `class` row is a classified activity (a short source code
+   * is ambiguous between a class and a group, and has no label); null from an older API.
+   */
+  readonly activities: readonly { readonly code: string; readonly label: string | null; readonly classState: CompanyCaenClassState | null }[]
 }
 
 export interface MoneyYear {
@@ -138,9 +153,18 @@ export interface CompanyProfileModel {
     readonly registry: readonly { readonly revision: string; readonly label: string }[]
   } | null
   /**
+   * The derived activity selection, when the API serves one for the pinned
+   * edition: it then heads the activities band in place of `mainActivity`
+   * (which stays for an older API). A selection, never a principal activity.
+   */
+  readonly selection: PrivateCompanyActivitySelection | null
+  /** The API refused the selection alone: the band says it cannot be shown, rather than falling back. */
+  readonly selectionUnavailable: boolean
+  /**
    * The registry's activities in every revision it lists (Rev.0 and rows that
    * name no revision included), by revision and division, the newest edition
-   * first. `revision` is the one revision every row names, null when they name
+   * first, each revision's unqualified observations last. `total` and
+   * `byRevision` count every row, unqualified ones included. `revision` is the one revision every row names, null when they name
    * several or none; `byRevision` counts the rows of each. Counts are the rows
    * provided — one activity may appear in several revisions — not distinct
    * authorisations. The transport gives a row only its code, revision, label
@@ -370,17 +394,39 @@ function groupLabel(division: string, revision: string | null): string {
   return revision ? t`Diviziunea ${division} (CAEN ${caenEdition(revision)})` : t`Diviziunea ${division} (fără revizie CAEN)`
 }
 
+/**
+ * The group a row belongs to. Only a row the API qualifies as `class` is
+ * grouped under the division its digits name. A short source code padded to
+ * four digits (`201` → `0201`) is no class of division 02: it, and every other
+ * non-class state, is `unqualified`. A row with no class state (an older API)
+ * is `unassessed`: such an API cannot tell a class 0201 from a short token
+ * 201, so it is never grouped under a division either.
+ */
+function groupKind(classState: CompanyCaenClassState | null): ActivityGroup['kind'] {
+  if (classState === 'class') return 'class'
+  return classState === null ? 'unassessed' : 'unqualified'
+}
+
+const KIND_ORDER: Readonly<Record<ActivityGroup['kind'], number>> = { class: 0, unqualified: 1, unassessed: 2 }
+
 function activityGroups(profile: PrivateCompanyProfile): CompanyProfileModel['activities'] {
   const onrc = profile.caenActivities.filter((activity) => activity.source === 'onrc')
-  const groups = new Map<string, { revision: string | null; division: string; activities: { code: string; label: string | null }[] }>()
+  const groups = new Map<
+    string,
+    { revision: string | null; division: string | null; kind: ActivityGroup['kind']; activities: { code: string; label: string | null; classState: CompanyCaenClassState | null }[] }
+  >()
   const counts = new Map<string | null, number>()
   for (const activity of onrc) {
     // The mapper keeps a label only beside a revision; a row with none is never named.
     const revision = activity.rev
-    const division = activity.code.slice(0, 2)
-    const key = JSON.stringify([revision, division])
-    const group = groups.get(key) ?? { revision, division, activities: [] }
-    group.activities.push({ code: activity.code, label: revision && activity.label ? commaBelow(activity.label) : null })
+    const classState = activity.classState ?? null
+    const kind = groupKind(classState)
+    const division = kind === 'class' ? activity.code.slice(0, 2) : null
+    const key = JSON.stringify([revision, kind === 'class' ? division : kind])
+    const group = groups.get(key) ?? { revision, division, kind, activities: [] }
+    // A catalog label names only a qualified class, never a guess from the code.
+    const labelled = revision !== null && activity.label !== null && kind === 'class'
+    group.activities.push({ code: activity.code, label: labelled && activity.label ? commaBelow(activity.label) : null, classState })
     groups.set(key, group)
     counts.set(revision, (counts.get(revision) ?? 0) + 1)
   }
@@ -396,12 +442,22 @@ function activityGroups(profile: PrivateCompanyProfile): CompanyProfileModel['ac
         key,
         revision: group.revision,
         division: group.division,
-        label: groupLabel(group.division, group.revision),
+        kind: group.kind,
+        label:
+          group.kind === 'unqualified'
+            ? t`Observații necalificate`
+            : group.kind === 'unassessed' || group.division === null
+              ? t`Calificare indisponibilă`
+              : groupLabel(group.division, group.revision),
         activities: group.activities.sort((a, b) => a.code.localeCompare(b.code)),
       }))
+      // Each revision's unqualified, then unassessed, observations close its block.
       .sort(
         (a, b) =>
-          compareCaenRevisions(a.revision, b.revision) || b.activities.length - a.activities.length || a.division.localeCompare(b.division),
+          compareCaenRevisions(a.revision, b.revision) ||
+          KIND_ORDER[a.kind] - KIND_ORDER[b.kind] ||
+          b.activities.length - a.activities.length ||
+          (a.division ?? '').localeCompare(b.division ?? ''),
       ),
   }
 }
@@ -613,6 +669,8 @@ export function buildCompanyProfileModel(
       countyCode,
     },
     mainActivity: mainActivityOf(profile),
+    selection: profile.activitySelection ?? null,
+    selectionUnavailable: profile.activitySelectionUnavailable === true,
     activities: activityGroups(profile),
     statementSources: statementSourcesOf(years),
     latest,

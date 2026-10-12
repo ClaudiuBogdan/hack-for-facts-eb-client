@@ -88,7 +88,9 @@ export function dimensionLabel(dimension: CompanyAnalysisDimension): string {
     case 'UAT':
       return t`Localitate (UAT)`
     case 'MAIN_CAEN':
-      return t`Activitate principală (CAEN)`
+      return t`Cod CAEN fiscal ANAF`
+    case 'ACTIVITY':
+      return t`Activitate selectată (derivată, prioritate ONRC)`
     case 'LEGAL_FORM':
       return t`Formă juridică`
     case 'OBSERVED_STATUS':
@@ -174,7 +176,7 @@ export function cohortLabel(mode: CompanyAnalysisCohortMode, year: number): stri
 export function caenBasisLabel(basis: CompanyAnalysisCaenBasis): string {
   if (basis === 'REVISION_KNOWN') return t`revizie CAEN publicată`
   if (basis === 'REVISION_UNKNOWN') return t`revizie CAEN nepublicată`
-  return t`fără activitate principală`
+  return t`fără cod CAEN fiscal ANAF`
 }
 
 type CaenDisplayValue = Pick<CompanyAnalysisCaen, 'code' | 'revision' | 'label' | 'descriptionStatus' | 'descriptions'>
@@ -216,7 +218,7 @@ export function companyAnalyticsCaveats(): readonly string[] {
     t`Acoperirea numără situațiile financiare observate: un an recent cu mai puține situații este parțial și nu e prezentat ca fiind complet.`,
     t`Salariații sunt suma numărului mediu raportat de fiecare firmă, nu persoane distincte; soldurile și salariații sunt valori ale unui singur an și nu se adună peste ani.`,
     t`Valorile lipsă sau reținute (formular neverificat, verificare, semnal de calitate) nu intră în sume și nu sunt tratate ca zero.`,
-    t`Codul CAEN principal declarat la ANAF își păstrează revizia publicată; când revizia nu e publicată, rămâne necunoscută.`,
+    t`Codul CAEN fiscal ANAF e o observație din sursă, nu o activitate principală. ANAF nu publică revizia lui, iar revizia nu e niciodată ghicită.`,
     t`Denumirile firmelor sunt cele publice actuale din directorul platformei, nu cele din ediția ONRC a analizei.`,
     t`Sumele sunt în lei nominali, neajustate cu inflația.`,
   ]

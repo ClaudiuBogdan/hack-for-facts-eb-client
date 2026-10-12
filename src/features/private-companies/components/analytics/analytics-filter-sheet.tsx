@@ -4,13 +4,13 @@ import { Group, SHEET_CLOSE, TALL } from '@/components/filters/filter-sheet/filt
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
-import { offeredMetricsIn, type CompanyAnalysisRelease, type CompanyAnalysisScope, type CompanyAnalysisStats } from '@/schemas/company-analytics'
+import { offeredMetricsIn, releaseOffersActivity, type CompanyAnalysisRelease, type CompanyAnalysisScope, type CompanyAnalysisStats } from '@/schemas/company-analytics'
 import type { ResolvedQuestion } from '../../api/company-analytics-plan'
 import type { UatIndex } from '../../hooks/use-uat-index'
 import { keyToggled, toggled } from '../../lib/company-analytics-filter-model'
 import { countText, localeOf } from '../../lib/company-analytics-format'
 import { filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
-import { CaenField, CodesField, CompanyField, CountyField, FilingField, FlagField, OnrcField, RangeField, SizeField, UatField } from './analytics-filter-fields'
+import { ActivityField, CaenField, CodesField, CompanyField, CountyField, FilingField, FlagField, OnrcField, RangeField, SizeField, UatField } from './analytics-filter-fields'
 
 /**
  * Every filter the question takes, in one panel, in a sheet: from the right
@@ -51,6 +51,8 @@ export function AnalyticsFilterSheet({
   const count = filterCount(scope)
   const limits = release?.limits
   const year = question?.year ?? release?.defaults.fiscalYear ?? null
+  // The derived activity where the release has it — and wherever the address already filters on it, so it can be cleared.
+  const activity = (release ? releaseOffersActivity(release) : false) || Boolean(scope.activity || scope.activityBasis)
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -87,6 +89,11 @@ export function AnalyticsFilterSheet({
             <p className="text-xs text-muted-foreground">{t`Starea comună e cea pe care o au toate înscrierile firmei din ediția ONRC; nu e dovada că firma e activă azi. Pentru „are o înscriere cu starea 1048", folosește observațiile ONRC de mai jos.`}</p>
             <CaenField scope={scope} max={limits?.maxCaenCodes ?? 200} onChange={set} />
           </Group>
+          {activity ? (
+            <Group title={t`Activitatea selectată (derivată, prioritate ONRC)`}>
+              <ActivityField scope={scope} max={limits?.maxCaenCodes ?? 200} onChange={set} />
+            </Group>
+          ) : null}
           <Group title={t`Observații ONRC (pe aceeași înscriere)`}>
             <OnrcField
               scope={scope}

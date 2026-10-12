@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { companyRegistryEvidenceSchema } from './private-company-registry'
+import { COMPANY_CAEN_CLASS_STATES, COMPANY_CAEN_REVISIONS, COMPANY_REGISTRY_COVERAGES, companyRegistryEvidenceSchema } from './private-company-registry'
 
 export const privateCompanyMatchConfidenceSchema = z.enum([
   'safe',
@@ -25,8 +25,8 @@ export const privateCompanyStatusSchema = z.object({
 
 /**
  * One activity: a (revision, code) the pinned ONRC edition publicly observes
- * (`onrc`), or ANAF's declared main activity (`anaf`, its own revision, often
- * unknown). `label` is the current database catalog's name in the row's OWN
+ * (`onrc`), or the ANAF fiscal CAEN code (`anaf`: a source observation; ANAF
+ * publishes no revision). `label` is the current database catalog's name in the row's OWN
  * known revision (`labelSource: current_db_catalog`); an unknown revision
  * has none.
  */
@@ -36,7 +36,79 @@ export const privateCompanyCaenActivitySchema = z.object({
   label: z.string().nullable(),
   source: z.enum(['onrc', 'anaf']),
   labelSource: z.literal('current_db_catalog').nullable().optional(),
+  /** ONRC rows: what the observation can say (only `class` is labelled); null for ANAF and from an older API. */
+  classState: z.enum(COMPANY_CAEN_CLASS_STATES).nullable().optional(),
 })
+
+/** How the company's ONE derived activity was selected (see `privateCompanyActivitySelectionSchema`). */
+export const COMPANY_ACTIVITY_BASES = [
+  'onrc_single_class',
+  'onrc_class_anaf_numeric_match',
+  'onrc_multiple_classes',
+  'anaf_fiscal_code',
+  'anaf_fiscal_uncatalogued',
+  'no_qualified_selection',
+] as const
+export type CompanyActivityBasis = (typeof COMPANY_ACTIVITY_BASES)[number]
+
+/**
+ * ANAF's fiscal CAEN code as qualified against its own raw row. `three_digit`:
+ * a three-digit source token the current normalizer pads to four digits; its
+ * class/group interpretation is unqualified. Which codes may select is the
+ * database's verdict (`anafCodeUsable`: the form policy `anafCaenFormPolicy`
+ * admits the form AND the code is not a placeholder such as `0000`/`9999`),
+ * never a set held here.
+ */
+export const COMPANY_ANAF_CAEN_FORMS = ['four_digit', 'three_digit', 'short', 'missing', 'invalid', 'unbound', 'unqualified', 'absent'] as const
+export type CompanyAnafCaenForm = (typeof COMPANY_ANAF_CAEN_FORMS)[number]
+
+/** How ANAF's fiscal code relates to the edition's classified keys. */
+export const COMPANY_ANAF_ONRC_AGREEMENTS = ['match_one_key', 'match_multiple_revisions', 'differs', 'no_class_key', 'anaf_missing', 'anaf_placeholder', 'anaf_not_usable'] as const
+export type CompanyAnafOnrcAgreement = (typeof COMPANY_ANAF_ONRC_AGREEMENTS)[number]
+
+/**
+ * The company's ONE derived activity: a selection the platform makes, never
+ * a principal activity ONRC or ANAF published. ONRC first — the only
+ * classified observation in the pinned edition (`onrc_single_class`, not an
+ * exclusive authorisation), or among several the one with the digits of
+ * ANAF's fiscal code (`onrc_class_anaf_numeric_match`) — else ANAF's fiscal
+ * code, whose revision ANAF does not publish (`anaf_fiscal_code`; catalog
+ * candidates only, never an exact label). `anaf_fiscal_uncatalogued` is a
+ * source observation, not a classified sector; `onrc_multiple_classes` and
+ * `no_qualified_selection` select nothing — the latter is not "no
+ * activity". Each count is the edition's exact aggregate, not the bounded
+ * list of observations the page shows. Dates are each source's own.
+ */
+export const privateCompanyActivitySelectionSchema = z.object({
+  basis: z.enum(COMPANY_ACTIVITY_BASES),
+  source: z.enum(['onrc', 'anaf']).nullable(),
+  code: z.string().nullable(),
+  /** ONRC only: never set for an ANAF selection. */
+  revision: z.enum(COMPANY_CAEN_REVISIONS).nullable(),
+  /** ONRC: the exact catalog label of (revision, code). ANAF: the label every catalog revision agrees on, else null. */
+  label: z.string().nullable(),
+  descriptionStatus: z.enum(['exact', 'consensus', 'conflict', 'missing']).nullable(),
+  /** ANAF: every catalog revision's text for the code; never a revision of the company's. */
+  descriptions: z.array(z.object({ revision: z.enum(COMPANY_CAEN_REVISIONS), label: z.string().nullable() })),
+  classKeyCount: z.number().int(),
+  unqualifiedObservationCount: z.number().int(),
+  /** The edition's exact number of public CAEN observation rows of the CUI (not the displayed list). */
+  observationCount: z.number().int(),
+  caenCoverage: z.enum(COMPANY_REGISTRY_COVERAGES),
+  editionId: z.string(),
+  /** ONRC's publication date of the edition (civil date), or null when unknown. */
+  editionSourceDate: z.string().nullable(),
+  anafCode: z.string().nullable(),
+  anafCodeForm: z.enum(COMPANY_ANAF_CAEN_FORMS),
+  /** Whether the code may select: the database's form policy admits its form AND it is no placeholder; null when the API did not say (never decided here). */
+  anafCodeUsable: z.boolean().nullable(),
+  /** The policy that decided it (`anaf-caen-form-policy-v1`), when the API names it. */
+  anafCaenFormPolicy: z.string().nullable(),
+  /** ANAF's state date for the fiscal record; null when none. */
+  anafStatusDate: z.string().nullable(),
+  agreement: z.enum(COMPANY_ANAF_ONRC_AGREEMENTS),
+})
+export type PrivateCompanyActivitySelection = z.infer<typeof privateCompanyActivitySelectionSchema>
 
 export const privateCompanyRepresentativeSchema = z.object({
   name: z.string(),
@@ -291,6 +363,10 @@ export const privateCompanyProfileSchema = z.object({
   }),
   geography: privateCompanyGeographySchema.nullable(),
   caenActivities: z.array(privateCompanyCaenActivitySchema),
+  /** The derived activity selection; null or absent from an older API, or when the edition is not published (the band then reads as before). */
+  activitySelection: privateCompanyActivitySelectionSchema.nullish(),
+  /** The API refused the selection alone (more observation groups than it bounds): said, never replaced by the older headline. */
+  activitySelectionUnavailable: z.boolean().optional(),
   representatives: z.array(privateCompanyRepresentativeSchema),
   euBranches: z.array(privateCompanyEuBranchSchema),
   fiscal: privateCompanyFiscalSchema,

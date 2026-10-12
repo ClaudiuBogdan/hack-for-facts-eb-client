@@ -14,8 +14,16 @@ import { z } from 'zod'
  * `companies-analytics` series, which persists a scope in this shape.
  */
 
-/** The only schema and population the API serves (a v1 release is refused there, never reinterpreted here). */
+/**
+ * The schemas the API serves (a v1 release is refused there, never
+ * reinterpreted here). v3 adds the derived activity selection (`ACTIVITY`,
+ * the `activity` / `activityBasis` filters); a v2 release keeps every v2
+ * field and answers without them. What a release offers is read from its
+ * own `dimensions`, never inferred from this version.
+ */
 export const COMPANY_ANALYSIS_SCHEMA_VERSION = 'companies-analytics-ch-v2'
+export const COMPANY_ANALYSIS_SCHEMA_VERSION_V3 = 'companies-analytics-ch-v3'
+export const COMPANY_ANALYSIS_SCHEMA_VERSIONS = [COMPANY_ANALYSIS_SCHEMA_VERSION, COMPANY_ANALYSIS_SCHEMA_VERSION_V3] as const
 export const COMPANY_ANALYSIS_POPULATION_POLICY_VERSION = 'public-onrc-edition-legal-person-v2'
 
 export const COMPANY_ANALYSIS_METRICS = [
@@ -83,7 +91,8 @@ export type CompanyAnalysisFlagValue = z.infer<typeof CompanyAnalysisFlagValueZ>
 export const CompanyAnalysisFilingZ = z.enum(['FILED', 'NOT_FILED'])
 export type CompanyAnalysisFiling = z.infer<typeof CompanyAnalysisFilingZ>
 
-export const COMPANY_ANALYSIS_DIMENSIONS = ['COUNTY', 'UAT', 'MAIN_CAEN', 'LEGAL_FORM', 'OBSERVED_STATUS', 'VAT_PAYER', 'FISCALLY_INACTIVE', 'EMPLOYEE_SIZE'] as const
+/** `ACTIVITY` (v3 only): the derived activity selection, offered only where the release's `dimensions` list it. */
+export const COMPANY_ANALYSIS_DIMENSIONS = ['COUNTY', 'UAT', 'MAIN_CAEN', 'ACTIVITY', 'LEGAL_FORM', 'OBSERVED_STATUS', 'VAT_PAYER', 'FISCALLY_INACTIVE', 'EMPLOYEE_SIZE'] as const
 export const CompanyAnalysisDimensionZ = z.enum(COMPANY_ANALYSIS_DIMENSIONS)
 export type CompanyAnalysisDimension = z.infer<typeof CompanyAnalysisDimensionZ>
 
@@ -104,6 +113,41 @@ export type CompanyAnalysisDirection = z.infer<typeof CompanyAnalysisDirectionZ>
 
 export const CompanyAnalysisGapReasonZ = z.enum(['NO_STATEMENTS', 'NOT_ADMITTED', 'NO_REPORTED_VALUES'])
 export type CompanyAnalysisGapReason = z.infer<typeof CompanyAnalysisGapReasonZ>
+
+// ──────────────────────────────────────────── derived activity (v3) ──
+
+/**
+ * How a company's ONE activity was selected (v3). Every basis is a DERIVED
+ * selection, never a principal activity a source published: the only
+ * classified ONRC observation of the edition (not an exclusive
+ * authorisation); one of several ONRC classes, chosen because ANAF's fiscal
+ * code has the same digits; ANAF's fiscal code (its revision unpublished)
+ * when the edition holds no class. The last three select nothing that may be
+ * ranked as a sector: several classes without a unique match, an ANAF code
+ * no catalog names (a source observation), and no qualified selection —
+ * which is not "no activity".
+ */
+export const COMPANY_ANALYSIS_ACTIVITY_BASES = [
+  'ONRC_SINGLE_CLASS',
+  'ONRC_CLASS_ANAF_NUMERIC_MATCH',
+  'ONRC_MULTIPLE_CLASSES',
+  'ANAF_FISCAL_CODE',
+  'ANAF_FISCAL_UNCATALOGUED',
+  'NO_QUALIFIED_SELECTION',
+] as const
+export const CompanyAnalysisActivityBasisZ = z.enum(COMPANY_ANALYSIS_ACTIVITY_BASES)
+export type CompanyAnalysisActivityBasis = z.infer<typeof CompanyAnalysisActivityBasisZ>
+
+/** The bases that select a named activity (a sector); the others are never ranked. */
+export const COMPANY_ANALYSIS_SELECTING_BASES: ReadonlySet<CompanyAnalysisActivityBasis> = new Set(['ONRC_SINGLE_CLASS', 'ONRC_CLASS_ANAF_NUMERIC_MATCH', 'ANAF_FISCAL_CODE'])
+
+export const CompanyAnalysisActivitySourceZ = z.enum(['ONRC', 'ANAF'])
+export type CompanyAnalysisActivitySource = z.infer<typeof CompanyAnalysisActivitySourceZ>
+
+/** Whether a release offers the derived activity selection (its grouping and its filters). */
+export function releaseOffersActivity(release: { readonly dimensions: readonly { readonly dimension: CompanyAnalysisDimension }[] }): boolean {
+  return release.dimensions.some((entry) => entry.dimension === 'ACTIVITY')
+}
 
 /** A release id: a positive integer as text (the API's `BigInt`, which it only accepts as a string). */
 export const COMPANY_ANALYSIS_RELEASE_ID_RE = /^[1-9]\d{0,15}$/u
@@ -250,6 +294,14 @@ export const CompanyAnalysisScopeZ = z.object({
   fiscallyInactive: z.array(CompanyAnalysisFlagValueZ).optional(),
   mainCaen: z.array(z.object({ code: z.string(), revision: z.string().optional() })).optional(),
   mainCaenBasis: z.array(CompanyAnalysisCaenBasisZ).optional(),
+  /**
+   * v3: the exact selected activity — ONRC with its revision (`rev0`…`rev3`),
+   * ANAF without one (ANAF publishes none). An ANAF selector never matches an
+   * ONRC selection, nor the reverse.
+   */
+  activity: z.array(z.object({ source: CompanyAnalysisActivitySourceZ, code: z.string(), revision: z.string().optional() })).optional(),
+  /** v3: the selection's basis. */
+  activityBasis: z.array(CompanyAnalysisActivityBasisZ).optional(),
   filing: CompanyAnalysisFilingZ.optional(),
   financialRanges: z.array(CompanyAnalysisRangeZ).optional(),
   employeeSizeBands: z.array(CompanyAnalysisSizeBandZ).optional(),
@@ -290,7 +342,7 @@ export type CompanyAnalysisReleaseRef = z.infer<typeof releaseRefZ>
 export const CompanyAnalysisReleaseZ = z.object({
   release: releaseRefZ,
   publicationId: countZ.nullable(),
-  schemaVersion: z.literal(COMPANY_ANALYSIS_SCHEMA_VERSION),
+  schemaVersion: z.enum(COMPANY_ANALYSIS_SCHEMA_VERSIONS),
   populationPolicyVersion: z.literal(COMPANY_ANALYSIS_POPULATION_POLICY_VERSION),
   admissionPolicyVersion: z.string().nullable(),
   admissionPolicySha256: z.string().nullable(),
@@ -393,6 +445,38 @@ const caenZ = z.object({
 })
 export type CompanyAnalysisCaen = z.infer<typeof caenZ>
 
+const caenRevisionZ = z.enum(['rev0', 'rev1', 'rev2', 'rev3'])
+
+/**
+ * A derived activity selection (v3). ONRC: the exact catalog label of its
+ * own (revision, code). ANAF: never a revision; catalog candidates only
+ * (CONSENSUS, CONFLICT, MISSING), never one borrowed as exact. `basis` is
+ * null on an ONRC bucket that mixes the single-class and numeric-match
+ * selections (`activityQuality.numericMatchSelected` counts the latter).
+ */
+export const CompanyAnalysisActivityZ = z.object({
+  basis: CompanyAnalysisActivityBasisZ.nullable(),
+  source: CompanyAnalysisActivitySourceZ.nullable(),
+  code: z.string().nullable(),
+  revision: caenRevisionZ.nullable(),
+  label: z.string().nullable(),
+  descriptionStatus: z.enum(['EXACT', 'CONSENSUS', 'CONFLICT', 'MISSING']).nullable(),
+  descriptions: z.array(z.object({ revision: caenRevisionZ, label: z.string().nullable() })),
+  /** True for every basis: a derived selection, never a published principal activity. */
+  derived: z.boolean(),
+})
+export type CompanyAnalysisActivity = z.infer<typeof CompanyAnalysisActivityZ>
+
+/** A bucket's selection quality (v3): how many of its companies came through the numeric match, have incomplete ONRC coverage, or unqualified rows; ANAF's status dates. */
+export const CompanyAnalysisActivityQualityZ = z.object({
+  numericMatchSelected: countZ,
+  incompleteCoverage: countZ,
+  withUnqualifiedRows: countZ,
+  anafObservedFrom: civilDateZ.nullable(),
+  anafObservedTo: civilDateZ.nullable(),
+})
+export type CompanyAnalysisActivityQuality = z.infer<typeof CompanyAnalysisActivityQualityZ>
+
 export const CompanyAnalysisBucketZ = z.object({
   kind: z.enum(['GROUP', 'OTHER', 'UNKNOWN', 'TOTAL']),
   /** GROUP only: the exact filter key — for COUNTY, UAT and OBSERVED_STATUS a consensus value, or `(<basis>)` for the companies without one. */
@@ -403,6 +487,9 @@ export const CompanyAnalysisBucketZ = z.object({
   /** A basis group's basis (COUNTY, UAT, OBSERVED_STATUS); null for a value group and every other bucket. */
   basis: CompanyAnalysisOnrcBasisZ.nullable(),
   caen: caenZ.nullable(),
+  /** ACTIVITY only (absent on another dimension and from an older API). */
+  activity: CompanyAnalysisActivityZ.nullish(),
+  activityQuality: CompanyAnalysisActivityQualityZ.nullish(),
   groups: z.number().int(),
   companies: countZ,
   filers: countZ,
@@ -422,6 +509,12 @@ export const CompanyAnalysisBreakdownZ = z.object({
   other: CompanyAnalysisBucketZ,
   unknown: CompanyAnalysisBucketZ,
   totals: CompanyAnalysisBucketZ,
+  /**
+   * ACTIVITY only: the several-classes, uncatalogued-ANAF and
+   * no-qualified-selection buckets — never ranked as sectors. groups + other
+   * + unknown + unclassified = totals. Absent from another dimension's read.
+   */
+  unclassified: z.array(CompanyAnalysisBucketZ).optional(),
 })
 export type CompanyAnalysisBreakdown = z.infer<typeof CompanyAnalysisBreakdownZ>
 
@@ -476,6 +569,13 @@ export const CompanyAnalysisRecordZ = z
     vatPayer: CompanyAnalysisFlagValueZ,
     fiscallyInactive: CompanyAnalysisFlagValueZ,
     mainCaen: caenZ.nullable(),
+    /** v3 (absent or null on a v2 release): the derived selection and what qualifies it. */
+    activity: CompanyAnalysisActivityZ.nullish(),
+    onrcClassKeyCount: z.number().int().nullish(),
+    onrcUnqualifiedRowCount: z.number().int().nullish(),
+    anafCaenForm: z.string().nullish(),
+    anafOnrcAgreement: z.string().nullish(),
+    anafStatusDate: civilDateZ.nullish(),
     filed: z.boolean(),
     employeeSizeBand: CompanyAnalysisSizeBandZ.nullable(),
     values: z.array(

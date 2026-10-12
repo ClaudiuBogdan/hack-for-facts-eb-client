@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import { hashKey, keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import type { CompanyAnalysisDimension, CompanyAnalysisRelease } from '@/schemas/company-analytics'
-import { isCursorRefused, isReleaseRefused, readCompanyAnalysisRelease } from '../api/company-analytics-api'
+import { isCapabilityRefused, isCursorRefused, isReleaseRefused, readCompanyAnalysisRelease } from '../api/company-analytics-api'
 import { planBreakdown, planOptions, planRecords, planSeries, planStats, resolveQuestion, type PlannedRead, type ResolvedQuestion } from '../api/company-analytics-plan'
 import type { CompanyAnalyticsSeed } from '../api/company-analytics-ssr'
 import { companyAnalyticsKeys, releaseOfKey } from '../lib/company-analytics-keys'
@@ -140,7 +140,7 @@ function usePlanned<T>(read: PlannedRead<T> | null, options: { readonly keepPrev
     queryFn: ({ signal }) => read!.read(signal),
     enabled: read?.enabled ?? false,
     staleTime: STALE,
-    retry: (count, error) => !isReleaseRefused(error) && !isCursorRefused(error) && count < 2,
+    retry: (count, error) => !isReleaseRefused(error) && !isCursorRefused(error) && !isCapabilityRefused(error) && count < 2,
     ...(options.keepPrevious ? { placeholderData: keepPreviousData } : {}),
     ...(read ? seeded<T>(read) : {}),
   })

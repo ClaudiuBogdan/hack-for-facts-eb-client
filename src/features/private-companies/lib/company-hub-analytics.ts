@@ -18,11 +18,12 @@ import {
 } from '@/schemas/company-analytics'
 import type { CompanyHubSearch, CompanyHubSectorMetric } from '@/schemas/private-company-search'
 import type { ResolvedQuestion } from '../api/company-analytics-plan'
+import { activitySourceTag, activityText, unclassifiedActivityLabel, unclassifiedBasisOf } from './company-activity-text'
 import { drillScope } from './company-analytics-drill'
 import { compactValue, countText, shareText } from './company-analytics-format'
 import { caenText, countyLabel } from './company-analytics-text'
 import { DEFAULT_STATE, urlSearchOf, type AnalyticsPanel, type CompanyAnalyticsState, type CompanyAnalyticsUrlSearch } from './company-analytics-url'
-import { metricFact, partialYears, type Fact } from './company-analytics-view'
+import { activityTail, metricFact, partialYears, type Fact } from './company-analytics-view'
 import type { HubCountyLayer, HubCountyValue } from './hub-counties'
 import { hubUnitWord, type HubUnit } from './hub-format'
 
@@ -269,17 +270,24 @@ export interface HubRow {
 }
 
 export interface HubRanking {
+  /** The ranked groups: named activities only. */
   readonly rows: readonly HubRow[]
   /** The groups the answer folds together, when it folds any. */
   readonly other: HubRow | null
-  /** The companies without the dimension's value (no declared main activity, no statement), when there are any. */
+  /**
+   * The derived activity's unclassified buckets (several classes, an
+   * uncatalogued ANAF code, no qualified selection), in the API's order:
+   * shares of the same total, never ranked, never a bar against the ranked.
+   */
+  readonly unclassified: readonly HubRow[]
+  /** The companies without the dimension's value (no ANAF fiscal CAEN code, no statement), when there are any. */
   readonly unknown: HubRow | null
   readonly total: string | null
 }
 
-/** Every part of a breakdown — the groups, the folded ones, the unknown — in a measure. */
+/** Every part of a breakdown — the groups, the folded ones, the unclassified activity buckets, the unknown — in a measure. */
 function partsOf(breakdown: CompanyAnalysisBreakdown, measure: HubMeasure): readonly (string | null)[] {
-  return [...breakdown.groups, breakdown.other, breakdown.unknown].map((bucket) => bucketValue(bucket, measure))
+  return [...breakdown.groups, breakdown.other, ...(breakdown.unclassified ?? []), breakdown.unknown].map((bucket) => bucketValue(bucket, measure))
 }
 
 /**
@@ -290,27 +298,33 @@ function partsOf(breakdown: CompanyAnalysisBreakdown, measure: HubMeasure): read
 export function hubRankingOf(breakdown: CompanyAnalysisBreakdown, measure: HubMeasure, locale: DecimalLocale): HubRanking {
   const total = bucketValue(breakdown.totals, measure)
   const whole = sharesHold(partsOf(breakdown, measure)) ? total : null
-  const max = barMax(breakdown.groups.map((bucket) => bucketValue(bucket, measure)))
+  // The derived activity's unclassified buckets are never ranked, wherever the answer put them.
+  const tail = activityTail(breakdown)
+  const ranked = breakdown.groups.filter((bucket) => !tail.includes(bucket))
+  const max = barMax(ranked.map((bucket) => bucketValue(bucket, measure)))
   const rowOf = (bucket: CompanyAnalysisBucket, key: string): HubRow => {
     const value = bucketValue(bucket, measure)
     return { key, bucket, value, share: hubShare(value, whole, locale), bar: barPercent(value, max) }
   }
   const empty = (bucket: CompanyAnalysisBucket) => bucket.companies === '0'
   return {
-    rows: breakdown.groups.map((bucket, index) => rowOf(bucket, bucket.key ?? `group-${index}`)),
+    rows: ranked.map((bucket, index) => rowOf(bucket, bucket.key ?? `group-${index}`)),
     other: breakdown.other.groups > 0 ? rowOf(breakdown.other, 'other') : null,
+    unclassified: tail.filter((bucket) => !empty(bucket)).map((bucket, index) => ({ ...rowOf(bucket, `unclassified-${bucket.key ?? String(index)}`), bar: 0 })),
     unknown: empty(breakdown.unknown) ? null : rowOf(breakdown.unknown, 'unknown'),
     total,
   }
 }
 
-/** A main activity: its exact source code, shared catalog description or explicit revision-qualified alternatives. */
+/** An ANAF fiscal CAEN code (MAIN_CAEN): its exact source code, shared catalog description or explicit revision-qualified alternatives; a selected activity with its own. */
 export function caenRowLabel(bucket: CompanyAnalysisBucket): string {
+  if (bucket.activity) return bucket.activity.code ? activityText(bucket.activity) : unclassifiedActivityLabel(unclassifiedBasisOf(bucket))
   return bucket.caen ? caenText(bucket.caen) : (bucket.label ?? bucket.key ?? '—')
 }
 
-/** The revision a main activity code was declared in, as a tag („CAEN rev2"); null when ANAF did not publish it. */
+/** The revision recorded for an ANAF fiscal CAEN code (ANAF publishes none today), as a tag („CAEN rev2"), null when ANAF did not publish it; a selected activity's source („ONRC Rev.2", ANAF unpublished). */
 export function caenRevisionTag(bucket: CompanyAnalysisBucket): string | null {
+  if (bucket.activity) return activitySourceTag(bucket.activity)
   return bucket.caen?.revision ? `CAEN ${bucket.caen.revision}` : null
 }
 

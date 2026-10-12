@@ -1,5 +1,6 @@
+import { ActivityDescription } from '../activity-description'
 import { CaenDescription } from '../caen-description'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
 import { Download } from 'lucide-react'
@@ -10,15 +11,16 @@ import { decimalSign, type DecimalLocale } from '@/lib/exact-decimal'
 import { downloadMapDataCsv } from '@/lib/map-data-csv'
 import { cn } from '@/lib/utils'
 import { COMPANY_ANALYSIS_DIMENSIONS, COMPANY_ANALYSIS_RANKINGS, type CompanyAnalysisBucket, type CompanyAnalysisDimension, type CompanyAnalysisRankBy } from '@/schemas/company-analytics'
-import { isReleaseRefused } from '../../api/company-analytics-api'
+import { isCapabilityRefused, isReleaseRefused } from '../../api/company-analytics-api'
 import { BREAKDOWN_TOP, BREAKDOWN_TOP_EXPANDED, type ResolvedQuestion } from '../../api/company-analytics-plan'
 import { useCompanyAnalysisBreakdown } from '../../hooks/use-company-analytics'
+import { activityDerivationText, activityQualityParts, activitySourceTag } from '../../lib/company-activity-text'
 import { drillScope, nextDimension } from '../../lib/company-analytics-drill'
 import { breakdownCsv } from '../../lib/company-analytics-export'
 import { compactValueText, countText, exactValueText, localeOf, shareText } from '../../lib/company-analytics-format'
 import { dimensionLabel, metricLabel, rankLabel } from '../../lib/company-analytics-text'
 import { withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
-import { breakdownRows, CONSENSUS_DIMENSIONS, groupLabel, labelSourcesOf } from '../../lib/company-analytics-view'
+import { activityTail, breakdownRows, CONSENSUS_DIMENSIONS, groupLabel, isUnclassifiedActivity, labelSourcesOf } from '../../lib/company-analytics-view'
 
 /**
  * The question by one grouping: the top groups, every other group folded
@@ -29,9 +31,31 @@ import { breakdownRows, CONSENSUS_DIMENSIONS, groupLabel, labelSourcesOf } from 
  * row narrows the same question to it (a filter the API reads exactly as the
  * group was counted); „other" and an unknown that no single filter names are
  * not links. Where the names come from is said under the table.
+ *
+ * The derived activity (offered by a v3 release only) is grouped by the
+ * selected activity, each with its source (ONRC Rev.N, or ANAF with its
+ * revision unpublished), its selection quality and ANAF's dates; its
+ * unclassified buckets — several classes, an uncatalogued ANAF code, no
+ * qualified selection — follow every ranked row, apart, never as sectors. A
+ * row narrows to that exact activity (or that basis).
  */
 
 const TRIGGER = 'h-11 w-full rounded-none text-sm shadow-none sm:h-9 sm:w-auto'
+
+/** A derived-activity row's name: the activity with its source tag and quality, or why an unclassified bucket has none. */
+function ActivityCell({ bucket, label, locale }: { readonly bucket: CompanyAnalysisBucket; readonly label: string; readonly locale: DecimalLocale }) {
+  const unclassified = isUnclassifiedActivity(bucket)
+  // An unclassified bucket names no activity, so no source tag: its label says why.
+  const tag = unclassified ? null : activitySourceTag(bucket.activity)
+  const quality = activityQualityParts(bucket.activityQuality, (value) => countText(value, locale))
+  return (
+    <span className="block whitespace-normal">
+      {bucket.activity?.code && !unclassified ? <ActivityDescription activity={bucket.activity} /> : <span>{label}</span>}
+      {tag ? <span className="mt-0.5 block font-mono text-[11px] uppercase tracking-wide text-muted-foreground">{tag}</span> : null}
+      {quality.length > 0 ? <span className="mt-0.5 block text-xs font-normal text-muted-foreground">{quality.join(' · ')}</span> : null}
+    </span>
+  )
+}
 
 function SumCell({ bucket, locale }: { readonly bucket: CompanyAnalysisBucket; readonly locale: DecimalLocale }) {
   const aggregate = bucket.metric
@@ -87,7 +111,8 @@ export function AnalyticsBreakdown({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {COMPANY_ANALYSIS_DIMENSIONS.map((dimension) => (
+          {/* The derived activity only where the release offers it; an address that asks for it elsewhere keeps it, said below. */}
+          {COMPANY_ANALYSIS_DIMENSIONS.filter((dimension) => dimension !== 'ACTIVITY' || question.activity || state.dimension === 'ACTIVITY').map((dimension) => (
             <SelectItem key={dimension} value={dimension}>
               {dimensionLabel(dimension)}
             </SelectItem>
@@ -115,6 +140,16 @@ export function AnalyticsBreakdown({
     </div>
   )
 
+  // Not offered by the release — known from its capabilities, or said by the API's typed refusal.
+  if (state.dimension === 'ACTIVITY' && (!question.activity || (breakdown.isError && isCapabilityRefused(breakdown.error))))
+    return (
+      <div className={className}>
+        {controls}
+        <p role="status" className="mt-4 border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="companies-analytics-activity-unavailable">
+          {t`Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară).`}
+        </p>
+      </div>
+    )
   if (breakdown.isError && !isReleaseRefused(breakdown.error))
     return (
       <div className={className}>
@@ -133,7 +168,12 @@ export function AnalyticsBreakdown({
     )
 
   const rows = breakdownRows(data)
-  const names = labelSourcesOf(data.groups.map((bucket) => bucket.labelSource ?? (bucket.caen?.descriptions?.length ? 'current_db_catalog' : null)))
+  const activity = data.dimension === 'ACTIVITY'
+  const unclassified = activityTail(data)
+  const firstUnclassified = unclassified[0]
+  const names = labelSourcesOf(
+    data.groups.map((bucket) => bucket.labelSource ?? (bucket.caen?.descriptions?.length || bucket.activity?.label || bucket.activity?.descriptions.length ? 'current_db_catalog' : null)),
+  )
   return (
     <div className={cn(className, breakdown.isFetching && 'opacity-70 transition-opacity')}>
       {controls}
@@ -154,27 +194,40 @@ export function AnalyticsBreakdown({
             const onDrill = drill(bucket)
             const label = groupLabel(state.dimension, bucket)
             const share = shares && total && bucket.metric?.sum ? shareText(bucket.metric.sum, total, locale) : null
+            // The derived activity's unclassified buckets: after every ranked row, under their own line, never as sectors.
+            const tail = activity && unclassified.includes(bucket)
+            const name = activity ? <ActivityCell bucket={bucket} label={label} locale={locale} /> : bucket.caen ? <CaenDescription caen={bucket.caen} /> : label
+            const wraps = activity || bucket.caen !== null
             return (
-              <TableRow key={`${bucket.kind}-${bucket.key ?? ''}`} className={cn(bucket.kind !== 'GROUP' && 'text-muted-foreground')}>
-                <TableCell className="max-w-[12rem] sm:max-w-md">
-                  {onDrill ? (
-                    <button type="button" onClick={onDrill} className={cn('block max-w-full text-left font-medium text-foreground underline-offset-4 hover:underline', bucket.caen ? 'whitespace-normal' : 'truncate')} title={t`Doar ${label}`}>
-                      {bucket.caen ? <CaenDescription caen={bucket.caen} /> : label}
-                    </button>
-                  ) : (
-                    <span className={cn('block', bucket.caen ? 'whitespace-normal' : 'truncate')} title={label}>
-                      {bucket.caen ? <CaenDescription caen={bucket.caen} /> : label}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{countText(bucket.companies, locale)}</TableCell>
-                <TableCell className="hidden text-right tabular-nums sm:table-cell">{countText(bucket.filers, locale)}</TableCell>
-                <TableCell className="whitespace-nowrap text-right tabular-nums">
-                  <SumCell bucket={bucket} locale={locale} />
-                </TableCell>
-                <TableCell className="hidden text-right tabular-nums md:table-cell">{bucket.metric ? countText(bucket.metric.contributors, locale) : '—'}</TableCell>
-                {shares ? <TableCell className="hidden text-right text-xs tabular-nums lg:table-cell">{share ?? '—'}</TableCell> : null}
-              </TableRow>
+              <Fragment key={`${bucket.kind}-${bucket.key ?? ''}-${tail ? 'unclassified' : 'ranked'}`}>
+                {tail && bucket === firstUnclassified ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={shares ? 6 : 5} className="pt-4 text-xs text-muted-foreground" data-testid="companies-analytics-unclassified-head">
+                      {t`Fără o activitate selectată: nu sunt domenii și nu sunt clasate.`}
+                    </TableCell>
+                  </TableRow>
+                ) : null}
+                <TableRow className={cn((bucket.kind !== 'GROUP' || tail) && 'text-muted-foreground')} data-unclassified={tail ? 'true' : undefined}>
+                  <TableCell className="max-w-[12rem] sm:max-w-md">
+                    {onDrill ? (
+                      <button type="button" onClick={onDrill} className={cn('block max-w-full text-left font-medium underline-offset-4 hover:underline', tail ? 'text-muted-foreground' : 'text-foreground', wraps ? 'whitespace-normal' : 'truncate')} title={t`Doar ${label}`}>
+                        {name}
+                      </button>
+                    ) : (
+                      <span className={cn('block', wraps ? 'whitespace-normal' : 'truncate')} title={label}>
+                        {name}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{countText(bucket.companies, locale)}</TableCell>
+                  <TableCell className="hidden text-right tabular-nums sm:table-cell">{countText(bucket.filers, locale)}</TableCell>
+                  <TableCell className="whitespace-nowrap text-right tabular-nums">
+                    <SumCell bucket={bucket} locale={locale} />
+                  </TableCell>
+                  <TableCell className="hidden text-right tabular-nums md:table-cell">{bucket.metric ? countText(bucket.metric.contributors, locale) : '—'}</TableCell>
+                  {shares ? <TableCell className="hidden text-right text-xs tabular-nums lg:table-cell">{share ?? '—'}</TableCell> : null}
+                </TableRow>
+              </Fragment>
             )
           })}
         </TableBody>
@@ -195,6 +248,7 @@ export function AnalyticsBreakdown({
         <span>
           {state.dimension === 'EMPLOYEE_SIZE' ? t`Mărimea se citește din situația anului ${question.year}; celelalte grupări descriu firma la data ediției.` : t`Gruparea descrie firma la data ediției, nu în anul fiscal.`}
           {CONSENSUS_DIMENSIONS.has(state.dimension) ? ` ${t`Fiecare firmă e într-un singur grup: valoarea comună a înscrierilor ei sau motivul pentru care nu are una.`}` : ''}
+          {activity ? ` ${activityDerivationText(data.release.source.sourcePublishedAt)}` : ''}
           {names.length > 0 ? ` ${t`Denumiri: ${names.join('; ')}.`}` : ''}
         </span>
         {!expanded && data.groupCount > data.topN ? (

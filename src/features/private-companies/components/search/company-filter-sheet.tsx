@@ -213,7 +213,7 @@ export function CompanyFilterSheet({
             <p className="text-xs text-[#505a5f] dark:text-[var(--pnrr-muted)]">
               <Trans>
                 Potrivire largă: codul în orice revizie CAEN, printre activitățile înscrise în ediția ONRC afișată (nu din ediții mai vechi și
-                nu activitatea principală declarată la ANAF). Aceleași cifre pot însemna activități diferite în revizii diferite.
+                nu codul CAEN fiscal ANAF). Aceleași cifre pot însemna activități diferite în revizii diferite.
               </Trans>
             </p>
             <div className="space-y-1 pt-2">

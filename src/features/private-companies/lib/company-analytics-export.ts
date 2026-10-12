@@ -8,7 +8,9 @@ import type { ResolvedQuestion } from '../api/company-analytics-plan'
  * API has no value — never a 0 — the release every row was read from and the
  * ONRC edition it was exported from, a date as the exact civil text the API
  * sent. Bounded by what the page read: one page of companies, a breakdown's
- * rows, a series' years.
+ * rows, a series' years. The derived activity's columns are written only for
+ * a release that offers it (records) and its own grouping (breakdown), so a
+ * v2 file is the file it always was.
  */
 
 const SOURCE_HEADER = ['source_edition_id', 'source_publication_epoch', 'source_published_at'] as const
@@ -30,8 +32,22 @@ export function csvOf(header: readonly string[], rows: readonly (readonly (strin
   return [header.map(cell).join(','), ...rows.map((row) => row.map(cell).join(','))].join('\r\n')
 }
 
+const RECORD_ACTIVITY_HEADER = [
+  'activity_basis',
+  'activity_source',
+  'activity_code',
+  'activity_revision',
+  'activity_label',
+  'onrc_class_key_count',
+  'onrc_unqualified_row_count',
+  'anaf_caen_form',
+  'anaf_onrc_agreement',
+  'anaf_status_date',
+] as const
+
 export function recordsCsv(records: CompanyAnalysisRecords, question: ResolvedQuestion): string {
   const metrics = question.recordMetrics
+  const activity = question.activity
   const header = [
     'release_id',
     ...SOURCE_HEADER,
@@ -54,6 +70,7 @@ export function recordsCsv(records: CompanyAnalysisRecords, question: ResolvedQu
     'fiscally_inactive',
     'main_caen_code',
     'main_caen_revision',
+    ...(activity ? RECORD_ACTIVITY_HEADER : []),
     'filed',
     'employee_size_band',
     ...metrics.flatMap((metric) => [metric.toLowerCase(), `${metric.toLowerCase()}_status`]),
@@ -80,6 +97,21 @@ export function recordsCsv(records: CompanyAnalysisRecords, question: ResolvedQu
     node.fiscallyInactive,
     node.mainCaen?.code,
     node.mainCaen?.revision,
+    ...(activity
+      ? [
+          node.activity?.basis,
+          node.activity?.source,
+          node.activity?.code,
+          // ANAF publishes no revision: none is ever written for it.
+          node.activity?.source === 'ONRC' ? node.activity.revision : null,
+          node.activity?.label,
+          node.onrcClassKeyCount,
+          node.onrcUnqualifiedRowCount,
+          node.anafCaenForm,
+          node.anafOnrcAgreement,
+          node.anafStatusDate,
+        ]
+      : []),
     node.filed,
     node.employeeSizeBand,
     ...metrics.flatMap((metric) => {
@@ -90,6 +122,40 @@ export function recordsCsv(records: CompanyAnalysisRecords, question: ResolvedQu
   return csvOf(header, rows)
 }
 
+function activityCells(bucket: CompanyAnalysisBucket, unclassified: boolean) {
+  const activity = bucket.activity
+  const quality = bucket.activityQuality
+  return [
+    unclassified,
+    activity?.basis ?? null,
+    activity?.source ?? null,
+    activity?.code ?? null,
+    activity?.source === 'ONRC' ? activity.revision : null,
+    activity?.descriptionStatus ?? null,
+    activity?.descriptions.length ? JSON.stringify(activity.descriptions) : null,
+    quality?.numericMatchSelected ?? null,
+    quality?.incompleteCoverage ?? null,
+    quality?.withUnqualifiedRows ?? null,
+    quality?.anafObservedFrom ?? null,
+    quality?.anafObservedTo ?? null,
+  ]
+}
+
+const ACTIVITY_BUCKET_HEADER = [
+  'unclassified',
+  'activity_basis',
+  'activity_source',
+  'activity_code',
+  'activity_revision',
+  'activity_description_status',
+  'activity_descriptions',
+  'numeric_match_selected',
+  'incomplete_coverage',
+  'with_unqualified_rows',
+  'anaf_observed_from',
+  'anaf_observed_to',
+] as const
+
 function bucketRow(breakdown: CompanyAnalysisBreakdown, bucket: CompanyAnalysisBucket) {
   return [
     breakdown.release.releaseId,
@@ -99,7 +165,7 @@ function bucketRow(breakdown: CompanyAnalysisBreakdown, bucket: CompanyAnalysisB
     bucket.kind,
     bucket.key,
     bucket.basis,
-    bucket.label ?? bucket.caen?.label ?? null,
+    bucket.label ?? bucket.caen?.label ?? bucket.activity?.label ?? null,
     bucket.labelSource,
     bucket.groups,
     bucket.companies,
@@ -115,13 +181,40 @@ function bucketRow(breakdown: CompanyAnalysisBreakdown, bucket: CompanyAnalysisB
     bucket.metric?.coverage.heldComponent ?? null,
     bucket.caen?.descriptionStatus ?? null,
     bucket.caen?.descriptions ? JSON.stringify(bucket.caen.descriptions) : null,
+    ...(breakdown.dimension === 'ACTIVITY' ? activityCells(bucket, (breakdown.unclassified ?? []).includes(bucket)) : []),
   ]
 }
 
 export function breakdownCsv(breakdown: CompanyAnalysisBreakdown): string {
-  const header = ['release_id', ...SOURCE_HEADER, 'fiscal_year', 'dimension', 'bucket', 'key', 'basis', 'label', 'label_source', 'groups', 'companies', 'filers', 'metric', 'sum', 'contributors', 'missing', 'not_admitted', 'held_profile', 'held_observation', 'held_quality', 'held_component', 'caen_description_status', 'caen_descriptions']
-  // Every bucket the API answered, the empty unknown slot of a consensus grouping too: the file adds up as the API's does.
-  const buckets = [...breakdown.groups, breakdown.other, breakdown.unknown, breakdown.totals]
+  const activity = breakdown.dimension === 'ACTIVITY'
+  const header = [
+    'release_id',
+    ...SOURCE_HEADER,
+    'fiscal_year',
+    'dimension',
+    'bucket',
+    'key',
+    'basis',
+    'label',
+    'label_source',
+    'groups',
+    'companies',
+    'filers',
+    'metric',
+    'sum',
+    'contributors',
+    'missing',
+    'not_admitted',
+    'held_profile',
+    'held_observation',
+    'held_quality',
+    'held_component',
+    'caen_description_status',
+    'caen_descriptions',
+    ...(activity ? ACTIVITY_BUCKET_HEADER : []),
+  ]
+  // Every bucket the API answered, the empty unknown slot of a consensus grouping too, the unclassified activity buckets apart: the file adds up as the API's does.
+  const buckets = [...breakdown.groups, breakdown.other, ...(activity ? (breakdown.unclassified ?? []) : []), breakdown.unknown, breakdown.totals]
   return csvOf(header, buckets.map((bucket) => bucketRow(breakdown, bucket)))
 }
 

@@ -9,7 +9,7 @@
  * edition; `status` matches ANY public original observation (1048 also beside
  * a conflicting code); `caenCode` is the broad match — the digits in any
  * revision of the current edition's observations, never older editions or
- * ANAF's main activity; `onrcCaen` is one code in one revision. The fiscal
+ * the ANAF fiscal CAEN code; `onrcCaen` is one code in one revision. The fiscal
  * switches are ANAF's own lists, independent of the registry.
  */
 import type { PrivateCompanySearchQuery } from '@/schemas/private-company-search'

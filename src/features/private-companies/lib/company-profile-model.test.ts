@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { CompanyCaenClassState } from '@/schemas/private-company-registry'
 import { admittedQualification } from '../mocks/fixtures/qualification'
 import { mockRegistryEvidence } from '../mocks/fixtures/registry'
 import { buildCompanyProfileModel, displayCompanyName, placeLabel, sizeClassOf } from './company-profile-model'
@@ -296,10 +297,10 @@ describe('buildCompanyProfileModel', () => {
     const model = buildCompanyProfileModel(
       companyProfile({
         caenActivities: [
-          { code: '4711', rev: 'rev2', label: 'Comerț', source: 'onrc' },
-          { code: '4719', rev: 'rev2', label: 'Alt comerț', source: 'onrc' },
-          { code: '5610', rev: 'rev2', label: 'Restaurante', source: 'onrc' },
-          { code: '4711', rev: 'rev1', label: 'Vechi', source: 'onrc' },
+          { code: '4711', rev: 'rev2', label: 'Comerț', source: 'onrc', classState: 'class' },
+          { code: '4719', rev: 'rev2', label: 'Alt comerț', source: 'onrc', classState: 'class' },
+          { code: '5610', rev: 'rev2', label: 'Restaurante', source: 'onrc', classState: 'class' },
+          { code: '4711', rev: 'rev1', label: 'Vechi', source: 'onrc', classState: 'class' },
           { code: '4711', rev: null, label: 'ANAF', source: 'anaf' },
         ],
         fiscal: { vatPayer: true, inactive: false, anafFound: true, asOfDate: '2026-07-04', fiscalCaen: { code: '4711', rev: null } },
@@ -331,8 +332,8 @@ describe('buildCompanyProfileModel', () => {
 
   describe('a main activity is named only from its own CAEN revision (CD-09/CD-10)', () => {
     const activities = [
-      { code: '6210', rev: 'rev3', label: 'Activități de realizare a soft-ului la comandă', source: 'onrc' as const },
-      { code: '6210', rev: 'rev1', label: 'Transporturi aeriene regulate', source: 'onrc' as const },
+      { code: '6210', rev: 'rev3', label: 'Activități de realizare a soft-ului la comandă', source: 'onrc' as const, classState: 'class' as const },
+      { code: '6210', rev: 'rev1', label: 'Transporturi aeriene regulate', source: 'onrc' as const, classState: 'class' as const },
       { code: '6210', rev: null, label: null, source: 'anaf' as const },
     ]
     const withFiscal = (rev: string | null) =>
@@ -367,7 +368,7 @@ describe('buildCompanyProfileModel', () => {
       expect(companySentence(buildCompanyProfileModel(companyProfile()))).toBe('Societate cu răspundere limitată din Gherla, Cluj.')
       const rev2 = companyProfile({ fiscal: { ...companyProfile().fiscal, fiscalCaen: { code: '5610', rev: 'rev2' } } })
       expect(companySentence(buildCompanyProfileModel(rev2))).toBe(
-        'Societate cu răspundere limitată din Gherla, Cluj. Activitatea principală declarată la ANAF: restaurante.',
+        'Societate cu răspundere limitată din Gherla, Cluj. Cod CAEN fiscal ANAF: restaurante.',
       )
       // The recorded date is no founding year: no year, no „înregistrată în".
       expect(companySentence(buildCompanyProfileModel(rev2))).not.toMatch(/\d{4}|înregistrat|înființ/u)
@@ -375,7 +376,16 @@ describe('buildCompanyProfileModel', () => {
   })
 
   describe('every registry revision is kept, each in its own name (CD-23)', () => {
-    const onrc = (code: string, rev: string | null, label: string | null) => ({ code, rev, label, source: 'onrc' as const })
+    // A current-API row: a qualified class by default. The server serves a
+    // CLASS row only with a known revision, so a row without one is passed
+    // as `unknown_revision` explicitly.
+    const onrc = (code: string, rev: string | null, label: string | null, classState: CompanyCaenClassState = 'class') => ({
+      code,
+      rev,
+      label,
+      source: 'onrc' as const,
+      classState,
+    })
 
     it('shows a company whose registry lists Rev.0 only', () => {
       const { activities } = buildCompanyProfileModel(
@@ -407,8 +417,8 @@ describe('buildCompanyProfileModel', () => {
             onrc('6210', 'rev3', 'Activități de realizare a soft-ului la comandă'),
             onrc('5610', 'rev2', 'Restaurante'),
             onrc('0111', 'rev0', 'Cultivarea cerealelor'),
-            // No revision: a group of its own, never named, whatever label rode along.
-            onrc('4711', null, 'Împrumutat'),
+            // No revision (unknown_revision): unqualified, never named, whatever label rode along.
+            onrc('4711', null, 'Împrumutat', 'unknown_revision'),
             { code: '6210', rev: null, label: null, source: 'anaf' },
           ],
         }),
@@ -427,14 +437,14 @@ describe('buildCompanyProfileModel', () => {
           'rev3',
           'Diviziunea 62 (CAEN Rev.3)',
           [
-            { code: '6210', label: 'Activități de realizare a soft-ului la comandă' },
-            { code: '6210', label: 'Activități de realizare a soft-ului la comandă' },
+            { code: '6210', label: 'Activități de realizare a soft-ului la comandă', classState: 'class' },
+            { code: '6210', label: 'Activități de realizare a soft-ului la comandă', classState: 'class' },
           ],
         ],
-        ['rev2', 'Restaurante și baruri', [{ code: '5610', label: 'Restaurante' }]],
-        ['rev1', 'Diviziunea 62 (CAEN Rev.1)', [{ code: '6210', label: 'Transporturi aeriene regulate' }]],
-        ['rev0', 'Diviziunea 01 (CAEN Rev.0)', [{ code: '0111', label: 'Cultivarea cerealelor' }]],
-        [null, 'Diviziunea 47 (fără revizie CAEN)', [{ code: '4711', label: null }]],
+        ['rev2', 'Restaurante și baruri', [{ code: '5610', label: 'Restaurante', classState: 'class' }]],
+        ['rev1', 'Diviziunea 62 (CAEN Rev.1)', [{ code: '6210', label: 'Transporturi aeriene regulate', classState: 'class' }]],
+        ['rev0', 'Diviziunea 01 (CAEN Rev.0)', [{ code: '0111', label: 'Cultivarea cerealelor', classState: 'class' }]],
+        [null, 'Observații necalificate', [{ code: '4711', label: null, classState: 'unknown_revision' }]],
       ])
       // One key per revision and division: 62 in Rev.3 and in Rev.1 never collide.
       const keys = activities.groups.map((group) => group.key)
@@ -444,7 +454,11 @@ describe('buildCompanyProfileModel', () => {
     it('lists the registry meaning of the main activity in every revision, Rev.0 included, naming none for ANAF', () => {
       const main = buildCompanyProfileModel(
         companyProfile({
-          caenActivities: [onrc('0111', 'rev0', 'Cultivarea cerealelor'), onrc('0111', 'rev2', 'Cultivarea cerealelor (Rev.2)'), onrc('0111', null, 'Împrumutat')],
+          caenActivities: [
+            onrc('0111', 'rev0', 'Cultivarea cerealelor'),
+            onrc('0111', 'rev2', 'Cultivarea cerealelor (Rev.2)'),
+            onrc('0111', null, 'Împrumutat', 'unknown_revision'),
+          ],
           fiscal: { vatPayer: null, inactive: null, anafFound: true, asOfDate: '2026-07-04', fiscalCaen: { code: '0111', rev: null } },
         }),
       ).mainActivity
@@ -459,12 +473,102 @@ describe('buildCompanyProfileModel', () => {
   it('names a registry division only in its own revision: Rev.2 by name, other editions by number', () => {
     const groupsOf = (rev: string) =>
       buildCompanyProfileModel(
-        companyProfile({ caenActivities: [{ code: '6210', rev, label: 'x', source: 'onrc' }] }),
+        companyProfile({ caenActivities: [{ code: '6210', rev, label: 'x', source: 'onrc', classState: 'class' }] }),
       ).activities.groups.map((group) => group.label)
     expect(groupsOf('rev2')).toEqual(['Software și servicii IT'])
     // Rev.1 62 is air transport and Rev.3 62 is not the Rev.2 list: number and edition only.
     expect(groupsOf('rev1')).toEqual(['Diviziunea 62 (CAEN Rev.1)'])
     expect(groupsOf('rev3')).toEqual(['Diviziunea 62 (CAEN Rev.3)'])
+  })
+
+  describe('derives a division only from a classified row, never from a short or unqualified code', () => {
+    const row = (code: string, rev: string | null, classState: CompanyCaenClassState | null, label: string | null = null) => ({
+      code,
+      rev,
+      label,
+      source: 'onrc' as const,
+      classState,
+    })
+
+    it('keeps the six-row short-token company’s padded codes out of divisions 02 and 01', () => {
+      const { activities } = buildCompanyProfileModel(
+        companyProfile({
+          caenActivities: [
+            // Source tokens 201, 111, 112: group 201 is under division 20, not forestry.
+            row('0201', 'rev2', 'short_token'),
+            row('0111', 'rev2', 'short_token'),
+            row('0112', 'rev2', 'short_token'),
+            row('6201', 'rev2', 'class', 'Activități de realizare a soft-ului la comandă'),
+            row('4711', 'rev2', 'class', 'Comerț cu amănuntul în magazine nespecializate'),
+            row('9999', 'rev2', 'unlabeled_key'),
+          ],
+        }),
+      )
+      // Was: 0201 under division 02 („Silvicultură"), 0111 and 0112 under 01.
+      expect(activities.groups.map((group) => group.division)).not.toContain('02')
+      expect(activities.groups.map((group) => group.division)).not.toContain('01')
+      for (const group of activities.groups) expect(group.label).not.toMatch(/Silvicultur|Diviziunea 0[12]\b/u)
+      expect(activities.groups.map((group) => [group.revision, group.division, group.label, group.activities])).toEqual([
+        ['rev2', '47', 'Comerț cu amănuntul', [{ code: '4711', label: 'Comerț cu amănuntul în magazine nespecializate', classState: 'class' }]],
+        ['rev2', '62', 'Software și servicii IT', [{ code: '6201', label: 'Activități de realizare a soft-ului la comandă', classState: 'class' }]],
+        [
+          'rev2',
+          null,
+          'Observații necalificate',
+          [
+            { code: '0111', label: null, classState: 'short_token' },
+            { code: '0112', label: null, classState: 'short_token' },
+            { code: '0201', label: null, classState: 'short_token' },
+            { code: '9999', label: null, classState: 'unlabeled_key' },
+          ],
+        ],
+      ])
+      // Every row still counted.
+      expect(activities.total).toBe(6)
+      expect(activities.revision).toBe('rev2')
+      expect(activities.byRevision).toEqual([{ revision: 'rev2', count: 6 }])
+    })
+
+    it('treats every non-class state alike, one unqualified group per revision, a null revision its own', () => {
+      for (const state of ['short_token', 'unknown_revision', 'unlabeled_key', 'unparsed'] as const) {
+        const { activities } = buildCompanyProfileModel(
+          companyProfile({
+            caenActivities: [row('0201', 'rev2', state, 'Împrumutat'), row('5610', 'rev2', 'class', 'Restaurante'), row('0201', 'rev3', state), row('0201', null, state)],
+          }),
+        )
+        expect(activities.groups.map((group) => [group.revision, group.division, group.label, group.activities.map((activity) => [activity.code, activity.label])])).toEqual([
+          ['rev3', null, 'Observații necalificate', [['0201', null]]],
+          ['rev2', '56', 'Restaurante și baruri', [['5610', 'Restaurante']]],
+          ['rev2', null, 'Observații necalificate', [['0201', null]]],
+          [null, null, 'Observații necalificate', [['0201', null]]],
+        ])
+        const keys = activities.groups.map((group) => group.key)
+        expect(new Set(keys).size).toBe(keys.length)
+        expect(activities.total).toBe(4)
+      }
+    })
+
+    it('never derives a division or a name for a row an older API serves without class state (legacy fallback)', () => {
+      // Rev.1 0201 with no class state: it may be a class 0201 or a short
+      // source token 201 (group 20.1) padded; the old API cannot say which.
+      const { activities } = buildCompanyProfileModel(
+        companyProfile({
+          caenActivities: [row('0201', 'rev1', null, 'Silvicultură și exploatare forestieră'), row('6201', 'rev2', 'class', 'Software')],
+        }),
+      )
+      expect(activities.groups.map((group) => [group.revision, group.kind, group.division, group.label, group.activities])).toEqual([
+        ['rev2', 'class', '62', expect.any(String), [{ code: '6201', label: 'Software', classState: 'class' }]],
+        // Kept: the code as served, its revision and count; never a sector.
+        ['rev1', 'unassessed', null, 'Calificare indisponibilă', [{ code: '0201', label: null, classState: null }]],
+      ])
+      const text = JSON.stringify(activities.groups)
+      expect(text).not.toMatch(/Silvicultur|forestier|Diviziunea 02/u)
+      expect(activities.total).toBe(2)
+      expect(activities.byRevision).toEqual([
+        { revision: 'rev2', count: 1 },
+        { revision: 'rev1', count: 1 },
+      ])
+    })
   })
 
   it('keeps ANAF’s Rev.3 vehicle repair as ANAF’s code, with no retired snapshot grouping', () => {
@@ -601,7 +705,7 @@ describe('buildCompanyProfileModel', () => {
     const model = buildCompanyProfileModel(
       companyProfile({
         status: { code: '1049', label: 'dizolvare judiciară conform Legii 31/1990 (fără lichidare) - radiere din oficiu - ş' },
-        caenActivities: [{ code: '5610', rev: 'rev2', label: 'Restaurante şi baruri', source: 'onrc' }],
+        caenActivities: [{ code: '5610', rev: 'rev2', label: 'Restaurante şi baruri', source: 'onrc', classState: 'class' }],
       }),
     )
     expect(model.status.label).toContain('ș')

@@ -3,6 +3,7 @@ import {
   companyMetricUnit,
   metricOfferedIn,
   offeredMetricsIn,
+  releaseOffersActivity,
   scopeNeedsStatement,
   type CompanyAnalysisBreakdown,
   type CompanyAnalysisCohortMode,
@@ -41,6 +42,8 @@ export type QuestionProblem =
   | { readonly kind: 'metric'; readonly metric: CompanyAnalysisMetric }
   | { readonly kind: 'range'; readonly metric: CompanyAnalysisMetric }
   | { readonly kind: 'limit'; readonly field: string; readonly max: number }
+  /** A filter of the derived activity (`activitate`, `activitate_baza`) on a release that does not offer it. */
+  | { readonly kind: 'capability'; readonly field: string }
 
 export interface ResolvedQuestion {
   readonly release: string
@@ -59,6 +62,8 @@ export interface ResolvedQuestion {
   readonly sortMetric: CompanyAnalysisMetric | null
   readonly direction: CompanyAnalysisDirection
   readonly cohortMode: CompanyAnalysisCohortMode
+  /** The release offers the derived activity (v3): its grouping, its filters, and each company's selection. */
+  readonly activity: boolean
 }
 
 const FIGURE_COMPANIONS: readonly CompanyAnalysisMetric[] = ['TURNOVER', 'NET_RESULT', 'EMPLOYEES']
@@ -99,6 +104,11 @@ export function resolveQuestion(state: CompanyAnalyticsState, release: CompanyAn
     ['onrc_fara_forma', onrc?.exclude?.legalForm?.length ?? 0, release.limits.maxLegalForms],
   ]
   for (const [field, count, max] of limits) if (count > max) problems.push({ kind: 'limit', field, max })
+  // A release without the derived activity cannot read its filters: said, never sent to be refused or dropped in silence.
+  const activity = releaseOffersActivity(release)
+  if (!activity && (state.scope.activity?.length ?? 0) > 0) problems.push({ kind: 'capability', field: 'activitate' })
+  if (!activity && (state.scope.activityBasis?.length ?? 0) > 0) problems.push({ kind: 'capability', field: 'activitate_baza' })
+  if ((state.scope.activity?.length ?? 0) > release.limits.maxCaenCodes) problems.push({ kind: 'limit', field: 'activitate', max: release.limits.maxCaenCodes })
 
   const sortMetric = state.sort === 'METRIC' ? metric : null
   const recordMetrics = unique([metric, ...FIGURE_COMPANIONS]).filter((item) => offered.includes(item)).slice(0, release.limits.maxRecordMetrics)
@@ -117,6 +127,7 @@ export function resolveQuestion(state: CompanyAnalyticsState, release: CompanyAn
     direction: state.direction ?? (state.sort === 'CUI' ? 'ASC' : 'DESC'),
     // Written out, as the API would default it: the cache key names the cohort it holds.
     cohortMode: state.cohort ?? (scopeNeedsStatement(state.scope) ? 'REFERENCE_YEAR' : 'EACH_YEAR'),
+    activity,
   }
 }
 
@@ -140,12 +151,13 @@ export function planStats(question: ResolvedQuestion): PlannedRead<CompanyAnalys
   }
 }
 
+/** A grouping the release does not offer (the derived activity on a v2 release) is not asked: it would only be refused. */
 export function planBreakdown(question: ResolvedQuestion, dimension: CompanyAnalysisDimension, topN: number): PlannedRead<CompanyAnalysisBreakdown> {
   const request = { release: question.release, scope: question.scope, dimension, metric: question.metric, rankBy: question.rankBy, topN }
   return {
     key: companyAnalyticsKeys.breakdown(request.release, request.scope, dimension, request.metric, request.rankBy, topN),
     read: (signal) => readCompanyAnalysisBreakdown(request, signal),
-    enabled: question.problems.length === 0,
+    enabled: question.problems.length === 0 && (dimension !== 'ACTIVITY' || question.activity),
   }
 }
 
@@ -188,6 +200,7 @@ export function planRecords(question: ResolvedQuestion, after: string | null): P
     metrics: question.recordMetrics,
     first: RECORDS_PAGE,
     after,
+    activity: question.activity,
   } as const
   return {
     key: companyAnalyticsKeys.records(request.release, request.scope, sort, request.sortMetric, request.direction, request.metrics, after),

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CompanyAnalysisBreakdown, CompanyAnalysisBucket } from '@/schemas/company-analytics'
 import { resolveQuestion } from '../../api/company-analytics-plan'
-import { aggregate, breakdownFixture, releaseFixture } from '../../api/company-analytics.fixture'
+import { activityBreakdownFixture, aggregate, breakdownFixture, releaseFixture, releaseV3Fixture } from '../../api/company-analytics.fixture'
 import { DEFAULT_STATE } from '../../lib/company-analytics-url'
 import { AnalyticsBreakdown } from './analytics-breakdown'
 
@@ -102,5 +102,44 @@ describe('AnalyticsBreakdown — a consensus grouping (schema v2)', () => {
     render(<AnalyticsBreakdown state={county} question={resolveQuestion(county, releaseFixture())} onChange={onChange} />)
     fireEvent.click(screen.getByRole('button', { name: 'Fără județ comun — valori diferite în înscrieri' }))
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ scope: { county: { in: ['(multiple_values)'] } }, dimension: 'UAT' }))
+  })
+})
+
+describe('AnalyticsBreakdown — the derived activity (schema v3)', () => {
+  const activity = { ...DEFAULT_STATE, panel: 'defalcare' as const, dimension: 'ACTIVITY' as const }
+
+  it('ranks the named activities with their source and quality, then the unclassified apart — never as sectors', () => {
+    answer.data = activityBreakdownFixture()
+    render(<AnalyticsBreakdown state={activity} question={resolveQuestion(activity, releaseV3Fixture())} onChange={() => undefined} />)
+    const rows = screen.getAllByRole('row').map((row) => row.textContent ?? '')
+    const head = rows.findIndex((row) => row.startsWith('Fără o activitate selectată'))
+    expect(head).toBeGreaterThan(0)
+    // Every ranked row before the line, every unclassified one after it.
+    expect(rows.slice(1, head).some((row) => row.includes('niciuna selectată'))).toBe(false)
+    expect(rows.slice(head + 1).filter((row) => /niciuna selectată|necatalogat|Fără selecție calificată/u.test(row))).toHaveLength(3)
+    expect(screen.getByText('ONRC Rev.2')).toBeInTheDocument()
+    expect(screen.getByText('ONRC Rev.3')).toBeInTheDocument()
+    expect(screen.getByText('ANAF · revizie nepublicată')).toBeInTheDocument()
+    expect(screen.getByText(/^3 alese după codul fiscal ANAF · 1 cu înscrieri ONRC incomplete · 2 cu observații necalificate · ANAF: situații între/u)).toBeInTheDocument()
+    expect(screen.getByText(/selecție derivată de platformă/u)).toBeInTheDocument()
+    expect(document.querySelectorAll('[data-unclassified="true"]')).toHaveLength(3)
+  })
+
+  it('drills a named activity to its exact selector and an unclassified bucket to its basis', () => {
+    answer.data = activityBreakdownFixture()
+    const onChange = vi.fn()
+    render(<AnalyticsBreakdown state={activity} question={resolveQuestion(activity, releaseV3Fixture())} onChange={onChange} />)
+    fireEvent.click(screen.getByRole('button', { name: /^6201 · Activități de programare a calculatoarelor/u }))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ scope: { activity: [{ source: 'ONRC', code: '6201', revision: 'rev3' }] }, dimension: 'COUNTY' }))
+    fireEvent.click(screen.getByRole('button', { name: /^4711 · Comerț cu amănuntul/u }))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ scope: { activity: [{ source: 'ANAF', code: '4711' }] } }))
+    fireEvent.click(screen.getByRole('button', { name: /^Fără selecție calificată/u }))
+    expect(onChange).toHaveBeenLastCalledWith(expect.objectContaining({ scope: { activityBasis: ['NO_QUALIFIED_SELECTION'] } }))
+  })
+
+  it('on a v2 release, says the grouping is not offered and asks nothing', () => {
+    answer.data = undefined
+    render(<AnalyticsBreakdown state={activity} question={resolveQuestion(activity, releaseFixture())} onChange={() => undefined} />)
+    expect(screen.getByTestId('companies-analytics-activity-unavailable')).toHaveTextContent('Această ediție a analizei nu are selecția derivată a activității.')
   })
 })

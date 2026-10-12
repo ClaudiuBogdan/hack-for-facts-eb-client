@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro'
 import { formatDecimal, type DecimalLocale } from '@/lib/exact-decimal'
 import { companyMetricUnit, type CompanyAnalysisDimension, type CompanyAnalysisKeyFilterInput, type CompanyAnalysisRangeInput, type CompanyAnalysisScope } from '@/schemas/company-analytics'
+import { activityBasisLabel, activitySelectorText } from './company-activity-text'
 import { basisGroupLabel, caenBasisLabel, consensusKeysOf, countyLabel, flagLabel, metricLabel, sizeBandLabel } from './company-analytics-text'
 import { caenToken } from './company-analytics-url'
 
@@ -81,8 +82,10 @@ export function scopeChips(scope: CompanyAnalysisScope, locale: DecimalLocale, n
   }
   if (scope.vatPayer) add('vatPayer', t`plătitor de TVA: ${scope.vatPayer.map(flagLabel).join(', ')}`)
   if (scope.fiscallyInactive) add('fiscallyInactive', t`inactiv fiscal: ${scope.fiscallyInactive.map(flagLabel).join(', ')}`)
-  if (scope.mainCaen) add('mainCaen', t`CAEN principal: ${joined(scope.mainCaen.map((selector) => (selector.revision ? caenToken(selector) : t`${selector.code} (revizie necunoscută)`)))}`)
+  if (scope.mainCaen) add('mainCaen', t`Cod CAEN fiscal ANAF: ${joined(scope.mainCaen.map((selector) => (selector.revision ? caenToken(selector) : t`${selector.code} (revizie necunoscută)`)))}`)
   if (scope.mainCaenBasis) add('mainCaenBasis', joined(scope.mainCaenBasis.map(caenBasisLabel)))
+  if (scope.activity) add('activity', t`activitate selectată (derivată): ${joined(scope.activity.map(activitySelectorText))}`)
+  if (scope.activityBasis) add('activityBasis', t`selecția activității: ${joined(scope.activityBasis.map(activityBasisLabel))}`)
   if (scope.filing) add('filing', scope.filing === 'FILED' ? t`au depus situații financiare` : t`nu au depus situații financiare`)
   for (const range of scope.financialRanges ?? []) add('financialRanges', rangeText(range, locale))
   if (scope.employeeSizeBands) add('employeeSizeBands', joined(scope.employeeSizeBands.map(sizeBandLabel)))
