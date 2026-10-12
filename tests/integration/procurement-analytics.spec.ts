@@ -86,6 +86,8 @@ test.describe('Procurement analytics — addresses and controls', () => {
     await page.goto(`${ROUTE}?titlu=laptop`)
     await waitForPageReady(page)
 
+    // From `sm` the ✕ shows, and takes a click, once its phrase is under the pointer — the way a reader reaches it.
+    await page.getByRole('heading', { level: 1 }).getByText(/laptop/).first().hover()
     await page.getByRole('button', { name: /Scoate „.*laptop/ }).first().click()
     await expect.poll(() => params(page).titlu).toBeUndefined()
   })
