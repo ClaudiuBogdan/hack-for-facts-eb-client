@@ -483,7 +483,8 @@ function CountiesBand({
                   locale={locale}
                   drill={(bucket) => hubCountyDrill(plan.questions.counties, bucket)}
                 />
-                <AnalyticsLink search={hubAnalyticsLink(plan.questions.counties, { panel: 'defalcare', mode: 'harta', dimension: 'COUNTY' })} />
+                {/* The analysis's map draws a measure's sum: the filers' layer opens the counties' table, ranked by them. */}
+                <AnalyticsLink search={hubAnalyticsLink(plan.questions.counties, { panel: 'defalcare', mode: measure === 'FILERS' ? 'tabel' : 'harta', dimension: 'COUNTY' })} />
               </>
             )}
           </SectionRead>

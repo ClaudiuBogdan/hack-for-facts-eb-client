@@ -97,6 +97,7 @@ export function CompaniesSeriesEditor({ series }: { readonly series: CompaniesAn
     ...DEFAULT_STATE,
     year: series.referenceYear ?? null,
     metric: series.metric,
+    mode: 'grafice',
     panel: 'evolutie',
     cohort: series.cohortMode ?? null,
     release: pin,

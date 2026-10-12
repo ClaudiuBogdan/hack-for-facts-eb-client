@@ -94,7 +94,8 @@ describe('the drill', () => {
 describe('the rows', () => {
   it('ranks the named activities only; the unclassified follow, apart, adding up to the total', () => {
     const breakdown = activityBreakdownFixture()
-    const rows = breakdownRows(breakdown)
+    const { ranked, rest, tail } = breakdownRows(breakdown)
+    const rows = [...ranked, ...rest, ...tail]
     expect(rows.map((row) => row.key ?? row.kind)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711', 'OTHER', '(onrc_multiple_classes)', '(anaf_fiscal_uncatalogued)', '(no_qualified_selection)'])
     expect(rows.reduce((sum, row) => sum + Number(row.metric?.sum ?? 0), 0)).toBe(Number(breakdown.totals.metric?.sum))
     expect(rows.map((row) => groupLabel('ACTIVITY', row))).toEqual([
@@ -111,7 +112,7 @@ describe('the rows', () => {
   it('keeps an unclassified bucket out of the ranked rows wherever the answer put it', () => {
     const misplaced = activityBreakdownFixture({ groups: [...activityBreakdownFixture().groups, bucket('GROUP', '(onrc_multiple_classes)', '5.00', { activity: activity({ basis: 'ONRC_MULTIPLE_CLASSES', code: null, revision: null }) })], unclassified: [] })
     expect(activityTail(misplaced).map((row) => row.key)).toEqual(['(onrc_multiple_classes)'])
-    expect(breakdownRows(misplaced).slice(0, 3).map((row) => row.key)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711'])
+    expect(breakdownRows(misplaced).ranked.map((row) => row.key)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711'])
     expect(hubRankingOf(misplaced, 'TURNOVER', 'ro').rows.map((row) => row.key)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711'])
   })
 

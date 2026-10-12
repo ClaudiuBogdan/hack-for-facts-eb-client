@@ -1,10 +1,10 @@
 import { t } from '@lingui/core/macro'
-import type { CompanyAnalysisRelease, CompanyAnalysisScope, CompanyAnalysisSizeBand } from '@/schemas/company-analytics'
+import type { CompanyAnalysisOnrcBasis, CompanyAnalysisRelease, CompanyAnalysisSizeBand } from '@/schemas/company-analytics'
 import { COMPANY_ANALYSIS_SIZE_BANDS } from '@/schemas/company-analytics'
 import type { ResolvedQuestion } from '../api/company-analytics-plan'
-import { scopeChips, type ScopeField, type ScopeNames } from './company-analytics-scope-text'
+import { scopeChips, type ScopeChip, type ScopeField, type ScopeNames } from './company-analytics-scope-text'
 import { statusGroupOf } from './company-analytics-states'
-import { countyLabel, flagLabel } from './company-analytics-text'
+import { consensusKeysOf, countyLabel, flagLabel, onrcBasisPhrase } from './company-analytics-text'
 import type { CompanyAnalyticsState } from './company-analytics-url'
 
 /**
@@ -27,6 +27,8 @@ export interface SentenceSource {
 /** One filter of the selection as words inside the headline; a lead phrase joins the subject („Firmele SRL radiate din Cluj"), the rest follow commas. */
 export interface Phrase {
   readonly field: ScopeField
+  /** The filter it says, as the panel's chip: what its ✕ removes (one range, one part of the ONRC observations). */
+  readonly chip: ScopeChip
   readonly text: string
   readonly lead: boolean
   /** What comes before it: a space after the subject, a comma otherwise (and for the county after its locality). */
@@ -58,6 +60,11 @@ const SIZE_SHORT: Partial<Record<CompanyAnalysisSizeBand, string>> = { ZERO: '0'
 /** The headline's order: the form, then the state, then the place (a locality before its county); the rest after commas. */
 const LEAD_ORDER: readonly ScopeField[] = ['legalForms', 'observedStatus', 'uat', 'county']
 
+/** „din Cluj": a place — its own message, apart from the date's „din 2019" („since 2019") the catalog holds. */
+function inPlace(place: string): string {
+  return t({ message: `din ${place}`, context: 'place' })
+}
+
 /** The counties by what they are: „județul Sibiu", „județele Cluj, Timiș", București by its name and first (it is no county). */
 function countyWords(codes: readonly string[]): string {
   const counties = codes.filter((code) => code !== 'B').map(countyLabel)
@@ -66,34 +73,48 @@ function countyWords(codes: readonly string[]): string {
   return named ? t`București și ${named}` : t`București`
 }
 
+/**
+ * A consensus filter's companies without a common value: for any reason
+ * („fără un județ comun"), or for the reasons asked for („fără un județ
+ * comun (valori diferite în înscrieri)"); null when none are asked for.
+ */
+function withoutCommon(field: 'county' | 'uat' | 'observedStatus', bases: readonly CompanyAnalysisOnrcBasis[], any: boolean): string | null {
+  if (!any && bases.length === 0) return null
+  const reasons = alternatives(bases.map(onrcBasisPhrase))
+  if (field === 'county') return any ? t`fără un județ comun` : t`fără un județ comun (${reasons})`
+  if (field === 'uat') return any ? t`fără o localitate comună` : t`fără o localitate comună (${reasons})`
+  return any ? t`fără stare comună` : t`fără stare comună (${reasons})`
+}
+
 /** The selection in phrases a sentence can hold („din Cluj", „SRL", „plătitoare de TVA"); anything else in the chip's own words. */
 export function phrasesOf(page: SentenceSource): readonly Phrase[] {
   const { state, names, locale, question } = page
   const scope = state.scope
   const year = question?.year
   const phrases = scopeChips(scope, locale, names).map((chip): Phrase => {
-    const rest = (text: string): Phrase => ({ field: chip.field, text, lead: false, before: ', ' })
-    const lead = (text: string, before = ' '): Phrase => ({ field: chip.field, text, lead: true, before })
+    const rest = (text: string): Phrase => ({ field: chip.field, chip, text, lead: false, before: ', ' })
+    const lead = (text: string, before = ' '): Phrase => ({ field: chip.field, chip, text, lead: true, before })
     switch (chip.field) {
       case 'county': {
-        // The companies with no known county, when they are asked for too, are said: they are in the figures.
-        const codes = scope.county?.in ?? []
-        const unknown = Boolean(scope.county?.includeUnknown)
-        if (codes.length === 0) return rest(unknown ? t`fără un județ comun` : chip.text)
-        const place = unknown ? t`din ${countyWords(codes)} sau fără un județ comun` : t`din ${countyWords(codes)}`
-        const uats = scope.uat?.in ?? []
-        if (uats.length === 0) return lead(place)
+        // The companies with no common county, when they are asked for too, are said: they are in the figures.
+        const { values: codes, bases } = consensusKeysOf(scope.county?.in ?? [])
+        const none = withoutCommon('county', bases, Boolean(scope.county?.includeUnknown))
+        if (codes.length === 0) return rest(none ?? chip.text)
+        const place = none ? t`din ${countyWords(codes)} sau ${none}` : inPlace(countyWords(codes))
+        const uats = consensusKeysOf(scope.uat?.in ?? [])
+        if (uats.values.length === 0) return lead(place)
         // After its localities, the county says which („din Sibiu, județul Sibiu") — only once the localities'
         // files show every one of them in it; two places that may not hold together are two conditions.
         const countyOf = new Map((page.uats.localities ?? []).map((item) => [item.value, item.county]))
-        const within = codes.length === 1 && !unknown && !scope.uat?.includeUnknown && uats.every((code) => countyOf.get(code) === codes[0])
+        const within = codes.length === 1 && !none && !scope.uat?.includeUnknown && uats.bases.length === 0 && uats.values.every((code) => countyOf.get(code) === codes[0])
         return within ? lead(countyWords(codes), ', ') : lead(place, ', ')
       }
       case 'uat': {
-        const uats = (scope.uat?.in ?? []).map((code) => names.uats?.get(code) ?? code)
-        const unknown = Boolean(scope.uat?.includeUnknown)
-        if (uats.length === 0) return rest(unknown ? t`fără o localitate comună` : chip.text)
-        return lead(unknown ? t`din ${joined(uats)} sau fără o localitate comună` : t`din ${joined(uats)}`)
+        const { values, bases } = consensusKeysOf(scope.uat?.in ?? [])
+        const uats = values.map((code) => names.uats?.get(code) ?? code)
+        const none = withoutCommon('uat', bases, Boolean(scope.uat?.includeUnknown))
+        if (uats.length === 0) return rest(none ?? chip.text)
+        return lead(none ? t`din ${joined(uats)} sau ${none}` : inPlace(joined(uats)))
       }
       case 'legalForms':
         return lead(anyOf(scope.legalForms ?? []))
@@ -101,9 +122,11 @@ export function phrasesOf(page: SentenceSource): readonly Phrase[] {
         const group = statusGroupOf(scope)
         if (group) return lead(group.phrase)
         // „cu starea „faliment"", several as alternatives („… sau …"): a status is a value, not a word of the sentence.
-        const statuses = (scope.observedStatus?.in ?? []).map((code) => `„${(names.statuses?.get(code) ?? code).toLocaleLowerCase('ro-RO')}”`)
-        const all = [...statuses, ...(scope.observedStatus?.includeUnknown ? [t`fără stare comună`] : [])]
-        return rest(all.length > 0 ? t`cu starea ${alternatives(all)}` : chip.text)
+        const { values, bases } = consensusKeysOf(scope.observedStatus?.in ?? [])
+        const statuses = values.map((code) => `„${(names.statuses?.get(code) ?? code).toLocaleLowerCase('ro-RO')}”`)
+        const none = withoutCommon('observedStatus', bases, Boolean(scope.observedStatus?.includeUnknown))
+        if (statuses.length === 0) return rest(none ?? chip.text)
+        return rest(t`cu starea ${alternatives([...statuses, ...(none ? [none] : [])])}`)
       }
       case 'vatPayer': {
         const values = scope.vatPayer ?? []
@@ -138,13 +161,6 @@ export function phrasesOf(page: SentenceSource): readonly Phrase[] {
   })
   const leads = LEAD_ORDER.flatMap((field) => phrases.filter((phrase) => phrase.lead && phrase.field === field))
   return [...leads, ...phrases.filter((phrase) => !phrase.lead)]
-}
-
-/** The selection without one of its filters. */
-export function without(scope: CompanyAnalysisScope, field: ScopeField): CompanyAnalysisScope {
-  const next: Record<string, unknown> = { ...scope }
-  delete next[field]
-  return next as CompanyAnalysisScope
 }
 
 /** The selection in plain words: the headline's, and the pinned bar's when the head is gone. */

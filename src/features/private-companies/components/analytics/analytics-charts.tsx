@@ -6,14 +6,16 @@ import { decimalToPlot } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisBucket, CompanyAnalysisDimension } from '@/schemas/company-analytics'
 import { useCompanyAnalysisBreakdown, useCompanyAnalysisRecords } from '../../hooks/use-company-analytics'
+import { activityRefused } from '../../lib/company-analytics-answer'
 import { drillScope, nextDimension } from '../../lib/company-analytics-drill'
 import { compactValueText, countText, shareText } from '../../lib/company-analytics-format'
 import { dimensionLabel, metricLabel } from '../../lib/company-analytics-text'
 import { withScope } from '../../lib/company-analytics-url'
-import { activityTail, groupLabel } from '../../lib/company-analytics-view'
+import { breakdownRows, groupLabel } from '../../lib/company-analytics-view'
+import { isReleaseRefused } from '../../api/company-analytics-api'
 import { CHART_TOP, chartRecordsQuestion } from '../../api/company-analytics-plan'
 import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
-import { orderedGroups } from '../../lib/company-analytics-order'
+import { ActivityName, ActivityUnavailable } from './analytics-axis'
 
 /**
  * The answer as charts: the largest companies as bars, and each axis as two
@@ -88,12 +90,12 @@ export function ShareChart({ page, dimension }: { readonly page: CompanyAnalytic
   const { state, question, locale, move } = page
   const breakdown = useCompanyAnalysisBreakdown(question, dimension, CHART_TOP)
   const data = breakdown.data
-  if (breakdown.isError) return <HubLoadError onRetry={() => void breakdown.refetch()} />
+  if (question && activityRefused(dimension, question.activity, breakdown.error)) return <ActivityUnavailable />
+  if (breakdown.isError && !isReleaseRefused(breakdown.error)) return <HubLoadError onRetry={() => void breakdown.refetch()} />
   if (!data || !question) return CHART_PENDING
-  // The derived activity's unclassified buckets follow the ranked groups, apart, never as sectors.
-  const tail = activityTail(data)
-  const ranked = orderedGroups(dimension, data.groups.filter((bucket) => !tail.includes(bucket)))
-  const rows = [...ranked, ...(data.other.groups > 0 ? [data.other] : []), ...tail, ...(data.unknown.companies !== '0' ? [data.unknown] : [])]
+  // The table's rows: the derived activity's unclassified buckets after the ranked groups, apart, never as sectors.
+  const { ranked, rest, tail } = breakdownRows(data)
+  const rows = [...ranked, ...rest, ...tail]
   const total = data.totals.metric?.sum ?? null
   const sums = rows.map((bucket) => decimalToPlot(bucket.metric?.sum) ?? 0)
   const shared = total !== null && (decimalToPlot(total) ?? 0) > 0 && sums.every((sum) => sum >= 0)
@@ -124,7 +126,12 @@ export function ShareChart({ page, dimension }: { readonly page: CompanyAnalytic
           const label = groupLabel(dimension, bucket)
           const onDrill = bucket.kind === 'GROUP' ? drill(bucket) : null
           const quiet = bucket.kind !== 'GROUP' || bucket.basis !== null || tail.includes(bucket)
-          const name = <span className={cn('block truncate text-sm', quiet ? 'italic text-muted-foreground' : 'font-medium text-foreground')}>{label}</span>
+          // An activity by its source and revision, as in the table: two revisions may share a code and a name.
+          const name = (
+            <span className={cn('block text-sm', dimension === 'ACTIVITY' ? 'whitespace-normal' : 'truncate', quiet ? 'italic text-muted-foreground' : 'font-medium text-foreground')}>
+              {dimension === 'ACTIVITY' ? <ActivityName bucket={bucket} label={label} locale={locale} /> : label}
+            </span>
+          )
           return (
             <li key={`${bucket.kind}-${bucket.key ?? index}`} className="grid gap-1.5 sm:grid-cols-[16rem_minmax(0,1fr)] sm:gap-x-4">
               {onDrill ? (

@@ -9,10 +9,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
 import { countText } from '../../lib/company-analytics-format'
-import { filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
+import { sourceEditionText } from '../../lib/company-analytics-source'
+import { companyAnalyticsCaveats } from '../../lib/company-analytics-text'
+import { DEFAULT_STATE, filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
 import { heldOf, partialYears } from '../../lib/company-analytics-view'
 import { STATUS_ACTIVE } from '../../lib/company-status-codes'
-import { phrasesOf, sentenceOf, without } from '../../lib/company-analytics-sentence'
+import { phrasesOf, sentenceOf } from '../../lib/company-analytics-sentence'
+import { withoutChip } from '../../lib/company-analytics-scope-text'
 import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
 import { FiscalYearSelect, MeasureSelect } from './analytics-choices'
 import { AddFilter } from './analytics-add-filter'
@@ -54,17 +57,16 @@ function headlineSize(length: number): string {
 
 // ──────────────────────────────────────────────────────────────── the head ──
 
-
 /** The selection as the headline — „Firmele SRL radiate din Cluj, plătitoare de TVA, în 2024" — each filter a phrase that opens the filters, with its ✕. */
 export function AnalyticsHead({ page, onFilters }: { readonly page: CompanyAnalyticsPageData; readonly onFilters: () => void }) {
-  const { state, question, live, move } = page
+  const { state, question, live, move, locale } = page
   const phrases = phrasesOf(page)
   const year = question?.year ?? live?.defaults.fiscalYear ?? null
   // The sentence in plain words: the headline's name (its phrases and their ✕s stay reachable inside) and its size.
   const plain = sentenceOf(page)
   return (
     <section className="relative border-b" aria-labelledby="company-analytics-title">
-      <TwoLayerLattice idPrefix="company-analytics-prototype" />
+      <TwoLayerLattice idPrefix="company-analytics" />
       <RuledFrame className="py-10 sm:py-12 lg:py-14">
         <CornerTicks />
         <div className="flex items-center justify-between gap-4">
@@ -86,9 +88,9 @@ export function AnalyticsHead({ page, onFilters }: { readonly page: CompanyAnaly
             <h1 id="company-analytics-title" aria-label={plain} className={cn(headlineSize(plain.length), 'text-balance break-words font-extrabold leading-[1.02] tracking-tighter text-foreground')}>
               {t`Firmele`}
               {phrases.map((phrase) => (
-                <span key={phrase.field}>
+                <span key={`${phrase.field}:${phrase.chip.part ?? ''}:${phrase.chip.text}`}>
                   {phrase.before}
-                  <HeadlinePhrase text={phrase.text} removeLabel={t`Scoate „${phrase.text}”`} onOpen={onFilters} onRemove={() => move(withScope(state, without(state.scope, phrase.field)))} />
+                  <HeadlinePhrase text={phrase.text} removeLabel={t`Scoate „${phrase.text}”`} onOpen={onFilters} onRemove={() => move(withScope(state, withoutChip(state.scope, phrase.chip, locale)))} />
                 </span>
               ))}
               {year ? `, ${t`în ${year}`}` : null}
@@ -216,11 +218,18 @@ interface ReadyQuestion {
   readonly to: (state: CompanyAnalyticsState) => CompanyAnalyticsState
 }
 
-const AT_ONCE = { cohort: null, release: null, unread: [] } as const
-
-/** Questions a reader asks first, each the page's own state. */
+/**
+ * Questions a reader asks first, each the page's own state, asked afresh: the
+ * reader's year, release and view, nothing of the last question's order or
+ * axis. The map draws places only, so a question of companies or of another
+ * axis is read in the table.
+ */
 function readyQuestions(): readonly ReadyQuestion[] {
-  const base = (state: CompanyAnalyticsState, patch: Partial<CompanyAnalyticsState>): CompanyAnalyticsState => ({ ...state, ...AT_ONCE, release: state.release, ...patch })
+  const base = (state: CompanyAnalyticsState, patch: Partial<CompanyAnalyticsState>): CompanyAnalyticsState => {
+    const next: CompanyAnalyticsState = { ...DEFAULT_STATE, year: state.year, release: state.release, mode: state.mode, ...patch }
+    const places = next.panel === 'defalcare' && (next.dimension === 'COUNTY' || next.dimension === 'UAT')
+    return next.mode === 'harta' && !places ? { ...next, mode: 'tabel' } : next
+  }
   return [
     { group: t`Cele mai mari`, text: t`Cele mai mari firme după cifra de afaceri`, to: (s) => base(s, { scope: {}, metric: 'TURNOVER', panel: 'firme' }) },
     { group: t`Cele mai mari`, text: t`Cei mai mari angajatori`, to: (s) => base(s, { scope: {}, metric: 'EMPLOYEES', panel: 'firme' }) },
@@ -245,7 +254,7 @@ function QuestionsMenu({ page }: { readonly page: CompanyAnalyticsPageData }) {
         {t`Întrebări`}
         <ChevronDown className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent align="start" className="max-h-[70vh] w-[min(92vw,22rem)] overflow-y-auto p-2">
+      <PopoverContent align="start" className="max-h-[min(70vh,var(--radix-popover-content-available-height))] w-[min(92vw,22rem)] overflow-y-auto p-2">
         {groups.map((group) => (
           <div key={group} className="py-1">
             <MonoLabel className="block px-2 py-1 text-muted-foreground">{group}</MonoLabel>
@@ -293,8 +302,9 @@ function NotesMarker({ page }: { readonly page: CompanyAnalyticsPageData }) {
   }
   notes.push(
     t`Firmele sunt persoanele juridice din registrul comerțului (SRL, SA…), fără PFA, II sau IF.`,
-    t`Județul, localitatea, forma și starea sunt cele dintr-o ediție publicată a registrului ONRC; cifrele sunt ale anului ales.`,
     t`O valoare lipsă nu e zero: o firmă fără bilanț nu are cifre pentru acel an.`,
+    ...companyAnalyticsCaveats(),
+    t`Județul, localitatea, starea și forma juridică sunt cele din ${sourceEditionText(live.release, locale)}.`,
   )
   const count = warnings.length
   return (
@@ -309,7 +319,7 @@ function NotesMarker({ page }: { readonly page: CompanyAnalyticsPageData }) {
         {count > 0 ? <TriangleAlert className="size-3.5" aria-hidden="true" /> : <Info className="size-3.5" aria-hidden="true" />}
         {count > 0 ? count : null}
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(92vw,26rem)] space-y-2 text-sm">
+      <PopoverContent align="start" className="max-h-[min(70vh,var(--radix-popover-content-available-height))] w-[min(92vw,26rem)] space-y-2 overflow-y-auto text-sm">
         {warnings.map((warning) => (
           <p key={warning} className="border-l-2 border-amber-600/60 pl-3 text-foreground">
             {warning}

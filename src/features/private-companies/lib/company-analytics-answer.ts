@@ -1,4 +1,6 @@
-import type { CompanyAnalysisDimension, CompanyAnalysisScope } from '@/schemas/company-analytics'
+import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
+import { onrcBasisOfKey, type CompanyAnalysisDimension, type CompanyAnalysisScope } from '@/schemas/company-analytics'
+import { isCapabilityRefused } from '../api/company-analytics-api'
 import type { CompanyAnalyticsState } from './company-analytics-url'
 
 /**
@@ -11,13 +13,15 @@ export type AnswerTab = 'firme' | 'evolutie' | CompanyAnalysisDimension
 
 /**
  * The tabs: the companies, then every axis the filters leave open — a county
- * chosen has no counties to rank, a locality no localities — then the years.
+ * chosen has no counties to rank, a locality no localities (a single value:
+ * with the companies without a common one, there are groups to rank) — then
+ * the years.
  * The derived activity where the release offers it (or the address asks for
  * it, to be told it is not offered), before ANAF's fiscal CAEN code.
  */
 export function answerTabs(state: CompanyAnalyticsState, activity: boolean): readonly AnswerTab[] {
-  const oneCounty = (state.scope.county?.in?.length ?? 0) === 1
-  const oneUat = (state.scope.uat?.in?.length ?? 0) === 1
+  const oneCounty = oneValueOf(state.scope.county) !== null
+  const oneUat = oneValueOf(state.scope.uat) !== null
   const axes: CompanyAnalysisDimension[] = []
   if (!oneCounty && !oneUat) axes.push('COUNTY')
   if (!oneUat) axes.push('UAT')
@@ -37,10 +41,21 @@ export function currentTab(state: CompanyAnalyticsState, activity: boolean): Ans
   return answerTabs(state, activity).includes(wanted) ? wanted : 'firme'
 }
 
-/** The one county the selection is in, if it is in one: the map shows its localities. */
+/** A consensus filter's one value, when it holds just that: no basis group, no companies without a common value. */
+function oneValueOf(filter: CompanyAnalysisScope['county']): string | null {
+  const key = filter?.in?.length === 1 && !filter.includeUnknown ? filter.in[0] : undefined
+  return key !== undefined && onrcBasisOfKey(key) === null ? key : null
+}
+
+/** The one county the selection is in, if it is in one the map knows: the map shows its localities. */
 export function mapCountyOf(scope: CompanyAnalysisScope): string | null {
-  const county = scope.county
-  return county?.in?.length === 1 && !county.includeUnknown ? (county.in[0] ?? null) : null
+  const county = oneValueOf(scope.county)
+  return county !== null && ROMANIA_COUNTIES.some((known) => known.code === county) ? county : null
+}
+
+/** Whether the release does not offer the derived activity — known from its capabilities, or said by the API's typed refusal. */
+export function activityRefused(dimension: CompanyAnalysisDimension, offered: boolean, error: unknown): boolean {
+  return dimension === 'ACTIVITY' && (!offered || isCapabilityRefused(error))
 }
 
 export function withTab(state: CompanyAnalyticsState, tab: AnswerTab): CompanyAnalyticsState {

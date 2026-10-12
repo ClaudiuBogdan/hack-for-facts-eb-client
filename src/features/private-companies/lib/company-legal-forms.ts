@@ -24,14 +24,6 @@ const LEGAL_FORM_NAMES: Readonly<Record<string, MessageDescriptor>> = {
   IF: msg`Întreprindere familială`,
 }
 
-/** The forms whose name is not feminine („Grup …", „Institut …"): the head's sentence says „înregistrat", not „înregistrată". */
-const NOT_FEMININE: ReadonlySet<string> = new Set(['GIE', 'GEIE', 'INCD'])
-
-/** Whether the sentence's participle agrees with a feminine name: every form's but a group's or an institute's, and „Firmă" when there is none. */
-export function legalFormIsFeminine(form: string | null): boolean {
-  return form === null || !NOT_FEMININE.has(form)
-}
-
 /** A code's name in words through `translate`; a code with no name stays the registry's own. */
 export function legalFormName(form: string | null, translate: (descriptor: MessageDescriptor) => string): string | null {
   if (form === null) return null

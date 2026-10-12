@@ -190,9 +190,28 @@ describe('CompanyAnalyticsPage', () => {
     router.search = { lang: 'ro' }
     renderPage()
     await screen.findByText(FIGURES)
-    fireEvent.click(screen.getByRole('tab', { name: 'În timp' }))
+    fireEvent.mouseDown(screen.getByRole('tab', { name: 'În timp' }))
     const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
     expect(search(router.search)).toEqual({ lang: 'ro', vedere: 'evolutie', editie: 7 })
+  })
+
+  it('walks the answer’s tabs by keyboard: an arrow moves the focus only, Enter opens the tab', async () => {
+    router.search = { lang: 'ro' }
+    renderPage()
+    await screen.findByText(FIGURES)
+    const first = screen.getByRole('tab', { name: 'Firmele' })
+    expect(first).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', first.id)
+    // One stop for Tab, not one per tab (the list hands its focus to the tab shown).
+    expect(screen.getAllByRole('tab').filter((tab) => tab.tabIndex === 0).length).toBeLessThanOrEqual(1)
+    first.focus()
+    fireEvent.keyDown(first, { key: 'ArrowRight' })
+    const next = screen.getByRole('tab', { name: 'Județe' })
+    await waitFor(() => expect(next).toHaveFocus())
+    expect(router.navigate).not.toHaveBeenCalled()
+    fireEvent.keyDown(next, { key: 'Enter' })
+    const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    expect(search(router.search)).toEqual({ lang: 'ro', vedere: 'defalcare', editie: 7 })
   })
 
   it('shows the answer as a table, a map or charts from the pinned bar, the choice written in the address', async () => {

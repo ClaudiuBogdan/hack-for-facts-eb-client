@@ -12,14 +12,11 @@ import {
   type CompanyAnalysisSeries,
   type CompanyAnalysisSeriesPoint,
   type CompanyAnalysisSizeBand,
-  type CompanyAnalysisStats,
 } from '@/schemas/company-analytics'
-import type { ResolvedQuestion } from '../api/company-analytics-plan'
 import { activityText, unclassifiedActivityLabel, unclassifiedBasisOf } from './company-activity-text'
-import { compactValue, countText, exactValueText, shareText } from './company-analytics-format'
-import type { ScopeNames } from './company-analytics-scope-text'
-import { basisGroupLabel, caenText, flagLabel, gapReasonLabel, labelSourceText, metricLabel, placeName, placePhrase, sizeBandLabel } from './company-analytics-text'
-import type { CompanyAnalyticsState } from './company-analytics-url'
+import { compactValue, countText, exactValueText } from './company-analytics-format'
+import { orderedGroups } from './company-analytics-order'
+import { basisGroupLabel, caenText, flagLabel, gapReasonLabel, labelSourceText, metricLabel, placeName, sizeBandLabel } from './company-analytics-text'
 
 /**
  * What the analysis page draws, worked out from the answers: the headline,
@@ -27,11 +24,6 @@ import type { CompanyAnalyticsState } from './company-analytics-url'
  * Pure, so each can be checked against the API's exact strings: a null sum
  * is said as „no value reported" and never drawn as 0.
  */
-
-/** The question as a sentence: „Cifra de afaceri în județul Cluj, anul fiscal 2024". */
-export function headlineOf(state: CompanyAnalyticsState, question: ResolvedQuestion, names: ScopeNames): string {
-  return t`${metricLabel(question.metric)} ${placePhrase(state.scope, names.uats ?? new Map())}, anul fiscal ${question.year}`
-}
 
 // ─────────────────────────────────────────────────────────────── figures ──
 
@@ -45,10 +37,6 @@ export interface Fact {
 
 export function heldOf(coverage: CompanyAnalysisCoverage): string {
   return sumDecimals([coverage.heldProfile, coverage.heldObservation, coverage.heldQuality, coverage.heldComponent]) ?? '0'
-}
-
-export function statementsOf(coverage: CompanyAnalysisCoverage): string {
-  return sumDecimals([coverage.reported, coverage.missing, coverage.notAdmitted, heldOf(coverage)]) ?? '0'
 }
 
 /** A measure's figure: its sum on one scale with the exact value under it, or why there is none — never a 0 for nothing reported. */
@@ -65,43 +53,18 @@ export function metricFact(aggregate: CompanyAnalysisMetricAggregate, locale: De
   }
 }
 
-export function factsOf(stats: CompanyAnalysisStats, question: ResolvedQuestion, locale: DecimalLocale): { readonly main: readonly Fact[]; readonly more: readonly Fact[] } {
-  const selected = stats.metrics.find((aggregate) => aggregate.metric === question.metric)
-  const main: Fact[] = [
-    { key: 'companies', value: countText(stats.companies, locale), label: t`Firme eligibile în selecție`, notes: [t`persoane juridice din registru, în orice stare`] },
-    {
-      key: 'filers',
-      value: countText(stats.filers, locale),
-      label: t`Cu situație financiară pentru ${question.year}`,
-      notes: [t`${countText(stats.nonFilers, locale)} fără situație pentru ${question.year}`],
-    },
-  ]
-  if (selected) {
-    main.push(metricFact(selected, locale))
-    const share = shareText(selected.coverage.reported, statementsOf(selected.coverage), locale)
-    main.push({
-      key: 'coverage',
-      value: share ?? '—',
-      label: t`Din situații au valoarea raportată`,
-      notes: [t`lipsă ${countText(selected.coverage.missing, locale)} · reținute ${countText(heldOf(selected.coverage), locale)} · neadmise ${countText(selected.coverage.notAdmitted, locale)}`],
-    })
-  }
-  const more = stats.metrics.filter((aggregate) => aggregate.metric !== question.metric).map((aggregate) => metricFact(aggregate, locale))
-  return { main, more }
-}
-
 // ────────────────────────────────────────────────────────────── breakdown ──
 
 /** County, locality and status are consensus groupings: every company is in a value group or a basis group, and their `unknown` is an empty slot. */
 export const CONSENSUS_DIMENSIONS: ReadonlySet<CompanyAnalysisDimension> = new Set(['COUNTY', 'UAT', 'OBSERVED_STATUS'])
 
 /**
- * The rows a breakdown shows, in its order: the groups (basis groups among
- * them, ranked like any), „other" when it folds any, the derived activity's
- * unclassified buckets (never ranked: after every ranked row), and the
- * unknown group — except a consensus grouping's or the derived activity's,
- * which the API keeps empty (shown only if it ever were not, so the rows
- * still add up to the total).
+ * The rows an axis shows, in three parts that add up to the total: the
+ * groups, ranked (basis groups among them, ranked like any; the sizes in
+ * their own order); apart, „other" when it folds any and the unknown group
+ * — except a consensus grouping's or the derived activity's, which the API
+ * keeps empty (shown only if it ever were not); and last the derived
+ * activity's unclassified buckets, never ranked.
  */
 export function breakdownRows(breakdown: {
   readonly dimension: CompanyAnalysisDimension
@@ -109,15 +72,14 @@ export function breakdownRows(breakdown: {
   readonly other: CompanyAnalysisBucket
   readonly unknown: CompanyAnalysisBucket
   readonly unclassified?: readonly CompanyAnalysisBucket[]
-}): readonly CompanyAnalysisBucket[] {
+}): { readonly ranked: readonly CompanyAnalysisBucket[]; readonly rest: readonly CompanyAnalysisBucket[]; readonly tail: readonly CompanyAnalysisBucket[] } {
   const emptySlot = (CONSENSUS_DIMENSIONS.has(breakdown.dimension) || breakdown.dimension === 'ACTIVITY') && breakdown.unknown.companies === '0'
   const tail = activityTail(breakdown)
-  return [
-    ...breakdown.groups.filter((bucket) => !tail.includes(bucket)),
-    ...(breakdown.other.groups > 0 ? [breakdown.other] : []),
-    ...tail,
-    ...(emptySlot ? [] : [breakdown.unknown]),
-  ]
+  return {
+    ranked: orderedGroups(breakdown.dimension, breakdown.groups.filter((bucket) => !tail.includes(bucket))),
+    rest: [...(breakdown.other.groups > 0 ? [breakdown.other] : []), ...(emptySlot ? [] : [breakdown.unknown])],
+    tail,
+  }
 }
 
 /** A derived-activity bucket that selects no named activity: several classes, an uncatalogued ANAF code, no qualified selection. Never a sector, never ranked. */

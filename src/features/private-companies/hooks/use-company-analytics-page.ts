@@ -37,8 +37,8 @@ export function useCompanyAnalyticsPage(address: CompanyAnalyticsAddress) {
   const [filtersOpen, setFiltersOpen] = useState(false)
   // Localities by name only once one is on screen or being looked for (the map's files weigh 3 MB).
   const uats = useUatIndex(filtersOpen || Boolean(state.scope.uat?.in?.length))
-  // Status labels for the headline, from the year's own population.
-  const statuses = useCompanyAnalysisOptions(question, 'OBSERVED_STATUS', Boolean(state.scope.observedStatus?.in?.length))
+  // Status labels for the headline and the ONRC observations, from the year's own population.
+  const statuses = useCompanyAnalysisOptions(question, 'OBSERVED_STATUS', Boolean(state.scope.observedStatus?.in?.length || state.scope.onrc?.status?.length || state.scope.onrc?.exclude?.status?.length))
   const statusNames: ReadonlyMap<string, string> = new Map((statuses.data?.groups ?? []).flatMap((group) => (group.key && group.label ? [[group.key, group.label] as const] : [])))
   const names: ScopeNames = { uats: uats.names, statuses: statusNames }
   const pin = (next: CompanyAnalyticsState): CompanyAnalyticsState => ({ ...next, release: next.release ?? pinned })

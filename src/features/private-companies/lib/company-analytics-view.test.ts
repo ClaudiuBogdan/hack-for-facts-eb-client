@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { aggregate, breakdownFixture, bucket, releaseFixture, seriesFixture, statsFixture } from '../api/company-analytics.fixture'
-import { resolveQuestion } from '../api/company-analytics-plan'
+import { aggregate, breakdownFixture, bucket, releaseFixture, seriesFixture } from '../api/company-analytics.fixture'
 import { drillScope, nextDimension } from './company-analytics-drill'
 import { boundOf } from './company-analytics-filter-model'
 import { placeName } from './company-analytics-text'
-import { DEFAULT_STATE, stateOf } from './company-analytics-url'
-import { breakdownRows, factsOf, groupLabel, headlineOf, metricFact, partialYears, pointText } from './company-analytics-view'
+import { breakdownRows, groupLabel, metricFact, partialYears, pointText } from './company-analytics-view'
 
 /**
  * What the page draws from the answers: nothing reported is said as such
@@ -14,7 +12,6 @@ import { breakdownRows, factsOf, groupLabel, headlineOf, metricFact, partialYear
  * statements is partial, and a click narrows exactly to what was counted.
  */
 
-const question = resolveQuestion(DEFAULT_STATE, releaseFixture())
 
 describe('figures band', () => {
   it('scales a sum past 2^53 and keeps its exact digits under it', () => {
@@ -35,32 +32,9 @@ describe('figures band', () => {
     expect(fact.value).toBe('0')
     expect(fact.notes).toContain('0,00 lei')
   })
-
-  it('counts companies, filers and non-filers, and the coverage of the chosen figure with its held values apart', () => {
-    const { main, more } = factsOf(statsFixture(), question, 'ro')
-    expect(main.map((fact) => fact.key)).toEqual(['companies', 'filers', 'TURNOVER', 'coverage'])
-    expect(main[0]?.value).toBe('2.718.250')
-    expect(main[1]?.notes).toEqual(['1.753.037 fără situație pentru 2024'])
-    // 900 000 reported of 965 213 statements (reported + missing + held).
-    expect(main[3]?.value).toBe('93,2%')
-    expect(main[3]?.notes).toEqual(['lipsă 60.000 · reținute 5.213 · neadmise 0'])
-    expect(more.map((fact) => [fact.key, fact.value])).toEqual([
-      ['EMPLOYEES', '—'],
-      ['NET_RESULT', '0'],
-    ])
-  })
 })
 
-describe('headline and breakdown', () => {
-  it('asks the question in a sentence: the figure, the place, the fiscal year', () => {
-    expect(headlineOf(stateOf({ judet: 'CJ' }), question, {})).toBe('Cifra de afaceri în județul Cluj, anul fiscal 2024')
-    expect(headlineOf(DEFAULT_STATE, question, {})).toBe('Cifra de afaceri în România, anul fiscal 2024')
-    // The companies without a common county are said as such — never as an unidentified seat.
-    expect(headlineOf(stateOf({ judet: '(multiple_values)' }), question, {})).toBe('Cifra de afaceri fără județ comun, anul fiscal 2024')
-    expect(headlineOf(stateOf({ judet: 'necunoscut' }), question, {})).toBe('Cifra de afaceri fără județ comun, anul fiscal 2024')
-    expect(headlineOf(stateOf({ judet: 'CJ,(multiple_values)' }), question, {})).toBe('Cifra de afaceri în 2 grupuri de județe, anul fiscal 2024')
-  })
-
+describe('breakdown', () => {
   it('names the unknown group by what is unknown, and a main activity of unknown revision as such', () => {
     const breakdown = breakdownFixture()
     expect(groupLabel('COUNTY', breakdown.unknown)).toBe('Județ necunoscut')
@@ -79,11 +53,12 @@ describe('headline and breakdown', () => {
 
   it('draws a consensus grouping’s basis groups among its groups, and not the unknown slot the API keeps empty', () => {
     const breakdown = breakdownFixture()
-    expect(breakdownRows(breakdown).map((row) => row.key ?? row.kind)).toEqual(['B', 'CJ', '(multiple_values)', 'OTHER'])
+    expect(breakdownRows(breakdown).ranked.map((row) => row.key)).toEqual(['B', 'CJ', '(multiple_values)'])
+    expect(breakdownRows(breakdown).rest.map((row) => row.kind)).toEqual(['OTHER'])
     // Were it ever not empty, it is drawn: the rows still add up to the total.
-    expect(breakdownRows({ ...breakdown, unknown: { ...breakdown.unknown, companies: '3' } }).map((row) => row.kind)).toContain('UNKNOWN')
+    expect(breakdownRows({ ...breakdown, unknown: { ...breakdown.unknown, companies: '3' } }).rest.map((row) => row.kind)).toContain('UNKNOWN')
     // Any other grouping keeps its unknown row, empty or not.
-    expect(breakdownRows({ ...breakdown, dimension: 'MAIN_CAEN' }).map((row) => row.kind)).toContain('UNKNOWN')
+    expect(breakdownRows({ ...breakdown, dimension: 'MAIN_CAEN' }).rest.map((row) => row.kind)).toContain('UNKNOWN')
   })
 
   it('narrows a click to exactly what the group counted, and refuses what no single filter names', () => {

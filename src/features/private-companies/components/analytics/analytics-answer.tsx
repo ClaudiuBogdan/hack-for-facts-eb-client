@@ -1,14 +1,17 @@
 import { t } from '@lingui/core/macro'
-import { ChartColumn, Map as MapIcon, Table2, type LucideIcon } from 'lucide-react'
+import { ChartColumn, Download, Map as MapIcon, Table2, type LucideIcon } from 'lucide-react'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
+import { downloadMapDataCsv } from '@/lib/map-data-csv'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisCohortMode } from '@/schemas/company-analytics'
 import { useCompanyAnalysisSeries } from '../../hooks/use-company-analytics'
 import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
 import { answerTabs, currentTab, withTab, type AnswerTab } from '../../lib/company-analytics-answer'
+import { seriesCsv } from '../../lib/company-analytics-export'
 import { compactValue, compactValueText, countText, exactValueText } from '../../lib/company-analytics-format'
 import { sentenceOf } from '../../lib/company-analytics-sentence'
 import { cohortLabel, gapReasonLabel, metricLabel } from '../../lib/company-analytics-text'
@@ -16,6 +19,7 @@ import { recordsKeyOf, type AnalyticsMode } from '../../lib/company-analytics-ur
 import { partialYears } from '../../lib/company-analytics-view'
 import { RankedAxis } from './analytics-axis'
 import { ShareChart, TopCompaniesChart } from './analytics-charts'
+import { ChartButton } from './analytics-chart-button'
 import { AnalyticsEvolution } from './analytics-evolution'
 import { MapAnswer } from './analytics-maps'
 import { AnalyticsRecords } from './analytics-records'
@@ -92,8 +96,9 @@ export function BareFigures({ page }: { readonly page: CompanyAnalyticsPageData 
   const cells: readonly FigureCell[] = [
     { key: 'companies', value: stats.data ? countText(stats.data.companies, locale) : null, label: t`Firme` },
     { key: 'filers', value: stats.data ? countText(stats.data.filers, locale) : null, label: question ? t`Cu bilanț pe ${question.year}` : t`Cu bilanț` },
-    figure('sum', selected?.sum, question ? metricLabel(question.metric) : ''),
-    figure('mean', selected?.mean, t`Media pe firmă`),
+    // The sum and the mean are of the companies that reported the measure, not of every company counted.
+    { ...figure('sum', selected?.sum, question ? metricLabel(question.metric) : ''), detail: selected?.sum ? t`raportat de ${countText(selected.contributors, locale)} firme` : undefined },
+    figure('mean', selected?.mean, t`Media pe firmă care a raportat`),
   ]
   return (
     <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
@@ -108,6 +113,7 @@ export function BareFigures({ page }: { readonly page: CompanyAnalyticsPageData 
               <div key={cell.key} className={cn('flex flex-col px-5 py-6 sm:py-7', index % 2 === 1 && 'border-l', index >= 2 && 'border-t lg:border-t-0', index >= 1 && 'lg:border-l')}>
                 <dt className="order-2 mt-2.5">
                   <MonoLabel className="block leading-relaxed text-foreground">{cell.label}</MonoLabel>
+                  {cell.detail ? <span className="mt-1 block text-xs text-muted-foreground">{cell.detail}</span> : null}
                 </dt>
                 <dd className="order-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-4xl" title={cell.exact ?? cell.note}>
                   {cell.value === null ? (
@@ -141,6 +147,8 @@ interface FigureCell {
   /** Why there is no figure. */
   readonly note?: string
   readonly label: string
+  /** Under the label: who the figure is of. */
+  readonly detail?: string
 }
 
 // ──────────────────────────────────────────────────────────── the answer ──
@@ -160,23 +168,22 @@ function tabLabel(tab: AnswerTab, activity: boolean): string {
   return t`Inactive fiscal`
 }
 
-function AnswerTabs({ tabs, current, activity, onTab }: { readonly tabs: readonly AnswerTab[]; readonly current: AnswerTab; readonly activity: boolean; readonly onTab: (tab: AnswerTab) => void }) {
+/** The tabs' row: a scroller on a phone, each tab underlined when it is the one shown. */
+function AnswerTabs({ tabs, activity }: { readonly tabs: readonly AnswerTab[]; readonly activity: boolean }) {
   return (
     // The rule is an inset shadow, under the tabs' own underline: a border would need the tabs pulled over it (-mb-px), and a scroller lets nothing out — it would scroll a pixel down.
-    <div role="tablist" aria-label={t`Răspunsul`} className="hide-scrollbar flex max-w-full gap-5 overflow-x-auto shadow-[inset_0_-1px_0_hsl(var(--border))]">
+    <TabsList aria-label={t`Răspunsul`} className="hide-scrollbar flex h-auto max-w-full justify-start gap-5 overflow-x-auto rounded-none bg-transparent p-0 shadow-[inset_0_-1px_0_hsl(var(--border))]">
       {tabs.map((tab) => (
-        <button
+        <TabsTrigger
           key={tab}
-          type="button"
-          role="tab"
-          aria-selected={tab === current}
-          onClick={() => onTab(tab)}
-          className={cn('min-h-11 shrink-0 border-b-2 text-sm', tab === current ? 'border-primary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}
+          value={tab}
+          // The focus ring inside the tab: the scroller would cut one drawn around it.
+          className="min-h-11 shrink-0 rounded-none border-b-2 border-transparent px-0 py-0 font-normal text-muted-foreground transition-none hover:text-foreground focus-visible:ring-inset focus-visible:ring-offset-0 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:font-medium data-[state=active]:text-foreground data-[state=active]:shadow-none"
         >
           {tabLabel(tab, activity)}
-        </button>
+        </TabsTrigger>
       ))}
-    </div>
+    </TabsList>
   )
 }
 
@@ -192,9 +199,17 @@ export function Answer({ page }: { readonly page: CompanyAnalyticsPageData }) {
         {mode === 'harta' ? (
           <MapAnswer page={page} />
         ) : (
-          <>
-            <AnswerTabs tabs={tabs} current={current} activity={tabs.includes('ACTIVITY')} onTab={(tab) => move(withTab(state, tab))} />
-            <div className="mt-6">
+          // Each tab is a read, so an arrow key moves the focus only; Enter, Space or a click opens the tab.
+          <Tabs
+            value={current}
+            activationMode="manual"
+            onValueChange={(value) => {
+              const tab = tabs.find((item) => item === value)
+              if (tab) move(withTab(state, tab))
+            }}
+          >
+            <AnswerTabs tabs={tabs} activity={tabs.includes('ACTIVITY')} />
+            <TabsContent value={current} className="mt-6 focus-visible:ring-offset-0">
               {current === 'firme' ? (
                 mode === 'grafice' ? (
                   <TopCompaniesChart page={page} />
@@ -217,8 +232,8 @@ export function Answer({ page }: { readonly page: CompanyAnalyticsPageData }) {
               ) : (
                 <RankedAxis page={page} dimension={current} />
               )}
-            </div>
-          </>
+            </TabsContent>
+          </Tabs>
         )}
       </RuledFrame>
     </section>
@@ -231,10 +246,11 @@ export function Answer({ page }: { readonly page: CompanyAnalyticsPageData }) {
  * The question in time, as a table: one row per fiscal year, newest first —
  * the measure's sum, the companies that reported it and those with a
  * statement; a year without a figure says why, never zero. A year opens the
- * whole page on it. The cohort is the reader's, as on the chart.
+ * whole page on it. The cohort is the reader's, and the series goes to the
+ * chart builder or out as CSV, as on the chart.
  */
 function YearsTable({ page }: { readonly page: CompanyAnalyticsPageData }) {
-  const { state, question, live, locale, move } = page
+  const { state, question, live, locale, move, uats } = page
   const series = useCompanyAnalysisSeries(question, live)
   if (!question || !live) return null
   const nonFilers = question.scope.filing === 'NOT_FILED'
@@ -258,7 +274,18 @@ function YearsTable({ page }: { readonly page: CompanyAnalyticsPageData }) {
   const head = 'px-2 pb-2 text-right first:pl-0 last:pr-0'
   return (
     <div className={cn(series.isFetching && 'opacity-70 transition-opacity')}>
-      {toggle}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {toggle}
+        {data ? (
+          <span className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+            <ChartButton state={state} question={question} release={live} uatNames={uats.names} label={t`Adaugă seria într-un grafic`} className="inline-flex min-h-11 items-center gap-1.5 font-medium text-foreground hover:underline sm:min-h-0" />
+            <button type="button" onClick={() => downloadMapDataCsv(seriesCsv(data), `firme-serie-${data.metric.toLowerCase()}.csv`)} className="inline-flex min-h-11 items-center gap-1 hover:text-foreground sm:min-h-0">
+              <Download className="size-3.5" aria-hidden="true" />
+              {t`CSV`}
+            </button>
+          </span>
+        ) : null}
+      </div>
       {!data ? (
         <div className="mt-6 h-96 animate-pulse bg-muted/30" aria-hidden="true" />
       ) : (
@@ -292,7 +319,10 @@ function YearsTable({ page }: { readonly page: CompanyAnalyticsPageData }) {
                   </th>
                   <td className="px-2 py-2.5 text-right">
                     {point.available && point.metric.sum !== null ? (
-                      <span className="font-semibold text-foreground">{compactValueText(point.metric.sum, data.unit, locale)}</span>
+                      <span className="font-semibold text-foreground" title={exactValueText(point.metric.sum, data.unit, locale)}>
+                        <span aria-hidden="true">{compactValueText(point.metric.sum, data.unit, locale)}</span>
+                        <span className="sr-only">{exactValueText(point.metric.sum, data.unit, locale)}</span>
+                      </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">{gapReasonLabel(point.gapReason)}</span>
                     )}
@@ -305,11 +335,13 @@ function YearsTable({ page }: { readonly page: CompanyAnalyticsPageData }) {
           </tbody>
         </table>
       )}
-      <p className="mt-4 text-xs text-muted-foreground">
-        {data?.cohortMode === 'REFERENCE_YEAR'
-          ? t`Fiecare an arată aceleași ${countText(data.cohortCompanies ?? '0', locale)} firme, selectate în ${data.referenceYear ?? question.year}.`
-          : t`Fiecare an își aplică singur filtrele: populația diferă de la un an la altul.`}
-      </p>
+      {data ? (
+        <p className="mt-4 text-xs text-muted-foreground">
+          {data.cohortMode === 'REFERENCE_YEAR'
+            ? t`Fiecare an arată aceleași ${countText(data.cohortCompanies ?? '0', locale)} firme, selectate în ${data.referenceYear ?? question.year}.`
+            : t`Fiecare an își aplică singur filtrele: populația diferă de la un an la altul.`}
+        </p>
+      ) : null}
     </div>
   )
 }

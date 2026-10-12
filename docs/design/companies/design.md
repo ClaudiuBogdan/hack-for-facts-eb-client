@@ -618,12 +618,37 @@ registry-scoped company picker).
   (a tab of its own where the release offers it, ANAF's code beside it as
   „CAEN ANAF"), its names with source and quality, its unclassified buckets
   apart, the ranking choice, the CSV, the totals, the notes on what a
-  grouping describes and where its names come from.
+  grouping describes and where its names come from. Its rows are one rule
+  (`breakdownRows`: ranked, apart, unclassified), shared with the chart, and
+  a release without the derived activity says so in both.
+- **Ranked by a count, the count is shown and drawn**: by the companies with
+  a statement or by those that reported, the last column (and, on a phone,
+  the line under the figure) is that count, and the bars follow it.
 - **The four figures are exact** on hover and to a screen reader; a measure
-  nobody reported is a dash that says so.
-- **The unknown groups read as the panel says them**: „fără un județ comun",
-  „fără o localitate comună", „fără stare comună".
-- **The hub opens the view its band shows**: the counties' map on the map,
-  the years' trend as the chart; the figures and leaders as the table.
+  nobody reported is a dash that says so. The sum says how many companies
+  reported it, and the mean is „per company that reported".
+- **The groups without a common value read as the panel says them**: „fără
+  un județ comun" for any reason, „fără un județ comun (valori diferite în
+  înscrieri)" for a basis group — never a key. A single place is one value:
+  a basis group or a value with the companies without one keeps its axis's
+  tab, and the map shows one county's localities only for a county it knows.
+- **A phrase's ✕ removes that filter only** — one range of several, one part
+  of the ONRC observations.
+- **A ready question is asked afresh**: the reader's year, release and view,
+  nothing of the last question's order; on the map, a question that is not
+  about places opens in the table.
+- **The tabs are tabs**: arrows move between them, Enter or a click opens
+  one (each is a read), one Tab stop, the answer their panel.
+- **The caveats stay behind the one marker**, all of them (the old head's
+  „Ce trebuie știut" included), with the edition the attributes come from.
+- **The years as a table** carry the chart's actions: the series into the
+  chart builder, and the CSV.
+- **The hub opens the view its band shows**: the counties' map on the map
+  (the companies-with-a-statement layer on the table ranked by them: the
+  analysis's map draws a measure's sum), the years' trend as the chart; the
+  figures and leaders as the table. The chart builder's link back opens the
+  years as the chart.
+- **The search box finds companies by name** under a registry pin of its
+  own and only in the analysis's ONRC edition — the panel picker's rule.
 - The company profile names a legal form from the same list as the
   analysis's filters (`lib/company-legal-forms.ts`).

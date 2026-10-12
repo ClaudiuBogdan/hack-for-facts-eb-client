@@ -336,7 +336,7 @@ describe('PrivateCompanyHubPage', () => {
   it('links the companies-with-a-statement layer by that ranking, never the release’s default sum', async () => {
     renderHub({ indicator: 'firme', domenii: 'firme' })
     await loaded()
-    expect(dataSearch(band('judete').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'depuneri', mod: 'harta', vedere: 'defalcare' })
+    expect(dataSearch(band('judete').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'depuneri', vedere: 'defalcare' })
     expect(dataSearch(band('domenii').getByRole('link', { name: 'Deschide în analiza bilanțurilor →' }))).toEqual({ an: 2024, editie: 7, indicator: 'turnover', clasare: 'depuneri', vedere: 'defalcare', dupa: 'caen' })
     expect(dataSearch(within(screen.getByTestId('company-hub-county-rank')).getByRole('link', { name: /Cluj/u }))).toMatchObject({ clasare: 'depuneri', judet: 'CJ', depunere: 'da' })
   })

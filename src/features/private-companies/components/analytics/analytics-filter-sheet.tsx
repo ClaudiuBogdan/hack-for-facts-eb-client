@@ -114,7 +114,6 @@ export function AnalyticsFilterSheet({
               unknown={scope.observedStatus?.includeUnknown}
               onToggle={(code) => set({ ...scope, observedStatus: keyToggled(scope.observedStatus, code) })}
               onUnknown={() => set({ ...scope, observedStatus: keyToggled(scope.observedStatus, null) })}
-              note={t`Starea observată e cea mai avansată stare văzută în registru, nu dovada că firma e activă azi.`}
             />
             <p className="text-xs text-muted-foreground">{t`Starea comună e cea pe care o au toate înscrierile firmei din ediția ONRC; nu e dovada că firma e activă azi. Pentru „are o înscriere cu starea 1048", folosește observațiile ONRC de mai jos.`}</p>
             <CaenField scope={scope} max={limits?.maxCaenCodes ?? 200} onChange={set} />

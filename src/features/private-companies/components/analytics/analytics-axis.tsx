@@ -7,18 +7,18 @@ import type { DecimalLocale } from '@/lib/exact-decimal'
 import { downloadMapDataCsv } from '@/lib/map-data-csv'
 import { cn } from '@/lib/utils'
 import { COMPANY_ANALYSIS_RANKINGS, type CompanyAnalysisBreakdown, type CompanyAnalysisBucket, type CompanyAnalysisDimension, type CompanyAnalysisRankBy } from '@/schemas/company-analytics'
-import { isCapabilityRefused, isReleaseRefused } from '../../api/company-analytics-api'
+import { isReleaseRefused } from '../../api/company-analytics-api'
 import { ANSWER_TOP, ANSWER_TOP_EXPANDED } from '../../api/company-analytics-plan'
 import { useCompanyAnalysisBreakdown } from '../../hooks/use-company-analytics'
 import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
 import { activityDerivationText, activityQualityParts, activitySourceTag } from '../../lib/company-activity-text'
 import { drillScope, nextDimension } from '../../lib/company-analytics-drill'
+import { activityRefused } from '../../lib/company-analytics-answer'
 import { breakdownCsv } from '../../lib/company-analytics-export'
 import { compactValueText, countText, exactValueText } from '../../lib/company-analytics-format'
-import { orderedGroups } from '../../lib/company-analytics-order'
 import { dimensionLabel, metricLabel, rankLabel } from '../../lib/company-analytics-text'
 import { withScope } from '../../lib/company-analytics-url'
-import { activityTail, CONSENSUS_DIMENSIONS, groupLabel, isUnclassifiedActivity, labelSourcesOf } from '../../lib/company-analytics-view'
+import { breakdownRows, CONSENSUS_DIMENSIONS, groupLabel, isUnclassifiedActivity, labelSourcesOf } from '../../lib/company-analytics-view'
 import { ActivityDescription } from '../activity-description'
 import { CaenDescription } from '../caen-description'
 import { ChoiceSelect } from './analytics-choices'
@@ -39,7 +39,7 @@ import { ChoiceSelect } from './analytics-choices'
  */
 
 /** A derived-activity row's name: the activity with its source tag and quality, or why an unclassified bucket has none. */
-function ActivityName({ bucket, label, locale }: { readonly bucket: CompanyAnalysisBucket; readonly label: string; readonly locale: DecimalLocale }) {
+export function ActivityName({ bucket, label, locale }: { readonly bucket: CompanyAnalysisBucket; readonly label: string; readonly locale: DecimalLocale }) {
   const unclassified = isUnclassifiedActivity(bucket)
   // An unclassified bucket names no activity, so no source tag: its label says why.
   const tag = unclassified ? null : activitySourceTag(bucket.activity)
@@ -50,6 +50,15 @@ function ActivityName({ bucket, label, locale }: { readonly bucket: CompanyAnaly
       {tag ? <span className="mt-0.5 block font-mono text-[11px] uppercase tracking-wide text-muted-foreground">{tag}</span> : null}
       {quality.length > 0 ? <span className="mt-0.5 block text-xs font-normal text-muted-foreground">{quality.join(' · ')}</span> : null}
     </span>
+  )
+}
+
+/** The derived activity asked of a release without it: what to choose instead. */
+export function ActivityUnavailable() {
+  return (
+    <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="companies-analytics-activity-unavailable">
+      {t`Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară).`}
+    </p>
   )
 }
 
@@ -117,13 +126,7 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
     </div>
   )
 
-  // Not offered by the release — known from its capabilities, or said by the API's typed refusal.
-  if (dimension === 'ACTIVITY' && (!question.activity || (breakdown.isError && isCapabilityRefused(breakdown.error))))
-    return (
-      <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="companies-analytics-activity-unavailable">
-        {t`Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară).`}
-      </p>
-    )
+  if (activityRefused(dimension, question.activity, breakdown.error)) return <ActivityUnavailable />
   if (breakdown.isError && !isReleaseRefused(breakdown.error)) return <HubLoadError onRetry={() => void breakdown.refetch()} />
   if (!data)
     return (
@@ -133,13 +136,14 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
       </>
     )
 
-  const tail = activityTail(data)
-  const ranked = orderedGroups(dimension, data.groups.filter((bucket) => !tail.includes(bucket)))
+  const { ranked, rest, tail } = breakdownRows(data)
   const byMetric = data.rankedBy === 'METRIC_SUM'
-  const measure = (bucket: CompanyAnalysisBucket) => (byMetric ? Math.abs(Number(bucket.metric?.sum ?? 0)) : Number(bucket.companies))
+  // The count beside the figure is the one the rows are ranked by, where they are ranked by one: the bars follow it too.
+  const counted = (bucket: CompanyAnalysisBucket): string =>
+    data.rankedBy === 'FILERS' ? bucket.filers : data.rankedBy === 'CONTRIBUTORS' ? (bucket.metric?.contributors ?? '0') : bucket.companies
+  const countHead = data.rankedBy === 'FILERS' ? t`Cu bilanț` : data.rankedBy === 'CONTRIBUTORS' ? t`Au raportat` : t`Firme`
+  const measure = (bucket: CompanyAnalysisBucket) => (byMetric ? Math.abs(Number(bucket.metric?.sum ?? 0)) : Number(counted(bucket)))
   const largest = Math.max(...ranked.map(measure), 1)
-  // „Other" when it folds any; the unknown group when it holds any company (a consensus grouping's and the activity's stay empty).
-  const rest = [...(data.other.groups > 0 ? [data.other] : []), ...(data.unknown.companies !== '0' ? [data.unknown] : [])]
   const drill = (bucket: CompanyAnalysisBucket) => {
     const scope = drillScope(state.scope, dimension, bucket)
     return scope ? () => move({ ...withScope(state, scope), dimension: nextDimension(dimension, scope) }) : null
@@ -164,8 +168,10 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
         </span>
         <span className={cn('text-right text-sm tabular-nums', quiet ? 'text-muted-foreground' : 'font-semibold text-foreground')}>
           <Figure bucket={bucket} locale={locale} />
+          {/* On a phone the count's column is gone: ranked by a count, the count is read under the figure. */}
+          {byMetric ? null : <span className="block text-xs font-normal text-muted-foreground sm:hidden">{`${countHead}: ${countText(counted(bucket), locale)}`}</span>}
         </span>
-        <span className="hidden text-right text-sm tabular-nums text-muted-foreground sm:block">{countText(bucket.companies, locale)}</span>
+        <span className="hidden text-right text-sm tabular-nums text-muted-foreground sm:block">{countText(counted(bucket), locale)}</span>
       </>
     )
     const rowClass = cn('group grid w-full items-start gap-x-3 border-b border-border/70 py-2.5 text-left', COLUMNS)
@@ -190,7 +196,7 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
         <MonoLabel className="text-muted-foreground">#</MonoLabel>
         <MonoLabel className="text-muted-foreground">{dimensionLabel(dimension)}</MonoLabel>
         <MonoLabel className="text-right text-muted-foreground">{metricLabel(question.metric)}</MonoLabel>
-        <MonoLabel className="hidden text-right text-muted-foreground sm:block">{t`Firme`}</MonoLabel>
+        <MonoLabel className="hidden text-right text-muted-foreground sm:block">{countHead}</MonoLabel>
       </div>
       <ol>
         {ranked.map((bucket, index) => row(bucket, index, bucket.basis !== null))}
@@ -207,7 +213,7 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
           <span className="text-right tabular-nums">
             <Figure bucket={data.totals} locale={locale} />
           </span>
-          <span className="hidden text-right tabular-nums sm:block">{countText(data.totals.companies, locale)}</span>
+          <span className="hidden text-right tabular-nums sm:block">{countText(counted(data.totals), locale)}</span>
         </li>
       </ol>
       <Notes data={data} dimension={dimension} year={question.year} expanded={expanded} onExpand={() => setExpandedFor(key)} />
