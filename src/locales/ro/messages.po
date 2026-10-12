@@ -5108,7 +5108,7 @@ msgstr "Adaugă teritorii"
 #: src/features/justice/components/analysis/analysis-controls.tsx:73
 #: src/features/justice/components/analysis/analysis-controls.tsx:74
 #: src/features/ngos/registry/components/registry-head.tsx:324
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:108
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:116
 #: src/features/private-companies/components/analytics/analytics-head.tsx:112
 #: src/features/procurement/components/analytics/analytics-head.tsx:204
 msgid "Adaugă un filtru"
@@ -9747,6 +9747,7 @@ msgstr ""
 #~ msgid "Căutarea liberă nu este păstrată. Alege o cheie publicabilă sau introdu un număr exact de dosar."
 #~ msgstr ""
 
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:100
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:222
 #: src/features/procurement/components/analytics/analytics-filters.tsx:169
 #: src/features/procurement/components/analytics/analytics-filters.tsx:173
@@ -20189,7 +20190,7 @@ msgstr "Filtre aplicate"
 #~ msgid "filtre dupa judet, tip serviciu, valabilitate si capacitate"
 #~ msgstr ""
 
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:110
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:118
 msgid "Filtre găsite"
 msgstr "Filtre găsite"
 
@@ -24984,7 +24985,7 @@ msgstr "Județ sau localitate din {0}"
 msgid "Județ, formă, stare, cuvinte din nume…"
 msgstr "Județ, formă, stare, cuvinte din nume…"
 
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:109
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:117
 msgid "Județ, localitate, formă, stare, firmă…"
 msgstr "Județ, localitate, formă, stare, firmă…"
 
@@ -29748,7 +29749,7 @@ msgid "Nimic de arătat."
 msgstr "Nimic de arătat."
 
 #: src/features/ngos/registry/components/registry-head.tsx:167
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:114
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:123
 #: src/features/procurement/components/analytics/analytics-controls.tsx:159
 msgid "Nimic găsit."
 msgstr "Nimic găsit."
@@ -31663,7 +31664,7 @@ msgstr "Numele în registru"
 
 #. placeholder {0}: directory?.editionId ?? '—'
 #. placeholder {1}: source?.editionId ?? '—'
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:99
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:107
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:336
 msgid "Numele nu sunt oferite: directorul de firme citește altă ediție ONRC ({0}) decât analiza ({1}). Poți adăuga o firmă după CUI."
 msgstr "Numele nu sunt oferite: directorul de firme citește altă ediție ONRC ({0}) decât analiza ({1}). Poți adăuga o firmă după CUI."
@@ -36985,6 +36986,7 @@ msgstr "Regulile: populație {0}, admitere {1}, schemă {2}."
 #~ msgstr ""
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:82
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:102
 #: src/features/private-companies/components/registry/company-registry-notices.tsx:22
 #: src/features/private-companies/components/search/private-company-search-page.tsx:255
 #: src/features/statistics/components/comparison/comparison-states.tsx:121
@@ -38356,7 +38358,7 @@ msgstr "Scrie un cod de stare ONRC, de exemplu 1048."
 msgid "Scrie un județ („Cluj”), o formă („fundații”), o stare („radiate”), un număr de registru sau cuvinte din nume."
 msgstr "Scrie un județ („Cluj”), o formă („fundații”), o stare („radiate”), un număr de registru sau cuvinte din nume."
 
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:112
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:120
 msgid "Scrie un județ („Cluj”), o localitate, o formă („SRL”), o stare („radiate”), o mărime („10–49”) sau numele ori CUI-ul unei firme."
 msgstr "Scrie un județ („Cluj”), o localitate, o formă („SRL”), o stare („radiate”), o mărime („10–49”) sau numele ori CUI-ul unei firme."
 
@@ -38489,8 +38491,8 @@ msgid "Se caută."
 msgstr "Se caută."
 
 #: src/features/legal/components/legislation-acts-directory.tsx:458
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:114
-#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:126
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:123
+#: src/features/private-companies/components/analytics/analytics-add-filter.tsx:136
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:219
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:239
 #: src/features/procurement/components/analytics/analytics-filters.tsx:166

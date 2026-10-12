@@ -126,4 +126,18 @@ describe('AddFilter — company names only from the analysis release’s own ONR
     fireEvent.click(await screen.findByText('CUI 14399840'))
     expect(moves.map((state) => state.scope.cuis)).toEqual([['14399840']])
   })
+
+  it('says a name search that failed, with a retry, and never that nothing was found', async () => {
+    transport.capabilities = capabilities(S41)
+    transport.resolve = () => Promise.reject(new Error('the search engine is down'))
+    renderBox()
+    await waitFor(() => expect(transport.registryReads).toBe(1))
+    type('danubius')
+    // The hook retries twice (1 s, then 2 s) before it fails.
+    expect(await screen.findByText('Căutarea nu a mers.', undefined, { timeout: 8000 })).toBeInTheDocument()
+    expect(screen.queryByText('Nimic găsit.')).not.toBeInTheDocument()
+    transport.resolve = named(S41)
+    fireEvent.click(screen.getByRole('button', { name: 'Reîncearcă' }))
+    expect(await screen.findByText('DANUBIUS SRL')).toBeInTheDocument()
+  }, 15000)
 })

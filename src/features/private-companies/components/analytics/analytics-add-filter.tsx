@@ -90,10 +90,18 @@ function FilterSearch({ page, onPicked }: { readonly page: SearchPage; readonly 
   })
   const groups = GROUPS.map((group) => ({ group, items: found.filter((item) => item.group === group) })).filter((entry) => entry.items.length > 0)
   const searching = asked && (places.loading || registry.status === 'pending' || names.isFetching || !names.current)
-  // A name typed while the names cannot be read: why none is offered.
+  // A name typed while the names cannot be read: why none is offered. A search that failed is no answer, never „nothing found".
   const named = asked && /\p{L}/u.test(term)
+  const failed = named && sameEdition && names.isError
   const notice = !named ? null : registry.status === 'error' || (registry.status === 'ready' && registry.moved) ? (
     <CompanyRegistryScopeNotice scope={registry} className="mx-3 my-2" />
+  ) : failed ? (
+    <p role="alert" className="flex flex-wrap items-baseline gap-x-2 px-3 py-2 text-xs text-muted-foreground">
+      {t`Căutarea nu a mers.`}
+      <button type="button" onClick={() => void names.refetch()} className="inline-flex min-h-11 items-center font-medium text-foreground underline-offset-4 hover:underline sm:min-h-0">
+        {t`Reîncearcă`}
+      </button>
+    </p>
   ) : registry.status === 'ready' && !sameEdition ? (
     <p role="status" className="px-3 py-2 text-xs text-muted-foreground">
       {t`Numele nu sunt oferite: directorul de firme citește altă ediție ONRC (${directory?.editionId ?? '—'}) decât analiza (${source?.editionId ?? '—'}). Poți adăuga o firmă după CUI.`}
@@ -111,7 +119,9 @@ function FilterSearch({ page, onPicked }: { readonly page: SearchPage; readonly 
         {!asked ? (
           <p className="px-3 py-3 text-sm text-muted-foreground">{t`Scrie un județ („Cluj”), o localitate, o formă („SRL”), o stare („radiate”), o mărime („10–49”) sau numele ori CUI-ul unei firme.`}</p>
         ) : groups.length === 0 ? (
-          <p className="px-3 py-6 text-center text-sm text-muted-foreground">{searching ? t`Se caută…` : t`Nimic găsit.`}</p>
+          failed ? null : (
+            <p className="px-3 py-6 text-center text-sm text-muted-foreground">{searching ? t`Se caută…` : t`Nimic găsit.`}</p>
+          )
         ) : null}
         {groups.map(({ group, items }) => (
           <CommandGroup key={group} heading={groupTitle(group)}>
