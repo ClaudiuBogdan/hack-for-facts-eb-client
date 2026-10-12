@@ -22,7 +22,7 @@ import { activitySourceTag, activityText, unclassifiedActivityLabel, unclassifie
 import { drillScope } from './company-analytics-drill'
 import { compactValue, countText, shareText } from './company-analytics-format'
 import { caenText, countyLabel } from './company-analytics-text'
-import { DEFAULT_STATE, urlSearchOf, type AnalyticsPanel, type CompanyAnalyticsState, type CompanyAnalyticsUrlSearch } from './company-analytics-url'
+import { DEFAULT_STATE, urlSearchOf, type AnalyticsPanel, type CompanyAnalyticsState, type CompanyAnalyticsUrlSearch, type AnalyticsMode } from './company-analytics-url'
 import { activityTail, metricFact, partialYears, type Fact } from './company-analytics-view'
 import type { HubCountyLayer, HubCountyValue } from './hub-counties'
 import { hubUnitWord, type HubUnit } from './hub-format'
@@ -129,13 +129,16 @@ export function hubQuestionState(year: number, measure: HubMeasure): CompanyAnal
  * A link into the analysis page for a question the hub asked: its year,
  * release, metric and ranking written out — never left to the release's
  * defaults — so the page resolves the very same question (the series' cohort
- * too, on the years' panel); the panel and grouping it opens on; and, for a
+ * too, on the years' panel); how it is shown (the table, the map, the
+ * charts — the band's own kind of answer), the panel and grouping it opens
+ * on; and, for a
  * list, the scope that narrows it. The page's own writer builds the address.
  */
 export function hubAnalyticsLink(
   question: ResolvedQuestion,
   view: {
     readonly panel: AnalyticsPanel
+    readonly mode?: AnalyticsMode
     readonly dimension?: CompanyAnalysisDimension
     readonly metric?: CompanyAnalysisMetric
     readonly scope?: CompanyAnalysisScope
@@ -148,6 +151,7 @@ export function hubAnalyticsLink(
     metric: view.metric ?? question.metric,
     rankBy: question.rankBy,
     cohort: view.panel === 'evolutie' ? question.cohortMode : null,
+    mode: view.mode ?? 'tabel',
     panel: view.panel,
     dimension: view.dimension ?? DEFAULT_STATE.dimension,
     scope: view.scope ?? {},

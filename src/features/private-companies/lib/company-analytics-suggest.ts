@@ -1,12 +1,12 @@
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { placeKey, searchPlaces, type PlaceIndex } from '@/features/procurement/lib/analytics-places'
-import { amongFilers, keyToggled, withFiling } from '@/features/private-companies/lib/company-analytics-filter-model'
-import { countyLabel, sizeBandLabel } from '@/features/private-companies/lib/company-analytics-text'
-import { legalFormName } from '@/features/private-companies/lib/company-legal-forms'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { CompanyAnalysisFlagValue, CompanyAnalysisRelease, CompanyAnalysisScope, CompanyAnalysisSizeBand } from '@/schemas/company-analytics'
-import { statusGroupOf, statusGroups } from './analytics.states'
+import { amongFilers, keyToggled, withFiling } from './company-analytics-filter-model'
+import { countyLabel, sizeBandLabel } from './company-analytics-text'
+import { legalFormName } from './company-legal-forms'
+import { statusGroupOf, statusGroups } from './company-analytics-states'
 
 /**
  * „Adaugă un filtru"'s answers to what a reader types: a CUI as typed, the

@@ -1,17 +1,21 @@
 import { withDeadline } from '@/lib/ssr/deadline-signal'
 import type { CompanyAnalysisRelease } from '@/schemas/company-analytics'
 import { companyAnalyticsKeys } from '../lib/company-analytics-keys'
-import { analyticsSearchOf, stateOf } from '../lib/company-analytics-url'
+import { analyticsSearchOf, stateOf, type CompanyAnalyticsState } from '../lib/company-analytics-url'
 import { isReleaseRefused, readCompanyAnalysisRelease } from './company-analytics-api'
-import { BREAKDOWN_TOP, planBreakdown, planRecords, planSeries, planStats, resolveQuestion, type PlannedRead } from './company-analytics-plan'
+import { currentTab, mapCountyOf } from '../lib/company-analytics-answer'
+import { ANSWER_TOP, CHART_TOP, chartRecordsQuestion, mapTopOf, planBreakdown, planRecords, planSeries, planStats, resolveQuestion, type PlannedRead, type ResolvedQuestion } from './company-analytics-plan'
 
 /**
  * The companies analysis page's server reads, for the route loader only.
  *
  * Every render reads afresh: the release first — the one the address pins,
- * or the active one — then the figures and the open panel's answer side by
+ * or the active one — then the figures and the first view's answer side by
  * side, each pinned to that release, under the keys the browser plans
- * (`company-analytics-plan.ts`). Nothing is kept between requests and the
+ * (`company-analytics-plan.ts`): the map's groups (by county, or by
+ * locality in one county), the companies (sorted by the measure for the
+ * chart), an axis's groups (as many as the table or the chart shows), or
+ * the years. Nothing is kept between requests and the
  * route's response is never cached: a release withdrawn from publication
  * must stop reaching readers at the next request, and only the API knows
  * (it caches the immutable figures itself, behind its own checks).
@@ -38,6 +42,15 @@ export interface CompanyAnalyticsServerRead {
 
 const FAILED_CLOSED: CompanyAnalyticsServerRead = { seed: [], complete: false }
 
+/** The answer the page shows first: what its mode and tab read, as the page's components plan it. */
+function answerRead(state: CompanyAnalyticsState, question: ResolvedQuestion, release: CompanyAnalysisRelease): PlannedRead<unknown> {
+  if (state.mode === 'harta') return planBreakdown(question, mapCountyOf(state.scope) ? 'UAT' : 'COUNTY', mapTopOf(release))
+  const tab = currentTab(state, question.activity)
+  if (tab === 'firme') return planRecords(state.mode === 'grafice' ? chartRecordsQuestion(question) : question, null)
+  if (tab === 'evolutie') return planSeries(question, release)
+  return planBreakdown(question, tab, state.mode === 'grafice' ? CHART_TOP : ANSWER_TOP)
+}
+
 export async function readCompanyAnalyticsForSsr(search: Readonly<Record<string, unknown>>): Promise<CompanyAnalyticsServerRead> {
   const state = stateOf(analyticsSearchOf(search))
   let release: CompanyAnalysisRelease
@@ -51,10 +64,7 @@ export async function readCompanyAnalyticsForSsr(search: Readonly<Record<string,
   // A question the release cannot answer is answered with what it cannot: nothing to read.
   if (question.problems.length > 0) return { seed, complete: true }
   const budget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
-  const reads: PlannedRead<unknown>[] = [planStats(question)]
-  if (state.panel === 'defalcare') reads.push(planBreakdown(question, state.dimension, BREAKDOWN_TOP))
-  if (state.panel === 'evolutie') reads.push(planSeries(question, release))
-  if (state.panel === 'firme') reads.push(planRecords(question, null))
+  const reads: PlannedRead<unknown>[] = [planStats(question), answerRead(state, question, release)]
   const settled = await Promise.allSettled(reads.filter((read) => read.enabled).map(async (read) => ({ key: read.key, data: await read.read(budget) })))
   // One refusal of the release, from any read, and nothing read under it is seeded.
   if (settled.some((read) => read.status === 'rejected' && isReleaseRefused(read.reason))) return FAILED_CLOSED

@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -126,10 +126,9 @@ describe('CompanyAnalyticsPage', () => {
   it('answers with exact figures, a figure nobody reported as such, and the companies themselves', async () => {
     renderPage()
     expect(await screen.findByText(FIGURES)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cifra de afaceri în România, anul fiscal 2024')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Firmele, în 2024')
     // The turnover sum past 2^53, every digit (the matcher reads the no-break space as a space).
-    expect(screen.getByText('9,007,199,254,741,973.32 lei')).toBeInTheDocument()
-    expect(screen.getAllByText('nicio firmă nu a raportat o valoare').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('9,007,199,254,741,973.32 lei').length).toBeGreaterThan(0)
     expect(await screen.findByText('Firma 1')).toBeInTheDocument()
     expect(screen.getByText('Fără denumire publică')).toBeInTheDocument()
     // A held value is a marked dash, its reason said in the cell (to a screen reader) and once under the table.
@@ -140,6 +139,15 @@ describe('CompanyAnalyticsPage', () => {
     // A company without a statement says so once, in the measure's column.
     expect(screen.getAllByText('fără bilanț')).toHaveLength(1)
     await waitFor(() => expect(api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease').every((call) => call.variables.release === '7')).toBe(true))
+  })
+
+  it('says a measure nobody reported is not reported — a dash with its reason, never a zero', async () => {
+    router.search = { indicator: 'employees' }
+    renderPage()
+    expect(await screen.findByText(FIGURES)).toBeInTheDocument()
+    const figures = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(within(figures).getAllByText('nicio firmă nu a raportat o valoare').length).toBe(2)
+    expect(within(figures).queryByText(/^0$/u)).not.toBeInTheDocument()
   })
 
   it('lists each company with why it has no common county or status, the date ONRC recorded as its civil date, and where the names come from', async () => {
@@ -182,9 +190,20 @@ describe('CompanyAnalyticsPage', () => {
     router.search = { lang: 'ro' }
     renderPage()
     await screen.findByText(FIGURES)
-    fireEvent.click(screen.getByRole('button', { name: /Evoluție/u }))
+    fireEvent.click(screen.getByRole('tab', { name: 'În timp' }))
     const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
     expect(search(router.search)).toEqual({ lang: 'ro', vedere: 'evolutie', editie: 7 })
+  })
+
+  it('shows the answer as a table, a map or charts from the pinned bar, the choice written in the address', async () => {
+    router.search = { lang: 'ro' }
+    renderPage()
+    await screen.findByText(FIGURES)
+    const modes = screen.getByRole('navigation', { name: 'Cum se arată răspunsul' })
+    expect(within(modes).getByRole('button', { name: 'Tabel' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(within(modes).getByRole('button', { name: 'Hartă' }))
+    const { search } = router.navigate.mock.calls[0]![0] as { readonly search: (previous: Record<string, unknown>) => Record<string, unknown> }
+    expect(search(router.search)).toEqual({ lang: 'ro', mod: 'harta', editie: 7 })
   })
 
   it('answers the first pinned question from the release it already read: nothing is read again, nothing empties', async () => {

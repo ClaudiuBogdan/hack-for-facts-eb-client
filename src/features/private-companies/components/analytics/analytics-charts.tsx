@@ -1,18 +1,19 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { useCompanyAnalysisBreakdown, useCompanyAnalysisRecords } from '@/features/private-companies/hooks/use-company-analytics'
-import { drillScope, nextDimension } from '@/features/private-companies/lib/company-analytics-drill'
-import { compactValueText, countText, shareText } from '@/features/private-companies/lib/company-analytics-format'
-import { dimensionLabel, metricLabel } from '@/features/private-companies/lib/company-analytics-text'
-import { withScope } from '@/features/private-companies/lib/company-analytics-url'
-import { groupLabel } from '@/features/private-companies/lib/company-analytics-view'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { decimalToPlot } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisBucket, CompanyAnalysisDimension } from '@/schemas/company-analytics'
-import type { AnalyticsPageData } from './analytics.data'
-import { orderedGroups } from './analytics.order'
+import { useCompanyAnalysisBreakdown, useCompanyAnalysisRecords } from '../../hooks/use-company-analytics'
+import { drillScope, nextDimension } from '../../lib/company-analytics-drill'
+import { compactValueText, countText, shareText } from '../../lib/company-analytics-format'
+import { dimensionLabel, metricLabel } from '../../lib/company-analytics-text'
+import { withScope } from '../../lib/company-analytics-url'
+import { activityTail, groupLabel } from '../../lib/company-analytics-view'
+import { CHART_TOP, chartRecordsQuestion } from '../../api/company-analytics-plan'
+import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
+import { orderedGroups } from '../../lib/company-analytics-order'
 
 /**
  * The answer as charts: the largest companies as bars, and each axis as two
@@ -24,7 +25,6 @@ import { orderedGroups } from './analytics.order'
 
 const CHART_PENDING = <div className="h-96 animate-pulse bg-muted/30" aria-hidden="true" />
 const TOP_COMPANIES = 15
-const TOP_GROUPS = 10
 
 /** A bar's length, as a percent of the longest: never so short it vanishes. */
 function barWidth(value: number, largest: number): string {
@@ -39,10 +39,10 @@ function barWidth(value: number, largest: number): string {
  * smallest, where the table is read from the smallest of this measure (the
  * largest losses).
  */
-export function TopCompaniesChart({ page }: { readonly page: AnalyticsPageData }) {
+export function TopCompaniesChart({ page }: { readonly page: CompanyAnalyticsPageData }) {
   const { question, locale } = page
-  const ascending = question?.sortMetric === question?.metric && question?.direction === 'ASC'
-  const ranked = question ? { ...question, sortMetric: question.metric, direction: ascending ? ('ASC' as const) : ('DESC' as const) } : null
+  const ranked = question ? chartRecordsQuestion(question) : null
+  const ascending = ranked?.direction === 'ASC'
   const records = useCompanyAnalysisRecords(ranked, null)
   if (records.isError) return <HubLoadError onRetry={() => void records.refetch()} />
   if (!records.data || !question) return CHART_PENDING
@@ -84,13 +84,16 @@ export function TopCompaniesChart({ page }: { readonly page: AnalyticsPageData }
  * measure with losses in it has no shares: its groups are drawn either side
  * of zero.
  */
-export function ShareChart({ page, dimension }: { readonly page: AnalyticsPageData; readonly dimension: CompanyAnalysisDimension }) {
+export function ShareChart({ page, dimension }: { readonly page: CompanyAnalyticsPageData; readonly dimension: CompanyAnalysisDimension }) {
   const { state, question, locale, move } = page
-  const breakdown = useCompanyAnalysisBreakdown(question, dimension, TOP_GROUPS)
+  const breakdown = useCompanyAnalysisBreakdown(question, dimension, CHART_TOP)
   const data = breakdown.data
   if (breakdown.isError) return <HubLoadError onRetry={() => void breakdown.refetch()} />
   if (!data || !question) return CHART_PENDING
-  const rows = [...orderedGroups(dimension, data.groups), ...(data.other.groups > 0 ? [data.other] : []), ...(data.unknown.companies !== '0' ? [data.unknown] : [])]
+  // The derived activity's unclassified buckets follow the ranked groups, apart, never as sectors.
+  const tail = activityTail(data)
+  const ranked = orderedGroups(dimension, data.groups.filter((bucket) => !tail.includes(bucket)))
+  const rows = [...ranked, ...(data.other.groups > 0 ? [data.other] : []), ...tail, ...(data.unknown.companies !== '0' ? [data.unknown] : [])]
   const total = data.totals.metric?.sum ?? null
   const sums = rows.map((bucket) => decimalToPlot(bucket.metric?.sum) ?? 0)
   const shared = total !== null && (decimalToPlot(total) ?? 0) > 0 && sums.every((sum) => sum >= 0)
@@ -120,10 +123,8 @@ export function ShareChart({ page, dimension }: { readonly page: AnalyticsPageDa
         {rows.map((bucket, index) => {
           const label = groupLabel(dimension, bucket)
           const onDrill = bucket.kind === 'GROUP' ? drill(bucket) : null
-          const basis = bucket.basis !== null
-          const name = (
-            <span className={cn('block truncate text-sm', bucket.kind !== 'GROUP' || basis ? 'italic text-muted-foreground' : 'font-medium text-foreground')}>{label}</span>
-          )
+          const quiet = bucket.kind !== 'GROUP' || bucket.basis !== null || tail.includes(bucket)
+          const name = <span className={cn('block truncate text-sm', quiet ? 'italic text-muted-foreground' : 'font-medium text-foreground')}>{label}</span>
           return (
             <li key={`${bucket.kind}-${bucket.key ?? index}`} className="grid gap-1.5 sm:grid-cols-[16rem_minmax(0,1fr)] sm:gap-x-4">
               {onDrill ? (

@@ -48,6 +48,8 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
 })
 
 const { readCompanyAnalyticsForSsr } = await import('./company-analytics-ssr')
+const { ANSWER_TOP, CHART_TOP, chartRecordsQuestion, mapTopOf, planBreakdown, planRecords, resolveQuestion } = await import('./company-analytics-plan')
+const { analyticsSearchOf, stateOf } = await import('../lib/company-analytics-url')
 
 const calls = (op: Op) => api.calls.filter((call) => call.op === op).length
 
@@ -66,6 +68,25 @@ describe('readCompanyAnalyticsForSsr', () => {
     expect(api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease').every((call) => call.release === '7')).toBe(true)
     expect(read.seed.map((entry) => entry.key[2])).toEqual(['release', 'stats', 'records'])
     expect(read.seed.filter((entry) => entry.key[2] !== 'release').every((entry) => entry.key[3] === '7')).toBe(true)
+  })
+
+  it('reads what the first view shows — the map, the companies chart, an axis as the table or the chart shows it — under the keys the page plans', async () => {
+    const release = releaseFixture()
+    const question = (search: Record<string, unknown>) => resolveQuestion(stateOf(analyticsSearchOf(search)), release)
+    const seeded = async (search: Record<string, unknown>) => (await readCompanyAnalyticsForSsr(search)).seed.map((entry) => entry.key)
+    const map = { an: 2024, mod: 'harta' }
+    expect(await seeded(map)).toContainEqual(planBreakdown(question(map), 'COUNTY', mapTopOf(release)).key)
+    const county = { an: 2024, mod: 'harta', judet: 'CJ' }
+    expect(await seeded(county)).toContainEqual(planBreakdown(question(county), 'UAT', mapTopOf(release)).key)
+    const chart = { an: 2024, mod: 'grafice' }
+    expect(await seeded(chart)).toContainEqual(planRecords(chartRecordsQuestion(question(chart)), null).key)
+    const axis = { an: 2024, vedere: 'defalcare', dupa: 'marime' }
+    expect(await seeded(axis)).toContainEqual(planBreakdown(question(axis), 'EMPLOYEE_SIZE', ANSWER_TOP).key)
+    const shares = { an: 2024, mod: 'grafice', vedere: 'defalcare', dupa: 'marime' }
+    expect(await seeded(shares)).toContainEqual(planBreakdown(question(shares), 'EMPLOYEE_SIZE', CHART_TOP).key)
+    // A county chosen has no counties to rank: the companies are the first view.
+    const ranked = { an: 2024, judet: 'CJ', vedere: 'defalcare', dupa: 'judet' }
+    expect((await seeded(ranked)).map((key) => key[2])).toEqual(['release', 'stats', 'records'])
   })
 
   it('reads the API afresh for every request: the same question twice is two releases and two answers read', async () => {

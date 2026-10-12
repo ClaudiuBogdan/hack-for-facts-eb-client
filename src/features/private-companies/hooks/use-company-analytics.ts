@@ -7,7 +7,7 @@ import { planBreakdown, planOptions, planRecords, planSeries, planStats, resolve
 import type { CompanyAnalyticsSeed } from '../api/company-analytics-ssr'
 import { companyAnalyticsKeys, releaseOfKey } from '../lib/company-analytics-keys'
 import { useRefusedReleases } from '../lib/company-release-refusals'
-import { analyticsSearchOf, siteSearchOf, stateOf, urlSearchOf, type CompanyAnalyticsState } from '../lib/company-analytics-url'
+import { siteSearchOf, urlSearchOf, type CompanyAnalyticsState } from '../lib/company-analytics-url'
 
 /**
  * The companies analysis page's state and reads. The address holds the
@@ -71,20 +71,36 @@ function useSeeded(): <T>(read: { readonly key: readonly unknown[] }) => { reado
 
 // ───────────────────────────────────────────────────────────────── state ──
 
-/** The question the address holds. */
-export function useCompanyAnalyticsState(): CompanyAnalyticsState {
-  return stateOf(analyticsSearchOf(useSearch({ from: '/companies/analytics' })))
+/**
+ * Where the page's question lives and how another one is asked: the route's
+ * address, or the design harness's. Each keeps its own keys — the site's
+ * (`lang`), the harness's — across a change of question.
+ */
+export interface CompanyAnalyticsAddress {
+  /** The address's search: the page reads its own keys from it. */
+  readonly search: Readonly<Record<string, unknown>>
+  /** Asks the question, answered in place (pushed: Back undoes it). */
+  readonly go: (next: CompanyAnalyticsState) => Promise<void>
+  /** A link to the question, for a place on the page that is a link. */
+  readonly link: (next: CompanyAnalyticsState) => CompanyAnalyticsLink
 }
 
-/**
- * A way to ask another question (pushed: Back undoes it). Every question
- * asked from the page names the release it was answered from, so a shared
- * link reads the same figures; the site's own keys (`lang`) stay with it.
- */
-export function useCompanyAnalyticsMove(pinned: string | null): (next: CompanyAnalyticsState) => void {
+export interface CompanyAnalyticsLink {
+  readonly to: '/companies/analytics' | '.'
+  readonly search: (previous: Record<string, unknown>) => Record<string, unknown>
+  readonly resetScroll: false
+}
+
+/** `/companies/analytics`'s own address: its question asked again in place, the site's keys kept. */
+export function useCompanyAnalyticsRouteAddress(): CompanyAnalyticsAddress {
+  const search = useSearch({ from: '/companies/analytics' })
   const navigate = useNavigate({ from: '/companies/analytics' })
-  return (next: CompanyAnalyticsState) =>
-    void navigate({ search: (previous) => ({ ...siteSearchOf(previous), ...urlSearchOf({ ...next, release: next.release ?? pinned }) }), resetScroll: false })
+  const searchFor = (next: CompanyAnalyticsState) => (previous: Record<string, unknown>) => ({ ...siteSearchOf(previous), ...urlSearchOf(next) })
+  return {
+    search,
+    go: (next) => navigate({ search: searchFor(next), resetScroll: false }),
+    link: (next) => ({ to: '/companies/analytics', search: searchFor(next), resetScroll: false }),
+  }
 }
 
 /**
@@ -94,15 +110,14 @@ export function useCompanyAnalyticsMove(pinned: string | null): (next: CompanyAn
  * one. The refusal itself stays known: going back to that release finds it
  * withdrawn.
  */
-export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string | null) {
+export function useReleaseRefresh(state: CompanyAnalyticsState, refused: string | null, go: CompanyAnalyticsAddress['go']) {
   const client = useQueryClient()
   const seeds = useContext(CompanyAnalyticsSeedContext)
-  const navigate = useNavigate({ from: '/companies/analytics' })
   return () => {
     seeds.clear()
     // Read again where the page shows it (the page moves when it lands), and on its next showing where it does not.
     void client.invalidateQueries({ queryKey: companyAnalyticsKeys.release(null) })
-    void navigate({ search: (previous) => ({ ...siteSearchOf(previous), ...urlSearchOf({ ...state, release: null }) }), resetScroll: false }).then(() => {
+    void go({ ...state, release: null }).then(() => {
       // Once the page has left it: forgotten whole, refusals included.
       if (refused !== null) client.removeQueries({ predicate: (query) => releaseOfKey(query.queryKey) === refused })
     })

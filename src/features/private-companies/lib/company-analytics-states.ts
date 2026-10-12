@@ -1,11 +1,11 @@
 import { t } from '@lingui/core/macro'
-import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK_OFF, STATUS_SUSPENDED } from '@/features/private-companies/lib/company-status-codes'
 import type { CompanyAnalysisScope } from '@/schemas/company-analytics'
+import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK_OFF, STATUS_SUSPENDED } from './company-status-codes'
 
 /**
  * The registry's states a reader asks about, each a set of ONRC codes, in
- * the headline's words („Firmele radiate din Cluj"); „unclear" is the
- * edition's companies without one state. The headline says the group the
+ * the headline's words („Firmele radiate din Cluj"); the last is the
+ * edition's companies without one common state. The headline says the group the
  * selection is; „Adaugă un filtru" offers them by these words.
  */
 
@@ -21,7 +21,7 @@ export function statusGroups(): readonly StatusGroup[] {
     { phrase: t`în insolvență`, scope: { in: INSOLVENCY_STATUSES } },
     { phrase: t`în dizolvare sau lichidare`, scope: { in: DISSOLUTION_STATUSES } },
     { phrase: t`radiate`, scope: { in: [STATUS_STRUCK_OFF] } },
-    { phrase: t`cu starea neclară în registru`, scope: { includeUnknown: true } },
+    { phrase: t`fără o stare comună în registru`, scope: { includeUnknown: true } },
   ]
 }
 

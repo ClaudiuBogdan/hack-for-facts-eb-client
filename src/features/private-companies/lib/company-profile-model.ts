@@ -1,3 +1,4 @@
+import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type {
@@ -13,6 +14,7 @@ import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK
 import { foldCountyName } from './county-names'
 import { comparable, metricStatus, qualifiedNet, reportedNumber, sourceValues, type SourceValue } from './financial-qualification'
 import { isReceiptFlow } from './public-money-display'
+import { legalFormName } from './company-legal-forms'
 
 /**
  * What the company profile draws, derived from the company's record: who it
@@ -259,33 +261,6 @@ export interface CompanyProfileModel {
 }
 
 // ───────────────────────────────────────────────── names ──
-
-function legalFormName(form: string | null): string | null {
-  switch (form) {
-    case null:
-      return null
-    case 'SA':
-      return t`Societate pe acțiuni`
-    case 'SRL':
-      return t`Societate cu răspundere limitată`
-    case 'SCS':
-      return t`Societate în comandită simplă`
-    case 'SNC':
-      return t`Societate în nume colectiv`
-    case 'SCA':
-      return t`Societate în comandită pe acțiuni`
-    case 'RA':
-      return t`Regie autonomă`
-    case 'PFA':
-      return t`Persoană fizică autorizată`
-    case 'II':
-      return t`Întreprindere individuală`
-    case 'IF':
-      return t`Întreprindere familială`
-    default:
-      return form
-  }
-}
 
 /** The registry's cedilla letters as the comma-below ones Romanian is written in („Bucureşti" → „București"). */
 export function commaBelow(text: string): string {
@@ -658,7 +633,7 @@ export function buildCompanyProfileModel(
   return {
     profile,
     displayName: displayCompanyName(profile.legalName),
-    legalFormName: legalFormName(profile.legalForm),
+    legalFormName: legalFormName(profile.legalForm, (descriptor) => i18n._(descriptor)),
     status: statusOf(profile),
     registry,
     recordedDate: registry.profile?.recordedDate ?? null,

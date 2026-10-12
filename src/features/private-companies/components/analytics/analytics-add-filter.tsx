@@ -2,11 +2,11 @@ import { useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { useCompanyNameSuggestions } from '@/features/private-companies/hooks/use-company-name-suggestions'
-import { useUatIndex } from '@/features/private-companies/hooks/use-uat-index'
-import { withScope } from '@/features/private-companies/lib/company-analytics-url'
-import type { AnalyticsPageData } from './analytics.data'
-import { suggestionsOf, type SuggestionGroup } from './analytics.suggest'
+import { useCompanyNameSuggestions } from '../../hooks/use-company-name-suggestions'
+import { useUatIndex } from '../../hooks/use-uat-index'
+import { withScope } from '../../lib/company-analytics-url'
+import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
+import { suggestionsOf, type SuggestionGroup } from '../../lib/company-analytics-suggest'
 
 /**
  * „+ Adaugă un filtru", as the NGO registry's: one box over what a reader
@@ -41,7 +41,7 @@ function groupTitle(group: SuggestionGroup): string {
   }
 }
 
-export function AddFilter({ page, trigger, triggerClassName }: { readonly page: AnalyticsPageData; readonly trigger: ReactNode; readonly triggerClassName: string }) {
+export function AddFilter({ page, trigger, triggerClassName }: { readonly page: CompanyAnalyticsPageData; readonly trigger: ReactNode; readonly triggerClassName: string }) {
   const { state, live, question, move } = page
   const [open, setOpen] = useState(false)
   const [term, setTerm] = useState('')

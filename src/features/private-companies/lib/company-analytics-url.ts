@@ -28,8 +28,9 @@ import {
 /**
  * `/companies/analytics` — the question its address holds. Every choice on
  * the page is a key here, so a question is a link and Back undoes a step:
- * the fiscal year, the measure, the panel and its grouping, the records'
- * order, the series' cohort, every filter and the pinned release.
+ * the fiscal year, the measure, how the answer is shown (a table, a map,
+ * charts), the panel and its grouping, the records' order, the series'
+ * cohort, every filter and the pinned release.
  *
  * The keys are short Romanian words, as the procurement analysis writes
  * them; a default is not written. A value the page cannot read is kept in
@@ -39,11 +40,15 @@ import {
 
 export type AnalyticsPanel = 'firme' | 'defalcare' | 'evolutie'
 
+/** How the answer is shown: a table (the default), a map, charts. */
+export type AnalyticsMode = 'tabel' | 'harta' | 'grafice'
+
 export interface CompanyAnalyticsState {
   /** Null: the release's default year (2024 when offered). */
   readonly year: number | null
   /** Null: the release's default measure. */
   readonly metric: CompanyAnalysisMetric | null
+  readonly mode: AnalyticsMode
   readonly panel: AnalyticsPanel
   readonly dimension: CompanyAnalysisDimension
   /** Null: the release's default ranking. */
@@ -63,6 +68,7 @@ export interface CompanyAnalyticsState {
 export const DEFAULT_STATE: CompanyAnalyticsState = {
   year: null,
   metric: null,
+  mode: 'tabel',
   panel: 'firme',
   dimension: 'COUNTY',
   rankBy: null,
@@ -79,6 +85,7 @@ export const DEFAULT_STATE: CompanyAnalyticsState = {
 const UNKNOWN = 'necunoscut'
 
 const PANEL_WORDS: Readonly<Record<AnalyticsPanel, string>> = { firme: 'firme', defalcare: 'defalcare', evolutie: 'evolutie' }
+const MODE_WORDS: Readonly<Record<AnalyticsMode, string>> = { tabel: 'tabel', harta: 'harta', grafice: 'grafice' }
 
 export const DIMENSION_WORDS: Readonly<Record<CompanyAnalysisDimension, string>> = {
   COUNTY: 'judet',
@@ -124,6 +131,7 @@ function invert<K extends string>(words: Readonly<Record<K, string>>): ReadonlyM
 }
 
 const PANEL_BY_WORD = invert(PANEL_WORDS)
+const MODE_BY_WORD = invert(MODE_WORDS)
 const DIMENSION_BY_WORD = invert(DIMENSION_WORDS)
 const RANK_BY_WORD = invert(RANK_WORDS)
 const COHORT_BY_WORD = invert(COHORT_WORDS)
@@ -137,6 +145,7 @@ const METRIC_BY_WORD = new Map(COMPANY_ANALYSIS_METRICS.map((metric) => [metricW
 export const SEARCH_KEYS = [
   'an',
   'indicator',
+  'mod',
   'vedere',
   'dupa',
   'clasare',
@@ -353,6 +362,7 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   const reader: Reader = { unread: new Set() }
   const year = one(reader, 'an', search.an, (text) => (/^(19|20)\d{2}$/u.test(text) ? Number(text) : undefined))
   const metric = one(reader, 'indicator', search.indicator, (text) => METRIC_BY_WORD.get(text))
+  const mode = one(reader, 'mod', search.mod, (text) => MODE_BY_WORD.get(text))
   const panel = one(reader, 'vedere', search.vedere, (text) => PANEL_BY_WORD.get(text))
   const dimension = one(reader, 'dupa', search.dupa, (text) => DIMENSION_BY_WORD.get(text))
   const rankBy = one(reader, 'clasare', search.clasare, (text) => RANK_BY_WORD.get(text))
@@ -406,6 +416,7 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   return {
     year: year ?? null,
     metric: metric ?? null,
+    mode: mode ?? 'tabel',
     panel: panel ?? 'firme',
     dimension: dimension ?? 'COUNTY',
     rankBy: rankBy ?? null,
@@ -440,6 +451,7 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
   const entries: [SearchKey, string | undefined][] = [
     ['an', state.year === null ? undefined : String(state.year)],
     ['indicator', state.metric === null ? undefined : metricWord(state.metric)],
+    ['mod', state.mode === 'tabel' ? undefined : MODE_WORDS[state.mode]],
     ['vedere', state.panel === 'firme' ? undefined : PANEL_WORDS[state.panel]],
     ['dupa', state.dimension === 'COUNTY' ? undefined : DIMENSION_WORDS[state.dimension]],
     ['clasare', state.rankBy === null ? undefined : RANK_WORDS[state.rankBy]],

@@ -582,3 +582,48 @@ The companies with no common county, locality or state in the ONRC edition
 are the API's basis groups (`bucket.basis`), named and drilled as the
 section of 4 October says; the prototype draws them muted and leaves them
 off the maps, counted under the legend.
+
+## The analysis page promoted (12 October 2026)
+
+`/companies/analytics` is the prototype's page (`propozitie`), on dev's
+analytics (the ONRC edition's basis groups, the derived activity, the
+registry-scoped company picker).
+
+### Where the code went
+
+- `components/analytics/company-analytics-page.tsx`: `CompanyAnalyticsView`
+  (the head, the notices, the pinned bar, the figures, the answer, the
+  years, the source, the filters panel) and the route's page around it.
+- `hooks/use-company-analytics-page.ts`: everything the page reads and every
+  way it moves, from an address — the route's
+  (`useCompanyAnalyticsRouteAddress`) or the design harness's; the
+  prototype keeps only its address (`analytics.data.ts`) and draws the
+  promoted view, so it shows what is live.
+- `analytics-head.tsx`, `analytics-add-filter.tsx`, `analytics-answer.tsx`
+  (the modes, the figures, the tabs, the years), `analytics-axis.tsx` (an
+  axis ranked), `analytics-charts.tsx`, `analytics-maps.tsx`; pure rules in
+  `lib/company-analytics-sentence.ts` (the headline), `-suggest.ts` (the
+  search box), `-states.ts`, `-order.ts`, `-answer.ts` (the tabs, shared
+  with the server read).
+- Replaced: the old head, the figures band and the breakdown table.
+
+### Decisions taken at promotion
+
+- **How the answer is shown is in the address** (`mod`: `harta`,
+  `grafice`; the table without it), and the route's server read follows the
+  first view under the page's keys: the map's groups (by county, by
+  locality in one county), the companies sorted for the chart, an axis's
+  groups as many as the table (15) or the chart (10) shows, the years.
+- **The ranked axis keeps the old table's substance**: the derived activity
+  (a tab of its own where the release offers it, ANAF's code beside it as
+  „CAEN ANAF"), its names with source and quality, its unclassified buckets
+  apart, the ranking choice, the CSV, the totals, the notes on what a
+  grouping describes and where its names come from.
+- **The four figures are exact** on hover and to a screen reader; a measure
+  nobody reported is a dash that says so.
+- **The unknown groups read as the panel says them**: „fără un județ comun",
+  „fără o localitate comună", „fără stare comună".
+- **The hub opens the view its band shows**: the counties' map on the map,
+  the years' trend as the chart; the figures and leaders as the table.
+- The company profile names a legal form from the same list as the
+  analysis's filters (`lib/company-legal-forms.ts`).

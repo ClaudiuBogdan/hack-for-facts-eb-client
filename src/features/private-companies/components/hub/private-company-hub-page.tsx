@@ -483,7 +483,7 @@ function CountiesBand({
                   locale={locale}
                   drill={(bucket) => hubCountyDrill(plan.questions.counties, bucket)}
                 />
-                <AnalyticsLink search={hubAnalyticsLink(plan.questions.counties, { panel: 'defalcare', dimension: 'COUNTY' })} />
+                <AnalyticsLink search={hubAnalyticsLink(plan.questions.counties, { panel: 'defalcare', mode: 'harta', dimension: 'COUNTY' })} />
               </>
             )}
           </SectionRead>
@@ -528,7 +528,7 @@ function TrendBand({
             />
             {plan?.questions.trend ? (
               <div className="mt-8" data-reveal>
-                <AnalyticsLink search={hubAnalyticsLink(plan.questions.trend, { panel: 'evolutie' })} />
+                <AnalyticsLink search={hubAnalyticsLink(plan.questions.trend, { panel: 'evolutie', mode: 'grafice' })} />
               </div>
             ) : null}
           </div>

@@ -3,9 +3,11 @@ import { AnalyticsPropozitie } from './analytics.variants'
 
 /**
  * `/companies/analytics` in the procurement analytics page's language, live
- * on the companies analytics API (`companyAnalysis*`, release-pinned) through
- * the page's own data layer and URL model, so every address of the real page
- * opens here too. The current page is at `/companies/analytics` for comparison.
+ * on the companies analytics API (`companyAnalysis*`, release-pinned).
+ * Promoted to `/companies/analytics` on 12 October 2026: the prototype now
+ * draws the promoted page (`CompanyAnalyticsView`) from its own address, so
+ * every address of the real page opens here too, and it stays the design
+ * record.
  *
  * `stare` (the statuses in the pinned bar) was folded into `propozitie` on
  * the owner's word (12 October 2026): the state is one of the filters, the

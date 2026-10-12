@@ -3,10 +3,6 @@ import { Link } from '@tanstack/react-router'
 import type { FeatureCollection, MultiPolygon, Polygon } from 'geojson'
 import { plural, t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { useCompanyAnalysisBreakdown } from '@/features/private-companies/hooks/use-company-analytics'
-import { compactValueText } from '@/features/private-companies/lib/company-analytics-format'
-import { countyLabel, metricLabel, placeName } from '@/features/private-companies/lib/company-analytics-text'
-import { withScope, type CompanyAnalyticsState } from '@/features/private-companies/lib/company-analytics-url'
 import { HubCountyBand, type HubCountyBandDefinition } from '@/features/statistics/components/hub/hub-county-band'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { COUNTY_MAP_STEPS, STEP_BG, STEP_FILL, countyScale, projectCounties, type CountyFeature } from '@/features/statistics/lib/county-map'
@@ -16,7 +12,13 @@ import { decimalToPlot, roundDecimal, shiftDecimal } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisBreakdown, CompanyAnalysisBucket } from '@/schemas/company-analytics'
 import type { StatisticsHubCountyLayer } from '@/schemas/statistics'
-import type { AnalyticsPageData } from './analytics.data'
+import { useCompanyAnalysisBreakdown } from '../../hooks/use-company-analytics'
+import { compactValueText } from '../../lib/company-analytics-format'
+import { countyLabel, metricLabel, placeName } from '../../lib/company-analytics-text'
+import { withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
+import { BREAKDOWN_TOP_EXPANDED, mapTopOf } from '../../api/company-analytics-plan'
+import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
+import { mapCountyOf } from '../../lib/company-analytics-answer'
 
 /**
  * The selection on the map: the measure by county on the hub's map, or —
@@ -28,14 +30,8 @@ import type { AnalyticsPageData } from './analytics.data'
  * with companies but no reported value, the localities without an outline.
  */
 
-/** The one county the selection is in, if it is in one. */
-export function oneCountyOf(page: AnalyticsPageData): string | null {
-  const county = page.state.scope.county
-  return county?.in?.length === 1 && !county.includeUnknown ? (county.in[0] ?? null) : null
-}
-
-export function MapAnswer({ page }: { readonly page: AnalyticsPageData }) {
-  const county = oneCountyOf(page)
+export function MapAnswer({ page }: { readonly page: CompanyAnalyticsPageData }) {
+  const county = mapCountyOf(page.state.scope)
   return county ? <LocalityMap page={page} county={county} /> : <CountyMap page={page} />
 }
 
@@ -73,22 +69,22 @@ function disclosures(places: Places, where: 'county' | 'locality', unshaped: num
     places.unplaced > 0
       ? where === 'county'
         ? plural(places.unplaced, {
-            one: 'O firmă fără un singur județ în registru nu apare pe hartă.',
-            few: '# firme fără un singur județ în registru nu apar pe hartă.',
-            other: '# de firme fără un singur județ în registru nu apar pe hartă.',
+            one: 'O firmă fără un județ comun nu apare pe hartă.',
+            few: '# firme fără un județ comun nu apar pe hartă.',
+            other: '# de firme fără un județ comun nu apar pe hartă.',
           })
         : plural(places.unplaced, {
-            one: 'O firmă fără o singură localitate în registru nu apare pe hartă.',
-            few: '# firme fără o singură localitate în registru nu apar pe hartă.',
-            other: '# de firme fără o singură localitate în registru nu apar pe hartă.',
+            one: 'O firmă fără o localitate comună nu apare pe hartă.',
+            few: '# firme fără o localitate comună nu apar pe hartă.',
+            other: '# de firme fără o localitate comună nu apar pe hartă.',
           })
       : null,
     // „Altele" folds the smallest groups past the API's 100: places, and perhaps companies without a single one — it cannot tell which.
     places.folded > 0
       ? plural(places.folded, {
-          one: 'O firmă, adunată la „altele" (locuri mici sau fără o valoare unică în registru), nu apare pe hartă.',
-          few: '# firme, adunate la „altele" (locuri mici sau fără o valoare unică în registru), nu apar pe hartă.',
-          other: '# de firme, adunate la „altele" (locuri mici sau fără o valoare unică în registru), nu apar pe hartă.',
+          one: 'O firmă, adunată la „altele" (locuri mici sau fără o valoare comună), nu apare pe hartă.',
+          few: '# firme, adunate la „altele" (locuri mici sau fără o valoare comună), nu apar pe hartă.',
+          other: '# de firme, adunate la „altele" (locuri mici sau fără o valoare comună), nu apar pe hartă.',
         })
       : null,
     // The county map names its hatched counties itself (with or without companies); the localities' hatching means only this.
@@ -118,9 +114,9 @@ function bandScale(largest: number, headcount: boolean): { readonly power: numbe
  * prints is the API's sum rounded, not a double's. The exact sums are the
  * table's („Județe"). The counties without a figure are named under it.
  */
-function CountyMap({ page }: { readonly page: AnalyticsPageData }) {
+function CountyMap({ page }: { readonly page: CompanyAnalyticsPageData }) {
   const { state, question, live, linkTo } = page
-  const breakdown = useCompanyAnalysisBreakdown(question, 'COUNTY', live?.limits.maxTopN ?? 100)
+  const breakdown = useCompanyAnalysisBreakdown(question, 'COUNTY', live ? mapTopOf(live) : BREAKDOWN_TOP_EXPANDED)
   const data = breakdown.data
   const map = useMemo(() => {
     if (!data || !question) return null
@@ -199,9 +195,9 @@ function localityState(state: CompanyAnalyticsState, key: string): CompanyAnalyt
  * as zero. Every printed figure is the API's own; only the colours are
  * computed from numbers. The figure under the pointer stands above the map.
  */
-function LocalityMap({ page, county }: { readonly page: AnalyticsPageData; readonly county: string }) {
+function LocalityMap({ page, county }: { readonly page: CompanyAnalyticsPageData; readonly county: string }) {
   const { state, question, live, locale, linkTo } = page
-  const breakdown = useCompanyAnalysisBreakdown(question, 'UAT', live?.limits.maxTopN ?? 100)
+  const breakdown = useCompanyAnalysisBreakdown(question, 'UAT', live ? mapTopOf(live) : BREAKDOWN_TOP_EXPANDED)
   const geo = useGeoJsonData('UAT')
   const [active, setActive] = useState<string | null>(null)
   const data = breakdown.data
@@ -275,7 +271,7 @@ function LocalityMap({ page, county }: { readonly page: AnalyticsPageData; reado
           )
           // A locality with companies opens them, by the API's own key; one without is a named shape.
           return bucket?.key ? (
-            <Link key={shape.code} {...linkTo(localityState(state, bucket.key), 'tabel')} aria-label={label} onPointerEnter={() => setActive(shape.code)} onFocus={() => setActive(shape.code)} className="outline-none">
+            <Link key={shape.code} {...linkTo({ ...localityState(state, bucket.key), mode: 'tabel' })} aria-label={label} onPointerEnter={() => setActive(shape.code)} onFocus={() => setActive(shape.code)} className="outline-none">
               {path}
               <title>{label}</title>
             </Link>
@@ -308,7 +304,7 @@ function LocalityMap({ page, county }: { readonly page: AnalyticsPageData; reado
           <ul className="space-y-1">
             {figures.unshaped.map((bucket) => (
               <li key={bucket.key}>
-                <Link {...linkTo(localityState(state, bucket.key ?? ''), 'tabel')} className="font-medium text-foreground underline-offset-4 hover:underline">
+                <Link {...linkTo({ ...localityState(state, bucket.key ?? ''), mode: 'tabel' })} className="font-medium text-foreground underline-offset-4 hover:underline">
                   {bucket.label ? placeName(bucket.label) : t`SIRUTA ${bucket.key ?? ''}`}
                 </Link>{' '}
                 · {bucketText(bucket)}
