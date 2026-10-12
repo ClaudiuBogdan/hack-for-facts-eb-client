@@ -261,6 +261,65 @@ async function readPopulation() {
   return population
 }
 
+// ── the analytics release's years ───────────────────────────────────────
+
+const RELEASE_QUERY = `query { companyAnalysisRelease { release { releaseId publishedAt source { sourcePublishedAt } } } }`
+const SERIES_QUERY = `
+  query Years($release: BigInt!, $metric: CompanyAnalysisMetric, $scope: CompanyAnalysisScopeInput) {
+    companyAnalysisSeries(release: $release, metric: $metric, cohortMode: EACH_YEAR, scope: $scope) {
+      points { fiscalYear available filers metric { sum contributors } }
+    }
+  }`
+const SERIES_METRICS = { turnover: 'TURNOVER', netResult: 'NET_RESULT', employees: 'EMPLOYEES' }
+// The release holds back reviewed impossible headcounts only, with no threshold of its own: a few more (1.3 million
+// "employees" from three 2011 statements, 122,690 from one in 2025) are left. Each year keeps the headcounts the
+// year's figures keep (EMPLOYEE_CEILING), from the same range filter the analysis offers.
+const SERIES_SCOPE = { employees: { financialRanges: [{ metric: 'EMPLOYEES', min: '0', max: String(EMPLOYEE_CEILING) }] } }
+
+async function graphql(query, variables = {}) {
+  const response = await fetch(args.api, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query, variables }) })
+  const { data, errors } = await response.json()
+  if (errors) throw new Error(JSON.stringify(errors))
+  return data
+}
+
+/**
+ * Every fiscal year of the active companies analytics release, each counting
+ * its own companies: the values it admits, never a raw sum. The raw statements
+ * carry keying errors (a 2020 statement of 300 trillion lei, headcounts of
+ * 999999999999999) and forms whose fields hold other things (insurers' 2024
+ * statements put an amount where a headcount goes); the release holds those
+ * back, so the hub's years are its.
+ */
+async function readYears() {
+  const { release } = (await graphql(RELEASE_QUERY)).companyAnalysisRelease
+  const series = {}
+  for (const [key, metric] of Object.entries(SERIES_METRICS)) {
+    series[key] = (await graphql(SERIES_QUERY, { release: release.releaseId, metric, scope: SERIES_SCOPE[key] })).companyAnalysisSeries.points.filter((point) => point.fiscalYear <= YEAR)
+  }
+  const years = series.turnover.map((point) => point.fiscalYear)
+  const problems = []
+  if (years.length < 2 || years.at(-1) !== YEAR || years.some((year, index) => index > 0 && year !== years[index - 1] + 1)) problems.push('the release\'s years are not a run ending in the year')
+  for (const key of Object.keys(SERIES_METRICS)) {
+    const points = series[key]
+    // A range filter narrows its series' companies; the others count every company with a statement.
+    const sameFilers = (point, index) => SERIES_SCOPE[key] !== undefined || point.filers === series.turnover[index].filers
+    if (points.length !== years.length || points.some((point, index) => point.fiscalYear !== years[index] || !sameFilers(point, index))) problems.push(`the ${key} series does not line up with turnover's`)
+  }
+  if (problems.length > 0) throw new Error(`The release's years do not reconcile:\n- ${problems.join('\n- ')}`)
+  const measure = (point) => ({ sum: point.available && point.metric.sum !== null ? Math.round(Number(point.metric.sum)) : null, reported: Number(point.metric.contributors) })
+  return {
+    source: { releaseId: release.releaseId, publishedAt: release.publishedAt?.slice(0, 10) ?? null, onrcPublished: release.source.sourcePublishedAt.slice(0, 10) },
+    rows: years.map((year, index) => ({
+      year,
+      filers: Number(series.turnover[index].filers),
+      turnover: measure(series.turnover[index]),
+      netResult: measure(series.netResult[index]),
+      employees: measure(series.employees[index]),
+    })),
+  }
+}
+
 // ── the module ──────────────────────────────────────────────────────────
 
 const int = (value) => Math.round(Number(value))
@@ -307,7 +366,7 @@ function reconcile(rows, population) {
   if (problems.length > 0) throw new Error(`The read does not reconcile:\n- ${problems.join('\n- ')}`)
 }
 
-function render(rows, population) {
+function render(rows, population, years) {
   const status = new Map(rows.status.map((row) => [row.status, int(row.n)]))
   const statusTotal = (codes) => codes.reduce((total, code) => total + (status.get(code) ?? 0), 0)
   const national = rows.national[0]
@@ -358,6 +417,11 @@ function render(rows, population) {
     " * - **County** = the registered office's county; turnover follows the head",
     ' *   office, so a national chain counts where it is registered.',
     ` * - **Population** = INS POP105A, residents on 1 January ${YEAR}.`,
+    ` * - **Years** (companies analytics release ${years.source.releaseId}, FY${years.rows[0].year}–FY${YEAR}): turnover,`,
+    ' *   net result and average employees as the release qualifies them, read from',
+    " *   the public API: not the raw sums above, which keyed errors and other forms'",
+    ` *   fields would distort. A headcount above ${EMPLOYEE_CEILING.toLocaleString('en-US')} (or below zero) is left out, as above.`,
+    ' *   Each year counts its own companies.',
     ' *',
     ' * Generated by `scripts/generate-companies-hub-snapshot.mjs`; never edit a figure by hand.',
     ' */',
@@ -407,15 +471,23 @@ function render(rows, population) {
     '  registrations: [',
     ...registrations.map((row) => `    { year: ${row.year}, registered: ${row.registered}, active: ${row.active} },`),
     '  ],',
+    '  years: [',
+    ...years.rows.map((row) => {
+      const m = (value) => `{ sum: ${value.sum === null ? 'null' : value.sum}, reported: ${value.reported} }`
+      return `    { year: ${row.year}, filers: ${row.filers}, turnover: ${m(row.turnover)}, netResult: ${m(row.netResult)}, employees: ${m(row.employees)} },`
+    }),
+    '  ],',
+    `  yearsSource: { releaseId: '${years.source.releaseId}', publishedAt: ${nullable(years.source.publishedAt)}, onrcPublished: '${years.source.onrcPublished}' },`,
     '}',
     '',
   ].join('\n')
 }
 
-// The population first: a failing API read then never leaves a database
-// connection open behind it.
+// The API reads first: a failing one then never leaves a database connection
+// open behind it.
 const population = await readPopulation()
+const years = await readYears()
 const rows = await readDatabase()
 reconcile(rows, population)
-writeFileSync(OUT, render(rows, population))
+writeFileSync(OUT, render(rows, population, years))
 console.log(`wrote ${OUT}`)

@@ -6,75 +6,90 @@ import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import {
-  COUNTY_MAP_WIDTH,
   STEP_BG,
   STEP_FILL,
   STEP_STROKE,
   STEP_TEXT,
-  countyLabelPixels,
-  countyShapes,
+  projectCounties,
   type CountyFeature,
   type CountyProperties,
   type CountyScale,
 } from '@/features/statistics/lib/county-map'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
-import type { DecimalLocale } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
-import type { CompanyAnalysisBucket } from '@/schemas/company-analytics'
-import type { CompanyAnalyticsUrlSearch } from '../../lib/company-analytics-url'
-import { hubShare, hubValueText, rankHubCounties, type HubCountyFigure, type HubCountyMapLayer } from '../../lib/company-hub-analytics'
-import { countyName, hubLayerScale, missingCounties } from '../../lib/hub-counties'
-import { formatHubValue } from '../../lib/hub-format'
-
-/** A county's list in the analysis: the companies the layer counted there. */
-type CountyDrill = (bucket: CompanyAnalysisBucket) => CompanyAnalyticsUrlSearch | null
+import {
+  countyName,
+  hubLayerDecimals,
+  hubLayerScale,
+  missingCounties,
+  rankCounties,
+  type HubCountyLayer,
+  type HubCountyValue,
+} from '../../lib/hub-counties'
+import { describeAgainstNational, formatHubValue, formatHubValueText, isAdditiveUnit } from '../../lib/hub-format'
 
 /**
- * The INS hub's county map, over one measure of the year's companies: a
- * plain-SVG choropleth keyed by the county code, a readout above it and the
- * stepped legend below. Only the colours and the legend's bounds are worked
- * out from numbers; every figure a reader reads is the API's exact value on
- * one scale.
+ * The INS hub's county map, over company figures: a plain-SVG choropleth
+ * keyed by the county code, a readout above it and the stepped legend below.
  *
  * The readout names the county under the pointer (the country, at rest): its
- * figure, its place and its share of the year's total. A county with no
- * value is hatched and named, never zero. On a touch screen the first tap
- * shows a county and the second opens its companies in the analysis: those
- * with a statement for the year whose common county it is, any status.
+ * figure, its place among the 42 and how it compares with Romania. The legend
+ * prints all six bounds of the five equal-count steps, the country as a
+ * dashed tick for a rate and the active county as a solid one. A county with
+ * no figure is hatched and named, never zero.
+ *
+ * On a touch screen the first tap shows a county and the second opens it — a
+ * map read by tapping would otherwise leave the page on every look. A county
+ * opens its companies in the analysis (`countyLink`).
+ *
+ * The geometry and the colour steps are the INS maps' (`statistics/lib/
+ * county-map`).
  */
 
+const WIDTH = 640
 /** One map per page: a fixed id keeps `url(#…)` free of the characters `useId` produces. */
 const NO_DATA_PATTERN = 'company-county-no-data'
 
-function valueText(exact: string, layer: HubCountyMapLayer, locale: DecimalLocale): string {
-  const figure = hubValueText(exact, layer.measure, locale)
-  return `${figure.value} ${figure.unit}`
+/** One projection per boundary load; counties in name order, so the keyboard walks them alphabetically. */
+const projections = new WeakMap<readonly CountyFeature[], ReturnType<typeof projectCounties>>()
+function projected(features: readonly CountyFeature[]) {
+  let projection = projections.get(features)
+  if (!projection) {
+    const { counties, height } = projectCounties(features, WIDTH)
+    projection = { counties: [...counties].sort((a, b) => a.name.localeCompare(b.name, 'ro')), height }
+    projections.set(features, projection)
+  }
+  return projection
+}
+
+/** On-screen size of a county code: legible at a phone's width, quiet at a desktop's. */
+function labelPixels(renderedWidth: number) {
+  return renderedWidth < 480 ? 9 : 11
 }
 
 export function CompanyCountyMap({
   layer,
   legend,
-  locale,
-  drill,
+  countyLink,
   className,
   activeCode,
   onActiveChange,
 }: {
-  readonly layer: HubCountyMapLayer
+  readonly layer: HubCountyLayer
   /** What the colour means and when, for the legend and the SVG's name. */
   readonly legend: string
-  readonly locale: DecimalLocale
-  readonly drill: CountyDrill
+  /** A county's address in the companies analysis. */
+  readonly countyLink: (code: string) => Record<string, unknown>
   readonly className?: string
   readonly activeCode?: string
   readonly onActiveChange?: (code: string | undefined) => void
 }) {
   const geo = useGeoJsonData('County')
-  const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features as readonly CountyFeature[] | undefined
-  const shapes = features ? countyShapes(features) : undefined
+  const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
+  const shapes = features ? projected(features) : undefined
   const scale = useMemo(() => hubLayerScale(layer), [layer])
   const byCode = useMemo(() => new Map(layer.values.map((county) => [county.code, county])), [layer.values])
-  const ranks = useMemo(() => new Map(rankHubCounties(layer.values).map((county, index) => [county.code, index + 1])), [layer.values])
+  const ranks = useMemo(() => new Map(rankCounties(layer.values).map((county, index) => [county.code, index + 1])), [layer.values])
   const [pinned, setPinned] = useState<string>()
   const pointerType = useRef('mouse')
   const figureRef = useRef<HTMLElement>(null)
@@ -123,10 +138,11 @@ export function CompanyCountyMap({
     )
   }
 
-  const title = (code: string, county: HubCountyFigure | undefined) =>
-    county ? `${countyName(code)}: ${valueText(county.exact, layer, locale)}` : t`${countyName(code)}: fără valoare`
+  const digits = hubLayerDecimals(layer)
+  const title = (code: string, county: HubCountyValue | undefined) =>
+    county ? `${countyName(code)}: ${formatHubValueText(county.value, layer.unit, digits)}` : t`${countyName(code)}: fără valoare`
   const active = activeCode ? shapes?.counties.find((shape) => shape.code === activeCode) : undefined
-  const fontSize = renderedWidth ? (countyLabelPixels(renderedWidth) * COUNTY_MAP_WIDTH) / renderedWidth : 11
+  const fontSize = renderedWidth ? (labelPixels(renderedWidth) * WIDTH) / renderedWidth : 11
   const hoverOnly = (event: PointerEvent, code: string | undefined) => {
     if (event.pointerType !== 'touch') onActiveChange?.(code)
   }
@@ -136,22 +152,22 @@ export function CompanyCountyMap({
   }
 
   return (
-    <figure ref={figureRef} className={cn('w-full', className)} data-testid="company-hub-county-map">
+    <figure ref={figureRef} className={cn('w-full', className)}>
       <CountyReadout
         id={readoutId}
         layer={layer}
-        locale={locale}
         activeCode={activeCode}
         county={activeCode ? byCode.get(activeCode) : undefined}
         rank={activeCode ? ranks.get(activeCode) : undefined}
         pinned={pinned !== undefined && pinned === activeCode}
-        drill={drill}
+        digits={digits}
+        countyLink={countyLink}
       />
       {shapes ? (
         // A group, not an image: the counties are links and stay in the accessibility tree.
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${COUNTY_MAP_WIDTH} ${shapes.height.toFixed(0)}`}
+          viewBox={`0 0 ${WIDTH} ${shapes.height.toFixed(0)}`}
           className="mt-4 block h-auto w-full touch-manipulation"
           role="group"
           aria-label={legend}
@@ -168,7 +184,6 @@ export function CompanyCountyMap({
           </defs>
           {shapes.counties.map((shape) => {
             const county = byCode.get(shape.code)
-            const search = county ? drill(county.bucket) : null
             const path = (
               <path
                 d={shape.d}
@@ -186,11 +201,11 @@ export function CompanyCountyMap({
                 <title>{title(shape.code, county)}</title>
               </path>
             )
-            return county && search ? (
+            return county ? (
               <Link
                 key={shape.code}
                 to="/companies/analytics"
-                search={search}
+                search={countyLink(shape.code)}
                 onPointerDown={(event) => {
                   pointerType.current = event.pointerType
                 }}
@@ -269,45 +284,51 @@ export function CompanyCountyMap({
         <div className="mt-4 aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60" aria-hidden="true" />
       )}
       <figcaption className="mt-6">
-        <CountyLegend layer={layer} scale={scale} title={legend} active={activeCode ? byCode.get(activeCode) : undefined} />
+        <CountyLegend
+          layer={layer}
+          scale={scale}
+          title={legend}
+          active={activeCode ? byCode.get(activeCode) : undefined}
+          digits={digits}
+        />
       </figcaption>
     </figure>
   )
 }
 
 /**
- * What the pointer is on: a county's figure, its place among the counties
- * and its share of the year's total; at rest, the total itself. Fixed
+ * What the pointer is on: a county's figure, its place among the counties and
+ * how it compares with the country; at rest, the country's own figure. Fixed
  * height, so moving across the map never moves the map.
  */
 function CountyReadout({
   id,
   layer,
-  locale,
   activeCode,
   county,
   rank,
   pinned,
-  drill,
+  digits,
+  countyLink,
 }: {
   readonly id: string
-  readonly layer: HubCountyMapLayer
-  readonly locale: DecimalLocale
+  readonly layer: HubCountyLayer
   readonly activeCode: string | undefined
-  readonly county: HubCountyFigure | undefined
+  readonly county: HubCountyValue | undefined
   readonly rank: number | undefined
   readonly pinned: boolean
-  readonly drill: CountyDrill
+  readonly digits: number
+  readonly countyLink: (code: string) => Record<string, unknown>
 }) {
-  const shown = county ? county.exact : activeCode ? null : layer.nationalExact
-  const formatted = shown === null ? null : hubValueText(shown, layer.measure, locale)
+  const shown = county ? county.value : activeCode ? null : layer.national
+  const formatted = shown === null ? null : formatHubValue(shown, layer.unit, { digits })
+  // The INS map's wording, so the two hubs read the same in every language.
   const total = layer.values.length
   const caption = county && rank ? t`${countyName(county.code)} · locul ${rank} din ${total}` : activeCode ? countyName(activeCode) : t`România`
-  const share = county ? hubShare(county.exact, layer.shareWhole, locale) : null
-  const search = pinned && county ? drill(county.bucket) : null
+  const note = county ? describeAgainstNational(county.value, layer.national, layer.unit, digits) : null
 
   return (
-    <div id={id} className="flex min-h-20 flex-col justify-start" data-testid="company-hub-county-readout">
+    <div id={id} className="flex min-h-20 flex-col justify-start">
       <MonoLabel className="block leading-relaxed text-muted-foreground">{caption}</MonoLabel>
       {formatted ? (
         <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-3xl">
@@ -320,14 +341,20 @@ function CountyReadout({
           ) : null}
         </p>
       ) : (
-        <p className="mt-1 text-base text-muted-foreground">{t({ message: 'Fără valoare', context: 'county map readout' })}</p>
+        <p className="mt-1 text-base text-muted-foreground">
+          {t({ message: 'Fără valoare', context: 'county map readout' })}
+        </p>
       )}
-      {share || search ? (
+      {note || (pinned && county) ? (
         <p className="mt-1 flex flex-wrap items-baseline gap-x-3 text-sm text-muted-foreground">
-          {share ? <span>{t`${share} din total`}</span> : null}
-          {search ? (
-            <Link to="/companies/analytics" search={search} className="font-medium text-primary underline-offset-4 hover:underline">
-              <Trans>Firmele cu situație financiară din județ</Trans> →
+          {note ? <span>{note}</span> : null}
+          {pinned && county ? (
+            <Link
+              to="/companies/analytics"
+              search={countyLink(county.code)}
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              <Trans>Firmele județului</Trans> →
             </Link>
           ) : null}
         </p>
@@ -337,25 +364,28 @@ function CountyReadout({
 }
 
 /**
- * Five equal-width steps with their bounds beneath and the active county as a
- * solid tick. Equal-count steps have unequal ranges, so the bounds are
- * printed, not implied; they are the scale's, rounded for the legend.
+ * Five equal-width steps with their bounds beneath, the country's rate as a
+ * dashed tick and the active county as a solid one. Equal-count steps have
+ * unequal ranges, so the bounds are printed, not implied.
  */
 function CountyLegend({
   layer,
   scale,
   title,
   active,
+  digits,
 }: {
-  readonly layer: HubCountyMapLayer
+  readonly layer: HubCountyLayer
   readonly scale: CountyScale
   readonly title: string
-  readonly active: HubCountyFigure | undefined
+  readonly active: HubCountyValue | undefined
+  readonly digits: number
 }) {
   const bounds = [...scale.thresholds, scale.max]
-  const labels = bounds.map((value) => formatHubValue(value, layer.unit).value)
+  const labels = bounds.map((value) => formatHubValue(value, layer.unit, { digits }).value)
   // Seven-figure bounds collide on a phone; there every other one drops a line.
   const stagger = Math.max(...labels.map((label) => label.length)) > 6
+  const national = isAdditiveUnit(layer.unit) ? null : scale.positionOf(layer.national)
   const activeAt = active ? scale.positionOf(active.value) : null
   const missing = missingCounties(layer)
   return (
@@ -368,7 +398,7 @@ function CountyLegend({
               <rect width="16" height="10" fill={`url(#${NO_DATA_PATTERN})`} />
             </svg>
             {/* Named, not only counted: a hatched county cannot be focused or tapped. */}
-            <MonoLabel className="leading-relaxed text-muted-foreground" data-testid="company-hub-county-missing">
+            <MonoLabel className="leading-relaxed text-muted-foreground">
               {plural(missing.length, {
                 one: 'un județ fără valoare',
                 few: '# județe fără valoare',
@@ -379,39 +409,54 @@ function CountyLegend({
           </span>
         ) : null}
       </div>
-      {layer.values.length > 0 ? (
-        <div className="max-w-lg" aria-hidden="true">
-          <div className="relative">
-            <div className="flex h-2.5 gap-px">
-              {STEP_BG.map((step) => (
-                <span key={step} className={cn('flex-1', step)} />
-              ))}
-            </div>
-            {activeAt !== null ? (
-              <span
-                className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground transition-[left] duration-150"
-                style={{ left: `${(activeAt * 100).toFixed(2)}%` }}
-              />
-            ) : null}
+      <div className="max-w-lg" aria-hidden="true">
+        {national !== null ? (
+          <div className="relative mb-1.5 h-2.5">
+            <MonoLabel
+              className={cn(
+                'absolute top-0 text-foreground',
+                // A national figure past the counties' range sits at an end; its label stays over the bar.
+                national < 0.03 ? 'translate-x-0' : national > 0.97 ? '-translate-x-full' : '-translate-x-1/2',
+              )}
+              style={{ left: `${(national * 100).toFixed(2)}%` }}
+            >
+              RO
+            </MonoLabel>
           </div>
-          <div className={cn('relative mt-2 h-3', stagger && 'max-sm:h-7')}>
-            {labels.map((label, index) => (
-              <MonoLabel
-                key={index}
-                className={cn(
-                  // Normal tracking: six bounds share a phone's width.
-                  'absolute top-0 whitespace-nowrap tabular-nums tracking-normal text-muted-foreground',
-                  index === 0 ? 'translate-x-0' : index === labels.length - 1 ? '-translate-x-full' : '-translate-x-1/2',
-                  stagger && index % 2 === 1 && 'max-sm:top-4',
-                )}
-                style={{ left: `${(index / (labels.length - 1)) * 100}%` }}
-              >
-                {label}
-              </MonoLabel>
+        ) : null}
+        <div className="relative">
+          <div className="flex h-2.5 gap-px">
+            {STEP_BG.map((step) => (
+              <span key={step} className={cn('flex-1', step)} />
             ))}
           </div>
+          {national !== null ? (
+            <span className="absolute -inset-y-1 border-l border-dashed border-foreground" style={{ left: `${(national * 100).toFixed(2)}%` }} />
+          ) : null}
+          {activeAt !== null ? (
+            <span
+              className="absolute -inset-y-1.5 w-0.5 -translate-x-1/2 bg-foreground transition-[left] duration-150"
+              style={{ left: `${(activeAt * 100).toFixed(2)}%` }}
+            />
+          ) : null}
         </div>
-      ) : null}
+        <div className={cn('relative mt-2 h-3', stagger && 'max-sm:h-7')}>
+          {labels.map((label, index) => (
+            <MonoLabel
+              key={index}
+              className={cn(
+                // Normal tracking: six bounds share a phone's width.
+                'absolute top-0 whitespace-nowrap tabular-nums tracking-normal text-muted-foreground',
+                index === 0 ? 'translate-x-0' : index === labels.length - 1 ? '-translate-x-full' : '-translate-x-1/2',
+                stagger && index % 2 === 1 && 'max-sm:top-4',
+              )}
+              style={{ left: `${(index / (labels.length - 1)) * 100}%` }}
+            >
+              {label}
+            </MonoLabel>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

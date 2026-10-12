@@ -1,378 +1,220 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
-import type { UseQueryResult } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
-import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RevealStyles, useRevealOnView } from '@/components/landing-skin/reveal'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
-import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
-import { HUB_BESIDE_TITLE_CLASS, HUB_SHORTCUT_LINK_CLASS, HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
-import type { DecimalLocale } from '@/lib/exact-decimal'
+import { SmearFilters, countUpWithin, stopCounting } from '@/features/landing/components/count-up'
+import { HomeBand, HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
+import { HubTwoLineChart } from '@/features/statistics/components/hub/hub-charts'
+import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
+import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
-import type { CompanyAnalysisBreakdown, CompanyAnalysisRecords, CompanyAnalysisRelease, CompanyAnalysisSeries, CompanyAnalysisStats } from '@/schemas/company-analytics'
-import type { CompanyHubMapIndicator, CompanyHubRanking, CompanyHubSearch, CompanyHubSectorMetric } from '@/schemas/private-company-search'
-import { isAnalyticsUnavailable, isCapabilityRefused, isReleaseRefused } from '../../api/company-analytics-api'
-import type { PlannedRead } from '../../api/company-analytics-plan'
-import { HUB_LEADERS, planCompanyHub, type CompanyHubPlan } from '../../api/company-hub-analytics'
-import { useCompanyAnalysisRelease } from '../../hooks/use-company-analytics'
-import { useCompanyHubRead, useCompanyHubRefresh } from '../../hooks/use-company-hub-analytics'
-import { useReleaseWithdrawal } from '../../hooks/use-release-withdrawal'
-import { localeOf } from '../../lib/company-analytics-format'
-import { partialYears } from '../../lib/company-analytics-view'
 import {
-  FILED_SCOPE,
-  hubAnalyticsLink,
-  hubCountyDrill,
-  hubCountyLayerOf,
-  hubCoverageText,
-  hubFiguresOf,
-  hubLeadersOf,
-  hubMeasureLabel,
-  hubMeasureWord,
-  offeredHubMeasures,
-  offeredRankings,
-  type HubMeasure,
-} from '../../lib/company-hub-analytics'
-import { STATUS_ACTIVE } from '../../lib/company-status-codes'
-import { ReleaseRefusedNotice, UnavailableNotice } from '../analytics/analytics-notices'
-import { SourceLine } from '../analytics/analytics-source'
-import { HubStartBand } from './company-hub-bands'
+  COMPANY_HUB_MAP_INDICATORS,
+  type CompanyHubMapIndicator,
+  type CompanyHubRanking,
+  type CompanyHubSearch,
+  type CompanyHubSectorMetric,
+  type CompanyHubYearMeasure,
+} from '@/schemas/private-company-search'
+import { divisionLabel } from '../../lib/caen-divisions'
+import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE } from '../../lib/company-status-codes'
+import { hubAnalysisSearch, hubCompaniesSearch, hubCountySearch } from '../../lib/hub-analysis-links'
+import { ANAF_FIRST_YEAR, ECONOMY_MEASURE, ECONOMY_METRIC } from '../../lib/hub-economy'
+import { formatHubDay, formatHubMonth, formatHubNumber, formatHubShare } from '../../lib/hub-format'
+import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
+import { hubCountyLayer, newFirmsLeadingSectors, registrationSeries, survivalShare } from '../../lib/hub-view'
+import { CompanyHubHero, CompanyLeadersFrame } from './company-hub-hero'
+import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandNumber, companyHubSections } from './company-hub-sections'
+import { HubEconomyChart, HubEconomySpan } from './hub-economy-years'
 import { HubCountyBand } from './hub-county-band'
-import { HubFigureCells } from './hub-figures'
 import { HubLeaders } from './hub-leaders'
 import { HubSearch } from './hub-search'
-import { HubSectors, HubSizeTable } from './hub-sectors'
-import { HubTrend } from './hub-trend'
+import { HubSectors, HubSizeTable, type SectorMetric } from './hub-sectors'
 
 /**
  * `/companies` — the companies hub, in the INS hub's composition: search in a
- * hero with the largest companies beside it, the year's four national
- * figures, then one numbered band per question — what the economy lives on,
- * where the companies are, how the year compares with the ones before — and
- * the places to start.
+ * hero with the largest companies beside it and the sources at its foot, the
+ * pinned bar of the page's bands, the four figures a reader comes for, then
+ * one numbered band per question — what the economy lives on, where the
+ * companies are, how the economy has gone year by year, how many companies
+ * are founded each year — three places to start, and the full sources line. A band says what its numbers are and nothing about
+ * the database. The head is `company-hub-hero.tsx`'s, which the loading state
+ * draws too.
  *
- * Every figure is the companies analytics' (`companyAnalysis*`): ONE
- * release — the active one, resolved once — and its default fiscal year,
- * with the release, the ONRC edition it was exported from and the year's
- * coverage named under the figures. Each section is its own read pinned to
- * that release, so one that fails says so beside the others; a release the
- * API refuses, on any read, withdraws every figure of it at once and only
- * the reader moves on to the current one. The search is the site's, scoped
- * to companies, and reads nothing of this. Each choice — the ranking, the
- * activities' measure, the map layer — is in the address.
+ * Every figure is the client's snapshot (`lib/hub-snapshot.ts`): a closed
+ * year of statements and registrations, so the page renders on the server in
+ * full and asks the API for nothing but the search. The years are the
+ * companies analysis release's qualified values, frozen in the same snapshot.
+ * Each choice — the ranking, the sector measure, the map layer, the years'
+ * measure — is in the URL, so a view can be shared. Where a figure leads
+ * further, it opens the companies analysis on the same question
+ * (`lib/hub-analysis-links.ts`).
+ *
+ * Counts in sentences go through `plural`: Romanian writes „de" before a count
+ * ending in 20–99 and not before one ending in 01–19, and the snapshot is
+ * regenerated every year.
  */
 
-const DEFAULT_WORD = 'cifra-de-afaceri' as const
+const SNAPSHOT = COMPANY_HUB_SNAPSHOT
+const YEAR = SNAPSHOT.fiscalYear
+/** A cohort old enough to have been through a downturn, recent enough to still matter. */
+const COHORT_YEAR = YEAR - 10
 
-type HubSearchKey = keyof CompanyHubSearch
+const DEFAULT_RANKING: CompanyHubRanking = 'cifra-de-afaceri'
+const DEFAULT_SECTOR_METRIC: CompanyHubSectorMetric = 'cifra-de-afaceri'
+const DEFAULT_MAP: CompanyHubMapIndicator = 'densitate'
+const DEFAULT_YEAR_MEASURE: CompanyHubYearMeasure = 'cifra-de-afaceri'
 
-/** Where the release stands: being read, refused, unreadable, without its default year, or read. */
-type ReleaseGate = 'pending' | 'withdrawn' | 'unavailable' | 'failed' | 'no-year' | 'ready'
+/** The registry's open data, where the counts of companies come from. */
+const ONRC_OPEN_DATA_URL = 'https://data.gov.ro/ro/organization/onrc'
+
+const SECTOR_METRIC: Record<CompanyHubSectorMetric, SectorMetric> = {
+  'cifra-de-afaceri': 'turnover',
+  salariati: 'employees',
+  firme: 'activeFirms',
+}
+
+function startArrivalEffects(block: Element, delay: number) {
+  countUpWithin(block, delay)
+}
+
+/** A figure's link to the band that breaks it down, showing it by that figure's measure. */
+function toBand(id: 'domenii' | 'infiintari', domenii?: CompanyHubSectorMetric) {
+  return function BandLink(label: ReactNode, className: string) {
+    return (
+      <Link
+        to="/companies"
+        search={(previous) => (id === 'domenii' ? { ...previous, domenii: domenii === DEFAULT_SECTOR_METRIC ? undefined : domenii } : previous)}
+        hash={id}
+        resetScroll={false}
+        className={className}
+      >
+        {label}
+      </Link>
+    )
+  }
+}
 
 export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubSearch }) {
   const { i18n } = useLingui()
-  const locale = localeOf(i18n.locale)
   const navigate = useNavigate()
   const rootRef = useRef<HTMLDivElement>(null)
-  useRevealOnView(rootRef)
+  useRevealOnView(rootRef, startArrivalEffects)
+  // The count-up driver is module state; an unmount mid-flight would leave it
+  // ticking against nodes that are no longer in the document.
+  useEffect(() => () => stopCounting(), [])
 
-  const release = useCompanyAnalysisRelease(null)
-  const pinned = release.data?.release.releaseId ?? null
-  // A refusal of the release by any read withdraws every figure of it (`use-release-withdrawal.ts`).
-  const withdrawn = useReleaseWithdrawal(pinned)
-  const refresh = useCompanyHubRefresh()
-  const live = withdrawn ? undefined : release.data
-  const plan = live ? planCompanyHub(live, search) : null
-  const stats = useCompanyHubRead(plan?.stats ?? null)
-  const leaders = useCompanyHubRead(plan?.leaders ?? null)
-  const activitySectors = useCompanyHubRead(plan?.sectors ?? null)
-  // The derived activity refused by type (a release without it): the main-activity grouping, as before — the release stands.
-  const fellBack = Boolean(plan?.legacySectors) && activitySectors.isError && isCapabilityRefused(activitySectors.error)
-  const legacySectors = useCompanyHubRead(fellBack ? (plan?.legacySectors ?? null) : null)
-  const sectors = fellBack ? legacySectors : activitySectors
-  const sectorsRead = fellBack ? (plan?.legacySectors ?? null) : (plan?.sectors ?? null)
-  const sizes = useCompanyHubRead(plan?.sizes ?? null)
-  const counties = useCompanyHubRead(plan?.counties ?? null)
-  const trend = useCompanyHubRead(plan?.trend ?? null)
-
-  const gate: ReleaseGate = withdrawn
-    ? 'withdrawn'
-    : live
-      ? plan
-        ? 'ready'
-        : 'no-year'
-      : release.isError
-        ? isAnalyticsUnavailable(release.error)
-          ? 'unavailable'
-          : 'failed'
-        : 'pending'
-  const open = gate === 'ready' || gate === 'pending'
-
-  const choose = (key: HubSearchKey, value: string) =>
+  const ranking = search.clasament ?? DEFAULT_RANKING
+  const sectorMetric = search.domenii ?? DEFAULT_SECTOR_METRIC
+  const mapIndicator = search.indicator ?? DEFAULT_MAP
+  const yearMeasure = search.evolutie ?? DEFAULT_YEAR_MEASURE
+  const choose = (key: keyof CompanyHubSearch, value: string, fallback: string) =>
     void navigate({
       to: '/companies',
-      search: (previous) => ({ ...previous, [key]: value === DEFAULT_WORD ? undefined : value }),
+      search: (previous) => ({ ...previous, [key]: value === fallback ? undefined : value }),
       replace: true,
       resetScroll: false,
     })
 
+  const sections = companyHubSections()
+  const { national } = SNAPSHOT
+  const month = formatHubMonth(SNAPSHOT.registryPeriod)
+  const facts: readonly HubFact[] = [
+    {
+      key: 'active',
+      value: national.activeFirms,
+      digits: 0,
+      label: <Trans>Firme în funcțiune</Trans>,
+      note: <Trans>În registrul comerțului, {month}</Trans>,
+      link: (label, className) => (
+        <Link to="/companies/analytics" search={hubCompaniesSearch(YEAR, { observedStatus: { in: [STATUS_ACTIVE] } })} className={className}>
+          {label}
+        </Link>
+      ),
+    },
+    {
+      key: 'new',
+      value: national.newFirms,
+      digits: 0,
+      label: <Trans>Firme noi</Trans>,
+      note: <Trans>Înființate în {YEAR}</Trans>,
+      link: toBand('infiintari'),
+    },
+    {
+      key: 'turnover',
+      value: Math.round(national.turnover / 100_000_000) / 10,
+      digits: 1,
+      unit: t`mld. lei`,
+      label: <Trans>Cifra de afaceri</Trans>,
+      // The statements counted, so the figure reads as the sum it is: ANAF was
+      // read in May and August of the next year, and a late filer is not in it.
+      note: plural(national.statements, {
+        one: `Dintr-un bilanț pe ${YEAR}`,
+        few: `Din # bilanțuri pe ${YEAR}`,
+        other: `Din # de bilanțuri pe ${YEAR}`,
+      }),
+      link: toBand('domenii', 'cifra-de-afaceri'),
+    },
+    {
+      key: 'employees',
+      value: national.employees,
+      digits: 0,
+      label: <Trans>Salariați</Trans>,
+      note: <Trans>Numărul mediu, din aceleași bilanțuri</Trans>,
+      link: toBand('domenii', 'salariati'),
+    },
+  ]
+
+  const largest = SNAPSHOT.sizeClasses.find((row) => row.key === '250+')
+  // Of all the turnover reported — the figures band's total — not only of the
+  // statements whose headcount places them in a class.
+  const largestShare = largest ? formatHubShare(largest.turnover, national.turnover) : ''
+  const mapOptions: Record<CompanyHubMapIndicator, { readonly label: string; readonly legend: string }> = {
+    densitate: {
+      label: t`La 1.000 de locuitori`,
+      legend: t`Firme în funcțiune la 1.000 de locuitori (populația INS la 1 ianuarie ${YEAR})`,
+    },
+    infiintari: { label: t`Firme noi`, legend: t`Firme înființate în ${YEAR}` },
+    'cifra-de-afaceri': { label: t`Cifra de afaceri`, legend: t`Cifra de afaceri raportată pe ${YEAR}, după sediul firmei, lei` },
+  }
+  const survival = survivalShare(SNAPSHOT.registrations, COHORT_YEAR)
+  const series = registrationSeries(SNAPSHOT.registrations)
+  const firstYear = SNAPSHOT.registrations[0]?.year ?? 1991
+  const newSectors = newFirmsLeadingSectors(SNAPSHOT, 5)
+  const economyMeasure = ECONOMY_MEASURE[yearMeasure]
+  const onrcDay = formatHubDay(SNAPSHOT.yearsSource.onrcPublished)
+  const lastMfYear = ANAF_FIRST_YEAR - 1
+
   return (
     <div ref={rootRef} className="relative w-full overflow-x-clip bg-background">
       <RevealStyles />
+      <SmearFilters />
 
-      <section className="relative border-b">
-        <TwoLayerLattice idPrefix="companies-hub" />
-        <RuledFrame marker="hero" className="py-12 sm:py-16 lg:py-20">
-          <CornerTicks />
-          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
-            <div className="min-w-0 lg:col-span-7">
-              <MonoLabel className="text-muted-foreground">
-                <Trans>Firme / România</Trans>
-              </MonoLabel>
-              {/* Two lines at every width: each fits its line on a phone, so no word is left alone on a third. */}
-              <h1 className="mt-5 text-[clamp(2.35rem,8.4vw+0.75rem,2.75rem)] font-extrabold leading-[0.92] tracking-tighter text-foreground sm:text-6xl lg:text-7xl">
-                <Trans>
-                  Economia,
-                  <br />
-                  firmă cu firmă
-                </Trans>
-              </h1>
-              <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-muted-foreground sm:text-xl">
-                <Trans>Din registrul comerțului (ONRC), datele fiscale ANAF și bilanțurile depuse, pentru fiecare firmă.</Trans>
-              </p>
-              <div className="mt-6 sm:mt-7">
-                <HubSearch autoFocus />
-              </div>
-              <nav aria-label={t`Scurtături`} className="mt-4">
-                <MonoLabel className="block text-muted-foreground/70 sm:inline sm:align-middle">
-                  <Trans>Sau mergi direct la</Trans>
-                </MonoLabel>
-                <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                  <Link to="/companies/search" search={{ status: [STATUS_ACTIVE] }} preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
-                    <Trans>Firmele cu înscriere „în funcțiune”</Trans>
-                  </Link>
-                  <Link to="/companies/analytics" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
-                    <Trans>Analiza bilanțurilor</Trans>
-                  </Link>
-                  <Link to="/procurement" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
-                    <Trans>Achiziții publice</Trans>
-                  </Link>
-                </span>
-              </nav>
-            </div>
-            {open ? (
-              <div className="min-w-0 lg:col-span-5">
-                <LeadersPanel plan={plan} leaders={leaders} release={live} locale={locale} onRank={(key) => choose('clasament', key)} />
-              </div>
-            ) : null}
-          </div>
+      <CompanyHubHero
+        search={<HubSearch autoFocus />}
+        leaders={<HeroLeaders ranking={ranking} onRanking={(key) => choose('clasament', key, DEFAULT_RANKING)} />}
+        source={<HeadSources />}
+      />
+
+      <HomeSectionNav title={t`Firmele din România`} sections={sections} />
+
+      <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
+        <RuledFrame>
+          <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
         </RuledFrame>
       </section>
 
-      {gate === 'withdrawn' ? (
-        <ReleaseRefusedNotice pin={pinned} onRefresh={refresh} />
-      ) : gate === 'unavailable' || gate === 'failed' ? (
-        <UnavailableNotice unavailable={gate === 'unavailable'} onRetry={() => void release.refetch()} />
-      ) : (
-        <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`} data-testid="company-hub-figures">
-          <RuledFrame>
-            <CruxMarks />
-            {gate === 'no-year' ? (
-              <p className="py-6 text-sm text-muted-foreground">{t`Ediția analizei nu cuprinde anul ei fiscal implicit: nu arătăm cifrele altui an în locul lui.`}</p>
-            ) : (
-              <HubFigures plan={plan} stats={stats} release={live} locale={locale} />
-            )}
-          </RuledFrame>
-        </section>
-      )}
-
-      {open ? (
-        <>
-          <SectorsBand
-            plan={plan}
-            read={sectorsRead}
-            dimension={fellBack ? 'MAIN_CAEN' : (plan?.sectorsDimension ?? 'MAIN_CAEN')}
-            sectors={sectors}
-            sizes={sizes}
-            release={live}
-            locale={locale}
-            onMeasure={(key) => choose('domenii', key)}
-          />
-          <CountiesBand plan={plan} counties={counties} release={live} locale={locale} onMeasure={(key) => choose('indicator', key)} />
-          <TrendBand plan={plan} trend={trend} release={live} locale={locale} />
-        </>
-      ) : null}
-
-      <HubStartBand index={open ? t`04 / Analize` : t`Analize`} />
-    </div>
-  )
-}
-
-// ──────────────────────────────────────────────────────────── states ──
-
-/**
- * One section's answer, or the state that stands in for it: pending, a
- * failure with its retry (a refusal of the release is not this section's to
- * say — it withdraws the page), or a question the release cannot answer.
- */
-function SectionRead<T>({
-  read,
-  query,
-  rows = 6,
-  children,
-}: {
-  readonly read: PlannedRead<T> | null | undefined
-  readonly query: UseQueryResult<T>
-  readonly rows?: number
-  readonly children: (data: T) => ReactNode
-}) {
-  if (read && !read.enabled) return <p className="text-sm text-muted-foreground">{t`Ediția nu are această valoare pentru anul ales.`}</p>
-  if (query.isError && !isReleaseRefused(query.error)) return <HubLoadError onRetry={() => void query.refetch()} />
-  if (query.data === undefined) return <HubPending rows={rows} />
-  return <>{children(query.data)}</>
-}
-
-function measureOptions<K extends string>(measures: readonly HubMeasure[]): readonly { readonly key: K; readonly label: string }[] {
-  return measures.map((measure) => ({ key: hubMeasureWord(measure) as K, label: hubMeasureLabel(measure) }))
-}
-
-// ─────────────────────────────────────────────────────────── figures ──
-
-function HubFigures({
-  plan,
-  stats,
-  release,
-  locale,
-}: {
-  readonly plan: CompanyHubPlan | null
-  readonly stats: UseQueryResult<CompanyAnalysisStats>
-  readonly release: CompanyAnalysisRelease | undefined
-  readonly locale: DecimalLocale
-}) {
-  if (!plan || !release) return <HubPending rows={2} className="py-6" />
-  return (
-    <SectionRead read={plan.stats} query={stats} rows={2}>
-      {(data) => (
-        <>
-          <HubFigureCells
-            figures={hubFiguresOf(data, plan.year, locale)}
-            link={(figure, label, className) => (
-              <Link
-                to="/companies/analytics"
-                // The companies with a statement open as that list; a sum, as every company of the year ranked by it.
-                search={hubAnalyticsLink(plan.questions.stats, figure.metric ? { panel: 'firme', metric: figure.metric } : { panel: 'firme', scope: FILED_SCOPE })}
-                className={className}
-              >
-                {label}
-              </Link>
-            )}
-          />
-          <div className="space-y-2 border-t py-4" data-testid="company-hub-source">
-            <MonoLabel className="block leading-relaxed text-muted-foreground">
-              {hubCoverageText(release, plan.year, locale)} · {t`Valorile lipsă sau reținute nu intră în sume și nu sunt socotite zero.`}
-            </MonoLabel>
-            <SourceLine release={release} />
-          </div>
-        </>
-      )}
-    </SectionRead>
-  )
-}
-
-// ────────────────────────────────────────────────────────── leaders ──
-
-function LeadersPanel({
-  plan,
-  leaders,
-  release,
-  locale,
-  onRank,
-}: {
-  readonly plan: CompanyHubPlan | null
-  readonly leaders: UseQueryResult<CompanyAnalysisRecords>
-  readonly release: CompanyAnalysisRelease | undefined
-  readonly locale: DecimalLocale
-  readonly onRank: (key: CompanyHubRanking) => void
-}) {
-  const rankings = plan && release ? offeredRankings(release, plan.year) : []
-  const ranking = plan?.choices.ranking ?? null
-  return (
-    <section className="border bg-card/80 p-5 backdrop-blur-[2px] sm:p-6" aria-labelledby="hub-leaders-title">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <MonoLabel id="hub-leaders-title" className="text-primary">
-          {plan ? t`Cele mai mari firme, ${plan.year}` : t`Cele mai mari firme`}
-        </MonoLabel>
-        {ranking && rankings.length > 1 ? (
-          <IndicatorToggle<CompanyHubRanking> label={t`Clasamentul după`} options={measureOptions(rankings)} value={hubMeasureWord(ranking) as CompanyHubRanking} onChange={onRank} />
-        ) : null}
-      </div>
-      <div className="mt-4">
-        {!plan ? (
-          <HubPending rows={5} />
-        ) : !ranking ? (
-          <p className="text-sm text-muted-foreground">{t`Anul nu are cifra de afaceri sau salariați raportați.`}</p>
-        ) : (
-          <SectionRead read={plan.leaders} query={leaders} rows={5}>
-            {(records) => {
-              const rows = hubLeadersOf(records, ranking, HUB_LEADERS)
-              return rows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t`Nicio firmă cu valoare raportată în anul ales.`}</p>
-              ) : (
-                <>
-                  {/* Ten rows; five on a phone, where the figures should not be pushed a screen down. */}
-                  <HubLeaders className="max-sm:[&>li:nth-child(n+6)]:hidden" leaders={rows} measure={ranking} locale={locale} />
-                  <Link
-                    to="/companies/analytics"
-                    search={plan.questions.leaders ? hubAnalyticsLink(plan.questions.leaders, { panel: 'firme' }) : undefined}
-                    className={cn('mt-3', HUB_SHORTCUT_LINK_CLASS)}
-                  >
-                    {t`Toate firmele, în analiza bilanțurilor →`}
-                  </Link>
-                </>
-              )
-            }}
-          </SectionRead>
-        )}
-      </div>
-    </section>
-  )
-}
-
-// ────────────────────────────────────────────────────────── 01 sectors ──
-
-function SectorsBand({
-  plan,
-  read,
-  dimension,
-  sectors,
-  sizes,
-  release,
-  locale,
-  onMeasure,
-}: {
-  readonly plan: CompanyHubPlan | null
-  /** The sectors' read: the derived activity, or the main-activity grouping it fell back to. */
-  readonly read: PlannedRead<CompanyAnalysisBreakdown> | null
-  readonly dimension: 'ACTIVITY' | 'MAIN_CAEN'
-  readonly sectors: UseQueryResult<CompanyAnalysisBreakdown>
-  readonly sizes: UseQueryResult<CompanyAnalysisBreakdown>
-  readonly release: CompanyAnalysisRelease | undefined
-  readonly locale: DecimalLocale
-  readonly onMeasure: (key: CompanyHubSectorMetric) => void
-}) {
-  const measure = plan?.choices.sectors ?? null
-  const offered = plan && release ? offeredHubMeasures(release, plan.year) : []
-  return (
-    <section id="domenii" className="scroll-mt-6 border-b" aria-labelledby="hub-sectors-title">
-      <RuledFrame className="py-14 sm:py-20">
+      <HomeBand id="domenii" labelledBy="hub-sectors-title">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <HubSectionHead
               titleId="hub-sectors-title"
-              index={t`01 / Pe domenii`}
+              index={`${bandNumber(sections, 'domenii')} / ${sections[0]?.label ?? ''}`}
               title={
                 <Trans>
                   Din ce trăiește
@@ -381,143 +223,75 @@ function SectorsBand({
                 </Trans>
               }
               lede={
-                plan
-                  ? dimension === 'ACTIVITY'
-                    ? t`Situațiile financiare pe ${plan.year}, după activitatea selectată a firmei (o selecție derivată, cu prioritate ONRC) din ediția analizei — nu activitatea pe care o avea firma în ${plan.year}. Fiecare firmă e numărată o dată.`
-                    : t`Situațiile financiare pe ${plan.year}, după codul CAEN fiscal ANAF din instantaneul ediției analizei — nu activitatea pe care o avea firma în ${plan.year}. Fiecare firmă e numărată o dată.`
+                largest
+                  ? plural(largest.firms, {
+                      one: `Singura firmă cu 250 de salariați sau mai mulți face ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
+                      few: `Cele # firme cu 250 de salariați sau mai mulți fac ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
+                      other: `Cele # de firme cu 250 de salariați sau mai mulți fac ${largestShare} din cifra de afaceri raportată pe ${YEAR}.`,
+                    })
                   : null
               }
             />
             <div className="mt-8" data-reveal>
-              <MonoLabel className="block text-muted-foreground">{plan ? t`Firmele cu situație financiară pe ${plan.year}, după numărul de salariați` : null}</MonoLabel>
-              {plan && measure ? (
-                <SectionRead read={plan.sizes} query={sizes} rows={5}>
-                  {(data) => <HubSizeTable className="mt-3" breakdown={data} measure={measure} locale={locale} />}
-                </SectionRead>
-              ) : (
-                <HubPending rows={5} className="mt-3" />
-              )}
+              <MonoLabel className="block text-muted-foreground">
+                <Trans>Bilanțurile pe {YEAR}, după numărul de salariați</Trans>
+              </MonoLabel>
+              <HubSizeTable className="mt-3" classes={SNAPSHOT.sizeClasses} />
             </div>
           </div>
-          <div className={cn('min-w-0 lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-            {measure && offered.length > 1 ? (
-              <div className="sm:w-fit">
-                <IndicatorToggle<CompanyHubSectorMetric> label={t`Domeniile după`} options={measureOptions(offered)} value={hubMeasureWord(measure)} onChange={onMeasure} />
-              </div>
-            ) : null}
-            <div className="mt-5">
-              {plan && measure ? (
-                <SectionRead read={read} query={sectors}>
-                  {(data) => (
-                    <>
-                      <HubSectors breakdown={data} measure={measure} locale={locale} />
-                      <AnalyticsLink search={hubAnalyticsLink(plan.questions.sectors, { panel: 'defalcare', dimension: data.dimension === 'ACTIVITY' ? 'ACTIVITY' : 'MAIN_CAEN' })} />
-                      {data.dimension === 'ACTIVITY' ? (
-                        // The grouping the hub showed before the derived activity, kept one click away.
-                        <Link
-                          to="/companies/analytics"
-                          search={hubAnalyticsLink(plan.questions.sectors, { panel: 'defalcare', dimension: 'MAIN_CAEN' })}
-                          className={cn('mt-2', HUB_SHORTCUT_LINK_CLASS)}
-                          data-testid="company-hub-sectors-legacy"
-                        >
-                          {t`După codul CAEN fiscal ANAF (gruparea anterioară) →`}
-                        </Link>
-                      ) : null}
-                    </>
-                  )}
-                </SectionRead>
-              ) : (
-                <HubPending />
-              )}
+          <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+            <div className="sm:w-fit">
+              <IndicatorToggle
+                label={t`Domeniile după`}
+                options={[
+                  { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
+                  { key: 'salariati', label: t`Salariați` },
+                  { key: 'firme', label: t`Firme` },
+                ]}
+                value={sectorMetric}
+                onChange={(key: CompanyHubSectorMetric) => choose('domenii', key, DEFAULT_SECTOR_METRIC)}
+              />
             </div>
+            <HubSectors
+              className="mt-5"
+              sectors={SNAPSHOT.sectors}
+              metric={SECTOR_METRIC[sectorMetric]}
+              analysis={hubAnalysisSearch(YEAR, {
+                panel: 'defalcare',
+                dimension: 'MAIN_CAEN',
+                metric: sectorMetric === 'salariati' ? 'EMPLOYEES' : 'TURNOVER',
+                // By the sum, the analysis's default, unless the domains are ranked by their companies.
+                rankBy: sectorMetric === 'firme' ? 'COMPANIES' : null,
+              })}
+              total={sectorMetric === 'salariati' ? national.employees : sectorMetric === 'firme' ? national.activeFirms : national.turnover}
+            />
           </div>
         </div>
-      </RuledFrame>
-    </section>
-  )
-}
+      </HomeBand>
 
-// ───────────────────────────────────────────────────────── 02 counties ──
-
-function countyLegend(measure: HubMeasure, year: number): string {
-  if (measure === 'TURNOVER') return t`Cifra de afaceri raportată pe ${year}, după județul comun al firmei în ediția ONRC, lei`
-  if (measure === 'EMPLOYEES') return t`Numărul mediu de salariați raportat pe ${year}, după județul comun al firmei în ediția ONRC`
-  return t`Firmele cu situație financiară pe ${year}, după județul comun al firmei în ediția ONRC`
-}
-
-function CountiesBand({
-  plan,
-  counties,
-  release,
-  locale,
-  onMeasure,
-}: {
-  readonly plan: CompanyHubPlan | null
-  readonly counties: UseQueryResult<CompanyAnalysisBreakdown>
-  readonly release: CompanyAnalysisRelease | undefined
-  readonly locale: DecimalLocale
-  readonly onMeasure: (key: CompanyHubMapIndicator) => void
-}) {
-  const measure = plan?.choices.map ?? null
-  const offered = plan && release ? offeredHubMeasures(release, plan.year) : []
-  return (
-    <section id="judete" className="scroll-mt-6 border-b" aria-labelledby="hub-counties-title">
-      <RuledFrame className="py-14 sm:py-20">
+      <HomeBand id="judete" labelledBy="hub-counties-title">
         <HubSectionHead
           titleId="hub-counties-title"
-          index={t`02 / Pe județe`}
+          index={`${bandNumber(sections, 'judete')} / ${t`Pe județe`}`}
           title={<Trans>Unde stă județul tău</Trans>}
           aside={
-            measure && offered.length > 1 ? (
-              <IndicatorToggle<CompanyHubMapIndicator> label={t`Indicatorul de pe hartă`} options={measureOptions(offered)} value={hubMeasureWord(measure)} onChange={onMeasure} />
-            ) : null
+            <IndicatorToggle
+              label={t`Indicatorul de pe hartă`}
+              options={COMPANY_HUB_MAP_INDICATORS.map((key) => ({ key, label: mapOptions[key].label }))}
+              value={mapIndicator}
+              onChange={(key: CompanyHubMapIndicator) => choose('indicator', key, DEFAULT_MAP)}
+            />
           }
         />
-        {plan && measure ? (
-          <SectionRead read={plan.counties} query={counties}>
-            {(data) => (
-              <>
-                <HubCountyBand
-                  layer={hubCountyLayerOf(data, measure)}
-                  legend={countyLegend(measure, plan.year)}
-                  locale={locale}
-                  drill={(bucket) => hubCountyDrill(plan.questions.counties, bucket)}
-                />
-                {/* The analysis's map draws a measure's sum: the filers' layer opens the counties' table, ranked by them. */}
-                <AnalyticsLink search={hubAnalyticsLink(plan.questions.counties, { panel: 'defalcare', mode: measure === 'FILERS' ? 'tabel' : 'harta', dimension: 'COUNTY' })} />
-              </>
-            )}
-          </SectionRead>
-        ) : (
-          <HubPending className="mt-10" />
-        )}
-      </RuledFrame>
-    </section>
-  )
-}
+        <HubCountyBand layer={hubCountyLayer(SNAPSHOT, mapIndicator)} legend={mapOptions[mapIndicator].legend} countyLink={(code) => hubCountySearch(YEAR, code)} />
+      </HomeBand>
 
-// ──────────────────────────────────────────────────────────── 03 trend ──
-
-function TrendBand({
-  plan,
-  trend,
-  release,
-  locale,
-}: {
-  readonly plan: CompanyHubPlan | null
-  readonly trend: UseQueryResult<CompanyAnalysisSeries>
-  readonly release: CompanyAnalysisRelease | undefined
-  readonly locale: DecimalLocale
-}) {
-  const firstYear = release?.fiscalYears[0]
-  return (
-    <section id="ani" className="scroll-mt-6 border-b" aria-labelledby="hub-trend-title">
-      <RuledFrame className="py-14 sm:py-20">
+      <HomeBand id="economie" labelledBy="hub-economy-title">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <HubSectionHead
-              titleId="hub-trend-title"
-              index={firstYear ? t`03 / Din ${firstYear} până azi` : t`03 / An de an`}
+              titleId="hub-economy-title"
+              index={`${bandNumber(sections, 'economie')} / ${t`Din ${SNAPSHOT.years[0]?.year ?? ''} până în ${YEAR}`}`}
               title={
                 <Trans>
                   Economia,
@@ -525,36 +299,267 @@ function TrendBand({
                   an de an
                 </Trans>
               }
-              lede={t`Suma raportată în fiecare an fiscal al ediției, din situațiile financiare depuse. Un an fără valori e un gol, nu un zero.`}
+              lede={economyLede(economyMeasure)}
             />
-            {plan?.questions.trend ? (
+            <div className="mt-8" data-reveal>
+              <HubEconomySpan
+                years={SNAPSHOT.years}
+                measure={economyMeasure}
+                note={
+                  <>
+                    <p>
+                      <Trans>
+                        Analiza bilanțurilor, ediția {SNAPSHOT.yearsSource.releaseId}: persoanele juridice din ediția ONRC din {onrcDay}, cu valorile
+                        admise după verificare. Ministerul Finanțelor până în {lastMfYear}, ANAF din {ANAF_FIRST_YEAR}.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>Cifrele-cheie de sus adună toate bilanțurile pe {YEAR}, deci diferă de anul {YEAR} de aici.</Trans>
+                    </p>
+                  </>
+                }
+              />
+            </div>
+          </div>
+          <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+            <div className="sm:w-fit">
+              <IndicatorToggle
+                label={t`Anii după`}
+                options={[
+                  { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
+                  { key: 'rezultat-net', label: t`Rezultatul net` },
+                  { key: 'salariati', label: t`Salariați` },
+                ]}
+                value={yearMeasure}
+                onChange={(key: CompanyHubYearMeasure) => choose('evolutie', key, DEFAULT_YEAR_MEASURE)}
+              />
+            </div>
+            <div className="mt-5">
+              <HubEconomyChart years={SNAPSHOT.years} measure={economyMeasure} />
+            </div>
+            <Link
+              to="/companies/analytics"
+              search={hubAnalysisSearch(YEAR, { mode: 'grafice', panel: 'evolutie', metric: ECONOMY_METRIC[economyMeasure], cohort: 'EACH_YEAR' })}
+              className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9"
+            >
+              <Trans>Deschide în analiza bilanțurilor</Trans> →
+            </Link>
+          </div>
+        </div>
+      </HomeBand>
+
+      <HomeBand id="infiintari" labelledBy="hub-registrations-title">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <HubSectionHead
+              titleId="hub-registrations-title"
+              index={`${bandNumber(sections, 'infiintari')} / ${t`Din ${firstYear} până azi`}`}
+              title={
+                <Trans>
+                  Câte firme
+                  <br />
+                  se nasc în fiecare an
+                </Trans>
+              }
+              lede={
+                survival !== null ? (
+                  <Trans>
+                    Din firmele înființate în {COHORT_YEAR}, {formatHubShare(survival, 1)} mai sunt în funcțiune.
+                  </Trans>
+                ) : null
+              }
+            />
+            {newSectors.length > 0 ? (
               <div className="mt-8" data-reveal>
-                <AnalyticsLink search={hubAnalyticsLink(plan.questions.trend, { panel: 'evolutie', mode: 'grafice' })} />
+                <MonoLabel className="block text-muted-foreground">
+                  <Trans>Firmele înființate în {YEAR}, pe domenii</Trans>
+                </MonoLabel>
+                {/* Not links: the directory can select neither a registration year
+                    the compact codes carry nor a main activity, so no query it
+                    runs would list the companies a row counts. */}
+                <ol className="mt-3 divide-y divide-border/70 border-y border-border/70" data-testid="company-hub-new-sectors">
+                  {newSectors.map((entry) => (
+                    <li key={entry.division} className="grid grid-cols-[minmax(0,1fr)_auto_3.5rem] items-baseline gap-x-4 py-2.5 text-sm">
+                      <span className="truncate pl-1 text-foreground">{divisionLabel(entry.division)}</span>
+                      <span className="tabular-nums text-muted-foreground">{formatHubNumber(entry.firms)}</span>
+                      <span className="pr-1 text-right font-semibold tabular-nums text-foreground">{formatHubShare(entry.share, 1)}</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             ) : null}
           </div>
-          <div className={cn('min-w-0 lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
-            {!plan || !release ? (
-              <HubPending />
-            ) : !plan.trend ? (
-              <p className="text-sm text-muted-foreground">{t`Anul nu are cifra de afaceri sau salariați raportați.`}</p>
-            ) : (
-              <SectionRead read={plan.trend} query={trend}>
-                {(data) => <HubTrend series={data} year={plan.year} locale={locale} partial={partialYears(release)} />}
-              </SectionRead>
-            )}
+          <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
+            <MonoLabel className="block text-muted-foreground">
+              <Trans>Firme înființate pe an, și câte mai sunt în funcțiune</Trans>
+            </MonoLabel>
+            <div className="mt-3">
+              <HubTwoLineChart
+                a={{ label: t`Înființate`, points: series.registered }}
+                b={{ label: t`În funcțiune în ${month}`, points: series.active }}
+                gap={{
+                  label: t`Ieșite din funcțiune`,
+                  aAbove: t`Ieșite din funcțiune`,
+                  bAbove: t`Mai multe în funcțiune decât înființate`,
+                }}
+              />
+            </div>
           </div>
         </div>
-      </RuledFrame>
-    </section>
+      </HomeBand>
+
+      <section aria-labelledby="hub-start-title" className="border-b">
+        <RuledFrame className="py-14 sm:py-20">
+          <HubSectionHead titleId="hub-start-title" index={t`Analize`} title={<Trans>De aici poți începe</Trans>} />
+          <div className="mt-8" data-reveal>
+            {/* The count is the snapshot's; the card opens the same selection in the analysis, whose
+                companies are one ONRC edition's, so its own count can differ. */}
+            <ul className="grid gap-px border bg-border/70 sm:grid-cols-3" data-testid="company-hub-start">
+              <StartCard
+                to={hubCompaniesSearch(YEAR, { observedStatus: { in: [...INSOLVENCY_STATUSES] } })}
+                title={<Trans>Firme în insolvență sau faliment</Trans>}
+                body={plural(national.insolvency, {
+                  one: '# firmă în insolvență, reorganizare judiciară sau faliment.',
+                  few: '# firme în insolvență, reorganizare judiciară sau faliment.',
+                  other: '# de firme în insolvență, reorganizare judiciară sau faliment.',
+                })}
+              />
+              <StartCard
+                to={hubCompaniesSearch(YEAR, { fiscallyInactive: ['YES'], observedStatus: { in: [STATUS_ACTIVE] } })}
+                title={<Trans>În funcțiune, dar inactive la ANAF</Trans>}
+                body={plural(national.fiscallyInactive, {
+                  one: '# firmă declarată inactivă fiscal.',
+                  few: '# firme declarate inactive fiscal.',
+                  other: '# de firme declarate inactive fiscal.',
+                })}
+              />
+              <StartCard
+                to={hubCompaniesSearch(YEAR, { observedStatus: { in: [...DISSOLUTION_STATUSES] } })}
+                title={<Trans>Firme în dizolvare sau lichidare</Trans>}
+                body={plural(national.dissolution, {
+                  one: '# firmă în dizolvare sau lichidare.',
+                  few: '# firme în dizolvare sau lichidare.',
+                  other: '# de firme în dizolvare sau lichidare.',
+                })}
+              />
+            </ul>
+          </div>
+        </RuledFrame>
+      </section>
+
+      <SourcesLine />
+    </div>
   )
 }
 
-/** A band's way into the analysis page: the same year, release, grouping and measure, nothing more. */
-function AnalyticsLink({ search }: { readonly search: ReturnType<typeof hubAnalyticsLink> }) {
+/** What a year's figure is, in one line under the band's title. */
+function economyLede(measure: 'turnover' | 'netResult' | 'employees'): string {
+  switch (measure) {
+    case 'turnover':
+      return t`Cifra de afaceri raportată, în lei nominali, neajustați cu inflația. Fiecare an își numără firmele cu bilanț.`
+    case 'netResult':
+      return t`Profiturile minus pierderile: sub zero, anii în care pierderile au fost mai mari.`
+    case 'employees':
+      return t`Numărul mediu de salariați din bilanțuri, adunat: nu persoane distincte.`
+  }
+}
+
+// ──────────────────────────────────────────────────────────── the hero ──
+
+/** The year's ten largest companies by the ranking chosen, what they are ranked by, and the rest in the analysis. */
+function HeroLeaders({ ranking, onRanking }: { readonly ranking: CompanyHubRanking; readonly onRanking: (key: CompanyHubRanking) => void }) {
+  const leaders = ranking === 'salariati' ? SNAPSHOT.leaders.employees : SNAPSHOT.leaders.turnover
+  const previousYear = YEAR - 1
   return (
-    <Link to="/companies/analytics" search={search} className={cn('mt-5', HUB_SHORTCUT_LINK_CLASS)}>
-      {t`Deschide în analiza bilanțurilor →`}
-    </Link>
+    <CompanyLeadersFrame
+      title={<Trans>Cele mai mari firme, {YEAR}</Trans>}
+      toggle={
+        <IndicatorToggle
+          label={t`Clasamentul după`}
+          options={[
+            { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
+            { key: 'salariati', label: t`Salariați` },
+          ]}
+          value={ranking}
+          onChange={onRanking}
+        />
+      }
+    >
+      <HubLeaders key={ranking} id="hub-leaders" className="mt-4" leaders={leaders} unit={ranking === 'salariati' ? 'persons' : 'lei'} limit={COMPANY_HUB_LEADERS_SHOWN} />
+      <Link to="/companies/analytics" search={hubCompaniesSearch(YEAR, {}, ranking === 'salariati' ? 'EMPLOYEES' : 'TURNOVER')} className={LEADERS_MORE_CLASS}>
+        <Trans>Toate firmele, în analiza bilanțurilor</Trans> →
+      </Link>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {ranking === 'salariati' ? (
+          <Trans>După numărul mediu de salariați din bilanțurile pe {YEAR} și variația față de {previousYear}.</Trans>
+        ) : (
+          <Trans>După cifra de afaceri din bilanțurile pe {YEAR} și variația față de {previousYear}.</Trans>
+        )}
+      </p>
+    </CompanyLeadersFrame>
+  )
+}
+
+/**
+ * The sources in the head, in a line, as the procurement and NGO hubs say
+ * theirs: the registry's open data as a link, with the capture the counts
+ * describe, and the statements' year. ANAF's statements are read from its web
+ * service, which has no page to link to. The full line closes the page.
+ */
+function HeadSources() {
+  // A link's words and its arrow on one line.
+  const link = 'whitespace-nowrap font-medium text-foreground underline-offset-4 hover:underline'
+  const month = formatHubMonth(SNAPSHOT.registryPeriod)
+  return (
+    <p className="text-sm text-muted-foreground">
+      <Trans>
+        Surse:{' '}
+        <a href={ONRC_OPEN_DATA_URL} target="_blank" rel="noreferrer" className={link}>
+          Registrul comerțului<span aria-hidden="true"> ↗</span>
+          <span className="sr-only"> (se deschide într-o filă nouă)</span>
+        </a>
+        , {month} · bilanțurile depuse la ANAF pe {YEAR}
+      </Trans>
+    </p>
+  )
+}
+
+/** The page's full sources line, closing it: each source, its publisher and its dates. */
+function SourcesLine() {
+  const link = 'text-foreground underline underline-offset-4 hover:text-primary'
+  const month = formatHubMonth(SNAPSHOT.registryPeriod)
+  const releaseId = SNAPSHOT.yearsSource.releaseId
+  const releaseDay = SNAPSHOT.yearsSource.publishedAt ? formatHubDay(SNAPSHOT.yearsSource.publishedAt) : '—'
+  return (
+    <footer className="border-b bg-muted/20">
+      <RuledFrame className="py-6">
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          <MonoLabel className="mr-3 text-foreground">
+            <Trans>Surse</Trans>
+          </MonoLabel>
+          <Trans>
+            <a href={ONRC_OPEN_DATA_URL} target="_blank" rel="noreferrer" className={link}>
+              Registrul comerțului
+            </a>
+            , Oficiul Național al Registrului Comerțului, {month} · Bilanțurile pe {YEAR}, ANAF · Populația: INS, 1 ianuarie {YEAR}
+          </Trans>{' '}
+          <Trans>
+            · Anii: analiza bilanțurilor, ediția {releaseId}, publicată pe {releaseDay}
+          </Trans>
+        </p>
+      </RuledFrame>
+    </footer>
+  )
+}
+
+/** One place to start: a selection in the analysis, with its size in the snapshot said. */
+function StartCard({ to, title, body }: { readonly to: Record<string, unknown>; readonly title: ReactNode; readonly body: ReactNode }) {
+  return (
+    <li>
+      <Link to="/companies/analytics" search={to} className="block h-full bg-background p-5 transition-colors hover:bg-muted/40">
+        <span className="block text-base font-semibold tracking-tight text-foreground">{title}</span>
+        <span className="mt-1.5 block text-sm leading-relaxed text-muted-foreground">{body}</span>
+      </Link>
+    </li>
   )
 }

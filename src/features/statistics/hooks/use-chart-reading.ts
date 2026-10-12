@@ -17,13 +17,18 @@ const TOOLTIP_GAP = 12
  * plot and its gutter — the value axis's, or a tile's padding (`gutter`).
  * A tile's chart is too short to hold it beside the rule: there it hangs
  * under the plot, centred on the rule (`centred`).
+ *
+ * A line's periods run from the plot's left edge to its right; a bar chart's
+ * sit each in the middle of an equal slot (`bands`), and the pointer reads the
+ * slot it is in.
  */
 export function useChartReading(
   count: number,
-  options: { readonly gutter?: number; readonly centred?: boolean } = {},
+  options: { readonly gutter?: number; readonly centred?: boolean; readonly bands?: boolean } = {},
 ) {
   const gutter = options.gutter ?? GUTTER
   const centred = options.centred ?? false
+  const bands = options.bands ?? false
   // `held`: picked by a finger or a pen.
   const [selection, setSelection] = useState<{ readonly index: number; readonly held: boolean } | null>(null)
   const active = selection === null ? null : Math.min(selection.index, count - 1)
@@ -48,7 +53,7 @@ export function useChartReading(
     if (active === null || !plot || !tooltip || count < 2) return
     const width = plot.clientWidth
     const size = tooltip.offsetWidth
-    const x = (active / (count - 1)) * width
+    const x = bands ? ((active + 0.5) / count) * width : (active / (count - 1)) * width
     if (centred) {
       setTooltipLeft(Math.min(Math.max(-gutter, x - size / 2), width + gutter - size))
       return
@@ -56,7 +61,7 @@ export function useChartReading(
     const right = x + TOOLTIP_GAP
     const left = x - TOOLTIP_GAP - size
     setTooltipLeft(right + size <= width ? right : left >= -gutter ? left : Math.min(Math.max(-gutter, x - size / 2), width - size))
-  }, [active, count, gutter, centred])
+  }, [active, count, gutter, centred, bands])
 
   // A pointer moves many times per period: the same reading is the same state.
   const setActive = (index: number | null, hold = false) =>
@@ -68,7 +73,8 @@ export function useChartReading(
   const indexAt = (clientX: number) => {
     const rect = plotRef.current?.getBoundingClientRect()
     if (!rect || rect.width === 0) return count - 1
-    return Math.min(count - 1, Math.max(0, Math.round(((clientX - rect.left) / rect.width) * (count - 1))))
+    const ratio = (clientX - rect.left) / rect.width
+    return Math.min(count - 1, Math.max(0, bands ? Math.floor(ratio * count) : Math.round(ratio * (count - 1))))
   }
 
   const handlers = {

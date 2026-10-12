@@ -70,4 +70,23 @@ describe('companies hub snapshot', () => {
     expect(counts).toEqual([...counts].sort((a, b) => b - a))
     expect(sum(counts)).toBeLessThanOrEqual(SNAPSHOT.national.newFirms)
   })
+
+  it('runs the release’s years without a gap to the fiscal year, each measure reported by at most its filers', () => {
+    const years = SNAPSHOT.years.map((entry) => entry.year)
+    expect(years[years.length - 1]).toBe(SNAPSHOT.fiscalYear)
+    expect(years.every((value, index) => index === 0 || value === (years[index - 1] ?? 0) + 1)).toBe(true)
+    for (const entry of SNAPSHOT.years) {
+      for (const measure of [entry.turnover, entry.netResult, entry.employees]) expect(measure.reported).toBeLessThanOrEqual(entry.filers)
+    }
+    expect(SNAPSHOT.yearsSource.releaseId).toMatch(/^\d+$/)
+  })
+
+  it('keeps an impossible headcount out of the years', () => {
+    // Under the ceiling, no year holds more than one in a hundred of its filers' average over 50,000.
+    for (const entry of SNAPSHOT.years) {
+      if (entry.employees.sum !== null) expect(entry.employees.sum).toBeLessThanOrEqual(entry.employees.reported * 50_000)
+      // The country's headcount moves by a few percent a year, never by a million.
+      expect(entry.employees.sum ?? 0).toBeLessThan(5_000_000)
+    }
+  })
 })

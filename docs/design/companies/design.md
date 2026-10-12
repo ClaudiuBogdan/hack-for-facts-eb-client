@@ -652,3 +652,51 @@ registry-scoped company picker).
   own and only in the analysis's ONRC edition — the panel picker's rule.
 - The company profile names a legal form from the same list as the
   analysis's filters (`lib/company-legal-forms.ts`).
+
+## The hub rebuilt from the Zeus design (12 October 2026)
+
+`/companies` is again the hub designed on Zeus (old branch
+`companies-hub-redesign`, commit 065f2825): its hero, figures band, domains,
+counties, births and starting points, rendered from the client's snapshot —
+on dev the other machine's analytics-read hub (`company-hub-analytics`,
+`hub-figures`, `hub-trend`, `company-hub-bands`) is gone. The owner chose the
+snapshot: the figures change once a year, render on the server in full for
+search engines, and cost the reader no request.
+
+### Decisions
+
+- **The years are the analytics release's, frozen.** „Economia, an de an"
+  (new band 03, tabs: turnover, net result, employees) reads the companies
+  analysis release's qualified series (2008–2025), frozen in the snapshot by
+  `scripts/generate-companies-hub-snapshot.mjs` from the public API. The raw
+  production sums the rest of the snapshot reads are unfit for years:
+  - one company (CUI 42443305) filed a 2020 turnover of 300 trillion lei and
+    a net profit of 291 trillion (held by the release as a reviewed suspect
+    statement);
+  - insurers' 2024 statements (layout `9dbe…`, not admitted) carry an amount
+    where the headcount goes: +1,071,725 „employees" below the 50,000 ceiling;
+  - keyed headcounts such as 999999999999999.
+  The release holds those back. It has no magnitude threshold, so a few
+  absurd headcounts remain (1.33 million from three 2011 statements, 122,690
+  from one in 2025): the generator reads employees within 0–50,000, the
+  ceiling the rest of the snapshot keeps (`EMPLOYEE_CEILING`).
+- **Two sources, said.** The years count the legal persons of one ONRC
+  edition with the values the release admits; the figures band adds every
+  statement for the year. The band says so under its span, and the sources
+  line names the release.
+- **The chart.** One bar a year on the INS charts' parts (ticks, grid, axis,
+  tooltip, `useChartReading`, which now reads equal slots: `bands`). The
+  publishers' break (Ministry of Finance to 2018, ANAF from 2019) is a dashed
+  rule with its names over it; the last year, with fewer filers than the one
+  before, is hatched and said; a loss hangs below zero; the reading gives the
+  exact figure, the change from the year before and who reported it. Net
+  result's change is a difference in lei, never a percent of a small base.
+- **Show more opens the analysis.** The leaders show their ten, then
+  „Toate firmele, în analiza bilanțurilor"; the domains show ten, then
+  „Toate activitățile…" (the analysis's ANAF codes). A domain row is not a
+  link: the analysis filters exact codes, never a division.
+- **The old directory is no longer linked.** The figure „Firme în
+  funcțiune", the hero's shortcut, each county and the three starting points
+  open the same selection in the analysis (`lib/hub-analysis-links.ts`, the
+  snapshot's year, the selection in canonical order). The analysis counts
+  one ONRC edition's companies, so its counts can differ from the hub's.

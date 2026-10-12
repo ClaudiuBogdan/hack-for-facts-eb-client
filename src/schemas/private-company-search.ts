@@ -290,13 +290,12 @@ export type CompanyResolveResult = {
 // ---------------------------------------------------------------------------
 
 /**
- * What the county map is coloured by: reported turnover, the average
- * headcount, or the companies with a financial statement for the year. The
- * retired layers (companies per 1,000 residents, companies founded in the
- * year) have no source in the analytics release; an old link that names one
- * opens the default layer.
+ * What the county map is coloured by, from the hub's snapshot: companies in
+ * business per 1,000 residents, companies founded in the fiscal year, or the
+ * year's reported turnover. A layer the hub does not draw (the analytics-era
+ * `salariati` and `firme`) opens the default one.
  */
-export const COMPANY_HUB_MAP_INDICATORS = ['cifra-de-afaceri', 'salariati', 'firme'] as const
+export const COMPANY_HUB_MAP_INDICATORS = ['densitate', 'infiintari', 'cifra-de-afaceri'] as const
 export type CompanyHubMapIndicator = (typeof COMPANY_HUB_MAP_INDICATORS)[number]
 
 /** What the main activities are ranked by. */
@@ -307,17 +306,22 @@ export type CompanyHubSectorMetric = (typeof COMPANY_HUB_SECTOR_METRICS)[number]
 export const COMPANY_HUB_RANKINGS = ['cifra-de-afaceri', 'salariati'] as const
 export type CompanyHubRanking = (typeof COMPANY_HUB_RANKINGS)[number]
 
+/** What „Economia, an de an" draws through the years. */
+export const COMPANY_HUB_YEAR_MEASURES = ['cifra-de-afaceri', 'rezultat-net', 'salariati'] as const
+export type CompanyHubYearMeasure = (typeof COMPANY_HUB_YEAR_MEASURES)[number]
+
 /**
- * The hub's three choices (map layer, activity measure, ranking), each a
- * measure of the analytics release's default fiscal year. A value the hub
- * does not know — a retired layer included — is dropped, so an old shared
- * link opens the hub on its defaults instead of failing.
+ * The hub's choices (map layer, activity measure, ranking, the years' measure), each in the
+ * URL so a view can be shared. A value the hub does not know is dropped, so
+ * an old shared link opens the hub on its defaults instead of failing, and
+ * the default is never written.
  */
 export const companyHubSearchSchema = z
   .object({
     indicator: z.enum(COMPANY_HUB_MAP_INDICATORS).optional().catch(undefined),
     domenii: z.enum(COMPANY_HUB_SECTOR_METRICS).optional().catch(undefined),
     clasament: z.enum(COMPANY_HUB_RANKINGS).optional().catch(undefined),
+    evolutie: z.enum(COMPANY_HUB_YEAR_MEASURES).optional().catch(undefined),
   })
   .catch({})
 

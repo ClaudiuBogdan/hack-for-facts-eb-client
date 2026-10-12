@@ -3,14 +3,12 @@ import { CompanyAnalysisBreakdownZ, CompanyAnalysisRecordZ, CompanyAnalysisRelea
 import { apiScopeOf, isCapabilityRefused, isReleaseRefused } from '../api/company-analytics-api'
 import { activity, activityBreakdownFixture, bucket, breakdownFixture, recordNode, recordsFixture, releaseFixture, releaseV3Fixture } from '../api/company-analytics.fixture'
 import { planBreakdown, resolveQuestion } from '../api/company-analytics-plan'
-import { planCompanyHub } from '../api/company-hub-analytics'
 import { GraphQLRequestError } from '@/lib/graphql/graphql-client'
 import { drillScope, nextDimension } from './company-analytics-drill'
 import { breakdownCsv, recordsCsv } from './company-analytics-export'
 import { scopeChips } from './company-analytics-scope-text'
 import { analyticsSearchOf, DEFAULT_STATE, searchOf, stateOf, urlSearchOf } from './company-analytics-url'
 import { activityTail, breakdownRows, groupLabel } from './company-analytics-view'
-import { hubRankingOf } from './company-hub-analytics'
 
 /**
  * The derived activity (v3) on the analysis and the hub: its address
@@ -113,39 +111,10 @@ describe('the rows', () => {
     const misplaced = activityBreakdownFixture({ groups: [...activityBreakdownFixture().groups, bucket('GROUP', '(onrc_multiple_classes)', '5.00', { activity: activity({ basis: 'ONRC_MULTIPLE_CLASSES', code: null, revision: null }) })], unclassified: [] })
     expect(activityTail(misplaced).map((row) => row.key)).toEqual(['(onrc_multiple_classes)'])
     expect(breakdownRows(misplaced).ranked.map((row) => row.key)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711'])
-    expect(hubRankingOf(misplaced, 'TURNOVER', 'ro').rows.map((row) => row.key)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711'])
-  })
-
-  it('on the hub: never ranks, never draws a bar for the unclassified, but gives them their share of the whole', () => {
-    const ranking = hubRankingOf(activityBreakdownFixture(), 'TURNOVER', 'ro')
-    expect(ranking.rows.map((row) => row.key)).toEqual(['onrc:rev2:6201', 'onrc:rev3:6201', 'anaf:4711'])
-    expect(ranking.unclassified.map((row) => [row.bucket.key, row.bar, row.share])).toEqual([
-      ['(onrc_multiple_classes)', 0, '10,0%'],
-      ['(anaf_fiscal_uncatalogued)', 0, '3,0%'],
-      ['(no_qualified_selection)', 0, '2,0%'],
-    ])
-    expect(ranking.rows[0]?.bar).toBe(100)
-    // Another dimension has no unclassified rows: the hub reads as before.
-    expect(hubRankingOf(breakdownFixture(), 'TURNOVER', 'ro').unclassified).toEqual([])
   })
 })
 
-describe('the plan', () => {
-  it('a v2 release: the hub asks for the main activity exactly as before, with nothing to fall back to', () => {
-    const plan = planCompanyHub(releaseFixture(), {})
-    expect(plan?.sectorsDimension).toBe('MAIN_CAEN')
-    expect(plan?.legacySectors).toBeNull()
-    expect(plan?.sectors.key).toContain('MAIN_CAEN')
-  })
-
-  it('a v3 release: the hub asks for the derived activity, with the main activity ready to fall back to', () => {
-    const plan = planCompanyHub(releaseV3Fixture(), {})
-    expect(plan?.sectorsDimension).toBe('ACTIVITY')
-    expect(plan?.sectors.key).toContain('ACTIVITY')
-    expect(plan?.legacySectors?.key).toContain('MAIN_CAEN')
-    expect(plan?.legacySectors?.key.slice(0, 4)).toEqual(plan?.sectors.key.slice(0, 4))
-  })
-
+describe('the release’s capabilities', () => {
   it('a v2 release cannot take the activity filters or grouping: said, and not asked', () => {
     const v2 = releaseFixture()
     const question = resolveQuestion({ ...DEFAULT_STATE, scope: { activity: [{ source: 'ANAF', code: '6201' }], activityBasis: ['ANAF_FISCAL_CODE'] } }, v2)

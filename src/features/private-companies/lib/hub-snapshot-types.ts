@@ -60,6 +60,39 @@ export interface HubRegistrationYear {
   readonly active: number
 }
 
+/** One measure of one fiscal year in the analytics release: its sum (null when nobody reported it) and who reported it. */
+export interface HubYearMeasure {
+  readonly sum: number | null
+  /** Companies whose statement reported the measure (a held or missing value is not counted). */
+  readonly reported: number
+}
+
+/**
+ * One fiscal year as the companies analytics release qualifies it: the
+ * companies with a statement, and turnover, net result and average employees
+ * summed over the values it admits (nominal lei, rounded to the leu). Each
+ * year counts its own companies.
+ */
+export interface HubFiscalYear {
+  readonly year: number
+  /** Companies with a statement for the year in the release. */
+  readonly filers: number
+  readonly turnover: HubYearMeasure
+  /** Profit less loss: below zero when the losses outweigh the profits. */
+  readonly netResult: HubYearMeasure
+  /** Average headcounts summed (not distinct people), a headcount above 50,000 or below zero left out as a keying error. */
+  readonly employees: HubYearMeasure
+}
+
+/** The release the years were read from. */
+export interface HubYearsSource {
+  readonly releaseId: string
+  /** When the release was published, `YYYY-MM-DD`. */
+  readonly publishedAt: string | null
+  /** When ONRC published the edition the release's companies come from, `YYYY-MM-DD`. */
+  readonly onrcPublished: string
+}
+
 export interface CompanyHubSnapshot {
   /** When the figures were read, `YYYY-MM-DD`. */
   readonly capturedAt: string
@@ -94,4 +127,12 @@ export interface CompanyHubSnapshot {
   readonly counties: readonly HubCountyFigures[]
   /** Registrations per year from 1991, with the ones still in business. */
   readonly registrations: readonly HubRegistrationYear[]
+  /**
+   * Every fiscal year of the companies analytics release up to `fiscalYear`,
+   * oldest first: the release's qualified values, not the raw sums the year's
+   * figures above are read from (a raw sum carries keying errors and forms
+   * whose fields hold other things), so its last year can differ from them.
+   */
+  readonly years: readonly HubFiscalYear[]
+  readonly yearsSource: HubYearsSource
 }
