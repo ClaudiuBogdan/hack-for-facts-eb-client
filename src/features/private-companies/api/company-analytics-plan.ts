@@ -138,7 +138,6 @@ export interface PlannedRead<T> {
   readonly enabled: boolean
 }
 
-export const BREAKDOWN_TOP = 25
 export const BREAKDOWN_TOP_EXPANDED = 100
 export const RECORDS_PAGE = 25
 

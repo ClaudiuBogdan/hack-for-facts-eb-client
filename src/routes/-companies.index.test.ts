@@ -100,7 +100,7 @@ describe('/companies route', () => {
     expect(metaOf(built, 'title')).toContain('Transparenta.eu')
     expect(metaOf(built, 'og:title')).toBe(metaOf(built, 'title'))
     expect(metaOf(built, 'description')).toBe(metaOf(built, 'og:description'))
-    expect(metaOf(built, 'description')).toMatch(/^1\.749\.479 de firme în funcțiune, 153\.618 înființate în 2025/)
+    expect(metaOf(built, 'description')).toMatch(/^1\.749\.479 de firme în funcțiune, 153\.618 înregistrate în 2025/)
     expect(metaOf(built, 'robots')).toBe('index,follow')
     expect(metaOf(built, 'og:url')).toBe('https://transparenta.eu/companies')
 

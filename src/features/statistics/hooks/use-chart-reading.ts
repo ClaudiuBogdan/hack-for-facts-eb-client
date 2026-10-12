@@ -20,15 +20,17 @@ const TOOLTIP_GAP = 12
  *
  * A line's periods run from the plot's left edge to its right; a bar chart's
  * sit each in the middle of an equal slot (`bands`), and the pointer reads the
- * slot it is in.
+ * slot it is in. The keyboard opens on `rest` — the latest period unless a
+ * chart rests on another (a last year still incomplete).
  */
 export function useChartReading(
   count: number,
-  options: { readonly gutter?: number; readonly centred?: boolean; readonly bands?: boolean } = {},
+  options: { readonly gutter?: number; readonly centred?: boolean; readonly bands?: boolean; readonly rest?: number } = {},
 ) {
   const gutter = options.gutter ?? GUTTER
   const centred = options.centred ?? false
   const bands = options.bands ?? false
+  const rest = Math.min(Math.max(options.rest ?? count - 1, 0), count - 1)
   // `held`: picked by a finger or a pen.
   const [selection, setSelection] = useState<{ readonly index: number; readonly held: boolean } | null>(null)
   const active = selection === null ? null : Math.min(selection.index, count - 1)
@@ -89,11 +91,11 @@ export function useChartReading(
     },
     onFocus: () => {
       // From the keyboard, open on the latest period; a click has already picked its own.
-      if (active === null) setActive(count - 1)
+      if (active === null) setActive(rest)
     },
     onBlur: () => setActive(null),
     onKeyDown: (event: KeyboardEvent) => {
-      const from = active ?? count - 1
+      const from = active ?? rest
       const next =
         event.key === 'ArrowLeft' ? Math.max(0, active === null ? from : from - 1)
         : event.key === 'ArrowRight' ? Math.min(count - 1, active === null ? from : from + 1)

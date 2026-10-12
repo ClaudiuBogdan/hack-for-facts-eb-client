@@ -59,7 +59,7 @@ export function registrationSeries(registrations: readonly HubRegistrationYear[]
   }
 }
 
-/** The divisions most companies founded in the fiscal year chose, with their share of the year's total. */
+/** The divisions most companies recorded in the fiscal year chose, with their share of the year's total. */
 export function newFirmsLeadingSectors(snapshot: CompanyHubSnapshot, limit: number) {
   return snapshot.newFirmsBySector.slice(0, limit).map((entry) => ({
     ...entry,

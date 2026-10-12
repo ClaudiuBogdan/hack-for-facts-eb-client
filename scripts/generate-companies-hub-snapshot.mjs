@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Regenerates `src/features/private-companies/lib/hub-snapshot.ts`, the
- * figures the `/companies` hub renders, from the production database and the
- * INS population the public API serves.
+ * figures the `/companies` hub renders, from the production database and, from
+ * the public API, the INS population and the companies analysis release's
+ * qualified years.
  *
  * Read-only: every statement is a SELECT inside one REPEATABLE READ, READ ONLY
  * transaction, run as the agent read-only role. Connection details come from
@@ -19,7 +20,7 @@
  *
  * Options:
  *   --year         fiscal year of the statements and of "new" companies (default: last year)
- *   --api          GraphQL endpoint for INS POP105A (default: dev-chronos-api)
+ *   --api          GraphQL endpoint for INS POP105A and the analytics release (default: dev-chronos-api)
  *   --server-repo  checkout whose node_modules provides `pg`
  */
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -27,6 +28,8 @@ import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+// Node strips the types: the years' checks are the app's, and its tests'.
+import { hubYearsFrom } from '../src/features/private-companies/lib/hub-years.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = resolve(ROOT, 'src/features/private-companies/lib/hub-snapshot.ts')
@@ -34,6 +37,7 @@ const OUT = resolve(ROOT, 'src/features/private-companies/lib/hub-snapshot.ts')
 const { values: args } = parseArgs({
   options: {
     year: { type: 'string', default: String(new Date().getFullYear() - 1) },
+    // INS POP105A and the companies analysis release.
     api: { type: 'string', default: 'https://dev-chronos-api.transparenta.eu/api/v1/graphql' },
     'server-repo': { type: 'string', default: resolve(ROOT, '../hack-for-facts-eb-server') },
   },
@@ -47,6 +51,8 @@ if (!Number.isInteger(YEAR) || YEAR < 2019) {
 /** An employee count above this is a keying error: the largest real employer (CFR) reports about 24,000. */
 const EMPLOYEE_CEILING = 50_000
 const FIRST_REGISTRATION_YEAR = 1991
+/** How far the year's raw sums may stray from the release's qualified ones (2.2% turnover, 1.6% employees in 2025). */
+const RAW_TOLERANCE = 0.05
 
 // ── the repo's own reference lists ──────────────────────────────────────
 
@@ -267,7 +273,7 @@ const RELEASE_QUERY = `query { companyAnalysisRelease { release { releaseId publ
 const SERIES_QUERY = `
   query Years($release: BigInt!, $metric: CompanyAnalysisMetric, $scope: CompanyAnalysisScopeInput) {
     companyAnalysisSeries(release: $release, metric: $metric, cohortMode: EACH_YEAR, scope: $scope) {
-      points { fiscalYear available filers metric { sum contributors } }
+      points { fiscalYear available gapReason filers metric { sum contributors } }
     }
   }`
 const SERIES_METRICS = { turnover: 'TURNOVER', netResult: 'NET_RESULT', employees: 'EMPLOYEES' }
@@ -297,26 +303,11 @@ async function readYears() {
   for (const [key, metric] of Object.entries(SERIES_METRICS)) {
     series[key] = (await graphql(SERIES_QUERY, { release: release.releaseId, metric, scope: SERIES_SCOPE[key] })).companyAnalysisSeries.points.filter((point) => point.fiscalYear <= YEAR)
   }
-  const years = series.turnover.map((point) => point.fiscalYear)
-  const problems = []
-  if (years.length < 2 || years.at(-1) !== YEAR || years.some((year, index) => index > 0 && year !== years[index - 1] + 1)) problems.push('the release\'s years are not a run ending in the year')
-  for (const key of Object.keys(SERIES_METRICS)) {
-    const points = series[key]
-    // A range filter narrows its series' companies; the others count every company with a statement.
-    const sameFilers = (point, index) => SERIES_SCOPE[key] !== undefined || point.filers === series.turnover[index].filers
-    if (points.length !== years.length || points.some((point, index) => point.fiscalYear !== years[index] || !sameFilers(point, index))) problems.push(`the ${key} series does not line up with turnover's`)
-  }
+  const { years, problems } = hubYearsFrom(series, YEAR, EMPLOYEE_CEILING)
   if (problems.length > 0) throw new Error(`The release's years do not reconcile:\n- ${problems.join('\n- ')}`)
-  const measure = (point) => ({ sum: point.available && point.metric.sum !== null ? Math.round(Number(point.metric.sum)) : null, reported: Number(point.metric.contributors) })
   return {
     source: { releaseId: release.releaseId, publishedAt: release.publishedAt?.slice(0, 10) ?? null, onrcPublished: release.source.sourcePublishedAt.slice(0, 10) },
-    rows: years.map((year, index) => ({
-      year,
-      filers: Number(series.turnover[index].filers),
-      turnover: measure(series.turnover[index]),
-      netResult: measure(series.netResult[index]),
-      employees: measure(series.employees[index]),
-    })),
+    rows: years,
   }
 }
 
@@ -340,7 +331,7 @@ function byCounty(rows, key = 'n') {
  * The parts must add up to their wholes before anything is written: a read
  * that does not reconcile is broken, and a broken snapshot would ship as fact.
  */
-function reconcile(rows, population) {
+function reconcile(rows, population, years) {
   const national = rows.national[0]
   const problems = []
   const check = (ok, message) => ok || problems.push(message)
@@ -363,6 +354,14 @@ function reconcile(rows, population) {
   }
   check(rows.registrations.length === YEAR - FIRST_REGISTRATION_YEAR + 1, 'a registration year is missing')
   check(/^\d{4}-\d{2}-\d{2}$/.test(rows.registryPublished[0]?.published ?? ''), 'no ONRC capture date')
+  // The year read twice — the raw statements of every company, the release's qualified ones of the legal persons —
+  // must tell the same story: a raw figure far off the release's is a form or a keying error the release held back
+  // (insurers' 2024 forms put an amount where the headcount goes: +27%), and it would ship in the figures band.
+  const released = years.rows.at(-1)
+  for (const [name, raw, qualified] of [['turnover', int(national.turnover), released?.turnover.sum], ['employees', int(national.employees), released?.employees.sum]]) {
+    const off = qualified ? Math.abs(raw - qualified) / qualified : Infinity
+    check(off <= RAW_TOLERANCE, `the year's raw ${name} (${raw}) is ${(off * 100).toFixed(1)}% off the release's (${qualified})`)
+  }
   if (problems.length > 0) throw new Error(`The read does not reconcile:\n- ${problems.join('\n- ')}`)
 }
 
@@ -473,7 +472,7 @@ function render(rows, population, years) {
     '  ],',
     '  years: [',
     ...years.rows.map((row) => {
-      const m = (value) => `{ sum: ${value.sum === null ? 'null' : value.sum}, reported: ${value.reported} }`
+      const m = (value) => `{ sum: ${value.sum === null ? 'null' : value.sum}, gap: ${nullable(value.gap)}, reported: ${value.reported} }`
       return `    { year: ${row.year}, filers: ${row.filers}, turnover: ${m(row.turnover)}, netResult: ${m(row.netResult)}, employees: ${m(row.employees)} },`
     }),
     '  ],',
@@ -488,6 +487,6 @@ function render(rows, population, years) {
 const population = await readPopulation()
 const years = await readYears()
 const rows = await readDatabase()
-reconcile(rows, population)
+reconcile(rows, population, years)
 writeFileSync(OUT, render(rows, population, years))
 console.log(`wrote ${OUT}`)

@@ -178,6 +178,19 @@ test.describe('Companies hub', () => {
     ).toHaveAttribute('aria-checked', 'true')
   })
 
+  test('the years band’s measure is in the URL, and its chart reads a year from the keyboard', async ({ page }) => {
+    await page.goto('/companies')
+    await waitForPageReady(page)
+
+    await page.getByRole('radiogroup', { name: 'Anii după' }).getByRole('radio', { name: 'Salariați' }).click()
+    await expect(page).toHaveURL(/evolutie=salariati/, { timeout: 30000 })
+    const chart = page.getByTestId('company-hub-economy-chart').getByRole('slider')
+    await expect(chart).toHaveAttribute('aria-label', /^Salariați, /)
+    await chart.focus()
+    await chart.press('Home')
+    await expect(chart).toHaveAttribute('aria-valuetext', /^2008, /)
+  })
+
   test('a largest company opens its profile', async ({ page }) => {
     await page.goto('/companies')
     await waitForPageReady(page)

@@ -23,7 +23,7 @@ import {
 } from '@/schemas/private-company-search'
 import { divisionLabel } from '../../lib/caen-divisions'
 import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE } from '../../lib/company-status-codes'
-import { hubAnalysisSearch, hubCompaniesSearch, hubCountySearch } from '../../lib/hub-analysis-links'
+import { HUB_EMPLOYEE_CEILING, hubAnalysisSearch, hubCompaniesSearch, hubCountySearch, withHubHeadcounts } from '../../lib/hub-analysis-links'
 import { ANAF_FIRST_YEAR, ECONOMY_MEASURE, ECONOMY_METRIC } from '../../lib/hub-economy'
 import { formatHubDay, formatHubMonth, formatHubNumber, formatHubShare } from '../../lib/hub-format'
 import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
@@ -31,6 +31,7 @@ import { hubCountyLayer, newFirmsLeadingSectors, registrationSeries, survivalSha
 import { CompanyHubHero, CompanyLeadersFrame } from './company-hub-hero'
 import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandNumber, companyHubSections } from './company-hub-sections'
 import { HubEconomyChart, HubEconomySpan } from './hub-economy-years'
+import { HubInfoNote } from './hub-info-note'
 import { HubCountyBand } from './hub-county-band'
 import { HubLeaders } from './hub-leaders'
 import { HubSearch } from './hub-search'
@@ -42,7 +43,7 @@ import { HubSectors, HubSizeTable, type SectorMetric } from './hub-sectors'
  * pinned bar of the page's bands, the four figures a reader comes for, then
  * one numbered band per question — what the economy lives on, where the
  * companies are, how the economy has gone year by year, how many companies
- * are founded each year — three places to start, and the full sources line. A band says what its numbers are and nothing about
+ * are recorded in the registry each year — three places to start, and the full sources line. A band says what its numbers are and nothing about
  * the database. The head is `company-hub-hero.tsx`'s, which the loading state
  * draws too.
  *
@@ -142,7 +143,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
       value: national.newFirms,
       digits: 0,
       label: <Trans>Firme noi</Trans>,
-      note: <Trans>Înființate în {YEAR}</Trans>,
+      note: <Trans>Înregistrate la ONRC în {YEAR}</Trans>,
       link: toBand('infiintari'),
     },
     {
@@ -179,7 +180,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
       label: t`La 1.000 de locuitori`,
       legend: t`Firme în funcțiune la 1.000 de locuitori (populația INS la 1 ianuarie ${YEAR})`,
     },
-    infiintari: { label: t`Firme noi`, legend: t`Firme înființate în ${YEAR}` },
+    infiintari: { label: t`Firme noi`, legend: t`Firme înregistrate la ONRC în ${YEAR}` },
     'cifra-de-afaceri': { label: t`Cifra de afaceri`, legend: t`Cifra de afaceri raportată pe ${YEAR}, după sediul firmei, lei` },
   }
   const survival = survivalShare(SNAPSHOT.registrations, COHORT_YEAR)
@@ -197,6 +198,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
       <CompanyHubHero
         search={<HubSearch autoFocus />}
+        inBusiness={hubCompaniesSearch(YEAR, { observedStatus: { in: [STATUS_ACTIVE] } })}
         leaders={<HeroLeaders ranking={ranking} onRanking={(key) => choose('clasament', key, DEFAULT_RANKING)} />}
         source={<HeadSources />}
       />
@@ -260,8 +262,10 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                 panel: 'defalcare',
                 dimension: 'MAIN_CAEN',
                 metric: sectorMetric === 'salariati' ? 'EMPLOYEES' : 'TURNOVER',
-                // By the sum, the analysis's default, unless the domains are ranked by their companies.
+                // By the sum, the analysis's default, unless the domains are ranked by their companies in business.
                 rankBy: sectorMetric === 'firme' ? 'COMPANIES' : null,
+                // The same companies the measure counts: those in business, or within the hub's headcounts.
+                scope: sectorMetric === 'firme' ? { observedStatus: { in: [STATUS_ACTIVE] } } : sectorMetric === 'salariati' ? withHubHeadcounts({}) : {},
               })}
               total={sectorMetric === 'salariati' ? national.employees : sectorMetric === 'firme' ? national.activeFirms : national.turnover}
             />
@@ -283,7 +287,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
             />
           }
         />
-        <HubCountyBand layer={hubCountyLayer(SNAPSHOT, mapIndicator)} legend={mapOptions[mapIndicator].legend} countyLink={(code) => hubCountySearch(YEAR, code)} />
+        <HubCountyBand layer={hubCountyLayer(SNAPSHOT, mapIndicator)} legend={mapOptions[mapIndicator].legend} countyLink={(code) => hubCountySearch(YEAR, code, mapIndicator === 'densitate')} />
       </HomeBand>
 
       <HomeBand id="economie" labelledBy="hub-economy-title">
@@ -314,7 +318,16 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                       </Trans>
                     </p>
                     <p>
-                      <Trans>Cifrele-cheie de sus adună toate bilanțurile pe {YEAR}, deci diferă de anul {YEAR} de aici.</Trans>
+                      <Trans>
+                        Cifrele-cheie de sus adună bilanțurile pe {YEAR} citite până acum de la ANAF, ale tuturor firmelor, deci diferă de anul {YEAR} de
+                        aici.
+                      </Trans>
+                    </p>
+                    <p>
+                      <Trans>
+                        Salariații: un număr mediu peste {formatHubNumber(HUB_EMPLOYEE_CEILING)} sau sub zero e o greșeală de introducere și nu e adunat;
+                        analiza deschisă de aici păstrează aceeași limită.
+                      </Trans>
                     </p>
                   </>
                 }
@@ -339,7 +352,14 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
             </div>
             <Link
               to="/companies/analytics"
-              search={hubAnalysisSearch(YEAR, { mode: 'grafice', panel: 'evolutie', metric: ECONOMY_METRIC[economyMeasure], cohort: 'EACH_YEAR' })}
+              search={hubAnalysisSearch(YEAR, {
+                mode: 'grafice',
+                panel: 'evolutie',
+                metric: ECONOMY_METRIC[economyMeasure],
+                cohort: 'EACH_YEAR',
+                // The chart's own headcounts: the analysis keeps the same ceiling.
+                scope: economyMeasure === 'employees' ? withHubHeadcounts({}) : {},
+              })}
               className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-foreground underline-offset-4 hover:underline sm:min-h-9"
             >
               <Trans>Deschide în analiza bilanțurilor</Trans> →
@@ -358,25 +378,37 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                 <Trans>
                   Câte firme
                   <br />
-                  se nasc în fiecare an
+                  apar în fiecare an
                 </Trans>
               }
               lede={
                 survival !== null ? (
-                  <Trans>
-                    Din firmele înființate în {COHORT_YEAR}, {formatHubShare(survival, 1)} mai sunt în funcțiune.
-                  </Trans>
+                  <>
+                    <Trans>
+                      Din firmele înregistrate în {COHORT_YEAR}, {formatHubShare(survival, 1)} mai sunt în funcțiune.
+                    </Trans>{' '}
+                    <HubInfoNote label={t`Despre înregistrări`}>
+                      <p>
+                        <Trans>
+                          Anul e cel în care firma a fost înregistrată la ONRC, din registru: nu neapărat anul înființării. Codurile compacte emise din
+                          septembrie 2024 nu poartă o dată: anul lor e cel din codul de înregistrare.
+                        </Trans>
+                      </p>
+                      <p>
+                        <Trans>„În funcțiune" e starea din registru în {month}.</Trans>
+                      </p>
+                    </HubInfoNote>
+                  </>
                 ) : null
               }
             />
             {newSectors.length > 0 ? (
               <div className="mt-8" data-reveal>
                 <MonoLabel className="block text-muted-foreground">
-                  <Trans>Firmele înființate în {YEAR}, pe domenii</Trans>
+                  <Trans>Firmele înregistrate în {YEAR}, pe domenii</Trans>
                 </MonoLabel>
-                {/* Not links: the directory can select neither a registration year
-                    the compact codes carry nor a main activity, so no query it
-                    runs would list the companies a row counts. */}
+                {/* Not links: no filter of the analysis selects a registration year the compact codes carry, nor a
+                    division, so no question it answers would list the companies a row counts. */}
                 <ol className="mt-3 divide-y divide-border/70 border-y border-border/70" data-testid="company-hub-new-sectors">
                   {newSectors.map((entry) => (
                     <li key={entry.division} className="grid grid-cols-[minmax(0,1fr)_auto_3.5rem] items-baseline gap-x-4 py-2.5 text-sm">
@@ -391,16 +423,16 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
           </div>
           <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
             <MonoLabel className="block text-muted-foreground">
-              <Trans>Firme înființate pe an, și câte mai sunt în funcțiune</Trans>
+              <Trans>Firme înregistrate pe an, și câte mai sunt în funcțiune</Trans>
             </MonoLabel>
             <div className="mt-3">
               <HubTwoLineChart
-                a={{ label: t`Înființate`, points: series.registered }}
+                a={{ label: t`Înregistrate`, points: series.registered }}
                 b={{ label: t`În funcțiune în ${month}`, points: series.active }}
                 gap={{
                   label: t`Ieșite din funcțiune`,
                   aAbove: t`Ieșite din funcțiune`,
-                  bAbove: t`Mai multe în funcțiune decât înființate`,
+                  bAbove: t`Mai multe în funcțiune decât înregistrate`,
                 }}
               />
             </div>

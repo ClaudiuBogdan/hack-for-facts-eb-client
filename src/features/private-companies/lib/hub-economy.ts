@@ -36,7 +36,11 @@ export function economyMeasureLabel(measure: EconomyMeasure): string {
   }
 }
 
-/** The last year when it has fewer companies with a statement than the year before: still being filed. */
+/**
+ * The last year when it has fewer companies with a statement than the year
+ * before: possibly incomplete. Observed coverage, not proof — a real decline
+ * reads the same — so it is said as possible, never as a fact.
+ */
 export function partialYear(years: readonly HubFiscalYear[]): number | null {
   const last = years[years.length - 1]
   const before = years[years.length - 2]

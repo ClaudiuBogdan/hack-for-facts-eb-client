@@ -1,3 +1,5 @@
+import type { CompanyAnalysisGapReason } from '@/schemas/company-analytics'
+
 /**
  * The shape of the companies hub's snapshot (`hub-snapshot.ts`): figures read
  * once from the registry and the financial statements and kept in the
@@ -60,9 +62,11 @@ export interface HubRegistrationYear {
   readonly active: number
 }
 
-/** One measure of one fiscal year in the analytics release: its sum (null when nobody reported it) and who reported it. */
+/** One measure of one fiscal year in the analytics release: its sum (null when there is none, and why) and who reported it. */
 export interface HubYearMeasure {
   readonly sum: number | null
+  /** Why a year has no sum, as the release says it; null when it has one. */
+  readonly gap: CompanyAnalysisGapReason | null
   /** Companies whose statement reported the measure (a held or missing value is not counted). */
   readonly reported: number
 }

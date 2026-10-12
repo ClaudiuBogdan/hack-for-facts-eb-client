@@ -11,9 +11,9 @@ import type { HubFiscalYear } from './hub-snapshot-types'
 const year = (value: number, filers: number): HubFiscalYear => ({
   year: value,
   filers,
-  turnover: { sum: 1, reported: filers },
-  netResult: { sum: 1, reported: filers },
-  employees: { sum: 1, reported: filers },
+  turnover: { sum: 1, gap: null, reported: filers },
+  netResult: { sum: 1, gap: null, reported: filers },
+  employees: { sum: 1, gap: null, reported: filers },
 })
 
 describe('the years', () => {

@@ -9,7 +9,7 @@ export function companyHubSections(): readonly HomeSection[] {
     { id: 'domenii', label: t({ message: 'Pe domenii', context: 'economic sectors' }) },
     { id: 'judete', label: t`Pe județe` },
     { id: 'economie', label: t`An de an` },
-    { id: 'infiintari', label: t`Înființări` },
+    { id: 'infiintari', label: t({ message: 'Înregistrări', context: 'company registrations' }) },
   ]
 }
 

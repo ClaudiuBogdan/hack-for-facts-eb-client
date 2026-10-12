@@ -10,8 +10,9 @@ import {
   STEP_FILL,
   STEP_STROKE,
   STEP_TEXT,
-  projectCounties,
-  type CountyFeature,
+  COUNTY_MAP_WIDTH,
+  countyLabelPixels,
+  countyShapes,
   type CountyProperties,
   type CountyScale,
 } from '@/features/statistics/lib/county-map'
@@ -46,26 +47,8 @@ import { describeAgainstNational, formatHubValue, formatHubValueText, isAdditive
  * county-map`).
  */
 
-const WIDTH = 640
 /** One map per page: a fixed id keeps `url(#…)` free of the characters `useId` produces. */
 const NO_DATA_PATTERN = 'company-county-no-data'
-
-/** One projection per boundary load; counties in name order, so the keyboard walks them alphabetically. */
-const projections = new WeakMap<readonly CountyFeature[], ReturnType<typeof projectCounties>>()
-function projected(features: readonly CountyFeature[]) {
-  let projection = projections.get(features)
-  if (!projection) {
-    const { counties, height } = projectCounties(features, WIDTH)
-    projection = { counties: [...counties].sort((a, b) => a.name.localeCompare(b.name, 'ro')), height }
-    projections.set(features, projection)
-  }
-  return projection
-}
-
-/** On-screen size of a county code: legible at a phone's width, quiet at a desktop's. */
-function labelPixels(renderedWidth: number) {
-  return renderedWidth < 480 ? 9 : 11
-}
 
 export function CompanyCountyMap({
   layer,
@@ -86,7 +69,7 @@ export function CompanyCountyMap({
 }) {
   const geo = useGeoJsonData('County')
   const features = (geo.data as FeatureCollection<Polygon | MultiPolygon, CountyProperties> | undefined)?.features
-  const shapes = features ? projected(features) : undefined
+  const shapes = features ? countyShapes(features) : undefined
   const scale = useMemo(() => hubLayerScale(layer), [layer])
   const byCode = useMemo(() => new Map(layer.values.map((county) => [county.code, county])), [layer.values])
   const ranks = useMemo(() => new Map(rankCounties(layer.values).map((county, index) => [county.code, index + 1])), [layer.values])
@@ -142,7 +125,7 @@ export function CompanyCountyMap({
   const title = (code: string, county: HubCountyValue | undefined) =>
     county ? `${countyName(code)}: ${formatHubValueText(county.value, layer.unit, digits)}` : t`${countyName(code)}: fără valoare`
   const active = activeCode ? shapes?.counties.find((shape) => shape.code === activeCode) : undefined
-  const fontSize = renderedWidth ? (labelPixels(renderedWidth) * WIDTH) / renderedWidth : 11
+  const fontSize = renderedWidth ? (countyLabelPixels(renderedWidth) * COUNTY_MAP_WIDTH) / renderedWidth : 11
   const hoverOnly = (event: PointerEvent, code: string | undefined) => {
     if (event.pointerType !== 'touch') onActiveChange?.(code)
   }
@@ -167,7 +150,7 @@ export function CompanyCountyMap({
         // A group, not an image: the counties are links and stay in the accessibility tree.
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${WIDTH} ${shapes.height.toFixed(0)}`}
+          viewBox={`0 0 ${COUNTY_MAP_WIDTH} ${shapes.height.toFixed(0)}`}
           className="mt-4 block h-auto w-full touch-manipulation"
           role="group"
           aria-label={legend}

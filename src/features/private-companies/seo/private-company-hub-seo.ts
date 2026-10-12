@@ -30,9 +30,9 @@ function describe(figures: CompanyHubSeoFigures): string {
   const founded = formatHubNumber(figures.newFirms)
   const year = figures.fiscalYear
   return plural(figures.activeFirms, {
-    one: `O firmă în funcțiune, ${founded} înființate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
-    few: `# firme în funcțiune, ${founded} înființate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
-    other: `# de firme în funcțiune, ${founded} înființate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
+    one: `O firmă în funcțiune, ${founded} înregistrate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
+    few: `# firme în funcțiune, ${founded} înregistrate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
+    other: `# de firme în funcțiune, ${founded} înregistrate în ${year}, cele mai mari firme, domeniile și județele economiei. Caută orice firmă după nume sau CUI.`,
   })
 }
 
@@ -64,7 +64,7 @@ export function buildCompanyHubHead(figures: CompanyHubSeoFigures | undefined, s
     ...(figures ? { temporalCoverage: String(figures.fiscalYear), dateModified: figures.capturedAt } : {}),
     spatialCoverage: { '@type': 'Place', name: 'Romania' },
     isBasedOn: ['https://www.onrc.ro', 'https://www.anaf.ro', 'https://insse.ro'],
-    variableMeasured: [t`firme în funcțiune`, t`firme înființate`, t`cifra de afaceri`, t`număr mediu de salariați`],
+    variableMeasured: [t`firme în funcțiune`, t`firme înregistrate`, t`cifra de afaceri`, t`număr mediu de salariați`],
     publisher: { '@type': 'Organization', '@id': `${siteUrl}#organization`, name: 'Transparenta.eu', url: siteUrl },
   }
   const webPage = {

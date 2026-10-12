@@ -700,3 +700,24 @@ search engines, and cost the reader no request.
   open the same selection in the analysis (`lib/hub-analysis-links.ts`, the
   snapshot's year, the selection in canonical order). The analysis counts
   one ONRC edition's companies, so its counts can differ from the hub's.
+
+### Decisions from the review (12 October 2026)
+
+- **Registrations, not foundings.** The births band, the figures band's
+  „Firme noi", the map's layer and the head say „înregistrate la ONRC": the
+  year is ONRC's recorded date (for the compact codes since September 2024,
+  the year in the code), never a founding date or an age — the analysis's
+  rule (`onrcRecordedYear`). The band says so behind its info button.
+- **A last year with fewer filers is „posibil incomplet"**, observed and not
+  proved; it is hatched, not compared with the year before, and the reading
+  rests on the last whole year (the keyboard opens there too: `rest`).
+- **Links keep the population their figure counts**: the density layer's
+  counties and the domains by companies open the companies in business; the
+  employees' links (leaders, domains, years) keep the hub's 0–50,000
+  headcount (`withHubHeadcounts`), and the years' note says so.
+- **The generator refuses a broken read.** The release's years go through
+  `lib/hub-years.ts` (tested): a run ending in the year, finite sums, no more
+  reporters than filers, a gap only with its reason, employees within the
+  ceiling. The year's raw sums must agree with the release's within 5% (2.2%
+  turnover, 1.6% employees today): a `--year 2024` run stops on the insurers'
+  headcounts instead of shipping them.

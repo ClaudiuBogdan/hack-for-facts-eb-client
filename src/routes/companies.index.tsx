@@ -4,13 +4,14 @@ import { buildCompanyHubHead, companyHubSeoFigures } from '@/features/private-co
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import {
   cleanPrivateCompanyDirectorySearch,
+  companyHubSearchSchema,
   parseCompanyHubSearch,
   parsePrivateCompanyDirectorySearch,
   type PrivateCompanyDirectorySearchState,
 } from '@/schemas/private-company-search'
 
 /** The hub's own search keys; everything else an old link carries is the directory's or the site's. */
-const HUB_KEYS = new Set(['indicator', 'domenii', 'clasament'])
+const HUB_KEYS = new Set(Object.keys(companyHubSearchSchema.unwrap().shape))
 
 /**
  * `/companies` is the hub; the directory moved to `/companies/search`. An old

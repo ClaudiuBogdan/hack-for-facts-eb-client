@@ -87,7 +87,7 @@ export function CompanyHubPending() {
                 </MonoLabel>
                 <MonoLabel className="block pt-3 leading-relaxed">
                   <PendingBar className="block w-24" />
-                  {/* Every note but the new companies' („Înființate în …") takes a second line; the first a third on a phone. */}
+                  {/* Every note but the new companies' („Înregistrate la ONRC în …") takes a second line; the first a third on a phone. */}
                   {index === 1 ? null : <PendingBar className="block w-20" />}
                   {index === 0 ? <PendingBar className="block w-12 sm:hidden" /> : null}
                 </MonoLabel>

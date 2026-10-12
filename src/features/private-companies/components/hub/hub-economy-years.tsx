@@ -1,15 +1,15 @@
 import { useId, type ReactNode } from 'react'
 import { plural, t } from '@lingui/core/macro'
-import { Info } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ChartGridLines, ChartPeriodAxis, ChartTooltip, ChartValueTicks } from '@/features/statistics/components/charts/period-chart-parts'
 import { useChartReading } from '@/features/statistics/hooks/use-chart-reading'
 import { CHART_HEIGHT, CHART_PLOT_CLASS, CHART_WIDTH, niceScale, yearTickIndices } from '@/features/statistics/lib/period-chart'
 import { cn } from '@/lib/utils'
+import { gapReasonLabel } from '../../lib/company-analytics-text'
 import { ANAF_FIRST_YEAR, ECONOMY_UNIT, economyChange, economyMeasureLabel, partialYear, type EconomyMeasure } from '../../lib/hub-economy'
 import { formatHubNumber, formatHubValue, formatHubValueText, type HubUnit } from '../../lib/hub-format'
 import type { HubFiscalYear } from '../../lib/hub-snapshot-types'
+import { HubInfoNote } from './hub-info-note'
 
 /**
  * „Economia, an de an": one measure through every fiscal year of the
@@ -22,8 +22,8 @@ import type { HubFiscalYear } from '../../lib/hub-snapshot-types'
  * year nobody reported a value for is a gap that says so, never a zero bar; a
  * loss hangs below the zero line. The statements were published by the
  * Ministry of Finance until 2018 and by ANAF since 2019: the break is marked.
- * The last year, with fewer statements than the one before it, is still being
- * filed: hatched, and said.
+ * The last year, with fewer statements than the one before it, is possibly
+ * incomplete (observed coverage, not proof): hatched, and said.
  *
  * Pointing at the chart (or a finger along it, or the arrow keys once it has
  * focus) reads a year: its figure exactly, the change from the year before
@@ -37,6 +37,16 @@ function axisScale(largest: number, unit: HubUnit): { readonly divisor: number; 
   return largest >= 1e6 ? { divisor: 1e6, label: t`mil. salariați` } : { divisor: 1e3, label: t`mii de salariați` }
 }
 
+/** Who reported a year's figure. Romanian writes „de" before a count ending in 20–99 or 00, and not before one ending in 01–19. */
+function reportedText(year: HubFiscalYear, measure: EconomyMeasure): string {
+  const reported = formatHubNumber(year[measure].reported)
+  return plural(year.filers, {
+    one: `Raportat de ${reported} dintr-o firmă cu bilanț`,
+    few: `Raportat de ${reported} din # firme cu bilanț`,
+    other: `Raportat de ${reported} din # de firme cu bilanț`,
+  })
+}
+
 export function HubEconomyChart({ years, measure }: { readonly years: readonly HubFiscalYear[]; readonly measure: EconomyMeasure }) {
   const unit = ECONOMY_UNIT[measure]
   const count = years.length
@@ -44,13 +54,24 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
   const present = values.filter((value): value is number => value !== null)
   const scale = niceScale(Math.min(0, ...present), Math.max(0, ...present))
   const axis = axisScale(Math.max(Math.abs(scale.from), Math.abs(scale.to)), unit)
-  const { active, plotRef, tooltipRef, tooltipLeft, handlers } = useChartReading(count, { bands: true })
+  const partialAt = years.findIndex((year) => year.year === partialYear(years))
+  // At rest, and where the keyboard opens: the last whole year.
+  const restIndex = partialAt >= 0 ? partialAt - 1 : count - 1
+  const { active, plotRef, tooltipRef, tooltipLeft, handlers } = useChartReading(count, { bands: true, rest: restIndex })
+  const gaps = [...new Set(years.flatMap((year) => (year[measure].sum === null && year[measure].gap ? [year[measure].gap] : [])))]
   const hintId = useId()
   const hatchId = useId()
   const partial = partialYear(years)
   // The year read at rest: the last whole one.
   const lastWhole = partial !== null ? count - 2 : count - 1
-  if (count < 2 || present.length === 0) return null
+  if (count < 2) return null
+  if (present.length === 0)
+    // A measure the release offers for no year: said, never an empty chart.
+    return (
+      <p className="py-10 text-sm text-muted-foreground" data-testid="company-hub-economy-unavailable">
+        {gaps.length > 0 ? gaps.map((gap) => gapReasonLabel(gap)).join(' · ') : t`Nicio valoare raportată`}
+      </p>
+    )
 
   const band = CHART_WIDTH / count
   const yAt = (value: number) => (1 - (value - scale.from) / (scale.to - scale.from)) * 100
@@ -63,16 +84,20 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
     const year = years[index]
     const value = values[index] ?? null
     const previous = index > 0 ? (values[index - 1] ?? null) : null
-    return { year, value, change: value === null ? null : economyChange(previous, value, measure) }
+    // A possibly incomplete year is not compared: its change would be its missing statements.
+    return { year, value, change: value === null || year?.year === partial ? null : economyChange(previous, value, measure) }
   }
   const spoken = (index: number) => {
     const { year, value, change } = readingAt(index)
     if (!year) return ''
     return [
       String(year.year),
-      value === null ? t`nicio valoare raportată` : formatHubValueText(value, unit),
+      value === null ? (year[measure].gap ? gapReasonLabel(year[measure].gap) : t`nicio valoare raportată`) : formatHubValueText(value, unit),
+      // The exact figure too: the scaled one is the eye's.
+      value !== null && unit === 'lei' ? t`${formatHubNumber(value)} lei` : null,
       change ? t`${change} față de anul precedent` : null,
-      year.year === partial ? t`an incomplet` : null,
+      reportedText(year, measure),
+      year.year === partial ? t`posibil incomplet` : null,
     ]
       .filter(Boolean)
       .join(', ')
@@ -107,10 +132,10 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
           {/* The publishers: the Ministry of Finance's years, then ANAF's, at the top of their bars. */}
           {breakAt > 0 ? (
             <>
-              <MonoLabel className="pointer-events-none absolute top-0 hidden -translate-x-full pr-2 text-[10px] text-muted-foreground sm:block" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
+              <MonoLabel className="pointer-events-none absolute top-0 hidden -translate-x-full whitespace-nowrap pr-2 text-[10px] text-muted-foreground sm:block" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
                 {t`Ministerul Finanțelor`}
               </MonoLabel>
-              <MonoLabel className="pointer-events-none absolute top-0 pl-2 text-[10px] text-muted-foreground" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
+              <MonoLabel className="pointer-events-none absolute top-0 whitespace-nowrap pl-2 text-[10px] text-muted-foreground" style={{ left: `${(breakAt / count) * 100}%` }} aria-hidden="true">
                 {t`ANAF`}
               </MonoLabel>
             </>
@@ -136,8 +161,13 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
                 // Nothing reported: a gap on the zero line, never a zero bar.
                 return <line key={year.year} x1={x} x2={x + width} y1={zero} y2={zero} className="stroke-muted-foreground" strokeDasharray="2 3" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
               }
-              const top = Math.min(zero, yPx(value))
+              if (value === 0) {
+                // An explicit zero: a mark on the zero line, never a bar on either side of it.
+                return <line key={year.year} x1={x} x2={x + width} y1={zero} y2={zero} className="stroke-foreground/60" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+              }
+              // At least a pixel tall, on the value's own side of zero.
               const height = Math.max(Math.abs(yPx(value) - zero), 1)
+              const top = value > 0 ? zero - height : zero
               const isActive = index === shown
               const tone =
                 year.year === partial ? undefined
@@ -164,10 +194,10 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
             <ChartTooltip tooltipRef={tooltipRef} left={tooltipLeft}>
               <MonoLabel className="block text-muted-foreground">
                 {reading.year.year}
-                {reading.year.year === partial ? ` · ${t`incomplet`}` : ''}
+                {reading.year.year === partial ? ` · ${t`posibil incomplet`}` : ''}
               </MonoLabel>
               {reading.value === null ? (
-                <p className="mt-1.5 text-sm text-muted-foreground">{t`Nicio valoare raportată`}</p>
+                <p className="mt-1.5 text-sm text-muted-foreground">{reading.year[measure].gap ? gapReasonLabel(reading.year[measure].gap) : t`Nicio valoare raportată`}</p>
               ) : (
                 <>
                   <p className="mt-1.5 text-base font-semibold tabular-nums text-foreground">{formatHubValueText(reading.value, unit)}</p>
@@ -176,12 +206,7 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
                 </>
               )}
               <p className="mt-1.5 border-t pt-1.5 text-muted-foreground">
-                {/* Romanian writes „de" before a count ending in 20–99 or 00, and not before one ending in 01–19. */}
-                {plural(reading.year.filers, {
-                  one: `Raportat de ${formatHubNumber(reading.year[measure].reported)} dintr-o firmă cu bilanț`,
-                  few: `Raportat de ${formatHubNumber(reading.year[measure].reported)} din # firme cu bilanț`,
-                  other: `Raportat de ${formatHubNumber(reading.year[measure].reported)} din # de firme cu bilanț`,
-                })}
+                {reportedText(reading.year, measure)}
               </p>
             </ChartTooltip>
           ) : null}
@@ -192,6 +217,7 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
           ticks={yearTickIndices(years.map((year) => String(year.year)))}
           left={centre}
           active={active}
+          centred
         />
       </div>
 
@@ -211,7 +237,7 @@ export function HubEconomyChart({ years, measure }: { readonly years: readonly H
             <svg className="h-2.5 w-4" aria-hidden="true">
               <rect width="100%" height="100%" fill={`url(#${hatchId})`} />
             </svg>
-            {t`${partial}: bilanțurile încă se depun`}
+            {t`${partial}: mai puține bilanțuri decât în ${partial - 1}, posibil incomplet`}
           </span>
         ) : null}
       </figcaption>
@@ -248,44 +274,26 @@ export function HubEconomySpan({
   const change = economyChange(from, to, measure)
   const figure = (year: HubFiscalYear) => {
     const value = formatHubValue(year[measure].sum ?? 0, unit)
+    // The unit under the figure: two figures and an arrow fit a phone and the band's narrow column.
     return (
-      <div>
+      <div className="min-w-0">
         <MonoLabel className="block text-muted-foreground">{year.year}</MonoLabel>
-        <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-3xl">
-          {value.value}
-          <span className="ml-1.5 text-sm font-medium tracking-normal text-muted-foreground">{value.unit}</span>
-        </p>
+        <p className="mt-1 text-xl font-semibold tabular-nums tracking-tight text-foreground sm:text-2xl xl:text-3xl">{value.value}</p>
+        <p className="text-sm text-muted-foreground">{value.unit}</p>
       </div>
     )
   }
   return (
-    <div className={cn('grid grid-cols-[1fr_auto_1fr] items-end gap-x-4 border-y border-border/70 py-4', className)} data-testid="company-hub-economy-span">
+    <div className={cn('grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-x-4 border-y border-border/70 py-4', className)} data-testid="company-hub-economy-span">
       {figure(first)}
-      <span className="pb-1.5 text-muted-foreground" aria-hidden="true">
+      <span className="pb-6 text-muted-foreground" aria-hidden="true">
         →
       </span>
       {figure(last)}
       <p className="col-span-3 mt-2 flex items-center gap-1 text-sm tabular-nums text-muted-foreground">
         {change ? t`${change} din ${first.year} până în ${last.year}` : null}
-        {note ? <EconomyNote>{note}</EconomyNote> : null}
+        {note ? <HubInfoNote>{note}</HubInfoNote> : null}
       </p>
     </div>
-  )
-}
-
-/** The info button and the note it opens: a tap target on a phone, a quiet glyph beside the text from `sm`. */
-function EconomyNote({ children }: { readonly children: ReactNode }) {
-  return (
-    <Popover>
-      <PopoverTrigger
-        className="-my-2 inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-foreground sm:my-0 sm:size-6 sm:min-h-0 sm:min-w-0"
-        aria-label={t`Despre aceste cifre`}
-      >
-        <Info className="size-4" aria-hidden="true" />
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-[min(92vw,24rem)] space-y-2 text-sm leading-relaxed text-muted-foreground">
-        {children}
-      </PopoverContent>
-    </Popover>
   )
 }

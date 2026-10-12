@@ -16,7 +16,7 @@ describe('CompanyHubPending', () => {
     expect(screen.getByText('Nume sau CUI...')).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Scurtături' })).toHaveTextContent('Toate firmele în funcțiune')
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
-    expect(bar).toHaveTextContent('01Pe domenii02Pe județe03An de an04Înființări')
+    expect(bar).toHaveTextContent('01Pe domenii02Pe județe03An de an04Înregistrări')
     expect(screen.getByRole('heading', { level: 2, name: /^Din ce trăiește\s*economia$/ })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: /^Cele mai mari firme/ })).toBeInTheDocument()
     // Nothing the snapshot says: no figure, no money, no year before the page's own.

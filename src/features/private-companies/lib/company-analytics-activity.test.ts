@@ -11,11 +11,10 @@ import { analyticsSearchOf, DEFAULT_STATE, searchOf, stateOf, urlSearchOf } from
 import { activityTail, breakdownRows, groupLabel } from './company-analytics-view'
 
 /**
- * The derived activity (v3) on the analysis and the hub: its address
- * (`dupa=activitate`, `activitate=onrc:rev2:6201`, `activitate_baza=…`), its
- * drill to the exact activity, its unclassified buckets never ranked, its
- * CSV columns — and a v2 release asking nothing of it, the hub on its main
- * activity exactly as before.
+ * The derived activity (v3) on the analysis: its address (`dupa=activitate`,
+ * `activitate=onrc:rev2:6201`, `activitate_baza=…`), its drill to the exact
+ * activity, its unclassified buckets never ranked, its CSV columns — and a v2
+ * release asking nothing of it.
  */
 
 describe('the address', () => {

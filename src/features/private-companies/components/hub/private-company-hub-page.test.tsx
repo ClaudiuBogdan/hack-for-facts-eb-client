@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import type { CompanyHubSearch } from '@/schemas/private-company-search'
 import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
+import { HubLeaders } from './hub-leaders'
 import { PrivateCompanyHubPage } from './private-company-hub-page'
 
 /**
@@ -92,7 +93,8 @@ describe('PrivateCompanyHubPage', () => {
     expect(within(leaders).getByText(first?.name ?? '').closest('a')?.getAttribute('href')).toBe(`/companies/${first?.cui}`)
 
     const bucharest = screen.getAllByRole('link').find((link) => link.getAttribute('data-search')?.includes('"judet":"B"'))
-    expect(linkOf(bucharest)).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover', judet: 'B' } })
+    // The density layer counts companies in business: the county opens those.
+    expect(linkOf(bucharest)).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover', judet: 'B', stare: 1048 } })
   })
 
   it('ranks by turnover until the reader asks for employees, and writes that to the URL', () => {
@@ -128,7 +130,8 @@ describe('PrivateCompanyHubPage', () => {
     expect(rest).toEqual([])
     expect(linkOf(more)).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'caen' } })
     rerender(page({ domenii: 'firme' }))
-    expect(linkOf(within(screen.getByTestId('company-hub-sectors')).getByRole('link')).search).toEqual({ an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'caen', clasare: 'firme' })
+    // Ranked by their companies in business: the analysis counts those.
+    expect(linkOf(within(screen.getByTestId('company-hub-sectors')).getByRole('link')).search).toEqual({ an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'caen', clasare: 'firme', stare: 1048 })
   })
 
   it('ranks the ten largest companies of each list, and opens the rest in the analysis', () => {
@@ -139,7 +142,8 @@ describe('PrivateCompanyHubPage', () => {
     expect(linkOf(more())).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover' } })
     rerender(page({ clasament: 'salariati' }))
     expect(leaders()).toHaveLength(10)
-    expect(linkOf(more()).search).toEqual({ an: 2025, indicator: 'employees' })
+    // Within the hub's headcounts: the keying error the ten leave out stays out there too.
+    expect(linkOf(more()).search).toEqual({ an: 2025, indicator: 'employees', interval: 'employees:0~50000' })
   })
 
   it('opens the three starting points as the same selections in the analysis', () => {
@@ -155,20 +159,20 @@ describe('PrivateCompanyHubPage', () => {
   })
 
   it('marks a ranked company that has left business since', () => {
-    render(page())
-    const leaders = screen.getByTestId('company-hub-leaders')
-    const struck = COMPANY_HUB_SNAPSHOT.leaders.turnover.find((leader) => leader.status === '1084')
-    if (!struck) return
-    expect(within(leaders).getByText(struck.name).closest('a')?.textContent).toContain('radiată')
+    // Whether a real leader has: the snapshot need not hold one, so a leader is made to.
+    const leader = COMPANY_HUB_SNAPSHOT.leaders.turnover[0]
+    if (!leader) throw new Error('the snapshot ranks no company')
+    render(<HubLeaders leaders={[{ ...leader, status: '1084' }]} unit="lei" limit={10} />)
+    expect(screen.getByText(leader.name).closest('a')?.textContent).toContain('radiată')
   })
 
-  it('draws the economy through the analysis release’s years, the last one still being filed', () => {
+  it('draws the economy through the analysis release’s years, the last one possibly incomplete', () => {
     render(page())
     const chart = screen.getByTestId('company-hub-economy-chart')
     const years = COMPANY_HUB_SNAPSHOT.years
     expect(within(chart).getByRole('slider').getAttribute('aria-label')).toBe(`Cifra de afaceri, ${years[0]?.year}–${years[years.length - 1]?.year}`)
-    // Fewer statements than the year before: hatched, and said.
-    expect(chart.textContent).toContain(`${years[years.length - 1]?.year}: bilanțurile încă se depun`)
+    // Fewer statements than the year before: hatched, and said as possible, not as fact.
+    expect(chart.textContent).toContain(`${years[years.length - 1]?.year}: mai puține bilanțuri decât în ${years[years.length - 2]?.year}, posibil incomplet`)
     // The span runs from the first year to the last whole one.
     const span = screen.getByTestId('company-hub-economy-span')
     expect(span.textContent).toContain(String(years[0]?.year))

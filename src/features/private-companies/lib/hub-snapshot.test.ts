@@ -82,11 +82,17 @@ describe('companies hub snapshot', () => {
   })
 
   it('keeps an impossible headcount out of the years', () => {
-    // Under the ceiling, no year holds more than one in a hundred of its filers' average over 50,000.
-    for (const entry of SNAPSHOT.years) {
-      if (entry.employees.sum !== null) expect(entry.employees.sum).toBeLessThanOrEqual(entry.employees.reported * 50_000)
-      // The country's headcount moves by a few percent a year, never by a million.
-      expect(entry.employees.sum ?? 0).toBeLessThan(5_000_000)
-    }
+    const last = SNAPSHOT.years[SNAPSHOT.years.length - 1]
+    // The release counts fewer companies (legal persons, one ONRC edition) than the year's raw figures: never more
+    // employees — an unfiltered 2025, with its 122,690-employee keying error, would be.
+    expect(last?.employees.sum ?? Infinity).toBeLessThanOrEqual(SNAPSHOT.national.employees)
+    // The country's headcount moves by a few percent a year: an unfiltered 2011, 1.3 million up and back, would not.
+    const sums = SNAPSHOT.years.map((entry) => entry.employees.sum ?? 0)
+    sums.forEach((sum, index) => {
+      const before = sums[index - 1]
+      const after = sums[index + 1]
+      if (before === undefined || after === undefined) return
+      expect(Math.abs(sum - (before + after) / 2) / ((before + after) / 2)).toBeLessThan(0.2)
+    })
   })
 })

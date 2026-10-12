@@ -12,7 +12,7 @@ import { DEFAULT_STATE, urlSearchOf } from '../../lib/company-analytics-url'
 import { STATUS_ACTIVE } from '../../lib/company-status-codes'
 import { LEADER_ROW_CLASS } from './company-hub-sections'
 
-/** The companies in business, in the analysis. */
+/** The companies in business in the analysis, on its own year: the loading state's, drawn before the snapshot is read. */
 const IN_BUSINESS = urlSearchOf({ ...DEFAULT_STATE, scope: { observedStatus: { in: [STATUS_ACTIVE] } } })
 
 /**
@@ -25,10 +25,13 @@ const IN_BUSINESS = urlSearchOf({ ...DEFAULT_STATE, scope: { observedStatus: { i
 
 export function CompanyHubHero({
   search,
+  inBusiness,
   leaders,
   source,
 }: {
   readonly search: ReactNode
+  /** The companies in business in the analysis, on the hub's year; the loading state, before the snapshot, has none and opens the analysis's own. */
+  readonly inBusiness?: Record<string, unknown>
   readonly leaders: ReactNode
   /** The sources in a line, at the head's foot, as the procurement and NGO hubs say theirs; the full line closes the page. */
   readonly source: ReactNode
@@ -60,8 +63,7 @@ export function CompanyHubHero({
                 <Trans>Sau mergi direct la</Trans>
               </MonoLabel>
               <span className="flex flex-wrap gap-x-4 sm:ml-4 sm:inline-flex sm:gap-y-1.5 sm:align-middle">
-                {/* The analysis's own year: the head is drawn before the snapshot is read. */}
-                <Link to="/companies/analytics" search={IN_BUSINESS} preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
+                <Link to="/companies/analytics" search={inBusiness ?? IN_BUSINESS} preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
                   <Trans>Toate firmele în funcțiune</Trans>
                 </Link>
                 <Link to="/companies/analytics" preload="intent" className={HUB_SHORTCUT_LINK_CLASS}>
