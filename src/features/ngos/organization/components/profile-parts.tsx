@@ -152,11 +152,20 @@ function yearText(point: YearPoint, money: (value: number | null) => string): st
  * statement on the platform kept as a hatched gap — unknown, not zero — and
  * a filed year whose form has no total a hatched half. The first and last
  * revenues are written above; each year is a button reading its figures.
- * Compact (the head's), it is one image, its years said in its name.
+ * Compact (the head's), it is one image, its years said in its name. A
+ * negative figure (a revenue reported below zero) goes below a zero line,
+ * on the same scale as the rest; with none, the zero line is the floor.
  */
 export function YearsChart({ series, height = 'h-56', compact = false }: { readonly series: readonly YearPoint[]; readonly height?: string; readonly compact?: boolean }) {
   const [active, setActive] = useState<number | null>(null)
-  const max = Math.max(1, ...series.flatMap((point) => [point.revenue ?? 0, point.expenses ?? 0]))
+  const values = series.flatMap((point) => [point.revenue ?? 0, point.expenses ?? 0])
+  const max = Math.max(1, ...values)
+  const min = Math.min(0, ...values)
+  // Below zero: the zero line where the scale puts it, as a share of the column's height from the top.
+  const negative = min < 0
+  const zero = negative ? (max / (max - min)) * 100 : 100
+  // A dashed mark (no figure) sits on the zero line; where the line is near the top, under it, so it never rises over the plot.
+  const markAt = zero < 20 ? { top: `${zero.toFixed(1)}%` } : { bottom: `${(100 - zero).toFixed(1)}%` }
   const current = series.find((point) => point.year === active) ?? null
   const filed = series.filter((point) => point.statement)
   const ends = new Set([filed[0]?.year, filed[filed.length - 1]?.year])
@@ -173,27 +182,41 @@ export function YearsChart({ series, height = 'h-56', compact = false }: { reado
             {formatNgoMoney(point.revenue).value}
           </span>
         ) : null}
-        {[point.revenue, point.expenses].map((value, index) =>
-          value === null ? (
-            // No such total in that year's form: a mark, not a zero-height column.
-            <span key={index} className="block h-3 w-1/2 border border-dashed border-muted-foreground/50" aria-hidden="true" />
-          ) : (
-            <span
-              key={index}
-              aria-hidden="true"
-              className={cn(
-                'block w-1/2',
-                index === 0 ? cn('bg-primary/70 transition-colors group-hover:bg-primary', active === point.year && 'bg-primary') : 'bg-foreground/25',
+        {[point.revenue, point.expenses].map((value, index) => {
+          const fill = index === 0 ? cn('bg-primary/70 transition-colors group-hover:bg-primary', active === point.year && 'bg-primary') : 'bg-foreground/25'
+          if (!negative)
+            return value === null ? (
+              // No such total in that year's form: a mark, not a zero-height column.
+              <span key={index} className="block h-3 w-1/2 border border-dashed border-muted-foreground/50" aria-hidden="true" />
+            ) : (
+              <span key={index} aria-hidden="true" className={cn('block w-1/2', fill, value !== 0 && 'min-h-px')} style={{ height: `${((value / max) * 100).toFixed(1)}%` }} />
+            )
+          // With a negative figure in the chart: each bar from the zero line, up or down, on one scale.
+          const share = value === null ? 0 : (Math.abs(value) / (max - min)) * 100
+          return (
+            <span key={index} className="relative block h-full w-1/2" aria-hidden="true">
+              {value === null ? (
+                <span className="absolute inset-x-0 block h-3 border border-dashed border-muted-foreground/50" style={markAt} />
+              ) : (
+                <span
+                  className={cn('absolute inset-x-0 block', fill, value !== 0 && 'min-h-px')}
+                  style={value < 0 ? { top: `${zero.toFixed(1)}%`, height: `${share.toFixed(1)}%` } : { bottom: `${(100 - zero).toFixed(1)}%`, height: `${share.toFixed(1)}%` }}
+                />
               )}
-              style={{ height: `${((value / max) * 100).toFixed(1)}%` }}
-            />
-          ),
-        )}
+            </span>
+          )
+        })}
       </>
+    ) : negative ? (
+      <span className="absolute inset-x-0 block h-3 border border-dashed border-muted-foreground/50 bg-muted/40" style={markAt} aria-hidden="true" />
     ) : (
       <span className="block h-3 w-full border border-dashed border-muted-foreground/50 bg-muted/40" aria-hidden="true" />
     )
-  const columns = 'flex items-end gap-1 border-b border-foreground/30 sm:gap-1.5'
+  // The zero line, where a negative figure puts it above the floor.
+  const zeroLine = negative ? (
+    <span className="pointer-events-none absolute inset-x-0 border-t border-foreground/30" style={{ top: `${zero.toFixed(1)}%` }} aria-hidden="true" />
+  ) : null
+  const columns = cn('relative flex items-end gap-1 sm:gap-1.5', !negative && 'border-b border-foreground/30')
   const cell = 'relative flex h-full min-w-0 flex-1 items-end justify-center gap-px'
   return (
     <figure>
@@ -201,6 +224,7 @@ export function YearsChart({ series, height = 'h-56', compact = false }: { reado
       {compact ? (
         // The head's: one image, its years said in its name — no stops a keyboard would land on for nothing.
         <div className={cn(columns, height)} role="img" aria-label={series.map((point) => yearText(point, text)).join('; ')}>
+          {zeroLine}
           {series.map((point) => (
             <span key={point.year} className={cell}>
               {bars(point)}
@@ -213,6 +237,7 @@ export function YearsChart({ series, height = 'h-56', compact = false }: { reado
             {current ? yearText(current, text) : null}
           </p>
           <div className={cn(columns, height)} onPointerLeave={() => setActive(null)}>
+            {zeroLine}
             {series.map((point) => (
               <button
                 key={point.year}

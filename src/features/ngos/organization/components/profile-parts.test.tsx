@@ -2,7 +2,8 @@ import { render, screen } from '@/test/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import type { NgoStatement } from '../api'
 import { FUNKY, FUNKY_STATEMENTS } from '../test/fixtures'
-import { AnafFacts, RegistryFacts, StatementReviewNote } from './profile-parts'
+import type { YearPoint } from '../model'
+import { AnafFacts, RegistryFacts, StatementReviewNote, YearsChart } from './profile-parts'
 
 vi.mock('@/features/statistics/lib/format', () => ({ activeNumberLocale: () => 'ro-RO' }))
 
@@ -92,5 +93,31 @@ describe('StatementReviewNote', () => {
   it('still says it is flagged when no reason comes with it', () => {
     render(<StatementReviewNote statement={statement('750', review([]))} />)
     expect(note()).toHaveTextContent('De verificat: platforma marchează această situație pentru verificare.')
+  })
+})
+
+describe('YearsChart', () => {
+  const statement = FUNKY_STATEMENTS[0]!
+  const point = (year: number, revenue: number | null, expenses: number | null, filed = true): YearPoint => ({ year, statement: filed ? statement : null, revenue, expenses })
+
+  it('keeps a dashed mark inside the plot where a negative year puts the zero line near the top', () => {
+    // −1.000 against 20: the zero line about 2% from the top; a missing total and a missing year hang under it.
+    const { container } = render(<YearsChart series={[point(2023, -1000, null), point(2024, null, null, false), point(2025, 20, 10)]} />)
+    const marks = [...container.querySelectorAll<HTMLElement>('span.border-dashed[style]')]
+    expect(marks.length).toBe(2)
+    for (const mark of marks) {
+      expect(mark.style.top).toMatch(/%$/)
+      expect(mark.style.bottom).toBe('')
+    }
+  })
+
+  it('gives a tiny non-zero figure a visible bar, and a zero none', () => {
+    const { container } = render(<YearsChart series={[point(2024, -500, 0), point(2025, 1_000_000, 0)]} />)
+    const bars = [...container.querySelectorAll<HTMLElement>('button span[style*="height"]')]
+    // −500 against a million rounds to 0 % of the plot: still a pixel tall.
+    const tiny = bars.find((bar) => bar.style.top !== '')!
+    expect(Number.parseFloat(tiny.style.height)).toBe(0)
+    expect(tiny.className).toContain('min-h-px')
+    expect(bars.filter((bar) => bar.className.includes('bg-foreground/25')).every((bar) => !bar.className.includes('min-h-px'))).toBe(true)
   })
 })

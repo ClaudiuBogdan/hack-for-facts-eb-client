@@ -32,6 +32,7 @@ import {
   type GroupAxis,
   type RegistryQuery,
   type RegistryRead,
+  isUnknownPlace,
 } from '../model'
 import { placeKey } from '../place'
 import { groupRows, isUnplaced, townLabel, unplacedOn, yearPoints, type RegistryFigure, type Tally } from '../counts'
@@ -255,8 +256,9 @@ function EmptyAnswer({
 function rowMeta(row: RegistryRecord, query: RegistryQuery, counties: NgoRegistrySummary['counties']): string {
   const code = counties.find((item) => item.source === row.county)?.code ?? null
   // As the breakdown names it: a town whose suffix names another county keeps that county („Berceni (PH)").
-  const town = row.locality ? townLabel(row.locality, code) : null
-  const county = row.county && row.county !== 'NEDETERMINAT' ? countyLabel(row.county, counties) : null
+  // The registry's „NEDETERMINAT" is no place: not named as a town or a county.
+  const town = row.locality && !isUnknownPlace(row.locality) ? townLabel(row.locality, code) : null
+  const county = row.county && !isUnknownPlace(row.county) ? countyLabel(row.county, counties) : null
   // „Arad, Arad" says the county twice: the county's name alone (with its diacritics) where the town bears it.
   const place = town && county && placeKey(town) === placeKey(county) ? county : [town, county].filter(Boolean).join(', ')
   const status = query.status === null && statusKeyOf(row.sourceRegistryStatus) !== 'registered' ? statusWord(row.sourceRegistryStatus) : null

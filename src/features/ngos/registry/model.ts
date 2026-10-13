@@ -56,6 +56,15 @@ function fold(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/gu, '').toUpperCase().trim()
 }
 
+/**
+ * The registry's placeholder for a place it does not know („NEDETERMINAT",
+ * in a county or a locality cell), or no value at all: unknown, never a
+ * place — not counted as a county or a town, not named as one.
+ */
+export function isUnknownPlace(value: string | null | undefined): boolean {
+  return value === null || value === undefined || value.trim() === '' || fold(value) === 'NEDETERMINAT'
+}
+
 /** A county's name folded for matching: no diacritics, capitals, a hyphen as a space („Satu-Mare" is „SATU MARE"). */
 function foldCounty(text: string): string {
   return fold(text).replace(/[-\s]+/gu, ' ')

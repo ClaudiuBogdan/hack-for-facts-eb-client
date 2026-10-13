@@ -42,7 +42,8 @@ export function countyOf(name: string | null): { readonly code: string; readonly
 
 /** „SECTORUL 3 - BUCURESTI" → „Sectorul 3"; „BORSEC - HR" → „Borsec". */
 export function localityOf(locality: string | null): string | null {
-  if (!locality) return null
+  // The registry's placeholder for an unknown place („NEDETERMINAT") is no town.
+  if (!locality || fold(locality) === 'NEDETERMINAT') return null
   const town = locality.replace(/\s+-\s+[\p{L} ]+$/u, '').trim()
   return town ? displayCompanyName(town) : null
 }

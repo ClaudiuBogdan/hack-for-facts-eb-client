@@ -170,6 +170,18 @@ describe('NgoRegistryListPage', () => {
     expect(screen.getByRole('link', { name: 'ASOCIATIA B' }).closest('td')).toHaveTextContent(/Formă necunoscută ·/)
   })
 
+  it('names no town for the registry’s „NEDETERMINAT": the county alone (QA NG-004)', async () => {
+    api.fetchRegistryRecords.mockResolvedValue({
+      edges: [{ cursor: '0', node: row({ id: 'n', name: 'PRO INCREMENTUM', county: 'CLUJ', locality: 'NEDETERMINAT' }) }],
+      pageInfo: { hasNextPage: false, endCursor: '0' },
+      snapshot,
+    })
+    renderPage({ q: 'pro incrementum' }, null)
+    const cell = (await screen.findByRole('link', { name: 'PRO INCREMENTUM' })).closest('td')!
+    expect(cell).toHaveTextContent(/Asociație · Cluj/)
+    expect(cell).not.toHaveTextContent(/Nedeterminat/i)
+  })
+
   it('reads in the browser what the server did not, the records first', async () => {
     api.fetchRegistryRecords.mockResolvedValue(firstPage)
     renderPage({ q: 'asociatia' }, null)

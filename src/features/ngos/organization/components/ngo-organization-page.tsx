@@ -421,13 +421,14 @@ function ReviewMark({ leading = false }: { readonly leading?: boolean }) {
 function MoneyLede({ facts }: { readonly facts: ProfileFacts }) {
   const text = (value: number | null) => {
     if (value === null) return '—'
-    const money = formatNgoMoney(Math.abs(value))
+    const money = formatNgoMoney(value)
     return `${money.value} ${money.unit}`
   }
   const year = facts.year
+  // Revenue and expenses as published, a negative one with its sign; the result as its size, „deficit" or „excedent" saying which.
   const revenue = text(facts.revenue)
   const expenses = text(facts.expenses)
-  const result = text(facts.result)
+  const result = text(facts.result === null ? null : Math.abs(facts.result))
   // The year's statement flagged for review: said after the figures, which stay as published.
   const review = facts.review ? (
     <>
