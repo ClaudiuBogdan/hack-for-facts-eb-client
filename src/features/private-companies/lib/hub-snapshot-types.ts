@@ -1,3 +1,5 @@
+import type { CompanyAnalysisActivity, CompanyAnalysisGapReason } from '@/schemas/company-analytics'
+
 /**
  * The shape of the companies hub's snapshot (`hub-snapshot.ts`): figures read
  * once from the registry and the financial statements and kept in the
@@ -10,8 +12,13 @@ export interface HubLeader {
   readonly name: string
   /** The county code (`CJ`, `B`) of the registered office, when the registry places it. */
   readonly county: string | null
-  /** The two-digit CAEN division of the main activity declared to ANAF. */
-  readonly division: string | null
+  /**
+   * The analytics release's derived activity selection for the company, as the
+   * API serves it: an ONRC class with its revision, ANAF's fiscal code with its
+   * revision unpublished, or why none is selected. Null when the release does
+   * not hold the company.
+   */
+  readonly activity: CompanyAnalysisActivity | null
   /** Its ONRC status at the registry capture: a company can lead a year and be struck off since. */
   readonly status: string | null
   /** The ranked figure for the snapshot's fiscal year. */
@@ -60,6 +67,41 @@ export interface HubRegistrationYear {
   readonly active: number
 }
 
+/** One measure of one fiscal year in the analytics release: its sum (null when there is none, and why) and who reported it. */
+export interface HubYearMeasure {
+  readonly sum: number | null
+  /** Why a year has no sum, as the release says it; null when it has one. */
+  readonly gap: CompanyAnalysisGapReason | null
+  /** Companies whose statement reported the measure (a held or missing value is not counted). */
+  readonly reported: number
+}
+
+/**
+ * One fiscal year as the companies analytics release qualifies it: the
+ * companies with a statement, and turnover, net result and average employees
+ * summed over the values it admits (nominal lei, rounded to the leu). Each
+ * year counts its own companies.
+ */
+export interface HubFiscalYear {
+  readonly year: number
+  /** Companies with a statement for the year in the release. */
+  readonly filers: number
+  readonly turnover: HubYearMeasure
+  /** Profit less loss: below zero when the losses outweigh the profits. */
+  readonly netResult: HubYearMeasure
+  /** Average headcounts summed (not distinct people), a headcount above 50,000 or below zero left out as a keying error. */
+  readonly employees: HubYearMeasure
+}
+
+/** The release the years were read from. */
+export interface HubYearsSource {
+  readonly releaseId: string
+  /** When the release was published, `YYYY-MM-DD`. */
+  readonly publishedAt: string | null
+  /** When ONRC published the edition the release's companies come from, `YYYY-MM-DD`. */
+  readonly onrcPublished: string
+}
+
 export interface CompanyHubSnapshot {
   /** When the figures were read, `YYYY-MM-DD`. */
   readonly capturedAt: string
@@ -94,4 +136,12 @@ export interface CompanyHubSnapshot {
   readonly counties: readonly HubCountyFigures[]
   /** Registrations per year from 1991, with the ones still in business. */
   readonly registrations: readonly HubRegistrationYear[]
+  /**
+   * Every fiscal year of the companies analytics release up to `fiscalYear`,
+   * oldest first: the release's qualified values, not the raw sums the year's
+   * figures above are read from (a raw sum carries keying errors and forms
+   * whose fields hold other things), so its last year can differ from them.
+   */
+  readonly years: readonly HubFiscalYear[]
+  readonly yearsSource: HubYearsSource
 }

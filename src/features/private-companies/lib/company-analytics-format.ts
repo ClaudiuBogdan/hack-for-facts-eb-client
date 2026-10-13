@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro'
-import { compactDecimal, formatDecimal, percentOf, type DecimalLocale } from '@/lib/exact-decimal'
+import { compactDecimal, formatDecimal, percentOf, roundDecimal, type DecimalLocale } from '@/lib/exact-decimal'
 import type { CompanyAnalysisUnit } from '@/schemas/company-analytics'
 
 /**
@@ -34,6 +34,27 @@ export function compactValue(value: string, unit: CompanyAnalysisUnit, locale: D
   const compact = compactDecimal(value, locale)
   const scale = compact.scale === 'billion' ? t`mld. lei` : compact.scale === 'million' ? t`mil. lei` : t`lei`
   return { value: compact.value, unit: scale }
+}
+
+/**
+ * A headcount mean as the API sends it, to two decimals without trailing
+ * zeros: an average over companies is rarely whole, and „0,43" is not none.
+ */
+function headcountMean(value: string): string {
+  const rounded = roundDecimal(value, 2) ?? value
+  return rounded.includes('.') ? rounded.replace(/\.?0+$/u, '') : rounded
+}
+
+/** A mean per company on one scale: lei as any amount, a headcount with its fraction („0,43 salariați"). */
+export function meanValue(value: string, unit: CompanyAnalysisUnit, locale: DecimalLocale): { readonly value: string; readonly unit: string } {
+  if (unit !== 'HEADCOUNT') return compactValue(value, unit, locale)
+  return { value: formatDecimal(headcountMean(value), locale), unit: unitWord(unit) }
+}
+
+/** A mean per company, exact: lei with their bani, a headcount with its fraction. */
+export function exactMeanText(value: string, unit: CompanyAnalysisUnit, locale: DecimalLocale): string {
+  if (unit !== 'HEADCOUNT') return exactValueText(value, unit, locale)
+  return `${formatDecimal(headcountMean(value), locale)}${NBSP}${unitWord(unit)}`
 }
 
 export function compactValueText(value: string, unit: CompanyAnalysisUnit, locale: DecimalLocale): string {

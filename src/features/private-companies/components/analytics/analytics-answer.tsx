@@ -12,7 +12,7 @@ import { useCompanyAnalysisSeries } from '../../hooks/use-company-analytics'
 import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
 import { answerTabs, currentTab, withTab, type AnswerTab } from '../../lib/company-analytics-answer'
 import { seriesCsv } from '../../lib/company-analytics-export'
-import { compactValue, compactValueText, countText, exactValueText } from '../../lib/company-analytics-format'
+import { compactValue, compactValueText, countText, exactMeanText, exactValueText, meanValue } from '../../lib/company-analytics-format'
 import { sentenceOf } from '../../lib/company-analytics-sentence'
 import { cohortLabel, gapReasonLabel, metricLabel } from '../../lib/company-analytics-text'
 import { recordsKeyOf, type AnalyticsMode } from '../../lib/company-analytics-url'
@@ -88,17 +88,19 @@ export function BareFigures({ page }: { readonly page: CompanyAnalyticsPageData 
   const { question, stats, locale } = page
   const selected = stats.data && question ? stats.data.metrics.find((aggregate) => aggregate.metric === question.metric) : undefined
   /** A money or headcount figure: scaled to read, exact on hover and to a screen reader; none reported is said, not drawn as zero. */
-  const figure = (key: string, value: string | null | undefined, label: string): FigureCell => {
+  const figure = (key: string, value: string | null | undefined, label: string, mean = false): FigureCell => {
     if (!stats.data) return { key, value: null, label }
     if (!value || !selected) return { key, value: '—', note: t`nicio firmă nu a raportat o valoare`, label }
-    return { key, ...compactValue(value, selected.unit, locale), exact: exactValueText(value, selected.unit, locale), label }
+    // A mean keeps a headcount's fraction: 0.43 employees a company is not none.
+    const shown = mean ? meanValue(value, selected.unit, locale) : compactValue(value, selected.unit, locale)
+    return { key, ...shown, exact: (mean ? exactMeanText : exactValueText)(value, selected.unit, locale), label }
   }
   const cells: readonly FigureCell[] = [
     { key: 'companies', value: stats.data ? countText(stats.data.companies, locale) : null, label: t`Firme` },
     { key: 'filers', value: stats.data ? countText(stats.data.filers, locale) : null, label: question ? t`Cu bilanț pe ${question.year}` : t`Cu bilanț` },
     // The sum and the mean are of the companies that reported the measure, not of every company counted.
     { ...figure('sum', selected?.sum, question ? metricLabel(question.metric) : ''), detail: selected?.sum ? t`raportat de ${countText(selected.contributors, locale)} firme` : undefined },
-    figure('mean', selected?.mean, t`Media pe firmă care a raportat`),
+    figure('mean', selected?.mean, t`Media pe firmă care a raportat`, true),
   ]
   return (
     <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>

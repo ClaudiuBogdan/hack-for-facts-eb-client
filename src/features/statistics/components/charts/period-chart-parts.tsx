@@ -63,12 +63,15 @@ export function ChartPeriodAxis({
   left,
   active,
   label = (period) => period,
+  centred = false,
 }: {
   readonly periods: readonly string[]
   readonly ticks: readonly number[]
   readonly left: (index: number) => number
   readonly active: number | null
   readonly label?: (period: string) => string
+  /** A bar chart's: every label centred under its bar, the end ones too (a line's end labels hug the plot's edges). */
+  readonly centred?: boolean
 }) {
   const count = periods.length
   return (
@@ -78,7 +81,7 @@ export function ChartPeriodAxis({
           key={index}
           className={cn(
             'absolute top-0 whitespace-nowrap font-mono text-[10px] tabular-nums text-muted-foreground',
-            position === 0 ? 'translate-x-0' : position === ticks.length - 1 ? '-translate-x-full' : '-translate-x-1/2',
+            centred ? '-translate-x-1/2' : position === 0 ? 'translate-x-0' : position === ticks.length - 1 ? '-translate-x-full' : '-translate-x-1/2',
             // A phone's axis has room for a decade only well clear of either end („2020" beside „2025").
             position > 0 && position < ticks.length - 1 && Math.min(index, count - 1 - index) < Math.max(8, (count - 1) * 0.15) && 'max-sm:hidden',
             active === index && 'text-foreground',

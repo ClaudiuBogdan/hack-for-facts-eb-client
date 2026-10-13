@@ -615,6 +615,3 @@ export function offeredMetricsIn(release: CompanyAnalysisRelease, fiscalYear: nu
   return COMPANY_ANALYSIS_METRICS.filter((metric) => metricOfferedIn(release, fiscalYear, metric))
 }
 
-export function yearCapabilityOf(release: CompanyAnalysisRelease, fiscalYear: number) {
-  return release.years.find((year) => year.fiscalYear === fiscalYear)
-}

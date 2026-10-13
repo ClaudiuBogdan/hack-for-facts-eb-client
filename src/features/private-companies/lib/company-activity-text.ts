@@ -1,5 +1,11 @@
 import { plural, t } from '@lingui/core/macro'
-import type { CompanyAnalysisActivity, CompanyAnalysisActivityBasis, CompanyAnalysisActivityQuality } from '@/schemas/company-analytics'
+import {
+  COMPANY_ANALYSIS_SELECTING_BASES,
+  type CompanyAnalysisActivity,
+  type CompanyAnalysisActivityBasis,
+  type CompanyAnalysisActivityQuality,
+  type CompanyAnalysisRecord,
+} from '@/schemas/company-analytics'
 import type { CompanyAnafCaenForm, PrivateCompanyActivitySelection } from '@/schemas/private-company'
 import type { CompanyCaenClassState } from '@/schemas/private-company-registry'
 import { caenText } from './company-analytics-text'
@@ -298,6 +304,28 @@ export function activityQualityParts(quality: CompanyAnalysisActivityQuality | n
     )
   }
   return parts
+}
+
+/**
+ * A ranked company's activity in one line. A v3 record carries the derived
+ * selection, and only it is said: an ONRC class with the exact label of its
+ * own revision and that revision; ANAF's fiscal code with its revision
+ * unpublished; and, when the selection names no activity, why — never the
+ * ANAF code it did not select. Only a record without the selection (a v2
+ * release, an older API) says ANAF's fiscal code as observed.
+ */
+export function leaderActivityText(node: Pick<CompanyAnalysisRecord, 'activity' | 'mainCaen'>): string | null {
+  const activity = node.activity
+  if (activity) {
+    if (activity.code === null || (activity.basis !== null && !COMPANY_ANALYSIS_SELECTING_BASES.has(activity.basis))) return unclassifiedActivityLabel(activity.basis)
+    if (activity.source === 'ANAF') {
+      // The text says the revision is unpublished; the source is named where the text does not name it.
+      return activity.descriptionStatus === 'CONSENSUS' || activity.descriptionStatus === 'CONFLICT' ? `${activityText(activity)} · ANAF` : activityText(activity)
+    }
+    const tag = activitySourceTag(activity)
+    return tag ? `${activityText(activity)} · ${tag}` : activityText(activity)
+  }
+  return node.mainCaen && node.mainCaen.basis !== 'MISSING' ? caenText(node.mainCaen) : null
 }
 
 /** An exact activity selector as the analysis's chips name it. */

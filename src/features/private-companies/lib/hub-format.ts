@@ -124,6 +124,15 @@ export function sharedDecimals(values: readonly number[]): number {
   return values.some((value) => Math.abs(Math.round(value) - value) > 1e-9) ? 1 : 0
 }
 
+/** `2026-10-11` → „11 octombrie 2026", in the page's language: the calendar day as written, whatever the reader's time zone. */
+export function formatHubDay(day: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day)
+  if (!match) return day
+  return new Intl.DateTimeFormat(hubNumberLocale(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]))),
+  )
+}
+
 /** `2026-07` → „iulie 2026", in the page's language. */
 export function formatHubMonth(period: string): string {
   const match = /^(\d{4})-(\d{2})$/.exec(period)

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Regenerates `src/features/private-companies/lib/hub-snapshot.ts`, the
- * figures the `/companies` hub renders, from the production database and the
- * INS population the public API serves.
+ * figures the `/companies` hub renders, from the production database and, from
+ * the public API, the INS population and the companies analysis release's
+ * qualified years.
  *
  * Read-only: every statement is a SELECT inside one REPEATABLE READ, READ ONLY
  * transaction, run as the agent read-only role. Connection details come from
@@ -19,7 +20,7 @@
  *
  * Options:
  *   --year         fiscal year of the statements and of "new" companies (default: last year)
- *   --api          GraphQL endpoint for INS POP105A (default: dev-chronos-api)
+ *   --api          GraphQL endpoint for INS POP105A and the analytics release (default: dev-chronos-api)
  *   --server-repo  checkout whose node_modules provides `pg`
  */
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -27,6 +28,8 @@ import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+// Node strips the types: the years' checks are the app's, and its tests'.
+import { hubYearsFrom, rawDeparture } from '../src/features/private-companies/lib/hub-years.ts'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const OUT = resolve(ROOT, 'src/features/private-companies/lib/hub-snapshot.ts')
@@ -34,6 +37,7 @@ const OUT = resolve(ROOT, 'src/features/private-companies/lib/hub-snapshot.ts')
 const { values: args } = parseArgs({
   options: {
     year: { type: 'string', default: String(new Date().getFullYear() - 1) },
+    // INS POP105A and the companies analysis release.
     api: { type: 'string', default: 'https://dev-chronos-api.transparenta.eu/api/v1/graphql' },
     'server-repo': { type: 'string', default: resolve(ROOT, '../hack-for-facts-eb-server') },
   },
@@ -47,6 +51,8 @@ if (!Number.isInteger(YEAR) || YEAR < 2019) {
 /** An employee count above this is a keying error: the largest real employer (CFR) reports about 24,000. */
 const EMPLOYEE_CEILING = 50_000
 const FIRST_REGISTRATION_YEAR = 1991
+/** How far the year's raw sums may stray from the release's qualified ones (2.2% turnover, 1.6% employees in 2025). */
+const RAW_TOLERANCE = 0.05
 
 // ── the repo's own reference lists ──────────────────────────────────────
 
@@ -119,20 +125,19 @@ const MAIN_DIVISION = `
 // counts), an impossible headcount turned into an unknown one.
 const FY = `
   select f.cui, f.turnover,
-         case when f.employees > ${EMPLOYEE_CEILING} then null else f.employees end as employees,
-         coalesce(f.employees > ${EMPLOYEE_CEILING}, false) as employee_outlier
+         case when f.employees > ${EMPLOYEE_CEILING} or f.employees < 0 then null else f.employees end as employees,
+         coalesce(f.employees > ${EMPLOYEE_CEILING} or f.employees < 0, false) as employee_outlier
   from companies_v2.financials f
   join core.organizations o on o.cui = f.cui and o.kind = 'company'
   where f.privacy_class = 'public' and length(f.cui) <= 10 and f.year = ${YEAR}`
 
 const leaders = (metric) => `
-  with fy as (${FY}), md as (${MAIN_DIVISION})
+  with fy as (${FY})
   select fy.cui, r.legal_name as name, r.selected_county_name as county, r.onrc_lifecycle_status_code as status,
-         md.division, fy.${metric}::text as value,
-         (case when p.employees > ${EMPLOYEE_CEILING} and '${metric}' = 'employees' then null else p.${metric} end)::text as previous
+         fy.${metric}::text as value,
+         (case when (p.employees > ${EMPLOYEE_CEILING} or p.employees < 0) and '${metric}' = 'employees' then null else p.${metric} end)::text as previous
   from fy
   left join companies_v2.registrations r on r.cui = fy.cui
-  left join md on md.cui = fy.cui
   left join companies_v2.financials p on p.cui = fy.cui and p.year = ${YEAR - 1} and p.privacy_class = 'public'
   where fy.${metric} is not null
   order by fy.${metric} desc
@@ -261,11 +266,102 @@ async function readPopulation() {
   return population
 }
 
+// ── the analytics release's years ───────────────────────────────────────
+
+const RELEASE_QUERY = `query { companyAnalysisRelease { release { releaseId publishedAt source { sourcePublishedAt } } } }`
+const SERIES_QUERY = `
+  query Years($release: BigInt!, $metric: CompanyAnalysisMetric, $scope: CompanyAnalysisScopeInput) {
+    companyAnalysisSeries(release: $release, metric: $metric, cohortMode: EACH_YEAR, scope: $scope) {
+      points { fiscalYear available gapReason filers metric { sum contributors } }
+    }
+  }`
+const SERIES_METRICS = { turnover: 'TURNOVER', netResult: 'NET_RESULT', employees: 'EMPLOYEES' }
+// The release holds back reviewed impossible headcounts only, with no threshold of its own: a few more (1.3 million
+// "employees" from three 2011 statements, 122,690 from one in 2025) are left. Each year keeps the headcounts the
+// year's figures keep (EMPLOYEE_CEILING), from the same range filter the analysis offers.
+const SERIES_SCOPE = { employees: { financialRanges: [{ metric: 'EMPLOYEES', min: '0', max: String(EMPLOYEE_CEILING) }] } }
+
+async function graphql(query, variables = {}) {
+  const response = await fetch(args.api, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ query, variables }) })
+  const { data, errors } = await response.json()
+  if (errors) throw new Error(JSON.stringify(errors))
+  return data
+}
+
+/**
+ * Every fiscal year of the active companies analytics release, each counting
+ * its own companies: the values it admits, never a raw sum. The raw statements
+ * carry keying errors (a 2020 statement of 300 trillion lei, headcounts of
+ * 999999999999999) and forms whose fields hold other things (insurers' 2024
+ * statements put an amount where a headcount goes); the release holds those
+ * back, so the hub's years are its.
+ */
+async function readYears() {
+  const { release } = (await graphql(RELEASE_QUERY)).companyAnalysisRelease
+  const series = {}
+  for (const [key, metric] of Object.entries(SERIES_METRICS)) {
+    series[key] = (await graphql(SERIES_QUERY, { release: release.releaseId, metric, scope: SERIES_SCOPE[key] })).companyAnalysisSeries.points.filter((point) => point.fiscalYear <= YEAR)
+  }
+  const { years, problems } = hubYearsFrom(series, YEAR, EMPLOYEE_CEILING)
+  if (problems.length > 0) throw new Error(`The release's years do not reconcile:\n- ${problems.join('\n- ')}`)
+  return {
+    source: { releaseId: release.releaseId, publishedAt: release.publishedAt?.slice(0, 10) ?? null, onrcPublished: release.source.sourcePublishedAt.slice(0, 10) },
+    rows: years,
+  }
+}
+
+// ── the leaders' activity ───────────────────────────────────────────────
+
+const ACTIVITY_QUERY = `
+  query LeaderActivity($release: BigInt!, $scope: CompanyAnalysisScopeInput, $first: Int) {
+    companyAnalysisRecords(release: $release, scope: $scope, first: $first) {
+      edges { node { cui activity { basis source code revision label descriptionStatus descriptions { revision label } derived } } }
+    }
+  }`
+
+/**
+ * Each ranked company's activity as the release selects it (v3), from the
+ * same release as the years: an ONRC class with its own revision, ANAF's
+ * fiscal code with its revision unpublished, or why none is selected. Never
+ * ANAF's raw code beside an ONRC class it contradicts — so not the fiscal
+ * division the sectors band groups by. A company the release does not hold
+ * has none; a held one without a selection means the release is not v3.
+ */
+async function readLeaderActivities(release, cuis) {
+  const unique = [...new Set(cuis)]
+  const { edges } = (await graphql(ACTIVITY_QUERY, { release, scope: { cuis: unique }, first: unique.length })).companyAnalysisRecords
+  const activities = new Map()
+  for (const { node } of edges) {
+    if (!node.activity) throw new Error(`Release ${release} names no activity selection for ${node.cui}: it is not a v3 release`)
+    activities.set(node.cui, node.activity)
+  }
+  const missing = unique.filter((cui) => !activities.has(cui))
+  if (missing.length > 0) console.warn(`not in release ${release}, so no activity: ${missing.join(', ')}`)
+  return activities
+}
+
 // ── the module ──────────────────────────────────────────────────────────
 
 const int = (value) => Math.round(Number(value))
-const quote = (value) => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+// A single-quoted literal of any text: a line break in a name or a label would end the string.
+const quote = (value) =>
+  `'${value
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')}'`
 const nullable = (value) => (value === null || value === undefined ? 'null' : `'${value}'`)
+const text = (value) => (value === null || value === undefined ? 'null' : quote(value))
+const activityLiteral = (activity) =>
+  activity
+    ? `{ basis: ${text(activity.basis)}, source: ${text(activity.source)}, code: ${text(activity.code)}, revision: ${text(activity.revision)}, label: ${text(
+        activity.label,
+      )}, descriptionStatus: ${text(activity.descriptionStatus)}, descriptions: [${activity.descriptions
+        .map((entry) => `{ revision: ${text(entry.revision)}, label: ${text(entry.label)} }`)
+        .join(', ')}], derived: ${activity.derived === true} }`
+    : 'null'
 const sumOf = (values) => values.reduce((total, value) => total + int(value), 0)
 
 function byCounty(rows, key = 'n') {
@@ -281,7 +377,7 @@ function byCounty(rows, key = 'n') {
  * The parts must add up to their wholes before anything is written: a read
  * that does not reconcile is broken, and a broken snapshot would ship as fact.
  */
-function reconcile(rows, population) {
+function reconcile(rows, population, years) {
   const national = rows.national[0]
   const problems = []
   const check = (ok, message) => ok || problems.push(message)
@@ -304,10 +400,18 @@ function reconcile(rows, population) {
   }
   check(rows.registrations.length === YEAR - FIRST_REGISTRATION_YEAR + 1, 'a registration year is missing')
   check(/^\d{4}-\d{2}-\d{2}$/.test(rows.registryPublished[0]?.published ?? ''), 'no ONRC capture date')
+  // The year read twice — the raw statements of every company, the release's qualified ones of the legal persons —
+  // must tell the same story: a raw figure far off the release's is a form or a keying error the release held back
+  // (insurers' 2024 forms put an amount where the headcount goes: +27%), and it would ship in the figures band.
+  const released = years.rows.at(-1)
+  for (const [name, raw, qualified] of [['turnover', int(national.turnover), released?.turnover.sum], ['employees', int(national.employees), released?.employees.sum]]) {
+    const off = rawDeparture(raw, qualified)
+    check(off <= RAW_TOLERANCE, `the year's raw ${name} (${raw}) is ${(off * 100).toFixed(1)}% off the release's (${qualified})`)
+  }
   if (problems.length > 0) throw new Error(`The read does not reconcile:\n- ${problems.join('\n- ')}`)
 }
 
-function render(rows, population) {
+function render(rows, population, years, activities) {
   const status = new Map(rows.status.map((row) => [row.status, int(row.n)]))
   const statusTotal = (codes) => codes.reduce((total, code) => total + (status.get(code) ?? 0), 0)
   const national = rows.national[0]
@@ -329,8 +433,8 @@ function render(rows, population) {
   const sizes = new Map(rows.sizes.map((row) => [row.size_class, row]))
   const today = new Date().toISOString().slice(0, 10)
   const leader = (row) =>
-    `      { cui: ${quote(row.cui)}, name: ${quote(row.name.trim())}, county: ${nullable(countyCode(row.county))}, division: ${nullable(
-      NAMED_DIVISIONS.has(row.division) ? row.division : null,
+    `      { cui: ${quote(row.cui)}, name: ${quote(row.name.trim())}, county: ${nullable(countyCode(row.county))}, activity: ${activityLiteral(
+      activities.get(row.cui) ?? null,
     )}, status: ${nullable(row.status)}, value: ${int(row.value)}, previous: ${row.previous === null ? 'null' : int(row.previous)} },`
 
   return [
@@ -350,14 +454,22 @@ function render(rows, population) {
     ' *   carry no date) the year in the registration code.',
     ` * - **Statements** (\`companies_v2.financials\`, FY${YEAR}, public rows):`,
     ' *   turnover and average employees as filed with ANAF. Employee counts above',
-    ` *   ${EMPLOYEE_CEILING.toLocaleString('en-US')} (${int(national.outliers)} this year) are keying errors and are dropped`,
+    ` *   ${EMPLOYEE_CEILING.toLocaleString('en-US')} or below zero (${int(national.outliers)} this year) are keying errors and are dropped`,
     ' *   from every employee figure. Banks and insurers file with the BNR and ASF.',
-    ' * - **Sector** = the main CAEN activity declared to ANAF, as a Rev.2 division',
+    ' * - **Sector** = the ANAF fiscal CAEN code (a source observation, not a main activity), as a Rev.2 division',
     ' *   (Rev.3 classes mapped to theirs, vehicle repair back to 45), so every',
     ' *   company sits in one division; those with no recognised code are the rest.',
+    ` * - **Leaders' activity** = release ${years.source.releaseId}'s derived activity selection, read from the`,
+    ' *   public API: an ONRC class with its revision, ANAF\'s fiscal code with its',
+    ' *   revision unpublished, or why none is selected; not the fiscal division above.',
     " * - **County** = the registered office's county; turnover follows the head",
     ' *   office, so a national chain counts where it is registered.',
     ` * - **Population** = INS POP105A, residents on 1 January ${YEAR}.`,
+    ` * - **Years** (companies analytics release ${years.source.releaseId}, FY${years.rows[0].year}–FY${YEAR}): turnover,`,
+    ' *   net result and average employees as the release qualifies them, read from',
+    " *   the public API: not the raw sums above, which keyed errors and other forms'",
+    ` *   fields would distort. A headcount above ${EMPLOYEE_CEILING.toLocaleString('en-US')} (or below zero) is left out, as above.`,
+    ' *   Each year counts its own companies.',
     ' *',
     ' * Generated by `scripts/generate-companies-hub-snapshot.mjs`; never edit a figure by hand.',
     ' */',
@@ -407,15 +519,25 @@ function render(rows, population) {
     '  registrations: [',
     ...registrations.map((row) => `    { year: ${row.year}, registered: ${row.registered}, active: ${row.active} },`),
     '  ],',
+    '  years: [',
+    ...years.rows.map((row) => {
+      const m = (value) => `{ sum: ${value.sum === null ? 'null' : value.sum}, gap: ${nullable(value.gap)}, reported: ${value.reported} }`
+      return `    { year: ${row.year}, filers: ${row.filers}, turnover: ${m(row.turnover)}, netResult: ${m(row.netResult)}, employees: ${m(row.employees)} },`
+    }),
+    '  ],',
+    `  yearsSource: { releaseId: '${years.source.releaseId}', publishedAt: ${nullable(years.source.publishedAt)}, onrcPublished: '${years.source.onrcPublished}' },`,
     '}',
     '',
   ].join('\n')
 }
 
-// The population first: a failing API read then never leaves a database
-// connection open behind it.
+// The API reads first: a failing one then never leaves a database connection
+// open behind it. The leaders' activity needs the ranking, so it is read once
+// the database is closed.
 const population = await readPopulation()
+const years = await readYears()
 const rows = await readDatabase()
-reconcile(rows, population)
-writeFileSync(OUT, render(rows, population))
+reconcile(rows, population, years)
+const activities = await readLeaderActivities(years.source.releaseId, [...rows.leadersTurnover, ...rows.leadersEmployees].map((row) => row.cui))
+writeFileSync(OUT, render(rows, population, years, activities))
 console.log(`wrote ${OUT}`)

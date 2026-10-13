@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
+import { CompanyAnalysisActivityZ } from '@/schemas/company-analytics'
 import { caenDivision } from './caen-divisions'
 import { COMPANY_HUB_SNAPSHOT as SNAPSHOT } from './hub-snapshot'
 
@@ -32,6 +33,16 @@ describe('companies hub snapshot', () => {
       expect(leaders.every((leader) => /^\d{1,10}$/.test(leader.cui))).toBe(true)
       const values = leaders.map((leader) => leader.value)
       expect(values).toEqual([...values].sort((a, b) => b - a))
+    }
+  })
+
+  it('names each leader by the release’s derived selection, as the API serves it, or by none', () => {
+    const leaders = [...SNAPSHOT.leaders.turnover, ...SNAPSHOT.leaders.employees]
+    for (const leader of leaders) {
+      if (leader.activity === null) continue
+      expect(CompanyAnalysisActivityZ.parse(leader.activity)).toEqual(leader.activity)
+      expect(leader.activity.derived).toBe(true)
+      expect(leader.activity.basis).not.toBeNull()
     }
   })
 
@@ -69,5 +80,42 @@ describe('companies hub snapshot', () => {
     const counts = SNAPSHOT.newFirmsBySector.map((entry) => entry.firms)
     expect(counts).toEqual([...counts].sort((a, b) => b - a))
     expect(sum(counts)).toBeLessThanOrEqual(SNAPSHOT.national.newFirms)
+  })
+
+  it('runs the release’s years without a gap to the fiscal year, each measure reported by at most its filers', () => {
+    const years = SNAPSHOT.years.map((entry) => entry.year)
+    expect(years[years.length - 1]).toBe(SNAPSHOT.fiscalYear)
+    expect(years.every((value, index) => index === 0 || value === (years[index - 1] ?? 0) + 1)).toBe(true)
+    for (const entry of SNAPSHOT.years) {
+      for (const measure of [entry.turnover, entry.netResult, entry.employees]) expect(measure.reported).toBeLessThanOrEqual(entry.filers)
+    }
+    expect(SNAPSHOT.yearsSource.releaseId).toMatch(/^\d+$/)
+  })
+
+  it('holds each year’s measure as a finite sum or a gap with its reason, never both or neither', () => {
+    for (const entry of SNAPSHOT.years) {
+      for (const measure of [entry.turnover, entry.netResult, entry.employees]) {
+        if (measure.sum === null) expect(measure.gap).not.toBeNull()
+        else {
+          expect(Number.isFinite(measure.sum)).toBe(true)
+          expect(measure.gap).toBeNull()
+        }
+      }
+    }
+  })
+
+  it('keeps an impossible headcount out of the years', () => {
+    const last = SNAPSHOT.years[SNAPSHOT.years.length - 1]
+    // The release counts fewer companies (legal persons, one ONRC edition) than the year's raw figures: never more
+    // employees — an unfiltered 2025, with its 122,690-employee keying error, would be.
+    expect(last?.employees.sum ?? Infinity).toBeLessThanOrEqual(SNAPSHOT.national.employees)
+    // The country's headcount moves by a few percent a year: an unfiltered 2011, 1.3 million up and back, would not.
+    const sums = SNAPSHOT.years.map((entry) => entry.employees.sum ?? 0)
+    sums.forEach((sum, index) => {
+      const before = sums[index - 1]
+      const after = sums[index + 1]
+      if (before === undefined || after === undefined) return
+      expect(Math.abs(sum - (before + after) / 2) / ((before + after) / 2)).toBeLessThan(0.2)
+    })
   })
 })

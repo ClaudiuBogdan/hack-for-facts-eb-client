@@ -1,17 +1,17 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import type { CompanyAnalyticsServerRead } from '@/features/private-companies/api/company-analytics-ssr'
-import { buildCompanyHubHead } from '@/features/private-companies/seo/private-company-hub-seo'
-import { createNoStoreHeaders } from '@/lib/http-cache'
-import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
+import { CompanyHubPending } from '@/features/private-companies/components/hub/company-hub-pending'
+import { buildCompanyHubHead, companyHubSeoFigures } from '@/features/private-companies/seo/private-company-hub-seo'
+import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import {
   cleanPrivateCompanyDirectorySearch,
+  companyHubSearchSchema,
   parseCompanyHubSearch,
   parsePrivateCompanyDirectorySearch,
   type PrivateCompanyDirectorySearchState,
 } from '@/schemas/private-company-search'
 
 /** The hub's own search keys; everything else an old link carries is the directory's or the site's. */
-const HUB_KEYS = new Set(['indicator', 'domenii', 'clasament'])
+const HUB_KEYS = new Set(Object.keys(companyHubSearchSchema.unwrap().shape))
 
 /**
  * `/companies` is the hub; the directory moved to `/companies/search`. An old
@@ -19,17 +19,20 @@ const HUB_KEYS = new Set(['indicator', 'domenii', 'clasament'])
  * `/procurement` → `/procurement/search` idiom — with the rest of what it
  * carried (the language, the currency), less the hub's own choices.
  *
- * The hub's figures are read on the server — the active analytics release,
- * then each section pinned to it, within one deadline
- * (`company-hub-analytics.ts`) — and seed the page's queries; on a
- * client-side navigation the loader returns at once and the page reads in
- * the browser. Like `/companies/analytics`, no response is ever cached, by a
- * CDN or by the browser: its HTML holds a release's figures, and a release
- * withdrawn from publication must stop reaching readers at the next request.
+ * Every figure is in the client's snapshot, so the page renders in full on
+ * the server and is cached publicly. The render follows the locale and theme
+ * cookies (language, number separators, the `html` class), so a shared cache
+ * keys on the cookie, as `/pnrr` does, and the browser revalidates.
+ *
+ * The snapshot is imported by the loader, not at the top: this file is in
+ * every route's entry chunk, and the head needs four of its figures. On a
+ * client navigation the page's head shows while its chunk loads
+ * (`CompanyHubPending`): the title, the search box and the pinned bar are
+ * words, not data.
  */
 export const Route = createFileRoute('/companies/')({
-  ssr: true,
   validateSearch: parseCompanyHubSearch,
+  pendingComponent: CompanyHubPending,
   beforeLoad: ({ location }) => {
     const raw = location.search as Record<string, unknown>
     const legacy = cleanPrivateCompanyDirectorySearch(parsePrivateCompanyDirectorySearch(raw))
@@ -42,13 +45,16 @@ export const Route = createFileRoute('/companies/')({
       })
     }
   },
-  loaderDeps: ({ search }) => ({ search }),
-  loader: async ({ deps }): Promise<CompanyAnalyticsServerRead> => {
-    if (!shouldBlockLoaderForSsr()) return { seed: [], complete: true }
-    const { readCompanyHubForSsr } = await import('@/features/private-companies/api/company-hub-analytics')
-    return readCompanyHubForSsr(deps.search)
+  loader: async () => {
+    const { COMPANY_HUB_SNAPSHOT } = await import('@/features/private-companies/lib/hub-snapshot')
+    return { seo: companyHubSeoFigures(COMPANY_HUB_SNAPSHOT) }
   },
-  // The layout's cache headers merge key by key: a CDN directive of its own would outlive this one.
-  headers: () => ({ ...createNoStoreHeaders(), 'CDN-Cache-Control': 'no-store' }),
-  head: () => buildCompanyHubHead(),
+  headers: () =>
+    createPublicPageCacheHeaders({
+      browserMaxAgeSeconds: 0,
+      sharedMaxAgeSeconds: 3600,
+      staleWhileRevalidateSeconds: 604800,
+      vary: ['Accept-Encoding', 'Cookie'],
+    }),
+  head: ({ loaderData }) => buildCompanyHubHead(loaderData?.seo),
 })
