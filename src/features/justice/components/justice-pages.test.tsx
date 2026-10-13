@@ -111,7 +111,7 @@ describe('a court', () => {
       'Dosare cu data din 2025',
       'Ce se judecă',
       'Pe etape',
-      'Alte etape (revizuiri, contestații în anulare)',
+      'Alte etape',
       'Instanțele de sub ea',
       'Judecătoria Zalău',
       '4.365',

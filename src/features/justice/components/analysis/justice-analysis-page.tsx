@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useLingui } from '@lingui/react'
 import { t } from '@lingui/core/macro'
@@ -40,6 +40,14 @@ export function JusticeAnalysisPage({ search }: { readonly search: Readonly<Reco
 export function JusticeAnalysis({ question, onChange }: { readonly question: Question; readonly onChange: (question: Question) => void }) {
   const { i18n } = useLingui()
   const [filters, setFilters] = useState(false)
+  // The button that opened the filters: the sheet has no trigger of its own to give the focus back to. A
+  // headline's phrase can be gone once the question changed; the Filters button stays.
+  const opener = useRef<HTMLElement | null>(null)
+  const openFilters = (button: HTMLElement) => {
+    opener.current = button
+    setFilters(true)
+  }
+  const returnFocus = () => (opener.current?.isConnected ? opener.current : document.querySelector<HTMLElement>('[data-analysis-filters]'))
   const source = sourceOf(question)
   // A court's arrow opens its page: have its code before the tap.
   useWarmRouteCode('/justice/courts/$code')
@@ -48,7 +56,7 @@ export function JusticeAnalysis({ question, onChange }: { readonly question: Que
   return (
     // Clip, not hide: the crux marks overhang the frame, and a hidden overflow would unstick the bar.
     <div className="relative w-full overflow-x-clip bg-background">
-      <AnalysisHead question={question} onChange={onChange} onFilters={() => setFilters(true)} />
+      <AnalysisHead question={question} onChange={onChange} onFilters={openFilters} />
       <AnalysisLevels question={question} onChange={onChange} />
       <AnalysisFigures question={question} />
       <section className="border-b" aria-label={t`Răspunsul`}>
@@ -60,7 +68,7 @@ export function JusticeAnalysis({ question, onChange }: { readonly question: Que
       <RuledFrame className="py-8">
         <JusticeSourceLine asOf={asOfOf(source)} archiveAsOf={asOfOf('iccj')} source={source} notes={[]} />
       </RuledFrame>
-      <AnalysisFilters question={question} open={filters} onOpenChange={setFilters} onChange={onChange} />
+      <AnalysisFilters question={question} open={filters} onOpenChange={setFilters} onChange={onChange} returnFocus={returnFocus} />
     </div>
   )
 }

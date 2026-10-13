@@ -6,21 +6,25 @@ import { courtName } from './judicial-labels'
  * Document titles for the justice pages, built twice: by the route `head` on
  * the server, and by the page in the browser once its read resolves (a
  * client-side navigation does not wait for the loader). One format, here —
- * and no snapshot: a route module loads with every page.
+ * and no snapshot: a route module loads with every page. Each is in the
+ * language of the translator it is given (the request's, on the server); a
+ * court's name stays as the court is called.
  */
-const JUSTICE_TITLE_SUFFIX = 'Justiție — Transparenta.eu'
-
-export function buildJusticeHubTitle(): string {
-  return `Instanțele din România — ${JUSTICE_TITLE_SUFFIX}`
+function justiceSuffix(i18n: I18n): string {
+  return `${i18n._(msg`Justiție`)} — Transparenta.eu`
 }
 
-export function buildCourtDocumentTitle(code: string): string {
-  return `${courtName(code)} — ${JUSTICE_TITLE_SUFFIX}`
+export function buildJusticeHubTitle(i18n: I18n): string {
+  return `${i18n._(msg`Instanțele din România`)} — ${justiceSuffix(i18n)}`
+}
+
+export function buildCourtDocumentTitle(i18n: I18n, code: string): string {
+  return `${courtName(code)} — ${justiceSuffix(i18n)}`
 }
 
 /** The analysis page's own title, in a request's language: the route's head gives it to every question. */
 export function buildAnalysisPageTitle(i18n: I18n): string {
-  return `${i18n._(msg`Analize ale dosarelor`)} — ${i18n._(msg`Justiție`)} — Transparenta.eu`
+  return `${i18n._(msg`Analize ale dosarelor`)} — ${justiceSuffix(i18n)}`
 }
 
 export function buildAnalysisPageDescription(i18n: I18n): string {
@@ -29,7 +33,7 @@ export function buildAnalysisPageDescription(i18n: I18n): string {
 
 /** The ECHR page's own title, in a request's language: the route's head gives it to every year. */
 export function buildEchrPageTitle(i18n: I18n): string {
-  return `${i18n._(msg`Hotărârile CEDO în cauze cu România`)} — ${i18n._(msg`Justiție`)} — Transparenta.eu`
+  return `${i18n._(msg`Hotărârile CEDO în cauze cu România`)} — ${justiceSuffix(i18n)}`
 }
 
 export function buildEchrPageDescription(i18n: I18n): string {
@@ -38,6 +42,6 @@ export function buildEchrPageDescription(i18n: I18n): string {
   )
 }
 
-export function buildCaseDocumentTitle(code: string, number: string): string {
-  return `Dosarul ${number} — ${courtName(code)} — ${JUSTICE_TITLE_SUFFIX}`
+export function buildCaseDocumentTitle(i18n: I18n, code: string, number: string): string {
+  return `${i18n._(msg`Dosarul ${number}`)} — ${courtName(code)} — ${justiceSuffix(i18n)}`
 }

@@ -2,7 +2,7 @@ import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import type { CaseSheet } from '../lib/case-model'
 import type { CourtSheet } from '../lib/court-model'
-import { fetchCaseSheet } from './judicial-case-api'
+import { fetchCaseExists, fetchCaseSheet } from './judicial-case-api'
 import { fetchCourtSheet } from './judicial-court-api'
 
 /**
@@ -22,6 +22,17 @@ const KEEP_MS = 10 * 60 * 1000
 
 const courts = createServerMemo<CourtSheet | null>(KEEP_MS, { maxEntries: 600, keep: (sheet) => sheet === null || !sheet.partial })
 const cases = createServerMemo<CaseSheet | null>(KEEP_MS, { maxEntries: 1_000, keep: (sheet) => sheet === null || !sheet.partial })
+/** Whether a court has a case of a number, as the existence probe found: kept either way. */
+const known = createServerMemo<boolean>(KEEP_MS, { maxEntries: 2_000 })
+
+/**
+ * The API says „no such case" in a tenth of a second and takes seconds over a
+ * case it has (the ÎCCJ's, design.md §12.5). A render waits for the probe a
+ * moment only, then goes on without knowing, as before; the probe runs on to
+ * its own deadline, and the next render of that case knows at once.
+ */
+const PROBE_WAIT_MS = 600
+const PROBE_DEADLINE_MS = 10_000
 
 export interface JusticeCourtServerRead {
   readonly code: string
@@ -52,5 +63,26 @@ export async function readCaseForSsr(code: string, number: string): Promise<Just
     return { code, number, sheet }
   } catch {
     return { code, number }
+  }
+}
+
+/**
+ * Whether the court surely lacks the case: only the API's own „none" says so.
+ * A case it has, a slow answer or a failed read all render the page, whose
+ * browser read then shows the case or its absence.
+ */
+export async function caseSurelyAbsentForSsr(code: string, number: string): Promise<boolean> {
+  const probe = known(`${code}|${number}`, () => fetchCaseExists(code, number, withDeadline(undefined, PROBE_DEADLINE_MS))).then(
+    (exists) => !exists,
+    () => false,
+  )
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const waited = new Promise<false>((resolve) => {
+    timer = setTimeout(() => resolve(false), PROBE_WAIT_MS)
+  })
+  try {
+    return await Promise.race([probe, waited])
+  } finally {
+    clearTimeout(timer)
   }
 }

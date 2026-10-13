@@ -29,8 +29,10 @@ import {
   type MainLevel,
   type MatterScope,
 } from '../../lib/hub-model'
+import { ECHR_FIRST_WHOLE_YEAR, ECHR_HUDOC_JUDGMENTS_BEFORE_WHOLE } from '../../lib/echr-model'
+import { ECHR_NEWEST, ECHR_REFERENCE_YEAR } from '../../lib/echr-years'
 import type { JusticeHubSnapshot } from '../../lib/hub-snapshot-types'
-import { countText, millionsText, monthText, percentText, rateText } from '../../lib/judicial-format'
+import { countText, dayText, millionsText, monthText, percentText, rateText } from '../../lib/judicial-format'
 import { caseCategoryLabel, courtLevelGenitive, courtLevelLabel, courtLevelPlural, courtName, stageLabel } from '../../lib/judicial-labels'
 import { STAGE_KEYS, type StageKey } from '../../lib/judicial-model'
 import { JusticeYearsChart } from '../justice-years-chart'
@@ -337,6 +339,8 @@ export function JusticeCourtsBand({
 
 export function JusticeYearsBand({ snapshot, index }: { readonly snapshot: JusticeHubSnapshot; readonly index: string }) {
   const lastMonth = snapshot.asOf.portalModifiedAt.slice(0, 7)
+  // The years count the ÎCCJ archive's cases too: its last year runs a month further.
+  const archiveMonth = snapshot.asOf.iccjArchiveDate.slice(0, 7)
   return (
     <HomeBand id="timp" labelledBy="justice-hub-years-title">
       <div className={BAND_GRID}>
@@ -349,16 +353,17 @@ export function JusticeYearsBand({ snapshot, index }: { readonly snapshot: Justi
               <Trans>
                 Preluarea portalului e densă din {firstWholeYear(snapshot)}, dar nicio numărătoare independentă nu arată că vreun an e complet. Anii
                 dinainte au doar dosarele modificate mai târziu, o parte necunoscută din fiecare an, iar ultimul an se oprește în{' '}
-                {monthText(lastMonth, 'long')}.
+                {monthText(lastMonth, 'long')} (arhiva Înaltei Curți, în {monthText(archiveMonth, 'long')}). Arhiva, numărată și ea, e parțială în fiecare
+                an și mai plină în anii recenți.
               </Trans>
             }
           />
         </div>
         <div className={cn('min-w-0 lg:col-span-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
           <MonoLabel className="block text-muted-foreground">
-            <Trans>Dosare după anul din portal</Trans>
+            <Trans>Dosare după anul din portal sau din arhiva ÎCCJ</Trans>
           </MonoLabel>
-          <JusticeYearsChart className="mt-4" bars={hubYearBars(snapshot)} lastMonth={lastMonth} />
+          <JusticeYearsChart className="mt-4" bars={hubYearBars(snapshot)} lastMonth={lastMonth} archiveMonth={archiveMonth} />
           <Link to="/justice/analytics" className={cn('mt-4 inline-flex', SHOW_MORE_CLASS)}>
             <Trans>Toți anii preluați, din {firstCaseYear(snapshot)}, în analiză</Trans>
             <span aria-hidden="true">&nbsp;→</span>
@@ -369,17 +374,37 @@ export function JusticeYearsBand({ snapshot, index }: { readonly snapshot: Justi
   )
 }
 
+/** How whole a bar's period is: a series can hold a year captured in part, or the running one. */
+type BarState = 'partial' | 'running' | 'whole'
+
+/** The bars' look per state, as the years chart draws them: a partial year dashed, the running one paler. */
+const BAR_CLASS: Readonly<Record<BarState, string>> = {
+  partial: 'border border-dashed border-primary/50 bg-primary/10',
+  running: 'bg-primary/40',
+  whole: 'bg-primary/70',
+}
+
+/** A series' periods that are not whole: which they are, and what the legend says of each. */
+interface SeriesStates {
+  readonly of: (key: string) => BarState
+  readonly partial: ReactNode
+  readonly running: ReactNode
+}
+
 function SeriesBars({
   title,
   series,
   label,
   caveat,
+  states = null,
   more = null,
 }: {
   readonly title: ReactNode
   readonly series: readonly { readonly key: string; readonly count: number }[]
   readonly label: (key: string) => string
   readonly caveat: ReactNode
+  /** The periods not whole, drawn apart and named in a legend: never read as comparable. */
+  readonly states?: SeriesStates | null
   /** Where the series continues: a page of its own. */
   readonly more?: ReactNode
 }) {
@@ -387,6 +412,8 @@ function SeriesBars({
   const total = series.reduce((sum, entry) => sum + entry.count, 0)
   const first = series[0]
   const last = series[series.length - 1]
+  const stateOf = (key: string): BarState => states?.of(key) ?? 'whole'
+  const shown = new Set(series.map((entry) => stateOf(entry.key)))
   return (
     <figure className="min-w-0" data-reveal>
       <div className="flex items-baseline justify-between gap-4 border-b border-border/70 pb-2">
@@ -394,22 +421,62 @@ function SeriesBars({
         <span className="text-sm font-semibold tabular-nums text-foreground">{countText(total)}</span>
       </div>
       <ol className="mt-3 flex h-28 items-end gap-0.5">
-        {series.map((entry) => (
-          <li key={entry.key} className="min-w-0 flex-1 bg-primary/70" style={{ height: `${entry.count > 0 ? Math.max((entry.count / top) * 100, 2).toFixed(1) : '0'}%` }}>
-            <span className="sr-only">
-              {label(entry.key)}: {countText(entry.count)}
-            </span>
-          </li>
-        ))}
+        {series.map((entry) => {
+          const state = stateOf(entry.key)
+          return (
+            <li key={entry.key} className={cn('min-w-0 flex-1', BAR_CLASS[state])} style={{ height: `${entry.count > 0 ? Math.max((entry.count / top) * 100, 2).toFixed(1) : '0'}%` }}>
+              <span className="sr-only">
+                {label(entry.key)}: {countText(entry.count)}
+                {state === 'partial' ? <> ({t`preluare parțială`})</> : state === 'running' ? <> ({t`an în curs`})</> : null}
+              </span>
+            </li>
+          )
+        })}
       </ol>
       <div className="mt-1 flex justify-between" aria-hidden="true">
         <MonoLabel className="tabular-nums text-muted-foreground">{first ? label(first.key) : ''}</MonoLabel>
         <MonoLabel className="tabular-nums text-muted-foreground">{last ? label(last.key) : ''}</MonoLabel>
       </div>
+      {states && (shown.has('partial') || shown.has('running')) ? (
+        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+          {shown.has('partial') ? (
+            <li className="flex items-baseline gap-1.5">
+              <span className={cn('size-2.5 shrink-0 self-center', BAR_CLASS.partial)} aria-hidden="true" />
+              <span>{states.partial}</span>
+            </li>
+          ) : null}
+          {shown.has('running') ? (
+            <li className="flex items-baseline gap-1.5">
+              <span className={cn('size-2.5 shrink-0 self-center', BAR_CLASS.running)} aria-hidden="true" />
+              <span>{states.running}</span>
+            </li>
+          ) : null}
+        </ul>
+      ) : null}
       <figcaption className="mt-3 text-xs leading-relaxed text-muted-foreground">{caveat}</figcaption>
       {more}
     </figure>
   )
+}
+
+/** The ECHR judgments' years as the ECHR page reads them: 2009 captured in part, the snapshot's last year running. */
+function echrStates(series: readonly { readonly key: string; readonly count: number }[]): SeriesStates {
+  const partialYear = ECHR_FIRST_WHOLE_YEAR - 1
+  const held = series.find((entry) => Number(entry.key) === partialYear)?.count ?? 0
+  const runningYear = ECHR_REFERENCE_YEAR + 1
+  return {
+    of: (key) => (Number(key) < ECHR_FIRST_WHOLE_YEAR ? 'partial' : Number(key) > ECHR_REFERENCE_YEAR ? 'running' : 'whole'),
+    partial: (
+      <Trans>
+        {partialYear}: preluat parțial ({countText(held)} din {countText(ECHR_HUDOC_JUDGMENTS_BEFORE_WHOLE)} pe HUDOC)
+      </Trans>
+    ),
+    running: (
+      <Trans>
+        {runningYear}: an în curs, documente până la {dayText(ECHR_NEWEST)}
+      </Trans>
+    ),
+  }
 }
 
 export function JusticeDecisionsBand({ snapshot, index }: { readonly snapshot: JusticeHubSnapshot; readonly index: string }) {
@@ -437,6 +504,7 @@ export function JusticeDecisionsBand({ snapshot, index }: { readonly snapshot: J
           series={echr}
           label={(key) => key}
           caveat={<Trans>Doar hotărârile, câte una (nu și traducerea), fără deciziile de admisibilitate și comunicări.</Trans>}
+          states={echrStates(echr)}
           more={
             <Link to="/justice/echr" className={SHOW_MORE_CLASS}>
               <Trans>Toate hotărârile, an de an</Trans>

@@ -96,7 +96,8 @@ function HubSourceLine({ snapshot, className }: { readonly snapshot: JusticeHubS
     </Trans>,
     <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt afișate aici, deși portalul le publică. Persoanele sunt doar numărate.</Trans>,
   ]
-  return <JusticeSourceLine asOf={snapshot.asOf.portalModifiedAt} source="both" notes={notes} className={className} />
+  // Its counts hold the ÎCCJ archive's cases too, which run past the Portal's last modification: both dates are said.
+  return <JusticeSourceLine asOf={snapshot.asOf.portalModifiedAt} archiveAsOf={snapshot.asOf.iccjArchiveDate} source="both" notes={notes} className={className} />
 }
 
 /** How many courts the hero panel names, and how many its button opens. */

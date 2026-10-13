@@ -13,9 +13,11 @@ vi.mock('@tanstack/react-router', () => ({
 
 const readCourt = vi.fn()
 const readCase = vi.fn()
+const caseAbsent = vi.fn()
 vi.mock('@/features/justice/api/justice-ssr', () => ({
   readCourtForSsr: (...args: unknown[]) => readCourt(...args),
   readCaseForSsr: (...args: unknown[]) => readCase(...args),
+  caseSurelyAbsentForSsr: (...args: unknown[]) => caseAbsent(...args),
 }))
 const readAnalysis = vi.fn()
 vi.mock('@/features/justice/api/justice-analysis-ssr', () => ({ readAnalysisForSsr: (...args: unknown[]) => readAnalysis(...args) }))
@@ -66,6 +68,7 @@ const caseRoute = (await import('./cases/$code/$')).Route as unknown as {
 beforeEach(() => {
   readCourt.mockReset()
   readCase.mockReset()
+  caseAbsent.mockReset()
   readAnalysis.mockReset()
   redirectMock.mockClear()
 })
@@ -156,8 +159,10 @@ describe('/justice/cases/$code/$', () => {
 
   it('leaves the ÎCCJ’s cases, too slow to read within a render, to the browser', async () => {
     const params = { code: 'InaltaCurtedeCasatiesiJustitie', _splat: '656/1/2025' }
+    caseAbsent.mockResolvedValueOnce(false)
     await expect(asServerRender(() => caseRoute.loader({ context: { queryClient: queryClient() }, params }))).resolves.toEqual({ code: params.code, number: params._splat })
     expect(readCase).not.toHaveBeenCalled()
+    expect(caseAbsent).toHaveBeenCalledWith(params.code, params._splat)
     // No sheet: the render is served once, never cached.
     vi.stubEnv('DEV', false)
     try {
@@ -165,6 +170,13 @@ describe('/justice/cases/$code/$', () => {
     } finally {
       vi.unstubAllEnvs()
     }
+  })
+
+  it('answers an ÎCCJ number the API says it lacks with a 404, before the browser reads anything', async () => {
+    const params = { code: 'InaltaCurtedeCasatiesiJustitie', _splat: '9999999/1/2025' }
+    caseAbsent.mockResolvedValueOnce(true)
+    await expect(asServerRender(() => caseRoute.loader({ context: { queryClient: queryClient() }, params }))).rejects.toBe(notFoundError)
+    expect(readCase).not.toHaveBeenCalled()
   })
 
   it('never holds a client-side navigation', async () => {

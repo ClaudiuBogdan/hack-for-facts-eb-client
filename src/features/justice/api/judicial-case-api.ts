@@ -2,7 +2,7 @@ import { graphqlQuery } from '@/lib/graphql/graphql-client'
 import { judicialCaseDetailSchema, type JudicialCaseDetail } from '@/schemas/judicial'
 import { z } from 'zod'
 import { caseSheetOf, otherCaseIds, type CaseSheet, type RelatedCaseRead } from '../lib/case-model'
-import { CASE_QUERY, relatedCasesQuery } from './judicial-queries'
+import { CASE_EXISTS_QUERY, CASE_QUERY, relatedCasesQuery } from './judicial-queries'
 
 /**
  * A case page's reads: the case by its court and number (the durable key —
@@ -42,6 +42,15 @@ export function relatedReadOf(data: Record<string, unknown>, ids: readonly strin
       return node ? [node.case] : []
     }),
   }
+}
+
+const caseExistsSchema = z.object({ judicialCase: z.object({ case: z.object({ caseId: z.string() }).nullable() }).nullable() })
+
+/** Whether the court has a case of that number: the smallest read of it, for a page that renders before its sheet is read. */
+export async function fetchCaseExists(code: string, number: string, signal?: AbortSignal): Promise<boolean> {
+  const data = caseExistsSchema.parse(await graphqlQuery<unknown>(CASE_EXISTS_QUERY, { code, number }, { operationName: 'JudicialCaseExists', signal }))
+  // Only the API's own null says „none"; a case without its fields is still a case, which the full read then judges.
+  return data.judicialCase !== null
 }
 
 /** The case page's sheet; null when the court has no case of that number. */

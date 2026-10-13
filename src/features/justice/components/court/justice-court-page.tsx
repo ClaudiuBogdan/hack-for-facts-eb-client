@@ -48,7 +48,8 @@ export function JusticeCourtPage({ code, year, initialData }: { readonly code: s
   const query = useJusticeCourt(code, year, initialData?.code === code && initialData.year === year ? initialData.court : undefined)
   const sheet = query.data
   const navigate = useNavigate({ from: '/justice/courts/$code' })
-  useClientDocumentTitle(buildCourtDocumentTitle(code))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildCourtDocumentTitle(i18n, code))
   useWarmRouteCode('/justice/cases/$code/$')
   const onYear = (next: number) =>
     void navigate({ search: (previous) => ({ ...previous, an: next === JUSTICE_REFERENCE_YEAR ? undefined : next }), resetScroll: false })
@@ -156,7 +157,10 @@ function CourtSheetView({ sheet, onYear }: { readonly sheet: CourtSheet; readonl
 function CourtSourceLine({ sheet, className }: { readonly sheet: CourtSheet; readonly className?: string }) {
   const iccj = sheet.level === 'inalta_curte'
   const notes: ReactNode[] = iccj
-    ? [<Trans key="date">Anul unui dosar e data lui din arhiva Înaltei Curți, al cărei înțeles nu e stabilit; nu e o dată de înregistrare verificată.</Trans>]
+    ? [
+        <Trans key="date">Anul unui dosar e data lui din arhiva Înaltei Curți, al cărei înțeles nu e stabilit; nu e o dată de înregistrare verificată.</Trans>,
+        <Trans key="archive">Arhiva Înaltei Curți e un set parțial, mai plin în anii recenți: anii ei nu se compară între ei.</Trans>,
+      ]
     : [
         <Trans key="date">Anul unui dosar e data din antetul lui pe portal, nu o dată de înregistrare verificată.</Trans>,
         <Trans key="capture">
@@ -173,6 +177,9 @@ function CourtSourceLine({ sheet, className }: { readonly sheet: CourtSheet; rea
     ),
   )
   if (sheet.partial) notes.push(<Trans key="partial">Dosarele instanțelor de sub ea nu au putut fi numărate acum; pagina le citește din nou.</Trans>)
+  // A court the capture holds no case of: what was read, not what the court has.
+  if (sheet.total === 0)
+    notes.push(<Trans key="empty">Preluarea nu are niciun dosar al acestei instanțe. Asta nu înseamnă că instanța nu are dosare pe portal.</Trans>)
   const lastYear = courtLastYear(sheet)
   if (lastYear !== null && sheet.newestAt) {
     notes.push(
@@ -204,7 +211,12 @@ function CourtFigures({ sheet }: { readonly sheet: CourtSheet }) {
       value: sheet.inYear,
       digits: 0,
       label: <Trans>Dosare cu data din {sheet.year}</Trans>,
-      note: <Trans>{casesCount(sheet.total)} în datele preluate, în total</Trans>,
+      note:
+        sheet.level === 'inalta_curte' ? (
+          <Trans>{casesCount(sheet.total)} în total, din arhiva ÎCCJ</Trans>
+        ) : (
+          <Trans>{casesCount(sheet.total)} în total, din preluarea portalului</Trans>
+        ),
       link: band('dosare'),
     },
     {
@@ -302,7 +314,7 @@ function CourtStagesBand({ sheet, index }: { readonly sheet: CourtSheet; readonl
               numbered={false}
               rows={rows.map((row) => ({
                 key: row.key,
-                label: row.key === 'other' ? t`Alte etape (revizuiri, contestații în anulare)` : stageLabel(row.key),
+                label: stageLabel(row.key),
                 meta: sheet.inYear > 0 ? percentText(row.count / sheet.inYear) : undefined,
                 value: countText(row.count),
                 fraction: row.count / top,

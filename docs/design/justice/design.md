@@ -843,9 +843,10 @@ address is `/justice/analytics`.
 - Every figure is a `judicialCaseload` count, a sum of them, or a share. A
   matter filter sends the Portal's code and the ÎCCJ's raw label (19 keys,
   12 matters); a stage filter sends the raw stage values grouped as fond,
-  apel, recurs, contestație and the extraordinary remedies (13 values hold all
-  but some 1,500 of 6.34 million cases); „Alte etape" is the rest of the
-  total, so the stages add up.
+  apel, recurs, contestație and the extraordinary remedies — revisions and
+  annulment appeals (12 values hold all but some 1,700 of 6.34 million
+  cases); „Alte etape" is the rest of the total, so the stages add up. An
+  appeal in the interest of the law is not an extraordinary remedy (§19).
 - Counties come from the courts (the API has no county filter or grouping): a
   county filter is the list of its courts, a county row the sum of its
   courts. The ÎCCJ has no county: it is drawn after the counties, never
@@ -1083,3 +1084,66 @@ every other state named), the page's server markup (the order a reader
 meets it, 82 judgments and their HUDOC links in 2018, no name pattern), the
 route (keys, headers, head), the entry, the sanitizer, the front door's
 links, and `tests/integration/justice.spec.ts`.
+
+## 19. QA fixes (2026-10-13)
+
+A read-only QA pass over the five pages (its tracker lives outside the
+repository: `~/projects/devostack/qa-trackers/justice-portal/ISSUES.md`)
+logged 15 findings; each was re-checked on the build before a fix. What the
+fixes decided:
+
+- **No case number in telemetry, through any way back.** The footer's and
+  the consent card's cookie-settings link carries the page it came from
+  (`/cookies?redirect=%2Fjustice%2Fcases%2F…`). The sanitizer now reads any
+  query value that is itself an address and scrubs it as a justice address,
+  a way back inside a way back too. It decodes one layer at a time, only
+  until the value reads as an address, so each layer's own query stays
+  inside it (an inner `%26caseNumber=…` never becomes a key of the page
+  around it). A justice address quoted in a value's text or in telemetry
+  text, encoded or not, is scrubbed where it stands; what is encoded past
+  the rounds read, or nested past the depth, is scrubbed whole: it fails
+  closed.
+- **An appeal in the interest of the law is not an extraordinary remedy.**
+  `Recurs în interesul legii` (the ÎCCJ's, 26 cases in 2025) unifies the
+  case law and decides no party's case: it counts in „Alte etape", on the
+  analysis page and in the front door's stage matrix. The ÎCCJ's
+  „revizuiri și contestații în anulare" are then 0, as the API says. A
+  court page's remainder row is „Alte etape", not „(revizuiri, contestații
+  în anulare)": at the ÎCCJ it is RIL and other stages.
+- **Mixed counts say both cutoffs.** The front door's totals hold the ÎCCJ
+  archive's cases (to 24 July 2026) beside the Portal's (to 22 June): its
+  source line, its years band and the chart's legend say both, and the band
+  says the archive is partial in every year and fuller in recent ones.
+- **The front door's ECHR chart marks its years** as the ECHR page does:
+  2009 dashed („preluat parțial, 153 din 168 pe HUDOC"), 2026 paler („an în
+  curs, documente până la 16 iulie 2026"). The generated `echr-years.ts`
+  gains `ECHR_NEWEST` for it.
+- **The ÎCCJ's archive has no whole year.** Its court page draws every bar
+  partial and its notes carry the analysis page's warning (its years do not
+  compare); its total says „din arhiva ÎCCJ", its lookup „din arhiva ei".
+- **An empty capture is not an empty court.** A court the capture holds no
+  case of says „Preluarea de pe portal nu are…", with a note that this does
+  not show the court has none on the portal.
+- **A missing ÎCCJ case is a 404.** Its sheet stays the browser's to read
+  (seconds), but the API answers „no such case" in a tenth of a second: the
+  server asks for the case's id alone, waits 600 ms at most, and 404s only
+  on the API's own „none". The answer is kept ten minutes, so the next
+  render of a case it has does not wait.
+- **Titles in the request's language** (front door, court, case: „Romania's
+  courts — Justice — Transparenta.eu", „Case 1059/117/2025 — …"); a court's
+  name stays as it is called. A case's own stage is read through
+  `caseStageLabel` (the counted stages as the summaries name them, each
+  remedy with the stage it reopens). The API gives a stage both as a code
+  (`ContestatieinanulareApel`) and as a display name (`Contestaţie în
+  anulare - Apel`); the rows carry the name, so both read the same.
+- **Smaller fixes:** the analysis filters give the focus back to the button
+  that opened them (the clicked one, or the Filters button if a headline's
+  phrase is gone); the case facts are one description-list group each; the
+  front door's court search says when nothing matches, and how many did
+  („Primele 6 din 179 de instanțe").
+- **Left:** an empty court's source line has no capture date (no case gives
+  it, and the court page does not load the front door's snapshot that has
+  it); its note says the capture holds none of its cases.
+- **Not here:** the shared shell's nested `<main>` waits for the owner to
+  name who fixes it, and the collapsed sidebar's unnamed links are fixed in
+  the procurement session (PR-010).

@@ -22,10 +22,16 @@ describe('mergedMatters', () => {
 })
 
 describe('stageKeyOf', () => {
-  it('names the four counted stages and gathers the rest as extraordinary remedies', () => {
+  it('names the four counted stages and gathers revisions and annulment appeals as extraordinary remedies', () => {
     expect(stageKeyOf('Fond')).toBe('fond')
     expect(stageKeyOf('ContestaţieNCPP')).toBe('contestatie')
     expect(stageKeyOf('RevizuireApel')).toBe('extraordinare')
+    expect(stageKeyOf('ContestatieInAnulareNCPP')).toBe('extraordinare')
+  })
+
+  it('leaves an appeal in the interest of the law, or a stage it does not know, to no group', () => {
+    expect(stageKeyOf('Recurs în interesul legii')).toBeNull()
+    expect(stageKeyOf('Altceva')).toBeNull()
   })
 })
 

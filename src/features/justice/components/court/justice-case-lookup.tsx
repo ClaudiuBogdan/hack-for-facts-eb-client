@@ -10,9 +10,10 @@ import { isTypedCaseNumber } from '../../lib/justice-paths'
 /**
  * Opens a case of this court by its number. Only a case number leaves the
  * page — into the case's address — so a name typed here by mistake goes
- * nowhere: it is not a number, and the field says so.
+ * nowhere: it is not a number, and the field says so. `archive`: the ÎCCJ's
+ * cases come from its archive, not from the portal.
  */
-export function JusticeCaseLookup({ code, className }: { readonly code: string; readonly className?: string }) {
+export function JusticeCaseLookup({ code, archive = false, className }: { readonly code: string; readonly archive?: boolean; readonly className?: string }) {
   const [value, setValue] = useState('')
   const [invalid, setInvalid] = useState(false)
   const navigate = useNavigate()
@@ -61,6 +62,8 @@ export function JusticeCaseLookup({ code, className }: { readonly code: string; 
       <p id={hintId} className={cn('mt-2 text-xs', invalid ? 'text-destructive' : 'text-muted-foreground')} role={invalid ? 'alert' : undefined}>
         {invalid ? (
           <Trans>Nu e un număr de dosar: cifre și bare, ca 1234/117/2024. Numele părților nu se caută.</Trans>
+        ) : archive ? (
+          <Trans>Un dosar al Curții, după numărul lui din arhiva ei.</Trans>
         ) : (
           <Trans>Un dosar al acestei instanțe, după numărul lui de pe portal.</Trans>
         )}

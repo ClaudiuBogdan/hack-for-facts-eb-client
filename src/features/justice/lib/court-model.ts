@@ -134,10 +134,16 @@ export function courtYearChoices(sheet: Pick<CourtSheet, 'newestAt' | 'years'>):
   return sheet.years.filter((entry) => entry.year <= last && entry.count > 0).map((entry) => entry.year)
 }
 
-export function courtYearBars(sheet: Pick<CourtSheet, 'newestAt' | 'years'>, firstWholeYear: number, from = 2019): readonly YearBar[] {
+/**
+ * The court's years as bars. The ÎCCJ's archive is a recent, partial set —
+ * none of its years is whole, and they do not compare — so each of its bars
+ * is drawn partial, whatever the Portal's capture holds whole.
+ */
+export function courtYearBars(sheet: Pick<CourtSheet, 'level' | 'newestAt' | 'years'>, firstWholeYear: number, from = 2019): readonly YearBar[] {
   const lastYear = courtLastYear(sheet) ?? firstWholeYear
-  return yearBars(
+  const bars = yearBars(
     sheet.years.map((entry) => ({ key: String(entry.year), count: entry.count })),
     { from, lastYear, firstWholeYear },
   )
+  return sheet.level === 'inalta_curte' ? bars.map((bar) => ({ ...bar, partial: true })) : bars
 }

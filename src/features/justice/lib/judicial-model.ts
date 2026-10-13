@@ -43,7 +43,7 @@ export function mergedMatters(groups: readonly CountGroup[]): readonly Share[] {
     .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key))
 }
 
-/** The stages a reader knows; revisions and annulment appeals are gathered as the extraordinary remedies. */
+/** The stages a reader knows; revisions and annulment appeals are gathered as the extraordinary remedies (`EXTRAORDINARY_STAGES`). */
 export type StageKey = 'fond' | 'apel' | 'recurs' | 'contestatie' | 'extraordinare'
 export const STAGE_KEYS: readonly StageKey[] = ['fond', 'apel', 'recurs', 'contestatie', 'extraordinare']
 
@@ -55,8 +55,29 @@ export const MAIN_STAGES: readonly { readonly stage: string; readonly key: Stage
   { stage: 'ContestaţieNCPP', key: 'contestatie' },
 ]
 
-export function stageKeyOf(stage: string): StageKey {
-  return MAIN_STAGES.find((main) => main.stage === stage)?.key ?? 'extraordinare'
+/**
+ * The extraordinary remedies as the API stores them: revisions and annulment
+ * appeals, after each stage they reopen. An appeal in the interest of the law
+ * (`Recurs în interesul legii`) is not one of them: the ÎCCJ unifies the case
+ * law and decides no party's case, so it stays with the stages none of the
+ * groups counts.
+ */
+export const EXTRAORDINARY_STAGES: readonly string[] = [
+  'RevizuireFond',
+  'ContestatieinanulareApel',
+  'RevizuireApel',
+  'ContestatieinanulareFond',
+  'RevizuireRecurs',
+  'ContestatieinanulareRecurs',
+  'ContestatieInAnulareNCPP',
+  'RevizuireContestatieNCPP',
+]
+
+/** A stage's group, or null for a stage none of them counts (the rest of a total). */
+export function stageKeyOf(stage: string): StageKey | null {
+  const main = MAIN_STAGES.find((entry) => entry.stage === stage)
+  if (main) return main.key
+  return EXTRAORDINARY_STAGES.includes(stage) ? 'extraordinare' : null
 }
 
 export interface YearBar {

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { JUDICIAL_COURT_LEVELS } from '@/schemas/judicial'
 import { COURT_NAMES } from './court-names.generated'
 import { compactCountText, formatJudicialDate } from './judicial-format'
-import { caseCategoryLabel, courtLevelLabel, courtName } from './judicial-labels'
+import { caseCategoryLabel, caseStageLabel, courtLevelLabel, courtName } from './judicial-labels'
 
 // The page's language, pinned: the test environment activates none.
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
@@ -45,6 +45,37 @@ describe('caseCategoryLabel', () => {
   it('keeps an unknown matter as spelled, and null as null', () => {
     expect(caseCategoryLabel('Materie nouă')).toBe('Materie nouă')
     expect(caseCategoryLabel(null)).toBeNull()
+  })
+})
+
+describe('caseStageLabel', () => {
+  // Each stage as the API serves it on a case: its code and its display name (read 2026-10-13); RIL has no name.
+  const STAGES: readonly (readonly [string, string | null, string])[] = [
+    ['Fond', 'Fond', 'Fond'],
+    ['Apel', 'Apel', 'Apel'],
+    ['Recurs', 'Recurs', 'Recurs'],
+    ['ContestaţieNCPP', 'Contestaţie(NCPP)', 'Contestație'],
+    ['RevizuireFond', 'Revizuire - Fond', 'Revizuire (fond)'],
+    ['RevizuireApel', 'Revizuire - Apel', 'Revizuire (apel)'],
+    ['RevizuireRecurs', 'Revizuire - Recurs', 'Revizuire (recurs)'],
+    ['RevizuireContestatieNCPP', 'Revizuire - Contestaţie(NCPP)', 'Revizuire (contestație)'],
+    ['ContestatieinanulareFond', 'Contestaţie în anulare - Fond', 'Contestație în anulare (fond)'],
+    ['ContestatieinanulareApel', 'Contestaţie în anulare - Apel', 'Contestație în anulare (apel)'],
+    ['ContestatieinanulareRecurs', 'Contestaţie în anulare - Recurs', 'Contestație în anulare (recurs)'],
+    ['ContestatieInAnulareNCPP', 'Contestaţie în anulare - Contestaţie(NCPP)', 'Contestație în anulare (contestație)'],
+    ['Recurs în interesul legii', null, 'Recurs în interesul legii'],
+  ]
+
+  it('reads a stage’s code and its display name alike, as the page’s own label', () => {
+    for (const [code, name, label] of STAGES) {
+      expect(caseStageLabel(code)).toBe(label)
+      if (name !== null) expect(caseStageLabel(name)).toBe(label)
+    }
+  })
+
+  it('keeps a stage it does not know as the source wrote it, and null as null', () => {
+    expect(caseStageLabel('Etapă nouă')).toBe('Etapă nouă')
+    expect(caseStageLabel(null)).toBeNull()
   })
 })
 

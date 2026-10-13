@@ -52,7 +52,10 @@ export function stageMatrix(snapshot: JusticeHubSnapshot): Readonly<Partial<Reco
   const rowOf = (level: JudicialCourtLevel) => (matrix[level] ??= { fond: 0, apel: 0, recurs: 0, contestatie: 0, extraordinare: 0, other: 0 })
   for (const level of Object.keys(snapshot.cases.byLevelInYear) as JudicialCourtLevel[]) rowOf(level)
   for (const stage of snapshot.stages) {
-    for (const [level, count] of Object.entries(stage.byLevelInYear) as [JudicialCourtLevel, number][]) rowOf(level)[stageKeyOf(stage.stage)] += count
+    const key = stageKeyOf(stage.stage)
+    // A stage no group counts (the ÎCCJ's appeals in the interest of the law) is in `other`, the remainder.
+    if (key === null) continue
+    for (const [level, count] of Object.entries(stage.byLevelInYear) as [JudicialCourtLevel, number][]) rowOf(level)[key] += count
   }
   for (const level of Object.keys(matrix) as JudicialCourtLevel[]) {
     const row = rowOf(level)

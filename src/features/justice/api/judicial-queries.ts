@@ -76,6 +76,17 @@ export const CASES_QUERY = /* GraphQL */ `
   }
 `
 
+/** Whether a court has a case of a number, and nothing else: the API answers a number it lacks at once. */
+export const CASE_EXISTS_QUERY = /* GraphQL */ `
+  query JudicialCaseExists($code: String!, $number: String!) {
+    judicialCase(institutionCode: $code, caseNumber: $number) {
+      case {
+        caseId
+      }
+    }
+  }
+`
+
 export const CASE_QUERY = /* GraphQL */ `
   query JudicialCasePage($code: String!, $number: String!) {
     judicialCase(institutionCode: $code, caseNumber: $number) {

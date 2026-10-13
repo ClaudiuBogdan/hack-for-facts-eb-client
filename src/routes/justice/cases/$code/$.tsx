@@ -42,10 +42,14 @@ export const Route = createFileRoute('/justice/cases/$code/$')({
       void context.queryClient.prefetchQuery(hooks.justiceCaseQueryOptions(params.code, number)).catch(() => undefined)
       return { code: params.code, number }
     }
-    if (params.code === SLOW_CASE_COURT) return { code: params.code, number }
+    const { caseSurelyAbsentForSsr, readCaseForSsr } = await import('@/features/justice/api/justice-ssr')
+    if (params.code === SLOW_CASE_COURT) {
+      // Its sheet is the browser's to read, but a number it lacks the API names at once: a 404, not a page that later says so.
+      if (await caseSurelyAbsentForSsr(params.code, number)) throw notFound()
+      return { code: params.code, number }
+    }
     // Read directly, not through the query client: a query created on the server
     // is dehydrated with the server's clock and would read again on mount.
-    const { readCaseForSsr } = await import('@/features/justice/api/justice-ssr')
     const read = await readCaseForSsr(params.code, number)
     if (read.sheet === null) throw notFound()
     return read
@@ -65,7 +69,7 @@ export const Route = createFileRoute('/justice/cases/$code/$')({
     const number = params._splat
     const canonical = `${getSiteUrl()}${casePath(params.code, number)}`
     const sheet = loaderData?.sheet ?? match.context.queryClient.getQueryData<CaseSheet | null>(justiceKeys.case(params.code, number)) ?? null
-    const title = buildCaseDocumentTitle(params.code, number)
+    const title = buildCaseDocumentTitle(translator, params.code, number)
     const court = courtName(params.code)
     const description = sheet
       ? translator._(msg`Dosarul ${number} de la ${court}: ședințele, căile de atac, părțile pe roluri și legile invocate, de pe portalul instanțelor. Persoanele nu sunt numite.`)

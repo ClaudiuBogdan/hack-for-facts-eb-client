@@ -1,3 +1,4 @@
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
@@ -8,17 +9,21 @@ import type { YearBar } from '../lib/judicial-model'
  * Cases by the year of their source date, as columns. The years before the
  * capture went dense are drawn dashed — they hold only cases still active
  * later — and the capture's last year is a part-year; the legend says both.
+ * A bar drawn partial says so whatever year it is (the ÎCCJ archive's).
  * Exact counts sit above the columns.
  */
 export function JusticeYearsChart({
   bars,
   lastMonth,
+  archiveMonth = null,
   compact = false,
   className,
 }: {
   readonly bars: readonly YearBar[]
   /** The capture's last month (`2026-06`): where the last year stops. */
   readonly lastMonth: string | null
+  /** The ÎCCJ archive's last month, when its cases are in the bars too: it runs past the Portal's. */
+  readonly archiveMonth?: string | null
   /** A single court's figures: in thousands („11,3 mii"), not in millions. */
   readonly compact?: boolean
   readonly className?: string
@@ -43,6 +48,7 @@ export function JusticeYearsChart({
             />
             <span className="sr-only">
               {bar.year}: {countText(bar.count)}
+              {bar.partial ? <> ({t`preluare parțială`})</> : bar.running ? <> ({t`an în curs`})</> : null}
             </span>
           </li>
         ))}
@@ -64,10 +70,16 @@ export function JusticeYearsChart({
               <Trans>preluare parțială</Trans>
             </li>
           ) : null}
-          {bars.some((bar) => bar.running) && lastMonth ? (
+          {bars.some((bar) => bar.running && !bar.partial) && lastMonth ? (
             <li className="flex items-center gap-1.5">
               <span className="size-2.5 bg-primary/45" aria-hidden="true" />
-              <Trans>an în curs, până în {monthText(lastMonth, 'long')}</Trans>
+              {archiveMonth ? (
+                <Trans>
+                  an în curs, până în {monthText(lastMonth, 'long')} (arhiva ÎCCJ: {monthText(archiveMonth, 'long')})
+                </Trans>
+              ) : (
+                <Trans>an în curs, până în {monthText(lastMonth, 'long')}</Trans>
+              )}
             </li>
           ) : null}
         </ul>

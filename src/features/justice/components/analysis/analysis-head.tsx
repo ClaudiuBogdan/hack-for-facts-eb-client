@@ -47,7 +47,7 @@ function headlineSize(text: string): string {
   return 'text-2xl sm:text-4xl'
 }
 
-function Headline({ question, onChange, onFilters }: { readonly question: Question; readonly onChange: Change; readonly onFilters: () => void }) {
+function Headline({ question, onChange, onFilters }: { readonly question: Question; readonly onChange: Change; readonly onFilters: (opener: HTMLElement) => void }) {
   const phrases = headlineOf(question)
   return (
     <h1 id="justice-analysis-title" className={cn('mt-6 max-w-5xl font-extrabold leading-[1.02] tracking-tighter text-foreground sm:mt-8', headlineSize(headlineText(question)))}>
@@ -64,7 +64,7 @@ function Headline({ question, onChange, onFilters }: { readonly question: Questi
               </span>
             ) : (
               <span className="group/phrase relative">
-                <button type="button" onClick={onFilters} className={PHRASE}>
+                <button type="button" onClick={(event) => onFilters(event.currentTarget)} className={PHRASE}>
                   {phrase.text}
                 </button>
                 {/* Straight after the phrase, no break before it; on a phone the inline ✕ may start the next line, the comma never. */}
@@ -86,7 +86,7 @@ function Headline({ question, onChange, onFilters }: { readonly question: Questi
   )
 }
 
-export function AnalysisHead({ question, onChange, onFilters }: { readonly question: Question; readonly onChange: Change; readonly onFilters: () => void }) {
+export function AnalysisHead({ question, onChange, onFilters }: { readonly question: Question; readonly onChange: Change; readonly onFilters: (opener: HTMLElement) => void }) {
   const chips = unsaidChips(question)
   const count = filterCount(question)
   const fresh = freshnessText(sourceOf(question))
@@ -135,7 +135,7 @@ export function AnalysisHead({ question, onChange, onFilters }: { readonly quest
         ) : null}
         <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-1">
           <AddFilter question={question} onChange={onChange} />
-          <button type="button" onClick={onFilters} className={LINK}>
+          <button type="button" onClick={(event) => onFilters(event.currentTarget)} className={LINK} data-analysis-filters>
             <SlidersHorizontal className="size-3.5" aria-hidden="true" />
             {t`Filtre`}
             {count > 0 ? <span className="bg-primary px-1.5 text-xs tabular-nums text-primary-foreground">{count}</span> : null}

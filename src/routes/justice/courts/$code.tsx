@@ -65,7 +65,7 @@ export const Route = createFileRoute('/justice/courts/$code')({
     const canonical = `${getSiteUrl()}${courtPath(params.code)}`
     const year = loaderData?.year ?? JUSTICE_REFERENCE_YEAR
     const court = loaderData?.court ?? match.context.queryClient.getQueryData<CourtSheet | null>(justiceKeys.court(params.code, year)) ?? null
-    const title = buildCourtDocumentTitle(params.code)
+    const title = buildCourtDocumentTitle(translator, params.code)
     const name = courtName(params.code)
     const description =
       court && court.children.length > 0

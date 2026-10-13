@@ -25,7 +25,7 @@ export const Route = createFileRoute('/justice/')({
   // In the request's own language: the shared Lingui instance may hold another request's.
   head: ({ match }) => {
     const translator = translatorFor(match.context.locale)
-    const title = buildJusticeHubTitle()
+    const title = buildJusticeHubTitle(translator)
     const description = translator._(
       msg`Dosarele de pe portalul instanțelor din România: ce se judecă, la ce instanțe, pe ce treaptă și în ce județ, cu hotărârile CEDO și deciziile CCR și CNSC. Persoanele nu sunt numite.`,
     )

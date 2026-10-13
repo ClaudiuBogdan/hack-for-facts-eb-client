@@ -49,6 +49,13 @@ describe('the court’s years', () => {
     expect(courtYearBars(sheet, 2023).filter((bar) => bar.partial).every((bar) => bar.year < 2023)).toBe(true)
   })
 
+  it('draws every year of the ÎCCJ’s archive partial: none of them is whole, nor compares with another', () => {
+    const iccj = { level: 'inalta_curte' as const, newestAt: '2026-07-24', years: [2023, 2024, 2025, 2026].map((year) => ({ year, count: year })) }
+    expect(courtYearBars(iccj, 2023).map((bar) => bar.partial)).toEqual([true, true, true, true])
+    // The years a reader can pick stay the capture's.
+    expect(courtYearChoices(iccj)).toEqual([2023, 2024, 2025, 2026])
+  })
+
   it('knows which levels have courts under them', () => {
     expect(childLevelOf({ courtLevel: 'curte_de_apel' })).toBe('tribunal')
     expect(childLevelOf({ courtLevel: 'tribunal' })).toBe('judecatorie')

@@ -46,6 +46,14 @@ describe('stageMatrix', () => {
     }
     expect(stageTotal(snapshot, 'apel')).toBeGreaterThan(0)
   })
+
+  it('counts the ÎCCJ’s appeals in the interest of the law among the other stages, not as revisions or annulment appeals', () => {
+    const ril = snapshot.stages.find((stage) => stage.stage === 'Recurs în interesul legii')?.byLevelInYear.inalta_curte ?? 0
+    expect(ril).toBeGreaterThan(0)
+    const iccj = stageMatrix(snapshot).inalta_curte
+    expect(iccj?.extraordinare).toBe(0)
+    expect(iccj?.other).toBeGreaterThanOrEqual(ril)
+  })
 })
 
 describe('courtsOf', () => {

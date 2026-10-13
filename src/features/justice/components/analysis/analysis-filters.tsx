@@ -121,7 +121,20 @@ function PickField({
   )
 }
 
-export function AnalysisFilters({ question, open, onOpenChange, onChange }: { readonly question: Question; readonly open: boolean; readonly onOpenChange: (open: boolean) => void; readonly onChange: Change }) {
+export function AnalysisFilters({
+  question,
+  open,
+  onOpenChange,
+  onChange,
+  returnFocus = () => null,
+}: {
+  readonly question: Question
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly onChange: Change
+  /** Where the focus goes back on closing: the button that opened the sheet, when it is still on the page. */
+  readonly returnFocus?: () => HTMLElement | null
+}) {
   const { width } = useWindowSize()
   const phone = width > 0 && width < 640
   const count = filterCount(question)
@@ -137,6 +150,12 @@ export function AnalysisFilters({ question, open, onOpenChange, onChange }: { re
         side={phone ? 'bottom' : 'right'}
         onOverlayClick={() => onOpenChange(false)}
         onEscapeKeyDown={keepEscapeForOpenList}
+        onCloseAutoFocus={(event) => {
+          const target = returnFocus()
+          if (!target?.isConnected) return
+          event.preventDefault()
+          target.focus()
+        }}
         closeClassName={SHEET_CLOSE}
         className={cn('flex flex-col gap-0 p-0', phone ? 'max-h-[90vh] rounded-t-2xl' : 'w-full sm:max-w-sm')}
       >

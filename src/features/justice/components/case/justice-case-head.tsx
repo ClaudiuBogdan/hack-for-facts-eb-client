@@ -6,9 +6,10 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
+import { cn } from '@/lib/utils'
 import type { CaseSheet } from '../../lib/case-model'
 import { formatJudicialDate } from '../../lib/judicial-format'
-import { caseCategoryLabel, courtName } from '../../lib/judicial-labels'
+import { caseCategoryLabel, caseStageLabel, courtName } from '../../lib/judicial-labels'
 
 /** The way back: the case's court. */
 function CaseKicker({ code }: { readonly code: string }) {
@@ -22,9 +23,10 @@ function CaseKicker({ code }: { readonly code: string }) {
   )
 }
 
-function Fact({ term, children }: { readonly term: ReactNode; readonly children: ReactNode }) {
+/** One term and its value, the description list's own group: a wide one spans both columns (`className`), never in a wrapper of its own. */
+function Fact({ term, className, children }: { readonly term: ReactNode; readonly className?: string; readonly children: ReactNode }) {
   return (
-    <div className="min-w-0 border-t border-border/70 py-2.5">
+    <div className={cn('min-w-0 border-t border-border/70 py-2.5', className)}>
       <dt>
         <MonoLabel className="text-muted-foreground">{term}</MonoLabel>
       </dt>
@@ -69,20 +71,18 @@ export function JusticeCaseHead({ sheet, sourceLine }: { readonly sheet: CaseShe
           </div>
           <dl className="grid min-w-0 grid-cols-2 gap-x-6 lg:col-span-5 lg:border-l lg:pl-8">
             <Fact term={<Trans>Materia</Trans>}>{caseCategoryLabel(record.category) ?? <Trans>nedeclarată</Trans>}</Fact>
-            <Fact term={<Trans>Etapa</Trans>}>{record.stageName ?? record.stage ?? <Trans>nedeclarată</Trans>}</Fact>
+            <Fact term={<Trans>Etapa</Trans>}>{caseStageLabel(record.stageName ?? record.stage) ?? <Trans>nedeclarată</Trans>}</Fact>
             <Fact term={record.sourceSlug === 'iccj' ? <Trans>Data din arhiva ÎCCJ</Trans> : <Trans>Data din portal</Trans>}>{opened ?? <Trans>fără dată</Trans>}</Fact>
             <Fact term={<Trans>Ultima modificare</Trans>}>{modified ?? <Trans>nedeclarată</Trans>}</Fact>
             {record.department && record.department.trim() !== '.' ? (
-              <div className="col-span-2">
-                <Fact term={<Trans>Secția</Trans>}>{record.department}</Fact>
-              </div>
+              <Fact term={<Trans>Secția</Trans>} className="col-span-2">
+                {record.department}
+              </Fact>
             ) : null}
             {record.caseNumberOld ? (
-              <div className="col-span-2">
-                <Fact term={<Trans>Număr vechi</Trans>}>
-                  <span className="font-mono tabular-nums">{record.caseNumberOld}</span>
-                </Fact>
-              </div>
+              <Fact term={<Trans>Număr vechi</Trans>} className="col-span-2">
+                <span className="font-mono tabular-nums">{record.caseNumberOld}</span>
+              </Fact>
             ) : null}
           </dl>
         </div>

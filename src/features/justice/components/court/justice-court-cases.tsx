@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { caseRowOf, type CourtCaseRow, type CourtSheet } from '../../lib/court-model'
 import { formatJudicialDate } from '../../lib/judicial-format'
-import { caseCategoryLabel } from '../../lib/judicial-labels'
+import { caseCategoryLabel, caseStageLabel } from '../../lib/judicial-labels'
 import { useJusticeCourtMoreCases } from '../../hooks/use-justice-court'
 
 const ROW = 'grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-0.5 px-1 py-2.5 text-sm'
@@ -25,7 +25,11 @@ export function JusticeCourtCases({ sheet }: { readonly sheet: CourtSheet }) {
   if (rows.length === 0) {
     return (
       <p className="mt-4 text-sm text-muted-foreground">
-        <Trans>Datele preluate nu au niciun dosar al acestei instanțe.</Trans>
+        {sheet.level === 'inalta_curte' ? (
+          <Trans>Arhiva preluată nu are niciun dosar al Curții.</Trans>
+        ) : (
+          <Trans>Preluarea de pe portal nu are niciun dosar al acestei instanțe.</Trans>
+        )}
       </p>
     )
   }
@@ -50,7 +54,7 @@ export function JusticeCourtCases({ sheet }: { readonly sheet: CourtSheet }) {
               <span className="min-w-0 truncate font-mono text-sm tabular-nums text-foreground">{row.caseNumber}</span>
               <span className="text-right text-xs tabular-nums text-muted-foreground">{formatJudicialDate(row.sourceOpenedAt) ?? <Trans>fără dată</Trans>}</span>
               <span className="col-span-2 min-w-0 truncate text-muted-foreground">
-                {[caseCategoryLabel(row.category), row.stageName].filter(Boolean).join(' · ')}
+                {[caseCategoryLabel(row.category), caseStageLabel(row.stageName)].filter(Boolean).join(' · ')}
               </span>
             </Link>
           </li>

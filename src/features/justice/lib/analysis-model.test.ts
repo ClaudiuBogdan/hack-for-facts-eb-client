@@ -79,7 +79,9 @@ describe('the filter a read sends', () => {
     const filter = filterOf(question({ levels: ['militare'], stages: ['contestatie', 'extraordinare'] }))
     expect(filter?.courtLevel?.in).toEqual(['tribunal_militar', 'curte_militara_apel'])
     expect(filter?.stage?.in).toContain('ContestaţieNCPP')
-    expect(filter?.stage?.in).toContain('Recurs în interesul legii')
+    expect(filter?.stage?.in).toContain('RevizuireApel')
+    // An appeal in the interest of the law is no party's remedy: „Alte etape" counts it.
+    expect(filter?.stage?.in).not.toContain('Recurs în interesul legii')
   })
 
   it('bounds every read by a year, or every year of the band for the years read', () => {

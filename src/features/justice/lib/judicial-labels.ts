@@ -176,6 +176,58 @@ export function stageLabel(stage: StageKey | 'other'): string {
   }
 }
 
+/** A stage's code or display name reduced to one key: no marks, no case, letters and digits only. */
+function stageFold(stage: string): string {
+  return stage
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/gu, '')
+}
+
+/**
+ * A case's own stage, read in the page's language: the four counted stages
+ * as the summaries name them, each extraordinary remedy with the stage it
+ * reopens. The API gives a stage as a code (`ContestatieinanulareApel`) and
+ * a display name (`Contestaţie în anulare - Apel`); both read the same. A
+ * stage this does not know is shown as the source wrote it.
+ */
+export function caseStageLabel(stage: string | null): string | null {
+  if (stage === null) return null
+  switch (stageFold(stage)) {
+    case 'fond':
+      return stageLabel('fond')
+    case 'apel':
+      return stageLabel('apel')
+    case 'recurs':
+      return stageLabel('recurs')
+    case 'contestatiencpp':
+      return stageLabel('contestatie')
+    case 'revizuirefond':
+      return t`Revizuire (fond)`
+    case 'revizuireapel':
+      return t`Revizuire (apel)`
+    case 'revizuirerecurs':
+      return t`Revizuire (recurs)`
+    case 'revizuirecontestatiencpp':
+      return t`Revizuire (contestație)`
+    case 'contestatieinanularefond':
+      return t`Contestație în anulare (fond)`
+    case 'contestatieinanulareapel':
+      return t`Contestație în anulare (apel)`
+    case 'contestatieinanularerecurs':
+      return t`Contestație în anulare (recurs)`
+    // The code says less than the name: an annulment appeal against a challenge (NCPP).
+    case 'contestatieinanularencpp':
+    case 'contestatieinanularecontestatiencpp':
+      return t`Contestație în anulare (contestație)`
+    case 'recursininteresullegii':
+      return t`Recurs în interesul legii`
+    default:
+      return stage
+  }
+}
+
 /** The name of the code an unresolved citation abbreviates. */
 export function codeAliasLabel(alias: CodeAlias): string {
   switch (alias) {

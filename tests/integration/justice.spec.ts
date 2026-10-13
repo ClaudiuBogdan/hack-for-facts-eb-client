@@ -27,6 +27,13 @@ test.describe('Justice pages', () => {
     await expect(page.getByRole('heading', { name: 'Pe ce treaptă sunt dosarele' })).toBeVisible()
   })
 
+  test('an English reader’s front door, court and case are titled in English, a court as it is called', async ({ request }) => {
+    const titleOf = async (path: string) => /<title>([^<]*)<\/title>/u.exec(await (await request.get(path)).text())?.[1]
+    expect(await titleOf('/justice?lang=en')).toBe('Romania&#x27;s courts — Justice — Transparenta.eu')
+    expect(await titleOf('/justice/courts/TribunalulSALAJ?lang=en')).toBe('Tribunalul Sălaj — Justice — Transparenta.eu')
+    expect(await titleOf('/justice/cases/CurteadeApelCONSTANTA/5180/118/2021/a3?lang=en')).toBe('Case 5180/118/2021/a3 — Curtea de Apel Constanța — Justice — Transparenta.eu')
+  })
+
   test('a court is rendered on the server with its matters, stages and the courts under it', async ({ page }) => {
     const response = await page.goto('/justice/courts/TribunalulSALAJ')
     await waitForPageReady(page)
@@ -115,6 +122,8 @@ test.describe('Justice pages', () => {
   test('a court or a case the portal does not have is a 404', async ({ page }) => {
     expect((await page.goto('/justice/courts/TribunalulNIMIC'))?.status()).toBe(404)
     expect((await page.goto('/justice/cases/TribunalulSALAJ/1/1/1900'))?.status()).toBe(404)
+    // The ÎCCJ's sheet is read in the browser, but a number it lacks the API names at once.
+    expect((await page.goto('/justice/cases/InaltaCurtedeCasatiesiJustitie/9999999/1/2025'))?.status()).toBe(404)
   })
 
   test('the mock-era addresses lead to the front door', async ({ page }) => {

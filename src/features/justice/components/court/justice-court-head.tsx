@@ -107,7 +107,12 @@ function headSentence(sheet: CourtSheet): ReactNode {
   if (sheet.inYear === 0) {
     return (
       <>
-        {what} <Trans>Datele preluate nu au dosare ale ei cu data din {sheet.year}.</Trans>
+        {what}{' '}
+        {sheet.level === 'inalta_curte' ? (
+          <Trans>Arhiva preluată nu are dosare ale Curții cu data din {sheet.year}.</Trans>
+        ) : (
+          <Trans>Preluarea de pe portal nu are dosare ale instanței cu data din {sheet.year}.</Trans>
+        )}
       </>
     )
   }
@@ -183,7 +188,7 @@ export function JusticeCourtHead({
                 </Link>
               ) : null}
             </p>
-            <JusticeCaseLookup code={sheet.code} className="mt-6" />
+            <JusticeCaseLookup code={sheet.code} archive={sheet.level === 'inalta_curte'} className="mt-6" />
           </div>
           <div className="min-w-0 lg:col-span-5 lg:border-l lg:pl-8">{aside}</div>
         </div>

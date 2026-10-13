@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { FileQuestion } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 import type { JusticeCaseServerRead } from '../../api/justice-ssr'
 import type { CaseSheet } from '../../lib/case-model'
 import { countText, dayText, formatHearingTime, formatJudicialDate } from '../../lib/judicial-format'
-import { caseCategoryLabel, codeAliasLabel, courtName, hearingsCount, linksCount, partiesCount, partyKindCount, partyRoleLabel } from '../../lib/judicial-labels'
+import { caseCategoryLabel, caseStageLabel, codeAliasLabel, courtName, hearingsCount, linksCount, partiesCount, partyKindCount, partyRoleLabel } from '../../lib/judicial-labels'
 import { buildCaseDocumentTitle } from '../../lib/justice-page-titles'
 import { useJusticeCase } from '../../hooks/use-justice-case'
 import { JusticeSourceLine } from '../justice-source-line'
@@ -32,7 +32,8 @@ export function JusticeCasePage({ code, number, initialData }: { readonly code: 
   const seeded = initialData?.code === code && initialData.number === number ? initialData.sheet : undefined
   const query = useJusticeCase(code, number, seeded)
   const sheet = query.data
-  useClientDocumentTitle(buildCaseDocumentTitle(code, number))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildCaseDocumentTitle(i18n, code, number))
 
   if (sheet) return <CaseSheetView sheet={sheet} />
   if (sheet === null) return <CaseMissing code={code} number={number} />
@@ -338,7 +339,7 @@ function RelatedBand({ sheet, index }: { readonly sheet: CaseSheet; readonly ind
                     </MonoLabel>
                     <span className="col-span-2 min-w-0 truncate text-muted-foreground">
                       <span className="font-mono tabular-nums">{other.caseNumber}</span>
-                      {[caseCategoryLabel(other.category), other.stageName, formatJudicialDate(other.sourceOpenedAt)].filter(Boolean).map((part) => ` · ${part ?? ''}`)}
+                      {[caseCategoryLabel(other.category), caseStageLabel(other.stageName), formatJudicialDate(other.sourceOpenedAt)].filter(Boolean).map((part) => ` · ${part ?? ''}`)}
                     </span>
                   </Link>
                 </li>

@@ -1,5 +1,5 @@
 import type { JudicialCourtLevel } from '@/schemas/judicial'
-import type { StageKey } from './judicial-model'
+import { EXTRAORDINARY_STAGES, type StageKey } from './judicial-model'
 
 /**
  * The codes the analysis page filters by — levels, matters, stages — what
@@ -61,25 +61,17 @@ export function matterKeyOf(raw: string): MatterKey | null {
 
 /**
  * The stages the API stores with more than a few hundred cases, by the
- * group a reader knows; they hold all but some 1,500 of the 6.3 million
- * cases. What none of them counts is „Alte etape": the rest of the total.
+ * group a reader knows; they hold all but some 1,700 of the 6.3 million
+ * cases. What none of them counts is „Alte etape": the rest of the total,
+ * the ÎCCJ's 239 appeals in the interest of the law among them.
  */
 export const STAGE_CODES: Readonly<Record<StageKey, readonly string[]>> = {
   fond: ['Fond'],
   apel: ['Apel'],
   recurs: ['Recurs'],
   contestatie: ['ContestaţieNCPP'],
-  extraordinare: [
-    'RevizuireFond',
-    'ContestatieinanulareApel',
-    'RevizuireApel',
-    'ContestatieinanulareFond',
-    'RevizuireRecurs',
-    'ContestatieinanulareRecurs',
-    'ContestatieInAnulareNCPP',
-    'RevizuireContestatieNCPP',
-    'Recurs în interesul legii',
-  ],
+  // Not the ÎCCJ's appeals in the interest of the law: they are no party's remedy, and count among „Alte etape".
+  extraordinare: EXTRAORDINARY_STAGES,
 }
 
 /** The stages none of the groups counts, as a key of their own. */

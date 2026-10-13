@@ -5,8 +5,8 @@ import { Trans } from '@lingui/react/macro'
 import { Search } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
-import { matchCourts } from '../../lib/court-search'
-import { casesCount, courtLevelLabel, courtName } from '../../lib/judicial-labels'
+import { COURT_SEARCH_RESULTS, matchCourts } from '../../lib/court-search'
+import { casesCount, courtLevelLabel, courtName, courtsCount } from '../../lib/judicial-labels'
 import type { HubCourt } from '../../lib/hub-snapshot-types'
 
 /**
@@ -19,7 +19,10 @@ export function JusticeCourtSearch({ courts, year, className }: { readonly court
   const [active, setActive] = useState(0)
   const navigate = useNavigate()
   const listId = useId()
-  const hits = useMemo(() => matchCourts(courts, query), [courts, query])
+  const matches = useMemo(() => matchCourts(courts, query, Number.POSITIVE_INFINITY), [courts, query])
+  const hits = matches.slice(0, COURT_SEARCH_RESULTS)
+  // A search that found nothing says so, on screen and to a screen reader; one that found courts says how many, and how many it shows.
+  const searched = query.trim().length > 0
   const optionId = (index: number) => `${listId}-${String(index)}`
   return (
     <div className={cn('relative max-w-xl', className)}>
@@ -86,6 +89,15 @@ export function JusticeCourtSearch({ courts, year, className }: { readonly court
           ))}
         </ul>
       ) : null}
+      <p role="status" className={cn('text-sm text-muted-foreground', searched && hits.length === 0 ? 'mt-2' : 'sr-only')}>
+        {!searched ? null : hits.length === 0 ? (
+          <Trans>Nicio instanță cu acest nume. Încearcă un oraș sau un județ.</Trans>
+        ) : matches.length > hits.length ? (
+          t`Primele ${hits.length} din ${courtsCount(matches.length)}`
+        ) : (
+          courtsCount(hits.length)
+        )}
+      </p>
     </div>
   )
 }
