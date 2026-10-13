@@ -33,6 +33,7 @@ import {
   type RegistryQuery,
   type RegistryRead,
   isUnknownPlace,
+  TABLE_PAGE_CAP,
 } from '../model'
 import { placeKey } from '../place'
 import { groupRows, isUnplaced, townLabel, unplacedOn, yearPoints, type RegistryFigure, type Tally } from '../counts'
@@ -304,9 +305,13 @@ export function RecordsTable({
   const rows = read.rows.slice(first, first + TABLE_PAGE)
   const total = state.tally?.total ?? null
   const last = first + rows.length
-  // What is read says whether another page follows — never the count alone, which a repeat could outrun.
+  // What is read says whether another page follows — never the count alone, which a repeat could outrun. Past the cap, the filters do.
   const more = last < read.rows.length || state.more
-  const filling = rows.length < TABLE_PAGE && state.more && !state.error
+  // At the last page a reader can reach, or where the read stopped at its cap: the filters narrow the rest.
+  const capped = (page >= TABLE_PAGE_CAP && more) || (state.atCap && last >= read.rows.length)
+  // The page's rows still being read (page 5, opened by its address, waits for the second request): the frame and its arrows stay.
+  const filling = rows.length < TABLE_PAGE && state.more && !state.error && !state.atCap
+  const pageText = formatNgoNumber(page)
   const atLeast = formatNgoNumber(read.rows.length)
   const firstText = formatNgoNumber(first + 1)
   const lastText = formatNgoNumber(last)
@@ -316,7 +321,7 @@ export function RecordsTable({
     <div className={className}>
       {filling ? (
         <Pending rows={6} />
-      ) : (
+      ) : rows.length === 0 ? null : (
         <Table>
           <TableHeader>
             <TableRow>
@@ -359,12 +364,17 @@ export function RecordsTable({
         </Table>
       )}
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-        <span className="tabular-nums">
-          {total !== null && page === 1 && !more
-            ? countText(total)
-            : total !== null
-              ? t`${firstText}–${lastText} din ${totalText}`
-              : t`${firstText}–${lastText} din cel puțin ${atLeast}`}
+        {/* Said as it changes: a page waiting for its rows, then its range. */}
+        <span className="tabular-nums" aria-live="polite">
+          {rows.length === 0
+            ? filling
+              ? t`Se citește pagina ${pageText}…`
+              : t`Pagina ${pageText}`
+            : total !== null && page === 1 && !more
+              ? countText(total)
+              : total !== null
+                ? t`${firstText}–${lastText} din ${totalText}`
+                : t`${firstText}–${lastText} din cel puțin ${atLeast}`}
         </span>
         {page > 1 || more ? (
           <span className="flex items-center gap-1">
@@ -379,7 +389,7 @@ export function RecordsTable({
             </button>
             <button
               type="button"
-              disabled={!more}
+              disabled={!more || capped}
               onClick={() => onPage(page + 1)}
               className="inline-flex size-11 items-center justify-center border hover:bg-muted disabled:opacity-40 sm:size-8"
               aria-label={t`Pagina următoare`}
@@ -389,6 +399,12 @@ export function RecordsTable({
           </span>
         ) : null}
       </div>
+      {capped ? (
+        <p className="mt-3 text-sm text-muted-foreground">
+          {/* As many as it really shows: fewer where the read's cap ends among repeats. */}
+          {t`Tabelul arată primele ${formatNgoNumber(Math.min(read.rows.length, TABLE_PAGE_CAP * TABLE_PAGE))} de înregistrări: pentru celelalte, restrânge selecția cu filtrele.`}
+        </p>
+      ) : null}
       {state.error ? (
         <div role="alert" className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
           <span>{t`Citirea s-a oprit după ${atLeast} de înregistrări.`}</span>

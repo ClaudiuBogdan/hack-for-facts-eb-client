@@ -7,12 +7,14 @@ import { yearSeries } from '../model'
 import { NgoOrganizationPage } from './ngo-organization-page'
 
 vi.mock('@/features/statistics/lib/format', () => ({ activeNumberLocale: () => 'ro-RO' }))
+// The page's language, which a test may set to English.
+const lingui = vi.hoisted(() => ({ locale: 'ro' }))
 vi.mock('@lingui/react/macro', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@lingui/react/macro')>()
   return {
     ...actual,
     useLingui: () => ({
-      i18n: { locale: 'ro', _: (message: string | { readonly id: string; readonly message?: string }) => (typeof message === 'string' ? message : (message.message ?? message.id)) },
+      i18n: { locale: lingui.locale, _: (message: string | { readonly id: string; readonly message?: string }) => (typeof message === 'string' ? message : (message.message ?? message.id)) },
     }),
   }
 })
@@ -270,6 +272,30 @@ describe('NgoOrganizationPage', () => {
     expect(badge).toHaveAttribute('tabindex', '-1')
     fireEvent.click(within(band).getByRole('button', { name: 'Arată mai multe' }))
     expect(badge).not.toHaveAttribute('tabindex')
+  })
+
+  it('marks the registry’s and the dictionary’s own words as Romanian, the page’s own badge in its language (QA NG-010)', () => {
+    renderPage()
+    const purpose = document.querySelector('#ngo-profile-purpose')!
+    expect(purpose).toHaveAttribute('lang', 'ro')
+    // The mask's badge is the page's words, inside the Romanian text: in the page's language.
+    expect(within(purpose as HTMLElement).getByRole('button')).toHaveAttribute('lang', 'ro')
+    // On the English page, the badge is English inside the Romanian text.
+    lingui.locale = 'en'
+    try {
+      const english = renderPage()
+      const englishPurpose = english.container.querySelectorAll('#ngo-profile-purpose')
+      const last = englishPurpose[englishPurpose.length - 1] as HTMLElement
+      expect(last).toHaveAttribute('lang', 'ro')
+      expect(within(last).getByRole('button')).toHaveAttribute('lang', 'en')
+      english.unmount()
+    } finally {
+      lingui.locale = 'ro'
+    }
+    // Each form row's label (not the section titles, which are the page's).
+    const rows = [...band(/rând cu rând/).querySelectorAll('th[scope="row"]')]
+    expect(rows.length).toBeGreaterThan(0)
+    expect(rows.every((row) => row.querySelector('span[lang="ro"]') !== null)).toBe(true)
   })
 
   it('numbers the bands from the money where there is no purpose', () => {

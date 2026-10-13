@@ -62,6 +62,8 @@ export interface RegistryReadState {
   readonly fetching: boolean
   /** The selection has rows past what is read. */
   readonly more: boolean
+  /** The read stopped at its cap (20 requests) with rows past it: no table page reads further. */
+  readonly atCap: boolean
   /** Reads again what failed: the first page, or the next one. */
   readonly retry: () => void
 }
@@ -110,9 +112,11 @@ export function useRegistryRead(query: RegistryQuery, tablePage: number, seed: R
   const tableShort = distinct.rows.length <= tablePage * TABLE_PAGE
   const counting = !counted && !waiting && pages.length < READ_CAP_PAGES
   const fetchNext = result.fetchNextPage
+  // The table's page reads within the same cap as the counting: 20 requests, repeats or not.
+  const atCap = hasNext && pages.length >= READ_CAP_PAGES
   useEffect(() => {
-    if (hasNext && !fetching && !failed && pages.length > 0 && (tableShort || counting)) void fetchNext()
-  }, [hasNext, fetching, failed, pages.length, tableShort, counting, fetchNext])
+    if (hasNext && !fetching && !failed && pages.length > 0 && !atCap && (tableShort || counting)) void fetchNext()
+  }, [hasNext, fetching, failed, pages.length, atCap, tableShort, counting, fetchNext])
   const complete = pages.length > 0 && !hasNext
   const read: RegistryRead = {
     rows: distinct.rows,
@@ -132,7 +136,9 @@ export function useRegistryRead(query: RegistryQuery, tablePage: number, seed: R
     error: failed,
     fetching,
     more: hasNext,
-    retry: () => void (pages.length === 0 ? result.refetch() : result.fetchNextPage()),
+    atCap,
+    // Never past the cap: there, a failed refresh is read again, not continued.
+    retry: () => void (pages.length === 0 || atCap ? result.refetch() : result.fetchNextPage()),
   }
 }
 

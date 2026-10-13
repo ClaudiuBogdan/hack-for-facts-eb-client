@@ -141,7 +141,12 @@ function CandidateDetails({ candidate }: { readonly candidate: NgoOrganization }
         <Trans>Ce spune registrul despre ea</Trans>
       </summary>
       <div className="mt-2 space-y-4">
-        {purpose ? <p className="whitespace-pre-wrap text-foreground">{purpose}</p> : null}
+        {/* The registry's own words, Romanian on an English page too. */}
+        {purpose ? (
+          <p lang="ro" className="whitespace-pre-wrap text-foreground">
+            {purpose}
+          </p>
+        ) : null}
         <RegistryFacts organization={candidate} />
       </div>
     </details>

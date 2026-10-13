@@ -7,6 +7,8 @@ import { tallyOfCounts, tallyToData, type RegistryCounts } from '../counts'
 import { EMPTY_QUERY, selectionKey, type RegistryQuery } from '../model'
 import { row, snapshot } from '../test/fixtures'
 import { NgoRegistryListPage } from './registry-list-page'
+import { TABLE_PAGE_CAP } from '../model'
+import { viewOf } from '../view'
 
 const api = vi.hoisted(() => ({ fetchRegistryRecords: vi.fn() }))
 vi.mock('../api', () => api)
@@ -56,12 +58,14 @@ const seedOf = (query: RegistryQuery) => ({
 })
 
 const onSearch = vi.fn()
+const onView = vi.fn()
 const renderPage = (search: Record<string, string>, query: RegistryQuery | null) =>
-  render(<NgoRegistryListPage search={search} seed={query ? seedOf(query) : null} onSearch={onSearch} />, { queryClient: createTestQueryClient() })
+  render(<NgoRegistryListPage search={search} seed={query ? seedOf(query) : null} onSearch={onSearch} onView={onView} />, { queryClient: createTestQueryClient() })
 
 describe('NgoRegistryListPage', () => {
   beforeEach(() => {
     onSearch.mockReset()
+    onView.mockReset()
     api.fetchRegistryRecords.mockReset()
     api.fetchRegistryRecords.mockResolvedValue({ edges: [], pageInfo: { hasNextPage: false, endCursor: null }, snapshot })
     Element.prototype.scrollIntoView = vi.fn()
@@ -107,8 +111,72 @@ describe('NgoRegistryListPage', () => {
     expect(within(panel()).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
     expect(within(panel()).queryByRole('table')).not.toBeInTheDocument()
     expect(within(panel()).getByText(/fără un județ recunoscut nu apar pe hartă/)).toBeInTheDocument()
-    rerender(<NgoRegistryListPage search={{ status: 'Dizolvata' }} seed={seedOf({ ...EMPTY_QUERY, status: 'dissolved' })} onSearch={onSearch} />)
+    rerender(<NgoRegistryListPage search={{ status: 'Dizolvata' }} seed={seedOf({ ...EMPTY_QUERY, status: 'dissolved' })} onSearch={onSearch} onView={onView} />)
     expect(within(panel()).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
+  })
+
+  it('keeps the answer’s view in the address: the table’s page, the tab, the counties’ map (QA NG-002, NG-003)', () => {
+    const { unmount } = renderPage({ county: 'CLUJ', status: 'Radiat' }, CLUJ_RADIATE)
+    fireEvent.click(screen.getByRole('button', { name: 'Pagina următoare' }))
+    expect(onView).toHaveBeenLastCalledWith({ page: 2 })
+    expect(screen.getByText(/^26–\d+ din/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Pe forme' }))
+    expect(onView).toHaveBeenLastCalledWith({ by: 'forma' })
+    // Back from a record (the page mounts again) or a shared link: the address reopens page 2 of the records.
+    unmount()
+    renderPage({ county: 'CLUJ', status: 'Radiat', page: '2' }, CLUJ_RADIATE)
+    expect(screen.getByRole('tab', { name: 'Înregistrări' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByText(/^26–\d+ din/)).toBeInTheDocument()
+  })
+
+  it('opens the tab and the counties’ map an address names, and the default for one it cannot use', () => {
+    const { unmount } = renderPage({ by: 'judet', view: 'map' }, EMPTY_QUERY)
+    expect(screen.getByRole('tab', { name: 'Pe județe' })).toHaveAttribute('aria-selected', 'true')
+    expect(within(screen.getByRole('tabpanel')).getByRole('button', { name: 'Hartă', pressed: true })).toBeInTheDocument()
+    unmount()
+    renderPage({ by: 'nimic', view: 'harta', page: '-3' }, EMPTY_QUERY)
+    expect(screen.getByRole('tab', { name: 'Înregistrări' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByText(/^1–25 din/)).toBeInTheDocument()
+  })
+
+  it('opens at most the last page a reader can reach from a link, and waits for a deep page’s rows', () => {
+    expect(viewOf({ page: 999 }).page).toBe(TABLE_PAGE_CAP)
+    expect(viewOf({ page: 3 }).page).toBe(3)
+    expect(viewOf({}).page).toBe(1)
+    // The server's first 30 rows cover pages 1–2; page 5 waits for the read on, its arrows kept, never „101–100".
+    api.fetchRegistryRecords.mockReturnValue(new Promise(() => {}))
+    const { unmount } = renderPage({ county: 'CLUJ', status: 'Radiat', page: '5' }, CLUJ_RADIATE)
+    expect(screen.getByText('Se citește pagina 5…')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pagina anterioară' })).toBeEnabled()
+    expect(screen.queryByText(/^101–/)).not.toBeInTheDocument()
+    unmount()
+  })
+
+  it('stops at 20 requests however many rows repeat, and says the filters narrow the rest', async () => {
+    // Every page after the server's is the same row again: the table's need never fills, the read must still stop.
+    const repeat = row({ id: 'same', registryNumber: '9/A/2020', name: 'ASOCIATIA REPETATA', county: 'CLUJ', sourceRegistryStatus: 'Radiat' })
+    api.fetchRegistryRecords.mockResolvedValue({ edges: Array.from({ length: 100 }, (_, index) => ({ cursor: String(index), node: repeat })), pageInfo: { hasNextPage: true, endCursor: 'x' }, snapshot })
+    renderPage({ county: 'CLUJ', status: 'Radiat', page: '79' }, CLUJ_RADIATE)
+    // The note says what the table really holds: the server's 30 and the one repeated row, 31.
+    expect(await screen.findByText(/^Tabelul arată primele 31 de înregistrări: pentru celelalte, restrânge selecția cu filtrele\.$/, {}, { timeout: 5000 })).toBeInTheDocument()
+    // The server's page and 19 more: 20 in all.
+    expect(api.fetchRegistryRecords).toHaveBeenCalledTimes(19)
+    expect(screen.getByRole('button', { name: 'Pagina următoare' })).toBeDisabled()
+  })
+
+  it('says a deep page could not be read, with a retry, never an empty range', async () => {
+    api.fetchRegistryRecords.mockRejectedValue(new Error('503'))
+    renderPage({ county: 'CLUJ', status: 'Radiat', page: '5' }, CLUJ_RADIATE)
+    expect(await screen.findByRole('alert')).toHaveTextContent('Citirea s-a oprit')
+    expect(screen.getByText('Pagina 5')).toBeInTheDocument()
+    expect(screen.queryByText(/^101–/)).not.toBeInTheDocument()
+  })
+
+  it('filters by an irregular registry number the registry holds (QA NG-001)', async () => {
+    api.fetchRegistryRecords.mockResolvedValue(firstPage)
+    renderPage({ registryNumber: '1/A/122' }, null)
+    await waitFor(() => expect(api.fetchRegistryRecords).toHaveBeenCalledWith({ registryNumber: { eq: '1/A/122' } }, expect.anything()))
+    expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent('Toate ONG-urile din registru')
   })
 
   it('moves between the tabs with the arrow keys, one tab stop', () => {
@@ -126,7 +194,7 @@ describe('NgoRegistryListPage', () => {
     const sheet = screen.getByRole('dialog')
     fireEvent.click(within(sheet).getByRole('button', { name: 'Dizolvate' }))
     expect(onSearch).toHaveBeenLastCalledWith({ ...EMPTY_QUERY, status: 'dissolved' })
-    rerender(<NgoRegistryListPage search={{ status: 'Dizolvata' }} seed={null} onSearch={onSearch} />)
+    rerender(<NgoRegistryListPage search={{ status: 'Dizolvata' }} seed={null} onSearch={onSearch} onView={onView} />)
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 

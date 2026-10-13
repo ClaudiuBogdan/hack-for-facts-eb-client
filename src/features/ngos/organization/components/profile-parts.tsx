@@ -304,7 +304,8 @@ function SectionRows({ title, rows, columns }: { readonly title: ReactNode; read
       {rows.map((row) => (
         <tr key={row.codes.join('-')} className="border-t border-border/60">
           <th scope="row" className="py-2 pl-1 pr-3 text-left text-sm font-normal text-foreground">
-            {row.base}
+            {/* The dictionary's own words, in Romanian on an English page too: said so to a screen reader. */}
+            <span lang="ro">{row.base}</span>
             <MonoLabel className="ml-2 text-muted-foreground">{row.codes.join('/')}</MonoLabel>
           </th>
           {/* A balance row has one value, at year end: the plan column stays empty, not dashed. */}
