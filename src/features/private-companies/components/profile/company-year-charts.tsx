@@ -299,20 +299,25 @@ function TooltipRow({ swatch, label, value }: { readonly swatch: string; readonl
 }
 
 /**
- * Turnover, net result and people over every year with a statement, on one
- * reading: the full-size sibling of the head's chart. People are a line in a
- * band of their own above, with its low and high in the gutter in its colour;
- * lei are bars below on their own axis — turnover wide and pale, the net
- * result narrow and solid in front of it from the same zero, a loss red and
- * under the line. The two bands share only the years, so no line is read
- * against a bar's scale. A year with no statement stays shaded across both.
- * Pointer and keyboard as on `YearBars`: a rule, and the year's three figures.
+ * Turnover, the bottom line and people over every year with a statement, on
+ * one reading: the full-size sibling of the head's chart. People are a line in
+ * a band of their own above, with its low and high in the gutter in its
+ * colour; lei are bars below on their own axis — turnover wide and pale, the
+ * bottom line narrow in front of it from the same zero: a net result solid, a
+ * negative one red and under the line, and an admitted profit whose result is
+ * held outlined — another metric, never drawn or named as a result. Each
+ * year's reading names its own bottom line (`netLabel`). The two bands share
+ * only the years, so no line is read against a bar's scale. A year with no
+ * comparable value stays shaded across both. Pointer and keyboard as on
+ * `YearBars`: a rule, and the year's three figures.
  */
 export function CombinedYears({
   years,
   turnover,
   net,
   employees,
+  netLabel,
+  profitOnly = () => false,
   labels,
   formatTick,
   formatMoney,
@@ -324,11 +329,16 @@ export function CombinedYears({
   readonly turnover: readonly (number | null)[]
   readonly net: readonly (number | null)[]
   readonly employees: readonly (number | null)[]
-  readonly labels: { readonly turnover: string; readonly net: string; readonly loss: string; readonly employees: string }
+  /** A year's bottom line by its own metric („Rezultat net", „Profit net"): what that year's reading calls it. */
+  readonly netLabel: (index: number) => string
+  /** A year whose bottom line is an admitted profit beside a held result: outlined, never drawn as a result. */
+  readonly profitOnly?: (index: number) => boolean
+  /** The legend: turnover, a net result, a negative one, an admitted profit, people. */
+  readonly labels: { readonly turnover: string; readonly net: string; readonly loss: string; readonly profit: string; readonly employees: string }
   readonly formatTick: (value: number) => string
   readonly formatMoney: (value: number) => string
   readonly formatCount: (value: number) => string
-  /** What a year with no value at all means („Niciun bilanț publicat"). */
+  /** What a year with no value at all means („Fără valori comparabile pentru acest an"). */
   readonly emptyLabel: (index: number) => string
   /** The chart's accessible name. */
   readonly label: string
@@ -353,7 +363,9 @@ export function CombinedYears({
   const narrow = Math.min(slot * 0.26, 14)
   const centre = (index: number) => ((index + 0.5) / count) * 100
   const empty = (index: number) => (turnover[index] ?? null) === null && (net[index] ?? null) === null && (employees[index] ?? null) === null
-  const losses = net.some((value) => value !== null && value < 0)
+  const losses = net.some((value, index) => value !== null && value < 0 && !profitOnly(index))
+  const results = net.some((value, index) => value !== null && value >= 0 && !profitOnly(index))
+  const profits = net.some((value, index) => value !== null && profitOnly(index))
   const dim = (index: number) => active !== null && active !== index && 'opacity-40'
 
   let staffPath = ''
@@ -369,7 +381,7 @@ export function CombinedYears({
     return [
       String(years[index]),
       part(labels.turnover, turnover[index] ?? null, formatMoney),
-      part(labels.net, net[index] ?? null, formatMoney),
+      part(netLabel(index), net[index] ?? null, formatMoney),
       part(labels.employees, employees[index] ?? null, formatCount),
     ].join(', ')
   }
@@ -384,10 +396,18 @@ export function CombinedYears({
           <span className="size-2.5 rounded-[2px] bg-primary/30" aria-hidden="true" />
           {labels.turnover}
         </span>
-        <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-[2px] bg-primary" aria-hidden="true" />
-          {labels.net}
-        </span>
+        {results ? (
+          <span className="flex items-center gap-1.5">
+            <span className="size-2.5 rounded-[2px] bg-primary" aria-hidden="true" />
+            {labels.net}
+          </span>
+        ) : null}
+        {profits ? (
+          <span className="flex items-center gap-1.5">
+            <span className="size-2.5 rounded-[2px] border border-primary" aria-hidden="true" />
+            {labels.profit}
+          </span>
+        ) : null}
         {losses ? (
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[2px] bg-destructive/70" aria-hidden="true" />
@@ -465,6 +485,7 @@ export function CombinedYears({
                   if (bar.value === null || bar.value === 0) return null
                   const from = yAt(Math.max(bar.value, 0))
                   const to = yAt(Math.min(bar.value, 0))
+                  const outlined = bar.key === 'net' && profitOnly(index)
                   return (
                     <rect
                       key={`${bar.key}-${year}`}
@@ -474,9 +495,12 @@ export function CombinedYears({
                       height={Math.max(((to - from) * CHART_HEIGHT) / 100, 0.8)}
                       className={cn(
                         'transition-opacity',
-                        bar.key === 'turnover' ? 'fill-primary/30' : bar.value < 0 ? 'fill-destructive/70' : 'fill-primary',
+                        bar.key === 'turnover' ? 'fill-primary/30' : outlined ? 'fill-background stroke-primary' : bar.value < 0 ? 'fill-destructive/70' : 'fill-primary',
                         dim(index),
                       )}
+                      strokeWidth={outlined ? 1.5 : undefined}
+                      vectorEffect={outlined ? 'non-scaling-stroke' : undefined}
+                      data-net-kind={bar.key === 'net' ? (outlined ? 'profit' : 'result') : undefined}
                     />
                   )
                 }),
@@ -497,8 +521,12 @@ export function CombinedYears({
                       { key: 'turnover', name: labels.turnover, swatch: 'size-2 rounded-[2px] bg-primary/30', value: turnover[active] ?? null, format: formatMoney },
                       {
                         key: 'net',
-                        name: (net[active] ?? 0) < 0 ? labels.loss : labels.net,
-                        swatch: cn('size-2 rounded-[2px]', (net[active] ?? 0) < 0 ? 'bg-destructive/70' : 'bg-primary'),
+                        // The year's own metric: a negative result is a result (in red), a held result's profit a profit.
+                        name: netLabel(active),
+                        swatch: cn(
+                          'size-2 rounded-[2px]',
+                          profitOnly(active) ? 'border border-primary' : (net[active] ?? 0) < 0 ? 'bg-destructive/70' : 'bg-primary',
+                        ),
                         value: net[active] ?? null,
                         format: formatMoney,
                       },

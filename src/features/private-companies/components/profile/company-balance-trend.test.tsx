@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
 import { companyProfile, financialYear } from '../../lib/company-profile.fixture'
@@ -16,10 +16,12 @@ vi.mock('@/lib/utils', async (importOriginal) => ({
  * tap anywhere else, closes it.
  */
 
-function trend() {
+function trend(overrides: Readonly<Record<number, Parameters<typeof financialYear>[1]>> = {}) {
   const model = buildCompanyProfileModel(
     companyProfile({
-      financials: [2021, 2022, 2023].map((year) => financialYear(year, { turnover: year * 1_000, netProfit: 100, employees: 5 })),
+      financials: [2021, 2022, 2023].map((year) =>
+        financialYear(year, { turnover: year * 1_000, netProfit: 100, employees: 5, ...overrides[year] }),
+      ),
     }),
   )
   const view = render(
@@ -45,6 +47,25 @@ function pointer(type: keyof typeof POINTER_EVENT, target: Element, pointerType:
 }
 
 describe('CompanyBalanceTrend', () => {
+  // The matcher folds the figures' no-break spaces into plain ones.
+  it('writes the last year’s three figures on the drawing, and no other year’s', () => {
+    const { view } = trend({ 2023: { employees: 7, netProfit: -250 } })
+    const drawing = view.container.querySelector('figure > [aria-hidden="true"]') as HTMLElement
+    expect(within(drawing).getByText('7')).toBeInTheDocument()
+    expect(within(drawing).getByText('2,0 mil. lei')).toBeInTheDocument()
+    // A loss is written in the loss's colour.
+    expect(within(drawing).getByText('-250 lei')).toHaveClass('text-destructive')
+    expect(within(drawing).queryByText('5')).toBeNull()
+    expect(within(drawing).queryByText('100 lei')).toBeNull()
+  })
+
+  it('lifts the last year’s figures over a taller year before, which a wide label reaches into', () => {
+    const { view } = trend({ 2023: { turnover: 1_000 } })
+    const drawing = view.container.querySelector('figure > [aria-hidden="true"]') as HTMLElement
+    // 2022's turnover is the chart's top: the stack stands on it, not on 2023's low bar.
+    expect(Number.parseFloat((within(drawing).getByText('100 lei').parentElement as HTMLElement).style.bottom)).toBe(100)
+  })
+
   it('opens a year on a tap and closes it on the next, although a touch also fires the hover', () => {
     const { year, tooltip } = trend()
     pointer('pointerOver', year(1), 'touch')

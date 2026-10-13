@@ -27,15 +27,67 @@ export interface HubLeader {
   readonly previous: number | null
 }
 
-/** One CAEN division, by the main activity each company declared to ANAF. */
-export interface HubSector {
-  readonly division: string
-  /** Companies in business in the registry with this main activity. */
-  readonly activeFirms: number
-  /** Net turnover over the division's statements for the fiscal year, in lei. */
-  readonly turnover: number
-  /** Average employees over the same statements. */
-  readonly employees: number
+/**
+ * One group of the analysis's derived activity selection (v3, `ACTIVITY`):
+ * an ONRC class in its own revision (`onrc:rev3:4711`), or ANAF's fiscal
+ * code with its revision unpublished (`anaf:4711`). Never a division, never a
+ * registered principal activity; the same digits in two revisions are two
+ * groups.
+ */
+export interface HubActivityRow {
+  /** The API's group key. */
+  readonly key: string
+  readonly source: 'ONRC' | 'ANAF'
+  readonly code: string
+  /** ONRC's own revision; null for ANAF, which publishes none. */
+  readonly revision: CompanyAnalysisActivity['revision']
+  /** The API's exact label for the group, when it gives one. */
+  readonly label: string | null
+  /** The ranked measure: lei, persons or companies. */
+  readonly value: number
+  readonly companies: number
+}
+
+/** Companies with no selected activity, by why: several ONRC classes, a code outside the nomenclature, no qualified selection. */
+export interface HubActivityUnselected {
+  readonly basis: string
+  /** Null where none of its companies reported the measure. */
+  readonly value: number | null
+  readonly companies: number
+}
+
+/**
+ * One measure's ranking: its top groups, the rest of the groups together,
+ * the companies with no selection apart, and the API's totals — the shares'
+ * only denominator. The parts add up to the totals (the generator checks).
+ */
+export interface HubActivityRanking {
+  readonly total: number
+  readonly companies: number
+  readonly groupCount: number
+  readonly rows: readonly HubActivityRow[]
+  /** `value` null where none of the rest reported the measure: no sum, never a zero. */
+  readonly other: { readonly value: number | null; readonly companies: number; readonly groups: number }
+  readonly unclassified: readonly HubActivityUnselected[]
+}
+
+/**
+ * The hub's „Pe domenii" rankings, from the public API (`hub-activities.ts`):
+ * each the question its link asks the analysis — turnover; employees within
+ * the hub's headcount ceiling; the companies observed „în funcțiune".
+ */
+export interface CompanyHubActivities {
+  readonly source: {
+    readonly releaseId: string
+    readonly publishedAt: string | null
+    /** The ONRC edition the release's selection reads. */
+    readonly onrcPublished: string
+    readonly fiscalYear: number
+    readonly readOn: string
+  }
+  readonly turnover: HubActivityRanking
+  readonly employees: HubActivityRanking
+  readonly activeFirms: HubActivityRanking
 }
 
 /** Statements of one size class, by average employees. */
@@ -128,10 +180,6 @@ export interface CompanyHubSnapshot {
     readonly turnover: readonly HubLeader[]
     readonly employees: readonly HubLeader[]
   }
-  /** Every named division, by turnover. */
-  readonly sectors: readonly HubSector[]
-  /** Companies founded in the fiscal year, by the main activity declared to ANAF. */
-  readonly newFirmsBySector: readonly { readonly division: string; readonly firms: number }[]
   readonly sizeClasses: readonly HubSizeClass[]
   readonly counties: readonly HubCountyFigures[]
   /** Registrations per year from 1991, with the ones still in business. */

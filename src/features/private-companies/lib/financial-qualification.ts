@@ -67,6 +67,28 @@ export function qualifiedNet(year: PrivateCompanyFinancialYear): number | null {
   return metricStatus(year, 'net_result') === 'reported' ? decimalNumber(year.qualification.netResult) : null
 }
 
+/**
+ * A statement's bottom line as a figure may show it, with its identity.
+ * `result`: the evaluator's net result. `profit`: no admitted result, but a
+ * positive net profit the evaluator admitted beside no typed net loss at all —
+ * the layout ANAF serves the largest companies on (464d…) types no net loss,
+ * so their result is held while their profit is not. The two are different
+ * metrics: a profit is never called the net result, never added into one and
+ * never compared with one. A zero profit beside an unknown loss says nothing
+ * (a company with a loss files a zero profit), so it is no figure, nor is any
+ * other held, missing or unassessed year.
+ */
+export type AdmittedNetKind = 'result' | 'profit'
+
+export function admittedNet(year: PrivateCompanyFinancialYear): { readonly value: number; readonly kind: AdmittedNetKind } | null {
+  const result = qualifiedNet(year)
+  if (result !== null) return { value: result, kind: 'result' }
+  const profit = reportedNumber(year, 'net_profit')
+  // `missing`: no typed loss value — not a loss held, refused or unassessed. It does not prove the filing has no loss line.
+  if (profit !== null && profit > 0 && metricStatus(year, 'net_loss') === 'missing') return { value: profit, kind: 'profit' }
+  return null
+}
+
 /** Two statements may be compared only under one policy, evaluator and release. */
 export function comparable(a: PrivateCompanyFinancialYear, b: PrivateCompanyFinancialYear): boolean {
   const left = a.qualification

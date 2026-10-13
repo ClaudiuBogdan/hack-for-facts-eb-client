@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { CombinedYears, YearBars, type BarSeries } from './company-year-charts'
 
@@ -68,27 +68,60 @@ describe('YearBars', () => {
 })
 
 describe('CombinedYears', () => {
-  it('says the three figures of a year, and what a year with no statement means', () => {
+  // 2022: an admitted profit beside a held result; 2023: a net result; 2024: nothing comparable; 2025: a negative net result.
+  const kinds = ['profit', 'result', null, 'result'] as const
+  const chart = () =>
     render(
       <CombinedYears
-        years={[2023, 2024, 2025]}
-        turnover={[1_000, null, 2_000]}
-        net={[100, null, -50]}
-        employees={[5, null, 4]}
-        labels={{ turnover: 'Cifra de afaceri', net: 'Profit net', loss: 'Pierdere netă', employees: 'Salariați' }}
+        years={[2022, 2023, 2024, 2025]}
+        turnover={[900, 1_000, null, 2_000]}
+        net={[120, 100, null, -50]}
+        employees={[6, 5, null, 4]}
+        netLabel={(index) => (kinds[index] === 'profit' ? 'Profit net' : 'Rezultat net')}
+        profitOnly={(index) => kinds[index] === 'profit'}
+        labels={{ turnover: 'Cifra de afaceri', net: 'Rezultat net', loss: 'Pierdere netă', profit: 'Profit net (rezultatul net reținut)', employees: 'Salariați' }}
         formatTick={format}
         formatMoney={format}
         formatCount={format}
-        emptyLabel={() => 'Niciun bilanț publicat pentru acest an'}
+        emptyLabel={() => 'Fără valori comparabile pentru acest an'}
         label="Toate"
       />,
     )
-    const slider = screen.getByRole('slider', { name: 'Toate, 2023–2025' })
-    expect(slider).toHaveAttribute('aria-valuetext', '2025, Cifra de afaceri 2000, Profit net -50, Salariați 4')
+
+  it('names each year’s bottom line by its own metric — a negative result is never „Profit net"', () => {
+    chart()
+    const slider = screen.getByRole('slider', { name: 'Toate, 2022–2025' })
+    expect(slider).toHaveAttribute('aria-valuetext', '2025, Cifra de afaceri 2000, Rezultat net -50, Salariați 4')
     fireEvent.focus(slider)
     fireEvent.keyDown(slider, { key: 'ArrowLeft' })
-    expect(slider).toHaveAttribute('aria-valuetext', '2024, Niciun bilanț publicat pentru acest an')
-    // A loss year is drawn in the loss colour, under the line.
+    expect(slider).toHaveAttribute('aria-valuetext', '2024, Fără valori comparabile pentru acest an')
+    fireEvent.keyDown(slider, { key: 'Home' })
+    expect(slider).toHaveAttribute('aria-valuetext', '2022, Cifra de afaceri 900, Profit net 120, Salariați 6')
+  })
+
+  it('draws a held result’s profit apart from the results, in the legend and the bars', () => {
+    chart()
+    // The negative result in the loss colour; the profit outlined, never filled as a result.
     expect(document.querySelectorAll('rect.fill-destructive\\/70')).toHaveLength(1)
+    expect(document.querySelectorAll('rect[data-net-kind="profit"]')).toHaveLength(1)
+    expect(document.querySelectorAll('rect[data-net-kind="result"]')).toHaveLength(2)
+    const legend = document.querySelector('figcaption')?.textContent ?? ''
+    expect(legend).toContain('Rezultat net')
+    expect(legend).toContain('Profit net (rezultatul net reținut)')
+    expect(legend).toContain('Pierdere netă')
+  })
+
+  it('names the year being read in its tooltip by its own metric', () => {
+    chart()
+    const slider = screen.getByRole('slider', { name: 'Toate, 2022–2025' })
+    fireEvent.focus(slider)
+    fireEvent.keyDown(slider, { key: 'Home' })
+    // The reading's figures: the one list in the chart while a year is read.
+    const reading = () => within(slider.querySelector('dl') as HTMLElement)
+    expect(reading().getByText('Profit net')).toBeInTheDocument()
+    expect(reading().queryByText('Rezultat net')).toBeNull()
+    fireEvent.keyDown(slider, { key: 'End' })
+    expect(reading().getByText('Rezultat net')).toBeInTheDocument()
+    expect(reading().queryByText('Profit net')).toBeNull()
   })
 })

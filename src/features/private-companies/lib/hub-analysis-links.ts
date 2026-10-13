@@ -30,6 +30,15 @@ export function hubCompaniesSearch(year: number, scope: CompanyAnalysisScope, me
   return hubAnalysisSearch(year, { scope: metric === 'EMPLOYEES' ? withHubHeadcounts(scope) : scope, metric })
 }
 
+/**
+ * The analysis on its newest year, for the companies sharing one of a
+ * company's facts — its county, locality, legal form or selected activity:
+ * where the profile's head leads.
+ */
+export function companyFactSearch(scope: CompanyAnalysisScope) {
+  return urlSearchOf({ ...DEFAULT_STATE, scope: normalizedScope(scope) })
+}
+
 /** The companies of one county; only those in business where the hub counted only those (the density layer). */
 export function hubCountySearch(year: number, code: string, inBusiness = false) {
   return hubCompaniesSearch(year, { county: { in: [code] }, ...(inBusiness ? { observedStatus: { in: [STATUS_ACTIVE] } } : {}) })

@@ -273,7 +273,7 @@ export function unclassifiedBasisOf(bucket: { readonly key: string | null; reado
 }
 
 /** Which source an activity bucket's code is from, as a tag: „ONRC Rev.2", or ANAF with its revision unpublished. */
-export function activitySourceTag(activity: CompanyAnalysisActivity | null | undefined): string | null {
+export function activitySourceTag(activity: Pick<CompanyAnalysisActivity, 'source' | 'revision'> | null | undefined): string | null {
   if (!activity?.source) return null
   if (activity.source === 'ONRC') return activity.revision ? `ONRC ${edition(activity.revision)}` : 'ONRC'
   return t`ANAF · revizie nepublicată`

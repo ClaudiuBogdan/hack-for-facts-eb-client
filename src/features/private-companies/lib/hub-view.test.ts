@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { COMPANY_HUB_SNAPSHOT } from './hub-snapshot'
-import { hubCountyLayer, newFirmsLeadingSectors, perThousand, registrationSeries, survivalShare } from './hub-view'
+import { hubCountyLayer, perThousand, registrationSeries, survivalShare } from './hub-view'
 
 describe('hub view', () => {
   it('measures a rate per 1,000 residents without rounding it', () => {
@@ -47,12 +47,5 @@ describe('hub view', () => {
       { period: '2025', value: 12 },
     ])
     expect(series.active.map((point) => point.value)).toEqual([8, 12])
-  })
-
-  it('gives the leading sectors of the year’s new companies their share of all of them', () => {
-    const sectors = newFirmsLeadingSectors(COMPANY_HUB_SNAPSHOT, 3)
-    expect(sectors).toHaveLength(3)
-    const [first] = sectors
-    expect(first?.share).toBeCloseTo((first?.firms ?? 0) / COMPANY_HUB_SNAPSHOT.national.newFirms)
   })
 })

@@ -7,7 +7,7 @@ import type {
   CompanyRegistryEnvelope,
   CompanyRegistryState,
 } from '@/schemas/private-company-registry'
-import { divisionLabel } from './caen-divisions'
+import { caenDivisionLabel } from './caen-divisions'
 import { dateText } from './company-profile-format'
 
 /**
@@ -74,13 +74,13 @@ export function caenRevisionText(revision: string | null): string {
 }
 
 /**
- * A division in its OWN revision: only the Rev.2 list is held here, so another
- * revision's division is named by its number and revision — never by the Rev.2
- * name of the same digits — and one with no known revision by its number.
+ * A division in its OWN revision: Rev.2 and Rev.3 by their names, another
+ * revision's division by its number and revision — never by the name of the
+ * same digits in another revision — and one with no known revision by its
+ * number.
  */
 export function caenDivisionText(revision: string | null, division: string): string {
-  if (revision === 'rev2') return divisionLabel(division)
-  return t`Diviziunea ${division} (${caenRevisionText(revision)})`
+  return caenDivisionLabel(division, revision) ?? t`Diviziunea ${division} (${caenRevisionText(revision)})`
 }
 
 /** A grouping bucket of companies with no consensus value: what keeps them out of the value buckets. */
@@ -122,6 +122,15 @@ const DIFF_FIELD_TEXT = {
 } as const
 
 /** The comparison with the previous edition, as observations — never a rename, registration or deletion. */
+/**
+ * A comparison worth a line on the profile: the records changed, the profile
+ * appeared or disappeared, or the comparison cannot conclude. „Unchanged", a
+ * first edition and a comparison not made say nothing about the company.
+ */
+export function registrationDiffSaysSomething(diff: CompanyRegistrationDiff): boolean {
+  return diff.status === 'changed' || diff.status === 'appeared' || diff.status === 'disappeared' || diff.status === 'ambiguous'
+}
+
 export function registrationDiffText(diff: CompanyRegistrationDiff): string {
   const from = diff.fromCaptureDate ? dateText(diff.fromCaptureDate) : null
   switch (diff.status) {

@@ -132,9 +132,12 @@ test.describe('Companies hub', () => {
 
     await expect(page.getByRole('heading', { name: /Economia/, level: 1 })).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('company-hub-leaders')).toContainText('OMV PETROM SA')
-    await expect(page.getByTestId('company-hub-sectors')).toContainText('Comerț cu ridicata')
+    // The analysis's derived activity selection, each class in its own revision — no ANAF code read into a division.
+    await expect(page.getByTestId('company-hub-activities')).toContainText('4711 · ONRC Rev.3')
+    await expect(page.getByTestId('company-hub-activities-rest')).toContainText('Mai multe activități clasificate ONRC, niciuna selectată')
     await expect(page.getByTestId('company-hub-sizes')).toBeVisible()
-    await expect(page.getByTestId('company-hub-new-sectors')).toBeVisible()
+    // No qualified breakdown of the year's new companies exists: none is drawn.
+    await expect(page.getByTestId('company-hub-new-sectors')).toHaveCount(0)
 
     // The search may warm up; nothing else may be asked for.
     expect(operations.filter((name) => name !== 'SearchEntities')).toEqual([])

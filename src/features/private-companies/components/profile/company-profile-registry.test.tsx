@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
@@ -14,7 +14,7 @@ import { CompanyProfilePage } from './company-profile-page'
  * scope the page pinned; a move during a dependent read hides it until the
  * reader asks; a conflict is listed, never resolved; a CUI outside the
  * edition is outside the edition, not unregistered, its financial and fiscal
- * content still served; the first edition has nothing to compare with; the
+ * content still served; a comparison is said only when it says something; the
  * recorded date is ONRC's civil date, never a founding date; the source line
  * names the edition and a mock as a mock.
  */
@@ -105,8 +105,11 @@ describe('CompanyProfilePage under the ONRC registry contract', () => {
     })
     render(page(companyProfile({ status: null, registry: conflict })))
     // The head's chip and the registry facts both say it; neither names a status.
-    expect(await screen.findAllByText('Stări diferite în registru')).toHaveLength(2)
-    expect(screen.getByText(/între care una „în funcțiune”; toate sunt listate/u)).toBeInTheDocument()
+    expect(await screen.findAllByText('Mai multe coduri de stare ONRC')).toHaveLength(2)
+    // Why, a tap away beside the chip rather than a notice under the head.
+    expect(screen.queryByText(/între care una „în funcțiune”/u)).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Despre starea din registru' }))
+    expect(await screen.findByText(/între care „în funcțiune”; unele pot fi mențiuni, nu stări\. Toate sunt listate/u)).toBeInTheDocument()
     const evidence = within(screen.getByTestId('company-registry-evidence'))
     expect(evidence.getByText(/^1048 · funcțiune; 1070 · faliment · Cluj$/u)).toBeInTheDocument()
     expect(evidence.getByText('(are o înscriere „în funcțiune” alături de alte stări)')).toBeInTheDocument()
@@ -133,10 +136,25 @@ describe('CompanyProfilePage under the ONRC registry contract', () => {
     expect(registry.diff).not.toHaveBeenCalled()
   })
 
-  it('says the first edition has nothing to compare with — never a disappearance', async () => {
+  it('says nothing of a comparison that says nothing — a first edition is never a disappearance', async () => {
     render(page(companyProfile()))
-    expect(await screen.findByTestId('company-registry-diff')).toHaveTextContent('Nu există o ediție anterioară publicată cu care să se compare.')
-    expect(document.body.textContent).not.toMatch(/dispăr|radiere/u)
+    await screen.findByRole('heading', { level: 1, name: '66 Jack SRL' })
+    await waitFor(() => expect(registry.diff).toHaveBeenCalled())
+    expect(screen.queryByTestId('company-registry-diff')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/dispăr|radiere|ediție anterioară/u)
+  })
+
+  it('says what changed since the edition before', async () => {
+    registry.diff.mockResolvedValue({
+      ...FIRST_EDITION,
+      fromEditionId: 'mock-0',
+      fromCaptureDate: '2026-06-01',
+      status: 'changed',
+      reason: null,
+      changes: [{ field: 'locality', from: 'Gherla', to: 'Dej' }],
+    })
+    render(page(companyProfile()))
+    expect(await screen.findByTestId('company-registry-diff')).toHaveTextContent(/^Față de ediția din .+, s-au schimbat înscrierile pentru: /u)
   })
 
   it('gives the date ONRC recorded, at day precision — never a founding year or an age', async () => {

@@ -12,10 +12,9 @@ import {
 } from '@/schemas/private-company'
 import { count, moneyCell, moneyText, moneyTick, percent, yearRanges } from '../../lib/company-profile-format'
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
-import { debtSentence, financialLede, measureLabel } from '../../lib/company-profile-text'
-import { metricStatus, reportedSummary } from '../../lib/financial-qualification'
+import { capitalised, debtSentence, financialLede, measureLabel, netChartLabel, netPointLabel, netResultStatusLabel, notAssessedNotice } from '../../lib/company-profile-text'
+import { metricStatus, reportedNumber, reportedSummary } from '../../lib/financial-qualification'
 import { BAND_GRID_CLASS, ProfileBand } from './company-profile-band'
-import { CompanyQualificationNote } from './company-qualification-note'
 import { CombinedYears, YearBars, type BarSeries } from './company-year-charts'
 
 const TITLE_ID = 'company-business-title'
@@ -47,6 +46,8 @@ export function CompanyBusinessBand({
     )
   }
   const debt = debtSentence(model)
+  // The newest statement could not be assessed: said where its figures would be. Every value it published is in the years' band.
+  const notAssessed = notAssessedNotice(model)
   return (
     <ProfileBand id="afacerea" titleId={TITLE_ID}>
       <div className={BAND_GRID_CLASS}>
@@ -55,7 +56,7 @@ export function CompanyBusinessBand({
           <div className="mt-8" data-reveal>
             <FinancialChart model={model} measure={measure} onMeasure={onMeasure} />
           </div>
-          <CompanyQualificationNote model={model} className="mt-8" />
+          {notAssessed ? <p className="mt-8 max-w-[60ch] border-l-2 border-amber-500 py-0.5 pl-3 text-sm leading-relaxed text-foreground">{notAssessed}</p> : null}
         </div>
         <div className={cn('min-w-0 lg:col-span-5', HUB_BESIDE_TITLE_CLASS)} data-reveal>
           <BalanceSheet model={model} />
@@ -66,11 +67,15 @@ export function CompanyBusinessBand({
   )
 }
 
-/** No statement at all: said once, where the figures would be. */
+/**
+ * No statement served at all: said once, where the figures would be. What
+ * the data holds, not what the company filed — a filing the sources were not
+ * read for, or kept apart, is not proof of no statement.
+ */
 function NoStatements({ className }: { readonly className?: string }) {
   return (
     <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>
-      <Trans>Niciun bilanț publicat la ANAF: nu se știu cifra de afaceri, rezultatul sau numărul de salariați.</Trans>
+      <Trans>Nicio valoare din bilanțuri în datele de aici: cifra de afaceri, rezultatul și numărul de salariați nu sunt disponibile.</Trans>
     </p>
   )
 }
@@ -91,26 +96,38 @@ function FinancialChart({
     profit: ['net_result'],
     salariati: ['employees'],
   }
-  // A gap says why: no statement, a statement that was not qualified or was
-  // qualified on another basis, a value held out of the chart, or a value the
-  // statement does not carry.
+  // A gap says why, and never claims what the data cannot know: no comparable
+  // values for the year (a filing kept apart or not read is no proof of none),
+  // a statement not qualified or qualified on another basis, the net result's
+  // own hold, a value held out of the chart, or no typed value.
+  // The years with no comparable values, said once under the chart.
+  const gapYears = model.missingYears.length > 0 ? yearRanges(model.missingYears) : null
   const emptyLabel = (index: number) => {
     const statement = statements.get(model.span[index] ?? 0)
-    if (!statement) return t`Niciun bilanț publicat pentru acest an`
+    if (!statement) return t`Fără valori comparabile pentru acest an`
     if (statement.qualification.assessment !== 'assessed') return t`Bilanț necalificat: valorile lui nu intră în grafic`
     if (model.qualification.otherBasisYears.includes(statement.fiscalYear)) return t`Calificat după altă politică sau ediție: nu se compară cu ceilalți ani`
+    if (charted[measure].includes('net_result')) {
+      const netStatus = metricStatus(statement, 'net_result')
+      // A zero profit and NO typed loss: the result is unknown, never a break-even. Only then.
+      if (netStatus !== 'reported' && reportedNumber(statement, 'net_profit') === 0 && metricStatus(statement, 'net_loss') === 'missing') {
+        return t`Profit net zero și nicio pierdere disponibilă aici: rezultatul net nu se știe`
+      }
+      // Otherwise a held result says its own reason (a held loss beside a profit included).
+      if (netStatus !== null && netStatus !== 'reported' && netStatus !== 'missing') return capitalised(netResultStatusLabel(netStatus))
+    }
     const held = charted[measure].some((metric) => {
       const status = metricStatus(statement, metric)
       return status !== 'reported' && status !== 'missing'
     })
-    return held ? t`Valoare reținută: nu intră în grafic` : t`Nu apare în bilanț`
+    return held ? t`Valoare reținută: nu intră în grafic` : t`Nicio valoare disponibilă aici pentru acest an`
   }
   return (
     <div>
       <div className="sm:w-fit">
         <IndicatorToggle
           label={t`Graficul arată`}
-          options={COMPANY_FINANCIAL_MEASURES.map((key) => ({ key, label: measureLabel(key) }))}
+          options={COMPANY_FINANCIAL_MEASURES.map((key) => ({ key, label: measureLabel(key, model.series.net) }))}
           value={measure}
           onChange={onMeasure}
         />
@@ -120,14 +137,22 @@ function FinancialChart({
           <CombinedYears
             years={model.span}
             turnover={model.series.turnover.map((point) => point.value)}
-            net={model.series.netResult.map((point) => point.value)}
+            net={model.series.net.map((point) => point.value)}
             employees={model.series.employees.map((point) => point.value)}
-            labels={{ turnover: t`Cifra de afaceri`, net: t`Profit net`, loss: t`Pierdere netă`, employees: t`Salariați` }}
+            netLabel={(index) => netPointLabel(model.series.net[index])}
+            profitOnly={(index) => model.series.net[index]?.kind === 'profit'}
+            labels={{
+              turnover: t`Cifra de afaceri`,
+              net: t`Rezultat net`,
+              loss: t`Pierdere netă`,
+              profit: t`Profit net (rezultatul net reținut)`,
+              employees: t`Salariați`,
+            }}
             formatTick={moneyTick}
             formatMoney={moneyText}
             formatCount={(value) => count(value)}
             emptyLabel={emptyLabel}
-            label={t`Cifra de afaceri, rezultatul net și salariații`}
+            label={netChartLabel(model.series.net)}
           />
         ) : (
           <YearBars
@@ -135,41 +160,55 @@ function FinancialChart({
             years={model.span}
             series={measureSeries(model, measure)}
             format={measure === 'salariati' ? (value) => count(value) : moneyTick}
-            label={measureLabel(measure)}
+            label={measureLabel(measure, model.series.net)}
             emptyLabel={emptyLabel}
-            legend={measure === 'profit' && model.lossYears > 0}
+            legend={measure === 'profit'}
             integer={measure === 'salariati'}
           />
         )}
       </div>
-      {model.missingYears.length > 0 ? (
+      {gapYears ? (
         <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">
-          <Trans>Fără bilanțuri publicate pentru {yearRanges(model.missingYears)}</Trans>
+          <Trans>Fără valori comparabile pentru {gapYears}</Trans>
         </MonoLabel>
       ) : null}
     </div>
   )
 }
 
-/** One figure's bars; the net result as profit and loss apart, so a loss reads in its own colour. */
+/**
+ * One figure's bars. The bottom line keeps each year's metric: a net result
+ * (a loss in its own colour) and an admitted profit whose result is held,
+ * outlined — three series, so a reading never calls one the other.
+ */
 function measureSeries(model: CompanyProfileModel, measure: Exclude<CompanyFinancialMeasure, 'toate'>): readonly BarSeries[] {
-  const points = measure === 'cifra-de-afaceri' ? model.series.turnover : measure === 'profit' ? model.series.netResult : model.series.employees
-  const values = points.map((point) => point.value)
-  if (measure !== 'profit') return [{ key: measure, label: measureLabel(measure), values, fill: 'fill-primary', swatch: 'bg-primary' }]
+  if (measure !== 'profit') {
+    const points = measure === 'cifra-de-afaceri' ? model.series.turnover : model.series.employees
+    return [{ key: measure, label: measureLabel(measure), values: points.map((point) => point.value), fill: 'fill-primary', swatch: 'bg-primary' }]
+  }
+  const net = model.series.net
   return [
     {
-      key: 'profit',
-      label: t`Profit net`,
-      values: values.map((value) => (value !== null && value >= 0 ? value : null)),
+      key: 'result',
+      label: t`Rezultat net`,
+      values: net.map((point) => (point.kind === 'result' && point.value !== null && point.value >= 0 ? point.value : null)),
       fill: 'fill-primary',
       swatch: 'bg-primary',
     },
     {
       key: 'loss',
       label: t`Pierdere netă`,
-      values: values.map((value) => (value !== null && value < 0 ? value : null)),
+      values: net.map((point) => (point.kind === 'result' && point.value !== null && point.value < 0 ? point.value : null)),
       fill: 'fill-destructive/70',
       swatch: 'bg-destructive/70',
+    },
+    {
+      key: 'profit',
+      label: t`Profit net (rezultatul net reținut)`,
+      values: net.map((point) => (point.kind === 'profit' ? point.value : null)),
+      fill: 'fill-primary/10',
+      swatch: 'border border-primary',
+      outline: true,
     },
   ]
 }

@@ -8,6 +8,7 @@ import type { PrivateCompanyActivitySelection } from '@/schemas/private-company'
 import { activityRowStateText, activitySelectionTexts } from '../../lib/company-activity-text'
 import { caenEdition, type ActivityGroup, type CompanyProfileModel } from '../../lib/company-profile-model'
 import { CaenDescription } from '../caen-description'
+import { HubInfoNote } from '../hub/hub-info-note'
 import { BAND_GRID_CLASS, ProfileBand, ROW_LINK_CLASS } from './company-profile-band'
 
 const TITLE_ID = 'company-activities-title'
@@ -118,15 +119,24 @@ function ActivitySelection({ selection, className }: { readonly selection: Priva
           <Trans>CAEN {caenEdition(selection.revision)} · ediția ONRC</Trans>
         </MonoLabel>
       ) : null}
-      <p className="mt-2 text-sm text-muted-foreground">{texts.basis}</p>
-      {texts.agreement ? <p className="mt-1 text-sm text-muted-foreground">{texts.agreement}</p> : null}
-      <MonoLabel className="mt-3 block leading-relaxed text-muted-foreground" data-testid="company-activity-selection-dates">
-        {texts.dates}
-      </MonoLabel>
-      <p className={cn('mt-3 text-xs leading-relaxed', incomplete ? 'text-foreground' : 'text-muted-foreground')} data-testid="company-activity-selection-coverage">
-        {texts.coverage}
+      {/* What was selected and why in a line; how — ANAF's code, each source's date, the edition's counts — a tap away. */}
+      <p className="mt-2 text-sm text-muted-foreground">
+        {texts.basis}{' '}
+        <HubInfoNote label={t`Cum a fost selectată`}>
+          {texts.agreement ? <p>{texts.agreement}</p> : null}
+          {incomplete ? null : <p data-testid="company-activity-selection-coverage">{texts.coverage}</p>}
+          <p>{texts.counts}</p>
+          <MonoLabel className="block leading-relaxed text-muted-foreground" data-testid="company-activity-selection-dates">
+            {texts.dates}
+          </MonoLabel>
+        </HubInfoNote>
       </p>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{texts.counts}</p>
+      {/* A list that may be incomplete changes how the selection reads: said in the open. */}
+      {incomplete ? (
+        <p className="mt-3 text-xs leading-relaxed text-foreground" data-testid="company-activity-selection-coverage">
+          {texts.coverage}
+        </p>
+      ) : null}
     </div>
   )
 }
