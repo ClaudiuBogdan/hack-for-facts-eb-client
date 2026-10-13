@@ -190,6 +190,20 @@ describe('the other kinds of record', () => {
     expect(legacy).toContain('Achiziția e dinainte de 2019')
   })
 
+  it('a report row from before 2019: started, its end unknown — never bought, never finalised', () => {
+    const legacy = html(directPurchase({ sourceSystem: 'seap_da', status: 'unknown', publicationDate: '2016-12-31', finalizationDate: '2017-01-01' }, null), null)
+    expect(legacy).toContain('Banca Nationala a Romaniei a pornit o achiziție directă de la Floraria Iris SRL , cu 98.448 lei fără TVA , pe 31 decembrie 2016. SEAP nu spune cum s-a încheiat.')
+    expect(legacy).toContain('Stare necunoscută')
+    expect(legacy).toContain('Ce s-a cerut')
+    expect(legacy).toContain('Publicată în SEAP pe 31 decembrie 2016; SEAP îi dă și data de 1 ianuarie 2017.')
+    expect(legacy).not.toContain('a cumpărat direct')
+    expect(legacy).not.toContain('Ce s-a cumpărat')
+    expect(legacy).not.toContain('finalizată pe')
+    // Its facts date it by its publication too: the other date is not a later step.
+    expect(legacy).toContain('Data 31 decembrie 2016 Coșul')
+    expect(legacy).not.toContain('pornită pe')
+  })
+
   it('a record SEAP does not have', () => {
     expect(html(null)).toContain('Achiziția nu a fost găsită')
   })

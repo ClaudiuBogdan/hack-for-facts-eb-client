@@ -61,7 +61,7 @@ describe('an association’s contract', () => {
 
   it('opens on what it is, between whom, for how much, when', () => {
     expect(page).toContain('Contract, în asociere · nr. 1065')
-    expect(page).toContain('Compania Nationala de Investitii C.N.I. SA a încheiat contractul cu Masterclass AG SRL și alte 2 firme, în asociere, pe 7 decembrie 2021, pentru 8,5 mil. lei .')
+    expect(page).toContain('Compania Nationala de Investitii C.N.I. SA a încheiat contractul cu Masterclass AG SRL și alte 2 firme, în asociere, pe 7 decembrie 2021, pentru 8,5 mil. lei , una dintre cele 3 valori pe care SEAP le publică pentru el.')
   })
 
   it('then the contract: the value and its facts, its two parties, the firms, the published values, the history, the source', () => {
@@ -117,6 +117,30 @@ describe('a contract alone in its notice', () => {
     expect(page).not.toContain('Firmele din asociere')
     expect(page).not.toContain('Valorile publicate')
     expect(page).not.toContain('Celelalte contracte din anunț')
+  })
+})
+
+describe('a contract with a version that carries no value', () => {
+  const sheet = contractSheetOf(cniRead())
+  const [first, second, third] = sheet.contract.versions
+  const withVersions = (versions: ContractSheet['contract']['versions'], value: ContractSheet['value'] = sheet.value): ContractSheet => ({ ...sheet, value, contract: { ...sheet.contract, versions } })
+
+  it('counts only the values SEAP publishes', () => {
+    const page = html(withVersions([first!, second!, { ...third!, value: null }]), ctContext())
+    expect(page).toContain('pentru 8,5 mil. lei , una dintre cele 2 valori pe care SEAP le publică pentru el.')
+    expect(page).toContain('E una dintre cele 2 valori pe care SEAP le publică pentru acest contract, mai jos.')
+  })
+
+  it('never calls a missing value one of the published ones, nor one alone one of several', () => {
+    const missing = html(withVersions([{ ...first!, value: null }, second!, third!], { kind: 'missing', reason: 'none' }), ctContext())
+    expect(missing).toContain('pentru o valoare nepublicată .')
+    expect(missing).not.toContain('una dintre cele')
+    // The other value stays on the page: a missing one is never the contract's only word on its value.
+    expect(missing).toContain('Valorile publicate')
+    expect(missing).toContain('180.260.321 lei')
+    const single = html(withVersions([first!, { ...second!, value: null }]), ctContext())
+    expect(single).not.toContain('una dintre cele')
+    expect(single).toContain('SEAP publică o singură valoare pentru acest contract; un alt rând al lui nu are una.')
   })
 })
 

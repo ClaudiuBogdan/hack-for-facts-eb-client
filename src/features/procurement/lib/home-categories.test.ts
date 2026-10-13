@@ -175,6 +175,23 @@ describe('groupContracts', () => {
     expect(contracts[1]?.winners).toEqual([{ cui: 'Solo SRL', name: 'Solo SRL' }])
   })
 
+  it('counts a member’s copy without a CUI as that member, not as another firm', () => {
+    // CNAIR's A1 lot (CAN1148055): MAKYOL with its CUI, MAKYOL again without one, OZALTIN without one.
+    const named = (id: string, cui: string | null, name: string) => row(id, '', { supplier: { cui, name } })
+    const rows = [
+      named('51107356', '141792', 'MAKYOL Insaat Sanayi Turizm ve Ticaret A.S.'),
+      named('2215384', null, 'MAKYOL Insaat Sanayi Turizm ve Ticaret A.S.'),
+      named('2215385', null, 'Ozaltin Insaat Ticaret Ve Sanayi A.S.'),
+    ]
+    const [contract] = groupContracts(rows, 10)
+    expect(contract?.winners).toEqual([
+      { cui: '141792', name: 'MAKYOL Insaat Sanayi Turizm ve Ticaret A.S.' },
+      { cui: null, name: 'Ozaltin Insaat Ticaret Ve Sanayi A.S.' },
+    ])
+    // Whichever row comes first, the firm keeps its CUI.
+    expect(groupContracts([rows[1]!, rows[0]!, rows[2]!], 10)[0]?.winners.map((winner) => winner.cui)).toEqual(['141792', null])
+  })
+
   it('keeps a row with no contract number a contract of its own, and stops at the limit', () => {
     const rows = [row('1', 'A', { contractNo: null }), row('2', 'B', { contractNo: null }), row('3', 'C', { contractNo: '9', value: 5 })]
     expect(groupContracts(rows, 10)).toHaveLength(3)

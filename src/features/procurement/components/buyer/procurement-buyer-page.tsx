@@ -55,13 +55,13 @@ function startArrivalEffects(block: Element, delay: number) {
 }
 
 /**
- * The contracts' money, with how many of them it covers: SEAP publishes a
- * value for only some awards, and a sum over five of twelve must not read as
- * the twelve's.
+ * The contracts' money, with how many of them it covers: the totals count a
+ * value only once checked, and a sum over five of twelve must not read as the
+ * twelve's — nor a sum they lack as a value SEAP lacks.
  */
 function awardsNote(profile: BuyerProfile): string {
   const { count, valued, value } = profile.awards
-  if (value === null || value <= 0 || !valued) return t`fără valori publicate`
+  if (value === null || value <= 0 || !valued) return t`fără valoare în totaluri`
   return valued < (count ?? 0) ? t`${moneyText(value)} la ${contractsCount(valued)}, provizoriu` : t`${moneyText(value)}, provizoriu`
 }
 
@@ -165,7 +165,8 @@ export function ProcurementBuyerPage({ cui, search, initial }: { readonly cui: s
   useEffect(() => () => stopCounting(), [])
   // The route `head` names the buyer on the server path only; a client-side navigation lands with its CUI.
   const named = profile && profile.identity.name !== cui ? profile.identity.name : null
-  useClientDocumentTitle(buildInstitutionDocumentTitle({ cui, authorityName: named }))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildInstitutionDocumentTitle(i18n, { cui, authorityName: named }))
 
   const choose = (patch: Partial<ProcurementBuyerSearch>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true, resetScroll: false })

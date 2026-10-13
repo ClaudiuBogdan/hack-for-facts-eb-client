@@ -3151,3 +3151,74 @@ The server read is kept ten minutes (a thousand notices at most) under a
 names the page by its title and institution (an untitled notice by its
 number) and describes a call and an award apart.
 
+
+## 23. The QA pass (13 October 2026)
+
+A read-only QA pass (tracker outside the repo, `qa-trackers/procurement-ui/`)
+logged 18 issues on the procurement pages; 17 held on dev, one was already
+fixed (the supplier head's "foreign firm" sentence, 50501617). The client
+fixes, and what they decide:
+
+- **Framework agreements are counted by their ceilings** wherever a page
+  counts them (front door, buyer, contract context): the contract grain's
+  default population is purchases only, so a framework scope without
+  `frameworkRole: framework_ceiling` counts none. One shared scope,
+  `FRAMEWORKS_SCOPE`, as the analytics page's population.
+- **A consortium member is one firm** on the front door too: a row without a
+  CUI is the member of that name (`lib/firm-merge.ts`, shared with the
+  contract page).
+- **A quarterly-report row from before 2019 has an unknown outcome**: SEAP's
+  report then lists refused offers beside purchases. The page says the
+  institution started a direct purchase, dated by its publication, and that
+  SEAP does not say how it ended; it never says bought or finalised. Later
+  report rows stay reported purchases.
+- **Awarded values are never said as paid**: on the supplier page, a share
+  of the firm's direct-purchase money "came from" a client; nothing is
+  "paid".
+- **A sum the totals lack is not a value SEAP lacks**: a contracts figure
+  with no counted value says "fără valoare în totaluri", not "fără valori
+  publicate" — the analysis withholds values the record API publishes
+  (Costalex's contract 2191955, 1,216,040 lei).
+- **A call with no linked award says so**: "Rezultatul nu e legat de acest
+  anunț" — the data does not tie a call to its award (§22.2 item 1), which
+  is no proof SEAP published none (CN1044934's award is CAN1096494).
+- **Several published values: the head says its value is one of them**, as
+  the value's box does. The front door's largest contracts still rank the
+  record API's accepted values; the owner chose to wait for the server's fix
+  (item 1 below) rather than rank from the analysis layer.
+- **Direct acquisitions are not only the catalogue's**: the population holds
+  notified purchases outside it (`seap_dan`).
+- **The records list's order and page are in the address** (`ordine=data`,
+  `pagina=N`, defaults left out): a reload, a shared link and Back keep
+  them, and a new question starts them over. Phones order by date from the
+  title column's header ("Cele mai noi"). The server reads the page the
+  address holds.
+- **Keyboard:** a ranking row's label is a button that drills as the row's
+  click does; the collapsed sidebar keeps each link's name for screen
+  readers.
+- **English titles** translate the page's words ("Public procurement",
+  "Supplier CUI …"); the record's names stay as SEAP writes them.
+
+### 23.1 What the API should change (for the server session)
+
+1. **Accepted values the analysis rejects.** `procurementContracts` serves
+   2089288 (ROMATSA ← MicroStep, CAN1144455, contract 65) at
+   125,934,000,000.00 lei, `official_exact`, accepted; its e-licitatie twin
+   51467814 at 791,657.62 lei (159,076 EUR), and the analysis withholds both.
+   The front door ranks it first, above the year's whole accepted total
+   (88.0 bn). `valueAccepted` should agree with the analysis, or carry a
+   conflict state.
+2. **Amendment amounts in EUR served as RON.** Modification 62724 (same
+   contract) has `valueBeforeRon` = `valueAfterRon` = 159076.00; the Q3 2025
+   amendment workbook (row 2141, H–K) says 159,076 EUR. Serve the native
+   currency, or withhold the RON fields when the source is not in lei.
+3. **Amendment dates with day and month swapped.** The same modification's
+   `modificationDate` is 2025-03-09, before the contract it amends; the
+   source cell is 03/09/2025 (dd/mm) in the Q3 2025 report — 3 September. A
+   date outside its report's own quarter is a cheap check across the load
+   (see §22.2 item 8 for contract rows).
+4. **The analysis dates some notified purchases with day and month
+   swapped.** Direct acquisition 16894776 (DAN2547167, Q3 2025 workbook):
+   the record says 2025-09-12, `procurementRecords` (build 13) 2025-12-09,
+   which moves 3,516,088.80 lei from September to December. 16778884 (Q2
+   workbook) agrees in both.

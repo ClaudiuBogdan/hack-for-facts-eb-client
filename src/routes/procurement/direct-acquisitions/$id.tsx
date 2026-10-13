@@ -49,7 +49,7 @@ export const Route = createFileRoute('/procurement/direct-acquisitions/$id')({
     const canonical = `${getSiteUrl()}/procurement/direct-acquisitions/${params.id}`
     // After a client-side navigation the loader returns no purchase: the query cache may hold it.
     const purchase = loaderData?.purchase ?? match.context.queryClient.getQueryData<DirectPurchase | null>(procurementDirectPurchaseKeys.purchase(params.id)) ?? null
-    const title = buildDirectPurchaseDocumentTitle({ id: params.id, title: purchase?.title, authorityName: purchase?.authority.name })
+    const title = buildDirectPurchaseDocumentTitle(translator, { id: params.id, title: purchase?.title, authorityName: purchase?.authority.name })
     const what = purchase?.title
     const buyer = purchase?.authority.name
     const seller = purchase?.supplier.name

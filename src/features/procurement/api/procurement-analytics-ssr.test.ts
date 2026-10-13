@@ -73,6 +73,16 @@ describe('readProcurementAnalyticsForSsr', () => {
     expect(keys.every((key) => key[3] === '13')).toBe(true)
   })
 
+  it('reads the records’ page and order the address holds, each page kept apart', async () => {
+    const read = await readProcurementAnalyticsForSsr({ tip: 'contracte', judet: 'IS', dupa: 'inregistrari', ordine: 'data', pagina: 3 })
+    const records = read.seed.find((entry) => entry.key[2] === 'records')?.key
+    expect(records?.slice(-2)).toEqual(['date_desc', 3])
+    // Another page of the same question is another read, not the kept one.
+    const next = await readProcurementAnalyticsForSsr({ tip: 'contracte', judet: 'IS', dupa: 'inregistrari', ordine: 'data', pagina: 4 })
+    expect(next.seed.find((entry) => entry.key[2] === 'records')?.key.slice(-2)).toEqual(['date_desc', 4])
+    expect(analysis().filter((call) => call.op === 'AnalyticsRecords')).toHaveLength(2)
+  })
+
   it('forgets the kept cutoff when a read is refused for its build: the next render starts from the new one', async () => {
     await readProcurementAnalyticsForSsr({ tip: 'directe', judet: 'CJ' })
     expect(cutoffReads()).toBe(1)

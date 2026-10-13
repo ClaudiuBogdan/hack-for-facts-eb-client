@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { FileQuestion } from 'lucide-react'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -29,7 +30,8 @@ export interface ProcurementProcedureInitialData {
 export function ProcurementProcedurePage({ id, initialData }: { readonly id: string; readonly initialData?: ProcurementProcedureInitialData }) {
   const query = useProcurementProcedure(id, initialData?.id === id ? initialData.procedure : undefined)
   const sheet = query.data
-  useClientDocumentTitle(buildProcedureDocumentTitle({ id, title: sheet?.title, noticeNo: sheet?.noticeNo, authorityName: sheet?.authority.name }))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildProcedureDocumentTitle(i18n, { id, title: sheet?.title, noticeNo: sheet?.noticeNo, authorityName: sheet?.authority.name }))
   // Where a procedure mostly leads: its contracts, the institution's page, a firm's.
   useWarmRouteCode('/procurement/contracts/$id')
   useWarmRouteCode('/procurement/institutions/$cui')

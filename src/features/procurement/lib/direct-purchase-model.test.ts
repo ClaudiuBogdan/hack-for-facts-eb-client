@@ -59,8 +59,16 @@ describe('how it ended', () => {
 
   it('takes an export row as reported, and a status it does not know as unknown', () => {
     expect(outcomeOf('unknown', 'export', null)).toEqual({ kind: 'reported' })
+    expect(outcomeOf('unknown', 'export', null, '2025-12-30')).toEqual({ kind: 'reported' })
     expect(outcomeOf('awarded', 'notification', null)).toEqual({ kind: 'reported' })
     expect(outcomeOf('published', 'catalog', null)).toEqual({ kind: 'unknown' })
+  })
+
+  it('does not take a report row from before 2019 as a purchase: refused offers sit beside purchases then', () => {
+    // DA10484294 (200611736): Federația Română de Atletism, 11.50 lei, 1 January 2017.
+    expect(outcomeOf('unknown', 'export', null, '2017-01-01')).toEqual({ kind: 'unknown' })
+    expect(outcomeOf('cancelled', 'export', null, '2017-01-01')).toEqual({ kind: 'stopped' })
+    expect(outcomeOf('unknown', 'notification', null, '2017-01-01')).toEqual({ kind: 'reported' })
   })
 })
 
@@ -90,10 +98,12 @@ describe('the purchase as the page reads it', () => {
     expect(directPurchase().alsoIn).toEqual([])
   })
 
-  it('dates an attempt by its request, anything else by its end', () => {
+  it('dates a purchase by its end, anything else — an attempt, an unknown end — by its request', () => {
     const refused = directPurchase({ status: 'cancelled', publicationDate: '2026-03-02', finalizationDate: '2026-03-05' }, { supplierRejectionReason: 'pret incorect' })
     expect(shownDayOf(refused)).toBe('2026-03-02')
     expect(shownDayOf(directPurchase())).toBe('2026-01-21')
+    const legacy = directPurchase({ sourceSystem: 'seap_da', status: 'unknown', publicationDate: '2016-12-31', finalizationDate: '2017-01-01' }, null)
+    expect(shownDayOf(legacy)).toBe('2016-12-31')
   })
 
   it('shows a purchase’s checked value, an attempt’s offer, and never an unchecked value as the value', () => {

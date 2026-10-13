@@ -14,7 +14,13 @@ const readForSsr = vi.fn()
 vi.mock('@/features/procurement/api/procurement-contract-ssr', () => ({ readProcurementContractForSsr: (...args: unknown[]) => readForSsr(...args) }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the real one needs the app's i18n set up.
-vi.mock('@/lib/i18n', () => ({ translatorFor: () => ({ _: () => 'descriere' }) }))
+// Every description reads `descriere`; the title's own words translate, so a page in English is named in English.
+vi.mock('@/lib/i18n', () => ({
+  translatorFor: (locale: string) => ({
+    // The test setup's `msg` is the message itself.
+    _: (message: unknown) => (message === 'Achiziții publice' ? (locale === 'en' ? 'Public procurement' : 'Achiziții publice') : 'descriere'),
+  }),
+}))
 
 const { Route } = await import('./contracts/$id')
 
@@ -105,5 +111,15 @@ describe('/procurement/contracts/$id', () => {
     expect(meta.title).toBe(`${sheet.title} — Compania Nationala de Investitii C.N.I. SA — Achiziții publice — Transparenta.eu`)
     expect(meta.description).toBe('descriere')
     expect(meta['og:url']).toBe('http://localhost:3000/procurement/contracts/1745168')
+  })
+
+  it('names the page in the request’s language: the record’s names as SEAP writes them, the page’s words translated', () => {
+    const head = route.head({
+      params: { id: sheet.id },
+      loaderData: { id: sheet.id, contract: sheet },
+      match: { context: { locale: 'en', queryClient: queryClient() } },
+    })
+    const title = head.meta.find((entry) => 'title' in entry)?.title
+    expect(title).toBe(`${sheet.title} — Compania Nationala de Investitii C.N.I. SA — Public procurement — Transparenta.eu`)
   })
 })

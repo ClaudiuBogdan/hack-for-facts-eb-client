@@ -30,6 +30,7 @@ import {
   type SupplierRanking,
   type SupplierYears,
 } from '../lib/buyer-model'
+import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
 import { levelCpvLeaves, readerCategories, type CpvBucket } from '../lib/home-categories'
 import { DIRECT_COMPARABLE_FROM, homeYear, tidyTitle, truncatePartYear, type RecentRecord, type YearPoint } from '../lib/home-model'
 import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cutoff, type Period, type PeriodChoice } from '../lib/profile-period'
@@ -63,7 +64,6 @@ import { RECENT, needsCutoff, periodOf, profilePeriodOf, throughMonth, type Cuto
 
 const DIRECT = { grain: 'direct_acquisition' } as const
 const AWARDS = { grain: 'contract', recordKind: 'contract_award' } as const
-const FRAMEWORKS = { grain: 'contract', recordKind: 'framework_agreement' } as const
 
 /** The budget platform's `CUI` scalar takes at most ten digits; a longer identifier has no entity record to read. */
 const ENTITY_CUI = /^\d{1,10}$/
@@ -155,7 +155,7 @@ export function buyerProfileFields(cui: string, period: Period, latest: number):
     // The year before only where it compares: not before 2019 (legacy rows), nor for the year in progress.
     ...(period.before ? [{ alias: 'directPrev', kind: 'stats' as const, scope: { ...own, ...period.before, ...DIRECT } }] : []),
     { alias: 'awards', kind: 'stats', scope: { ...inPeriod, ...AWARDS } },
-    { alias: 'frameworks', kind: 'stats', scope: { ...inPeriod, ...FRAMEWORKS } },
+    { alias: 'frameworks', kind: 'stats', scope: { ...inPeriod, ...FRAMEWORKS_SCOPE } },
     // Distinct firms over the whole period: the last twelve months span two calendar years, whose counts do not add up.
     { alias: 'directSellers', kind: 'concentration', scope: { ...inPeriod, ...DIRECT } },
     { alias: 'directYearsValue', kind: 'series', scope: { ...own, ...DIRECT, ...span }, args: 'bucket: year, measure: valueAwardedSum' },

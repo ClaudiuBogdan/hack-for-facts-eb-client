@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { dayText, monthText } from '@/features/procurement/lib/home-format'
 import { HubLoadError } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import { bucketStart, clippedBucket, drilled, POPULATIONS, type Query } from '../../lib/analytics-model'
+import { bucketStart, clippedBucket, drilled, POPULATIONS, recordsViewOf, type Query, type RecordsView } from '../../lib/analytics-model'
 import { RECORDS_PAGE, RECORDS_WINDOW, type Point, type Ranking, type RecordsSort } from '../../api/procurement-analytics-api'
 import { COUNTY_POPULATION, countyPopulationNote, useRecords, type Answer } from '../../hooks/use-procurement-analytics'
 import { useSearchStrings } from '../../hooks/use-procurement-analytics'
@@ -29,8 +29,10 @@ const ICON = 'inline-flex size-9 shrink-0 items-center justify-center border tex
 
 export function ShareIcon({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
   const [copied, setCopied] = useState(false)
+  // The records list's order and page, from the address: the link keeps the reader's place.
+  const view = recordsViewOf(useSearchStrings(), query)
   const copy = () =>
-    void navigator.clipboard?.writeText(shareUrl(query, answer)).then(() => {
+    void navigator.clipboard?.writeText(shareUrl(query, answer, view)).then(() => {
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1500)
     })
@@ -248,9 +250,24 @@ export function AnswerTable({
                 <TableCell className="text-right font-mono text-xs tabular-nums text-muted-foreground">{top ? index + 1 : ''}</TableCell>
                 <TableCell className="max-w-[12rem] sm:max-w-md">
                   <span className="flex items-center gap-1.5">
-                    <span className="truncate" title={[row.label, row.sub].filter(Boolean).join(' · ')}>
-                      {row.label}
-                    </span>
+                    {top ? (
+                      // The drill a click on the row makes, reachable by keyboard: the row itself takes no focus.
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onChange(drilled(query, group, row.key!))
+                        }}
+                        className="min-w-0 truncate text-left hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        title={[row.label, row.sub].filter(Boolean).join(' · ')}
+                      >
+                        {row.label}
+                      </button>
+                    ) : (
+                      <span className="truncate" title={[row.label, row.sub].filter(Boolean).join(' · ')}>
+                        {row.label}
+                      </span>
+                    )}
                     {link ? (
                       <Link to={link.to} params={link.params} onClick={(event) => event.stopPropagation()} className="shrink-0 text-muted-foreground hover:text-foreground" aria-label={t`Pagina ${row.label}`}>
                         <ArrowUpRight className="size-3.5" aria-hidden="true" />
@@ -298,16 +315,26 @@ export function AnswerTable({
  * page. One row per counted record: a consortium's award lists once per
  * member, as it is counted, its value once. The list's total IS the count.
  */
-export function AnswerRecords({ query, answer, className }: { readonly query: Query; readonly answer: Answer; readonly className?: string }) {
+export function AnswerRecords({
+  query,
+  answer,
+  view,
+  onView,
+  className,
+}: {
+  readonly query: Query
+  readonly answer: Answer
+  /** The order and page, from the address: a reload, a shared link and Back keep them. */
+  readonly view: RecordsView
+  readonly onView: (next: RecordsView) => void
+  readonly className?: string
+}) {
   // A framework has no value to order by (a ceiling at most): its records come newest first, with no choice.
   const valued = POPULATIONS[query.tip].money !== 'none'
-  const [sort, setSort] = useState<RecordsSort>(valued ? 'value_desc' : 'date_desc')
-  const [page, setPage] = useState(1)
+  const { sort, page } = view
   const { read: records, retry } = useRecords(query, answer.cutoff, sort, page)
-  const order = (next: RecordsSort) => () => {
-    setSort(next)
-    setPage(1)
-  }
+  const order = (next: RecordsSort) => () => onView({ sort: next, page: 1 })
+  const setPage = (next: number) => onView({ sort, page: next })
   // No cutoff, no build: nothing is listed — said, with a retry that reads the cutoff again.
   if (answer.cutoffFailed || records.isError) return (
       <p className={cn('py-6 text-sm text-muted-foreground', className)}>
@@ -322,6 +349,16 @@ export function AnswerRecords({ query, answer, className }: { readonly query: Qu
   const { rows, total } = records.data
   const first = (page - 1) * RECORDS_PAGE + 1
   const more = page * RECORDS_PAGE < Math.min(total ?? 0, RECORDS_WINDOW)
+  // A shared address can hold a page past the list's end: said, with the way back to its start — never an empty selection.
+  if (rows.length === 0 && page > 1)
+    return (
+      <p className={cn('py-6 text-sm text-muted-foreground', className)}>
+        {t`Pagina ${page} e după sfârșitul listei.`}{' '}
+        <button type="button" onClick={() => setPage(1)} className="font-medium text-foreground underline underline-offset-4">
+          {t`Mergi la prima pagină`}
+        </button>
+      </p>
+    )
   if (rows.length === 0) return <p className={cn('py-6 text-sm text-muted-foreground', className)}>{t`Nicio înregistrare în această selecție.`}</p>
   return (
     <div className={cn(className, records.isFetching && 'opacity-70 transition-opacity')}>
@@ -329,7 +366,22 @@ export function AnswerRecords({ query, answer, className }: { readonly query: Qu
         <TableHeader>
           <TableRow>
             <TableHead className="hidden w-8 text-right sm:table-cell">#</TableHead>
-            <TableHead />
+            <TableHead>
+              {/* The column's name for screen readers: a phone shows only the order control here. */}
+              <span className="sr-only">{t`Înregistrarea`}</span>
+              {/* A phone has no date column: the date order is here, above the dates the rows say — a toggle, back to the value order. */}
+              {valued ? (
+                <button
+                  type="button"
+                  onClick={order(sort === 'date_desc' ? 'value_desc' : 'date_desc')}
+                  aria-pressed={sort === 'date_desc'}
+                  className={cn('inline-flex min-h-11 items-center gap-1 hover:text-foreground sm:hidden', sort === 'date_desc' && 'font-semibold text-foreground')}
+                >
+                  {t`Cele mai noi`}
+                  {sort === 'date_desc' ? <ArrowDown className="size-3" aria-hidden="true" /> : null}
+                </button>
+              ) : null}
+            </TableHead>
             <SortHead label={t({ message: 'Data', context: 'day' })} active={sort === 'date_desc'} onClick={sort === 'date_desc' ? null : order('date_desc')} className="hidden sm:table-cell" />
             <SortHead label={t`Valoare`} active={sort === 'value_desc'} onClick={!valued || sort === 'value_desc' ? null : order('value_desc')} />
           </TableRow>

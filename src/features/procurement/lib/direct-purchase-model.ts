@@ -203,9 +203,12 @@ const PURCHASE_STATUSES: ReadonlySet<string> = new Set(['finalized', 'awarded', 
  * How a record ended, from SEAP's status and — for a cancelled catalogue
  * purchase — its detail: a reason names who refused; without one, the side
  * that never decided let it lapse. Text withheld for privacy withholds the
- * reasons too, so such a record is only `stopped`.
+ * reasons too, so such a record is only `stopped`. Before 2019 SEAP's
+ * quarterly report lists refused offers beside purchases, so a row of it
+ * dated then (`day`, as `dayOf`) says neither.
  */
-export function outcomeOf(status: string, family: DpFamily, detail: DaDetail | null): DpOutcome {
+export function outcomeOf(status: string, family: DpFamily, detail: DaDetail | null, day: string | null = null): DpOutcome {
+  if (family === 'export' && status !== 'cancelled' && day !== null && Number(day.slice(0, 4)) < DIRECT_COMPARABLE_FROM) return { kind: 'unknown' }
   if (family !== 'catalog') return status === 'cancelled' ? { kind: 'stopped' } : { kind: 'reported' }
   if (PURCHASE_STATUSES.has(status)) return { kind: 'accepted' }
   if (status !== 'cancelled') return { kind: 'unknown' }
@@ -378,7 +381,7 @@ export function mapDirectPurchase(
   duplicates: readonly string[] = [],
 ): DirectPurchase {
   const family = familyOf(record.sourceSystem)
-  const outcome = outcomeOf(record.status, family, availability === 'AVAILABLE' ? detail : null)
+  const outcome = outcomeOf(record.status, family, availability === 'AVAILABLE' ? detail : null, record.finalizationDate ?? record.publicationDate)
   const own = numberOf(record.valueRon)
   const accepted = record.value?.valueAccepted ? numberOf(record.value.valueRonComparable) : null
   // A purchase shows its checked value; an attempt shows its offer, marked as one.
@@ -447,9 +450,13 @@ export function dayOf(purchase: Pick<DirectPurchase, 'finalized' | 'published'>)
   return purchase.finalized ?? purchase.published
 }
 
-/** The day the page dates a record by: an attempt by its request (its publication — a cancelled record's other date is its end), anything else by `dayOf`. */
+/**
+ * The day the page dates a record by: a purchase by `dayOf`; anything else by
+ * its request, its publication — an attempt's other date is its end, and a
+ * record whose end SEAP does not say has no known end.
+ */
 export function shownDayOf(purchase: Pick<DirectPurchase, 'finalized' | 'published' | 'outcome'>): string | null {
-  return isAttempt(purchase.outcome) ? (purchase.published ?? purchase.finalized) : dayOf(purchase)
+  return isPurchase(purchase.outcome) ? dayOf(purchase) : (purchase.published ?? purchase.finalized)
 }
 
 /** The year a party's procurement page opens on: the purchase's, when the pages have it; else their default. */

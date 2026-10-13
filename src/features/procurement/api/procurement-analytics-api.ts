@@ -12,6 +12,7 @@ import {
   scopeValue,
   type Dimension,
   type Query,
+  type RecordsSort,
   type ResolvedPeriod,
 } from '../lib/analytics-model'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
@@ -345,7 +346,7 @@ export const RECORDS_PAGE = 25
 /** The API pages a list up to its 10,000th row. */
 export const RECORDS_WINDOW = 10_000
 
-export type RecordsSort = 'value_desc' | 'date_desc'
+export { defaultRecordsSort, type RecordsSort } from '../lib/analytics-model'
 
 /** A page of the records the figures count: the same scope, the same build, the rows one by one. */
 export async function readRecords(scope: Scope, build: string | null, sort: RecordsSort, page: number, signal: AbortSignal): Promise<Records> {
@@ -374,11 +375,6 @@ export async function readRecords(scope: Scope, build: string | null, sort: Reco
 }
 
 // ──────────────────────────────────────────────────────────────── the plan ──
-
-/** The order the records open in: the largest first where there is a value, else the newest. */
-export function defaultRecordsSort(query: Pick<Query, 'tip'>): RecordsSort {
-  return POPULATIONS[query.tip].money !== 'none' ? 'value_desc' : 'date_desc'
-}
 
 /** One read of the answer: its cache key, whether it runs, and the read itself. */
 export interface PlannedRead<T> {

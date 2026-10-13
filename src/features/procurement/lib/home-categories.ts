@@ -1,5 +1,6 @@
 import type { MessageDescriptor } from '@lingui/core'
 import { msg } from '@lingui/core/macro'
+import { addFirm } from './firm-merge'
 import type { HomeParty, RecentRecord } from './home-model'
 
 /**
@@ -299,8 +300,9 @@ export function groupContracts(rows: readonly ContractRow[], limit = Infinity): 
   return [...groups.values()]
     .map((group): RecentRecord => {
       const lead = group.find((row) => row.title) ?? group[0]!
+      // A member's row without a CUI is the member of that name, not another firm.
       const winners = new Map<string, HomeParty>()
-      for (const row of group) if (!winners.has(partyKey(row.supplier))) winners.set(partyKey(row.supplier), row.supplier)
+      for (const row of group) addFirm(winners, row.supplier)
       const dates = group.map((row) => row.date).filter((date): date is string => date !== null).sort()
       return {
         id: lead.id,

@@ -42,7 +42,7 @@ describe('the other ledes', () => {
   })
 
   it('say the average direct purchase', () => {
-    expect(directAverageLede(nationalRead())).toMatch(/2,01\u00a0mil\. de achiziții directe din catalogul SEAP, de 8\.948\u00a0lei în medie/)
+    expect(directAverageLede(nationalRead())).toMatch(/2,01\u00a0mil\. de achiziții directe, de 8\.948\u00a0lei în medie/)
   })
 
   it('say how direct purchases grew, only when they grew by half or more', () => {

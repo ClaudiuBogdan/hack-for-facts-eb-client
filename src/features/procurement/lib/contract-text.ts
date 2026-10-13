@@ -193,10 +193,26 @@ export function associationNote(contract: CtContract): string | null {
   return t`Valoarea e a întregului contract: SEAP o publică pe numele fiecăreia dintre cele ${firms} și nu spune cât revine fiecăreia.`
 }
 
+/** How many values SEAP publishes for a contract: its versions that carry one (a version without a value is no published value). */
+export function publishedValuesCount(contract: CtContract): number {
+  return contract.versions.filter((version) => version.value !== null).length
+}
+
+/** Whether the head's value is an amount SEAP publishes for this row — not „o valoare nepublicată". */
+export function showsPublishedValue(value: CtValue): boolean {
+  if (value.kind === 'missing') return false
+  if (value.kind === 'ceiling') return value.value !== null
+  if (value.kind === 'unverified') return value.published !== null
+  return true
+}
+
 /** Versions: one contract number at several values — which is in force only the notice's value today can say, when it is one of them. */
 export function versionsText(contract: CtContract, current: { readonly value: number; readonly modified: number } | null): string | null {
   if (contract.versions.length < 2) return null
-  const values = valuesCount(contract.versions.length)
+  // Only the versions that carry a value count: a row without one is no value SEAP publishes (versions are distinct values, so at most one is none).
+  const published = publishedValuesCount(contract)
+  if (published < 2) return t`SEAP publică o singură valoare pentru acest contract; un alt rând al lui nu are una.`
+  const values = valuesCount(published)
   const today = current !== null && contract.versions.some((version) => version.value !== null && Math.abs(version.value - current.value) <= 1)
   if (today && current) {
     const amount = leiShort(current.value)

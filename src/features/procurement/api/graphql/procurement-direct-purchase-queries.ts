@@ -35,7 +35,7 @@ export type RawDirectPurchaseNames = z.infer<typeof directPurchaseNamesSchema>
 
 // ────────────────────────────────────────────────────── records around ──
 
-const AROUND_FIELDS = 'id uniqueCode title valueRon status publicationDate finalizationDate value { valueAccepted valueRonComparable }'
+const AROUND_FIELDS = 'id uniqueCode title valueRon status sourceSystem publicationDate finalizationDate value { valueAccepted valueRonComparable }'
 
 /**
  * The records between the same two, newer and older than this one's day
@@ -55,6 +55,7 @@ const aroundItemSchema = z.object({
   title: z.string().nullable(),
   valueRon: z.string().nullable(),
   status: z.string(),
+  sourceSystem: z.string(),
   publicationDate: z.string().nullable(),
   finalizationDate: z.string().nullable(),
   value: z.object({ valueAccepted: z.boolean(), valueRonComparable: z.string().nullable() }).nullable(),
