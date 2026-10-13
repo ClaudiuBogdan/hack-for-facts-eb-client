@@ -21,6 +21,7 @@ import { approvedStatusText, budgetPhrase, budgetWhen, changeOf, chapterLabel, c
 import { absDecimal, exactFigure, isNegative, plotOf, thousandToLei } from '@/features/national-budget/analytics/lib/exact'
 import { SECTION_ROOT, cutLines } from '@/features/national-budget/analytics/lib/lines'
 import { shiftYears, toAnalyticsSeries, yearOf } from '@/features/national-budget/analytics/lib/series'
+import { focusQuestion } from '@/features/national-budget/analytics/lib/focus-question'
 import { Bone } from '@/features/procurement/components/home/home-chrome'
 import { HubLoadError, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
@@ -66,7 +67,9 @@ function useAdvancedModel(state: AdvancedState, set: (patch: Partial<AdvancedSta
   // One budget is read from its release's column, from 1 January: a quarter or a month alone becomes its release's figure.
   const asked = execPeriodOf(state, catalog.execution.coverage)
   const period = state.buget && isExecution(state.tip) ? cumulativeOf(asked) : asked
-  const edition = editionOf(catalog, state.an)
+  // A view of the law reads only the year asked; the bulletins' views ignore the year (one carried over from the law),
+  // and their contents list the ministries of that law, else of the newest.
+  const edition = isExecution(state.tip) ? (editionOf(catalog, state.an) ?? editionOf(catalog, null)) : editionOf(catalog, state.an)
   const lawYear = lawYearOf(state, edition, catalog)
   // A population switch keeps only what the new one reads: its first tab, no line opened.
   const move = (patch: Partial<AdvancedState>) => {
@@ -97,6 +100,9 @@ function Advanced({ state, set }: { readonly state: AdvancedState; readonly set:
   const deferred = useDeferredValue(state)
   const shown: AdvancedModel = { ...useAdvancedModel(deferred, set), move }
   const stale = deferred !== state
+  // The contents list the law the page reads (the newest, when a bulletins' view carries a year with no law): a step into
+  // the law from them leaves that year, so it opens the law they listed.
+  const contentsGo = (patch: Partial<AdvancedState>) => move(state.an !== null && editionOf(catalog, state.an) === null && (patch.tip === 'lege' || patch.tip === 'ministere') ? { an: null, ...patch } : patch)
   const [filters, setFilters] = useState(false)
   const [contents, setContents] = useState(false)
   const page = useRef<HTMLDivElement>(null)
@@ -111,7 +117,7 @@ function Advanced({ state, set }: { readonly state: AdvancedState; readonly set:
       <YearsRead model={shown} stale={stale} />
       <SourceRead model={shown} />
       <FilterSheet state={state} lawYears={yearsOfLaw(catalog.approved.editions)} lawYear={lawYear} onChange={move} open={filters} onOpenChange={setFilters} />
-      <ContentsSheet open={contents} onOpenChange={setContents} catalog={catalog} state={state} edition={edition} lawYear={lawYear} onGo={move} />
+      <ContentsSheet open={contents} onOpenChange={setContents} catalog={catalog} state={state} edition={edition} lawYear={lawYear} onGo={contentsGo} />
     </div>
   )
 }
@@ -485,7 +491,7 @@ function HeadlineText({
   const { box, title } = useFittedHeadline(text)
   return (
     <div ref={box} data-headline-box className="mt-6 flex min-h-[7.75rem] items-end sm:mt-8">
-      <h1 ref={title} id="budget-advanced-title" className={cn('max-w-5xl font-extrabold leading-[1.02] tracking-tighter text-foreground', headlineSize(text))}>
+      <h1 ref={title} id="budget-advanced-title" tabIndex={-1} className={cn('max-w-5xl font-extrabold outline-none leading-[1.02] tracking-tighter text-foreground', headlineSize(text))}>
         {parts.map((part, index) => (
           <Fragment key={index}>
             {part.role === 'scope' ? (
@@ -675,10 +681,20 @@ function Figures(props: {
   return (
     <section className="border-b bg-muted/20" aria-label={t`Cifre-cheie`}>
       <RuledFrame>
-        <FiguresLocale.Provider value={i18n.locale === 'en' ? 'en' : 'ro'}>{facts ?? <p className="py-8 text-sm text-muted-foreground">{t`Nicio lege în date.`}</p>}</FiguresLocale.Provider>
+        <FiguresLocale.Provider value={i18n.locale === 'en' ? 'en' : 'ro'}>{facts ?? <p className="py-8 text-sm text-muted-foreground">{noLawText(state.an)}</p>}</FiguresLocale.Provider>
       </RuledFrame>
     </section>
   )
+}
+
+/** A ministry asked by a code the year's law doesn't list. */
+function missingAuthorityText(code: string, year: number): string {
+  return t`Legea pe ${year} nu are un ordonator principal cu codul ${code}.`
+}
+
+/** A view of the law with no law to read: the year asked isn't in the data (the head names the years that are), or no law is. */
+function noLawText(year: number | null): string {
+  return year === null ? t`Nicio lege a bugetului în date.` : t`Legea pe ${year} nu e în datele noastre.`
 }
 
 const FiguresLocale = createContext<'ro' | 'en'>('ro')
@@ -871,6 +887,8 @@ function AuthorityFigures({ catalog, state, edition }: { readonly catalog: Budge
     if (estimate !== null) add(facts, money('next', estimate, t`Estimare pentru ${year + 1}`, t`${name}, din ${lawText(year)}`))
     return <Band facts={facts} empty={empty} />
   }
+  // A code the law doesn't list is not answered with the whole state budget: the question stays the reader's, the answer says it isn't there.
+  if (state.rand) return <Band facts={[]} empty={rows.length > 0 ? missingAuthorityText(state.rand, year) : empty} />
   if (approvedTotal !== null) add(facts, money('total', approvedTotal, t`Bugetul de stat, aprobat`, t`${lawText(year)}, rândul 5001`))
   facts.push({
     key: 'count',
@@ -916,7 +934,26 @@ function Answer({
     if (state.dupa === 'timp') return <TimeAnswer state={state} catalog={catalog} period={period} onChange={onChange} titleId="budget-advanced-title" />
     return <CategoriesAnswer state={state} catalog={catalog} period={period} onChange={onChange} />
   }
-  if (!edition) return <Unavailable>{t`Nicio lege a bugetului în date.`}</Unavailable>
+  if (!edition && state.tip === 'lege' && state.dupa === 'legi') return <EditionsAnswer state={state} catalog={catalog} lawYear={lawYear} onChange={onChange} />
+  if (!edition) {
+    // The figures above already say the year asked has no law: the answer is the way to the newest one.
+    const newest = yearsOfLaw(catalog.approved.editions)[0]
+    if (state.an === null || newest === undefined) return <Unavailable>{noLawText(state.an)}</Unavailable>
+    return (
+      <Unavailable>
+        <button
+          type="button"
+          onClick={() => {
+            onChange({ an: null, rand: null })
+            focusQuestion()
+          }}
+          className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+        >
+          {t`Vezi ${lawText(newest)}`}
+        </button>
+      </Unavailable>
+    )
+  }
   // The views read from the law's records (chapters, titles, a ministry's lines) would mix an annex read in more than
   // one way; the totals already answer such a cell as ambiguous.
   if (edition.hasConflictingInterpretations && ((state.tip === 'ministere' && state.rand) || (state.tip === 'lege' && state.dupa === 'capitole'))) {
@@ -1060,7 +1097,9 @@ function SourceLine({ state, catalog, edition }: { readonly state: AdvancedState
   const execution = isExecution(state.tip)
   const source = execution
     ? t`Sursa: buletinele lunare de execuție bugetară ale Ministerului Finanțelor, ${monthText(coverage.firstMonth)} – ${monthText(coverage.lastMonth)} (${coverage.selectedMonthCount} din ${coverage.calendarMonthCount} luni)`
-    : t`Sursa: ${edition ? lawText(edition.budgetYear) : t`legile bugetului`}, cum a fost publicată (XML); legătura documentului: în așteptare`
+    : edition
+      ? t`Sursa: ${lawText(edition.budgetYear)}, cum a fost publicată (XML); legătura documentului: în așteptare`
+      : t`Sursa: legile bugetului, cum au fost publicate (XML); legăturile documentelor: în așteptare`
   return (
     <footer className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
       <span>{source}</span>

@@ -21,7 +21,7 @@ import {
 } from './home-data'
 import { comparableWithAnaf } from '../hooks/use-home-data'
 import { partsOfWhole } from '../hooks/use-whole-of'
-import { authorityName, gdpNumber, gdpSizeText, restOf, shareNumber, shareOf } from './home-format'
+import { authorityName, budgetsLede, gdpNumber, gdpSizeText, moneyText, restOf, shareNumber, shareOf } from './home-format'
 import { cellsOutOfHundred, namedCount, squarify, toneOf, type Part } from './home-geometry'
 import { lawChaptersOf, planTotalsInput, previousEdition } from './home-law'
 
@@ -415,5 +415,40 @@ describe('the GDP figures, each from its own source', () => {
     expect([others.share(TOTAL_ITEMS.spending), others.shareStatus(TOTAL_ITEMS.spending)]).toEqual([null, 'absent'])
     expect([others.share(TOTAL_ITEMS.revenue), others.shareStatus(TOTAL_ITEMS.revenue)]).toEqual(['0', 'available'])
     expect([others.share(TOTAL_ITEMS.balance), others.shareStatus(TOTAL_ITEMS.balance)]).toEqual([null, 'unqualified'])
+  })
+})
+
+describe('the budgets band\'s sentence', () => {
+  // December 2025, BGC, as the API prints the columns (snapshot e1.b5701dc5…).
+  const spending = {
+    year: '2025',
+    side: 'EXPENDITURE' as const,
+    before: '1003066412649.9998',
+    transfers: '-185073582515.90002',
+    operations: '-9261415173.9999998',
+    consolidated: '808731414960.09985',
+  }
+
+  it('names the financial operations, so the transfers alone are not the whole step to the consolidated budget', () => {
+    const text = budgetsLede(spending) ?? ''
+    for (const amount of [moneyText(spending.before), moneyText('185073582515.90002'), moneyText('9261415173.9999998'), moneyText(spending.consolidated)]) expect(text).toContain(amount)
+    expect(text).toContain('operațiuni financiare')
+    expect(text).toContain('fără')
+    const revenue = budgetsLede({ ...spending, side: 'REVENUE', before: '849769998617.25001', operations: '-1998242999.9999999', consolidated: '662698173101.34997' }) ?? ''
+    expect(revenue).toContain(moneyText('1998242999.9999999'))
+    expect(revenue).toContain('operațiuni financiare')
+  })
+
+  it('leaves the financial operations out only when they are zero, adds them when they add, and has no sentence when a step is missing', () => {
+    for (const side of ['EXPENDITURE', 'REVENUE'] as const) {
+      const zero = budgetsLede({ ...spending, side, operations: '-0.00' })
+      expect(zero).toContain(moneyText(spending.consolidated))
+      expect(zero).not.toContain('operațiuni financiare')
+      const adding = budgetsLede({ ...spending, side, operations: '9261415173.9999998' })
+      expect(adding).toContain('adăugând cele')
+      expect(adding).not.toContain('fără cele')
+      expect(budgetsLede({ ...spending, side, operations: null })).toBeNull()
+      expect(budgetsLede({ ...spending, side, transfers: null })).toBeNull()
+    }
   })
 })

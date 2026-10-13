@@ -113,6 +113,28 @@ test.describe('National budget analysis — the server render', () => {
     ).toBe(true)
   })
 
+  test('a law year or a ministry the data doesn’t have is said so, never answered with another', async ({ page }) => {
+    // 2001: before the laws the data holds (2016 on), so it stays a year without a law.
+    await page.goto(`${ROUTE}?tip=lege&an=2001`)
+    await waitForPageReady(page)
+
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('2001')
+    await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toContainText('Legea pe 2001 nu e în datele noastre')
+    await page.getByRole('button', { name: /^Vezi legea pe/u }).click()
+    await expect.poll(() => params(page).an).toBeUndefined()
+    await expect(page.getByRole('heading', { level: 1 })).not.toContainText('2001')
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+
+    await page.goto(`${ROUTE}?tip=ministere&rand=99999999`)
+    await waitForPageReady(page)
+    await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toContainText('nu are un ordonator principal cu codul 99999999')
+    await expect(page.getByRole('region', { name: 'Cifre-cheie' })).not.toContainText('Ordonatori principali')
+    await expect(answerRows(page)).toHaveCount(0)
+    await page.getByRole('button', { name: /^Toți ordonatorii/u }).click()
+    await expect.poll(() => params(page).rand).toBeUndefined()
+    await expect.poll(() => answerRows(page).count()).toBeGreaterThan(20)
+  })
+
   test('an address it cannot read falls back to the first question, not to an error', async ({ page }) => {
     await page.goto(`${ROUTE}?tip=altceva&perioada=ieri&dupa=platit`)
     await waitForPageReady(page)
@@ -178,5 +200,39 @@ test.describe('National budget analysis — the controls write the address', () 
     await sheet.getByRole('button', { name: /^Dobânzi/u }).first().click()
     await expect.poll(() => params(page).rand).toBe('expenditure.interest')
     await expect(sheet).toBeHidden()
+  })
+
+  test('the budget filter is searched, and closing the filters gives the focus back to them', async ({ page }) => {
+    await page.goto(ROUTE)
+    await waitForPageReady(page)
+
+    const filters = page.getByRole('button', { name: /^Filtre/u }).first()
+    await filters.focus()
+    await page.keyboard.press('Enter')
+    const sheet = page.getByRole('dialog')
+    await expect(sheet).toBeVisible()
+    const search = sheet.getByRole('textbox', { name: 'Caută: Bugetul' })
+    await search.fill('exim')
+    await expect(sheet.getByRole('group', { name: 'Bugetul' }).getByRole('button')).toHaveCount(1)
+    // Escape clears the words first; the next one closes the sheet.
+    await search.press('Escape')
+    await expect(search).toHaveValue('')
+    await expect(sheet).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(sheet).toBeHidden()
+    await expect(filters).toBeFocused()
+
+    // Opened from a phrase of the question (the time view's „cheltuielile publice"), which the pick then rewrites: the
+    // focus still lands on a control, never on the page.
+    await page.goto(`${ROUTE}?dupa=timp`)
+    await waitForPageReady(page)
+    await page.getByRole('heading', { level: 1 }).getByRole('button').first().focus()
+    await page.keyboard.press('Enter')
+    await expect(sheet).toBeVisible()
+    await sheet.getByRole('group', { name: 'Bugetul' }).getByRole('button', { name: 'Bugetul de stat' }).click()
+    await expect.poll(() => params(page).buget).toBe('state_budget')
+    await page.keyboard.press('Escape')
+    await expect(sheet).toBeHidden()
+    expect(await page.evaluate(() => document.activeElement !== document.body && document.activeElement !== null)).toBe(true)
   })
 })

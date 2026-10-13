@@ -1199,3 +1199,32 @@ years became selectable and plotted with the new snapshot.
   spending and revenue bands keep the verified total and say the breakdown
   isn't available, with no grid and no „other" row (`partsOfWhole` returns
   null). A line of exactly zero is a value, so the breakdown stands.
+
+### 11.6 QA fixes (13 October 2026)
+
+From the QA tracker (`qa-trackers/national-budget/ISSUES.md`, outside the repo):
+
+- **NB-001. The budgets band's sentence names every printed step.** Taking the
+  transfers from „all budgets, before transfers" doesn't reach the
+  consolidated budget: the signed financial operations come between (2025
+  spending: 1.003,1 − 185,1 − 9,3 → 808,7 mld. lei). The sentence names them
+  whenever they aren't zero („fără" when they take away, „adăugând" when they
+  add), on both sides; with a step missing there is no sentence. The bridge's
+  step says minus or plus by its sign.
+- **NB-003. A law year the data doesn't have is never answered with another.**
+  `editionOf` reads the year asked, or the newest when none is asked; an
+  unknown year has no law: the figures say so, the answer is a link to the
+  newest, and the laws side by side still show. The bulletins' views ignore a
+  law year carried over, and their contents list the newest law's ministries.
+- **NB-002. A ministry code the law doesn't list is said so**, not answered
+  with the whole state budget; the answer is the link back to every ministry.
+  (The API lists the same ministries for both credit types, 2016–2025.)
+- **NB-004.** The treemap's amounts are drawn at full ink (≥ 4,5:1).
+- **NB-007.** The Budget filter (twelve values) has a search and a scrolled
+  list, the picked budget first at open, one weight for a pick; Escape in a
+  search with words clears it before it closes the sheet.
+- **NB-008.** The filter sheet has no trigger of its own: closed, it gives the
+  focus back to whichever opened it, or to the Filters button when a pick took
+  the opener away. The two ways out above move the focus to the new question.
+- Not here: the collapsed sidebar's link names (NB-005, fixed site-wide by the
+  procurement session) and the nested `main` (NB-006, shared shell, no owner yet).

@@ -11,6 +11,7 @@ import { billionsText, moneyText } from '@/features/national-budget/analytics/li
 import type { AdvancedState } from '@/features/national-budget/analytics/lib/analytics-state'
 import { FUND_OF, LAW_FUNDS, SPENDING_CODE_OF, SPENDING_TOTAL_OF, SYNTHESIS_OF, TITLE_GROUPS, approvedStatusText, changeText, chapterLabel, fundLabel, lawText, sentenceCase, titleLabel } from '@/features/national-budget/analytics/lib/analytics-view'
 import { exactText, plotOf, thousandToLei } from '@/features/national-budget/analytics/lib/exact'
+import { focusQuestion } from '@/features/national-budget/analytics/lib/focus-question'
 import { cn } from '@/lib/utils'
 import type { BudgetApprovedCodes, BudgetApprovedEdition, BudgetApprovedRecord, BudgetApprovedTotalCell, BudgetNationalCatalog } from '@/schemas/national-budget-api'
 import { STICKY_HEAD, STICKY_HEAD_WIDE, ChangeCell, DocumentLink, EvidenceIcon, EvidenceList, ShareCell, Unavailable } from './analytics-parts'
@@ -552,6 +553,23 @@ export function AuthoritiesAnswer({
     })
     .sort((a, b) => (b.lei ?? -Infinity) - (a.lei ?? -Infinity))
   if (rows.length === 0) return <Unavailable>{t`Legea pe ${year} nu are anexa ordonatorilor în date.`}</Unavailable>
+  if (state.rand) {
+    // A code the law doesn't list (the figures above say so): the answer is the way back to the whole list, never the list itself.
+    return (
+      <Unavailable>
+        <button
+          type="button"
+          onClick={() => {
+            onChange({ rand: null })
+            focusQuestion()
+          }}
+          className="font-medium text-foreground underline underline-offset-4 hover:text-primary"
+        >
+          {t`Toți ordonatorii din ${lawText(year)}`}
+        </button>
+      </Unavailable>
+    )
+  }
   const widest = Math.max(0.0001, ...rows.map((row) => (row.lei !== null && total ? row.lei / total : 0)))
   return (
     <div>

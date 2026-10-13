@@ -1,8 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Check, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
 
-import { CELL, Group, Row, SHEET_CLOSE, TALL } from '@/components/filters/filter-sheet/filter-sheet-parts'
+import { Announce, CELL, FIELD, Group, Notice, Row, SHEET_CLOSE, TALL } from '@/components/filters/filter-sheet/filter-sheet-parts'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -13,6 +13,7 @@ import { type AdvancedState, type BudgetKey, DEFAULTS, type Dupa, filterCount, i
 import { BUDGET_COMPONENTS, LAW_FUNDS, QUESTIONS, SECTION_OF, chapterLabel, componentLabel, fundLabel, isExecution, lastCompleteYear, periodText, populationLabel, questionGroupLabel, reasonText, tabLabel, type ExecPeriod } from '@/features/national-budget/analytics/lib/analytics-view'
 import { SECTION_ROOT, treeLines } from '@/features/national-budget/analytics/lib/lines'
 import { lastWholeQuarter, yearOf } from '@/features/national-budget/analytics/lib/series'
+import { placeKey } from '@/features/procurement/lib/analytics-places'
 import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
 import type { BudgetNationalCatalog } from '@/schemas/national-budget-api'
@@ -518,7 +519,7 @@ export function Trail({ state, onChange }: { readonly state: AdvancedState; read
 export function FiltersButton({ state, onClick, className }: { readonly state: AdvancedState; readonly onClick: () => void; readonly className?: string }) {
   const count = filterCount(state)
   return (
-    <button type="button" onClick={onClick} className={className}>
+    <button type="button" onClick={onClick} data-filters-button className={className}>
       <SlidersHorizontal className="size-3.5" aria-hidden="true" />
       {t`Filtre`}
       {count > 0 ? <span className="bg-primary px-1.5 text-xs tabular-nums text-primary-foreground">{count}</span> : null}
@@ -527,6 +528,49 @@ export function FiltersButton({ state, onClick, className }: { readonly state: A
 }
 
 const POPULATIONS: readonly Tip[] = ['cheltuieli', 'venituri', 'sold', 'lege', 'ministere']
+
+/**
+ * The budgets, the consolidated first: twelve values, so a search above them
+ * and the list scrolls (the owner's rule for a filter's list, past eight).
+ * The budget picked when the sheet opened comes first, so it shows; the
+ * search is there from the start, and a pick changes neither the order nor
+ * a label's weight, so nothing moves under the pointer.
+ */
+function BudgetList({ picked, onPick }: { readonly picked: BudgetKey | null; readonly onPick: (buget: BudgetKey | null) => void }) {
+  const [term, setTerm] = useState('')
+  const [first] = useState(picked)
+  const choices = ([null, ...BUDGET_COMPONENTS] as const).map((buget) => ({ buget, label: buget ? componentLabel(buget) : t`Consolidat (toate bugetele)` }))
+  const ordered = [...choices.filter((choice) => choice.buget === first), ...choices.filter((choice) => choice.buget !== first)]
+  const key = placeKey(term)
+  const shown = key === '' ? ordered : ordered.filter((choice) => placeKey(choice.label).includes(key))
+  const nothing = t`Niciun buget pentru „${term.trim()}".`
+  return (
+    <div className="space-y-1.5">
+      <input
+        value={term}
+        onChange={(event) => setTerm(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') setTerm('')
+        }}
+        // The sheet keeps Escape while there is a search to clear (its `onEscapeKeyDown`).
+        data-clears-on-escape={term === '' ? undefined : 'true'}
+        placeholder={t`Caută printre ${choices.length}`}
+        aria-label={t`Caută: Bugetul`}
+        className={FIELD}
+      />
+      {/* Out of the Tab order: Chrome makes a scroller a stop of its own. */}
+      <div role="group" aria-label={t`Bugetul`} tabIndex={-1} className="grid max-h-64 grid-cols-1 gap-1.5 overflow-y-auto overscroll-contain">
+        {shown.map(({ buget, label }) => (
+          <button key={buget ?? 'all'} type="button" aria-pressed={picked === buget} onClick={() => onPick(buget)} className={cn(CELL, 'text-left', picked === buget && 'border-primary bg-primary/5')}>
+            {label}
+          </button>
+        ))}
+        {shown.length === 0 ? <Notice kind="empty">{nothing}</Notice> : null}
+      </div>
+      <Announce text={shown.length === 0 ? nothing : ''} />
+    </div>
+  )
+}
 
 /** Every filter, in a sheet from the right (from the bottom on a phone); a change applies at once. */
 export function FilterSheet({
@@ -548,11 +592,27 @@ export function FilterSheet({
   const phone = width > 0 && width < 640
   const active = (on: boolean) => (on ? 'border-primary bg-primary/5 font-semibold' : '')
   const execution = isExecution(state.tip)
+  // The sheet has no trigger of its own (the Filters button, a phrase of the question): closed, it gives the focus back to
+  // whichever opened it, or to the Filters button when a change took the opener away (a phrase of a cleared filter).
+  const opener = useRef<HTMLElement | null>(null)
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side={phone ? 'bottom' : 'right'}
         onOverlayClick={() => onOpenChange(false)}
+        onEscapeKeyDown={(event) => {
+          // Escape in a search with words in it clears the search; the next one closes the sheet.
+          if (document.activeElement instanceof HTMLInputElement && document.activeElement.dataset.clearsOnEscape === 'true') event.preventDefault()
+        }}
+        onOpenAutoFocus={() => {
+          opener.current = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null
+        }}
+        onCloseAutoFocus={(event) => {
+          const target = opener.current?.isConnected ? opener.current : document.querySelector<HTMLElement>('[data-filters-button]')
+          if (!target) return
+          event.preventDefault()
+          target.focus({ preventScroll: true })
+        }}
         closeClassName={SHEET_CLOSE}
         className={cn('flex flex-col gap-0 p-0', phone ? 'max-h-[90vh] rounded-t-2xl' : 'w-full sm:max-w-sm')}
       >
@@ -575,19 +635,7 @@ export function FilterSheet({
           {execution ? (
             <Group title={t`Bugetul`}>
               <Row label="">
-                <div className="grid grid-cols-1 gap-1.5">
-                  {([null, ...BUDGET_COMPONENTS] as const).map((buget) => (
-                    <button
-                      key={buget ?? 'all'}
-                      type="button"
-                      aria-pressed={state.buget === buget}
-                      onClick={() => onChange({ buget, ...(state.dupa === 'bugete' ? { dupa: TABS[state.tip][0] } : {}) })}
-                      className={cn(CELL, 'text-left', active(state.buget === buget))}
-                    >
-                      {buget ? componentLabel(buget) : t`Consolidat (toate bugetele)`}
-                    </button>
-                  ))}
-                </div>
+                <BudgetList picked={state.buget} onPick={(buget) => onChange({ buget, ...(state.dupa === 'bugete' ? { dupa: TABS[state.tip][0] } : {}) })} />
               </Row>
             </Group>
           ) : null}

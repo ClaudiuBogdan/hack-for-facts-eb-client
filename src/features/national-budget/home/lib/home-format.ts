@@ -6,9 +6,9 @@
 import { t } from '@lingui/core/macro'
 
 import { moneyText } from '@/features/national-budget/analytics/lib/analytics-format'
-import { exactPercent, isNegative, absDecimal } from '@/features/national-budget/analytics/lib/exact'
+import { canonicalDecimal, exactPercent, isNegative, absDecimal } from '@/features/national-budget/analytics/lib/exact'
 import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
-import { sumDecimals } from '@/lib/exact-decimal'
+import { decimalSign, sumDecimals } from '@/lib/exact-decimal'
 
 export { moneyText }
 
@@ -174,6 +174,47 @@ export function restOf(total: string, parts: readonly (string | null)[]): string
   const shown = parts.filter((part): part is string => part !== null)
   const negated = shown.map((part) => (part.startsWith('-') ? part.slice(1) : `-${part}`))
   return sumDecimals([total, ...negated])
+}
+
+/**
+ * The budgets band's sentence: what the budgets add up to, the transfers
+ * between them, the financial operations, and the consolidated budget, all
+ * printed columns. The financial operations are named whenever they are not
+ * zero: without them, the transfers alone don't take the sum to the
+ * consolidated budget. No sentence when a step is missing.
+ */
+export function budgetsLede({
+  year,
+  side,
+  before,
+  transfers,
+  operations,
+  consolidated,
+}: {
+  readonly year: string
+  readonly side: 'EXPENDITURE' | 'REVENUE'
+  readonly before: string | null
+  readonly transfers: string | null
+  readonly operations: string | null
+  readonly consolidated: string | null
+}): string | null {
+  if (!before || !transfers || !operations || !consolidated) return null
+  const sign = decimalSign(canonicalDecimal(operations))
+  if (sign === null) return null
+  const all = moneyText(before)
+  const moved = moneyText(absDecimal(transfers))
+  const ops = moneyText(absDecimal(operations))
+  const total = moneyText(consolidated)
+  if (side === 'EXPENDITURE') {
+    if (sign === 0) return t`În ${year}, bugetele publice au cheltuit împreună ${all}. Dar ${moved} au fost bani dați de un buget altuia, care i-a cheltuit apoi el: socotiți o singură dată, cheltuielile statului au fost ${total}.`
+    return sign < 0
+      ? t`În ${year}, bugetele publice au cheltuit împreună ${all}. Dar ${moved} au fost bani dați de un buget altuia, care i-a cheltuit apoi el. Socotiți o singură dată și fără cele ${ops} de operațiuni financiare, cheltuielile statului au fost ${total}.`
+      : t`În ${year}, bugetele publice au cheltuit împreună ${all}. Dar ${moved} au fost bani dați de un buget altuia, care i-a cheltuit apoi el. Socotiți o singură dată și adăugând cele ${ops} de operațiuni financiare, cheltuielile statului au fost ${total}.`
+  }
+  if (sign === 0) return t`În ${year}, bugetele publice au încasat împreună ${all}. Dar ${moved} au venit de la alt buget: socotite o singură dată, veniturile statului au fost ${total}.`
+  return sign < 0
+    ? t`În ${year}, bugetele publice au încasat împreună ${all}. Dar ${moved} au venit de la alt buget. Socotite o singură dată și fără cele ${ops} de operațiuni financiare, veniturile statului au fost ${total}.`
+    : t`În ${year}, bugetele publice au încasat împreună ${all}. Dar ${moved} au venit de la alt buget. Socotite o singură dată și adăugând cele ${ops} de operațiuni financiare, veniturile statului au fost ${total}.`
 }
 
 /** „ian.", „feb." … for a month axis. */

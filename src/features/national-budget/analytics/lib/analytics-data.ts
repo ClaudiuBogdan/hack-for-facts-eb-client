@@ -117,7 +117,8 @@ export function largestShare(grid: { readonly results: readonly BudgetNationalSe
 
 export const creditTypeOf = (state: Pick<AdvancedState, 'credite'>): BudgetCreditType => (state.credite === 'angajament' ? 'COMMITMENT_CREDITS' : 'BUDGET_CREDITS')
 
+/** The law a view reads: the year asked, or the newest when none is asked. A year asked with no law in the data has none: the page says so, never another year's law in its place. */
 export function editionOf(catalog: BudgetNationalCatalog, year: number | null): BudgetApprovedEdition | null {
   const editions = [...catalog.approved.editions].sort((a, b) => b.budgetYear - a.budgetYear)
-  return editions.find((edition) => edition.budgetYear === year) ?? editions[0] ?? null
+  return year === null ? (editions[0] ?? null) : (editions.find((edition) => edition.budgetYear === year) ?? null)
 }

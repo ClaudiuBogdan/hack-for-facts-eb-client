@@ -175,7 +175,7 @@ export function Treemap({
                 {room === 'full' ? (
                   <span className="block">
                     <span className="block text-2xl font-semibold leading-none tracking-tight tabular-nums sm:text-[2rem]">{part.shareLabel}</span>
-                    <span className="mt-1.5 block text-xs tabular-nums opacity-80">{part.amount}</span>
+                    <span className="mt-1.5 block text-xs tabular-nums">{part.amount}</span>
                   </span>
                 ) : room === 'name' || room === 'share' ? (
                   <span className={cn('block font-semibold tabular-nums', room === 'name' ? 'text-sm' : 'text-xs')}>{part.shareLabel}</span>

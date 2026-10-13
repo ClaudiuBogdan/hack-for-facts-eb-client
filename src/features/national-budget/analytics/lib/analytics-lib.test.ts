@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
+import type { BudgetNationalCatalog } from '@/schemas/national-budget-api'
+import { editionOf } from './analytics-data'
 import { canonicalDecimal, exactBillions, exactChange, exactCompact, exactPercent, exactRounded, exactText, plotOf, thousandToLei } from './exact'
 import { LINE_TREE, SECTION_ROOT, cutLines, opens, rankedTree, treeLines } from './lines'
 import { lastWholeQuarter, periodTypeOf, periodsBetween, quarterOf, shiftYears, toAnalyticsSeries } from './series'
@@ -223,5 +225,16 @@ describe('the bulletin tree, against the live full-year values 2019–2025', () 
   it('keeps a line whose parent is absent this period, and an unknown item, last', () => {
     const present = new Set(['mfin.bgc.revenue.total', 'mfin.bgc.revenue.vat', 'mfin.bgc.revenue.new_line'])
     expect(cutLines({ section: 'REVENUE', sectionItems: [...items, 'mfin.bgc.revenue.new_line'], present, depth: 1 })).toEqual(['mfin.bgc.revenue.vat', 'mfin.bgc.revenue.new_line'])
+  })
+})
+
+describe('the law a view reads', () => {
+  const catalog = { approved: { editions: [{ id: 'law_2024', budgetYear: 2024 }, { id: 'law_2025', budgetYear: 2025 }] } } as unknown as BudgetNationalCatalog
+
+  it('reads the year asked, the newest when none is asked, and no law for a year the data has none of', () => {
+    expect(editionOf(catalog, 2024)?.id).toBe('law_2024')
+    expect(editionOf(catalog, null)?.id).toBe('law_2025')
+    expect(editionOf(catalog, 2026)).toBeNull()
+    expect(editionOf(catalog, 2001)).toBeNull()
   })
 })

@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import type { Part } from '../lib/home-geometry'
 import { useBudgetColumns } from '../hooks/use-home-data'
 import { BUDGET_COLUMNS, type YearView } from '../lib/home-data'
-import { moneyText, restOf, shareNumber, shareOf } from '../lib/home-format'
+import { budgetsLede, moneyText, restOf, shareNumber, shareOf } from '../lib/home-format'
 import { AnalyticsLink, SourceNote, type BandProps } from './home-shell'
 
 /**
@@ -113,13 +113,6 @@ function NoColumns({ view }: { readonly view: YearView }) {
 
 function Head({ index, titleId, lede }: Pick<BandProps, 'index' | 'titleId'> & { readonly lede: string | null }) {
   return <HubSectionHead titleId={titleId} index={index} title={t`Prin ce bugete trec banii`} lede={lede} />
-}
-
-function lede(view: YearView, before: string | null, consolidated: string | null, transfers: string | null, side: Side): string | null {
-  if (!before || !consolidated || !transfers) return null
-  return side === 'EXPENDITURE'
-    ? t`În ${view.text}, bugetele publice au cheltuit împreună ${moneyText(before)}. Dar ${moneyText(transfers.replace(/^-/u, ''))} au fost bani dați de un buget altuia, care i-a cheltuit apoi el: socotiți o singură dată, cheltuielile statului au fost ${moneyText(consolidated)}.`
-    : t`În ${view.text}, bugetele publice au încasat împreună ${moneyText(before)}. Dar ${moneyText(transfers.replace(/^-/u, ''))} au venit de la alt buget: socotite o singură dată, veniturile statului au fost ${moneyText(consolidated)}.`
 }
 
 function Sources({ view }: { readonly view: YearView }) {
@@ -231,7 +224,7 @@ function bridgeSteps(data: ReturnType<typeof useBudgets>, side: Side): readonly 
   if (data.operations && plotOf(data.operations) !== 0) {
     steps.push({
       key: OPERATIONS,
-      label: t`Minus operațiunile financiare`,
+      label: data.operations.startsWith('-') ? t`Minus operațiunile financiare` : t`Plus operațiunile financiare`,
       amount: `${data.operations.startsWith('-') ? '−' : '+'}${moneyText(data.operations.replace(/^-/u, ''))}`,
       from: consolidated,
       to: beforeOperations,
@@ -253,7 +246,7 @@ export function BudgetsBand(props: BandProps) {
   return (
     <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8">
       <div className="lg:col-span-4">
-        <Head {...props} lede={data.printed ? lede(view, data.before, data.consolidated, data.transfers, side) : null} />
+        <Head {...props} lede={data.printed ? budgetsLede({ year: view.text, side, before: data.before, transfers: data.transfers, operations: data.operations, consolidated: data.consolidated }) : null} />
         {data.printed ? (
           <div className="mt-6">
             <SideToggle side={side} onSide={setSide} />
