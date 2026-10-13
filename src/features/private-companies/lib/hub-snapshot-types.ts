@@ -1,4 +1,4 @@
-import type { CompanyAnalysisGapReason } from '@/schemas/company-analytics'
+import type { CompanyAnalysisActivity, CompanyAnalysisGapReason } from '@/schemas/company-analytics'
 
 /**
  * The shape of the companies hub's snapshot (`hub-snapshot.ts`): figures read
@@ -12,8 +12,13 @@ export interface HubLeader {
   readonly name: string
   /** The county code (`CJ`, `B`) of the registered office, when the registry places it. */
   readonly county: string | null
-  /** The two-digit CAEN division of the main activity declared to ANAF. */
-  readonly division: string | null
+  /**
+   * The analytics release's derived activity selection for the company, as the
+   * API serves it: an ONRC class with its revision, ANAF's fiscal code with its
+   * revision unpublished, or why none is selected. Null when the release does
+   * not hold the company.
+   */
+  readonly activity: CompanyAnalysisActivity | null
   /** Its ONRC status at the registry capture: a company can lead a year and be struck off since. */
   readonly status: string | null
   /** The ranked figure for the snapshot's fiscal year. */

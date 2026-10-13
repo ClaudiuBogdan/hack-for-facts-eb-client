@@ -579,7 +579,7 @@ msgid "{0, plural, one {Nu apare pe grafic o înregistrare fără an și fără 
 msgstr "{0, plural, one {One record with no year and no published value is not on the chart.} other {# records with no year and no published value are not on the chart.}}"
 
 #. placeholder {0}: selection.classKeyCount
-#: src/features/private-companies/lib/company-activity-text.ts:187
+#: src/features/private-companies/lib/company-activity-text.ts:193
 msgid "{0, plural, one {o activitate clasificată} few {# activități clasificate} other {# de activități clasificate}}"
 msgstr "{0, plural, one {one classified activity} other {# classified activities}}"
 
@@ -659,7 +659,7 @@ msgid "{0, plural, one {O înscriere originală} few {# înscrieri originale} ot
 msgstr "{0, plural, one {One original entry} other {# original entries}}"
 
 #. placeholder {0}: selection.observationCount
-#: src/features/private-companies/lib/company-activity-text.ts:186
+#: src/features/private-companies/lib/company-activity-text.ts:192
 msgid "{0, plural, one {O observație CAEN în ediție} few {# observații CAEN în ediție} other {# de observații CAEN în ediție}}"
 msgstr "{0, plural, one {One CAEN observation in the edition} other {# CAEN observations in the edition}}"
 
@@ -843,7 +843,7 @@ msgid "{0} · revizie CAEN nepublicată de ANAF"
 msgstr "{0} · CAEN revision not published by ANAF"
 
 #. placeholder {0}: selector.code
-#: src/features/private-companies/lib/company-activity-text.ts:306
+#: src/features/private-companies/lib/company-activity-text.ts:334
 msgid "{0} (ANAF, revizie nepublicată)"
 msgstr "{0} (ANAF, revision not published)"
 
@@ -914,7 +914,7 @@ msgid "{0} ale statului central"
 msgstr "{0} of the central state"
 
 #. placeholder {0}: count(quality.numericMatchSelected)
-#: src/features/private-companies/lib/company-activity-text.ts:290
+#: src/features/private-companies/lib/company-activity-text.ts:296
 msgid "{0} alese după codul fiscal ANAF"
 msgstr "{0} selected by the ANAF fiscal code"
 
@@ -1002,12 +1002,12 @@ msgstr "{0} companies found"
 #~ msgstr "{0} County"
 
 #. placeholder {0}: count(quality.incompleteCoverage)
-#: src/features/private-companies/lib/company-activity-text.ts:291
+#: src/features/private-companies/lib/company-activity-text.ts:297
 msgid "{0} cu înscrieri ONRC incomplete"
 msgstr "{0} with incomplete ONRC entries"
 
 #. placeholder {0}: count(quality.withUnqualifiedRows)
-#: src/features/private-companies/lib/company-activity-text.ts:292
+#: src/features/private-companies/lib/company-activity-text.ts:298
 msgid "{0} cu observații necalificate"
 msgstr "{0} with unqualified observations"
 
@@ -2194,7 +2194,7 @@ msgstr "{category}."
 
 #. placeholder {0}: first.year
 #. placeholder {1}: last.year
-#: src/features/private-companies/components/hub/hub-economy-years.tsx:294
+#: src/features/private-companies/components/hub/hub-economy-years.tsx:297
 msgid "{change} din {0} până în {1}"
 msgstr "{change} from {0} to {1}"
 
@@ -2236,7 +2236,7 @@ msgstr "{change} vs the {year} law"
 msgid "{choice}, până în {0}"
 msgstr "{choice}, to {0}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:283
+#: src/features/private-companies/lib/company-activity-text.ts:289
 msgid "{code} (cod CAEN fiscal ANAF, revizie nepublicată)"
 msgstr "{code} (ANAF fiscal CAEN code, revision not published)"
 
@@ -2662,11 +2662,11 @@ msgstr "{Institutions} bought it from the firm in {year} for {range}; {where}."
 msgid "{kept, plural, one {# valoare ținută în afara cifrelor} few {# valori ținute în afara cifrelor} other {# de valori ținute în afara cifrelor}}"
 msgstr "{kept, plural, one {# value kept out of the figures} other {# values kept out of the figures}}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:101
+#: src/features/private-companies/lib/company-activity-text.ts:107
 msgid "{keys, plural, one {Activitatea clasificată din ediția ONRC cu aceleași cifre ca codul CAEN fiscal ANAF (revizie nepublicată). Selecție derivată, nu o informație publicată de ONRC sau ANAF.} few {Una dintre cele # activități clasificate din ediția ONRC, aleasă pentru că are aceleași cifre ca codul CAEN fiscal ANAF (revizie nepublicată). Selecție derivată, nu o informație publicată de ONRC sau ANAF.} other {Una dintre cele # de activități clasificate din ediția ONRC, aleasă pentru că are aceleași cifre ca codul CAEN fiscal ANAF (revizie nepublicată). Selecție derivată, nu o informație publicată de ONRC sau ANAF.}}"
 msgstr "{keys, plural, one {The classified activity in the ONRC edition with the same digits as the ANAF fiscal CAEN code (revision not published). A derived selection, not a fact published by ONRC or ANAF.} other {One of the # classified activities in the ONRC edition, selected because it has the same digits as the ANAF fiscal CAEN code (revision not published). A derived selection, not a fact published by ONRC or ANAF.}}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:107
+#: src/features/private-companies/lib/company-activity-text.ts:113
 msgid "{keys, plural, one {O activitate clasificată în ediția ONRC; nu e selectată.} few {# activități clasificate în ediția ONRC; niciuna nu e selectată.} other {# de activități clasificate în ediția ONRC; niciuna nu e selectată.}}"
 msgstr "{keys, plural, one {One classified activity in the ONRC edition; it is not selected.} other {# classified activities in the ONRC edition; none is selected.}}"
 
@@ -3195,7 +3195,7 @@ msgstr "{total, plural, one {one enterprise on the lists} other {{n} enterprises
 msgid "{total, plural, one {O localitate găsită} few {# localități găsite} other {# de localități găsite}}"
 msgstr "{total, plural, one {One locality found} other {# localities found}}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:220
+#: src/features/private-companies/lib/company-activity-text.ts:226
 msgid "{total, plural, one {O observație CAEN în ediție; se afișează {shown}.} few {# observații CAEN în ediție; se afișează {shown}.} other {# de observații CAEN în ediție; se afișează {shown}.}}"
 msgstr "{total, plural, one {One CAEN observation in the edition; showing {shown}.} other {# CAEN observations in the edition; showing {shown}.}}"
 
@@ -3285,7 +3285,7 @@ msgstr "{unpublished} of {0} were negotiated without a public notice."
 msgid "{unpublished} dintre ele au fost negociate fără anunț public."
 msgstr "{unpublished} of them were negotiated without a public notice."
 
-#: src/features/private-companies/lib/company-activity-text.ts:191
+#: src/features/private-companies/lib/company-activity-text.ts:197
 msgid "{unqualified, plural, one {o observație necalificată (cod scurt, revizie necunoscută, cod fără denumire sau neinterpretabil)} few {# observații necalificate (cod scurt, revizie necunoscută, cod fără denumire sau neinterpretabil)} other {# de observații necalificate (cod scurt, revizie necunoscută, cod fără denumire sau neinterpretabil)}}"
 msgstr "{unqualified, plural, one {one unqualified observation (short code, unknown revision, code without a catalog name or unreadable)} other {# unqualified observations (short code, unknown revision, code without a catalog name or unreadable)}}"
 
@@ -4896,7 +4896,7 @@ msgstr "Main economic activity"
 msgid "activitate necunoscută"
 msgstr "activity unknown"
 
-#: src/features/private-companies/lib/company-activity-text.ts:235
+#: src/features/private-companies/lib/company-activity-text.ts:241
 msgid "activitate ONRC aleasă după codul fiscal ANAF"
 msgstr "ONRC activity selected by the ANAF fiscal code"
 
@@ -4916,16 +4916,16 @@ msgstr "Selected activity"
 msgid "Activitate selectată (derivată, prioritate ONRC)"
 msgstr "Selected activity (derived, ONRC first)"
 
-#: src/features/private-companies/lib/company-activity-text.ts:201
+#: src/features/private-companies/lib/company-activity-text.ts:207
 msgid "Activitate selectată (derivată)"
 msgstr "Selected activity (derived)"
 
 #. placeholder {0}: selection.code
-#: src/features/private-companies/lib/company-activity-text.ts:203
+#: src/features/private-companies/lib/company-activity-text.ts:209
 msgid "Activitate selectată (derivată) · CAEN {0}"
 msgstr "Selected activity (derived) · CAEN {0}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:202
+#: src/features/private-companies/lib/company-activity-text.ts:208
 msgid "Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată"
 msgstr "Selected activity (derived) · ANAF fiscal CAEN code, revision not published"
 
@@ -5032,7 +5032,7 @@ msgstr "The selected activity (derived, ONRC first)"
 msgid "Activitatea selectată e o selecție derivată de platformă, nu o informație publicată de ONRC sau ANAF. Un cod ONRC nu găsește firmele selectate după codul ANAF și invers."
 msgstr "The selected activity is a selection the platform derives, not a fact published by ONRC or ANAF. An ONRC code does not find companies selected by their ANAF code, nor the reverse."
 
-#: src/features/private-companies/lib/company-activity-text.ts:315
+#: src/features/private-companies/lib/company-activity-text.ts:343
 msgid "Activitatea selectată este o selecție derivată de platformă, nu o informație publicată: singura activitate clasificată a firmei în ediția ONRC a analizei (publicată pe {date}) sau, dintre mai multe, cea cu aceleași cifre ca codul CAEN fiscal ANAF; altfel, codul CAEN fiscal ANAF, cu revizia nepublicată. Firmele cu mai multe activități fără selecție, cu un cod ANAF necatalogat sau fără selecție calificată sunt listate separat și nu sunt clasate."
 msgstr "The selected activity is a selection the platform derives, not a published fact: the company’s only classified activity in the analysis’s ONRC edition (published on {date}) or, among several, the one with the same digits as the ANAF fiscal CAEN code; otherwise the ANAF fiscal CAEN code, its revision not published. Companies with several activities and no selection, with an uncatalogued ANAF code or with no qualified selection are listed apart and not ranked."
 
@@ -6314,7 +6314,7 @@ msgstr "An unexpected error occurred"
 msgid "ANAF"
 msgstr "ANAF"
 
-#: src/features/private-companies/lib/company-activity-text.ts:273
+#: src/features/private-companies/lib/company-activity-text.ts:279
 msgid "ANAF · revizie nepublicată"
 msgstr "ANAF · revision not published"
 
@@ -6345,7 +6345,7 @@ msgstr "ANAF declared it fiscally inactive (it did not file its returns or could
 #~ msgstr "ANAF fiscal observation"
 
 #: src/features/private-companies/components/profile/company-activities-band.tsx:66
-#: src/features/private-companies/lib/company-activity-text.ts:134
+#: src/features/private-companies/lib/company-activity-text.ts:140
 msgid "ANAF nu are un cod CAEN fiscal pentru firmă."
 msgstr "ANAF has no fiscal CAEN code for the company."
 
@@ -6404,22 +6404,22 @@ msgstr "ANAF, ONRC"
 #. placeholder {0}: dateText(anaf.snapshotDate)
 #. placeholder {0}: dateText(selection.anafStatusDate)
 #: src/features/private-companies/components/profile/company-registry-band.tsx:167
-#: src/features/private-companies/lib/company-activity-text.ts:207
+#: src/features/private-companies/lib/company-activity-text.ts:213
 msgid "ANAF, situația la {0}"
 msgstr "ANAF, status as of {0}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:207
+#: src/features/private-companies/lib/company-activity-text.ts:213
 msgid "ANAF: fără dată de stare"
 msgstr "ANAF: no status date"
 
 #. placeholder {0}: dateText(quality.anafObservedFrom)
-#: src/features/private-companies/lib/company-activity-text.ts:296
+#: src/features/private-companies/lib/company-activity-text.ts:302
 msgid "ANAF: situația la {0}"
 msgstr "ANAF: status as of {0}"
 
 #. placeholder {0}: dateText(quality.anafObservedFrom)
 #. placeholder {1}: dateText(quality.anafObservedTo)
-#: src/features/private-companies/lib/company-activity-text.ts:297
+#: src/features/private-companies/lib/company-activity-text.ts:303
 msgid "ANAF: situații între {0} și {1}"
 msgstr "ANAF: statuses between {0} and {1}"
 
@@ -8852,7 +8852,7 @@ msgstr "The procedure’s timeline"
 msgid "Calificare indisponibilă"
 msgstr "Qualification unavailable"
 
-#: src/features/private-companies/lib/company-activity-text.ts:48
+#: src/features/private-companies/lib/company-activity-text.ts:54
 msgid "calificarea codului nu e disponibilă"
 msgstr "code qualification unavailable"
 
@@ -11704,7 +11704,7 @@ msgstr "Exact CAEN code, in one revision"
 msgid "Cod CAEN fiscal (ANAF)"
 msgstr "Fiscal CAEN code (ANAF)"
 
-#: src/features/private-companies/lib/company-activity-text.ts:239
+#: src/features/private-companies/lib/company-activity-text.ts:245
 msgid "cod CAEN fiscal ANAF"
 msgstr "ANAF fiscal CAEN code"
 
@@ -11719,7 +11719,7 @@ msgstr "ANAF fiscal CAEN code"
 msgid "Cod CAEN fiscal ANAF · {0}"
 msgstr "ANAF fiscal CAEN code · {0}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:253
+#: src/features/private-companies/lib/company-activity-text.ts:259
 msgid "Cod CAEN fiscal ANAF necatalogat (observație din sursă, nu un domeniu)"
 msgstr "Uncatalogued ANAF fiscal CAEN code (a source observation, not a sector)"
 
@@ -11752,11 +11752,11 @@ msgstr "CPV code"
 msgid "Cod CPV {prefix}"
 msgstr "CPV code {prefix}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:56
+#: src/features/private-companies/lib/company-activity-text.ts:62
 msgid "cod din patru cifre"
 msgstr "four-digit code"
 
-#: src/features/private-companies/lib/company-activity-text.ts:34
+#: src/features/private-companies/lib/company-activity-text.ts:40
 msgid "cod fără denumire în nomenclatorul CAEN"
 msgstr "code without a name in the CAEN catalog"
 
@@ -11764,27 +11764,27 @@ msgstr "code without a name in the CAEN catalog"
 msgid "Cod fiscal (CUI)"
 msgstr "Tax ID (CUI)"
 
-#: src/features/private-companies/lib/company-activity-text.ts:241
+#: src/features/private-companies/lib/company-activity-text.ts:247
 msgid "cod fiscal ANAF necatalogat"
 msgstr "uncatalogued ANAF fiscal code"
 
-#: src/features/private-companies/lib/company-activity-text.ts:68
+#: src/features/private-companies/lib/company-activity-text.ts:74
 msgid "cod necalificat încă"
 msgstr "code not yet qualified"
 
-#: src/features/private-companies/lib/company-activity-text.ts:36
+#: src/features/private-companies/lib/company-activity-text.ts:42
 msgid "cod neinterpretabil în sursă"
 msgstr "unreadable code in the source"
 
-#: src/features/private-companies/lib/company-activity-text.ts:64
+#: src/features/private-companies/lib/company-activity-text.ts:70
 msgid "cod nevalid în sursă"
 msgstr "invalid code in the source"
 
-#: src/features/private-companies/lib/company-activity-text.ts:60
+#: src/features/private-companies/lib/company-activity-text.ts:66
 msgid "cod scurt în sursă"
 msgstr "short code in the source"
 
-#: src/features/private-companies/lib/company-activity-text.ts:30
+#: src/features/private-companies/lib/company-activity-text.ts:36
 msgid "cod scurt în sursă — clasă/grupă ambiguă"
 msgstr "short source code — class/group ambiguous"
 
@@ -11796,7 +11796,7 @@ msgstr "Code and data"
 msgid "Cod sursa"
 msgstr "Cod sursa"
 
-#: src/features/private-companies/lib/company-activity-text.ts:58
+#: src/features/private-companies/lib/company-activity-text.ts:64
 msgid "cod sursă din trei cifre, completat de normalizator; interpretare necalificată"
 msgstr "three-digit source code, padded by the normalizer; interpretation unqualified"
 
@@ -11820,7 +11820,7 @@ msgstr "Code copied to clipboard"
 msgid "Codul"
 msgstr "Code"
 
-#: src/features/private-companies/lib/company-activity-text.ts:166
+#: src/features/private-companies/lib/company-activity-text.ts:172
 msgid "Codul ANAF are trei cifre în sursă; normalizatorul îl completează cu un zero, iar interpretarea lui nu e calificată."
 msgstr "The ANAF code has three digits in the source; our normalizer pads it with a zero, and its interpretation is not qualified."
 
@@ -11830,27 +11830,27 @@ msgstr "The ANAF code has three digits in the source; our normalizer pads it wit
 msgid "Codul CAEN {code}"
 msgstr "CAEN code {code}"
 
-#: src/features/private-companies/lib/company-activity-text.ts:126
+#: src/features/private-companies/lib/company-activity-text.ts:132
 msgid "Codul CAEN fiscal ANAF {code} (revizie nepublicată) are aceleași cifre ca activitatea clasificată din ediție."
 msgstr "The ANAF fiscal CAEN code {code} (revision not published) has the same digits as the classified activity in the edition."
 
-#: src/features/private-companies/lib/company-activity-text.ts:130
+#: src/features/private-companies/lib/company-activity-text.ts:136
 msgid "Codul CAEN fiscal ANAF {code} (revizie nepublicată) nu se regăsește printre activitățile clasificate din ediție."
 msgstr "The ANAF fiscal CAEN code {code} (revision not published) is not among the classified activities in the edition."
 
-#: src/features/private-companies/lib/company-activity-text.ts:128
+#: src/features/private-companies/lib/company-activity-text.ts:134
 msgid "Codul CAEN fiscal ANAF {code} are aceleași cifre ca activități clasificate din revizii CAEN diferite, așa că nu alege între ele."
 msgstr "The ANAF fiscal CAEN code {code} has the same digits as classified activities in different CAEN revisions, so it does not choose between them."
 
-#: src/features/private-companies/lib/company-activity-text.ts:136
+#: src/features/private-companies/lib/company-activity-text.ts:142
 msgid "Codul CAEN fiscal ANAF {code} este un cod substitut și nu e folosit la selecție."
 msgstr "The ANAF fiscal CAEN code {code} is a placeholder and is not used for the selection."
 
-#: src/features/private-companies/lib/company-activity-text.ts:148
+#: src/features/private-companies/lib/company-activity-text.ts:154
 msgid "Codul CAEN fiscal ANAF {code} nu e folosit la selecție: {form} (regula {policy})."
 msgstr "The ANAF fiscal CAEN code {code} is not used for the selection: {form} (rule {policy})."
 
-#: src/features/private-companies/lib/company-activity-text.ts:150
+#: src/features/private-companies/lib/company-activity-text.ts:156
 msgid "Codul CAEN fiscal ANAF {code} nu e folosit la selecție: {form}."
 msgstr "The ANAF fiscal CAEN code {code} is not used for the selection: {form}."
 
@@ -11871,11 +11871,11 @@ msgstr "The ANAF fiscal CAEN code is a source observation, not a principal activ
 #~ msgid "Codul CAEN fiscal ANAF nu e folosit la selecție: {0}."
 #~ msgstr "The ANAF fiscal CAEN code is not used for the selection: {0}."
 
-#: src/features/private-companies/lib/company-activity-text.ts:148
+#: src/features/private-companies/lib/company-activity-text.ts:154
 msgid "Codul CAEN fiscal ANAF nu e folosit la selecție: {form} (regula {policy})."
 msgstr "The ANAF fiscal CAEN code is not used for the selection: {form} (rule {policy})."
 
-#: src/features/private-companies/lib/company-activity-text.ts:150
+#: src/features/private-companies/lib/company-activity-text.ts:156
 msgid "Codul CAEN fiscal ANAF nu e folosit la selecție: {form}."
 msgstr "The ANAF fiscal CAEN code is not used for the selection: {form}."
 
@@ -14593,7 +14593,7 @@ msgstr "Data Labels"
 msgid "Dată lipsă"
 msgstr "Dată lipsă"
 
-#: src/features/private-companies/lib/company-activity-text.ts:314
+#: src/features/private-companies/lib/company-activity-text.ts:342
 msgid "dată necunoscută"
 msgstr "unknown date"
 
@@ -16976,7 +16976,7 @@ msgstr "Only changes of domicile: whoever leaves without changing their domicile
 msgid "Doar numele care conțin cuvintele; o organizație numită altfel nu apare."
 msgstr "Only names that contain the words; an organisation named otherwise does not appear."
 
-#: src/features/private-companies/lib/company-activity-text.ts:179
+#: src/features/private-companies/lib/company-activity-text.ts:185
 msgid "Doar o parte a înscrierilor CAEN e atribuită firmei: lista poate fi incompletă."
 msgstr "Only part of the CAEN entries is linked to the company: the list may be incomplete."
 
@@ -17860,7 +17860,7 @@ msgstr "The analysis release is no longer available"
 #~ msgstr "The release has no such value for the chosen year."
 
 #. placeholder {0}: selection.editionId
-#: src/features/private-companies/lib/company-activity-text.ts:92
+#: src/features/private-companies/lib/company-activity-text.ts:98
 msgid "ediția ONRC {0} (dată de publicare necunoscută)"
 msgstr "ONRC edition {0} (publication date unknown)"
 
@@ -17894,16 +17894,16 @@ msgstr "The ONRC edition shown has no qualified public profile for this CUI. Tha
 msgid "Ediția ONRC are înscris {code} (CAEN {0}): {1}."
 msgstr "The ONRC edition records {code} (CAEN {0}): {1}."
 
-#: src/features/private-companies/lib/company-activity-text.ts:113
+#: src/features/private-companies/lib/company-activity-text.ts:119
 msgid "Ediția ONRC nu are nicio activitate clasificată pentru firmă, așa că e folosit codul CAEN fiscal ANAF, revizie nepublicată. Selecție derivată, nu o informație publicată de ONRC sau ANAF."
 msgstr "The ONRC edition holds no classified activity for the company, so the ANAF fiscal CAEN code is used, its revision not published. A derived selection, not a fact published by ONRC or ANAF."
 
-#: src/features/private-companies/lib/company-activity-text.ts:115
+#: src/features/private-companies/lib/company-activity-text.ts:121
 msgid "Ediția ONRC nu are nicio activitate clasificată pentru firmă, iar codul CAEN fiscal ANAF (revizie nepublicată) nu apare în nomenclatorul CAEN: e o observație din sursă, nu un domeniu clasificat."
 msgstr "The ONRC edition holds no classified activity for the company, and the ANAF fiscal CAEN code (revision not published) is not in the CAEN catalog: it is a source observation, not a classified sector."
 
 #. placeholder {0}: dateText(selection.editionSourceDate)
-#: src/features/private-companies/lib/company-activity-text.ts:92
+#: src/features/private-companies/lib/company-activity-text.ts:98
 msgid "ediția ONRC publicată pe {0}"
 msgstr "ONRC edition published on {0}"
 
@@ -19231,7 +19231,7 @@ msgstr "No main activity on record"
 #~ msgid "Fără activitate principală recunoscută"
 #~ msgstr "No recognised main activity"
 
-#: src/features/private-companies/lib/company-activity-text.ts:257
+#: src/features/private-companies/lib/company-activity-text.ts:263
 #: src/features/private-companies/lib/company-analytics-view.ts:115
 msgid "Fără activitate selectată"
 msgstr "No selected activity"
@@ -19302,7 +19302,7 @@ msgstr "No ANAF fiscal CAEN code"
 msgid "Fără cod CPV"
 msgstr "No CPV code"
 
-#: src/features/private-companies/lib/company-activity-text.ts:62
+#: src/features/private-companies/lib/company-activity-text.ts:68
 msgid "fără cod în sursă"
 msgstr "no code in the source"
 
@@ -19486,7 +19486,7 @@ msgstr "No budget record"
 msgid "fără identificator de înregistrare"
 msgstr "no registration identifier"
 
-#: src/features/private-companies/lib/company-activity-text.ts:70
+#: src/features/private-companies/lib/company-activity-text.ts:76
 msgid "fără înregistrare fiscală publică"
 msgstr "no public fiscal record"
 
@@ -19710,11 +19710,11 @@ msgstr "no employees"
 msgid "Fără sediu în fișă"
 msgstr "No seat on record"
 
-#: src/features/private-companies/lib/company-activity-text.ts:243
+#: src/features/private-companies/lib/company-activity-text.ts:249
 msgid "fără selecție calificată"
 msgstr "no qualified selection"
 
-#: src/features/private-companies/lib/company-activity-text.ts:255
+#: src/features/private-companies/lib/company-activity-text.ts:261
 msgid "Fără selecție calificată (nu înseamnă fără activitate)"
 msgstr "No qualified selection (does not mean no activity)"
 
@@ -24197,7 +24197,7 @@ msgstr "Entries with differing values"
 msgid "înscrieri nerezolvate"
 msgstr "unresolved entries"
 
-#: src/features/private-companies/lib/company-activity-text.ts:175
+#: src/features/private-companies/lib/company-activity-text.ts:181
 msgid "Înscrierile CAEN ale firmei din ediție sunt complete."
 msgstr "The company’s CAEN entries in the edition are complete."
 
@@ -25816,7 +25816,7 @@ msgstr "Legaturi conexe"
 #~ msgid "Legături indisponibile pentru acest nivel."
 #~ msgstr "No links are available for this level."
 
-#: src/features/private-companies/lib/company-activity-text.ts:181
+#: src/features/private-companies/lib/company-activity-text.ts:187
 msgid "Legături nerezolvate: lista poate fi incompletă."
 msgstr "Links unresolved: the list may be incomplete."
 
@@ -27365,11 +27365,11 @@ msgstr "More than in {0}"
 msgid "Mai multe"
 msgstr "Mai multe"
 
-#: src/features/private-companies/lib/company-activity-text.ts:251
+#: src/features/private-companies/lib/company-activity-text.ts:257
 msgid "Mai multe activități clasificate ONRC, niciuna selectată"
 msgstr "Several classified ONRC activities, none selected"
 
-#: src/features/private-companies/lib/company-activity-text.ts:237
+#: src/features/private-companies/lib/company-activity-text.ts:243
 msgid "mai multe activități ONRC, niciuna selectată"
 msgstr "several ONRC activities, none selected"
 
@@ -29383,7 +29383,7 @@ msgid "Nicio achiziție publicată"
 msgstr "No published purchase"
 
 #. placeholder {0}: editionDateText(selection)
-#: src/features/private-companies/lib/company-activity-text.ts:177
+#: src/features/private-companies/lib/company-activity-text.ts:183
 msgid "Nicio activitate observată în {0}."
 msgstr "No activity observed in the {0}."
 
@@ -29560,7 +29560,7 @@ msgstr "No observation between {0} and {1}"
 msgid "Nicio observație la această frecvență"
 msgstr "No observation at this cadence"
 
-#: src/features/private-companies/lib/company-activity-text.ts:196
+#: src/features/private-companies/lib/company-activity-text.ts:202
 msgid "nicio observație necalificată"
 msgstr "no unqualified observation"
 
@@ -29584,7 +29584,7 @@ msgstr "Nicio ședință nu corespunde criteriilor selectate."
 msgid "Nicio selecție calificată"
 msgstr "No qualified selection"
 
-#: src/features/private-companies/lib/company-activity-text.ts:117
+#: src/features/private-companies/lib/company-activity-text.ts:123
 msgid "Nicio selecție calificată. Asta nu înseamnă că firma nu are activitate: acoperirea și înscrierile de mai jos arată ce există."
 msgstr "No qualified selection. This does not mean the company has no activity: the coverage and the entries below show what exists."
 
@@ -32109,7 +32109,7 @@ msgstr "The case's object:"
 msgid "Obiectul e textul instanței, așa cum apare pe portal."
 msgstr "The object is the court's text, as it appears on the portal."
 
-#: src/features/private-companies/lib/company-activity-text.ts:66
+#: src/features/private-companies/lib/company-activity-text.ts:72
 msgid "observația ANAF nu se poate lega de înregistrarea fiscală afișată"
 msgstr "the ANAF observation cannot be bound to the fiscal record shown"
 
@@ -37836,7 +37836,7 @@ msgstr "Revision"
 msgid "Revizia CAEN"
 msgstr "CAEN revision"
 
-#: src/features/private-companies/lib/company-activity-text.ts:32
+#: src/features/private-companies/lib/company-activity-text.ts:38
 msgid "revizie CAEN necunoscută"
 msgstr "unknown CAEN revision"
 
@@ -40667,11 +40667,11 @@ msgstr "sincronizare suspendată"
 msgid "Sindicate"
 msgstr "Trade unions"
 
-#: src/features/private-companies/lib/company-activity-text.ts:99
+#: src/features/private-companies/lib/company-activity-text.ts:105
 msgid "Singura activitate clasificată observată în ediția ONRC. Selecție derivată: nu înseamnă că firma e autorizată doar pentru ea."
 msgstr "The only classified activity observed in the ONRC edition. A derived selection: it does not mean the company is authorised for it alone."
 
-#: src/features/private-companies/lib/company-activity-text.ts:233
+#: src/features/private-companies/lib/company-activity-text.ts:239
 msgid "singura activitate clasificată ONRC"
 msgstr "the only classified ONRC activity"
 

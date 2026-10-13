@@ -132,13 +132,12 @@ const FY = `
   where f.privacy_class = 'public' and length(f.cui) <= 10 and f.year = ${YEAR}`
 
 const leaders = (metric) => `
-  with fy as (${FY}), md as (${MAIN_DIVISION})
+  with fy as (${FY})
   select fy.cui, r.legal_name as name, r.selected_county_name as county, r.onrc_lifecycle_status_code as status,
-         md.division, fy.${metric}::text as value,
+         fy.${metric}::text as value,
          (case when (p.employees > ${EMPLOYEE_CEILING} or p.employees < 0) and '${metric}' = 'employees' then null else p.${metric} end)::text as previous
   from fy
   left join companies_v2.registrations r on r.cui = fy.cui
-  left join md on md.cui = fy.cui
   left join companies_v2.financials p on p.cui = fy.cui and p.year = ${YEAR - 1} and p.privacy_class = 'public'
   where fy.${metric} is not null
   order by fy.${metric} desc
@@ -311,11 +310,58 @@ async function readYears() {
   }
 }
 
+// ── the leaders' activity ───────────────────────────────────────────────
+
+const ACTIVITY_QUERY = `
+  query LeaderActivity($release: BigInt!, $scope: CompanyAnalysisScopeInput, $first: Int) {
+    companyAnalysisRecords(release: $release, scope: $scope, first: $first) {
+      edges { node { cui activity { basis source code revision label descriptionStatus descriptions { revision label } derived } } }
+    }
+  }`
+
+/**
+ * Each ranked company's activity as the release selects it (v3), from the
+ * same release as the years: an ONRC class with its own revision, ANAF's
+ * fiscal code with its revision unpublished, or why none is selected. Never
+ * ANAF's raw code beside an ONRC class it contradicts — so not the fiscal
+ * division the sectors band groups by. A company the release does not hold
+ * has none; a held one without a selection means the release is not v3.
+ */
+async function readLeaderActivities(release, cuis) {
+  const unique = [...new Set(cuis)]
+  const { edges } = (await graphql(ACTIVITY_QUERY, { release, scope: { cuis: unique }, first: unique.length })).companyAnalysisRecords
+  const activities = new Map()
+  for (const { node } of edges) {
+    if (!node.activity) throw new Error(`Release ${release} names no activity selection for ${node.cui}: it is not a v3 release`)
+    activities.set(node.cui, node.activity)
+  }
+  const missing = unique.filter((cui) => !activities.has(cui))
+  if (missing.length > 0) console.warn(`not in release ${release}, so no activity: ${missing.join(', ')}`)
+  return activities
+}
+
 // ── the module ──────────────────────────────────────────────────────────
 
 const int = (value) => Math.round(Number(value))
-const quote = (value) => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
+// A single-quoted literal of any text: a line break in a name or a label would end the string.
+const quote = (value) =>
+  `'${value
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')}'`
 const nullable = (value) => (value === null || value === undefined ? 'null' : `'${value}'`)
+const text = (value) => (value === null || value === undefined ? 'null' : quote(value))
+const activityLiteral = (activity) =>
+  activity
+    ? `{ basis: ${text(activity.basis)}, source: ${text(activity.source)}, code: ${text(activity.code)}, revision: ${text(activity.revision)}, label: ${text(
+        activity.label,
+      )}, descriptionStatus: ${text(activity.descriptionStatus)}, descriptions: [${activity.descriptions
+        .map((entry) => `{ revision: ${text(entry.revision)}, label: ${text(entry.label)} }`)
+        .join(', ')}], derived: ${activity.derived === true} }`
+    : 'null'
 const sumOf = (values) => values.reduce((total, value) => total + int(value), 0)
 
 function byCounty(rows, key = 'n') {
@@ -365,7 +411,7 @@ function reconcile(rows, population, years) {
   if (problems.length > 0) throw new Error(`The read does not reconcile:\n- ${problems.join('\n- ')}`)
 }
 
-function render(rows, population, years) {
+function render(rows, population, years, activities) {
   const status = new Map(rows.status.map((row) => [row.status, int(row.n)]))
   const statusTotal = (codes) => codes.reduce((total, code) => total + (status.get(code) ?? 0), 0)
   const national = rows.national[0]
@@ -387,8 +433,8 @@ function render(rows, population, years) {
   const sizes = new Map(rows.sizes.map((row) => [row.size_class, row]))
   const today = new Date().toISOString().slice(0, 10)
   const leader = (row) =>
-    `      { cui: ${quote(row.cui)}, name: ${quote(row.name.trim())}, county: ${nullable(countyCode(row.county))}, division: ${nullable(
-      NAMED_DIVISIONS.has(row.division) ? row.division : null,
+    `      { cui: ${quote(row.cui)}, name: ${quote(row.name.trim())}, county: ${nullable(countyCode(row.county))}, activity: ${activityLiteral(
+      activities.get(row.cui) ?? null,
     )}, status: ${nullable(row.status)}, value: ${int(row.value)}, previous: ${row.previous === null ? 'null' : int(row.previous)} },`
 
   return [
@@ -413,6 +459,9 @@ function render(rows, population, years) {
     ' * - **Sector** = the ANAF fiscal CAEN code (a source observation, not a main activity), as a Rev.2 division',
     ' *   (Rev.3 classes mapped to theirs, vehicle repair back to 45), so every',
     ' *   company sits in one division; those with no recognised code are the rest.',
+    ` * - **Leaders' activity** = release ${years.source.releaseId}'s derived activity selection, read from the`,
+    ' *   public API: an ONRC class with its revision, ANAF\'s fiscal code with its',
+    ' *   revision unpublished, or why none is selected; not the fiscal division above.',
     " * - **County** = the registered office's county; turnover follows the head",
     ' *   office, so a national chain counts where it is registered.',
     ` * - **Population** = INS POP105A, residents on 1 January ${YEAR}.`,
@@ -483,10 +532,12 @@ function render(rows, population, years) {
 }
 
 // The API reads first: a failing one then never leaves a database connection
-// open behind it.
+// open behind it. The leaders' activity needs the ranking, so it is read once
+// the database is closed.
 const population = await readPopulation()
 const years = await readYears()
 const rows = await readDatabase()
 reconcile(rows, population, years)
-writeFileSync(OUT, render(rows, population, years))
+const activities = await readLeaderActivities(years.source.releaseId, [...rows.leadersTurnover, ...rows.leadersEmployees].map((row) => row.cui))
+writeFileSync(OUT, render(rows, population, years, activities))
 console.log(`wrote ${OUT}`)

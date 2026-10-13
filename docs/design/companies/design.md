@@ -721,3 +721,14 @@ search engines, and cost the reader no request.
   ceiling. The year's raw sums must agree with the release's within 5% (2.2%
   turnover, 1.6% employees today): a `--year 2024` run stops on the insurers'
   headcounts instead of shipping them.
+- **A leader is named by the release's selected activity (13 October
+  2026).** Dev's „Qualify leader activity labels" (`ac21705a`) landed on the
+  analytics-read hub this one replaces; its rule moves to the snapshot. Each
+  ranked company's line says the county and the release's derived selection
+  (`leaderActivityText`, now in `company-activity-text.ts`): an ONRC class
+  with its own revision, ANAF's fiscal code with its revision unpublished, or
+  why none is selected („Mai multe activități clasificate ONRC, niciuna
+  selectată") — never the ANAF fiscal division it would contradict. The
+  generator reads the selection from the years' release; a company the
+  release does not hold (Poșta Română, today) shows its county only. The
+  domains band still groups by ANAF's fiscal division and says so.

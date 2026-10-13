@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
-import { divisionLabel } from '../../lib/caen-divisions'
+import { leaderActivityText } from '../../lib/company-activity-text'
 import { STATUS_ACTIVE, STATUS_STRUCK_OFF } from '../../lib/company-status-codes'
 import { countyName } from '../../lib/hub-counties'
 import { formatHubChange, formatHubValue, type HubUnit } from '../../lib/hub-format'
@@ -17,7 +17,8 @@ function statusNote(status: string | null): string | null {
 
 /**
  * One ranking of companies: place, name, the figure as a share of the
- * largest's, sector and county, the figure and its change on the year before.
+ * largest's, county and the release's selected activity, the figure and its
+ * change on the year before.
  * Each row opens the company's profile.
  *
  * The change is left out, not zeroed, for a company that did not file the
@@ -44,7 +45,8 @@ export function HubLeaders({
         const figure = formatHubValue(leader.value, unit)
         const change = formatHubChange(leader.previous, leader.value)
         const note = statusNote(leader.status)
-        const meta = [leader.division ? divisionLabel(leader.division) : null, leader.county ? countyName(leader.county) : null].filter(Boolean)
+        const county = leader.county ? countyName(leader.county) : null
+        const activity = leaderActivityText({ activity: leader.activity, mainCaen: null })
         return (
           <li key={leader.cui}>
             <Link to="/companies/$cui" params={{ cui: leader.cui }} className={cn(LEADER_ROW_CLASS, 'transition-colors hover:bg-muted/40')}>
@@ -52,14 +54,16 @@ export function HubLeaders({
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium text-foreground">{leader.name}</span>
                 <FigureBar fraction={leader.value / top} />
-                <MonoLabel className="mt-1 block truncate text-muted-foreground">
-                  {meta.join(' · ')}
+                {/* The activity last: it is the long part, the one the line cuts, so the status is never cut. */}
+                <MonoLabel className="mt-1 block truncate text-muted-foreground" title={[county, note, activity].filter(Boolean).join(' · ')}>
+                  {county}
                   {note ? (
                     <>
-                      {meta.length > 0 ? ' · ' : null}
+                      {county ? ' · ' : null}
                       <span className="text-foreground">{note}</span>
                     </>
                   ) : null}
+                  {activity ? `${county || note ? ' · ' : ''}${activity}` : null}
                 </MonoLabel>
               </span>
               <span className="text-right">

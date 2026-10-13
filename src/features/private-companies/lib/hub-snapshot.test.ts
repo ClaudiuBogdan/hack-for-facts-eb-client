@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
+import { CompanyAnalysisActivityZ } from '@/schemas/company-analytics'
 import { caenDivision } from './caen-divisions'
 import { COMPANY_HUB_SNAPSHOT as SNAPSHOT } from './hub-snapshot'
 
@@ -32,6 +33,16 @@ describe('companies hub snapshot', () => {
       expect(leaders.every((leader) => /^\d{1,10}$/.test(leader.cui))).toBe(true)
       const values = leaders.map((leader) => leader.value)
       expect(values).toEqual([...values].sort((a, b) => b - a))
+    }
+  })
+
+  it('names each leader by the release’s derived selection, as the API serves it, or by none', () => {
+    const leaders = [...SNAPSHOT.leaders.turnover, ...SNAPSHOT.leaders.employees]
+    for (const leader of leaders) {
+      if (leader.activity === null) continue
+      expect(CompanyAnalysisActivityZ.parse(leader.activity)).toEqual(leader.activity)
+      expect(leader.activity.derived).toBe(true)
+      expect(leader.activity.basis).not.toBeNull()
     }
   })
 

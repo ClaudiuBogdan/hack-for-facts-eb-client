@@ -4,6 +4,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
+import type { CompanyAnalysisActivity } from '@/schemas/company-analytics'
 import type { CompanyHubSearch } from '@/schemas/private-company-search'
 import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
 import { HubLeaders } from './hub-leaders'
@@ -158,12 +159,24 @@ describe('PrivateCompanyHubPage', () => {
     ])
   })
 
-  it('marks a ranked company that has left business since', () => {
+  it('marks a ranked company that has left business since, before the activity the line may cut', () => {
     // Whether a real leader has: the snapshot need not hold one, so a leader is made to.
     const leader = COMPANY_HUB_SNAPSHOT.leaders.turnover[0]
     if (!leader) throw new Error('the snapshot ranks no company')
-    render(<HubLeaders leaders={[{ ...leader, status: '1084' }]} unit="lei" limit={10} />)
-    expect(screen.getByText(leader.name).closest('a')?.textContent).toContain('radiată')
+    const activity: CompanyAnalysisActivity = { basis: 'ONRC_CLASS_ANAF_NUMERIC_MATCH', source: 'ONRC', code: '4711', revision: 'rev3', label: 'Comerț cu amănuntul nespecializat', descriptionStatus: 'EXACT', descriptions: [], derived: true }
+    render(<HubLeaders leaders={[{ ...leader, county: 'TM', status: '1084', activity }]} unit="lei" limit={10} />)
+    expect(screen.getByText(leader.name).closest('a')?.textContent).toContain('Timiș · radiată · 4711 · Comerț cu amănuntul nespecializat · ONRC Rev.3')
+  })
+
+  it('names a ranked company by the release’s selection, or why it has none — never by ANAF’s fiscal division', () => {
+    const [selected, unselected] = COMPANY_HUB_SNAPSHOT.leaders.turnover
+    if (!selected || !unselected) throw new Error('the snapshot ranks no company')
+    const none: CompanyAnalysisActivity = { basis: 'ONRC_MULTIPLE_CLASSES', source: null, code: null, revision: null, label: null, descriptionStatus: null, descriptions: [], derived: true }
+    render(<HubLeaders leaders={[{ ...selected, county: 'B', status: '1048', activity: null }, { ...unselected, county: 'B', status: '1048', activity: none }]} unit="lei" limit={10} />)
+    const [first, second] = within(screen.getByTestId('company-hub-leaders')).getAllByRole('link')
+    // A company the release does not hold: its county alone.
+    expect(first?.textContent).toMatch(/București(?!\s*·)/u)
+    expect(second?.textContent).toContain('București · Mai multe activități clasificate ONRC, niciuna selectată')
   })
 
   it('draws the economy through the analysis release’s years, the last one possibly incomplete', () => {
