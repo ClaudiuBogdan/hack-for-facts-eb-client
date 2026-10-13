@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { breakdownFixture, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
+import type { CompanyAnalysisMetricAggregate } from '@/schemas/company-analytics'
+import { aggregate, breakdownFixture, recordsFixture, releaseFixture, releaseRef, seriesFixture, statsFixture } from '../../api/company-analytics.fixture'
 import { CompanyAnalyticsSeedContext, createSeedStore } from '../../hooks/use-company-analytics'
 import { companyAnalyticsKeys, releaseOfKey } from '../../lib/company-analytics-keys'
 import { CompanyAnalyticsPage } from './company-analytics-page'
@@ -34,6 +35,8 @@ const api = vi.hoisted(() => ({
   refuseCursor: (() => false) as (call: Call) => boolean,
   /** Which reads the API answers SERVICE_UNAVAILABLE (no v2 release published yet). */
   unavailable: (() => false) as (call: Call) => boolean,
+  /** The figures' aggregates, when a test names them (else the fixture's). */
+  metrics: null as readonly CompanyAnalysisMetricAggregate[] | null,
 }))
 
 vi.mock('@tanstack/react-router', () => ({
@@ -63,7 +66,7 @@ vi.mock('@/lib/graphql/graphql-client', async (importOriginal) => {
         case 'CompanyAnalysisRelease':
           return Promise.resolve({ companyAnalysisRelease: releaseFixture({ release }) })
         case 'CompanyAnalysisStats':
-          return Promise.resolve({ companyAnalysisStats: statsFixture({ release }) })
+          return Promise.resolve({ companyAnalysisStats: statsFixture({ release, ...(api.metrics ? { metrics: [...api.metrics] } : {}) }) })
         case 'CompanyAnalysisRecords':
           return Promise.resolve({ companyAnalysisRecords: recordsFixture({ release }) })
         case 'CompanyAnalysisBreakdown':
@@ -120,6 +123,7 @@ beforeEach(() => {
   api.refuseRelease = () => false
   api.refuseCursor = () => false
   api.unavailable = () => false
+  api.metrics = null
 })
 
 describe('CompanyAnalyticsPage', () => {
@@ -148,6 +152,16 @@ describe('CompanyAnalyticsPage', () => {
     const figures = screen.getByRole('region', { name: 'Cifre-cheie' })
     expect(within(figures).getAllByText('nicio firmă nu a raportat o valoare').length).toBe(2)
     expect(within(figures).queryByText(/^0$/u)).not.toBeInTheDocument()
+  })
+
+  it('keeps an employee mean’s fraction: 0.43 a company is not none', async () => {
+    router.search = { indicator: 'employees' }
+    api.metrics = [{ ...aggregate('EMPLOYEES', '299616', '691828'), mean: '0.43' }]
+    renderPage()
+    expect(await screen.findByText(FIGURES)).toBeInTheDocument()
+    const figures = screen.getByRole('region', { name: 'Cifre-cheie' })
+    expect(within(figures).getByText('0.43')).toBeInTheDocument()
+    expect(within(figures).getByText('299,616')).toBeInTheDocument()
   })
 
   it('lists each company with why it has no common county or status, the date ONRC recorded as its civil date, and where the names come from', async () => {
