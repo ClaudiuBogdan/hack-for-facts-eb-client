@@ -84,7 +84,8 @@ function StateFrame({ title, children, alert = false }: { readonly title: ReactN
 /**
  * A CUI the platform's company directory does not hold (or does not show
  * publicly) — said as a finding about the directory, never as a fact about the
- * company's legal registration, with the way to search.
+ * company's legal registration, with the way to search: the companies'
+ * front door, whose search box looks names up.
  */
 export function CompanyProfileNotFound({ cui }: { readonly cui: string | null }) {
   return (
@@ -103,7 +104,7 @@ export function CompanyProfileNotFound({ cui }: { readonly cui: string | null })
         )}
       </p>
       <Link
-        to="/companies/search"
+        to="/companies"
         className="mt-6 inline-flex min-h-10 items-center rounded-sm border px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
       >
         <Trans>Caută în firme</Trans>

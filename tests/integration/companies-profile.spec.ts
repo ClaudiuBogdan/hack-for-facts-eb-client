@@ -146,6 +146,6 @@ test.describe('Company profile', () => {
     const response = await page.goto('/companies/not-a-cui')
     expect(response?.status()).toBe(404)
     await expect(page.getByRole('heading', { level: 1, name: 'Firma nu a fost găsită' })).toBeVisible({ timeout: 30000 })
-    await expect(page.getByRole('link', { name: 'Caută în firme' })).toHaveAttribute('href', '/companies/search')
+    await expect(page.getByRole('link', { name: 'Caută în firme' })).toHaveAttribute('href', '/companies')
   })
 })

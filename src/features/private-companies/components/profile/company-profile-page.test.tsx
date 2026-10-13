@@ -414,6 +414,13 @@ describe('CompanyProfilePage — the head', () => {
     expect(document.body.textContent).not.toMatch(/înființat|înregistrată în 2007|de \d+ ani/u)
   })
 
+  it('says a form outside the analysis’s population without leading to an empty answer', async () => {
+    render(page(companyProfile({ legalForm: 'PFA' })))
+    await registryPinned()
+    expect(sentence()).toHaveTextContent(/^Persoană fizică autorizată din Gherla, Cluj/u)
+    expect(within(sentence()).queryByRole('link', { name: /^Persoană fizică autorizată/u })).toBeNull()
+  })
+
   it('names a selected ONRC class by its exact label, code and revision, and opens its exact filter with the revision', async () => {
     render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcSingleClass })))
     await registryPinned()

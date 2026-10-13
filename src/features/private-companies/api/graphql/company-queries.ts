@@ -1,7 +1,7 @@
 /**
  * GraphQL query documents + raw-response Zod schemas for the redesign
  * companies surface. The raw shapes here mirror the server SDL
- * (Company / CompanyFinancials / CompanyConnection / CompanyResolveHit); the
+ * (Company / CompanyFinancials / CompanyResolveHit); the
  * mappers in `company-mappers.ts` translate them into the UI's
  * `PrivateCompanyProfile` / search types.
  *
@@ -308,85 +308,6 @@ export type RawStatementQualification = z.infer<typeof rawQualificationSchema>
 export type CompanyProfileResponse = z.infer<typeof companyProfileResponseSchema>
 
 // ---------------------------------------------------------------------------
-// Search list — companies(...)
-// ---------------------------------------------------------------------------
-
-export const COMPANIES_SEARCH_QUERY = /* GraphQL */ `
-  query CompaniesSearch(
-    $filter: CompaniesFilter
-    $q: String
-    $sort: CompanySort
-    $first: Int
-    $after: String
-  ) {
-    companies(filter: $filter, q: $q, sort: $sort, first: $first, after: $after) {
-      edges {
-        cursor
-        node {
-          cui
-          orgId
-          name
-          nameSource
-          legalForm
-          headlineStatus { code label labelSource }
-          county
-          vatPayer
-          declaredFiscallyInactive
-          registrationDate
-          registrationDatePresent
-          registryCuiState
-          hasActiveObservation
-          statusBasis
-          countyBasis
-          recordedDateBasis
-        }
-      }
-      pageInfo { hasNextPage endCursor }
-      totalCount
-      totalEstimated
-      registry { ${REGISTRY_ENVELOPE_FIELDS} }
-    }
-  }
-`
-
-const rawCompanyListItemSchema = z.object({
-  cui: z.string(),
-  orgId: z.union([z.string(), z.number()]),
-  name: z.string(),
-  nameSource: z.string(),
-  legalForm: z.string().nullable(),
-  headlineStatus: rawCompanyStatusSchema,
-  county: z.string().nullable(),
-  vatPayer: z.boolean().nullable(),
-  declaredFiscallyInactive: z.boolean().nullable(),
-  registrationDate: z.string().nullable(),
-  registrationDatePresent: z.boolean(),
-  registryCuiState: z.string(),
-  hasActiveObservation: z.boolean().nullable(),
-  statusBasis: z.string().nullable(),
-  countyBasis: z.string().nullable(),
-  recordedDateBasis: z.string().nullable(),
-})
-
-export const companiesSearchResponseSchema = z.object({
-  companies: z.object({
-    edges: z.array(
-      z.object({ cursor: z.string(), node: rawCompanyListItemSchema }),
-    ),
-    pageInfo: z.object({
-      hasNextPage: z.boolean(),
-      endCursor: z.string().nullable(),
-    }),
-    totalCount: z.number().nullable(),
-    totalEstimated: z.boolean(),
-    registry: rawRegistryEnvelopeSchema,
-  }),
-})
-
-export type RawCompanyListItem = z.infer<typeof rawCompanyListItemSchema>
-export type CompaniesSearchResponse = z.infer<typeof companiesSearchResponseSchema>
-
-// ---------------------------------------------------------------------------
 // Resolve — companyResolveResult(dim, q, limit, registryScope)
 // ---------------------------------------------------------------------------
 
@@ -445,5 +366,3 @@ export const companyResolveResultResponseSchema = z.object({
 export type RawCompanyResolveHit = z.infer<typeof rawCompanyResolveHitSchema>
 export type RawCompanyResolveResult = NonNullable<z.infer<typeof companyResolveResultResponseSchema>['companyResolveResult']>
 
-// The groupings (`companyCountyProfile`, `companyHubStats`) live in
-// `../company-groups-api.ts`, with their registry envelope.

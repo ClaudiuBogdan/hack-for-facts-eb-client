@@ -1,8 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
-import type { CompanyRegistryEnvelope } from '@/schemas/private-company-registry'
 import type { CompanyRegistryScope } from '../../hooks/use-company-registry-scope'
-import { registryStateText } from '../../lib/company-registry-text'
 
 /**
  * The page-level registry notices: the registry moved under the page (its
@@ -40,13 +38,3 @@ export function CompanyRegistryScopeNotice({ scope, className }: { readonly scop
   return null
 }
 
-/** The pinned registry cannot answer: said once, as a state. */
-export function CompanyRegistryStateNotice({ registry, className }: { readonly registry: CompanyRegistryEnvelope; readonly className?: string }) {
-  const text = registryStateText(registry.state)
-  if (text === null) return null
-  return (
-    <p role="status" className={cn(NOTICE_CLASS, 'border-muted-foreground', className)} data-testid="company-registry-state">
-      {text}
-    </p>
-  )
-}

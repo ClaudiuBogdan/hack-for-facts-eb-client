@@ -14,7 +14,8 @@ import type { ProcurementHomeInitialData } from '@/features/procurement/componen
  * questions now. An old deep link that still carries an explorer choice is
  * redirected there, its question in the analytics page's words, with the
  * rest of what it carried (the language, the currency), less the front
- * door's own choices — the idiom `/companies` → `/companies/search` uses.
+ * door's own choices — the idiom `/companies` uses for the retired
+ * company directory's links.
  *
  * The national picture, the categories and the year's largest contracts are
  * read on the server (kept there for ten minutes, under a deadline — see

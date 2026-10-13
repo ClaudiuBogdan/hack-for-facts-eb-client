@@ -141,6 +141,25 @@ const ACTIVITY_BASIS_BY_WORD = invert(ACTIVITY_BASIS_WORDS)
 const SIZE_BY_WORD = invert(SIZE_WORDS)
 const METRIC_BY_WORD = new Map(COMPANY_ANALYSIS_METRICS.map((metric) => [metricWord(metric), metric]))
 
+/**
+ * The legal forms of the analysis's population: the register's legal
+ * persons, no PFA, II or IF. Release 7's legal-form breakdown holds these
+ * twelve and nothing else (read 13 October 2026; no other, no unknown
+ * bucket). A form outside it is not read: no company of the population has
+ * it, so its empty answer would pass for a finding. In the order the filter
+ * suggests them.
+ */
+export const ANALYSIS_LEGAL_FORMS: readonly string[] = ['SRL', 'SA', 'SNC', 'SCS', 'SCA', 'RA', 'SC', 'SCE', 'SE', 'GIE', 'GEIE', 'INCD']
+
+/**
+ * Keys the page reads only to say it does not answer them: a typed name
+ * (`nume`) and an ONRC recorded-date range (`inregistrare`, `from~to`), which
+ * an old directory link carried (`company-directory-redirect.ts`). The page
+ * has no such filter; naming them keeps a wider answer from passing for the
+ * question the link meant.
+ */
+export const UNANSWERED_KEYS = ['nume', 'inregistrare'] as const
+
 /** Every key the page reads: the rest of an address (`lang`, the site's own) is left as it came. */
 export const SEARCH_KEYS = [
   'an',
@@ -177,6 +196,8 @@ export const SEARCH_KEYS = [
   'onrc_fara_caen',
   'onrc_fara_judet',
   'onrc_fara_forma',
+  // Never answered (no such filter here): a name and a recorded-date range the retired directory's links carried.
+  ...UNANSWERED_KEYS,
 ] as const
 export type SearchKey = (typeof SEARCH_KEYS)[number]
 
@@ -378,7 +399,9 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   if (county) scope.county = county
   const uat = keyFilter(reader, 'uat', search.uat, SIRUTA_RE)
   if (uat) scope.uat = uat
-  const legalForms = sortedUnique(tokens(reader, 'forma', search.forma, (token) => (LEGAL_FORM_RE.test(token) ? token.toUpperCase() : null)))
+  const legalForms = sortedUnique(
+    tokens(reader, 'forma', search.forma, (token) => (LEGAL_FORM_RE.test(token) && ANALYSIS_LEGAL_FORMS.includes(token.toUpperCase()) ? token.toUpperCase() : null)),
+  )
   if (legalForms.length > 0) scope.legalForms = legalForms
   const status = keyFilter(reader, 'stare', search.stare, STATUS_RE)
   if (status) scope.observedStatus = status
@@ -406,6 +429,7 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   const sizes = inVocabulary(tokens(reader, 'marime', search.marime, (token) => SIZE_BY_WORD.get(token) ?? null), COMPANY_ANALYSIS_SIZE_BANDS)
   if (sizes.length > 0) scope.employeeSizeBands = sizes
   const onrc = onrcOf(reader, search)
+  for (const key of UNANSWERED_KEYS) if (search[key] !== undefined && search[key] !== '') reader.unread.add(key)
   if (onrc) scope.onrc = onrc
   // A company without a statement has no reported value or size band: the API refuses the pair, and so does the page.
   if (scope.filing === 'NOT_FILED' && (scope.financialRanges || scope.employeeSizeBands)) {
@@ -491,7 +515,12 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
  * and reads back as its digits.
  */
 export function urlSearchOf(state: CompanyAnalyticsState): CompanyAnalyticsUrlSearch {
-  return Object.fromEntries(Object.entries(searchOf(state)).map(([key, value]) => [key, /^[1-9]\d{0,14}$/u.test(value) ? Number(value) : value])) as CompanyAnalyticsUrlSearch
+  return urlSearchOfText(searchOf(state))
+}
+
+/** An address in the page's words, as the router writes it: a digits-only value as a number. */
+export function urlSearchOfText(search: CompanyAnalyticsSearch): CompanyAnalyticsUrlSearch {
+  return Object.fromEntries(Object.entries(search).map(([key, value]) => [key, /^[1-9]\d{0,14}$/u.test(value) ? Number(value) : value])) as CompanyAnalyticsUrlSearch
 }
 
 // ──────────────────────────────────────────────────────────── changes ──

@@ -6,12 +6,11 @@ import { GRAPHQL_INVALID_INPUT_CODE, GraphQLRequestError } from '@/lib/graphql/g
  *
  * - the answer came back under another scope than the page pinned (the
  *   server re-pinned after a publish, withdrawal or access change), the
- *   server could not hold one scope through the request, or it refused a
- *   continuation cursor of another scope or the page's `registryScope` key
- *   (the resolver) — `CompanyRegistryScopeMovedError`:
+ *   server could not hold one scope through the request, or the resolver
+ *   refused the page's `registryScope` key — `CompanyRegistryScopeMovedError`:
  *   nothing of it is shown or cached, and the page re-reads the registry;
- * - the registry has no published edition, so a registry filter, sort,
- *   grouping or lookup cannot be answered — `CompanyRegistryUnavailableError`:
+ * - the registry has no published edition, so a registry read or lookup
+ *   cannot be answered — `CompanyRegistryUnavailableError`:
  *   a state to show, never an empty result;
  * - a read that depends on a company the page shows found no directory
  *   company for the CUI any more (`company: null`: it turned non-public or
@@ -23,8 +22,6 @@ const SERVICE_UNAVAILABLE_CODE = 'SERVICE_UNAVAILABLE'
 
 /** The server's words for a scope that moved under one request (core/registry.ts). */
 const MOVED_DURING_REQUEST = /changed during the request/iu
-/** The server's words for a refused continuation (a cursor of another scope, or a malformed one). */
-const RESTART_PAGINATION = /restart pagination/iu
 /**
  * The resolver's words (`companyResolveResult`, repair 04) for a `registryScope`
  * it refuses: the scope moved since the page's key was issued, or the key is
@@ -61,20 +58,13 @@ function codes(error: GraphQLRequestError): readonly string[] {
   return error.graphQLErrors.flatMap((entry) => (typeof entry.extensions?.code === 'string' ? [entry.extensions.code] : []))
 }
 
-/**
- * The registry meaning of a failed read, else the error as it came.
- * `continuation`: the read sent a cursor, so an invalid input is the server
- * refusing that cursor, not the filter.
- */
-export function classifyRegistryError(error: unknown, { continuation = false }: { readonly continuation?: boolean } = {}): unknown {
+/** The registry meaning of a failed read, else the error as it came. */
+export function classifyRegistryError(error: unknown): unknown {
   if (!(error instanceof GraphQLRequestError)) return error
   const messages = error.graphQLErrors.map((entry) => entry.message).join('; ')
   const raised = codes(error)
   if (raised.includes(SERVICE_UNAVAILABLE_CODE)) {
     return MOVED_DURING_REQUEST.test(messages) ? new CompanyRegistryScopeMovedError() : new CompanyRegistryUnavailableError(messages)
-  }
-  if (continuation && raised.includes(GRAPHQL_INVALID_INPUT_CODE) && RESTART_PAGINATION.test(messages)) {
-    return new CompanyRegistryScopeMovedError()
   }
   // The error carries no `field` (the companies mapper exposes code and type only): code + documented message decide.
   if (raised.includes(GRAPHQL_INVALID_INPUT_CODE) && REGISTRY_SCOPE_REFUSED.test(messages)) {

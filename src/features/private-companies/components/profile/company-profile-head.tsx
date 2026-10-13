@@ -8,6 +8,7 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
 import { HubInfoNote } from '../hub/hub-info-note'
+import { ANALYSIS_LEGAL_FORMS } from '../../lib/company-analytics-url'
 import { caenEdition, type CompanyProfileModel, type StatusKind } from '../../lib/company-profile-model'
 import { companySentenceFacts, headActivity, headActivityDetail, nameLength, statusNotice, statusText } from '../../lib/company-profile-text'
 import { companyFactSearch } from '../../lib/hub-analysis-links'
@@ -117,7 +118,11 @@ function placeLink(model: CompanyProfileModel): FactLink | null {
 export function CompanySentence({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
   const { form, feminine, where, recordedYear: year } = companySentenceFacts(model)
   const legalForm = model.profile.legalForm
-  const formLink: FactLink | null = legalForm ? { search: companyFactSearch({ legalForms: [legalForm] }), hint: t`firmele cu aceeași formă juridică, în analiza bilanțurilor` } : null
+  // A PFA, II or IF is outside the analysis's population: its form is said, not linked to an empty answer.
+  const formLink: FactLink | null =
+    legalForm && ANALYSIS_LEGAL_FORMS.includes(legalForm.toUpperCase())
+      ? { search: companyFactSearch({ legalForms: [legalForm] }), hint: t`firmele cu aceeași formă juridică, în analiza bilanțurilor` }
+      : null
   const whereLink = placeLink(model)
   const yearLink: FactLink = { hash: 'registru', hint: t`data din registru, mai jos` }
   return (

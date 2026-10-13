@@ -2,13 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { FINANCIAL_METRICS, privateCompanyProfileSchema } from '@/schemas/private-company'
 import { qualifiedNet, reportedNumber } from '../../lib/financial-qualification'
 import {
-  companiesSearchResponseSchema,
   companyProfileResponseSchema,
   type CompanyProfileResponse,
   type RawCompanyFinancialYear,
   type RawStatementQualification,
 } from './company-queries'
-import { mapCompanyListItem, mapCompanyProfile } from './company-mappers'
+import { mapCompanyProfile } from './company-mappers'
 import { mapRegistryEnvelope, type RawRegistryEnvelope, type RawRegistryEvidence } from './company-registry-graphql'
 
 const PUBLISHED: RawRegistryEnvelope = {
@@ -394,52 +393,6 @@ describe('mapCompanyProfile — the pinned ONRC edition (API19)', () => {
     expect(profile.registrationDate).toBe('1992-11-05')
     expect(profile.registry.profile?.recordedDate).toEqual({ value: '1992-11-05', basis: 'single_observation' })
     expect(profile.status).toEqual({ code: '1048', label: 'funcțiune', labelSource: 'api_nomenclature' })
-  })
-})
-
-describe('mapCompanyListItem', () => {
-  const node = {
-    cui: '2816464',
-    orgId: '1517396',
-    name: 'DEDEMAN SRL',
-    nameSource: 'ONRC_EDITION',
-    legalForm: 'SRL',
-    headlineStatus: { code: '1048', label: 'funcțiune', labelSource: 'API_NOMENCLATURE' },
-    county: 'Bacău',
-    vatPayer: true,
-    declaredFiscallyInactive: false,
-    registrationDate: '1992-11-05',
-    registrationDatePresent: false,
-    registryCuiState: 'IN_EDITION',
-    hasActiveObservation: true,
-    statusBasis: 'SINGLE_OBSERVATION',
-    countyBasis: 'SINGLE_OBSERVATION',
-    recordedDateBasis: 'MISSING',
-  }
-
-  it('maps a list node and nulls registrationDate when not present', () => {
-    const item = mapCompanyListItem(node, mapRegistryEnvelope(PUBLISHED))
-    expect(item).toMatchObject({ name: 'DEDEMAN SRL', county: 'Bacău', status: { code: '1048', label: 'funcțiune' }, registrationDate: null })
-    expect(item).toMatchObject({ registryCuiState: 'in_edition', hasActiveObservation: true, statusBasis: 'single_observation', recordedDateBasis: 'missing' })
-  })
-
-  it('keeps a conflict on the row: no status, its basis, the active observation', () => {
-    const item = mapCompanyListItem({ ...node, headlineStatus: null, statusBasis: 'MULTIPLE_VALUES' }, mapRegistryEnvelope(PUBLISHED))
-    expect(item).toMatchObject({ status: null, statusBasis: 'multiple_values', hasActiveObservation: true })
-  })
-
-  it('carries no registry field on a page whose registry cannot answer', () => {
-    const item = mapCompanyListItem(node, mapRegistryEnvelope(UNPUBLISHED))
-    expect(item).toMatchObject({ registryCuiState: 'unpublished', status: null, county: null, legalForm: null, hasActiveObservation: null, statusBasis: null, nameSource: 'core_organization' })
-    // ANAF's own answers stay.
-    expect(item).toMatchObject({ vatPayer: true, declaredFiscallyInactive: false })
-  })
-
-  it('parses a serialized page with its envelope', () => {
-    const page = companiesSearchResponseSchema.parse({
-      companies: { edges: [{ cursor: 'c1', node }], pageInfo: { hasNextPage: true, endCursor: 'c1' }, totalCount: 1, totalEstimated: false, registry: PUBLISHED },
-    })
-    expect(mapRegistryEnvelope(page.companies.registry).scopeKey).toBe('onrc:published:7:3:11')
   })
 })
 

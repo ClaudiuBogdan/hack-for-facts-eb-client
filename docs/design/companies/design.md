@@ -50,6 +50,8 @@ These are the places where the prototype could not decide for production.
    hub. The directory stays one click away through the active-companies
    shortcut, the four tiles, the sector bars, the county map and list, and the
    three investigation cards. Revisit if readers ask for the old path back.
+   *(Superseded 13 October 2026: the directory is retired; see „The directory
+   retired" below.)*
 2. **No mock badges ship.** The prototype's invented ONRC capture and ANAF
    snapshot dates are gone rather than badged: an operational date that can
    drift silently is worse than none. The sources strip shows the served
@@ -135,7 +137,8 @@ Composition to prototype:
 2. One ruled metrics band (dataset size, in funcțiune, county coverage with the
    missing share stated).
 3. CAEN chart as the page's chart, then the county module (map beside list on
-   desktop, list first on mobile), both navigating to `/companies/search`.
+   desktop, list first on mobile), both navigating to `/companies/search`
+   (since 12 October 2026, to the analysis).
 4. Investigation links, then the coverage and sources strip.
 
 Speed: everything but the numbers is SSR-able. The hub cache makes a cold
@@ -872,3 +875,34 @@ Dacia before any of it was built.
   8(c)) and ONRC's certificates name it, but the ONRC open-data files read
   carry no principal flag: the derived selection is never called one, and
   acquiring principal observations is separate source work.
+
+## The directory retired (13 October 2026)
+
+`/companies/search`, the company directory, is removed: the analysis answers
+its filters, and the front door's search box looks names up. Its page, hooks,
+filter sheet, list query (`companies(filter, q, …)`), county options
+(`companyCountyProfile`) and their tests are gone. The name lookup
+(`companyResolveResult`) stays: the analysis's company picker uses it.
+
+### Decisions
+
+- **Old addresses keep working, permanently redirected (301).**
+  `lib/company-directory-redirect.ts` reads the directory's address and sends
+  it where its question is answered now. `/companies/search` and the older
+  `/companies?county=…` links go through the same rule.
+- **Filters open the analysis as ONRC observations.** The directory matched
+  its registry filters on the observations of one identifier in the pinned
+  edition („1048" also beside a conflicting code). Those are the analysis's
+  `onrc_*` keys, not its consensus keys (`judet`, `stare`), so a bookmark asks
+  the same question. County names fold to codes (`MUNICIPIUL BUCUREŞTI` → `B`).
+- **Nothing is widened in silence.** Each value goes over as written: one
+  the analysis cannot read (a CAEN prefix under four digits) is named there
+  as unread. The analysis has no recorded-date filter and no name filter: a
+  date range and a name beside other filters go over as `inregistrare` and
+  `nume`, keys the analysis reads only to name them as not answered
+  (`UNANSWERED_KEYS`). The order (`sort`) narrows nothing and is dropped.
+- **A CUI alone opens its company**; beside filters it is the analysis's
+  company filter. A name alone, or nothing the directory read, opens the
+  front door.
+- **The profile's "not found" state** links „Caută în firme" to the front
+  door, whose search box finds a company by name or CUI.
