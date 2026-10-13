@@ -22,7 +22,7 @@ import { lastCompleteYear, periodText } from '@/features/national-budget/analyti
 import { canonicalDecimal } from '@/features/national-budget/analytics/lib/exact'
 import { yearOf } from '@/features/national-budget/analytics/lib/series'
 import { fetchCompleteAggregatedLineItems, fetchEntityAnalytics } from '@/lib/api/entity-analytics'
-import { sumDecimals } from '@/lib/exact-decimal'
+import { compareDecimal, isDecimalString, sumDecimals } from '@/lib/exact-decimal'
 import type { AnalyticsFilterType } from '@/schemas/charts'
 import type { BudgetApprovedEdition, BudgetNationalCatalog, BudgetNationalSeries, BudgetObservation } from '@/schemas/national-budget-api'
 
@@ -178,17 +178,81 @@ export const SPENDING_PARTS = [
   E('subsidies'),
 ] as const
 
-/** The GDP shares a release prints for the consolidated budget, by item (matched by the line's label: shares carry no item), and the GDP they divide by. */
-export function gdpOf(catalog: BudgetNationalCatalog, rows: readonly BudgetObservation[]) {
-  const shares = new Map<string, string>()
-  let gdp: string | null = null
-  for (const row of rows) {
-    if (row.measure === 'GDP_DENOMINATOR') gdp = row.value
-    if (row.measure !== 'GDP_SHARE' || row.value === null) continue
+/**
+ * How one GDP figure stands: printed once (or the same value repeated),
+ * not printed, printed twice with different values, or printed in a unit the
+ * figure cannot carry. Only `available` is shown; the other three are said.
+ */
+export type GdpStatus = 'available' | 'absent' | 'conflicting' | 'unqualified'
+
+/** The GDP figures of one year's release, each with how it stands. */
+export type GdpRead = {
+  /** The printed share of the consolidated budget for an item, as a fraction; null unless available. */
+  readonly share: (itemId: string) => string | null
+  readonly shareStatus: (itemId: string) => GdpStatus
+  /** The year's GDP in lei; null unless available. */
+  readonly gdp: string | null
+  readonly gdpStatus: GdpStatus
+}
+
+/** One figure from its candidate printed values: the one value, or why there is none. */
+function standing(candidates: readonly { readonly value: string; readonly unit: string | null }[], unit: 'FRACTION' | 'RON') {
+  if (candidates.length === 0) return { status: 'absent' as const, value: null }
+  // A candidate in another (or no) unit is never read as this figure's unit.
+  if (candidates.some((row) => row.unit !== unit)) return { status: 'unqualified' as const, value: null }
+  const [first] = candidates
+  if (!first || candidates.some((row) => compareDecimal(row.value, first.value) !== 0)) return { status: 'conflicting' as const, value: null }
+  return { status: 'available' as const, value: canonicalDecimal(first.value) }
+}
+
+/**
+ * The GDP figures of a year, each from its own source. Shares: the BGC's
+ * printed share of the consolidated budget, matched to an item by its label
+ * (shares carry no item). GDP: the denominator the BGC or the Sinteza prints
+ * for exactly the view's year, in lei. A figure printed with different
+ * values, or in a unit it cannot carry, is refused and said — never chosen by
+ * row order, and never computed from the other figures.
+ */
+export function gdpOf({
+  catalog,
+  shares,
+  denominators,
+  year,
+}: {
+  readonly catalog: BudgetNationalCatalog
+  readonly shares: readonly BudgetObservation[]
+  readonly denominators: readonly BudgetObservation[]
+  readonly year: number
+}): GdpRead {
+  const printed = (row: BudgetObservation) => row.disposition === 'FACT' && row.periodRole === 'CURRENT' && row.value !== null && isDecimalString(row.value)
+  const byItem = new Map<string, { readonly value: string; readonly unit: string | null }[]>()
+  for (const row of shares) {
+    if (row.input !== 'BGC' || row.measure !== 'GDP_SHARE' || row.component !== 'general_consolidated_budget' || !printed(row)) continue
     const item = catalog.execution.seriesItems.find((entry) => entry.sourceLabel === row.lineItem && entry.section === row.section)
-    if (item) shares.set(item.itemId, canonicalDecimal(row.value))
+    if (!item) continue
+    byItem.set(item.itemId, [...(byItem.get(item.itemId) ?? []), { value: row.value ?? '', unit: row.unit }])
   }
-  return { share: (itemId: string) => shares.get(itemId) ?? null, gdp }
+  const shareOf = new Map([...byItem].map(([itemId, rows]) => [itemId, standing(rows, 'FRACTION')]))
+  const gdp = standing(
+    denominators
+      .filter(
+        (row) =>
+          (row.input === 'BGC' || row.input === 'SINTEZA') &&
+          row.measure === 'GDP_DENOMINATOR' &&
+          row.component === 'gdp' &&
+          row.lineItem === 'pib' &&
+          row.referenceYear === year &&
+          printed(row),
+      )
+      .map((row) => ({ value: row.value ?? '', unit: row.unit })),
+    'RON',
+  )
+  return {
+    share: (itemId) => shareOf.get(itemId)?.value ?? null,
+    shareStatus: (itemId) => shareOf.get(itemId)?.status ?? 'absent',
+    gdp: gdp.value,
+    gdpStatus: gdp.status,
+  }
 }
 
 /** The budgets the release prints a column for, in the order the page lists them. */

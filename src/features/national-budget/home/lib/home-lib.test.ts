@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { cellsOf } from '@/features/national-budget/analytics/lib/analytics-data'
-import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries } from '@/schemas/national-budget-api'
+import type { BudgetApprovedRecord, BudgetNationalCatalog, BudgetNationalSeries, BudgetObservation } from '@/schemas/national-budget-api'
 import {
   ANAF_FIRST_YEAR,
   TOTAL_ITEMS,
@@ -9,6 +9,7 @@ import {
   anafTotal,
   chaptersOf,
   defaultYear,
+  gdpOf,
   lawEditionOf,
   previousView,
   readKey,
@@ -289,5 +290,130 @@ describe('the law', () => {
     expect(lawEditionOf(catalog, 2026)).toBeNull()
     expect(planTotalsInput(edition, previous)).toMatchObject({ editionIds: ['2024:law', '2025:law'], measureYears: [2024, 2025] })
     expect(planTotalsInput(edition, null)).toMatchObject({ editionIds: ['2025:law'], measureYears: [2025] })
+  })
+})
+
+describe('the GDP figures, each from its own source', () => {
+  /** The three totals as the catalog names them (shares carry no item; they match by label). */
+  const gdpCatalog = {
+    ...catalog,
+    execution: {
+      ...catalog.execution,
+      seriesItems: [
+        { itemId: TOTAL_ITEMS.revenue, sourceLabel: 'venituri totale', section: 'REVENUE' },
+        { itemId: TOTAL_ITEMS.spending, sourceLabel: 'cheltuieli totale', section: 'EXPENDITURE' },
+        { itemId: TOTAL_ITEMS.balance, sourceLabel: 'excedent(+) / deficit(-)', section: 'BALANCE' },
+      ],
+    },
+  } as unknown as BudgetNationalCatalog
+  const row = (fields: Partial<BudgetObservation>): BudgetObservation =>
+    ({
+      month: '2026-08',
+      input: 'BGC',
+      section: null,
+      lineItem: null,
+      component: null,
+      measure: null,
+      periodRole: 'CURRENT',
+      disposition: 'FACT',
+      value: null,
+      unit: null,
+      sourceToken: null,
+      referenceYear: 2026,
+      catalogItem: null,
+      reportPeriod: null,
+      executionStatus: null,
+      finality: null,
+      locator: null,
+      labelEvidence: null,
+      document: { url: 'https://mfinante.gov.ro/x.pdf', sha256: 'a'.repeat(64) },
+      ...fields,
+    }) as BudgetObservation
+  /** A BGC printed share of the consolidated budget (a fraction). */
+  const share = (lineItem: string, section: BudgetObservation['section'], value: string, fields: Partial<BudgetObservation> = {}) =>
+    row({ lineItem, section, value, component: 'general_consolidated_budget', measure: 'GDP_SHARE', unit: 'FRACTION', ...fields })
+  /** A printed GDP denominator for a year, in lei. */
+  const gdpRow = (value: string, fields: Partial<BudgetObservation> = {}) =>
+    row({ lineItem: 'pib', component: 'gdp', measure: 'GDP_DENOMINATOR', unit: 'RON', value, ...fields })
+  // August 2026: the BGC prints the shares; only the Sinteza prints the GDP.
+  const shares = [
+    share('venituri totale', 'REVENUE', '0.228'),
+    share('cheltuieli totale', 'EXPENDITURE', '0.257'),
+    share('excedent(+) / deficit(-)', 'BALANCE', '-0.0289'),
+  ]
+  const sinteza = gdpRow('2056000000000', { input: 'SINTEZA' })
+  const read = (denominators: readonly BudgetObservation[], year = 2026, rows = shares) =>
+    gdpOf({ catalog: gdpCatalog, shares: rows, denominators, year })
+
+  it('keeps the printed BGC shares as printed and takes the Sinteza GDP of the year', () => {
+    const gdp = read([sinteza, gdpRow('1916404900000', { input: 'SINTEZA', referenceYear: 2025 })])
+    // 527.525,6 / 2.056.000 is 0,2566…: the share stays the bulletin's own 0,257.
+    expect([gdp.share(TOTAL_ITEMS.revenue), gdp.share(TOTAL_ITEMS.spending), gdp.share(TOTAL_ITEMS.balance)]).toEqual(['0.228', '0.257', '-0.0289'])
+    expect(gdp.shareStatus(TOTAL_ITEMS.spending)).toBe('available')
+    expect([gdp.gdp, gdp.gdpStatus]).toEqual(['2056000000000', 'available'])
+  })
+
+  it('takes the GDP a workbook BGC prints, and the same value printed by both families once', () => {
+    expect(read([gdpRow('2056000000000')]).gdp).toBe('2056000000000')
+    const both = read([gdpRow('2056000000000'), gdpRow('2056000000000.0', { input: 'SINTEZA' }), gdpRow('02056000000000.00')])
+    expect([both.gdp, both.gdpStatus]).toEqual(['2056000000000', 'available'])
+  })
+
+  it('has no GDP for a foreign, missing or comparison year, a blank cell or a row that is not the current GDP', () => {
+    for (const denominators of [
+      [],
+      [gdpRow('2056000000000', { referenceYear: 2025 })],
+      [gdpRow('2056000000000', { referenceYear: null })],
+      [gdpRow('2056000000000', { periodRole: 'COMPARISON' })],
+      [gdpRow('2056000000000', { disposition: 'BLANK' })],
+      [gdpRow('2056000000000', { component: 'general_consolidated_budget' })],
+      [gdpRow('2056000000000', { lineItem: 'venituri totale' })],
+      [gdpRow('2056000000000', { measure: 'GDP_SHARE' })],
+      [{ ...gdpRow('2056000000000'), value: null }],
+    ])
+      expect([read(denominators).gdp, read(denominators).gdpStatus]).toEqual([null, 'absent'])
+  })
+
+  it('refuses two different GDP values for the year, whichever family and order', () => {
+    for (const denominators of [
+      [sinteza, gdpRow('2056100000000')],
+      [gdpRow('2056100000000'), sinteza],
+      [sinteza, gdpRow('2056000000000'), gdpRow('2000000000000', { input: 'SINTEZA' })],
+    ])
+      expect([read(denominators).gdp, read(denominators).gdpStatus]).toEqual([null, 'conflicting'])
+  })
+
+  it('never reads a GDP in thousands of lei, as a fraction or without a unit as lei', () => {
+    for (const unit of ['THOUSAND_LEI', 'FRACTION', null] as const) {
+      expect([read([gdpRow('2056000000', { unit })]).gdp, read([gdpRow('2056000000', { unit })]).gdpStatus]).toEqual([null, 'unqualified'])
+      // Not even beside a qualifying lei value of the same digits.
+      expect(read([sinteza, gdpRow('2056000000000', { unit })]).gdpStatus).toBe('unqualified')
+    }
+  })
+
+  it('refuses a share printed twice with different values, even when a later row repeats the first', () => {
+    const gdp = read([sinteza], 2026, [
+      ...shares,
+      share('cheltuieli totale', 'EXPENDITURE', '0.258'),
+      share('cheltuieli totale', 'EXPENDITURE', '0.257'),
+      share('venituri totale', 'REVENUE', '0.2280'),
+    ])
+    expect([gdp.share(TOTAL_ITEMS.spending), gdp.shareStatus(TOTAL_ITEMS.spending)]).toEqual([null, 'conflicting'])
+    // An equal repeat is the same printed value.
+    expect([gdp.share(TOTAL_ITEMS.revenue), gdp.shareStatus(TOTAL_ITEMS.revenue)]).toEqual(['0.228', 'available'])
+    expect(gdp.gdp).toBe('2056000000000')
+  })
+
+  it('reads only the BGC consolidated-budget share, in its fraction unit, and keeps a share of exactly zero', () => {
+    const others = read([sinteza], 2026, [
+      share('cheltuieli totale', 'EXPENDITURE', '0.257', { input: 'SINTEZA' }),
+      share('cheltuieli totale', 'EXPENDITURE', '0.1', { component: 'state_budget' }),
+      share('cheltuieli totale', 'EXPENDITURE', '0.2', { disposition: 'BLANK' }),
+      share('venituri totale', 'REVENUE', '0'),
+      share('excedent(+) / deficit(-)', 'BALANCE', '-0.0289', { unit: 'RON' }),
+    ])
+    expect([others.share(TOTAL_ITEMS.spending), others.shareStatus(TOTAL_ITEMS.spending)]).toEqual([null, 'absent'])
+    expect([others.share(TOTAL_ITEMS.revenue), others.shareStatus(TOTAL_ITEMS.revenue)]).toEqual(['0', 'available'])
+    expect([others.share(TOTAL_ITEMS.balance), others.shareStatus(TOTAL_ITEMS.balance)]).toEqual([null, 'unqualified'])
   })
 })

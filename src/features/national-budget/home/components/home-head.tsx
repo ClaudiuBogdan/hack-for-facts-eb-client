@@ -16,7 +16,7 @@ import { HUB_SHORTCUT_LINK_CLASS, HubPending } from '@/features/statistics/compo
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import { useGdp, useYearLines } from '../hooks/use-home-data'
-import { TOTAL_ITEMS, readKey, type YearView } from '../lib/home-data'
+import { TOTAL_ITEMS, readKey, type GdpStatus, type YearView } from '../lib/home-data'
 import { deficitOf, gdpNumber, gdpSizeText, moneyText, sizeText } from '../lib/home-format'
 import { YearOptions } from './home-shell'
 import { siteKeys } from '../lib/home-data'
@@ -113,8 +113,15 @@ function SourcesLine({ className }: { readonly className?: string }) {
 
 // ─────────────────────────────────────────────────── the year's balance ──
 
+/** Why a printed GDP figure is not shown; null when it is shown or simply not printed. */
+function refusedText(status: GdpStatus): string | null {
+  if (status === 'conflicting') return t`valorile tipărite diferă`
+  if (status === 'unqualified') return t`unitatea tipărită nu e cea așteptată`
+  return null
+}
+
 /** Revenue and spending as two bars on one scale; the gap between them is the deficit, hatched. */
-function BalanceBars({ view }: { readonly view: YearView }) {
+export function BalanceBars({ view }: { readonly view: YearView }) {
   const lines = useYearLines(view, [TOTAL_ITEMS.revenue, TOTAL_ITEMS.spending, TOTAL_ITEMS.balance])
   const gdp = useGdp(view)
   const revenue = lines.now(TOTAL_ITEMS.revenue)
@@ -124,6 +131,7 @@ function BalanceBars({ view }: { readonly view: YearView }) {
   const max = Math.max(revenue.value, spending.value)
   const deficit = deficitOf(balance.exact)
   const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance))
+  const deficitRefused = refusedText(gdp.shareStatus(TOTAL_ITEMS.balance))
   return (
     <div>
       <MonoLabel className="text-primary">{t`Bilanțul, ${view.text}`}</MonoLabel>
@@ -158,6 +166,7 @@ function BalanceBars({ view }: { readonly view: YearView }) {
         <p className="text-sm text-foreground">
           {deficit ? t`Deficit: ${sizeText(balance.exact)}` : t`Excedent: ${moneyText(balance.exact)}`}
           {deficitShare ? <span className="text-muted-foreground">{view.partial ? t`, ${deficitShare} din PIB-ul estimat pe tot anul` : t`, ${deficitShare} din PIB`}</span> : null}
+          {!deficitShare && deficitRefused ? <span className="text-muted-foreground">{t`; ponderea în PIB nu e afișată: ${deficitRefused}`}</span> : null}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t`Partea hașurată: ce s-a cheltuit peste ce s-a încasat, acoperit din împrumuturi.`}</p>
       </div>
@@ -226,9 +235,18 @@ function Figures({ view }: { readonly view: YearView }) {
   money('venituri', lines.now(TOTAL_ITEMS.revenue)?.exact ?? null, t`Venituri publice, ${view.text}`, changeNote(TOTAL_ITEMS.revenue))
   const balance = lines.now(TOTAL_ITEMS.balance)?.exact ?? null
   const deficitShare = gdpSizeText(gdp.share(TOTAL_ITEMS.balance))
-  const deficitNote = deficitShare ? (view.partial ? t`${deficitShare} din PIB-ul estimat pe tot anul` : t`${deficitShare} din PIB`) : ''
+  const deficitRefused = refusedText(gdp.shareStatus(TOTAL_ITEMS.balance))
+  const deficitNote = deficitShare
+    ? view.partial
+      ? t`${deficitShare} din PIB-ul estimat pe tot anul`
+      : t`${deficitShare} din PIB`
+    : deficitRefused
+      ? t`Ponderea în PIB nu e afișată: ${deficitRefused}`
+      : ''
   money('deficit', balance, balance && deficitOf(balance) ? t`Deficit, ${view.text}` : t`Excedent, ${view.text}`, deficitNote)
   const percent = gdpNumber(gdp.share(TOTAL_ITEMS.spending), 1)
+  const spendingRefused = refusedText(gdp.shareStatus(TOTAL_ITEMS.spending))
+  const gdpRefused = refusedText(gdp.gdpStatus)
   if (percent !== null) {
     facts.push({
       key: 'pib',
@@ -236,7 +254,13 @@ function Figures({ view }: { readonly view: YearView }) {
       digits: 1,
       unit: '%',
       label: t`Cheltuielile, din PIB`,
-      note: view.partial ? t`din PIB-ul estimat pe tot anul` : gdp.gdp ? t`PIB ${view.year}: ${moneyText(gdp.gdp)}` : '',
+      note: view.partial
+        ? t`din PIB-ul estimat pe tot anul`
+        : gdp.gdp
+          ? t`PIB ${view.year}: ${moneyText(gdp.gdp)}`
+          : gdpRefused
+            ? t`PIB ${view.year} nu e afișat: ${gdpRefused}`
+            : '',
       link: (content, className) => (
         <a href="#deficit" className={className}>
           {content}
@@ -247,9 +271,11 @@ function Figures({ view }: { readonly view: YearView }) {
   return (
     <>
       <HubFiguresBand facts={facts} locale={i18n.locale === 'en' ? 'en' : 'ro'} />
-      {/* A year whose served data has no GDP shares: the band says so rather than losing a figure silently. */}
+      {/* A year whose served data has no GDP shares, or prints them in a way we refuse: the band says which, rather than losing a figure silently. */}
       {percent === null ? (
-        <p className="border-t px-5 py-3 text-xs text-muted-foreground">{t`Ponderile în PIB pentru ${view.text} nu sunt disponibile în datele noastre.`}</p>
+        <p className="border-t px-5 py-3 text-xs text-muted-foreground">
+          {spendingRefused ? t`Ponderile în PIB pentru ${view.text} nu sunt afișate: ${spendingRefused}.` : t`Ponderile în PIB pentru ${view.text} nu sunt disponibile în datele noastre.`}
+        </p>
       ) : null}
     </>
   )

@@ -207,6 +207,8 @@ export type BudgetSeriesEvidence = z.infer<typeof budgetSeriesEvidenceSchema>
 
 export const budgetObservationSchema = z.object({
   month: z.string(),
+  /** The bulletin family whose printed cell this is: the BGC, or the Sinteza (its GDP). */
+  input: z.enum(['BGC', 'SINTEZA']),
   section: budgetSectionSchema.nullable(),
   lineItem: z.string().nullable(),
   component: z.string().nullable(),
@@ -216,6 +218,8 @@ export const budgetObservationSchema = z.object({
   value: exactDecimalSchema.nullable(),
   unit: budgetValueUnitSchema.nullable(),
   sourceToken: z.string().nullable(),
+  /** A GDP denominator's own year: a reference value, not a reporting window. */
+  referenceYear: z.number().int().nullable(),
   catalogItem: z.object({ itemId: z.string() }).nullable(),
   reportPeriod: intervalSchema.nullable(),
   executionStatus: z.enum(['ACTUAL', 'ESTIMATE']).nullable(),

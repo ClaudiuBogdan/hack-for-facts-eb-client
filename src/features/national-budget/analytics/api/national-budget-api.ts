@@ -180,21 +180,23 @@ export function fetchSeriesEvidence(
 
 export type ObservationsInput = {
   readonly months: readonly string[]
+  /** The printed families to read: the BGC unless a reader names others (the GDP the Sinteza prints). */
+  readonly inputs?: readonly ('BGC' | 'SINTEZA')[]
   readonly components?: readonly string[]
   readonly sections?: readonly BudgetSection[]
   readonly lineItems?: readonly string[]
   readonly measures?: readonly ('AMOUNT' | 'GDP_SHARE' | 'GDP_DENOMINATOR')[]
 }
 
-/** The printed BGC observations of some months (current period only), every page. `truncated` when the bound cut them. */
+/** The printed observations of some months (current period only; the BGC's unless `inputs` says otherwise), every page. `truncated` when the bound cut them. */
 export async function fetchObservations(
-  { months, components, sections, lineItems, measures }: ObservationsInput,
+  { months, inputs = ['BGC'], components, sections, lineItems, measures }: ObservationsInput,
   snapshot: string,
   signal?: AbortSignal,
 ): Promise<{ readonly rows: readonly BudgetObservation[]; readonly truncated: boolean }> {
   const input = {
     source: { months: { type: 'MONTH', selection: { dates: ascending(months) } } },
-    inputs: ['BGC'],
+    inputs,
     periodRoles: ['CURRENT'],
     ...(components ? { components } : {}),
     ...(sections ? { sections } : {}),

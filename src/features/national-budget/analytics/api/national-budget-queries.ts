@@ -63,7 +63,7 @@ export const EXECUTION_OBSERVATIONS_QUERY = /* GraphQL */ `
       pageInfo { hasNextPage endCursor }
       edges {
         node {
-          month section lineItem component measure periodRole disposition value unit sourceToken
+          month input section lineItem component measure periodRole disposition value unit sourceToken referenceYear
           catalogItem { itemId }
           reportPeriod { start end }
           executionStatus finality
