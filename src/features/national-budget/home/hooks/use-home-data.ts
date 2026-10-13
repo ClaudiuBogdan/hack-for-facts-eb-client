@@ -69,12 +69,22 @@ function yearLinesOptions(client: QueryClient, catalog: BudgetNationalCatalog, v
   return executionGridOptions(client, catalog.snapshots.execution, { itemIds, basis: view.basis, period: { type: view.type, dates: [view.previous, view.label] } })
 }
 
-function gdpOptions(client: QueryClient, catalog: BudgetNationalCatalog, view: YearView) {
-  // The three totals' shares and the GDP they divide by (its row is „pib"): not the release's fifty share rows.
+/** The three totals' shares, as the BGC prints them: not the release's fifty share rows. */
+export function gdpSharesOptions(client: QueryClient, catalog: BudgetNationalCatalog, view: YearView) {
   return observationsOptions(client, catalog.snapshots.execution, {
     months: [view.month],
-    measures: ['GDP_SHARE', 'GDP_DENOMINATOR'],
-    lineItems: ['venituri totale', 'cheltuieli totale', 'excedent(+) / deficit(-)', 'pib'],
+    measures: ['GDP_SHARE'],
+    lineItems: ['venituri totale', 'cheltuieli totale', 'excedent(+) / deficit(-)'],
+  })
+}
+
+/** The GDP the shares divide by (its row is „pib"): the BGC prints it in the workbook years, the Sinteza in others. */
+export function gdpDenominatorOptions(client: QueryClient, catalog: BudgetNationalCatalog, view: YearView) {
+  return observationsOptions(client, catalog.snapshots.execution, {
+    months: [view.month],
+    inputs: ['BGC', 'SINTEZA'],
+    measures: ['GDP_DENOMINATOR'],
+    lineItems: ['pib'],
   })
 }
 
@@ -162,12 +172,14 @@ export function useYearLines(view: YearView, itemIds: readonly string[]) {
   }
 }
 
-/** The GDP shares the year's release prints for the consolidated budget, and the GDP it divides by. */
+/** The GDP shares the year's release prints for the consolidated budget, and the GDP it divides by: each said when refused. */
 export function useGdp(view: YearView) {
   const catalog = useNationalCatalog()
   const client = useQueryClient()
-  const { data } = useSuspenseQuery(gdpOptions(client, catalog, view))
-  return gdpOf(catalog, data.rows)
+  const [{ data: shares }, { data: denominators }] = useSuspenseQueries({
+    queries: [gdpSharesOptions(client, catalog, view), gdpDenominatorOptions(client, catalog, view)],
+  })
+  return gdpOf({ catalog, shares: shares.rows, denominators: denominators.rows, year: view.year })
 }
 
 /** The year's release: each budget's printed column for the revenue and spending totals. */
@@ -232,7 +244,8 @@ export function useHomePrefetch(view: YearView) {
   usePrefetchQuery(yearLinesOptions(client, catalog, view, LINE_SETS.totals))
   usePrefetchQuery(yearLinesOptions(client, catalog, view, LINE_SETS.spending))
   usePrefetchQuery(yearLinesOptions(client, catalog, view, LINE_SETS.revenue))
-  usePrefetchQuery(gdpOptions(client, catalog, view))
+  usePrefetchQuery(gdpSharesOptions(client, catalog, view))
+  usePrefetchQuery(gdpDenominatorOptions(client, catalog, view))
   usePrefetchQuery(budgetColumnsOptions(client, catalog, view))
   const anaf = view.year >= ANAF_FIRST_YEAR
   const fallback = nationalCatalogOptions()
