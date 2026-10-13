@@ -51,7 +51,7 @@ export const Route = createFileRoute('/procurement/procedures/$id')({
     const canonical = `${getSiteUrl()}/procurement/procedures/${params.id}`
     // After a client-side navigation the loader returns no procedure: the query cache may hold it.
     const procedure = loaderData?.procedure ?? match.context.queryClient.getQueryData<ProcedureSheet | null>(procurementProcedureKeys.procedure(params.id)) ?? null
-    const title = buildProcedureDocumentTitle({ id: params.id, title: procedure?.title, noticeNo: procedure?.noticeNo, authorityName: procedure?.authority.name })
+    const title = buildProcedureDocumentTitle(translator, { id: params.id, title: procedure?.title, noticeNo: procedure?.noticeNo, authorityName: procedure?.authority.name })
     const what = procedure?.title
     const buyer = procedure?.authority.name
     const description =

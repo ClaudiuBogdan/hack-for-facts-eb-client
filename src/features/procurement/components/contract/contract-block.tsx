@@ -25,6 +25,7 @@ import {
   offersCount,
   offersFate,
   offersFrom,
+  publishedValuesCount,
   republishedText,
   signedLei,
   unpublishedText,
@@ -77,9 +78,10 @@ function ContractValue({ sheet }: { readonly sheet: ContractSheet }) {
   const boxLabel = box.label
   const label = sheet.vatExcluded && box.figure !== '—' ? t`${boxLabel}, fără TVA` : boxLabel
   const shared = associationNote(sheet.contract)
-  const versions = sheet.contract.versions.length
+  // A version without a value is no value SEAP publishes; nor is the box one of them when it shows none.
+  const versions = publishedValuesCount(sheet.contract)
   const others =
-    versions > 1
+    versions > 1 && box.figure !== '—'
       ? plural(versions, {
           one: 'E una dintre valorile pe care SEAP le publică pentru acest contract, mai jos.',
           few: 'E una dintre cele # valori pe care SEAP le publică pentru acest contract, mai jos.',

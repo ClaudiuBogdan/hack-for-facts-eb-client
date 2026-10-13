@@ -142,8 +142,9 @@ export function NavMain() {
                       isActive(item.url) && "bg-muted font-medium"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
-                    {!collapsed && <span className="flex-1">{item.title}</span>}
+                    <item.icon className="h-4 w-4" aria-hidden="true" />
+                    {/* Collapsed to its icon, the link keeps its name for screen readers. */}
+                    <span className={collapsed ? "sr-only" : "flex-1"}>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

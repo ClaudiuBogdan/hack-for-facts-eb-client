@@ -10,6 +10,7 @@ import {
   type CtContextInput,
   type CtYear,
 } from '../lib/contract-model'
+import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
 import { contextPeriodOf, cpvKey } from '../lib/direct-purchase-model'
 import { DIRECT_COMPARABLE_FROM, homeYear } from '../lib/home-model'
 import { buyerSeriesSchema, buyerStatsSchema, procurementBuyerQuery, type BuyerField } from './graphql/procurement-buyer-queries'
@@ -54,7 +55,6 @@ const AROUND_PER_SIDE = 12
 const AROUND_SHOWN = 3
 
 const AWARDS = { grain: 'contract', recordKind: 'contract_award' } as const
-const FRAMEWORKS = { grain: 'contract', recordKind: 'framework_agreement' } as const
 const DIRECT = { grain: 'direct_acquisition' } as const
 
 function rowOf(raw: RawContractRow): ContractRow {
@@ -214,7 +214,7 @@ export async function fetchContractContext(input: CtContextInput, sheet: Contrac
         'ProcurementContractPair',
         [
           { alias: 'pairAwards', kind: 'series', scope: { ...pair, ...AWARDS, ...span }, args: 'bucket: year, measure: recordCount' },
-          { alias: 'pairFrameworks', kind: 'series', scope: { ...pair, ...FRAMEWORKS, ...span }, args: 'bucket: year, measure: recordCount' },
+          { alias: 'pairFrameworks', kind: 'series', scope: { ...pair, ...FRAMEWORKS_SCOPE, ...span }, args: 'bucket: year, measure: recordCount' },
           { alias: 'pairDirect', kind: 'series', scope: { ...pair, ...DIRECT, ...span }, args: 'bucket: year, measure: recordCount' },
           { alias: 'pairDirectValue', kind: 'series', scope: { ...pair, ...DIRECT, ...span }, args: 'bucket: year, measure: valueAwardedSum' },
         ],
@@ -224,7 +224,7 @@ export async function fetchContractContext(input: CtContextInput, sheet: Contrac
         'ProcurementContractPairPart',
         [
           { alias: 'partAwards', kind: 'series', scope: { ...pair, ...AWARDS, ...partYear }, args: 'bucket: month, measure: recordCount' },
-          { alias: 'partFrameworks', kind: 'series', scope: { ...pair, ...FRAMEWORKS, ...partYear }, args: 'bucket: month, measure: recordCount' },
+          { alias: 'partFrameworks', kind: 'series', scope: { ...pair, ...FRAMEWORKS_SCOPE, ...partYear }, args: 'bucket: month, measure: recordCount' },
           { alias: 'partDirect', kind: 'series', scope: { ...pair, ...DIRECT, ...partYear }, args: 'bucket: month, measure: recordCount' },
           { alias: 'partDirectValue', kind: 'series', scope: { ...pair, ...DIRECT, ...partYear }, args: 'bucket: month, measure: valueAwardedSum' },
         ],
@@ -257,9 +257,9 @@ export async function fetchContractContext(input: CtContextInput, sheet: Contrac
         'ProcurementContractBuyer',
         [
           { alias: 'pairAwardsYear', kind: 'stats', scope: { ...pair, ...AWARDS, ...within } },
-          { alias: 'pairFrameworksYear', kind: 'stats', scope: { ...pair, ...FRAMEWORKS, ...within } },
+          { alias: 'pairFrameworksYear', kind: 'stats', scope: { ...pair, ...FRAMEWORKS_SCOPE, ...within } },
           { alias: 'buyerAwards', kind: 'stats', scope: { authorityCui: input.authorityCui, ...AWARDS, ...within } },
-          { alias: 'buyerFrameworks', kind: 'stats', scope: { authorityCui: input.authorityCui, ...FRAMEWORKS, ...within } },
+          { alias: 'buyerFrameworks', kind: 'stats', scope: { authorityCui: input.authorityCui, ...FRAMEWORKS_SCOPE, ...within } },
         ],
         signal,
       ),

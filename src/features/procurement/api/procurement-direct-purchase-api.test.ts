@@ -118,14 +118,15 @@ describe('the context', () => {
   const month = (index: number) => `${PART}-${String(index).padStart(2, '0')}`
   const complete = directPurchase({ publicationDate: `${LATEST}-06-01`, finalizationDate: `${LATEST}-06-02` })
   const input = { id: complete.id, authorityCui: '361684', supplierCui: '9446547', day: `${LATEST}-06-01`, yearDay: `${LATEST}-06-02` }
-  const around = (id: string, date: string, status = 'finalized') => ({
+  const around = (id: string, date: string, status = 'finalized', finalized = date) => ({
     id,
     uniqueCode: null,
     title: 'ARANJAMENTE FLORALE',
     valueRon: '10.00',
     status,
+    sourceSystem: 'elicitatie_da',
     publicationDate: date,
-    finalizationDate: date,
+    finalizationDate: finalized,
     value: { valueAccepted: status !== 'cancelled', valueRonComparable: status !== 'cancelled' ? '10.00' : null },
   })
 
@@ -172,6 +173,19 @@ describe('the context', () => {
       [complete.id, true],
       ['o1', false],
     ])
+  })
+
+  it('reads a neighbour as its own page does: a record whose end SEAP does not say is no purchase, dated by its request', async () => {
+    answer({
+      ...handlers,
+      ProcurementDirectPurchaseAround: () => ({
+        all: { total: 2, totalEstimated: false },
+        newer: { items: [around(complete.id, `${LATEST}-06-02`), around('u1', `${LATEST}-07-16`, 'offered', `${LATEST}-07-21`)] },
+        older: { items: [] },
+      }),
+    })
+    const context = await fetchDirectPurchaseContext(input, complete)
+    expect(context.others.find((other) => other.id === 'u1')).toMatchObject({ date: `${LATEST}-07-16`, done: false })
   })
 
   it('runs the pair’s years to the year in progress, cut at its cutoff', async () => {

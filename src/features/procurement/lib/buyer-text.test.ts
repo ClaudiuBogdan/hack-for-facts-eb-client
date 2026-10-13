@@ -107,7 +107,7 @@ describe('what it buys', () => {
 describe('who sells', () => {
   it('sums the top five firms and names the largest when it holds a tenth', () => {
     expect(sellersLede(buyerProfile())).toBe(
-      'Cinci firme au primit 44% din banii achizițiilor directe din 2025; au vândut 72 de firme în total. Cea mai mare sumă, 13%, a mers la Upper Level SRL.',
+      'Cinci firme însumează 44% din valoarea achizițiilor directe din 2025; au vândut 72 de firme în total. Cea mai mare parte, 13%, e a firmei Upper Level SRL.',
     )
   })
 
@@ -126,7 +126,7 @@ describe('who sells', () => {
 describe('where, when and how', () => {
   it("gives the home county's share, and the capital's past a tenth", () => {
     expect(whereLede(buyerProfile())).toBe(
-      '51% din banii achizițiilor directe au mers la firme din Ilfov, județul instituției. 34% au mers la firme din București.',
+      'Firmele din Ilfov, județul instituției, însumează 51% din valoarea achizițiilor directe. Firmele din București, 34%.',
     )
   })
 
@@ -144,9 +144,9 @@ describe('where, when and how', () => {
 
   it('says a year in progress bought only directly so far, not for the year', () => {
     const only = buyerProfile({ awards: { count: 0, valued: 0, value: null, suppliers: 0 }, frameworks: 0 })
-    expect(balanceLede(only)).toBe('În 2025 a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.')
+    expect(balanceLede(only)).toBe('În 2025 a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat cu un contract atribuit.')
     expect(balanceLede({ ...only, period: yearPeriod(2026, '2026-05') })).toBe(
-      'Până în mai 2026 a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.',
+      'Până în mai 2026 a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat încă cu un contract atribuit.',
     )
   })
 
@@ -210,6 +210,6 @@ describe('the last twelve months', () => {
 
   it('says they bought only directly — not „so far": the twelve months are whole', () => {
     const only = buyerProfile({ period: recent, awards: { count: 0, valued: 0, value: null, suppliers: 0 }, frameworks: 0 })
-    expect(balanceLede(only)).toBe('În ultimele 12 luni a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.')
+    expect(balanceLede(only)).toBe('În ultimele 12 luni a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat cu un contract atribuit.')
   })
 })

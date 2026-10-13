@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { FileQuestion } from 'lucide-react'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -32,7 +33,8 @@ export interface ProcurementDirectPurchaseInitialData {
 export function ProcurementDirectPurchasePage({ id, initialData }: { readonly id: string; readonly initialData?: ProcurementDirectPurchaseInitialData }) {
   const query = useProcurementDirectPurchase(id, initialData?.id === id ? initialData.purchase : undefined)
   const purchase = query.data
-  useClientDocumentTitle(buildDirectPurchaseDocumentTitle({ id, title: purchase?.title, authorityName: purchase?.authority.name }))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildDirectPurchaseDocumentTitle(i18n, { id, title: purchase?.title, authorityName: purchase?.authority.name }))
   // Where a purchase mostly leads: the institution's page, the firm's.
   useWarmRouteCode('/procurement/institutions/$cui')
   useWarmRouteCode('/procurement/suppliers/$cui')

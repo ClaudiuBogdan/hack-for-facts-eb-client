@@ -75,6 +75,13 @@ describe('the record', () => {
     expect(spaced(versionsText(plain.contract, null))).toBeNull()
   })
 
+  it('counts only the versions that carry a value', () => {
+    const [first, second, third] = cni.contract.versions
+    expect(spaced(versionsText({ ...cni.contract, versions: [first!, second!, { ...third!, value: null }] }, null))).toBe('SEAP publică acest contract cu 2 valori diferite și nu spune care e în vigoare.')
+    // One value and a row without one: the list stays, said as one value.
+    expect(spaced(versionsText({ ...cni.contract, versions: [first!, { ...second!, value: null }] }, null))).toBe('SEAP publică o singură valoare pentru acest contract; un alt rând al lui nu are una.')
+  })
+
   it('leads the amendments with the first act whose reported values disagree with its text', () => {
     expect(spaced(amendmentsLede(cni))).toBe(
       'În SEAP: 4 acte adiționale. Valorile raportate nu se potrivesc cu textul actelor: actul nr. 5 spune +1,8 mil. lei, dar valoarea raportată se schimbă cu +171,8 mil. lei.',

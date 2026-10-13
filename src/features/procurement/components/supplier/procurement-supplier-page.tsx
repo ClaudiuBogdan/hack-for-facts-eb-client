@@ -69,12 +69,16 @@ function startArrivalEffects(block: Element, delay: number) {
   countUpWithin(block, delay)
 }
 
-/** The contracts' figure's note: how many were won with other firms (a floor unless every row was scanned), or their money. */
+/**
+ * The contracts' figure's note: how many were won with other firms (a floor
+ * unless every row was scanned), or their money. The totals count a contract's
+ * value only once checked, so a sum they lack is not a value SEAP lacks.
+ */
 function contractsNote(profile: SupplierProfile): string {
   const { contracts, awards } = profile
   if (contracts.together > 0) return scanIsWhole(profile) ? t`${contracts.together} în asociere cu alte firme` : t`cel puțin ${contracts.together} în asociere cu alte firme`
   if (awards.value !== null && awards.value > 0) return t`${moneyText(awards.value)}, provizoriu`
-  return t`fără valori publicate`
+  return t`fără valoare în totaluri`
 }
 
 /** Up to four figures: the period's direct sales and contracts, the institutions, the largest client's share. */
@@ -193,7 +197,8 @@ function ProcurementSupplierPageBody({ cui, search, initial }: { readonly cui: s
   // The count-up driver is module state: an unmount mid-flight would leave it ticking.
   useEffect(() => () => stopCounting(), [])
   // The route `head` names the firm on the server path only; a client-side navigation lands with its CUI.
-  useClientDocumentTitle(buildSupplierDocumentTitle({ cui, supplierName: profile && profile.name !== cui ? profile.name : null }))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildSupplierDocumentTitle(i18n, { cui, supplierName: profile && profile.name !== cui ? profile.name : null }))
 
   const choose = (patch: Partial<ProcurementSupplierSearch>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true, resetScroll: false })

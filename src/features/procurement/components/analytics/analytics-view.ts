@@ -1,7 +1,7 @@
 import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { monthText } from '../../lib/home-format'
-import { clippedBucket, cpvLevelOf, cpvPrefix, POPULATIONS, searchOf, unreadParams, type AnalyticsSearch, type AxisId, type Query } from '../../lib/analytics-model'
+import { clippedBucket, cpvLevelOf, cpvPrefix, POPULATIONS, recordsViewSearch, searchOf, unreadParams, type AnalyticsSearch, type AxisId, type Query, type RecordsView } from '../../lib/analytics-model'
 import type { Ranking } from '../../api/procurement-analytics-api'
 import { QUESTIONS } from '../../lib/analytics-questions'
 import { COUNTY_POPULATION, type Answer } from '../../hooks/use-procurement-analytics'
@@ -82,12 +82,17 @@ export const PROCEDURES = [
   'Licitatie deschisa accelerata',
 ]
 
-/** This page's address for a query, the months frozen where they would move: a link a journalist cites must not move with the next month. */
-export function shareUrl(query: Query, answer: Answer): string {
+/**
+ * This page's address for a query, the months frozen where they would move: a
+ * link a journalist cites must not move with the next month. On the records,
+ * the list's order and page go with it.
+ */
+export function shareUrl(query: Query, answer: Answer, view: RecordsView | null = null): string {
   // The last twelve months and a year in progress move with the next month; the link carries the months they are today.
   const moving = query.period.kind === 'recent' || (query.period.kind === 'year' && answer.period !== null && !answer.period.to.endsWith('-12'))
   const period = answer.period && moving ? { kind: 'months' as const, from: answer.period.from, to: answer.period.to } : query.period
-  const params = new URLSearchParams(Object.entries(searchOf({ ...query, period })).filter((entry): entry is [string, string] => entry[1] !== undefined))
+  const search = { ...searchOf({ ...query, period }), ...(view && query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : {}) }
+  const params = new URLSearchParams(Object.entries(search).flatMap(([key, value]): [string, string][] => (value === undefined ? [] : [[key, String(value)]])))
   return `${window.location.origin}${window.location.pathname}${params.size > 0 ? `?${params.toString()}` : ''}`
 }
 

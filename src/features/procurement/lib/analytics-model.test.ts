@@ -9,10 +9,13 @@ import {
   clippedBucket,
   drilled,
   queryOf,
+  recordsViewOf,
+  recordsViewSearch,
   resolvePeriod,
   dropsFilters,
   searchOf,
   unreadParams,
+  withoutRecordsView,
   withCategory,
   withTitle,
   type GroupBy,
@@ -131,5 +134,25 @@ describe('analytics records', () => {
     expect(withTitle(withTitle(fresh, 'laptop'), null).dupa).toEqual(fresh.dupa)
     const chosen = queryOf({ dupa: 'firma' })
     expect(withTitle(chosen, 'laptop').dupa).toEqual({ axis: 'furnizor', level: 'cui' })
+  })
+  it('holds the list’s order and page in the address, defaults left out', () => {
+    const contracts = queryOf({ tip: 'contracte', dupa: 'inregistrari' })
+    expect(recordsViewOf({}, contracts)).toEqual({ sort: 'value_desc', page: 1 })
+    expect(recordsViewOf({ ordine: 'data', pagina: '2' }, contracts)).toEqual({ sort: 'date_desc', page: 2 })
+    expect(recordsViewSearch({ sort: 'date_desc', page: 2 }, contracts)).toEqual({ ordine: 'data', pagina: 2 })
+    expect(recordsViewSearch({ sort: 'value_desc', page: 1 }, contracts)).toEqual({})
+    // Past the API's 10,000th row there is no page to read.
+    expect(recordsViewOf({ pagina: '999' }, contracts).page).toBe(400)
+    // A framework has no value to order by: newest first, whatever the address says.
+    const frameworks = queryOf({ tip: 'acorduri', dupa: 'inregistrari' })
+    expect(recordsViewOf({ ordine: 'valoare' }, frameworks)).toEqual({ sort: 'date_desc', page: 1 })
+    expect(recordsViewSearch({ sort: 'date_desc', page: 1 }, frameworks)).toEqual({})
+  })
+  it('says a list key it cannot read, or one without the list, and drops both on a new question', () => {
+    expect(unreadParams({ dupa: 'inregistrari', ordine: 'data', pagina: '3' })).toEqual([])
+    expect(unreadParams({ dupa: 'inregistrari', ordine: 'pret', pagina: '0' }).map((item) => item.param)).toEqual(['ordine', 'pagina'])
+    expect(unreadParams({ pagina: '2' }).map((item) => item.param)).toEqual(['pagina'])
+    expect(recordsViewOf({ ordine: 'pret', pagina: 'x' }, queryOf({}))).toEqual({ sort: 'value_desc', page: 1 })
+    expect(withoutRecordsView({ dupa: 'inregistrari', ordine: 'data', pagina: 2, lang: 'en' })).toEqual({ dupa: 'inregistrari', lang: 'en' })
   })
 })

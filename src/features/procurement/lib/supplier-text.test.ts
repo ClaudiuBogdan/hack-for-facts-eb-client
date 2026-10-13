@@ -32,7 +32,7 @@ describe('headSentence', () => {
 describe('clientsLede', () => {
   it('states the largest clients’ share and the firm’s weight for the institution it mattered most to', () => {
     expect(clientsLede(supplierProfile())).toBe(
-      'Orasul Otopeni a plătit 61% din banii achizițiilor directe ale firmei în 2025; primele trei instituții, 89%. Pentru Gradinita Nr 1 Otopeni, firma a fost cel mai mare furnizor direct: 29% din achizițiile ei directe.',
+      'Orasul Otopeni a cumpărat 61% din valoarea vânzărilor directe ale firmei din 2025; primele trei instituții, 89%. Pentru Gradinita Nr 1 Otopeni, firma a fost cel mai mare furnizor direct: 29% din achizițiile ei directe.',
     )
   })
 
@@ -71,7 +71,7 @@ describe('whatLede, guarded', () => {
 
 describe('whereLede', () => {
   it('says how much came from the firm’s own county, and from how many others', () => {
-    expect(whereLede(supplierView(supplierProfile()))).toBe('85% din banii achizițiilor directe au venit de la instituții din județul Ilfov, județul firmei; restul, din alt județ.')
+    expect(whereLede(supplierView(supplierProfile()))).toBe('Instituțiile din județul Ilfov, județul firmei, au cumpărat 85% din valoarea vânzărilor ei directe; restul, cele din alt județ.')
     const three = supplierView(
       supplierProfile({
         counties: [
@@ -81,7 +81,7 @@ describe('whereLede', () => {
         ],
       }),
     )
-    expect(whereLede(three)).toContain('restul, din alte 2 județe.')
+    expect(whereLede(three)).toContain('restul, cele din alte 2 județe.')
   })
 
   it('says „all" only when the one county holds every row', () => {
