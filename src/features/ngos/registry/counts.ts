@@ -15,6 +15,7 @@ import {
   type GroupRow,
   type RegistryQuery,
   type RegistryRead,
+  isUnknownPlace,
 } from './model'
 
 /**
@@ -101,7 +102,9 @@ export function tallyOfCounts(counts: RegistryCounts, query: RegistryQuery): Tal
     total += entries
     if (cells[at + CUI] === 1) withCui += entries
     add(by.judet, place < 0 ? NONE : (counts.counties[place] ?? NONE), entries)
-    add(by.localitate, town < 0 ? NONE : (counts.localities[town] ?? NONE), entries)
+    // The registry's placeholder („NEDETERMINAT") is no town: with the entries whose locality is unknown.
+    const locality = town < 0 ? null : (counts.localities[town] ?? null)
+    add(by.localitate, isUnknownPlace(locality) ? NONE : locality!, entries)
     add(by.forma, counts.categories[cells[at + FORM] ?? -1] ?? NONE, entries)
     add(by.stare, counts.statuses[cells[at + STATUS] ?? -1] ?? NONE, entries)
     add(by.an, year < 0 ? NONE : String(year), entries)
@@ -116,8 +119,8 @@ export function tallyOfRows(rows: readonly RegistryRecord[], lastYear: number): 
   for (const row of rows) {
     // The CUI the platform admits, by any reviewed method — not only one the registry declares.
     if (row.organizationCui) withCui += 1
-    add(by.judet, row.county === null || row.county === 'NEDETERMINAT' ? NONE : row.county, 1)
-    add(by.localitate, row.locality ?? NONE, 1)
+    add(by.judet, isUnknownPlace(row.county) ? NONE : row.county!, 1)
+    add(by.localitate, isUnknownPlace(row.locality) ? NONE : row.locality!, 1)
     add(by.forma, row.category, 1)
     add(by.stare, row.sourceRegistryStatus, 1)
     add(by.an, numberYear(row.registryNumber, lastYear)?.toString() ?? NONE, 1)
@@ -387,7 +390,14 @@ export function figuresOf({
     })
   } else {
     const code = summary?.counties.find((item) => item.source === query.county)?.code ?? null
-    figures.push({ key: 'localities', label: t`Localități`, value: formatNgoNumber(valuesOn(tally, 'localitate', code)), note: null })
+    const unplaced = unplacedOn(tally, 'localitate')
+    const unplacedText = formatNgoNumber(unplaced)
+    figures.push({
+      key: 'localities',
+      label: t`Localități`,
+      value: formatNgoNumber(valuesOn(tally, 'localitate', code)),
+      note: unplaced > 0 ? t`${unplacedText} fără localitate` : null,
+    })
   }
   const cuiShare = share(tally.withCui, tally.total)
   figures.push({ key: 'cui', label: t`Cu CUI`, value: formatNgoNumber(tally.withCui), note: t`${cuiShare}; CUI legat de platformă` })

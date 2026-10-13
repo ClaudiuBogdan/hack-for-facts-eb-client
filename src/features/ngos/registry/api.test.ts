@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   recordSchema,
+  siteKeys,
+  withView,
   registryPageSchema,
   validateRegistrySearch,
 } from "./api";
@@ -53,6 +55,17 @@ describe("RNONG client contract", () => {
       }),
     ).toEqual({ publicUtility: "unknown", status: "Radiat" });
     expect(validateRegistrySearch({ q: "a".repeat(300) }).q).toHaveLength(200);
+  });
+  it("keeps the table's page a whole number above 1, and the answer's tab and view as text", () => {
+    expect(validateRegistrySearch({ page: 3, by: "judet", view: "map" })).toEqual({ page: 3, by: "judet", view: "map" });
+    expect(validateRegistrySearch({ page: "4" }).page).toBe(4);
+    for (const page of [1, 0, -2, 2.5, "x", "1"]) expect(validateRegistrySearch({ page }).page).toBeUndefined();
+  });
+  it("starts a new question on page 1, its tab and county view kept with the site's own keys", () => {
+    expect(siteKeys({ q: "a", county: "CLUJ", page: 4, by: "judet", view: "map", lang: "en", after: "x" })).toEqual({ by: "judet", view: "map", lang: "en" });
+  });
+  it("sets the answer's view in the address and drops what it unsets, the question untouched", () => {
+    expect(withView({ status: "Radiat", page: 3, by: "forma", lang: "en" }, { page: undefined, view: "map" })).toEqual({ status: "Radiat", by: "forma", view: "map", lang: "en" });
   });
   it("preserves duplicate source observations and rows without CUI", () => {
     const page = registryPageSchema.parse({

@@ -28,6 +28,8 @@ describe('the words', () => {
     expect(placeOf(FUNKY)).toBe('Sectorul 3, București')
     expect(placeOf({ county: 'BUCURESTI', locality: 'BUCURESTI' })).toBe('București')
     expect(placeOf({ county: null, locality: null })).toBeNull()
+    // The registry's placeholder is no town: the county alone.
+    expect(placeOf({ county: 'CLUJ', locality: 'NEDETERMINAT' })).toBe('Cluj')
   })
 
   it('reads the registry status and says which CUI links are only inferred', () => {

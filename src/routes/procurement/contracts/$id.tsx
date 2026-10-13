@@ -49,7 +49,7 @@ export const Route = createFileRoute('/procurement/contracts/$id')({
     const canonical = `${getSiteUrl()}/procurement/contracts/${params.id}`
     // After a client-side navigation the loader returns no contract: the query cache may hold it.
     const contract = loaderData?.contract ?? match.context.queryClient.getQueryData<ContractSheet | null>(procurementContractKeys.contract(params.id)) ?? null
-    const title = buildContractDocumentTitle({ id: params.id, title: contract?.title, authorityName: contract?.authority.name })
+    const title = buildContractDocumentTitle(translator, { id: params.id, title: contract?.title, authorityName: contract?.authority.name })
     const what = contract?.title
     const buyer = contract?.authority.name
     const seller = contract?.supplier.name

@@ -103,7 +103,8 @@ if (stray) throw new Error(`row ${stray.id} is not of the current export ${snaps
 const dictionary = (values) => [...new Set(values.filter((value) => value !== null && value !== ''))].sort((a, b) => a.localeCompare(b, 'ro'))
 const lastYear = Number(snapshot.capturedAt.slice(0, 4))
 const counties = dictionary(rows.map((row) => (row.county === NO_COUNTY ? null : row.county)))
-const localities = dictionary(rows.map((row) => row.locality))
+// The placeholder is no town either: an entry with it has no known locality (the client reads it so too).
+const localities = dictionary(rows.map((row) => (row.locality === NO_COUNTY ? null : row.locality)))
 const countyIndex = new Map(counties.map((value, index) => [value, index]))
 const localityIndex = new Map(localities.map((value, index) => [value, index]))
 

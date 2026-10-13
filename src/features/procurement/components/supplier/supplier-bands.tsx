@@ -110,8 +110,8 @@ export function SupplierClientsBand({ profile, index }: { readonly profile: Supp
       {profile.weights.size > 0 ? (
         <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-muted-foreground">
           <Trans>
-            „Din achizițiile ei directe”: banii plătiți firmei împărțiți la toate achizițiile directe ale instituției în același an, calculat de
-            Transparenta.eu.
+            „Din achizițiile ei directe”: valoarea achizițiilor directe ale instituției de la firmă, împărțită la valoarea tuturor achizițiilor
+            directe ale instituției în același an, calculat de Transparenta.eu.
           </Trans>
         </p>
       ) : null}

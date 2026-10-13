@@ -56,10 +56,17 @@ export interface Population {
   readonly defaultMeasure: Measure
 }
 
+/**
+ * The framework agreements, wherever a page counts them: the role named, as
+ * the API asks of a frameworks' population — without it the contract grain's
+ * purchases default counts none.
+ */
+export const FRAMEWORKS_SCOPE = { grain: 'contract', recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling' } as const
+
 export const POPULATIONS: Readonly<Record<PopulationId, Population>> = {
   directe: { id: 'directe', grain: 'direct_acquisition', money: 'clean', comparableFrom: 2019, changes: true, cutoff: 'direct', defaultMeasure: 'lei' },
   contracte: { id: 'contracte', grain: 'contract', recordKind: 'contract_award', money: 'provisional', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
-  acorduri: { id: 'acorduri', grain: 'contract', recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling', money: 'none', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
+  acorduri: { id: 'acorduri', ...FRAMEWORKS_SCOPE, money: 'none', comparableFrom: 2019, kindSplitUntil: '2025-12', changes: false, cutoff: 'contract', defaultMeasure: 'numar' },
 }
 
 // ────────────────────────────────────────────────────────────────── axes ──
@@ -375,6 +382,10 @@ export function unreadParams(search: AnalyticsSearch): readonly UnreadParam[] {
   }
   if (search.dupa !== undefined && !ownKey(GROUP_PARAMS, search.dupa)) add('dupa')
   if (search.masura !== undefined && !MEASURES.includes(search.masura)) add('masura')
+  // The records' keys hold only for the records, and only a value they take.
+  const records = query.dupa.axis === 'inregistrari'
+  if (search.ordine !== undefined && (!records || !ownKey(SORT_PARAMS, search.ordine))) add('ordine')
+  if (search.pagina !== undefined && (!records || !PAGE.test(search.pagina))) add('pagina')
   return unread
 }
 
@@ -398,10 +409,60 @@ export function searchOf(query: Query): AnalyticsSearch {
   return search
 }
 
-/** The search keys the page reads: every filter level's own, and the query's. */
-export const SEARCH_KEYS: readonly string[] = ['tip', 'perioada', ...AXIS_ORDER.flatMap((axisId) => AXES[axisId].levels.map((level) => level.param)), 'titlu', 'valoare', 'dupa', 'masura'].filter(
-  (key, index, keys) => keys.indexOf(key) === index,
-)
+// ──────────────────────────────────────────────────────── the records' view ──
+
+export type RecordsSort = 'value_desc' | 'date_desc'
+
+/** The order the records open in: the largest first where there is a value, else the newest. */
+export function defaultRecordsSort(query: Pick<Query, 'tip'>): RecordsSort {
+  return POPULATIONS[query.tip].money !== 'none' ? 'value_desc' : 'date_desc'
+}
+
+/** The records list's own place: its order and page. In the address, so a reload, a shared link and Back keep it. */
+export interface RecordsView {
+  readonly sort: RecordsSort
+  readonly page: number
+}
+
+/** The list's keys: of the list, not the question — a new question starts them over (`siteSearchOf` drops them with the rest). */
+const RECORDS_VIEW_KEYS = ['ordine', 'pagina'] as const
+const SORT_PARAMS: Readonly<Record<string, RecordsSort>> = { valoare: 'value_desc', data: 'date_desc' }
+/** The API pages a list to its 10,000th row, 25 a page. */
+const LAST_RECORDS_PAGE = 400
+const PAGE = /^[1-9]\d{0,2}$/u
+
+/** The records' view an address holds; a value it cannot read is the default (and said, by `unreadParams`). A framework has no value to order by. */
+export function recordsViewOf(search: AnalyticsSearch, query: Pick<Query, 'tip'>): RecordsView {
+  const asked = search.ordine && ownKey(SORT_PARAMS, search.ordine) ? SORT_PARAMS[search.ordine] : undefined
+  const sort = POPULATIONS[query.tip].money === 'none' ? 'date_desc' : (asked ?? defaultRecordsSort(query))
+  const page = search.pagina && PAGE.test(search.pagina) ? Math.min(Number(search.pagina), LAST_RECORDS_PAGE) : 1
+  return { sort, page }
+}
+
+/** The address's keys for a records' view, defaults left out. */
+export function recordsViewSearch(view: RecordsView, query: Pick<Query, 'tip'>): AnalyticsUrlSearch {
+  const search: Record<string, string | number> = {}
+  if (view.sort !== defaultRecordsSort(query)) search.ordine = view.sort === 'date_desc' ? 'data' : 'valoare'
+  if (view.page > 1) search.pagina = view.page
+  return search
+}
+
+/** An address without the records' keys: a move of the list replaces them. */
+export function withoutRecordsView<S extends Readonly<Record<string, unknown>>>(search: S): Partial<S> {
+  return Object.fromEntries(Object.entries(search).filter(([key]) => !(RECORDS_VIEW_KEYS as readonly string[]).includes(key))) as Partial<S>
+}
+
+/** The search keys the page reads: every filter level's own, the query's, and the records list's. */
+export const SEARCH_KEYS: readonly string[] = [
+  'tip',
+  'perioada',
+  ...AXIS_ORDER.flatMap((axisId) => AXES[axisId].levels.map((level) => level.param)),
+  'titlu',
+  'valoare',
+  'dupa',
+  'masura',
+  ...RECORDS_VIEW_KEYS,
+].filter((key, index, keys) => keys.indexOf(key) === index)
 
 /** The page's address as the router holds it: each key a string, or the number a digits-only value travels as. */
 export type AnalyticsUrlSearch = Readonly<Partial<Record<string, string | number>>>

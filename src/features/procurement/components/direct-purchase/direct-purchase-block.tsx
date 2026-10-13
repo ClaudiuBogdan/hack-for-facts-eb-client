@@ -309,7 +309,11 @@ function Steps({ purchase, className }: { readonly purchase: DirectPurchase; rea
   )
 }
 
-/** A record SEAP publishes as one row: its dates in one sentence — an attempt's second date is its end, not a finalisation. */
+/**
+ * A record SEAP publishes as one row: its dates in one sentence — an
+ * attempt's second date is its end, not a finalisation, and a record whose end
+ * SEAP does not say has a second date the page does not name.
+ */
 function RowDates({ purchase, className }: { readonly purchase: DirectPurchase; readonly className?: string }) {
   const { published, finalized } = purchase
   if (published && finalized && published !== finalized) {
@@ -317,7 +321,11 @@ function RowDates({ purchase, className }: { readonly purchase: DirectPurchase; 
     const to = dayLong(finalized)
     return (
       <p className={cn('text-sm text-muted-foreground', className)}>
-        {isAttempt(purchase.outcome) ? t`Publicată în SEAP pe ${from}, anulată pe ${to}.` : t`Publicată în SEAP pe ${from}, finalizată pe ${to}.`}
+        {isAttempt(purchase.outcome)
+          ? t`Publicată în SEAP pe ${from}, anulată pe ${to}.`
+          : isPurchase(purchase.outcome)
+            ? t`Publicată în SEAP pe ${from}, finalizată pe ${to}.`
+            : t`Publicată în SEAP pe ${from}; SEAP îi dă și data de ${to}.`}
       </p>
     )
   }
@@ -391,7 +399,7 @@ export function DirectPurchaseBlock({ purchase, year, className }: { readonly pu
   return (
     <section className={className} aria-labelledby="direct-purchase-what">
       <h2 id="direct-purchase-what" className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-        <Trans>Ce s-a cumpărat</Trans>
+        {isPurchase(purchase.outcome) ? <Trans>Ce s-a cumpărat</Trans> : <Trans>Ce s-a cerut</Trans>}
       </h2>
       <PurchaseDescription purchase={purchase} className="mt-4" />
       {/* The value, its facts, and the two parties as the last column: across the frame, the reading below at its own width. */}

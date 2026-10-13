@@ -106,7 +106,7 @@ export function populationLabel(tip: PopulationId): string {
 }
 
 export function populationGloss(tip: PopulationId): string {
-  if (tip === 'directe') return t`Cumpărături din catalogul SEAP, fără licitație. Bani verificați, fără TVA.`
+  if (tip === 'directe') return t`Cumpărături fără licitație, din catalogul SEAP sau notificate separat. Bani verificați, fără TVA.`
   if (tip === 'contracte') return t`Contractele de sine stătătoare din anunțurile de atribuire, fără acorduri-cadru și fără contracte subsecvente. Numărăm rânduri: o asociere are un rând pe firmă. Banii sunt provizorii.`
   return t`Acorduri care fixează un plafon; banii se cheltuiesc prin contracte subsecvente. Le numărăm, nu le adunăm banii.`
 }

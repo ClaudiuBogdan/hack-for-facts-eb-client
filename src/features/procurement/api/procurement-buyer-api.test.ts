@@ -122,6 +122,8 @@ describe('fetchProcurementBuyer', () => {
     expect(figures?.[1]).not.toHaveProperty('nationalDirectMonths')
     expect(figures?.[1]).toHaveProperty('directPrev')
     expect(figures?.[1]).toMatchObject({ direct: { authorityCui: '4364446', year: 2025 } })
+    // Framework agreements are ceilings: the scope names the role, or the purchases default counts none.
+    expect(figures?.[1]).toMatchObject({ frameworks: { recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling' } })
     expect(figures?.[1]).not.toHaveProperty('modifications')
     expect(figures?.[1]).not.toHaveProperty('directDivisions')
     expect(figures?.[0]).not.toContain('entity(')

@@ -3,7 +3,7 @@ import { msg } from '@lingui/core/macro'
 import { createNoStoreHeaders, createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
-import { validateRegistrySearch } from '@/features/ngos/registry/api'
+import { REGISTRY_SEARCH_KEYS, validateRegistrySearch, type RegistrySearch } from '@/features/ngos/registry/api'
 import type { RegistryServerRead } from '@/features/ngos/registry/registry-ssr'
 import { RegistryUnavailable } from '@/features/ngos/registry/components/registry-unavailable'
 
@@ -18,7 +18,10 @@ import { RegistryUnavailable } from '@/features/ngos/registry/components/registr
 export const Route = createFileRoute('/ngos/registry/')({
   ssr: true,
   validateSearch: validateRegistrySearch,
-  loaderDeps: ({ search }) => ({ search }),
+  // The question only: the answer's view (page, tab, list or map) changes nothing the server reads.
+  loaderDeps: ({ search }) => ({
+    search: Object.fromEntries(REGISTRY_SEARCH_KEYS.flatMap((key) => (search[key] === undefined ? [] : [[key, search[key]]]))) as RegistrySearch,
+  }),
   loader: async ({ deps, abortController }): Promise<RegistryServerRead | { readonly seed: null; readonly complete: true }> => {
     // `import.meta.env.SSR` lets the client's bundle drop the server read (and the counts it carries) altogether.
     if (!import.meta.env.SSR || !shouldBlockLoaderForSsr()) return { seed: null, complete: true }

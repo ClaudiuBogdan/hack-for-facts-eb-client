@@ -23,6 +23,10 @@ describe('a change of question', () => {
     expect(siteSearchOf({ lang: 'en', currency: 'EUR', utm_source: 'x', tip: 'contracte', perioada: 2024, judet: 'SB', titlu: 'laptop', page: 2, view: 'list' })).toEqual({ lang: 'en', currency: 'EUR', utm_source: 'x' })
   })
 
+  it('starts the records list over: a new question drops its order and page', () => {
+    expect(siteSearchOf({ lang: 'en', dupa: 'inregistrari', ordine: 'data', pagina: 3 })).toEqual({ lang: 'en' })
+  })
+
   it('never reads as an explorer question, even at the page’s defaults', () => {
     // An analytics address carrying a stray explorer key, asked again with every key a default.
     const next = { ...siteSearchOf({ lang: 'en', tip: 'contracte', page: 2 }), ...urlSearchOf(repaired(queryOf({}))) }

@@ -16,6 +16,7 @@ import {
   searchOf,
   suggestionsOf,
   type RegistryQuery,
+  registryNumberOf,
 } from './model'
 import { read, row, snapshot } from './test/fixtures'
 
@@ -220,5 +221,27 @@ describe('the questions and the omnibox', () => {
     expect(suggestionsOf('1471/A/2012', EMPTY_QUERY, counties).map((item) => item.group)).toEqual(['number'])
     const named = suggestionsOf('banca pentru alimente', EMPTY_QUERY, counties)
     expect(named[named.length - 1]?.query.q).toBe('banca pentru alimente')
+  })
+})
+
+describe('a registry number for the filter', () => {
+  it('normalises the usual form and keeps an irregular literal the registry holds, rejecting what is no number', () => {
+    expect(registryNumberOf(' 3446 / a / 2026 ')).toBe('3446/A/2026')
+    expect(registryNumberOf('1/A/122')).toBe('1/A/122')
+    expect(registryNumberOf('12 / b / 7')).toBe('12/B/7')
+    expect(registryNumberOf('salvati copiii')).toBeNull()
+    // Not three parts: no number the registry writes.
+    for (const text of ['12/2020', '1/A', '3446/A', '1//2', '1/A/2/3']) expect(registryNumberOf(text)).toBeNull()
+    expect(registryNumberOf('A/1/2020')).toBeNull()
+    expect(registryNumberOf(`1/${'A'.repeat(60)}`)).toBeNull()
+  })
+})
+
+describe('the page’s search box', () => {
+  it('offers an irregular registry number as a number, not as words in a name (QA NG-001)', () => {
+    const found = suggestionsOf('1/A/122', EMPTY_QUERY, NGO_REGISTRY_SUMMARY.counties)
+    expect(found.find((item) => item.group === 'number')?.query.registryNumber).toBe('1/A/122')
+    expect(found.some((item) => item.group === 'name')).toBe(false)
+    expect(suggestionsOf('12/2020', EMPTY_QUERY, NGO_REGISTRY_SUMMARY.counties).some((item) => item.group === 'number')).toBe(false)
   })
 })

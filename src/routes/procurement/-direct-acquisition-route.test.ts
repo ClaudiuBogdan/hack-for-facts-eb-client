@@ -13,7 +13,13 @@ const readForSsr = vi.fn()
 vi.mock('@/features/procurement/api/procurement-direct-purchase-ssr', () => ({ readProcurementDirectPurchaseForSsr: (...args: unknown[]) => readForSsr(...args) }))
 vi.mock('@/lib/utils', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/lib/utils')>()), getUserLocale: () => 'ro' }))
 // The head speaks the request's language through a translator; the real one needs the app's i18n set up.
-vi.mock('@/lib/i18n', () => ({ translatorFor: () => ({ _: () => 'descriere' }) }))
+// Every description reads `descriere`; the title's own words translate, so a page in English is named in English.
+vi.mock('@/lib/i18n', () => ({
+  translatorFor: (locale: string) => ({
+    // The test setup's `msg` is the message itself.
+    _: (message: unknown) => (message === 'Achiziții publice' ? (locale === 'en' ? 'Public procurement' : 'Achiziții publice') : 'descriere'),
+  }),
+}))
 
 const { Route } = await import('./direct-acquisitions/$id')
 

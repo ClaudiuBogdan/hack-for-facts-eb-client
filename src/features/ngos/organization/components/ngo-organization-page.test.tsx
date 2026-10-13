@@ -3,15 +3,18 @@ import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NgoIndicator } from '../api'
 import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS } from '../test/fixtures'
+import { yearSeries } from '../model'
 import { NgoOrganizationPage } from './ngo-organization-page'
 
 vi.mock('@/features/statistics/lib/format', () => ({ activeNumberLocale: () => 'ro-RO' }))
+// The page's language, which a test may set to English.
+const lingui = vi.hoisted(() => ({ locale: 'ro' }))
 vi.mock('@lingui/react/macro', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@lingui/react/macro')>()
   return {
     ...actual,
     useLingui: () => ({
-      i18n: { locale: 'ro', _: (message: string | { readonly id: string; readonly message?: string }) => (typeof message === 'string' ? message : (message.message ?? message.id)) },
+      i18n: { locale: lingui.locale, _: (message: string | { readonly id: string; readonly message?: string }) => (typeof message === 'string' ? message : (message.message ?? message.id)) },
     }),
   }
 })
@@ -190,6 +193,36 @@ describe('NgoOrganizationPage', () => {
     expect(within(band(/rând cu rând/)).getByRole('note')).toHaveTextContent('De verificat:')
   })
 
+  it('keeps a negative revenue negative: in the sentence, and below a zero line in the chart (QA NG-005, NG-006)', () => {
+    const [latest, ...rest] = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)
+    const year = latest!.fiscalYear
+    const negative = { ...latest!, indicators: latest!.indicators.map((indicator) => (indicator.code === 'I38' ? { ...indicator, value: '-915733' } : indicator)) }
+    renderPage({ statementsRead: { status: 'ready', statements: [negative, ...rest] } })
+    const money = band(/De unde vin banii/)
+    expect(money).toHaveTextContent(new RegExp(`În ${year}, venituri de -915\\.733 lei și cheltuieli de`))
+    // The bar goes down from the zero line, sized on the same scale as every other bar; the zero line is drawn there.
+    const values = yearSeries([negative, ...rest]).flatMap((point) => [point.revenue ?? 0, point.expenses ?? 0])
+    const max = Math.max(1, ...values)
+    const min = Math.min(0, ...values)
+    const zero = ((max / (max - min)) * 100).toFixed(1)
+    const bar = money.querySelector<HTMLElement>(`button[aria-label^="${year}:"] span[style*="top"]`)!
+    expect(bar.style.top).toBe(`${zero}%`)
+    expect(bar.style.height).toBe(`${((915733 / (max - min)) * 100).toFixed(1)}%`)
+    expect(money.querySelector<HTMLElement>('figure span.border-t[style*="top"]')!.style.top).toBe(`${zero}%`)
+    // The head's small chart draws the same zero line.
+    expect(screen.getByRole('img', { name: new RegExp(`${year}: venituri -915`) }).querySelector('span.border-t[style*="top"]')).not.toBeNull()
+  })
+
+  it('draws an all-positive chart as before: bars from the floor, sized on the largest, no zero line', () => {
+    renderPage()
+    const money = band(/De unde vin banii/)
+    expect(money.querySelector('figure span[style*="top"]')).toBeNull()
+    const heights = [...money.querySelectorAll<HTMLElement>('figure button span[style^="height"]')].map((bar) => Number.parseFloat(bar.style.height))
+    expect(heights.length).toBeGreaterThan(0)
+    expect(Math.max(...heights)).toBe(100)
+    expect(heights.every((height) => height >= 0)).toBe(true)
+  })
+
   it('leaves out a figure the latest form does not give, never a zero, and calls a zero result neither', () => {
     const [latest, ...rest] = [...FUNKY_STATEMENTS].sort((a, b) => b.fiscalYear - a.fiscalYear)
     const blank = (pattern: RegExp) => (indicator: NgoIndicator) => (pattern.test(indicator.label) ? { ...indicator, value: null } : indicator)
@@ -239,6 +272,30 @@ describe('NgoOrganizationPage', () => {
     expect(badge).toHaveAttribute('tabindex', '-1')
     fireEvent.click(within(band).getByRole('button', { name: 'Arată mai multe' }))
     expect(badge).not.toHaveAttribute('tabindex')
+  })
+
+  it('marks the registry’s and the dictionary’s own words as Romanian, the page’s own badge in its language (QA NG-010)', () => {
+    renderPage()
+    const purpose = document.querySelector('#ngo-profile-purpose')!
+    expect(purpose).toHaveAttribute('lang', 'ro')
+    // The mask's badge is the page's words, inside the Romanian text: in the page's language.
+    expect(within(purpose as HTMLElement).getByRole('button')).toHaveAttribute('lang', 'ro')
+    // On the English page, the badge is English inside the Romanian text.
+    lingui.locale = 'en'
+    try {
+      const english = renderPage()
+      const englishPurpose = english.container.querySelectorAll('#ngo-profile-purpose')
+      const last = englishPurpose[englishPurpose.length - 1] as HTMLElement
+      expect(last).toHaveAttribute('lang', 'ro')
+      expect(within(last).getByRole('button')).toHaveAttribute('lang', 'en')
+      english.unmount()
+    } finally {
+      lingui.locale = 'ro'
+    }
+    // Each form row's label (not the section titles, which are the page's).
+    const rows = [...band(/rând cu rând/).querySelectorAll('th[scope="row"]')]
+    expect(rows.length).toBeGreaterThan(0)
+    expect(rows.every((row) => row.querySelector('span[lang="ro"]') !== null)).toBe(true)
   })
 
   it('numbers the bands from the money where there is no purpose', () => {

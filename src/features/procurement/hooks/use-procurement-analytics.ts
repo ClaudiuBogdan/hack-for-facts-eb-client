@@ -27,7 +27,23 @@ import { forgetProcurementCutoff } from '../api/procurement-cutoff'
 import { fetchProcurementGeographyOptions } from '../api/procurement-reference-api'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
 import { siteSearchOf } from '../lib/analytics-legacy'
-import { analyticsSearchOf, dropsFilters, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation, type AnalyticsSearch, type PopulationId, type Query, type ResolvedPeriod } from '../lib/analytics-model'
+import {
+  analyticsSearchOf,
+  dropsFilters,
+  POPULATION_ORDER,
+  queryOf,
+  recordsViewOf,
+  recordsViewSearch,
+  repaired,
+  urlSearchOf,
+  withoutRecordsView,
+  withPopulation,
+  type AnalyticsSearch,
+  type PopulationId,
+  type Query,
+  type RecordsView,
+  type ResolvedPeriod,
+} from '../lib/analytics-model'
 import type { Namer } from '../lib/analytics-text'
 import { bucharestOwnLabel, countyOwnCode, placeIndexOf, type PlaceFeatures, type PlaceIndex } from '../lib/analytics-places'
 import { homeYear } from '../lib/home-model'
@@ -87,6 +103,13 @@ export function useAnalyticsQuery(): readonly [Query, (next: Query) => void, Ana
   // The site's own keys stay with it: without `?lang=en` the next render would be in Romanian.
   const move = (next: Query) => void navigate({ search: (previous) => ({ ...siteSearchOf(previous), ...urlSearchOf(repaired(next)) }), resetScroll: false })
   return [query, move, strings] as const
+}
+
+/** The records list's order and page, from the address, and a way to move them (pushed: Back returns to the page before, and to it from a record). */
+export function useRecordsView(query: Query, strings: AnalyticsSearch): readonly [RecordsView, (next: RecordsView) => void] {
+  const navigate = useNavigate({ from: '/procurement/analytics' })
+  const move = (next: RecordsView) => void navigate({ search: (previous) => ({ ...withoutRecordsView(previous), ...recordsViewSearch(next, query) }), resetScroll: false })
+  return [recordsViewOf(strings, query), move] as const
 }
 
 // ──────────────────────────────────────────────────────────────── cutoff ──
