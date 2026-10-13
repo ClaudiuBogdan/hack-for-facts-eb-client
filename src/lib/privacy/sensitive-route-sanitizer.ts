@@ -16,7 +16,9 @@ import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
  * their closed list (`SAFE_JUSTICE_VALUES`); everything else (including
  * `partyKey`, `caseNumber`, `from`, and any unknown param) is stripped. A case page's
  * path carries the case number (`/justice/cases/<court>/<number>`): it is
- * reported as `/justice/cases/<court>/:caseNumber`.
+ * reported as `/justice/cases/<court>/:caseNumber`. Another page's query can
+ * carry a justice address as its way back (the cookie settings' `redirect`):
+ * that address is sanitized the same way, however often it was encoded.
  */
 
 /** Safe aggregate-routing params allowed on justice URLs. */
@@ -115,6 +117,10 @@ const JUSTICE_SOURCE_HINT_PATTERN =
   /^(?:cautare|justitie|dosare|companies:\d+|entities:\d+)$/i
 const ABSOLUTE_URL_PATTERN = /\bhttps?:\/\/[^\s"'<>]+/gi
 const RELATIVE_ROUTE_PATTERN = /\/(?:justice|justitie|companies|entities)\/[^\s"'<>]*/gi
+/** A justice address encoded into text, once or more (`%2Fjustice%2Fcases%2F…`, `%252F…`): a way back quoted in a message. */
+const ENCODED_JUSTICE_ROUTE_PATTERN = /%(?:25)*2F(?:justice|justitie)\b[^\s"'<>&#]*/gi
+/** The same, tested once: a value still holding one after it was decoded was encoded past what is read, and is scrubbed whole. */
+const STILL_ENCODED_JUSTICE_ROUTE = /%(?:25)*2F(?:justice|justitie)\b/iu
 const SENSITIVE_FIELD_ASSIGNMENT_PATTERN =
   /\b(caseNumber|case_number|case-id|caseId|partyKey|party_key|party-key)\s*[:=]\s*["']?[^"',\s&})]+["']?/gi
 
@@ -124,18 +130,95 @@ const SENSITIVE_FIELD_ASSIGNMENT_PATTERN =
  * fragment that was encoded into it. Undecodable input stays as it is.
  */
 function decodedPath(pathname: string): string {
-  let path = pathname
-  for (let round = 0; round < 4; round += 1) {
+  const path = decodedValue(pathname)
+  return path.split(/[?#]/u)[0] ?? path
+}
+
+/** How many times a value is decoded before what is still encoded counts as hidden. */
+const MAX_DECODE_ROUNDS = 4
+
+/** A value decoded until it stops changing. Undecodable input stays as it is. */
+function decodedValue(value: string): string {
+  let current = value
+  for (let round = 0; round < MAX_DECODE_ROUNDS; round += 1) {
     let next: string
     try {
-      next = decodeURIComponent(path)
+      next = decodeURIComponent(current)
     } catch {
       break
     }
-    if (next === path) break
-    path = next
+    if (next === current) break
+    current = next
   }
-  return path.split(/[?#]/u)[0] ?? path
+  return current
+}
+
+const ABSOLUTE_ADDRESS_START = /^https?:\/\//iu
+
+/**
+ * A value as an address, decoded one layer at a time only until it reads as
+ * one (`/…` or `http…`): each layer's own query keeps its escapes, so an
+ * inner `%26caseNumber=…` stays inside the address it belongs to rather
+ * than becoming a key of the page around it. Null when it never reads as an
+ * address.
+ */
+function addressOf(value: string): string | null {
+  let current = value
+  for (let round = 0; round <= MAX_DECODE_ROUNDS; round += 1) {
+    if (current.startsWith('/') || ABSOLUTE_ADDRESS_START.test(current)) return current
+    let next: string
+    try {
+      next = decodeURIComponent(current)
+    } catch {
+      return null
+    }
+    if (next === current) return null
+    current = next
+  }
+  return null
+}
+
+/** How deep a way back may hold another before the rest is scrubbed whole. */
+const MAX_NESTED_ADDRESSES = 4
+const JUSTICE_ROUTE_ANYWHERE = /\/(?:justice|justitie)\b/iu
+
+/**
+ * A query value that is itself an address — the way back another page
+ * carries (`/cookies?redirect=%2Fjustice%2Fcases%2F…`) — read as the router
+ * would and sanitized as one; a justice address quoted inside other text is
+ * sanitized where it stands. What cannot be read to the end — encoded past
+ * the rounds read, or nested past the depth — and could hold a justice
+ * address is scrubbed whole. Any other value is returned as it was.
+ */
+function sanitizeAddressValue(value: string, depth: number): string {
+  const address = addressOf(value)
+  if (address === null) {
+    const text = decodedValue(value)
+    if (STILL_ENCODED_JUSTICE_ROUTE.test(text)) return REDACTED_JUSTICE_VALUE
+    if (!JUSTICE_ROUTE_ANYWHERE.test(text)) return value
+    const clean = text.replace(RELATIVE_ROUTE_PATTERN, (match) => sanitizeFragmentAt(match, depth + 1))
+    return clean === text ? value : clean
+  }
+  if (depth > MAX_NESTED_ADDRESSES) {
+    const text = decodedValue(address)
+    return JUSTICE_ROUTE_ANYWHERE.test(text) || STILL_ENCODED_JUSTICE_ROUTE.test(text) ? REDACTED_JUSTICE_VALUE : value
+  }
+  const clean = ABSOLUTE_ADDRESS_START.test(address) ? sanitizeUrlAt(address, depth + 1) : sanitizeFragmentAt(address, depth + 1)
+  return clean === address ? value : clean
+}
+
+/** A query's values that are addresses, each sanitized; the query is rebuilt only when one of them changed. */
+function sanitizeNestedAddresses(queryString: string, depth: number): string {
+  if (queryString.length === 0) return queryString
+  const params = new URLSearchParams(queryString)
+  const next = new URLSearchParams()
+  let changed = false
+  for (const [key, value] of params) {
+    const clean = sanitizeAddressValue(value, depth)
+    if (clean !== value) changed = true
+    next.append(key, clean)
+  }
+  return changed ? next.toString() : queryString
 }
 
 /**
@@ -213,6 +296,13 @@ export function sanitizeJusticeTelemetryString(value: string): string {
   sanitized = sanitized.replace(RELATIVE_ROUTE_PATTERN, (match) =>
     sanitizeJusticeUrlFragment(match),
   )
+  sanitized = sanitized.replace(ENCODED_JUSTICE_ROUTE_PATTERN, (match) => {
+    // Read one layer at a time, as a query value is; one that never reads as an address is scrubbed whole.
+    const address = addressOf(match)
+    if (address === null) return REDACTED_JUSTICE_VALUE
+    const clean = sanitizeAddressValue(address, 0)
+    return clean === address ? match : encodeURIComponent(clean)
+  })
   sanitized = sanitized.replace(
     SENSITIVE_FIELD_ASSIGNMENT_PATTERN,
     (_match, key: string) => `${key}=${REDACTED_JUSTICE_VALUE}`,
@@ -338,23 +428,32 @@ export function sanitizeJusticeQueryString(
 
 /**
  * Sanitizes a full URL string (origin + pathname + search + hash) for justice
- * routes. Non-justice URLs are returned unchanged. Hash is preserved.
+ * routes. Non-justice URLs are returned unchanged, except a justice address
+ * one of their query values carries (a way back). Hash is preserved.
  * Tolerates malformed input by returning it unchanged on parse failure.
  */
 export function sanitizeJusticeUrl(url: string): string {
+  return sanitizeUrlAt(url, 0)
+}
+
+function sanitizeUrlAt(url: string, depth: number): string {
   if (typeof url !== 'string' || url.length === 0) return url
   let parsed: URL
   try {
     parsed = new URL(url)
   } catch {
     // Not an absolute URL; try to sanitize as a pathname+search fragment.
-    return sanitizeJusticeUrlFragment(url)
+    return sanitizeFragmentAt(url, depth)
   }
   if (
     !isJusticePath(parsed.pathname) &&
     !isJusticeLitigationProfilePath(parsed.pathname, parsed.search)
   ) {
-    return url
+    const query = parsed.search.slice(1)
+    const nested = sanitizeNestedAddresses(query, depth)
+    if (nested === query) return url
+    parsed.search = `?${nested}`
+    return parsed.toString()
   }
   const sanitizedSearch = sanitizeJusticeQueryString(parsed.pathname, parsed.search)
   parsed.pathname = sanitizeJusticePathname(parsed.pathname)
@@ -365,9 +464,15 @@ export function sanitizeJusticeUrl(url: string): string {
 /**
  * Sanitizes a pathname+search fragment (no origin), e.g. the values TanStack
  * Router exposes via `location.pathname` / `location.searchStr`, or relative
- * hrefs. Non-justice fragments are returned unchanged.
+ * hrefs. Non-justice fragments are returned unchanged, except a justice
+ * address one of their query values carries: the cookie settings' way back
+ * from a case page (`/cookies?redirect=%2Fjustice%2Fcases%2F…`).
  */
 export function sanitizeJusticeUrlFragment(fragment: string): string {
+  return sanitizeFragmentAt(fragment, 0)
+}
+
+function sanitizeFragmentAt(fragment: string, depth: number): string {
   if (typeof fragment !== 'string' || fragment.length === 0) return fragment
   const queryIndex = fragment.indexOf('?')
   const hashIndex = fragment.indexOf('#')
@@ -383,7 +488,8 @@ export function sanitizeJusticeUrlFragment(fragment: string): string {
     !isJusticePath(pathname) &&
     !isJusticeLitigationProfilePath(pathname, queryString)
   ) {
-    return fragment
+    const nested = sanitizeNestedAddresses(queryString, depth)
+    return nested === queryString ? fragment : `${pathname}?${nested}${hash}`
   }
   const sanitized = sanitizeJusticeQueryString(pathname, queryString)
   const sanitizedPathname = sanitizeJusticePathname(pathname)

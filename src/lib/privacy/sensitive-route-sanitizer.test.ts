@@ -96,6 +96,62 @@ describe('the /justice pages', () => {
   it('scrub a case address quoted inside telemetry text', () => {
     expect(sanitizeJusticeTelemetryString('failed to load /justice/cases/TribunalulCLUJ/1234/117/2024')).toBe('failed to load /justice/cases/TribunalulCLUJ/:caseNumber')
   })
+
+  it('scrub a case address another page carries as its way back, as the cookie settings’ link from a case page does', () => {
+    const casePage = '/justice/cases/InaltaCurtedeCasatiesiJustitie/9999999/1/2025?lang=en'
+    const scrubbed = `redirect=${encodeURIComponent('/justice/cases/InaltaCurtedeCasatiesiJustitie/:caseNumber')}`
+    const cookies = `/cookies?redirect=${encodeURIComponent(casePage)}`
+    expect(sanitizeJusticeUrlFragment(cookies)).toBe(`/cookies?${scrubbed}`)
+    expect(sanitizeJusticeUrl(`https://transparenta.eu${cookies}#top`)).toBe(`https://transparenta.eu/cookies?${scrubbed}#top`)
+    // Encoded twice, or a way back to a page that holds a way back itself.
+    expect(sanitizeJusticeUrlFragment(`/cookies?redirect=${encodeURIComponent(encodeURIComponent(casePage))}`)).toBe(`/cookies?${scrubbed}`)
+    expect(sanitizeJusticeUrlFragment(`/cookies?redirect=${encodeURIComponent(cookies)}`)).not.toContain('9999999')
+    // The analytics payload the SDK sends, and text that quotes the address.
+    const event = sanitizeJusticeEventProperties({ $current_url: `https://transparenta.eu${cookies}`, $pathname: '/cookies' })
+    expect(JSON.stringify(event)).not.toMatch(/9999999/u)
+    expect(sanitizeJusticeTelemetryString(`navigated to ${cookies}`)).not.toContain('9999999')
+    expect(sanitizeJusticeTelemetryString(`navigated to ${cookies.replace('/cookies', 'cookies')}`)).not.toContain('9999999')
+  })
+
+  it('scrub a case address however often it was encoded, and one quoted inside another value’s text', () => {
+    const casePage = '/justice/cases/InaltaCurtedeCasatiesiJustitie/9999999/1/2025'
+    /** What a reader of the telemetry could recover: the text decoded until it stops changing. */
+    const recovered = (text: string) => {
+      let current = text
+      for (let round = 0; round < 12; round += 1) current = decodeURIComponent(current)
+      return current
+    }
+    let encoded = casePage
+    for (let round = 0; round < 7; round += 1) encoded = encodeURIComponent(encoded)
+    expect(recovered(sanitizeJusticeUrlFragment(`/cookies?redirect=${encoded}`))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeTelemetryString(`redirect=${encoded}`))).not.toContain('9999999')
+    // A way back to the cookie settings, whose own way back is the case: `%252F` in the text.
+    const twice = `/cookies?redirect=${encodeURIComponent(`/cookies?redirect=${encodeURIComponent(casePage)}`)}`
+    expect(recovered(sanitizeJusticeTelemetryString(`went back to ${twice.slice('/cookies?redirect='.length)}`))).not.toContain('9999999')
+    expect(recovered(sanitizeJusticeUrlFragment(`/search?q=${encodeURIComponent(`vezi ${casePage}`)}`))).not.toContain('9999999')
+    // An address quoted in a message, encoded twice, absolute too.
+    for (const address of [casePage, `https://transparenta.eu${casePage}`])
+      expect(recovered(sanitizeJusticeTelemetryString(`failed to load ${encodeURIComponent(encodeURIComponent(address))}`))).not.toContain('9999999')
+  })
+
+  it('keep each way back’s own query inside it: an inner key never becomes the outer page’s', () => {
+    const inner = '/justice/analytics?an=2025&caseNumber=9999999/117/2025&partyKey=77'
+    const cookies = (back: string) => `/cookies?redirect=${encodeURIComponent(back)}`
+    for (const fragment of [cookies(inner), cookies(cookies(inner)), cookies(cookies(cookies(inner)))]) {
+      const event = sanitizeJusticeEventProperties({ $current_url: `https://transparenta.eu${fragment}` })
+      const text = decodeURIComponent(decodeURIComponent(decodeURIComponent(String(event.$current_url))))
+      expect(text).not.toContain('9999999')
+      expect(text).not.toContain('partyKey')
+      // The analysis page's own question is kept.
+      expect(text).toContain('/justice/analytics?an=2025')
+    }
+  })
+
+  it('leave a way back that is not a justice address as it was', () => {
+    for (const fragment of ['/cookies?redirect=%2Fprocurement%3Fq%3Dx', '/cookies?redirect=/justice/analytics?an%3D2025', '/search?q=justice+cases'])
+      expect(sanitizeJusticeUrlFragment(fragment)).toBe(fragment)
+    expect(sanitizeJusticeUrl('https://transparenta.eu/cookies?redirect=%2Fprocurement')).toBe('https://transparenta.eu/cookies?redirect=%2Fprocurement')
+  })
 })
 
 describe('isJusticePath', () => {
