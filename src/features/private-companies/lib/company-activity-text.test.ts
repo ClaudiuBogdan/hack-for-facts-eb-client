@@ -53,7 +53,8 @@ describe('the profile selection', () => {
 
   it('names the only classified ONRC observation, and says it is not exclusive', () => {
     const texts = activitySelectionTexts(ACTIVITY_SELECTIONS.onrcSingleClass)
-    expect(texts.kicker).toBe('Activitate selectată (derivată) · CAEN 6201')
+    // The code is said once, under the title, not in the label.
+    expect(texts.kicker).toBe('Activitate selectată (derivată)')
     expect(texts.basis).toContain('Singura activitate clasificată observată în ediția ONRC')
     expect(texts.basis).toContain('nu înseamnă că firma e autorizată doar pentru ea')
   })
@@ -70,7 +71,7 @@ describe('the profile selection', () => {
 
   it('names ANAF’s code as the fiscal code with its revision unpublished', () => {
     const texts = activitySelectionTexts(ACTIVITY_SELECTIONS.anafConsensus)
-    expect(texts.kicker).toBe('Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată')
+    expect(texts.kicker).toBe('Activitate selectată (derivată)')
     expect(texts.basis).toContain('codul CAEN fiscal ANAF, revizie nepublicată')
   })
 

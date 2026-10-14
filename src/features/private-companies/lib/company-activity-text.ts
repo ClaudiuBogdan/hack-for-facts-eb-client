@@ -203,16 +203,11 @@ function countsText(selection: PrivateCompanyActivitySelection): string {
   return `${rows} · ${classes} · ${rest}`
 }
 
-function kickerText(selection: PrivateCompanyActivitySelection): string {
-  if (selection.code === null) return t`Activitate selectată (derivată)`
-  if (selection.source === 'anaf') return t`Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată`
-  return t`Activitate selectată (derivată) · CAEN ${selection.code}`
-}
-
 export function activitySelectionTexts(selection: PrivateCompanyActivitySelection): ActivitySelectionTexts {
   const anaf = selection.anafStatusDate ? t`ANAF, situația la ${dateText(selection.anafStatusDate)}` : t`ANAF: fără dată de stare`
   return {
-    kicker: kickerText(selection),
+    // The code and its source are said once, under the title.
+    kicker: t`Activitate selectată (derivată)`,
     basis: basisText(selection),
     agreement: anafText(selection),
     dates: `${editionDateText(selection)} · ${anaf}`,

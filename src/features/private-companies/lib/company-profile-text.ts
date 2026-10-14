@@ -587,6 +587,14 @@ export function statementStateLabel(statement: StatementValues): string {
   if (statement.otherBasis) return t`calificat după altă politică sau altă ediție a datelor`
   const kept = statement.keptOut
   if (kept === 0) return statement.netHeld ? t`valorile publicate admise; rezultatul net reținut` : t`toate valorile admise`
+  // The derived net is no published value: said beside the count, never counted in it — and only when held, not when never admitted.
+  if (statement.netHeld && statement.netResult?.status !== 'not_admitted') {
+    return plural(kept, {
+      one: '# valoare ținută în afara cifrelor; rezultatul net reținut',
+      few: '# valori ținute în afara cifrelor; rezultatul net reținut',
+      other: '# de valori ținute în afara cifrelor; rezultatul net reținut',
+    })
+  }
   return plural(kept, {
     one: '# valoare ținută în afara cifrelor',
     few: '# valori ținute în afara cifrelor',

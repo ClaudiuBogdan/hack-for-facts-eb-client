@@ -395,6 +395,16 @@ const page = (outcomes: CompanyMainActivityOutcome[], nextCursor: string | null)
 })
 
 describe('the main activity history', () => {
+  it('an ANAF-only company with no authorized ONRC class: the main block and its history still show, beside no authorized list', async () => {
+    history.answer = () => Promise.resolve(page([outcome('501', { status: 'NO_ONRC_MATCH', resolved: null, candidates: [] })], null))
+    renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.marketingNoMatch), []))
+    expect(screen.getByTestId('company-main-activity-headline').textContent).toBe('Cod ANAF 4730 · revizie necunoscută')
+    expect(screen.queryByText('Activitățile autorizate, pe domenii')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Istoricul activității principale presupuse' }))
+    await waitFor(() => expect(screen.getAllByTestId('company-main-activity-outcome')).toHaveLength(1))
+    expect(screen.getByTestId('company-main-activity-outcome').textContent).toContain('fără potrivire ONRC')
+  })
+
   it('opens on demand, newest first, a bounded page at a time', async () => {
     history.answer = ({ after }) => Promise.resolve(after === 'c1' ? page([outcome('499', { status: 'NO_ONRC_MATCH', resolved: null })], null) : page([outcome('501'), outcome('500', { status: 'NO_ONRC_MATCH', resolved: null })], 'c1'))
     renderBand(profileWith(assignedRead(MAIN_ACTIVITIES.lidlLatestRevision), []))
