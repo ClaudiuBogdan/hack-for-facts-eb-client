@@ -126,7 +126,7 @@ describe('the axes', () => {
 })
 
 describe('rows and numbers', () => {
-  it('drops a row repeated field for field, keeps a row that differs', () => {
+  it('drops a row repeated in every key field, keeps a row that differs', () => {
     const { rows, repeated } = distinctRows([
       row({ id: 'a', sourceRowNumber: 1 }),
       row({ id: 'b', sourceRowNumber: 2 }),
@@ -140,7 +140,7 @@ describe('rows and numbers', () => {
     expect(numberYear('12/B/2006 ', 2026)).toBe(2006)
     expect(numberYear('fara numar', 2026)).toBeNull()
   })
-  it('takes a year before 1990 or after the export for a slip, not a year', () => {
+  it('takes a year before 1990 or after the export for no year, its meaning unknown', () => {
     expect(numberYear('88/A/1990', 2026)).toBe(1990)
     expect(numberYear('5/A/1005', 2026)).toBeNull()
     expect(numberYear('5/A/2034', 2026)).toBeNull()
@@ -177,6 +177,22 @@ describe('the notes', () => {
     expect(notes.alerts).toEqual([])
     expect(notes.facts.some((fact) => fact.includes('fără județ'))).toBe(false)
   })
+  it('names the fields a repeat is judged by, and the ones it is not', () => {
+    const notes = notesOf({
+      query: EMPTY_QUERY,
+      unread: [],
+      snapshot: { ...snapshot, refreshOverdue: false },
+      summary,
+      summaryMatches: true,
+      read: read([row()]),
+      countsGap: null,
+      trap: null,
+    })
+    const repeat = notes.facts.find((fact) => fact.includes('rânduri repetă'))
+    expect(repeat).toContain('în toate cele 14 câmpuri comparate: număr, nume, nume ascuns, formă, formă juridică, instanță, stare, dată, județ, localitate, CUI declarat, CUI legat, filială și utilitate publică')
+    expect(repeat).toContain('Scopul și numărul din registrul special nu sunt comparate.')
+    expect(notes.facts.join(' ')).not.toContain('câmp cu câmp')
+  })
 })
 
 describe('the notes when the counts or the summary are of another export', () => {
@@ -193,6 +209,9 @@ describe('the notes when the counts or the summary are of another export', () =>
     })
     expect(notes.alerts.some((alert) => alert.includes('altui export'))).toBe(true)
     expect(notes.facts.some((fact) => fact.includes('104'))).toBe(false)
+    expect(notes.facts).toContain(
+      'Rândurile care repetă un alt rând în toate cele 14 câmpuri comparate: număr, nume, nume ascuns, formă, formă juridică, instanță, stare, dată, județ, localitate, CUI declarat, CUI legat, filială și utilitate publică sunt numărate o dată. Scopul și numărul din registrul special nu sunt comparate.',
+    )
   })
   it('bound a read past the cap by its distinct rows', () => {
     const notes = notesOf({

@@ -4,8 +4,9 @@
  *
  * Every count is of registry entries. The registry is the Ministry of
  * Justice's export; an entry is an organisation as the registry records it,
- * and only rows repeated field for field are dropped, so a count is never
- * sharper than the registry itself.
+ * and only rows that repeat another in every compared field are dropped (not
+ * the purpose or the special number), so a count is never sharper than the
+ * registry itself.
  */
 
 export type NgoRegistryStatusKey = 'registered' | 'deregistered' | 'inLiquidation' | 'dissolved'
@@ -34,7 +35,7 @@ export interface NgoRegistrySummary {
   readonly lastRegistration: string
   /** Rows in the export, repeated rows included. */
   readonly entries: number
-  /** Rows dropped because another row repeats them field for field. */
+  /** Rows dropped because another row repeats them in every compared field. */
   readonly repeated: number
   readonly status: Readonly<Record<NgoRegistryStatusKey, number>>
   /** Registered entries by legal form. */

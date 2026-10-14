@@ -34,7 +34,7 @@ export interface RegistryCounts {
   readonly capturedAt: string
   /** Rows in the export, repeats included. */
   readonly entries: number
-  /** Rows dropped as field-for-field repeats of another. */
+  /** Rows dropped as repeats of another in every compared field (not the purpose or the special number). */
   readonly repeated: number
   /** The registry's own spellings: the API's `county.eq` matches them exactly. */
   readonly counties: readonly string[]

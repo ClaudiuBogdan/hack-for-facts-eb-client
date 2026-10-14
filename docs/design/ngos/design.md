@@ -756,7 +756,8 @@ from the finance summary).
   point above that says what the page does not say came from them.
 - **Not yet.** The server's new sections — accredited social services,
   social-economy and employment-service certificates — are not deployed; the
-  head will carry them as factual badges once they are. The statements'
+  head will carry them as factual badges once they are. (Deployed since; drawn
+  as their own band, §19, with no head badges yet.) The statements'
   hydrated payload grows with the years (about 80 KB raw, 10 KB gzipped for
   17): the loader could send indicators as tuples if it grows.
 
@@ -1004,3 +1005,47 @@ certificate; `null`, a dictionary the rules do not cover.
   de verificat"). The hub's ten leaders, read from the static summary, match
   their 2025 statements on the API exactly and none of their 2024–2025
   statements is flagged.
+
+## 19. The official lists on the profile (2026-10-14)
+
+The 13 October audit (N04) found the profile left out four sections the API
+already served on every NGO profile: the ministry's licensed social services
+and accredited social-service providers, ANOFM's social-enterprise register
+(RUEIS) and accredited employment-service providers. The owner chose them as
+the first batch after the NGO handover; the public fields are the reviewed
+DTO's, nothing more (no address, SIRUTA, contacts, provider type, sanctions or
+free-text notes).
+
+- **One band, „Servicii și acreditări"**, before „ANAF și registru", drawn
+  only where a list names the organisation. A list that does not
+  (`available`, `[]`) is not drawn: not listed in that edition, never „no
+  services". `not_loaded` — every list on a profile without a CUI — is no
+  fact at all. So most profiles have no band, and none says „none".
+- **Each list dated by its edition.** The date the API carries where it
+  carries one („Ediția din 31 mai 2026"); otherwise „Data ediției nu este
+  disponibilă; importată la 29 iunie 2026" — unavailable, not undated (the
+  ministry dates its lists, 11 December 2023 and 10 April 2024, but the API
+  does not carry those dates), and the import named as such, never as the
+  edition. No date is inferred from a file name or URL. The lede says it once: a
+  licence or certificate in a list does not prove it is valid today, and a
+  service's place is the service's, not the organisation's seat. RUEIS's
+  status and validity are the list's word („în listă: RETRAS, valabil până
+  la …"). A list served without a snapshot says „Ediția listei nu e
+  cunoscută".
+- **A county-only service** (`countyOnly`: protective, or a type the list
+  does not name) is „Serviciu publicat doar cu județul", its county only —
+  never called protective, since an unclassified one is not known to be. The
+  parser drops a name or locality even if a response carried one, and the
+  page draws no list on a profile without a CUI whatever a response says.
+  Capacity 0 stays 0; a missing licence says nothing.
+- **Services**, six then „Arată toate"; each its name, type and code, place,
+  capacity and licence. The ministry's and ANOFM's words keep `lang="ro"` on
+  the English page. The lists are linked once, in the page's sources.
+
+The registry's counting note (audit N10/N11) now names all 14 fields a repeat
+is judged by — number, name, withheld name, form, legal form, court, status,
+date, county, locality, declared CUI, linked CUI, branch and public utility;
+not the purpose or the special-register number — one list shared by the page
+and both counting scripts (`scripts/lib/ngo-registry-repeat.mjs`), and no
+longer calls a number year before 1990 or after the export a typing slip: it
+is not counted, its meaning unknown, the number kept as published.

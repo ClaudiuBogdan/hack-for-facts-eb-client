@@ -7,6 +7,7 @@ import { graphqlQuery } from '@/lib/graphql/graphql-client'
  * requests that fail apart:
  *
  * - the profile: identity, registry, the registry's purpose („Scop"), ANAF,
+ *   the four official lists of services and accreditations joined by CUI,
  *   and the statements' years only;
  * - the statements, every year's (1–20), each in its own dictionary.
  *
@@ -31,6 +32,59 @@ const section = <T extends z.ZodType>(data: T) => z.object({ availability, data:
  * observations that disagree (`conflicts` then holds `purpose`).
  */
 export const ngoPurposeSchema = z.object({ availability, text: z.string().nullable() })
+
+/**
+ * The edition of an official list the profile is joined to by CUI: the date
+ * the API carries for it (`sourceDeclaredDate`), where it carries one. Null
+ * is a date the API does not carry, not an undated source (the ministry's
+ * lists are dated by their publisher); then only the import time is known,
+ * which is not the edition's date. Neither says a licence or a certificate is
+ * still valid.
+ */
+const listSnapshotSchema = z.object({ sourceUrl: z.string(), sourceDeclaredDate: z.string().nullable(), importedAt: z.string() })
+export type NgoListSnapshot = z.infer<typeof listSnapshotSchema>
+
+/**
+ * One of the four official lists: `available` with `[]` is not listed in
+ * that edition; `not_loaded` (snapshot and data null) is no coverage — a
+ * profile without a CUI has nothing to join — never „none". A list this
+ * client cannot read drops the list, never the profile.
+ */
+const listSection = <T extends z.ZodType>(item: T) =>
+  z
+    .object({ availability, snapshot: listSnapshotSchema.nullable(), data: z.array(item).nullable() })
+    .catch({ availability: 'not_loaded' as const, snapshot: null, data: null })
+
+/**
+ * A licensed social service. A protective or unclassified one (`countyOnly`:
+ * shelters, residential child protection, or a type the list does not name)
+ * is published with its county only: its name and locality are dropped here
+ * even if a response carried them.
+ */
+const socialServiceSchema = z
+  .object({
+    serviceType: z.string().nullable(),
+    serviceCode: z.string().nullable(),
+    serviceName: z.string().nullable(),
+    county: z.string().nullable(),
+    locality: z.string().nullable(),
+    capacity: z.number().int().nullable(),
+    licenseNumber: z.string().nullable(),
+    licensedOn: z.string().nullable(),
+    countyOnly: z.boolean(),
+  })
+  .transform((service) => (service.countyOnly ? { ...service, serviceName: null, locality: null } : service))
+export type NgoSocialService = z.infer<typeof socialServiceSchema>
+
+const accreditationSchema = z.object({ certificateNumber: z.string().nullable(), decisionNumber: z.string().nullable() })
+/** RUEIS: `status` is the published edition's (`RETRAS`, `EXPIRAT`…), not a live check. */
+const enterpriseCertificateSchema = z.object({
+  certificateNumber: z.string().nullable(),
+  certificateDate: z.string().nullable(),
+  validUntil: z.string().nullable(),
+  status: z.string().nullable(),
+})
+const employmentAccreditationSchema = z.object({ certificateNumber: z.string().nullable(), issuedOn: z.string().nullable() })
 
 export const ngoOrganizationSchema = z.object({
   /** Null on a profile read by registry number where the platform admits no CUI: then the CUI-keyed sections are `not_loaded`. */
@@ -62,6 +116,10 @@ export const ngoOrganizationSchema = z.object({
   financials: z.object({ availability, fiscalYears: z.array(z.number().int()) }),
   // An availability this client does not know yet drops the purpose, never the profile.
   purpose: ngoPurposeSchema.catch({ availability: 'not_loaded', text: null }),
+  socialServices: listSection(socialServiceSchema),
+  socialServiceAccreditations: listSection(accreditationSchema),
+  socialEnterpriseCertificates: listSection(enterpriseCertificateSchema),
+  employmentServiceAccreditations: listSection(employmentAccreditationSchema),
 })
 export type NgoOrganization = z.infer<typeof ngoOrganizationSchema>
 
@@ -95,6 +153,7 @@ export type NgoIndicator = z.infer<typeof indicatorSchema>
 /** The statements' read, which fails apart from the profile's: a failure is said, never shown as „none". */
 export type NgoStatementsRead = { readonly status: 'ready'; readonly statements: readonly NgoStatement[] } | { readonly status: 'failed' }
 
+const LIST_SNAPSHOT = 'snapshot { sourceUrl sourceDeclaredDate importedAt }'
 const PROFILE_FIELDS = `
     cui identity { cui method } registryNumber name category legalForm county locality sourceRegistryStatus
     sourceReportsPublicUtility sourceRegistrationDate conflicts
@@ -103,7 +162,12 @@ const PROFILE_FIELDS = `
     anafRegistration { availability data { registrationStateText registrationDate queryDate } }
     fiscal { availability data { vatPayer declaredFiscallyInactive mainCaenCode queryDate } }
     financials { availability fiscalYears }
-    purpose { availability text }`
+    purpose { availability text }
+    socialServices { availability ${LIST_SNAPSHOT}
+      data { serviceType serviceCode serviceName county locality capacity licenseNumber licensedOn countyOnly } }
+    socialServiceAccreditations { availability ${LIST_SNAPSHOT} data { certificateNumber decisionNumber } }
+    socialEnterpriseCertificates { availability ${LIST_SNAPSHOT} data { certificateNumber certificateDate validUntil status } }
+    employmentServiceAccreditations { availability ${LIST_SNAPSHOT} data { certificateNumber issuedOn } }`
 
 export const NGO_ORGANIZATION_QUERY = `query NgoOrganization($cui: CUI!) {
   ngoOrganizationProfile(cui: $cui) {${PROFILE_FIELDS}

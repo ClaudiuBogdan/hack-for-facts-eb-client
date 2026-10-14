@@ -2,6 +2,123 @@
 // three statements around its missing 2022, and Asociația Absolut, whose statements are not loaded.
 import type { NgoOrganization, NgoStatement } from '../api'
 
+// The four official lists' editions as the dev API served them on 14 October 2026: the ministry's two with no date the
+// API carries (their publisher dates them), ANOFM's two with one.
+const SERVICES_EDITION = {
+  sourceUrl:
+    'https://data.gov.ro/dataset/a2421c58-0685-4711-8cfc-1e511796bd3a/resource/d51101dd-705a-44b1-9e0c-e84e8daf6a74/download/11122023_servicii_sociale_licentiate.xml',
+  sourceDeclaredDate: null,
+  importedAt: '2026-06-29T19:01:55.520Z',
+}
+const PROVIDERS_EDITION = {
+  sourceUrl:
+    'https://data.gov.ro/dataset/a36006e8-696e-4a21-a77d-27f8db57eeb3/resource/efd22022-06fe-4b92-864d-8c80e1f05270/download/10042024_furnizori_acreditati_1.xml',
+  sourceDeclaredDate: null,
+  importedAt: '2026-06-29T19:01:55.520Z',
+}
+const RUEIS_EDITION = {
+  sourceUrl: 'https://www.anofm.ro/wp-content/uploads/2026/06/Extras-RUEIS-mai-2026.xlsx',
+  sourceDeclaredDate: '2026-05-31',
+  importedAt: '2026-06-19T23:16:30.924Z',
+}
+const EMPLOYMENT_EDITION = {
+  sourceUrl: 'https://www.anofm.ro/wp-content/uploads/2026/06/Date-Registrul-National-furnizori-acreditati-activi-actualizat-la-30-04-2026.xlsx',
+  sourceDeclaredDate: '2026-04-30',
+  importedAt: '2026-06-19T23:16:30.924Z',
+}
+
+type Lists = Pick<NgoOrganization, 'socialServices' | 'socialServiceAccreditations' | 'socialEnterpriseCertificates' | 'employmentServiceAccreditations'>
+
+/** Loaded, and none of the four lists names the organisation (Funky Citizens, Absolut). */
+export const NOT_LISTED: Lists = {
+  socialServices: { availability: 'available', snapshot: SERVICES_EDITION, data: [] },
+  socialServiceAccreditations: { availability: 'available', snapshot: PROVIDERS_EDITION, data: [] },
+  socialEnterpriseCertificates: { availability: 'available', snapshot: RUEIS_EDITION, data: [] },
+  employmentServiceAccreditations: { availability: 'available', snapshot: EMPLOYMENT_EDITION, data: [] },
+}
+
+/** A profile without a CUI: nothing to join the lists by. */
+export const NO_LISTS: Lists = {
+  socialServices: { availability: 'not_loaded', snapshot: null, data: null },
+  socialServiceAccreditations: { availability: 'not_loaded', snapshot: null, data: null },
+  socialEnterpriseCertificates: { availability: 'not_loaded', snapshot: null, data: null },
+  employmentServiceAccreditations: { availability: 'not_loaded', snapshot: null, data: null },
+}
+
+/**
+ * Real rows from several profiles, put together to meet every case at once: Salvați Copiii's (3151288) day
+ * centres, one without a licence, and its accreditation; Casa de Copii Lupeni's (10008141) protective service,
+ * published with its county only; L&C Consulting's (16427530) unclassified one, county only and with no type, and
+ * its withdrawn and expired RUEIS attestations; Fundația
+ * Orizont's (10003730) employment accreditation.
+ */
+export const LISTED: Lists = {
+  socialServices: {
+    availability: 'available',
+    snapshot: SERVICES_EDITION,
+    data: [
+      {
+        serviceType: '17.Centre de zi pentru familie cu copii',
+        serviceCode: '8899 CZ-F-I',
+        serviceName: 'Centrul de educaţie emoţională şi comportamentală pentru copii',
+        county: 'BUCUREȘTI',
+        locality: 'sector 3',
+        capacity: 35,
+        licenseNumber: null,
+        licensedOn: null,
+        countyOnly: false,
+      },
+      {
+        serviceType: '16.Centre de zi pentru copii: copii în familie, copii separaţi sau în risc de separare de părinți',
+        serviceCode: '8891 CZ-C-II',
+        serviceName: 'Centrul de zi nr. 1 Braşov',
+        county: 'Brașov',
+        locality: 'Brașov',
+        capacity: 20,
+        licenseNumber: '0001474/LF',
+        licensedOn: '2021-12-20',
+        countyOnly: false,
+      },
+      {
+        serviceType: '5.Centre rezidenţiale pentru copii în sistemul de protecție special',
+        serviceCode: '8790 CR-C-I',
+        serviceName: null,
+        county: 'Hunedoara',
+        locality: null,
+        capacity: 12,
+        licenseNumber: 'LF/0000382',
+        licensedOn: '2016-02-03',
+        countyOnly: true,
+      },
+      {
+        serviceType: null,
+        serviceCode: '8899 CZ-PN-VII',
+        serviceName: null,
+        county: 'Hunedoara',
+        locality: null,
+        capacity: 10,
+        licenseNumber: '0000906/LF',
+        licensedOn: '2023-11-13',
+        countyOnly: true,
+      },
+    ],
+  },
+  socialServiceAccreditations: { availability: 'available', snapshot: PROVIDERS_EDITION, data: [{ certificateNumber: 'AF/001157', decisionNumber: '174' }] },
+  socialEnterpriseCertificates: {
+    availability: 'available',
+    snapshot: RUEIS_EDITION,
+    data: [
+      { certificateNumber: '22', certificateDate: '2025-06-10', validUntil: null, status: 'RETRAS' },
+      { certificateNumber: '1', certificateDate: '2017-01-08', validUntil: null, status: 'EXPIRAT' },
+    ],
+  },
+  employmentServiceAccreditations: {
+    availability: 'available',
+    snapshot: EMPLOYMENT_EDITION,
+    data: [{ certificateNumber: 'SERIA DJ NR.18/00088', issuedOn: '2018-01-11' }],
+  },
+}
+
 export const FUNKY: NgoOrganization = {
   cui: '30339344',
   name: 'FUNKY CITIZENS',
@@ -47,6 +164,7 @@ export const FUNKY: NgoOrganization = {
   financials: { availability: 'available', fiscalYears: [2021, 2023, 2024] },
   // As the dev API served it on 2026-10-01: the registry's capitals, cut by its own masking.
   purpose: { availability: 'available', text: 'PROMOVAREA DREPTURILOR OMULUI, DEZVOLTAREA SUSTENABILA, RESPONSABILITATEA SOCALA SI INDIVIDUALA PRIN CETATENIE ACTIVA, EDUCATIE CIVICA SII CULTURALA, ATAT PRIN ACTIVITATI PROPRII, CAT SI PRIN SPRIJINIREA INITIATIVELOR CARE ISI <PERSON>' },
+  ...NOT_LISTED,
 }
 
 /** The server's review of a statement no rule flags: assessed, not suspected — no certificate of correctness. */
@@ -675,6 +793,7 @@ export const ABSOLUT: NgoOrganization = {
   sourceRegistrationDate: null,
   financials: { availability: 'not_loaded', fiscalYears: [] },
   purpose: { availability: 'available', text: 'stimularea interesului și curiozității față de cultură și artă, mai întâi prin cunoașterea tradițiilor locale, prin dezvoltarea deprinderilor de muncă practică și intelectuală, prin cultivarea capacității creatoare a imaginației, a spiritului de cercetare, a dorinței de a contribui după puterea fiecăruia la perpetuarea șl promovarea valorilor culturale, spirituale, naționale și internaționale, prin educarea copiilor .și a tinerilor cetățeni în domeniul artei: dans, etnografie, pictură, muzică, teatru, arta fotografică, designer vestimentar sau de ambient, artă manuală: creatori de goblen și a altor meșteșuguri tradiționale românești (arta țesutului, cusutului, împletitului, croșetatului, olăritului, sculptatului, etc.) precum și crearea unui cadru propice schimbului de cunoștințe, informații cultural-educative între cetățenii români și cetățenii altor țări, realizarea de parteneriate în vederea susținerii de proiecte cultural-educaționale, sprijinirea membrilor asociației în vederea participării și organizării activităților cultural-educative pe plan intern și internațional. Formarea atitudinii de respect față de propria cultură și fața de cultura celorlalte popoare.' },
+  ...NOT_LISTED,
 }
 
 /**
@@ -711,4 +830,5 @@ export const BLANC: NgoOrganization = {
     availability: 'available',
     text: 'Scopul pentru care se constituie Asociatia: sprijinirea familiilor persoanelor afectate de dependențe (droguri, alcool, ecrane, jocuri de noroc, etc.) prin oferirea de consiliere, educație, suport și integrare sociala.',
   },
+  ...NO_LISTS,
 }
