@@ -69,7 +69,7 @@ export function statusCodeText(code: string): string {
   return name ? `${code} · ${name}` : code
 }
 
-export function caenRevisionText(revision: string | null): string {
+function caenRevisionText(revision: string | null): string {
   return revision ? `CAEN ${revision.replace(/^rev/u, 'Rev.')}` : t`fără revizie CAEN`
 }
 

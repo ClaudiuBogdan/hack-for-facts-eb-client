@@ -383,5 +383,10 @@ describe('qualification in words (CD-14)', () => {
     expect(statementStateLabel(buildCompanyProfileModel(companyProfile({ financials: [heldTurnover] })).qualification.statements[0]!)).toBe(
       '1 valoare ținută în afara cifrelor',
     )
+    // A held value and the derived net held with it: both said, the net never counted as a published value.
+    const heldLoss = held(2024, { turnover: 1, netProfit: 0, netLoss: 10 }, { net_loss: 'held_observation', net_result: 'held_component' })
+    expect(statementStateLabel(buildCompanyProfileModel(companyProfile({ financials: [heldLoss] })).qualification.statements[0]!)).toBe(
+      '1 valoare ținută în afara cifrelor; rezultatul net reținut',
+    )
   })
 })

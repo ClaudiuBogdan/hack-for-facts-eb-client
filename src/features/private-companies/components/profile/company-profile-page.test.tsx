@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
@@ -533,9 +533,11 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcSingleClass })))
     await registryPinned()
     const block = within(selection())
-    expect(block.getByText('Activitate selectată (derivată) · CAEN 6201')).toBeInTheDocument()
-    expect(block.getByText('6201 · Activități de realizare a soft-ului la comandă (software orientat client)')).toBeInTheDocument()
-    expect(block.getByText('CAEN Rev.2 · ediția ONRC')).toBeInTheDocument()
+    expect(block.getByText('Activitate selectată (derivată)')).toBeInTheDocument()
+    // Its name as the title, the code once beneath it with its revision and source.
+    expect(block.getByText('Activități de realizare a soft-ului la comandă (software orientat client)')).toBeInTheDocument()
+    expect(block.getByText('6201 · CAEN Rev.2 · ediția ONRC')).toBeInTheDocument()
+    expect(selection().textContent?.match(/6201/gu)).toHaveLength(1)
     expect(block.getByText(/Singura activitate clasificată observată în ediția ONRC/u)).toBeInTheDocument()
     expect(selection().textContent).not.toMatch(/principal/iu)
     // How, a tap away: each source's date and a complete edition's coverage.
@@ -558,10 +560,24 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.anafConflict })))
     await registryPinned()
     const block = within(selection())
-    expect(block.getByText('Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată')).toBeInTheDocument()
+    expect(block.getByText('Activitate selectată (derivată)')).toBeInTheDocument()
+    // The title shows the code and its unpublished revision; the line under it adds only the source.
+    expect(block.getByText('Cod CAEN fiscal ANAF')).toBeInTheDocument()
+    expect(selection().textContent?.match(/6201/gu)).toHaveLength(1)
     expect(block.getByText('Activități de programare a calculatoarelor')).toBeInTheDocument()
     expect(block.queryByText(/ediția ONRC$/u)).toBeNull()
     expect((await howSelected()).getByTestId('company-activity-selection-coverage').textContent).toMatch(/^Nicio activitate observată în ediția ONRC publicată pe /u)
+  })
+
+  it('says no selection quietly: the title alone, no count or sentence repeating it, and why with how', async () => {
+    render(page(companyProfile({ activitySelection: ACTIVITY_SELECTIONS.onrcMultipleRevisions })))
+    await registryPinned()
+    const block = within(selection())
+    expect(block.getByText('Nicio activitate selectată')).toBeInTheDocument()
+    expect(block.queryByText(/activități clasificate|niciuna nu e selectată/u)).toBeNull()
+    // Nothing was selected: the info button says why, not how.
+    fireEvent.click(block.getByRole('button', { name: 'De ce nu e selectată niciuna' }))
+    expect(within(await screen.findByRole('dialog', { name: 'De ce nu e selectată niciuna' })).getByText(/^Codul CAEN fiscal ANAF 5211 are aceleași cifre ca activități clasificate din revizii CAEN diferite/u)).toBeInTheDocument()
   })
 
   it('says a company without a qualified selection is not without activity, and that an unresolved list may be incomplete', async () => {
@@ -575,7 +591,7 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     expect((await howSelected()).getByText('Codul CAEN fiscal ANAF 0000 este un cod substitut și nu e folosit la selecție.')).toBeInTheDocument()
   })
 
-  it('names a short source code as ambiguous, unlabelled, and says the list is bounded with the edition’s exact count', async () => {
+  it('names a short source code as ambiguous and unlabelled, and lists no original row', async () => {
     const profile = companyProfile({
       activitySelection: { ...ACTIVITY_SELECTIONS.truncated, editionId: 'mock-1' },
       caenActivities: [
@@ -600,12 +616,13 @@ describe('CompanyProfilePage — the derived activity selection', () => {
     })
     render(page(profile))
     await registryPinned()
-    // The evidence list: the short row unlabelled, the edition's count beside the rows shown.
-    expect(screen.getByText('5600 · CAEN Rev.2 · cod scurt în sursă — clasă/grupă ambiguă')).toBeInTheDocument()
-    expect(screen.queryByText(/Împrumutat/u)).toBeNull()
-    expect(screen.getByTestId('company-registry-truncated').textContent).toMatch(/observații CAEN în ediție; se afișează 2\.$/u)
-    // The activities: the division holds the class alone; the short row sits with the unqualified observations, said for what it is.
+    // The edition's original rows are not listed; the source's own label never shows.
+    expect(screen.queryByTestId('company-registry-rows')).toBeNull()
+    expect(screen.queryByText(/Împrumutat|înscrieri originale/u)).toBeNull()
+    // The bounded activity list says the edition's count beside what it shows, never passes for all of it.
     const activities = within(document.getElementById('activitati') as HTMLElement)
+    expect(activities.getByTestId('company-activities-truncated').textContent).toMatch(/^1\.090 de observații CAEN în ediție; se afișează 2\.$/u)
+    // The activities: the division holds the class alone; the short row sits with the unqualified observations, said for what it is.
     const division = activities.getByRole('button', { name: /Restaurante și baruri/u })
     fireEvent.click(division)
     const classes = within(document.getElementById(division.getAttribute('aria-controls') ?? '') as HTMLElement)
@@ -814,7 +831,8 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     // Opened: the exact value, why, and the reviewer's reason in words, the recorded one beside it (never alone).
     const detail = openYear(2020)
     expect(detail.getByText('300.000.000.000.000 lei')).toBeInTheDocument()
-    expect(detail.getByText(/: reținută după verificare$/u)).toBeInTheDocument()
+    expect(detail.getByText('2 valori ținute în afara cifrelor; rezultatul net reținut')).toBeInTheDocument()
+    expect(detail.getAllByText('reținută după verificare')).toHaveLength(2)
     expect(detail.getByText(/^Reținut după o verificare\./u)).toBeInTheDocument()
     expect(detail.getByText('Motivul înregistrat: Valoare introdusă greșit, verificată la sursă.')).toBeInTheDocument()
     // No figure is built from it: no turnover or net tile, the reported headcount still is one.
@@ -823,6 +841,17 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     }
     expect(screen.getByText('Salariați, 2020')).toBeInTheDocument()
     expect((await aboutValues()).getByText(/politica de calificare companies-analytics-admission-2026-10-02-q1, aprobată pe 2026-10-02/u)).toBeInTheDocument()
+  })
+
+  it('closes an opened statement from its own button', async () => {
+    render(page(companyProfile({ financials: [financialYear(2025, { turnover: 9_000 })] })))
+    await registryPinned()
+    const detail = openYear(2025)
+    expect(detail.getByText('Toate valorile admise')).toBeInTheDocument()
+    fireEvent.click(detail.getByRole('button', { name: 'Închide bilanțul pe 2025' }))
+    expect(screen.queryByRole('region', { name: 'Bilanțul pe 2025' })).toBeNull()
+    // Focus goes back to the year that opened it.
+    await waitFor(() => expect(document.activeElement).toBe(years().getByRole('button', { name: /^Bilanțul pe 2025/u })))
   })
 
   it('says a reviewed hold in words, never its code alone (CH-001)', async () => {
@@ -924,7 +953,8 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     const detail = openYear(2023)
     expect(detail.getByText('Bilanțul pe 2023 · ANAF')).toBeInTheDocument()
     expect(detail.getByText('7.654.321,00 lei')).toBeInTheDocument()
-    expect(detail.getAllByText('necalificat (calificarea nu este disponibilă acum)').length).toBeGreaterThanOrEqual(1)
+    // Held whole: why is said once, as its state, not on every value.
+    expect(detail.getAllByText(/^necalificat \(calificarea nu este disponibilă acum\)$/iu)).toHaveLength(1)
     // Nothing is a figure or a point.
     for (const label of ['Cifra de afaceri, 2024', 'Salariați, 2024']) expect(screen.queryByText(label)).toBeNull()
     const model = buildCompanyProfileModel(profile)

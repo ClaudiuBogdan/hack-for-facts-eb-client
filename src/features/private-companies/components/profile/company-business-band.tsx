@@ -168,9 +168,9 @@ function FinancialChart({
         )}
       </div>
       {gapYears ? (
-        <MonoLabel className="mt-4 block leading-relaxed text-muted-foreground">
+        <p className="mt-4 text-xs text-muted-foreground">
           <Trans>Fără valori comparabile pentru {gapYears}</Trans>
-        </MonoLabel>
+        </p>
       ) : null}
     </div>
   )

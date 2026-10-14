@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import type { CompanyRegistryValue } from '@/schemas/private-company-registry'
 import type { CompanyProcurementRead } from '../../lib/company-procurement-read'
@@ -18,7 +17,7 @@ const TITLE_ID = 'company-registry-title'
 /**
  * „Datele din registru": the record as the pinned ONRC edition and ANAF keep
  * it — each registry value with the basis that qualifies it, the edition's
- * observations behind them (conflicts listed, not chosen), the comparison with
+ * identifiers with their statuses (conflicts listed, not chosen), the comparison with
  * the previous edition — and where every figure on the page comes from. A
  * registry that cannot answer, or a CUI the edition holds no profile for, is
  * said as such: never as an empty record or an unregistered company.
@@ -51,7 +50,7 @@ export function CompanyRegistryBand({
         </p>
       ) : null}
       <RegistryFacts model={model} />
-      <CompanyRegistryEvidenceList evidence={model.registry} caenObservationCount={model.selection?.observationCount ?? null} className="mt-8 max-w-[68ch]" />
+      <CompanyRegistryEvidenceList evidence={model.registry} className="mt-8 max-w-[68ch]" />
       {diffText ? <p className="mt-4 max-w-[68ch] text-sm text-muted-foreground" data-testid="company-registry-diff">{diffText}</p> : null}
       <SourcesLine model={model} procurement={procurement} courts={courts} />
     </ProfileBand>
@@ -170,8 +169,8 @@ function SourcesLine({
     courts ? t`dosarele de pe portalul instanțelor (portal.just.ro)` : null,
   ].filter((part): part is string => part !== null)
   return (
-    <MonoLabel className="mt-6 block leading-relaxed text-muted-foreground" data-testid="company-sources-line">
+    <p className="mt-6 text-xs text-muted-foreground" data-testid="company-sources-line">
       <Trans>Surse:</Trans> {parts.join(' · ')}
-    </MonoLabel>
+    </p>
   )
 }

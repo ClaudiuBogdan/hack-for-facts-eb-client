@@ -208,12 +208,12 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
       />
       <div className="mt-4 space-y-1.5">
         {openYear !== null ? (
-          <MonoLabel className="block leading-relaxed text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             <Trans>{openYear} e anul în curs: bara lui nu e un an întreg.</Trans>
-          </MonoLabel>
+          </p>
         ) : null}
         {undated.count > 0 ? (
-          <MonoLabel className="block leading-relaxed text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {undated.count > undated.unvalued
               ? plural(undated.count, {
                   one: `Nu apare pe grafic o înregistrare fără an în sursă (${moneyText(undated.total)}).`,
@@ -225,17 +225,17 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
                   few: 'Nu apar pe grafic # înregistrări fără an și fără valoare publicată.',
                   other: 'Nu apar pe grafic # de înregistrări fără an și fără valoare publicată.',
                 })}
-          </MonoLabel>
+          </p>
         ) : null}
         {/* Commitments stay out of the bars: an obligation drawn on the payments' scale would flatten them. */}
         {commitments.total > 0 ? (
-          <MonoLabel className="block leading-relaxed text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {plural(commitments.count, {
               one: `Fără angajamentul PNRR de ${moneyText(commitments.total)}: o obligație asumată, nu o plată.`,
               few: `Fără cele # angajamente PNRR, de ${moneyText(commitments.total)}: obligații asumate, nu plăți.`,
               other: `Fără cele # de angajamente PNRR, de ${moneyText(commitments.total)}: obligații asumate, nu plăți.`,
             })}
-          </MonoLabel>
+          </p>
         ) : null}
       </div>
     </div>
@@ -361,7 +361,7 @@ function CoverageNote({ read, grain, className }: { readonly read: CompanyProcur
     ranking,
   ].filter((part): part is string => part !== null)
   if (parts.length === 0) return null
-  return <MonoLabel className={cn('block leading-relaxed text-muted-foreground', className)}>{parts.join(' ')}</MonoLabel>
+  return <p className={cn('text-xs text-muted-foreground', className)}>{parts.join(' ')}</p>
 }
 
 /**
