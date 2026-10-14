@@ -97,17 +97,21 @@ export function SourcesBand({ index, parts, locale }: { readonly index: string; 
   )
 }
 
-/** What they do, by main activity, and where their seats are, when they are in more than one county. */
+/**
+ * What they do, as far as ANAF's fiscal CAEN code says (grouped by its first
+ * two digits, no revision published, so no division name), and where their
+ * seats are, when they are in more than one county.
+ */
 export function PlacesBand({ index, rows, locale }: { readonly index: string; readonly rows: readonly PortfolioRow[]; readonly locale: string }) {
   const byCounty = countyCounts(rows)
   const only = byCounty.length === 1 ? byCounty[0]!.key : null
   const lede = only
-    ? t`După activitatea principală din fișa ANAF. Toate au sediul în ${displayName(only)}.`
-    : t`După activitatea principală din fișa ANAF și județul sediului, din registrul comerțului.`
+    ? t`După codul CAEN fiscal din fișa ANAF, grupat după primele două cifre (ANAF nu publică revizia lui). Toate au sediul în ${displayName(only)}.`
+    : t`După codul CAEN fiscal din fișa ANAF, grupat după primele două cifre (ANAF nu publică revizia lui), și județul sediului, din registrul comerțului.`
   return (
     <HomeBand id="domenii" labelledBy="authority-places-title">
       <BandColumns titleId="authority-places-title" index={index} title={t`Ce fac și unde sunt`} lede={lede}>
-        <MonoLabel className="block pb-2 text-muted-foreground">{t`Activitatea principală`}</MonoLabel>
+        <MonoLabel className="block pb-2 text-muted-foreground">{t`Cod CAEN fiscal (ANAF)`}</MonoLabel>
         <CountRows counts={activityCounts(rows)} label={activityLabel} locale={locale} />
         {only ? null : (
           <>

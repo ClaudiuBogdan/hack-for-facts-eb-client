@@ -1,6 +1,5 @@
 import { plural, t } from '@lingui/core/macro'
 
-import { divisionLabel } from '@/features/private-companies/lib/caen-divisions'
 import type { PublicEnterprisePortfolioSort } from '@/schemas/public-enterprises'
 import type { AuthorityPortfolio, PortfolioAuthority } from '@/schemas/public-enterprise-portfolio'
 import {
@@ -20,7 +19,7 @@ import {
   type RegistryState,
 } from './authority-portfolio-model'
 import { displayName, enterpriseCount, formatCount, formatDate, formatLei, s1001ListDate } from './hub-format'
-import { sourceStatusLabel } from './hub-text'
+import { fiscalCaenGroupLabel, sourceStatusLabel } from './hub-text'
 
 /**
  * The authority portfolio's words. The authority is the sentence's subject
@@ -220,8 +219,9 @@ export function heldNote(reasons: ReadonlySet<HeldReason>): string {
   return t`„Reținut”: verificarea bilanțurilor ține valoarea deoparte (${why}), ca pe pagina firmei. Nu e un zero.`
 }
 
+/** A fiscal-CAEN group by its first two digits; no code in the record is said as such, never as no activity. */
 export function activityLabel(division: string | null): string {
-  return division ? divisionLabel(division) : t`Fără activitate principală în fișă`
+  return division ? fiscalCaenGroupLabel(division) : t`Fără cod CAEN fiscal în fișă`
 }
 
 export function countyLabel(county: string | null): string {

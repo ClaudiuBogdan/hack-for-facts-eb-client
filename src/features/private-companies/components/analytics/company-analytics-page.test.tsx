@@ -145,6 +145,16 @@ describe('CompanyAnalyticsPage', () => {
     await waitFor(() => expect(api.calls.filter((call) => call.op !== 'CompanyAnalysisRelease').every((call) => call.variables.release === '7')).toBe(true))
   })
 
+  it('says what „cu bilanț” counts: a statement in the standard history, never proof that a company did not file (D5)', async () => {
+    renderPage()
+    expect(await screen.findByText(FIGURES)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /^(Despre aceste cifre|\d+ (de )?atenționăr?i?e?)$/u }))
+    expect(
+      await screen.findByText('„Cu bilanț” înseamnă o situație financiară în istoricul standard al platformei. Situațiile publicate doar în format lung nu sunt numărate aici, așa că „fără bilanț” nu dovedește că firma nu a depus.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('O valoare lipsă nu e zero: o firmă fără bilanț în istoricul standard nu are cifre pentru acel an.')).toBeInTheDocument()
+  })
+
   it('says a measure nobody reported is not reported — a dash with its reason, never a zero', async () => {
     router.search = { indicator: 'employees' }
     renderPage()

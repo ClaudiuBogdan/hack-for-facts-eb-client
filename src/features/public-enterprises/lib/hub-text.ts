@@ -1,6 +1,5 @@
 import { plural, t } from '@lingui/core/macro'
 
-import { divisionLabel } from '@/features/private-companies/lib/caen-divisions'
 import type { PublicEnterprisePopulation } from '@/schemas/public-enterprises'
 import { displayName, enterpriseCount, formatCount, formatLei, formatShare } from './hub-format'
 import { countyRanking, leadingAuthority, populationTotal, s1001Count, sectorRanking, sourcesIn } from './hub-model'
@@ -66,15 +65,24 @@ export function countiesLede(snapshot: PublicEnterpriseHubSnapshot, population: 
   return t`Cele mai multe au sediul în ${first.name}: ${n(first.value)}. Urmează ${second.name} (${n(second.value)}) și ${third.name} (${n(third.value)}).`
 }
 
-/** The activities with the most enterprises of the population the band shows, the first one's share of that population. */
+/**
+ * A group of ANAF fiscal CAEN codes by their first two digits, named by its
+ * digits only: the snapshot holds the bare code, ANAF publishes no revision,
+ * so no CAEN division name (of any revision) is given to it.
+ */
+export function fiscalCaenGroupLabel(prefix: string): string {
+  return t`CAEN fiscal ${prefix}`
+}
+
+/** The fiscal-CAEN groups with the most enterprises of the population the band shows, the first one's share of that population. */
 export function sectorsLede(snapshot: PublicEnterpriseHubSnapshot, population: PublicEnterprisePopulation, locale: string): string | null {
   const [first, second, third] = sectorRanking(snapshot, population)
   if (!first || !second || !third) return null
   const n = (value: number) => formatCount(value, locale)
   const share = formatShare(first.count, populationTotal(snapshot, population), locale)
-  const lower = (division: string) => divisionLabel(division).toLocaleLowerCase(locale === 'en' ? 'en-GB' : 'ro-RO')
-  const lead = share ? t`${divisionLabel(first.division)}: ${n(first.count)}, ${share} dintre ele.` : t`${divisionLabel(first.division)}: ${n(first.count)}.`
-  return `${lead} ${t`Urmează ${lower(second.division)} (${n(second.count)}) și ${lower(third.division)} (${n(third.count)}).`}`
+  const group = fiscalCaenGroupLabel(first.division)
+  const lead = share ? t`Cele mai multe sunt în grupa ${group}: ${n(first.count)}, ${share} dintre ele.` : t`Cele mai multe sunt în grupa ${group}: ${n(first.count)}.`
+  return `${lead} ${t`Urmează grupele ${second.division} (${n(second.count)}) și ${third.division} (${n(third.count)}).`}`
 }
 
 /** The year's largest turnover, then the loss-makers among the statements whose net result was admitted. */

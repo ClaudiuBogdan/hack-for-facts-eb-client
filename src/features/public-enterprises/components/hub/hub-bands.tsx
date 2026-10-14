@@ -4,7 +4,6 @@ import { Trans, useLingui } from '@lingui/react/macro'
 
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
-import { divisionLabel } from '@/features/private-companies/lib/caen-divisions'
 import { HomeBand } from '@/features/procurement/components/home/home-chrome'
 import { HubCountyBand, type HubCountyBandDefinition } from '@/features/statistics/components/hub/hub-county-band'
 import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
@@ -15,6 +14,7 @@ import type { PublicEnterpriseHubSnapshot, PublicEnterpriseStatusCount } from '.
 import {
   authorityKindLabel,
   controlLede,
+  fiscalCaenGroupLabel,
   nextYearText,
   publishersText,
   countiesLede,
@@ -152,7 +152,12 @@ export function CountiesBand({ snapshot, index, population, onPopulation }: Band
   )
 }
 
-/** What they do: the main activity ANAF holds for each, by CAEN division. */
+/**
+ * What they do, as far as ANAF's fiscal CAEN code says: each code grouped by
+ * its first two digits, named by them alone (no revision is published, so no
+ * division name is given). No code in the record is its own count, not a
+ * company without activity.
+ */
 export function SectorsBand({ snapshot, index, population, onPopulation }: BandProps & { readonly population: PublicEnterprisePopulation; readonly onPopulation: (value: PublicEnterprisePopulation) => void }) {
   const { i18n } = useLingui()
   const [open, setOpen] = useState(false)
@@ -182,8 +187,8 @@ export function SectorsBand({ snapshot, index, population, onPopulation }: BandP
           key={population}
           rows={shown.map((row) => ({
             key: row.division,
-            label: divisionLabel(row.division),
-            caption: [`CAEN ${row.division}`, formatShare(row.count, whole, i18n.locale)].filter(Boolean).join(' · '),
+            label: fiscalCaenGroupLabel(row.division),
+            caption: formatShare(row.count, whole, i18n.locale) ?? '',
             value: formatCount(row.count, i18n.locale),
             fraction: top > 0 ? row.count / top : null,
           }))}
@@ -192,10 +197,10 @@ export function SectorsBand({ snapshot, index, population, onPopulation }: BandP
           <ShowMore
             open={open}
             onToggle={() => setOpen(!open)}
-            all={plural(rows.length, { one: 'Singurul domeniu', few: `Toate cele ${formatCount(rows.length, i18n.locale)} domenii`, other: `Toate cele ${formatCount(rows.length, i18n.locale)} de domenii` })}
+            all={plural(rows.length, { one: 'Singura grupă', few: `Toate cele ${formatCount(rows.length, i18n.locale)} grupe`, other: `Toate cele ${formatCount(rows.length, i18n.locale)} de grupe` })}
           />
         ) : null}
-        <BandNote>{t`Activitatea principală declarată la ANAF, pe diviziuni CAEN; ANAF nu spune revizia codului. Fără cod: ${formatCount(withoutSector(snapshot, population), i18n.locale)}.`}</BandNote>
+        <BandNote>{t`Codul CAEN fiscal din fișa ANAF, grupat după primele două cifre; ANAF nu publică revizia codului, așa că grupele nu primesc denumiri. Fără cod CAEN fiscal în fișă: ${formatCount(withoutSector(snapshot, population), i18n.locale)}.`}</BandNote>
       </BandColumns>
     </HomeBand>
   )

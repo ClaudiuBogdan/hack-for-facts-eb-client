@@ -67,11 +67,12 @@ export function companyFigures(model: CompanyProfileModel, anchors: { readonly b
     }
   }
   // A sum only when some receipt has a published amount, whatever its sign: a count of unvalued records is not a figure.
+  // Named as what it adds up — the published values of the records, by instrument — not as money received.
   if (money.flows.some((flow) => flow.receipt && flow.total !== null)) {
     figures.push({
       key: 'public',
       ...moneyFigure(money.received),
-      label: <Trans>Contracte și plăți publice</Trans>,
+      label: <Trans>Valori din contracte, achiziții și PNRR</Trans>,
       note: moneyPeriod(model),
       link: toBand(anchors.money),
     })

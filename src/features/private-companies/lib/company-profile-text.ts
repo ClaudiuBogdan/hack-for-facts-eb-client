@@ -475,6 +475,12 @@ export function moneyLede(model: CompanyProfileModel): string | null {
   const awarded = receipts.some((flow) => AWARDED_FLOWS.has(flow.flowType))
     ? t`Pentru contracte și achiziții directe, valoarea e cea atribuită, nu ce s-a plătit efectiv.`
     : null
+  // Awards and other receipts both carry a value: the sum is a record-value sum across instruments, the numbers unchanged.
+  const valued = receipts.filter((flow) => flow.total !== null)
+  const mixed =
+    valued.some((flow) => AWARDED_FLOWS.has(flow.flowType)) && valued.some((flow) => !AWARDED_FLOWS.has(flow.flowType))
+      ? t`Suma adună valori din instrumente diferite, fără verificare de dubluri între ele: nu e un total de bani încasați.`
+      : null
   const lowerBound =
     money.unvaluedCount > 0
       ? plural(money.unvaluedCount, {
@@ -483,7 +489,7 @@ export function moneyLede(model: CompanyProfileModel): string | null {
           other: '# de înregistrări nu au valoare publicată, deci suma e o limită de jos.',
         })
       : null
-  return [base, awarded, lowerBound].filter((sentence): sentence is string => sentence !== null).join(' ')
+  return [base, awarded, mixed, lowerBound].filter((sentence): sentence is string => sentence !== null).join(' ')
 }
 
 /** A year's records with no published amount, as a clause. */

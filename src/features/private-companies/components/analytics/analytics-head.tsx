@@ -315,7 +315,9 @@ function NotesMarker({ page }: { readonly page: CompanyAnalyticsPageData }) {
   }
   notes.push(
     t`Firmele sunt persoanele juridice din registrul comerțului (SRL, SA…), fără PFA, II sau IF.`,
-    t`O valoare lipsă nu e zero: o firmă fără bilanț nu are cifre pentru acel an.`,
+    t`O valoare lipsă nu e zero: o firmă fără bilanț în istoricul standard nu are cifre pentru acel an.`,
+    // D5: what „cu bilanț" counts, and what its absence does not prove.
+    t`„Cu bilanț” înseamnă o situație financiară în istoricul standard al platformei. Situațiile publicate doar în format lung nu sunt numărate aici, așa că „fără bilanț” nu dovedește că firma nu a depus.`,
     t`Un 0 este valoarea numerică păstrată din sursă. Unele situații au câmpul gol într-o sursă și 0 în alta, așa că valorile din surse și ani diferiți nu sunt neapărat comparabile.`,
     ...companyAnalyticsCaveats(),
     t`Județul, localitatea, starea și forma juridică sunt cele din ${sourceEditionText(live.release, locale)}.`,

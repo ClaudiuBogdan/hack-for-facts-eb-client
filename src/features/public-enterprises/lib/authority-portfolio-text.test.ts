@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { disagreements, portfolioRows, type MissingFigure } from './authority-portfolio-model'
 import {
+  activityLabel,
   amepipTitle,
   authorityTitle,
   disagreementLede,
@@ -159,5 +160,11 @@ describe('the authority portfolio’s words', () => {
     expect(caveats.join(' ')).not.toMatch(/octombrie/u)
     expect(caveats).toContain('Publicate parțial: lista ANAF, anunțurile de selecție AMEPIP; sursa nu spune ce lipsește.')
     expect(portfolioCaveats({ ...portfolio, ...withLane('4270740', 's1001', 'unavailable') })).toContain('Nu erau încărcate la citire: lista ANAF. Pagina nu spune nimic din ele.')
+  })
+
+  it('names a fiscal-CAEN group by its digits and a missing code as such, never as no activity (CQA-08)', () => {
+    expect(activityLabel('49')).toBe('CAEN fiscal 49')
+    expect(activityLabel('04')).toBe('CAEN fiscal 04')
+    expect(activityLabel(null)).toBe('Fără cod CAEN fiscal în fișă')
   })
 })

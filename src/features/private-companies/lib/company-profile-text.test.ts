@@ -270,6 +270,25 @@ describe('public money', () => {
     expect(moneyLede(buildCompanyProfileModel(companyProfile()))).toBeNull()
   })
 
+  it('says a sum across awards and other records is a record-value sum, the number unchanged (CQA-09)', () => {
+    const mixed = withMoney(
+      [
+        { flowType: 'procurement_contract', totalRon: 1_000_000, count: 4 },
+        { flowType: 'pnrr_payment', totalRon: 250_000, count: 2 },
+      ],
+      [],
+    )
+    expect(mixed.money.received).toBe(1_250_000)
+    expect(moneyLede(mixed)).toBe(
+      `Firma apare în 4 contracte și 2 plăți din bani publici, cu valori publicate de ${lei('1,3 mil. lei')}.` +
+        ' Pentru contracte și achiziții directe, valoarea e cea atribuită, nu ce s-a plătit efectiv.' +
+        ' Suma adună valori din instrumente diferite, fără verificare de dubluri între ele: nu e un total de bani încasați.',
+    )
+    // Awards alone, or payments alone, are no mix: the sentence stays out.
+    expect(moneyLede(withMoney([{ flowType: 'procurement_contract', totalRon: 1_000_000, count: 4 }, { flowType: 'direct_acquisition', totalRon: 5_000, count: 1 }], []))).not.toMatch(/instrumente diferite/u)
+    expect(moneyLede(withMoney([{ flowType: 'pnrr_payment', totalRon: 250_000, count: 2 }], []))).not.toMatch(/instrumente diferite/u)
+  })
+
   it('names an institution SEAP published without a name by what it has', () => {
     expect(institutionName('  ', '29469839')).toBe('Instituție fără nume publicat (CUI 29469839)')
     expect(institutionName(null, null)).toBe('Instituție fără nume publicat')
