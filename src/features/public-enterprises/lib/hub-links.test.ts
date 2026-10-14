@@ -12,6 +12,23 @@ describe('the hub’s links', () => {
     expect(enterpriseHitHref({ href: '/companies/13267213?lang=en' })).toBe('/public-enterprises/13267213')
   })
 
+  it('sends an enterprise indexed as the public institution it also is to its enterprise page', () => {
+    // ADPB and CNAIR are indexed as institutions (`/entities/$cui`) that play the enterprise role.
+    expect(enterpriseHitHref({ href: '/entities/10020943', roles: ['company', 'organization', 'public_enterprise'] }))
+      .toBe('/public-enterprises/10020943')
+    expect(enterpriseHitHref({ href: '/entities/16054368?lang=en', roles: ['organization', 'public_enterprise'] }))
+      .toBe('/public-enterprises/16054368')
+    expect(enterpriseHitHref({ href: '/entities/0010020943', roles: ['public_enterprise'] })).toBe('/public-enterprises/10020943')
+  })
+
+  it('keeps an institution that plays no enterprise role on its own page', () => {
+    expect(enterpriseHitHref({ href: '/entities/4305857', roles: ['organization'] })).toBeNull()
+    expect(enterpriseHitHref({ href: '/entities/4305857', roles: [] })).toBeNull()
+    // The role does not turn another kind of address into an enterprise's, nor take a CUI the page refuses.
+    expect(enterpriseHitHref({ href: '/procurement/institutions/10020943', roles: ['public_enterprise'] })).toBeNull()
+    expect(enterpriseHitHref({ href: '/entities/5', roles: ['public_enterprise'] })).toBeNull()
+  })
+
   it('keeps a hit with no enterprise address on its own link', () => {
     expect(enterpriseHitHref({ href: '/entities/4305857' })).toBeNull()
     expect(enterpriseHitHref({ href: 'https://example.test/public-enterprise' })).toBeNull()

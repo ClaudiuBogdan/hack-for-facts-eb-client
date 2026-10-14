@@ -195,6 +195,7 @@ export function LandingSearch({
   onSelect,
   docTypes,
   entityTags,
+  roles,
   fixedScope,
   hrefOf,
 }: {
@@ -206,6 +207,8 @@ export function LandingSearch({
   readonly docTypes?: readonly string[]
   /** Source tags every row must carry, for a page whose population is a source (the NGO registry's `source::rnong`). */
   readonly entityTags?: readonly string[]
+  /** Roles a row must play (any one of them), for a page whose population is a role: the public-enterprise hub's. */
+  readonly roles?: readonly string[]
   /**
    * A scope the reader cannot take off, worn as a pill before the text. With
    * it, category words no longer become chips — there is nothing left for a
@@ -238,7 +241,7 @@ export function LandingSearch({
   const placeholder = placeholderProp ?? t`Caută entități, statistici sau identificatori...`
   const {
     term, setTerm, filters, suggestions, addFilter, removeFilter, reset, status, results, isCurrent,
-  } = useSearchResults({ docTypes, entityTags, suggestions: fixedScope === undefined })
+  } = useSearchResults({ docTypes, entityTags, roles, suggestions: fixedScope === undefined })
   const commit = useEntitySelection({ onSelect })
 
   const [isOpen, setIsOpen] = useState(false)

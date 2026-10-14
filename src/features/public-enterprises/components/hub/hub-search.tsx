@@ -4,7 +4,15 @@ import { Building2 } from 'lucide-react'
 
 import { LandingSearch } from '@/features/landing/components/search/landing-search'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { enterpriseHitHref } from '../../lib/hub-links'
+import { ENTERPRISE_ROLE, enterpriseHitHref } from '../../lib/hub-links'
+
+/**
+ * Search indexes an enterprise that is also a public institution as that
+ * institution (`organization`), and every other one as `public_enterprise`;
+ * both play the enterprise role, which holds the institutions to enterprises.
+ */
+const ENTERPRISE_DOC_TYPES = ['public_enterprise', 'organization'] as const
+const ENTERPRISE_ROLES = [ENTERPRISE_ROLE] as const
 
 /**
  * The site search, held to public enterprises; a hit opens the enterprise's
@@ -17,7 +25,8 @@ export function EnterpriseSearch() {
   const { hash } = useLocation()
   return (
     <LandingSearch
-      docTypes={['public_enterprise']}
+      docTypes={ENTERPRISE_DOC_TYPES}
+      roles={ENTERPRISE_ROLES}
       fixedScope={{ label: t`Întreprinderi`, Icon: Building2 }}
       placeholder={t`Întreprindere publică sau CUI…`}
       autoFocus={!isMobile && !hash}
