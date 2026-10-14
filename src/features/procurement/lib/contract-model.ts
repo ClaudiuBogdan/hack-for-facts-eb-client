@@ -94,6 +94,8 @@ export interface ContractRead {
     readonly estimatedValueRon: string | null
     readonly sourceSystem: string
     readonly sourceUrl: string | null
+    /** The award notice's e-licitatie page, as the API resolves it: its own, or one exact number and buyer match (P33). */
+    readonly elicitatiePageUrl?: string | null
     readonly valueComparable: string | null
     readonly modifications: readonly ContractModificationRow[]
   }
@@ -571,16 +573,18 @@ function offersOf(read: ContractRead): CtOffers | null {
 }
 
 /**
- * The award notice's page: the notice read, else the row's own source when
- * it is the notice, else the notice SEAP matched an export row to. Never the
- * procedure's (a call for competition, not the award).
+ * The award notice's page: the notice read, else the page the API resolved
+ * (the row's own, or the one notice with its number and institution, P33),
+ * else the row's own source when it is the notice. An export row the API
+ * resolves no notice for has none: never one borrowed through a duplicate or a
+ * title (P33: no guessed link). Never the procedure's (a call for competition,
+ * not the award).
  */
 function noticeUrlOf(read: ContractRead): string | null {
   if (read.source) return `https://e-licitatie.ro/pub/notices/ca-notices/view-c/${read.source.caNoticeId}`
   const own = read.contract
-  if (own.sourceSystem === 'elicitatie_ca_award' && own.sourceUrl) return toElicitatieClientUrl(own.sourceUrl)
-  const display = own.displayTitle
-  return display?.source === 'matched_award' && display.sourceUrl ? toElicitatieClientUrl(display.sourceUrl) : null
+  if (own.elicitatiePageUrl) return own.elicitatiePageUrl
+  return own.sourceSystem === 'elicitatie_ca_award' && own.sourceUrl ? toElicitatieClientUrl(own.sourceUrl) : null
 }
 
 export function contractSheetOf(read: ContractRead): ContractSheet {

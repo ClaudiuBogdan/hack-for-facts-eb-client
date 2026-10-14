@@ -88,7 +88,7 @@ describe('a contract read from its notice', () => {
     expect(sheet.cpv).toEqual({ code: '45200000', label: { ro: 'Lucrări de construcţii complete sau parţiale şi lucrări publice', en: 'Works for complete or part construction and civil engineering work' } })
   })
 
-  it('points at the award notice SEAP matched the export row to, without claiming its VAT basis', () => {
+  it('points at the award notice the API matched the export row to, without claiming its VAT basis', () => {
     expect(sheet.source).toMatchObject({ kind: 'export', file: { year: '2024', quarter: '2' } })
     expect(sheet.noticeUrl).toBe('https://e-licitatie.ro/pub/notices/ca-notices/view-c/100625175')
     expect(sheet.vatExcluded).toBe(false)
@@ -96,6 +96,23 @@ describe('a contract read from its notice', () => {
 
   it('is whole when every read answered', () => {
     expect(sheet.partial).toBe(false)
+  })
+})
+
+describe('a contract’s e-licitatie page (P33)', () => {
+  const read = cniRead()
+  const withPage = (url: string | null) => contractSheetOf({ ...read, contract: { ...read.contract, elicitatiePageUrl: url } })
+
+  it('is the page the API resolved by number and institution, beside the export row', () => {
+    const sheet = withPage('https://e-licitatie.ro/pub/notices/ca-notices/view-c/100000001')
+    expect(sheet.noticeUrl).toBe('https://e-licitatie.ro/pub/notices/ca-notices/view-c/100000001')
+    expect(sheet.source).toMatchObject({ kind: 'export', file: { year: '2024', quarter: '2' } })
+  })
+
+  it('is none when the API resolved none: never borrowed from a matched duplicate’s title', () => {
+    const sheet = withPage(null)
+    expect(read.contract.displayTitle?.source).toBe('matched_award')
+    expect(sheet.noticeUrl).toBeNull()
   })
 })
 

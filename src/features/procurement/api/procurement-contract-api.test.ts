@@ -54,6 +54,7 @@ const PAGE = {
       estimatedValueRon: null,
       sourceSystem: 'seap_contracts',
       sourceUrl: 'https://data.gov.ro/download/datagov-raport-contracte-publicate-t4-2025.xlsx',
+      elicitatiePage: { url: 'https://e-licitatie.ro/pub/notices/ca-notices/view-c/100608090' },
       modifications: [],
     },
     procedure: { id: '999', procedureType: 'procedura simplificata', awardedValueRon: '7664195.00', authority: { cui: '4270740' } },
@@ -95,6 +96,9 @@ describe('the contract', () => {
     expect(sheet?.contract.firms.map((firm) => firm.name)).toEqual(['Domino Construct Expert SRL', 'Decorint S.R.L.'])
     expect(sheet?.cpv?.label).toEqual({ ro: 'Lucrări de reparaţii generale şi de renovare', en: 'Overhaul and refurbishment work' })
     expect(sheet?.value).toEqual({ kind: 'accepted', value: 7664195 })
+    // The award notice the API matched by number and institution (P33), beside the export row.
+    expect(sheet?.noticeUrl).toBe('https://e-licitatie.ro/pub/notices/ca-notices/view-c/100608090')
+    expect(sheet?.source).toMatchObject({ kind: 'export' })
   })
 
   it('reads a full page of the notice as a floor: the notice may hold more', async () => {

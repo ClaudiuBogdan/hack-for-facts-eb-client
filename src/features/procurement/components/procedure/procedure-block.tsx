@@ -683,6 +683,12 @@ export function ProcedureSource({ sheet, className }: { readonly sheet: Procedur
         )
       ) : (
         <>
+          {source.notice ? (
+            <>
+              <ExternalLink href={source.notice}>{t`anunțul de atribuire pe e-licitatie.ro`}</ExternalLink>
+              {'; '}
+            </>
+          ) : null}
           {t`rândul anunțului în raportul SEAP`}
           {source.file ? `, ${source.file}` : ''}
           {source.url ? (

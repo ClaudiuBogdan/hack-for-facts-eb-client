@@ -69,6 +69,7 @@ export function cniRead(fields: Partial<ContractRead> = {}): ContractRead {
       estimatedValueRon: null,
       sourceSystem: 'seap_contracts',
       sourceUrl: 'https://data.gov.ro/dataset/ed84773a/resource/c5f1fefc/download/datagov-raport-contracte-publicate-t-ii-2024.csv',
+      elicitatiePageUrl: 'https://e-licitatie.ro/pub/notices/ca-notices/view-c/100625175',
       valueComparable: '8451291.00',
       modifications: [
         {

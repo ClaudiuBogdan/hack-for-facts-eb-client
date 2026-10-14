@@ -86,6 +86,7 @@ export function contractReadOf(raw: RawContractPage, notice: ContractRead['notic
       estimatedValueRon: contract.estimatedValueRon,
       sourceSystem: contract.sourceSystem,
       sourceUrl: contract.sourceUrl,
+      elicitatiePageUrl: contract.elicitatiePage?.url ?? null,
       valueComparable: contract.value?.valueRonComparable ?? null,
       modifications: (contract.modifications ?? []).map((item) => ({
         id: item.id,

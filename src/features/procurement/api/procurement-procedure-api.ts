@@ -33,6 +33,7 @@ export function procedureReadOf(raw: RawProcedurePage, names: ProcedureRead['nam
       publicationDate: procedure.publicationDate,
       sourceSystem: procedure.sourceSystem,
       sourceUrl: procedure.sourceUrl,
+      elicitatiePageUrl: procedure.elicitatiePage?.url ?? null,
       valueAccepted: procedure.value?.valueAccepted ?? false,
       valueComparable: procedure.value?.valueRonComparable ?? null,
     },

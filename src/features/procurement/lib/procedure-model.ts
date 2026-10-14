@@ -57,6 +57,8 @@ export interface ProcedureRow {
   readonly publicationDate: string | null
   readonly sourceSystem: string
   readonly sourceUrl: string | null
+  /** The notice's e-licitatie page when the API resolves one: its own, or one exact number and institution match (P33). */
+  readonly elicitatiePageUrl?: string | null
   readonly valueAccepted: boolean
   /** The value engine's accepted amount, when it resolved one (a duplicate's rescue included). */
   readonly valueComparable?: string | null
@@ -258,7 +260,10 @@ export interface ProcedureSheet {
   readonly namedBy: { readonly notice: PrNoticeRef; readonly text: string | null; readonly awarded: number | null } | null
   /** The values are the award notice's, which states them without VAT; the API's rows state no basis. */
   readonly vatExcluded: boolean
-  readonly source: { readonly kind: 'notice'; readonly url: string | null } | { readonly kind: 'export'; readonly url: string | null; readonly file: string | null }
+  readonly source:
+    | { readonly kind: 'notice'; readonly url: string | null }
+    /** An export row; `notice` is the e-licitatie award notice it matches exactly, when one does. */
+    | { readonly kind: 'export'; readonly url: string | null; readonly file: string | null; readonly notice: string | null }
   /** The year the parties' pages open on. */
   readonly year: number | undefined
   /** The names could not be read: the record's own stand. */
@@ -584,7 +589,7 @@ export function procedureSheetOf(read: ProcedureRead): ProcedureSheet {
       ? { kind: 'notice', url: noticePage(source.caNoticeId) }
       : row.sourceSystem === 'elicitatie'
         ? { kind: 'notice', url: sourceUrl }
-        : { kind: 'export', url: row.sourceUrl, file: fileOf(row.sourceUrl) },
+        : { kind: 'export', url: row.sourceUrl, file: fileOf(row.sourceUrl), notice: row.elicitatiePageUrl ?? null },
     year: firstDay ? Number(firstDay.slice(0, 4)) : undefined,
     partial: read.names.failed,
   }

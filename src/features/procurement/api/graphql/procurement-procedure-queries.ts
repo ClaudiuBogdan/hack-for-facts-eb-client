@@ -14,6 +14,7 @@ export const PROCEDURE_PAGE_QUERY = /* GraphQL */ `
         authority { cui name }
         cpvCode estimatedValueRon awardedValueRon status publicationDate
         sourceSystem sourceUrl
+        elicitatiePage { url }
         value { valueAccepted valueRonComparable }
       }
       contracts {
@@ -48,6 +49,7 @@ export const procedurePageSchema = z.object({
         publicationDate: z.string().nullable(),
         sourceSystem: z.string(),
         sourceUrl: z.string().nullable(),
+        elicitatiePage: z.object({ url: z.string() }).nullable(),
         value: valueSchema.nullable(),
       }),
       contracts: z.array(

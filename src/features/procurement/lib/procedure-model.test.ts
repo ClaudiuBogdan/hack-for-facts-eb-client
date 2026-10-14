@@ -65,7 +65,7 @@ describe('a legacy call', () => {
     expect(sheet.call).toMatchObject({ no: '92137', id: '35106757', date: '2009-12-10', status: 'unknown' })
     expect(sheet.status).toBe('unknown')
     expect(sheet.title).toBeNull()
-    expect(sheet.source).toEqual({ kind: 'export', url: legacyRaw().procedure.sourceUrl, file: 'anunturi-participare-2009.xls' })
+    expect(sheet.source).toEqual({ kind: 'export', url: legacyRaw().procedure.sourceUrl, file: 'anunturi-participare-2009.xls', notice: null })
     expect(sheet.year).toBe(2009)
   })
 })
@@ -217,5 +217,14 @@ describe('the kind of notice and its value', () => {
     const part = procedureSheetOf(readOf({ ...raw, procedure: { ...raw.procedure, awardedValueRon: '9000000000.00' } }))
     expect(part.awarded).toBe(9_000_000_000)
     expect(part.awardedByContracts).toBe(false)
+  })
+})
+
+describe('an export notice e-licitatie publishes too (P33)', () => {
+  it('links the e-licitatie award notice the API matched, beside its export row', () => {
+    const raw = legacyRaw()
+    const url = 'https://e-licitatie.ro/pub/notices/ca-notices/view-c/100000002'
+    const sheet = procedureSheetOf(readOf({ ...raw, procedure: { ...raw.procedure, elicitatiePage: { url } } }))
+    expect(sheet.source).toEqual({ kind: 'export', url: raw.procedure.sourceUrl, file: 'anunturi-participare-2009.xls', notice: url })
   })
 })

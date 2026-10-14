@@ -28,6 +28,7 @@ function procedure(fields: Partial<RawProcedure>): RawProcedure {
     publicationDate: null,
     sourceSystem: 'elicitatie',
     sourceUrl: null,
+    elicitatiePage: null,
     value: { valueAccepted: true, valueRonComparable: null },
     ...fields,
   }
