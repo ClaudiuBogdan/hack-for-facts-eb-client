@@ -46,6 +46,8 @@ import {
   mainIntegrityHeldOnrcUnavailableHeadline,
   mainCustodyText,
   mainDatesText,
+  mainLegacyOutcomeText,
+  mainLegacyTimeText,
   mainDerivedText,
   mainHistoryNoteText,
   mainKickerText,
@@ -153,6 +155,7 @@ function AssignedMainActivity({
   const currentness = mainCurrentnessNote(activity)
   const dates = mainDatesText(activity)
   const custody = mainCustodyText(activity.anaf?.evidenceCustody ?? null)
+  const legacyTime = mainLegacyTimeText(activity.anaf)
   // Marked as the current main activity only when CURRENT with an exact key: never a pending, withheld or withdrawn one.
   const current = mainShownAsCurrent(activity)
   return (
@@ -197,6 +200,11 @@ function AssignedMainActivity({
         {mainDerivedText(activity)}
         {custody ? ` ${custody}` : ''}
       </p>
+      {legacyTime ? (
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground" data-testid="company-main-activity-legacy-time">
+          {legacyTime}
+        </p>
+      ) : null}
       <MainActivityAnalysisLink activity={activity} />
       {history && cui !== '' ? <MainActivityHistory cui={cui} activity={activity} scopeKey={scopeKey} onAnafWithdrawn={onAnafWithdrawn} onCompanyNotPublic={onCompanyNotPublic} /> : null}
     </div>
@@ -435,6 +443,12 @@ function OutcomeRow({ outcome, anafHidden }: { readonly outcome: CompanyMainActi
       {hidden ? null : <span className="text-foreground">{mainOutcomeStatusText(outcome.status)}</span>}
       {key ? <span className="text-muted-foreground"> · {`${mainKeyText(key)} — ${key.label}`}</span> : null}
       {token !== null ? <span className="text-muted-foreground"> · {token}</span> : null}
+      {!hidden && outcome.basis === 'ANAF_ASSUMED_MAIN_LEGACY_TIME' ? (
+        <span className="text-muted-foreground" data-testid="company-main-activity-outcome-legacy">
+          {' · '}
+          {mainLegacyOutcomeText()}
+        </span>
+      ) : null}
       <Withdrawn anaf={hidden} onrc={outcome.onrcWithdrawn} />
     </li>
   )
@@ -444,6 +458,7 @@ function EvidenceRow({ entry, anafHidden }: { readonly entry: CompanyMainActivit
   const anaf = anafHidden || entry.anafWithdrawn ? null : entry.anaf
   const token = anaf ? anafTokenText(anaf) : null
   const custody = mainCustodyText(anaf?.evidenceCustody ?? null)
+  const legacyTime = mainLegacyTimeText(anaf)
   return (
     <li className="text-sm" data-testid="company-main-activity-evidence">
       <MonoLabel className="block text-muted-foreground">{observedAtText(entry.evidenceAt)}</MonoLabel>
@@ -454,6 +469,11 @@ function EvidenceRow({ entry, anafHidden }: { readonly entry: CompanyMainActivit
         </span>
       ) : null}
       {custody ? <span className="block text-xs text-muted-foreground">{custody}</span> : null}
+      {legacyTime ? (
+        <span className="block text-xs text-muted-foreground" data-testid="company-main-activity-evidence-legacy-time">
+          {legacyTime}
+        </span>
+      ) : null}
       <Withdrawn anaf={anafHidden || entry.anafWithdrawn} onrc={entry.onrcWithdrawn} />
     </li>
   )

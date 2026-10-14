@@ -41,8 +41,12 @@ const ACTIVITY_SELECTION_FIELDS = /* GraphQL */ `
  * `anafWithdrawn` and `integrityHeld` are part of the field, not a
  * generation of their own: an API serving `mainActivity` without them is no
  * contract this client reads (its rejection fails the read, never a fallback).
+ * Contract v2's `timeBasis` / `rawRetrievedAt` ARE a generation: an API from
+ * before them rejects exactly those names at validation, and the profile is
+ * asked again without only them (`v2: false`), its v1 evidence unchanged.
  */
-const MAIN_ACTIVITY_FIELDS = /* GraphQL */ `
+const MAIN_V2_EVIDENCE_FIELDS = ' timeBasis rawRetrievedAt'
+const mainActivityFields = (v2: boolean) => /* GraphQL */ `
       mainActivity {
         availability reason
         activity {
@@ -51,7 +55,7 @@ const MAIN_ACTIVITY_FIELDS = /* GraphQL */ `
           candidates { revision code }
           correctionId
           anaf {
-            originalToken jsonType tokenForm canonicalDigits assumedCode v3Form statusDate retrievedAt
+            originalToken jsonType tokenForm canonicalDigits assumedCode v3Form statusDate retrievedAt${v2 ? MAIN_V2_EVIDENCE_FIELDS : ''}
             sourceUrl sourceSnapshotId sourceHash rawCaptureId rawCustodyId evidenceCustody
           }
           anafWithdrawn integrityHeld
@@ -71,7 +75,7 @@ const MAIN_FLAG_FIELDS = ' isMainCaen matchesAssumedMainCode'
  */
 type ProfileShape = 'current' | 'without-selection' | 'legacy'
 
-const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL */ `
+const companyProfileQuery = (shape: ProfileShape, main: boolean, mainV2 = true) => /* GraphQL */ `
   query CompanyProfile($cui: CUI!) {
     company(cui: $cui) {
       cui
@@ -93,7 +97,7 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
         registeredName
         asOf
       }
-      caenActivities { code rev label source labelSource${shape === 'legacy' ? '' : ' classState'}${main ? MAIN_FLAG_FIELDS : ''} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}${main ? MAIN_ACTIVITY_FIELDS : ''}
+      caenActivities { code rev label source labelSource${shape === 'legacy' ? '' : ' classState'}${main ? MAIN_FLAG_FIELDS : ''} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}${main ? mainActivityFields(mainV2) : ''}
       representatives { name role }
       euBranches { branchName country euid fiscalCode }
       registry { ${registryEvidenceFields(shape === 'legacy')} }
@@ -150,6 +154,10 @@ export const COMPANY_PROFILE_QUERY = companyProfileQuery('current', true)
 export const COMPANY_PROFILE_QUERY_WITHOUT_MAIN = companyProfileQuery('current', false)
 /** The same profile without the derived activity: asked only when the selection alone was refused. */
 export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION = companyProfileQuery('without-selection', true)
+/** The profile with the main activity before contract v2 (no `timeBasis` / `rawRetrievedAt`): asked only when an API rejected exactly those. */
+export const COMPANY_PROFILE_QUERY_MAIN_V1 = companyProfileQuery('current', true, false)
+/** The same, without the derived activity (the selection alone refused by that API). */
+export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_MAIN_V1 = companyProfileQuery('without-selection', true, false)
 /** Without the derived activity, on an API without the main activity. */
 export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN = companyProfileQuery('without-selection', false)
 /** The profile as an API from before the derived activity serves it: asked only when that API rejected the new fields. */
@@ -442,7 +450,7 @@ export type RawCompanyResolveResult = NonNullable<z.infer<typeof companyResolveR
  * and source-observation history, never legal effective dates; withdrawn
  * sources come back withdrawn (`anafWithdrawn`, `onrcWithdrawn`).
  */
-export const COMPANY_MAIN_ACTIVITY_HISTORY_QUERY = /* GraphQL */ `
+const mainActivityHistoryQuery = (v2: boolean) => /* GraphQL */ `
   query CompanyMainActivityHistory($cui: CUI!, $kind: CompanyMainActivityHistoryKind, $first: Int, $after: String) {
     companyMainActivityHistory(cui: $cui, kind: $kind, first: $first, after: $after) {
       state
@@ -458,7 +466,7 @@ export const COMPANY_MAIN_ACTIVITY_HISTORY_QUERY = /* GraphQL */ `
       }
       evidence {
         supportId previousSupportId resolutionId refreshId editionId
-        anaf { sourceSnapshotId sourceHash statusDate retrievedAt sourceUrl rawCaptureId rawCustodyId evidenceCustody originalToken jsonType }
+        anaf { sourceSnapshotId sourceHash statusDate retrievedAt${v2 ? MAIN_V2_EVIDENCE_FIELDS : ''} sourceUrl rawCaptureId rawCustodyId evidenceCustody originalToken jsonType }
         caenCoverage evidenceAt anafWithdrawn onrcWithdrawn
       }
       hasNextPage
@@ -468,6 +476,9 @@ export const COMPANY_MAIN_ACTIVITY_HISTORY_QUERY = /* GraphQL */ `
     }
   }
 `
+export const COMPANY_MAIN_ACTIVITY_HISTORY_QUERY = mainActivityHistoryQuery(true)
+/** The history before contract v2 (no evidence `timeBasis` / `rawRetrievedAt`): asked only when an API rejected exactly those. */
+export const COMPANY_MAIN_ACTIVITY_HISTORY_QUERY_V1 = mainActivityHistoryQuery(false)
 
 /** Strict: an enum value this client does not know fails the page (a data error), never read as a nearby one. */
 export const companyMainActivityHistoryResponseSchema = z.object({

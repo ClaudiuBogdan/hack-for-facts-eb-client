@@ -4362,7 +4362,7 @@ msgstr "the same period, a year earlier"
 #~ msgid "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
 #~ msgstr "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:288
+#: src/features/private-companies/lib/company-main-activity-text.ts:312
 msgid "același cod ca ANAF"
 msgstr "same code as ANAF"
 
@@ -5169,15 +5169,15 @@ msgstr "The main activity declared to ANAF, by CAEN division; ANAF does not give
 #~ msgid "Activitatea principală nu e declarată la ANAF."
 #~ msgstr "The main activity is not declared to ANAF."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:275
+#: src/features/private-companies/lib/company-main-activity-text.ts:299
 msgid "Activitatea principală presupusă după ANAF nu a fost încă stabilită pentru această firmă."
 msgstr "The main activity assumed from ANAF has not been established for this company yet."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:279
+#: src/features/private-companies/lib/company-main-activity-text.ts:303
 msgid "Activitatea principală presupusă după ANAF nu poate fi afișată: răspunsul API nu a putut fi citit."
 msgstr "The main activity assumed from ANAF cannot be shown: the API answer could not be read."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:371
+#: src/features/private-companies/lib/company-main-activity-text.ts:395
 msgid "Activitatea principală presupusă s-a schimbat în timpul citirii istoricului."
 msgstr "The assumed main activity changed while the history was being read."
 
@@ -6781,14 +6781,14 @@ msgstr "ANAF, status as of {0}"
 
 #: src/features/private-companies/lib/company-activity-text.ts:207
 #: src/features/private-companies/lib/company-main-activity-text.ts:220
-#: src/features/private-companies/lib/company-main-activity-text.ts:344
+#: src/features/private-companies/lib/company-main-activity-text.ts:368
 msgid "ANAF: fără dată de stare"
 msgstr "ANAF: no status date"
 
 #. placeholder {0}: dateText(iso)
 #. placeholder {0}: dateText(status)
 #: src/features/private-companies/lib/company-main-activity-text.ts:220
-#: src/features/private-companies/lib/company-main-activity-text.ts:344
+#: src/features/private-companies/lib/company-main-activity-text.ts:368
 msgid "ANAF: situația cerută la {0}"
 msgstr "ANAF: status requested as of {0}"
 
@@ -7861,7 +7861,7 @@ msgstr "ascunde cuprinsul"
 msgid "Ascunde impactul fiscal"
 msgstr "Ascunde impactul fiscal"
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:332
+#: src/features/private-companies/components/profile/company-main-activity.tsx:340
 msgid "Ascunde istoricul"
 msgstr "Hide the history"
 
@@ -9258,7 +9258,7 @@ msgstr "Computed by Transparenta.eu: the value of direct purchases by the county
 msgid "calculat din {0}"
 msgstr "computed from {0}"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:335
+#: src/features/private-companies/lib/company-main-activity-text.ts:359
 msgid "calculat la {date}"
 msgstr "computed on {date}"
 
@@ -12219,7 +12219,7 @@ msgstr "code {code}"
 msgid "Cod {status}, fără nume în sursă"
 msgstr "Code {status}, unnamed in the source"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:354
+#: src/features/private-companies/lib/company-main-activity-text.ts:378
 msgid "cod ANAF „{token}”"
 msgstr "ANAF code „{token}”"
 
@@ -12227,7 +12227,7 @@ msgstr "ANAF code „{token}”"
 msgid "cod ANAF „{token}” potrivit cu ONRC {code} (zerouri la început)"
 msgstr "ANAF code „{token}” matched to ONRC {code} (leading zeros)"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:271
+#: src/features/private-companies/lib/company-main-activity-text.ts:295
 msgid "Cod ANAF {code} · fără corespondent ONRC"
 msgstr "ANAF code {code} · no ONRC counterpart"
 
@@ -12248,7 +12248,7 @@ msgstr "ANAF source code „{shown}” · no ONRC counterpart"
 msgid "Cod ANAF într-o formă fără corespondent ONRC"
 msgstr "ANAF code in a form with no ONRC counterpart"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:361
+#: src/features/private-companies/lib/company-main-activity-text.ts:385
 msgid "cod ANAF neafișat (nu e o formă de cod CAEN)"
 msgstr "ANAF code not shown (not a CAEN code form)"
 
@@ -12256,7 +12256,7 @@ msgstr "ANAF code not shown (not a CAEN code form)"
 msgid "Cod ANAF nevalid"
 msgstr "Invalid ANAF code"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:359
+#: src/features/private-companies/lib/company-main-activity-text.ts:383
 msgid "cod ANAF nevalid în sursă"
 msgstr "invalid ANAF code in the source"
 
@@ -12264,7 +12264,7 @@ msgstr "invalid ANAF code in the source"
 msgid "Cod ANAF nevalid în sursă"
 msgstr "Invalid ANAF code in the source"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:359
+#: src/features/private-companies/lib/company-main-activity-text.ts:383
 msgid "cod ANAF nevalid în sursă ({type})"
 msgstr "invalid ANAF code in the source ({type})"
 
@@ -12377,7 +12377,7 @@ msgstr "code not yet qualified"
 msgid "cod neinterpretabil în sursă"
 msgstr "unreadable code in the source"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:307
+#: src/features/private-companies/lib/company-main-activity-text.ts:331
 msgid "cod nevalid"
 msgstr "invalid code"
 
@@ -12401,7 +12401,7 @@ msgstr "Code and data"
 msgid "Cod SIRUTA"
 msgstr "SIRUTA code"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:305
+#: src/features/private-companies/lib/company-main-activity-text.ts:329
 msgid "cod substitut"
 msgstr "placeholder code"
 
@@ -13987,7 +13987,7 @@ msgstr "Copy the civic module link"
 msgid "Corectează selecția sau șterge filtrul invalid. Nu am folosit date implicite în locul lui."
 msgstr "Correct the selection or clear the invalid filter. No defaults were substituted for it."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:313
+#: src/features/private-companies/lib/company-main-activity-text.ts:337
 msgid "corecție revizuită"
 msgstr "reviewed correction"
 
@@ -15431,7 +15431,7 @@ msgstr "Data up to date through {0} {1}"
 msgid "Date actualizate pe {published}"
 msgstr "Data updated on {published}"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:326
+#: src/features/private-companies/lib/company-main-activity-text.ts:350
 msgid "date ANAF retrase"
 msgstr "ANAF data withdrawn"
 
@@ -15556,7 +15556,7 @@ msgstr "Date neverificate."
 #~ msgid "Date oficiale INS Tempo pentru fiecare localitate, județ și pentru întreaga țară."
 #~ msgstr "Official INS Tempo data for localities, counties and the whole country."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:330
+#: src/features/private-companies/lib/company-main-activity-text.ts:354
 msgid "date ONRC retrase"
 msgstr "ONRC data withdrawn"
 
@@ -15697,7 +15697,7 @@ msgstr "The edition's details did not load."
 msgid "Datele firmei din registrul comerțului nu pot fi citite acum; vânzările către stat de mai jos nu depind de ele."
 msgstr "The firm’s trade register data cannot be read right now; the sales to the state below do not depend on it."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:366
+#: src/features/private-companies/lib/company-main-activity-text.ts:390
 msgid "Datele fiscale ANAF ale firmei nu mai sunt publice: istoricul nu mai arată niciun câmp ANAF."
 msgstr "The company's ANAF fiscal data is no longer public: the history no longer shows any ANAF field."
 
@@ -18058,6 +18058,14 @@ msgstr "Dovadă"
 msgid "Dovada ANAF: atestată din schimbul arhivat, imuabil."
 msgstr "ANAF evidence: attested from the archived, immutable exchange."
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:246
+msgid "Dovada ANAF: legată prin compatibilitatea cu un import mai vechi, după observația brută păstrată."
+msgstr "ANAF evidence: bound through compatibility with an older import, via the retained raw observation."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:244
+msgid "Dovada ANAF: legată prin compatibilitatea cu un import mai vechi, după răspunsul brut indicat atunci."
+msgstr "ANAF evidence: bound through compatibility with an older import, via the raw response it pointed to then."
+
 #: src/features/private-companies/lib/company-main-activity-text.ts:242
 msgid "Dovada ANAF: nicio dovadă brută legată."
 msgstr "ANAF evidence: no raw evidence bound."
@@ -18070,7 +18078,7 @@ msgstr "ANAF evidence: the retained raw observation."
 msgid "Dovada ANAF: răspunsul brut original poate să nu mai fie păstrat (codul și amprentele lui sunt)."
 msgstr "ANAF evidence: the original raw response may no longer be retained (the code and its hashes are)."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:340
+#: src/features/private-companies/lib/company-main-activity-text.ts:364
 msgid "dovadă calculată la {date}"
 msgstr "evidence computed on {date}"
 
@@ -20267,7 +20275,7 @@ msgid "Fără cod CPV"
 msgstr "No CPV code"
 
 #: src/features/private-companies/lib/company-activity-text.ts:68
-#: src/features/private-companies/lib/company-main-activity-text.ts:309
+#: src/features/private-companies/lib/company-main-activity-text.ts:333
 msgid "fără cod în sursă"
 msgstr "no code in the source"
 
@@ -20459,7 +20467,7 @@ msgstr "No grouping"
 msgid "fără înregistrare fiscală publică"
 msgstr "no public fiscal record"
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:365
+#: src/features/private-companies/components/profile/company-main-activity.tsx:373
 msgid "Fără istoric public pentru această firmă."
 msgstr "No public history for this company."
 
@@ -20592,7 +20600,7 @@ msgstr "no payments in the previous year"
 #~ msgid "fără potrivire"
 #~ msgstr "fără potrivire"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:301
+#: src/features/private-companies/lib/company-main-activity-text.ts:325
 msgid "fără potrivire ONRC"
 msgstr "no ONRC match"
 
@@ -21882,7 +21890,7 @@ msgstr "The companies that meet the filters each year"
 msgid "Firmele care<0/>vând statului"
 msgstr "The companies<0/>selling to the state"
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:228
+#: src/features/private-companies/components/profile/company-main-activity.tsx:236
 msgid "Firmele cu aceeași activitate principală presupusă, în analiză"
 msgstr "Companies with the same assumed main activity, in the analysis"
 
@@ -22300,7 +22308,7 @@ msgstr "forma afișată"
 msgid "Forma codului din sursă nu permite o potrivire exactă cu o activitate ONRC; codul nu e completat cu zerouri."
 msgstr "The source code's form allows no exact match with an ONRC activity; the code is not padded with zeros."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:303
+#: src/features/private-companies/lib/company-main-activity-text.ts:327
 msgid "formă de cod fără corespondent ONRC"
 msgstr "code form with no ONRC counterpart"
 
@@ -25709,11 +25717,11 @@ msgstr "Interpret with network coverage and industrial structure; utility demand
 #~ msgid "Interpretare calificată"
 #~ msgstr "Qualified interpretation"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:265
+#: src/features/private-companies/lib/company-main-activity-text.ts:289
 msgid "Interpretare reținută până la verificare"
 msgstr "Interpretation withheld pending verification"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:317
+#: src/features/private-companies/lib/company-main-activity-text.ts:341
 msgid "interpretare retrasă"
 msgstr "interpretation withdrawn"
 
@@ -26139,7 +26147,7 @@ msgstr "Issued at"
 msgid "Istoria contractului"
 msgstr "The contract's history"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:322
+#: src/features/private-companies/lib/company-main-activity-text.ts:346
 msgid "Istoric de derivări și observații din sursă, nu date legale de intrare în vigoare."
 msgstr "History of derivations and source observations, not legal effective dates."
 
@@ -26147,11 +26155,11 @@ msgstr "History of derivations and source observations, not legal effective date
 #~ msgid "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
 #~ msgstr "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:332
+#: src/features/private-companies/components/profile/company-main-activity.tsx:340
 msgid "Istoricul activității principale presupuse"
 msgstr "History of the assumed main activity"
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:377
+#: src/features/private-companies/components/profile/company-main-activity.tsx:385
 msgid "Istoricul are o înregistrare mai nouă decât activitatea afișată; profilul se citește din nou."
 msgstr "The history has a newer entry than the activity shown; the profile is read again."
 
@@ -26164,11 +26172,11 @@ msgstr "Istoricul de vot nu a putut fi încărcat"
 #~ msgid "Istoricul încărcat este limitat la ultimele 200 de observații."
 #~ msgstr "The loaded history is capped at the latest 200 observations."
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:406
+#: src/features/private-companies/components/profile/company-main-activity.tsx:414
 msgid "Istoricul nu a putut fi citit."
 msgstr "The history could not be read."
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:369
+#: src/features/private-companies/components/profile/company-main-activity.tsx:377
 msgid "Istoricul nu e disponibil acum."
 msgstr "The history is not available right now."
 
@@ -26974,6 +26982,10 @@ msgstr "Legal representative role"
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1697
 #~ msgid "legat"
 #~ msgstr "legat"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:269
+msgid "legat prin compatibilitatea cu un import mai vechi"
+msgstr "bound through compatibility with an older import"
 
 #: src/features/statistics/lib/territory-links.ts:26
 msgid "Legătura are nevoie de un cod de județ din sursa teritorială."
@@ -28581,7 +28593,7 @@ msgid "Mai mult decât în {0}"
 msgstr "More than in {0}"
 
 #: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:304
-#: src/features/private-companies/components/profile/company-main-activity.tsx:394
+#: src/features/private-companies/components/profile/company-main-activity.tsx:402
 msgid "Mai multe"
 msgstr "Mai multe"
 
@@ -30736,7 +30748,7 @@ msgstr "No records in this selection."
 msgid "Nicio înregistrare în acest an"
 msgstr "No records in this year"
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:373
+#: src/features/private-companies/components/profile/company-main-activity.tsx:381
 msgid "Nicio înregistrare în istoric."
 msgstr "No entries in the history."
 
@@ -33467,7 +33479,7 @@ msgstr "the observation fails the check"
 msgid "Observație ANAF nelegată de înregistrarea fiscală"
 msgstr "ANAF observation not bound to the fiscal record"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:311
+#: src/features/private-companies/lib/company-main-activity-text.ts:335
 msgid "observație nelegată"
 msgstr "unbound observation"
 
@@ -33480,7 +33492,7 @@ msgstr "unbound observation"
 msgid "observații concordante"
 msgstr "consistent observations"
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:346
+#: src/features/private-companies/components/profile/company-main-activity.tsx:354
 msgid "Observații din sursă"
 msgstr "Source observations"
 
@@ -34106,6 +34118,10 @@ msgstr "OR"
 #: src/features/procurement/components/procurement-filter-sheet.tsx:311
 #~ msgid "Or a whole year"
 #~ msgstr "Or a whole year"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:264
+msgid "Ora de preluare din datele fiscale e păstrată cu precizie de milisecundă, fără fracțiunile de microsecundă (ora brută: {raw}). Asta arată compatibilitatea cu importul mai vechi documentat, nu cine a scris rândul și nici schimbul HTTP original; nicio oră de preluare nu e o dată legală."
+msgstr "The fiscal data's retrieval time is stored at millisecond precision, with the microsecond fraction removed (raw time: {raw}). This shows compatibility with the documented older import, not who wrote the row nor the original HTTP exchange; no retrieval time is a legal date."
 
 #: src/features/procurement/lib/analytics-places.ts:142
 #: src/features/public-enterprises/lib/enterprise-text.ts:46
@@ -36411,7 +36427,7 @@ msgstr "potrivire probabilă cu acest număr"
 #~ msgid "Potrivire respinsă"
 #~ msgstr "Potrivire respinsă"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:315
+#: src/features/private-companies/lib/company-main-activity-text.ts:339
 msgid "potrivire reținută prin corecție"
 msgstr "match withheld by correction"
 
@@ -36432,11 +36448,11 @@ msgstr "Match withheld by a reviewed correction"
 msgid "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
 msgstr "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:297
+#: src/features/private-companies/lib/company-main-activity-text.ts:321
 msgid "potrivit cu ONRC"
 msgstr "matched with ONRC"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:299
+#: src/features/private-companies/lib/company-main-activity-text.ts:323
 msgid "potrivit cu ONRC (cea mai recentă revizie)"
 msgstr "matched with ONRC (latest revision)"
 
@@ -36829,7 +36845,7 @@ msgstr "through {0}"
 msgid "Prin ce bugete trec banii"
 msgstr "Which budgets the money goes through"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:284
+#: src/features/private-companies/lib/company-main-activity-text.ts:308
 msgid "principală (presupusă)"
 msgstr "main (assumed)"
 
@@ -38716,7 +38732,7 @@ msgstr "Rules: population {0}, admission {1}, schema {2}."
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:82
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:102
-#: src/features/private-companies/components/profile/company-main-activity.tsx:408
+#: src/features/private-companies/components/profile/company-main-activity.tsx:416
 #: src/features/private-companies/components/registry/company-registry-notices.tsx:20
 #: src/features/statistics/components/comparison/comparison-states.tsx:121
 #: src/features/statistics/components/detail/detail-body.tsx:179
@@ -39462,7 +39478,7 @@ msgstr "Result, {year}"
 #: src/features/landing/components/search/landing-search.tsx:682
 #: src/features/landing/components/search/landing-search.tsx:733
 #: src/features/legal/components/legislation-act-finder.tsx:372
-#: src/features/private-companies/components/profile/company-main-activity.tsx:346
+#: src/features/private-companies/components/profile/company-main-activity.tsx:354
 #: src/features/private-companies/components/profile/company-years-band.tsx:152
 #: src/features/statistics/components/explorer/dataset-explorer-results.tsx:117
 msgid "Rezultate"
@@ -40407,7 +40423,7 @@ msgstr "Loading the enterprise."
 msgid "Se încarcă întreprinderile autorității."
 msgstr "Loading the authority’s enterprises."
 
-#: src/features/private-companies/components/profile/company-main-activity.tsx:357
+#: src/features/private-companies/components/profile/company-main-activity.tsx:365
 msgid "Se încarcă istoricul…"
 msgstr "Loading the history…"
 
@@ -43750,7 +43766,7 @@ msgstr "Sursa accesibila"
 #~ msgid "sursă AMEPIP, nu BVB live"
 #~ msgstr "sursă AMEPIP, nu BVB live"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:250
+#: src/features/private-companies/lib/company-main-activity-text.ts:274
 msgid "Sursa ANAF a fost retrasă"
 msgstr "The ANAF source was withdrawn"
 
@@ -43758,11 +43774,11 @@ msgstr "The ANAF source was withdrawn"
 msgid "Sursa ANAF folosită e reținută pentru verificarea integrității: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
 msgstr "The ANAF source used is held for integrity verification: no code, no ONRC counterpart and no mark in the activity list is shown."
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:255
+#: src/features/private-companies/lib/company-main-activity-text.ts:279
 msgid "Sursa ANAF reținută pentru verificarea integrității"
 msgstr "ANAF source held for integrity verification"
 
-#: src/features/private-companies/lib/company-main-activity-text.ts:260
+#: src/features/private-companies/lib/company-main-activity-text.ts:284
 msgid "Sursa ANAF reținută pentru verificarea integrității · ediția ONRC indisponibilă"
 msgstr "ANAF source held for integrity verification · ONRC edition unavailable"
 
