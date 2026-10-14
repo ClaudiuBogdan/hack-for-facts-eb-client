@@ -950,3 +950,195 @@ it('does not fill native gaps when INS and a calculated descendant share the exp
   expect(result.get('c')?.data).toEqual([{ x: '2024', y: 24 }])
   expect(result.get('c')?.missingPeriods).toEqual(['2023'])
 })
+
+describe('native operands in sums and differences', () => {
+  const native = (id: string, points: [string, number][], missingPeriods: string[] = []): AnalyticsSeries =>
+    ({ ...createAnalyticsSeries(id, points.map(([x, y]) => ({ x, y }))), missingPeriods })
+  const read = (...series: AnalyticsSeries[]) => new Map(series.map(item => [item.seriesId, item]))
+
+  // Corbeanca spending, each series selecting one year (the audit's live read).
+  const corbeanca = () => read(native('budget-2024', [['2024', 40517740.48]]), native('budget-2025', [['2025', 69217739.42]]))
+
+  it.each(['subtract', 'sum'] as const)('%s: no value at a period one operand does not cover', (op) => {
+    const result = evaluateCalculation({ op, args: ['budget-2025', 'budget-2024'] }, corbeanca(), [], 'difference')
+    expect(result.points).toEqual([])
+    expect(result.missingPeriods).toEqual(['2024', '2025'])
+    expect(result.warnings).toEqual([])
+  })
+  it('keeps every period both operands cover', () => {
+    const data = read(native('a', [['2022', 1], ['2023', 10], ['2024', 20]]), native('b', [['2023', 4], ['2024', 5], ['2025', 6]]))
+    const difference = evaluateCalculation({ op: 'subtract', args: ['a', 'b'] }, data, [], 'd')
+    expect(difference.points).toEqual([{ x: '2023', y: 6 }, { x: '2024', y: 15 }])
+    expect(difference.missingPeriods).toEqual(['2022', '2025'])
+    expect(evaluateCalculation({ op: 'sum', args: ['a', 'b'] }, data, [], 's').points).toEqual([{ x: '2023', y: 14 }, { x: '2024', y: 25 }])
+  })
+  it('keeps a printed zero as a value and a zero result as a point', () => {
+    const data = read(native('a', [['2024', 0], ['2025', 7]]), native('b', [['2024', 5], ['2025', 7]]))
+    const difference = evaluateCalculation({ op: 'subtract', args: ['a', 'b'] }, data, [], 'd')
+    expect(difference.points).toEqual([{ x: '2024', y: -5 }, { x: '2025', y: 0 }])
+    expect(difference.missingPeriods).toEqual([])
+    expect(evaluateCalculation({ op: 'sum', args: ['a', 'b'] }, data, [], 's').points).toEqual([{ x: '2024', y: 5 }, { x: '2025', y: 14 }])
+  })
+  it('applies constants at the periods the series cover, and nowhere else', () => {
+    const data = read(native('a', [['2023', 1], ['2024', 0]]))
+    expect(evaluateCalculation({ op: 'sum', args: ['a', 100] }, data, [], 's').points).toEqual([{ x: '2023', y: 101 }, { x: '2024', y: 100 }])
+    expect(evaluateCalculation({ op: 'subtract', args: [100, 'a'] }, data, [], 'd').points).toEqual([{ x: '2023', y: 99 }, { x: '2024', y: 100 }])
+    const nested = evaluateCalculation({ op: 'sum', args: ['a', { op: 'subtract', args: [10, 4] }] }, data, [], 'n')
+    expect(nested.points).toEqual([{ x: '2023', y: 7 }, { x: '2024', y: 6 }])
+    expect(nested.missingPeriods).toEqual([])
+  })
+  it('keeps explicit gaps and adds the periods an operand does not cover', () => {
+    const data = read(native('a', [['2022', 1], ['2024', 3]], ['2023']), native('b', [['2022', 10], ['2023', 20], ['2024', 30], ['2025', 40]]))
+    const result = evaluateCalculation({ op: 'sum', args: ['a', 'b'] }, data, [], 's')
+    expect(result.points).toEqual([{ x: '2022', y: 11 }, { x: '2024', y: 33 }])
+    expect(result.missingPeriods).toEqual(['2023', '2025'])
+  })
+  it('treats a native value that is not a number as unavailable, not 0', () => {
+    const result = evaluateCalculation({ op: 'subtract', args: ['a', 'b'] }, read(native('a', [['2024', Number.NaN]]), native('b', [['2024', 3]])), [], 'd')
+    expect(result.points).toEqual([])
+    expect(result.missingPeriods).toEqual(['2024'])
+  })
+  it('carries the gaps through nested expressions and calculated descendants', () => {
+    const series = [createDataSeries('a'), createDataSeries('b'), createDataSeries('c'),
+      createDataSeries('budget-2024'), createDataSeries('budget-2025'),
+      createCalculationSeries('diff', { op: 'subtract', args: ['b', 'a'] }),
+      createCalculationSeries('outer', { op: 'sum', args: ['diff', 1] }),
+      createCalculationSeries('inline', { op: 'sum', args: [{ op: 'subtract', args: ['b', 'a'] }, 'c'] }),
+      createCalculationSeries('difference', { op: 'subtract', args: ['budget-2025', 'budget-2024'] }),
+      createCalculationSeries('later', { op: 'sum', args: ['difference', 5] })]
+    const map = read(native('a', [['2023', 1], ['2024', 2]]), native('b', [['2024', 10], ['2025', 20]]),
+      native('c', [['2023', 100], ['2024', 100], ['2025', 100]]), ...corbeanca().values())
+    const result = calculateAllSeriesData(series, map)
+    expect(result.dataSeriesMap.get('diff')?.data).toEqual([{ x: '2024', y: 8 }])
+    expect(result.dataSeriesMap.get('outer')?.data).toEqual([{ x: '2024', y: 9 }])
+    expect(result.dataSeriesMap.get('outer')?.missingPeriods).toEqual(['2023', '2025'])
+    expect(result.dataSeriesMap.get('inline')?.data).toEqual([{ x: '2024', y: 108 }])
+    expect(result.dataSeriesMap.get('inline')?.missingPeriods).toEqual(['2023', '2025'])
+    expect(result.dataSeriesMap.get('later')?.data).toEqual([])
+    expect(result.dataSeriesMap.get('later')?.missingPeriods).toEqual(['2024', '2025'])
+    expect(result.warnings).toEqual([])
+  })
+})
+
+describe('constant expressions beside native data', () => {
+  const native = (id: string, points: [string, number][], unit = 'year', missingPeriods: string[] = []): AnalyticsSeries => {
+    const series = { ...createAnalyticsSeries(id, points.map(([x, y]) => ({ x, y }))), missingPeriods }
+    series.xAxis.unit = unit
+    return series
+  }
+  const evaluate = (calculation: Calculation, ...series: AnalyticsSeries[]) =>
+    calculateAllSeriesData([...series.map(item => createDataSeries(item.seriesId)), createCalculationSeries('c', calculation)],
+      new Map(series.map(item => [item.seriesId, item]))).dataSeriesMap.get('c')
+
+  it.each([
+    { x: '2024', unit: 'year' },
+    { x: '2024-Q1', unit: 'quarter' },
+    { x: '2024-01', unit: 'month' },
+  ])('adds a nested literal expression as the scalar it declares ($unit)', ({ x, unit }) => {
+    const nested = evaluate({ op: 'sum', args: ['a', { op: 'sum', args: [1, 2] }] }, native('a', [[x, 10]], unit))
+    expect(nested?.data).toEqual([{ x, y: 13 }])
+    expect(nested?.missingPeriods).toEqual([])
+    expect(nested).toEqual(evaluate({ op: 'sum', args: ['a', 3] }, native('a', [[x, 10]], unit)))
+  })
+  it('keeps native zero, a zero scalar and zero products as values', () => {
+    expect(evaluate({ op: 'sum', args: ['a', { op: 'subtract', args: [2, 2] }] }, native('a', [['2024', 0]]))?.data).toEqual([{ x: '2024', y: 0 }])
+    expect(evaluate({ op: 'multiply', args: ['a', { op: 'subtract', args: [2, 2] }] }, native('a', [['2024', 5]]))?.data).toEqual([{ x: '2024', y: 0 }])
+    expect(evaluate({ op: 'subtract', args: [{ op: 'sum', args: [3, 4] }, 'a'] }, native('a', [['2024', 7]]))?.data).toEqual([{ x: '2024', y: 0 }])
+  })
+  it('evaluates deeply nested constants, and constants inside named native calculations, once', () => {
+    const deep = evaluate({ op: 'sum', args: ['a', { op: 'multiply', args: [{ op: 'sum', args: [1, { op: 'subtract', args: [5, 3] }] }, 2] }] }, native('a', [['2024-01', 10]], 'month'))
+    expect(deep?.data).toEqual([{ x: '2024-01', y: 16 }])
+    expect(deep?.missingPeriods).toEqual([])
+    const series = [createDataSeries('a'),
+      createCalculationSeries('named', { op: 'sum', args: ['a', { op: 'sum', args: [1, 2] }] }),
+      createCalculationSeries('descendant', { op: 'subtract', args: ['named', { op: 'multiply', args: [2, { op: 'sum', args: [1, 0] }] }] })]
+    const result = calculateAllSeriesData(series, new Map([['a', native('a', [['2024-Q1', 10], ['2024-Q3', 4]], 'quarter', ['2024-Q2'])]])).dataSeriesMap
+    expect(result.get('descendant')?.data).toEqual([{ x: '2024-Q1', y: 11 }, { x: '2024-Q3', y: 5 }])
+    expect(result.get('descendant')?.missingPeriods).toEqual(['2024-Q2'])
+  })
+  it('keeps an undefined constant expression unavailable at every period, never 0', () => {
+    for (const undefinedScalar of [{ op: 'divide', args: [1, 0] }, { op: 'sum', args: [{ op: 'divide', args: [1, 0] }, 2] }, { op: 'sum', args: [] }] as Calculation[]) {
+      const result = evaluate({ op: 'sum', args: ['a', undefinedScalar] }, native('a', [['2024', 10], ['2025', 0]]))
+      expect(result?.data).toEqual([])
+      expect(result?.missingPeriods).toEqual(['2024', '2025'])
+    }
+  })
+  it('keeps genuine native gaps and partial overlap beside a scalar', () => {
+    const result = evaluate({ op: 'sum', args: ['a', 'b', { op: 'sum', args: [1, 2] }] },
+      native('a', [['2023', 1], ['2024', 2]]), native('b', [['2024', 10], ['2025', 20]], 'year', ['2026']))
+    expect(result?.data).toEqual([{ x: '2024', y: 15 }])
+    expect(result?.missingPeriods).toEqual(['2026', '2023', '2025'])
+  })
+  it('leaves standalone constants and calculations without native coverage as before', () => {
+    const standalone = calculateAllSeriesData([createCalculationSeries('c', { op: 'sum', args: [{ op: 'sum', args: [1, 2] }, 4] })], new Map()).dataSeriesMap.get('c')
+    expect(standalone?.data.length).toBeGreaterThan(1)
+    expect(standalone?.data.every(point => point.y === 7)).toBe(true)
+    expect(standalone?.missingPeriods).toBeUndefined()
+    const legacy = evaluateCalculation({ op: 'sum', args: ['a', { op: 'sum', args: [1, 2] }] }, new Map([['a', createAnalyticsSeries('a', [{ x: '2024', y: 10 }])]]), [], 'c')
+    expect(legacy.points.find(point => point.x === '2024')?.y).toBe(13)
+    expect(legacy.points.length).toBeGreaterThan(1)
+    expect(legacy.missingPeriods).toBeUndefined()
+  })
+})
+
+describe('native completeness inside shared and grouped expressions', () => {
+  const native = (id: string, points: [string, number][], unit = 'year'): AnalyticsSeries => {
+    const series = { ...createAnalyticsSeries(id, points.map(([x, y]) => ({ x, y }))), missingPeriods: [] }
+    series.xAxis.unit = unit
+    return series
+  }
+
+  it('reads a reused constant subexpression like its copy, including a zero one', () => {
+    const month = new Map([['a', native('a', [['2024-01', 10]], 'month')]])
+    const shared: Calculation = { op: 'sum', args: [1, 2] }
+    const zero: Calculation = { op: 'subtract', args: [2, 2] }
+    for (const [expression, y] of [
+      [{ op: 'sum', args: ['a', { op: 'sum', args: [shared, shared] }] }, 16],
+      [{ op: 'sum', args: ['a', { op: 'multiply', args: [zero, zero] }] }, 10],
+      [{ op: 'sum', args: ['a', shared, { op: 'multiply', args: [shared, 2] }] }, 19],
+    ] as [Calculation, number][]) {
+      const reused = calculateAllSeriesData([createDataSeries('a'), createCalculationSeries('c', expression)], new Map(month)).dataSeriesMap.get('c')
+      const copied = calculateAllSeriesData([createDataSeries('a'), createCalculationSeries('c', JSON.parse(JSON.stringify(expression)))], new Map(month)).dataSeriesMap.get('c')
+      expect(reused?.data).toEqual([{ x: '2024-01', y }])
+      expect(reused?.missingPeriods).toEqual([])
+      expect(reused).toEqual(copied)
+    }
+  })
+
+  const series = (calculation: Calculation, c: { year: number; value: number }[] = [{ year: 2025, value: 20 }]) => calculateAllSeriesData(
+    [createDataSeries('a'), createCustomSeries('b', [{ year: 2024, value: 10 }]), createCustomSeries('c', c), createCalculationSeries('calc', calculation)],
+    new Map([['a', native('a', [['2024', 100]])]]),
+  ).dataSeriesMap.get('calc')
+
+  it('does not let grouping turn an unmarked missing operand into 0 inside a native calculation', () => {
+    const grouped = series({ op: 'sum', args: ['a', { op: 'sum', args: ['b', 'c'] }] })
+    const flat = series({ op: 'sum', args: ['a', 'b', 'c'] })
+    expect(grouped?.data).toEqual([])
+    expect(grouped?.missingPeriods).toEqual(['2024', '2025'])
+    expect(grouped).toEqual(flat)
+    const deeper = series({ op: 'subtract', args: ['a', { op: 'multiply', args: [{ op: 'sum', args: ['b', 'c'] }, 2] }] })
+    expect(deeper?.data).toEqual([])
+    expect(deeper?.missingPeriods).toEqual(['2024', '2025'])
+  })
+  it('keeps the periods a grouped expression fully covers, with their real zeros', () => {
+    const covered = [{ year: 2024, value: -10 }, { year: 2025, value: 20 }]
+    const grouped = series({ op: 'sum', args: ['a', { op: 'sum', args: ['b', 'c'] }] }, covered)
+    expect(grouped?.data).toEqual([{ x: '2024', y: 100 }])
+    expect(grouped?.missingPeriods).toEqual(['2025'])
+    expect(grouped).toEqual(series({ op: 'sum', args: ['a', 'b', 'c'] }, covered))
+  })
+  it('leaves calculations over unmarked series alone, and a named one as it was materialized', () => {
+    // Standalone legacy policy: no native read, so absent custom values are still added as 0.
+    const legacy = series({ op: 'sum', args: ['b', 'c'] })
+    expect(legacy?.data).toEqual([{ x: '2024', y: 10 }, { x: '2025', y: 20 }])
+    expect(legacy?.missingPeriods).toBeUndefined()
+    // Boundary: a named legacy calculation is materialized on its own policy; a native parent reads its points.
+    const named = calculateAllSeriesData(
+      [createDataSeries('a'), createCustomSeries('b', [{ year: 2024, value: 10 }]), createCustomSeries('c', [{ year: 2025, value: 20 }]),
+        createCalculationSeries('bc', { op: 'sum', args: ['b', 'c'] }), createCalculationSeries('calc', { op: 'sum', args: ['a', 'bc'] })],
+      new Map([['a', native('a', [['2024', 100]])]]),
+    ).dataSeriesMap.get('calc')
+    expect(named?.data).toEqual([{ x: '2024', y: 110 }])
+    expect(named?.missingPeriods).toEqual(['2025'])
+  })
+})
