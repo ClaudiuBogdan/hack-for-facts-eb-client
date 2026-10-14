@@ -8,6 +8,7 @@ import { formatNgoDate, formatNgoMoney, formatNgoShare } from '@/features/ngos/h
 import { cn } from '@/lib/utils'
 import type { NgoAvailability, NgoOrganization, NgoStatement } from '../api'
 import { formatExact, isInferred, keyFigures, latestStatement, needsReview, placeOf, statementRows, statusOf, type Amount, type StatementRow, type YearPoint } from '../model'
+import { LIST_NAME, listedSections } from '../lists'
 import { categoryLabel, identityText, statusLabel, useNumberLocale } from '../words'
 
 /**
@@ -630,7 +631,7 @@ export function RegistryFacts({ organization }: { readonly organization: NgoOrga
   )
 }
 
-/** The page's sources, once: the registry, ANAF and the statements, each with its date. */
+/** The page's sources, once: the registry, ANAF, the statements and the official lists that name it, each with its date or edition. */
 export function ProfileSources({ organization, statements }: { readonly organization: NgoOrganization; readonly statements: readonly NgoStatement[] }) {
   const captured = formatNgoDate(organization.snapshot.capturedAt.slice(0, 10))
   const statement = latestStatement(statements)
@@ -661,6 +662,17 @@ export function ProfileSources({ organization, statements }: { readonly organiza
           </a>
         </>
       ) : null}
+      {/* The official lists the services band draws, each the edition it was read from. */}
+      {listedSections(organization).map(({ key, snapshot }) =>
+        snapshot ? (
+          <span key={key}>
+            {' · '}
+            <a href={snapshot.sourceUrl} target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-4">
+              {LIST_NAME[key]()}
+            </a>
+          </span>
+        ) : null,
+      )}
     </p>
   )
 }

@@ -349,7 +349,7 @@ export function countText(count: number): string {
 export interface RegistryRead {
   /** Rows read, repeated rows dropped. */
   readonly rows: readonly RegistryRecord[]
-  /** Rows dropped as repeats of another row, field for field. */
+  /** Rows dropped as repeats of another row in all 14 fields of `distinctRows`' key (not the purpose or the special number). */
   readonly repeated: number
   /** Every page of the selection is read: the rows are the whole selection. */
   readonly complete: boolean
@@ -376,9 +376,11 @@ export const TABLE_PAGE = 25
 export const TABLE_PAGE_CAP = Math.floor((READ_CAP_PAGES * PAGE_SIZE - 1) / TABLE_PAGE)
 
 /**
- * Rows repeated field for field (104 in the export) as one, judged by the
- * same fields as `scripts/count-ngo-registry.mjs`, so a read and the counts
- * agree on what a repeat is.
+ * Rows that repeat another in all 14 fields below (104 in the export) as one,
+ * judged by the same fields as the counts' scripts
+ * (`scripts/lib/ngo-registry-repeat.mjs`), so a read and the counts agree on
+ * what a repeat is. The purpose and the special registry
+ * number are not among them: a repeat can differ in those.
  */
 export function distinctRows(rows: readonly RegistryRecord[]): { readonly rows: readonly RegistryRecord[]; readonly repeated: number } {
   const seen = new Set<string>()
@@ -413,7 +415,8 @@ const FIRST_NUMBER_YEAR = 1990
 /**
  * The year in a registry number (`3446/A/2026`): the year the entry was
  * given, which the registration date does not keep. A year before 1990 or
- * after the export (`1005`, `3009`: typing slips) is no year.
+ * after the export (`1005`, `3009`) is no year: its meaning is unknown, not
+ * a confirmed typing slip, and the number itself stays as published.
  */
 export function numberYear(registryNumber: string, lastYear: number): number | null {
   const match = /\/(\d{4})$/u.exec(registryNumber.trim())
@@ -523,13 +526,13 @@ export function notesOf({
   // The summary's figures are of the export it counted: said only while that is the export read.
   if (summaryMatches !== false) {
     const repeated = formatNgoNumber(summary.repeated)
-    facts.push(t`${repeated} rânduri se repetă în export câmp cu câmp; sunt numărate o dată.`)
+    facts.push(t`${repeated} rânduri repetă un alt rând în toate cele 14 câmpuri comparate: număr, nume, nume ascuns, formă, formă juridică, instanță, stare, dată, județ, localitate, CUI declarat, CUI legat, filială și utilitate publică; sunt numărate o dată. Scopul și numărul din registrul special nu sunt comparate.`)
     if (query.county === null) {
       const unplaced = formatNgoNumber(summary.noCounty)
       facts.push(t`${unplaced} intrări înregistrate nu au județ în registru; un filtru pe județ nu le găsește.`)
     }
   } else {
-    facts.push(t`Rândurile repetate câmp cu câmp sunt numărate o dată.`)
+    facts.push(t`Rândurile care repetă un alt rând în toate cele 14 câmpuri comparate: număr, nume, nume ascuns, formă, formă juridică, instanță, stare, dată, județ, localitate, CUI declarat, CUI legat, filială și utilitate publică sunt numărate o dată. Scopul și numărul din registrul special nu sunt comparate.`)
   }
   facts.push(
     t`Data din registru se schimbă când intrarea se modifică; anul din numărul de registru rămâne. Lista vine în ordinea datei, cea mai recentă întâi.`,

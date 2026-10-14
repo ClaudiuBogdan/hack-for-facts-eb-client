@@ -657,7 +657,12 @@ export function SourceLine({
           <p>{t`Lista este exportul registrului, filtrat de API, în ordinea exportului: data din registru, cea mai recentă întâi. API-ul nu numără și nu grupează.`}</p>
           <p>{t`Numărătorile și împărțirile vin din citirea integrală a aceluiași export, pe județ, localitate, formă, stare, utilitate publică, an și CUI; le arătăm doar cât timp API-ul servește acel export.`}</p>
           <p>{t`O căutare după nume sau după număr e numărată din propriile rânduri, citite până la ${cap}; peste acest prag spunem doar că sunt mai multe.`}</p>
-          <p>{t`Rândurile repetate câmp cu câmp sunt numărate o dată. Anul este cel din numărul de registru; un an înainte de 1990 sau după export e o greșeală de scriere și nu e numărat.`}</p>
+          <p>
+            {t`Rândurile care repetă un alt rând în toate cele 14 câmpuri comparate: număr, nume, nume ascuns, formă, formă juridică, instanță, stare, dată, județ, localitate, CUI declarat, CUI legat, filială și utilitate publică sunt numărate o dată. Scopul și numărul din registrul special nu sunt comparate.`}
+          </p>
+          <p>
+            {t`Anul este cel din numărul de registru. Un an dinainte de 1990 sau de după export nu e numărat: nu știm ce înseamnă, iar numărul rămâne cel din registru.`}
+          </p>
           {tally && tally.capturedAt === null ? <p>{t`Această selecție a fost numărată din rândurile ei, citite integral.`}</p> : null}
         </PopoverContent>
       </Popover>

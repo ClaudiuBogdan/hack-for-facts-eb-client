@@ -8,7 +8,8 @@
  *   node scripts/summarize-ngo-registry.mjs /tmp/rnong.jsonl
  *
  * Counts are of registry entries, not of distinct organisations the registry
- * cannot prove: only rows repeated field for field are dropped. A county's
+ * cannot prove: only rows that repeat another in all 14 fields of
+ * `REPEAT_FIELDS` (`lib/ngo-registry-repeat.mjs`) are dropped. A county's
  * `source` is the registry's own spelling, which the registry filter matches
  * exactly (`DÂMBOVITA`, `VÂLCEA`).
  *
@@ -20,6 +21,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { repeatKey } from './lib/ngo-registry-repeat.mjs'
 
 const API_URL = process.env.NGO_API_URL ?? 'https://dev-chronos-api.transparenta.eu/api/v1/graphql'
 const OUTPUT = fileURLToPath(new URL('../src/features/ngos/hub/registry-summary.ts', import.meta.url))
@@ -66,8 +68,7 @@ const seen = new Set()
 const rows = []
 for (const line of lines) {
   const row = JSON.parse(line)
-  const { id, ...fields } = row
-  const key = JSON.stringify(fields)
+  const key = repeatKey(row)
   if (seen.has(key)) continue
   seen.add(key)
   rows.push(row)

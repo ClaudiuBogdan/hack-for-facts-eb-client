@@ -14,6 +14,7 @@ import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/co
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
 import type { NgoOrganization, NgoStatementsRead } from '../api'
+import { listedSections } from '../lists'
 import { keyFigures, latestStatement, needsReview, placeOf, yearSeries } from '../model'
 import { categoryLabel, organizationName, profileFacts, purposeText, type ProfileFacts } from '../words'
 import {
@@ -30,6 +31,7 @@ import {
   YearsChart,
 } from './profile-parts'
 import { PurposeSection } from './purpose-section'
+import { ServiceListsBand } from './service-lists'
 import { YearsMatrix } from './years-matrix'
 
 /**
@@ -37,7 +39,8 @@ import { YearsMatrix } from './years-matrix'
  * (`docs/design/ngos/design.md` §14): the name, what it says it does and one
  * sentence with the chips, its last years beside them, the pinned bar, four
  * figures, then one band per question — the money, the statement as filed,
- * the key rows year by year, and what ANAF and the registry say.
+ * the key rows year by year, the official lists of services and
+ * accreditations that name it, and what ANAF and the registry say.
  *
  * The statements are read apart from the profile: where they fail, the page
  * stands and says so, with a way to read them again.
@@ -82,11 +85,14 @@ export function NgoOrganizationPage({
   // A year the address asks for that has no statement on the platform: said, and the latest shown instead.
   const unfiled = year !== undefined && chosen !== null && chosen.fiscalYear !== year ? year : null
   const linked = organization.cui !== null
+  // Only the official lists that name the organisation: the band is not drawn where none does.
+  const listed = listedSections(organization).length > 0
   const sections = [
     ...(purpose ? [{ id: 'scop', label: t`Scopul` }] : []),
     ...(linked ? [{ id: 'bani', label: t`Banii` }] : []),
     ...(chosen ? [{ id: 'situatie', label: t`Situația financiară` }] : []),
     ...(series.length > 0 ? [{ id: 'an-cu-an', label: t`An cu an` }] : []),
+    ...(listed ? [{ id: 'servicii', label: t`Servicii` }] : []),
     { id: 'registru', label: linked ? t`ANAF și registru` : t`Registrul` },
   ]
   /** „02 / An cu an": a band's number is its place in the bar, which drops a band when there is nothing to show in it. */
@@ -258,6 +264,8 @@ export function NgoOrganizationPage({
           </div>
         </HomeBand>
       ) : null}
+
+      {listed ? <ServiceListsBand organization={organization} index={indexOf('servicii')} /> : null}
 
       <HomeBand id="registru" labelledBy="ngo-profile-registry">
         <HubSectionHead

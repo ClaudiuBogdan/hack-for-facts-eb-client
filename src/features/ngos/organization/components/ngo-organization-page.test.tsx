@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { fireEvent, render, screen, within } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { NgoIndicator } from '../api'
-import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS } from '../test/fixtures'
+import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS, LISTED, NO_LISTS } from '../test/fixtures'
 import { yearSeries } from '../model'
 import { NgoOrganizationPage } from './ngo-organization-page'
 
@@ -40,6 +40,9 @@ const renderPage = (props: Partial<Parameters<typeof NgoOrganizationPage>[0]> = 
     />,
   )
 const band = (name: RegExp) => screen.getByRole('region', { name })
+/** The innermost element whose whole text is this, across the spans inside it. */
+const whole = (container: HTMLElement, text: string) =>
+  within(container).getByText((_, element) => element?.textContent === text && ![...element.children].some((child) => child.textContent === text))
 
 describe('NgoOrganizationPage', () => {
   beforeEach(() => {
@@ -55,6 +58,94 @@ describe('NgoOrganizationPage', () => {
     expect(screen.getByText('30339344')).toBeInTheDocument()
     const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
     expect(within(bar).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['#scop', '#bani', '#situatie', '#an-cu-an', '#registru'])
+  })
+
+  it('draws the official lists that name it, each dated by its edition, and a county-only service by its county alone', () => {
+    renderPage({ organization: { ...FUNKY, ...LISTED } })
+    const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
+    expect(within(bar).getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual(['#scop', '#bani', '#situatie', '#an-cu-an', '#servicii', '#registru'])
+    const lists = band(/Servicii și acreditări/)
+    expect(within(lists).getByText('05 / Servicii')).toBeInTheDocument()
+    expect(within(lists).getByText('Servicii sociale licențiate · 4')).toBeInTheDocument()
+    // A town that names its county says it once; a service without a licence number says none.
+    expect(whole(lists, 'Brașov · capacitate 20 · licența 0001474/LF din 20 decembrie 2021')).toBeInTheDocument()
+    expect(whole(lists, 'sector 3, BUCUREȘTI · capacitate 35')).toBeInTheDocument()
+    // Protective or unclassified: never named protective, and the one with no type says only its code.
+    expect(within(lists).getAllByText('Serviciu publicat doar cu județul')).toHaveLength(2)
+    expect(whole(lists, 'cod 8899 CZ-PN-VII')).toBeInTheDocument()
+    expect(whole(lists, 'Hunedoara · capacitate 12 · licența LF/0000382 din 3 februarie 2016')).toBeInTheDocument()
+    expect(whole(lists, 'Certificatul AF/001157 · decizia 174')).toBeInTheDocument()
+    expect(whole(lists, 'Atestatul nr. 22 din 10 iunie 2025 · în listă: RETRAS')).toBeInTheDocument()
+    expect(whole(lists, 'Certificatul SERIA DJ NR.18/00088 · din 11 ianuarie 2018')).toBeInTheDocument()
+    // The ministry's and ANOFM's own words stay marked Romanian on a page in any language.
+    expect(within(lists).getByText('Centrul de zi nr. 1 Braşov')).toHaveAttribute('lang', 'ro')
+    expect(within(lists).getByText('5.Centre rezidenţiale pentru copii în sistemul de protecție special')).toHaveAttribute('lang', 'ro')
+    expect(within(lists).getByText('RETRAS')).toHaveAttribute('lang', 'ro')
+    // The API carries no date for the ministry's lists: unavailable, not undated, and the import named as such; ANOFM's carry theirs.
+    expect(within(lists).getAllByText('Data ediției nu este disponibilă; importată la 29 iunie 2026')).toHaveLength(2)
+    expect(within(lists).getByText('Ediția din 31 mai 2026')).toBeInTheDocument()
+    expect(within(lists).getByText('Ediția din 30 aprilie 2026')).toBeInTheDocument()
+    const sources = screen.getByRole('link', { name: 'Registrul unic al întreprinderilor sociale (RUEIS), ANOFM' })
+    expect(sources).toHaveAttribute('href', LISTED.socialEnterpriseCertificates.snapshot!.sourceUrl)
+  })
+
+  it('keeps a real zero capacity, says what RUEIS says of a validity, and an edition it cannot date', () => {
+    const [service] = LISTED.socialServices.data!
+    renderPage({
+      organization: {
+        ...FUNKY,
+        ...LISTED,
+        socialServices: { availability: 'available', snapshot: null, data: [{ ...service!, capacity: 0 }] },
+        socialEnterpriseCertificates: {
+          ...LISTED.socialEnterpriseCertificates,
+          data: [{ certificateNumber: '7', certificateDate: '2021-03-01', validUntil: '2026-03-01', status: 'VALID' }],
+        },
+      },
+    })
+    const lists = band(/Servicii și acreditări/)
+    expect(whole(lists, 'sector 3, BUCUREȘTI · capacitate 0')).toBeInTheDocument()
+    expect(whole(lists, 'Atestatul nr. 7 din 1 martie 2021 · în listă: VALID, valabil până la 1 martie 2026')).toBeInTheDocument()
+    expect(within(lists).getByText('Ediția listei nu e cunoscută')).toBeInTheDocument()
+  })
+
+  it('never shows a county-only service’s name or locality, even one that reached the page', () => {
+    const [, , countyOnly] = LISTED.socialServices.data!
+    const leaked = { ...countyOnly!, serviceName: 'Adăpost', locality: 'Lupeni' }
+    renderPage({ organization: { ...FUNKY, ...LISTED, socialServices: { ...LISTED.socialServices, data: [leaked] } } })
+    const lists = band(/Servicii și acreditări/)
+    expect(within(lists).queryByText(/Adăpost|Lupeni/)).not.toBeInTheDocument()
+    expect(whole(lists, 'Hunedoara · capacitate 12 · licența LF/0000382 din 3 februarie 2016')).toBeInTheDocument()
+  })
+
+  it('draws a band of certificates alone where no service is listed', () => {
+    renderPage({ organization: { ...FUNKY, employmentServiceAccreditations: LISTED.employmentServiceAccreditations } })
+    const bar = screen.getByRole('navigation', { name: 'Secțiunile paginii' })
+    expect(within(bar).getByRole('link', { name: /Servicii/ })).toHaveAttribute('href', '#servicii')
+    const lists = band(/Servicii și acreditări/)
+    expect(within(lists).queryByText(/Servicii sociale licențiate/)).not.toBeInTheDocument()
+    expect(whole(lists, 'Certificatul SERIA DJ NR.18/00088 · din 11 ianuarie 2018')).toBeInTheDocument()
+  })
+
+  it('shows six services, then all of them on request', () => {
+    const [service] = LISTED.socialServices.data!
+    const data = Array.from({ length: 8 }, (_, position) => ({ ...service!, serviceName: `Centrul ${position + 1}` }))
+    renderPage({ organization: { ...FUNKY, ...LISTED, socialServices: { ...LISTED.socialServices, data } } })
+    const lists = band(/Servicii și acreditări/)
+    expect(within(lists).queryByText('Centrul 7')).not.toBeInTheDocument()
+    fireEvent.click(within(lists).getByRole('button', { name: 'Arată toate cele 8' }))
+    expect(within(lists).getByText('Centrul 8')).toBeInTheDocument()
+    expect(within(lists).getByRole('button', { name: 'Arată mai puține' })).toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('draws no services band where no list names it, or none is loaded: no fact is not „none"', () => {
+    // A profile without a CUI shows no list, whatever a response says.
+    for (const organization of [FUNKY, { ...FUNKY, ...NO_LISTS }, { ...BLANC, ...LISTED }]) {
+      const { unmount } = renderPage({ organization })
+      expect(screen.queryByRole('region', { name: /Servicii și acreditări/ })).not.toBeInTheDocument()
+      expect(within(screen.getByRole('navigation', { name: 'Secțiunile paginii' })).queryByRole('link', { name: 'Servicii' })).not.toBeInTheDocument()
+      expect(screen.queryByText(/RUEIS/)).not.toBeInTheDocument()
+      unmount()
+    }
   })
 
   it('reads the latest statement row by row, and another year on the reader’s choice', () => {

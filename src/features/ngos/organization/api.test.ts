@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fetchNgoOrganization, fetchNgoRegistryProfile, fetchNgoStatements, ngoOrganizationSchema } from './api'
-import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS } from './test/fixtures'
+import { ABSOLUT, BLANC, FUNKY, FUNKY_STATEMENTS, LISTED } from './test/fixtures'
 
 const query = vi.hoisted(() => vi.fn())
 vi.mock('@/lib/graphql/graphql-client', () => ({ graphqlQuery: query }))
@@ -55,6 +55,30 @@ describe('the NGO organisation profile, read', () => {
     expect(query.mock.calls[0]![0]).toContain('purpose { availability text }')
     // An availability this client does not know drops the purpose, not the profile.
     expect(ngoOrganizationSchema.parse({ ...FUNKY, purpose: { availability: 'unknown', text: 'x' } }).purpose).toEqual({ availability: 'not_loaded', text: null })
+  })
+
+  it('reads the four official lists with the profile, each with its edition', async () => {
+    query.mockResolvedValueOnce({ ngoOrganizationProfile: { ...FUNKY, ...LISTED } })
+    const organization = await fetchNgoOrganization('30339344')
+    expect(organization?.socialEnterpriseCertificates).toEqual(LISTED.socialEnterpriseCertificates)
+    expect(organization?.socialServices.snapshot).toEqual({ ...LISTED.socialServices.snapshot })
+    for (const list of ['socialServices', 'socialServiceAccreditations', 'socialEnterpriseCertificates', 'employmentServiceAccreditations'])
+      expect(query.mock.calls[0]![0]).toContain(`${list} { availability snapshot { sourceUrl sourceDeclaredDate importedAt }`)
+  })
+
+  it('never keeps a county-only service’s name or locality, even where a response carries them', () => {
+    const [service] = LISTED.socialServices.data!.filter((item) => item.countyOnly)
+    const leaked = { ...service!, serviceName: 'Adăpost', locality: 'Lupeni' }
+    const parsed = ngoOrganizationSchema.parse({ ...FUNKY, ...LISTED, socialServices: { ...LISTED.socialServices, data: [leaked] } })
+    expect(parsed.socialServices.data).toEqual([{ ...leaked, serviceName: null, locality: null }])
+  })
+
+  it('drops a list it cannot read, never the profile, and keeps not loaded apart from not listed', () => {
+    const parsed = ngoOrganizationSchema.parse({ ...FUNKY, ...LISTED, socialServices: { availability: 'stale', snapshot: null, data: [] } })
+    expect(parsed.socialServices).toEqual({ availability: 'not_loaded', snapshot: null, data: null })
+    expect(parsed.socialServiceAccreditations).toEqual(LISTED.socialServiceAccreditations)
+    expect(ngoOrganizationSchema.parse(FUNKY).employmentServiceAccreditations).toMatchObject({ availability: 'available', data: [] })
+    expect(ngoOrganizationSchema.parse(BLANC).employmentServiceAccreditations).toEqual({ availability: 'not_loaded', snapshot: null, data: null })
   })
 
   it('reads a profile by the registry’s literal number, a CUI-less one included', async () => {

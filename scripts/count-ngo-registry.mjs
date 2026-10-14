@@ -19,11 +19,12 @@
  * group-by: until it has both, these counts stand in, and the page uses
  * them only while the API serves the export they were counted on.
  *
- * Only rows repeated field for field are dropped (as in
- * `summarize-ngo-registry.mjs`). The year is the one in the registry number
- * (`3446/A/2026`), never the registration date, which moves when an entry
- * changes; a number whose year is before 1990 or after the export (`1005`,
- * `3009`, typing slips) counts as one without a year. `NEDETERMINAT` is no
+ * Only rows that repeat another in all 14 fields of `REPEAT_FIELDS`
+ * (`lib/ngo-registry-repeat.mjs`) are dropped. The
+ * year is the one in the registry number (`3446/A/2026`), never the
+ * registration date, which moves when an entry changes; a number whose year
+ * is before 1990 or after the export (`1005`, `3009`: meaning unknown, not a
+ * confirmed slip) counts as one without a year. `NEDETERMINAT` is no
  * county.
  *
  * Output: dictionaries, then `cells` — one flat array, eight integers a
@@ -33,6 +34,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { repeatKey } from './lib/ngo-registry-repeat.mjs'
 
 const API_URL = process.env.NGO_API_URL ?? 'https://dev-chronos-api.transparenta.eu/api/v1/graphql'
 const REGISTRY_NUMBER_YEAR = /\/(\d{4})$/
@@ -48,28 +50,6 @@ if (!input) {
   process.exit(1)
 }
 
-/**
- * The fields a repeat is judged by: every captured field but the row id
- * (as in `summarize-ngo-registry.mjs`). The registry page drops repeats of
- * a live read by the same list (`distinctRows` in its model), so the two
- * count alike.
- */
-const REPEAT_FIELDS = [
-  'registryNumber',
-  'name',
-  'nameWithheld',
-  'category',
-  'legalForm',
-  'court',
-  'sourceRegistryStatus',
-  'sourceRegistrationDate',
-  'county',
-  'locality',
-  'sourceCui',
-  'linkedOrganizationCui',
-  'isBranch',
-  'sourceReportsPublicUtility',
-]
 
 const lines = readFileSync(input, 'utf8').split('\n').filter(Boolean)
 const captured = lines.map((line) => JSON.parse(line))
@@ -78,7 +58,7 @@ if (captured.some((row) => !('organizationCui' in row))) throw new Error('the ca
 const seen = new Set()
 const rows = []
 for (const row of captured) {
-  const key = JSON.stringify(REPEAT_FIELDS.map((field) => row[field] ?? null))
+  const key = repeatKey(row)
   if (seen.has(key)) continue
   seen.add(key)
   rows.push(row)
