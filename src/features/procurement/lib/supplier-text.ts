@@ -11,8 +11,9 @@ import { contractClients, hasAnyRecord, knownClientName, scanIsWhole, steadyClie
 /**
  * A firm's page's sentences. Each states a fact computed from the read and
  * returns null when the data would contradict it or has nothing worth a line
- * — never a judgement: „83% din bani au venit de la o instituție", not
- * „depinde de". An institution is named in a sentence only when its name is
+ * — never a judgement: „o instituție a cumpărat 83% din valoarea vânzărilor
+ * ei directe", not „depinde de". An amount is what SEAP awarded, never said
+ * as paid or received. An institution is named in a sentence only when its name is
  * known, never by a bare CUI.
  */
 
@@ -65,7 +66,8 @@ export function headSentence(profile: SupplierProfile): string {
 }
 
 /**
- * How much of the firm's direct money its largest clients paid — and the other
+ * How much of the firm's direct sales came from its largest clients — awarded
+ * values, never said as paid — and the other
  * side: the institution the firm weighed most for, its share of that
  * institution's own direct purchases, and whether it led them.
  */
@@ -81,8 +83,8 @@ export function clientsLede(profile: SupplierProfile): string | null {
       const three = rows.slice(0, 3).reduce((sum, row) => sum + (row.share ?? 0), 0)
       parts.push(
         rows.length >= 4 && three - top.share >= 0.05
-          ? t`${topName} a plătit ${percentText(top.share, 0)} din banii achizițiilor directe ale firmei în ${year}; primele trei instituții, ${percentText(three, 0)}.`
-          : t`${topName} a plătit ${percentText(top.share, 0)} din banii achizițiilor directe ale firmei în ${year}.`,
+          ? t`${topName} a cumpărat ${percentText(top.share, 0)} din valoarea vânzărilor directe ale firmei din ${year}; primele trei instituții, ${percentText(three, 0)}.`
+          : t`${topName} a cumpărat ${percentText(top.share, 0)} din valoarea vânzărilor directe ale firmei din ${year}.`,
       )
     }
   } else if ((profile.direct.count ?? 0) === 0) {
@@ -171,13 +173,13 @@ export function whereLede(profile: SupplierView): string | null {
     const others = otherCounties(rows.length - 1)
     if (!direct) return t`${share} din contracte au venit de la instituții din ${where}, județul firmei; restul, din ${others}.`
     return profile.countiesRankedBy === 'value'
-      ? t`${share} din banii achizițiilor directe au venit de la instituții din ${where}, județul firmei; restul, din ${others}.`
+      ? t`Instituțiile din ${where}, județul firmei, au cumpărat ${share} din valoarea vânzărilor ei directe; restul, cele din ${others}.`
       : t`${share} din achizițiile directe au venit de la instituții din ${where}, județul firmei; restul, din ${others}.`
   }
   if (top.share === null) return null
   if (!direct) return t`A câștigat contracte de la instituții din ${countiesCount(rows.length)}; cele mai multe, din ${countyName(top.code)}.`
   return profile.countiesRankedBy === 'value'
-    ? t`A vândut direct instituțiilor din ${countiesCount(rows.length)}; cei mai mulți bani au venit din ${countyName(top.code)} (${percentText(top.share, 0)}).`
+    ? t`A vândut direct instituțiilor din ${countiesCount(rows.length)}; cele din ${countyName(top.code)} au cumpărat cel mai mult (${percentText(top.share, 0)} din valoare).`
     : t`A vândut direct instituțiilor din ${countiesCount(rows.length)}; cele mai multe achiziții, din ${countyName(top.code)}.`
 }
 

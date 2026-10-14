@@ -86,7 +86,7 @@ export const Route = createFileRoute('/procurement/suppliers/$cui')({
     const name = found && found !== params.cui ? found : null
     // A CUI with no sale since 2019 (a buyer's, a mistyped one) is not a page for a search engine.
     const noRecords = profile ? ![...profile.directYears, ...profile.contractYears].some((point) => (point.count ?? 0) > 0) : false
-    const title = buildSupplierDocumentTitle({ cui: params.cui, supplierName: name })
+    const title = buildSupplierDocumentTitle(translator, { cui: params.cui, supplierName: name })
     const description = name
       ? translator._(msg`${name} ca furnizor al statului: ce instituții cumpără de la firmă, ce vinde, unde, cum câștigă și cu cine, din SEAP.`)
       : translator._(msg`O firmă ca furnizor al statului: ce instituții cumpără de la ea, ce vinde, unde, cum câștigă și cu cine, din SEAP.`)

@@ -72,6 +72,34 @@ describe('a tally on its way from the server', () => {
   })
 })
 
+describe('the registry’s placeholder for an unknown place', () => {
+  it('counts „NEDETERMINAT" as no locality, from the counts and from rows alike', () => {
+    // Cluj, dissolved: eleven towns and one entry the registry places in no town (QA NG-004).
+    const cluj = tally({ county: 'CLUJ', status: 'dissolved' })!
+    expect(entriesOf(cluj, 'localitate', 'NEDETERMINAT')).toBe(0)
+    expect(unplacedOn(cluj, 'localitate')).toBeGreaterThan(0)
+    expect(valuesOn(cluj, 'localitate', 'CJ')).toBe(11)
+    const rows = tallyOfRows(
+      [
+        row({ id: 'a', registryNumber: '1/A/2020', locality: 'NEDETERMINAT', county: 'CLUJ' }),
+        row({ id: 'b', registryNumber: '2/A/2020', locality: 'TURDA', county: 'NEDETERMINAT' }),
+      ],
+      2026,
+    )
+    expect(valuesOn(rows, 'localitate')).toBe(1)
+    expect(unplacedOn(rows, 'localitate')).toBe(1)
+    expect(unplacedOn(rows, 'judet')).toBe(1)
+  })
+
+  it('says on the localities figure how many entries have no known town, as the counties figure does', () => {
+    const query = { ...EMPTY_QUERY, county: 'CLUJ', status: 'dissolved' as const }
+    const localities = figuresOf({ query, summary, tally: tally(query), read: read([], { pending: true, complete: false }) }).find(
+      (figure) => figure.key === 'localities',
+    )
+    expect(localities).toMatchObject({ value: '11', note: '1 fără localitate' })
+  })
+})
+
 describe('what the counts cannot answer', () => {
   it('a name, a registry number, a county the registry does not spell that way', () => {
     expect(tally({ q: 'funky' })).toBeNull()

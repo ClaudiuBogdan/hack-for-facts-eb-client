@@ -82,8 +82,10 @@ describe('an award notice with an association', () => {
 describe('a legacy call with contracts joined by mistake', () => {
   const page = text(render(procedureSheetOf(readOf(legacyRaw()))))
 
-  it('names the untitled notice by its number and says what SEAP does not publish', () => {
-    inOrder(page, ['Anunț de participare', 'Anunțul de participare nr. 92137', 'SEAP nu dă acestui anunț un titlu.', 'a publicat anunțul de participare', '10 decembrie 2009', 'SEAP nu publică ce s-a întâmplat cu ea.'])
+  it('names the untitled notice by its number and says its result is not linked, not that none was published', () => {
+    inOrder(page, ['Anunț de participare', 'Anunțul de participare nr. 92137', 'SEAP nu dă acestui anunț un titlu.', 'a publicat anunțul de participare', '10 decembrie 2009', 'Rezultatul nu e legat de acest anunț: o atribuire, dacă există, e un anunț separat.'])
+    // The data does not link a call to its award: that is no proof SEAP published none (CN1044934 → CAN1096494).
+    expect(page).not.toContain('SEAP nu publică ce s-a întâmplat')
   })
 
   it('sets the other institutions’ contracts apart, counted nowhere', () => {

@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { t } from '@lingui/core/macro'
-import { Trans } from '@lingui/react/macro'
+import { Trans, useLingui } from '@lingui/react/macro'
 import { Info, X } from 'lucide-react'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Close as PopoverClose } from '@radix-ui/react-popover'
@@ -41,9 +41,12 @@ function maskLabel(kind: MaskKind): string {
 function MaskedData({ kind, token, focusable }: { readonly kind: MaskKind; readonly token: string; readonly focusable: boolean }) {
   const label = maskLabel(kind)
   const id = useId()
+  const { i18n } = useLingui()
   return (
     <Popover>
       <PopoverTrigger
+        // The badge is the page's own words, inside the registry's Romanian text: in the page's language.
+        lang={i18n.locale}
         tabIndex={focusable ? undefined : -1}
         aria-label={t`Ascuns în registru: ${label}. De ce?`}
         className="mx-0.5 inline-flex items-center gap-1.5 rounded-sm border border-dashed border-muted-foreground/45 bg-muted/50 px-2 py-px align-baseline text-[0.8em] font-semibold uppercase leading-snug tracking-[0.06em] text-muted-foreground transition-colors hover:border-foreground/50 hover:text-foreground"
@@ -75,7 +78,8 @@ function MaskedData({ kind, token, focusable }: { readonly kind: MaskKind; reado
 function PurposeText({ text, id, clamped }: { readonly text: string; readonly id: string; readonly clamped: boolean }) {
   return (
     // pre-wrap: the registry's line breaks and indents, exactly as published.
-    <p id={id} className={cn('whitespace-pre-wrap text-lg leading-relaxed text-foreground', clamped && 'line-clamp-[8]')}>
+    // The registry's own words, in Romanian on an English page too (`lang`): a screen reader reads them as Romanian.
+    <p id={id} lang="ro" className={cn('whitespace-pre-wrap text-lg leading-relaxed text-foreground', clamped && 'line-clamp-[8]')}>
       {purposeSegments(text).map((segment, index) =>
         'text' in segment ? (
           <span key={index}>{segment.text}</span>

@@ -5,14 +5,19 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { cn } from '@/lib/utils'
 import { count, moneyText } from '../../lib/company-profile-format'
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
+import { netChartLabel, netLineName, netPointLabel } from '../../lib/company-profile-text'
 
 /** The legend column beside the chart's bands. */
 const LABEL_COLUMN = '7.5rem'
 
+/** The type of the last year's figures on the drawing; each use adds its series' colour. */
+const LAST_VALUE_CLASS = 'whitespace-nowrap font-mono text-[10px] font-medium leading-none tabular-nums'
+
 /**
  * The head's chart: turnover, net result and people over the last five years
  * with a statement, all at once, no toggle, no table — the shape at a glance,
- * the figures on a pointer.
+ * the last year's figures written over its point and bars, every other year's
+ * on a pointer.
  *
  * Two units share no axis, so they share only the years: people are a line in
  * a band of their own above, lei are bars below — turnover wide and pale, the
@@ -39,13 +44,16 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
   }, [active])
   const { recent } = model
   const years = recent.years
+  // The bottom line: a net result, or a held result's admitted profit, named by what its points are.
+  const netValues = recent.net.map((point) => point.value)
+  const netName = netLineName(recent.net)
   const n = years.length
   if (!model.latest || n === 0) return null
   const last = n - 1
   const repeat = `repeat(${n}, minmax(0, 1fr))`
   const centre = (index: number) => ((index + 0.5) / n) * 100
 
-  const lei = [...recent.turnover, ...recent.netResult].filter((value): value is number => value !== null)
+  const lei = [...recent.turnover, ...netValues].filter((value): value is number => value !== null)
   const top = Math.max(0, ...lei)
   const bottom = Math.min(0, ...lei)
   const range = top - bottom || 1
@@ -70,9 +78,38 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
   })
   const leiRow = hasStaff ? 2 : 1
 
-  const rows = [
+  // The last year's figures, written on the chart so the newest reads without a pointer.
+  const lastStaff = recent.employees[last] ?? null
+  const lastTurnover = recent.turnover[last] ?? null
+  const lastNet = netValues[last] ?? null
+  const lastLei = [
+    ...(lastTurnover !== null ? [{ key: 'turnover', value: lastTurnover, tone: 'text-primary/80' }] : []),
+    ...(lastNet !== null ? [{ key: 'net', value: lastNet, tone: lastNet < 0 ? 'text-destructive' : 'text-primary' }] : []),
+  ]
+  // The money stack stands over the last column and, wider than it on a phone, reaches into the one before: it clears both.
+  const lastLeiTop = recent.turnover
+    .slice(Math.max(0, last - 1))
+    .concat(netValues.slice(Math.max(0, last - 1)))
+    .reduce<number>((highest, value) => Math.max(highest, value ?? 0), 0)
+
+  const rows: readonly {
+    readonly key: string
+    readonly label: string
+    readonly labelAt?: (index: number) => string
+    readonly swatch: string
+    readonly values: readonly (number | null)[]
+    readonly format: (value: number) => string
+  }[] = [
     { key: 'turnover', label: t`Cifra de afaceri`, swatch: 'size-2.5 rounded-[2px] bg-primary/30', values: recent.turnover, format: moneyText },
-    { key: 'net', label: t`Rezultat net`, swatch: 'size-2.5 rounded-[2px] bg-primary', values: recent.netResult, format: moneyText },
+    {
+      key: 'net',
+      label: netName,
+      // A year's reading names its own bottom line: a profit is never called the result.
+      labelAt: (index: number) => netPointLabel(recent.net[index]),
+      swatch: 'size-2.5 rounded-[2px] bg-primary',
+      values: netValues,
+      format: moneyText,
+    },
     {
       key: 'employees',
       label: t`Salariați`,
@@ -88,8 +125,8 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
         {n >= 5 ? t`Ultimii 5 ani cu bilanț` : t`Anii cu bilanț`}
       </MonoLabel>
 
-      {/* The drawing; the hidden table below says every value to assistive technology. */}
-      <div className="relative mt-4 grid" style={{ gridTemplateColumns: `${LABEL_COLUMN} ${repeat}` }} aria-hidden="true">
+      {/* The drawing; the hidden table below says every value to assistive technology. Room at its top for the last count, over its point. */}
+      <div className={cn('relative grid', lastStaff !== null ? 'mt-7' : 'mt-4')} style={{ gridTemplateColumns: `${LABEL_COLUMN} ${repeat}` }} aria-hidden="true">
         {hasStaff ? (
           <>
             <MonoLabel className="self-center pr-3 leading-relaxed text-amber-600 dark:text-amber-400" style={{ gridRow: 1, gridColumn: 1 }}>
@@ -118,6 +155,15 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
                   />
                 ),
               )}
+              {lastStaff !== null ? (
+                // Over the last point, knocked out of the line that may pass behind it.
+                <span
+                  className={cn(LAST_VALUE_CLASS, 'absolute -mt-2 -translate-x-1/2 -translate-y-full bg-background px-0.5 text-amber-700 dark:text-amber-400')}
+                  style={{ left: `${centre(last).toFixed(2)}%`, top: `${staffY(lastStaff).toFixed(1)}%` }}
+                >
+                  {count(lastStaff)}
+                </span>
+              ) : null}
             </div>
           </>
         ) : null}
@@ -126,37 +172,63 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
           <MonoLabel className="block leading-relaxed text-primary/60">
             <Trans>Cifra de afaceri</Trans>
           </MonoLabel>
-          <MonoLabel className="block leading-relaxed text-primary">
-            <Trans>Rezultat net</Trans>
-          </MonoLabel>
+          {/* No bottom line to draw (every year held or missing): no name for bars that are not there. */}
+          {netValues.some((value) => value !== null) ? <MonoLabel className="block leading-relaxed text-primary">{netName}</MonoLabel> : null}
         </span>
-        <div className={cn('relative h-28', hasStaff && 'mt-3')} style={{ gridRow: leiRow, gridColumn: `2 / span ${n}` }}>
-          <span className="absolute inset-x-0 h-px bg-border" style={{ top: `${zero.toFixed(1)}%` }} />
-          <div className="grid h-full" style={{ gridTemplateColumns: repeat }}>
-            {years.map((year, index) => {
-              const turnover = recent.turnover[index] ?? null
-              const net = recent.netResult[index] ?? null
-              const strong = index === last || index === active
-              return (
-                <div key={year} className="relative">
-                  {turnover !== null ? (
-                    <span
-                      className={cn('absolute inset-x-1.5 rounded-[2px] transition-colors sm:inset-x-2.5', strong ? 'bg-primary/30' : 'bg-primary/15')}
-                      style={barStyle(turnover)}
-                    />
-                  ) : null}
-                  {net !== null ? (
-                    <span
-                      className={cn(
-                        'absolute left-1/2 w-2/5 -translate-x-1/2 rounded-[2px] transition-colors',
-                        net < 0 ? (strong ? 'bg-destructive' : 'bg-destructive/60') : strong ? 'bg-primary' : 'bg-primary/60',
-                      )}
-                      style={barStyle(net)}
-                    />
-                  ) : null}
-                </div>
-              )
-            })}
+        {/* The bars keep their height; the band grows by the headroom the last year's figures stand in. */}
+        <div className={cn('relative', lastLei.length > 0 ? 'h-36' : 'h-28', hasStaff && 'mt-3')} style={{ gridRow: leiRow, gridColumn: `2 / span ${n}` }}>
+          <div className={cn('absolute inset-x-0 bottom-0', lastLei.length > 0 ? 'top-8' : 'top-0')}>
+            <span className="absolute inset-x-0 h-px bg-border" style={{ top: `${zero.toFixed(1)}%` }} />
+            <div className="grid h-full" style={{ gridTemplateColumns: repeat }}>
+              {years.map((year, index) => {
+                const turnover = recent.turnover[index] ?? null
+                const net = netValues[index] ?? null
+                const strong = index === last || index === active
+                return (
+                  <div key={year} className="relative">
+                    {turnover !== null ? (
+                      <span
+                        className={cn('absolute inset-x-1.5 rounded-[2px] transition-colors sm:inset-x-2.5', strong ? 'bg-primary/30' : 'bg-primary/15')}
+                        style={barStyle(turnover)}
+                      />
+                    ) : null}
+                    {net !== null ? (
+                      // A held result's admitted profit is outlined: another metric than a net result, never drawn as one.
+                      <span
+                        className={cn(
+                          'absolute left-1/2 w-2/5 -translate-x-1/2 rounded-[2px] transition-colors',
+                          recent.net[index]?.kind === 'profit'
+                            ? cn('border-2 bg-background', strong ? 'border-primary' : 'border-primary/60')
+                            : net < 0
+                              ? strong
+                                ? 'bg-destructive'
+                                : 'bg-destructive/60'
+                              : strong
+                                ? 'bg-primary'
+                                : 'bg-primary/60',
+                        )}
+                        style={barStyle(net)}
+                        data-net-kind={recent.net[index]?.kind ?? undefined}
+                      />
+                    ) : null}
+                    {index === last && lastLei.length > 0 ? (
+                      // Over the column, centred on it, and never past the chart's right edge: wider than the
+                      // column, the stack grows to the left, over the year before's bars too.
+                      <span
+                        className="absolute right-0 mb-1.5 flex w-max min-w-full flex-col items-center gap-1"
+                        style={{ bottom: `${(100 - zero + (lastLeiTop / range) * 100).toFixed(1)}%` }}
+                      >
+                        {lastLei.map((entry) => (
+                          <span key={entry.key} className={cn(LAST_VALUE_CLASS, entry.tone)}>
+                            {moneyText(entry.value)}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
 
@@ -216,7 +288,7 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
                         <span className="flex w-3 justify-center">
                           <span className={row.swatch} />
                         </span>
-                        {row.label}
+                        {row.labelAt ? row.labelAt(active) : row.label}
                       </dt>
                       <dd className={cn('text-right font-medium tabular-nums', value !== null && value < 0 && 'text-destructive')}>
                         {value === null ? '—' : row.format(value)}
@@ -231,7 +303,7 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
       </div>
 
       <table className="sr-only">
-        <caption>{t`Cifra de afaceri, rezultatul net și salariații, ${years[0]}–${years[last]}`}</caption>
+        <caption>{`${netChartLabel(recent.net)}, ${years[0]}–${years[last]}`}</caption>
         <thead>
           <tr>
             <th scope="col">{t`An`}</th>
@@ -248,7 +320,10 @@ export function CompanyBalanceTrend({ model, className }: { readonly model: Comp
               <th scope="row">{year}</th>
               {rows.map((row) => {
                 const value = row.values[index] ?? null
-                return <td key={row.key}>{value === null ? '—' : row.format(value)}</td>
+                // A year whose metric is not the column's says its own (a profit under „Rezultat sau profit net").
+                const own = row.labelAt?.(index)
+                const text = value === null ? '—' : row.format(value)
+                return <td key={row.key}>{own && own !== row.label && value !== null ? `${own}: ${text}` : text}</td>
               })}
             </tr>
           ))}

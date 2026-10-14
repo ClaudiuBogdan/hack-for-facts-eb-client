@@ -3,10 +3,9 @@ import { withDeadline } from '@/lib/ssr/deadline-signal'
 import { createServerMemo } from '@/lib/ssr/server-memo'
 import type { AnalyticsSeed } from '../hooks/use-procurement-analytics'
 import { procurementAnalyticsKeys } from '../lib/analytics-keys'
-import { analyticsSearchOf, cpvKey, dropsFilters, POPULATION_ORDER, queryOf, repaired, urlSearchOf, withPopulation } from '../lib/analytics-model'
+import { analyticsSearchOf, cpvKey, dropsFilters, POPULATION_ORDER, queryOf, recordsViewOf, recordsViewSearch, repaired, urlSearchOf, withPopulation } from '../lib/analytics-model'
 import { homeYear } from '../lib/home-model'
 import {
-  defaultRecordsSort,
   isStaleBuild,
   nameKeys,
   planAnswer,
@@ -28,8 +27,9 @@ import { fetchProcurementGeographyOptions } from './procurement-reference-api'
  * The cutoff first (every read's months hang on it, and every read is pinned
  * to the analysis build it was read from), then the answer's reads side by
  * side — the figures, the concentration, the ranking or the series or the
- * records' first page, the years — and the names of what they hold. A question
- * is kept per build: a publication starts every question over.
+ * records' page the address holds, the years — and the names of what they
+ * hold. A question is kept per build: a publication starts every question
+ * over.
  * They seed the page's queries under the keys the browser plans (see
  * `planAnswer`), so the document carries the answer and the browser reads
  * only what the server could not.
@@ -65,12 +65,15 @@ const questions = createServerMemo<ProcurementAnalyticsServerRead>(KEEP_MS, { ma
 const reference = createServerMemo<unknown>(KEEP_REFERENCE_MS, { maxEntries: 4 })
 
 export async function readProcurementAnalyticsForSsr(search: Readonly<Record<string, unknown>>): Promise<ProcurementAnalyticsServerRead> {
-  const query = repaired(queryOf(analyticsSearchOf(search)))
+  const strings = analyticsSearchOf(search)
+  const query = repaired(queryOf(strings))
+  // The records' page and order the address holds: the list the page opens on.
+  const view = recordsViewOf(strings, query)
   const latest = homeYear()
   // The shared cutoff read keeps itself (`procurement-cutoff.ts`): its build keys the question. Within the render's budget.
   const cutoffBudget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
   const pinned = await untilAborted(readAnalyticsCutoff(latest), cutoffBudget).catch(() => null)
-  return questions(hashKey([urlSearchOf(query), pinned?.build ?? null]), async () => {
+  return questions(hashKey([urlSearchOf(query), query.dupa.axis === 'inregistrari' ? recordsViewSearch(view, query) : null, pinned?.build ?? null]), async () => {
     const budget = withDeadline(undefined, SSR_BUDGET_MS) ?? new AbortController().signal
     const seeded = async <T>(read: PlannedRead<T>) => ({ key: read.key, data: await read.read(budget) })
     const cutoffKey = procurementAnalyticsKeys.cutoff(latest)
@@ -87,7 +90,7 @@ export async function readProcurementAnalyticsForSsr(search: Readonly<Record<str
     seed.push({ key: cutoffKey, data: cutoff.value })
     const plan = planAnswer(query, cutoff.value, { topN: 25, years: true })
     const answer: PlannedRead<unknown>[] = [plan.figures, plan.concentration, plan.ranking, plan.series, plan.years].filter((read) => read.enabled)
-    const records = query.dupa.axis === 'inregistrari' ? planRecords(query, cutoff.value, defaultRecordsSort(query), 1) : null
+    const records = query.dupa.axis === 'inregistrari' ? planRecords(query, cutoff.value, view.sort, view.page) : null
     // The other populations' figures, for the counts on their tabs (and their answer, should a tab be clicked): a failure there is the browser's to read.
     const others = POPULATION_ORDER.filter((tip) => tip !== query.tip && !dropsFilters(query, tip))
       .map((tip) => planAnswer(withPopulation(query, tip), cutoff.value, { topN: 25, years: false }).figures)

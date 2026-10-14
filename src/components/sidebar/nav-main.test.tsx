@@ -345,7 +345,7 @@ describe('NavMain', () => {
       expect(screen.getByText('Map')).toBeInTheDocument()
     })
 
-    it('hides labels when collapsed', async () => {
+    it('hides labels when collapsed, but keeps each link named for screen readers', async () => {
       mockSidebarState.mockReturnValue({
         state: 'collapsed',
         isMobile: false,
@@ -353,8 +353,10 @@ describe('NavMain', () => {
       })
       await renderNavMain()
 
-      expect(screen.queryByText('Dashboard')).not.toBeInTheDocument()
-      expect(screen.queryByText('Map')).not.toBeInTheDocument()
+      expect(screen.getByText('Dashboard')).toHaveClass('sr-only')
+      expect(screen.getByText('Map')).toHaveClass('sr-only')
+      expect(screen.getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '/')
+      expect(screen.getByRole('link', { name: 'Map' })).toHaveAttribute('href', '/map')
     })
   })
 

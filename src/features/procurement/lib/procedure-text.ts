@@ -58,8 +58,9 @@ export function statusText(status: PrStatus): string | null {
       return t`Ofertele sunt în evaluare.`
     case 'published':
       return t`Procedura e în desfășurare.`
+    // The data does not link a call to its award (design §22.1): its result may be published as a notice of its own.
     case 'unknown':
-      return t`SEAP nu publică ce s-a întâmplat cu ea.`
+      return t`Rezultatul nu e legat de acest anunț: o atribuire, dacă există, e un anunț separat.`
     default:
       return null
   }
@@ -78,7 +79,7 @@ export function statusLabel(status: PrStatus): string {
     case 'published':
       return t`în desfășurare`
     default:
-      return t`fără rezultat publicat`
+      return t`fără rezultat legat`
   }
 }
 

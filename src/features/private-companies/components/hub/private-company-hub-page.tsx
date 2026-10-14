@@ -13,6 +13,7 @@ import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/co
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { HubFiguresBand, type HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { cn } from '@/lib/utils'
+import type { CompanyAnalysisMetric, CompanyAnalysisRankBy, CompanyAnalysisScope } from '@/schemas/company-analytics'
 import {
   COMPANY_HUB_MAP_INDICATORS,
   type CompanyHubMapIndicator,
@@ -21,13 +22,15 @@ import {
   type CompanyHubSectorMetric,
   type CompanyHubYearMeasure,
 } from '@/schemas/private-company-search'
-import { divisionLabel } from '../../lib/caen-divisions'
+import { activityDerivationText } from '../../lib/company-activity-text'
 import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE } from '../../lib/company-status-codes'
 import { HUB_EMPLOYEE_CEILING, hubAnalysisSearch, hubCompaniesSearch, hubCountySearch, withHubHeadcounts } from '../../lib/hub-analysis-links'
 import { ANAF_FIRST_YEAR, ECONOMY_MEASURE, ECONOMY_METRIC } from '../../lib/hub-economy'
-import { formatHubDay, formatHubMonth, formatHubNumber, formatHubShare } from '../../lib/hub-format'
+import { formatHubDay, formatHubMonth, formatHubNumber, formatHubShare, formatHubValueText } from '../../lib/hub-format'
+import { COMPANY_HUB_ACTIVITIES } from '../../lib/hub-activities'
 import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
-import { hubCountyLayer, newFirmsLeadingSectors, registrationSeries, survivalShare } from '../../lib/hub-view'
+import type { HubActivityRow } from '../../lib/hub-snapshot-types'
+import { hubCountyLayer, registrationSeries, survivalShare } from '../../lib/hub-view'
 import { CompanyHubHero, CompanyLeadersFrame } from './company-hub-hero'
 import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandNumber, companyHubSections } from './company-hub-sections'
 import { HubEconomyChart, HubEconomySpan } from './hub-economy-years'
@@ -35,14 +38,15 @@ import { HubInfoNote } from './hub-info-note'
 import { HubCountyBand } from './hub-county-band'
 import { HubLeaders } from './hub-leaders'
 import { HubSearch } from './hub-search'
-import { HubSectors, HubSizeTable, type SectorMetric } from './hub-sectors'
+import { HubActivities, HubSizeTable, type ActivityMeasure } from './hub-sectors'
 
 /**
  * `/companies` — the companies hub, in the INS hub's composition: search in a
  * hero with the largest companies beside it and the sources at its foot, the
  * pinned bar of the page's bands, the four figures a reader comes for, then
- * one numbered band per question — what the economy lives on, where the
- * companies are, how the economy has gone year by year, how many companies
+ * one numbered band per question — where the companies are (first, as the
+ * procurement and NGO hubs open on their counties), what the economy lives
+ * on, how the economy has gone year by year, how many companies
  * are recorded in the registry each year — three places to start, and the full sources line. A band says what its numbers are and nothing about
  * the database. The head is `company-hub-hero.tsx`'s, which the loading state
  * draws too.
@@ -50,7 +54,10 @@ import { HubSectors, HubSizeTable, type SectorMetric } from './hub-sectors'
  * Every figure is the client's snapshot (`lib/hub-snapshot.ts`): a closed
  * year of statements and registrations, so the page renders on the server in
  * full and asks the API for nothing but the search. The years are the
- * companies analysis release's qualified values, frozen in the same snapshot.
+ * companies analysis release's qualified values, frozen in the same snapshot,
+ * and so are the rankings by activity (`lib/hub-activities.ts`): the
+ * release's derived selection, each exact class in its own revision, with
+ * the API's own totals.
  * Each choice — the ranking, the sector measure, the map layer, the years'
  * measure — is in the URL, so a view can be shared. Where a figure leads
  * further, it opens the companies analysis on the same question
@@ -62,6 +69,7 @@ import { HubSectors, HubSizeTable, type SectorMetric } from './hub-sectors'
  */
 
 const SNAPSHOT = COMPANY_HUB_SNAPSHOT
+const ACTIVITIES = COMPANY_HUB_ACTIVITIES
 const YEAR = SNAPSHOT.fiscalYear
 /** A cohort old enough to have been through a downturn, recent enough to still matter. */
 const COHORT_YEAR = YEAR - 10
@@ -74,10 +82,39 @@ const DEFAULT_YEAR_MEASURE: CompanyHubYearMeasure = 'cifra-de-afaceri'
 /** The registry's open data, where the counts of companies come from. */
 const ONRC_OPEN_DATA_URL = 'https://data.gov.ro/ro/organization/onrc'
 
-const SECTOR_METRIC: Record<CompanyHubSectorMetric, SectorMetric> = {
+const ACTIVITY_MEASURE: Record<CompanyHubSectorMetric, ActivityMeasure> = {
   'cifra-de-afaceri': 'turnover',
   salariati: 'employees',
   firme: 'activeFirms',
+}
+
+/**
+ * The question each activity ranking asked the analysis (`hub-activities.ts`):
+ * its population, metric and rank. Its links ask the same, so a row opens the
+ * companies its figure counts.
+ */
+const ACTIVITY_QUESTION: Readonly<
+  Record<ActivityMeasure, { readonly metric: CompanyAnalysisMetric; readonly rankBy: CompanyAnalysisRankBy | null; readonly scope: CompanyAnalysisScope }>
+> = {
+  turnover: { metric: 'TURNOVER', rankBy: null, scope: {} },
+  employees: { metric: 'EMPLOYEES', rankBy: null, scope: withHubHeadcounts({}) },
+  activeFirms: { metric: 'TURNOVER', rankBy: 'COMPANIES', scope: { observedStatus: { in: [STATUS_ACTIVE] } } },
+}
+
+/**
+ * One row's companies in the analysis: the exact selection (ONRC with its
+ * revision, ANAF with none), under its ranking's question, in the release the
+ * ranking was read from (`editie`) — a later release could answer with other
+ * companies.
+ */
+function activityRowSearch(measure: ActivityMeasure, row: HubActivityRow) {
+  const question = ACTIVITY_QUESTION[measure]
+  const selector = row.source === 'ONRC' && row.revision ? { source: row.source, code: row.code, revision: row.revision } : { source: row.source, code: row.code }
+  return hubAnalysisSearch(ACTIVITIES.source.fiscalYear, {
+    release: ACTIVITIES.source.releaseId,
+    metric: question.metric,
+    scope: { ...question.scope, activity: [selector] },
+  })
 }
 
 function startArrivalEffects(block: Element, delay: number) {
@@ -112,6 +149,7 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
 
   const ranking = search.clasament ?? DEFAULT_RANKING
   const sectorMetric = search.domenii ?? DEFAULT_SECTOR_METRIC
+  const activityMeasure = ACTIVITY_MEASURE[sectorMetric]
   const mapIndicator = search.indicator ?? DEFAULT_MAP
   const yearMeasure = search.evolutie ?? DEFAULT_YEAR_MEASURE
   const choose = (key: keyof CompanyHubSearch, value: string, fallback: string) =>
@@ -186,7 +224,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
   const survival = survivalShare(SNAPSHOT.registrations, COHORT_YEAR)
   const series = registrationSeries(SNAPSHOT.registrations)
   const firstYear = SNAPSHOT.registrations[0]?.year ?? 1991
-  const newSectors = newFirmsLeadingSectors(SNAPSHOT, 5)
   const economyMeasure = ECONOMY_MEASURE[yearMeasure]
   const onrcDay = formatHubDay(SNAPSHOT.yearsSource.onrcPublished)
   const lastMfYear = ANAF_FIRST_YEAR - 1
@@ -211,12 +248,29 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
         </RuledFrame>
       </section>
 
+      <HomeBand id="judete" labelledBy="hub-counties-title">
+        <HubSectionHead
+          titleId="hub-counties-title"
+          index={`${bandNumber(sections, 'judete')} / ${t`Pe județe`}`}
+          title={<Trans>Unde stă județul tău</Trans>}
+          aside={
+            <IndicatorToggle
+              label={t`Indicatorul de pe hartă`}
+              options={COMPANY_HUB_MAP_INDICATORS.map((key) => ({ key, label: mapOptions[key].label }))}
+              value={mapIndicator}
+              onChange={(key: CompanyHubMapIndicator) => choose('indicator', key, DEFAULT_MAP)}
+            />
+          }
+        />
+        <HubCountyBand layer={hubCountyLayer(SNAPSHOT, mapIndicator)} legend={mapOptions[mapIndicator].legend} countyLink={(code) => hubCountySearch(YEAR, code, mapIndicator === 'densitate')} />
+      </HomeBand>
+
       <HomeBand id="domenii" labelledBy="hub-sectors-title">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <HubSectionHead
               titleId="hub-sectors-title"
-              index={`${bandNumber(sections, 'domenii')} / ${sections[0]?.label ?? ''}`}
+              index={`${bandNumber(sections, 'domenii')} / ${sections.find((section) => section.id === 'domenii')?.label ?? ''}`}
               title={
                 <Trans>
                   Din ce trăiește
@@ -248,46 +302,31 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                 options={[
                   { key: 'cifra-de-afaceri', label: t`Cifra de afaceri` },
                   { key: 'salariati', label: t`Salariați` },
-                  { key: 'firme', label: t`Firme` },
+                  // The companies ONRC observes „în funcțiune": not every company the analysis holds.
+                  { key: 'firme', label: t`Firme în funcțiune` },
                 ]}
                 value={sectorMetric}
                 onChange={(key: CompanyHubSectorMetric) => choose('domenii', key, DEFAULT_SECTOR_METRIC)}
               />
             </div>
-            <HubSectors
+            <HubActivities
               className="mt-5"
-              sectors={SNAPSHOT.sectors}
-              metric={SECTOR_METRIC[sectorMetric]}
-              analysis={hubAnalysisSearch(YEAR, {
+              ranking={ACTIVITIES[activityMeasure]}
+              measure={activityMeasure}
+              rowLink={(row) => activityRowSearch(activityMeasure, row)}
+              analysis={hubAnalysisSearch(ACTIVITIES.source.fiscalYear, {
+                // The release the ranking was read from: the same groups, the same totals.
+                release: ACTIVITIES.source.releaseId,
                 panel: 'defalcare',
-                dimension: 'MAIN_CAEN',
-                metric: sectorMetric === 'salariati' ? 'EMPLOYEES' : 'TURNOVER',
-                // By the sum, the analysis's default, unless the domains are ranked by their companies in business.
-                rankBy: sectorMetric === 'firme' ? 'COMPANIES' : null,
-                // The same companies the measure counts: those in business, or within the hub's headcounts.
-                scope: sectorMetric === 'firme' ? { observedStatus: { in: [STATUS_ACTIVE] } } : sectorMetric === 'salariati' ? withHubHeadcounts({}) : {},
+                dimension: 'ACTIVITY',
+                metric: ACTIVITY_QUESTION[activityMeasure].metric,
+                rankBy: ACTIVITY_QUESTION[activityMeasure].rankBy,
+                scope: ACTIVITY_QUESTION[activityMeasure].scope,
               })}
-              total={sectorMetric === 'salariati' ? national.employees : sectorMetric === 'firme' ? national.activeFirms : national.turnover}
+              caption={<ActivitiesCaption measure={activityMeasure} />}
             />
           </div>
         </div>
-      </HomeBand>
-
-      <HomeBand id="judete" labelledBy="hub-counties-title">
-        <HubSectionHead
-          titleId="hub-counties-title"
-          index={`${bandNumber(sections, 'judete')} / ${t`Pe județe`}`}
-          title={<Trans>Unde stă județul tău</Trans>}
-          aside={
-            <IndicatorToggle
-              label={t`Indicatorul de pe hartă`}
-              options={COMPANY_HUB_MAP_INDICATORS.map((key) => ({ key, label: mapOptions[key].label }))}
-              value={mapIndicator}
-              onChange={(key: CompanyHubMapIndicator) => choose('indicator', key, DEFAULT_MAP)}
-            />
-          }
-        />
-        <HubCountyBand layer={hubCountyLayer(SNAPSHOT, mapIndicator)} legend={mapOptions[mapIndicator].legend} countyLink={(code) => hubCountySearch(YEAR, code, mapIndicator === 'densitate')} />
       </HomeBand>
 
       <HomeBand id="economie" labelledBy="hub-economy-title">
@@ -402,24 +441,6 @@ export function PrivateCompanyHubPage({ search }: { readonly search: CompanyHubS
                 ) : null
               }
             />
-            {newSectors.length > 0 ? (
-              <div className="mt-8" data-reveal>
-                <MonoLabel className="block text-muted-foreground">
-                  <Trans>Firmele înregistrate în {YEAR}, pe domenii</Trans>
-                </MonoLabel>
-                {/* Not links: no filter of the analysis selects a registration year the compact codes carry, nor a
-                    division, so no question it answers would list the companies a row counts. */}
-                <ol className="mt-3 divide-y divide-border/70 border-y border-border/70" data-testid="company-hub-new-sectors">
-                  {newSectors.map((entry) => (
-                    <li key={entry.division} className="grid grid-cols-[minmax(0,1fr)_auto_3.5rem] items-baseline gap-x-4 py-2.5 text-sm">
-                      <span className="truncate pl-1 text-foreground">{divisionLabel(entry.division)}</span>
-                      <span className="tabular-nums text-muted-foreground">{formatHubNumber(entry.firms)}</span>
-                      <span className="pr-1 text-right font-semibold tabular-nums text-foreground">{formatHubShare(entry.share, 1)}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ) : null}
           </div>
           <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} data-reveal>
             <MonoLabel className="block text-muted-foreground">
@@ -494,6 +515,47 @@ function economyLede(measure: 'turnover' | 'netResult' | 'employees'): string {
     case 'employees':
       return t`Numărul mediu de salariați din bilanțuri, adunat: nu persoane distincte.`
   }
+}
+
+/**
+ * What a ranking by activity counts and what its shares are of — the API's
+ * own total for that question, not the figures band's raw sums — and, behind
+ * one marker, how the activity is selected: by the platform, never the
+ * principal activity the law has a company register (the ONRC files read
+ * carry no such flag).
+ */
+function ActivitiesCaption({ measure }: { readonly measure: ActivityMeasure }) {
+  const { releaseId, fiscalYear: year, onrcPublished } = ACTIVITIES.source
+  const unit = measure === 'turnover' ? 'lei' : measure === 'employees' ? 'persons' : 'firms'
+  const total = formatHubValueText(ACTIVITIES[measure].total, unit)
+  const ceiling = formatHubNumber(HUB_EMPLOYEE_CEILING)
+  return (
+    <>
+      {measure === 'turnover' ? (
+        <Trans>
+          Procente din {total}, cifra de afaceri admisă pe {year} în analiza bilanțurilor, ediția {releaseId}.
+        </Trans>
+      ) : measure === 'employees' ? (
+        <Trans>
+          Procente din {total}, numărul mediu admis pe {year} (cel mult {ceiling} pe firmă) în analiza bilanțurilor, ediția {releaseId}.
+        </Trans>
+      ) : (
+        <Trans>
+          Procente din {total} cu starea „în funcțiune" în registrul citit de analiza bilanțurilor, ediția {releaseId}.
+        </Trans>
+      )}{' '}
+      <HubInfoNote label={t`Despre activitatea selectată`}>
+        <p>{activityDerivationText(onrcPublished)}</p>
+        <p>
+          <Trans>
+            Legea cere fiecărei firme o activitate principală înregistrată, dar fișierele ONRC publicate pe care le citim nu o marchează: activitatea de aici e
+            selecția platformei, nu activitatea principală înregistrată. Fiecare clasă e în revizia CAEN a înscrierii ei; aceleași cifre în două revizii sunt două
+            rânduri.
+          </Trans>
+        </p>
+      </HubInfoNote>
+    </>
+  )
 }
 
 // ──────────────────────────────────────────────────────────── the hero ──

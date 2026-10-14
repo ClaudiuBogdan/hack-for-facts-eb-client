@@ -73,7 +73,7 @@ export function directAverageLede(read: NationalRead): string | null {
   if (value === null || count === null || count <= 0 || valued === null || valued <= 0) return null
   const purchases = directPurchasesBig(count)
   const average = moneyText(value / valued)
-  return t`Pe lângă contracte, instituțiile au făcut ${purchases} din catalogul SEAP, de ${average} în medie: cumpărături sub pragul pentru licitație.`
+  return t`Pe lângă contracte, instituțiile au făcut ${purchases}, de ${average} în medie: cumpărături sub pragul pentru licitație.`
 }
 
 /** Direct acquisitions from the first comparable year, while they grew by half or more. */

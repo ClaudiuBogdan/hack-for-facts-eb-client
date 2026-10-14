@@ -58,11 +58,3 @@ export function registrationSeries(registrations: readonly HubRegistrationYear[]
     active: registrations.map((entry) => ({ period: String(entry.year), value: entry.active })),
   }
 }
-
-/** The divisions most companies recorded in the fiscal year chose, with their share of the year's total. */
-export function newFirmsLeadingSectors(snapshot: CompanyHubSnapshot, limit: number) {
-  return snapshot.newFirmsBySector.slice(0, limit).map((entry) => ({
-    ...entry,
-    share: snapshot.national.newFirms > 0 ? entry.firms / snapshot.national.newFirms : 0,
-  }))
-}

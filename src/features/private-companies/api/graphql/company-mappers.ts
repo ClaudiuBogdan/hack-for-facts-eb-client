@@ -54,13 +54,12 @@ import {
   type CompanyMainActivityRead,
 } from '@/schemas/private-company-main-activity'
 import { withAnafWithdrawn } from '../../lib/company-main-activity-model'
-import { COMPANY_REGISTRY_COVERAGES, type CompanyRegistryCuiState, type CompanyRegistryEnvelope } from '@/schemas/private-company-registry'
+import { COMPANY_REGISTRY_COVERAGES, type CompanyRegistryEnvelope } from '@/schemas/private-company-registry'
 import {
   COMPANY_RESOLVE_LABEL_SOURCES,
   type CompanyResolveDim,
   type CompanyResolveLabelSource,
   type CompanyResolveResult,
-  type PrivateCompanySearchResultPage,
 } from '@/schemas/private-company-search'
 import { notAssessed, QUALIFICATION_EVALUATOR, SUMMARY_METRICS } from '../../lib/financial-qualification'
 import type {
@@ -68,11 +67,10 @@ import type {
   RawActivitySelection,
   RawCompany,
   RawCompanyFinancialYear,
-  RawCompanyListItem,
   RawCompanyResolveResult,
   RawStatementQualification,
 } from './company-queries'
-import { mapCaenClassState, mapCaenRevision, mapRegistryBasis, mapRegistryEnvelope, mapRegistryEvidence } from './company-registry-graphql'
+import { mapCaenClassState, mapCaenRevision, mapRegistryEnvelope, mapRegistryEvidence } from './company-registry-graphql'
 
 /** Whose name the API gave: an unknown answer is never credited to the ONRC edition. */
 function mapNameSource(raw: string): 'onrc_edition' | 'core_organization' {
@@ -641,44 +639,6 @@ export function mapCompanyProfile(
     publicMoney: mapPublicMoney(company),
     sources: buildSources(company, registry.registry),
     registry,
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Search list item
-// ---------------------------------------------------------------------------
-
-/** The canonical search-row shape lives on the result page type. */
-export type PrivateCompanySearchResultItem =
-  PrivateCompanySearchResultPage['items'][number]
-
-const LIST_CUI_STATES: readonly CompanyRegistryCuiState[] = ['in_edition', 'not_in_edition', 'unpublished', 'withdrawn', 'unavailable']
-
-/** A row of a page under `registry`: its ONRC fields only for a CUI that page's edition holds. */
-export function mapCompanyListItem(
-  node: RawCompanyListItem,
-  registry: CompanyRegistryEnvelope,
-): PrivateCompanySearchResultItem {
-  const stated = LIST_CUI_STATES.find((state) => state === node.registryCuiState.toLowerCase()) ?? 'unavailable'
-  const registryCuiState: CompanyRegistryCuiState = registry.state !== 'published' ? registry.state : stated === 'in_edition' || stated === 'not_in_edition' ? stated : 'unavailable'
-  const inEdition = registryCuiState === 'in_edition'
-  const basis = (raw: string | null) => (inEdition && raw !== null ? mapRegistryBasis(raw) : null)
-  const status = inEdition ? mapStatus(node.headlineStatus) : null
-  return {
-    cui: node.cui,
-    name: node.name,
-    nameSource: inEdition ? mapNameSource(node.nameSource) : 'core_organization',
-    legalForm: inEdition ? node.legalForm : null,
-    status: status ? { code: status.code, label: status.label } : null,
-    county: inEdition ? node.county : null,
-    vatPayer: node.vatPayer,
-    declaredFiscallyInactive: node.declaredFiscallyInactive,
-    registrationDate: inEdition && node.registrationDatePresent ? node.registrationDate : null,
-    registryCuiState,
-    hasActiveObservation: inEdition ? node.hasActiveObservation : null,
-    statusBasis: basis(node.statusBasis),
-    countyBasis: basis(node.countyBasis),
-    recordedDateBasis: basis(node.recordedDateBasis),
   }
 }
 

@@ -732,7 +732,8 @@ describe('a fresh history answer that the company is no longer public (not_publi
     await waitFor(() => expect(screen.queryByTestId('company-main-activity')).toBeNull())
     expect(onCompanyGone).toHaveBeenCalledTimes(1)
     expect(screen.queryByTestId('company-main-activity-analysis')).toBeNull()
-    expect(document.body.textContent).not.toMatch(/Extracția petrolului brut|Corespondent ONRC|principală \(presupusă\)|același cod ca ANAF/u)
+    // The frozen label exactly: the Rev.3 division heading of the authorized activities (a different, still public name) stays.
+    expect(document.body.textContent).not.toMatch(/Extracția petrolului brut \(MOCK\)|Corespondent ONRC|principală \(presupusă\)|același cod ca ANAF/u)
     expect(rowMarks()).toMatchObject({ main: [], sameCode: [] })
     // Never worded as a withdrawn ANAF source or an older API.
     expect(document.body.textContent).not.toMatch(/Sursa ANAF a fost retrasă|date ANAF retrase|nu mai sunt publice/u)

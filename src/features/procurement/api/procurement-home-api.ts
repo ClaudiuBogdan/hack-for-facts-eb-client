@@ -41,6 +41,7 @@ import {
   type ContractRow,
   type CpvBucket,
 } from '../lib/home-categories'
+import { FRAMEWORKS_SCOPE } from '../lib/analytics-model'
 import {
   DIRECT_COMPARABLE_FROM,
   cutoffMonth,
@@ -209,7 +210,7 @@ export async function fetchProcurementHomeNational(year: number, signal?: AbortS
       PROCUREMENT_HOME_NATIONAL_QUERY,
       {
         awards: { ...AWARDS, year },
-        frameworks: { grain: 'contract', recordKind: 'framework_agreement', year },
+        frameworks: { ...FRAMEWORKS_SCOPE, year },
         direct: { ...DIRECT, year },
         directYears: { ...DIRECT, from: `${DIRECT_COMPARABLE_FROM}-01`, to: `${year + 1}-12` },
         awardsMonths: { ...AWARDS, from: `${year}-01`, to: `${year + 1}-12` },

@@ -86,7 +86,7 @@ export const Route = createFileRoute('/procurement/institutions/$cui')({
     const noRecords = profile ? ![...profile.directYears, ...profile.awardYears].some((point) => (point.count ?? 0) > 0) && !profile.frameworks : false
     // The SSR loader resolved the buyer's name — a CUI-only title is a useless
     // search result. A client-side navigation corrects it once the read lands.
-    const title = buildInstitutionDocumentTitle({ cui: params.cui, authorityName: name })
+    const title = buildInstitutionDocumentTitle(translator, { cui: params.cui, authorityName: name })
     const description = name
       ? translator._(msg`Achizițiile publice ale instituției ${name}: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP.`)
       : translator._(msg`Achizițiile publice ale unei instituții: ce cumpără, de la ce firme și din ce județe, când și cum, din SEAP.`)

@@ -380,9 +380,10 @@ describe('/companies/$cui — a comparison read that finds no directory company 
 describe('/companies/$cui — refusal episodes of the comparison read', () => {
   const ACCESS = 'company access (core organization privacy) could not be rechecked by this runtime; the response is withheld'
   const MOVED = 'company registry scope changed during the request; retry'
-  const DIFF_TEXT = 'Aceleași înscrieri ca în ediția anterioară.'
+  // A comparison the page says (an unchanged one it does not).
+  const DIFF_TEXT = 'S-au schimbat înscrierile pentru: localitatea.'
   /** The S1 company: its name anywhere, its comparison. */
-  const OLD = /Prezent SRL|Aceleași înscrieri/iu
+  const OLD = /Prezent SRL|S-au schimbat înscrierile/iu
   const NEUTRAL = `CUI ${CUI}`
 
   let commits: string[] = []
@@ -391,7 +392,15 @@ describe('/companies/$cui — refusal episodes of the comparison read', () => {
   const diffBody = (scopeKey: string) => ({
     company: {
       registry: { registry: envelope(scopeKey) },
-      registrationDiff: { fromEditionId: '6', toEditionId: '7', fromCaptureDate: null, toCaptureDate: null, status: 'UNCHANGED', reason: null, changes: [] },
+      registrationDiff: {
+        fromEditionId: '6',
+        toEditionId: '7',
+        fromCaptureDate: null,
+        toCaptureDate: null,
+        status: 'CHANGED',
+        reason: null,
+        changes: [{ field: 'LOCALITY', from: 'Gherla', to: 'Dej' }],
+      },
     },
   })
   const refusal = (message: string) => new GraphQLRequestError('refused', { graphQLErrors: [{ message, extensions: { code: 'SERVICE_UNAVAILABLE' } }] })

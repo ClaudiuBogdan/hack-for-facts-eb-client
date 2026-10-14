@@ -53,9 +53,6 @@ export type CompanyCaenRevision = (typeof COMPANY_CAEN_REVISIONS)[number]
 export const COMPANY_CAEN_CLASS_STATES = ['class', 'short_token', 'unknown_revision', 'unlabeled_key', 'unparsed'] as const
 export type CompanyCaenClassState = (typeof COMPANY_CAEN_CLASS_STATES)[number]
 
-/** An exact CAEN selector, `<revision>:<4 digits>` (`rev2:6201`, `rev0:1111`). */
-export const ONRC_CAEN_SELECTOR = /^rev[0-3]:\d{4}$/u
-
 export const companyRegistryEnvelopeSchema = z.object({
   mode: z.enum(['live', 'mock']),
   state: z.enum(COMPANY_REGISTRY_STATES),

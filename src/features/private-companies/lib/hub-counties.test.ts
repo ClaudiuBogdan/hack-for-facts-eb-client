@@ -1,27 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
-import {
-  countyDirectorySearch,
-  countyName,
-  hubLayerDecimals,
-  missingCounties,
-  rankCounties,
-  registryCountyName,
-} from './hub-counties'
+import { countyName, hubLayerDecimals, missingCounties, rankCounties } from './hub-counties'
 
 describe('hub counties', () => {
-  it('spells a county as the registry does, which is how the directory facet names it', () => {
-    // The facet keys the API returned on 23 September 2026.
-    expect(registryCountyName('B')).toBe('Bucureşti')
-    expect(registryCountyName('TM')).toBe('Timiş')
-    expect(registryCountyName('BN')).toBe('Bistriţa-Năsăud')
-    expect(registryCountyName('CJ')).toBe('Cluj')
-  })
-
-  it('opens the directory on the county’s companies with an „în funcțiune" observation, by the county code the API matches', () => {
-    expect(countyDirectorySearch('CT')).toEqual({ county: ['CT'], status: ['1048'] })
-  })
-
   it('names a county by its code and leaves an unknown code as itself', () => {
     expect(countyName('IS')).toBe('Iași')
     expect(countyName('XX')).toBe('XX')

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { NgoRegistryListPage } from '@/features/ngos/registry/components/registry-list-page'
-import { siteKeys } from '@/features/ngos/registry/api'
+import { siteKeys, withView } from '@/features/ngos/registry/api'
 import { searchOf } from '@/features/ngos/registry/model'
 
 export const Route = createLazyFileRoute('/ngos/registry/')({
@@ -20,6 +20,10 @@ function RegistryRoutePage() {
       // A change of question stays where the reader is: the page answers in place, it is not a new page.
       // The site's own keys (`lang`) stay: only the question changes.
       onSearch={(query) => void navigate({ search: (previous) => ({ ...siteKeys(previous), ...searchOf(query) }), resetScroll: false })}
+      // The answer's view rewrites the address in place: Back leaves the page, it does not step through its tabs and pages.
+      onView={(view) =>
+        void navigate({ search: (previous) => withView(previous, view), replace: true, resetScroll: false })
+      }
     />
   )
 }

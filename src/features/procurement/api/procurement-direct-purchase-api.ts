@@ -4,9 +4,13 @@ import {
   aroundOf,
   contextPeriodOf,
   cpvKey,
+  familyOf,
+  isPurchase,
   LISTED_FROM,
   mapDirectPurchase,
   NO_NAMES,
+  outcomeOf,
+  shownDayOf,
   type DirectPurchase,
   type DpContext,
   type DpContextInput,
@@ -168,15 +172,17 @@ function statsOf(raw: unknown): { readonly count: number; readonly value: number
 }
 
 function otherOf(item: RawAroundItem): DpOther {
-  const done = item.status !== 'cancelled'
+  // How it ended, as its own page reads it (the list has no detail: a cancelled catalogue purchase is only stopped).
+  const outcome = outcomeOf(item.status, familyOf(item.sourceSystem), null, item.finalizationDate ?? item.publicationDate)
+  const done = isPurchase(outcome)
   return {
     id: item.id,
     code: item.uniqueCode,
     title: tidyTitle(item.title),
-    // A purchase's checked value; an attempt's offer, struck on the page.
+    // A purchase's checked value; anything else's offer, struck on the page.
     value: done ? (item.value?.valueAccepted ? decimal(item.value.valueRonComparable) : null) : decimal(item.valueRon),
-    // A purchase dated by its end, an attempt by its request — as its own page dates it.
-    date: done ? (item.finalizationDate ?? item.publicationDate) : (item.publicationDate ?? item.finalizationDate),
+    // A purchase dated by its end, anything else by its request — as its own page dates it.
+    date: shownDayOf({ finalized: item.finalizationDate, published: item.publicationDate, outcome }),
     done,
   }
 }

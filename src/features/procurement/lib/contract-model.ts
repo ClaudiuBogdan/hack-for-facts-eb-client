@@ -3,6 +3,7 @@ import { buyerName, type BuyerIdentity } from './buyer-model'
 import { cpvDivisionLabelEn, cpvDivisionLabelRo } from './cpv-labels'
 import { cpvKey, type DpLabel, type DpNames } from './direct-purchase-model'
 import { toElicitatieClientUrl } from './elicitatie-client-url'
+import { addFirm, firmKey, nameKey } from './firm-merge'
 import { DIRECT_COMPARABLE_FROM, homeYear, isUnpublishedProcedure, tidyName, tidyTitle } from './home-model'
 
 /**
@@ -357,37 +358,6 @@ export function rowFigure(row: ContractRow): { readonly value: number | null; re
 function firmOf(supplier: { readonly cui: string | null; readonly name: string | null }, labels: ReadonlyMap<string, string>): CtParty {
   const label = supplier.cui ? labels.get(supplier.cui) : undefined
   return { cui: supplier.cui, name: displayCompanyName(label ?? supplier.name ?? supplier.cui ?? '—'), identity: null, hasBudget: false }
-}
-
-const LEGAL_FORMS = /\b(s\.?\s?r\.?\s?l|s\.?\s?a|a\.?\s?g|s\.?\s?c|gmbh|ltd|spa)\b\.?/giu
-
-/** A firm's name without its legal form, letters and digits only: to match a row that carries no CUI to one that does. */
-const nameKey = (name: string) =>
-  name
-    .toLocaleLowerCase('ro-RO')
-    .replace(LEGAL_FORMS, '')
-    .replace(/[^\p{L}\p{N}]/gu, '')
-
-/** A firm's key: its CUI when a row has it (two firms of one name are two firms); its name only for a row without one. */
-const firmKey = (firm: CtParty) => (firm.cui ? `cui:${firm.cui}` : `name:${nameKey(firm.name)}`)
-
-/**
- * Adds a firm to a list keyed by `firmKey`: a row without a CUI joins the
- * firm of that name; a row with one takes the place of the name-only entry.
- * Returns the key the firm is under.
- */
-function addFirm(firms: Map<string, CtParty>, firm: CtParty): string {
-  const byName = [...firms.entries()].find(([, known]) => nameKey(known.name) === nameKey(firm.name) && (!known.cui || !firm.cui || known.cui === firm.cui))
-  if (!firm.cui) {
-    if (byName) return byName[0]
-    firms.set(firmKey(firm), firm)
-    return firmKey(firm)
-  }
-  const key = firmKey(firm)
-  if (firms.has(key)) return key
-  if (byName && !byName[1].cui) firms.delete(byName[0])
-  firms.set(key, { ...(byName?.[1] ?? {}), ...firm })
-  return key
 }
 
 // ──────────────────────────────────────────────────────────── the notice ──

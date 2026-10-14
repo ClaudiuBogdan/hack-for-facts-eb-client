@@ -4,7 +4,7 @@ import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { HomeSectionNav } from '@/features/procurement/components/home/home-section-nav'
-import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
+import { HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { CompanyHubHero, CompanyLeaderRowsPending, CompanyLeadersFrame, CompanySearchShell, PendingBar } from './company-hub-hero'
 import { COMPANY_HUB_LEADERS_SHOWN, LEADERS_MORE_CLASS, bandNumber, companyHubSections } from './company-hub-sections'
@@ -97,49 +97,24 @@ export function CompanyHubPending() {
         </RuledFrame>
       </section>
 
-      <section className="border-b" aria-labelledby="company-hub-pending-sectors">
+      <section className="border-b" aria-labelledby="company-hub-pending-counties">
         <RuledFrame className="py-14 sm:py-20">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <HubSectionHead
-                titleId="company-hub-pending-sectors"
-                index={`${bandNumber(sections, 'domenii')} / ${sections[0]?.label ?? ''}`}
-                title={
-                  <Trans>
-                    Din ce trăiește
-                    <br />
-                    economia
-                  </Trans>
-                }
-                // The lede's three lines (the largest companies' share), held so the band does not grow under a reader.
-                lede={
-                  <span aria-hidden="true">
-                    <PendingBar className="block w-full" />
-                    <PendingBar className="block w-full" />
-                    <PendingBar className="block w-2/3" />
-                  </span>
-                }
-              />
-              {/* The size table's caption, head and five classes, at its rows' height. */}
-              <div className="mt-8" aria-hidden="true">
-                <MonoLabel className="block">
-                  <PendingBar className="w-2/3" />
-                </MonoLabel>
-                <div className="mt-3 space-y-px">
-                  {Array.from({ length: 6 }, (_, index) => (
-                    <div key={index} className="h-10 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none" />
-                  ))}
-                </div>
-              </div>
+          <HubSectionHead
+            titleId="company-hub-pending-counties"
+            index={`${bandNumber(sections, 'judete')} / ${sections.find((section) => section.id === 'judete')?.label ?? ''}`}
+            title={<Trans>Unde stă județul tău</Trans>}
+            // The map layer's switch, at its size.
+            aside={<div className="h-9 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none sm:w-96" aria-hidden="true" />}
+          />
+          {/* The map beside the ranking of the counties, as `HubCountyBand` lays them out. */}
+          <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8" aria-hidden="true">
+            <div className="lg:col-span-7">
+              <div className="mt-4 aspect-[640/454] w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none" />
             </div>
-            <div className={cn('lg:col-span-6 lg:col-start-7', HUB_BESIDE_TITLE_CLASS)} aria-hidden="true">
-              {/* The measure's switch, then the sectors' rows. */}
-              <div className="h-9 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none sm:w-72" />
-              <div className="mt-5 space-y-2">
-                {Array.from({ length: 8 }, (_, index) => (
-                  <div key={index} className="h-9 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none" />
-                ))}
-              </div>
+            <div className="space-y-2 lg:col-span-5 lg:col-start-8">
+              {Array.from({ length: 10 }, (_, index) => (
+                <div key={index} className="h-9 w-full animate-pulse rounded-sm bg-muted/60 motion-reduce:animate-none" />
+              ))}
             </div>
           </div>
         </RuledFrame>

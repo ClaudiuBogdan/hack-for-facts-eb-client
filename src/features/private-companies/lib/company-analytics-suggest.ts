@@ -3,6 +3,7 @@ import { t } from '@lingui/core/macro'
 import { placeKey, searchPlaces, type PlaceIndex } from '@/features/procurement/lib/analytics-places'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type { CompanyAnalysisFlagValue, CompanyAnalysisRelease, CompanyAnalysisScope, CompanyAnalysisSizeBand } from '@/schemas/company-analytics'
+import { ANALYSIS_LEGAL_FORMS } from './company-analytics-url'
 import { amongFilers, keyToggled, withFiling } from './company-analytics-filter-model'
 import { countyLabel, sizeBandLabel } from './company-analytics-text'
 import { legalFormName } from './company-legal-forms'
@@ -37,9 +38,6 @@ export interface SuggestionInput {
   /** How many values a field may hold; none is offered past its limit, nor before it is known. */
   readonly limits: Pick<CompanyAnalysisRelease['limits'], 'maxSelectedCuis' | 'maxCounties' | 'maxUats' | 'maxLegalForms'> | null
 }
-
-/** The legal forms of the population, the commonest first (no PFA, II or IF: they are not in it). */
-const LEGAL_FORMS: readonly string[] = ['SRL', 'SA', 'SNC', 'SCS', 'SCA', 'RA', 'SC', 'SCE', 'SE', 'GIE', 'GEIE', 'INCD']
 
 const SIZES: readonly CompanyAnalysisSizeBand[] = ['ZERO', 'FROM_1_TO_9', 'FROM_10_TO_49', 'FROM_50_TO_249', 'FROM_250']
 
@@ -99,7 +97,7 @@ export function suggestionsOf({ term, scope, year, places, companies, limits }: 
   }
 
   const forms = scope.legalForms ?? []
-  for (const form of room(forms, limits?.maxLegalForms) ? LEGAL_FORMS : []) {
+  for (const form of room(forms, limits?.maxLegalForms) ? ANALYSIS_LEGAL_FORMS : []) {
     const name = legalFormName(form, (descriptor) => i18n._(descriptor)) ?? form
     if (!forms.includes(form) && (form.toLowerCase().startsWith(key) || atWordStart(name, key))) found.push({ key: `form-${form}`, group: 'form', label: form, hint: name, scope: { ...scope, legalForms: [...forms, form] } })
   }

@@ -50,6 +50,8 @@ These are the places where the prototype could not decide for production.
    hub. The directory stays one click away through the active-companies
    shortcut, the four tiles, the sector bars, the county map and list, and the
    three investigation cards. Revisit if readers ask for the old path back.
+   *(Superseded 13 October 2026: the directory is retired; see „The directory
+   retired" below.)*
 2. **No mock badges ship.** The prototype's invented ONRC capture and ANAF
    snapshot dates are gone rather than badged: an operational date that can
    drift silently is worse than none. The sources strip shows the served
@@ -135,7 +137,8 @@ Composition to prototype:
 2. One ruled metrics band (dataset size, in funcțiune, county coverage with the
    missing share stated).
 3. CAEN chart as the page's chart, then the county module (map beside list on
-   desktop, list first on mobile), both navigating to `/companies/search`.
+   desktop, list first on mobile), both navigating to `/companies/search`
+   (since 12 October 2026, to the analysis).
 4. Investigation links, then the coverage and sources strip.
 
 Speed: everything but the numbers is SSR-able. The hub cache makes a cold
@@ -732,3 +735,174 @@ search engines, and cost the reader no request.
   generator reads the selection from the years' release; a company the
   release does not hold (Poșta Română, today) shows its county only. The
   domains band still groups by ANAF's fiscal division and says so.
+
+## The profile ported to the Zeus design (13 October 2026)
+
+The old branch (`companies-hub-redesign`) drew the same profile with a few
+things dev lacked; dev had the data contract the old branch never read
+(qualified statements, the pinned ONRC edition, the derived activity). The
+port keeps dev's contract and brings over the design.
+
+### Decisions
+
+- **From the old branch:** the head's sentence underlines its facts
+  (`CompanySentence`, still one translatable sentence); the head chart writes
+  the last year's figures on the drawing; the money band links the firm's
+  records on the analytics page („din 2019") and the firm as a supplier, and
+  says how far SEAP's data runs (`useSeapCutoff`) unless the firm has a
+  record past it. **Not brought over**, because dev's contract forbids them:
+  the head's registration year (ONRC's recorded date is not a founding date),
+  the kicker's sector and the „În economie" band (no edition-bound total to
+  take a share of), and the raw net profit of a statement form whose net
+  result the evaluator holds. *(Superseded the same day for the year, the
+  kicker and the profit — see „The accepted header" below; the „În economie"
+  band stays out.)*
+- **„Bilanțurile, an cu an" replaces „Ce intră în cifre"**: one matrix, an
+  indicator a row (results, balance sheet, staff), a statement a column,
+  newest first — the NGO page's layout. Years without a statement between two
+  that have one fold into a single shaded column. The indicator names stay
+  pinned while the years scroll, and the years while the rows do, inside a
+  box no taller than the screen. A value the figures leave out stays, faded
+  and underlined in amber, its reason on a pointer and to assistive
+  technology; „admisă" is never written. A year is marked (⚠) only for what a
+  reader should look at — not assessed, another basis, a review or quality
+  hold — never for a shape the policy leaves out (`held_profile`: a line the
+  statement's form is not admitted for). Its header opens the statement under the table: what stays out and
+  why (one reason said once when it is every value's), the reviewer's reason
+  in words with the recorded one beside it (CH-001), the published statement.
+  The admission policy and the cell legend sit behind the corner's ⓘ. Its own
+  band, before the registry: evidence late, the chart and the balance sheet
+  answer first.
+- **Caveats behind one marker**: a registry status that is a caveat
+  (observations that disagree, an edition that cannot say) explains itself
+  from an ⓘ beside its chip instead of a notice under the head (the supplier
+  page, which shares the chips, keeps its notice); the activity selection
+  keeps what was selected and why in the open, and ANAF's code, the dates
+  and the counts a tap away — an incomplete list stays in the open. The
+  edition comparison is said only when it says something (changed, appeared,
+  disappeared, inconclusive).
+
+## The accepted header, and the hub's counties first (13 October 2026)
+
+The owner asked for the old branch's head — the sentence with its facts
+underlined and leading to the analysis, the kicker with the activity, the
+profit bars and the figures — and for the hub to open on its counties, as
+the procurement and NGO hubs do. The data rules were verified against the
+live API (release 7) for OMV Petrom, Lidl, OMV Petrom Marketing, CFR and
+Dacia before any of it was built.
+
+### Decisions
+
+- **The year ONRC recorded, said as such**: „înregistrată la ONRC în 1997",
+  from the edition's qualified date — registered then, not necessarily
+  founded. No analysis filter selects a registration year, so the year leads
+  to the Registru band.
+- **Each fact leads where the analysis can follow it**: the legal form to the
+  analysis's legal-form filter; the place to its locality filter (SIRUTA) only
+  when the label names the edition's own locality, to the county filter when
+  the label is the county alone, and nowhere otherwise; the kicker's county
+  to the county filter (no longer the retired directory). Each link says
+  where it goes on a pointer and to assistive technology.
+- **The activity is the v3 selection, never a principal activity**: a
+  selected ONRC class by its exact API label, code and revision, leading to
+  the analysis's exact selected-activity filter *with* its revision
+  (`onrc:rev3:2910`); ANAF's selected code with its revision unpublished and
+  ANAF's filter. Several classes with none selected (OMV: 213, Lidl: 214,
+  CFR: 172) are counted and lead to the activities band. No revision is
+  preferred, inferred from a statement's year or read from a padded code.
+- **The kicker names the selected class's division, in its own revision, as
+  text**: the analysis filters exact activities, never a division, so the
+  crumb is no link that would pass an exact class off as a division filter.
+- **Rev.3 division names from ONRC's own list** (`caen-rev3-divisions.ts`):
+  the API's catalog holds four-digit classes only (651 Rev.3), so the 87
+  divisions are reference data in the client, read from ONRC's „CAEN Rev.3 —
+  structura completă" (hash and counts in the file), names verbatim, English
+  from Eurostat's NACE Rev. 2.1. A division is looked up only with its
+  revision (`caenDivisionLabel`): Rev.2 from the Rev.2 table, Rev.3 from
+  ONRC's, any other revision or none stays a number. Serving the hierarchy
+  from the server remains the follow-up above.
+- **A held result's profit is a profit** (`admittedNet`): where the evaluator
+  holds the net result for want of a loss (ANAF's 464d layout types no net
+  loss) and admitted a positive net profit beside no published loss, the
+  figure, the head chart and the business chart show that profit, named
+  „Profit net" — never „Rezultat net", and a series mixing it with results
+  with a loss among them is „Profit sau pierdere netă". A zero profit beside
+  an unknown loss stays a gap, and the chart says why: a company with a loss
+  files a zero profit (CFR 2019–2025). Loss years still count net results
+  only.
+- **The hub opens on its counties**, the sectors second.
+- **„Pe domenii" is the analysis's derived activity selection** (corrected the
+  same day, after review): no ANAF fiscal code is read into a Rev.2 division
+  any more. The band ranks the release's `ACTIVITY` groups — each exact class
+  in its own revision (`onrc:rev3:4711`; Rev.2 and Rev.3 4941 are two rows),
+  or ANAF's code with its revision unpublished — by turnover, by employees
+  within the hub's ceiling, or by the companies observed „în funcțiune";
+  each share is of that question's own API total (2.780,3 mld. lei admitted
+  for 2025, not the figures band's raw 2.841,2 mld.), and the rest of the
+  groups and the companies with no selection (several ONRC classes: 21,2% of
+  the turnover) are counted beside the ranking. A row opens its exact
+  selection in the analysis on the same question. The rankings are a
+  generated snapshot of the public API (`hub-activities.ts`,
+  `scripts/generate-companies-hub-activities.mjs`), which checks that the
+  parts add up to the totals. The year's new companies have no qualified
+  activity breakdown (no registration-year filter), so none is drawn.
+- **Each year's bottom line keeps its metric** (corrected after review): a net
+  result and a held result's admitted profit are compared only with their own
+  kind, named by their own kind in every reading (tooltip, spoken value,
+  accessible table), and drawn apart — a profit outlined, never as a result.
+- **A gap claims no absence**: a year or a cell without comparable or typed
+  values says that, never that no statement was published (OMV 2012–2018 are
+  retained outside the typed metrics). „No typed loss" is said only when the
+  loss is in fact untyped; otherwise a held result says its own reason.
+- **Several ONRC status codes are said neutrally** („Mai multe coduri de stare
+  ONRC"): some may be annotations, not states; all stay listed, none chosen.
+
+### Left for the data owners
+
+- The 464d layout's two „PIERDERE BRUTĂ" lines (I17, I19): no evidence yet
+  that I19 is the net loss (CFR 2025: I17 = 534.337.056, I19 = 548.897.866,
+  profit 0). Until a form dictionary or filings settle it, these companies'
+  net results stay held, and the hub's national net result leaves them out
+  (it says how many statements it counts each year).
+- A three-digit ANAF token („610") and the same code in two revisions: their
+  qualification needs source evidence; padding alone would still leave OMV's
+  0610 in both Rev.2 and Rev.3.
+- A division-level view of the activities needs the revision-qualified
+  hierarchy served (and a division filter in the analysis); the year's new
+  companies by activity need a registration-year cohort the analysis can
+  select.
+- The registered principal activity exists in law (Law 31/1990 art. 7(c),
+  8(c)) and ONRC's certificates name it, but the ONRC open-data files read
+  carry no principal flag: the derived selection is never called one, and
+  acquiring principal observations is separate source work.
+
+## The directory retired (13 October 2026)
+
+`/companies/search`, the company directory, is removed: the analysis answers
+its filters, and the front door's search box looks names up. Its page, hooks,
+filter sheet, list query (`companies(filter, q, …)`), county options
+(`companyCountyProfile`) and their tests are gone. The name lookup
+(`companyResolveResult`) stays: the analysis's company picker uses it.
+
+### Decisions
+
+- **Old addresses keep working, permanently redirected (301).**
+  `lib/company-directory-redirect.ts` reads the directory's address and sends
+  it where its question is answered now. `/companies/search` and the older
+  `/companies?county=…` links go through the same rule.
+- **Filters open the analysis as ONRC observations.** The directory matched
+  its registry filters on the observations of one identifier in the pinned
+  edition („1048" also beside a conflicting code). Those are the analysis's
+  `onrc_*` keys, not its consensus keys (`judet`, `stare`), so a bookmark asks
+  the same question. County names fold to codes (`MUNICIPIUL BUCUREŞTI` → `B`).
+- **Nothing is widened in silence.** Each value goes over as written: one
+  the analysis cannot read (a CAEN prefix under four digits) is named there
+  as unread. The analysis has no recorded-date filter and no name filter: a
+  date range and a name beside other filters go over as `inregistrare` and
+  `nume`, keys the analysis reads only to name them as not answered
+  (`UNANSWERED_KEYS`). The order (`sort`) narrows nothing and is dropped.
+- **A CUI alone opens its company**; beside filters it is the analysis's
+  company filter. A name alone, or nothing the directory read, opens the
+  front door.
+- **The profile's "not found" state** links „Caută în firme" to the front
+  door, whose search box finds a company by name or CUI.

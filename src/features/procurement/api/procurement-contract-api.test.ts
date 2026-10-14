@@ -197,6 +197,11 @@ describe('the context', () => {
     expect(context.years?.[context.years.length - 1]).toEqual({ year: PART, awards: 2, frameworks: 0, direct: 1, directLei: 250 })
     expect(context.inProgress).toEqual({ year: PART, through: month(5) })
     expect(variablesOf('ProcurementContractPair')?.pairAwards).toMatchObject({ from: '2019-01', to: `${LATEST}-12` })
+    // Framework agreements are ceilings: every framework count names the role, or the purchases default counts none.
+    const ceiling = { recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling' }
+    expect(variablesOf('ProcurementContractPair')?.pairFrameworks).toMatchObject(ceiling)
+    expect(variablesOf('ProcurementContractPairPart')?.partFrameworks).toMatchObject(ceiling)
+    expect(variablesOf('ProcurementContractBuyer')).toMatchObject({ pairFrameworksYear: ceiling, buyerFrameworks: ceiling })
     expect(variablesOf('ProcurementContractPairPart')?.partAwards).toMatchObject({ year: PART })
     // The association's other row is this contract, collapsed into this page's own.
     expect(context.around.map((other) => other.id)).toEqual(['n1', '2533825', 'o1'])

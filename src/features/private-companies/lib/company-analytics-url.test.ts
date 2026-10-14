@@ -90,6 +90,20 @@ describe('company analytics address', () => {
     expect(state.release).toBeNull()
   })
 
+  it('reads a legal form only inside its population: a PFA is named, never answered as zero companies', () => {
+    const state = stateOf({ forma: 'PFA,srl,II' })
+    expect(state.scope.legalForms).toEqual(['SRL'])
+    expect(state.unread).toEqual(['forma'])
+  })
+
+  it('names a directory link’s name and recorded dates as filters it does not have', () => {
+    const state = stateOf({ judet: 'CJ', nume: 'dante', inregistrare: '2020-01-01~' })
+    expect(state.scope).toEqual({ county: { in: ['CJ'] } })
+    expect(state.unread).toEqual(['nume', 'inregistrare'])
+    // Never written back: the next question is the page's own.
+    expect(searchOf(state)).toEqual({ judet: 'CJ' })
+  })
+
   it('refuses ranges on a company without a statement, as the API does', () => {
     const state = stateOf({ depunere: 'nu', interval: 'net_loss:0.01~' })
     expect(state.scope.filing).toBeUndefined()

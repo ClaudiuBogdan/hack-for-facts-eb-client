@@ -136,7 +136,8 @@ test.describe('Company profile', () => {
     await waitForHydration(page)
 
     await expect(page.getByRole('heading', { level: 1, name: 'A & B Ideatica S.R.L.' })).toBeVisible({ timeout: 30000 })
-    await expect(page.getByText(/Niciun bilanț publicat la ANAF/)).toBeVisible()
+    // What the data holds — never a claim that the company filed no statement.
+    await expect(page.getByText(/Nicio valoare din bilanțuri în datele de aici/)).toBeVisible()
     await expect(page.getByText(/Niciun contract și nicio plată din bani publici/)).toBeVisible()
     await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toHaveCount(0)
   })
@@ -145,6 +146,6 @@ test.describe('Company profile', () => {
     const response = await page.goto('/companies/not-a-cui')
     expect(response?.status()).toBe(404)
     await expect(page.getByRole('heading', { level: 1, name: 'Firma nu a fost găsită' })).toBeVisible({ timeout: 30000 })
-    await expect(page.getByRole('link', { name: 'Caută în firme' })).toHaveAttribute('href', '/companies/search')
+    await expect(page.getByRole('link', { name: 'Caută în firme' })).toHaveAttribute('href', '/companies')
   })
 })

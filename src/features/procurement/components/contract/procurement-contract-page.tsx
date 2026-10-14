@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import { useLingui } from '@lingui/react'
 import { Trans } from '@lingui/react/macro'
 import { FileQuestion } from 'lucide-react'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
@@ -32,7 +33,8 @@ export interface ProcurementContractInitialData {
 export function ProcurementContractPage({ id, initialData }: { readonly id: string; readonly initialData?: ProcurementContractInitialData }) {
   const query = useProcurementContract(id, initialData?.id === id ? initialData.contract : undefined)
   const sheet = query.data
-  useClientDocumentTitle(buildContractDocumentTitle({ id, title: sheet?.title, authorityName: sheet?.authority.name }))
+  const { i18n } = useLingui()
+  useClientDocumentTitle(buildContractDocumentTitle(i18n, { id, title: sheet?.title, authorityName: sheet?.authority.name }))
   // Where a contract mostly leads: the institution's page, the firm's, another contract.
   useWarmRouteCode('/procurement/institutions/$cui')
   useWarmRouteCode('/procurement/suppliers/$cui')

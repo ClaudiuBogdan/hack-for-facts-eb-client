@@ -435,7 +435,8 @@ describe('buildCompanyProfileModel', () => {
       expect(activities.groups.map((group) => [group.revision, group.label, group.activities])).toEqual([
         [
           'rev3',
-          'Diviziunea 62 (CAEN Rev.3)',
+          // ONRC's Rev.3 name for 62, not Rev.2's („Software și servicii IT") nor Rev.1's.
+          'Activități de programare și activități de consultanță în tehnologia informației',
           [
             { code: '6210', label: 'Activități de realizare a soft-ului la comandă', classState: 'class' },
             { code: '6210', label: 'Activități de realizare a soft-ului la comandă', classState: 'class' },
@@ -470,15 +471,19 @@ describe('buildCompanyProfileModel', () => {
     })
   })
 
-  it('names a registry division only in its own revision: Rev.2 by name, other editions by number', () => {
-    const groupsOf = (rev: string) =>
+  it('names a registry division only in its own revision: Rev.2 and Rev.3 by their own lists, other editions by number', () => {
+    const groupsOf = (code: string, rev: string) =>
       buildCompanyProfileModel(
-        companyProfile({ caenActivities: [{ code: '6210', rev, label: 'x', source: 'onrc', classState: 'class' }] }),
+        companyProfile({ caenActivities: [{ code, rev, label: 'x', source: 'onrc', classState: 'class' }] }),
       ).activities.groups.map((group) => group.label)
-    expect(groupsOf('rev2')).toEqual(['Software și servicii IT'])
-    // Rev.1 62 is air transport and Rev.3 62 is not the Rev.2 list: number and edition only.
-    expect(groupsOf('rev1')).toEqual(['Diviziunea 62 (CAEN Rev.1)'])
-    expect(groupsOf('rev3')).toEqual(['Diviziunea 62 (CAEN Rev.3)'])
+    expect(groupsOf('6210', 'rev2')).toEqual(['Software și servicii IT'])
+    // Rev.3's own name (ONRC's list), never Rev.2's for the same digits.
+    expect(groupsOf('6210', 'rev3')).toEqual(['Activități de programare și activități de consultanță în tehnologia informației'])
+    // Rev.1 62 is air transport: number and edition only.
+    expect(groupsOf('6210', 'rev1')).toEqual(['Diviziunea 62 (CAEN Rev.1)'])
+    // Rev.3 abolished division 45: a Rev.3 row with those digits is never named by Rev.2's motor-vehicle trade.
+    expect(groupsOf('4520', 'rev3')).toEqual(['Diviziunea 45 (CAEN Rev.3)'])
+    expect(groupsOf('0610', 'rev3')).toEqual(['Extracția petrolului brut și a gazelor naturale'])
   })
 
   describe('derives a division only from a classified row, never from a short or unqualified code', () => {
@@ -715,7 +720,51 @@ describe('buildCompanyProfileModel', () => {
 
   it('computes no share of sector, county or national totals: no edition-bound total exists (CD-14)', () => {
     const model = buildCompanyProfileModel(companyProfile({ financials: [financialYear(2025, { turnover: 5_000, employees: 5 })] }))
-    expect(model.place).toEqual({ label: 'Gherla, Cluj', county: 'Cluj', countyCode: 'CJ' })
+    // The locality's SIRUTA code: the analysis's filter for the companies of the same locality, not a total.
+    expect(model.place).toEqual({ label: 'Gherla, Cluj', county: 'Cluj', countyCode: 'CJ', uatCode: '55384' })
     expect(model).not.toHaveProperty('context')
+  })
+
+  it('links the place to the edition’s locality only when the label names that same one', () => {
+    const elsewhere = companyProfile()
+    const model = buildCompanyProfileModel({ ...elsewhere, geography: elsewhere.geography ? { ...elsewhere.geography, uatSirutaCode: '54984' } : null })
+    expect(model.place.uatCode).toBeNull()
+  })
+
+  it('takes the year ONRC recorded from the qualified date alone', () => {
+    expect(buildCompanyProfileModel(companyProfile({ registrationDate: '1997-10-23' })).recordedYear).toBe(1997)
+    expect(buildCompanyProfileModel(companyProfile({ registrationDate: null })).recordedYear).toBeNull()
+  })
+
+  describe('the bottom line: a net result, or a held result’s admitted profit, never one called the other', () => {
+    // The 464d layout: a profit admitted, no net loss typed anywhere, so the evaluator holds the result.
+    const held = (year: number, profit: number) => {
+      const statement = financialYear(year, { turnover: 10_000, netProfit: profit, netLoss: null, employees: 5 })
+      return { ...statement, qualification: admittedQualification(statement, { net_result: 'held_profile' }) }
+    }
+
+    it('draws a held result’s positive profit as a profit, and its zero profit as a gap — never a break-even', () => {
+      const model = buildCompanyProfileModel(companyProfile({ financials: [held(2024, 4_143), held(2025, 3_067)] }))
+      expect(model.series.net.map(({ value, kind }) => [value, kind])).toEqual([
+        [4_143, 'profit'],
+        [3_067, 'profit'],
+      ])
+      // The net results themselves stay held: no loss year is counted from a profit.
+      expect(model.series.netResult.map((point) => point.value)).toEqual([null, null])
+      const zero = buildCompanyProfileModel(companyProfile({ financials: [held(2025, 0)] }))
+      expect(zero.series.net).toEqual([{ year: 2025, value: null, kind: null }])
+    })
+
+    it('keeps the evaluator’s net result where it reports one, a loss included', () => {
+      const model = buildCompanyProfileModel(companyProfile({ financials: [financialYear(2024, { turnover: 10_000, netProfit: 0, netLoss: 700 })] }))
+      expect(model.series.net).toEqual([{ year: 2024, value: -700, kind: 'result' }])
+    })
+
+    it('admits no profit beside a loss that was published but held', () => {
+      const statement = financialYear(2025, { turnover: 10_000, netProfit: 900, netLoss: 50 })
+      const qualification = admittedQualification(statement, { net_result: 'held_component', net_loss: 'held_quality' })
+      const model = buildCompanyProfileModel(companyProfile({ financials: [{ ...statement, qualification }] }))
+      expect(model.series.net).toEqual([{ year: 2025, value: null, kind: null }])
+    })
   })
 })

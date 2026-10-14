@@ -4,7 +4,8 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { NGO_REGISTRY_SUMMARY } from '@/features/ngos/hub/registry-summary'
 import type { RegistrySearch } from '../api'
 import { figuresOf } from '../counts'
-import { groupAxes, notesOf, queryOf, questionOf, selectionKey, type RegistryQuery } from '../model'
+import { groupAxes, notesOf, queryOf, questionOf, selectionKey, TABLE_PAGE, type RegistryQuery } from '../model'
+import { viewOf } from '../view'
 import { useRegistryRead, type RegistrySeed } from '../use-registry-read'
 import { AnswerPanel, AnswerTabs, GroupTable, Pending, RecordsTable, RegistryFigures, SourceLine, YearsBars, type AnswerAxis } from './registry-answer'
 import { CountyViewToggle, RegistryCountyMap, type CountyView } from './registry-county-map'
@@ -22,19 +23,28 @@ import { RegistryHead, StatusNav } from './registry-head'
  *
  * Every control writes the address in the route's own keys (`q`, `county`,
  * `category`, `status`, `registryNumber`, `publicUtility`), so a question
- * is a link and every link the hub makes opens unchanged.
+ * is a link and every link the hub makes opens unchanged. The answer's
+ * view is in it too (`page`, `by`, `view`): Back from a record returns to
+ * its page, and a shared link opens the same tab, list or map.
  */
 
 /**
- * The table's page, which belongs to one selection: a new one starts on
- * page 1, and back on an earlier one its old page does not return. Not by
- * remounting the page on a new address — that would close and reopen the
- * filter sheet, its focus lost, at every filter set in it.
+ * One piece of the answer's view: shown at once, written to the address
+ * after. The address wins whenever it changes (Back, a link) or the
+ * selection does (`scope`) — not by remounting the page on a new address,
+ * which would close and reopen the filter sheet, its focus lost.
  */
-function useTablePage(key: string): readonly [number, (page: number) => void] {
-  const [paging, setPaging] = useState({ key, page: 1 })
-  if (paging.key !== key) setPaging({ key, page: 1 })
-  return [paging.key === key ? paging.page : 1, (page: number) => setPaging({ key, page })] as const
+function useAddressed<T>(fromAddress: T, scope: string, write: (value: T) => void): readonly [T, (value: T) => void] {
+  const [local, setLocal] = useState({ from: fromAddress, scope, value: fromAddress })
+  const current = local.from === fromAddress && local.scope === scope
+  if (!current) setLocal({ from: fromAddress, scope, value: fromAddress })
+  return [
+    current ? local.value : fromAddress,
+    (value: T) => {
+      setLocal({ from: fromAddress, scope, value })
+      write(value)
+    },
+  ] as const
 }
 
 function Shell({ children }: { readonly children: ReactNode }) {
@@ -48,24 +58,34 @@ export function NgoRegistryListPage({
   search,
   seed,
   onSearch,
+  onView,
 }: {
   readonly search: RegistrySearch
   /** What the server read for the address it rendered. */
   readonly seed: RegistrySeed | null
   /** A new question, as the route's address. */
   readonly onSearch: (query: RegistryQuery) => void
+  /**
+   * The answer's view, into the address in place (no new history entry); `undefined` drops a key. The page goes
+   * as a number: the router writes a numeric string as JSON („page=%222%22").
+   */
+  readonly onView: (view: { readonly page?: number | undefined; readonly by?: string | undefined; readonly view?: string | undefined }) => void
 }) {
   const counties = NGO_REGISTRY_SUMMARY.counties
   const { query, unread } = queryOf(search, counties)
   const key = selectionKey(query)
   // A new question keeps them: the sheet stays open for the next filter, the answer on its axis.
   const [filters, setFilters] = useState(false)
-  const [axis, setAxis] = useState<AnswerAxis>('inregistrari')
-  // The counties as the list or the map: the reader's choice, kept as the axis is.
-  const [countyView, setCountyView] = useState<CountyView>('list')
-  const [page, setPage] = useTablePage(key)
-  const state = useRegistryRead(query, page, seed)
+  const addressed = viewOf(search)
+  // The answer's tab and the counties' list or map: the reader's choice, kept with a new question as before, now in the address.
+  const [axis, setAxis] = useAddressed<AnswerAxis>(addressed.axis, '', (next) => onView({ by: next === 'inregistrari' ? undefined : next }))
+  const [countyView, setCountyView] = useAddressed<CountyView>(addressed.countyView, '', (next) => onView({ view: next === 'map' ? 'map' : undefined }))
+  // The table's page belongs to one selection: a new one starts on page 1 (its address carries none).
+  const [asked, setPage] = useAddressed(addressed.page, key, (next) => onView({ page: next > 1 ? next : undefined }))
+  const state = useRegistryRead(query, asked, seed)
   const { read, summary, tally } = state
+  // A page past the selection's last (a stale link) shows the last.
+  const page = tally && tally.total > 0 ? Math.min(asked, Math.ceil(tally.total / TABLE_PAGE)) : asked
   const figures = figuresOf({ query, summary: summary ?? null, tally, read, stopped: state.error })
   const notes = notesOf({
     query,

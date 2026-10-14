@@ -52,8 +52,34 @@ export function isRegistryNumber(text: string): boolean {
   return REGISTRY_NUMBER.test(text.trim())
 }
 
+/** Number, letters, number — the registry's three parts, its irregular ones too („1/A/122"); not „12/2020" or „1/A". */
+const REGISTRY_LITERAL = /^\d+\s*\/\s*\p{L}+\s*\/\s*\d+$/u
+
+/**
+ * The registry number a filter asks for: the usual form normalised
+ * („3446 / a / 2026" → „3446/A/2026"), or an irregular literal the registry
+ * holds („1/A/122", design.md §15: number, letters, number) — its spaces
+ * around a slash dropped, in capitals, as the registry writes its letters;
+ * `null` for anything else („12/2020", „1/A", a name).
+ */
+export function registryNumberOf(text: string): string | null {
+  const typed = text.trim()
+  if (isRegistryNumber(typed)) return typed.replace(/\s/gu, '').toUpperCase()
+  if (typed.length > 40 || !REGISTRY_LITERAL.test(typed)) return null
+  return typed.replace(/\s*\/\s*/gu, '/').toUpperCase()
+}
+
 function fold(text: string): string {
   return text.normalize('NFD').replace(/[̀-ͯ]/gu, '').toUpperCase().trim()
+}
+
+/**
+ * The registry's placeholder for a place it does not know („NEDETERMINAT",
+ * in a county or a locality cell), or no value at all: unknown, never a
+ * place — not counted as a county or a town, not named as one.
+ */
+export function isUnknownPlace(value: string | null | undefined): boolean {
+  return value === null || value === undefined || value.trim() === '' || fold(value) === 'NEDETERMINAT'
 }
 
 /** A county's name folded for matching: no diacritics, capitals, a hyphen as a space („Satu-Mare" is „SATU MARE"). */
@@ -108,7 +134,7 @@ export function queryOf(
   if (rawCounty !== '' && county === null) unread.push({ param: 'county', value: rawCounty })
   const q = text('q')
   const rawNumber = text('registryNumber')
-  const registryNumber = rawNumber === '' ? null : isRegistryNumber(rawNumber) ? rawNumber.replace(/\s/gu, '').toUpperCase() : null
+  const registryNumber = rawNumber === '' ? null : registryNumberOf(rawNumber)
   if (rawNumber !== '' && registryNumber === null) unread.push({ param: 'registryNumber', value: rawNumber })
   return { query: { status, county, category, publicUtility, q: q === '' ? null : q, registryNumber }, unread }
 }
@@ -342,6 +368,12 @@ export const READ_CAP_PAGES = 20
 export const PAGE_SIZE = 100
 /** Rows a table page shows. */
 export const TABLE_PAGE = 25
+/**
+ * The last table page a reader can reach — by the arrows or a link: its
+ * rows and the one after them (which says whether another page follows)
+ * within the read's 20 requests. Further, the filters narrow the selection.
+ */
+export const TABLE_PAGE_CAP = Math.floor((READ_CAP_PAGES * PAGE_SIZE - 1) / TABLE_PAGE)
 
 /**
  * Rows repeated field for field (104 in the export) as one, judged by the
@@ -571,10 +603,9 @@ export function suggestionsOf(term: string, query: RegistryQuery, counties: NgoR
   if (typed.length < 2) return []
   const wanted = fold(typed)
   const found: Suggestion[] = []
-  if (isRegistryNumber(typed)) {
-    const number = typed.replace(/\s/gu, '').toUpperCase()
-    found.push({ key: 'number', group: 'number', label: t`Numărul de registru ${number}`, query: { ...query, registryNumber: number } })
-  }
+  // The usual form or an irregular number the registry holds, read as the filter reads it.
+  const number = registryNumberOf(typed)
+  if (number !== null) found.push({ key: 'number', group: 'number', label: t`Numărul de registru ${number}`, query: { ...query, registryNumber: number } })
   for (const county of counties) {
     const name = countyNameRo(county.code) ?? county.source
     if (fold(name).startsWith(wanted) || county.code === wanted)
@@ -597,7 +628,7 @@ export function suggestionsOf(term: string, query: RegistryQuery, counties: NgoR
   }
   if (fold(t`utilitate publică`).includes(wanted) || wanted.startsWith('UTIL'))
     found.push({ key: 'utility', group: 'utility', label: t`De utilitate publică`, query: { ...query, publicUtility: true } })
-  if (typed.length >= 3 && !isRegistryNumber(typed))
+  if (typed.length >= 3 && number === null)
     found.push({ key: 'name', group: 'name', label: t`Numele conține „${typed}”`, query: { ...query, q: typed.slice(0, 200) } })
   return found
 }

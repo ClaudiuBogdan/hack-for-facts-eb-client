@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import type { CompanyAnalysisActivity } from '@/schemas/company-analytics'
 import type { CompanyHubSearch } from '@/schemas/private-company-search'
+import { COMPANY_HUB_ACTIVITIES } from '../../lib/hub-activities'
 import { COMPANY_HUB_SNAPSHOT } from '../../lib/hub-snapshot'
 import { HubLeaders } from './hub-leaders'
 import { PrivateCompanyHubPage } from './private-company-hub-page'
@@ -115,24 +116,54 @@ describe('PrivateCompanyHubPage', () => {
     expect(navigatedSearch({ indicator: 'infiintari', domenii: 'salariati' })).toEqual({ indicator: undefined, domenii: 'salariati' })
   })
 
-  it('ranks the sectors by the measure in the URL, the first ten', () => {
+  it('ranks the derived activity selection by the measure in the URL, each class in its own revision', () => {
     render(page({ domenii: 'firme' }))
-    const rows = within(screen.getByTestId('company-hub-sectors')).getAllByRole('listitem')
+    const activities = screen.getByTestId('company-hub-activities')
+    const rows = within(activities.querySelector('ol') as HTMLElement).getAllByRole('listitem')
     expect(rows).toHaveLength(10)
-    // By companies in business, retail leads; by turnover, wholesale does.
-    expect(rows[0]?.textContent).toContain('Comerț cu amănuntul')
+    // By companies observed in business, Rev.2 4120 leads — and Rev.2 and Rev.3 4941 are two rows, never one.
+    expect(rows[0]?.textContent).toContain('4120 · ONRC Rev.2')
+    expect(rows.filter((row) => /4941 · ONRC Rev\.[23]/u.test(row.textContent ?? ''))).toHaveLength(2)
+    // The rest and the companies with no selection, counted apart from the ranking. (The test's numbers are English.)
+    const rest = within(screen.getByTestId('company-hub-activities-rest')).getAllByRole('listitem').map((row) => row.textContent ?? '')
+    expect(rest.some((text) => /^Alte 2[.,]?577 de activități selectate/u.test(text))).toBe(true)
+    expect(rest.some((text) => text.startsWith('Mai multe activități clasificate ONRC, niciuna selectată'))).toBe(true)
+    // No division, no Rev.2 sector name borrowed for an ANAF code.
+    expect(activities.textContent).not.toMatch(/Software și servicii IT|Comerț cu ridicata\b(?! al)/u)
   })
 
-  it('opens the rest of the activities in the analysis; a domain row opens nothing it could not select', () => {
+  it('takes its shares of the analysis’s own total, and says so', () => {
+    render(page())
+    const activities = screen.getByTestId('company-hub-activities')
+    // Rev.3 4711: 92,0 mld. of the 2.780,3 mld. lei admitted — not of the raw 2.841,2 mld. in the figures band.
+    expect(within(activities).getAllByRole('listitem')[0]?.textContent).toMatch(/3[.,]3\s?%/u)
+    expect(activities.textContent).toMatch(/Procente din 2[.,]780[.,]3\smld\.\slei, cifra de afaceri admisă pe 2025 în analiza bilanțurilor, ediția 7\./u)
+    // The unselected keep their share: several ONRC classes and no selection hold 21,2% of the turnover.
+    expect(within(screen.getByTestId('company-hub-activities-rest')).getByText('Mai multe activități clasificate ONRC, niciuna selectată').parentElement?.textContent).toMatch(/21[.,]2\s?%/u)
+  })
+
+  it('opens each row’s exact selection, and every activity, on the question its figure counts — in the release it was read from', () => {
     const { rerender } = render(page())
-    const sectors = screen.getByTestId('company-hub-sectors')
-    // The analysis filters exact codes, never a division: the rows are not links.
-    const [more, ...rest] = within(sectors).getAllByRole('link')
-    expect(rest).toEqual([])
-    expect(linkOf(more)).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'caen' } })
+    const links = () => within(screen.getByTestId('company-hub-activities')).getAllByRole('link').map(linkOf)
+    // The snapshot's release (`editie`), so a later release cannot answer a row with other companies.
+    const release = Number(COMPANY_HUB_ACTIVITIES.source.releaseId)
+    // An ONRC row: its exact selection with its revision; the analysis's companies by turnover.
+    expect(links()[0]).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover', activitate: 'onrc:rev3:4711', editie: release } })
+    // Every activity: the same grouping the band ranks (the derived selection), not ANAF's raw code.
+    expect(links()[links().length - 1]).toEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'activitate', editie: release } })
     rerender(page({ domenii: 'firme' }))
-    // Ranked by their companies in business: the analysis counts those.
-    expect(linkOf(within(screen.getByTestId('company-hub-sectors')).getByRole('link')).search).toEqual({ an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'caen', clasare: 'firme', stare: 1048 })
+    // Companies observed in business, ranked by their count: the population the figure counts.
+    expect(links()[0]?.search).toEqual({ an: 2025, indicator: 'turnover', activitate: 'onrc:rev2:4120', stare: 1048, editie: release })
+    expect(links()[links().length - 1]?.search).toEqual({ an: 2025, indicator: 'turnover', vedere: 'defalcare', dupa: 'activitate', clasare: 'firme', stare: 1048, editie: release })
+    rerender(page({ domenii: 'salariati' }))
+    // Within the hub's headcounts, as the ranking was read.
+    expect(links()[0]?.search).toEqual({ an: 2025, indicator: 'employees', activitate: 'onrc:rev3:4100', interval: 'employees:0~50000', editie: release })
+    expect(links()[links().length - 1]?.search).toEqual({ an: 2025, indicator: 'employees', vedere: 'defalcare', dupa: 'activitate', interval: 'employees:0~50000', editie: release })
+    // Every row of all three rankings is pinned, not only the first.
+    for (const domenii of [undefined, 'salariati', 'firme'] as const) {
+      rerender(page(domenii ? { domenii } : {}))
+      expect(links().every((link) => link.search.editie === release)).toBe(true)
+    }
   })
 
   it('ranks the ten largest companies of each list, and opens the rest in the analysis', () => {
@@ -202,10 +233,9 @@ describe('PrivateCompanyHubPage', () => {
     expect(open).toContainEqual({ to: '/companies/analytics', search: { an: 2025, indicator: 'net_result', mod: 'grafice', vedere: 'evolutie', cohorta: 'fiecare-an' } })
   })
 
-  it('does not link a count of new companies to a directory query that lists others', () => {
-    // The directory cannot select compact-code registrations or a main
-    // activity, so any link from these rows would open a different population.
+  it('draws no activity breakdown of the year’s new companies: no qualified one exists for that cohort', () => {
+    // The analysis has no registration-year filter, and an ANAF code read into a division is no qualified activity.
     render(page())
-    expect(within(screen.getByTestId('company-hub-new-sectors')).queryAllByRole('link')).toEqual([])
+    expect(screen.queryByTestId('company-hub-new-sectors')).toBeNull()
   })
 })

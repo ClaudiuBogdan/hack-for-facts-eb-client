@@ -3,11 +3,11 @@ import type { HomeSection } from '@/features/procurement/lib/home-links'
 
 /** The hub's layout constants, shared by the page and its loading state so the two draw the same head. */
 
-/** The page's bands, in order: the pinned bar's links and each band's number. */
+/** The page's bands, in order: the pinned bar's links and each band's number. The counties first, as the procurement and NGO hubs open. */
 export function companyHubSections(): readonly HomeSection[] {
   return [
-    { id: 'domenii', label: t({ message: 'Pe domenii', context: 'economic sectors' }) },
     { id: 'judete', label: t`Pe județe` },
+    { id: 'domenii', label: t({ message: 'Pe domenii', context: 'economic sectors' }) },
     { id: 'economie', label: t`An de an` },
     { id: 'infiintari', label: t({ message: 'Înregistrări', context: 'company registrations' }) },
   ]

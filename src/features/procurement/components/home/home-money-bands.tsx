@@ -210,9 +210,9 @@ export function HomeSellersBand({
           <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
             {sellers === 'directe' ? (
               read?.directSellers.rankedBy === 'count' ? (
-                <Trans>Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, din catalogul SEAP.</Trans>
+                <Trans>Firmele, după numărul vânzărilor directe din {year}: cumpărături mici, fără licitație.</Trans>
               ) : (
-                <Trans>Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, din catalogul SEAP.</Trans>
+                <Trans>Firmele, după valoarea vânzărilor directe din {year}, fără TVA: cumpărături mici, fără licitație.</Trans>
               )
             ) : (
               <>

@@ -52,7 +52,7 @@ describe('fetchProcurementHomeNational', () => {
 
     const [, variables] = graphqlQuery.mock.calls[0] as [string, Record<string, Record<string, unknown>>]
     expect(variables.awards).toEqual({ grain: 'contract', recordKind: 'contract_award', year: 2025 })
-    expect(variables.frameworks).toEqual({ grain: 'contract', recordKind: 'framework_agreement', year: 2025 })
+    expect(variables.frameworks).toEqual({ grain: 'contract', recordKind: 'framework_agreement', frameworkRole: 'framework_ceiling', year: 2025 })
     expect(variables.directYears).toEqual({ grain: 'direct_acquisition', from: '2019-01', to: '2026-12' })
     const [, names] = graphqlQuery.mock.calls[1] as [string, Record<string, unknown>]
     // One CUI asked once, whatever the rankings it is in.

@@ -6,7 +6,7 @@ import { useWindowSize } from '@/hooks/useWindowSize'
 import { cn } from '@/lib/utils'
 import { useActiveOption } from '../use-active-option'
 import { Announce, CELL, Chip, FIELD, Group, Notice, OPTION, OptionGroup, Options, Row, TALL } from './filter-parts'
-import { categoryLabel, countText, EMPTY_QUERY, filterCount, isRegistryNumber, STATUS_ORDER, statusLabel, type RegistryQuery } from '../model'
+import { categoryLabel, countText, EMPTY_QUERY, filterCount, registryNumberOf, STATUS_ORDER, statusLabel, type RegistryQuery } from '../model'
 import { countyPlaceOf, countyPlaces, searchCounties, type CountyPlace } from '../place'
 
 /**
@@ -282,12 +282,14 @@ function NumberField({ query, onChange }: { readonly query: RegistryQuery; reado
   const [checked, setChecked] = useState(false)
   const hint = useId()
   const typed = value.trim()
-  const wrong = checked && typed !== '' && !isRegistryNumber(typed)
+  // The usual form or an irregular literal the registry holds („1/A/122"); wrong only where it is no number at all.
+  const number = registryNumberOf(typed)
+  const wrong = checked && typed !== '' && number === null
   const apply = () => {
     setChecked(true)
-    if (!isRegistryNumber(typed)) return
+    if (number === null) return
     setValue('')
-    onChange({ ...query, registryNumber: typed.replace(/\s/gu, '').toUpperCase() })
+    onChange({ ...query, registryNumber: number })
   }
   return (
     <Row label={t`Numărul`}>

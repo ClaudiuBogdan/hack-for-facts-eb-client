@@ -1,14 +1,22 @@
 import { i18n, type MessageDescriptor } from '@lingui/core'
 import { msg, t } from '@lingui/core/macro'
+import { CAEN_REV3_DIVISIONS } from './caen-rev3-divisions'
 
 /**
  * The CAEN Rev.2 divisions, by the name a reader knows the sector by.
  *
  * The registry and ANAF serve codes, not names, and the reference module
  * publishes four-character classes only, so this table — the official Rev.2
- * division list, shortened for a bar label — is the one place a division's
- * name comes from. Names are `msg` descriptors, resolved when they are read,
- * so the English page names sectors in English.
+ * division list, shortened for a bar label — is the one place a Rev.2
+ * division's name comes from; Rev.3's are ONRC's own, in
+ * `caen-rev3-divisions.ts`. Names are `msg` descriptors, resolved when they
+ * are read, so the English page names sectors in English.
+ *
+ * The same two digits name different divisions in different revisions (Rev.1
+ * 62 is air transport; Rev.3 has no 45), so a division is looked up only with
+ * its revision (`caenDivisionLabel`). `divisionLabel` is the Rev.2 table
+ * alone, for figures grouped on Rev.2 divisions by construction (the hub's
+ * snapshot).
  */
 
 export type CaenDivision = {
@@ -113,8 +121,30 @@ export function caenDivision(code: string): CaenDivision | undefined {
   return DIVISION_BY_CODE.get(code)
 }
 
-/** The division's name in the page's language; a code with no division stays a code, never a guessed name. */
+/** A Rev.2 division's name in the page's language; a code with no Rev.2 division stays a code, never a guessed name. */
 export function divisionLabel(code: string): string {
   const division = DIVISION_BY_CODE.get(code)
   return division ? i18n._(division.name) : t`CAEN ${code}`
+}
+
+const REV3_BY_CODE = new Map(CAEN_REV3_DIVISIONS.map((division) => [division.code, division]))
+
+/** The cedilla letters of ONRC's text as the comma-below ones Romanian is written in. */
+function commaBelow(text: string): string {
+  return text.replace(/ş/gu, 'ș').replace(/Ş/gu, 'Ș').replace(/ţ/gu, 'ț').replace(/Ţ/gu, 'Ț')
+}
+
+/**
+ * A division's name in its own CAEN revision, in the page's language: Rev.2
+ * from the Rev.2 table, Rev.3 from ONRC's. Null for any other revision, a
+ * code the revision has no division for, or no revision at all — never a
+ * name borrowed from another revision.
+ */
+export function caenDivisionLabel(code: string, revision: string | null): string | null {
+  if (revision === 'rev2') return DIVISION_BY_CODE.has(code) ? divisionLabel(code) : null
+  if (revision === 'rev3') {
+    const division = REV3_BY_CODE.get(code)
+    return division ? commaBelow(i18n._(division.name)) : null
+  }
+  return null
 }

@@ -180,7 +180,7 @@ export function whatLede(rows: readonly CategoryFigure[], grain: HomeGrain, year
 
 // ────────────────────────────────────────────────────── who sells ──
 
-/** „Cinci firme au primit 44% din banii achizițiilor directe din 2025; au vândut 72 de firme în total." */
+/** „Cinci firme însumează 44% din valoarea achizițiilor directe din 2025; au vândut 72 de firme în total." — awarded values, never said as received. */
 export function sellersLede(profile: BuyerProfile): string | null {
   const { rows } = profile.directSuppliers
   const firms = profile.direct.suppliers
@@ -188,8 +188,8 @@ export function sellersLede(profile: BuyerProfile): string | null {
   const top5 = rows.slice(0, 5).reduce((sum, row) => sum + (row.share ?? 0), 0)
   const first = rows[0]
   if (!first || first.share === null || top5 <= 0) return null
-  const lead = t`Cinci firme au primit ${percentText(top5, 0)} din banii achizițiilor directe din ${periodText(profile.period)}; au vândut ${firmsCount(firms)} în total.`
-  const biggest = first.share >= 0.1 ? t`Cea mai mare sumă, ${percentText(first.share, 0)}, a mers la ${supplierName(profile, first.cui)}.` : ''
+  const lead = t`Cinci firme însumează ${percentText(top5, 0)} din valoarea achizițiilor directe din ${periodText(profile.period)}; au vândut ${firmsCount(firms)} în total.`
+  const biggest = first.share >= 0.1 ? t`Cea mai mare parte, ${percentText(first.share, 0)}, e a firmei ${supplierName(profile, first.cui)}.` : ''
   return [lead, biggest].filter(Boolean).join(' ')
 }
 
@@ -208,7 +208,7 @@ export function steadyLede(profile: BuyerProfile, rows: readonly SupplierYears[]
 
 // ─────────────────────────────────────────────────── where they are ──
 
-/** „51% din banii achizițiilor directe au mers la firme din Ilfov, județul instituției. 34% au mers la firme din București." */
+/** „Firmele din Ilfov, județul instituției, însumează 51% din valoarea achizițiilor directe. Firmele din București, 34%." — awarded values, never said as received. */
 export function whereLede(profile: BuyerProfile): string | null {
   const rows = profile.supplierCounties
   const county = profile.county
@@ -219,13 +219,13 @@ export function whereLede(profile: BuyerProfile): string | null {
   const lead =
     homeShare >= 0.005
       ? county === 'B'
-        ? t`${percentText(homeShare, 0)} din banii achizițiilor directe au mers la firme din București, unde e și instituția.`
-        : t`${percentText(homeShare, 0)} din banii achizițiilor directe au mers la firme din ${name}, județul instituției.`
+        ? t`Firmele din București, unde e și instituția, însumează ${percentText(homeShare, 0)} din valoarea achizițiilor directe.`
+        : t`Firmele din ${name}, județul instituției, însumează ${percentText(homeShare, 0)} din valoarea achizițiilor directe.`
       : county === 'B'
-        ? t`Aproape nimic din banii achizițiilor directe n-a mers la firme din București, unde e instituția.`
-        : t`Aproape nimic din banii achizițiilor directe n-a mers la firme din ${name}, județul instituției.`
+        ? t`Firmele din București, unde e instituția, nu însumează aproape nimic din valoarea achizițiilor directe.`
+        : t`Firmele din ${name}, județul instituției, nu însumează aproape nimic din valoarea achizițiilor directe.`
   const capital = county !== 'B' ? rows.find((row) => row.code === 'B') : undefined
-  const tail = capital?.share != null && capital.share >= 0.1 ? t`${percentText(capital.share, 0)} au mers la firme din București.` : ''
+  const tail = capital?.share != null && capital.share >= 0.1 ? t`Firmele din București, ${percentText(capital.share, 0)}.` : ''
   return [lead, tail].filter(Boolean).join(' ')
 }
 
@@ -298,8 +298,8 @@ export function balanceLede(profile: BuyerProfile): string | null {
     const { period } = profile
     // The year in progress is said so far: its procedures may still end in a contract.
     return isPartYear(period) && period.through
-      ? t`Până în ${monthText(period.through)} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat încă cu un contract atribuit.`
-      : t`În ${periodText(period)} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit.`
+      ? t`Până în ${monthText(period.through)} a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat încă cu un contract atribuit.`
+      : t`În ${periodText(period)} a cumpărat doar direct, fără licitație: nicio procedură nu s-a încheiat cu un contract atribuit.`
   }
   const ratio = Math.round(direct / awards)
   if (ratio >= 20) return t`Cumpără mai ales direct: la fiecare contract atribuit, ${directPurchasesCount(ratio)}.`

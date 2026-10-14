@@ -9,7 +9,7 @@ import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/comp
 import { HubPending } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import { linkYearOf, type ContractSheet } from '../../lib/contract-model'
-import { headMoney, isAssociation, kindLabel } from '../../lib/contract-text'
+import { headMoney, isAssociation, kindLabel, publishedValuesCount, showsPublishedValue } from '../../lib/contract-text'
 import { whenText } from '../../lib/direct-purchase-text'
 import { CopyCode, PartyName } from '../direct-purchase/direct-purchase-head'
 
@@ -69,7 +69,21 @@ function HeadSentence({ sheet }: { readonly sheet: ContractSheet }) {
   const authority = <PartyName party={sheet.authority} role="authority" year={year} />
   const supplier = <PartyName party={sheet.supplier} role="supplier" year={year} />
   const when = whenText(sheet.date)
-  const money = <strong className="font-semibold text-foreground">{headMoney(sheet.value)}</strong>
+  const versions = publishedValuesCount(sheet.contract)
+  // Several values under one contract number: SEAP does not say which is in force, so the head's is one of them, said as one (as the value's box does).
+  const amount = <strong className="font-semibold text-foreground">{headMoney(sheet.value)}</strong>
+  const money =
+    versions > 1 && showsPublishedValue(sheet.value) ? (
+      <>
+        {amount}
+        {plural(versions, {
+          few: ', una dintre cele # valori pe care SEAP le publică pentru el',
+          other: ', una dintre cele # de valori pe care SEAP le publică pentru el',
+        })}
+      </>
+    ) : (
+      amount
+    )
   const partners = sheet.contract.firms.length - 1
   const others = plural(partners, { one: 'încă o firmă', few: 'alte # firme', other: 'alte # de firme' })
   if (sheet.kind === 'framework') {
