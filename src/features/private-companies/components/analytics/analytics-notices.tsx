@@ -73,7 +73,9 @@ function problemText(problem: QuestionProblem): string {
     case 'limit':
       return t`Filtrul „${problem.field}" are mai mult de ${problem.max} valori, cât primește analiza.`
     case 'capability':
-      return t`Filtrul „${problem.field}" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității.`
+      return problem.field.startsWith('activitate_principala')
+        ? t`Filtrul „${problem.field}" (activitatea principală presupusă după ANAF) nu există în această ediție a analizei: ediția nu oferă activitatea principală.`
+        : t`Filtrul „${problem.field}" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității.`
   }
 }
 

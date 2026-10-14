@@ -91,6 +91,8 @@ export function dimensionLabel(dimension: CompanyAnalysisDimension): string {
       return t`Cod CAEN fiscal ANAF`
     case 'ACTIVITY':
       return t`Activitate selectată (derivată, prioritate ONRC)`
+    case 'MAIN_ACTIVITY':
+      return t`Activitate principală (presupusă după ANAF)`
     case 'LEGAL_FORM':
       return t`Formă juridică`
     case 'OBSERVED_STATUS':

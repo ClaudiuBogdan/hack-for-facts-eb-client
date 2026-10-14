@@ -19,6 +19,10 @@
  * - the derived activity selection is kept only for the pinned edition, and
  *   only when it holds together (see `mapActivitySelection`); otherwise the
  *   profile reads as an older API's did.
+ * - the ANAF-assumed main activity is parsed strictly and kept only when it
+ *   holds together; its flags only on ONRC class rows of the pinned edition
+ *   while it is current, and only when they agree with its selected key
+ *   (see `mapMainActivity`, `mainFlagsOf`).
  */
 import {
   COMPANY_ACTIVITY_BASES,
@@ -42,6 +46,14 @@ import {
   type PrivateCompanyStatementQualification,
   type PrivateCompanyStatementSource,
 } from '@/schemas/private-company'
+import {
+  COMPANY_MAIN_ACTIVITY_POLICY,
+  COMPANY_MAIN_ACTIVITY_SELECTING_STATUSES,
+  companyMainActivityReadSchema,
+  type CompanyMainActivity,
+  type CompanyMainActivityRead,
+} from '@/schemas/private-company-main-activity'
+import { withAnafWithdrawn } from '../../lib/company-main-activity-model'
 import { COMPANY_REGISTRY_COVERAGES, type CompanyRegistryCuiState, type CompanyRegistryEnvelope } from '@/schemas/private-company-registry'
 import {
   COMPANY_RESOLVE_LABEL_SOURCES,
@@ -175,6 +187,142 @@ export function mapActivitySelection(raw: RawActivitySelection | null | undefine
       if (basis === 'onrc_multiple_classes' && raw.classKeyCount < 2) return null
       return { basis, ...counts, ...none }
   }
+}
+
+/**
+ * The ANAF-assumed main activity as the profile keeps it: `read` undefined
+ * when the API served none (an older API, a null field) — nothing new is
+ * shown — and `unreadable` when it served one this client cannot read.
+ */
+export interface MappedMainActivity {
+  readonly read: CompanyMainActivityRead | undefined
+  readonly unreadable: boolean
+}
+
+const MAIN_NOT_SERVED: MappedMainActivity = { read: undefined, unreadable: false }
+const MAIN_UNREADABLE: MappedMainActivity = { read: undefined, unreadable: true }
+
+const NO_INTERPRETATION = { status: null, matchBasis: null, revisionBasis: null, resolved: null, candidates: null, correctionId: null } as const
+const NO_TOKEN = { originalToken: null, jsonType: null, tokenForm: null, canonicalDigits: null, assumedCode: null, v3Form: null } as const
+
+/**
+ * What the API withholds, applied again here so a field it suppresses can
+ * never come back from a response that carried it anyway: with
+ * `anafWithdrawn`, whatever the currentness, every ANAF field and the whole
+ * interpretation of ANAF's code; under SOURCE_WITHDRAWN the same; under
+ * ONRC_UNAVAILABLE everything ONRC-derived (the interpretation and the
+ * edition); pending with no status (the interpretation withheld) the
+ * interpretation and every token-derived ANAF field, the fiscal source's
+ * dates, ids and custody staying.
+ */
+function withheld(served: CompanyMainActivity): CompanyMainActivity {
+  const activity = served.anafWithdrawn ? withAnafWithdrawn(served) : served
+  switch (activity.currentness) {
+    case 'SOURCE_WITHDRAWN':
+      return { ...activity, ...NO_INTERPRETATION, anaf: null }
+    case 'ONRC_UNAVAILABLE':
+      return { ...activity, ...NO_INTERPRETATION, edition: null }
+    case 'PENDING_REFRESH':
+      return activity.status === null ? { ...activity, ...NO_INTERPRETATION, anaf: activity.anaf && { ...activity.anaf, ...NO_TOKEN } } : activity
+    case 'CURRENT':
+      return activity
+  }
+}
+
+/**
+ * An integrity hold exactly as the API serves it: under any non-current
+ * currentness (pending, or the higher-priority ONRC unavailable / source
+ * withdrawn, which the hold may accompany), with no interpretation, and
+ * either no ANAF object (withdrawn) or none of its token-derived fields. A
+ * current one, or one with a status, key, candidate, basis, correction or
+ * token, is unreadable — never a held source shown with a code or a key.
+ */
+function heldAsServed(activity: CompanyMainActivity): boolean {
+  if (!activity.integrityHeld) return true
+  if (activity.currentness === 'CURRENT') return false
+  if (Object.keys(NO_INTERPRETATION).some((field) => activity[field as keyof typeof NO_INTERPRETATION] !== null)) return false
+  const anaf = activity.anaf
+  return anaf === null || Object.keys(NO_TOKEN).every((field) => anaf[field as keyof typeof NO_TOKEN] === null)
+}
+
+/**
+ * Whether an assignment holds together under the page's registry: a status
+ * for a current one (unless its ANAF source is withdrawn, which leaves no
+ * interpretation); a selected key exactly for the selecting statuses; no
+ * ONRC interpretation under a registry that is not published; a current one
+ * only in the pinned, published edition. A pending one without a status is
+ * the interpretation withheld — valid, never malformed.
+ */
+function mainHoldsTogether(activity: CompanyMainActivity, registry: CompanyRegistryEnvelope): boolean {
+  if (activity.currentness === 'CURRENT' && activity.status === null && !activity.anafWithdrawn) return false
+  if (activity.status !== null && COMPANY_MAIN_ACTIVITY_SELECTING_STATUSES.has(activity.status) !== (activity.resolved !== null)) return false
+  if (registry.state !== 'published' && (activity.resolved !== null || activity.candidates !== null)) return false
+  if (activity.currentness === 'CURRENT') {
+    if (registry.state !== 'published' || registry.editionId === null || activity.edition?.editionId !== registry.editionId) return false
+  }
+  return true
+}
+
+/**
+ * `Company.mainActivity`, fail closed: parsed strictly (an unknown enum value
+ * is unreadable, never a nearby one), the policy this client words, an
+ * activity exactly when ASSIGNED, an integrity hold only in its served
+ * shape, the API's suppression re-applied,
+ * and an assignment that holds together under the pinned registry.
+ */
+export function mapMainActivity(raw: unknown, registry: CompanyRegistryEnvelope): MappedMainActivity {
+  if (raw === undefined || raw === null) return MAIN_NOT_SERVED
+  const parsed = companyMainActivityReadSchema.safeParse(raw)
+  if (!parsed.success) return MAIN_UNREADABLE
+  const read = parsed.data
+  if ((read.availability === 'ASSIGNED') !== (read.activity !== null)) return MAIN_UNREADABLE
+  if (read.activity === null) return { read, unreadable: false }
+  if (read.activity.policy !== COMPANY_MAIN_ACTIVITY_POLICY || !heldAsServed(read.activity)) return MAIN_UNREADABLE
+  const activity = withheld(read.activity)
+  if (!mainHoldsTogether(activity, registry)) return MAIN_UNREADABLE
+  return { read: { ...read, activity }, unreadable: false }
+}
+
+/** The assignment whose flags a CAEN row may carry: current, in the pinned published edition, its ANAF source public. */
+function flaggingAssignment(main: MappedMainActivity, registry: CompanyRegistryEnvelope): CompanyMainActivity | null {
+  const activity = main.read?.activity ?? null
+  if (activity?.currentness !== 'CURRENT' || activity.anafWithdrawn || registry.state !== 'published' || activity.edition?.editionId !== registry.editionId) return null
+  return activity
+}
+
+type RawCaenActivity = RawCompany['caenActivities'][number]
+
+/**
+ * A row's main flags: the API's own, on an ONRC class row while the
+ * assignment is current in the pinned edition; null on every other row
+ * (ANAF's, a short token, an unknown revision, no current assignment). A row
+ * an older API (or document) serves without them stays without them.
+ */
+export function mainFlagsOf(
+  activity: Pick<RawCaenActivity, 'isMainCaen' | 'matchesAssumedMainCode'>,
+  source: PrivateCompanyCaenActivity['source'],
+  classState: PrivateCompanyCaenActivity['classState'],
+  flagging: CompanyMainActivity | null,
+): Pick<PrivateCompanyCaenActivity, 'isMainCaen' | 'matchesAssumedMainCode'> {
+  if (activity.isMainCaen === undefined && activity.matchesAssumedMainCode === undefined) return {}
+  if (flagging === null || source !== 'onrc' || classState !== 'class') return { isMainCaen: null, matchesAssumedMainCode: null }
+  return { isMainCaen: activity.isMainCaen ?? null, matchesAssumedMainCode: activity.matchesAssumedMainCode ?? null }
+}
+
+/**
+ * Every class row carries both flags, or none does: the API serves them null
+ * under a current assignment when its bounded flag list is unavailable or
+ * over its bound — unknown, so no row keeps one (nothing is inferred from
+ * the rest).
+ */
+function flagsKnown(rows: readonly PrivateCompanyCaenActivity[]): boolean {
+  return rows.every((row) => row.source !== 'onrc' || row.classState !== 'class' || (row.isMainCaen !== null && row.matchesAssumedMainCode !== null))
+}
+
+/** Every row flagged main is the assignment's selected key (and there is one): otherwise header and list would disagree. */
+function flagsAgree(rows: readonly PrivateCompanyCaenActivity[], flagging: CompanyMainActivity | null): boolean {
+  const key = flagging?.resolved ?? null
+  return rows.every((row) => row.isMainCaen !== true || (key !== null && row.rev === key.revision && row.code === key.code))
 }
 
 /**
@@ -421,6 +569,30 @@ export function mapCompanyProfile(
       ? { code: fiscal.mainCaenCode, rev: fiscal.mainCaenRev || null }
       : null
 
+  const mappedMain = mapMainActivity(company.mainActivity, registry.registry)
+  const flagging = flaggingAssignment(mappedMain, registry.registry)
+  const caenActivities = company.caenActivities.flatMap((activity): PrivateCompanyCaenActivity[] => {
+    const source = mapCaenSource(activity.source)
+    // ANAF's declared activity is its own source and stays; the edition's only inside it.
+    if (source === null || (source === 'onrc' && !inEdition)) return []
+    const classState = source === 'onrc' ? mapCaenClassState(activity.classState) : null
+    // A label only beside the row's own known revision, from the current catalog — and only on a class row when the API says which.
+    const labelled = Boolean(activity.rev) && activity.label !== null && (classState === null || classState === 'class')
+    return [{
+      code: activity.code,
+      rev: activity.rev || null,
+      label: labelled ? activity.label : null,
+      source,
+      labelSource: labelled ? ('current_db_catalog' as const) : null,
+      classState,
+      ...mainFlagsOf(activity, source, classState, flagging),
+    }]
+  })
+  // Flags that name another key than the assignment's: neither is kept, and the main block says it cannot be read.
+  const agree = flagsAgree(caenActivities, flagging)
+  const main = agree ? mappedMain : MAIN_UNREADABLE
+  const rows = agree && flagsKnown(caenActivities) ? caenActivities : caenActivities.map((row) => ('isMainCaen' in row || 'matchesAssumedMainCode' in row ? { ...row, isMainCaen: null, matchesAssumedMainCode: null } : row))
+
   return {
     organizationId: `org:${company.orgId}`,
     cui: company.cui,
@@ -444,23 +616,10 @@ export function mapCompanyProfile(
           matchConfidence: mapMatchConfidence(company.territory.matchConfidence),
         }
       : null,
-    caenActivities: company.caenActivities.flatMap((activity) => {
-      const source = mapCaenSource(activity.source)
-      // ANAF's declared activity is its own source and stays; the edition's only inside it.
-      if (source === null || (source === 'onrc' && !inEdition)) return []
-      const classState = source === 'onrc' ? mapCaenClassState(activity.classState) : null
-      // A label only beside the row's own known revision, from the current catalog — and only on a class row when the API says which.
-      const labelled = Boolean(activity.rev) && activity.label !== null && (classState === null || classState === 'class')
-      return [{
-        code: activity.code,
-        rev: activity.rev || null,
-        label: labelled ? activity.label : null,
-        source,
-        labelSource: labelled ? ('current_db_catalog' as const) : null,
-        classState,
-      }]
-    }),
+    caenActivities: rows,
     activitySelection: mapActivitySelection(company.activitySelection, registry.registry),
+    ...(main.read !== undefined ? { mainActivity: main.read } : {}),
+    ...(main.unreadable ? { mainActivityUnreadable: true } : {}),
     representatives: company.representatives.map((rep) => ({
       name: rep.name,
       role: rep.role,

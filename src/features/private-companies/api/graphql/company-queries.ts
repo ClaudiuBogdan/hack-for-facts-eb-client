@@ -9,6 +9,12 @@
  *   hack-for-facts-eb-server/src/modules/companies/shell/graphql/typedefs.ts
  */
 import { z } from 'zod'
+import {
+  COMPANY_MAIN_ACTIVITY_HISTORY_KINDS,
+  COMPANY_MAIN_ACTIVITY_HISTORY_STATES,
+  companyMainActivityEvidenceEntrySchema,
+  companyMainActivityOutcomeSchema,
+} from '@/schemas/private-company-main-activity'
 import { REGISTRY_ENVELOPE_FIELDS, rawRegistryEnvelopeSchema, rawRegistryEvidenceSchema, registryEvidenceFields } from './company-registry-graphql'
 
 /** Money/BigInt scalars serialize as strings over the wire; coerce on parse. */
@@ -28,14 +34,44 @@ const ACTIVITY_SELECTION_FIELDS = /* GraphQL */ `
       }`
 
 /**
+ * `Company.mainActivity` (the ANAF-assumed main activity) and, on the CAEN
+ * rows, its two flags. Asked beside the derived activity; an API from before
+ * them rejects the document at validation, and the profile is asked again
+ * without them (`fetchPrivateCompanyProfileLive`) — nothing new is shown.
+ * `anafWithdrawn` and `integrityHeld` are part of the field, not a
+ * generation of their own: an API serving `mainActivity` without them is no
+ * contract this client reads (its rejection fails the read, never a fallback).
+ */
+const MAIN_ACTIVITY_FIELDS = /* GraphQL */ `
+      mainActivity {
+        availability reason
+        activity {
+          policy basis currentness status matchBasis revisionBasis
+          resolved { revision code label labelSource }
+          candidates { revision code }
+          correctionId
+          anaf {
+            originalToken jsonType tokenForm canonicalDigits assumedCode v3Form statusDate retrievedAt
+            sourceUrl sourceSnapshotId sourceHash rawCaptureId rawCustodyId evidenceCustody
+          }
+          anafWithdrawn integrityHeld
+          edition { editionId sourcePublishedAt caenCoverage }
+          derivedAt evidenceAt refreshedAt resolutionId supportId refreshId contentEpoch cacheKey
+        }
+      }`
+const MAIN_FLAG_FIELDS = ' isMainCaen matchesAssumedMainCode'
+
+/**
  * The profile document in three shapes: `current` (the derived activity and
  * the CAEN class states), `without-selection` (the selection alone was
  * refused), `legacy` (an API from before them, which rejects those fields at
- * validation — the profile then reads exactly as it did).
+ * validation — the profile then reads exactly as it did). `main` adds the
+ * ANAF-assumed main activity and its flags (never to `legacy`: an API from
+ * before the derived activity has no main activity either).
  */
 type ProfileShape = 'current' | 'without-selection' | 'legacy'
 
-const companyProfileQuery = (shape: ProfileShape) => /* GraphQL */ `
+const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL */ `
   query CompanyProfile($cui: CUI!) {
     company(cui: $cui) {
       cui
@@ -57,7 +93,7 @@ const companyProfileQuery = (shape: ProfileShape) => /* GraphQL */ `
         registeredName
         asOf
       }
-      caenActivities { code rev label source labelSource${shape === 'legacy' ? '' : ' classState'} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}
+      caenActivities { code rev label source labelSource${shape === 'legacy' ? '' : ' classState'}${main ? MAIN_FLAG_FIELDS : ''} }${shape === 'current' ? ACTIVITY_SELECTION_FIELDS : ''}${main ? MAIN_ACTIVITY_FIELDS : ''}
       representatives { name role }
       euBranches { branchName country euid fiscalCode }
       registry { ${registryEvidenceFields(shape === 'legacy')} }
@@ -108,11 +144,15 @@ const companyProfileQuery = (shape: ProfileShape) => /* GraphQL */ `
   }
 `
 
-export const COMPANY_PROFILE_QUERY = companyProfileQuery('current')
+export const COMPANY_PROFILE_QUERY = companyProfileQuery('current', true)
+/** The profile without the main activity: asked only when an API from before it rejected its fields at validation. */
+export const COMPANY_PROFILE_QUERY_WITHOUT_MAIN = companyProfileQuery('current', false)
 /** The same profile without the derived activity: asked only when the selection alone was refused. */
-export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION = companyProfileQuery('without-selection')
+export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION = companyProfileQuery('without-selection', true)
+/** Without the derived activity, on an API without the main activity. */
+export const COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN = companyProfileQuery('without-selection', false)
 /** The profile as an API from before the derived activity serves it: asked only when that API rejected the new fields. */
-export const COMPANY_PROFILE_QUERY_LEGACY = companyProfileQuery('legacy')
+export const COMPANY_PROFILE_QUERY_LEGACY = companyProfileQuery('legacy', false)
 
 const rawCompanyStatusSchema = z
   .object({ code: z.string(), label: z.string().nullable(), labelSource: z.string().nullish() })
@@ -190,9 +230,17 @@ const rawCompanySchema = z.object({
       source: z.string(),
       labelSource: z.string().nullish(),
       classState: z.string().nullish(),
+      isMainCaen: z.boolean().nullish(),
+      matchesAssumedMainCode: z.boolean().nullish(),
     }),
   ),
   activitySelection: rawActivitySelectionSchema.nullish(),
+  /**
+   * Read as it came: the mapper parses it strictly (`companyMainActivityReadSchema`),
+   * so an answer it cannot read is said on the main block alone — never a
+   * profile lost, never a value read as a nearby one.
+   */
+  mainActivity: z.unknown().optional(),
   representatives: z.array(z.object({ name: z.string(), role: z.string() })),
   euBranches: z.array(
     z.object({
@@ -447,3 +495,59 @@ export type RawCompanyResolveResult = NonNullable<z.infer<typeof companyResolveR
 
 // The groupings (`companyCountyProfile`, `companyHubStats`) live in
 // `../company-groups-api.ts`, with their registry envelope.
+
+// ---------------------------------------------------------------------------
+// Main activity history — companyMainActivityHistory(cui, kind, first, after)
+// ---------------------------------------------------------------------------
+
+/**
+ * One bounded page of the ANAF-assumed main activity's history: derived
+ * outcomes or the source observations behind them, newest first. Derivation
+ * and source-observation history, never legal effective dates; withdrawn
+ * sources come back withdrawn (`anafWithdrawn`, `onrcWithdrawn`).
+ */
+export const COMPANY_MAIN_ACTIVITY_HISTORY_QUERY = /* GraphQL */ `
+  query CompanyMainActivityHistory($cui: CUI!, $kind: CompanyMainActivityHistoryKind, $first: Int, $after: String) {
+    companyMainActivityHistory(cui: $cui, kind: $kind, first: $first, after: $after) {
+      state
+      reason
+      kind
+      outcomes {
+        resolutionId previousResolutionId refreshId reasons policy basis status revisionBasis matchBasis
+        anaf { originalToken jsonType tokenForm canonicalDigits assumedCode }
+        editionId
+        candidates { revision code }
+        resolved { revision code label labelSource }
+        correctionId derivedAt anafWithdrawn onrcWithdrawn
+      }
+      evidence {
+        supportId previousSupportId resolutionId refreshId editionId
+        anaf { sourceSnapshotId sourceHash statusDate retrievedAt sourceUrl rawCaptureId rawCustodyId evidenceCustody originalToken jsonType }
+        caenCoverage evidenceAt anafWithdrawn onrcWithdrawn
+      }
+      hasNextPage
+      endCursor
+      registry { ${REGISTRY_ENVELOPE_FIELDS} }
+      note
+    }
+  }
+`
+
+/** Strict: an enum value this client does not know fails the page (a data error), never read as a nearby one. */
+export const companyMainActivityHistoryResponseSchema = z.object({
+  companyMainActivityHistory: z
+    .object({
+      state: z.enum(COMPANY_MAIN_ACTIVITY_HISTORY_STATES),
+      reason: z.string().nullable(),
+      kind: z.enum(COMPANY_MAIN_ACTIVITY_HISTORY_KINDS),
+      outcomes: z.array(companyMainActivityOutcomeSchema),
+      evidence: z.array(companyMainActivityEvidenceEntrySchema),
+      hasNextPage: z.boolean(),
+      endCursor: z.string().nullable(),
+      registry: rawRegistryEnvelopeSchema,
+      note: z.string(),
+    })
+    .nullable(),
+})
+
+export type CompanyMainActivityHistoryResponse = z.infer<typeof companyMainActivityHistoryResponseSchema>

@@ -4,6 +4,7 @@ import type { PrivateCompanyProfile } from '@/schemas/private-company'
 import { isRegistryPublished } from '@/schemas/private-company-registry'
 import { fetchCompanyRegistrationDiff } from '../api/company-registry-api'
 import { isRegistryParentMissing, isRegistryRefusal, retryRegistryRead } from '../api/company-registry-errors'
+import { removeMainActivityHistory } from './use-company-main-activity-history'
 import { privateCompanyProfileQueryKey } from './use-private-company-profile'
 import { boundScopeKey, useRegistryReadLedger, useReportRegistryMove, type CompanyRegistryScope } from './use-company-registry-scope'
 
@@ -17,8 +18,10 @@ import { boundScopeKey, useRegistryReadLedger, useReportRegistryMove, type Compa
  *   check: it waits for the pin like any other answer.
  * - `checking`: nothing is shown while the registry or the company is read
  *   again: no pin yet, a refusal reported, an answer of another scope, a
- *   dependent read that found the company gone from the directory, or one the
- *   registry refused (until a read started after that refusal is accepted).
+ *   dependent read that found the company gone from the directory (the
+ *   registration diff, or the main activity's history answering that the
+ *   company is no longer public: `reportGone`), or one the registry refused
+ *   (until a read started after that refusal is accepted).
  * - `moved`: the registry moved under the page; hidden until the reader asks.
  * - `unreadable`: the registry could not be read, the company's presence
  *   could not be settled, or the registry refused the comparison again after
@@ -48,8 +51,12 @@ export function useProfileRegistryScope(
   const live = !withdrawn.includes(profile)
   const current = live && pinned !== null && answered === pinned
   const diff = useCompanyRegistrationDiff(cui, current && boundScopeKey(scope) !== null ? profile : null, scope)
-  // The diff read found no directory company for the CUI: hidden from this render on, never „not registered".
-  const gone = current && isRegistryParentMissing(diff.error)
+  // Another dependent read (the main activity's history) found the company of this answer no longer public.
+  const [reportedGone, setReportedGone] = useState<PrivateCompanyProfile | null>(null)
+  const reportGone = useCallback(() => setReportedGone(profile), [profile])
+  // The diff read, or another dependent read, found no directory company for the CUI: hidden from this render on,
+  // never „not registered".
+  const gone = current && (isRegistryParentMissing(diff.error) || reportedGone === profile)
   // The diff read was refused by the registry — its scope moved, or access could not be rechecked: the scope the
   // profile was answered under is in doubt, so the profile is hidden from this render on, and while that refusal's
   // episode is open (until a diff read started after it is accepted). `company: null` is the withdrawal above, and an
@@ -79,6 +86,9 @@ export function useProfileRegistryScope(
     // The document's own answer goes too: the route may stand it in again while the company is re-read.
     setWithdrawn((list) => [...list, ...[profile, bootstrap].filter((answer): answer is PrivateCompanyProfile => answer !== undefined && !list.includes(answer))])
     queryClient.removeQueries({ queryKey: registrationDiffKey(cui) })
+    // Every main-activity history page of the company goes too (a read in flight is cancelled): the page that
+    // shows it is unmounted by this withdrawal and can no longer purge it itself.
+    removeMainActivityHistory(queryClient, cui)
     if (rereadUnder.current === pinned) {
       setUnsettled(true)
       return
@@ -102,7 +112,7 @@ export function useProfileRegistryScope(
   else if (inDoubt && diff.isError && !diff.isFetching && report) verdict = { status: 'unreadable', retry: report }
   else if (refusedNow || inDoubt) verdict = CHECKING
   else verdict = { status: 'show', profile }
-  return { verdict, diff }
+  return { verdict, diff, reportGone }
 }
 
 const registrationDiffKey = (cui: string) => ['company-registration-diff', cui] as const

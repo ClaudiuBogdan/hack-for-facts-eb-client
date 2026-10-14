@@ -16,6 +16,18 @@ The script will:
 1. Parse the grep output to extract msgid and msgstr pairs
 2. Find matching msgid entries in the Romanian locale file
 3. Update empty msgstr entries with the translations
+
+Opt-in: --replace-source-copy
+    python insert_translations.py --replace-source-copy ../src/locales/en/messages.po < input.txt
+
+    The source catalog (en) is pre-filled by Lingui with msgstr == msgid (the
+    Romanian source text), so the default mode, which fills only EMPTY msgstr,
+    cannot translate it. With this flag, for ONLY the supplied msgids, an entry
+    whose msgstr is exactly its msgid is replaced as well - and only when the
+    entry is single-line, non-plural and has no msgctxt. Empty msgstr are
+    filled as in the default mode; every other entry (an existing human
+    translation, a context, a plural, a multi-line entry) is left untouched.
+    Without the flag the behaviour is unchanged.
 """
 
 import re
@@ -83,13 +95,38 @@ def write_po_file(filepath: str, lines: List[str]) -> None:
         f.writelines(lines)
 
 
-def update_po_file(po_lines: List[str], translations: Dict[str, str]) -> Tuple[List[str], int]:
+def has_msgctxt(po_lines: List[str], msgid_index: int) -> bool:
+    """Whether the entry whose msgid line is at msgid_index carries a msgctxt (a multi-line one included)."""
+    j = msgid_index - 1
+    while j >= 0 and po_lines[j].lstrip().startswith('"'):
+        j -= 1
+    return j >= 0 and po_lines[j].strip().startswith('msgctxt ')
+
+
+def is_source_copy(po_lines: List[str], i: int, msgid_content: str) -> bool:
+    """
+    Whether the entry whose msgid line is at i is a single-line, non-plural
+    entry without msgctxt whose msgstr is exactly its msgid.
+    """
+    if msgid_content == '""' or i + 1 >= len(po_lines):
+        return False
+    if po_lines[i + 1].strip() != f'msgstr {msgid_content}':
+        return False
+    if i + 2 < len(po_lines) and po_lines[i + 2].lstrip().startswith('"'):
+        return False
+    return not has_msgctxt(po_lines, i)
+
+
+def update_po_file(po_lines: List[str], translations: Dict[str, str], replace_source_copy: bool = False) -> Tuple[List[str], int]:
     """
     Update PO file lines with translations.
 
     Args:
         po_lines: List of lines from the PO file
         translations: Dictionary mapping msgid to msgstr
+        replace_source_copy: also replace, for the supplied msgids only, a
+            msgstr that is exactly its msgid (single-line, non-plural, no
+            msgctxt); see the module docstring
 
     Returns:
         Tuple of (updated lines, count of updates)
@@ -120,6 +157,13 @@ def update_po_file(po_lines: List[str], translations: Dict[str, str]) -> Tuple[L
                         i += 2  # Skip the original msgstr line
                         continue
 
+                # Opt-in: a source copy (msgstr == msgid) of a supplied msgid
+                if replace_source_copy and msgid_content in translations and is_source_copy(po_lines, i, msgid_content):
+                    updated_lines.append(f'msgstr {translations[msgid_content]}\n')
+                    updates_count += 1
+                    i += 2  # Skip the original msgstr line
+                    continue
+
         i += 1
 
     return updated_lines, updates_count
@@ -127,6 +171,11 @@ def update_po_file(po_lines: List[str], translations: Dict[str, str]) -> Tuple[L
 
 def main():
     """Main function."""
+    # The opt-in flag, then the historical positional PO path.
+    args = sys.argv[1:]
+    replace_source_copy = '--replace-source-copy' in args
+    positional = [arg for arg in args if arg != '--replace-source-copy']
+
     # Read input from stdin
     input_lines = sys.stdin.readlines()
 
@@ -147,7 +196,7 @@ def main():
     # Path to Romanian locale file. Keep the historical default for existing
     # callers, while allowing isolated catalog batches (admin, PNRR, etc.) to
     # target their own PO file explicitly.
-    ro_po_path = sys.argv[1] if len(sys.argv) > 1 else '../src/locales/ro/messages.po'
+    ro_po_path = positional[0] if positional else '../src/locales/ro/messages.po'
 
     # Read the current PO file
     print(f"Reading {ro_po_path}...", file=sys.stderr)
@@ -156,7 +205,7 @@ def main():
 
     # Update the PO file
     print("Updating translations...", file=sys.stderr)
-    updated_lines, updates_count = update_po_file(po_lines, translations)
+    updated_lines, updates_count = update_po_file(po_lines, translations, replace_source_copy)
 
     # Write the updated file
     if updates_count > 0:

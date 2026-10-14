@@ -1,4 +1,5 @@
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
+import type { CompanyMainActivityHistoryKind, CompanyMainActivityHistoryResult } from '@/schemas/private-company-main-activity'
 import type {
   CompanyResolveRequest,
   CompanyResolveResult,
@@ -13,6 +14,7 @@ import { fetchCompanyGroupProfile } from './company-groups-api'
 import { assertRegistryScope } from './company-registry-errors'
 import { fetchPrivateCompanyProfileMock } from './private-company-api.mock'
 import {
+  fetchCompanyMainActivityHistoryLive,
   fetchPrivateCompanyProfileLive,
   fetchPrivateCompanySearchLive,
   resolveCompaniesLive,
@@ -33,6 +35,19 @@ export async function fetchPrivateCompanyProfile(
     return fetchPrivateCompanyProfileMock(cui)
   }
   return fetchPrivateCompanyProfileLive(cui, signal)
+}
+
+/**
+ * A page of the ANAF-assumed main activity's history. The mock profiles carry
+ * no main activity, so mock mode serves no history (`unsupported`: nothing
+ * shown), never an invented one.
+ */
+export async function fetchCompanyMainActivityHistory(
+  request: { readonly cui: string; readonly kind: CompanyMainActivityHistoryKind; readonly after: string | null; readonly scopeKey: string },
+  signal?: AbortSignal,
+): Promise<CompanyMainActivityHistoryResult> {
+  if (isPrivateCompanyMockEnabled()) return { status: 'unsupported' }
+  return fetchCompanyMainActivityHistoryLive(request, signal)
 }
 
 export async function fetchPrivateCompanySearch(

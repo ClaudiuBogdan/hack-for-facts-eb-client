@@ -565,7 +565,7 @@ msgid "{0, plural, one {Încă un capitol} few {Celelalte # capitole} other {Cel
 msgstr "{0, plural, one {Încă un capitol} few {Celelalte # capitole} other {Celelalte # de capitole}}"
 
 #. placeholder {0}: bucket.groups
-#: src/features/private-companies/lib/company-analytics-view.ts:102
+#: src/features/private-companies/lib/company-analytics-view.ts:105
 msgid "{0, plural, one {Încă un grup} few {Alte # grupuri} other {Alte # de grupuri}}"
 msgstr "{0, plural, one {Încă un grup} few {Alte # grupuri} other {Alte # de grupuri}}"
 
@@ -723,7 +723,7 @@ msgstr "{0, plural, one {un an fără valoare publicată, socotit zero} few {# a
 #~ msgstr "{0, plural, one {un copil} few {# copii} other {# de copii}}"
 
 #. placeholder {0}: groups.length
-#: src/features/private-companies/components/profile/company-activities-band.tsx:222
+#: src/features/private-companies/components/profile/company-activities-band.tsx:248
 msgid "{0, plural, one {Un domeniu} few {Toate cele # domenii} other {Toate cele # de domenii}}"
 msgstr "{0, plural, one {Un domeniu} few {Toate cele # domenii} other {Toate cele # de domenii}}"
 
@@ -872,11 +872,16 @@ msgstr "{0} (numele din fișa ei de buget)"
 msgid "{0} (numele din lista ANAF)"
 msgstr "{0} (numele din lista ANAF)"
 
+#. placeholder {0}: mainKeyText(selector)
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:70
+msgid "{0} (ONRC, activitate principală presupusă)"
+msgstr "{0} (ONRC, activitate principală presupusă)"
+
 #. placeholder {0}: caen.code
 #. placeholder {0}: selector.code
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:493
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:85
-#: src/features/private-companies/lib/company-analytics-text.ts:207
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:86
+#: src/features/private-companies/lib/company-analytics-text.ts:209
 msgid "{0} (revizie necunoscută)"
 msgstr "{0} (revizie necunoscută)"
 
@@ -1220,7 +1225,7 @@ msgid "{0} față de România"
 msgstr "{0} față de România"
 
 #. placeholder {0}: cuis.length
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:59
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:60
 msgid "{0} firme alese"
 msgstr "{0} firme alese"
 
@@ -1642,7 +1647,7 @@ msgstr "{0} și {1}, {2}–{3}"
 #. placeholder {0}: values.slice(0, max).join(', ')
 #. placeholder {1}: values.length - 3
 #. placeholder {1}: values.length - max
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:32
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:33
 #: src/features/private-companies/lib/company-analytics-sentence.ts:39
 msgid "{0} și încă {1}"
 msgstr "{0} și încă {1}"
@@ -1868,7 +1873,7 @@ msgstr "{0}; ÎCCJ: {1}"
 #. placeholder {1}: moneyText(row.before.exact)
 #. placeholder {1}: segment.text
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:368
-#: src/features/private-companies/lib/company-analytics-view.ts:159
+#: src/features/private-companies/lib/company-analytics-view.ts:169
 #: src/features/statistics/components/detail/detail-scope-sentence.tsx:376
 msgid "{0}: {1}"
 msgstr "{0}: {1}"
@@ -1877,7 +1882,7 @@ msgstr "{0}: {1}"
 #. placeholder {1}: exactValueText(sum, series.unit, locale)
 #. placeholder {2}: countText(point.metric.contributors, locale)
 #. placeholder {3}: countText(point.filers, locale)
-#: src/features/private-companies/lib/company-analytics-view.ts:160
+#: src/features/private-companies/lib/company-analytics-view.ts:170
 msgid "{0}: {1} · raportat de {2} din {3} firme cu situație"
 msgstr "{0}: {1} · raportat de {2} din {3} firme cu situație"
 
@@ -1908,7 +1913,7 @@ msgstr "{0}: {1} situații"
 #. placeholder {0}: dimensionLabel(dimension)
 #. placeholder {1}: measure.toLocaleLowerCase('ro-RO')
 #. placeholder {2}: question.year
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:110
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:111
 msgid "{0}: {1}, {2}"
 msgstr "{0}: {1}, {2}"
 
@@ -1968,7 +1973,7 @@ msgstr "{0}: pe titluri"
 #. placeholder {0}: dimensionLabel(dimension)
 #. placeholder {1}: measure.toLocaleLowerCase('ro-RO')
 #. placeholder {2}: question.year
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:110
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:111
 msgid "{0}: ponderea în firme și în {1}, {2}"
 msgstr "{0}: ponderea în firme și în {1}, {2}"
 
@@ -2751,12 +2756,12 @@ msgid "{label}: awarded value unavailable, {countLabel} records"
 msgstr "{label}: valoare atribuită indisponibilă, {countLabel} înregistrări"
 
 #. placeholder {0}: boundText(range.max ?? '0', range, locale)
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:44
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:45
 msgid "{label}: cel mult {0}"
 msgstr "{label}: cel mult {0}"
 
 #. placeholder {0}: boundText(range.min, range, locale)
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:43
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:44
 msgid "{label}: cel puțin {0}"
 msgstr "{label}: cel puțin {0}"
 
@@ -2768,7 +2773,7 @@ msgstr "{label}: de la {from} în {0} la {to} în {1}"
 
 #. placeholder {0}: boundText(range.min, range, locale)
 #. placeholder {1}: boundText(range.max, range, locale)
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:42
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:43
 msgid "{label}: între {0} și {1}"
 msgstr "{label}: între {0} și {1}"
 
@@ -2830,7 +2835,7 @@ msgid "{lossYears, plural, one {A încheiat cu pierdere un an din cei {counted} 
 msgstr "{lossYears, plural, one {A încheiat cu pierdere un an din cei {counted} cu rezultat net admis.} few {A încheiat cu pierdere # ani din cei {counted} cu rezultat net admis.} other {A încheiat cu pierdere # de ani din cei {counted} cu rezultat net admis.}}"
 
 #. placeholder {0}: compactValueText(total ?? '0', question.unit, locale)
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:119
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:120
 msgid "{measure} ({0})"
 msgstr "{measure} ({0})"
 
@@ -3179,15 +3184,15 @@ msgstr "{topName} cumpără direct de {topValue} pe locuitor, {bottomName} de {b
 #~ msgid "{total, plural, few {Primele {shown} din # teritorii găsite} other {Primele {shown} din # de teritorii găsite}}"
 #~ msgstr "{total, plural, few {Primele {shown} din # teritorii găsite} other {Primele {shown} din # de teritorii găsite}}"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:227
+#: src/features/private-companies/components/profile/company-activities-band.tsx:253
 msgid "{total, plural, one {O activitate autorizată în registrul comerțului{nomenclature}.} few {# activități autorizate în registrul comerțului{nomenclature}.} other {# de activități autorizate în registrul comerțului{nomenclature}.}}"
 msgstr "{total, plural, one {O activitate autorizată în registrul comerțului{nomenclature}.} few {# activități autorizate în registrul comerțului{nomenclature}.} other {# de activități autorizate în registrul comerțului{nomenclature}.}}"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:239
+#: src/features/private-companies/components/profile/company-activities-band.tsx:265
 msgid "{total, plural, one {O activitate înscrisă în registrul comerțului, fără revizie CAEN.} few {# activități înscrise în registrul comerțului, fără revizie CAEN.} other {# de activități înscrise în registrul comerțului, fără revizie CAEN.}}"
 msgstr "{total, plural, one {O activitate înscrisă în registrul comerțului, fără revizie CAEN.} few {# activități înscrise în registrul comerțului, fără revizie CAEN.} other {# de activități înscrise în registrul comerțului, fără revizie CAEN.}}"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:233
+#: src/features/private-companies/components/profile/company-activities-band.tsx:259
 msgid "{total, plural, one {O activitate înscrisă în registrul comerțului.} few {# înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.} other {# de înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.}}"
 msgstr "{total, plural, one {O activitate înscrisă în registrul comerțului.} few {# înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.} other {# de înscrieri de activități în registrul comerțului, pe revizii CAEN; aceeași activitate poate apărea în mai multe revizii.}}"
 
@@ -3687,7 +3692,7 @@ msgstr "|z| >= prag"
 msgid "0 participants"
 msgstr "0 participanți"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:120
+#: src/features/private-companies/lib/company-analytics-text.ts:122
 msgid "0 salariați"
 msgstr "0 salariați"
 
@@ -3823,7 +3828,7 @@ msgstr "1 UAT alocat"
 msgid "1–3 digits match every code starting with them; 4 digits match that exact code."
 msgstr "1–3 cifre caută toate codurile care încep așa; 4 cifre caută exact acel cod."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:122
+#: src/features/private-companies/lib/company-analytics-text.ts:124
 msgid "1–9 salariați"
 msgstr "1–9 salariați"
 
@@ -3831,7 +3836,7 @@ msgstr "1–9 salariați"
 msgid "1,000 inhabitants"
 msgstr "1.000 locuitori"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:124
+#: src/features/private-companies/lib/company-analytics-text.ts:126
 msgid "10–49 salariați"
 msgstr "10–49 salariați"
 
@@ -3860,7 +3865,7 @@ msgstr "100.000–1 mil."
 #~ msgid "1234/3/2024"
 #~ msgstr ""
 
-#: src/features/private-companies/lib/company-analytics-text.ts:128
+#: src/features/private-companies/lib/company-analytics-text.ts:130
 msgid "250 de salariați sau mai mulți"
 msgstr "250 de salariați sau mai mulți"
 
@@ -3876,7 +3881,7 @@ msgstr "250 și peste"
 #~ msgid "45 (division), 452 (group), 4523 (class), 45233 (category) or 45233140 (code)"
 #~ msgstr "45 (diviziune), 452 (grupă), 4523 (clasă), 45233 (categorie) sau 45233140 (cod)"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:126
+#: src/features/private-companies/lib/company-analytics-text.ts:128
 msgid "50–249 salariați"
 msgstr "50–249 salariați"
 
@@ -4194,11 +4199,15 @@ msgstr ""
 msgid "Această căutare corespunde mai multor acte — alege actul:"
 msgstr ""
 
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:62
+msgid "Această ediție a analizei nu are activitatea principală presupusă după ANAF. Alege altă grupare sau o ediție care o oferă."
+msgstr "Această ediție a analizei nu are activitatea principală presupusă după ANAF. Alege altă grupare sau o ediție care o oferă."
+
 #: src/features/private-companies/components/analytics/analytics-breakdown.tsx:149
 #~ msgid "Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu activitatea principală declarată la ANAF (CAEN)."
 #~ msgstr "Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu activitatea principală declarată la ANAF (CAEN)."
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:60
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:63
 msgid "Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară)."
 msgstr "Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară)."
 
@@ -4232,7 +4241,7 @@ msgid "Aceeași autoritate mai are"
 msgstr "Aceeași autoritate mai are"
 
 #. placeholder {0}: match.join(' · ')
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:73
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:74
 msgid "aceeași înscriere ONRC: {0}"
 msgstr "aceeași înscriere ONRC: {0}"
 
@@ -4249,6 +4258,10 @@ msgstr "aceeași perioadă, un an înainte"
 #~ msgid "Aceiași indicatori pentru orice localitate din România, cu județul și țara alături ca reper."
 #~ msgstr ""
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:288
+msgid "același cod ca ANAF"
+msgstr "același cod ca ANAF"
+
 #: src/features/justice/components/case/justice-case-page.tsx:315
 msgid "Același dosar la alte instanțe"
 msgstr "Același dosar la alte instanțe"
@@ -4261,7 +4274,7 @@ msgstr "Același preț la {institutions} care l-au cumpărat de la firmă în {y
 msgid "Aceleași cifre, distribuite pe județe și localități."
 msgstr "Aceleași cifre, distribuite pe județe și localități."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:173
+#: src/features/private-companies/lib/company-analytics-text.ts:175
 msgid "Aceleași firme, selectate în {year}"
 msgstr "Aceleași firme, selectate în {year}"
 
@@ -4584,7 +4597,7 @@ msgstr "Acoperire: {0}. Actualizată la {1}."
 #~ msgid "Acoperirea nu este complet confirmată de catalogul live."
 #~ msgstr "Acoperirea nu este complet confirmată de catalogul live."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:218
+#: src/features/private-companies/lib/company-analytics-text.ts:220
 msgid "Acoperirea numără situațiile financiare observate: un an recent cu mai puține situații este parțial și nu e prezentat ca fiind complet."
 msgstr "Acoperirea numără situațiile financiare observate: un an recent cu mai puține situații este parțial și nu e prezentat ca fiind complet."
 
@@ -4884,7 +4897,7 @@ msgstr "Activele imobilizate"
 #~ msgstr ""
 
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:164
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:165
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:166
 msgid "Activitate"
 msgstr "Activitate"
 
@@ -4904,13 +4917,33 @@ msgstr "activitate necunoscută"
 msgid "activitate ONRC aleasă după codul fiscal ANAF"
 msgstr "activitate ONRC aleasă după codul fiscal ANAF"
 
-#: src/features/private-companies/components/profile/company-registry-band.tsx:104
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:165
 #~ msgid "Activitate principală (ANAF)"
 #~ msgstr "Activitate principală (ANAF)"
 
 #: src/features/private-companies/lib/company-analytics-text.ts:91
 #~ msgid "Activitate principală (CAEN)"
 #~ msgstr "Activitate principală (CAEN)"
+
+#: src/features/private-companies/lib/company-analytics-text.ts:95
+#: src/features/private-companies/lib/company-main-activity-text.ts:79
+msgid "Activitate principală (presupusă după ANAF)"
+msgstr "Activitate principală (presupusă după ANAF)"
+
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:165
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:57
+msgid "Activitate principală presupusă"
+msgstr "Activitate principală presupusă"
+
+#. placeholder {0}: joined(scope.mainActivity.map(mainActivitySelectorText))
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:90
+msgid "activitate principală presupusă după ANAF: {0}"
+msgstr "activitate principală presupusă după ANAF: {0}"
+
+#. placeholder {0}: joined(scope.mainActivityStatus.map(unresolvedMainLabel))
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:91
+msgid "activitate principală presupusă: {0}"
+msgstr "activitate principală presupusă: {0}"
 
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:545
 msgid "Activitate selectată"
@@ -4934,7 +4967,7 @@ msgid "Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepubl
 msgstr "Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată"
 
 #. placeholder {0}: joined(scope.activity.map(activitySelectorText))
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:87
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:88
 msgid "activitate selectată (derivată): {0}"
 msgstr "activitate selectată (derivată): {0}"
 
@@ -5023,6 +5056,18 @@ msgstr "Activitatea principală declarată la ANAF, pe diviziuni CAEN; ANAF nu s
 #~ msgid "Activitatea principală nu e declarată la ANAF."
 #~ msgstr "Activitatea principală nu e declarată la ANAF."
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:275
+msgid "Activitatea principală presupusă după ANAF nu a fost încă stabilită pentru această firmă."
+msgstr "Activitatea principală presupusă după ANAF nu a fost încă stabilită pentru această firmă."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:279
+msgid "Activitatea principală presupusă după ANAF nu poate fi afișată: răspunsul API nu a putut fi citit."
+msgstr "Activitatea principală presupusă după ANAF nu poate fi afișată: răspunsul API nu a putut fi citit."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:371
+msgid "Activitatea principală presupusă s-a schimbat în timpul citirii istoricului."
+msgstr "Activitatea principală presupusă s-a schimbat în timpul citirii istoricului."
+
 #. placeholder {0}: uncapitalised(activity)
 #: src/features/private-companies/lib/company-profile-text.ts:39
 #~ msgid "Activitatea principală: {0}."
@@ -5040,7 +5085,7 @@ msgstr "Activitatea selectată e o selecție derivată de platformă, nu o infor
 msgid "Activitatea selectată este o selecție derivată de platformă, nu o informație publicată: singura activitate clasificată a firmei în ediția ONRC a analizei (publicată pe {date}) sau, dintre mai multe, cea cu aceleași cifre ca codul CAEN fiscal ANAF; altfel, codul CAEN fiscal ANAF, cu revizia nepublicată. Firmele cu mai multe activități fără selecție, cu un cod ANAF necatalogat sau fără selecție calificată sunt listate separat și nu sunt clasate."
 msgstr "Activitatea selectată este o selecție derivată de platformă, nu o informație publicată: singura activitate clasificată a firmei în ediția ONRC a analizei (publicată pe {date}) sau, dintre mai multe, cea cu aceleași cifre ca codul CAEN fiscal ANAF; altfel, codul CAEN fiscal ANAF, cu revizia nepublicată. Firmele cu mai multe activități fără selecție, cu un cod ANAF necatalogat sau fără selecție calificată sunt listate separat și nu sunt clasate."
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:42
+#: src/features/private-companies/components/profile/company-activities-band.tsx:56
 msgid "Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos."
 msgstr "Activitatea selectată nu poate fi calculată acum pentru această firmă: ediția ONRC are prea multe observații CAEN pentru calculul exact. Înscrierile sunt listate mai jos."
 
@@ -5063,7 +5108,7 @@ msgstr "Activități economice"
 msgid "Activități fără scop patrimonial"
 msgstr "Activități fără scop patrimonial"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:51
+#: src/features/private-companies/components/profile/company-activities-band.tsx:65
 msgid "Activitățile autorizate, pe domenii"
 msgstr "Activitățile autorizate, pe domenii"
 
@@ -5085,6 +5130,14 @@ msgstr "Impact real asupra bugetului"
 #: src/features/justice/components/data-trust.tsx:206
 #~ msgid "Actualizare"
 #~ msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:212
+msgid "actualizare în curs"
+msgstr "actualizare în curs"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:202
+msgid "Actualizare în curs: aceasta e ultima atribuire calculată, așa că nu e marcată în lista de activități."
+msgstr "Actualizare în curs: aceasta e ultima atribuire calculată, așa că nu e marcată în lista de activități."
 
 #: src/features/public-investments/pages/PublicInvestmentsSearchPage.tsx:189
 msgid "actualizare în fundal"
@@ -5160,7 +5213,7 @@ msgstr "Adaugă o instanță"
 msgid "Adaugă o localitate"
 msgstr "Adaugă o localitate"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:283
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:284
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:125
 msgid "Adaugă seria într-un grafic"
 msgstr "Adaugă seria într-un grafic"
@@ -6348,7 +6401,7 @@ msgstr "ANAF a declarat-o inactivă fiscal (nu și-a depus declarațiile sau nu 
 #~ msgid "ANAF fiscal observation"
 #~ msgstr "Date fiscale ANAF"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:66
+#: src/features/private-companies/components/profile/company-activities-band.tsx:80
 #: src/features/private-companies/lib/company-activity-text.ts:140
 msgid "ANAF nu are un cod CAEN fiscal pentru firmă."
 msgstr "ANAF nu are un cod CAEN fiscal pentru firmă."
@@ -6413,8 +6466,17 @@ msgid "ANAF, situația la {0}"
 msgstr "ANAF, situația la {0}"
 
 #: src/features/private-companies/lib/company-activity-text.ts:213
+#: src/features/private-companies/lib/company-main-activity-text.ts:220
+#: src/features/private-companies/lib/company-main-activity-text.ts:344
 msgid "ANAF: fără dată de stare"
 msgstr "ANAF: fără dată de stare"
+
+#. placeholder {0}: dateText(iso)
+#. placeholder {0}: dateText(status)
+#: src/features/private-companies/lib/company-main-activity-text.ts:220
+#: src/features/private-companies/lib/company-main-activity-text.ts:344
+msgid "ANAF: situația cerută la {0}"
+msgstr "ANAF: situația cerută la {0}"
 
 #. placeholder {0}: dateText(quality.anafObservedFrom)
 #: src/features/private-companies/lib/company-activity-text.ts:302
@@ -6731,7 +6793,7 @@ msgstr "anual"
 #: src/features/national-budget/home/components/home-shell.tsx:116
 #: src/features/ngos/organization/components/profile-parts.tsx:418
 #: src/features/ngos/registry/components/registry-answer.tsx:520
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:298
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:299
 #: src/features/procurement/components/analytics/analytics-filters.tsx:74
 msgid "Anul"
 msgstr "Anul"
@@ -7339,7 +7401,7 @@ msgid "Arată mai puține"
 msgstr "Arată mai puține"
 
 #. placeholder {0}: Math.min(ANSWER_TOP_EXPANDED, data.groupCount)
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:94
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:97
 msgid "Arată primele {0}"
 msgstr "Arată primele {0}"
 
@@ -7468,6 +7530,10 @@ msgstr ""
 #: src/features/legal/components/act-relevance-band.tsx:128
 msgid "Ascunde impactul fiscal"
 msgstr ""
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:306
+msgid "Ascunde istoricul"
+msgstr "Ascunde istoricul"
 
 #: src/features/public-enterprises/components/enterprise/enterprise-bands.tsx:230
 msgid "Ascunde valorile, pe ani"
@@ -7648,11 +7714,11 @@ msgstr "atribuită pentru {awarded}"
 msgid "Au depus"
 msgstr "Au depus"
 
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:89
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:92
 msgid "au depus situații financiare"
 msgstr "au depus situații financiare"
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:144
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:148
 msgid "Au raportat"
 msgstr "Au raportat"
 
@@ -8735,17 +8801,17 @@ msgstr ""
 #~ msgstr ""
 
 #. placeholder {0}: joined(exclude?.caenCode ?? [])
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:77
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:78
 msgid "CAEN {0}"
 msgstr "CAEN {0}"
 
 #. placeholder {0}: caenEdition(selection.revision)
-#: src/features/private-companies/components/profile/company-activities-band.tsx:118
+#: src/features/private-companies/components/profile/company-activities-band.tsx:132
 msgid "CAEN {0} · ediția ONRC"
 msgstr "CAEN {0} · ediția ONRC"
 
 #. placeholder {0}: joined(onrc.caenCode ?? [])
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:70
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:71
 msgid "CAEN {0} (orice revizie)"
 msgstr "CAEN {0} (orice revizie)"
 
@@ -8757,7 +8823,7 @@ msgstr "CAEN {code}"
 #~ msgid "CAEN activities"
 #~ msgstr "Activități CAEN"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:165
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:166
 msgid "CAEN ANAF"
 msgstr "CAEN ANAF"
 
@@ -8770,7 +8836,7 @@ msgstr "Cod CAEN"
 #~ msgstr "Diviziunea CAEN 41 — construcții de clădiri, domeniul cu cele mai multe contracte publice."
 
 #. placeholder {0}: joined(onrc.onrcCaen ?? [])
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:71
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:72
 msgid "CAEN exact {0}"
 msgstr "CAEN exact {0}"
 
@@ -8796,6 +8862,10 @@ msgstr "Căi ferate și metrou"
 msgid "Căile de atac"
 msgstr "Căile de atac"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:229
+msgid "Calculat de platformă la {derived}; nu e o dată legală."
+msgstr "Calculat de platformă la {derived}; nu e o dată legală."
+
 #: src/features/procurement/components/home/home-context-bands.tsx:99
 msgid "Calculat de Transparenta.eu: contractele atribuite de instituțiile din județ, la 100.000 de locuitori (populația INS din 1 ianuarie {POPULATION_YEAR}); media țării, pe aceeași bază. Instituțiile centrale au sediul în București."
 msgstr "Calculat de Transparenta.eu: contractele atribuite de instituțiile din județ, la 100.000 de locuitori (populația INS din 1 ianuarie {POPULATION_YEAR}); media țării, pe aceeași bază. Instituțiile centrale au sediul în București."
@@ -8813,6 +8883,10 @@ msgstr "Calculat de Transparenta.eu: valoarea achizițiilor directe ale institu�
 #: src/features/statistics/components/territory/territory-derived-list.tsx:230
 msgid "calculat din {0}"
 msgstr "calculat din {0}"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:335
+msgid "calculat la {date}"
+msgstr "calculat la {date}"
 
 #: src/features/procurement/components/procurement-institution-signals.tsx:166
 #~ msgid "Calculat pe contractele cu lanț de modificări verificabil."
@@ -8852,7 +8926,7 @@ msgstr "Calcule Transparenta.eu din date INS, pe populația după domiciliu — 
 msgid "Calendarul procedurii"
 msgstr "Calendarul procedurii"
 
-#: src/features/private-companies/lib/company-profile-model.ts:425
+#: src/features/private-companies/lib/company-profile-model.ts:453
 msgid "Calificare indisponibilă"
 msgstr "Calificare indisponibilă"
 
@@ -10037,7 +10111,7 @@ msgstr "Ce fac și unde sunt"
 msgid "Ce face acest act"
 msgstr ""
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:37
+#: src/features/private-companies/components/profile/company-activities-band.tsx:50
 msgid "Ce face firma"
 msgstr "Ce face firma"
 
@@ -10065,7 +10139,7 @@ msgstr "Ce firme câștigă cele mai multe contracte?"
 msgid "Ce firme din județul Cluj vând statului?"
 msgstr "Ce firme din județul Cluj vând statului?"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:262
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:263
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:98
 msgid "Ce firme urmărește seria"
 msgstr "Ce firme urmărește seria"
@@ -10285,6 +10359,10 @@ msgstr ""
 #: src/features/legal/components/legislation-changes-feed.tsx:276
 msgid "Cea mai recentă modificare intrată deja în vigoare are data de {0} — schimbările produse după această dată nu apar încă aici. Modificările cu dată viitoare provin din acte deja publicate."
 msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:117
+msgid "cea mai recentă revizie potrivită; candidați: {list}"
+msgstr "cea mai recentă revizie potrivită; candidați: {list}"
 
 #: src/features/justice/components/echr/echr-head.tsx:73
 msgid "CEDO"
@@ -11700,6 +11778,63 @@ msgstr "cod {code}"
 msgid "Cod {status}, fără nume în sursă"
 msgstr "Cod {status}, fără nume în sursă"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:354
+msgid "cod ANAF „{token}”"
+msgstr "cod ANAF „{token}”"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:113
+msgid "cod ANAF „{token}” potrivit cu ONRC {code} (zerouri la început)"
+msgstr "cod ANAF „{token}” potrivit cu ONRC {code} (zerouri la început)"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:271
+msgid "Cod ANAF {code} · fără corespondent ONRC"
+msgstr "Cod ANAF {code} · fără corespondent ONRC"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:136
+msgid "Cod ANAF {code} · revizie necunoscută"
+msgstr "Cod ANAF {code} · revizie necunoscută"
+
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:41
+msgid "Cod ANAF fără potrivire ONRC (revizie necunoscută)"
+msgstr "Cod ANAF fără potrivire ONRC (revizie necunoscută)"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:141
+msgid "Cod ANAF în sursă „{shown}” · fără corespondent ONRC"
+msgstr "Cod ANAF în sursă „{shown}” · fără corespondent ONRC"
+
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:43
+#: src/features/private-companies/lib/company-main-activity-text.ts:74
+msgid "Cod ANAF într-o formă fără corespondent ONRC"
+msgstr "Cod ANAF într-o formă fără corespondent ONRC"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:361
+msgid "cod ANAF neafișat (nu e o formă de cod CAEN)"
+msgstr "cod ANAF neafișat (nu e o formă de cod CAEN)"
+
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:47
+msgid "Cod ANAF nevalid"
+msgstr "Cod ANAF nevalid"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:359
+msgid "cod ANAF nevalid în sursă"
+msgstr "cod ANAF nevalid în sursă"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:72
+msgid "Cod ANAF nevalid în sursă"
+msgstr "Cod ANAF nevalid în sursă"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:359
+msgid "cod ANAF nevalid în sursă ({type})"
+msgstr "cod ANAF nevalid în sursă ({type})"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:72
+msgid "Cod ANAF nevalid în sursă ({type})"
+msgstr "Cod ANAF nevalid în sursă ({type})"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:149
+msgid "Cod ANAF nevalid în sursă: „{token}”"
+msgstr "Cod ANAF nevalid în sursă: „{token}”"
+
 #: src/features/private-companies/components/search/company-filter-sheet.tsx:221
 msgid "Cod CAEN exact, într-o revizie"
 msgstr "Cod CAEN exact, într-o revizie"
@@ -11719,7 +11854,7 @@ msgid "Cod CAEN fiscal ANAF"
 msgstr "Cod CAEN fiscal ANAF"
 
 #. placeholder {0}: mainActivity.code
-#: src/features/private-companies/components/profile/company-activities-band.tsx:75
+#: src/features/private-companies/components/profile/company-activities-band.tsx:89
 msgid "Cod CAEN fiscal ANAF · {0}"
 msgstr "Cod CAEN fiscal ANAF · {0}"
 
@@ -11728,7 +11863,7 @@ msgid "Cod CAEN fiscal ANAF necatalogat (observație din sursă, nu un domeniu)"
 msgstr "Cod CAEN fiscal ANAF necatalogat (observație din sursă, nu un domeniu)"
 
 #. placeholder {0}: joined(scope.mainCaen.map((selector) => (selector.revision ? caenToken(selector) : t`${selector.code} (revizie necunoscută)`)))
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:85
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:86
 msgid "Cod CAEN fiscal ANAF: {0}"
 msgstr "Cod CAEN fiscal ANAF: {0}"
 
@@ -11780,6 +11915,10 @@ msgstr "cod necalificat încă"
 msgid "cod neinterpretabil în sursă"
 msgstr "cod neinterpretabil în sursă"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:307
+msgid "cod nevalid"
+msgstr "cod nevalid"
+
 #: src/features/private-companies/lib/company-activity-text.ts:70
 msgid "cod nevalid în sursă"
 msgstr "cod nevalid în sursă"
@@ -11795,6 +11934,18 @@ msgstr "cod scurt în sursă — clasă/grupă ambiguă"
 #: src/features/landing/lib/people.ts:199
 msgid "Cod și date"
 msgstr "Cod și date"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:305
+msgid "cod substitut"
+msgstr "cod substitut"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:146
+msgid "Cod substitut ANAF „{shown}”"
+msgstr "Cod substitut ANAF „{shown}”"
+
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:45
+msgid "Cod substitut ANAF (nu indică o activitate)"
+msgstr "Cod substitut ANAF (nu indică o activitate)"
 
 #: src/components/data-trust/source-provenance-drawer.tsx:155
 msgid "Cod sursa"
@@ -11828,9 +11979,9 @@ msgstr "Codul"
 msgid "Codul ANAF are trei cifre în sursă; normalizatorul îl completează cu un zero, iar interpretarea lui nu e calificată."
 msgstr "Codul ANAF are trei cifre în sursă; normalizatorul îl completează cu un zero, iar interpretarea lui nu e calificată."
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:77
-#: src/features/private-companies/components/profile/company-activities-band.tsx:137
-#: src/features/private-companies/components/profile/company-activities-band.tsx:153
+#: src/features/private-companies/components/profile/company-activities-band.tsx:91
+#: src/features/private-companies/components/profile/company-activities-band.tsx:151
+#: src/features/private-companies/components/profile/company-activities-band.tsx:167
 msgid "Codul CAEN {code}"
 msgstr "Codul CAEN {code}"
 
@@ -11862,7 +12013,7 @@ msgstr "Codul CAEN fiscal ANAF {code} nu e folosit la selecție: {form}."
 #~ msgid "Codul CAEN fiscal ANAF din instantaneul ediției analizei: o observație din sursă, nu o activitate principală și nu istoricul lui pe ani. ANAF nu publică revizia lui, așa că rămâne necunoscută. Nu sunt activitățile autorizate în registrul comerțului."
 #~ msgstr "Codul CAEN fiscal ANAF din instantaneul ediției analizei: o observație din sursă, nu o activitate principală și nu istoricul lui pe ani. ANAF nu publică revizia lui, așa că rămâne necunoscută. Nu sunt activitățile autorizate în registrul comerțului."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:221
+#: src/features/private-companies/lib/company-analytics-text.ts:223
 msgid "Codul CAEN fiscal ANAF e o observație din sursă, nu o activitate principală. ANAF nu publică revizia lui, iar revizia nu e niciodată ghicită."
 msgstr "Codul CAEN fiscal ANAF e o observație din sursă, nu o activitate principală. ANAF nu publică revizia lui, iar revizia nu e niciodată ghicită."
 
@@ -13332,6 +13483,14 @@ msgstr "Copiază linkul modulului civic"
 msgid "Corectează selecția sau șterge filtrul invalid. Nu am folosit date implicite în locul lui."
 msgstr "Corectează selecția sau șterge filtrul invalid. Nu am folosit date implicite în locul lui."
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:313
+msgid "corecție revizuită"
+msgstr "corecție revizuită"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:121
+msgid "corecție revizuită (nr. {id})"
+msgstr "corecție revizuită (nr. {id})"
+
 #: src/features/justice/components/litigation-slice-section.tsx:137
 #~ msgid "corelare în verificare"
 #~ msgstr "corelare în verificare"
@@ -13339,6 +13498,10 @@ msgstr "Corectează selecția sau șterge filtrul invalid. Nu am folosit date im
 #: src/features/justice/components/litigation-slice-section.tsx:127
 #~ msgid "Corelarea dintre CUI și dosare este în verificare."
 #~ msgstr "Corelarea dintre CUI și dosare este în verificare."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:100
+msgid "Corespondent ONRC: {keyText} — {label} ({edition})"
+msgstr "Corespondent ONRC: {keyText} — {label} ({edition})"
 
 #. placeholder {0}: number(LEGAL_ACT_COUNT)
 #. placeholder {1}: number(LEGAL_PARSED_DOCUMENT_COUNT)
@@ -13807,8 +13970,8 @@ msgstr "Criteriul de atribuire"
 #~ msgid "Cronologie"
 #~ msgstr ""
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:286
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:123
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:287
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:126
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:128
 #: src/features/private-companies/components/analytics/analytics-records.tsx:236
 msgid "CSV"
@@ -13893,7 +14056,7 @@ msgstr "cu activitatea întreruptă"
 #~ msgstr ""
 
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:100
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:144
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:148
 msgid "Cu bilanț"
 msgstr "Cu bilanț"
 
@@ -14036,7 +14199,7 @@ msgstr "CUI"
 #. placeholder {0}: hit.cui
 #: src/features/private-companies/components/analytics/analytics-charts.tsx:67
 #: src/features/private-companies/components/search/private-company-result-card.tsx:42
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:58
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:59
 #: src/features/private-companies/lib/company-analytics-suggest.ts:142
 msgid "CUI {0}"
 msgstr "CUI {0}"
@@ -14455,7 +14618,7 @@ msgstr ""
 
 #: src/features/ngos/organization/components/profile-parts.tsx:496
 #: src/features/ngos/registry/components/registry-filters.tsx:112
-#: src/features/private-companies/lib/company-analytics-text.ts:108
+#: src/features/private-companies/lib/company-analytics-text.ts:110
 msgid "Da"
 msgstr "Da"
 
@@ -14544,7 +14707,7 @@ msgstr ""
 msgid "Data înregistrată de ONRC"
 msgstr "Data înregistrată de ONRC"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:217
+#: src/features/private-companies/lib/company-analytics-text.ts:219
 msgid "Data înregistrată de ONRC este data din registru, nu data înființării și nici o vechime."
 msgstr "Data înregistrată de ONRC este data din registru, nu data înființării și nici o vechime."
 
@@ -14754,6 +14917,10 @@ msgstr "Date actualizate până la {0} {1}"
 msgid "Date actualizate pe {published}"
 msgstr "Date actualizate pe {published}"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:326
+msgid "date ANAF retrase"
+msgstr "date ANAF retrase"
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:149
 msgid "Date and time"
 msgstr "Data și ora"
@@ -14874,6 +15041,10 @@ msgstr ""
 #: src/features/statistics/pages/statistics-landing-page.tsx:76
 #~ msgid "Date oficiale INS Tempo pentru fiecare localitate, județ și pentru întreaga țară."
 #~ msgstr "Date oficiale INS Tempo pentru fiecare localitate, județ și pentru întreaga țară."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:330
+msgid "date ONRC retrase"
+msgstr "date ONRC retrase"
 
 #: src/features/statistics/components/coverage-ribbon.tsx:42
 #~ msgid "Date până în"
@@ -14999,6 +15170,18 @@ msgstr "Datele din registru"
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:188
 msgid "Datele firmei din registrul comerțului nu pot fi citite acum; vânzările către stat de mai jos nu depind de ele."
 msgstr "Datele firmei din registrul comerțului nu pot fi citite acum; vânzările către stat de mai jos nu depind de ele."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:366
+msgid "Datele fiscale ANAF ale firmei nu mai sunt publice: istoricul nu mai arată niciun câmp ANAF."
+msgstr "Datele fiscale ANAF ale firmei nu mai sunt publice: istoricul nu mai arată niciun câmp ANAF."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:193
+msgid "Datele fiscale ANAF ale firmei nu mai sunt publice: nu e afișat niciun cod ANAF, niciun corespondent ONRC și niciun marcaj în lista de activități."
+msgstr "Datele fiscale ANAF ale firmei nu mai sunt publice: nu e afișat niciun cod ANAF, niciun corespondent ONRC și niciun marcaj în lista de activități."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:204
+msgid "Datele fiscale ANAF pe care se baza au fost retrase: activitatea principală presupusă nu mai e afișată, iar lista de activități nu are marcaje."
+msgstr "Datele fiscale ANAF pe care se baza au fost retrase: activitatea principală presupusă nu mai e afișată, iar lista de activități nu are marcaje."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:163
 msgid "Datele Institutului Național de Statistică, pentru țară, județe și fiecare localitate."
@@ -15771,11 +15954,11 @@ msgid "denumiri diferite între reviziile nomenclatorului"
 msgstr "denumiri diferite între reviziile nomenclatorului"
 
 #. placeholder {0}: names.join('; ')
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:90
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:93
 msgid "Denumiri: {0}."
 msgstr "Denumiri: {0}."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:222
+#: src/features/private-companies/lib/company-analytics-text.ts:224
 msgid "Denumirile firmelor sunt cele publice actuale din directorul platformei, nu cele din ediția ONRC a analizei."
 msgstr "Denumirile firmelor sunt cele publice actuale din directorul platformei, nu cele din ediția ONRC a analizei."
 
@@ -16493,15 +16676,15 @@ msgstr "din cheltuieli"
 #~ msgid "din cifra de afaceri raportată în România"
 #~ msgstr "din cifra de afaceri raportată în România"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:80
+#: src/features/private-companies/components/profile/company-activities-band.tsx:94
 msgid "Din datele fiscale ANAF, CAEN {edition}. O observație din sursă, nu o activitate principală."
 msgstr "Din datele fiscale ANAF, CAEN {edition}. O observație din sursă, nu o activitate principală."
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:82
+#: src/features/private-companies/components/profile/company-activities-band.tsx:96
 msgid "Din datele fiscale ANAF: o observație din sursă, nu o activitate principală. ANAF nu publică revizia CAEN, iar aceleași cifre pot însemna activități diferite în revizii diferite, așa că nu îi dăm o denumire."
 msgstr "Din datele fiscale ANAF: o observație din sursă, nu o activitate principală. ANAF nu publică revizia CAEN, iar aceleași cifre pot însemna activități diferite în revizii diferite, așa că nu îi dăm o denumire."
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:252
+#: src/features/private-companies/components/profile/company-activities-band.tsx:278
 msgid "Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere fără revizie cunoscută nu are denumire."
 msgstr "Din ediția ONRC afișată. Denumirile sunt din nomenclatorul CAEN curent al platformei, pe revizia fiecărei înscrieri; o înscriere fără revizie cunoscută nu are denumire."
 
@@ -16830,11 +17013,11 @@ msgid "Diviziunea {division} ({0})"
 msgstr "Diviziunea {division} ({0})"
 
 #. placeholder {0}: caenEdition(revision)
-#: src/features/private-companies/lib/company-profile-model.ts:369
+#: src/features/private-companies/lib/company-profile-model.ts:391
 msgid "Diviziunea {division} (CAEN {0})"
 msgstr "Diviziunea {division} (CAEN {0})"
 
-#: src/features/private-companies/lib/company-profile-model.ts:369
+#: src/features/private-companies/lib/company-profile-model.ts:391
 msgid "Diviziunea {division} (fără revizie CAEN)"
 msgstr "Diviziunea {division} (fără revizie CAEN)"
 
@@ -16889,8 +17072,8 @@ msgid "Doar {0}: {1} {2}, România {3}. Fereastra de trei ani netezește anii mi
 msgstr "Doar {0}: {1} {2}, România {3}. Fereastra de trei ani netezește anii mici și întârzie o schimbare rapidă."
 
 #: src/features/justice/components/analysis/analysis-table.tsx:101
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:181
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:138
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:185
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:139
 #: src/features/procurement/components/analytics/analytics-filters.tsx:232
 #: src/features/procurement/components/analytics/analytics-head.tsx:103
 #: src/features/procurement/components/analytics/analytics-place-field.tsx:82
@@ -16993,7 +17176,7 @@ msgstr "Doar o parte din decizii, din {0}; firmele și instituțiile din ele sun
 msgid "Doar primele {limit}"
 msgstr "Doar primele {limit}"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:222
+#: src/features/private-companies/components/profile/company-activities-band.tsx:248
 msgid "Doar primele {limit} domenii"
 msgstr "Doar primele {limit} domenii"
 
@@ -17309,6 +17492,26 @@ msgstr "Dosarul nu a fost găsit"
 msgid "Dovadă"
 msgstr ""
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:236
+msgid "Dovada ANAF: atestată din schimbul arhivat, imuabil."
+msgstr "Dovada ANAF: atestată din schimbul arhivat, imuabil."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:242
+msgid "Dovada ANAF: nicio dovadă brută legată."
+msgstr "Dovada ANAF: nicio dovadă brută legată."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:238
+msgid "Dovada ANAF: observația brută păstrată."
+msgstr "Dovada ANAF: observația brută păstrată."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:240
+msgid "Dovada ANAF: răspunsul brut original poate să nu mai fie păstrat (codul și amprentele lui sunt)."
+msgstr "Dovada ANAF: răspunsul brut original poate să nu mai fie păstrat (codul și amprentele lui sunt)."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:340
+msgid "dovadă calculată la {date}"
+msgstr "dovadă calculată la {date}"
+
 #: src/features/legal/components/legislation-gazette-band.tsx:41
 msgid "Dovada publicării — de la data apariției în Monitor, un act produce efecte."
 msgstr ""
@@ -17321,15 +17524,15 @@ msgstr ""
 msgid "Dovezi"
 msgstr ""
 
-#: src/features/private-companies/lib/company-analytics-text.ts:277
+#: src/features/private-companies/lib/company-analytics-text.ts:279
 msgid "dovezi complete"
 msgstr "dovezi complete"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:279
+#: src/features/private-companies/lib/company-analytics-text.ts:281
 msgid "dovezi complete, fără coduri"
 msgstr "dovezi complete, fără coduri"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:281
+#: src/features/private-companies/lib/company-analytics-text.ts:283
 msgid "dovezi incomplete"
 msgstr "dovezi incomplete"
 
@@ -17476,11 +17679,11 @@ msgstr "După domiciliu, nu după cine locuiește efectiv: cine pleacă fără s
 msgid "După domiciliu: cine pleacă fără să-și schimbe domiciliul rămâne numărat."
 msgstr "După domiciliu: cine pleacă fără să-și schimbe domiciliul rămâne numărat."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:166
+#: src/features/private-companies/lib/company-analytics-text.ts:168
 msgid "după firmele cu situații"
 msgstr "după firmele cu situații"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:168
+#: src/features/private-companies/lib/company-analytics-text.ts:170
 msgid "după firmele cu valoare raportată"
 msgstr "după firmele cu valoare raportată"
 
@@ -17510,7 +17713,7 @@ msgstr "După numărul de contracte atribuite."
 msgid "După numărul de dosare cu data din {0}."
 msgstr "După numărul de dosare cu data din {0}."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:164
+#: src/features/private-companies/lib/company-analytics-text.ts:166
 msgid "după numărul de firme"
 msgstr "după numărul de firme"
 
@@ -17526,7 +17729,7 @@ msgstr "După sediul din registrul comerțului."
 msgid "după SIRUTA"
 msgstr "după SIRUTA"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:162
+#: src/features/private-companies/lib/company-analytics-text.ts:164
 msgid "după sumă"
 msgstr "după sumă"
 
@@ -17868,6 +18071,11 @@ msgstr "Ediția analizei nu mai este disponibilă"
 msgid "ediția ONRC {0} (dată de publicare necunoscută)"
 msgstr "ediția ONRC {0} (dată de publicare necunoscută)"
 
+#. placeholder {0}: edition.editionId
+#: src/features/private-companies/lib/company-main-activity-text.ts:90
+msgid "ediția ONRC {0}, dată necunoscută"
+msgstr "ediția ONRC {0}, dată necunoscută"
+
 #: src/features/private-companies/lib/company-analytics-source.ts:15
 msgid "ediția ONRC {editionId}, cu data publicării necunoscută"
 msgstr "ediția ONRC {editionId}, cu data publicării necunoscută"
@@ -17894,9 +18102,18 @@ msgstr "Ediția ONRC afișată nu are un profil public calificat pentru acest CU
 
 #. placeholder {0}: caenEdition(entry.revision)
 #. placeholder {1}: entry.label
-#: src/features/private-companies/components/profile/company-activities-band.tsx:91
+#: src/features/private-companies/components/profile/company-activities-band.tsx:105
 msgid "Ediția ONRC are înscris {code} (CAEN {0}): {1}."
 msgstr "Ediția ONRC are înscris {code} (CAEN {0}): {1}."
+
+#. placeholder {0}: dateText(edition.sourcePublishedAt)
+#: src/features/private-companies/lib/company-main-activity-text.ts:90
+msgid "ediția ONRC din {0}"
+msgstr "ediția ONRC din {0}"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:89
+msgid "ediția ONRC necunoscută"
+msgstr "ediția ONRC necunoscută"
 
 #: src/features/private-companies/lib/company-activity-text.ts:119
 msgid "Ediția ONRC nu are nicio activitate clasificată pentru firmă, așa că e folosit codul CAEN fiscal ANAF, revizie nepublicată. Selecție derivată, nu o informație publicată de ONRC sau ANAF."
@@ -17905,6 +18122,18 @@ msgstr "Ediția ONRC nu are nicio activitate clasificată pentru firmă, așa c�
 #: src/features/private-companies/lib/company-activity-text.ts:121
 msgid "Ediția ONRC nu are nicio activitate clasificată pentru firmă, iar codul CAEN fiscal ANAF (revizie nepublicată) nu apare în nomenclatorul CAEN: e o observație din sursă, nu un domeniu clasificat."
 msgstr "Ediția ONRC nu are nicio activitate clasificată pentru firmă, iar codul CAEN fiscal ANAF (revizie nepublicată) nu apare în nomenclatorul CAEN: e o observație din sursă, nu un domeniu clasificat."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:165
+msgid "Ediția ONRC nu are o activitate clasificată cu aceleași cifre, așa că revizia rămâne necunoscută și codul nu primește o denumire."
+msgstr "Ediția ONRC nu are o activitate clasificată cu aceleași cifre, așa că revizia rămâne necunoscută și codul nu primește o denumire."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:195
+msgid "Ediția ONRC nu poate fi folosită acum, iar sursa ANAF folosită e reținută pentru verificarea integrității: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
+msgstr "Ediția ONRC nu poate fi folosită acum, iar sursa ANAF folosită e reținută pentru verificarea integrității: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:206
+msgid "Ediția ONRC nu poate fi folosită acum: doar observația ANAF, fără corespondent ONRC."
+msgstr "Ediția ONRC nu poate fi folosită acum: doar observația ANAF, fără corespondent ONRC."
 
 #. placeholder {0}: dateText(selection.editionSourceDate)
 #: src/features/private-companies/lib/company-activity-text.ts:98
@@ -19231,12 +19460,16 @@ msgstr "Fără achiziții publice"
 msgid "Fără activitate principală în fișă"
 msgstr "Fără activitate principală în fișă"
 
+#: src/features/private-companies/lib/company-analytics-view.ts:120
+msgid "Fără activitate principală presupusă"
+msgstr "Fără activitate principală presupusă"
+
 #: src/features/private-companies/components/hub/hub-sectors.tsx:92
 #~ msgid "Fără activitate principală recunoscută"
 #~ msgstr "Fără activitate principală recunoscută"
 
 #: src/features/private-companies/lib/company-activity-text.ts:263
-#: src/features/private-companies/lib/company-analytics-view.ts:115
+#: src/features/private-companies/lib/company-analytics-view.ts:118
 msgid "Fără activitate selectată"
 msgstr "Fără activitate selectată"
 
@@ -19294,19 +19527,33 @@ msgstr "Fără categorie CPV"
 msgid "Fără cifră pe platformă"
 msgstr "Fără cifră pe platformă"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:179
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:49
+msgid "Fără cod CAEN ANAF (nu înseamnă fără activitate)"
+msgstr "Fără cod CAEN ANAF (nu înseamnă fără activitate)"
+
+#: src/features/private-companies/lib/company-analytics-text.ts:181
 msgid "fără cod CAEN fiscal ANAF"
 msgstr "fără cod CAEN fiscal ANAF"
 
-#: src/features/private-companies/lib/company-analytics-view.ts:113
+#: src/features/private-companies/lib/company-analytics-view.ts:116
 msgid "Fără cod CAEN fiscal ANAF"
 msgstr "Fără cod CAEN fiscal ANAF"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:69
+#: src/features/private-companies/lib/company-main-activity-text.ts:151
+msgid "Fără cod CAEN în înregistrarea fiscală ANAF"
+msgstr "Fără cod CAEN în înregistrarea fiscală ANAF"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:68
+msgid "Fără cod CAEN în observația ANAF"
+msgstr "Fără cod CAEN în observația ANAF"
 
 #: src/features/procurement/lib/home-categories.ts:53
 msgid "Fără cod CPV"
 msgstr "Fără cod CPV"
 
 #: src/features/private-companies/lib/company-activity-text.ts:68
+#: src/features/private-companies/lib/company-main-activity-text.ts:309
 msgid "fără cod în sursă"
 msgstr "fără cod în sursă"
 
@@ -19421,7 +19668,7 @@ msgstr "Fără date pentru frecvența aleasă."
 
 #: src/features/private-companies/components/activity-description.tsx:32
 #: src/features/private-companies/components/caen-description.tsx:20
-#: src/features/private-companies/lib/company-analytics-text.ts:206
+#: src/features/private-companies/lib/company-analytics-text.ts:208
 msgid "fără denumire în nomenclator"
 msgstr "fără denumire în nomenclator"
 
@@ -19494,15 +19741,19 @@ msgstr "fără identificator de înregistrare"
 msgid "fără înregistrare fiscală publică"
 msgstr "fără înregistrare fiscală publică"
 
+#: src/features/private-companies/components/profile/company-main-activity.tsx:339
+msgid "Fără istoric public pentru această firmă."
+msgstr "Fără istoric public pentru această firmă."
+
 #: src/features/ngos/registry/counts.ts:203
 msgid "Fără județ"
 msgstr "Fără județ"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:342
+#: src/features/private-companies/lib/company-analytics-text.ts:344
 msgid "fără județ comun"
 msgstr "fără județ comun"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:267
+#: src/features/private-companies/lib/company-analytics-text.ts:269
 msgid "Fără județ comun — {phrase}"
 msgstr "Fără județ comun — {phrase}"
 
@@ -19511,7 +19762,7 @@ msgstr "Fără județ comun — {phrase}"
 msgid "fără județ comun ({0})"
 msgstr "fără județ comun ({0})"
 
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:50
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:51
 msgid "fără județ comun (orice motiv)"
 msgstr "fără județ comun (orice motiv)"
 
@@ -19527,15 +19778,15 @@ msgstr "fără listă de produse în SEAP"
 msgid "Fără localitate"
 msgstr "Fără localitate"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:339
+#: src/features/private-companies/lib/company-analytics-text.ts:341
 msgid "fără localitate comună"
 msgstr "fără localitate comună"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:268
+#: src/features/private-companies/lib/company-analytics-text.ts:270
 msgid "Fără localitate comună — {phrase}"
 msgstr "Fără localitate comună — {phrase}"
 
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:50
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:51
 msgid "fără localitate comună (orice motiv)"
 msgstr "fără localitate comună (orice motiv)"
 
@@ -19549,7 +19800,7 @@ msgstr "fără număr"
 msgid "fără număr de salariați raportat"
 msgstr "fără număr de salariați raportat"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:116
+#: src/features/private-companies/lib/company-analytics-text.ts:118
 msgid "Fără număr de salariați raportat"
 msgstr "Fără număr de salariați raportat"
 
@@ -19569,7 +19820,7 @@ msgstr "fără nume în această sursă"
 msgid "Fără nume în sursă"
 msgstr "Fără nume în sursă"
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:206
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:210
 msgid "Fără o activitate selectată: nu sunt domenii și nu sunt clasate."
 msgstr "Fără o activitate selectată: nu sunt domenii și nu sunt clasate."
 
@@ -19622,6 +19873,10 @@ msgstr "fără plăți în anul dinainte"
 #: src/components/provenance/source-provenance.tsx:447
 #~ msgid "fără potrivire"
 #~ msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:301
+msgid "fără potrivire ONRC"
+msgstr "fără potrivire ONRC"
 
 #: src/features/entity-search/components/entity-search-page.tsx:313
 msgid "Fără primării"
@@ -19686,7 +19941,7 @@ msgstr "Fără răspunsul firmei"
 msgid "fără revizie CAEN"
 msgstr "fără revizie CAEN"
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:158
+#: src/features/private-companies/components/profile/company-activities-band.tsx:172
 msgid "Fără revizie CAEN"
 msgstr "Fără revizie CAEN"
 
@@ -19742,7 +19997,7 @@ msgstr "Fără situație pe platformă pentru {previousYear}"
 #~ msgid "Fără situație publicată"
 #~ msgstr "Fără situație publicată"
 
-#: src/features/private-companies/lib/company-analytics-view.ts:119
+#: src/features/private-companies/lib/company-analytics-view.ts:124
 msgid "Fără situație sau fără salariați raportați"
 msgstr "Fără situație sau fără salariați raportați"
 
@@ -19756,7 +20011,7 @@ msgstr "fără stare"
 msgid "fără stare comună"
 msgstr "fără stare comună"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:269
+#: src/features/private-companies/lib/company-analytics-text.ts:271
 msgid "Fără stare comună — {phrase}"
 msgstr "Fără stare comună — {phrase}"
 
@@ -19769,7 +20024,7 @@ msgstr "fără stare comună ({0})"
 msgid "fără stare comună ({reasons})"
 msgstr "fără stare comună ({reasons})"
 
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:50
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:51
 msgid "fără stare comună (orice motiv)"
 msgstr "fără stare comună (orice motiv)"
 
@@ -19871,7 +20126,7 @@ msgctxt "county map readout"
 msgid "Fără valoare"
 msgstr "Fără valoare"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:270
+#: src/features/private-companies/lib/company-analytics-text.ts:272
 msgid "Fără valoare comună — {phrase}"
 msgstr "Fără valoare comună — {phrase}"
 
@@ -19921,7 +20176,7 @@ msgid "Fără vot"
 msgstr ""
 
 #. placeholder {0}: excluded.join(' · ')
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:81
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:82
 msgid "fără, după dovezi complete ONRC: {0}"
 msgstr "fără, după dovezi complete ONRC: {0}"
 
@@ -20033,12 +20288,12 @@ msgstr ""
 
 #. placeholder {0}: countText(data.cohortCompanies ?? '0', locale)
 #. placeholder {1}: data.referenceYear ?? question.year
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:343
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:344
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:152
 msgid "Fiecare an arată aceleași {0} firme, selectate în {1}."
 msgstr "Fiecare an arată aceleași {0} firme, selectate în {1}."
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:344
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:345
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:153
 msgid "Fiecare an își aplică singur filtrele: populația diferă de la un an la altul."
 msgstr "Fiecare an își aplică singur filtrele: populația diferă de la un an la altul."
@@ -20095,7 +20350,7 @@ msgstr "Fiecare contract, cu instituția, firmele câștigătoare și valoarea p
 #~ msgid "Fiecare firmă din director e numărată o dată: după starea comună tuturor înscrierilor ei din ediție, sau într-un grup separat când nu au una comună. Denumirile stărilor sunt din nomenclatorul aplicației."
 #~ msgstr "Fiecare firmă din director e numărată o dată: după starea comună tuturor înscrierilor ei din ediție, sau într-un grup separat când nu au una comună. Denumirile stărilor sunt din nomenclatorul aplicației."
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:88
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:91
 msgid "Fiecare firmă e într-un singur grup: valoarea comună a înscrierilor ei sau motivul pentru care nu are una."
 msgstr "Fiecare firmă e într-un singur grup: valoarea comună a înscrierilor ei sau motivul pentru care nu are una."
 
@@ -20392,7 +20647,7 @@ msgstr "Filtrează seturile de date"
 msgid "Filtrele de mai sus nu se aplică la căutarea de citări — șterge căutarea pentru a reveni la listă."
 msgstr ""
 
-#: src/features/private-companies/lib/company-analytics-text.ts:216
+#: src/features/private-companies/lib/company-analytics-text.ts:218
 msgid "Filtrele de observații ONRC caută pe aceeași înscriere a firmei (stare, județ, CAEN). O excludere păstrează doar firmele cu dovezi complete: cele cu dovezi incomplete nu sunt nici păstrate, nici socotite fără acel cod."
 msgstr "Filtrele de observații ONRC caută pe aceeași înscriere a firmei (stare, județ, CAEN). O excludere păstrează doar firmele cu dovezi complete: cele cu dovezi incomplete nu sunt nici păstrate, nici socotite fără acel cod."
 
@@ -20444,7 +20699,12 @@ msgstr ""
 #~ msgstr ""
 
 #. placeholder {0}: problem.field
-#: src/features/private-companies/components/analytics/analytics-notices.tsx:76
+#: src/features/private-companies/components/analytics/analytics-notices.tsx:77
+msgid "Filtrul „{0}\" (activitatea principală presupusă după ANAF) nu există în această ediție a analizei: ediția nu oferă activitatea principală."
+msgstr "Filtrul „{0}\" (activitatea principală presupusă după ANAF) nu există în această ediție a analizei: ediția nu oferă activitatea principală."
+
+#. placeholder {0}: problem.field
+#: src/features/private-companies/components/analytics/analytics-notices.tsx:78
 msgid "Filtrul „{0}\" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității."
 msgstr "Filtrul „{0}\" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității."
 
@@ -20691,7 +20951,7 @@ msgstr "firme"
 #: src/features/landing/lib/search-filters.ts:79
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:36
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:99
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:144
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:148
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:340
 #: src/features/private-companies/components/analytics/analytics-head.tsx:76
 #: src/features/private-companies/components/hub/company-hub-hero.tsx:116
@@ -20714,13 +20974,13 @@ msgstr "Firme / România"
 msgid "Firme care au vândut direct statului"
 msgstr "Firme care au vândut direct statului"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:307
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:146
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:308
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:147
 msgid "Firme cu bilanț"
 msgstr "Firme cu bilanț"
 
 #. placeholder {0}: countText(data.totals.filers, locale)
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:115
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:116
 msgid "Firme cu bilanț ({0})"
 msgstr "Firme cu bilanț ({0})"
 
@@ -20859,13 +21119,17 @@ msgstr "Firmele"
 msgid "Firmele care i-au vândut cel mai mult direct din {DIRECT_COMPARABLE_FROM} încoace, pe ani."
 msgstr "Firmele care i-au vândut cel mai mult direct din {DIRECT_COMPARABLE_FROM} încoace, pe ani."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:173
+#: src/features/private-companies/lib/company-analytics-text.ts:175
 msgid "Firmele care îndeplinesc filtrele în fiecare an"
 msgstr "Firmele care îndeplinesc filtrele în fiecare an"
 
 #: src/features/procurement/components/home/home-money-bands.tsx:161
 msgid "Firmele care<0/>vând statului"
 msgstr "Firmele care<0/>vând statului"
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:219
+msgid "Firmele cu aceeași activitate principală presupusă, în analiză"
+msgstr "Firmele cu aceeași activitate principală presupusă, în analiză"
 
 #: src/features/private-companies/components/analytics/analytics-head.tsx:236
 msgid "Firmele cu cele mai mari pierderi"
@@ -21213,13 +21477,21 @@ msgid "Forma"
 msgstr "Forma"
 
 #. placeholder {0}: joined(exclude?.legalForm ?? [])
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:79
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:80
 msgid "forma {0}"
 msgstr "forma {0}"
 
 #: src/features/legal/components/act-versions-band.tsx:95
 msgid "forma afișată"
 msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:167
+msgid "Forma codului din sursă nu permite o potrivire exactă cu o activitate ONRC; codul nu e completat cu zerouri."
+msgstr "Forma codului din sursă nu permite o potrivire exactă cu o activitate ONRC; codul nu e completat cu zerouri."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:303
+msgid "formă de cod fără corespondent ONRC"
+msgstr "formă de cod fără corespondent ONRC"
 
 #: src/features/ngos/registry/components/registry-filters.tsx:318
 msgid "Forma este număr/literă/an: 3446/A/2026."
@@ -21229,10 +21501,10 @@ msgstr "Forma este număr/literă/an: 3446/A/2026."
 msgid "forma juridică"
 msgstr "forma juridică"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:167
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:168
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:107
 #: src/features/private-companies/components/profile/company-registry-band.tsx:98
-#: src/features/private-companies/lib/company-analytics-text.ts:95
+#: src/features/private-companies/lib/company-analytics-text.ts:97
 msgid "Formă juridică"
 msgstr "Formă juridică"
 
@@ -21243,7 +21515,7 @@ msgstr "Formă juridică"
 #. placeholder {0}: joined(scope.legalForms)
 #. placeholder {0}: row.legalForm ?? none
 #: src/features/private-companies/components/profile/company-registry-evidence.tsx:119
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:62
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:63
 msgid "formă juridică: {0}"
 msgstr "formă juridică: {0}"
 
@@ -21863,7 +22135,7 @@ msgstr "Grup de interes economic"
 msgid "Grup european de interes economic"
 msgstr "Grup european de interes economic"
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:87
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:90
 msgid "Gruparea descrie firma la data ediției, nu în anul fiscal."
 msgstr "Gruparea descrie firma la data ediției, nu în anul fiscal."
 
@@ -22526,7 +22798,7 @@ msgstr "în taxe de consum „invizibile”."
 #. placeholder {0}: current.year
 #. placeholder {0}: layer.period
 #. placeholder {0}: series.year
-#: src/features/private-companies/lib/company-analytics-text.ts:338
+#: src/features/private-companies/lib/company-analytics-text.ts:340
 #: src/features/procurement/components/home/home-context-bands.tsx:231
 #: src/features/statistics/components/hub/hub-county-band.tsx:392
 #: src/features/statistics/components/uat-map/uat-map-series.ts:105
@@ -22544,12 +22816,12 @@ msgid "În {0} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu 
 msgstr "În {0} a cumpărat doar direct, din catalogul SEAP: nicio procedură nu s-a încheiat cu un contract atribuit."
 
 #. placeholder {0}: counties.values.length
-#: src/features/private-companies/lib/company-analytics-text.ts:342
+#: src/features/private-companies/lib/company-analytics-text.ts:344
 msgid "în {0} județe"
 msgstr "în {0} județe"
 
 #. placeholder {0}: uats.values.length
-#: src/features/private-companies/lib/company-analytics-text.ts:339
+#: src/features/private-companies/lib/company-analytics-text.ts:341
 msgid "în {0} localități"
 msgstr "în {0} localități"
 
@@ -22614,7 +22886,7 @@ msgstr "În {0}, statul a încasat {1} și a cheltuit {2}."
 msgid "În {0}, statul a încasat {1}."
 msgstr "În {0}, statul a încasat {1}."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:342
+#: src/features/private-companies/lib/company-analytics-text.ts:344
 msgid "în {countyGroups} grupuri de județe"
 msgstr "în {countyGroups} grupuri de județe"
 
@@ -22657,7 +22929,7 @@ msgstr "În {period} nu are achiziții directe publicate în SEAP; contractele a
 msgid "În {period} nu are achiziții publicate în SEAP."
 msgstr "În {period} nu are achiziții publicate în SEAP."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:339
+#: src/features/private-companies/lib/company-analytics-text.ts:341
 msgid "în {uatGroups} grupuri de localități"
 msgstr "în {uatGroups} grupuri de localități"
 
@@ -22847,7 +23119,7 @@ msgstr "În bilanț, la sfârșitul anului"
 msgid "în browserul tău"
 msgstr "în browserul tău"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:341
+#: src/features/private-companies/lib/company-analytics-text.ts:343
 msgid "în București"
 msgstr "în București"
 
@@ -23001,7 +23273,7 @@ msgid "În județul"
 msgstr "În județul"
 
 #. placeholder {0}: countyLabel(firstCounty)
-#: src/features/private-companies/lib/company-analytics-text.ts:341
+#: src/features/private-companies/lib/company-analytics-text.ts:343
 msgid "în județul {0}"
 msgstr "în județul {0}"
 
@@ -23117,7 +23389,7 @@ msgstr "În registrul comerțului, {month}"
 msgid "în revizuire sau contestație în anulare"
 msgstr "în revizuire sau contestație în anulare"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:343
+#: src/features/private-companies/lib/company-analytics-text.ts:345
 msgid "în România"
 msgstr "în România"
 
@@ -23179,12 +23451,12 @@ msgid "Inactiv"
 msgstr ""
 
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:137
-#: src/features/private-companies/lib/company-analytics-text.ts:101
+#: src/features/private-companies/lib/company-analytics-text.ts:103
 msgid "Inactiv fiscal"
 msgstr "Inactiv fiscal"
 
 #. placeholder {0}: scope.fiscallyInactive.map(flagLabel).join(', ')
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:84
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:85
 msgid "inactiv fiscal: {0}"
 msgstr "inactiv fiscal: {0}"
 
@@ -23232,7 +23504,7 @@ msgstr "Inactive"
 msgid "inactive fiscal"
 msgstr "inactive fiscal"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:170
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:171
 #: src/features/private-companies/lib/company-analytics-suggest.ts:121
 msgid "Inactive fiscal"
 msgstr "Inactive fiscal"
@@ -23770,7 +24042,7 @@ msgstr "Indicatorul nu a fost găsit. Alege un indicator din catalog."
 msgid "Indicatorul nu are valori raportate pentru teritoriile și dimensiunile alese. Încearcă altă valoare fixată sau alte localități."
 msgstr "Indicatorul nu are valori raportate pentru teritoriile și dimensiunile alese. Încearcă altă valoare fixată sau alte localități."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:154
+#: src/features/private-companies/lib/company-analytics-text.ts:156
 msgid "indicatorul nu e admis pentru acest an"
 msgstr "indicatorul nu e admis pentru acest an"
 
@@ -24192,8 +24464,8 @@ msgstr "înscrieri cu valori diferite"
 msgid "Înscrieri cu valori diferite"
 msgstr "Înscrieri cu valori diferite"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:260
-#: src/features/private-companies/lib/company-analytics-text.ts:283
+#: src/features/private-companies/lib/company-analytics-text.ts:262
+#: src/features/private-companies/lib/company-analytics-text.ts:285
 msgid "înscrieri nerezolvate"
 msgstr "înscrieri nerezolvate"
 
@@ -24563,6 +24835,18 @@ msgstr "Interpretați împreună cu acoperirea rețelei și structura industrial
 #~ msgid "Interpretare calificată"
 #~ msgstr "Interpretare calificată"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:265
+msgid "Interpretare reținută până la verificare"
+msgstr "Interpretare reținută până la verificare"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:317
+msgid "interpretare retrasă"
+msgstr "interpretare retrasă"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:197
+msgid "Interpretarea codului ANAF e reținută până la verificare: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
+msgstr "Interpretarea codului ANAF e reținută până la verificare: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
+
 #: src/components/entities/views/ins-stats-view.presentation.tsx:561
 msgid "Interpretation notes"
 msgstr "Note de interpretare"
@@ -24701,7 +24985,7 @@ msgstr "Între ele, pe ani, lei"
 msgid "Între timp, o negociere fără anunț"
 msgstr "Între timp, o negociere fără anunț"
 
-#: src/features/private-companies/components/analytics/analytics-notices.tsx:83
+#: src/features/private-companies/components/analytics/analytics-notices.tsx:85
 msgid "Întrebarea nu are răspuns în această ediție"
 msgstr "Întrebarea nu are răspuns în această ediție"
 
@@ -24976,9 +25260,21 @@ msgstr "Emis la"
 msgid "Istoria contractului"
 msgstr "Istoria contractului"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:322
+msgid "Istoric de derivări și observații din sursă, nu date legale de intrare în vigoare."
+msgstr "Istoric de derivări și observații din sursă, nu date legale de intrare în vigoare."
+
 #: src/features/statistics/pages/statistics-hub-page.tsx:419
 #~ msgid "Istoric: captură INS Tempo din {captureMonth}, completat cu ultimul an publicat. Fiecare serie deschide sursa."
 #~ msgstr ""
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:306
+msgid "Istoricul activității principale presupuse"
+msgstr "Istoricul activității principale presupuse"
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:351
+msgid "Istoricul are o înregistrare mai nouă decât activitatea afișată; profilul se citește din nou."
+msgstr "Istoricul are o înregistrare mai nouă decât activitatea afișată; profilul se citește din nou."
 
 #: src/features/parliament/components/member-voting-tab.tsx:196
 msgid "Istoricul de vot nu a putut fi încărcat"
@@ -24988,6 +25284,14 @@ msgstr ""
 #: src/features/statistics/components/territory/territory-indicator-row.tsx:133
 #~ msgid "Istoricul încărcat este limitat la ultimele 200 de observații."
 #~ msgstr "Istoricul încărcat este limitat la ultimele 200 de observații."
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:380
+msgid "Istoricul nu a putut fi citit."
+msgstr "Istoricul nu a putut fi citit."
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:343
+msgid "Istoricul nu e disponibil acum."
+msgstr "Istoricul nu e disponibil acum."
 
 #: src/features/procurement/lib/home-categories.ts:36
 msgid "IT și telecomunicații"
@@ -25145,7 +25449,7 @@ msgstr ""
 #~ msgid "județ necunoscut"
 #~ msgstr ""
 
-#: src/features/private-companies/lib/company-analytics-view.ts:109
+#: src/features/private-companies/lib/company-analytics-view.ts:112
 msgid "Județ necunoscut"
 msgstr "Județ necunoscut"
 
@@ -25254,8 +25558,8 @@ msgstr "Județul"
 #. placeholder {0}: counties[0]
 #. placeholder {0}: countyName(code)
 #. placeholder {0}: joined((exclude?.county ?? []).map(countyLabel))
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:69
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:78
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:70
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:79
 #: src/features/private-companies/lib/company-analytics-sentence.ts:71
 #: src/features/procurement/lib/buyer-text.ts:28
 msgid "județul {0}"
@@ -25313,7 +25617,7 @@ msgstr "Județul și țara includ populația rurală, fără spații verzi rapor
 msgid "Județul, localitatea și starea sunt cele de la data ediției, nu din fiecare an."
 msgstr "Județul, localitatea și starea sunt cele de la data ediției, nu din fiecare an."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:214
+#: src/features/private-companies/lib/company-analytics-text.ts:216
 msgid "Județul, localitatea și starea sunt valoarea comună a tuturor înscrierilor firmei din ediția ONRC a analizei. O firmă fără valoare comună e numărată într-un grup care spune de ce (valori diferite, observații incomplete, lipsă, nerezolvat), nu ca „necunoscută” și nu ca absentă."
 msgstr "Județul, localitatea și starea sunt valoarea comună a tuturor înscrierilor firmei din ediția ONRC a analizei. O firmă fără valoare comună e numărată într-un grup care spune de ce (valori diferite, observații incomplete, lipsă, nerezolvat), nu ca „necunoscută” și nu ca absentă."
 
@@ -25321,7 +25625,7 @@ msgstr "Județul, localitatea și starea sunt valoarea comună a tuturor înscri
 #~ msgid "Județul, localitatea, forma și starea sunt cele dintr-o ediție publicată a registrului ONRC; cifrele sunt ale anului ales."
 #~ msgstr "Județul, localitatea, forma și starea sunt cele dintr-o ediție publicată a registrului ONRC; cifrele sunt ale anului ales."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:213
+#: src/features/private-companies/lib/company-analytics-text.ts:215
 msgid "Județul, localitatea, starea ONRC și atributele fiscale ANAF descriu firma la data ediției, nu în anul fiscal."
 msgstr "Județul, localitatea, starea ONRC și atributele fiscale ANAF descriu firma la data ediției, nu în anul fiscal."
 
@@ -26029,7 +26333,7 @@ msgstr "Legislație"
 #: src/features/private-companies/components/profile/company-qualification-note.tsx:98
 #: src/features/private-companies/lib/company-analytics-format.ts:23
 #: src/features/private-companies/lib/company-analytics-format.ts:35
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:36
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:37
 #: src/features/private-companies/lib/company-profile-format.ts:44
 #: src/features/private-companies/lib/hub-format.ts:56
 #: src/features/procurement/components/analytics/analytics-filters.tsx:398
@@ -26281,7 +26585,7 @@ msgstr ""
 #~ msgid "lipsă {0} · reținute {1} · neadmise {2}"
 #~ msgstr "lipsă {0} · reținute {1} · neadmise {2}"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:138
+#: src/features/private-companies/lib/company-analytics-text.ts:140
 msgid "lipsă din sursă"
 msgstr "lipsă din sursă"
 
@@ -26428,6 +26732,10 @@ msgstr ""
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:198
 #~ msgid "Lista întreprinderilor publice"
 #~ msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:51
+msgid "listă JSON"
+msgstr "listă JSON"
 
 #: src/features/procurement/components/direct-purchase/direct-purchase-block.tsx:174
 msgid "lista nu e încă preluată"
@@ -26913,7 +27221,7 @@ msgstr "Localitate din {0}"
 #~ msgid "localitate neidentificată"
 #~ msgstr "localitate neidentificată"
 
-#: src/features/private-companies/lib/company-analytics-view.ts:111
+#: src/features/private-companies/lib/company-analytics-view.ts:114
 msgid "Localitate neidentificată"
 msgstr "Localitate neidentificată"
 
@@ -27362,6 +27670,7 @@ msgid "Mai mult decât în {0}"
 msgstr "Mai mult decât în {0}"
 
 #: src/features/parliament/components/parliament-hub-activity-heatmap.tsx:304
+#: src/features/private-companies/components/profile/company-main-activity.tsx:368
 msgid "Mai multe"
 msgstr ""
 
@@ -27771,14 +28080,14 @@ msgid "March"
 msgstr "Martie"
 
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:46
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:166
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:167
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:850
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:852
 #: src/features/private-companies/components/profile/company-registry-band.tsx:110
 msgid "Mărime"
 msgstr "Mărime"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:103
+#: src/features/private-companies/lib/company-analytics-text.ts:105
 msgid "Mărime după salariați"
 msgstr "Mărime după salariați"
 
@@ -27787,7 +28096,7 @@ msgstr "Mărime după salariați"
 #~ msgid "Mărimea se citește din situația anului {0}; celelalte grupări descriu firma la data ediției."
 #~ msgstr "Mărimea se citește din situația anului {0}; celelalte grupări descriu firma la data ediției."
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:87
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:90
 msgid "Mărimea se citește din situația anului {year}; celelalte grupări descriu firma la data ediției."
 msgstr "Mărimea se citește din situația anului {year}; celelalte grupări descriu firma la data ediției."
 
@@ -29022,7 +29331,7 @@ msgstr "neadmis"
 msgid "neadmis pentru acest an"
 msgstr "neadmis pentru acest an"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:140
+#: src/features/private-companies/lib/company-analytics-text.ts:142
 msgid "neadmis pentru an"
 msgstr "neadmis pentru an"
 
@@ -29073,15 +29382,15 @@ msgstr "Neconcordanțe"
 #~ msgstr ""
 
 #: src/features/legal/components/legal-status-badge.tsx:73
-#: src/features/private-companies/lib/company-analytics-text.ts:110
-#: src/features/private-companies/lib/company-analytics-view.ts:124
+#: src/features/private-companies/lib/company-analytics-text.ts:112
+#: src/features/private-companies/lib/company-analytics-view.ts:129
 #: src/features/procurement/lib/analytics-text.ts:89
 #: src/features/public-investments/lib/display.ts:41
 #: src/features/public-investments/pages/PublicInvestmentsObjectivePage.tsx:141
 msgid "Necunoscut"
 msgstr "Necunoscut"
 
-#: src/features/private-companies/lib/company-analytics-view.ts:122
+#: src/features/private-companies/lib/company-analytics-view.ts:127
 msgid "Necunoscut (fără observație ANAF)"
 msgstr "Necunoscut (fără observație ANAF)"
 
@@ -29391,7 +29700,19 @@ msgstr "Nicio activitate observată în {0}."
 #~ msgid "Nicio activitate principală declarată pentru anul ales."
 #~ msgstr "Nicio activitate principală declarată pentru anul ales."
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:136
+#: src/features/private-companies/lib/company-main-activity-text.ts:171
+msgid "Nicio activitate principală presupusă din acest cod."
+msgstr "Nicio activitate principală presupusă din acest cod."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:175
+msgid "Nicio activitate principală presupusă. Asta nu înseamnă că firma nu are activitate."
+msgstr "Nicio activitate principală presupusă. Asta nu înseamnă că firma nu are activitate."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:173
+msgid "Nicio activitate principală presupusă. Lipsa codului nu înseamnă că firma nu are activitate."
+msgstr "Nicio activitate principală presupusă. Lipsa codului nu înseamnă că firma nu are activitate."
+
+#: src/features/private-companies/components/profile/company-activities-band.tsx:150
 msgid "Nicio activitate selectată"
 msgstr "Nicio activitate selectată"
 
@@ -29454,11 +29775,11 @@ msgid "Nicio firmă în această selecție."
 msgstr "Nicio firmă în această selecție."
 
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:93
-#: src/features/private-companies/lib/company-analytics-view.ts:45
+#: src/features/private-companies/lib/company-analytics-view.ts:46
 msgid "nicio firmă nu a raportat o valoare"
 msgstr "nicio firmă nu a raportat o valoare"
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:194
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:198
 msgid "Nicio grupă nu are valori raportate: sunt ordonate după numărul de firme."
 msgstr "Nicio grupă nu are valori raportate: sunt ordonate după numărul de firme."
 
@@ -29469,6 +29790,10 @@ msgstr "Nicio înregistrare în această selecție."
 #: src/features/private-companies/components/profile/company-money-band.tsx:193
 msgid "Nicio înregistrare în acest an"
 msgstr "Nicio înregistrare în acest an"
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:347
+msgid "Nicio înregistrare în istoric."
+msgstr "Nicio înregistrare în istoric."
 
 #: src/features/ngos/registry/components/registry-answer.tsx:232
 #: src/features/ngos/registry/components/registry-answer.tsx:432
@@ -29580,7 +29905,7 @@ msgstr ""
 msgid "Nicio ședință nu corespunde criteriilor selectate."
 msgstr ""
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:136
+#: src/features/private-companies/components/profile/company-activities-band.tsx:150
 msgid "Nicio selecție calificată"
 msgstr "Nicio selecție calificată"
 
@@ -29596,7 +29921,7 @@ msgstr "Nicio situație financiară cu cifre admise."
 #~ msgid "Nicio situație financiară cu număr de salariați în anul ales."
 #~ msgstr "Nicio situație financiară cu număr de salariați în anul ales."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:153
+#: src/features/private-companies/lib/company-analytics-text.ts:155
 msgid "nicio situație financiară în ediție"
 msgstr "nicio situație financiară în ediție"
 
@@ -29643,11 +29968,11 @@ msgstr "Nicio sumă pe toate întreprinderile: populația e provizorie, iar bila
 #~ msgid "Nicio sursa ONG nu este disponibila in mock."
 #~ msgstr "Nicio sursă ONG nu este disponibilă în mock."
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:68
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:71
 msgid "nicio valoare"
 msgstr "nicio valoare"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:258
+#: src/features/private-companies/lib/company-analytics-text.ts:260
 msgid "nicio valoare în ediție"
 msgstr "nicio valoare în ediție"
 
@@ -29668,7 +29993,7 @@ msgid "Nicio valoare pentru aceste perioade."
 msgstr "Nicio valoare pentru aceste perioade."
 
 #: src/features/private-companies/components/hub/hub-economy-years.tsx:95
-#: src/features/private-companies/lib/company-analytics-text.ts:155
+#: src/features/private-companies/lib/company-analytics-text.ts:157
 msgid "nicio valoare raportată"
 msgstr "nicio valoare raportată"
 
@@ -29681,7 +30006,7 @@ msgstr "Nicio valoare raportată"
 #~ msgid "Nicio valoare raportată în anii ediției."
 #~ msgstr "Nicio valoare raportată în anii ediției."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:156
+#: src/features/private-companies/lib/company-analytics-text.ts:158
 msgid "nicio valoare raportată în selecție"
 msgstr "nicio valoare raportată în selecție"
 
@@ -30626,15 +30951,15 @@ msgstr "Noi în {year}"
 #~ msgid "noiembrie"
 #~ msgstr "noiembrie"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:295
+#: src/features/private-companies/lib/company-analytics-text.ts:297
 msgid "nomenclatorul CAEN al platformei, cu reviziile denumirilor indicate"
 msgstr "nomenclatorul CAEN al platformei, cu reviziile denumirilor indicate"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:293
+#: src/features/private-companies/lib/company-analytics-text.ts:295
 msgid "nomenclatorul stărilor al aplicației, nu etichete publicate de ONRC"
 msgstr "nomenclatorul stărilor al aplicației, nu etichete publicate de ONRC"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:291
+#: src/features/private-companies/lib/company-analytics-text.ts:293
 msgid "nomenclatorul teritorial al platformei"
 msgstr "nomenclatorul teritorial al platformei"
 
@@ -30919,7 +31244,7 @@ msgstr "Nr. registru {registryNumber}, din Registrul național ONG."
 
 #: src/features/ngos/organization/components/profile-parts.tsx:496
 #: src/features/ngos/registry/components/registry-filters.tsx:113
-#: src/features/private-companies/lib/company-analytics-text.ts:109
+#: src/features/private-companies/lib/company-analytics-text.ts:111
 msgid "Nu"
 msgstr "Nu"
 
@@ -31263,7 +31588,7 @@ msgstr "Nu arătăm cifre parțiale sau de test în locul lor."
 msgid "nu are încă observații încărcate în această interfață."
 msgstr "nu are încă observații încărcate în această interfață."
 
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:89
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:92
 msgid "nu au depus situații financiare"
 msgstr "nu au depus situații financiare"
 
@@ -31618,7 +31943,7 @@ msgstr "număr mediu de salariați"
 msgid "Număr mic de evenimente"
 msgstr "Număr mic de evenimente"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:118
+#: src/features/private-companies/lib/company-analytics-text.ts:120
 msgid "Număr negativ raportat"
 msgstr "Număr negativ raportat"
 
@@ -31943,6 +32268,14 @@ msgstr "O cerere e numărată o dată, în anul primei ei hotărâri de aici. Ho
 msgid "o componentă a valorii e reținută"
 msgstr "o componentă a valorii e reținută"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:179
+msgid "O corecție revizuită (nr. {id}) reține potrivirea: nu e afișat un corespondent ONRC."
+msgstr "O corecție revizuită (nr. {id}) reține potrivirea: nu e afișat un corespondent ONRC."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:177
+msgid "O corecție revizuită reține potrivirea: nu e afișat un corespondent ONRC."
+msgstr "O corecție revizuită reține potrivirea: nu e afișat un corespondent ONRC."
+
 #: src/features/legal/components/legislation-gazette-directory.tsx:161
 msgid "o ediție în {partLabel}, {year}"
 msgstr ""
@@ -31979,7 +32312,7 @@ msgstr "O firmă se potrivește dacă are starea pe oricare înscriere publică 
 msgid "O hotărâre publicată în engleză și în franceză e numărată o dată (după ECLI); deciziile și cauzele comunicate, după dată și cereri."
 msgstr "O hotărâre publicată în engleză și în franceză e numărată o dată (după ECLI); deciziile și cauzele comunicate, după dată și cereri."
 
-#: src/features/private-companies/components/profile/company-activities-band.tsx:259
+#: src/features/private-companies/components/profile/company-activities-band.tsx:285
 msgid "O înscriere neclasificată (cod scurt, cod fără denumire în nomenclator, cod neinterpretabil) nu are denumire și nu e o activitate clasificată."
 msgstr "O înscriere neclasificată (cod scurt, cod fără denumire în nomenclator, cod neinterpretabil) nu are denumire și nu e o activitate clasificată."
 
@@ -32024,6 +32357,10 @@ msgstr ""
 msgid "o potrivire afișată — numărul total nu este cunoscut"
 msgstr ""
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:84
+msgid "O presupunere: codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC."
+msgstr "O presupunere: codul CAEN din datele fiscale ANAF, potrivit cu activitățile din ediția ONRC. Nu e o informație publicată de ONRC."
+
 #: src/routes/procurement/procedures/$id.tsx:64
 msgid "O procedură de achiziție publică din SEAP: ce s-a cerut, cui s-a atribuit, cu cât și când."
 msgstr "O procedură de achiziție publică din SEAP: ce s-a cerut, cui s-a atribuit, cu cât și când."
@@ -32032,7 +32369,7 @@ msgstr "O procedură de achiziție publică din SEAP: ce s-a cerut, cui s-a atri
 msgid "o rată anuală pe trei ani: suma evenimentelor împărțită la suma populațiilor."
 msgstr "o rată anuală pe trei ani: suma evenimentelor împărțită la suma populațiilor."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:250
+#: src/features/private-companies/lib/company-analytics-text.ts:252
 msgid "o singură observație"
 msgstr "o singură observație"
 
@@ -32076,6 +32413,10 @@ msgstr "o valoare publicată doar în valută"
 msgid "O valoare reținută sau lipsă nu e arătată și nu intră în sume."
 msgstr "O valoare reținută sau lipsă nu e arătată și nu intră în sume."
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:49
+msgid "obiect JSON"
+msgstr "obiect JSON"
+
 #: src/features/public-investments/pages/PublicInvestmentsLandingPage.tsx:122
 #: src/features/public-investments/pages/PublicInvestmentsTerritoryPage.tsx:105
 msgid "Obiective"
@@ -32109,6 +32450,10 @@ msgstr "Obiectul dosarului:"
 msgid "Obiectul e textul instanței, așa cum apare pe portal."
 msgstr "Obiectul e textul instanței, așa cum apare pe portal."
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:153
+msgid "Observația ANAF nu se poate lega de înregistrarea fiscală"
+msgstr "Observația ANAF nu se poate lega de înregistrarea fiscală"
+
 #: src/features/private-companies/lib/company-activity-text.ts:72
 msgid "observația ANAF nu se poate lega de înregistrarea fiscală afișată"
 msgstr "observația ANAF nu se poate lega de înregistrarea fiscală afișată"
@@ -32117,16 +32462,28 @@ msgstr "observația ANAF nu se poate lega de înregistrarea fiscală afișată"
 msgid "observația nu trece verificarea"
 msgstr "observația nu trece verificarea"
 
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:51
+msgid "Observație ANAF nelegată de înregistrarea fiscală"
+msgstr "Observație ANAF nelegată de înregistrarea fiscală"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:311
+msgid "observație nelegată"
+msgstr "observație nelegată"
+
 #: src/features/statistics/components/detail/detail-series-summary.tsx:159
 #: src/features/statistics/components/detail/detail-skeletons.tsx:77
 #~ msgid "observații"
 #~ msgstr "observații"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:252
+#: src/features/private-companies/lib/company-analytics-text.ts:254
 msgid "observații concordante"
 msgstr "observații concordante"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:254
+#: src/features/private-companies/components/profile/company-main-activity.tsx:320
+msgid "Observații din sursă"
+msgstr "Observații din sursă"
+
+#: src/features/private-companies/lib/company-analytics-text.ts:256
 msgid "observații incomplete"
 msgstr "observații incomplete"
 
@@ -32134,7 +32491,7 @@ msgstr "observații incomplete"
 msgid "Observații INS"
 msgstr "Observații INS"
 
-#: src/features/private-companies/lib/company-profile-model.ts:423
+#: src/features/private-companies/lib/company-profile-model.ts:451
 msgid "Observații necalificate"
 msgstr "Observații necalificate"
 
@@ -32810,7 +33167,7 @@ msgstr ""
 msgid "Ordonanță de urgență"
 msgstr ""
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:112
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:115
 msgid "Ordonate după"
 msgstr "Ordonate după"
 
@@ -32845,7 +33202,7 @@ msgstr "ordonatorul cu codul {0}"
 msgid "Ordonatorul principal"
 msgstr "Ordonatorul principal"
 
-#: src/features/private-companies/components/analytics/analytics-axis.tsx:117
+#: src/features/private-companies/components/analytics/analytics-axis.tsx:120
 msgid "Ordonează grupurile"
 msgstr "Ordonează grupurile"
 
@@ -33340,7 +33697,7 @@ msgstr ""
 #~ msgid "Părți publicabile"
 #~ msgstr ""
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:319
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:320
 msgid "parțial"
 msgstr "parțial"
 
@@ -34586,12 +34943,12 @@ msgid "Plătitoare de TVA"
 msgstr "Plătitoare de TVA"
 
 #: src/features/private-companies/components/analytics/analytics-filter-sheet.tsx:135
-#: src/features/private-companies/lib/company-analytics-text.ts:99
+#: src/features/private-companies/lib/company-analytics-text.ts:101
 msgid "Plătitor de TVA"
 msgstr "Plătitor de TVA"
 
 #. placeholder {0}: scope.vatPayer.map(flagLabel).join(', ')
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:83
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:84
 msgid "plătitor de TVA: {0}"
 msgstr "plătitor de TVA: {0}"
 
@@ -35024,6 +35381,15 @@ msgstr ""
 #~ msgid "Potrivire respinsă"
 #~ msgstr ""
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:315
+msgid "potrivire reținută prin corecție"
+msgstr "potrivire reținută prin corecție"
+
+#: src/features/private-companies/lib/company-analytics-main-activity.ts:53
+#: src/features/private-companies/lib/company-main-activity-text.ts:155
+msgid "Potrivire reținută printr-o corecție revizuită"
+msgstr "Potrivire reținută printr-o corecție revizuită"
+
 #: src/components/identity/identity-confidence-badge.tsx:63
 #~ msgid "Potrivirea a fost respinsă în revizuire."
 #~ msgstr ""
@@ -35035,6 +35401,14 @@ msgstr ""
 #: src/features/legal/components/legislation-act-finder.tsx:324
 msgid "Potriviri după numărul și denumirea actelor. Căutarea în textul legilor nu este încă disponibilă — o prevedere poate exista chiar dacă nu apare aici."
 msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:297
+msgid "potrivit cu ONRC"
+msgstr "potrivit cu ONRC"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:299
+msgid "potrivit cu ONRC (cea mai recentă revizie)"
+msgstr "potrivit cu ONRC (cea mai recentă revizie)"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:156
 #~ msgid "Potrivit registrului"
@@ -35344,7 +35718,7 @@ msgstr "UAT primar"
 
 #. placeholder {0}: data.topN
 #. placeholder {1}: data.groupCount
-#: src/features/private-companies/components/analytics/analytics-charts.tsx:163
+#: src/features/private-companies/components/analytics/analytics-charts.tsx:164
 msgid "Primele {0} din {1}; celelalte, adunate."
 msgstr "Primele {0} din {1}; celelalte, adunate."
 
@@ -35413,6 +35787,10 @@ msgstr "prin {0}"
 #: src/features/national-budget/home/components/national-budget-home-page.tsx:44
 msgid "Prin ce bugete trec banii"
 msgstr "Prin ce bugete trec banii"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:284
+msgid "principală (presupusă)"
+msgstr "principală (presupusă)"
 
 #: src/features/parliament/components/parliament-stenogram-reader-page.tsx:482
 msgid "Printează extrasul filtrat"
@@ -36464,11 +36842,11 @@ msgstr "Rapoarte de erori"
 msgid "Raport"
 msgstr ""
 
-#: src/features/private-companies/lib/company-analytics-text.ts:136
+#: src/features/private-companies/lib/company-analytics-text.ts:138
 msgid "raportat"
 msgstr "raportat"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:304
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:305
 msgid "Raportat de"
 msgstr "Raportat de"
 
@@ -36481,7 +36859,7 @@ msgstr "Raportat de"
 #. placeholder {0}: countText(aggregate.contributors, locale)
 #. placeholder {0}: countText(selected.contributors, locale)
 #: src/features/private-companies/components/analytics/analytics-answer.tsx:102
-#: src/features/private-companies/lib/company-analytics-view.ts:52
+#: src/features/private-companies/lib/company-analytics-view.ts:53
 msgid "raportat de {0} firme"
 msgstr "raportat de {0} firme"
 
@@ -36530,7 +36908,7 @@ msgstr "Răspuns parțial: sursa nu acoperă toată selecția."
 #: src/features/justice/components/echr/echr-answer.tsx:44
 #: src/features/national-budget/analytics/components/national-budget-analytics-page.tsx:188
 #: src/features/ngos/registry/components/registry-list-page.tsx:90
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:177
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:178
 #: src/features/procurement/components/analytics/procurement-analytics-page.tsx:53
 msgid "Răspunsul"
 msgstr "Răspunsul"
@@ -36540,7 +36918,7 @@ msgid "Răspunsul căutării a fost reținut."
 msgstr "Răspunsul căutării a fost reținut."
 
 #. placeholder {0}: keys.join(', ')
-#: src/features/private-companies/components/analytics/analytics-notices.tsx:97
+#: src/features/private-companies/components/analytics/analytics-notices.tsx:99
 msgid "Răspunsul de mai jos nu le folosește: {0}."
 msgstr "Răspunsul de mai jos nu le folosește: {0}."
 
@@ -37235,6 +37613,7 @@ msgstr "Regulile: populație {0}, admitere {1}, schemă {2}."
 
 #: src/features/parliament/components/parliament-stenogram-failure.tsx:82
 #: src/features/private-companies/components/analytics/analytics-add-filter.tsx:102
+#: src/features/private-companies/components/profile/company-main-activity.tsx:382
 #: src/features/private-companies/components/registry/company-registry-notices.tsx:22
 #: src/features/private-companies/components/search/private-company-search-page.tsx:255
 #: src/features/statistics/components/comparison/comparison-states.tsx:121
@@ -37711,7 +38090,7 @@ msgstr "Resurse proprii ale bugetului UE"
 msgid "reținut"
 msgstr "reținut"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:144
+#: src/features/private-companies/lib/company-analytics-text.ts:146
 #: src/features/private-companies/lib/company-profile-text.ts:446
 msgid "reținut după verificare"
 msgstr "reținut după verificare"
@@ -37720,11 +38099,11 @@ msgstr "reținut după verificare"
 msgid "reținut pentru un semnal de calitate"
 msgstr "reținut pentru un semnal de calitate"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:142
+#: src/features/private-companies/lib/company-analytics-text.ts:144
 msgid "reținut: formular neverificat"
 msgstr "reținut: formular neverificat"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:148
+#: src/features/private-companies/lib/company-analytics-text.ts:150
 msgid "reținut: o componentă e reținută"
 msgstr "reținut: o componentă e reținută"
 
@@ -37736,7 +38115,7 @@ msgstr "reținut: pentru această formă de bilanț nu se calculează din profit
 msgid "reținut: profitul sau pierderea publicată e reținută"
 msgstr "reținut: profitul sau pierderea publicată e reținută"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:146
+#: src/features/private-companies/lib/company-analytics-text.ts:148
 msgid "reținut: semnal de calitate"
 msgstr "reținut: semnal de calitate"
 
@@ -37854,15 +38233,15 @@ msgstr "Revizia CAEN"
 msgid "revizie CAEN necunoscută"
 msgstr "revizie CAEN necunoscută"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:178
+#: src/features/private-companies/lib/company-analytics-text.ts:180
 msgid "revizie CAEN nepublicată"
 msgstr "revizie CAEN nepublicată"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:177
+#: src/features/private-companies/lib/company-analytics-text.ts:179
 msgid "revizie CAEN publicată"
 msgstr "revizie CAEN publicată"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:204
+#: src/features/private-companies/lib/company-analytics-text.ts:206
 msgid "revizie nepublicată"
 msgstr "revizie nepublicată"
 
@@ -37874,7 +38253,7 @@ msgstr "Revizie nepublicată"
 msgid "Revizie nepublicată — denumiri diferite"
 msgstr "Revizie nepublicată — denumiri diferite"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:206
+#: src/features/private-companies/lib/company-analytics-text.ts:208
 msgid "revizie nepublicată; denumiri diferite"
 msgstr "revizie nepublicată; denumiri diferite"
 
@@ -37951,6 +38330,7 @@ msgstr "Rezultat, {year}"
 #: src/features/landing/components/search/landing-search.tsx:679
 #: src/features/landing/components/search/landing-search.tsx:730
 #: src/features/legal/components/legislation-act-finder.tsx:372
+#: src/features/private-companies/components/profile/company-main-activity.tsx:320
 #: src/features/statistics/components/explorer/dataset-explorer-results.tsx:117
 msgid "Rezultate"
 msgstr "Rezultate"
@@ -38256,7 +38636,7 @@ msgstr "Săgețile trec de la o perioadă la alta."
 
 #: src/features/private-companies/components/analytics/analytics-maps.tsx:104
 #: src/features/private-companies/lib/company-analytics-format.ts:23
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:36
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:37
 #: src/features/private-companies/lib/hub-format.ts:54
 msgid "salariați"
 msgstr "salariați"
@@ -38304,7 +38684,7 @@ msgstr "Salariații"
 msgid "Salariații sunt numărați unde lucrează, nu unde locuiesc; poate depăși 1.000. Nu e o rată de ocupare."
 msgstr "Salariații sunt numărați unde lucrează, nu unde locuiesc; poate depăși 1.000. Nu e o rată de ocupare."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:219
+#: src/features/private-companies/lib/company-analytics-text.ts:221
 msgid "Salariații sunt suma numărului mediu raportat de fiecare firmă, nu persoane distincte; soldurile și salariații sunt valori ale unui singur an și nu se adună peste ani."
 msgstr "Salariații sunt suma numărului mediu raportat de fiecare firmă, nu persoane distincte; soldurile și salariații sunt valori ale unui singur an și nu se adună peste ani."
 
@@ -38851,6 +39231,10 @@ msgstr "Se încarcă întreprinderea."
 #: src/features/public-enterprises/components/authority/authority-pending.tsx:40
 msgid "Se încarcă întreprinderile autorității."
 msgstr "Se încarcă întreprinderile autorității."
+
+#: src/features/private-companies/components/profile/company-main-activity.tsx:331
+msgid "Se încarcă istoricul…"
+msgstr "Se încarcă istoricul…"
 
 #: src/features/private-companies/components/search/private-company-search-page.tsx:70
 msgid "Se încarcă județele…"
@@ -39767,7 +40151,7 @@ msgid "Selected UATs are already in group."
 msgstr "UAT-urile selectate sunt deja în grup."
 
 #. placeholder {0}: joined(scope.activityBasis.map(activityBasisLabel))
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:88
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:89
 msgid "selecția activității: {0}"
 msgstr "selecția activității: {0}"
 
@@ -39940,7 +40324,7 @@ msgstr "Seria se încheie cu perioada „{discontinuedAfter}”."
 #~ msgid "Seria selectată"
 #~ msgstr "Seria selectată"
 
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:273
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:274
 #: src/features/private-companies/components/analytics/analytics-evolution.tsx:101
 msgid "Seria urmărește firmele selectate într-un an după situația lor din acel an: firmele fără situație nu au ce urmări. Alege „Firmele care îndeplinesc filtrele în fiecare an\"."
 msgstr "Seria urmărește firmele selectate într-un an după situația lor din acel an: firmele fără situație nu au ce urmări. Alege „Firmele care îndeplinesc filtrele în fiecare an\"."
@@ -40718,7 +41102,7 @@ msgstr "SIRUTA"
 msgid "SIRUTA {0}"
 msgstr "SIRUTA {0}"
 
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:61
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:62
 msgid "SIRUTA {code}"
 msgstr "SIRUTA {code}"
 
@@ -41298,7 +41682,7 @@ msgid "Standard"
 msgstr "Standard"
 
 #: src/features/ngos/organization/components/profile-parts.tsx:576
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:168
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:169
 #: src/features/public-enterprises/components/enterprise/public-enterprise-page.tsx:43
 msgid "Stare"
 msgstr "Stare"
@@ -41307,12 +41691,12 @@ msgstr "Stare"
 #~ msgid "Stare a datelor"
 #~ msgstr ""
 
-#: src/features/private-companies/lib/company-analytics-text.ts:97
+#: src/features/private-companies/lib/company-analytics-text.ts:99
 msgid "Stare comună în ediția ONRC"
 msgstr "Stare comună în ediția ONRC"
 
 #. placeholder {0}: consensusText(scope.observedStatus, 'OBSERVED_STATUS', (code) => names.statuses?.get(code) ?? code)
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:63
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:64
 msgid "stare comună în ediția ONRC: {0}"
 msgstr "stare comună în ediția ONRC: {0}"
 
@@ -41341,7 +41725,7 @@ msgid "Stare neconfirmată în registru"
 msgstr "Stare neconfirmată în registru"
 
 #: src/features/ngos/organization/words.ts:110
-#: src/features/private-companies/lib/company-analytics-view.ts:117
+#: src/features/private-companies/lib/company-analytics-view.ts:122
 #: src/features/private-companies/lib/company-profile-text.ts:69
 #: src/features/procurement/lib/direct-purchase-text.ts:233
 msgid "Stare necunoscută"
@@ -41385,8 +41769,8 @@ msgstr "Starea"
 
 #. placeholder {0}: joined((exclude?.status ?? []).map((code) => names.statuses?.get(code) ?? code))
 #. placeholder {0}: joined(status)
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:68
-#: src/features/private-companies/lib/company-analytics-scope-text.ts:76
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:69
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:77
 msgid "starea {0}"
 msgstr "starea {0}"
 
@@ -41394,7 +41778,7 @@ msgstr "starea {0}"
 msgid "Starea comună e cea pe care o au toate înscrierile firmei din ediția ONRC; nu e dovada că firma e activă azi. Pentru „are o înscriere cu starea 1048\", folosește observațiile ONRC de mai jos."
 msgstr "Starea comună e cea pe care o au toate înscrierile firmei din ediția ONRC; nu e dovada că firma e activă azi. Pentru „are o înscriere cu starea 1048\", folosește observațiile ONRC de mai jos."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:215
+#: src/features/private-companies/lib/company-analytics-text.ts:217
 msgid "Starea comună nu înseamnă că firma este activă azi."
 msgstr "Starea comună nu înseamnă că firma este activă azi."
 
@@ -42033,7 +42417,7 @@ msgstr "Sume în curs de distribuire"
 msgid "Sume în lei"
 msgstr "Sume în lei"
 
-#: src/features/private-companies/lib/company-analytics-text.ts:223
+#: src/features/private-companies/lib/company-analytics-text.ts:225
 msgid "Sumele sunt în lei nominali, neajustate cu inflația."
 msgstr "Sumele sunt în lei nominali, neajustate cu inflația."
 
@@ -42152,6 +42536,22 @@ msgstr ""
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:465
 #~ msgid "sursă AMEPIP, nu BVB live"
 #~ msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:250
+msgid "Sursa ANAF a fost retrasă"
+msgstr "Sursa ANAF a fost retrasă"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:196
+msgid "Sursa ANAF folosită e reținută pentru verificarea integrității: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
+msgstr "Sursa ANAF folosită e reținută pentru verificarea integrității: nu e afișat niciun cod, niciun corespondent ONRC și niciun marcaj în lista de activități."
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:255
+msgid "Sursa ANAF reținută pentru verificarea integrității"
+msgstr "Sursa ANAF reținută pentru verificarea integrității"
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:260
+msgid "Sursa ANAF reținută pentru verificarea integrității · ediția ONRC indisponibilă"
+msgstr "Sursa ANAF reținută pentru verificarea integrității · ediția ONRC indisponibilă"
 
 #: src/components/data-trust/data-status-badge.tsx:44
 msgid "Sursă blocată"
@@ -44205,7 +44605,7 @@ msgstr "total"
 #: src/features/justice/components/hub/justice-hub-bands.tsx:236
 #: src/features/national-budget/analytics/components/analytics-law.tsx:367
 #: src/features/parliament/components/vote-group-votes-table.tsx:318
-#: src/features/private-companies/lib/company-analytics-view.ts:103
+#: src/features/private-companies/lib/company-analytics-view.ts:106
 #: src/features/procurement/components/direct-purchase/direct-purchase-receipt.tsx:141
 #: src/features/procurement/components/profile/party-years-matrix.tsx:83
 msgid "Total"
@@ -44631,7 +45031,7 @@ msgstr "Turismul înainte și după pandemie"
 #~ msgstr "Cifră de afaceri (I14) · {0}"
 
 #: src/features/national-budget/home/lib/home-format.ts:21
-#: src/features/private-companies/components/analytics/analytics-answer.tsx:169
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:170
 msgid "TVA"
 msgstr "TVA"
 
@@ -44906,6 +45306,10 @@ msgstr "Un buget: coloana lui, cum o tipăresc buletinele Excel (din 2019, nu to
 msgid "Un cod CAEN exact din adresă nu are forma „revizie:cod” (de exemplu rev2:6201). Elimină-l din filtre pentru a vedea rezultatele."
 msgstr "Un cod CAEN exact din adresă nu are forma „revizie:cod” (de exemplu rev2:6201). Elimină-l din filtre pentru a vedea rezultatele."
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:169
+msgid "Un cod substitut (precum 0000 sau 9999) nu indică o activitate: nicio activitate principală presupusă."
+msgstr "Un cod substitut (precum 0000 sau 9999) nu indică o activitate: nicio activitate principală presupusă."
+
 #: src/routes/procurement/contracts/$id.tsx:61
 msgid "Un contract de achiziție publică din SEAP: ce s-a atribuit, cui, cu cât și ce s-a schimbat după."
 msgstr "Un contract de achiziție publică din SEAP: ce s-a atribuit, cui, cu cât și ce s-a schimbat după."
@@ -45145,7 +45549,7 @@ msgstr ""
 #~ msgid "Unele filtre sunt gated până când lane-urile ajung live."
 #~ msgstr ""
 
-#: src/features/private-companies/components/analytics/analytics-notices.tsx:96
+#: src/features/private-companies/components/analytics/analytics-notices.tsx:98
 msgid "Unele valori din adresă nu au putut fi citite"
 msgstr "Unele valori din adresă nu au putut fi citite"
 
@@ -45780,6 +46184,10 @@ msgstr ""
 msgid "valoare INS negativă, nefolosită"
 msgstr "valoare INS negativă, nefolosită"
 
+#: src/features/private-companies/lib/company-main-activity-text.ts:47
+msgid "valoare logică"
+msgstr "valoare logică"
+
 #: src/features/procurement/lib/enum-labels.ts:89
 #~ msgid "Valoare neatribuibilă"
 #~ msgstr ""
@@ -45792,6 +46200,10 @@ msgstr "valoare nepublicată"
 #: src/features/procurement/lib/concentration-copy.ts:68
 #~ msgid "valoare nerepartizată pe furnizori"
 #~ msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:45
+msgid "valoare numerică"
+msgstr "valoare numerică"
 
 #: src/features/procurement/components/analytics/analytics-filters.tsx:386
 #~ msgid "Valoare până la, lei"
@@ -45812,6 +46224,10 @@ msgstr "Valoare reținută: nu intră în grafic"
 #: src/features/procurement/components/value-with-currency.tsx:43
 msgid "valoare RON indisponibilă"
 msgstr ""
+
+#: src/features/private-companies/lib/company-main-activity-text.ts:43
+msgid "valoare text"
+msgstr "valoare text"
 
 #: src/features/procurement/components/value-with-currency.tsx:47
 msgid "valoare-cadru"
@@ -45985,7 +46401,7 @@ msgstr "Valori"
 #~ msgid "Valori absolute — nivelurile teritoriale nu sunt normalizate per locuitor."
 #~ msgstr "Valori absolute — nivelurile teritoriale nu sunt normalizate per locuitor."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:256
+#: src/features/private-companies/lib/company-analytics-text.ts:258
 msgid "valori diferite în înscrieri"
 msgstr "valori diferite în înscrieri"
 
@@ -46019,7 +46435,7 @@ msgstr "Valorile din SEAP sunt cele atribuite, nu plățile efective."
 #~ msgid "Valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă. Fiecare rând deschide seria lui; „Compară\" o pune lângă județ și țară."
 #~ msgstr "Valorile disponibile pentru teritoriu, fără interpolarea perioadelor lipsă. Fiecare rând deschide seria lui; „Compară\" o pune lângă județ și țară."
 
-#: src/features/private-companies/lib/company-analytics-text.ts:220
+#: src/features/private-companies/lib/company-analytics-text.ts:222
 msgid "Valorile lipsă sau reținute (formular neverificat, verificare, semnal de calitate) nu intră în sume și nu sunt tratate ca zero."
 msgstr "Valorile lipsă sau reținute (formular neverificat, verificare, semnal de calitate) nu intră în sume și nu sunt tratate ca zero."
 

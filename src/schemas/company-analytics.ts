@@ -18,12 +18,16 @@ import { z } from 'zod'
  * The schemas the API serves (a v1 release is refused there, never
  * reinterpreted here). v3 adds the derived activity selection (`ACTIVITY`,
  * the `activity` / `activityBasis` filters); a v2 release keeps every v2
- * field and answers without them. What a release offers is read from its
- * own `dimensions`, never inferred from this version.
+ * field and answers without them. v4 (staged: no v4 release is published
+ * yet) adds the ANAF-assumed main activity (`MAIN_ACTIVITY`, the
+ * `mainActivity` / `mainActivityStatus` filters) and pins its content
+ * (`mainCaen`). What a release offers is read from its own `dimensions`,
+ * never inferred from this version.
  */
 export const COMPANY_ANALYSIS_SCHEMA_VERSION = 'companies-analytics-ch-v2'
 export const COMPANY_ANALYSIS_SCHEMA_VERSION_V3 = 'companies-analytics-ch-v3'
-export const COMPANY_ANALYSIS_SCHEMA_VERSIONS = [COMPANY_ANALYSIS_SCHEMA_VERSION, COMPANY_ANALYSIS_SCHEMA_VERSION_V3] as const
+export const COMPANY_ANALYSIS_SCHEMA_VERSION_V4 = 'companies-analytics-ch-v4'
+export const COMPANY_ANALYSIS_SCHEMA_VERSIONS = [COMPANY_ANALYSIS_SCHEMA_VERSION, COMPANY_ANALYSIS_SCHEMA_VERSION_V3, COMPANY_ANALYSIS_SCHEMA_VERSION_V4] as const
 export const COMPANY_ANALYSIS_POPULATION_POLICY_VERSION = 'public-onrc-edition-legal-person-v2'
 
 export const COMPANY_ANALYSIS_METRICS = [
@@ -91,8 +95,12 @@ export type CompanyAnalysisFlagValue = z.infer<typeof CompanyAnalysisFlagValueZ>
 export const CompanyAnalysisFilingZ = z.enum(['FILED', 'NOT_FILED'])
 export type CompanyAnalysisFiling = z.infer<typeof CompanyAnalysisFilingZ>
 
-/** `ACTIVITY` (v3 only): the derived activity selection, offered only where the release's `dimensions` list it. */
-export const COMPANY_ANALYSIS_DIMENSIONS = ['COUNTY', 'UAT', 'MAIN_CAEN', 'ACTIVITY', 'LEGAL_FORM', 'OBSERVED_STATUS', 'VAT_PAYER', 'FISCALLY_INACTIVE', 'EMPLOYEE_SIZE'] as const
+/**
+ * `ACTIVITY` (v3): the derived activity selection; `MAIN_ACTIVITY` (v4
+ * only): the ANAF-assumed main activity. Each is offered only where the
+ * release's `dimensions` list it.
+ */
+export const COMPANY_ANALYSIS_DIMENSIONS = ['COUNTY', 'UAT', 'MAIN_CAEN', 'ACTIVITY', 'MAIN_ACTIVITY', 'LEGAL_FORM', 'OBSERVED_STATUS', 'VAT_PAYER', 'FISCALLY_INACTIVE', 'EMPLOYEE_SIZE'] as const
 export const CompanyAnalysisDimensionZ = z.enum(COMPANY_ANALYSIS_DIMENSIONS)
 export type CompanyAnalysisDimension = z.infer<typeof CompanyAnalysisDimensionZ>
 
@@ -147,6 +155,39 @@ export type CompanyAnalysisActivitySource = z.infer<typeof CompanyAnalysisActivi
 /** Whether a release offers the derived activity selection (its grouping and its filters). */
 export function releaseOffersActivity(release: { readonly dimensions: readonly { readonly dimension: CompanyAnalysisDimension }[] }): boolean {
   return release.dimensions.some((entry) => entry.dimension === 'ACTIVITY')
+}
+
+// ─────────────────────────────────────── ANAF-assumed main activity (v4) ──
+
+/**
+ * A company's ANAF-assumed main activity in a v4 release: ANAF's fiscal CAEN
+ * token ASSUMED to be its main activity, matched to one exact ONRC class key
+ * (`revision`, `code`; the revision is ONRC's, ANAF publishes none) — never a
+ * principal activity ONRC published. The statuses are the profile's; only the
+ * selecting ones name a key, the others are unclassified buckets
+ * (`(<status>)`), never ranked.
+ */
+export const COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES = [
+  'RESOLVED',
+  'RESOLVED_LATEST_REVISION',
+  'NO_ONRC_MATCH',
+  'UNRESOLVED_TOKEN_FORM',
+  'TOKEN_PLACEHOLDER',
+  'TOKEN_INVALID',
+  'SOURCE_MISSING',
+  'SOURCE_UNBOUND',
+  'CORRECTED',
+  'CORRECTION_WITHHELD',
+] as const
+export const CompanyAnalysisMainActivityStatusZ = z.enum(COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES)
+export type CompanyAnalysisMainActivityStatus = z.infer<typeof CompanyAnalysisMainActivityStatusZ>
+
+/** The statuses that select one exact ONRC key (a named bucket); the others are never ranked. */
+export const COMPANY_ANALYSIS_MAIN_SELECTING_STATUSES: ReadonlySet<CompanyAnalysisMainActivityStatus> = new Set(['RESOLVED', 'RESOLVED_LATEST_REVISION', 'CORRECTED'])
+
+/** Whether a release offers the ANAF-assumed main activity (its grouping and its filters): only where its dimensions list it. */
+export function releaseOffersMainActivity(release: { readonly dimensions: readonly { readonly dimension: CompanyAnalysisDimension }[] }): boolean {
+  return release.dimensions.some((entry) => entry.dimension === 'MAIN_ACTIVITY')
 }
 
 /** A release id: a positive integer as text (the API's `BigInt`, which it only accepts as a string). */
@@ -302,6 +343,10 @@ export const CompanyAnalysisScopeZ = z.object({
   activity: z.array(z.object({ source: CompanyAnalysisActivitySourceZ, code: z.string(), revision: z.string().optional() })).optional(),
   /** v3: the selection's basis. */
   activityBasis: z.array(CompanyAnalysisActivityBasisZ).optional(),
+  /** v4: the exact ONRC key of the ANAF-assumed main activity (`rev3` + `4711`); never a code without its revision. */
+  mainActivity: z.array(z.object({ revision: z.enum(['rev0', 'rev1', 'rev2', 'rev3']), code: z.string().regex(/^\d{4}$/u) })).optional(),
+  /** v4: the main activity's status (the unresolved buckets). */
+  mainActivityStatus: z.array(CompanyAnalysisMainActivityStatusZ).optional(),
   filing: CompanyAnalysisFilingZ.optional(),
   financialRanges: z.array(CompanyAnalysisRangeZ).optional(),
   employeeSizeBands: z.array(CompanyAnalysisSizeBandZ).optional(),
@@ -338,6 +383,20 @@ const releaseRefZ = z.object({
   source: CompanyAnalysisSourceZ,
 })
 export type CompanyAnalysisReleaseRef = z.infer<typeof releaseRefZ>
+
+/**
+ * A v4 release's pin of the main activity's content: the semantic content
+ * epoch, the refresh, the policy and the ONRC edition it was exported under.
+ * Null on v2/v3. A profile links into a release's main cohort only when its
+ * own main activity has the same edition and content epoch.
+ */
+export const CompanyAnalysisMainCaenPinZ = z.object({
+  contentEpoch: countZ,
+  refreshId: countZ,
+  policy: z.string().min(1),
+  editionId: sourceIdZ,
+})
+export type CompanyAnalysisMainCaenPin = z.infer<typeof CompanyAnalysisMainCaenPinZ>
 
 export const CompanyAnalysisReleaseZ = z.object({
   release: releaseRefZ,
@@ -403,7 +462,16 @@ export const CompanyAnalysisReleaseZ = z.object({
     maxPageSize: z.number().int(),
   }),
   caveats: z.array(z.string()),
+  /** v4: the main activity's content pin; null or absent on v2/v3 (and from an API that predates the field). */
+  mainCaen: CompanyAnalysisMainCaenPinZ.nullish(),
 })
+  // Only a v4 release offers the main activity, and every v4 release pins its content: anything else does not hold together.
+  .refine((release) => !releaseOffersMainActivity(release) || release.schemaVersion === COMPANY_ANALYSIS_SCHEMA_VERSION_V4, {
+    message: 'only a companies-analytics-ch-v4 release lists MAIN_ACTIVITY',
+  })
+  .refine((release) => (release.schemaVersion === COMPANY_ANALYSIS_SCHEMA_VERSION_V4) === (release.mainCaen !== null && release.mainCaen !== undefined), {
+    message: 'a v4 release pins mainCaen, and only a v4 release does',
+  })
 export type CompanyAnalysisRelease = z.infer<typeof CompanyAnalysisReleaseZ>
 
 export const CompanyAnalysisMetricAggregateZ = z.object({
@@ -477,6 +545,21 @@ export const CompanyAnalysisActivityQualityZ = z.object({
 })
 export type CompanyAnalysisActivityQuality = z.infer<typeof CompanyAnalysisActivityQualityZ>
 
+/**
+ * A bucket's or record's main activity (v4): its status and, for a selecting
+ * status, the exact ONRC key with the label frozen in the release; the match
+ * basis and policy as the release exported them.
+ */
+export const CompanyAnalysisMainActivityZ = z.object({
+  status: CompanyAnalysisMainActivityStatusZ,
+  revision: caenRevisionZ.nullable(),
+  code: z.string().regex(/^\d{4}$/u).nullable(),
+  label: z.string().nullable(),
+  matchBasis: z.enum(['EXACT', 'LEADING_ZERO_MATCH']).nullable(),
+  policy: z.string(),
+})
+export type CompanyAnalysisMainActivity = z.infer<typeof CompanyAnalysisMainActivityZ>
+
 export const CompanyAnalysisBucketZ = z.object({
   kind: z.enum(['GROUP', 'OTHER', 'UNKNOWN', 'TOTAL']),
   /** GROUP only: the exact filter key — for COUNTY, UAT and OBSERVED_STATUS a consensus value, or `(<basis>)` for the companies without one. */
@@ -490,6 +573,8 @@ export const CompanyAnalysisBucketZ = z.object({
   /** ACTIVITY only (absent on another dimension and from an older API). */
   activity: CompanyAnalysisActivityZ.nullish(),
   activityQuality: CompanyAnalysisActivityQualityZ.nullish(),
+  /** MAIN_ACTIVITY only (v4; absent elsewhere). */
+  mainActivity: CompanyAnalysisMainActivityZ.nullish(),
   groups: z.number().int(),
   companies: countZ,
   filers: countZ,
@@ -511,8 +596,9 @@ export const CompanyAnalysisBreakdownZ = z.object({
   totals: CompanyAnalysisBucketZ,
   /**
    * ACTIVITY only: the several-classes, uncatalogued-ANAF and
-   * no-qualified-selection buckets — never ranked as sectors. groups + other
-   * + unknown + unclassified = totals. Absent from another dimension's read.
+   * no-qualified-selection buckets — never ranked as sectors. MAIN_ACTIVITY
+   * (v4): the unresolved statuses, `(<status>)`. groups + other + unknown +
+   * unclassified = totals. Absent from another dimension's read.
    */
   unclassified: z.array(CompanyAnalysisBucketZ).optional(),
 })
@@ -576,6 +662,8 @@ export const CompanyAnalysisRecordZ = z
     anafCaenForm: z.string().nullish(),
     anafOnrcAgreement: z.string().nullish(),
     anafStatusDate: civilDateZ.nullish(),
+    /** v4 (absent on v2/v3): the ANAF-assumed main activity, its label frozen in the release. */
+    mainActivity: CompanyAnalysisMainActivityZ.nullish(),
     filed: z.boolean(),
     employeeSizeBand: CompanyAnalysisSizeBandZ.nullable(),
     values: z.array(

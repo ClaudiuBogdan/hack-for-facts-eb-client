@@ -31,7 +31,11 @@ import {
  * The derived activity (v3) is asked for only where it is offered: the
  * ACTIVITY breakdown has a document of its own, and a records page selects
  * the activity fields only for a release that lists ACTIVITY — so a question
- * on another dimension asks exactly what it asked before.
+ * on another dimension asks exactly what it asked before. The ANAF-assumed
+ * main activity (v4, staged) the same way: its own breakdown document, its
+ * record fields only for a release that lists MAIN_ACTIVITY, and the
+ * release's `mainCaen` pin asked of an API that knows it (an older one
+ * rejects the field at validation and is asked again without it).
  */
 
 const COVERAGE = 'coverage { reported missing notAdmitted heldProfile heldObservation heldQuality heldComponent }'
@@ -41,7 +45,7 @@ const RELEASE_REF =
   'release { releaseId publishedAt active source { editionId publicationEpoch sourceSnapshotId sourcePublishedAt interpretationVersion privacyPolicyVersion dimensionPolicyVersion eligibilityPolicyVersion } }'
 const ANSWER = `${RELEASE_REF} scope scopeHash fiscalYear caveats`
 
-const RELEASE_QUERY = /* GraphQL */ `
+const releaseQuery = (mainCaen: boolean) => /* GraphQL */ `
   query CompanyAnalysisRelease($release: BigInt) {
     companyAnalysisRelease(release: $release) {
       ${RELEASE_REF}
@@ -61,10 +65,13 @@ const RELEASE_QUERY = /* GraphQL */ `
       asOf { kind id published retrieved rows }
       nameFilter
       limits { maxSelectedCuis maxCounties maxUats maxLegalForms maxObservedStatuses maxCaenCodes maxFinancialRanges maxMetrics maxRecordMetrics defaultTopN maxTopN defaultPageSize maxPageSize }
-      caveats
+      caveats${mainCaen ? '\n      mainCaen { contentEpoch refreshId policy editionId }' : ''}
     }
   }
 `
+const RELEASE_QUERY = releaseQuery(true)
+/** The release as an API from before the main activity (v4) serves it: asked only when that API rejected `mainCaen` at validation. */
+const RELEASE_QUERY_WITHOUT_MAIN = releaseQuery(false)
 
 const STATS_QUERY = /* GraphQL */ `
   query CompanyAnalysisStats($release: BigInt!, $scope: CompanyAnalysisScopeInput, $metrics: [CompanyAnalysisMetric!]) {
@@ -121,6 +128,29 @@ const ACTIVITY_BREAKDOWN_QUERY = /* GraphQL */ `
   }
 `
 
+const MAIN_ACTIVITY = 'status revision code label matchBasis policy'
+const MAIN_ACTIVITY_BUCKET = `${BUCKET} mainActivity { ${MAIN_ACTIVITY} }`
+
+/** The ANAF-assumed main activity's breakdown (v4): each bucket's main activity, and the unresolved statuses apart, never ranked. */
+const MAIN_ACTIVITY_BREAKDOWN_QUERY = /* GraphQL */ `
+  query CompanyAnalysisMainActivityBreakdown($release: BigInt!, $scope: CompanyAnalysisScopeInput, $dimension: CompanyAnalysisDimension!, $metric: CompanyAnalysisMetric, $rankBy: CompanyAnalysisRankBy, $topN: Int) {
+    companyAnalysisBreakdown(release: $release, scope: $scope, dimension: $dimension, metric: $metric, rankBy: $rankBy, topN: $topN) {
+      ${ANSWER}
+      dimension
+      metric
+      groupCount
+      rankBy
+      rankedBy
+      topN
+      groups { ${MAIN_ACTIVITY_BUCKET} }
+      other { ${MAIN_ACTIVITY_BUCKET} }
+      unknown { ${MAIN_ACTIVITY_BUCKET} }
+      unclassified { ${MAIN_ACTIVITY_BUCKET} }
+      totals { ${MAIN_ACTIVITY_BUCKET} }
+    }
+  }
+`
+
 const SERIES_QUERY = /* GraphQL */ `
   query CompanyAnalysisSeries($release: BigInt!, $scope: CompanyAnalysisScopeInput, $metric: CompanyAnalysisMetric, $cohortMode: CompanyAnalysisCohortMode, $fromYear: Int, $toYear: Int) {
     companyAnalysisSeries(release: $release, scope: $scope, metric: $metric, cohortMode: $cohortMode, fromYear: $fromYear, toYear: $toYear) {
@@ -140,7 +170,7 @@ const SERIES_QUERY = /* GraphQL */ `
 
 const RECORD_ACTIVITY = `activity { ${ACTIVITY} } onrcClassKeyCount onrcUnqualifiedRowCount anafCaenForm anafOnrcAgreement anafStatusDate`
 
-const recordsQuery = (activity: boolean) => /* GraphQL */ `
+const recordsQuery = (activity: boolean, mainActivity: boolean) => /* GraphQL */ `
   query CompanyAnalysisRecords($release: BigInt!, $scope: CompanyAnalysisScopeInput, $sort: CompanyAnalysisRecordSort, $sortMetric: CompanyAnalysisMetric, $direction: CompanyAnalysisDirection, $metrics: [CompanyAnalysisMetric!], $first: Int, $after: String) {
     companyAnalysisRecords(release: $release, scope: $scope, sort: $sort, sortMetric: $sortMetric, direction: $direction, metrics: $metrics, first: $first, after: $after) {
       ${ANSWER}
@@ -170,6 +200,7 @@ const recordsQuery = (activity: boolean) => /* GraphQL */ `
           fiscallyInactive
           mainCaen { ${CAEN} }
           ${activity ? RECORD_ACTIVITY : ''}
+          ${mainActivity ? `mainActivity { ${MAIN_ACTIVITY} }` : ''}
           filed
           employeeSizeBand
           values { metric value status }
@@ -211,6 +242,28 @@ export function isCapabilityRefused(error: unknown): boolean {
   return (
     error instanceof GraphQLRequestError &&
     error.graphQLErrors.some((entry) => entry.extensions?.code === RELEASE_CAPABILITY_UNAVAILABLE)
+  )
+}
+
+/** The capability a typed refusal names (`ACTIVITY`, `MAIN_ACTIVITY`), when it names one. */
+export function refusedCapabilityOf(error: unknown): string | null {
+  if (!(error instanceof GraphQLRequestError)) return null
+  const capability = error.graphQLErrors.find((entry) => entry.extensions?.code === RELEASE_CAPABILITY_UNAVAILABLE)?.extensions?.capability
+  return typeof capability === 'string' ? capability : null
+}
+
+/**
+ * An API from before the main activity (v4) rejected the release's `mainCaen`
+ * pin at validation, and nothing else: the release is asked again without
+ * it (a v2/v3 release has none). Any other error is the read's own.
+ */
+export function isPreMainCaenApiError(error: unknown): boolean {
+  return (
+    error instanceof GraphQLRequestError &&
+    error.graphQLErrors.length > 0 &&
+    error.graphQLErrors.every(
+      (entry) => (entry.path?.length ?? 0) === 0 && /^Cannot query field "mainCaen" on type "CompanyAnalysisRelease"\.(?: Did you mean .+\?)?$/u.test(entry.message),
+    )
   )
 }
 
@@ -271,6 +324,11 @@ export function apiScopeOf(scope: CompanyAnalysisScopeInput): CompanyAnalysisSco
     scope.activity?.map((selector) => (selector.source === 'ONRC' && selector.revision ? { source: 'ONRC', code: selector.code, revision: selector.revision } : { source: selector.source, code: selector.code })),
   )
   list('activityBasis', scope.activityBasis)
+  list(
+    'mainActivity',
+    scope.mainActivity?.map((selector) => ({ revision: selector.revision, code: selector.code })),
+  )
+  list('mainActivityStatus', scope.mainActivityStatus)
   if (scope.filing) out.filing = scope.filing
   list(
     'financialRanges',
@@ -295,7 +353,14 @@ function present<T>(value: T | null | undefined, operation: string): T {
 
 /** The active release (`pin` null) or the pinned one; a pin the API no longer serves is refused, never replaced. */
 export async function readCompanyAnalysisRelease(pin: string | null, signal?: AbortSignal): Promise<CompanyAnalysisRelease> {
-  const data = await read('CompanyAnalysisRelease', RELEASE_QUERY, pin === null ? {} : { release: pin }, signal)
+  const variables = pin === null ? {} : { release: pin }
+  let data: Record<string, unknown>
+  try {
+    data = await read('CompanyAnalysisRelease', RELEASE_QUERY, variables, signal)
+  } catch (error) {
+    if (!isPreMainCaenApiError(error)) throw error
+    data = await read('CompanyAnalysisRelease', RELEASE_QUERY_WITHOUT_MAIN, variables, signal)
+  }
   return CompanyAnalysisReleaseZ.parse(present(data.companyAnalysisRelease, 'companyAnalysisRelease'))
 }
 
@@ -325,10 +390,15 @@ export interface BreakdownRequest {
 }
 
 export async function readCompanyAnalysisBreakdown(request: BreakdownRequest, signal?: AbortSignal): Promise<CompanyAnalysisBreakdown> {
-  const activity = request.dimension === 'ACTIVITY'
+  const [operation, document] =
+    request.dimension === 'ACTIVITY'
+      ? ['CompanyAnalysisActivityBreakdown', ACTIVITY_BREAKDOWN_QUERY]
+      : request.dimension === 'MAIN_ACTIVITY'
+        ? ['CompanyAnalysisMainActivityBreakdown', MAIN_ACTIVITY_BREAKDOWN_QUERY]
+        : ['CompanyAnalysisBreakdown', BREAKDOWN_QUERY]
   const data = await read(
-    activity ? 'CompanyAnalysisActivityBreakdown' : 'CompanyAnalysisBreakdown',
-    activity ? ACTIVITY_BREAKDOWN_QUERY : BREAKDOWN_QUERY,
+    operation,
+    document,
     {
       release: request.release,
       scope: apiScopeOf(request.scope),
@@ -379,12 +449,14 @@ export interface RecordsRequest {
   readonly after: string | null
   /** The release offers the derived activity: each company then carries it. */
   readonly activity?: boolean
+  /** The release offers the ANAF-assumed main activity (v4): each company then carries it. */
+  readonly mainActivity?: boolean
 }
 
 export async function readCompanyAnalysisRecords(request: RecordsRequest, signal?: AbortSignal): Promise<CompanyAnalysisRecords> {
   const data = await read(
     'CompanyAnalysisRecords',
-    recordsQuery(request.activity ?? false),
+    recordsQuery(request.activity ?? false, request.mainActivity ?? false),
     {
       release: request.release,
       scope: apiScopeOf(request.scope),

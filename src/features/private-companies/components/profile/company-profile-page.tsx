@@ -91,7 +91,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   const scope = useCompanyRegistryScope()
   // Only an instance hydrating the server's document holds one: the answer it was rendered with.
   const documentAnswer = useDocumentBootstrap(answer)
-  const { verdict, diff } = useProfileRegistryScope(answer, documentAnswer, cui, scope)
+  const { verdict, diff, reportGone } = useProfileRegistryScope(answer, documentAnswer, cui, scope)
   const shown = verdict.status === 'show' ? verdict.profile : null
   // The route's head names the company on the server path only; the tab is named while the company is shown, and
   // says the CUI alone otherwise — a name the page no longer shows (withdrawn, moved, unreadable) leaves the tab too.
@@ -172,7 +172,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
         onMeasure={(measure) => choose({ masura: measure === 'toate' ? undefined : measure })}
       />
       <CompanyMoneyBand model={model} index={indexOf('bani-publici')} procurement={procurement} onGrain={onGrain} />
-      <CompanyActivitiesBand model={model} index={indexOf('activitati')} />
+      <CompanyActivitiesBand model={model} index={indexOf('activitati')} onCompanyGone={reportGone} />
       {litigation ? (
         <CompanyLitigationBand cui={cui} index={indexOf('litigii')} litigation={litigation} />
       ) : null}

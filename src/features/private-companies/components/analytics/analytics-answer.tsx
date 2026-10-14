@@ -162,6 +162,7 @@ function tabLabel(tab: AnswerTab, activity: boolean): string {
   if (tab === 'COUNTY') return t`Județe`
   if (tab === 'UAT') return t`Localități`
   if (tab === 'ACTIVITY') return t`Activitate`
+  if (tab === 'MAIN_ACTIVITY') return t`Activitate principală presupusă`
   if (tab === 'MAIN_CAEN') return activity ? t`CAEN ANAF` : t`Activitate`
   if (tab === 'EMPLOYEE_SIZE') return t`Mărime`
   if (tab === 'LEGAL_FORM') return t`Formă juridică`
@@ -193,8 +194,8 @@ function AnswerTabs({ tabs, activity }: { readonly tabs: readonly AnswerTab[]; r
 export function Answer({ page }: { readonly page: CompanyAnalyticsPageData }) {
   const { state, question, live, uats, move, mode } = page
   if (!question || !live) return null
-  const tabs = answerTabs(state, question.activity)
-  const current = currentTab(state, question.activity)
+  const tabs = answerTabs(state, question.activity, question.mainActivity)
+  const current = currentTab(state, question.activity, question.mainActivity)
   return (
     <section className="border-b" aria-label={modeLabel(mode)}>
       <RuledFrame className="py-10 sm:py-14">

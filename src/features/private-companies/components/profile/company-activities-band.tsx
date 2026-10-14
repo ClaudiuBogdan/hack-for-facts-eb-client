@@ -1,19 +1,26 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { plural, t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { HUB_BESIDE_TITLE_CLASS, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
-import type { PrivateCompanyActivitySelection } from '@/schemas/private-company'
+import type { PrivateCompanyActivitySelection, PrivateCompanyProfile } from '@/schemas/private-company'
 import { activityRowStateText, activitySelectionTexts } from '../../lib/company-activity-text'
-import { caenEdition, type ActivityGroup, type CompanyProfileModel } from '../../lib/company-profile-model'
+import { mainBadgeText, sameCodeAsAnafText } from '../../lib/company-main-activity-text'
+import { caenEdition, withAnafWithdrawnSeen, withOwningCompanyRefused, type ActivityGroup, type CompanyProfileModel } from '../../lib/company-profile-model'
 import { CaenDescription } from '../caen-description'
+import { CompanyMainActivity } from './company-main-activity'
 import { BAND_GRID_CLASS, ProfileBand, ROW_LINK_CLASS } from './company-profile-band'
 
 const TITLE_ID = 'company-activities-title'
 
 /**
- * „Ce face firma": the derived activity selection — ONRC first, ANAF's
+ * „Ce face firma": first, where the API serves it, the ANAF-assumed main
+ * activity (`CompanyMainActivity`) — an assumption from ANAF's fiscal code,
+ * never a principal activity ONRC declared; its flags mark the one ONRC class
+ * row it names („principală (presupusă)") and the rows with the same digits
+ * („același cod ca ANAF"), and nothing else. Then the derived activity
+ * selection, unchanged — ONRC first, ANAF's
  * fiscal code only when the edition holds no class — with how it was
  * selected, each source's date and the edition's coverage; from an older API
  * that serves none, the ANAF fiscal CAEN code, as before. Then the
@@ -28,13 +35,39 @@ const TITLE_ID = 'company-activities-title'
  * registry's. Every revision the edition lists is shown, Rev.0 included, each
  * under its own name; names come from the current database catalog of the
  * row's own revision, and a row with no known revision has none.
+ *
+ * Once the main activity's history reports ANAF's source withdrawn under the
+ * assignment shown, the main block and the rows' flags lose every ANAF field
+ * at once (`withAnafWithdrawnSeen`), until the profile read again answers.
+ * Once it answers that the company is no longer public, the main block and
+ * the rows' flags go at once (`withOwningCompanyRefused`) and the page's
+ * privacy path is told (`onCompanyGone`): it hides the answer and reads the
+ * profile again.
  */
-export function CompanyActivitiesBand({ model, index }: { readonly model: CompanyProfileModel; readonly index: string }) {
+export function CompanyActivitiesBand({
+  model: served,
+  index,
+  onCompanyGone,
+}: {
+  readonly model: CompanyProfileModel
+  readonly index: string
+  /** The page's privacy path for a dependent read that found the company gone (`useProfileRegistryScope`). */
+  readonly onCompanyGone?: () => void
+}) {
+  const [anafWithdrawnUnder, setAnafWithdrawnUnder] = useState<string | null>(null)
+  const [refusedAnswer, setRefusedAnswer] = useState<PrivateCompanyProfile | null>(null)
+  const model = withOwningCompanyRefused(withAnafWithdrawnSeen(served, anafWithdrawnUnder), refusedAnswer)
+  const answer = served.profile
+  const onCompanyNotPublic = useCallback(() => {
+    setRefusedAnswer(answer)
+    onCompanyGone?.()
+  }, [answer, onCompanyGone])
   return (
     <ProfileBand id="activitati" titleId={TITLE_ID}>
       <div className={BAND_GRID_CLASS}>
         <div className="min-w-0 lg:col-span-5">
           <HubSectionHead titleId={TITLE_ID} index={index} title={<Trans>Ce face firma</Trans>} />
+          <CompanyMainActivity model={model} onAnafWithdrawn={setAnafWithdrawnUnder} onCompanyNotPublic={onCompanyNotPublic} className="mt-8" />
           {model.selection ? (
             <ActivitySelection selection={model.selection} className="mt-8" />
           ) : model.selectionUnavailable ? (
@@ -201,7 +234,19 @@ function ActivityGroups({ model, limit = 8, className }: { readonly model: Compa
                         // A row may repeat (the transport carries no row identifier): its position keeps it.
                         <li key={`${activity.code}-${String(row)}`} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2 text-sm">
                           <span className="font-mono text-xs tabular-nums text-muted-foreground">{activity.code}</span>
-                          <span className="text-muted-foreground">{activity.label ?? activityRowStateText(activity.classState)}</span>
+                          <span className="text-muted-foreground">
+                            {activity.label ?? activityRowStateText(activity.classState)}
+                            {/* The API's flags only: the main badge where it names this row, the hint where only the digits agree. */}
+                            {activity.isMainCaen === true ? (
+                              <span className="ml-2 inline-block rounded-sm border border-primary/40 px-1.5 text-xs font-medium text-primary" data-testid="company-activity-main-badge">
+                                {mainBadgeText()}
+                              </span>
+                            ) : activity.matchesAssumedMainCode === true ? (
+                              <span className="ml-2 inline-block text-xs text-muted-foreground" data-testid="company-activity-same-code-hint">
+                                · {sameCodeAsAnafText()}
+                              </span>
+                            ) : null}
+                          </span>
                         </li>
                       ))}
                     </ul>

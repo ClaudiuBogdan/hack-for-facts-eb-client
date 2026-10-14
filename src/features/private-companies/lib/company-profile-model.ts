@@ -15,6 +15,7 @@ import { foldCountyName } from './county-names'
 import { comparable, metricStatus, qualifiedNet, reportedNumber, sourceValues, type SourceValue } from './financial-qualification'
 import { isReceiptFlow } from './public-money-display'
 import { legalFormName } from './company-legal-forms'
+import { assumedMainOf, withAnafWithdrawn, type AssumedMainView } from './company-main-activity-model'
 
 /**
  * What the company profile draws, derived from the company's record: who it
@@ -65,7 +66,21 @@ export interface ActivityGroup {
    * `classState` where the API names it: only a `class` row is a classified activity (a short source code
    * is ambiguous between a class and a group, and has no label); null from an older API.
    */
-  readonly activities: readonly { readonly code: string; readonly label: string | null; readonly classState: CompanyCaenClassState | null }[]
+  readonly activities: readonly ActivityRow[]
+}
+
+/**
+ * One registry activity row. `isMainCaen` / `matchesAssumedMainCode` are the
+ * API's flags as the mapper kept them (only on a class row of the pinned
+ * edition while the ANAF-assumed main activity is current); null otherwise,
+ * absent from an older API (the row then reads exactly as before).
+ */
+export interface ActivityRow {
+  readonly code: string
+  readonly label: string | null
+  readonly classState: CompanyCaenClassState | null
+  readonly isMainCaen?: boolean | null
+  readonly matchesAssumedMainCode?: boolean | null
 }
 
 export interface MoneyYear {
@@ -162,6 +177,13 @@ export interface CompanyProfileModel {
   readonly selection: PrivateCompanyActivitySelection | null
   /** The API refused the selection alone: the band says it cannot be shown, rather than falling back. */
   readonly selectionUnavailable: boolean
+  /**
+   * The ANAF-assumed main activity: an assumption from ANAF's fiscal code,
+   * never a principal activity ONRC declared. Shown above the derived
+   * selection, which keeps its own meaning. The activity rows' flags come
+   * from the same answer.
+   */
+  readonly assumedMain: AssumedMainView
   /**
    * The registry's activities in every revision it lists (Rev.0 and rows that
    * name no revision included), by revision and division, the newest edition
@@ -388,7 +410,7 @@ function activityGroups(profile: PrivateCompanyProfile): CompanyProfileModel['ac
   const onrc = profile.caenActivities.filter((activity) => activity.source === 'onrc')
   const groups = new Map<
     string,
-    { revision: string | null; division: string | null; kind: ActivityGroup['kind']; activities: { code: string; label: string | null; classState: CompanyCaenClassState | null }[] }
+    { revision: string | null; division: string | null; kind: ActivityGroup['kind']; activities: ActivityRow[] }
   >()
   const counts = new Map<string | null, number>()
   for (const activity of onrc) {
@@ -401,7 +423,13 @@ function activityGroups(profile: PrivateCompanyProfile): CompanyProfileModel['ac
     const group = groups.get(key) ?? { revision, division, kind, activities: [] }
     // A catalog label names only a qualified class, never a guess from the code.
     const labelled = revision !== null && activity.label !== null && kind === 'class'
-    group.activities.push({ code: activity.code, label: labelled && activity.label ? commaBelow(activity.label) : null, classState })
+    group.activities.push({
+      code: activity.code,
+      label: labelled && activity.label ? commaBelow(activity.label) : null,
+      classState,
+      ...(activity.isMainCaen !== undefined ? { isMainCaen: activity.isMainCaen } : {}),
+      ...(activity.matchesAssumedMainCode !== undefined ? { matchesAssumedMainCode: activity.matchesAssumedMainCode } : {}),
+    })
     groups.set(key, group)
     counts.set(revision, (counts.get(revision) ?? 0) + 1)
   }
@@ -594,6 +622,47 @@ export function sizeClassOf(employees: number | null): SizeClass | null {
   return 'large'
 }
 
+/**
+ * The model once a history row reported ANAF's source withdrawn under the
+ * assignment shown (`identity`, its `cacheKey`): ANAF's history is public
+ * only while the company's fiscal row is, so the assignment loses its ANAF
+ * evidence and interpretation (`withAnafWithdrawn`) and no activity row
+ * keeps a main flag — at once, before the profile read again answers. A
+ * profile under another identity (the reread's answer) is shown as served.
+ */
+export function withAnafWithdrawnSeen(model: CompanyProfileModel, identity: string | null): CompanyProfileModel {
+  const view = model.assumedMain
+  if (identity === null || view.kind !== 'assigned' || view.activity.cacheKey !== identity) return model
+  return {
+    ...model,
+    assumedMain: { kind: 'assigned', activity: withAnafWithdrawn(view.activity) },
+    activities: { ...model.activities, groups: model.activities.groups.map((group) => ({ ...group, activities: group.activities.map(unflaggedRow) })) },
+  }
+}
+
+/** A row without the main flags (rows an older API served without them stay as they were). */
+function unflaggedRow(row: ActivityRow): ActivityRow {
+  return row.isMainCaen === undefined && row.matchesAssumedMainCode === undefined ? row : { ...row, isMainCaen: null, matchesAssumedMainCode: null }
+}
+
+/**
+ * The model once a dependent read answered that the company of this very
+ * answer (`refused`, the profile object) is no longer a public directory
+ * company: its main activity is withheld (`refused`) and no activity row
+ * keeps a main flag or hint — at once, before the profile read again
+ * answers; the page's own privacy path then hides the answer
+ * (`useProfileRegistryScope`). Another answer (the reread's) is shown as
+ * served.
+ */
+export function withOwningCompanyRefused(model: CompanyProfileModel, refused: PrivateCompanyProfile | null): CompanyProfileModel {
+  if (refused === null || refused !== model.profile) return model
+  return {
+    ...model,
+    assumedMain: { kind: 'refused' },
+    activities: { ...model.activities, groups: model.activities.groups.map((group) => ({ ...group, activities: group.activities.map(unflaggedRow) })) },
+  }
+}
+
 export function buildCompanyProfileModel(
   profile: PrivateCompanyProfile,
   {
@@ -646,6 +715,7 @@ export function buildCompanyProfileModel(
     mainActivity: mainActivityOf(profile),
     selection: profile.activitySelection ?? null,
     selectionUnavailable: profile.activitySelectionUnavailable === true,
+    assumedMain: assumedMainOf(profile),
     activities: activityGroups(profile),
     statementSources: statementSourcesOf(years),
     latest,
