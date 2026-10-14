@@ -12,10 +12,10 @@ import { isReleaseRefused } from '../../api/company-analytics-api'
 import type { ResolvedQuestion } from '../../api/company-analytics-plan'
 import { useCompanyAnalysisSeries } from '../../hooks/use-company-analytics'
 import { seriesCsv } from '../../lib/company-analytics-export'
-import { compactValueText, countText, localeOf } from '../../lib/company-analytics-format'
+import { compactValueText, localeOf } from '../../lib/company-analytics-format'
 import { cohortLabel, metricGloss } from '../../lib/company-analytics-text'
 import type { CompanyAnalyticsState } from '../../lib/company-analytics-url'
-import { pointText } from '../../lib/company-analytics-view'
+import { cohortSentence, pointText } from '../../lib/company-analytics-view'
 import { ChartButton } from './analytics-chart-button'
 
 /**
@@ -149,7 +149,7 @@ export function AnalyticsEvolution({
         <p>{metricGloss(data.metric)}</p>
         <p>
           {data.cohortMode === 'REFERENCE_YEAR'
-            ? t`Fiecare an arată aceleași ${countText(data.cohortCompanies ?? '0', locale)} firme, selectate în ${data.referenceYear ?? question.year}.`
+            ? cohortSentence(data.cohortCompanies ?? '0', data.referenceYear ?? question.year, locale)
             : t`Fiecare an își aplică singur filtrele: populația diferă de la un an la altul.`}{' '}
           {t`Județul, localitatea și starea sunt cele de la data ediției, nu din fiecare an.`}
         </p>

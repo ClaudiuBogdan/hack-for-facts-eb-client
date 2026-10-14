@@ -106,7 +106,11 @@ describe('PublicEnterpriseHubPage', () => {
   it('ranks the activities of the population asked, written in the address', () => {
     render(<PublicEnterpriseHubPage snapshot={SNAPSHOT} search={{ domenii: 'centrale' }} />)
     const sectors = band('domenii')
-    expect(within(sectors).getAllByRole('listitem').map((row) => row.textContent?.match(/CAEN \d+/u)?.[0])).toEqual(['CAEN 35', 'CAEN 49', 'CAEN 02'])
+    expect(within(sectors).getAllByRole('listitem').map((row) => row.textContent?.match(/CAEN fiscal \d{2}/u)?.[0])).toEqual(['CAEN fiscal 35', 'CAEN fiscal 49', 'CAEN fiscal 02'])
+    // Numeric groups of the fiscal code, the missing codes counted as such: no division name, no principal activity.
+    expect(sectors).toHaveTextContent('grupat după primele două cifre; ANAF nu publică revizia codului')
+    expect(sectors).toHaveTextContent('Fără cod CAEN fiscal în fișă: 0.')
+    expect(sectors).not.toHaveTextContent(/Energie electrică|Transporturi|Silvicultură|Activitatea principală/u)
     fireEvent.click(within(sectors).getByRole('radio', { name: 'Toate' }))
     expect(written({ domenii: 'centrale' })).toEqual({ domenii: undefined })
   })

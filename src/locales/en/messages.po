@@ -49403,3 +49403,75 @@ msgstr "PNRR and budget"
 #: src/features/private-companies/lib/company-analytics-view.ts:69
 msgid "raportat de {0}"
 msgstr "reported by {0}"
+
+#: src/features/private-companies/components/analytics/analytics-head.tsx:320
+msgid "„Cu bilanț” înseamnă o situație financiară în istoricul standard al platformei. Situațiile publicate doar în format lung nu sunt numărate aici, așa că „fără bilanț” nu dovedește că firma nu a depus."
+msgstr "“With a statement” means a financial statement in the platform’s standard history. Statements published in long format only are not counted here, so “no statement” does not prove that the company did not file."
+
+#. placeholder {0}: cuis.length
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:60
+msgid "{0, plural, one {# firmă aleasă} few {# firme alese} other {# de firme alese}}"
+msgstr "{0, plural, one {# chosen company} other {# chosen companies}}"
+
+#. placeholder {0}: rows.length
+#. placeholder {1}: formatCount(rows.length, i18n.locale)
+#. placeholder {2}: formatCount(rows.length, i18n.locale)
+#: src/features/public-enterprises/components/hub/hub-bands.tsx:200
+msgid "{0, plural, one {Singura grupă} few {Toate cele {1} grupe} other {Toate cele {2} de grupe}}"
+msgstr "{0, plural, one {The only group} other {All {2} groups}}"
+
+#: src/features/public-enterprises/lib/hub-text.ts:74
+msgid "CAEN fiscal {prefix}"
+msgstr "Fiscal CAEN {prefix}"
+
+#. placeholder {0}: n(first.count)
+#: src/features/public-enterprises/lib/hub-text.ts:84
+msgid "Cele mai multe sunt în grupa {group}: {0}, {share} dintre ele."
+msgstr "Most are in group {group}: {0}, {share} of them."
+
+#. placeholder {0}: n(first.count)
+#: src/features/public-enterprises/lib/hub-text.ts:84
+msgid "Cele mai multe sunt în grupa {group}: {0}."
+msgstr "Most are in group {group}: {0}."
+
+#. placeholder {0}: formatCount(withoutSector(snapshot, population), i18n.locale)
+#: src/features/public-enterprises/components/hub/hub-bands.tsx:203
+msgid "Codul CAEN fiscal din fișa ANAF, grupat după primele două cifre; ANAF nu publică revizia codului, așa că grupele nu primesc denumiri. Fără cod CAEN fiscal în fișă: {0}."
+msgstr "The fiscal CAEN code on ANAF’s record, grouped by its first two digits; ANAF does not publish the code’s revision, so the groups are not named. No fiscal CAEN code on the record: {0}."
+
+#: src/features/public-enterprises/components/authority/authority-bands.tsx:110
+msgid "După codul CAEN fiscal din fișa ANAF, grupat după primele două cifre (ANAF nu publică revizia lui), și județul sediului, din registrul comerțului."
+msgstr "By the fiscal CAEN code on ANAF’s record, grouped by its first two digits (ANAF does not publish its revision), and the county of the seat, from the trade register."
+
+#. placeholder {0}: displayName(only)
+#: src/features/public-enterprises/components/authority/authority-bands.tsx:109
+msgid "După codul CAEN fiscal din fișa ANAF, grupat după primele două cifre (ANAF nu publică revizia lui). Toate au sediul în {0}."
+msgstr "By the fiscal CAEN code on ANAF’s record, grouped by its first two digits (ANAF does not publish its revision). All have their seat in {0}."
+
+#: src/features/public-enterprises/lib/authority-portfolio-text.ts:224
+msgid "Fără cod CAEN fiscal în fișă"
+msgstr "No fiscal CAEN code on the record"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:195
+msgid "Înregistrări de bani publici pe an"
+msgstr "Public-money records by year"
+
+#: src/features/private-companies/components/analytics/analytics-head.tsx:318
+msgid "O valoare lipsă nu e zero: o firmă fără bilanț în istoricul standard nu are cifre pentru acel an."
+msgstr "A missing value is not zero: a company without a statement in the standard history has no figures for that year."
+
+#: src/features/private-companies/lib/company-profile-text.ts:482
+msgid "Suma adună valori din instrumente diferite, fără verificare de dubluri între ele: nu e un total de bani încasați."
+msgstr "The sum adds values from different instruments, without a check for duplicates between them: it is not a total of money received."
+
+#. placeholder {0}: second.division
+#. placeholder {1}: n(second.count)
+#. placeholder {2}: third.division
+#. placeholder {3}: n(third.count)
+#: src/features/public-enterprises/lib/hub-text.ts:85
+msgid "Urmează grupele {0} ({1}) și {2} ({3})."
+msgstr "Then groups {0} ({1}) and {2} ({3})."
+
+#: src/features/private-companies/components/profile/company-figures.tsx:75
+msgid "Valori din contracte, achiziții și PNRR"
+msgstr "Values from contracts, purchases and PNRR"

@@ -3,6 +3,7 @@ import {
   authorityKindLabel,
   controlLede,
   countiesLede,
+  fiscalCaenGroupLabel,
   hubCaveats,
   hubLede,
   inactiveCount,
@@ -32,15 +33,19 @@ describe('the hub’s sentences', () => {
     expect(moneyLede(SNAPSHOT, 'ro')).toBe('14 cumpără prin SEAP și 15 vând instituțiilor prin achiziții directe. Pe pagina fiecărei firme, cât și de la cine.')
   })
 
-  it('computes the activities’ share, never writes it in', () => {
-    expect(sectorsLede(SNAPSHOT, 'toate', 'ro')).toMatch(/^Apă potabilă: 9, 30\s?% dintre ele\. Urmează energie electrică, termică și gaze \(7\) și curățenie și întreținerea clădirilor \(6\)\.$/u)
+  it('computes the fiscal-CAEN groups’ share, never writes it in, and names them by their digits only (CQA-08)', () => {
+    expect(sectorsLede(SNAPSHOT, 'toate', 'ro')).toMatch(/^Cele mai multe sunt în grupa CAEN fiscal 36: 9, 30\s?% dintre ele\. Urmează grupele 35 \(7\) și 81 \(6\)\.$/u)
     expect(sectorsLede(hubSnapshotFixture({ sectors: SNAPSHOT.sectors.slice(0, 2) }), 'toate', 'ro')).toBeNull()
+    // No CAEN division name of any revision: ANAF publishes none for the fiscal code.
+    expect(sectorsLede(SNAPSHOT, 'toate', 'ro')).not.toMatch(/apă|energie|curățenie/iu)
+    // A prefix that is no Rev.2 division is named the same way, never guessed or recoded.
+    expect(['36', '04', '00'].map(fiscalCaenGroupLabel)).toEqual(['CAEN fiscal 36', 'CAEN fiscal 04', 'CAEN fiscal 00'])
   })
 
   it('describes the population the band shows, its share of that population', () => {
     expect(countiesLede(SNAPSHOT, 'locale', 'ro')).toBe('Cele mai multe au sediul în Timiș: 6. Urmează Cluj (5) și București (4).')
     // The state's 10: energy first, 5 of them.
-    expect(sectorsLede(SNAPSHOT, 'centrale', 'ro')).toMatch(/^Energie electrică, termică și gaze: 5, 50\s?% dintre ele\./u)
+    expect(sectorsLede(SNAPSHOT, 'centrale', 'ro')).toMatch(/^Cele mai multe sunt în grupa CAEN fiscal 35: 5, 50\s?% dintre ele\./u)
   })
 
   it('agrees the head’s lede with a single enterprise too', () => {

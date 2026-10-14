@@ -101,6 +101,11 @@ describe('AuthorityPortfolioPage', () => {
   it('shows what they do and where from five enterprises on, one county said in words', () => {
     renderPage()
     expect(within(band('domenii')).getByText(/Toate au sediul în Hunedoara/u)).toBeInTheDocument()
+    // ANAF's fiscal code by its first two digits, no division name and no principal activity (CQA-08).
+    expect(within(band('domenii')).getByText('Cod CAEN fiscal (ANAF)')).toBeInTheDocument()
+    expect(within(band('domenii')).getByText(/^După codul CAEN fiscal din fișa ANAF, grupat după primele două cifre \(ANAF nu publică revizia lui\)\./u)).toBeInTheDocument()
+    expect(within(band('domenii')).getAllByText(/^CAEN fiscal \d{2}$/u).length).toBeGreaterThan(0)
+    expect(document.body.textContent).not.toMatch(/Activitatea principală|activitatea principală|Transporturi terestre|Lucrări de construcții/u)
     render(<AuthorityPortfolioPage portfolio={portfolioFixture('4270740')} search={DEFAULTS} onSearch={vi.fn()} />)
     expect(document.querySelectorAll('#domenii')).toHaveLength(1)
   })

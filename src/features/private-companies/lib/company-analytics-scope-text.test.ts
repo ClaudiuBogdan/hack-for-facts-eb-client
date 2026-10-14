@@ -1,3 +1,4 @@
+import { i18n } from '@lingui/core'
 import { describe, expect, it } from 'vitest'
 import type { CompanyAnalysisScope } from '@/schemas/company-analytics'
 import { scopeChips, withoutChip } from './company-analytics-scope-text'
@@ -36,5 +37,19 @@ describe('scopeChips', () => {
     expect(withoutChip(SCOPE, match!, 'ro').onrc).toEqual({ exclude: { status: ['1070'], caenCode: ['4711'] } })
     expect(withoutChip(SCOPE, exclude!, 'ro').onrc).toEqual({ status: ['1048'], county: ['CJ'], caenCode: ['6201'], onrcCaen: ['rev2:6201'] })
     expect(withoutChip({ onrc: { status: ['1048'] } }, match!, 'ro').onrc).toBeUndefined()
+  })
+})
+
+describe('selected companies (CQA-12)', () => {
+  it('agrees the chip with the count: a few firms, or „de" from 20 on', () => {
+    const before = i18n.locale
+    i18n.activate('ro')
+    try {
+      const chip = (count: number) => scopeChips({ cuis: Array.from({ length: count }, (_, index) => String(1000 + index)) }, 'ro')[0]?.text
+      expect([2, 19, 20, 101, 120].map(chip)).toEqual(['2 firme alese', '19 firme alese', '20 de firme alese', '101 firme alese', '120 de firme alese'])
+      expect(chip(1)).toBe('CUI 1000')
+    } finally {
+      i18n.activate(before)
+    }
   })
 })

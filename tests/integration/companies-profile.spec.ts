@@ -131,14 +131,18 @@ test.describe('Company profile', () => {
     expect(overflow).toBeLessThanOrEqual(0)
   })
 
-  test('says in a line what a company with no statement and no public money does not have', async ({ page }) => {
+  test('says in a line what the available records do not hold for a company with no statement and no public-money record', async ({ page }) => {
     await page.goto(`/companies/${IDEATICA}`)
     await waitForHydration(page)
 
     await expect(page.getByRole('heading', { level: 1, name: 'A & B Ideatica S.R.L.' })).toBeVisible({ timeout: 30000 })
     // What the data holds — never a claim that the company filed no statement.
     await expect(page.getByText(/Nicio valoare din bilanțuri în datele de aici/)).toBeVisible()
-    await expect(page.getByText(/Niciun contract și nicio plată din bani publici/)).toBeVisible()
+    // An absence in the records read here — never a verified zero of contracts or payments.
+    await expect(
+      page.getByText('Firma nu apare în datele de aici ca furnizor în contracte sau achiziții publice (SEAP) și nici ca beneficiar PNRR.', { exact: true }),
+    ).toBeVisible()
+    await expect(page.getByText(/Niciun contract și nicio plată din bani publici/)).toHaveCount(0)
     await expect(page.getByRole('region', { name: 'Cifre-cheie' })).toHaveCount(0)
   })
 

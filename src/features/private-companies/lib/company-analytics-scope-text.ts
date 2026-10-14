@@ -1,4 +1,4 @@
-import { t } from '@lingui/core/macro'
+import { plural, t } from '@lingui/core/macro'
 import { formatDecimal, type DecimalLocale } from '@/lib/exact-decimal'
 import { companyMetricUnit, type CompanyAnalysisDimension, type CompanyAnalysisKeyFilterInput, type CompanyAnalysisRangeInput, type CompanyAnalysisScope } from '@/schemas/company-analytics'
 import { activityBasisLabel, activitySelectorText } from './company-activity-text'
@@ -57,7 +57,7 @@ export function scopeChips(scope: CompanyAnalysisScope, locale: DecimalLocale, n
   const add = (field: ScopeField, text: string, part?: ScopeChip['part']) => chips.push({ field, text, ...(part ? { part } : {}) })
   const cuis = scope.cuis ?? []
   if (cuis.length === 1) add('cuis', t`CUI ${cuis[0] ?? ''}`)
-  else if (cuis.length > 1) add('cuis', t`${cuis.length} firme alese`)
+  else if (cuis.length > 1) add('cuis', plural(cuis.length, { one: '# firmă aleasă', few: '# firme alese', other: '# de firme alese' }))
   if (scope.county) add('county', consensusText(scope.county, 'COUNTY', countyLabel))
   if (scope.uat) add('uat', consensusText(scope.uat, 'UAT', (code) => names.uats?.get(code) ?? t`SIRUTA ${code}`))
   if (scope.legalForms) add('legalForms', t`formă juridică: ${joined(scope.legalForms)}`)

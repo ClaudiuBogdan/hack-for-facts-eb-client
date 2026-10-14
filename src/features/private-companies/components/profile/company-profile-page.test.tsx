@@ -311,7 +311,7 @@ describe('CompanyProfilePage', () => {
     render(page(reversals))
     await registryPinned()
     // A net total below zero is still a figure; an undated reversal is still a value, not a missing one.
-    expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toHaveTextContent('Contracte și plăți publice')
+    expect(screen.getByRole('region', { name: 'Cifre-cheie' })).toHaveTextContent('Valori din contracte, achiziții și PNRR')
     expect(screen.getByText(/Nu apare pe grafic o înregistrare fără an în sursă/)).toBeInTheDocument()
     expect(screen.queryByText(/fără an și fără valoare publicată/)).toBeNull()
   })

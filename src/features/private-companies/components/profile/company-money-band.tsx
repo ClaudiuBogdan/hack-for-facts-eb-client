@@ -192,7 +192,7 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
         years={byYear.map((year) => year.year)}
         series={series}
         format={moneyTick}
-        label={t`Contracte, achiziții și PNRR, pe an`}
+        label={t`Înregistrări de bani publici pe an`}
         emptyLabel={(index) => {
           const year = byYear[index]
           return year && year.unvalued > 0 ? capitalised(unvaluedNote(year.unvalued)) : t`Nicio înregistrare în acest an`
