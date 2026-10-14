@@ -320,6 +320,8 @@ export function SeriesConfigView() {
                 onDebouncedChange={(v) => updateSeriesField('label', v)}
                 debounceMs={600}
                 placeholder={t`Enter series label...`}
+                changingText={t`Changing…`}
+                changedText={t`Changed`}
               />
             </div>
 
@@ -482,6 +484,8 @@ export function SeriesConfigView() {
                     onDebouncedChange={(v) => updateSeriesConfig({ xAxisPrefixToRemove: v || undefined })}
                     debounceMs={700}
                     placeholder={t`Example: 2024-`}
+                    changingText={t`Changing…`}
+                    changedText={t`Changed`}
                   />
                 </div>
                 {isInsSeries && (

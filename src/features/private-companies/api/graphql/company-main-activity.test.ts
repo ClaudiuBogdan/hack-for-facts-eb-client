@@ -8,15 +8,20 @@ import {
   fetchPrivateCompanyProfileLive,
   isPreMainActivityApiError,
   isPreMainActivityHistoryApiError,
+  isPreMainV2ApiError,
 } from '../private-company-api.live'
 import { CompanyRegistryScopeMovedError } from '../company-registry-errors'
-import { MAIN_ACTIVITIES, NO_ASSIGNMENT_READ, UNAVAILABLE_READ, assignedRead, mainActivityFixture, mainAnafFixture } from '../../mocks/fixtures/main-activity'
+import { LEGACY_RAW_RETRIEVED_AT, MAIN_ACTIVITIES, NO_ASSIGNMENT_READ, UNAVAILABLE_READ, assignedRead, legacyAnafFixture, mainActivityFixture, mainAnafFixture } from '../../mocks/fixtures/main-activity'
 import { mapCompanyProfile, mapMainActivity } from './company-mappers'
 import {
+  COMPANY_MAIN_ACTIVITY_HISTORY_QUERY,
+  COMPANY_MAIN_ACTIVITY_HISTORY_QUERY_V1,
   COMPANY_PROFILE_QUERY,
   COMPANY_PROFILE_QUERY_LEGACY,
+  COMPANY_PROFILE_QUERY_MAIN_V1,
   COMPANY_PROFILE_QUERY_WITHOUT_MAIN,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION,
+  COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_MAIN_V1,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN,
   companyProfileResponseSchema,
 } from './company-queries'
@@ -184,7 +189,8 @@ describe('mapMainActivity', () => {
   it('is unreadable — not an older API — for an unknown enum, an unknown policy or an answer that does not hold together', () => {
     const unreadable = { read: undefined, unreadable: true }
     expect(mapMainActivity({ ...assignedRead(mainActivityFixture()), availability: 'MAYBE' }, REGISTRY)).toEqual(unreadable)
-    expect(mapMainActivity(assignedRead(mainActivityFixture({ policy: 'anaf-assumed-main-caen-v2' })), REGISTRY)).toEqual(unreadable)
+    // Contract v2 made v2 known: an unknown policy is any other.
+    expect(mapMainActivity(assignedRead(mainActivityFixture({ policy: 'anaf-assumed-main-caen-v3' })), REGISTRY)).toEqual(unreadable)
     expect(mapMainActivity({ availability: 'ASSIGNED', reason: null, activity: null }, REGISTRY)).toEqual(unreadable)
     expect(mapMainActivity({ ...NO_ASSIGNMENT_READ, activity: mainActivityFixture() }, REGISTRY)).toEqual(unreadable)
     // A selecting status without its key, an unresolved one with a key, a current status missing.
@@ -813,5 +819,242 @@ describe('fetchCompanyMainActivityHistoryLive', () => {
     const moved = rejected(fieldError(['companyMainActivityHistory'], 'the main activity changed during the request; retry', 'SERVICE_UNAVAILABLE'))
     transport.answer = () => Promise.reject(moved)
     await expect(fetchCompanyMainActivityHistoryLive(request)).rejects.toBe(moved)
+  })
+})
+
+// ───────────────────────────────────────── contract v2 (20261013T220030) ──
+
+describe('contract v2: legacy time provenance (policy anaf-assumed-main-caen-v2)', () => {
+  const RAW = LEGACY_RAW_RETRIEVED_AT
+  const legacy = (over: Parameters<typeof mainActivityFixture>[0] = {}) =>
+    mainActivityFixture({ policy: 'anaf-assumed-main-caen-v2', basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME', anaf: legacyAnafFixture(), ...over })
+  const read = (activity: unknown) => mapMainActivity(assignedRead(activity as never), REGISTRY)
+
+  it('v1 native keeps its meaning; v2 native reads too', () => {
+    expect(read(mainActivityFixture()).unreadable).toBe(false)
+    expect(read(mainActivityFixture({ policy: 'anaf-assumed-main-caen-v2' })).unreadable).toBe(false)
+  })
+
+  it.each(['LEGACY_MS_POINTER_BOUND', 'LEGACY_MS_RETAINED_CUSTODY'] as const)('v2 legacy (%s) reads with the exact six-digit raw time and keeps its badge', (tag) => {
+    const activity = legacy({ anaf: legacyAnafFixture({ evidenceCustody: tag }) })
+    const mapped = read(activity)
+    expect(mapped.unreadable).toBe(false)
+    expect(mapped.read?.activity?.anaf).toMatchObject({ evidenceCustody: tag, timeBasis: 'LEGACY_MS_PROJECTION', retrievedAt: '2026-09-21T04:00:12.642000Z', rawRetrievedAt: '2026-09-21T04:00:12.642832Z' })
+    const profile = profileOf(assignedRead(activity), [onrcRow('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })])
+    expect(flagsOf(profile)).toEqual([['onrc', 'rev3', '4711', true, true]])
+  })
+
+  it('a withdrawn legacy assignment keeps its basis, shows no ANAF field and no badge (readable, never malformed)', () => {
+    const withdrawn = legacy({ currentness: 'SOURCE_WITHDRAWN', anafWithdrawn: true, status: null, resolved: null, candidates: null, matchBasis: null, revisionBasis: null, anaf: null })
+    const mapped = read(withdrawn)
+    expect(mapped.unreadable).toBe(false)
+    expect(mapped.read?.activity).toMatchObject({ basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME', anaf: null })
+    const profile = profileOf(assignedRead(withdrawn), [onrcRow('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })])
+    expect(flagsOf(profile)).toEqual([['onrc', 'rev3', '4711', null, null]])
+  })
+
+  it('an ONRC-unavailable or integrity-held legacy assignment keeps its coherent provenance', () => {
+    const onrcUnavailable = legacy({ currentness: 'ONRC_UNAVAILABLE', status: null, resolved: null, candidates: null, matchBasis: null, revisionBasis: null, edition: null })
+    expect(read(onrcUnavailable).unreadable).toBe(false)
+    const held = legacy({
+      currentness: 'PENDING_REFRESH',
+      integrityHeld: true,
+      status: null,
+      resolved: null,
+      candidates: null,
+      matchBasis: null,
+      revisionBasis: null,
+      anaf: legacyAnafFixture({ originalToken: null, jsonType: null, tokenForm: null, canonicalDigits: null, assumedCode: null, v3Form: null }),
+    })
+    expect(read(held).unreadable).toBe(false)
+  })
+
+  it.each<[string, Record<string, unknown>]>([
+    ['an unknown policy', { policy: 'anaf-assumed-main-caen-v3' }],
+    ['a legacy basis under v1', { policy: 'anaf-assumed-main-caen-v1' }],
+    ['a native basis with legacy evidence', { basis: 'ANAF_ASSUMED_MAIN' }],
+    ['a legacy basis with native evidence', { anaf: mainAnafFixture() }],
+    ['a legacy tag without its raw time', { anaf: legacyAnafFixture({ rawRetrievedAt: null }) }],
+    ['a legacy tag with the native basis', { anaf: legacyAnafFixture({ timeBasis: 'NATIVE' }) }],
+    ['a served time that is not the floor', { anaf: legacyAnafFixture({ retrievedAt: '2026-09-21T04:00:12.643000Z' }) }],
+    ['a served time equal to the raw time', { anaf: legacyAnafFixture({ retrievedAt: RAW }) }],
+    ['a non-canonical raw time', { anaf: legacyAnafFixture({ rawRetrievedAt: '2026-09-21T04:00:12.642832+00:00' }) }],
+    ['a legacy assignment whose time basis is not stated', { anaf: legacyAnafFixture({ timeBasis: null }) }],
+    ['an unknown time basis', { anaf: { ...legacyAnafFixture(), timeBasis: 'LEGACY' } }],
+    ['an unknown custody tag', { anaf: { ...legacyAnafFixture(), evidenceCustody: 'LEGACY_MS' } }],
+  ])('refuses %s: unreadable, no badge, the profile kept', (_name, over) => {
+    const activity = { ...legacy(), ...over }
+    expect(read(activity).unreadable).toBe(true)
+    const profile = profileOf(assignedRead(activity as never), [onrcRow('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })])
+    expect(profile.mainActivityUnreadable).toBe(true)
+    expect(flagsOf(profile)).toEqual([['onrc', 'rev3', '4711', null, null]])
+  })
+
+  it('an older API (fields absent): v1 native evidence reads with an unstated time basis; v2 without them is unreadable', () => {
+    const { timeBasis: _t, rawRetrievedAt: _r, ...v1Anaf } = mainAnafFixture()
+    const v1 = read({ ...mainActivityFixture(), anaf: v1Anaf })
+    expect(v1.unreadable).toBe(false)
+    // Omitted stays omitted (undefined): never collapsed into v2's stated null (no fiscal source).
+    expect(v1.read?.activity?.anaf?.timeBasis).toBeUndefined()
+    expect(v1.read?.activity?.anaf?.rawRetrievedAt).toBeUndefined()
+    expect(read({ ...mainActivityFixture({ policy: 'anaf-assumed-main-caen-v2' }), anaf: v1Anaf }).unreadable).toBe(true)
+  })
+
+  it('history: v1 and legacy v2 outcomes read; a legacy basis under v1 or an unknown policy fails the page', () => {
+    expect(companyMainActivityOutcomeSchema.safeParse(outcome('501')).success).toBe(true)
+    expect(companyMainActivityOutcomeSchema.safeParse(outcome('502', { policy: 'anaf-assumed-main-caen-v2', basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME' })).success).toBe(true)
+    expect(companyMainActivityOutcomeSchema.safeParse(outcome('503', { basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME' })).success).toBe(false)
+    expect(companyMainActivityOutcomeSchema.safeParse(outcome('504', { policy: 'anaf-assumed-main-caen-v3' })).success).toBe(false)
+    // A withdrawn legacy outcome keeps its basis and no ANAF field.
+    const withdrawn = companyMainActivityOutcomeSchema.parse(
+      outcome('505', { policy: 'anaf-assumed-main-caen-v2', basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME', anafWithdrawn: true, anaf: null, status: null, resolved: null, candidates: null }),
+    )
+    expect(withdrawn).toMatchObject({ basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME', anaf: null })
+  })
+
+  it('history evidence: legacy entries keep the exact raw text; incoherent ones fail; withdrawn ones read', () => {
+    const legacyEntry = evidenceEntry('701', { evidenceCustody: 'LEGACY_MS_RETAINED_CUSTODY', timeBasis: 'LEGACY_MS_PROJECTION', retrievedAt: '2026-09-21T04:00:12.642000Z', rawRetrievedAt: RAW })
+    expect(companyMainActivityEvidenceEntrySchema.parse(legacyEntry).anaf?.rawRetrievedAt).toBe('2026-09-21T04:00:12.642832Z')
+    expect(companyMainActivityEvidenceEntrySchema.safeParse(evidenceEntry('702', { evidenceCustody: 'LEGACY_MS_POINTER_BOUND' })).success).toBe(false)
+    expect(companyMainActivityEvidenceEntrySchema.safeParse(evidenceEntry('703', { timeBasis: 'NATIVE', rawRetrievedAt: RAW })).success).toBe(false)
+    expect(companyMainActivityEvidenceEntrySchema.safeParse(evidenceEntry('704', {}, { anaf: null, anafWithdrawn: true })).success).toBe(true)
+    // An older API's native entry (no time basis) still reads.
+    const older = companyMainActivityEvidenceEntrySchema.parse(evidenceEntry('705')).anaf
+    expect(older?.timeBasis).toBeUndefined()
+    expect(older?.rawRetrievedAt).toBeUndefined()
+  })
+
+  describe('an API from before contract v2 (it rejects exactly timeBasis / rawRetrievedAt)', () => {
+    const V2_FIELDS = [
+      validation('Cannot query field "timeBasis" on type "CompanyMainActivityAnafEvidence".'),
+      validation('Cannot query field "rawRetrievedAt" on type "CompanyMainActivityAnafEvidence".'),
+    ]
+    const v1Served = rawResponse(assignedRead({ ...MAIN_ACTIVITIES.lidlLatestRevision, anaf: (({ timeBasis: _t, rawRetrievedAt: _r, ...rest }) => rest)(mainAnafFixture()) } as never), [onrcRow('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })])
+
+    it('is recognised only for exactly those names on exactly those types', () => {
+      expect(isPreMainV2ApiError(rejected(...V2_FIELDS))).toBe(true)
+      expect(isPreMainV2ApiError(rejected(validation('Cannot query field "rawRetrievedAt" on type "CompanyMainActivityEvidenceAnaf". Did you mean "retrievedAt"?')))).toBe(true)
+      expect(isPreMainV2ApiError(rejected(...V2_FIELDS, validation(MAIN_FIELD)))).toBe(false)
+      expect(isPreMainV2ApiError(rejected(validation('Cannot query field "timeBasis" on type "CompanyMainActivity".')))).toBe(false)
+      expect(isPreMainV2ApiError(rejected(fieldError(['company', 'mainActivity'], 'Cannot query field "timeBasis" on type "CompanyMainActivityAnafEvidence".', 'GRAPHQL_VALIDATION_FAILED')))).toBe(false)
+    })
+
+    it('the profile is asked again without only them: the main activity, its flags and the profile kept', async () => {
+      transport.answer = (document) => (document.includes('rawRetrievedAt') ? Promise.reject(rejected(...V2_FIELDS)) : Promise.resolve(v1Served))
+      const profile = await fetchPrivateCompanyProfileLive('22891860')
+      expect(transport.calls.map((call) => call.document)).toEqual([COMPANY_PROFILE_QUERY, COMPANY_PROFILE_QUERY_MAIN_V1])
+      expect(COMPANY_PROFILE_QUERY_MAIN_V1).toContain('mainActivity {')
+      expect(COMPANY_PROFILE_QUERY_MAIN_V1).toContain('isMainCaen matchesAssumedMainCode')
+      expect(COMPANY_PROFILE_QUERY_MAIN_V1).not.toMatch(/timeBasis|rawRetrievedAt/u)
+      expect(COMPANY_PROFILE_QUERY.replace(/ timeBasis rawRetrievedAt/u, '')).toBe(COMPANY_PROFILE_QUERY_MAIN_V1)
+      expect(profile?.mainActivityUnreadable).toBeUndefined()
+      expect(profile?.mainActivity?.activity?.anaf?.timeBasis).toBeUndefined()
+      expect(profile?.mainActivity?.activity?.anaf?.rawRetrievedAt).toBeUndefined()
+      expect(profile?.caenActivities[0]?.isMainCaen).toBe(true)
+    })
+
+    it('and its selection refused alone: the v1-main document without the selection', async () => {
+      transport.answer = (document) => {
+        if (document.includes('rawRetrievedAt')) return Promise.reject(rejected(...V2_FIELDS))
+        if (document.includes('activitySelection')) return Promise.reject(rejected(fieldError(['company', 'activitySelection'], 'too many observation groups', 'SERVICE_UNAVAILABLE')))
+        return Promise.resolve(v1Served)
+      }
+      const profile = await fetchPrivateCompanyProfileLive('22891860')
+      expect(transport.calls.map((call) => call.document)).toEqual([COMPANY_PROFILE_QUERY, COMPANY_PROFILE_QUERY_MAIN_V1, COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_MAIN_V1])
+      expect(profile?.activitySelectionUnavailable).toBe(true)
+      expect(profile?.mainActivity?.availability).toBe('ASSIGNED')
+    })
+
+    it('the history is asked again without only them; other errors are never that API', async () => {
+      const page = historyPage([outcome('501')], false, null)
+      transport.answer = (document) => (document.includes('rawRetrievedAt') ? Promise.reject(rejected(validation('Cannot query field "timeBasis" on type "CompanyMainActivityEvidenceAnaf".'))) : Promise.resolve(page))
+      const result = await fetchCompanyMainActivityHistoryLive({ cui: '22891860', kind: 'OUTCOMES', after: null, scopeKey: PUBLISHED.scopeKey })
+      expect(transport.calls.map((call) => call.document)).toEqual([COMPANY_MAIN_ACTIVITY_HISTORY_QUERY, COMPANY_MAIN_ACTIVITY_HISTORY_QUERY_V1])
+      expect(COMPANY_MAIN_ACTIVITY_HISTORY_QUERY.replace(/ timeBasis rawRetrievedAt/u, '')).toBe(COMPANY_MAIN_ACTIVITY_HISTORY_QUERY_V1)
+      expect(result.status).toBe('page')
+      transport.calls = []
+      const moved = rejected(fieldError(['companyMainActivityHistory'], 'the main activity changed during the request; retry', 'SERVICE_UNAVAILABLE'))
+      transport.answer = () => Promise.reject(moved)
+      await expect(fetchCompanyMainActivityHistoryLive({ cui: '22891860', kind: 'OUTCOMES', after: null, scopeKey: PUBLISHED.scopeKey })).rejects.toBe(moved)
+      expect(transport.calls).toHaveLength(1)
+    })
+  })
+})
+
+// ─────────────────────────── turn 11: the exact no-source shape (contract v2) ──
+
+describe('contract v2: no fiscal source is a stated null time basis, never judged from the status', () => {
+  const read = (activity: unknown) => mapMainActivity(assignedRead(activity as never), REGISTRY)
+  /** The ANAF object a no-source assignment carries: every field stated null (not withdrawn). */
+  const noSourceAnaf = mainAnafFixture({
+    originalToken: null,
+    jsonType: null,
+    tokenForm: null,
+    canonicalDigits: null,
+    assumedCode: null,
+    v3Form: null,
+    statusDate: null,
+    retrievedAt: null,
+    timeBasis: null,
+    rawRetrievedAt: null,
+    sourceUrl: null,
+    sourceSnapshotId: null,
+    sourceHash: null,
+    rawCaptureId: null,
+    rawCustodyId: null,
+    evidenceCustody: null,
+  })
+  const missing = (over: Parameters<typeof mainActivityFixture>[0] = {}) =>
+    mainActivityFixture({ policy: 'anaf-assumed-main-caen-v2', status: 'SOURCE_MISSING', matchBasis: null, revisionBasis: null, resolved: null, candidates: [], anaf: noSourceAnaf, ...over })
+
+  it('SOURCE_MISSING without a source reads with an all-null ANAF object (anafWithdrawn false), under v2 and v1', () => {
+    const v2 = read(missing())
+    expect(v2.unreadable).toBe(false)
+    expect(v2.read?.activity).toMatchObject({ anafWithdrawn: false, anaf: { timeBasis: null, sourceSnapshotId: null } })
+    expect(read(missing({ policy: 'anaf-assumed-main-caen-v1' })).unreadable).toBe(false)
+  })
+
+  it('a reviewed correction without fiscal evidence, and an ONRC mask over absent evidence, stay readable', () => {
+    expect(read(missing({ status: 'CORRECTED', revisionBasis: 'REVIEWED_CORRECTION', correctionId: '5', resolved: { revision: 'rev3', code: '4711', label: 'L (MOCK)', labelSource: 'frozen_at_derivation' }, candidates: [{ revision: 'rev3', code: '4711' }] })).unreadable).toBe(false)
+    expect(read(missing({ currentness: 'ONRC_UNAVAILABLE', status: null, candidates: null, edition: null })).unreadable).toBe(false)
+  })
+
+  it('a REAL fiscal row with an absent token is SOURCE_MISSING with its source and a stated basis; without the basis it is unreadable', () => {
+    const present = mainAnafFixture({ originalToken: null, jsonType: 'ABSENT', tokenForm: 'ABSENT', canonicalDigits: null, assumedCode: null, v3Form: 'missing' })
+    expect(read(missing({ anaf: present })).unreadable).toBe(false)
+    expect(read(missing({ anaf: { ...present, timeBasis: null } })).unreadable).toBe(true)
+  })
+
+  it.each<[string, Record<string, unknown>]>([
+    ['the native category without a source', { timeBasis: 'NATIVE' }],
+    ['a hash without a snapshot', { sourceHash: 'a'.repeat(64) }],
+    ['a status date without a snapshot', { statusDate: '2026-09-20' }],
+    ['a retrieval time without a snapshot', { retrievedAt: '2026-09-21T04:00:12.642832Z' }],
+    ['a capture id without a snapshot', { rawCaptureId: '901' }],
+    ['a custody without a snapshot', { evidenceCustody: 'UNBOUND_AT_DERIVATION' }],
+    ['a raw time without a snapshot', { rawRetrievedAt: '2026-09-21T04:00:12.642832Z' }],
+    ['a token without a snapshot', { originalToken: '0610', jsonType: 'STRING' }],
+    ['a token form without a snapshot', { tokenForm: 'ABSENT' }],
+  ])('a partial no-source shape is unreadable, without a badge: %s', (_name, over) => {
+    const activity = missing({ anaf: { ...noSourceAnaf, ...over } as never })
+    expect(read(activity).unreadable).toBe(true)
+  })
+
+  it('a legacy role basis on absent evidence is unreadable', () => {
+    expect(read(missing({ basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME' })).unreadable).toBe(true)
+  })
+
+  it('an older API omitting the v2 fields keeps its own, separate rule: a v1 no-source answer reads, a v2 one does not', () => {
+    const { timeBasis: _t, rawRetrievedAt: _r, ...omitted } = noSourceAnaf
+    expect(read(missing({ policy: 'anaf-assumed-main-caen-v1', anaf: omitted as never })).unreadable).toBe(false)
+    expect(read(missing({ anaf: omitted as never })).unreadable).toBe(true)
+  })
+
+  it('history evidence: a stated-null no-source entry reads; a partial one or a source without a basis fails the page', () => {
+    const absent = { sourceSnapshotId: null, sourceHash: null, statusDate: null, retrievedAt: null, timeBasis: null, rawRetrievedAt: null, sourceUrl: null, rawCaptureId: null, rawCustodyId: null, evidenceCustody: null, originalToken: null, jsonType: null }
+    expect(companyMainActivityEvidenceEntrySchema.parse(evidenceEntry('801', absent)).anaf).toMatchObject({ sourceSnapshotId: null, timeBasis: null })
+    expect(companyMainActivityEvidenceEntrySchema.safeParse(evidenceEntry('802', { ...absent, sourceHash: 'a'.repeat(64) })).success).toBe(false)
+    expect(companyMainActivityEvidenceEntrySchema.safeParse(evidenceEntry('803', { ...absent, timeBasis: 'NATIVE' })).success).toBe(false)
+    expect(companyMainActivityEvidenceEntrySchema.safeParse(evidenceEntry('804', { timeBasis: null })).success).toBe(false)
   })
 })

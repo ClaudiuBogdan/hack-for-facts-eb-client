@@ -23,6 +23,8 @@ export function mainAnafFixture(overrides: Partial<CompanyMainActivityAnafEviden
     v3Form: 'four_digit',
     statusDate: '2026-09-20',
     retrievedAt: '2026-09-21T04:00:00Z',
+    timeBasis: 'NATIVE',
+    rawRetrievedAt: null,
     sourceUrl: null,
     sourceSnapshotId: 'mock-fiscal-2026-09-21',
     sourceHash: 'a'.repeat(64),
@@ -65,6 +67,23 @@ export function mainActivityFixture(overrides: Partial<CompanyMainActivity> = {}
 }
 
 const NO_KEY = { resolved: null, candidates: null, matchBasis: null, revisionBasis: null } as const
+
+/**
+ * Contract v2: ANAF's evidence bound through the frozen legacy-time cohort —
+ * the served retrieval time is the millisecond floor of the raw one, kept as
+ * exact six-digit text.
+ */
+export const LEGACY_RAW_RETRIEVED_AT = '2026-09-21T04:00:12.642832Z'
+export function legacyAnafFixture(overrides: Partial<CompanyMainActivityAnafEvidence> = {}): CompanyMainActivityAnafEvidence {
+  return mainAnafFixture({
+    retrievedAt: '2026-09-21T04:00:12.642000Z',
+    timeBasis: 'LEGACY_MS_PROJECTION',
+    rawRetrievedAt: LEGACY_RAW_RETRIEVED_AT,
+    rawCaptureId: null,
+    evidenceCustody: 'LEGACY_MS_POINTER_BOUND',
+    ...overrides,
+  })
+}
 
 export const MAIN_ACTIVITIES = {
   lidlLatestRevision: mainActivityFixture(),

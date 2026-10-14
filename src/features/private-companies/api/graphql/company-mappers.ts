@@ -48,9 +48,9 @@ import {
   type PrivateCompanyStatementSource,
 } from '@/schemas/private-company'
 import {
-  COMPANY_MAIN_ACTIVITY_POLICY,
   COMPANY_MAIN_ACTIVITY_SELECTING_STATUSES,
   companyMainActivityReadSchema,
+  mainActivityProvenanceReadable,
   type CompanyMainActivity,
   type CompanyMainActivityRead,
 } from '@/schemas/private-company-main-activity'
@@ -277,7 +277,10 @@ export function mapMainActivity(raw: unknown, registry: CompanyRegistryEnvelope)
   const read = parsed.data
   if ((read.availability === 'ASSIGNED') !== (read.activity !== null)) return MAIN_UNREADABLE
   if (read.activity === null) return { read, unreadable: false }
-  if (read.activity.policy !== COMPANY_MAIN_ACTIVITY_POLICY || !heldAsServed(read.activity)) return MAIN_UNREADABLE
+  // Contract v2: a readable policy and basis, and coherent time provenance of
+  // the visible ANAF evidence (a withdrawn source has none to judge).
+  const provenance = { ...read.activity, anaf: read.activity.anafWithdrawn ? null : read.activity.anaf }
+  if (!mainActivityProvenanceReadable(provenance) || !heldAsServed(read.activity)) return MAIN_UNREADABLE
   const activity = withheld(read.activity)
   if (!mainHoldsTogether(activity, registry)) return MAIN_UNREADABLE
   return { read: { ...read, activity }, unreadable: false }

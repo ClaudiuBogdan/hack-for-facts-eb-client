@@ -2,8 +2,10 @@ import { z } from 'zod'
 import { COMPANY_CAEN_REVISIONS } from './private-company-registry'
 
 /**
- * The ANAF-ASSUMED main activity (`Company.mainActivity`, policy
- * `anaf-assumed-main-caen-v1`) and its history, as the client reads them.
+ * The ANAF-ASSUMED main activity (`Company.mainActivity`, policies
+ * `anaf-assumed-main-caen-v1`, read with its original meaning, and
+ * `anaf-assumed-main-caen-v2`, the current producer) and its history, as the
+ * client reads them.
  *
  * What it is: ANAF's fiscal CAEN token of the company, ASSUMED to be its main
  * activity — a product assumption, never a principal activity ONRC declared —
@@ -17,10 +19,20 @@ import { COMPANY_CAEN_REVISIONS } from './private-company-registry'
  * never read as a nearby one.
  */
 
-export const COMPANY_MAIN_ACTIVITY_POLICY = 'anaf-assumed-main-caen-v1'
+export const COMPANY_MAIN_ACTIVITY_POLICY_V1 = 'anaf-assumed-main-caen-v1'
+/** Contract v2: v1's matching, plus the legacy-time role basis and custody tags. */
+export const COMPANY_MAIN_ACTIVITY_POLICY_V2 = 'anaf-assumed-main-caen-v2'
+/** The policies this client reads; any other is unreadable (never reinterpreted). */
+export const COMPANY_MAIN_ACTIVITY_POLICIES: ReadonlySet<string> = new Set([COMPANY_MAIN_ACTIVITY_POLICY_V1, COMPANY_MAIN_ACTIVITY_POLICY_V2])
 
 export const COMPANY_MAIN_ACTIVITY_AVAILABILITIES = ['ASSIGNED', 'NO_ASSIGNMENT', 'UNAVAILABLE'] as const
-export const COMPANY_MAIN_ACTIVITY_ROLE_BASES = ['ANAF_ASSUMED_MAIN'] as const
+/**
+ * `ANAF_ASSUMED_MAIN_LEGACY_TIME` (v2 only): the same assumption, its ANAF
+ * evidence bound through the frozen legacy-time cohort (the served fiscal
+ * time keeps an older import's millisecond projection of the raw one).
+ */
+export const COMPANY_MAIN_ACTIVITY_LEGACY_ROLE_BASIS = 'ANAF_ASSUMED_MAIN_LEGACY_TIME'
+export const COMPANY_MAIN_ACTIVITY_ROLE_BASES = ['ANAF_ASSUMED_MAIN', COMPANY_MAIN_ACTIVITY_LEGACY_ROLE_BASIS] as const
 export const COMPANY_MAIN_ACTIVITY_CURRENTNESS = ['CURRENT', 'PENDING_REFRESH', 'SOURCE_WITHDRAWN', 'ONRC_UNAVAILABLE'] as const
 export const COMPANY_MAIN_ACTIVITY_STATUSES = [
   'RESOLVED',
@@ -38,7 +50,18 @@ export const COMPANY_MAIN_ACTIVITY_MATCH_BASES = ['EXACT', 'LEADING_ZERO_MATCH']
 export const COMPANY_MAIN_ACTIVITY_REVISION_BASES = ['UNIQUE_ONRC_MATCH', 'LATEST_MATCHING_ONRC_REVISION', 'REVIEWED_CORRECTION'] as const
 export const COMPANY_MAIN_ACTIVITY_TOKEN_FORMS = ['FOUR_DIGIT', 'OTHER_DIGIT_FORM', 'ZERO_PLACEHOLDER', 'PLACEHOLDER_9999', 'INVALID', 'ABSENT'] as const
 export const COMPANY_MAIN_ACTIVITY_JSON_TYPES = ['STRING', 'NUMBER', 'NULL', 'ABSENT', 'BOOLEAN', 'OBJECT', 'ARRAY'] as const
-export const COMPANY_MAIN_ACTIVITY_EVIDENCE_CUSTODIES = ['ARCHIVED_EXCHANGE', 'RETAINED_CUSTODY', 'POINTER_BOUND_AT_DERIVATION', 'UNBOUND_AT_DERIVATION'] as const
+/** The legacy-time custody tags (v2): bound through the frozen cohort by the then-current raw pointer, or by a retained raw occurrence. */
+export const COMPANY_MAIN_ACTIVITY_LEGACY_CUSTODIES = ['LEGACY_MS_POINTER_BOUND', 'LEGACY_MS_RETAINED_CUSTODY'] as const
+export const COMPANY_MAIN_ACTIVITY_EVIDENCE_CUSTODIES = ['ARCHIVED_EXCHANGE', 'RETAINED_CUSTODY', 'POINTER_BOUND_AT_DERIVATION', 'UNBOUND_AT_DERIVATION', ...COMPANY_MAIN_ACTIVITY_LEGACY_CUSTODIES] as const
+/**
+ * How the served retrieval time was stored, for evidence with a fiscal source
+ * (null when it has none): `NATIVE` = the normal non-legacy category — no
+ * legacy-millisecond compatibility attestation applied, the loader-recorded
+ * time; NOT by itself proof that it equals the raw time (the custody says
+ * whether raw was verified). `LEGACY_MS_PROJECTION` = `rawRetrievedAt` at
+ * millisecond precision, its microsecond fraction removed.
+ */
+export const COMPANY_MAIN_ACTIVITY_FISCAL_TIME_BASES = ['NATIVE', 'LEGACY_MS_PROJECTION'] as const
 /** The v3 form diagnoses the API serves (`v3Form`); any other value is null (the API nulls it, the client again). */
 export const COMPANY_MAIN_ACTIVITY_V3_FORMS: ReadonlySet<string> = new Set(['four_digit', 'three_digit', 'short', 'missing', 'invalid', 'unbound', 'unqualified'])
 export const COMPANY_MAIN_ACTIVITY_HISTORY_KINDS = ['OUTCOMES', 'EVIDENCE'] as const
@@ -51,10 +74,130 @@ export type CompanyMainActivityMatchBasis = (typeof COMPANY_MAIN_ACTIVITY_MATCH_
 export type CompanyMainActivityRevisionBasis = (typeof COMPANY_MAIN_ACTIVITY_REVISION_BASES)[number]
 export type CompanyMainActivityTokenForm = (typeof COMPANY_MAIN_ACTIVITY_TOKEN_FORMS)[number]
 export type CompanyMainActivityEvidenceCustody = (typeof COMPANY_MAIN_ACTIVITY_EVIDENCE_CUSTODIES)[number]
+export type CompanyMainActivityFiscalTimeBasis = (typeof COMPANY_MAIN_ACTIVITY_FISCAL_TIME_BASES)[number]
+export type CompanyMainActivityRoleBasis = (typeof COMPANY_MAIN_ACTIVITY_ROLE_BASES)[number]
 export type CompanyMainActivityHistoryKind = (typeof COMPANY_MAIN_ACTIVITY_HISTORY_KINDS)[number]
 
 /** The statuses that carry a selected exact ONRC class key (`resolved`); every other one carries none. */
 export const COMPANY_MAIN_ACTIVITY_SELECTING_STATUSES: ReadonlySet<CompanyMainActivityStatus> = new Set(['RESOLVED', 'RESOLVED_LATEST_REVISION', 'CORRECTED'])
+
+/** Exactly the API's six-digit UTC text (`YYYY-MM-DDTHH:MM:SS.ffffffZ`). */
+const UTC_MICROS = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z$/u
+
+export function isLegacyMainCustody(custody: string | null | undefined): boolean {
+  return custody === 'LEGACY_MS_POINTER_BOUND' || custody === 'LEGACY_MS_RETAINED_CUSTODY'
+}
+
+/**
+ * The provenance of one visible piece of ANAF evidence. `timeBasis` /
+ * `rawRetrievedAt`: `undefined` = OMITTED (an API from before contract v2
+ * answered the fallback document without them), `null` = stated null (v2: no
+ * fiscal source at all), else the stated value.
+ */
+interface EvidenceTime {
+  readonly evidenceCustody: string | null
+  readonly timeBasis?: CompanyMainActivityFiscalTimeBasis | null
+  readonly retrievedAt: string | null
+  readonly rawRetrievedAt?: string | null
+  readonly sourceSnapshotId: string | null
+  readonly sourceHash: string | null
+  readonly statusDate: string | null
+  readonly sourceUrl: string | null
+  readonly rawCaptureId: string | null
+  readonly rawCustodyId: string | null
+  readonly originalToken: string | null
+  readonly jsonType: string | null
+}
+
+/** The current read's token-derived fields, also null for the no-source shape. */
+interface CurrentTokenFields {
+  readonly tokenForm: string | null
+  readonly canonicalDigits: string | null
+  readonly assumedCode: string | null
+  readonly v3Form: string | null
+}
+
+/**
+ * The exact no-source shape (contract v2): no source snapshot, and every
+ * other exposed fiscal field null too — locators, dates, ids, custody, the
+ * stated time basis and raw time, token and JSON type (and the current read's
+ * form, digits, assumed code and v3 form). Never judged from the outcome's
+ * status: SOURCE_MISSING also names a real fiscal row with an absent token.
+ */
+function exactNoSource(anaf: EvidenceTime, current: CurrentTokenFields | null): boolean {
+  const fields: readonly unknown[] = [
+    anaf.sourceHash,
+    anaf.statusDate,
+    anaf.retrievedAt,
+    anaf.sourceUrl,
+    anaf.rawCaptureId,
+    anaf.rawCustodyId,
+    anaf.evidenceCustody,
+    anaf.timeBasis,
+    anaf.rawRetrievedAt,
+    anaf.originalToken,
+    anaf.jsonType,
+    ...(current ? [current.tokenForm, current.canonicalDigits, current.assumedCode, current.v3Form] : []),
+  ]
+  return fields.every((value) => value === null)
+}
+
+/**
+ * Whether visible ANAF evidence states its provenance coherently.
+ *
+ * - OMITTED fields (an older API's fallback answer): only evidence with
+ *   neither a legacy tag nor a raw time (the caller limits the current read
+ *   to policy v1);
+ * - no source snapshot: exactly the no-source shape (a partial one fails);
+ * - a source: a STATED time basis; a legacy custody tag,
+ *   `LEGACY_MS_PROJECTION` and a raw time come together, and then the served
+ *   time is the raw time with its microsecond fraction removed
+ *   (`…642832Z` → `…642000Z`) and differs from it. Text arithmetic on the
+ *   six-digit form, checked before slicing: never a Date, which would drop
+ *   the microseconds compared.
+ */
+export function mainEvidenceTimeCoherent(anaf: EvidenceTime, current: CurrentTokenFields | null = null): boolean {
+  const legacyTag = isLegacyMainCustody(anaf.evidenceCustody)
+  if (anaf.timeBasis === undefined) return !legacyTag && (anaf.rawRetrievedAt === undefined || anaf.rawRetrievedAt === null)
+  if (anaf.sourceSnapshotId === null) return exactNoSource(anaf, current)
+  if (anaf.timeBasis === null) return false
+  const legacy = anaf.timeBasis === 'LEGACY_MS_PROJECTION'
+  if (legacyTag !== legacy) return false
+  const rawRetrievedAt = anaf.rawRetrievedAt ?? null
+  if (!legacy) return rawRetrievedAt === null
+  const { retrievedAt } = anaf
+  if (retrievedAt === null || rawRetrievedAt === null || !UTC_MICROS.test(retrievedAt) || !UTC_MICROS.test(rawRetrievedAt)) return false
+  return retrievedAt === `${rawRetrievedAt.slice(0, 23)}000Z` && retrievedAt !== rawRetrievedAt
+}
+
+/** A legacy role basis exists only under v2; any other policy is unreadable. */
+export function mainPolicyAndBasisReadable(policy: string, basis: CompanyMainActivityRoleBasis): boolean {
+  if (!COMPANY_MAIN_ACTIVITY_POLICIES.has(policy)) return false
+  return basis !== COMPANY_MAIN_ACTIVITY_LEGACY_ROLE_BASIS || policy === COMPANY_MAIN_ACTIVITY_POLICY_V2
+}
+
+/**
+ * The current assignment's provenance holds together: a readable policy and
+ * basis; visible ANAF evidence coherent in time; legacy basis exactly with
+ * legacy evidence; under v1 no legacy time at all; an unstated time basis
+ * only under v1. A withdrawn source keeps its basis and has no evidence to
+ * judge (nothing hidden is rebuilt).
+ */
+export function mainActivityProvenanceReadable(activity: {
+  readonly policy: string
+  readonly basis: CompanyMainActivityRoleBasis
+  readonly anaf: (EvidenceTime & CurrentTokenFields) | null
+}): boolean {
+  if (!mainPolicyAndBasisReadable(activity.policy, activity.basis)) return false
+  const anaf = activity.anaf
+  if (anaf === null) return true
+  if (!mainEvidenceTimeCoherent(anaf, anaf)) return false
+  // Omitted fields come only from an API before contract v2: v1 only.
+  if (anaf.timeBasis === undefined) return activity.policy === COMPANY_MAIN_ACTIVITY_POLICY_V1
+  if (activity.policy === COMPANY_MAIN_ACTIVITY_POLICY_V1 && anaf.timeBasis === 'LEGACY_MS_PROJECTION') return false
+  // Legacy basis exactly with legacy evidence; absent evidence carries no legacy marker.
+  return (activity.basis === COMPANY_MAIN_ACTIVITY_LEGACY_ROLE_BASIS) === isLegacyMainCustody(anaf.evidenceCustody)
+}
 
 /**
  * ANAF's original token as the page may show it: only an economic-code digit
@@ -102,6 +245,13 @@ function withPublicEvidence<T extends { readonly originalToken: string | null; r
 /** A BigInt id as the API serializes it (text); a JSON number is accepted and kept as its digits. */
 const bigIntText = z.union([z.string().regex(/^-?\d+$/u), z.number().int()]).transform((value) => String(value))
 const revisionZ = z.enum(COMPANY_CAEN_REVISIONS)
+/**
+ * Contract v2 fields. Kept as served: `undefined` = omitted (only an API from
+ * before v2, answering the fallback document), `null` = stated null (no
+ * fiscal source), else the value. Never collapsed into one another.
+ */
+const fiscalTimeBasisZ = z.enum(COMPANY_MAIN_ACTIVITY_FISCAL_TIME_BASES).nullable().optional()
+const rawRetrievedAtZ = z.string().nullable().optional()
 const classCodeZ = z.string().regex(/^\d{4}$/u)
 
 /** The selected exact ONRC class key, its catalog label frozen when the outcome was derived. */
@@ -143,6 +293,10 @@ export const companyMainActivityAnafEvidenceSchema = z.object({
   statusDate: z.string().nullable(),
   /** The loader's retrieval time. Not a capture time, not a legal date. */
   retrievedAt: z.string().nullable(),
+  /** Contract v2: null = no fiscal source (with every fiscal field null); omitted = an API before v2 (v1 only). */
+  timeBasis: fiscalTimeBasisZ,
+  /** The raw retrieval time, exact six-digit UTC text, for a `LEGACY_MS_PROJECTION` only. Never a legal date. */
+  rawRetrievedAt: rawRetrievedAtZ,
   sourceUrl: z.string().nullable(),
   sourceSnapshotId: z.string().nullable(),
   sourceHash: z.string().nullable(),
@@ -251,20 +405,24 @@ export const companyMainActivityOutcomeSchema = z.object({
   derivedAt: z.string(),
   anafWithdrawn: z.boolean(),
   onrcWithdrawn: z.boolean(),
-})
+}).refine((outcome) => mainPolicyAndBasisReadable(outcome.policy, outcome.basis), { message: 'main activity outcome policy / basis not readable' })
 
 const evidenceAnafSchema = z.object({
   sourceSnapshotId: z.string().nullable(),
   sourceHash: z.string().nullable(),
   statusDate: z.string().nullable(),
   retrievedAt: z.string().nullable(),
+  timeBasis: fiscalTimeBasisZ,
+  rawRetrievedAt: rawRetrievedAtZ,
   sourceUrl: z.string().nullable(),
   rawCaptureId: bigIntText.nullable(),
   rawCustodyId: bigIntText.nullable(),
   evidenceCustody: z.enum(COMPANY_MAIN_ACTIVITY_EVIDENCE_CUSTODIES).nullable(),
   originalToken: z.string().nullable(),
   jsonType: z.enum(COMPANY_MAIN_ACTIVITY_JSON_TYPES).nullable(),
-}).transform(withPublicToken)
+})
+  .refine((anaf) => mainEvidenceTimeCoherent(anaf), { message: 'main activity evidence provenance not coherent' })
+  .transform(withPublicToken)
 
 /** One source observation behind an outcome. `evidenceAt` is a derivation time. */
 export const companyMainActivityEvidenceEntrySchema = z.object({

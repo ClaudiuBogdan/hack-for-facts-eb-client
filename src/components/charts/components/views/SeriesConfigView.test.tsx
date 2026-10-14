@@ -201,13 +201,15 @@ vi.mock('../series-config/UnitInput', () => ({
 
 // Mock DebouncedStatusInput
 vi.mock('@/components/ui/debounced-status-input', () => ({
-  DebouncedStatusInput: ({ value, onDebouncedChange, id, placeholder }: any) => (
+  DebouncedStatusInput: ({ value, onDebouncedChange, id, placeholder, changingText, changedText }: any) => (
     <input
       data-testid={`debounced-input-${id}`}
       id={id}
       value={value}
       onChange={(e) => onDebouncedChange(e.target.value)}
       placeholder={placeholder}
+      data-changing-text={changingText}
+      data-changed-text={changedText}
     />
   ),
 }))
@@ -376,6 +378,18 @@ describe('SeriesConfigView', () => {
       fireEvent.click(screen.getByText('Show advanced settings'))
 
       expect(screen.getByText('X-Axis Prefix To Remove')).toBeInTheDocument()
+    })
+
+    it('passes catalog status words to both debounced inputs, never the generic English defaults (CQA-12)', () => {
+      render(<SeriesConfigView />)
+
+      fireEvent.click(screen.getByText('Show advanced settings'))
+
+      for (const id of ['series-label', 'x-axis-prefix-to-remove']) {
+        const input = screen.getByTestId(`debounced-input-${id}`)
+        expect(input).toHaveAttribute('data-changing-text', 'Changing…')
+        expect(input).toHaveAttribute('data-changed-text', 'Changed')
+      }
     })
 
     it('shows INS advanced controls for ins-series', () => {
