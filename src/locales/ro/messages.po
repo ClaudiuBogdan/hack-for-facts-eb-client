@@ -3223,6 +3223,14 @@ msgstr "{topName} cumpără direct de {topValue} pe locuitor, {bottomName} de {b
 #~ msgid "{total, plural, few {Primele {shown} din # teritorii găsite} other {Primele {shown} din # de teritorii găsite}}"
 #~ msgstr "{total, plural, few {Primele {shown} din # teritorii găsite} other {Primele {shown} din # de teritorii găsite}}"
 
+#: src/features/elections/catalog/elections-catalog-page.tsx:121
+msgid "{total, plural, one {# ediție de sursă} few {# ediții de sursă} other {# de ediții de sursă}}"
+msgstr "{total, plural, one {# ediție de sursă} few {# ediții de sursă} other {# de ediții de sursă}}"
+
+#: src/features/elections/catalog/election-edition-page.tsx:199
+msgid "{total, plural, one {# scrutin} few {# scrutine} other {# de scrutine}}"
+msgstr "{total, plural, one {# scrutin} few {# scrutine} other {# de scrutine}}"
+
 #: src/features/private-companies/components/profile/company-activities-band.tsx:320
 msgid "{total, plural, one {O activitate autorizată în registrul comerțului{nomenclature}.} few {# activități autorizate în registrul comerțului{nomenclature}.} other {# de activități autorizate în registrul comerțului{nomenclature}.}}"
 msgstr "{total, plural, one {O activitate autorizată în registrul comerțului{nomenclature}.} few {# activități autorizate în registrul comerțului{nomenclature}.} other {# de activități autorizate în registrul comerțului{nomenclature}.}}"
@@ -6042,11 +6050,17 @@ msgid "Alegere proprie"
 msgstr "Alegere proprie"
 
 #: src/components/sidebar/nav-main.tsx:94
+#: src/features/elections/catalog/elections-catalog-page.tsx:70
+#: src/features/elections/catalog/elections-catalog-text.ts:13
 #: src/features/elections/components/election-hub-page.tsx:32
 #: src/features/elections/components/elections-page-layout.tsx:56
 #: src/features/landing/lib/landing-groups.ts:149
 msgid "Alegeri"
 msgstr "Alegeri"
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:70
+msgid "Alegeri / România"
+msgstr "Alegeri / România"
 
 #: src/features/privacy/components/cookie-settings-page.tsx:157
 msgid "Alegerile tale"
@@ -6626,6 +6640,10 @@ msgstr "An în curs: date incomplete"
 msgid "an întreg"
 msgstr "an întreg"
 
+#: src/features/elections/catalog/elections-catalog-page.tsx:198
+msgid "An neraportat"
+msgstr "An neraportat"
+
 #: src/features/private-companies/components/sections/private-company-money-sources.tsx:72
 #~ msgid "An obligation entered into, not money paid out."
 #~ msgstr "Un angajament asumat, nu bani plătiți."
@@ -6633,6 +6651,11 @@ msgstr "an întreg"
 #: src/features/private-companies/components/sections/private-company-money-sources.tsx:146
 #~ msgid "an obligation, not money paid out"
 #~ msgstr ""
+
+#: src/features/elections/catalog/election-edition-page.tsx:117
+#: src/features/elections/catalog/elections-catalog-page.tsx:140
+msgid "An raportat"
+msgstr "An raportat"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:123
 msgid "An unexpected error occurred"
@@ -7501,6 +7524,10 @@ msgstr ""
 msgid "Aplică"
 msgstr "Aplică"
 
+#: src/features/elections/catalog/catalog-parts.tsx:197
+msgid "Aplică filtrele"
+msgstr "Aplică filtrele"
+
 #: src/features/privacy/components/consent-card.tsx:293
 msgid "Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu."
 msgstr "Aplicația ține minte în browser doar preferințele tale. Statisticile de utilizare și rapoartele de erori pornesc numai dacă le pornești tu."
@@ -7778,6 +7805,10 @@ msgstr "Arhiva Înaltei Curți nu dă ședințele dosarelor ei."
 #: src/routes/justitie.cautare.tsx:67
 #~ msgid "Arhivat"
 #~ msgstr ""
+
+#: src/features/elections/catalog/election-contest-page.tsx:65
+msgid "Aria din sursă poate fi un loc de raportare, de exemplu o secție de votare, nu un teritoriu electoral verificat."
+msgstr "Aria din sursă poate fi un loc de raportare, de exemplu o secție de votare, nu un teritoriu electoral verificat."
 
 #: src/features/national-budget/home/components/home-domains.tsx:33
 msgid "armata"
@@ -8066,6 +8097,10 @@ msgstr "Autoritate centrală"
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:48
 msgid "Autoritate locală"
 msgstr "Autoritate locală"
+
+#: src/features/elections/catalog/election-edition-page.tsx:125
+msgid "Autoritate raportată"
+msgstr "Autoritate raportată"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:865
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:1072
@@ -9294,6 +9329,11 @@ msgstr "contracte subsecvente"
 msgid "Camera"
 msgstr ""
 
+#: src/features/elections/catalog/election-contest-page.tsx:97
+#: src/features/elections/catalog/elections-catalog-text.ts:42
+msgid "Cameră"
+msgstr "Cameră"
+
 #. placeholder {0}: day.camera
 #. placeholder {1}: day.senat
 #. placeholder {2}: day.comun
@@ -9693,9 +9733,21 @@ msgstr "Cât se judecă în județul tău"
 msgid "Cât TVA se încasează pe trimestru?"
 msgstr "Cât TVA se încasează pe trimestru?"
 
+#: src/features/elections/catalog/elections-catalog-page.tsx:80
+msgid "Catalog"
+msgstr "Catalog"
+
 #: src/features/private-companies/lib/company-analytics-text.ts:257
 #~ msgid "catalogul CAEN actual al platformei, pe revizia codului"
 #~ msgstr "catalogul CAEN actual al platformei, pe revizia codului"
+
+#: src/routes/alegeri/index.tsx:46
+msgid "Catalogul edițiilor de date electorale din România, fiecare cu scrutinele ei, cu etichetele exact cum le raportează sursa. Rezultatele nu sunt încă disponibile."
+msgstr "Catalogul edițiilor de date electorale din România, fiecare cu scrutinele ei, cu etichetele exact cum le raportează sursa. Rezultatele nu sunt încă disponibile."
+
+#: src/features/landing/lib/landing-groups.ts:150
+msgid "Catalogul edițiilor de date electorale și al scrutinelor lor, cu etichetele din sursă. Fără rezultate deocamdată."
+msgstr "Catalogul edițiilor de date electorale și al scrutinelor lor, cu etichetele din sursă. Fără rezultate deocamdată."
 
 #: src/features/procurement/lib/direct-purchase-text.ts:192
 msgid "catalogul electronic"
@@ -9722,6 +9774,10 @@ msgstr "Catalogul INS Tempo, pe domenii, periodicitate și acoperire teritorial�
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:140
 #~ msgid "Catalogul INS Tempo, pe teme, periodicitate și acoperire teritorială. Fiecare set deschide seria lui."
 #~ msgstr ""
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:109
+msgid "Catalogul nu are încă nicio ediție de sursă."
+msgstr "Catalogul nu are încă nicio ediție de sursă."
 
 #: src/features/statistics/pages/statistics-hub-page.tsx:223
 #~ msgid "Catalogul pe domenii"
@@ -11224,13 +11280,25 @@ msgstr "Se verifică..."
 msgid "Cheia ceruta nu exista in fixture-ul MVP."
 msgstr ""
 
+#: src/features/elections/catalog/election-edition-page.tsx:126
+msgid "Cheia ediției"
+msgstr "Cheia ediției"
+
 #: src/features/justice/components/litigation-slice-section.tsx:173
 #~ msgid "Cheia publicabilă există, dar fixture-ul mock nu are dosare pentru intervalul acoperit."
 #~ msgstr "Cheia publicabilă există, dar fixture-ul mock nu are dosare pentru intervalul acoperit."
 
+#: src/features/elections/catalog/election-contest-page.tsx:99
+msgid "Cheia scrutinului"
+msgstr "Cheia scrutinului"
+
 #: src/features/public-investments/components/SourceProvenanceDrawer.tsx:91
 msgid "Cheie"
 msgstr ""
+
+#: src/features/elections/catalog/election-contest-page.tsx:93
+msgid "Cheie de arie din sursă"
+msgstr "Cheie de arie din sursă"
 
 #: src/routes/justitie.cautare.tsx:245
 #~ msgid "Cheie publicabilă"
@@ -11713,6 +11781,10 @@ msgstr "Cine vinde medicamente instituțiilor?"
 #: src/features/legal/lib/legal-vocabulary.ts:145
 msgid "Circulară"
 msgstr ""
+
+#: src/features/elections/catalog/elections-catalog-text.ts:43
+msgid "Circumscripție din sursă"
+msgstr "Circumscripție din sursă"
 
 #: src/features/legal/components/legislation-acts-directory.tsx:212
 msgid "Citare sau nume uzual"
@@ -12262,6 +12334,10 @@ msgstr "Cod CPV"
 msgid "Cod CPV {prefix}"
 msgstr "Cod CPV {prefix}"
 
+#: src/features/elections/catalog/election-contest-page.tsx:95
+msgid "Cod de circumscripție"
+msgstr "Cod de circumscripție"
+
 #: src/features/private-companies/lib/company-activity-text.ts:62
 msgid "cod din patru cifre"
 msgstr "cod din patru cifre"
@@ -12305,6 +12381,10 @@ msgstr "cod scurt în sursă — clasă/grupă ambiguă"
 #: src/features/landing/lib/people.ts:199
 msgid "Cod și date"
 msgstr "Cod și date"
+
+#: src/features/elections/catalog/elections-catalog-text.ts:38
+msgid "Cod SIRUTA"
+msgstr "Cod SIRUTA"
 
 #: src/features/private-companies/lib/company-main-activity-text.ts:305
 msgid "cod substitut"
@@ -15191,6 +15271,10 @@ msgstr "Perioada datelor afișate:"
 msgid "Data provine din câmpul de dată al sursei."
 msgstr ""
 
+#: src/features/elections/catalog/election-edition-page.tsx:120
+msgid "Data raportată"
+msgstr "Data raportată"
+
 #: src/features/advanced-map-analytics/components/map-analytics-public-view.tsx:969
 #: src/features/advanced-map-analytics/components/map-analytics-series-selector.tsx:95
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:451
@@ -15578,6 +15662,10 @@ msgstr ""
 #~ msgid "Datele capturii ONRC și ale listei ANAF nu sunt încă publicate de API, așa că nu apar aici."
 #~ msgstr "Datele capturii ONRC și ale listei ANAF nu sunt încă publicate de API, așa că nu apar aici."
 
+#: src/features/elections/catalog/catalog-parts.tsx:80
+msgid "Datele de identificare sunt cele raportate de sursă și nu au fost încă verificate."
+msgstr "Datele de identificare sunt cele raportate de sursă și nu au fost încă verificate."
+
 #: src/features/landing/lib/people.ts:88
 msgid "Datele despre banii publici există deja — dar în zeci de portaluri care nu vorbesc între ele. Transparenta le pune la un loc și spune, de fiecare dată, de unde vine cifra."
 msgstr "Datele despre banii publici există deja — dar în zeci de portaluri care nu vorbesc între ele. Transparenta le pune la un loc și spune, de fiecare dată, de unde vine cifra."
@@ -15585,6 +15673,10 @@ msgstr "Datele despre banii publici există deja — dar în zeci de portaluri c
 #: src/features/private-companies/components/profile/company-registry-band.tsx:46
 msgid "Datele din registru"
 msgstr "Datele din registru"
+
+#: src/features/elections/catalog/election-edition-page.tsx:102
+msgid "Datele ediției nu s-au încărcat."
+msgstr "Datele ediției nu s-au încărcat."
 
 #: src/features/procurement/components/supplier/procurement-supplier-page.tsx:192
 msgid "Datele firmei din registrul comerțului nu pot fi citite acum; vânzările către stat de mai jos nu depind de ele."
@@ -15623,6 +15715,10 @@ msgstr "Datele merg până în {0}."
 msgid "Datele nu au putut fi citite acum. Asta nu spune nimic despre organizație."
 msgstr "Datele nu au putut fi citite acum. Asta nu spune nimic despre organizație."
 
+#: src/features/elections/catalog/catalog-parts.tsx:137
+msgid "Datele nu s-au putut actualiza. Se afișează ultimul răspuns primit."
+msgstr "Datele nu s-au putut actualiza. Se afișează ultimul răspuns primit."
+
 #: src/components/provenance/source-provenance.tsx:604
 #~ msgid "Datele pot fi depășite"
 #~ msgstr ""
@@ -15639,6 +15735,10 @@ msgstr "Datele nu au putut fi citite acum. Asta nu spune nimic despre organizaț
 #: src/features/private-companies/lib/company-registry-text.ts:30
 msgid "Datele registrului comerțului (ONRC) nu pot fi citite acum."
 msgstr "Datele registrului comerțului (ONRC) nu pot fi citite acum."
+
+#: src/features/elections/catalog/election-contest-page.tsx:70
+msgid "Datele scrutinului nu s-au încărcat."
+msgstr "Datele scrutinului nu s-au încărcat."
 
 #. placeholder {0}: monthText(period.to)
 #: src/features/procurement/lib/analytics-text.ts:320
@@ -16771,6 +16871,10 @@ msgstr "Dezvoltare durabilă — Ținte 2030"
 #: src/features/procurement/lib/home-model.ts:225
 msgid "Dialog competitiv"
 msgstr "Dialog competitiv"
+
+#: src/features/elections/catalog/elections-catalog-text.ts:40
+msgid "Diaspora"
+msgstr "Diaspora"
 
 #: src/features/ngos/organization/components/profile-parts.tsx:376
 msgid "Dicționarul"
@@ -18505,9 +18609,30 @@ msgstr "Ediția {pin} a analizei nu mai este disponibilă"
 msgid "Ediția analizei nu mai este disponibilă"
 msgstr "Ediția analizei nu mai este disponibilă"
 
+#: src/features/elections/catalog/election-contest-page.tsx:101
+msgid "Ediția de sursă"
+msgstr "Ediția de sursă"
+
+#: src/features/elections/catalog/election-contest-page.tsx:84
+#: src/features/elections/catalog/elections-catalog-text.ts:23
+msgid "Ediția de sursă {electionKey}"
+msgstr "Ediția de sursă {electionKey}"
+
+#: src/routes/alegeri/$electionKey.tsx:67
+msgid "Ediția de sursă {name}: anul, tipul și turul raportate de sursă, și scrutinele ei. Rezultatele nu sunt încă disponibile."
+msgstr "Ediția de sursă {name}: anul, tipul și turul raportate de sursă, și scrutinele ei. Rezultatele nu sunt încă disponibile."
+
+#: src/features/elections/catalog/election-edition-page.tsx:77
+msgid "Ediția de sursă nu a fost găsită"
+msgstr "Ediția de sursă nu a fost găsită"
+
 #: src/features/private-companies/components/hub/private-company-hub-page.tsx:232
 #~ msgid "Ediția nu are această valoare pentru anul ales."
 #~ msgstr "Ediția nu are această valoare pentru anul ales."
+
+#: src/features/elections/catalog/election-edition-page.tsx:188
+msgid "Ediția nu are scrutine în date."
+msgstr "Ediția nu are scrutine în date."
 
 #: src/features/private-companies/components/profile/company-activities-band.tsx:195
 msgid "Ediția ONRC"
@@ -18595,9 +18720,29 @@ msgstr "Ediția registrului comerțului (ONRC) nu e accesibilă public acum: dat
 msgid "Ediția registrului comerțului nu este publicată acum."
 msgstr "Ediția registrului comerțului nu este publicată acum."
 
+#: src/features/elections/catalog/election-edition-page.tsx:91
+msgid "Ediție de sursă"
+msgstr "Ediție de sursă"
+
 #: src/features/legal/components/legislation-gazette-directory.tsx:296
 msgid "Ediții"
 msgstr ""
+
+#: src/features/elections/catalog/elections-catalog-text.ts:17
+msgid "Ediții de date electorale"
+msgstr "Ediții de date electorale"
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:106
+msgid "Ediții de sursă"
+msgstr "Ediții de sursă"
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:72
+msgid "Edițiile de date electorale încărcate din sursele autorităților electorale, fiecare cu scrutinele ei."
+msgstr "Edițiile de date electorale încărcate din sursele autorităților electorale, fiecare cu scrutinele ei."
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:81
+msgid "Edițiile de sursă"
+msgstr "Edițiile de sursă"
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:191
 msgid "Edițiile Monitorului Oficial"
@@ -19116,6 +19261,18 @@ msgstr "Etape"
 #: src/features/elections/components/election-shared.tsx:156
 msgid "Eticheta candidatului sau competitorului este preluata din sursa; nu implica identitate de persoana rezolvata."
 msgstr ""
+
+#: src/features/elections/catalog/election-contest-page.tsx:94
+msgid "Etichetă de arie"
+msgstr "Etichetă de arie"
+
+#: src/features/elections/catalog/election-edition-page.tsx:235
+msgid "Eticheta exactă, de ex. mayor"
+msgstr "Eticheta exactă, de ex. mayor"
+
+#: src/features/elections/catalog/election-edition-page.tsx:273
+msgid "Eticheta exactă, de ex. tur1"
+msgstr "Eticheta exactă, de ex. tur1"
 
 #: src/features/procurement/components/cpv-label.tsx:48
 msgid "etichetă oficială RO indisponibilă"
@@ -20271,6 +20428,10 @@ msgstr "Fără fișă de firmă: nu se știe ce a vândut instituțiilor."
 msgid "Fără fișă în buget"
 msgstr "Fără fișă în buget"
 
+#: src/features/elections/catalog/election-edition-page.tsx:130
+msgid "Fără grupare"
+msgstr "Fără grupare"
+
 #: src/features/justice/lib/justice-format.ts:238
 #~ msgid "fără ICCJ"
 #~ msgstr ""
@@ -20969,6 +21130,10 @@ msgstr "Fiecare rând al cheltuielilor"
 msgid "Fiecare reper de pe bară este o luare de cuvânt, în ordinea din stenogramă, iar reperele colorate sunt intervențiile aflate acum pe ecran. Unde ședința este densă, reperele apropiate sunt grupate într-unul singur. Folosește săgețile sus și jos pentru a trece de la o intervenție la alta; activarea unui reper deschide intervenția în textul integral, fără să ascundă restul dezbaterii."
 msgstr ""
 
+#: src/features/elections/catalog/election-edition-page.tsx:163
+msgid "Fiecare scrutin din ediție, cu funcția, aria și turul exact cum le raportează sursa. Aria din sursă poate fi un loc de raportare, nu un teritoriu electoral verificat."
+msgstr "Fiecare scrutin din ediție, cu funcția, aria și turul exact cum le raportează sursa. Aria din sursă poate fi un loc de raportare, nu un teritoriu electoral verificat."
+
 #. placeholder {0}: formatCount(snapshot.status.anafInactive, i18n.locale)
 #. placeholder {1}: formatCount(snapshot.status.crossings.fiscallyInactiveButS1001Active, i18n.locale)
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:333
@@ -21185,6 +21350,10 @@ msgstr ""
 msgid "Filtrează după vorbitor"
 msgstr ""
 
+#: src/features/elections/catalog/elections-catalog-page.tsx:132
+msgid "Filtrează edițiile de sursă"
+msgstr "Filtrează edițiile de sursă"
+
 #: src/features/landing/lib/search-filters.ts:166
 msgid "Filtrează entitățile publice după etichetă"
 msgstr "Filtrează entitățile publice după etichetă"
@@ -21197,9 +21366,18 @@ msgstr "Filtrează entitățile publice după etichetă"
 msgid "Filtrează obiectivele mock-first fără a pierde dovada sursei."
 msgstr ""
 
+#: src/features/elections/catalog/election-edition-page.tsx:211
+msgid "Filtrează scrutinele"
+msgstr "Filtrează scrutinele"
+
 #: src/features/statistics/pages/statistics-dataset-explorer-page.tsx:111
 msgid "Filtrează seturile de date"
 msgstr "Filtrează seturile de date"
+
+#: src/features/elections/catalog/election-edition-page.tsx:189
+#: src/features/elections/catalog/elections-catalog-page.tsx:110
+msgid "Filtrele caută eticheta exactă din sursă."
+msgstr "Filtrele caută eticheta exactă din sursă."
 
 #: src/features/legal/components/legislation-acts-directory.tsx:338
 msgid "Filtrele de mai sus nu se aplică la căutarea de citări — șterge căutarea pentru a reveni la listă."
@@ -22228,6 +22406,11 @@ msgstr "De la anul fiscal"
 msgid "Full historical observations exceeded the page cap for this view. Showing the retrieved subset."
 msgstr "Observațiile istorice complete au depășit limita de paginare pentru această vizualizare. Se afișează subsetul recuperat."
 
+#: src/features/elections/catalog/election-contest-page.tsx:91
+#: src/features/elections/catalog/election-edition-page.tsx:227
+msgid "Funcție raportată"
+msgstr "Funcție raportată"
+
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:96
 #: src/components/classification-explorer/ClassificationExplorer.tsx:192
 #: src/components/classification-explorer/ClassificationExplorer.tsx:193
@@ -22750,6 +22933,10 @@ msgstr "Grup de interes economic"
 #: src/features/private-companies/lib/company-legal-forms.ts:20
 msgid "Grup european de interes economic"
 msgstr "Grup european de interes economic"
+
+#: src/features/elections/catalog/election-edition-page.tsx:128
+msgid "Grupare pe platformă (neverificată)"
+msgstr "Grupare pe platformă (neverificată)"
 
 #: src/features/private-companies/components/analytics/analytics-axis.tsx:90
 msgid "Gruparea descrie firma la data ediției, nu în anul fiscal."
@@ -24316,6 +24503,8 @@ msgid "Încasările bugetului general consolidat (toate bugetele publice, fără
 msgstr "Încasările bugetului general consolidat (toate bugetele publice, fără transferurile dintre ele), {0}. Sursa: buletinele lunare de execuție ale Ministerului Finanțelor. Variația, față de aceeași perioadă a anului trecut, în lei curenți."
 
 #: src/components/filters/filter-sheet/filter-sheet-parts.tsx:137
+#: src/features/elections/catalog/catalog-parts.tsx:122
+#: src/features/elections/catalog/catalog-parts.tsx:140
 #: src/features/entity-search/components/entity-empty-state.tsx:48
 #: src/features/entity-search/components/entity-empty-state.tsx:191
 #: src/features/entity-search/components/entity-empty-state.tsx:275
@@ -26093,6 +26282,7 @@ msgstr "judecătoriilor"
 msgid "județ"
 msgstr "județ"
 
+#: src/features/elections/catalog/elections-catalog-text.ts:39
 #: src/features/justice/components/analysis/analysis-filters.tsx:149
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:365
 #: src/features/private-companies/components/hub/company-county-rank.tsx:120
@@ -27398,6 +27588,10 @@ msgstr "Lista e scurtată: ediția are mai multe înscrieri decât cele afișate
 msgid "Lista e tăiată la 4.000 de rânduri."
 msgstr "Lista e tăiată la 4.000 de rânduri."
 
+#: src/features/elections/catalog/elections-catalog-page.tsx:108
+msgid "Lista edițiilor nu s-a încărcat."
+msgstr "Lista edițiilor nu s-a încărcat."
+
 #: src/features/ngos/registry/components/registry-answer.tsx:657
 msgid "Lista este exportul registrului, filtrat de API, în ordinea exportului: data din registru, cea mai recentă întâi. API-ul nu numără și nu grupează."
 msgstr "Lista este exportul registrului, filtrat de API, în ordinea exportului: data din registru, cea mai recentă întâi. API-ul nu numără și nu grupează."
@@ -27465,6 +27659,10 @@ msgstr "Lista nu se arată: cifrele acestei selecții nu pot fi date (vezi „Cu
 #: src/features/ngos/components/ngo-services-page.tsx:708
 #~ msgid "Lista pastreaza linkul catre profilul furnizorului."
 #~ msgstr ""
+
+#: src/features/elections/catalog/election-edition-page.tsx:187
+msgid "Lista scrutinelor nu s-a încărcat."
+msgstr "Lista scrutinelor nu s-a încărcat."
 
 #: src/features/elections/components/election-shared.tsx:374
 msgid "Lista sincronizata cu harta va fi conectata dupa API."
@@ -29064,12 +29262,13 @@ msgstr "Unește UAT-uri în acest spațiu de lucru"
 
 #: src/components/ui/pagination.tsx:170
 msgid "Mergi la"
-msgstr ""
+msgstr "Mergi la"
 
 #: src/components/ui/pagination.tsx:185
 msgid "Mergi la pagina"
-msgstr ""
+msgstr "Mergi la pagina"
 
+#: src/features/elections/catalog/catalog-parts.tsx:235
 #: src/features/procurement/components/analytics/analytics-answer.tsx:358
 msgid "Mergi la prima pagină"
 msgstr "Mergi la prima pagină"
@@ -29977,6 +30176,7 @@ msgstr "Nașteri peste decese"
 #~ msgid "National"
 #~ msgstr "Național"
 
+#: src/features/elections/catalog/elections-catalog-text.ts:41
 #: src/features/statistics/components/territory/territory-header.tsx:32
 msgid "Național"
 msgstr "Național"
@@ -30214,6 +30414,16 @@ msgstr "Nepublicat."
 #~ msgid "nepublicată"
 #~ msgstr "nepublicată"
 
+#: src/features/elections/catalog/catalog-parts.tsx:105
+msgid "Neraportat"
+msgstr "Neraportat"
+
+#: src/features/elections/catalog/election-contest-page.tsx:94
+#: src/features/elections/catalog/election-contest-page.tsx:97
+#: src/features/elections/catalog/election-edition-page.tsx:122
+msgid "Neraportată"
+msgstr "Neraportată"
+
 #: src/features/justice/components/case/justice-case-page.tsx:296
 msgid "nerecunoscut în registru"
 msgstr "nerecunoscut în registru"
@@ -30450,6 +30660,10 @@ msgstr "Nicio alegere salvată"
 #: src/components/provenance/source-provenance.tsx:474
 #~ msgid "Nicio dovadă înregistrată pentru această organizație."
 #~ msgstr ""
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:109
+msgid "Nicio ediție de sursă nu corespunde filtrelor."
+msgstr "Nicio ediție de sursă nu corespunde filtrelor."
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:273
 msgid "Nicio ediție nu corespunde filtrelor. Părțile III–VII au acoperire doar pentru anii recenți; Partea I începe cu 22 decembrie 1989."
@@ -30932,6 +31146,10 @@ msgstr "Niciun rezultat pentru <0>{0}</0>. <1>Încearcă numele complet sau iden
 #: src/features/landing/components/search/search-parts.tsx:395
 msgid "Niciun rezultat."
 msgstr "Niciun rezultat."
+
+#: src/features/elections/catalog/election-edition-page.tsx:188
+msgid "Niciun scrutin al ediției nu corespunde filtrelor."
+msgstr "Niciun scrutin al ediției nu corespunde filtrelor."
 
 #: src/features/ngos/components/ngo-services-page.tsx:358
 #~ msgid "Niciun serviciu nu corespunde filtrelor curente."
@@ -32452,6 +32670,10 @@ msgstr ""
 msgid "Nu există o ediție anterioară publicată cu care să se compare."
 msgstr "Nu există o ediție anterioară publicată cu care să se compare."
 
+#: src/features/elections/catalog/election-edition-page.tsx:78
+msgid "Nu există o ediție de sursă publică cu cheia {electionKey}."
+msgstr "Nu există o ediție de sursă publică cu cheia {electionKey}."
+
 #: src/features/private-companies/lib/company-profile-text.ts:621
 msgid "nu există o politică de calificare publicată"
 msgstr "nu există o politică de calificare publicată"
@@ -32503,6 +32725,10 @@ msgstr ""
 #: src/features/ngos/components/ngo-profile-page.tsx:119
 #~ msgid "Nu exista un profil mock pentru acest CUI."
 #~ msgstr "Nu există un profil mock pentru acest CUI."
+
+#: src/features/elections/catalog/election-contest-page.tsx:39
+msgid "Nu există un scrutin public cu cheia {contestKey}."
+msgstr "Nu există un scrutin public cu cheia {contestKey}."
 
 #: src/features/legal/components/reader/legal-reader-page.tsx:514
 msgid "Nu există un text servit pentru acest document"
@@ -32808,6 +33034,10 @@ msgstr "Număr de UAT-uri"
 #~ msgid "Nume"
 #~ msgstr ""
 
+#: src/features/elections/catalog/election-contest-page.tsx:96
+msgid "Nume de circumscripție"
+msgstr "Nume de circumscripție"
+
 #: src/features/public-enterprises/components/hub/hub-bands.tsx:253
 #: src/features/public-enterprises/components/hub/public-enterprise-hub-page.tsx:119
 msgid "nume din altă sursă"
@@ -33010,6 +33240,10 @@ msgstr "O corecție revizuită (nr. {id}) reține potrivirea: nu e afișat un co
 #: src/features/private-companies/lib/company-main-activity-text.ts:177
 msgid "O corecție revizuită reține potrivirea: nu e afișat un corespondent ONRC."
 msgstr "O corecție revizuită reține potrivirea: nu e afișat un corespondent ONRC."
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:83
+msgid "O ediție de sursă este un set de date așa cum l-a publicat sursa, nu o alegere distinctă: aceeași alegere poate apărea în mai multe ediții, iar edițiile nu se adună."
+msgstr "O ediție de sursă este un set de date așa cum l-a publicat sursa, nu o alegere distinctă: aceeași alegere poate apărea în mai multe ediții, iar edițiile nu se adună."
 
 #: src/features/legal/components/legislation-gazette-directory.tsx:161
 msgid "o ediție în {partLabel}, {year}"
@@ -33991,6 +34225,9 @@ msgstr "Organizațiile în lichidare"
 #~ msgid "Organization name"
 #~ msgstr "Denumirea organizației"
 
+#: src/features/elections/catalog/election-edition-page.tsx:255
+#: src/features/elections/catalog/elections-catalog-page.tsx:149
+#: src/features/elections/catalog/elections-catalog-page.tsx:165
 #: src/features/ngos/registry/components/registry-filters.tsx:111
 msgid "Oricare"
 msgstr "Oricare"
@@ -34160,12 +34397,16 @@ msgstr "Pagina {pageText}"
 
 #: src/components/ui/pagination.tsx:140
 msgid "Pagina {safeCurrent} din {totalPages}"
-msgstr ""
+msgstr "Pagina {safeCurrent} din {totalPages}"
 
 #: src/features/procurement/components/contract/contract-block.tsx:229
 #: src/features/procurement/components/contract/contract-block.tsx:269
 msgid "pagina aceasta"
 msgstr "pagina aceasta"
+
+#: src/features/elections/catalog/catalog-parts.tsx:230
+msgid "Pagina aceasta nu are rânduri. Lista are {pages, plural, one {o pagină} few {# pagini} other {# de pagini}}."
+msgstr "Pagina aceasta nu are rânduri. Lista are {pages, plural, one {o pagină} few {# pagini} other {# de pagini}}."
 
 #: src/features/entity-search/components/entity-empty-state.tsx:235
 msgid "Pagina aceasta nu are rezultate afișabile, dar căutarea are o pagină următoare."
@@ -34245,7 +34486,7 @@ msgstr ""
 
 #: src/components/ui/pagination.tsx:86
 msgid "Paginare"
-msgstr ""
+msgstr "Paginare"
 
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:756
 #~ msgid "Paginare întreprinderi publice"
@@ -36208,7 +36449,7 @@ msgstr ""
 
 #: src/components/ui/pagination.tsx:107
 msgid "Precedenta"
-msgstr ""
+msgstr "Precedenta"
 
 #: src/features/legal/components/legislation-act-finder.tsx:185
 msgid "Precizări de la server"
@@ -36435,11 +36676,11 @@ msgstr ""
 
 #: src/components/ui/pagination.tsx:96
 msgid "Prima"
-msgstr ""
+msgstr "Prima"
 
 #: src/components/ui/pagination.tsx:93
 msgid "Prima pagină"
-msgstr ""
+msgstr "Prima pagină"
 
 #: src/features/ngos/hub/ngo-hub-page.tsx:326
 msgid "prima publicare"
@@ -39209,8 +39450,8 @@ msgstr ""
 #~ msgstr "Rezultate parțiale — unele serii pot lipsi."
 
 #: src/features/landing/lib/landing-groups.ts:150
-msgid "Rezultate pe scrutin și geografie. Rezultatele nu sunt voturi în plen."
-msgstr "Rezultate pe scrutin și geografie. Rezultatele nu sunt voturi în plen."
+#~ msgid "Rezultate pe scrutin și geografie. Rezultatele nu sunt voturi în plen."
+#~ msgstr "Rezultate pe scrutin și geografie. Rezultatele nu sunt voturi în plen."
 
 #: src/features/ngos/components/ngo-services-page.tsx:698
 #~ msgid "Rezultate servicii"
@@ -39223,6 +39464,10 @@ msgstr ""
 #: src/features/statistics/components/explorer/dataset-explorer-results.tsx:101
 msgid "Rezultatele căutării"
 msgstr "Rezultatele căutării"
+
+#: src/features/elections/catalog/catalog-parts.tsx:76
+msgid "Rezultatele, prezența la vot, candidații și mandatele nu sunt disponibile în această versiune."
+msgstr "Rezultatele, prezența la vot, candidații și mandatele nu sunt disponibile în această versiune."
 
 #: src/features/statistics/components/comparison/comparison-standings.tsx:104
 msgid "Rezultatul comparației"
@@ -39881,9 +40126,34 @@ msgstr "Zoom la scroll: Dezactivat"
 msgid "Scroll zoom: On"
 msgstr "Zoom la scroll: Activat"
 
+#: src/features/elections/catalog/election-contest-page.tsx:56
+msgid "Scrutin din sursă"
+msgstr "Scrutin din sursă"
+
 #: src/features/elections/components/election-hub-page.tsx:61
 msgid "Scrutin negasit"
 msgstr ""
+
+#: src/features/elections/catalog/election-edition-page.tsx:160
+msgid "Scrutine"
+msgstr "Scrutine"
+
+#: src/features/elections/catalog/election-edition-page.tsx:161
+#: src/features/elections/catalog/election-edition-page.tsx:185
+msgid "Scrutinele ediției"
+msgstr "Scrutinele ediției"
+
+#: src/features/elections/catalog/elections-catalog-text.ts:33
+msgid "Scrutinul {contestKey}"
+msgstr "Scrutinul {contestKey}"
+
+#: src/routes/alegeri/contest/$contestKey.tsx:52
+msgid "Scrutinul {office} din {place}, din ediția de sursă {election}: funcția, aria și turul raportate de sursă. Rezultatele nu sunt încă disponibile."
+msgstr "Scrutinul {office} din {place}, din ediția de sursă {election}: funcția, aria și turul raportate de sursă. Rezultatele nu sunt încă disponibile."
+
+#: src/features/elections/catalog/election-contest-page.tsx:38
+msgid "Scrutinul nu a fost găsit"
+msgstr "Scrutinul nu a fost găsit"
 
 #: src/features/justice/components/hub/justice-hub-hero.tsx:51
 #: src/features/landing/components/landing-page.tsx:278
@@ -39932,7 +40202,7 @@ msgstr ""
 
 #: src/components/ui/pagination.tsx:60
 msgid "Se afișează {from}–{to} din {totalCount} rânduri"
-msgstr ""
+msgstr "Se afișează {from}–{to} din {totalCount} rânduri"
 
 #: src/features/parliament/components/parliament-stenogram-filter-notice.tsx:56
 msgid "Se afișează {visibleCount} din {totalCount} luări de cuvânt ale ședinței, doar de la: {speakerList}."
@@ -40023,6 +40293,7 @@ msgstr ""
 #~ msgid "Se exportă…"
 #~ msgstr "Se exportă…"
 
+#: src/features/elections/catalog/catalog-parts.tsx:261
 #: src/features/statistics/components/comparison/comparison-standings.tsx:142
 msgid "Se încarcă"
 msgstr "Se încarcă"
@@ -40054,6 +40325,10 @@ msgstr "Se încarcă contractul"
 #: src/features/legal/components/legislation-gazette-directory.tsx:464
 msgid "Se încarcă cuprinsul…"
 msgstr ""
+
+#: src/features/elections/catalog/elections-catalog-page.tsx:107
+msgid "Se încarcă edițiile de sursă"
+msgstr "Se încarcă edițiile de sursă"
 
 #: src/features/legal/components/legislation-gazette-skeleton.tsx:16
 msgid "Se încarcă edițiile Monitorului Oficial"
@@ -40107,6 +40382,10 @@ msgstr ""
 msgid "Se încarcă pagina"
 msgstr "Se încarcă pagina"
 
+#: src/features/elections/catalog/catalog-parts.tsx:322
+msgid "Se încarcă pagina cerută. Rândurile de mai jos sunt cele afișate anterior."
+msgstr "Se încarcă pagina cerută. Rândurile de mai jos sunt cele afișate anterior."
+
 #. placeholder {0}: Math.min(loadedCount + 1, groupCount)
 #: src/features/legal/components/reader/legal-reader-page.tsx:749
 msgid "Se încarcă partea {0} din {groupCount}…"
@@ -40139,6 +40418,10 @@ msgstr "Se încarcă regiunile și județele…"
 #: src/features/public-enterprises/components/public-enterprises-pages.tsx:558
 #~ msgid "Se încarcă rezultatele"
 #~ msgstr ""
+
+#: src/features/elections/catalog/election-edition-page.tsx:186
+msgid "Se încarcă scrutinele"
+msgstr "Se încarcă scrutinele"
 
 #: src/features/statistics/components/detail/detail-skeletons.tsx:116
 msgid "Se încarcă seria de date"
@@ -42996,6 +43279,7 @@ msgstr "Șterge clasificările invalide înainte de a alege alte valori."
 #~ msgid "Șterge doar filtrul teritorial"
 #~ msgstr "Șterge doar filtrul teritorial"
 
+#: src/features/elections/catalog/catalog-parts.tsx:201
 #: src/features/legal/components/legislation-acts-directory.tsx:329
 #: src/features/legal/components/legislation-changes-feed.tsx:431
 #: src/features/parliament/components/parliament-list-surface.tsx:163
@@ -44855,6 +45139,11 @@ msgstr ""
 msgid "Tip act"
 msgstr ""
 
+#: src/features/elections/catalog/election-contest-page.tsx:92
+#: src/features/elections/catalog/election-edition-page.tsx:247
+msgid "Tip de arie din sursă"
+msgstr "Tip de arie din sursă"
+
 #: src/routes/justitie.dosare.$caseId.tsx:270
 #~ msgid "tip necunoscut"
 #~ msgstr ""
@@ -44862,6 +45151,11 @@ msgstr ""
 #: src/routes/justitie.cautare.tsx:269
 #~ msgid "Tip parte"
 #~ msgstr ""
+
+#: src/features/elections/catalog/election-edition-page.tsx:118
+#: src/features/elections/catalog/elections-catalog-page.tsx:156
+msgid "Tip raportat"
+msgstr "Tip raportat"
 
 #: src/features/ngos/components/ngo-services-page.tsx:271
 #~ msgid "Tip serviciu"
@@ -45174,6 +45468,12 @@ msgstr "Toate domeniile"
 #: src/features/private-companies/components/profile/company-economy-band.tsx:57
 #~ msgid "Toate domeniile →"
 #~ msgstr "Toate domeniile →"
+
+#: src/features/elections/catalog/catalog-parts.tsx:158
+#: src/features/elections/catalog/election-contest-page.tsx:52
+#: src/features/elections/catalog/election-edition-page.tsx:88
+msgid "Toate edițiile de sursă"
+msgstr "Toate edițiile de sursă"
 
 #: src/features/legal/components/legislation-changes-feed.tsx:384
 msgid "toate felurile"
@@ -45901,6 +46201,12 @@ msgstr "Încearcă să ghicești din nou"
 msgid "Try once more before moving on."
 msgstr "Mai încearcă o dată înainte de a continua."
 
+#: src/features/elections/catalog/election-contest-page.tsx:98
+#: src/features/elections/catalog/election-edition-page.tsx:124
+#: src/features/elections/catalog/election-edition-page.tsx:265
+msgid "Tur raportat"
+msgstr "Tur raportat"
+
 #: src/features/statistics/lib/territory-derived.ts:264
 msgid "TUR102C (31 iul.) / POP108D × 1.000"
 msgstr "TUR102C (31 iul.) / POP108D × 1.000"
@@ -46056,7 +46362,7 @@ msgstr "UAT-uri"
 
 #: src/components/ui/pagination.tsx:162
 msgid "Ultima"
-msgstr ""
+msgstr "Ultima"
 
 #: src/features/statistics/components/detail-metadata-section.tsx:190
 #~ msgid "Ultima actualizare INS: {lastUpdate}"
@@ -46094,7 +46400,7 @@ msgstr "Ultima modificare"
 
 #: src/components/ui/pagination.tsx:160
 msgid "Ultima pagină ({totalPages})"
-msgstr ""
+msgstr "Ultima pagină ({totalPages})"
 
 #: src/features/statistics/components/territory/territory-period-control.tsx:47
 #: src/features/statistics/components/territory/territory-period-control.tsx:50
@@ -46299,6 +46605,10 @@ msgstr "Un număr de salariați imposibil ({0}, CUI {1}) e lăsat afară din cla
 #: src/features/national-budget/analytics/components/analytics-execution.tsx:401
 msgid "Un rând fără valoare în această perioadă („—\", motivul la indicator) rămâne în arbore; grupa lui nu mai e suma rândurilor arătate."
 msgstr "Un rând fără valoare în această perioadă („—\", motivul la indicator) rămâne în arbore; grupa lui nu mai e suma rândurilor arătate."
+
+#: src/routes/alegeri/contest/$contestKey.tsx:53
+msgid "Un scrutin dintr-o ediție de date electorale: funcția, aria și turul raportate de sursă. Rezultatele nu sunt încă disponibile."
+msgstr "Un scrutin dintr-o ediție de date electorale: funcția, aria și turul raportate de sursă. Rezultatele nu sunt încă disponibile."
 
 #: src/features/public-enterprises/lib/authority-portfolio-text.ts:214
 msgid "un semnal de calitate"

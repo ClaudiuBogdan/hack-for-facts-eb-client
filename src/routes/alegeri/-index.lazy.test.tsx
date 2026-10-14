@@ -1,82 +1,52 @@
 import type { ComponentType } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { electionsNavigateMock } from '@/features/elections/test/elections-router-mock'
-import {
-  DEFAULT_ELECTIONS_LANDING_SEARCH,
-  type ElectionsLandingSearch,
-} from '@/schemas/elections'
-import {
-  createTestQueryClient,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from '@/test/test-utils'
-import userEvent from '@testing-library/user-event'
+import { render } from '@/test/test-utils'
+import { electionsCatalogKeys, seedKeyOf } from '@/features/elections/lib/elections-catalog-keys'
 
-let mockedSearch: ElectionsLandingSearch = DEFAULT_ELECTIONS_LANDING_SEARCH
+const state = vi.hoisted(() => ({
+  search: {} as Record<string, unknown>,
+  loaderData: {} as Record<string, unknown>,
+  navigate: vi.fn(),
+  page: vi.fn((_props: Record<string, unknown>) => null),
+}))
 
-vi.mock('@tanstack/react-router', async () => {
-  const { MockElectionsLink, electionsNavigateMock, createMockLazyFileRoute } =
-    await import('@/features/elections/test/elections-router-mock')
+vi.mock('@tanstack/react-router', () => ({
+  createLazyFileRoute: () => (options: Record<string, unknown>) => ({ options, useSearch: () => state.search, useLoaderData: () => state.loaderData }),
+  useNavigate: () => state.navigate,
+}))
+vi.mock('@/features/elections/catalog/elections-catalog-page', () => ({ ElectionsCatalogPage: (props: Record<string, unknown>) => state.page(props) }))
 
-  return {
-    Link: MockElectionsLink,
-    useNavigate: () => electionsNavigateMock,
-    createLazyFileRoute: createMockLazyFileRoute(() => mockedSearch),
-  }
+const { Route } = await import('./index.lazy')
+const RoutePage = (Route as unknown as { readonly options: { readonly component: ComponentType } }).options.component
+const propsOfLastRender = () => state.page.mock.lastCall?.[0] as Record<string, unknown> & { readonly onSearchChange: (next: unknown) => void }
+
+const PAGE = { items: [], page: 1, pageSize: 20, total: 0, hasMore: false }
+
+beforeEach(() => {
+  state.page.mockClear()
+  state.navigate.mockReset()
 })
 
-describe('AlegeriLandingRoutePage', () => {
-  beforeEach(() => {
-    mockedSearch = { ...DEFAULT_ELECTIONS_LANDING_SEARCH }
-    electionsNavigateMock.mockReset()
+describe('the /alegeri route page', () => {
+  it('seeds the page with the server’s read when it was for this address', () => {
+    state.search = { an: 2024 }
+    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.catalog({ an: 2024 })), page: PAGE }
+    render(<RoutePage />)
+    expect(propsOfLastRender()).toMatchObject({ search: { an: 2024 }, initialPage: PAGE })
   })
 
-  it('passes search to the landing page and navigates on filter interactions', async () => {
-    const user = userEvent.setup()
-    const { Route } = await import('./index.lazy')
-    const RouteComponent = Route.options.component as ComponentType
+  it('never seeds another address’s page', () => {
+    state.search = { an: 2020 }
+    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.catalog({ an: 2024 })), page: PAGE }
+    render(<RoutePage />)
+    expect(propsOfLastRender()).not.toHaveProperty('initialPage')
+  })
 
-    render(<RouteComponent />, { queryClient: createTestQueryClient() })
-
-    expect(await screen.findByRole('heading', { name: 'Rezultate alegeri' })).toBeInTheDocument()
-    expect(await screen.findByText('Date demonstrative (mock)')).toBeInTheDocument()
-    expect(await screen.findByText('Alegeri locale 2024')).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'Exista scrutine istorice ascunse; activeaza arhiva pentru a le vedea.',
-      ),
-    ).toBeInTheDocument()
-
-    fireEvent.change(screen.getByPlaceholderText('Cauta dupa nume, an sau autoritate'), {
-      target: { value: 'cluj' },
-    })
-    expect(electionsNavigateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        search: expect.objectContaining({ q: 'cluj' }),
-        replace: true,
-      }),
-    )
-
-    electionsNavigateMock.mockClear()
-    await user.click(screen.getByRole('button', { name: 'Locale' }))
-    await waitFor(() => {
-      expect(electionsNavigateMock).toHaveBeenCalledWith({
-        search: expect.objectContaining({
-          family: ['local'],
-        }),
-        replace: true,
-      })
-    })
-
-    electionsNavigateMock.mockClear()
-    await user.click(screen.getByRole('switch'))
-    await waitFor(() => {
-      expect(electionsNavigateMock).toHaveBeenCalledWith({
-        search: expect.objectContaining({ arhiva: 1 }),
-        replace: true,
-      })
-    })
+  it('moves the filters and the page through the address, keeping the reader’s place', () => {
+    state.search = {}
+    state.loaderData = { seedKey: seedKeyOf(electionsCatalogKeys.catalog({})) }
+    render(<RoutePage />)
+    propsOfLastRender().onSearchChange({ tip: 'local' })
+    expect(state.navigate).toHaveBeenCalledWith({ search: { tip: 'local' }, resetScroll: false })
   })
 })

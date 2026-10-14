@@ -1,75 +1,41 @@
 import type { ComponentType } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { electionsNavigateMock } from '@/features/elections/test/elections-router-mock'
-import {
-  DEFAULT_CONTEST_SEARCH,
-  type ContestSearch,
-} from '@/schemas/elections'
-import { createTestQueryClient, render, screen, waitFor } from '@/test/test-utils'
-import userEvent from '@testing-library/user-event'
+import { render } from '@/test/test-utils'
 
-let mockedSearch: ContestSearch = DEFAULT_CONTEST_SEARCH
-let mockedParams = { contestKey: 'local-2024-cluj-napoca-primar' }
+const state = vi.hoisted(() => ({
+  params: { contestKey: '' },
+  loaderData: {} as Record<string, unknown>,
+  page: vi.fn((_props: Record<string, unknown>) => null),
+}))
 
-vi.mock('@tanstack/react-router', async () => {
-  const { MockElectionsLink, electionsNavigateMock, createMockLazyFileRoute } =
-    await import('@/features/elections/test/elections-router-mock')
+vi.mock('@tanstack/react-router', () => ({
+  createLazyFileRoute: () => (options: Record<string, unknown>) => ({ options, useParams: () => state.params, useLoaderData: () => state.loaderData }),
+}))
+vi.mock('@/features/elections/catalog/election-contest-page', () => ({ ElectionContestPage: (props: Record<string, unknown>) => state.page(props) }))
 
-  return {
-    Link: MockElectionsLink,
-    useNavigate: () => electionsNavigateMock,
-    createLazyFileRoute: createMockLazyFileRoute(
-      () => mockedSearch,
-      () => mockedParams,
-    ),
-  }
+const { Route } = await import('./$contestKey.lazy')
+const RoutePage = (Route as unknown as { readonly options: { readonly component: ComponentType } }).options.component
+const propsOfLastRender = () => state.page.mock.lastCall?.[0] as Record<string, unknown>
+
+const KEY = 'contest:bec-local-2024:mayor:source_constituency:8-19'
+const CONTEST = { contestKey: KEY }
+
+beforeEach(() => {
+  state.page.mockClear()
 })
 
-describe('ContestResultRoutePage', () => {
-  beforeEach(() => {
-    mockedSearch = { ...DEFAULT_CONTEST_SEARCH }
-    mockedParams = { contestKey: 'local-2024-cluj-napoca-primar' }
-    electionsNavigateMock.mockReset()
+describe('the /alegeri/contest/$contestKey route page', () => {
+  it('seeds the page with the server’s read of this contest', () => {
+    state.params = { contestKey: KEY }
+    state.loaderData = { contestKey: KEY, contest: CONTEST }
+    render(<RoutePage />)
+    expect(propsOfLastRender()).toEqual({ contestKey: KEY, initialContest: CONTEST })
   })
 
-  it('passes params/search and navigates on explorer interactions', async () => {
-    const user = userEvent.setup()
-    const { Route } = await import('./$contestKey.lazy')
-    const RouteComponent = Route.options.component as ComponentType
-
-    render(<RouteComponent />, { queryClient: createTestQueryClient() })
-
-    expect(await screen.findByText('Rezultate alegeri')).toBeInTheDocument()
-    expect(await screen.findAllByText('EMIL BOC - PNL')).not.toHaveLength(0)
-
-    await user.click(screen.getByRole('button', { name: 'Harta' }))
-    await waitFor(() => {
-      expect(electionsNavigateMock).toHaveBeenCalledWith({
-        search: expect.objectContaining({ view: 'harta' }),
-        replace: true,
-      })
-    })
-
-    electionsNavigateMock.mockClear()
-    await user.click(screen.getByRole('button', { name: 'Mod expert' }))
-    await waitFor(() => {
-      expect(electionsNavigateMock).toHaveBeenCalledWith({
-        search: expect.objectContaining({ expert: 1 }),
-        replace: true,
-      })
-    })
-  })
-
-  it('shows not-found state for unknown contest keys', async () => {
-    mockedParams = { contestKey: 'unknown-contest' }
-    const { Route } = await import('./$contestKey.lazy')
-    const RouteComponent = Route.options.component as ComponentType
-
-    render(<RouteComponent />, { queryClient: createTestQueryClient() })
-
-    expect(await screen.findByText('Concurs negasit')).toBeInTheDocument()
-    expect(
-      screen.getByText('Fixture-ul MVP contine contestKey local-2024-cluj-napoca-primar.'),
-    ).toBeInTheDocument()
+  it('never seeds another contest’s page', () => {
+    state.params = { contestKey: `${KEY}-2` }
+    state.loaderData = { contestKey: KEY, contest: CONTEST }
+    render(<RoutePage />)
+    expect(propsOfLastRender()).toEqual({ contestKey: `${KEY}-2` })
   })
 })
