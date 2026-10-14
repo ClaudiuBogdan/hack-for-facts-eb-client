@@ -22,12 +22,12 @@ export function ChartConfigView() {
                     <BreadcrumbList>
                         <BreadcrumbItem>
                             <BreadcrumbLink asChild>
-                                <a href="#" onClick={(e) => { e.preventDefault(); goToOverview(); }}>Chart</a>
+                                <a href="#" onClick={(e) => { e.preventDefault(); goToOverview(); }}><Trans>Chart</Trans></a>
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator />
                         <BreadcrumbItem>
-                            <BreadcrumbPage>Chart Config</BreadcrumbPage>
+                            <BreadcrumbPage><Trans>Chart Config</Trans></BreadcrumbPage>
                         </BreadcrumbItem>
                     </BreadcrumbList>
                 </Breadcrumb>
@@ -36,7 +36,7 @@ export function ChartConfigView() {
                         <h1 className="text-3xl font-bold tracking-tight" data-testid="chart-config-heading">
                             <Trans>Chart Configuration</Trans>
                         </h1>
-                        <p className="text-muted-foreground">{chart.title || 'Untitled Chart'}</p>
+                        <p className="text-muted-foreground">{chart.title || <Trans>Untitled Chart</Trans>}</p>
                     </div>
 
                     <div className="flex items-center gap-2">

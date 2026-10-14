@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Trans } from '@lingui/react/macro';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback';
@@ -28,7 +29,7 @@ export const YearRangeSlider = ({ value, onChange, min, max }: YearRangeSliderPr
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <Label>Year Range</Label>
+        <Label><Trans>Year Range</Trans></Label>
         <span className="text-sm text-muted-foreground">
           {localValue[0]} - {localValue[1]}
         </span>

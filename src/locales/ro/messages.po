@@ -49351,3 +49351,21 @@ msgstr "Urmează grupele {0} ({1}) și {2} ({3})."
 #: src/features/private-companies/components/profile/company-figures.tsx:75
 msgid "Valori din contracte, achiziții și PNRR"
 msgstr "Valori din contracte, achiziții și PNRR"
+
+#: src/components/charts/components/views/ChartConfigView.tsx:30
+msgid "Chart Config"
+msgstr "Configurare"
+
+#: src/components/charts/components/chart-config/YearRangeSlider.tsx:32
+msgid "Year Range"
+msgstr "Interval de ani"
+
+#: src/components/charts/components/views/SeriesConfigView.tsx:323
+#: src/components/charts/components/views/SeriesConfigView.tsx:487
+msgid "Changing…"
+msgstr "Se modifică…"
+
+#: src/components/charts/components/views/SeriesConfigView.tsx:324
+#: src/components/charts/components/views/SeriesConfigView.tsx:488
+msgid "Changed"
+msgstr "Modificat"
