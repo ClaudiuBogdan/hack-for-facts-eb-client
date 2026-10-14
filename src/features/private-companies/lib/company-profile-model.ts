@@ -4,6 +4,7 @@ import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
 import type {
   PrivateCompanyActivitySelection,
   PrivateCompanyFinancialYear,
+  PrivateCompanyLongFormStatement,
   PrivateCompanyMetricStatus,
   PrivateCompanyProfile,
   PrivateCompanyStatementPublisher,
@@ -122,7 +123,7 @@ export interface MoneyFlowSummary {
  */
 export type StatusKind = 'active' | 'insolvency' | 'dissolution' | 'struck-off' | 'other' | 'conflict' | 'unqualified'
 
-/** The statements' size classes, as `/companies` counts them. */
+/** A statement's reported-headcount band (0, 1–9, 10–49, 50–249, 250+), as `/companies` counts them: never an SME, micro or tax class. */
 export type SizeClass = 'none' | 'micro' | 'small' | 'medium' | 'large'
 
 /** One statement's published values, for inspection: every year, every status. */
@@ -262,6 +263,12 @@ export interface CompanyProfileModel {
   }
   readonly lossYears: number
   readonly sizeClass: SizeClass | null
+  /**
+   * Statements under the CUI kept outside the typed history by policy (long
+   * format only), newest first: file metadata, never a figure, in no series
+   * or count. Null: unknown (said as nothing, never as „none").
+   */
+  readonly longForm: readonly PrivateCompanyLongFormStatement[] | null
   /**
    * The statements' qualification. Every series, trend, count and comparison
    * on the page shares ONE basis: the newest assessed statement's policy,
@@ -767,6 +774,7 @@ export function buildCompanyProfileModel(
     // Counted over reported net results on the basis only; the page says which statements it cannot count.
     lossYears: netResult.filter((point) => point.value !== null && point.value < 0).length,
     sizeClass: sizeClassOf(latest ? employeesOf(latest) : null),
+    longForm: profile.longFormStatements ?? null,
     qualification: {
       policy: basis ? { version: basis.qualification.policyVersion, approvedOn: basis.qualification.policyApprovedOn } : null,
       latestNotAssessed: latest && latest.qualification.assessment !== 'assessed' ? (latest.qualification.reason ?? 'qualification_missing') : null,

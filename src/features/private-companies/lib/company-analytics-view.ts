@@ -40,6 +40,22 @@ export function heldOf(coverage: CompanyAnalysisCoverage): string {
   return sumDecimals([coverage.heldProfile, coverage.heldObservation, coverage.heldQuality, coverage.heldComponent]) ?? '0'
 }
 
+/** A count of companies with its noun, the count as `countText` writes it: „1 firmă", „12 firme", „1.234 de firme". */
+export function companiesCountText(count: string, locale: DecimalLocale): string {
+  const text = countText(count, locale)
+  return plural(Number(count), { one: `${text} firmă`, few: `${text} firme`, other: `${text} de firme` })
+}
+
+/** The reference-year cohort in a sentence, agreeing with its count: one company is „aceeași firmă, selectată". */
+export function cohortSentence(count: string, year: number, locale: DecimalLocale): string {
+  const text = countText(count, locale)
+  return plural(Number(count), {
+    one: `Fiecare an arată aceeași firmă, selectată în ${year}.`,
+    few: `Fiecare an arată aceleași ${text} firme, selectate în ${year}.`,
+    other: `Fiecare an arată aceleași ${text} de firme, selectate în ${year}.`,
+  })
+}
+
 /** A measure's figure: its sum on one scale with the exact value under it, or why there is none — never a 0 for nothing reported. */
 export function metricFact(aggregate: CompanyAnalysisMetricAggregate, locale: DecimalLocale): Fact {
   const label = metricLabel(aggregate.metric)
@@ -50,7 +66,7 @@ export function metricFact(aggregate: CompanyAnalysisMetricAggregate, locale: De
     value: compact.value,
     unit: compact.unit,
     label,
-    notes: [t`raportat de ${countText(aggregate.contributors, locale)} firme`, exactValueText(aggregate.sum, aggregate.unit, locale)],
+    notes: [t`raportat de ${companiesCountText(aggregate.contributors, locale)}`, exactValueText(aggregate.sum, aggregate.unit, locale)],
   }
 }
 
@@ -167,7 +183,7 @@ export function labelSourcesOf(sources: readonly (string | null | undefined)[]):
 export function pointText(point: CompanyAnalysisSeriesPoint, series: CompanyAnalysisSeries, locale: DecimalLocale): string {
   const sum = point.metric.sum
   if (!point.available || sum === null) return t`${point.fiscalYear}: ${gapReasonLabel(point.available ? 'NO_REPORTED_VALUES' : point.gapReason)}`
-  return t`${point.fiscalYear}: ${exactValueText(sum, series.unit, locale)} · raportat de ${countText(point.metric.contributors, locale)} din ${countText(point.filers, locale)} firme cu situație`
+  return t`${point.fiscalYear}: ${exactValueText(sum, series.unit, locale)} · raportat de ${countText(point.metric.contributors, locale)} din ${companiesCountText(point.filers, locale)} cu situație`
 }
 
 /** The last year when it holds fewer statements than the year before: observed partial coverage (a recent year still being filed), never „complete". */

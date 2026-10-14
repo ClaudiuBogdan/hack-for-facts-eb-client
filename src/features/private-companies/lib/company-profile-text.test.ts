@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { i18n } from '@lingui/core'
 import { describe, expect, it, vi } from 'vitest'
 import { admittedQualification } from '../mocks/fixtures/qualification'
 import { buildCompanyProfileModel } from './company-profile-model'
@@ -10,6 +11,7 @@ import {
   debtSentence,
   financialLede,
   institutionName,
+  longFormNotice,
   metricStatusLabel,
   moneyLede,
   moneyPeriod,
@@ -20,6 +22,7 @@ import {
   notAssessedNotice,
   otherBasisNotice,
   qualificationLede,
+  sizeClassLabel,
   statementPublisherLabel,
   statementStateLabel,
   statusNotice,
@@ -367,6 +370,36 @@ describe('qualification in words (CD-14)', () => {
     ])
     expect(statementPublisherLabel('mfp')).toBe('Ministerul Finanțelor')
     expect(statementPublisherLabel(null)).toBe('sursă nenumită')
+  })
+
+  it('names the size by reported headcount and its statement, never as an SME or tax class (CQA-05)', () => {
+    expect((['none', 'micro', 'small', 'medium', 'large'] as const).map((size) => sizeClassLabel(size, 2024))).toEqual([
+      '0 salariați raportați în bilanțul pe 2024',
+      '1–9 salariați raportați în bilanțul pe 2024',
+      '10–49 de salariați raportați în bilanțul pe 2024',
+      '50–249 de salariați raportați în bilanțul pe 2024',
+      '250 de salariați sau mai mulți, raportați în bilanțul pe 2024',
+    ])
+  })
+
+  it('says what long-format-only years are not, and nothing when none is known or the API cannot say', () => {
+    const statement = (fiscalYear: number) => ({ fiscalYear, publisher: 'mfp' as const, filerClass: 'ir', sourceSnapshotId: `mfp:p:${fiscalYear}:r`, resourceUrl: null })
+    const notice = (longFormStatements: NonNullable<Parameters<typeof companyProfile>[0]>['longFormStatements']) => longFormNotice(buildCompanyProfileModel(companyProfile({ longFormStatements })))
+    expect(notice([statement(2018), statement(2017), statement(2015)])).toBe(
+      'Bilanțurile pe 2015, 2017–2018 sunt înregistrate sub acest CUI doar în format lung: pagina nu le citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu sunt ani fără bilanț.',
+    )
+    expect(notice([statement(2013)])).toBe(
+      'Bilanțul pe 2013 e înregistrat sub acest CUI doar în format lung: pagina nu îi citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu e un an fără bilanț.',
+    )
+    for (const unknownOrNone of [undefined, null, []]) expect(notice(unknownOrNone)).toBeNull()
+    // OMV's seven years are Romanian „few": the plural form falls back to the many-years sentence.
+    const before = i18n.locale
+    i18n.activate('ro')
+    try {
+      expect(notice([2018, 2017, 2016, 2015, 2014, 2013, 2012].map(statement))).toMatch(/^Bilanțurile pe 2012–2018 sunt înregistrate sub acest CUI doar în format lung: .* Nu sunt ani fără bilanț\.$/u)
+    } finally {
+      i18n.activate(before)
+    }
   })
 
   it('explains a held derived net without a value, apart from its published components (D1-C02)', () => {

@@ -130,6 +130,7 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean) => /* GraphQL *
           holdDrift
         }
       }
+      longFormOnly { year sourceSystem filerClass sourceSnapshotId resourceUrl }
       trajectory {
         fromYear
         toYear
@@ -339,12 +340,28 @@ const rawTrajectorySchema = z.object({
   employeesDeltaReason: z.string().nullish(),
 })
 
+/**
+ * `CompanyFinancials.longFormOnly`: statements kept outside the typed history
+ * by policy, as file-level metadata (no figure, no row). Null: the API cannot
+ * read its ledger (unknown). Optional as well, for recorded and mocked
+ * answers without it — NOT for an older server, which rejects the field at
+ * validation: the server ships before this client.
+ */
+const rawLongFormStatementSchema = z.object({
+  year: z.number().int(),
+  sourceSystem: z.string(),
+  filerClass: z.string().nullable(),
+  sourceSnapshotId: z.string(),
+  resourceUrl: z.string().nullable(),
+})
+
 export const companyProfileResponseSchema = z.object({
   company: rawCompanySchema.nullable(),
   companyFinancials: z
     .object({
       years: z.array(rawFinancialYearSchema),
       trajectory: rawTrajectorySchema.nullish(),
+      longFormOnly: z.array(rawLongFormStatementSchema).nullish(),
     })
     .nullable(),
 })
@@ -352,6 +369,7 @@ export const companyProfileResponseSchema = z.object({
 export type RawCompany = z.infer<typeof rawCompanySchema>
 export type RawActivitySelection = z.infer<typeof rawActivitySelectionSchema>
 export type RawCompanyFinancialYear = z.infer<typeof rawFinancialYearSchema>
+export type RawLongFormStatement = z.infer<typeof rawLongFormStatementSchema>
 export type RawStatementQualification = z.infer<typeof rawQualificationSchema>
 export type CompanyProfileResponse = z.infer<typeof companyProfileResponseSchema>
 

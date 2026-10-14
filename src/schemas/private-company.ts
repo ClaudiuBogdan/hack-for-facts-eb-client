@@ -267,6 +267,23 @@ export const privateCompanyFinancialYearSchema = z.object({
 })
 
 /**
+ * A statement recorded under the CUI only in long format, kept outside the
+ * typed history by policy: file-level metadata, never a figure. It names no
+ * row and claims neither that its selected line nor that every line is kept.
+ */
+export const privateCompanyLongFormStatementSchema = z.object({
+  fiscalYear: z.number().int(),
+  /** Null when the API named a publisher this client does not know: never assumed. */
+  publisher: privateCompanyStatementPublisherSchema.nullable(),
+  /** The publisher's filer class as recorded (e.g. `ir`), verbatim: never read as a reporting basis. */
+  filerClass: z.string().nullable(),
+  /** The anchor capture exactly as recorded; its package can be a later year's (FY2013 in the 2021 one). */
+  sourceSnapshotId: z.string(),
+  /** The anchor file's address as recorded (others may hold copies); null when none was recorded. */
+  resourceUrl: z.string().nullable(),
+})
+
+/**
  * Server-computed year-on-year deltas. The server owns this arithmetic on
  * purpose: only values the evaluator REPORTED in both years, under one
  * policy, enter a delta (the net from the evaluator's own net result); a
@@ -390,6 +407,12 @@ export const privateCompanyProfileSchema = z.object({
   euBranches: z.array(privateCompanyEuBranchSchema),
   fiscal: privateCompanyFiscalSchema,
   financials: z.array(privateCompanyFinancialYearSchema),
+  /**
+   * Long-format-only statements, newest first. `[]`: none known. Null or
+   * absent: this API cannot say — unknown, never „none" and never a year
+   * without a filing.
+   */
+  longFormStatements: z.array(privateCompanyLongFormStatementSchema).nullish(),
   financialTrajectory: privateCompanyFinancialTrajectorySchema.nullable(),
   /** Null when the company received no public money at all. */
   publicMoney: privateCompanyPublicMoneySchema.nullable(),
@@ -402,6 +425,7 @@ export type PrivateCompanyProfile = z.infer<typeof privateCompanyProfileSchema>
 export type PrivateCompanyMetricStatus = z.infer<typeof privateCompanyMetricStatusSchema>
 export type PrivateCompanyStatementQualification = z.infer<typeof privateCompanyStatementQualificationSchema>
 export type PrivateCompanyStatementSource = z.infer<typeof privateCompanyStatementSourceSchema>
+export type PrivateCompanyLongFormStatement = z.infer<typeof privateCompanyLongFormStatementSchema>
 export type PrivateCompanyCaenActivity = z.infer<
   typeof privateCompanyCaenActivitySchema
 >

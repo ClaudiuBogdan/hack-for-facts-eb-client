@@ -16,7 +16,7 @@ import { compactValue, compactValueText, countText, exactMeanText, exactValueTex
 import { sentenceOf } from '../../lib/company-analytics-sentence'
 import { cohortLabel, gapReasonLabel, metricLabel } from '../../lib/company-analytics-text'
 import { recordsKeyOf, type AnalyticsMode } from '../../lib/company-analytics-url'
-import { partialYears } from '../../lib/company-analytics-view'
+import { cohortSentence, companiesCountText, partialYears } from '../../lib/company-analytics-view'
 import { RankedAxis } from './analytics-axis'
 import { ShareChart, TopCompaniesChart } from './analytics-charts'
 import { ChartButton } from './analytics-chart-button'
@@ -99,7 +99,7 @@ export function BareFigures({ page }: { readonly page: CompanyAnalyticsPageData 
     { key: 'companies', value: stats.data ? countText(stats.data.companies, locale) : null, label: t`Firme` },
     { key: 'filers', value: stats.data ? countText(stats.data.filers, locale) : null, label: question ? t`Cu bilanț pe ${question.year}` : t`Cu bilanț` },
     // The sum and the mean are of the companies that reported the measure, not of every company counted.
-    { ...figure('sum', selected?.sum, question ? metricLabel(question.metric) : ''), detail: selected?.sum ? t`raportat de ${countText(selected.contributors, locale)} firme` : undefined },
+    { ...figure('sum', selected?.sum, question ? metricLabel(question.metric) : ''), detail: selected?.sum ? t`raportat de ${companiesCountText(selected.contributors, locale)}` : undefined },
     figure('mean', selected?.mean, t`Media pe firmă care a raportat`, true),
   ]
   return (
@@ -341,7 +341,7 @@ function YearsTable({ page }: { readonly page: CompanyAnalyticsPageData }) {
       {data ? (
         <p className="mt-4 text-xs text-muted-foreground">
           {data.cohortMode === 'REFERENCE_YEAR'
-            ? t`Fiecare an arată aceleași ${countText(data.cohortCompanies ?? '0', locale)} firme, selectate în ${data.referenceYear ?? question.year}.`
+            ? cohortSentence(data.cohortCompanies ?? '0', data.referenceYear ?? question.year, locale)
             : t`Fiecare an își aplică singur filtrele: populația diferă de la un an la altul.`}
         </p>
       ) : null}

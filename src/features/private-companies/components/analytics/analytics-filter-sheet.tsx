@@ -8,7 +8,8 @@ import { offeredMetricsIn, releaseOffersActivity, type CompanyAnalysisRelease, t
 import type { ResolvedQuestion } from '../../api/company-analytics-plan'
 import type { UatIndex } from '../../hooks/use-uat-index'
 import { keyToggled, toggled } from '../../lib/company-analytics-filter-model'
-import { countText, localeOf } from '../../lib/company-analytics-format'
+import { localeOf } from '../../lib/company-analytics-format'
+import { companiesCountText } from '../../lib/company-analytics-view'
 import { filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
 import { FiscalYearSelect, MeasureSelect } from './analytics-choices'
 import { ActivityField, CaenField, CodesField, CompanyField, CountyField, FilingField, FlagField, OnrcField, RangeField, SizeField, UatField } from './analytics-filter-fields'
@@ -146,7 +147,7 @@ export function AnalyticsFilterSheet({
             {t`Șterge tot`}
           </button>
           <button type="button" onClick={() => onOpenChange(false)} className={cn(TALL, 'bg-primary px-3 text-sm font-medium tabular-nums text-primary-foreground hover:bg-primary/90')}>
-            {stats ? t`Arată ${countText(stats.companies, localeOf(locale))} firme` : t`Arată`}
+            {stats ? t`Arată ${companiesCountText(stats.companies, localeOf(locale))}` : t`Arată`}
           </button>
         </div>
       </SheetContent>

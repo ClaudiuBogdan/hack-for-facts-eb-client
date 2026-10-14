@@ -268,19 +268,35 @@ export function netPointLabel(point: Pick<NetPoint, 'kind'> | undefined): string
   return point?.kind === 'profit' ? t`Profit net` : t`Rezultat net`
 }
 
-export function sizeClassLabel(size: SizeClass): string {
+/** A reported-headcount band with the statement that reported it: never an SME, micro or tax class. */
+export function sizeClassLabel(size: SizeClass, year: number): string {
   switch (size) {
     case 'none':
-      return t`fără salariați`
+      return t`0 salariați raportați în bilanțul pe ${year}`
     case 'micro':
-      return t`microîntreprindere, sub 10 salariați`
+      return t`1–9 salariați raportați în bilanțul pe ${year}`
     case 'small':
-      return t`firmă mică, 10–49 de salariați`
+      return t`10–49 de salariați raportați în bilanțul pe ${year}`
     case 'medium':
-      return t`firmă mijlocie, 50–249 de salariați`
+      return t`50–249 de salariați raportați în bilanțul pe ${year}`
     case 'large':
-      return t`firmă mare, 250 de salariați sau mai mulți`
+      return t`250 de salariați sau mai mulți, raportați în bilanțul pe ${year}`
   }
+}
+
+/**
+ * Statements under the CUI that the source holds only in long format, said
+ * with what they are not: no value of theirs is read here, and they are not
+ * years without a filing. Null when none is known (unknown says nothing).
+ */
+export function longFormNotice(model: CompanyProfileModel): string | null {
+  const statements = model.longForm
+  if (!statements || statements.length === 0) return null
+  const years = yearRanges(statements.map((statement) => statement.fiscalYear))
+  return plural(statements.length, {
+    one: `Bilanțul pe ${years} e înregistrat sub acest CUI doar în format lung: pagina nu îi citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu e un an fără bilanț.`,
+    other: `Bilanțurile pe ${years} sunt înregistrate sub acest CUI doar în format lung: pagina nu le citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu sunt ani fără bilanț.`,
+  })
 }
 
 /**

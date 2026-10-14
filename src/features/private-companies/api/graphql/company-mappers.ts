@@ -37,6 +37,7 @@ import {
   type PrivateCompanyFinancialSummary,
   type PrivateCompanyFinancialTrajectory,
   type PrivateCompanyFinancialYear,
+  type PrivateCompanyLongFormStatement,
   type PrivateCompanyMatchConfidence,
   type PrivateCompanyMetricStatus,
   type PrivateCompanyProfile,
@@ -68,6 +69,7 @@ import type {
   RawCompany,
   RawCompanyFinancialYear,
   RawCompanyResolveResult,
+  RawLongFormStatement,
   RawStatementQualification,
 } from './company-queries'
 import { mapCaenClassState, mapCaenRevision, mapRegistryEnvelope, mapRegistryEvidence } from './company-registry-graphql'
@@ -486,6 +488,26 @@ function mapTrajectory(
   }
 }
 
+/** Only a web address is linked: anything else a response holds is no link. */
+const HTTPS_URL = /^https:\/\/\S+$/u
+
+/**
+ * The long-format-only statements as served: year, publisher, verbatim class,
+ * anchor capture and file — no figure, no row. Absent or null (no answer, a
+ * recorded answer without the field, an unreadable ledger) stays null: unknown,
+ * never an empty list.
+ */
+function mapLongFormStatements(raw: readonly RawLongFormStatement[] | null | undefined): PrivateCompanyLongFormStatement[] | null {
+  if (raw == null) return null
+  return raw.map((statement) => ({
+    fiscalYear: statement.year,
+    publisher: mapPublisher(statement.sourceSystem),
+    filerClass: statement.filerClass,
+    sourceSnapshotId: statement.sourceSnapshotId,
+    resourceUrl: statement.resourceUrl !== null && HTTPS_URL.test(statement.resourceUrl) ? statement.resourceUrl : null,
+  }))
+}
+
 /**
  * Public money received as a payee. Null (not a zeroed object) when the company
  * appears in no flow at all, so the UI can stay silent instead of asserting 0.
@@ -635,6 +657,7 @@ export function mapCompanyProfile(
       fiscalCaen,
     },
     financials,
+    longFormStatements: mapLongFormStatements(response.companyFinancials?.longFormOnly),
     financialTrajectory: mapTrajectory(response.companyFinancials),
     publicMoney: mapPublicMoney(company),
     sources: buildSources(company, registry.registry),

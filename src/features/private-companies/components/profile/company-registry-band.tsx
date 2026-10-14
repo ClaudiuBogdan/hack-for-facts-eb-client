@@ -106,7 +106,7 @@ function RegistryFacts({ model }: { readonly model: CompanyProfileModel }) {
       term: t`Lista contribuabililor inactivi (ANAF)`,
       detail: !fiscal.anafFound ? t`Nu apare în datele ANAF` : fiscal.inactive === null ? '—' : fiscal.inactive ? t`Declarată inactivă fiscal` : t`Nu figurează pe listă`,
     },
-    ...(model.sizeClass ? [{ term: t`Mărime`, detail: sizeClassLabel(model.sizeClass) }] : []),
+    ...(model.sizeClass && model.latest ? [{ term: t`Mărime după salariați`, detail: sizeClassLabel(model.sizeClass, model.latest.fiscalYear) }] : []),
   ]
   return (
     <dl className="mt-8 grid gap-x-8 lg:grid-cols-2">

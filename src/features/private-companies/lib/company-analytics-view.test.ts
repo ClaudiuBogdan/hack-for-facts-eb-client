@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { i18n } from '@lingui/core'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { aggregate, breakdownFixture, bucket, releaseFixture, seriesFixture } from '../api/company-analytics.fixture'
 import { drillScope, nextDimension } from './company-analytics-drill'
 import { boundOf } from './company-analytics-filter-model'
 import { placeName } from './company-analytics-text'
-import { breakdownRows, groupLabel, metricFact, partialYears, pointText } from './company-analytics-view'
+import { breakdownRows, cohortSentence, companiesCountText, groupLabel, metricFact, partialYears, pointText } from './company-analytics-view'
 
 /**
  * What the page draws from the answers: nothing reported is said as such
@@ -31,6 +32,37 @@ describe('figures band', () => {
     const fact = metricFact(aggregate('NET_RESULT', '0.00', '3'), 'ro')
     expect(fact.value).toBe('0')
     expect(fact.notes).toContain('0,00 lei')
+  })
+})
+
+/** Romanian counts agree with their noun: one, a few (2–19, and 101–119…), or „de" from 20 on. */
+describe('company counts (CQA-12)', () => {
+  const before = i18n.locale
+  beforeAll(() => i18n.activate('ro'))
+  afterAll(() => i18n.activate(before))
+
+  it('writes each count with its own noun form, the count as the page writes it', () => {
+    expect(['1', '2', '19', '20', '101', '1234', '0'].map((count) => companiesCountText(count, 'ro'))).toEqual([
+      '1 firmă',
+      '2 firme',
+      '19 firme',
+      '20 de firme',
+      '101 firme',
+      '1.234 de firme',
+      '0 firme',
+    ])
+  })
+
+  it('makes the reference-year cohort agree with one company and with many', () => {
+    expect(cohortSentence('1', 2024, 'ro')).toBe('Fiecare an arată aceeași firmă, selectată în 2024.')
+    expect(cohortSentence('7', 2024, 'ro')).toBe('Fiecare an arată aceleași 7 firme, selectate în 2024.')
+    expect(cohortSentence('25000', 2024, 'ro')).toBe('Fiecare an arată aceleași 25.000 de firme, selectate în 2024.')
+  })
+
+  it('agrees a year’s filers, never „1 firme"', () => {
+    const series = seriesFixture()
+    const one = { ...series.points[0]!, filers: '1', metric: { ...series.points[0]!.metric, contributors: '1' } }
+    expect(pointText(one, series, 'ro')).toMatch(/· raportat de 1 din 1 firmă cu situație$/u)
   })
 })
 
@@ -94,6 +126,10 @@ describe('place words', () => {
     expect(placeName('MUNICIPIUL TÂRGU MUREȘ')).toBe('Târgu Mureș')
   })
 
+  it('says who reported a sum with the count’s own noun form', () => {
+    expect(metricFact(aggregate('TURNOVER', '9007199254741973.32', '900000'), 'ro').notes[0]).toBe('raportat de 900.000 de firme')
+  })
+
 })
 
 describe('years', () => {
@@ -103,9 +139,9 @@ describe('years', () => {
 
   it('says why a year has no figure, and the exact figure with who reported it otherwise', () => {
     const series = seriesFixture()
-    expect(pointText(series.points[0]!, series, 'ro')).toBe('2008: 9.007.199.254.741.973,32 lei · raportat de 70 din 80 firme cu situație')
+    expect(pointText(series.points[0]!, series, 'ro')).toBe('2008: 9.007.199.254.741.973,32 lei · raportat de 70 din 80 de firme cu situație')
     expect(pointText(series.points[1]!, series, 'ro')).toBe('2009: indicatorul nu e admis pentru acest an')
-    expect(pointText(series.points[2]!, series, 'ro')).toBe('2010: 0,00 lei · raportat de 2 din 80 firme cu situație')
+    expect(pointText(series.points[2]!, series, 'ro')).toBe('2010: 0,00 lei · raportat de 2 din 80 de firme cu situație')
     expect(pointText(series.points[3]!, series, 'ro')).toBe('2011: nicio valoare raportată')
   })
 })

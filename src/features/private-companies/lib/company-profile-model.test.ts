@@ -218,6 +218,24 @@ describe('sizeClassOf', () => {
   })
 })
 
+describe('long-format-only statements', () => {
+  const statement = { fiscalYear: 2013, publisher: 'mfp' as const, filerClass: 'ir', sourceSnapshotId: 'mfp:situatii_financiare_2021:2013:r', resourceUrl: null }
+
+  it('keeps them beside the typed history, never in a series, the span or a count', () => {
+    const model = buildCompanyProfileModel(companyProfile({ financials: [financialYear(2024, { turnover: 5, employees: 2 })], longFormStatements: [statement] }))
+    expect(model.longForm).toEqual([statement])
+    expect(model.span).toEqual([2024])
+    expect(model.qualification.statements.map((year) => year.year)).toEqual([2024])
+    expect(model.statementSources).toEqual([{ publisher: 'anaf', first: 2024, last: 2024 }])
+  })
+
+  it('reads an absent list as unknown, never as none', () => {
+    expect(buildCompanyProfileModel(companyProfile()).longForm).toBeNull()
+    expect(buildCompanyProfileModel(companyProfile({ longFormStatements: null })).longForm).toBeNull()
+    expect(buildCompanyProfileModel(companyProfile({ longFormStatements: [] })).longForm).toEqual([])
+  })
+})
+
 describe('buildCompanyProfileModel', () => {
   it('keeps every year from the first statement to the last, the gaps as gaps', () => {
     const model = buildCompanyProfileModel(

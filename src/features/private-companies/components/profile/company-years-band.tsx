@@ -10,6 +10,7 @@ import { count, moneyCell } from '../../lib/company-profile-format'
 import type { CompanyProfileModel, StatementValues } from '../../lib/company-profile-model'
 import {
   capitalised,
+  longFormNotice,
   metricLabel,
   metricStatusLabel,
   netResultStatusLabel,
@@ -140,7 +141,57 @@ export function CompanyYearsBand({ model, index, last = false }: { readonly mode
         </table>
       </div>
       {open ? <StatementDetail statement={open} locale={locale} onClose={close} className="mt-6" /> : null}
+      <LongFormStatements model={model} className="mt-8" />
     </ProfileBand>
+  )
+}
+
+/**
+ * Statements under the CUI that the source holds only in long format: each
+ * year with its publisher, the class it filed under as recorded and its file,
+ * never a value. The file is the one the statement was read from; a statement
+ * assembled from several copies has others. Nothing when none is known, nor
+ * when this API cannot say (unknown is not „none").
+ */
+export function LongFormStatements({ model, className }: { readonly model: CompanyProfileModel; readonly className?: string }) {
+  const notice = longFormNotice(model)
+  if (notice === null || model.longForm === null) return null
+  return (
+    <section aria-label={t`Bilanțuri doar în format lung`} className={cn('max-w-3xl text-sm', className)}>
+      <MonoLabel className="block text-muted-foreground">
+        <Trans>Doar în format lung, fără valori aici</Trans>
+      </MonoLabel>
+      <p className="mt-2 leading-relaxed text-muted-foreground">{notice}</p>
+      <ul className="mt-3 divide-y divide-border/60 border-y border-border/60">
+        {model.longForm.map((statement) => {
+          const year = statement.fiscalYear
+          const filerClass = statement.filerClass
+          return (
+            <li key={`${year}-${statement.sourceSnapshotId}`} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-1.5">
+              <span className="font-mono text-xs tabular-nums text-foreground">
+                {year} · {publisherShort(statement.publisher)}
+                {filerClass ? <> · {t`clasa ${filerClass}`}</> : null}
+              </span>
+              {statement.resourceUrl ? (
+                <a
+                  href={statement.resourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t`Fișierul bilanțului pe ${year}, pe data.gov.ro`}
+                  className="inline-flex min-h-11 items-center gap-1 text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-0"
+                >
+                  <Trans>Fișierul pe data.gov.ro</Trans>
+                  <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                </a>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
+      <p className="mt-2 text-xs text-muted-foreground">
+        <Trans>Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere.</Trans>
+      </p>
+    </section>
   )
 }
 
@@ -363,9 +414,15 @@ function StatementDetail({
           rel="noopener noreferrer"
           className="col-span-2 mt-3 inline-flex min-h-11 items-center gap-1 justify-self-start text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:mt-0 sm:min-h-9"
         >
-          {source.urlKind === 'mfp_resource' ? <Trans>Fișierul pe data.gov.ro</Trans> : <Trans>Bilanțul la ANAF</Trans>}
+          {source.urlKind === 'mfp_resource' ? <Trans>Fișierul pe data.gov.ro</Trans> : <Trans>Interoghează ANAF pentru {year}</Trans>}
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
+      ) : null}
+      {source?.url && source.urlKind === 'anaf_statement' ? (
+        // ANAF's link asks it again for this CUI and year: today's answer, not the copy read here.
+        <p className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">
+          <Trans>Legătura îi cere acum ANAF-ului bilanțul pe {year} al acestui CUI; ANAF răspunde cu datele de azi, care pot diferi de cele preluate aici.</Trans>
+        </p>
       ) : null}
     </section>
   )

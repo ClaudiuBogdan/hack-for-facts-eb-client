@@ -49165,3 +49165,101 @@ msgstr "Σ POP201D / Σ POP108D × 1.000"
 #: src/features/statistics/lib/territory-derived.ts:134
 msgid "Σ POP206D / Σ POP108D × 1.000"
 msgstr "Σ POP206D / Σ POP108D × 1.000"
+
+#. placeholder {0}: Number(count)
+#: src/features/private-companies/lib/company-analytics-view.ts:46
+msgid "{0, plural, one {{text} firmă} few {{text} firme} other {{text} de firme}}"
+msgstr "{0, plural, one {{text} firmă} few {{text} firme} other {{text} de firme}}"
+
+#. placeholder {0}: statements.length
+#: src/features/private-companies/lib/company-profile-text.ts:296
+msgid "{0, plural, one {Bilanțul pe {years} e înregistrat sub acest CUI doar în format lung: pagina nu îi citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu e un an fără bilanț.} other {Bilanțurile pe {years} sunt înregistrate sub acest CUI doar în format lung: pagina nu le citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu sunt ani fără bilanț.}}"
+msgstr "{0, plural, one {Bilanțul pe {years} e înregistrat sub acest CUI doar în format lung: pagina nu îi citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu e un an fără bilanț.} other {Bilanțurile pe {years} sunt înregistrate sub acest CUI doar în format lung: pagina nu le citește valorile, așa că nu intră în tabel, grafice sau comparații. Nu sunt ani fără bilanț.}}"
+
+#. placeholder {0}: Number(count)
+#: src/features/private-companies/lib/company-analytics-view.ts:52
+msgid "{0, plural, one {Fiecare an arată aceeași firmă, selectată în {year}.} few {Fiecare an arată aceleași {text} firme, selectate în {year}.} other {Fiecare an arată aceleași {text} de firme, selectate în {year}.}}"
+msgstr "{0, plural, one {Fiecare an arată aceeași firmă, selectată în {year}.} few {Fiecare an arată aceleași {text} firme, selectate în {year}.} other {Fiecare an arată aceleași {text} de firme, selectate în {year}.}}"
+
+#. placeholder {0}: point.fiscalYear
+#. placeholder {1}: exactValueText(sum, series.unit, locale)
+#. placeholder {2}: countText(point.metric.contributors, locale)
+#. placeholder {3}: companiesCountText(point.filers, locale)
+#: src/features/private-companies/lib/company-analytics-view.ts:186
+msgid "{0}: {1} · raportat de {2} din {3} cu situație"
+msgstr "{0}: {1} · raportat de {2} din {3} cu situație"
+
+#: src/features/private-companies/lib/company-profile-text.ts:275
+msgid "0 salariați raportați în bilanțul pe {year}"
+msgstr "0 salariați raportați în bilanțul pe {year}"
+
+#: src/features/private-companies/lib/company-profile-text.ts:277
+msgid "1–9 salariați raportați în bilanțul pe {year}"
+msgstr "1–9 salariați raportați în bilanțul pe {year}"
+
+#: src/features/private-companies/lib/company-profile-text.ts:279
+msgid "10–49 de salariați raportați în bilanțul pe {year}"
+msgstr "10–49 de salariați raportați în bilanțul pe {year}"
+
+#: src/features/private-companies/lib/company-profile-text.ts:283
+msgid "250 de salariați sau mai mulți, raportați în bilanțul pe {year}"
+msgstr "250 de salariați sau mai mulți, raportați în bilanțul pe {year}"
+
+#: src/features/private-companies/lib/company-profile-text.ts:281
+msgid "50–249 de salariați raportați în bilanțul pe {year}"
+msgstr "50–249 de salariați raportați în bilanțul pe {year}"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:160
+msgid "Bilanțuri doar în format lung"
+msgstr "Bilanțuri doar în format lung"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:277
+msgid "Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări, așa că cumpărătorii nu pot fi numiți aici."
+msgstr "Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări, așa că cumpărătorii nu pot fi numiți aici."
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:173
+msgid "clasa {filerClass}"
+msgstr "clasa {filerClass}"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:74
+msgid "Contracte, achiziții și PNRR"
+msgstr "Contracte, achiziții și PNRR"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:195
+msgid "Contracte, achiziții și PNRR, pe an"
+msgstr "Contracte, achiziții și PNRR, pe an"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:162
+msgid "Doar în format lung, fără valori aici"
+msgstr "Doar în format lung, fără valori aici"
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:114
+msgid "Firma nu apare în datele de aici ca furnizor în contracte sau achiziții publice (SEAP) și nici ca beneficiar PNRR."
+msgstr "Firma nu apare în datele de aici ca furnizor în contracte sau achiziții publice (SEAP) și nici ca beneficiar PNRR."
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:180
+msgid "Fișierul bilanțului pe {year}, pe data.gov.ro"
+msgstr "Fișierul bilanțului pe {year}, pe data.gov.ro"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:192
+msgid "Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere."
+msgstr "Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere."
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:417
+msgid "Interoghează ANAF pentru {year}"
+msgstr "Interoghează ANAF pentru {year}"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:424
+msgid "Legătura îi cere acum ANAF-ului bilanțul pe {year} al acestui CUI; ANAF răspunde cu datele de azi, care pot diferi de cele preluate aici."
+msgstr "Legătura îi cere acum ANAF-ului bilanțul pe {year} al acestui CUI; ANAF răspunde cu datele de azi, care pot diferi de cele preluate aici."
+
+#: src/features/private-companies/components/profile/company-money-band.tsx:183
+msgid "PNRR și buget"
+msgstr "PNRR și buget"
+
+#. placeholder {0}: companiesCountText(aggregate.contributors, locale)
+#. placeholder {0}: companiesCountText(selected.contributors, locale)
+#: src/features/private-companies/components/analytics/analytics-answer.tsx:102
+#: src/features/private-companies/lib/company-analytics-view.ts:69
+msgid "raportat de {0}"
+msgstr "raportat de {0}"

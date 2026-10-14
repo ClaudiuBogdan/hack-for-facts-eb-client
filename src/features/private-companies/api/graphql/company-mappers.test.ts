@@ -630,3 +630,43 @@ describe('mapCompanyProfile — statement qualification (CD-14)', () => {
     expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()
   })
 })
+
+describe('mapCompanyProfile — long-format-only statements (B5c)', () => {
+  const OMV_2013 = {
+    year: 2013,
+    sourceSystem: 'MFP',
+    filerClass: 'ir',
+    sourceSnapshotId: 'mfp:situatii_financiare_2021:2013:13dec119-4013-4689-90e0-52da4c69d3ea',
+    resourceUrl: 'https://data.gov.ro/dataset/f8353c0e-fee9-4aa3-b26d-be0e96c328a7/resource/13dec119-4013-4689-90e0-52da4c69d3ea/download/web_ir_an2013.txt',
+  }
+  const withLongForm = (longFormOnly: unknown, years: RawCompanyFinancialYear[] = dedemanResponse.companyFinancials!.years): CompanyProfileResponse =>
+    companyProfileResponseSchema.parse({ ...dedemanResponse, companyFinancials: { years, trajectory: null, longFormOnly } })
+
+  it('maps year, publisher, the class verbatim, the exact anchor capture and the recorded file — no value and no row', () => {
+    const profile = mapCompanyProfile(withLongForm([{ ...OMV_2013, statementLocator: 'mfp:13dec119:19' }]))!
+    expect(profile.longFormStatements).toEqual([
+      { fiscalYear: 2013, publisher: 'mfp', filerClass: 'ir', sourceSnapshotId: OMV_2013.sourceSnapshotId, resourceUrl: OMV_2013.resourceUrl },
+    ])
+    // The typed history is untouched beside it.
+    expect(profile.financials.map((year) => year.fiscalYear)).toEqual([2024, 2022])
+    expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()
+  })
+
+  it('keeps unknown apart from none: absent or null stays null, an empty list stays empty', () => {
+    expect(mapCompanyProfile(dedemanResponse)!.longFormStatements).toBeNull()
+    expect(mapCompanyProfile(withLongForm(null))!.longFormStatements).toBeNull()
+    expect(mapCompanyProfile(withLongForm([]))!.longFormStatements).toEqual([])
+    expect(mapCompanyProfile({ ...dedemanResponse, companyFinancials: null })!.longFormStatements).toBeNull()
+  })
+
+  it('serves a long-format-only CUI with no typed year, nothing assumed about its publisher or link', () => {
+    const profile = mapCompanyProfile(
+      withLongForm([{ ...OMV_2013, sourceSystem: 'other' }, { ...OMV_2013, year: 2012, filerClass: null, resourceUrl: 'javascript:alert(1)' }], []),
+    )!
+    expect(profile.financials).toEqual([])
+    expect(profile.longFormStatements?.map(({ fiscalYear, publisher, filerClass, resourceUrl }) => [fiscalYear, publisher, filerClass, resourceUrl])).toEqual([
+      [2013, null, 'ir', OMV_2013.resourceUrl],
+      [2012, 'mfp', null, null],
+    ])
+  })
+})

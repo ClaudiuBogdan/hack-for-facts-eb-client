@@ -54,10 +54,11 @@ export type ProcurementState =
 const SEAP_FLOWS = new Set(['procurement_contract', 'direct_acquisition'])
 
 /**
- * „Ce a primit de la stat": the public money the company received, by the
- * instrument that carried it, per year, and — from SEAP — who paid, for what,
- * and the newest records. Commitments are said apart, never summed with
- * payments; records without an amount are counted, never summed as zero.
+ * „Contracte, achiziții și PNRR": the public records that name the company as
+ * supplier or beneficiary, by the instrument each is (an award is not a
+ * payment), per year, and — from SEAP — who buys, for what, and the newest
+ * records. Commitments are said apart, never summed with payments; records
+ * without an amount are counted, never summed as zero.
  */
 export function CompanyMoneyBand({
   model,
@@ -70,7 +71,7 @@ export function CompanyMoneyBand({
   readonly procurement: ProcurementState
   readonly onGrain: (grain: CompanyPaymentGrain) => void
 }) {
-  const title = <Trans>Ce a primit de la stat</Trans>
+  const title = <Trans>Contracte, achiziții și PNRR</Trans>
   const { money } = model
   const seapGrains = procurement.status === 'ready' ? procurement.grains.length : 0
   if (money.receivedCount === 0 && money.commitments.count === 0 && seapGrains === 0) {
@@ -106,11 +107,11 @@ export function CompanyMoneyBand({
   )
 }
 
-/** No public money: the absence is a finding, said in a line with the sources it covers. */
+/** No record: the absence in the data, said with the sources it covers — never as a verified zero. */
 function NoPublicMoney({ className }: { readonly className?: string }) {
   return (
     <p className={cn('max-w-[60ch] text-sm leading-relaxed text-muted-foreground', className)}>
-      <Trans>Niciun contract și nicio plată din bani publici: firma nu apare ca furnizor în achizițiile publice (SEAP) și nici ca beneficiar PNRR.</Trans>
+      <Trans>Firma nu apare în datele de aici ca furnizor în contracte sau achiziții publice (SEAP) și nici ca beneficiar PNRR.</Trans>
     </p>
   )
 }
@@ -178,7 +179,8 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
     },
     {
       key: 'other',
-      label: t`Alte plăți publice (PNRR, buget)`,
+      // PNRR payments and subcontracts, budget execution: named, not all called payments.
+      label: t`PNRR și buget`,
       values: byYear.map((year) => year.other || null),
       fill: 'fill-violet-400 dark:fill-violet-300',
       swatch: BUCKET_SWATCH.other,
@@ -190,7 +192,7 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
         years={byYear.map((year) => year.year)}
         series={series}
         format={moneyTick}
-        label={t`Contracte și plăți publice pe an`}
+        label={t`Contracte, achiziții și PNRR, pe an`}
         emptyLabel={(index) => {
           const year = byYear[index]
           return year && year.unvalued > 0 ? capitalised(unvaluedNote(year.unvalued)) : t`Nicio înregistrare în acest an`
@@ -272,7 +274,7 @@ function SeapDetail({
     // The profile counts SEAP records the supplier read did not return: say so rather than drop the section.
     return (
       <p className="mt-14 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
-        <Trans>Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări, așa că plătitorii nu pot fi numiți aici.</Trans>
+        <Trans>Căutarea în SEAP după CUI-ul firmei nu a întors înregistrări, așa că cumpărătorii nu pot fi numiți aici.</Trans>
       </p>
     )
   }
@@ -281,7 +283,7 @@ function SeapDetail({
       <div className="min-w-0 lg:col-span-7">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <MonoLabel className="text-primary">
-            <Trans>Cine plătește</Trans>
+            <Trans>Cine cumpără</Trans>
           </MonoLabel>
           <div className="w-full sm:w-fit">
             {grains.length > 1 ? (

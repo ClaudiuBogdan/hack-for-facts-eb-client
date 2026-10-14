@@ -8,7 +8,7 @@ import type { SupplierProcurementSlice } from '@/schemas/procurement'
 import { FINANCIAL_METRICS, type PrivateCompanyProfile, type PrivateCompanySearchState } from '@/schemas/private-company'
 import type { CompanyCaenClassState } from '@/schemas/private-company-registry'
 import { mapCompanyProfile } from '../../api/graphql/company-mappers'
-import type { RawCompanyFinancialYear, RawStatementQualification } from '../../api/graphql/company-queries'
+import type { RawCompanyFinancialYear, RawLongFormStatement, RawStatementQualification } from '../../api/graphql/company-queries'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
 import {
   authorityRow,
@@ -217,7 +217,9 @@ describe('CompanyProfilePage', () => {
     expect(html).toContain('data-count-value="517.9"')
     // The head's chart says every value to assistive technology.
     expect(html).toContain('<caption>Cifra de afaceri, rezultatul net și salariații, 2021–2025</caption>')
-    expect(html).toContain('Ce a primit de la stat')
+    // The money band names its instruments: an award is not money received.
+    expect(html).toContain('Contracte, achiziții și PNRR')
+    expect(html).not.toContain('Ce a primit de la stat')
     expect(html).toContain('Se încarcă înregistrările din SEAP')
     expect(html).toContain('Datele din registru')
   })
@@ -364,7 +366,11 @@ describe('CompanyProfilePage', () => {
     // What the data holds, never a claim that the company filed nothing.
     expect(screen.getByText(/Nicio valoare din bilanțuri în datele de aici/)).toBeInTheDocument()
     expect(document.body.textContent).not.toMatch(/Niciun bilanț publicat/u)
-    expect(screen.getByText(/Niciun contract și nicio plată din bani publici/)).toBeInTheDocument()
+    // An absence in the data, never a verified zero of contracts or payments.
+    expect(screen.getByText('Firma nu apare în datele de aici ca furnizor în contracte sau achiziții publice (SEAP) și nici ca beneficiar PNRR.')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/nicio plată din bani publici/u)
+    // A fixture without the long-format field is unknown: no disclosure, never „none".
+    expect(screen.queryByRole('region', { name: 'Bilanțuri doar în format lung' })).toBeNull()
     // No figure to show, no band of figures; no chart in the head.
     expect(screen.queryByRole('region', { name: 'Cifre-cheie' })).toBeNull()
     expect(screen.queryByText('Ultimii 5 ani cu bilanț')).toBeNull()
@@ -887,7 +893,7 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
   })
 
   /** A live-API response through the real mapper: no fixture default can stand in for a missing qualification. */
-  const mapped = (years: RawCompanyFinancialYear[]): PrivateCompanyProfile => {
+  const mapped = (years: RawCompanyFinancialYear[], longFormOnly?: RawLongFormStatement[] | null): PrivateCompanyProfile => {
     const profile = mapCompanyProfile({
       company: {
         cui: '22202108',
@@ -919,7 +925,7 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
         publicMoney: null,
         asOf: { onrc: '2026-07-08', anaf: null },
       },
-      companyFinancials: { years, trajectory: null },
+      companyFinancials: { years, trajectory: null, ...(longFormOnly === undefined ? {} : { longFormOnly }) },
     })
     if (!profile) throw new Error('unmapped')
     return profile
@@ -1077,5 +1083,94 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     // Its values stay readable, out of the figures.
     expect(years().getByText('1.000 lei, calificat după altă politică sau altă ediție a datelor')).toBeInTheDocument()
     expect(years().getByRole('button', { name: 'Bilanțul pe 2023, de verificat' })).toBeInTheDocument()
+  })
+
+  // ── Source traceability (B5c): long-format-only statements, the ANAF query, the headcount band.
+
+  const OMV_2013_URL = 'https://data.gov.ro/dataset/f8353c0e-fee9-4aa3-b26d-be0e96c328a7/resource/13dec119-4013-4689-90e0-52da4c69d3ea/download/web_ir_an2013.txt'
+  /** OMV-shaped: FY2013 sits in the 2021 package, its file the one recorded — never a name built from the year. */
+  const LONG_FORM: RawLongFormStatement[] = [
+    { year: 2013, sourceSystem: 'mfp', filerClass: 'ir', sourceSnapshotId: 'mfp:situatii_financiare_2021:2013:13dec119-4013-4689-90e0-52da4c69d3ea', resourceUrl: OMV_2013_URL },
+    { year: 2012, sourceSystem: 'mfp', filerClass: 'ir', sourceSnapshotId: 'mfp:situatii_financiare_2012:2012:0646b71b-8dbc-4241-9c6b-7d01cce771e4', resourceUrl: null },
+  ]
+  const ANAF_2024: RawCompanyFinancialYear = {
+    year: 2024,
+    sourceSystem: 'anaf',
+    turnover: '1000.00',
+    netProfit: '10.00',
+    netLoss: '0.00',
+    employees: '12',
+    source: {
+      sourceSystem: 'anaf',
+      url: 'https://webservicesp.anaf.ro/bilant?an=2024&cui=22202108',
+      urlKind: 'anaf_statement',
+      statementProfileHash: 'c3'.repeat(32),
+      metricRuleVersion: 'anaf-bilant-metric-v1',
+    },
+  }
+  const longForm = () => screen.queryByRole('region', { name: 'Bilanțuri doar în format lung' })
+
+  it('lists the long-format-only years under the statements: year, publisher, class as recorded and the recorded file — no value', async () => {
+    render(page(mapped([ANAF_2024], LONG_FORM)))
+    await registryPinned()
+    const band = within(document.getElementById('an-cu-an') as HTMLElement)
+    const list = within(band.getByRole('region', { name: 'Bilanțuri doar în format lung' }))
+    expect(list.getByText(/^Bilanțurile pe 2012–2013 sunt înregistrate sub acest CUI doar în format lung/u)).toHaveTextContent('Nu sunt ani fără bilanț.')
+    expect(list.getByText('2013 · MF · clasa ir')).toBeInTheDocument()
+    expect(list.getByText('2012 · MF · clasa ir')).toBeInTheDocument()
+    // The recorded anchor file, exactly; none when none was recorded. The class is never read as a reporting basis.
+    expect(list.getByRole('link', { name: 'Fișierul bilanțului pe 2013, pe data.gov.ro' })).toHaveAttribute('href', OMV_2013_URL)
+    expect(list.queryByRole('link', { name: /2012/u })).toBeNull()
+    expect(list.getByText('Fișierul e cel din care a fost citit bilanțul; un bilanț poate apărea și în alte fișiere.')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/IFRS|rândul|mfp:13dec119/u)
+    // No column, figure or point for those years: the matrix keeps only the typed statement.
+    expect(band.queryByRole('button', { name: /^Bilanțul pe 201[23]/u })).toBeNull()
+    expect(buildCompanyProfileModel(mapped([ANAF_2024], LONG_FORM)).span).toEqual([2024])
+  })
+
+  it('names the ANAF link as a query asked now, with what it can and cannot show', async () => {
+    render(page(mapped([ANAF_2024], [])))
+    await registryPinned()
+    fireEvent.click(within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' })).getByRole('button', { name: /^Bilanțul pe 2024/u }))
+    const detail = within(screen.getByRole('region', { name: 'Bilanțul pe 2024' }))
+    expect(detail.getByRole('link', { name: 'Interoghează ANAF pentru 2024' })).toHaveAttribute('href', 'https://webservicesp.anaf.ro/bilant?an=2024&cui=22202108')
+    expect(
+      detail.getByText('Legătura îi cere acum ANAF-ului bilanțul pe 2024 al acestui CUI; ANAF răspunde cu datele de azi, care pot diferi de cele preluate aici.'),
+    ).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/Bilanțul la ANAF|custodie|amprent/u)
+    // Known none: nothing is said about long-format statements.
+    expect(longForm()).toBeNull()
+  })
+
+  it('discloses a long-format-only CUI where its figures would be, with no years band', async () => {
+    render(page(mapped([], [{ ...LONG_FORM[0]!, resourceUrl: 'javascript:alert(1)' }])))
+    await registryPinned()
+    expect(document.getElementById('an-cu-an')).toBeNull()
+    const business = within(document.getElementById('afacerea') as HTMLElement)
+    expect(business.getByText(/Nicio valoare din bilanțuri în datele de aici/u)).toBeInTheDocument()
+    const list = within(business.getByRole('region', { name: 'Bilanțuri doar în format lung' }))
+    expect(list.getByText(/^Bilanțul pe 2013 e înregistrat sub acest CUI doar în format lung/u)).toHaveTextContent('Nu e un an fără bilanț.')
+    // Only a web address is a link.
+    expect(list.queryByRole('link')).toBeNull()
+  })
+
+  it('says nothing about long-format statements when the API cannot say, nor when it knows none', async () => {
+    const answers: (RawLongFormStatement[] | null | undefined)[] = [null, undefined, []]
+    for (const longFormOnly of answers) {
+      const { unmount } = render(page(mapped([ANAF_2024], longFormOnly)))
+      await registryPinned()
+      expect(longForm()).toBeNull()
+      expect(document.body.textContent).not.toMatch(/format lung|fără bilanț publicat/u)
+      unmount()
+    }
+  })
+
+  it('reads the size as the reported headcount of a named statement, never as an SME class', async () => {
+    render(page(builder()))
+    await registryPinned()
+    const registry = within(document.getElementById('registru') as HTMLElement)
+    expect(registry.getByText('Mărime după salariați')).toBeInTheDocument()
+    expect(registry.getByText('10–49 de salariați raportați în bilanțul pe 2025')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/microîntreprindere|firmă mică|firmă mijlocie|firmă mare/u)
   })
 })

@@ -16,6 +16,7 @@ import { capitalised, debtSentence, financialLede, measureLabel, netChartLabel, 
 import { metricStatus, reportedNumber, reportedSummary } from '../../lib/financial-qualification'
 import { BAND_GRID_CLASS, ProfileBand } from './company-profile-band'
 import { CombinedYears, YearBars, type BarSeries } from './company-year-charts'
+import { LongFormStatements } from './company-years-band'
 
 const TITLE_ID = 'company-business-title'
 
@@ -38,10 +39,12 @@ export function CompanyBusinessBand({
 }) {
   const title = <Trans>Cum merge afacerea</Trans>
   if (!model.latest) {
+    // No typed statement, so no years band: statements held only in long format are listed here instead.
     return (
       <ProfileBand id="afacerea" titleId={TITLE_ID}>
         <HubSectionHead titleId={TITLE_ID} index={index} title={title} />
         <NoStatements className="mt-5" />
+        <LongFormStatements model={model} className="mt-6" />
       </ProfileBand>
     )
   }
