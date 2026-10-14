@@ -132,6 +132,41 @@ describe('landing universal search', () => {
     const keys = queryClient.getQueryCache().findAll().map((query) => String(query.queryKey[1]))
     expect(keys.every((key) => key.endsWith('|source::rnong'))).toBe(true)
   })
+  it('sends a caller’s roles with the request, and keys the cache by them', async () => {
+    const queryClient = createTestQueryClient()
+    function Wrapper({ children }: { readonly children: ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(
+      () => useSearchResults({
+        debounceMs: 0, docTypes: ['public_enterprise', 'organization'], roles: ['public_enterprise'], suggestions: false,
+      }),
+      { wrapper: Wrapper },
+    )
+    await search(result, '10020943')
+    expect(searchEntities).toHaveBeenCalledWith({
+      q: '10020943', docTypes: ['public_enterprise', 'organization'], roles: ['public_enterprise'], limit: 8,
+    }, expect.any(AbortSignal))
+    // Without the role the same families hold every institution: another answer, another key.
+    expect(
+      queryClient.getQueryCache().findAll().map((query) => query.queryKey.slice(0, 3)),
+    ).toContainEqual(['landingUniversalSearch', 'public_enterprise,organization|roles:public_enterprise', '10020943'])
+  })
+  it('keeps a caller’s roles when a chip brings its own, since one more role could only widen them', async () => {
+    const queryClient = createTestQueryClient()
+    function Wrapper({ children }: { readonly children: ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    }
+    const { result } = renderHook(() => useSearchResults({ debounceMs: 0, roles: ['public_enterprise'] }), { wrapper: Wrapper })
+    await search(result, 'pnrr Dante')
+    act(() => result.current.addFilter(result.current.suggestions.find(filter => filter.id === 'pnrr')!))
+    await waitFor(() =>
+      expect(searchEntities).toHaveBeenLastCalledWith(
+        expect.objectContaining({ q: 'Dante', roles: ['public_enterprise'] }),
+        expect.any(AbortSignal),
+      ),
+    )
+  })
   it('preserves server ordering and omits missing or external destinations', async () => {
     const ngo = { ...COMPANY, id: 'ngo:123', docType: 'ngo', href: '/ngos/123' }
     const plain = { ...COMPANY, id: 'ngo_10860991_x', docType: 'organization_unclassified', href: '' }

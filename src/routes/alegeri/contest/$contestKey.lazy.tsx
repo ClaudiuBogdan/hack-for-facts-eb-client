@@ -1,23 +1,20 @@
-import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
-import { ContestResultExplorerPage } from '@/features/elections/components/contest-result-explorer-page'
-import type { ContestSearch } from '@/features/elections/types'
+import { createLazyFileRoute } from '@tanstack/react-router'
+import { ElectionContestPage } from '@/features/elections/catalog/election-contest-page'
 
 export const Route = createLazyFileRoute('/alegeri/contest/$contestKey')({
-  component: ContestResultRoutePage,
+  component: ElectionContestRoutePage,
 })
 
-function ContestResultRoutePage() {
-  const search = Route.useSearch()
+function ElectionContestRoutePage() {
   const { contestKey } = Route.useParams()
-  const navigate = useNavigate({ from: '/alegeri/contest/$contestKey' })
+  const data = Route.useLoaderData()
 
   return (
-    <ContestResultExplorerPage
+    <ElectionContestPage
+      key={contestKey}
       contestKey={contestKey}
-      search={search}
-      onSearchChange={(next: ContestSearch) => {
-        void navigate({ search: next, replace: true })
-      }}
+      // The server's read seeds the page only for the contest it was read for.
+      {...(data.contestKey === contestKey && data.contest ? { initialContest: data.contest } : {})}
     />
   )
 }

@@ -155,12 +155,12 @@ describe('NavMain', () => {
       expect(screen.getByText('Legislație')).toBeInTheDocument()
     })
 
-    it('does not link Elections while the area is off in this build', async () => {
+    it('renders Alegeri link while the area is on in this build', async () => {
       await renderNavMain()
 
-      // `src/config/feature-flags.ts`: elections are not implemented yet.
-      expect(screen.queryByTestId('link-/alegeri')).not.toBeInTheDocument()
-      expect(screen.queryByText('Alegeri')).not.toBeInTheDocument()
+      // `src/config/feature-flags.ts`: elections are on, as a catalog of source editions.
+      expect(screen.getByTestId('link-/alegeri')).toBeInTheDocument()
+      expect(screen.getByText('Alegeri')).toBeInTheDocument()
     })
 
     it('renders ONG-uri link', async () => {
@@ -181,8 +181,8 @@ describe('NavMain', () => {
       await renderNavMain()
 
       const menuItems = screen.getAllByTestId('sidebar-menu-item')
-      // Twelve declared, Elections switched off.
-      expect(menuItems).toHaveLength(11)
+      // Twelve declared, every area on.
+      expect(menuItems).toHaveLength(12)
     })
 
     it('renders the public enterprises link, after the companies', async () => {
@@ -232,10 +232,10 @@ describe('NavMain', () => {
       expect(screen.getByTestId('icon-companies')).toBeInTheDocument()
     })
 
-    it('draws no elections icon while the area is off', async () => {
+    it('renders elections icon', async () => {
       await renderNavMain()
 
-      expect(screen.queryByTestId('icon-elections')).not.toBeInTheDocument()
+      expect(screen.getByTestId('icon-elections')).toBeInTheDocument()
     })
 
     it('renders ONG-uri icon', async () => {
@@ -324,11 +324,12 @@ describe('NavMain', () => {
       expect(achizitiiLink).toHaveClass('bg-muted')
     })
 
-    it('marks nothing active on a path of an area that is off', async () => {
-      mockMatches.mockReturnValue([{ pathname: '/alegeri/contest/local-2024-cluj-napoca-primar' }])
+    it('marks Alegeri as active on a contest page', async () => {
+      mockMatches.mockReturnValue([{ pathname: '/alegeri/contest/contest%3Abec-local-2024%3Amayor%3Asource_constituency%3A8-19' }])
       await renderNavMain()
 
-      expect(screen.getAllByRole('link').filter((link) => link.classList.contains('bg-muted'))).toHaveLength(0)
+      expect(screen.getByTestId('link-/alegeri')).toHaveClass('bg-muted')
+      expect(screen.getAllByRole('link').filter((link) => link.classList.contains('bg-muted'))).toHaveLength(1)
     })
   })
 

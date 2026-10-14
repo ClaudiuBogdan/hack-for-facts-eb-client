@@ -50,6 +50,7 @@ export function isProfileless(hit: Pick<EntitySearchHit, 'docType' | 'href'>): b
 }
 
 const NO_TAGS: readonly string[] = []
+const NO_ROLES: readonly string[] = []
 const NO_RESULTS: readonly EntitySearchHit[] = []
 
 /** How long an answer is trusted from the cache; a non-current one is asked again at once. */
@@ -71,6 +72,7 @@ export function useSearchResults({
   debounceMs = SEARCH_DEBOUNCE_MS,
   docTypes = LANDING_SEARCH_TYPES,
   entityTags = NO_TAGS,
+  roles = NO_ROLES,
   suggestions: suggestionsEnabled = true,
 }: {
   readonly debounceMs?: number
@@ -87,6 +89,14 @@ export function useSearchResults({
    * kind. Sent with the chips' tags, never instead of them.
    */
   readonly entityTags?: readonly string[]
+  /**
+   * Roles a row must play, for a page whose population is a role rather than a
+   * kind (the public-enterprise hub: an enterprise that is also an institution
+   * is indexed as the institution). The server matches any one of them. They
+   * replace a chip's roles rather than join them: one more role in that list
+   * could only widen the page's population.
+   */
+  readonly roles?: readonly string[]
   /**
    * Whether category words in the text may become chips. Off when the scope
    * is fixed by the caller: a *Primării* chip over company-only rows can only
@@ -108,13 +118,18 @@ export function useSearchResults({
   // chip's own `docTypes` wins over the caller's: a chip narrows within the
   // families the field started with, and a field with a fixed scope offers no
   // chips at all.
-  const scopeKey = entityTags.length > 0 ? `${docTypes.join(',')}|${entityTags.join(',')}` : docTypes.join(',')
+  const scopeKey = [
+    docTypes.join(','),
+    ...(entityTags.length > 0 ? [entityTags.join(',')] : []),
+    ...(roles.length > 0 ? [`roles:${roles.join(',')}`] : []),
+  ].join('|')
   const { data, error, isError, isFetching, isPlaceholderData, isSuccess, refetch } = useQuery({
     queryKey: ['landingUniversalSearch', scopeKey, normalized, serverFilters],
     queryFn: async ({ signal }): Promise<LandingAnswer> => {
       const tags = [...entityTags, ...(serverFilters.entityTags ?? [])]
       const response = await searchEntitiesLive({
-        q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }), limit: SEARCH_LIMIT,
+        q: normalized, docTypes, ...serverFilters, ...(tags.length > 0 && { entityTags: tags }),
+        ...(roles.length > 0 && { roles }), limit: SEARCH_LIMIT,
       }, signal)
       // The engine could not look: an error to retry, never an empty answer.
       if (response.degraded) throw new Error('Search unavailable')

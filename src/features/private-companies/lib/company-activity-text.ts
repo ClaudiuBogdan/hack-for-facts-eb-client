@@ -203,16 +203,11 @@ function countsText(selection: PrivateCompanyActivitySelection): string {
   return `${rows} · ${classes} · ${rest}`
 }
 
-function kickerText(selection: PrivateCompanyActivitySelection): string {
-  if (selection.code === null) return t`Activitate selectată (derivată)`
-  if (selection.source === 'anaf') return t`Activitate selectată (derivată) · cod CAEN fiscal ANAF, revizie nepublicată`
-  return t`Activitate selectată (derivată) · CAEN ${selection.code}`
-}
-
 export function activitySelectionTexts(selection: PrivateCompanyActivitySelection): ActivitySelectionTexts {
   const anaf = selection.anafStatusDate ? t`ANAF, situația la ${dateText(selection.anafStatusDate)}` : t`ANAF: fără dată de stare`
   return {
-    kicker: kickerText(selection),
+    // The code and its source are said once, under the title.
+    kicker: t`Activitate selectată (derivată)`,
     basis: basisText(selection),
     agreement: anafText(selection),
     dates: `${editionDateText(selection)} · ${anaf}`,
@@ -273,7 +268,7 @@ export function unclassifiedBasisOf(bucket: { readonly key: string | null; reado
 }
 
 /** Which source an activity bucket's code is from, as a tag: „ONRC Rev.2", or ANAF with its revision unpublished. */
-export function activitySourceTag(activity: CompanyAnalysisActivity | null | undefined): string | null {
+export function activitySourceTag(activity: Pick<CompanyAnalysisActivity, 'source' | 'revision'> | null | undefined): string | null {
   if (!activity?.source) return null
   if (activity.source === 'ONRC') return activity.revision ? `ONRC ${edition(activity.revision)}` : 'ONRC'
   return t`ANAF · revizie nepublicată`

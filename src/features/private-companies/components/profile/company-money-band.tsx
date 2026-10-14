@@ -3,9 +3,12 @@ import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { IndicatorToggle } from '@/components/landing-skin/indicator-toggle'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { supplierRecordsSearch } from '@/features/procurement/lib/home-links'
+import { DIRECT_COMPARABLE_FROM } from '@/features/procurement/lib/home-model'
 import { HUB_BESIDE_TITLE_CLASS, HubLoadError, HubPending, HubSectionHead } from '@/features/statistics/components/hub/hub-chrome'
 import { cn } from '@/lib/utils'
 import type { CompanyPaymentGrain } from '@/schemas/private-company'
+import { useSeapCutoff } from '../../hooks/use-seap-cutoff'
 import {
   grainAuthorities,
   grainCategories,
@@ -205,12 +208,12 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
       />
       <div className="mt-4 space-y-1.5">
         {openYear !== null ? (
-          <MonoLabel className="block leading-relaxed text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             <Trans>{openYear} e anul în curs: bara lui nu e un an întreg.</Trans>
-          </MonoLabel>
+          </p>
         ) : null}
         {undated.count > 0 ? (
-          <MonoLabel className="block leading-relaxed text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {undated.count > undated.unvalued
               ? plural(undated.count, {
                   one: `Nu apare pe grafic o înregistrare fără an în sursă (${moneyText(undated.total)}).`,
@@ -222,17 +225,17 @@ function MoneyChart({ model, className }: { readonly model: CompanyProfileModel;
                   few: 'Nu apar pe grafic # înregistrări fără an și fără valoare publicată.',
                   other: 'Nu apar pe grafic # de înregistrări fără an și fără valoare publicată.',
                 })}
-          </MonoLabel>
+          </p>
         ) : null}
         {/* Commitments stay out of the bars: an obligation drawn on the payments' scale would flatten them. */}
         {commitments.total > 0 ? (
-          <MonoLabel className="block leading-relaxed text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {plural(commitments.count, {
               one: `Fără angajamentul PNRR de ${moneyText(commitments.total)}: o obligație asumată, nu o plată.`,
               few: `Fără cele # angajamente PNRR, de ${moneyText(commitments.total)}: obligații asumate, nu plăți.`,
               other: `Fără cele # de angajamente PNRR, de ${moneyText(commitments.total)}: obligații asumate, nu plăți.`,
             })}
-          </MonoLabel>
+          </p>
         ) : null}
       </div>
     </div>
@@ -305,36 +308,60 @@ function SeapDetail({
           <Trans>Cele mai recente</Trans>
         </MonoLabel>
         <RecentRecords records={read.recent} className="mt-4" />
-        {model.profile.cui ? (
-          <Link
-            to="/procurement/suppliers/$cui"
-            params={{ cui: model.profile.cui }}
-            className="mt-3 inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
-          >
-            <Trans>Toate contractele și achizițiile →</Trans>
-          </Link>
-        ) : null}
+        {model.profile.cui ? <ProcurementLinks cui={model.profile.cui} grain={grain} className="mt-3" /> : null}
       </div>
+    </div>
+  )
+}
+
+const OUT_LINK_CLASS = 'inline-flex min-h-9 items-center text-sm font-medium text-foreground underline-offset-4 hover:text-primary hover:underline'
+
+/**
+ * Where the procurement pages take the company further: its records of the
+ * grain shown, on the analytics page — from the year that page compares from,
+ * said in the link — and the firm as the state's supplier.
+ */
+function ProcurementLinks({ cui, grain, className }: { readonly cui: string; readonly grain: CompanyPaymentGrain; readonly className?: string }) {
+  const from = DIRECT_COMPARABLE_FROM
+  return (
+    <div className={cn('flex flex-col items-start', className)}>
+      <Link to="/procurement/analytics" search={supplierRecordsSearch(cui, null, grain === 'contracte' ? 'contract' : 'direct')} className={OUT_LINK_CLASS}>
+        {grain === 'contracte' ? <Trans>Contractele firmei din {from} →</Trans> : <Trans>Achizițiile directe ale firmei din {from} →</Trans>}
+      </Link>
+      <Link to="/procurement/suppliers/$cui" params={{ cui }} className={OUT_LINK_CLASS}>
+        <Trans>Firma ca furnizor al statului →</Trans>
+      </Link>
     </div>
   )
 }
 
 /**
  * A line under a ranking: the months of the company's own records — not the
- * source's coverage — how much of it carries a published value when both
- * counts are known, and what the ranking is by when it cannot be money.
+ * source's coverage, which follows them as the month SEAP's data runs to —
+ * how much of it carries a published value when both counts are known, and
+ * what the ranking is by when it cannot be money.
  */
 function CoverageNote({ read, grain, className }: { readonly read: CompanyProcurementRead; readonly grain: CompanyPaymentGrain; readonly className?: string }) {
+  const cutoff = useSeapCutoff().data
+  const through = cutoff ? (grain === 'contracte' ? cutoff.contract : cutoff.direct) : null
   const stats = grainStats(read, grain)
+  // The cutoff is SEAP's last month complete enough to read; a record in a thinner month after it would
+  // put the company's newest month past „the data's end", so the date is said only when it is not.
+  const seapMonth = through && !(stats.lastMonth && stats.lastMonth > through) ? monthText(through) : null
   const window = stats.firstMonth && stats.lastMonth ? `${monthText(stats.firstMonth)} – ${monthText(stats.lastMonth)}` : null
   const lowerBound =
     stats.count !== null && stats.withValue !== null && stats.withValue < stats.count
       ? t`Valoarea e publicată pentru ${count(stats.withValue)} din ${grainCount(grain, stats.count)}, deci sumele sunt o limită de jos.`
       : null
   const ranking = stats.authoritiesRankedBy === 'count' ? t`Ordonate după numărul de înregistrări: prea puține au valoare publicată.` : null
-  const parts = [window ? t`Înregistrările firmei în SEAP, ${window}.` : null, lowerBound, ranking].filter((part): part is string => part !== null)
+  const parts = [
+    window ? t`Înregistrările firmei în SEAP, ${window}.` : null,
+    seapMonth ? t`Date SEAP până în ${seapMonth}.` : null,
+    lowerBound,
+    ranking,
+  ].filter((part): part is string => part !== null)
   if (parts.length === 0) return null
-  return <MonoLabel className={cn('block leading-relaxed text-muted-foreground', className)}>{parts.join(' ')}</MonoLabel>
+  return <p className={cn('text-xs text-muted-foreground', className)}>{parts.join(' ')}</p>
 }
 
 /**

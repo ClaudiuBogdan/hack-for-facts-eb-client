@@ -4,6 +4,7 @@ import { TriangleAlert } from 'lucide-react'
 import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import type { QuestionProblem } from '../../api/company-analytics-plan'
 import { metricLabel } from '../../lib/company-analytics-text'
+import { UNANSWERED_KEYS } from '../../lib/company-analytics-url'
 
 /**
  * What the page says instead of figures it cannot give: a release the API
@@ -73,7 +74,9 @@ function problemText(problem: QuestionProblem): string {
     case 'limit':
       return t`Filtrul „${problem.field}" are mai mult de ${problem.max} valori, cât primește analiza.`
     case 'capability':
-      return t`Filtrul „${problem.field}" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității.`
+      return problem.field.startsWith('activitate_principala')
+        ? t`Filtrul „${problem.field}" (activitatea principală presupusă după ANAF) nu există în această ediție a analizei: ediția nu oferă activitatea principală.`
+        : t`Filtrul „${problem.field}" (activitatea selectată) nu există în această ediție a analizei: ediția nu are selecția derivată a activității.`
   }
 }
 
@@ -90,11 +93,19 @@ export function QuestionProblemsNotice({ problems }: { readonly problems: readon
   )
 }
 
-/** Values in the address the page could not read: said, so the answer below is not taken for the question the link meant. */
+/**
+ * Values in the address the page could not read, and filters it does not
+ * have (an old directory link's name or recorded dates): said, so the answer
+ * below is not taken for the question the link meant.
+ */
 export function UnreadNotice({ keys }: { readonly keys: readonly string[] }) {
+  const unanswered = keys.filter((key) => (UNANSWERED_KEYS as readonly string[]).includes(key))
+  const unread = keys.filter((key) => !unanswered.includes(key))
+  const unansweredKeys = unanswered.join(', ')
   return (
-    <Notice title={t`Unele valori din adresă nu au putut fi citite`}>
-      <p>{t`Răspunsul de mai jos nu le folosește: ${keys.join(', ')}.`}</p>
+    <Notice title={unread.length > 0 ? t`Unele valori din adresă nu au putut fi citite` : t`Unele filtre din adresă nu sunt aplicate`}>
+      {unread.length > 0 ? <p>{t`Răspunsul de mai jos nu le folosește: ${unread.join(', ')}.`}</p> : null}
+      {unanswered.length > 0 ? <p>{t`Analiza nu are aceste filtre, iar răspunsul de mai jos nu le aplică: ${unansweredKeys}.`}</p> : null}
     </Notice>
   )
 }

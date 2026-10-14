@@ -1,7 +1,13 @@
 import type { CompanyAnalysisBucket, CompanyAnalysisDimension, CompanyAnalysisScope } from '@/schemas/company-analytics'
-import { COMPANY_ANALYSIS_SELECTING_BASES, COMPANY_ANALYSIS_SIZE_BANDS, type CompanyAnalysisSizeBand } from '@/schemas/company-analytics'
+import {
+  COMPANY_ANALYSIS_MAIN_SELECTING_STATUSES,
+  COMPANY_ANALYSIS_SELECTING_BASES,
+  COMPANY_ANALYSIS_SIZE_BANDS,
+  type CompanyAnalysisSizeBand,
+} from '@/schemas/company-analytics'
 import { unclassifiedBasisOf } from './company-activity-text'
-import { activitySelectorOf } from './company-analytics-url'
+import { unresolvedMainStatusOf } from './company-analytics-main-activity'
+import { activitySelectorOf, mainActivitySelectorOf } from './company-analytics-url'
 
 /**
  * A breakdown row clicked: the same question narrowed to that group, with a
@@ -15,10 +21,14 @@ import { activitySelectorOf } from './company-analytics-url'
  * companies without a statement with statements without a headcount: neither
  * narrows to one filter, so neither is a drill. A selected activity narrows
  * to that exact activity — ONRC with its revision, ANAF without one — and an
- * unclassified activity bucket to its basis.
+ * unclassified activity bucket to its basis. A main activity (v4) narrows to
+ * its exact ONRC key, an unresolved one to its status — only ever with the
+ * main activity's own filters, never the derived activity's, ANAF's fiscal
+ * code or an authorized ONRC code.
  */
 export function drillScope(scope: CompanyAnalysisScope, dimension: CompanyAnalysisDimension, bucket: CompanyAnalysisBucket): CompanyAnalysisScope | null {
   if (dimension === 'ACTIVITY') return bucket.kind === 'GROUP' ? withActivity(scope, bucket) : null
+  if (dimension === 'MAIN_ACTIVITY') return bucket.kind === 'GROUP' ? withMainActivity(scope, bucket) : null
   if (bucket.kind === 'GROUP' && bucket.key !== null) return withGroup(scope, dimension, bucket.key)
   if (bucket.kind === 'UNKNOWN') return withUnknown(scope, dimension)
   return null
@@ -40,6 +50,20 @@ function withActivity(scope: CompanyAnalysisScope, bucket: CompanyAnalysisBucket
   if (activity?.source === 'ANAF' && activity.code) return { ...scope, activity: [{ source: 'ANAF', code: activity.code }] }
   const selector = bucket.key ? activitySelectorOf(bucket.key) : null
   return selector ? { ...scope, activity: [selector] } : null
+}
+
+/**
+ * A MAIN_ACTIVITY bucket's exact filter: an unresolved status by that status;
+ * a selected key by its revision and code, read from the bucket's main
+ * activity or, failing that, its key (`main:rev3:4711`).
+ */
+function withMainActivity(scope: CompanyAnalysisScope, bucket: CompanyAnalysisBucket): CompanyAnalysisScope | null {
+  const unresolved = unresolvedMainStatusOf(bucket)
+  if (unresolved !== null) return { ...scope, mainActivityStatus: [unresolved] }
+  const main = bucket.mainActivity
+  if (main && COMPANY_ANALYSIS_MAIN_SELECTING_STATUSES.has(main.status) && main.revision && main.code) return { ...scope, mainActivity: [{ revision: main.revision, code: main.code }] }
+  const selector = bucket.key ? mainActivitySelectorOf(bucket.key) : null
+  return selector ? { ...scope, mainActivity: [selector] } : null
 }
 
 function withGroup(scope: CompanyAnalysisScope, dimension: CompanyAnalysisDimension, key: string): CompanyAnalysisScope | null {
@@ -67,6 +91,7 @@ function withGroup(scope: CompanyAnalysisScope, dimension: CompanyAnalysisDimens
     case 'EMPLOYEE_SIZE':
       return (COMPANY_ANALYSIS_SIZE_BANDS as readonly string[]).includes(key) ? { ...scope, employeeSizeBands: [key as CompanyAnalysisSizeBand] } : null
     case 'ACTIVITY':
+    case 'MAIN_ACTIVITY':
       return null
   }
 }
@@ -88,7 +113,7 @@ const DRILL_ORDER: readonly CompanyAnalysisDimension[] = ['COUNTY', 'UAT', 'MAIN
 
 /**
  * After a drill, the breakdown moves on: a county opens its localities, anything else the first grouping not already narrowed to one value.
- * The derived activity is never moved to (a release may not offer it): it is left for the reader to choose.
+ * The derived and the main activity are never moved to (a release may not offer them): they are left for the reader to choose.
  */
 export function nextDimension(dimension: CompanyAnalysisDimension, scope: CompanyAnalysisScope): CompanyAnalysisDimension {
   if (dimension === 'COUNTY') return 'UAT'
@@ -102,6 +127,8 @@ export function nextDimension(dimension: CompanyAnalysisDimension, scope: Compan
         return (scope.mainCaen?.length ?? 0) === 1
       case 'ACTIVITY':
         return (scope.activity?.length ?? 0) === 1
+      case 'MAIN_ACTIVITY':
+        return (scope.mainActivity?.length ?? 0) === 1
       case 'LEGAL_FORM':
         return (scope.legalForms?.length ?? 0) === 1
       case 'OBSERVED_STATUS':

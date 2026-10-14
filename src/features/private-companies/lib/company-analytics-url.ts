@@ -2,6 +2,7 @@ import {
   COMPANY_ANALYSIS_ACTIVITY_BASES,
   COMPANY_ANALYSIS_CAEN_BASES,
   COMPANY_ANALYSIS_FLAG_VALUES,
+  COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES,
   COMPANY_ANALYSIS_METRICS,
   COMPANY_ANALYSIS_RELEASE_ID_RE,
   COMPANY_ANALYSIS_SIZE_BANDS,
@@ -15,6 +16,7 @@ import {
   type CompanyAnalysisDirection,
   type CompanyAnalysisFlagValue,
   type CompanyAnalysisKeyFilterInput,
+  type CompanyAnalysisMainActivityStatus,
   type CompanyAnalysisMetric,
   type CompanyAnalysisOnrcExcludeInput,
   type CompanyAnalysisOnrcInput,
@@ -92,6 +94,7 @@ export const DIMENSION_WORDS: Readonly<Record<CompanyAnalysisDimension, string>>
   UAT: 'uat',
   MAIN_CAEN: 'caen',
   ACTIVITY: 'activitate',
+  MAIN_ACTIVITY: 'activitate-principala',
   LEGAL_FORM: 'forma',
   OBSERVED_STATUS: 'stare',
   VAT_PAYER: 'tva',
@@ -110,6 +113,19 @@ const ACTIVITY_BASIS_WORDS: Readonly<Record<CompanyAnalysisActivityBasis, string
   ANAF_FISCAL_CODE: 'anaf',
   ANAF_FISCAL_UNCATALOGUED: 'anaf-necatalogat',
   NO_QUALIFIED_SELECTION: 'fara-selectie',
+}
+/** The ANAF-assumed main activity's statuses (v4), as the address writes them. */
+const MAIN_STATUS_WORDS: Readonly<Record<CompanyAnalysisMainActivityStatus, string>> = {
+  RESOLVED: 'potrivita',
+  RESOLVED_LATEST_REVISION: 'potrivita-ultima-revizie',
+  NO_ONRC_MATCH: 'fara-potrivire-onrc',
+  UNRESOLVED_TOKEN_FORM: 'forma-cod-nerezolvata',
+  TOKEN_PLACEHOLDER: 'cod-substitut',
+  TOKEN_INVALID: 'cod-nevalid',
+  SOURCE_MISSING: 'fara-cod',
+  SOURCE_UNBOUND: 'nelegata',
+  CORRECTED: 'corectata',
+  CORRECTION_WITHHELD: 'corectie-retinuta',
 }
 const SIZE_WORDS: Readonly<Record<CompanyAnalysisSizeBand, string>> = {
   UNAVAILABLE: 'indisponibil',
@@ -138,8 +154,28 @@ const COHORT_BY_WORD = invert(COHORT_WORDS)
 const FLAG_BY_WORD = invert(FLAG_WORDS)
 const BASIS_BY_WORD = invert(BASIS_WORDS)
 const ACTIVITY_BASIS_BY_WORD = invert(ACTIVITY_BASIS_WORDS)
+const MAIN_STATUS_BY_WORD = invert(MAIN_STATUS_WORDS)
 const SIZE_BY_WORD = invert(SIZE_WORDS)
 const METRIC_BY_WORD = new Map(COMPANY_ANALYSIS_METRICS.map((metric) => [metricWord(metric), metric]))
+
+/**
+ * The legal forms of the analysis's population: the register's legal
+ * persons, no PFA, II or IF. Release 7's legal-form breakdown holds these
+ * twelve and nothing else (read 13 October 2026; no other, no unknown
+ * bucket). A form outside it is not read: no company of the population has
+ * it, so its empty answer would pass for a finding. In the order the filter
+ * suggests them.
+ */
+export const ANALYSIS_LEGAL_FORMS: readonly string[] = ['SRL', 'SA', 'SNC', 'SCS', 'SCA', 'RA', 'SC', 'SCE', 'SE', 'GIE', 'GEIE', 'INCD']
+
+/**
+ * Keys the page reads only to say it does not answer them: a typed name
+ * (`nume`) and an ONRC recorded-date range (`inregistrare`, `from~to`), which
+ * an old directory link carried (`company-directory-redirect.ts`). The page
+ * has no such filter; naming them keeps a wider answer from passing for the
+ * question the link meant.
+ */
+export const UNANSWERED_KEYS = ['nume', 'inregistrare'] as const
 
 /** Every key the page reads: the rest of an address (`lang`, the site's own) is left as it came. */
 export const SEARCH_KEYS = [
@@ -165,6 +201,9 @@ export const SEARCH_KEYS = [
   // The derived activity selection (v3): exact `onrc:rev2:6201` / `anaf:6201`, and its basis.
   'activitate',
   'activitate_baza',
+  // The ANAF-assumed main activity (v4): its exact ONRC key `rev3:4711`, and its status.
+  'activitate_principala',
+  'activitate_principala_stare',
   'depunere',
   'interval',
   'marime',
@@ -177,6 +216,8 @@ export const SEARCH_KEYS = [
   'onrc_fara_caen',
   'onrc_fara_judet',
   'onrc_fara_forma',
+  // Never answered (no such filter here): a name and a recorded-date range the retired directory's links carried.
+  ...UNANSWERED_KEYS,
 ] as const
 export type SearchKey = (typeof SEARCH_KEYS)[number]
 
@@ -319,6 +360,26 @@ export function activityToken(selector: ActivitySelector): string {
   return selector.source === 'ONRC' ? `onrc:${selector.revision ?? ''}:${selector.code}` : `anaf:${selector.code}`
 }
 
+/** An exact ONRC key of the ANAF-assumed main activity (v4): `rev3:4711`, never a code without its revision. */
+export interface MainActivitySelector {
+  readonly revision: 'rev0' | 'rev1' | 'rev2' | 'rev3'
+  readonly code: string
+}
+
+const MAIN_ACTIVITY_KEY_RE = /^(rev[0-3]):(\d{4})$/u
+
+/** `rev3:4711` (or the API's bucket key `main:rev3:4711`); anything else is not read. */
+export function mainActivitySelectorOf(token: string): MainActivitySelector | null {
+  const match = MAIN_ACTIVITY_KEY_RE.exec(token.toLowerCase().replace(/^main:/u, ''))
+  const revision = match?.[1]
+  const code = match?.[2]
+  return revision && code ? { revision: revision as MainActivitySelector['revision'], code } : null
+}
+
+export function mainActivityToken(selector: MainActivitySelector): string {
+  return `${selector.revision}:${selector.code}`
+}
+
 function one<T>(reader: Reader, key: SearchKey, text: string | undefined, read: (text: string) => T | undefined): T | undefined {
   if (text === undefined || text === '') return undefined
   const value = read(text)
@@ -378,7 +439,9 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   if (county) scope.county = county
   const uat = keyFilter(reader, 'uat', search.uat, SIRUTA_RE)
   if (uat) scope.uat = uat
-  const legalForms = sortedUnique(tokens(reader, 'forma', search.forma, (token) => (LEGAL_FORM_RE.test(token) ? token.toUpperCase() : null)))
+  const legalForms = sortedUnique(
+    tokens(reader, 'forma', search.forma, (token) => (LEGAL_FORM_RE.test(token) && ANALYSIS_LEGAL_FORMS.includes(token.toUpperCase()) ? token.toUpperCase() : null)),
+  )
   if (legalForms.length > 0) scope.legalForms = legalForms
   const status = keyFilter(reader, 'stare', search.stare, STATUS_RE)
   if (status) scope.observedStatus = status
@@ -394,6 +457,13 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   if (activity.size > 0) scope.activity = [...activity.entries()].sort(([a], [b]) => byText(a, b)).map(([, selector]) => ({ ...selector }))
   const activityBases = inVocabulary(tokens(reader, 'activitate_baza', search.activitate_baza, (token) => ACTIVITY_BASIS_BY_WORD.get(token) ?? null), COMPANY_ANALYSIS_ACTIVITY_BASES)
   if (activityBases.length > 0) scope.activityBasis = activityBases
+  const main = new Map(tokens(reader, 'activitate_principala', search.activitate_principala, mainActivitySelectorOf).map((selector) => [mainActivityToken(selector), selector]))
+  if (main.size > 0) scope.mainActivity = [...main.entries()].sort(([a], [b]) => byText(a, b)).map(([, selector]) => ({ ...selector }))
+  const mainStatuses = inVocabulary(
+    tokens(reader, 'activitate_principala_stare', search.activitate_principala_stare, (token) => MAIN_STATUS_BY_WORD.get(token) ?? null),
+    COMPANY_ANALYSIS_MAIN_ACTIVITY_STATUSES,
+  )
+  if (mainStatuses.length > 0) scope.mainActivityStatus = mainStatuses
   const filing = one(reader, 'depunere', search.depunere, (text) => (text === 'da' ? ('FILED' as const) : text === 'nu' ? ('NOT_FILED' as const) : undefined))
   if (filing) scope.filing = filing
   const ranges = new Map<CompanyAnalysisMetric, CompanyAnalysisRangeInput>()
@@ -406,6 +476,7 @@ export function stateOf(search: CompanyAnalyticsSearch): CompanyAnalyticsState {
   const sizes = inVocabulary(tokens(reader, 'marime', search.marime, (token) => SIZE_BY_WORD.get(token) ?? null), COMPANY_ANALYSIS_SIZE_BANDS)
   if (sizes.length > 0) scope.employeeSizeBands = sizes
   const onrc = onrcOf(reader, search)
+  for (const key of UNANSWERED_KEYS) if (search[key] !== undefined && search[key] !== '') reader.unread.add(key)
   if (onrc) scope.onrc = onrc
   // A company without a statement has no reported value or size band: the API refuses the pair, and so does the page.
   if (scope.filing === 'NOT_FILED' && (scope.financialRanges || scope.employeeSizeBands)) {
@@ -470,6 +541,8 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
     ['caen_baza', list(scope.mainCaenBasis?.map((basis) => BASIS_WORDS[basis]))],
     ['activitate', list(scope.activity?.map(activityToken))],
     ['activitate_baza', list(scope.activityBasis?.map((basis) => ACTIVITY_BASIS_WORDS[basis]))],
+    ['activitate_principala', list(scope.mainActivity?.map(mainActivityToken))],
+    ['activitate_principala_stare', list(scope.mainActivityStatus?.map((status) => MAIN_STATUS_WORDS[status]))],
     ['depunere', scope.filing === undefined ? undefined : scope.filing === 'FILED' ? 'da' : 'nu'],
     ['interval', list(scope.financialRanges?.map(rangeToken))],
     ['marime', list(scope.employeeSizeBands?.map((band) => SIZE_WORDS[band]))],
@@ -491,7 +564,12 @@ export function searchOf(state: CompanyAnalyticsState): CompanyAnalyticsSearch {
  * and reads back as its digits.
  */
 export function urlSearchOf(state: CompanyAnalyticsState): CompanyAnalyticsUrlSearch {
-  return Object.fromEntries(Object.entries(searchOf(state)).map(([key, value]) => [key, /^[1-9]\d{0,14}$/u.test(value) ? Number(value) : value])) as CompanyAnalyticsUrlSearch
+  return urlSearchOfText(searchOf(state))
+}
+
+/** An address in the page's words, as the router writes it: a digits-only value as a number. */
+export function urlSearchOfText(search: CompanyAnalyticsSearch): CompanyAnalyticsUrlSearch {
+  return Object.fromEntries(Object.entries(search).map(([key, value]) => [key, /^[1-9]\d{0,14}$/u.test(value) ? Number(value) : value])) as CompanyAnalyticsUrlSearch
 }
 
 // ──────────────────────────────────────────────────────────── changes ──

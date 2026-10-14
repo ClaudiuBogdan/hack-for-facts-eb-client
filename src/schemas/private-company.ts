@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { companyMainActivityReadSchema } from './private-company-main-activity'
 import { COMPANY_CAEN_CLASS_STATES, COMPANY_CAEN_REVISIONS, COMPANY_REGISTRY_COVERAGES, companyRegistryEvidenceSchema } from './private-company-registry'
 
 export const privateCompanyMatchConfidenceSchema = z.enum([
@@ -38,6 +39,16 @@ export const privateCompanyCaenActivitySchema = z.object({
   labelSource: z.literal('current_db_catalog').nullable().optional(),
   /** ONRC rows: what the observation can say (only `class` is labelled); null for ANAF and from an older API. */
   classState: z.enum(COMPANY_CAEN_CLASS_STATES).nullable().optional(),
+  /**
+   * The API's flag: true only on the ONRC class row whose (revision, code) is
+   * the ANAF-assumed main activity's selected key, false on the other class
+   * rows, while that assignment is current in the pinned edition; null
+   * otherwise (ANAF row, non-class row, not current, unreadable) and absent
+   * from an older API. Never derived here.
+   */
+  isMainCaen: z.boolean().nullable().optional(),
+  /** The row's leading-zero-free digits equal ANAF's assumed token (same gates as `isMainCaen`); not the main key itself. */
+  matchesAssumedMainCode: z.boolean().nullable().optional(),
 })
 
 /** How the company's ONE derived activity was selected (see `privateCompanyActivitySelectionSchema`). */
@@ -367,6 +378,14 @@ export const privateCompanyProfileSchema = z.object({
   activitySelection: privateCompanyActivitySelectionSchema.nullish(),
   /** The API refused the selection alone (more observation groups than it bounds): said, never replaced by the older headline. */
   activitySelectionUnavailable: z.boolean().optional(),
+  /**
+   * The ANAF-assumed main activity (`Company.mainActivity`): absent or null
+   * from an API that does not serve it (nothing new is shown, nothing is
+   * inferred). See `private-company-main-activity.ts`.
+   */
+  mainActivity: companyMainActivityReadSchema.nullish(),
+  /** The API answered a main activity this client cannot read (an unknown value, an answer that does not hold together): said, and every main flag dropped. */
+  mainActivityUnreadable: z.boolean().optional(),
   representatives: z.array(privateCompanyRepresentativeSchema),
   euBranches: z.array(privateCompanyEuBranchSchema),
   fiscal: privateCompanyFiscalSchema,

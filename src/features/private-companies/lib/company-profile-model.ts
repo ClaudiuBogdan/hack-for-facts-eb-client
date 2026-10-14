@@ -9,12 +9,13 @@ import type {
   PrivateCompanyStatementPublisher,
 } from '@/schemas/private-company'
 import type { CompanyCaenClassState, CompanyRegistryEvidence, CompanyRegistryValue } from '@/schemas/private-company-registry'
-import { divisionLabel } from './caen-divisions'
+import { caenDivisionLabel } from './caen-divisions'
 import { DISSOLUTION_STATUSES, INSOLVENCY_STATUSES, STATUS_ACTIVE, STATUS_STRUCK_OFF } from './company-status-codes'
 import { foldCountyName } from './county-names'
-import { comparable, metricStatus, qualifiedNet, reportedNumber, sourceValues, type SourceValue } from './financial-qualification'
+import { admittedNet, comparable, metricStatus, qualifiedNet, reportedNumber, sourceValues, type AdmittedNetKind, type SourceValue } from './financial-qualification'
 import { isReceiptFlow } from './public-money-display'
 import { legalFormName } from './company-legal-forms'
+import { assumedMainOf, withAnafWithdrawn, type AssumedMainView } from './company-main-activity-model'
 
 /**
  * What the company profile draws, derived from the company's record: who it
@@ -37,6 +38,15 @@ export interface YearValue {
   readonly year: number
   /** Null for a year with no statement or no value: a gap, never a zero. */
   readonly value: number | null
+}
+
+/**
+ * A year's bottom line (`admittedNet`): the net result, or a positive net
+ * profit admitted where the result is held for want of a loss; `kind` says
+ * which, so a label never calls a profit the result. Null for a gap.
+ */
+export interface NetPoint extends YearValue {
+  readonly kind: AdmittedNetKind | null
 }
 
 /**
@@ -65,7 +75,21 @@ export interface ActivityGroup {
    * `classState` where the API names it: only a `class` row is a classified activity (a short source code
    * is ambiguous between a class and a group, and has no label); null from an older API.
    */
-  readonly activities: readonly { readonly code: string; readonly label: string | null; readonly classState: CompanyCaenClassState | null }[]
+  readonly activities: readonly ActivityRow[]
+}
+
+/**
+ * One registry activity row. `isMainCaen` / `matchesAssumedMainCode` are the
+ * API's flags as the mapper kept them (only on a class row of the pinned
+ * edition while the ANAF-assumed main activity is current); null otherwise,
+ * absent from an older API (the row then reads exactly as before).
+ */
+export interface ActivityRow {
+  readonly code: string
+  readonly label: string | null
+  readonly classState: CompanyCaenClassState | null
+  readonly isMainCaen?: boolean | null
+  readonly matchesAssumedMainCode?: boolean | null
 }
 
 export interface MoneyYear {
@@ -137,8 +161,15 @@ export interface CompanyProfileModel {
   readonly recordedDate: CompanyRegistryValue | null
   /** Some resolved identifier holds a public „în funcțiune" (1048) observation — also beside a conflicting one. */
   readonly activeObservation: boolean
-  /** `label`: the registered office as a reader writes it („Gherla, Cluj"). */
-  readonly place: { readonly label: string | null; readonly county: string | null; readonly countyCode: string | null }
+  /**
+   * `label`: the registered office as a reader writes it („Gherla, Cluj").
+   * `uatCode`: the SIRUTA code the companies analysis filters the label's
+   * locality by — only when the pinned edition's consensus and the locality
+   * the label names are the same one.
+   */
+  readonly place: { readonly label: string | null; readonly county: string | null; readonly countyCode: string | null; readonly uatCode: string | null }
+  /** The year of the qualified date ONRC recorded: registered then, not necessarily founded. Null without one. */
+  readonly recordedYear: number | null
   /**
    * The main activity declared to ANAF — ANAF's statement, never a current
    * ONRC fact. `label` comes only from the code's own CAEN revision: null when
@@ -162,6 +193,13 @@ export interface CompanyProfileModel {
   readonly selection: PrivateCompanyActivitySelection | null
   /** The API refused the selection alone: the band says it cannot be shown, rather than falling back. */
   readonly selectionUnavailable: boolean
+  /**
+   * The ANAF-assumed main activity: an assumption from ANAF's fiscal code,
+   * never a principal activity ONRC declared. Shown above the derived
+   * selection, which keeps its own meaning. The activity rows' flags come
+   * from the same answer.
+   */
+  readonly assumedMain: AssumedMainView
   /**
    * The registry's activities in every revision it lists (Rev.0 and rows that
    * name no revision included), by revision and division, the newest edition
@@ -205,7 +243,10 @@ export interface CompanyProfileModel {
   readonly missingYears: readonly number[]
   readonly series: {
     readonly turnover: readonly YearValue[]
+    /** The evaluator's net results only: what counts loss years. */
     readonly netResult: readonly YearValue[]
+    /** The bottom line the charts draw: the net result, else an admitted positive profit (`NetPoint`). */
+    readonly net: readonly NetPoint[]
     readonly employees: readonly YearValue[]
   }
   /**
@@ -216,6 +257,7 @@ export interface CompanyProfileModel {
     readonly years: readonly number[]
     readonly turnover: readonly (number | null)[]
     readonly netResult: readonly (number | null)[]
+    readonly net: readonly NetPoint[]
     readonly employees: readonly (number | null)[]
   }
   readonly lossYears: number
@@ -359,13 +401,14 @@ export function compareCaenRevisions(a: string | null, b: string | null): number
 }
 
 /**
- * A division's name in the group's own revision. Only the Rev.2 division list
- * is held here, so another revision's division is named by its number and
- * edition — never by the Rev.2 name of the same digits (Rev.1 62 is air
- * transport, not software) — and a row with no revision by its number alone.
+ * A division's name in the group's own revision. Rev.2 and Rev.3 divisions
+ * are named; another revision's division by its number and edition — never by
+ * the name of the same digits in another revision (Rev.1 62 is air transport,
+ * not software) — and a row with no revision by its number alone.
  */
 function groupLabel(division: string, revision: string | null): string {
-  if (revision === 'rev2') return divisionLabel(division)
+  const named = caenDivisionLabel(division, revision)
+  if (named) return named
   return revision ? t`Diviziunea ${division} (CAEN ${caenEdition(revision)})` : t`Diviziunea ${division} (fără revizie CAEN)`
 }
 
@@ -388,7 +431,7 @@ function activityGroups(profile: PrivateCompanyProfile): CompanyProfileModel['ac
   const onrc = profile.caenActivities.filter((activity) => activity.source === 'onrc')
   const groups = new Map<
     string,
-    { revision: string | null; division: string | null; kind: ActivityGroup['kind']; activities: { code: string; label: string | null; classState: CompanyCaenClassState | null }[] }
+    { revision: string | null; division: string | null; kind: ActivityGroup['kind']; activities: ActivityRow[] }
   >()
   const counts = new Map<string | null, number>()
   for (const activity of onrc) {
@@ -401,7 +444,13 @@ function activityGroups(profile: PrivateCompanyProfile): CompanyProfileModel['ac
     const group = groups.get(key) ?? { revision, division, kind, activities: [] }
     // A catalog label names only a qualified class, never a guess from the code.
     const labelled = revision !== null && activity.label !== null && kind === 'class'
-    group.activities.push({ code: activity.code, label: labelled && activity.label ? commaBelow(activity.label) : null, classState })
+    group.activities.push({
+      code: activity.code,
+      label: labelled && activity.label ? commaBelow(activity.label) : null,
+      classState,
+      ...(activity.isMainCaen !== undefined ? { isMainCaen: activity.isMainCaen } : {}),
+      ...(activity.matchesAssumedMainCode !== undefined ? { matchesAssumedMainCode: activity.matchesAssumedMainCode } : {}),
+    })
     groups.set(key, group)
     counts.set(revision, (counts.get(revision) ?? 0) + 1)
   }
@@ -594,6 +643,47 @@ export function sizeClassOf(employees: number | null): SizeClass | null {
   return 'large'
 }
 
+/**
+ * The model once a history row reported ANAF's source withdrawn under the
+ * assignment shown (`identity`, its `cacheKey`): ANAF's history is public
+ * only while the company's fiscal row is, so the assignment loses its ANAF
+ * evidence and interpretation (`withAnafWithdrawn`) and no activity row
+ * keeps a main flag — at once, before the profile read again answers. A
+ * profile under another identity (the reread's answer) is shown as served.
+ */
+export function withAnafWithdrawnSeen(model: CompanyProfileModel, identity: string | null): CompanyProfileModel {
+  const view = model.assumedMain
+  if (identity === null || view.kind !== 'assigned' || view.activity.cacheKey !== identity) return model
+  return {
+    ...model,
+    assumedMain: { kind: 'assigned', activity: withAnafWithdrawn(view.activity) },
+    activities: { ...model.activities, groups: model.activities.groups.map((group) => ({ ...group, activities: group.activities.map(unflaggedRow) })) },
+  }
+}
+
+/** A row without the main flags (rows an older API served without them stay as they were). */
+function unflaggedRow(row: ActivityRow): ActivityRow {
+  return row.isMainCaen === undefined && row.matchesAssumedMainCode === undefined ? row : { ...row, isMainCaen: null, matchesAssumedMainCode: null }
+}
+
+/**
+ * The model once a dependent read answered that the company of this very
+ * answer (`refused`, the profile object) is no longer a public directory
+ * company: its main activity is withheld (`refused`) and no activity row
+ * keeps a main flag or hint — at once, before the profile read again
+ * answers; the page's own privacy path then hides the answer
+ * (`useProfileRegistryScope`). Another answer (the reread's) is shown as
+ * served.
+ */
+export function withOwningCompanyRefused(model: CompanyProfileModel, refused: PrivateCompanyProfile | null): CompanyProfileModel {
+  if (refused === null || refused !== model.profile) return model
+  return {
+    ...model,
+    assumedMain: { kind: 'refused' },
+    activities: { ...model.activities, groups: model.activities.groups.map((group) => ({ ...group, activities: group.activities.map(unflaggedRow) })) },
+  }
+}
+
 export function buildCompanyProfileModel(
   profile: PrivateCompanyProfile,
   {
@@ -624,11 +714,20 @@ export function buildCompanyProfileModel(
   const employeesOf = (year: PrivateCompanyFinancialYear) => (onBasis(year) ? reportedNumber(year, 'employees') : null)
   const netOf = (year: PrivateCompanyFinancialYear) => (onBasis(year) ? qualifiedNet(year) : null)
   const netResult = seriesOf(netOf)
+  const netPointOf = (year: number): NetPoint => {
+    const entry = byYear.get(year)
+    const net = entry && onBasis(entry) ? admittedNet(entry) : null
+    return { year, value: net?.value ?? null, kind: net?.kind ?? null }
+  }
 
   const countyName = profile.geography?.countyName ?? profile.address.county
   const countyCode = countyCodeOf(countyName)
   const recentYears = years.slice(-RECENT_YEARS)
   const { registry } = profile
+  // The analysis filters the edition's locality consensus: a link only when the label names that same locality.
+  const editionUat = registry.profile?.uatSirutaCode.value ?? null
+  const uatCode = editionUat !== null && profile.geography?.uatSirutaCode === editionUat ? editionUat : null
+  const recordedYear = /^(\d{4})-\d{2}-\d{2}$/u.exec(profile.registrationDate ?? '')?.[1]
 
   return {
     profile,
@@ -642,10 +741,13 @@ export function buildCompanyProfileModel(
       label: placeLabel(profile.geography?.uatName ?? profile.address.locality, countyName),
       county: countyName ? commaBelow(countyName) : null,
       countyCode,
+      uatCode,
     },
+    recordedYear: recordedYear ? Number(recordedYear) : null,
     mainActivity: mainActivityOf(profile),
     selection: profile.activitySelection ?? null,
     selectionUnavailable: profile.activitySelectionUnavailable === true,
+    assumedMain: assumedMainOf(profile),
     activities: activityGroups(profile),
     statementSources: statementSourcesOf(years),
     latest,
@@ -654,11 +756,12 @@ export function buildCompanyProfileModel(
     stale: latest !== null && latest.fiscalYear < now.getFullYear() - 2,
     span,
     missingYears: span.filter((year) => !byYear.has(year)),
-    series: { turnover: seriesOf(turnoverOf), netResult, employees: seriesOf(employeesOf) },
+    series: { turnover: seriesOf(turnoverOf), netResult, net: span.map(netPointOf), employees: seriesOf(employeesOf) },
     recent: {
       years: recentYears.map((year) => year.fiscalYear),
       turnover: recentYears.map(turnoverOf),
       netResult: recentYears.map(netOf),
+      net: recentYears.map((year) => netPointOf(year.fiscalYear)),
       employees: recentYears.map(employeesOf),
     },
     // Counted over reported net results on the basis only; the page says which statements it cannot count.

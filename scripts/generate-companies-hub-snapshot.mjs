@@ -60,14 +60,13 @@ const source = (path) => readFileSync(resolve(ROOT, path), 'utf8')
 const COUNTIES = [...source('src/lib/territory-counties.ts').matchAll(/\{ code: '([A-Z]+)', name: '[^']+', nameRo: '([^']+)' \}/g)].map(
   ([, code, name]) => ({ code, name }),
 )
-const NAMED_DIVISIONS = new Set([...source('src/features/private-companies/lib/caen-divisions.ts').matchAll(/code: '(\d\d)'/g)].map(([, code]) => code))
 const statusCodes = (name) => {
   const list = new RegExp(`export const ${name} = \\[([^\\]]*)\\]`).exec(source('src/features/private-companies/lib/company-status-codes.ts'))?.[1]
   return [...(list ?? '').matchAll(/'(\d+)'/g)].map(([, code]) => code)
 }
 const INSOLVENCY_STATUSES = statusCodes('INSOLVENCY_STATUSES')
 const DISSOLUTION_STATUSES = statusCodes('DISSOLUTION_STATUSES')
-if (COUNTIES.length !== 42 || NAMED_DIVISIONS.size !== 88 || INSOLVENCY_STATUSES.length === 0 || DISSOLUTION_STATUSES.length === 0) {
+if (COUNTIES.length !== 42 || INSOLVENCY_STATUSES.length === 0 || DISSOLUTION_STATUSES.length === 0) {
   throw new Error('A reference list changed shape')
 }
 const sqlList = (codes) => codes.map((code) => `'${code}'`).join(', ')
@@ -104,22 +103,6 @@ const BASE = `
   from companies_v2.registrations r
   join core.organizations o on o.cui = r.cui and o.kind = 'company'
   where length(r.cui) <= 10`
-
-// The main activity declared to ANAF, as a CAEN Rev.2 division. ANAF's codes
-// mix Rev.2 and, since 2025, Rev.3 (and old Rev.1 codes on dormant firms); the
-// field carries no revision. A Rev.2 class keeps its division. A class only
-// Rev.3 has keeps its division too — the divisions line up — except motor
-// vehicle repair (95.3x in Rev.3, which abolished division 45), which goes back
-// to 45. Anything else is no recognised activity.
-const MAIN_DIVISION = `
-  select fs.cui,
-         case
-           when fs.main_caen_code in (select code from core.classification_codes where system = 'caen_rev2')
-             then left(fs.main_caen_code, 2)
-           when fs.main_caen_code in (select code from core.classification_codes where system = 'caen_rev3')
-             then case when fs.main_caen_code like '953%' then '45' else left(fs.main_caen_code, 2) end
-         end as division
-  from companies_v2.fiscal_status fs`
 
 // The year's public statements of served companies (the population BASE
 // counts), an impossible headcount turned into an unknown one.
@@ -159,16 +142,6 @@ const QUERIES = {
     group by reg_year order by reg_year`,
   activeByCounty: `with base as (${BASE}) select county, count(*)::bigint as n from base where status = '1048' group by county`,
   newByCounty: `with base as (${BASE}) select county, count(*)::bigint as n from base where reg_year = ${YEAR} group by county`,
-  activeByDivision: `
-    with base as (${BASE}), md as (${MAIN_DIVISION})
-    select md.division, count(*)::bigint as n
-    from base b left join md on md.cui = b.cui
-    where b.status = '1048' group by 1`,
-  newByDivision: `
-    with base as (${BASE}), md as (${MAIN_DIVISION})
-    select md.division, count(*)::bigint as n
-    from base b left join md on md.cui = b.cui
-    where b.reg_year = ${YEAR} group by 1`,
   fiscallyInactive: `
     with base as (${BASE})
     select count(*) filter (where fs.is_inactive)::bigint as n
@@ -180,12 +153,6 @@ const QUERIES = {
            count(*) filter (where employee_outlier)::bigint as outliers,
            count(*) filter (where employees is null)::bigint as unknown_headcount
     from fy`,
-  sectors: `
-    with fy as (${FY}), md as (${MAIN_DIVISION})
-    select md.division,
-           coalesce(sum(fy.turnover), 0)::text as turnover, coalesce(sum(fy.employees), 0)::text as employees
-    from fy left join md on md.cui = fy.cui
-    group by 1`,
   // Size is known only where a headcount is: a statement with none (or an
   // impossible one) has no class, rather than joining the ones with zero.
   sizes: `
@@ -323,9 +290,9 @@ const ACTIVITY_QUERY = `
  * Each ranked company's activity as the release selects it (v3), from the
  * same release as the years: an ONRC class with its own revision, ANAF's
  * fiscal code with its revision unpublished, or why none is selected. Never
- * ANAF's raw code beside an ONRC class it contradicts — so not the fiscal
- * division the sectors band groups by. A company the release does not hold
- * has none; a held one without a selection means the release is not v3.
+ * ANAF's raw code beside an ONRC class it contradicts. A company the release
+ * does not hold has none; a held one without a selection means the release is
+ * not v3.
  */
 async function readLeaderActivities(release, cuis) {
   const unique = [...new Set(cuis)]
@@ -384,16 +351,11 @@ function reconcile(rows, population, years) {
   check(byCounty(rows.activeByCounty).size === 42 && byCounty(rows.countyFinancials, 'turnover').size === 42, 'a county has no figures')
   check(sumOf(COUNTIES.map((county) => population.get(county.code))) === population.get('RO'), 'county populations do not add up to RO')
   check(sumOf(rows.countyFinancials.map((row) => row.turnover)) === int(national.turnover), 'county turnover does not add up to the national total')
-  check(sumOf(rows.sectors.map((row) => row.turnover)) === int(national.turnover), 'sector turnover does not add up to the national total')
   check(sumOf(rows.sizes.map((row) => row.employees)) === int(national.employees), 'size-class employees do not add up to the national total')
   check(
     sumOf(rows.sizes.map((row) => row.firms)) + int(national.unknown_headcount) === int(national.statements),
     'size classes and unknown headcounts do not add up to the statements',
   )
-  const status1048 = int(rows.status.find((row) => row.status === '1048')?.n ?? 0)
-  const newFirms = int(rows.registrations.find((row) => row.reg_year === YEAR)?.registered ?? 0)
-  check(sumOf(rows.activeByDivision.map((row) => row.n)) === status1048, 'companies in business by division do not add up to their count')
-  check(sumOf(rows.newByDivision.map((row) => row.n)) === newFirms, "the year's new companies by division do not add up to their count")
   for (const [name, leaders] of [['turnover', rows.leadersTurnover], ['employees', rows.leadersEmployees]]) {
     check(leaders.length === 10, `the ${name} ranking is short of ten`)
     check(new Set(leaders.map((row) => row.cui)).size === leaders.length, `a company appears twice in the ${name} ranking`)
@@ -421,15 +383,6 @@ function render(rows, population, years, activities) {
   const active = byCounty(rows.activeByCounty)
   const fresh = byCounty(rows.newByCounty)
   const finance = new Map(rows.countyFinancials.filter((row) => row.county !== null).map((row) => [countyCode(row.county), row]))
-  const activeByDivision = new Map(rows.activeByDivision.map((row) => [row.division, int(row.n)]))
-  const sectors = rows.sectors
-    .filter((row) => NAMED_DIVISIONS.has(row.division))
-    .map((row) => ({ division: row.division, activeFirms: activeByDivision.get(row.division) ?? 0, turnover: int(row.turnover), employees: int(row.employees) }))
-    .sort((a, b) => b.turnover - a.turnover || a.division.localeCompare(b.division))
-  const newBySector = rows.newByDivision
-    .filter((row) => NAMED_DIVISIONS.has(row.division))
-    .map((row) => ({ division: row.division, firms: int(row.n) }))
-    .sort((a, b) => b.firms - a.firms || a.division.localeCompare(b.division))
   const sizes = new Map(rows.sizes.map((row) => [row.size_class, row]))
   const today = new Date().toISOString().slice(0, 10)
   const leader = (row) =>
@@ -456,12 +409,10 @@ function render(rows, population, years, activities) {
     ' *   turnover and average employees as filed with ANAF. Employee counts above',
     ` *   ${EMPLOYEE_CEILING.toLocaleString('en-US')} or below zero (${int(national.outliers)} this year) are keying errors and are dropped`,
     ' *   from every employee figure. Banks and insurers file with the BNR and ASF.',
-    ' * - **Sector** = the ANAF fiscal CAEN code (a source observation, not a main activity), as a Rev.2 division',
-    ' *   (Rev.3 classes mapped to theirs, vehicle repair back to 45), so every',
-    ' *   company sits in one division; those with no recognised code are the rest.',
     ` * - **Leaders' activity** = release ${years.source.releaseId}'s derived activity selection, read from the`,
     ' *   public API: an ONRC class with its revision, ANAF\'s fiscal code with its',
-    ' *   revision unpublished, or why none is selected; not the fiscal division above.',
+    ' *   revision unpublished, or why none is selected. The rankings by activity are',
+    " *   the API's own (`hub-activities.ts`): no ANAF code is grouped into a division here.",
     " * - **County** = the registered office's county; turnover follows the head",
     ' *   office, so a national chain counts where it is registered.',
     ` * - **Population** = INS POP105A, residents on 1 January ${YEAR}.`,
@@ -496,12 +447,6 @@ function render(rows, population, years, activities) {
     ...rows.leadersEmployees.map(leader),
     '    ],',
     '  },',
-    '  sectors: [',
-    ...sectors.map((s) => `    { division: '${s.division}', activeFirms: ${s.activeFirms}, turnover: ${s.turnover}, employees: ${s.employees} },`),
-    '  ],',
-    '  newFirmsBySector: [',
-    ...newBySector.map((s) => `    { division: '${s.division}', firms: ${s.firms} },`),
-    '  ],',
     '  sizeClasses: [',
     ...['0', '1-9', '10-49', '50-249', '250+'].map((key) => {
       const row = sizes.get(key)

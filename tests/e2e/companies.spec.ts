@@ -8,6 +8,7 @@
  * prod (companies.registrations / companies.financials) on 2026-06-17.
  */
 import { test, expect, type Page } from '@playwright/test'
+import { waitForPageReady } from '../utils/test-helpers'
 
 const DEDEMAN_CUI = '2816464'
 const DEDEMAN_NAME = /DEDEMAN SRL/i
@@ -51,32 +52,25 @@ test.describe('Companies — live profile', () => {
   })
 })
 
-test.describe('Companies — search directory', () => {
-  test('search by name returns DEDEMAN and links to its profile', async ({
+test.describe('Companies — finding a company', () => {
+  test('the front door’s search finds DEDEMAN by name and opens its profile', async ({
     page,
   }) => {
-    const response = await page.goto('/companies?q=dedeman').catch(() => null)
-    test.skip(!response, 'Companies search unavailable (API/tunnel down)')
+    const response = await page.goto('/companies').catch(() => null)
+    test.skip(!response, 'Companies front door unavailable (API/tunnel down)')
+    // Typed before hydration, the text would ask nothing.
+    await waitForPageReady(page)
 
-    const results = page.getByTestId('company-search-results')
+    // The hub's field is the site's search, pinned to companies.
+    await page.getByRole('combobox').first().fill('dedeman')
+    const option = page.getByRole('option', { name: DEDEMAN_NAME }).first()
     try {
-      await expect(results).toBeVisible({ timeout: 20000 })
+      await expect(option).toBeVisible({ timeout: 20000 })
     } catch {
-      test.skip(true, 'Companies search did not render results (API down)')
+      test.skip(true, 'Companies search did not answer (API down)')
     }
 
-    // DEDEMAN must appear among the results.
-    await expect(page.getByText(DEDEMAN_NAME).first()).toBeVisible()
-
-    // The card for CUI 2816464 links to the canonical profile route. Filter by
-    // the (unambiguous) CUI text — card textContent concatenates name + "CUI …".
-    const dedemanCard = page
-      .getByTestId('company-result-card')
-      .filter({ hasText: new RegExp(`CUI ${DEDEMAN_CUI}\\b`) })
-      .first()
-    await expect(dedemanCard).toHaveAttribute(
-      'href',
-      new RegExp(`/companies/${DEDEMAN_CUI}`),
-    )
+    await option.click()
+    await expect(page).toHaveURL(new RegExp(`/companies/${DEDEMAN_CUI}\\b`), { timeout: 30000 })
   })
 })

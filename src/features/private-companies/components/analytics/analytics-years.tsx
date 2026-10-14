@@ -8,7 +8,7 @@ import { metricOfferedIn, type CompanyAnalysisRelease } from '@/schemas/company-
 import type { ResolvedQuestion } from '../../api/company-analytics-plan'
 import { countText, localeOf } from '../../lib/company-analytics-format'
 import { metricLabel } from '../../lib/company-analytics-text'
-import type { CompanyAnalyticsState } from '../../lib/company-analytics-url'
+import { filterCount, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
 import { partialYears } from '../../lib/company-analytics-view'
 
 /**
@@ -16,7 +16,9 @@ import { partialYears } from '../../lib/company-analytics-view'
  * statements each holds and how many carry the measure, the question's year
  * marked; a click asks the same question of another year. These are
  * observed filings: a year with fewer statements than the one before is said
- * to be partial, and no year is called complete.
+ * to be partial, and no year is called complete. The counts are the whole
+ * edition's, never the filtered question's, and the band says so in its
+ * heading and in every bar's name.
  */
 
 export function YearsBand({ state, release, question, onChange }: { readonly state: CompanyAnalyticsState; readonly release: CompanyAnalysisRelease; readonly question: ResolvedQuestion; readonly onChange: (next: CompanyAnalyticsState) => void }) {
@@ -26,12 +28,14 @@ export function YearsBand({ state, release, question, onChange }: { readonly sta
   const max = Math.max(1, ...years.map((year) => decimalToPlot(year.statements) ?? 0))
   const partial = partialYears(release)
   const reportedOf = (year: (typeof years)[number]) => year.metrics.find((entry) => entry.metric === question.metric)?.coverage.reported ?? null
+  const filtered = filterCount(state.scope) > 0
   return (
     <section className="border-b" aria-labelledby="companies-analytics-years">
       <RuledFrame className="py-10">
         <MonoLabel id="companies-analytics-years" className="block text-muted-foreground">
-          {t`Situații financiare pe ani fiscali`}
+          {t`Situații financiare pe ani fiscali, în toată ediția`}
         </MonoLabel>
+        {filtered ? <p className="mt-1 text-xs text-muted-foreground">{t`Numerele sunt ale întregii ediții, nu ale firmelor filtrate.`}</p> : null}
         <ol className="mt-4 flex h-28 items-end gap-1">
           {years.map((year) => {
             const offered = metricOfferedIn(release, year.fiscalYear, question.metric)
@@ -39,7 +43,7 @@ export function YearsBand({ state, release, question, onChange }: { readonly sta
             const height = ((decimalToPlot(year.statements) ?? 0) / max) * 100
             const current = year.fiscalYear === question.year
             const label = [
-              t`${year.fiscalYear}: ${countText(year.statements, locale)} situații`,
+              t`${year.fiscalYear}: ${countText(year.statements, locale)} situații în toată ediția`,
               offered && reported ? t`${countText(reported, locale)} cu valoarea raportată` : t`fără ${metricLabel(question.metric).toLowerCase()}`,
               partial.has(year.fiscalYear) ? t`mai puține decât anul precedent: acoperire parțială observată` : null,
             ]

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { Route } from './route'
 
 describe('/alegeri layout', () => {
-  it('answers every elections page with a 404 while the area is off', () => {
+  it('lets the elections pages through the area’s gate while the area is on', () => {
     const beforeLoad = (Route as unknown as { readonly options: { readonly beforeLoad: () => void } }).options.beforeLoad
-    expect(beforeLoad).toThrow(expect.objectContaining({ isNotFound: true }))
+    expect(beforeLoad).not.toThrow()
   })
 })

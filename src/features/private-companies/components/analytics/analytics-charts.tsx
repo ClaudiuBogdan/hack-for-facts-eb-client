@@ -6,7 +6,7 @@ import { decimalToPlot } from '@/lib/exact-decimal'
 import { cn } from '@/lib/utils'
 import type { CompanyAnalysisBucket, CompanyAnalysisDimension } from '@/schemas/company-analytics'
 import { useCompanyAnalysisBreakdown, useCompanyAnalysisRecords } from '../../hooks/use-company-analytics'
-import { activityRefused } from '../../lib/company-analytics-answer'
+import { activityRefused, mainActivityRefused } from '../../lib/company-analytics-answer'
 import { drillScope, nextDimension } from '../../lib/company-analytics-drill'
 import { compactValueText, countText, shareText } from '../../lib/company-analytics-format'
 import { dimensionLabel, metricLabel } from '../../lib/company-analytics-text'
@@ -91,6 +91,7 @@ export function ShareChart({ page, dimension }: { readonly page: CompanyAnalytic
   const breakdown = useCompanyAnalysisBreakdown(question, dimension, CHART_TOP)
   const data = breakdown.data
   if (question && activityRefused(dimension, question.activity, breakdown.error)) return <ActivityUnavailable />
+  if (question && mainActivityRefused(dimension, question.mainActivity, breakdown.error)) return <ActivityUnavailable capability="MAIN_ACTIVITY" />
   if (breakdown.isError && !isReleaseRefused(breakdown.error)) return <HubLoadError onRetry={() => void breakdown.refetch()} />
   if (!data || !question) return CHART_PENDING
   // The table's rows: the derived activity's unclassified buckets after the ranked groups, apart, never as sectors.

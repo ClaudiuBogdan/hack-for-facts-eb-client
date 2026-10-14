@@ -68,6 +68,7 @@ const baseDefaultFilter: AnalyticsFilterType = {
 const defaultFilter: AnalyticsFilterType = {
   ...baseDefaultFilter,
 }
+const { report_period: _defaultPeriod, ...baseDefaultFilterWithoutPeriod } = baseDefaultFilter
 const defaultReportPeriod = createDefaultExecutionYearReportPeriod() as ReportPeriodInput
 type BudgetExplorerFilter = Omit<AnalyticsFilterType, 'report_period'> & { report_period: ReportPeriodInput }
 const defaultBudgetExplorerFilter: BudgetExplorerFilter = {
@@ -168,13 +169,12 @@ function normalizeBudgetExplorerFilterInput(rawValue: unknown): unknown {
 const BudgetExplorerFilterSchema = z.preprocess(
   normalizeBudgetExplorerFilterInput,
   AnalyticsFilterSchema,
-).transform((filter): BudgetExplorerFilter => {
-  return {
-    ...defaultBudgetExplorerFilter,
-    ...filter,
-    report_period: (filter.report_period as ReportPeriodInput | undefined) ?? defaultBudgetExplorerFilter.report_period,
-  }
-})
+).transform((filter) => ({
+  ...defaultBudgetExplorerFilter,
+  ...filter,
+  // Resolved with the legacy `year` below: absent here means the link named no period.
+  report_period: filter.report_period as ReportPeriodInput | undefined,
+}))
 
 const SearchSchema = z.object({
   view: ViewEnum.default('treemap').describe('Legacy view parameter kept for backward compatibility.'),
@@ -182,13 +182,24 @@ const SearchSchema = z.object({
   depth: DepthEnum.default('chapter').describe('Detail level: chapter (chapters) or subchapter (subcategories).'),
   transferFilter: TransferFilterEnum.default('all').describe('Transfer mode: include all transfers or exclude transfer flows.'),
   search: z.string().optional().describe('Text search within categories.'),
-  filter: z.preprocess((value) => (value === undefined ? defaultFilter : value), BudgetExplorerFilterSchema).describe(
+  filter: z.preprocess((value) => (value === undefined ? baseDefaultFilterWithoutPeriod : value), BudgetExplorerFilterSchema).describe(
     'Budget filter including report_period, account_category, normalization, report_type.',
   ),
   treemapPrimary: PrimaryLevelEnum.optional().describe('Legacy parameter kept for backward compatibility.'),
   treemapPath: z.coerce.string().optional().describe('Legacy parameter kept for backward compatibility.'),
-  year: z.coerce.number().optional().describe('Shorthand for setting report year (overrides filter.report_period).'),
-})
+  year: z.coerce.number().optional().describe('Legacy shorthand for a report year, read only when filter.report_period is absent.'),
+}).transform(({ filter, ...search }) => ({
+  ...search,
+  // The one period the control shows and every read and link uses: an explicit period wins; a legacy
+  // `year` names its year only when the link has no period; otherwise the default execution year.
+  filter: {
+    ...filter,
+    report_period: filter.report_period
+      ?? (search.year && Number.isFinite(search.year)
+        ? ({ type: 'YEAR', selection: { dates: [String(search.year)] } } as ReportPeriodInput)
+        : defaultBudgetExplorerFilter.report_period),
+  } satisfies BudgetExplorerFilter,
+}))
 
 export type BudgetExplorerState = z.infer<typeof SearchSchema>
 
@@ -265,20 +276,8 @@ function BudgetExplorerPage() {
     BUDGET_EXPLORER_DISCLAIMER_COLLAPSED_STORAGE_KEY,
     false,
   )
-  const { year } = search
-
-  const filter = useMemo(() => {
-    if (year && Number.isFinite(year)) {
-      return {
-        ...search.filter,
-        report_period: {
-          type: 'YEAR' as const,
-          selection: { dates: [String(year)] },
-        },
-      }
-    }
-    return search.filter
-  }, [search.filter, year])
+  // Already the one effective period (see SearchSchema): the header, the reads and the links share it.
+  const filter = search.filter
 
   const effectiveNormalization = useMemo(() => {
     const rawNormalization = filter.normalization ?? 'total'
@@ -327,7 +326,8 @@ function BudgetExplorerPage() {
     }
 
     navigate({
-      search: (prev) => ({
+      // The filter now carries the effective period, so the legacy `year` goes: it cannot outvote a later choice.
+      search: ({ year: _legacyYear, ...prev }: Record<string, unknown>) => ({
         ...(prev as unknown as BudgetExplorerState),
         ...restPartial,
         filter: nextFilter,

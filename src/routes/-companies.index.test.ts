@@ -70,14 +70,24 @@ describe('/companies route', () => {
     })
   })
 
-  it('sends an old directory deep link to the directory, with the language it carried', async () => {
+  it('sends an old directory deep link where the directory’s address goes now, with the language it carried', async () => {
     const { beforeLoad } = await route()
     expect(thrownBy(() => beforeLoad({ location: { search: { county: 'CLUJ', clasament: 'salariati', lang: 'en' } } }))).toEqual({
-      redirect: { to: '/companies/search', search: { lang: 'en', county: ['CLUJ'] }, replace: true },
+      redirect: { to: '/companies/analytics', search: { lang: 'en', onrc_judet: 'CJ' }, replace: true, statusCode: 301 },
     })
-    // Every one of the hub's choices stays behind, the years' measure too.
-    expect(thrownBy(() => beforeLoad({ location: { search: { county: 'CLUJ', evolutie: 'salariati' } } }))).toEqual({
-      redirect: { to: '/companies/search', search: { county: ['CLUJ'] }, replace: true },
+    // Every one of the hub's choices stays behind, the years' measure too: `indicator` would be the analysis's measure.
+    expect(thrownBy(() => beforeLoad({ location: { search: { county: 'CLUJ', evolutie: 'salariati', indicator: 'densitate' } } }))).toEqual({
+      redirect: { to: '/companies/analytics', search: { onrc_judet: 'CJ' }, replace: true, statusCode: 301 },
+    })
+    expect(thrownBy(() => beforeLoad({ location: { search: { q: '14399840' } } }))).toEqual({
+      redirect: { to: '/companies/$cui', params: { cui: '14399840' }, search: {}, replace: true, statusCode: 301 },
+    })
+  })
+
+  it('drops a name an old link searched, keeping the hub’s own choices on the hub', async () => {
+    const { beforeLoad } = await route()
+    expect(thrownBy(() => beforeLoad({ location: { search: { q: 'dante', indicator: 'densitate', lang: 'en' } } }))).toEqual({
+      redirect: { to: '/companies', search: { lang: 'en', indicator: 'densitate' }, replace: true, statusCode: 301 },
     })
   })
 

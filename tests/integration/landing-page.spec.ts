@@ -13,6 +13,7 @@ import { waitForHydration } from '../utils/test-helpers'
 
 const HERO_HEADING = /decizii informate|informed decisions/i
 const SEARCH_NAME = /entit|cui/i
+const POLITICS = /^(politică|politics)$/i
 
 test.describe('Landing Page', () => {
   test.beforeEach(async ({ page, mockApi }) => {
@@ -55,6 +56,7 @@ test.describe('Landing Page', () => {
       [/banii publici|public money/i, ['/national-budget', '/procurement', '/pnrr']],
       [/instituții și organizații|institutions and organi/i, ['/entity-analytics', '/companies', '/public-enterprises', '/ngos']],
       [/lege și justiție|law and justice/i, ['/legislation', '/justice']],
+      [POLITICS, ['/alegeri']],
       [/instrumente|tools/i, ['/map', '/charts', '/ins']],
     ]
 
@@ -69,14 +71,25 @@ test.describe('Landing Page', () => {
   })
 
   test('links no area switched off in this build, and each of them answers 404', async ({ page }) => {
-    // `src/config/feature-flags.ts`: public investments and elections are not implemented yet.
-    for (const href of ['/investitii-publice', '/alegeri']) {
-      await expect(page.locator(`a[href="${href}"]`)).toHaveCount(0)
-    }
-    // The elections landing first writes its search defaults into the address; wherever it lands, the answer is 404.
-    for (const path of ['/investitii-publice', '/investitii-publice/cautare', '/alegeri', '/alegeri/contest/local-2024-cluj-napoca-primar']) {
+    // `src/config/feature-flags.ts`: public investments are not implemented yet.
+    await expect(page.locator('a[href="/investitii-publice"]')).toHaveCount(0)
+    for (const path of ['/investitii-publice', '/investitii-publice/cautare']) {
       expect((await page.request.get(path)).status(), path).toBe(404)
     }
+  })
+
+  test('links the elections catalog, which opens with results unavailable', async ({ page }) => {
+    // `src/config/feature-flags.ts`: elections is on as source metadata only. A failed
+    // catalog read still renders the page, so neither check depends on the API's rows.
+    expect((await page.request.get('/alegeri')).status()).toBe(200)
+    const politics = page.getByRole('region', { name: POLITICS })
+    await politics.scrollIntoViewIfNeeded()
+    await politics.locator('a[href="/alegeri"]').click()
+    await expect(page).toHaveURL(/\/alegeri\/?$/)
+    await expect(page.getByRole('heading', { name: /^(alegeri|elections)$/i, level: 1 })).toBeVisible()
+    await expect(
+      page.getByRole('note').filter({ hasText: /rezultatele.*nu sunt disponibile|results.*not available/i }),
+    ).toBeVisible()
   })
 
   test('keyword chips send the UAT filter before rendering results', async ({ page }) => {

@@ -97,8 +97,9 @@ describe('LandingPage', () => {
       const title = group.title as unknown as string
       expect(screen.getByRole('region', { name: title })).toBeInTheDocument()
     }
-    // The areas switched off in this build (`src/config/feature-flags.ts`) are not linked.
-    for (const href of ['/investitii-publice', '/alegeri']) expect(document.querySelector(`a[href="${href}"]`)).toBeNull()
+    // The areas switched off in this build (`src/config/feature-flags.ts`) are not linked; the ones on are.
+    expect(document.querySelector('a[href="/investitii-publice"]')).toBeNull()
+    expect(document.querySelector('a[href="/alegeri"]')).not.toBeNull()
   })
 
   it('omits the institution count until it is served', async () => {

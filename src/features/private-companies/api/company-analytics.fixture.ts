@@ -5,6 +5,7 @@ import {
   COMPANY_ANALYSIS_POPULATION_POLICY_VERSION,
   COMPANY_ANALYSIS_SCHEMA_VERSION,
   COMPANY_ANALYSIS_SCHEMA_VERSION_V3,
+  COMPANY_ANALYSIS_SCHEMA_VERSION_V4,
   companyMetricKind,
   companyMetricUnit,
   type CompanyAnalysisBreakdown,
@@ -128,6 +129,22 @@ export function releaseV3Fixture(overrides: Partial<CompanyAnalysisRelease> = {}
     release: releaseRef('8'),
     schemaVersion: COMPANY_ANALYSIS_SCHEMA_VERSION_V3,
     dimensions: [...base.dimensions, { dimension: 'ACTIVITY', yearScoped: false, labelSource: 'current_db_catalog' }],
+    ...overrides,
+  })
+}
+
+/**
+ * A v4 release (staged: none is published): release 9, schema
+ * `companies-analytics-ch-v4`, the ANAF-assumed main activity among its
+ * dimensions and its content pinned (edition 7, content epoch 12).
+ */
+export function releaseV4Fixture(overrides: Partial<CompanyAnalysisRelease> = {}): CompanyAnalysisRelease {
+  const base = releaseV3Fixture()
+  return releaseFixture({
+    release: releaseRef('9'),
+    schemaVersion: COMPANY_ANALYSIS_SCHEMA_VERSION_V4,
+    dimensions: [...base.dimensions, { dimension: 'MAIN_ACTIVITY', yearScoped: false, labelSource: 'frozen_at_derivation' }],
+    mainCaen: { contentEpoch: '12', refreshId: '41', policy: 'anaf-assumed-main-caen-v1', editionId: '7' },
     ...overrides,
   })
 }

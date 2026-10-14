@@ -39,8 +39,10 @@ the cross-domain payoff of anchoring statistics on SIRUTA.
     primărie's budget tab if a CUI exists) — scoped to the place.
   - **Primărie** → `/primarie/$cui` when a town-hall CUI resolves for the SIRUTA;
     else `/primarie?county=<countyCode>` as a fallback list.
-  - **Firme** → `/companies?county=<countyCode>` (county-scoped directory;
-    UAT-level company filtering only if supported).
+  - **Firme** → `/companies/analytics?judet=<countyCode>` (the companies
+    analysis on the county, as the companies hub's county links open it;
+    `uat=<siruta>` for a locality). Was `/companies?county=`, the company
+    directory, retired 13 October 2026; that address now redirects.
   - **Instituții publice** → `/entities?county=<countyCode>` / search scoped to
     the territory.
   - **Hartă** → `/ins/harti?level=<county|uat>&highlight=<siruta>`.

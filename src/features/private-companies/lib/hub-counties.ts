@@ -1,6 +1,5 @@
 import { COUNTY_MAP_STEPS, countyScale, type CountyScale } from '@/features/statistics/lib/county-map'
 import { ROMANIA_COUNTIES } from '@/lib/territory-counties'
-import { STATUS_ACTIVE } from './company-status-codes'
 import { sharedDecimals, type HubUnit } from './hub-format'
 
 /**
@@ -26,27 +25,6 @@ const COUNTY_NAMES = new Map<string, string>(ROMANIA_COUNTIES.map((county) => [c
 
 export function countyName(code: string): string {
   return COUNTY_NAMES.get(code) ?? code
-}
-
-/**
- * The county as the registry spells it, which is how the directory's county
- * facet names it: the cedilla forms (`Timiş`, `Bucureşti`) ONRC writes, not
- * the comma-below ones the boundary file and `ROMANIA_COUNTIES` use. The
- * server folds both, so either filters the same rows; this one also ticks the
- * county's box in the directory's filter sheet.
- */
-export function registryCountyName(code: string): string {
-  return countyName(code).replace(/ș/g, 'ş').replace(/ț/g, 'ţ').replace(/Ș/g, 'Ş').replace(/Ț/g, 'Ţ')
-}
-
-/**
- * What a county opens: the directory on its companies with an „în funcțiune"
- * observation in that county. By code — the API matches a county by its code
- * (or name) on the same identifier as the status, and the directory's county
- * options are codes.
- */
-export function countyDirectorySearch(code: string) {
-  return { county: [code], status: [STATUS_ACTIVE] }
 }
 
 /** Highest first; ties share the order they arrive in. */

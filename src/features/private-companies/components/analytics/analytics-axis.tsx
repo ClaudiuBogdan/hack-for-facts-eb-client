@@ -13,7 +13,7 @@ import { useCompanyAnalysisBreakdown } from '../../hooks/use-company-analytics'
 import type { CompanyAnalyticsPageData } from '../../hooks/use-company-analytics-page'
 import { activityDerivationText, activityQualityParts, activitySourceTag } from '../../lib/company-activity-text'
 import { drillScope, nextDimension } from '../../lib/company-analytics-drill'
-import { activityRefused } from '../../lib/company-analytics-answer'
+import { activityRefused, mainActivityRefused } from '../../lib/company-analytics-answer'
 import { breakdownCsv } from '../../lib/company-analytics-export'
 import { compactValueText, countText, exactValueText } from '../../lib/company-analytics-format'
 import { dimensionLabel, metricLabel, rankLabel } from '../../lib/company-analytics-text'
@@ -54,10 +54,13 @@ export function ActivityName({ bucket, label, locale }: { readonly bucket: Compa
 }
 
 /** The derived activity asked of a release without it: what to choose instead. */
-export function ActivityUnavailable() {
+/** The release cannot answer the grouping: the derived activity (v3) or, `capability` MAIN_ACTIVITY, the ANAF-assumed main activity (v4). */
+export function ActivityUnavailable({ capability = 'ACTIVITY' }: { readonly capability?: 'ACTIVITY' | 'MAIN_ACTIVITY' }) {
   return (
-    <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="companies-analytics-activity-unavailable">
-      {t`Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară).`}
+    <p role="status" className="border-l-2 border-muted-foreground py-0.5 pl-3 text-sm text-muted-foreground" data-testid="companies-analytics-activity-unavailable" data-capability={capability}>
+      {capability === 'MAIN_ACTIVITY'
+        ? t`Această ediție a analizei nu are activitatea principală presupusă după ANAF. Alege altă grupare sau o ediție care o oferă.`
+        : t`Această ediție a analizei nu are selecția derivată a activității. Alege altă grupare, de exemplu codul CAEN fiscal ANAF (gruparea anterioară).`}
     </p>
   )
 }
@@ -127,6 +130,7 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
   )
 
   if (activityRefused(dimension, question.activity, breakdown.error)) return <ActivityUnavailable />
+  if (mainActivityRefused(dimension, question.mainActivity, breakdown.error)) return <ActivityUnavailable capability="MAIN_ACTIVITY" />
   if (breakdown.isError && !isReleaseRefused(breakdown.error)) return <HubLoadError onRetry={() => void breakdown.refetch()} />
   if (!data)
     return (
@@ -150,7 +154,7 @@ export function RankedAxis({ page, dimension }: { readonly page: CompanyAnalytic
   }
   const nameOf = (bucket: CompanyAnalysisBucket, label: string) =>
     dimension === 'ACTIVITY' ? <ActivityName bucket={bucket} label={label} locale={locale} /> : bucket.caen ? <CaenDescription caen={bucket.caen} /> : label
-  const wraps = dimension === 'ACTIVITY' || dimension === 'MAIN_CAEN'
+  const wraps = dimension === 'ACTIVITY' || dimension === 'MAIN_CAEN' || dimension === 'MAIN_ACTIVITY'
 
   const row = (bucket: CompanyAnalysisBucket, index: number | null, quiet: boolean) => {
     const onDrill = drill(bucket)

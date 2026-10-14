@@ -45,7 +45,7 @@ const FAILED_CLOSED: CompanyAnalyticsServerRead = { seed: [], complete: false }
 /** The answer the page shows first: what its mode and tab read, as the page's components plan it. */
 function answerRead(state: CompanyAnalyticsState, question: ResolvedQuestion, release: CompanyAnalysisRelease): PlannedRead<unknown> {
   if (state.mode === 'harta') return planBreakdown(question, mapCountyOf(state.scope) ? 'UAT' : 'COUNTY', mapTopOf(release))
-  const tab = currentTab(state, question.activity)
+  const tab = currentTab(state, question.activity, question.mainActivity)
   if (tab === 'firme') return planRecords(state.mode === 'grafice' ? chartRecordsQuestion(question) : question, null)
   if (tab === 'evolutie') return planSeries(question, release)
   return planBreakdown(question, tab, state.mode === 'grafice' ? CHART_TOP : ANSWER_TOP)

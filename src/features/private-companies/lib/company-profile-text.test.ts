@@ -97,12 +97,12 @@ describe('status', () => {
     expect(statusText(buildCompanyProfileModel(companyProfile({ status: null })))).toBe('Stare neconfirmată în registru')
   })
 
-  it('says a conflict as a conflict, naming the „în funcțiune" observation among the others', () => {
+  it('says several status codes neutrally — some may be annotations — naming the „în funcțiune" one, choosing none', () => {
     const registry = mockRegistryEvidence({ identifier: 'J1', name: 'X SRL', legalForm: 'SRL', recordedDate: null, countyCode: null, countyName: null, statusCodes: ['1048', '1084'], caen: [] })
     const model = buildCompanyProfileModel(companyProfile({ status: null, registry }))
-    expect(statusText(model)).toBe('Stări diferite în registru')
+    expect(statusText(model)).toBe('Mai multe coduri de stare ONRC')
     expect(statusNotice(model)).toBe(
-      'Înscrierile din registru au stări diferite, între care una „în funcțiune”; toate sunt listate în secțiunea Registru, niciuna nu e aleasă.',
+      'Registrul are mai multe coduri de stare pentru firmă, între care „în funcțiune”; unele pot fi mențiuni, nu stări. Toate sunt listate în secțiunea Registru, niciunul nu e ales.',
     )
   })
 
@@ -137,6 +137,44 @@ describe('changes', () => {
     expect(netChangeNote(null, loss)).toBeNull()
   })
 
+  describe('compares one metric with itself: a held result’s profit never against a net result', () => {
+    /** The 464d shape: a positive profit admitted, no typed loss, the result held for want of it. */
+    const profitOnly = (year: number, profit: number) => {
+      const base = financialYear(year, { turnover: 100, netProfit: profit, netLoss: null })
+      return { ...base, qualification: admittedQualification(base, { net_result: 'held_profile' }) }
+    }
+    const result = (year: number, net: number) => financialYear(year, { turnover: 100, netProfit: net >= 0 ? net : 0, netLoss: net < 0 ? -net : 0 })
+
+    it('compares two admitted profits as profits', () => {
+      expect(netChangeNote(profitOnly(2024, 200), profitOnly(2025, 150))).toBe('-25,0% față de 2024')
+    })
+
+    it('says nothing from a profit to a result, a loss included', () => {
+      // Profit-only 120 (result held), then a qualified result of -10: no percent and no „went into loss".
+      expect(netChangeNote(profitOnly(2024, 120), result(2025, -10))).toBeNull()
+      expect(netChangeNote(profitOnly(2024, 120), result(2025, 90))).toBeNull()
+    })
+
+    it('says nothing from a result to a profit', () => {
+      expect(netChangeNote(result(2024, -10), profitOnly(2025, 120))).toBeNull()
+      expect(netChangeNote(result(2024, 90), profitOnly(2025, 120))).toBeNull()
+    })
+
+    it('keeps the qualified results’ transitions', () => {
+      expect(netChangeNote(result(2024, 4_100_000), result(2025, -27_800_000))).toBe(`în 2024: profit de ${lei('4,1 mil. lei')}`)
+      expect(netChangeNote(result(2024, -27_800_000), result(2025, 4_100_000))).toBe(`în 2024: pierdere de ${lei('27,8 mil. lei')}`)
+    })
+
+    it('writes the business sentence from one metric only', () => {
+      const lede = (years: readonly ReturnType<typeof financialYear>[]) => financialLede(buildCompanyProfileModel(companyProfile({ financials: [...years] })))
+      expect(lede([profitOnly(2024, 200), profitOnly(2025, 150)])).toBe('În 2025, cifra de afaceri a rămas la fel, iar profitul net a scăzut cu 25,0%.')
+      // Across the two metrics, only the turnover moves in the sentence.
+      expect(lede([profitOnly(2024, 120), result(2025, -10)])).toBe('În 2025, cifra de afaceri a rămas la fel.')
+      expect(lede([result(2024, -10), profitOnly(2025, 120)])).toBe('În 2025, cifra de afaceri a rămas la fel.')
+      expect(lede([result(2024, 100), result(2025, -10)])).toBe('În 2025, cifra de afaceri a rămas la fel, iar firma a trecut pe pierdere.')
+    })
+  })
+
   it('counts people up and down', () => {
     expect(countChangeNote(7_207, 6_701, 2024)).toBe('-506 față de 2024')
     expect(countChangeNote(2, 2, 2024)).toBe('la fel ca în 2024')
@@ -155,7 +193,8 @@ describe('financialLede', () => {
 
   it('says a newest statement is old news before anything else', () => {
     const model = buildCompanyProfileModel(companyProfile({ financials: [financialYear(2019, { turnover: 10, netProfit: 1 })] }))
-    expect(financialLede(model)).toBe('Ultimul bilanț publicat este pe 2019.')
+    // The newest statement the data holds — not a claim that the company filed none since.
+    expect(financialLede(model)).toBe('Ultimul bilanț disponibil aici este pe 2019.')
   })
 
   it('says nothing for a company that never filed', () => {
@@ -255,12 +294,12 @@ describe('qualification in words (CD-14)', () => {
     // Six statements, five reported results: the held 2022 is neither a loss nor a profit here,
     // and the sentence says its count is of the admitted results, and how many it leaves out (D1-C04).
     expect(financialLede(buildCompanyProfileModel(companyProfile({ financials: years })))).toBe(
-      'Ultimul bilanț publicat este pe 2023. În 2023, cifra de afaceri a scăzut cu 50,0%. A încheiat cu pierdere 5 ani din cei 5 cu rezultat net admis. Rezultatul net al încă unui bilanț nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+      'Ultimul bilanț disponibil aici este pe 2023. În 2023, cifra de afaceri a scăzut cu 50,0%. A încheiat cu pierdere 5 ani din cei 5 cu rezultat net admis. Rezultatul net al încă unui bilanț nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
     )
     // A statement on another basis is left out of the count the same way.
     const rebased = years.map((year) => (year.fiscalYear === 2018 ? { ...year, qualification: { ...year.qualification, releaseId: '1' } } : year))
     expect(financialLede(buildCompanyProfileModel(companyProfile({ financials: rebased })))).toBe(
-      'Ultimul bilanț publicat este pe 2023. În 2023, cifra de afaceri a scăzut cu 50,0%. A încheiat cu pierdere 4 ani din cei 4 cu rezultat net admis. Rezultatul net al altor 2 bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
+      'Ultimul bilanț disponibil aici este pe 2023. În 2023, cifra de afaceri a scăzut cu 50,0%. A încheiat cu pierdere 4 ani din cei 4 cu rezultat net admis. Rezultatul net al altor 2 bilanțuri nu e numărat: lipsește, e reținut, nu a fost calificat sau ține de altă politică.',
     )
   })
 
@@ -319,7 +358,7 @@ describe('qualification in words (CD-14)', () => {
       companyProfile({ financials: years.map((year) => (year.fiscalYear < 2023 ? { ...year, qualification: { ...year.qualification, policySha256: 'b2'.repeat(32) } } : year)) }),
     )
     expect(otherBasisNotice(rebased)).toBe(
-      'Bilanțurile pe 2021–2022 au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt listate mai jos.',
+      'Bilanțurile pe 2021–2022 au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt în tabel, estompate.',
     )
     expect(rebased.qualification.statements.map(statementStateLabel)).toEqual([
       'toate valorile admise',
@@ -338,10 +377,16 @@ describe('qualification in words (CD-14)', () => {
     expect(statement?.netResult).toEqual({ status: 'held_profile', value: null })
     expect(netResultStatusLabel('held_profile')).toBe('reținut: pentru această formă de bilanț nu se calculează din profit și pierdere')
     expect(netResultStatusLabel('held_component')).toBe('reținut: profitul sau pierderea publicată e reținută')
-    expect(netResultStatusLabel('missing')).toBe('nu se poate calcula: nici profitul, nici pierderea nu sunt publicate')
+    // No typed value is no proof of an unpublished one.
+    expect(netResultStatusLabel('missing')).toBe('nu se poate calcula: nici profitul, nici pierderea nu sunt disponibile aici')
     const heldTurnover = held(2024, { turnover: 1, employees: 2 }, { turnover: 'held_observation' })
     expect(statementStateLabel(buildCompanyProfileModel(companyProfile({ financials: [heldTurnover] })).qualification.statements[0]!)).toBe(
       '1 valoare ținută în afara cifrelor',
+    )
+    // A held value and the derived net held with it: both said, the net never counted as a published value.
+    const heldLoss = held(2024, { turnover: 1, netProfit: 0, netLoss: 10 }, { net_loss: 'held_observation', net_result: 'held_component' })
+    expect(statementStateLabel(buildCompanyProfileModel(companyProfile({ financials: [heldLoss] })).qualification.statements[0]!)).toBe(
+      '1 valoare ținută în afara cifrelor; rezultatul net reținut',
     )
   })
 })

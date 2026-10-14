@@ -8,7 +8,6 @@ import { RuledFrame } from '@/components/landing-skin/ruled-frame'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
-import { countText } from '../../lib/company-analytics-format'
 import { sourceEditionText } from '../../lib/company-analytics-source'
 import { companyAnalyticsCaveats } from '../../lib/company-analytics-text'
 import { DEFAULT_STATE, filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
@@ -296,13 +295,28 @@ function NotesMarker({ page }: { readonly page: CompanyAnalyticsPageData }) {
     const missing = Number(selected.coverage.missing)
     const statements = Number(selected.coverage.reported) + held + missing + Number(selected.coverage.notAdmitted)
     const gaps: string[] = []
-    if (held > 0) gaps.push(t`${countText(String(held), locale)} valori reținute la verificare nu intră în sume.`)
-    if (missing > 0) gaps.push(t`${countText(String(missing), locale)} situații nu au valoarea completată.`)
+    if (held > 0)
+      gaps.push(
+        plural(held, {
+          one: 'O valoare reținută la verificare nu intră în sume.',
+          few: '# valori reținute la verificare nu intră în sume.',
+          other: '# de valori reținute la verificare nu intră în sume.',
+        }),
+      )
+    if (missing > 0)
+      gaps.push(
+        plural(missing, {
+          one: 'O situație nu are valoarea completată.',
+          few: '# situații nu au valoarea completată.',
+          other: '# de situații nu au valoarea completată.',
+        }),
+      )
     ;(statements > 0 && (held + missing) / statements > 0.01 ? warnings : notes).push(...gaps)
   }
   notes.push(
     t`Firmele sunt persoanele juridice din registrul comerțului (SRL, SA…), fără PFA, II sau IF.`,
     t`O valoare lipsă nu e zero: o firmă fără bilanț nu are cifre pentru acel an.`,
+    t`Un 0 este valoarea numerică păstrată din sursă. Unele situații au câmpul gol într-o sursă și 0 în alta, așa că valorile din surse și ani diferiți nu sunt neapărat comparabile.`,
     ...companyAnalyticsCaveats(),
     t`Județul, localitatea, starea și forma juridică sunt cele din ${sourceEditionText(live.release, locale)}.`,
   )

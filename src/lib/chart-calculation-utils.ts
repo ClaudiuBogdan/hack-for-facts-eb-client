@@ -143,11 +143,48 @@ function sortXAxisLabels(values: string[], unit: CalculationXAxisUnit): string[]
   });
 }
 
+/** An inline expression of numbers only, at any depth: a scalar, not a series. */
+function isConstantExpression(
+  calculation: Calculation,
+  active: Set<Calculation> = new Set(),
+  known: Map<Calculation, boolean> = new Map()
+): boolean {
+  const settled = known.get(calculation);
+  if (settled !== undefined) return settled;
+  // Only a node on the current path is a cycle; a subexpression reused elsewhere counts like any copy of it.
+  if (active.has(calculation)) return false;
+  active.add(calculation);
+  const constant = calculation.args.every(arg => typeof arg === 'number' || (typeof arg === 'object' && arg !== null && isConstantExpression(arg, active, known)));
+  active.delete(calculation);
+  known.set(calculation, constant);
+  return constant;
+}
+
+/** Whether a calculation reads a series with native coverage (`missingPeriods`), directly, inline or through a named calculation. */
+function readsNativeCoverage(
+  calculation: Calculation,
+  seriesData: Map<string, AnalyticsSeries>,
+  allSeries: Series[],
+  visited: Set<Calculation> = new Set()
+): boolean {
+  if (visited.has(calculation)) return false;
+  visited.add(calculation);
+  return calculation.args.some(arg => {
+    if (typeof arg === 'number') return false;
+    if (typeof arg === 'object') return arg !== null && readsNativeCoverage(arg, seriesData, allSeries, visited);
+    const data = seriesData.get(arg);
+    if (data) return data.missingPeriods != null;
+    const series = allSeries.find(s => s.id === arg);
+    return series?.type === 'aggregated-series-calculation' && readsNativeCoverage(series.calculation, seriesData, allSeries, visited);
+  });
+}
+
 /**
  * Evaluates a calculation series and returns its data points
  * @param calculation - The calculation to evaluate
  * @param seriesData - Map of series ID to their data points
  * @param allSeries - All series definitions (for recursive calculations)
+ * @param nativeContext - Whether the enclosing calculation reads native coverage; computed when omitted
  * @returns The calculated data points
  */
 export function evaluateCalculation(
@@ -156,10 +193,12 @@ export function evaluateCalculation(
   allSeries: Series[],
   seriesIdForWarnings: string,
   xAxisUnit: CalculationXAxisUnit = 'year',
-  requireCompleteOperands = false
+  requireCompleteOperands = false,
+  nativeContext?: boolean
 ): CalculationResult {
   const operandResults: EvaluatedOperand[] = [];
   const warnings: DataValidationError[] = [];
+  const native = nativeContext ?? readsNativeCoverage(calculation, seriesData, allSeries);
 
   // Evaluate each operand
   for (const operand of calculation.args) {
@@ -199,9 +238,14 @@ export function evaluateCalculation(
           });
         }
       }
+    } else if (native && !requireCompleteOperands && isConstantExpression(operand)) {
+      // Beside native data an inline constants-only expression is one scalar, as in the strict path, never a
+      // default-years series; an undefined one (NaN) leaves every period it meets unavailable.
+      const scalar = evaluateCalculation(operand, seriesData, allSeries, seriesIdForWarnings, xAxisUnit, true);
+      operandResults.push({ points: [], isConstant: true, constantValue: scalar.unavailable ? Number.NaN : scalar.constantValue ?? Number.NaN });
     } else {
       // Nested calculation
-      const result = evaluateCalculation(operand, seriesData, allSeries, seriesIdForWarnings, xAxisUnit, requireCompleteOperands);
+      const result = evaluateCalculation(operand, seriesData, allSeries, seriesIdForWarnings, xAxisUnit, requireCompleteOperands, native);
       if (result.unavailable) return result;
       operandResults.push(result.constantValue !== undefined
         ? { points: [], isConstant: true, constantValue: result.constantValue }
@@ -211,8 +255,9 @@ export function evaluateCalculation(
     }
   }
 
-  // Perform the operation
-  const opResult = performOperation(calculation.op, operandResults, seriesIdForWarnings, xAxisUnit, requireCompleteOperands);
+  // Perform the operation. Inside a native calculation every inline level is held to native completeness,
+  // even one whose own operands are unmarked, so grouping cannot turn a missing operand into 0.
+  const opResult = performOperation(calculation.op, operandResults, seriesIdForWarnings, xAxisUnit, requireCompleteOperands, native && !requireCompleteOperands);
   return { ...opResult, warnings: warnings.concat(opResult.warnings) };
 }
 
@@ -224,14 +269,15 @@ function performOperation(
   operands: EvaluatedOperand[],
   seriesIdForWarnings: string,
   xAxisUnit: CalculationXAxisUnit,
-  requireCompleteOperands = false
+  requireCompleteOperands = false,
+  nativeContext = false
 ): CalculationResult {
   if (requireCompleteOperands && operands.some(operand => !operand.isConstant && operand.points.length === 0)) return unavailableCompleteCalculation(seriesIdForWarnings);
   if (operands.length === 0) {
     return { points: [], warnings: [] };
   }
 
-  const hasNativeCoverage = operands.some(operand => operand.missingPeriods !== undefined);
+  const hasNativeCoverage = nativeContext || operands.some(operand => operand.missingPeriods !== undefined);
   const missing = new Set(operands.flatMap(operand => operand.missingPeriods ?? []));
   // Get all unique x labels across non-constant operands.
   const allXLabels = new Set<string>(missing);
@@ -276,6 +322,11 @@ function performOperation(
     return map?.get(label);
   };
 
+  // Under native coverage an operand with no value at a period (outside its own selection,
+  // or not a number) leaves the sum or difference unavailable there, never counted as 0.
+  const additiveOperandsPresent = (label: string): boolean =>
+    !hasNativeCoverage || operands.every((_, index) => Number.isFinite(getOperandValue(index, label)));
+
   const result: { x: string; y: number }[] = [];
   const warnings: DataValidationError[] = [];
 
@@ -286,6 +337,7 @@ function performOperation(
 
     switch (operation) {
       case 'sum':
+        if (!additiveOperandsPresent(label)) break;
         value = 0;
         for (let i = 0; i < operands.length; i++) {
           value += getOperandValue(i, label) || 0;
@@ -293,7 +345,7 @@ function performOperation(
         break;
 
       case 'subtract':
-        if (operands.length > 0) {
+        if (operands.length > 0 && additiveOperandsPresent(label)) {
           value = getOperandValue(0, label) || 0;
           for (let i = 1; i < operands.length; i++) {
             value -= getOperandValue(i, label) || 0;

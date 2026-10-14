@@ -16,7 +16,7 @@ import { useDocumentBootstrap } from '../../hooks/use-document-bootstrap'
 import { useProfileRegistryScope } from '../../hooks/use-profile-registry-scope'
 import { effectiveGrain, paymentGrainsOf, toCompanyProcurementRead } from '../../lib/company-procurement-read'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
-import { registrationDiffText } from '../../lib/company-registry-text'
+import { registrationDiffSaysSomething, registrationDiffText } from '../../lib/company-registry-text'
 import { buildPrivateCompanyDocumentTitle, buildPrivateCompanyNeutralTitle } from '../../seo/private-company-seo'
 import { CompanyRegistryScopeProvider } from '../registry/company-registry-scope-provider'
 import { CompanyActivitiesBand } from './company-activities-band'
@@ -27,6 +27,7 @@ import { CompanyMoneyBand, type ProcurementState } from './company-money-band'
 import { CompanyProfileHead } from './company-profile-head'
 import { CompanyProfileError, CompanyProfileRegistryMoved, CompanyProfileSkeleton } from './company-profile-states'
 import { CompanyRegistryBand } from './company-registry-band'
+import { CompanyYearsBand } from './company-years-band'
 
 /**
  * `/companies/$cui` — one company in the `/companies` hub's rhythm: a compact
@@ -34,7 +35,8 @@ import { CompanyRegistryBand } from './company-registry-band'
  * last five years with a statement on one chart; the figures band with the
  * newest values; then one numbered band per question — how the business goes,
  * what it received from the state, what it does, its court cases (only when
- * published name-to-CUI links count one), the registry record. A bar pins under the head
+ * published name-to-CUI links count one), every statement year by year, the
+ * registry record. A bar pins under the head
  * with the name and the bands.
  *
  * Every figure and sentence is computed from the record, so the page holds
@@ -48,13 +50,14 @@ import { CompanyRegistryBand } from './company-registry-band'
  * money arrive after it, each with its own pending state.
  */
 
-type SectionId = 'afacerea' | 'bani-publici' | 'activitati' | 'litigii' | 'registru'
+type SectionId = 'afacerea' | 'bani-publici' | 'activitati' | 'litigii' | 'an-cu-an' | 'registru'
 
 const SECTIONS: readonly { readonly id: SectionId; readonly label: () => string }[] = [
   { id: 'afacerea', label: () => t`Afacerea` },
   { id: 'bani-publici', label: () => t`Bani publici` },
   { id: 'activitati', label: () => t`Activități` },
   { id: 'litigii', label: () => t`Litigii` },
+  { id: 'an-cu-an', label: () => t`An cu an` },
   { id: 'registru', label: () => t`Registru` },
 ]
 
@@ -91,7 +94,7 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   const scope = useCompanyRegistryScope()
   // Only an instance hydrating the server's document holds one: the answer it was rendered with.
   const documentAnswer = useDocumentBootstrap(answer)
-  const { verdict, diff } = useProfileRegistryScope(answer, documentAnswer, cui, scope)
+  const { verdict, diff, reportGone } = useProfileRegistryScope(answer, documentAnswer, cui, scope)
   const shown = verdict.status === 'show' ? verdict.profile : null
   // The route's head names the company on the server path only; the tab is named while the company is shown, and
   // says the CUI alone otherwise — a name the page no longer shows (withdrawn, moved, unreadable) leaves the tab too.
@@ -109,7 +112,8 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   const profile = shown
   const model = buildCompanyProfileModel(profile)
   // A failed comparison read shows no comparison, not the one an earlier read left in the cache.
-  const diffText = diff.data && !diff.isError ? registrationDiffText(diff.data) : null
+  // Only a comparison that says something about the company: not „unchanged", not „no earlier edition".
+  const diffText = diff.data && !diff.isError && registrationDiffSaysSomething(diff.data) ? registrationDiffText(diff.data) : null
 
   const choose = (patch: Partial<PrivateCompanySearchState>, replace = true) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace, resetScroll: false })
@@ -124,7 +128,8 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
   // The company's own first grain stays out of the URL, like any default.
   const onGrain = (grain: CompanyPaymentGrain) => choose({ plati: grain === grains[0] ? undefined : grain })
 
-  const sections = SECTIONS.filter((section) => section.id !== 'litigii' || litigation)
+  const years = model.qualification.statements.length > 0
+  const sections = SECTIONS.filter((section) => (section.id !== 'litigii' || litigation) && (section.id !== 'an-cu-an' || years))
   const indexOf = (id: SectionId) => {
     const position = sections.findIndex((section) => section.id === id)
     return `${String(position + 1).padStart(2, '0')} / ${SECTIONS.find((section) => section.id === id)?.label() ?? ''}`
@@ -172,10 +177,11 @@ function CompanyProfileBody({ profile: answer, cui, search }: CompanyProfilePage
         onMeasure={(measure) => choose({ masura: measure === 'toate' ? undefined : measure })}
       />
       <CompanyMoneyBand model={model} index={indexOf('bani-publici')} procurement={procurement} onGrain={onGrain} />
-      <CompanyActivitiesBand model={model} index={indexOf('activitati')} />
+      <CompanyActivitiesBand model={model} index={indexOf('activitati')} onCompanyGone={reportGone} />
       {litigation ? (
         <CompanyLitigationBand cui={cui} index={indexOf('litigii')} litigation={litigation} />
       ) : null}
+      {years ? <CompanyYearsBand model={model} index={indexOf('an-cu-an')} /> : null}
       <CompanyRegistryBand model={model} index={indexOf('registru')} procurement={read} diffText={diffText} courts={litigation !== null} last />
     </div>
   )

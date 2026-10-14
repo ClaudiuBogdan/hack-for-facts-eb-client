@@ -7,10 +7,13 @@ import type {
   PrivateCompanyMetricStatus,
   PrivateCompanyStatementPublisher,
 } from '@/schemas/private-company'
+import { caenDivisionLabel } from './caen-divisions'
+import type { ActivitySelector } from './company-analytics-url'
+import { legalFormIsFeminine } from './company-legal-forms'
 import { count, moneyText, percent, yearRanges } from './company-profile-format'
-import type { CompanyProfileModel, SizeClass, StatementValues } from './company-profile-model'
+import { caenEdition, type CompanyProfileModel, type NetPoint, type SizeClass, type StatementValues } from './company-profile-model'
 import { cuiStateText } from './company-registry-text'
-import { comparable, qualifiedNet, reportedNumber, reportedSummary } from './financial-qualification'
+import { admittedNet, comparable, reportedNumber, reportedSummary } from './financial-qualification'
 import { formatHubNumber } from './hub-format'
 
 /**
@@ -27,17 +30,92 @@ export function nameLength(name: string): 'short' | 'medium' | 'long' {
 }
 
 /**
- * The company in one sentence: what it is, where, and what it declared to
- * ANAF as its main activity. No year: the date ONRC recorded is not a
- * founding date, and the registry facts with their date are in the registry
- * band.
+ * What a sentence says about the company — what it is, where, the year ONRC
+ * recorded it (registered then, not necessarily founded: the head says „la
+ * ONRC"), and what it declared to ANAF as its main activity — each ready to
+ * stand inside the sentence; null where the record is silent. `feminine`: the
+ * participle's agreement with `form`.
  */
-export function companySentence(model: CompanyProfileModel): string {
-  const form = model.legalFormName ?? t`Firmă`
-  const where = model.place.label
-  const first = where ? t`${form} din ${where}.` : `${form}.`
+export function companySentenceFacts(model: CompanyProfileModel): {
+  readonly form: string
+  readonly feminine: boolean
+  readonly where: string | null
+  readonly recordedYear: number | null
+  readonly activity: string | null
+} {
   const activity = model.mainActivity?.label
-  return activity ? `${first} ${t`Cod CAEN fiscal ANAF: ${uncapitalised(activity)}.`}` : first
+  return {
+    form: model.legalFormName ?? t`Firmă`,
+    feminine: legalFormIsFeminine(model.profile.legalForm),
+    where: model.place.label || null,
+    recordedYear: model.recordedYear,
+    activity: activity ? uncapitalised(activity) : null,
+  }
+}
+
+/**
+ * What the profile's head says about the company's activity, in the v3
+ * contract: the platform's derived selection, never a principal activity a
+ * source published.
+ *
+ * - `selected`: an ONRC class with its exact catalog label, code and revision,
+ *   and the analysis's exact selected-activity filter (with the revision);
+ *   or ANAF's fiscal code, its revision unpublished, with ANAF's filter. Its
+ *   `division` is the class's division in the class's own revision, when that
+ *   revision's division list names it — for ANAF never (no revision).
+ * - `unselected`: several classified activities and none selected: their count.
+ * - `fiscal`: an older API with no selection: ANAF's code as observed, named
+ *   only from its own revision.
+ *
+ * Null when the selection selects nothing for another reason (no qualified
+ * selection, a code outside the nomenclature) or could not be read: the
+ * activities band says why. No revision is ever inferred and no padded code is
+ * read as a class here.
+ */
+export type HeadActivity =
+  | {
+      readonly kind: 'selected'
+      readonly label: string | null
+      readonly code: string
+      /** `rev3` for an ONRC class; null for ANAF, which publishes none. */
+      readonly revision: string | null
+      readonly selector: ActivitySelector
+      readonly division: string | null
+    }
+  | { readonly kind: 'unselected'; readonly count: number }
+  | { readonly kind: 'fiscal'; readonly label: string }
+
+export function headActivity(model: CompanyProfileModel): HeadActivity | null {
+  const selection = model.selection
+  if (selection) {
+    const { code, revision } = selection
+    if (code !== null && selection.source === 'onrc' && revision !== null && (selection.basis === 'onrc_single_class' || selection.basis === 'onrc_class_anaf_numeric_match')) {
+      return { kind: 'selected', label: selection.label, code, revision, selector: { source: 'ONRC', code, revision }, division: caenDivisionLabel(code.slice(0, 2), revision) }
+    }
+    if (code !== null && selection.source === 'anaf' && selection.basis === 'anaf_fiscal_code') {
+      return { kind: 'selected', label: selection.label, code, revision: null, selector: { source: 'ANAF', code }, division: null }
+    }
+    if (selection.basis === 'onrc_multiple_classes' && selection.classKeyCount > 1) return { kind: 'unselected', count: selection.classKeyCount }
+    return null
+  }
+  if (model.selectionUnavailable) return null
+  const label = model.mainActivity?.label
+  return label ? { kind: 'fiscal', label: uncapitalised(label) } : null
+}
+
+/** A selected activity's source, code and revision, in the parenthesis after its label. */
+export function headActivityDetail(activity: Extract<HeadActivity, { kind: 'selected' }>): string {
+  const { code, revision } = activity
+  if (!revision) return t`cod CAEN fiscal ANAF ${code}, revizie nepublicată`
+  const edition = caenEdition(revision)
+  return t`CAEN ${code}, ${edition}, din registrul ONRC`
+}
+
+/** The company in one sentence, as plain text for a head that writes it among its own (the supplier's, an enterprise's). */
+export function companySentence(model: CompanyProfileModel): string {
+  const { form, where, activity } = companySentenceFacts(model)
+  const first = where ? t`${form} din ${where}.` : `${form}.`
+  return activity ? `${first} ${t`Cod CAEN fiscal ANAF: ${activity}.`}` : first
 }
 
 export function capitalised(text: string): string {
@@ -58,7 +136,8 @@ export function statusText(model: CompanyProfileModel): string {
     case 'active':
       return t`În funcțiune`
     case 'conflict':
-      return t`Stări diferite în registru`
+      // Several codes may be a state and its annotations, not states that contradict each other: said neutrally.
+      return t`Mai multe coduri de stare ONRC`
     case 'unqualified': {
       const state = model.registry.cuiState
       if (state === 'not_in_edition') return t`Fără profil în ediția ONRC`
@@ -79,8 +158,8 @@ export function statusNotice(model: CompanyProfileModel): string | null {
   const { kind, label } = model.status
   if (kind === 'conflict') {
     return model.activeObservation
-      ? t`Înscrierile din registru au stări diferite, între care una „în funcțiune”; toate sunt listate în secțiunea Registru, niciuna nu e aleasă.`
-      : t`Înscrierile din registru au stări diferite; toate sunt listate în secțiunea Registru, niciuna nu e aleasă.`
+      ? t`Registrul are mai multe coduri de stare pentru firmă, între care „în funcțiune”; unele pot fi mențiuni, nu stări. Toate sunt listate în secțiunea Registru, niciunul nu e ales.`
+      : t`Registrul are mai multe coduri de stare pentru firmă; unele pot fi mențiuni, nu stări. Toate sunt listate în secțiunea Registru, niciunul nu e ales.`
   }
   if (kind === 'unqualified') return cuiStateText(model.registry.cuiState)
   if (kind === 'active' || kind === 'other') return null
@@ -107,16 +186,23 @@ export function changeNote(from: number | null | undefined, to: number | null | 
 }
 
 /**
- * The change of a net result, in words where a percent would lie: a profit
- * turning into a loss is not „-12.840%". Only between two reported net results
- * of statements qualified under one policy.
+ * The change of a bottom line, in words where a percent would lie: a profit
+ * turning into a loss is not „-12.840%". Only between two statements
+ * qualified under one policy, and only within ONE metric (`admittedNet`): two
+ * net results — the only ones that can turn into a loss or reach zero — or
+ * two admitted profits of held results. A profit is never compared with a
+ * result, in either direction.
  */
 export function netChangeNote(previous: PrivateCompanyFinancialYear | null, latest: PrivateCompanyFinancialYear): string | null {
   if (!previous || !comparable(previous, latest)) return null
-  const before = qualifiedNet(previous)
-  const now = qualifiedNet(latest)
-  if (before === null || now === null) return null
+  const was = admittedNet(previous)
+  const is = admittedNet(latest)
+  if (!was || !is || was.kind !== is.kind) return null
   const year = previous.fiscalYear
+  // Two profits, both above zero: their change, and nothing about a result neither of them is.
+  if (is.kind === 'profit') return changeNote(was.value, is.value, year)
+  const before = was.value
+  const now = is.value
   if (before === 0) return now === 0 ? t`la fel ca în ${year}` : t`în ${year}: rezultat zero`
   if (before > 0 && now <= 0) return t`în ${year}: profit de ${moneyText(before)}`
   if (before < 0 && now >= 0) return t`în ${year}: pierdere de ${moneyText(-before)}`
@@ -138,17 +224,48 @@ function movement(from: number, to: number): string {
 
 // ────────────────────────────────────────── business ──
 
-export function measureLabel(measure: CompanyFinancialMeasure): string {
+/** A measure's name; the bottom line's by what its points are (`netLineName`), the net result's when none is given. */
+export function measureLabel(measure: CompanyFinancialMeasure, net?: readonly NetPoint[]): string {
   switch (measure) {
     case 'toate':
       return t`Toate`
     case 'cifra-de-afaceri':
       return t`Cifra de afaceri`
     case 'profit':
-      return t`Rezultat net`
+      return net ? netLineName(net) : t`Rezultat net`
     case 'salariati':
       return t`Salariați`
   }
+}
+
+/** Which metrics a bottom line's drawn points are: net results, admitted profits of held results, or both. */
+function netKinds(points: readonly NetPoint[]): 'result' | 'profit' | 'both' {
+  const kinds = new Set(points.filter((point) => point.value !== null).map((point) => point.kind))
+  if (!kinds.has('profit')) return 'result'
+  return kinds.has('result') ? 'both' : 'profit'
+}
+
+/**
+ * A bottom line's name by the metrics its drawn points are: „Rezultat net",
+ * „Profit net", or — where the years hold both — „Rezultat sau profit net",
+ * each year then named by its own (`netPointLabel`). Never „Rezultat net"
+ * over a profit, nor „Profit net" over a result.
+ */
+export function netLineName(points: readonly NetPoint[]): string {
+  const kinds = netKinds(points)
+  return kinds === 'result' ? t`Rezultat net` : kinds === 'profit' ? t`Profit net` : t`Rezultat sau profit net`
+}
+
+/** A chart of turnover, the bottom line and staff, named as `netLineName` names its bottom line. */
+export function netChartLabel(points: readonly NetPoint[]): string {
+  const kinds = netKinds(points)
+  if (kinds === 'result') return t`Cifra de afaceri, rezultatul net și salariații`
+  return kinds === 'profit' ? t`Cifra de afaceri, profitul net și salariații` : t`Cifra de afaceri, rezultatul sau profitul net și salariații`
+}
+
+/** One year's bottom line by its own metric, as a reading of that year names it: a profit is never the result. */
+export function netPointLabel(point: Pick<NetPoint, 'kind'> | undefined): string {
+  return point?.kind === 'profit' ? t`Profit net` : t`Rezultat net`
 }
 
 export function sizeClassLabel(size: SizeClass): string {
@@ -174,16 +291,23 @@ export function financialLede(model: CompanyProfileModel): string | null {
   const { latest, previous, stale, lossYears } = model
   if (!latest) return null
   const sentences: string[] = []
-  if (stale) sentences.push(t`Ultimul bilanț publicat este pe ${latest.fiscalYear}.`)
+  // The newest statement the data holds: not proof the company filed none since.
+  const newest = latest.fiscalYear
+  if (stale) sentences.push(t`Ultimul bilanț disponibil aici este pe ${newest}.`)
   const before = previous && model.comparable ? reportedNumber(previous, 'turnover') : null
   const after = reportedNumber(latest, 'turnover')
   if (previous && before !== null && before > 0 && after !== null) {
     const year = latest.fiscalYear
     const turnover = t`În ${year}, cifra de afaceri ${movement(before, after)}`
-    const was = qualifiedNet(previous)
-    const now = qualifiedNet(latest)
+    // One metric against itself: two net results (only they can turn into a loss or reach zero), or two admitted
+    // profits of held results. A profit against a result says nothing.
+    const wasNet = admittedNet(previous)
+    const isNet = admittedNet(latest)
+    const was = wasNet && isNet && wasNet.kind === isNet.kind ? wasNet.value : null
+    const now = wasNet && isNet && wasNet.kind === isNet.kind ? isNet.value : null
     let net = ''
-    if (was !== null && now !== null) {
+    if (isNet?.kind === 'profit' && was !== null && now !== null) net = t`, iar profitul net ${movement(was, now)}`
+    else if (was !== null && now !== null) {
       if (was > 0 && now < 0) net = t`, iar firma a trecut pe pierdere`
       else if (was < 0 && now > 0) net = t`, iar firma a trecut pe profit`
       else if (was !== 0 && now === 0) net = t`, iar rezultatul net a ajuns la zero`
@@ -409,7 +533,8 @@ export function metricStatusLabel(status: PrivateCompanyMetricStatus | null): st
     case 'reported':
       return t`admisă`
     case 'missing':
-      return t`nepublicată`
+      // Nothing available here: not proof the filing has no such line.
+      return t`nicio valoare disponibilă aici`
     case 'not_admitted':
       return t`neadmisă pentru acest an`
     case 'held_profile':
@@ -435,7 +560,7 @@ export function netResultStatusLabel(status: PrivateCompanyMetricStatus): string
     case 'reported':
       return t`admis: profitul minus pierderea, cum le-a calculat evaluatorul`
     case 'missing':
-      return t`nu se poate calcula: nici profitul, nici pierderea nu sunt publicate`
+      return t`nu se poate calcula: nici profitul, nici pierderea nu sunt disponibile aici`
     case 'not_admitted':
       return t`neadmis pentru acest an`
     case 'held_profile':
@@ -462,6 +587,14 @@ export function statementStateLabel(statement: StatementValues): string {
   if (statement.otherBasis) return t`calificat după altă politică sau altă ediție a datelor`
   const kept = statement.keptOut
   if (kept === 0) return statement.netHeld ? t`valorile publicate admise; rezultatul net reținut` : t`toate valorile admise`
+  // The derived net is no published value: said beside the count, never counted in it — and only when held, not when never admitted.
+  if (statement.netHeld && statement.netResult?.status !== 'not_admitted') {
+    return plural(kept, {
+      one: '# valoare ținută în afara cifrelor; rezultatul net reținut',
+      few: '# valori ținute în afara cifrelor; rezultatul net reținut',
+      other: '# de valori ținute în afara cifrelor; rezultatul net reținut',
+    })
+  }
   return plural(kept, {
     one: '# valoare ținută în afara cifrelor',
     few: '# valori ținute în afara cifrelor',
@@ -473,7 +606,7 @@ export function statementStateLabel(statement: StatementValues): string {
 export function otherBasisNotice(model: CompanyProfileModel): string | null {
   const years = model.qualification.otherBasisYears
   if (years.length === 0) return null
-  return t`Bilanțurile pe ${yearRanges(years)} au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt listate mai jos.`
+  return t`Bilanțurile pe ${yearRanges(years)} au fost calificate după altă politică sau altă ediție a datelor: nu intră în grafice, comparații și numărătoarea pierderilor alături de ceilalți ani; valorile lor sunt în tabel, estompate.`
 }
 
 /** Why a statement was not assessed, in a phrase. */

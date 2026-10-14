@@ -15,6 +15,7 @@ import {
 } from '@/schemas/company-analytics'
 import { activityText, unclassifiedActivityLabel, unclassifiedBasisOf } from './company-activity-text'
 import { compactValue, countText, exactValueText } from './company-analytics-format'
+import { isUnresolvedMainActivity, mainActivityBucketText, unresolvedMainLabel, unresolvedMainStatusOf } from './company-analytics-main-activity'
 import { orderedGroups } from './company-analytics-order'
 import { basisGroupLabel, caenText, flagLabel, gapReasonLabel, labelSourceText, metricLabel, placeName, sizeBandLabel } from './company-analytics-text'
 
@@ -73,7 +74,7 @@ export function breakdownRows(breakdown: {
   readonly unknown: CompanyAnalysisBucket
   readonly unclassified?: readonly CompanyAnalysisBucket[]
 }): { readonly ranked: readonly CompanyAnalysisBucket[]; readonly rest: readonly CompanyAnalysisBucket[]; readonly tail: readonly CompanyAnalysisBucket[] } {
-  const emptySlot = (CONSENSUS_DIMENSIONS.has(breakdown.dimension) || breakdown.dimension === 'ACTIVITY') && breakdown.unknown.companies === '0'
+  const emptySlot = (CONSENSUS_DIMENSIONS.has(breakdown.dimension) || breakdown.dimension === 'ACTIVITY' || breakdown.dimension === 'MAIN_ACTIVITY') && breakdown.unknown.companies === '0'
   const tail = activityTail(breakdown)
   return {
     ranked: orderedGroups(breakdown.dimension, breakdown.groups.filter((bucket) => !tail.includes(bucket))),
@@ -91,9 +92,11 @@ export function isUnclassifiedActivity(bucket: CompanyAnalysisBucket): boolean {
 /**
  * The derived activity's unclassified buckets — the API's own, and any group
  * that selects no named activity (never ranked, wherever it was sent) — in
- * the API's order. Empty for every other dimension.
+ * the API's order; the same for the main activity's unresolved statuses (v4).
+ * Empty for every other dimension.
  */
 export function activityTail(breakdown: { readonly dimension: CompanyAnalysisDimension; readonly groups: readonly CompanyAnalysisBucket[]; readonly unclassified?: readonly CompanyAnalysisBucket[] }): readonly CompanyAnalysisBucket[] {
+  if (breakdown.dimension === 'MAIN_ACTIVITY') return [...breakdown.groups.filter(isUnresolvedMainActivity), ...(breakdown.unclassified ?? [])]
   if (breakdown.dimension !== 'ACTIVITY') return []
   return [...breakdown.groups.filter(isUnclassifiedActivity), ...(breakdown.unclassified ?? [])]
 }
@@ -113,6 +116,8 @@ export function groupLabel(dimension: CompanyAnalysisDimension, bucket: CompanyA
         return t`Fără cod CAEN fiscal ANAF`
       case 'ACTIVITY':
         return t`Fără activitate selectată`
+      case 'MAIN_ACTIVITY':
+        return t`Fără activitate principală presupusă`
       case 'OBSERVED_STATUS':
         return t`Stare necunoscută`
       case 'EMPLOYEE_SIZE':
@@ -136,6 +141,11 @@ export function groupLabel(dimension: CompanyAnalysisDimension, bucket: CompanyA
     case 'ACTIVITY':
       if (isUnclassifiedActivity(bucket)) return unclassifiedActivityLabel(unclassifiedBasisOf(bucket))
       return bucket.activity ? activityText(bucket.activity) : key
+    case 'MAIN_ACTIVITY': {
+      const unresolved = unresolvedMainStatusOf(bucket)
+      if (unresolved !== null) return unresolvedMainLabel(unresolved)
+      return bucket.mainActivity ? mainActivityBucketText(bucket.mainActivity) : key
+    }
     case 'VAT_PAYER':
     case 'FISCALLY_INACTIVE':
       return key === 'YES' || key === 'NO' ? flagLabel(key) : key

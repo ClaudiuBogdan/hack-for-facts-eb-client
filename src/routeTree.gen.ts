@@ -428,9 +428,7 @@ const CompaniesSearchRoute = CompaniesSearchRouteImport.update({
   id: '/companies/search',
   path: '/companies/search',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/companies.search.lazy').then((d) => d.Route),
-)
+} as any)
 const DevelopmentIndexRoute = DevelopmentIndexRouteImport.update({
   id: '/',
   path: '/',

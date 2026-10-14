@@ -147,7 +147,7 @@ export const LANDING_GROUPS: readonly LandingGroup[] = [
       },
       {
         title: msg`Alegeri`,
-        blurb: msg`Rezultate pe scrutin și geografie. Rezultatele nu sunt voturi în plen.`,
+        blurb: msg`Catalogul edițiilor de date electorale și al scrutinelor lor, cu etichetele din sursă. Fără rezultate deocamdată.`,
         to: '/alegeri',
         icon: Vote,
         gate: () => isFeatureEnabled('elections'),

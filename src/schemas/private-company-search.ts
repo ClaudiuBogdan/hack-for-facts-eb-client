@@ -1,22 +1,18 @@
 import { z } from 'zod'
 import { parseArraySearchParam } from './public-investments'
-import type { CompanyRegistryBasis, CompanyRegistryCuiState, CompanyRegistryEnvelope } from './private-company-registry'
-
-export type { CompanyGroupByDim } from './private-company-hub'
+import type { CompanyRegistryEnvelope } from './private-company-registry'
 
 /**
- * URL state for the /companies/search directory page. TanStack Router
+ * The address of the retired company directory (`/companies/search`, and
+ * `/companies?…` before it), read only to send an old link where its
+ * question is answered now (`company-directory-redirect.ts`). TanStack Router
  * JSON-parses search params, so `?q=14399840` can arrive as a number — coerce
- * to string. Multi-value filters accept a scalar (`?county=CLUJ`, the pre-rework
- * deep-link form), a repeated param, a comma list or a JSON array. Filters map
- * onto the GraphQL `companies(filter, q, sort, first, after)` query (see
- * `api/graphql/company-filters.ts`).
+ * to string. Multi-value filters accept a scalar (`?county=CLUJ`, the
+ * pre-rework deep-link form), a repeated param, a comma list or a JSON array.
  *
- * The registry filters (county, status, caen, onrcCaen, legal form, recorded
- * date) are answered by the API from ONE pinned ONRC edition, on the SAME
- * resolved identifier; the fiscal switches are ANAF's, independent of it. A
- * filter the registry cannot answer now stays in the URL and the page says
- * so — it is never dropped or answered as empty.
+ * The directory answered its registry filters (county, status, caen,
+ * onrcCaen, legal form, recorded date) from ONE pinned ONRC edition, on the
+ * SAME resolved identifier; the fiscal switches were ANAF's.
  */
 const stringArrayParam = z
   .preprocess((value) => parseArraySearchParam(value), z.array(z.string()).optional())
@@ -118,45 +114,8 @@ export function cleanPrivateCompanyDirectorySearch(
 }
 
 /**
- * Internal query passed to the API adapters. `pageSize`/`cursor` drive the
- * GraphQL connection; the URL only carries the user-facing filters.
- */
-export type PrivateCompanySearchQuery = {
-  readonly q?: string
-  readonly county?: readonly string[]
-  readonly status?: readonly string[]
-  readonly caen?: string
-  readonly onrcCaen?: readonly string[]
-  readonly legalForm?: readonly string[]
-  readonly regFrom?: string
-  readonly regTo?: string
-  readonly vat?: boolean
-  readonly inactive?: boolean
-  readonly sort?: PrivateCompanySortValue
-  readonly pageSize: number
-  readonly cursor?: string | null
-  /** The registry scope the read is bound to: an answer under another is refused, never kept. */
-  readonly scopeKey: string
-  readonly signal?: AbortSignal
-}
-
-/**
- * A selectable county: its code (what the URL and the API filter carry), its
- * canonical name, and how many companies with an „în funcțiune" observation
- * have it as their county consensus in the pinned edition.
- */
-export type PrivateCompanyCountyFacet = {
-  readonly code: string
-  readonly name: string
-  readonly count: number
-}
-
-/**
- * Status-code options for the directory status filter. The status filter
- * matches ANY public original observation of the code on a resolved
- * identifier of the pinned edition (`1048` also beside a conflicting code).
- * The labels are this application's presentation nomenclature for the codes,
- * not labels ONRC publishes, and are deliberately left untranslated.
+ * ONRC status codes with this application's presentation nomenclature for
+ * them — not labels ONRC publishes, and deliberately left untranslated.
  */
 export const PRIVATE_COMPANY_STATUS_OPTIONS = [
   { code: '1084', label: 'radiată' },
@@ -167,59 +126,6 @@ export const PRIVATE_COMPANY_STATUS_OPTIONS = [
   { code: '1070', label: 'faliment' },
   { code: '1107', label: 'insolvență' },
 ] as const
-
-/**
- * Legal-form options for the directory filter — the ONRC `legalForm` strings as
- * stored. Verified 2026-07-22 against a production `DISTINCT legal_form` sweep
- * of `companies_v2.registrations`: exact casing confirmed; ordered by measured
- * count (SRL 2.66M … RA 700). Covers every form with ≥700 registrations except
- * placeholder/rare codes (`N/A`, `SC`, cooperative `OC*` variants); re-measure
- * before treating as exhaustive after a snapshot generation change.
- */
-export const PRIVATE_COMPANY_LEGAL_FORM_OPTIONS = [
-  'SRL',
-  'PFA',
-  'II',
-  'PF',
-  'AF',
-  'IF',
-  'SA',
-  'SNC',
-  'CA',
-  'SCS',
-  'RA',
-] as const
-
-/**
- * One result page from the GraphQL `companies` connection, bound to ONE
- * registry scope (`registry`): rows, cursor and total all belong to it.
- */
-export type PrivateCompanySearchResultPage = {
-  readonly items: ReadonlyArray<{
-    readonly cui: string
-    readonly name: string
-    /** Whose name: the pinned edition's qualified one, or the platform directory's. */
-    readonly nameSource: 'onrc_edition' | 'core_organization'
-    readonly legalForm: string | null
-    /** The edition's complete status consensus; null without one (see `statusBasis`). */
-    readonly status: { code: string; label: string } | null
-    readonly county: string | null
-    readonly vatPayer: boolean | null
-    readonly declaredFiscallyInactive: boolean | null
-    /** The civil date ONRC recorded; never a founding date. */
-    readonly registrationDate: string | null
-    readonly registryCuiState: CompanyRegistryCuiState
-    /** Any public original 1048; null outside the edition. */
-    readonly hasActiveObservation: boolean | null
-    readonly statusBasis: CompanyRegistryBasis | null
-    readonly countyBasis: CompanyRegistryBasis | null
-    readonly recordedDateBasis: CompanyRegistryBasis | null
-  }>
-  readonly nextCursor: string | null
-  readonly totalCount: number | null
-  readonly totalEstimated: boolean
-  readonly registry: CompanyRegistryEnvelope
-}
 
 // ---------------------------------------------------------------------------
 // Resolve — companyResolveResult(dim, q, limit, registryScope)
@@ -312,7 +218,9 @@ export type CompanyHubYearMeasure = (typeof COMPANY_HUB_YEAR_MEASURES)[number]
 
 /**
  * The hub's choices (map layer, activity measure, ranking, the years' measure), each in the
- * URL so a view can be shared. A value the hub does not know is dropped, so
+ * URL so a view can be shared. Never a key of the retired directory's (`q`, `county`,
+ * `status`, `caen`, `sort`, …): `/companies` sends an address carrying one on for good
+ * (a cached 301), so a hub key of that name would never reach the hub. A value the hub does not know is dropped, so
  * an old shared link opens the hub on its defaults instead of failing, and
  * the default is never written.
  */

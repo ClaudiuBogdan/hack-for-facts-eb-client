@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTestQueryClient } from '@/test/test-utils'
 import type { PrivateCompanyProfile } from '@/schemas/private-company'
@@ -14,7 +14,7 @@ import { CompanyProfilePage } from './company-profile-page'
  * scope the page pinned; a move during a dependent read hides it until the
  * reader asks; a conflict is listed, never resolved; a CUI outside the
  * edition is outside the edition, not unregistered, its financial and fiscal
- * content still served; the first edition has nothing to compare with; the
+ * content still served; a comparison is said only when it says something; the
  * recorded date is ONRC's civil date, never a founding date; the source line
  * names the edition and a mock as a mock.
  */
@@ -22,6 +22,12 @@ import { CompanyProfilePage } from './company-profile-page'
 const registry = vi.hoisted(() => ({
   next: null as unknown,
   diff: vi.fn(),
+  history: vi.fn(),
+}))
+
+vi.mock('../../api/private-company-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/private-company-api')>()),
+  fetchCompanyMainActivityHistory: (...args: unknown[]) => registry.history(...args),
 }))
 
 vi.mock('../../api/company-registry-api', () => ({
@@ -92,6 +98,106 @@ describe('CompanyProfilePage under the ONRC registry contract', () => {
     expect(screen.queryByRole('heading', { level: 1, name: '66 Jack SRL' })).toBeNull()
   })
 
+  /**
+   * History caches of the owning company (OUTCOMES stale, so opening the history reads it again; EVIDENCE fresh and
+   * public) and of an unrelated company, kept forever unless actively removed (no garbage collection can pass a test).
+   */
+  async function seedHistories(client: ReturnType<typeof createTestQueryClient>, profile: PrivateCompanyProfile) {
+    const { mainActivityHistoryKey } = await import('../../hooks/use-company-main-activity-history')
+    const cui = profile.cui ?? ''
+    const identity = profile.mainActivity?.activity?.cacheKey ?? ''
+    const scopeKey = profile.registry.registry.scopeKey
+    client.setQueryDefaults(['company-main-activity-history'], { gcTime: Infinity })
+    const publicPage = (kind: 'OUTCOMES' | 'EVIDENCE') => ({
+      pages: [{ status: 'page', page: { state: 'AVAILABLE', kind, outcomes: [], evidence: [], nextCursor: null, scopeKey } }],
+      pageParams: [null],
+    })
+    client.setQueryData(mainActivityHistoryKey(cui, 'OUTCOMES', identity, scopeKey), publicPage('OUTCOMES'), { updatedAt: 1 })
+    client.setQueryData(mainActivityHistoryKey(cui, 'EVIDENCE', identity, scopeKey), publicPage('EVIDENCE'))
+    const unrelated = mainActivityHistoryKey('9999999', 'OUTCOMES', identity, scopeKey)
+    client.setQueryData(unrelated, publicPage('OUTCOMES'))
+    const owning = () => client.getQueryCache().findAll({ queryKey: ['company-main-activity-history', cui] })
+    return { owning, unrelated }
+  }
+
+  it('a main activity history answering that the company is no longer public withdraws the whole answer through the privacy path, purges every owning-company history and reads the profile again', async () => {
+    const { MAIN_ACTIVITIES, assignedRead } = await import('../../mocks/fixtures/main-activity')
+    registry.history.mockReset()
+    registry.history.mockResolvedValue({ status: 'not_public' })
+    const client = createTestQueryClient()
+    // The profile reread is held pending: whatever is checked below holds before it answers.
+    const invalidate = vi.spyOn(client, 'invalidateQueries').mockImplementation(() => new Promise<void>(() => undefined))
+    const profile = companyProfile({ mainActivity: assignedRead(MAIN_ACTIVITIES.omvLeadingZero) })
+    const { owning, unrelated } = await seedHistories(client, profile)
+    expect(owning()).toHaveLength(2)
+    render(
+      <QueryClientProvider client={client}>
+        <CompanyProfilePage profile={profile} cui={profile.cui ?? ''} search={{}} />
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByRole('heading', { level: 1, name: '66 Jack SRL' })).toBeInTheDocument()
+    // Both seeded histories survive the first render (same identity and scope: nothing to purge yet).
+    expect(owning()).toHaveLength(2)
+    fireEvent.click(screen.getByRole('button', { name: 'Istoricul activității principale presupuse' }))
+    // Nothing of the company while it is read again — its main activity least of all.
+    expect(await screen.findByRole('status', { name: 'Se încarcă profilul firmei' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: '66 Jack SRL' })).toBeNull()
+    expect(screen.queryByTestId('company-main-activity')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/Extracția petrolului brut|Corespondent ONRC/u)
+    expect(registry.history).toHaveBeenCalledTimes(1)
+    // The activities band is unmounted by the withdrawal, yet no history of the owning company is left — the loaded
+    // public EVIDENCE page included — and none comes back; another company's history is untouched.
+    await waitFor(() => expect(owning()).toHaveLength(0))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(owning()).toHaveLength(0)
+    expect(registry.history).toHaveBeenCalledTimes(1)
+    expect(client.getQueryData(unrelated)).toBeDefined()
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['private-company', profile.cui], exact: true })
+  })
+
+  it('the registration diff finding the company gone purges its main activity histories too (the same owning privacy path)', async () => {
+    const { MAIN_ACTIVITIES, assignedRead } = await import('../../mocks/fixtures/main-activity')
+    const { CompanyRegistryParentMissingError } = await import('../../api/company-registry-errors')
+    registry.diff.mockRejectedValue(new CompanyRegistryParentMissingError())
+    registry.history.mockReset()
+    const client = createTestQueryClient()
+    vi.spyOn(client, 'invalidateQueries').mockImplementation(() => new Promise<void>(() => undefined))
+    const profile = companyProfile({ mainActivity: assignedRead(MAIN_ACTIVITIES.omvLeadingZero) })
+    const { owning, unrelated } = await seedHistories(client, profile)
+    render(
+      <QueryClientProvider client={client}>
+        <CompanyProfilePage profile={profile} cui={profile.cui ?? ''} search={{}} />
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByRole('status', { name: 'Se încarcă profilul firmei' })).toBeInTheDocument()
+    await waitFor(() => expect(owning()).toHaveLength(0))
+    expect(client.getQueryData(unrelated)).toBeDefined()
+    expect(registry.history).not.toHaveBeenCalled()
+  })
+
+  it('negative control: an ordinary history transport failure withdraws nothing — the company, its main activity and its other history stay', async () => {
+    const { MAIN_ACTIVITIES, assignedRead } = await import('../../mocks/fixtures/main-activity')
+    registry.history.mockReset()
+    registry.history.mockRejectedValue(new Error('fetch failed'))
+    const client = createTestQueryClient()
+    const invalidate = vi.spyOn(client, 'invalidateQueries').mockImplementation(() => new Promise<void>(() => undefined))
+    const profile = companyProfile({ mainActivity: assignedRead(MAIN_ACTIVITIES.omvLeadingZero) })
+    const { owning } = await seedHistories(client, profile)
+    render(
+      <QueryClientProvider client={client}>
+        <CompanyProfilePage profile={profile} cui={profile.cui ?? ''} search={{}} />
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByRole('heading', { level: 1, name: '66 Jack SRL' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Istoricul activității principale presupuse' }))
+    expect(await screen.findByTestId('company-main-activity-history-failed')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: '66 Jack SRL' })).toBeInTheDocument()
+    expect(screen.getByTestId('company-main-activity')).toBeInTheDocument()
+    // The failed OUTCOMES read and the loaded EVIDENCE page are both still held; the profile is not withdrawn.
+    expect(owning()).toHaveLength(2)
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: ['private-company', profile.cui], exact: true })
+  })
+
   it('lists an „în funcțiune" observation beside a conflicting one, choosing neither', async () => {
     const conflict = mockRegistryEvidence({
       identifier: 'J16/44/1996',
@@ -105,8 +211,11 @@ describe('CompanyProfilePage under the ONRC registry contract', () => {
     })
     render(page(companyProfile({ status: null, registry: conflict })))
     // The head's chip and the registry facts both say it; neither names a status.
-    expect(await screen.findAllByText('Stări diferite în registru')).toHaveLength(2)
-    expect(screen.getByText(/între care una „în funcțiune”; toate sunt listate/u)).toBeInTheDocument()
+    expect(await screen.findAllByText('Mai multe coduri de stare ONRC')).toHaveLength(2)
+    // Why, a tap away beside the chip rather than a notice under the head.
+    expect(screen.queryByText(/între care una „în funcțiune”/u)).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Despre starea din registru' }))
+    expect(await screen.findByText(/între care „în funcțiune”; unele pot fi mențiuni, nu stări\. Toate sunt listate/u)).toBeInTheDocument()
     const evidence = within(screen.getByTestId('company-registry-evidence'))
     expect(evidence.getByText(/^1048 · funcțiune; 1070 · faliment · Cluj$/u)).toBeInTheDocument()
     expect(evidence.getByText('(are o înscriere „în funcțiune” alături de alte stări)')).toBeInTheDocument()
@@ -133,10 +242,25 @@ describe('CompanyProfilePage under the ONRC registry contract', () => {
     expect(registry.diff).not.toHaveBeenCalled()
   })
 
-  it('says the first edition has nothing to compare with — never a disappearance', async () => {
+  it('says nothing of a comparison that says nothing — a first edition is never a disappearance', async () => {
     render(page(companyProfile()))
-    expect(await screen.findByTestId('company-registry-diff')).toHaveTextContent('Nu există o ediție anterioară publicată cu care să se compare.')
-    expect(document.body.textContent).not.toMatch(/dispăr|radiere/u)
+    await screen.findByRole('heading', { level: 1, name: '66 Jack SRL' })
+    await waitFor(() => expect(registry.diff).toHaveBeenCalled())
+    expect(screen.queryByTestId('company-registry-diff')).toBeNull()
+    expect(document.body.textContent).not.toMatch(/dispăr|radiere|ediție anterioară/u)
+  })
+
+  it('says what changed since the edition before', async () => {
+    registry.diff.mockResolvedValue({
+      ...FIRST_EDITION,
+      fromEditionId: 'mock-0',
+      fromCaptureDate: '2026-06-01',
+      status: 'changed',
+      reason: null,
+      changes: [{ field: 'locality', from: 'Gherla', to: 'Dej' }],
+    })
+    render(page(companyProfile()))
+    expect(await screen.findByTestId('company-registry-diff')).toHaveTextContent(/^Față de ediția din .+, s-au schimbat înscrierile pentru: /u)
   })
 
   it('gives the date ONRC recorded, at day precision — never a founding year or an age', async () => {

@@ -4,7 +4,7 @@ import type { HubFact } from '@/features/statistics/components/hub/hub-figures'
 import { moneyFigure } from '../../lib/company-profile-format'
 import type { CompanyProfileModel } from '../../lib/company-profile-model'
 import { changeNote, countChangeNote, moneyPeriod, netChangeNote } from '../../lib/company-profile-text'
-import { qualifiedNet, reportedNumber } from '../../lib/financial-qualification'
+import { admittedNet, reportedNumber } from '../../lib/financial-qualification'
 
 /** A figure's link to the band that breaks it down. */
 function toBand(anchor: string) {
@@ -21,7 +21,8 @@ function toBand(anchor: string) {
  * The figures band under the head: size, result, people and public money —
  * each only when the record has it, so a company that never filed shows its
  * public money alone, and one with neither shows no band. A statement figure
- * is a REPORTED value only (the net result the evaluator's own), and its
+ * is a REPORTED value only (the net result the evaluator's own, or where it is
+ * held for want of a loss, the admitted profit, called a profit), and its
  * change only against a reported value under the same policy; held or
  * unassessed values are shown apart, in the business band.
  */
@@ -42,7 +43,8 @@ export function companyFigures(model: CompanyProfileModel, anchors: { readonly b
         link: toBand(anchors.business),
       })
     }
-    const net = qualifiedNet(latest)
+    // A net result, or a held result's admitted profit (`admittedNet`): either way above zero is a profit, and only a result is a loss or a zero.
+    const net = admittedNet(latest)?.value ?? null
     if (net !== null) {
       figures.push({
         key: 'net',

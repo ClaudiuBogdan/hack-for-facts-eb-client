@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type { CompanyRegistryCapabilities } from '@/schemas/private-company-registry'
 import { fetchCompanyRegistry } from '../api/company-registry-api'
 import { isRegistryRefusal } from '../api/company-registry-errors'
@@ -157,11 +157,6 @@ export function useRegistryReadLedger(): RegistryReadLedger {
     return true
   }, [])
   return useMemo(() => ({ track, openRefusal, open }), [track, openRefusal, open])
-}
-
-/** Whether `query` is still the cache's own entry for its key — not one a refusal retired. */
-export function isCachedQuery(queryClient: QueryClient, query: { readonly queryHash: string }): boolean {
-  return (queryClient.getQueryCache().get(query.queryHash) as unknown) === query
 }
 
 /**
