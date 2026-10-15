@@ -34,9 +34,16 @@ export function displayNgoName(name: string): string {
 
 const fold = (value: string) => value.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/-/g, ' ').toUpperCase().trim()
 
+/**
+ * The county a name says: the registry's („BUCURESTI", „CARAS SEVERIN") or the
+ * search index's canonical one („MUNICIPIUL BUCUREȘTI", „CARAȘ-SEVERIN"). Only
+ * the county lookup drops a leading MUNICIPIUL or JUDEȚUL; nothing else is read
+ * out of the name, so a compound or unknown value stays no county.
+ */
 export function countyOf(name: string | null): { readonly code: string; readonly name: string } | null {
   if (!name) return null
-  const county = ROMANIA_COUNTIES.find((entry) => fold(entry.nameRo) === fold(name))
+  const key = fold(name).replace(/^(?:MUNICIPIUL|JUDETUL) +/u, '')
+  const county = ROMANIA_COUNTIES.find((entry) => fold(entry.nameRo) === key)
   return county ? { code: county.code, name: county.nameRo } : null
 }
 

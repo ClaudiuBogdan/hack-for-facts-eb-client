@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   amountOf,
+  countyOf,
   displayNgoName,
   formatExact,
   isInferred,
@@ -30,6 +31,29 @@ describe('the words', () => {
     expect(placeOf({ county: null, locality: null })).toBeNull()
     // The registry's placeholder is no town: the county alone.
     expect(placeOf({ county: 'CLUJ', locality: 'NEDETERMINAT' })).toBe('Cluj')
+  })
+
+  it('reads a county by its canonical name too, the leading MUNICIPIUL or JUDEȚUL dropped from the county alone', () => {
+    const bucharest = { code: 'B', name: 'București' }
+    // The search index's canonical names (core.territories) beside the registry's own spellings.
+    expect(countyOf('MUNICIPIUL BUCUREȘTI')).toEqual(bucharest)
+    expect(countyOf('MUNICIPIUL BUCURESTI')).toEqual(bucharest)
+    expect(countyOf('MUNICIPIUL BUCUREȘTI'.normalize('NFD'))).toEqual(bucharest)
+    expect(countyOf('JUDEȚUL CLUJ')).toEqual({ code: 'CJ', name: 'Cluj' })
+    expect(countyOf('BUCURESTI')).toEqual(bucharest)
+    expect(countyOf('CARAȘ-SEVERIN')).toEqual({ code: 'CS', name: 'Caraș-Severin' })
+    expect(countyOf('CONSTANȚA')).toEqual({ code: 'CT', name: 'Constanța' })
+    expect(countyOf('HUNEDOARA')).toEqual({ code: 'HD', name: 'Hunedoara' })
+    // No county is made up: unknown, placeholder and compound values stay unknown.
+    expect(countyOf(null)).toBeNull()
+    expect(countyOf('NEDETERMINAT')).toBeNull()
+    expect(countyOf('MUNICIPIUL')).toBeNull()
+    expect(countyOf('BUCUREȘTI PUNCT DE LUCRU: JUD. GALAȚI')).toBeNull()
+    // The place line says the canonical county as it says the registry's; a town keeps its own words.
+    expect(placeOf({ county: 'MUNICIPIUL BUCUREȘTI', locality: null })).toBe('București')
+    expect(placeOf({ county: 'MUNICIPIUL BUCUREȘTI', locality: 'BUCURESTI' })).toBe('București')
+    expect(placeOf({ county: 'CONSTANȚA', locality: null })).toBe('Constanța')
+    expect(placeOf({ county: 'CLUJ', locality: 'MUNICIPIUL CLUJ-NAPOCA' })).toBe('Municipiul Cluj-Napoca, Cluj')
   })
 
   it('reads the registry status and says which CUI links are only inferred', () => {
