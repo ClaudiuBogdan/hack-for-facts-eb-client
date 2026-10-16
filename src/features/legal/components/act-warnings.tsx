@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react'
-import { Trans } from '@lingui/react/macro'
+import { Plural, Trans } from '@lingui/react/macro'
 import { AlertTriangle, ChevronDown } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { LegalActDetail } from '@/schemas/legal'
@@ -26,13 +26,13 @@ type Props = {
  * This is the most important content on the page's lead. The summary is
  * generated from the document we hold, and for 10.033 acts that document is
  * the text *as first published* — the Codul Fiscal's body is dated 2015-09-10
- * and has been amended 295 times since, yet its summary still states the 2015
+ * and 295 amendment references have been recorded since, yet its summary still states the 2015
  * VAT rates in the flat, confident register of a summary. A reader who acts
  * on that is misled by us, not by the source.
  *
  * Each warning shows only its HEADLINE by default (user decision 2026-08-11:
  * the text is the page's main content, everything above it earns its lines).
- * The headline alone carries the qualifying fact — "modificat de 22 ori",
+ * The headline alone carries the qualifying fact — "22 de referințe de modificare",
  * "sursele nu sunt de acord" — and the explanation opens on demand. In the
  * `row` variant the amber field is gone too: the triangle carries the signal,
  * at the same volume as the card's other footer row.
@@ -110,10 +110,15 @@ export function ActWarnings({ act, variant = 'banner' }: Props) {
         <CollapsedWarning
           variant={variant}
           headline={
-            <Trans>
-              Acest act a fost modificat de{' '}
-              {number(act.amendedAfterPublication)} ori de la publicare.
-            </Trans>
+            // The count is of incoming modification/completion REFERENCES,
+            // not of distinct amending acts or amendment events (I-22: the
+            // Codul Fiscal's 295 come from 216 acts).
+            <Plural
+              value={act.amendedAfterPublication}
+              one="O referință de modificare sau completare înregistrată de la publicare."
+              few="# referințe de modificare sau completare înregistrate de la publicare."
+              other="# de referințe de modificare sau completare înregistrate de la publicare."
+            />
           }
         >
           {publishedOn ? (

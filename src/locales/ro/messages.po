@@ -56,6 +56,11 @@ msgstr " pe "
 msgid " și "
 msgstr " și "
 
+#. placeholder {0}: act.amendedAfterPublication
+#: src/features/legal/components/act-warnings.tsx:116
+msgid "{0, plural, one {O referință de modificare sau completare înregistrată de la publicare.} few {# referințe de modificare sau completare înregistrate de la publicare.} other {# de referințe de modificare sau completare înregistrate de la publicare.}}"
+msgstr "{0, plural, one {O referință de modificare sau completare înregistrată de la publicare.} few {# referințe de modificare sau completare înregistrate de la publicare.} other {# de referințe de modificare sau completare înregistrate de la publicare.}}"
+
 #: src/features/statistics/components/detail/detail-accordion.tsx:224
 #~ msgid "— (nicio observație pentru selecția curentă)"
 #~ msgstr "— (nicio observație pentru selecția curentă)"
