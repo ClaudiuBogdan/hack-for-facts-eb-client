@@ -180,11 +180,11 @@ describe('OnrcField — the observations of one ONRC identifier', () => {
     render(<Harness />)
     add('Cu starea', '1048')
     add('În județul', 'cj')
-    add('Cu CAEN (orice revizie)', '6201')
+    add('Cu CAEN (cod larg)', '6201')
     add('Cu CAEN exact', 'REV2:6201')
     expect(latest.onrc).toEqual({ status: ['1048'], county: ['CJ'], caenCode: ['6201'], onrcCaen: ['rev2:6201'] })
     expect(screen.getByText('1048 · funcțiune')).toBeInTheDocument()
-    expect(screen.getByText('6201 (orice revizie)')).toBeInTheDocument()
+    expect(screen.getByText('6201 (cod larg)')).toBeInTheDocument()
   })
 
   it('never guesses a revision: an exact CAEN without one is said, not written', () => {
@@ -198,10 +198,24 @@ describe('OnrcField — the observations of one ONRC identifier', () => {
     render(<Harness />)
     expect(screen.queryByRole('textbox', { name: /Fără CAEN exact/u })).not.toBeInTheDocument()
     add('Fără starea', '1070')
-    add('Fără CAEN (orice revizie)', '4711')
+    add('Fără CAEN (cod larg)', '4711')
     expect(latest.onrc).toEqual({ exclude: { status: ['1070'], caenCode: ['4711'] } })
     fireEvent.click(screen.getByRole('button', { name: 'Scoate 1070' }))
     fireEvent.click(screen.getByRole('button', { name: 'Scoate 4711' }))
     expect(latest.onrc).toBeUndefined()
+  })
+
+  it('says what the release’s CAEN filters test, and nothing it does not know (CQA-15)', () => {
+    const field = (caenRule?: 'class' | 'observation') => (
+      <OnrcField scope={{}} limits={{ statuses: 60, counties: 60, caen: 200, legalForms: 30 }} statusNames={new Map()} caenRule={caenRule} onChange={() => undefined} />
+    )
+    const { rerender } = render(field('class'))
+    expect(screen.getByText(/doar clasele calificate/u)).toBeInTheDocument()
+    expect(screen.getByText(/revizie necunoscută face acoperirea CAEN incompletă/u)).toBeInTheDocument()
+    rerender(field('observation'))
+    expect(screen.getByText(/orice observație a codului, inclusiv cu revizie necunoscută/u)).toBeInTheDocument()
+    expect(screen.queryByText(/doar clasele calificate/u)).not.toBeInTheDocument()
+    rerender(field())
+    expect(screen.queryByText(/doar clasele calificate|orice observație a codului/u)).not.toBeInTheDocument()
   })
 })

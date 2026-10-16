@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro'
 import { countyNameRo } from '@/lib/territory-counties'
 import {
+  COMPANY_ANALYSIS_SCHEMA_VERSION,
   onrcBasisOfKey,
   type CompanyAnalysisCaen,
   type CompanyAnalysisCaenBasis,
@@ -209,13 +210,39 @@ export function caenText(caen: CaenDisplayValue): string {
   return t`${caen.code} (revizie necunoscută)`
 }
 
+/**
+ * What an ONRC CAEN filter tests in a release (CQA-15): a v3 release exports
+ * qualified classes only (four-digit original token, known revision, catalog
+ * label), a v2 release every observed code. Unknown when no release is at hand.
+ */
+export type CaenFilterRule = 'class' | 'observation'
+
+export function caenRuleOf(schemaVersion: string | undefined): CaenFilterRule | undefined {
+  if (schemaVersion === undefined) return undefined
+  return schemaVersion === COMPANY_ANALYSIS_SCHEMA_VERSION ? 'observation' : 'class'
+}
+
+/** What the release's CAEN filters test, in a sentence; nothing when unknown. */
+export function caenRuleText(rule: CaenFilterRule | undefined): readonly string[] {
+  if (rule === 'class')
+    return [
+      t`În această versiune, filtrele CAEN ONRC folosesc doar clasele calificate (cod din patru cifre, revizie cunoscută, denumire în nomenclator): un cod scurt sau o cheie fără denumire nu se potrivește și nici nu împiedică o excludere. O observație neinterpretată sau cu revizie necunoscută face acoperirea CAEN incompletă, așa că o excludere nu păstrează firma. „Fără CAEN” înseamnă fără clasă calificată, nu că sursa nu are acel cod.`,
+    ]
+  if (rule === 'observation')
+    return [
+      t`În această versiune (schema v2), codul CAEN larg se potrivește cu orice observație a codului, inclusiv cu revizie necunoscută, iar o excludere cere acoperire CAEN completă și nicio observație cu acel cod.`,
+    ]
+  return []
+}
+
 /** What a reader should know before citing a figure, in the page's language. */
-export function companyAnalyticsCaveats(): readonly string[] {
+export function companyAnalyticsCaveats(caenRule?: CaenFilterRule): readonly string[] {
   return [
     t`Județul, localitatea, starea ONRC și atributele fiscale ANAF descriu firma la data ediției, nu în anul fiscal.`,
     t`Județul, localitatea și starea sunt valoarea comună a tuturor înscrierilor firmei din ediția ONRC a analizei. O firmă fără valoare comună e numărată într-un grup care spune de ce (valori diferite, observații incomplete, lipsă, nerezolvat), nu ca „necunoscută” și nu ca absentă.`,
     t`Starea comună nu înseamnă că firma este activă azi.`,
     t`Filtrele de observații ONRC caută pe aceeași înscriere a firmei (stare, județ, CAEN). O excludere păstrează doar firmele cu dovezi complete: cele cu dovezi incomplete nu sunt nici păstrate, nici socotite fără acel cod.`,
+    ...caenRuleText(caenRule),
     t`Data înregistrată de ONRC este data din registru, nu data înființării și nici o vechime.`,
     t`Acoperirea numără situațiile financiare observate: un an recent cu mai puține situații este parțial și nu e prezentat ca fiind complet.`,
     t`Salariații sunt suma numărului mediu raportat de fiecare firmă, nu persoane distincte; soldurile și salariații sunt valori ale unui singur an și nu se adună peste ani.`,

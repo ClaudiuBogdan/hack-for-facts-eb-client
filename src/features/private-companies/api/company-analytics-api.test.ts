@@ -174,7 +174,7 @@ describe('company analytics API adapter — schema v2', () => {
         fiscalYear: 2024,
         // The companies whose entries name different counties — exactly that bucket.
         county: { in: ['(multiple_values)', 'CJ'] },
-        // A public 1048 and a Cluj county and a 6201 (any revision, unknown included) on the SAME identifier.
+        // A public 1048 and a Cluj county and a broad 6201 on the SAME identifier.
         onrc: { status: ['1048'], county: ['CJ'], caenCode: ['6201'], onrcCaen: [], exclude: { status: [], caenCode: ['4711'] } },
         observedStatus: { in: [], includeUnknown: true },
       }),

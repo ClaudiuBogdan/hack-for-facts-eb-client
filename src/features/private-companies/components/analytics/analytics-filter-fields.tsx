@@ -34,7 +34,7 @@ import { amongFilers, boundOf, keyToggled, toggled, withFiling } from '../../lib
 import { localeOf } from '../../lib/company-analytics-format'
 import { rangeText } from '../../lib/company-analytics-scope-text'
 import { directoryReadsSource } from '../../lib/company-analytics-source'
-import { basisGroupLabel, caenBasisLabel, countyLabel, flagLabel, metricLabel, sizeBandLabel } from '../../lib/company-analytics-text'
+import { basisGroupLabel, caenBasisLabel, caenRuleText, countyLabel, flagLabel, metricLabel, sizeBandLabel, type CaenFilterRule } from '../../lib/company-analytics-text'
 import { activitySelectorOf, activityToken, caenToken, ONRC_KEY_PATTERNS } from '../../lib/company-analytics-url'
 import { legalFormName } from '../../lib/company-legal-forms'
 import { CompanyRegistryScopeNotice } from '../registry/company-registry-notices'
@@ -661,15 +661,17 @@ function prunedOnrc(onrc: CompanyAnalysisOnrcInput): CompanyAnalysisOnrcInput | 
 
 /**
  * The ONRC observations of one identifier (`scope.onrc`): a status, a county,
- * a broad CAEN code (any revision, unknown included) and an exact
- * `rev<N>:<code>`, each a list (OR) and all on the SAME identifier (AND) — a
+ * a broad CAEN code (v3 releases: qualified classes only; v2: every
+ * observation, unknown revision included) and an exact `rev<N>:<code>`, each a list (OR) and all on the SAME identifier (AND) — a
  * company with a public 1048 matches even beside a conflicting status. Apart
  * from the consensus fields above, which ask what all of a company's entries
  * agree on. The exclusions keep only companies whose evidence is complete:
- * incomplete evidence abstains, it is never read as „without". An exact
- * revision is never excluded (an unknown revision may carry the same code).
+ * incomplete evidence abstains, it is never read as „without" (an unparsed or
+ * unknown-revision CAEN row makes CAEN coverage partial). An exact revision is
+ * never excluded (an unknown revision may carry the same code). `caenRule`
+ * names what the release's CAEN filters test.
  */
-export function OnrcField({ scope, limits, statusNames, onChange }: { readonly scope: CompanyAnalysisScope; readonly limits: { readonly statuses: number; readonly counties: number; readonly caen: number; readonly legalForms: number }; readonly statusNames: ReadonlyMap<string, string>; readonly onChange: ScopeChange }) {
+export function OnrcField({ scope, limits, statusNames, caenRule, onChange }: { readonly scope: CompanyAnalysisScope; readonly limits: { readonly statuses: number; readonly counties: number; readonly caen: number; readonly legalForms: number }; readonly statusNames: ReadonlyMap<string, string>; readonly caenRule?: CaenFilterRule | undefined; readonly onChange: ScopeChange }) {
   const onrc = scope.onrc ?? {}
   const set = (next: CompanyAnalysisOnrcInput) => onChange({ ...scope, onrc: prunedOnrc(next) })
   const list = (key: OnrcList) => (values: readonly string[]) => set({ ...onrc, [key]: [...values] })
@@ -683,7 +685,7 @@ export function OnrcField({ scope, limits, statusNames, onChange }: { readonly s
     <>
       <CodeListField label={t`Cu starea`} placeholder={t`„1048"`} pattern={ONRC_KEY_PATTERNS.status} normalize={(text) => text} values={onrc.status ?? []} max={limits.statuses} describe={statusName} invalidText={statusInvalid} onChange={list('status')} />
       <CodeListField label={t`În județul`} placeholder={t`„CJ"`} pattern={ONRC_KEY_PATTERNS.county} normalize={upper} values={onrc.county ?? []} max={limits.counties} describe={countyLabel} invalidText={countyInvalid} onChange={list('county')} />
-      <CodeListField label={t`Cu CAEN (orice revizie)`} placeholder={t`„6201"`} pattern={ONRC_KEY_PATTERNS.caenCode} normalize={(text) => text} values={onrc.caenCode ?? []} max={limits.caen} describe={(code) => t`${code} (orice revizie)`} invalidText={caenInvalid} onChange={list('caenCode')} />
+      <CodeListField label={t`Cu CAEN (cod larg)`} placeholder={t`„6201"`} pattern={ONRC_KEY_PATTERNS.caenCode} normalize={(text) => text} values={onrc.caenCode ?? []} max={limits.caen} describe={(code) => t`${code} (cod larg)`} invalidText={caenInvalid} onChange={list('caenCode')} />
       <CodeListField
         label={t`Cu CAEN exact`}
         placeholder={t`„rev2:6201"`}
@@ -692,15 +694,20 @@ export function OnrcField({ scope, limits, statusNames, onChange }: { readonly s
         values={onrc.onrcCaen ?? []}
         max={limits.caen}
         describe={(key) => key}
-        invalidText={t`Scrie revizia și codul, de exemplu rev2:6201. Un cod fără revizie se caută la „CAEN (orice revizie)": revizia nu e ghicită.`}
+        invalidText={t`Scrie revizia și codul, de exemplu rev2:6201. Un cod fără revizie se caută la „CAEN (cod larg)": revizia nu e ghicită.`}
         onChange={list('onrcCaen')}
       />
       <p className="text-xs text-muted-foreground">{t`Toate condițiile de mai sus se caută pe aceeași înscriere ONRC a firmei. Un cod CAEN exact nu găsește înscrierile cu revizia nepublicată.`}</p>
       <CodeListField label={t`Fără starea`} placeholder={t`„1070"`} pattern={ONRC_KEY_PATTERNS.status} normalize={(text) => text} values={onrc.exclude?.status ?? []} max={limits.statuses} describe={statusName} invalidText={statusInvalid} onChange={excluded('status')} />
-      <CodeListField label={t`Fără CAEN (orice revizie)`} placeholder={t`„4711"`} pattern={ONRC_KEY_PATTERNS.caenCode} normalize={(text) => text} values={onrc.exclude?.caenCode ?? []} max={limits.caen} describe={(code) => code} invalidText={caenInvalid} onChange={excluded('caenCode')} />
+      <CodeListField label={t`Fără CAEN (cod larg)`} placeholder={t`„4711"`} pattern={ONRC_KEY_PATTERNS.caenCode} normalize={(text) => text} values={onrc.exclude?.caenCode ?? []} max={limits.caen} describe={(code) => code} invalidText={caenInvalid} onChange={excluded('caenCode')} />
       <CodeListField label={t`Alt județ comun decât`} placeholder={t`„B"`} pattern={ONRC_KEY_PATTERNS.county} normalize={upper} values={onrc.exclude?.county ?? []} max={limits.counties} describe={countyLabel} invalidText={countyInvalid} onChange={excluded('county')} />
       <CodeListField label={t`Altă formă juridică decât`} placeholder={t`„SRL"`} pattern={ONRC_KEY_PATTERNS.legalForm} normalize={upper} values={onrc.exclude?.legalForm ?? []} max={limits.legalForms} describe={(form) => form} invalidText={t`Scrie forma juridică, de exemplu SRL.`} onChange={excluded('legalForm')} />
       <p className="text-xs text-muted-foreground">{t`Excluderile păstrează doar firmele cu dovezi complete în ediție; cele cu înscrieri incomplete sau nerezolvate nu sunt păstrate și nici socotite fără acel cod. Un CAEN exact nu se poate exclude.`}</p>
+      {caenRuleText(caenRule).map((text) => (
+        <p key={text} className="text-xs text-muted-foreground">
+          {text}
+        </p>
+      ))}
     </>
   )
 }

@@ -2,7 +2,7 @@ import { plural, t } from '@lingui/core/macro'
 import { formatDecimal, type DecimalLocale } from '@/lib/exact-decimal'
 import { companyMetricUnit, type CompanyAnalysisDimension, type CompanyAnalysisKeyFilterInput, type CompanyAnalysisRangeInput, type CompanyAnalysisScope } from '@/schemas/company-analytics'
 import { activityBasisLabel, activitySelectorText } from './company-activity-text'
-import { basisGroupLabel, caenBasisLabel, consensusKeysOf, countyLabel, flagLabel, metricLabel, sizeBandLabel } from './company-analytics-text'
+import { basisGroupLabel, caenBasisLabel, consensusKeysOf, countyLabel, flagLabel, metricLabel, sizeBandLabel, type CaenFilterRule } from './company-analytics-text'
 import { mainActivitySelectorText, unresolvedMainLabel } from './company-analytics-main-activity'
 import { caenToken } from './company-analytics-url'
 
@@ -27,6 +27,20 @@ export interface ScopeNames {
   readonly uats?: ReadonlyMap<string, string>
   /** Observed status labels by code, where read. */
   readonly statuses?: ReadonlyMap<string, string>
+  /** What the release's CAEN filters test; unknown, the chip names the filter without claiming either rule. */
+  readonly caenRule?: CaenFilterRule
+}
+
+/** A broad CAEN criterion, in the words of the release's rule (CQA-15). */
+function caenMatchText(codes: string, rule: CaenFilterRule | undefined): string {
+  if (rule === 'class') return t`CAEN ${codes} (clasă calificată, orice revizie cunoscută)`
+  if (rule === 'observation') return t`CAEN ${codes} (orice observație, inclusiv revizie necunoscută)`
+  return t`CAEN ${codes} (cod larg)`
+}
+
+/** A CAEN exclusion: in a v3 release it is the absence of a qualified class, not of any source row. */
+function caenExcludedText(codes: string, rule: CaenFilterRule | undefined): string {
+  return rule === 'class' ? t`clasă CAEN calificată ${codes}` : t`CAEN ${codes}`
 }
 
 function joined(values: readonly string[], max = 3): string {
@@ -68,14 +82,14 @@ export function scopeChips(scope: CompanyAnalysisScope, locale: DecimalLocale, n
     const match = [
       ...(status.length > 0 ? [t`starea ${joined(status)}`] : []),
       ...((onrc.county ?? []).length > 0 ? [t`județul ${joined((onrc.county ?? []).map(countyLabel))}`] : []),
-      ...((onrc.caenCode ?? []).length > 0 ? [t`CAEN ${joined(onrc.caenCode ?? [])} (orice revizie)`] : []),
+      ...((onrc.caenCode ?? []).length > 0 ? [caenMatchText(joined(onrc.caenCode ?? []), names.caenRule)] : []),
       ...((onrc.onrcCaen ?? []).length > 0 ? [t`CAEN exact ${joined(onrc.onrcCaen ?? [])}`] : []),
     ]
     if (match.length > 0) add('onrc', t`aceeași înscriere ONRC: ${match.join(' · ')}`, 'match')
     const exclude = onrc.exclude
     const excluded = [
       ...((exclude?.status ?? []).length > 0 ? [t`starea ${joined((exclude?.status ?? []).map((code) => names.statuses?.get(code) ?? code))}`] : []),
-      ...((exclude?.caenCode ?? []).length > 0 ? [t`CAEN ${joined(exclude?.caenCode ?? [])}`] : []),
+      ...((exclude?.caenCode ?? []).length > 0 ? [caenExcludedText(joined(exclude?.caenCode ?? []), names.caenRule)] : []),
       ...((exclude?.county ?? []).length > 0 ? [t`județul ${joined((exclude?.county ?? []).map(countyLabel))}`] : []),
       ...((exclude?.legalForm ?? []).length > 0 ? [t`forma ${joined(exclude?.legalForm ?? [])}`] : []),
     ]
