@@ -236,12 +236,24 @@ export const privateCompanyStatementQualificationSchema = z.object({
   holdDrift: z.array(z.string()),
 })
 
+/** One MFP file line that supplied cells of a statement: its file, row and the indicators it gave. */
+export const privateCompanyStatementContributionSchema = z.object({
+  rowNumber: z.string().nullable(),
+  /** An https URL as the API recorded it; null otherwise. */
+  url: z.string().nullable(),
+  indicators: z.array(z.object({ code: z.string(), name: z.string().nullable() })),
+})
+
 /** Where the statement was published; the URL only when the API recorded it, never guessed. */
 export const privateCompanyStatementSourceSchema = z.object({
   url: z.string().nullable(),
   urlKind: z.enum(['anaf_statement', 'mfp_resource']).nullable(),
   statementProfileHash: z.string().nullable(),
   metricRuleVersion: z.string().nullable(),
+  /** The selection ledger's basis (e.g. cross_copy_union); null when not read. */
+  selectionBasis: z.string().nullable(),
+  /** MFP: every file line that supplied cells, anchor first; null when the API did not read them. */
+  contributingSources: z.array(privateCompanyStatementContributionSchema).nullable(),
 })
 
 export const privateCompanyFinancialYearSchema = z.object({

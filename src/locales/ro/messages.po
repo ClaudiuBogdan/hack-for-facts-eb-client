@@ -49562,3 +49562,25 @@ msgstr "În această versiune, filtrele CAEN ONRC folosesc doar clasele califica
 #: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:697
 msgid "Scrie revizia și codul, de exemplu rev2:6201. Un cod fără revizie se caută la „CAEN (cod larg)\": revizia nu e ghicită."
 msgstr "Scrie revizia și codul, de exemplu rev2:6201. Un cod fără revizie se caută la „CAEN (cod larg)\": revizia nu e ghicită."
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:360
+msgid "Fișierul {ordinal}"
+msgstr "Fișierul {ordinal}"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:357
+msgid "Fișierul {ordinal} pe data.gov.ro"
+msgstr "Fișierul {ordinal} pe data.gov.ro"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:352
+msgid "rând neînregistrat"
+msgstr "rând neînregistrat"
+
+#. placeholder {0}: line.rowNumber
+#: src/features/private-companies/components/profile/company-years-band.tsx:352
+msgid "rândul {0}"
+msgstr "rândul {0}"
+
+#. placeholder {0}: lines.length
+#: src/features/private-companies/components/profile/company-years-band.tsx:347
+msgid "Valorile acestui an provin din {0} fișiere MF publicate separat; fiecare indicator se verifică în fișierul lui:"
+msgstr "Valorile acestui an provin din {0} fișiere MF publicate separat; fiecare indicator se verifică în fișierul lui:"

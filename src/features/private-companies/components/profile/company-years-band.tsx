@@ -335,6 +335,39 @@ function ValueCell({
  * like the table's rows: the exact text, marked as in the table, and why. A
  * statement held whole says why once, in its state, not on every line.
  */
+/**
+ * A statement MFP published split across files (CQA-14): every file line that
+ * supplied cells, anchor first, with the indicators it gave, so each value can
+ * be checked in its own file. The names are the statement's own.
+ */
+function ContributingFiles({ lines }: { readonly lines: NonNullable<NonNullable<StatementValues['source']>['contributingSources']> }) {
+  return (
+    <div className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">
+      <p>
+        <Trans>Valorile acestui an provin din {lines.length} fișiere MF publicate separat; fiecare indicator se verifică în fișierul lui:</Trans>
+      </p>
+      <ul className="mt-1 space-y-1">
+        {lines.map((line, index) => {
+          const ordinal = index + 1
+          const row = line.rowNumber ? t`rândul ${line.rowNumber}` : t`rând neînregistrat`
+          return (
+            <li key={`${String(ordinal)}:${line.rowNumber ?? ''}`}>
+              {line.url ? (
+                <a href={line.url} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:text-foreground hover:underline">
+                  {t`Fișierul ${ordinal} pe data.gov.ro`}
+                </a>
+              ) : (
+                t`Fișierul ${ordinal}`
+              )}{' '}
+              ({row}): {line.indicators.map((indicator) => indicator.name ?? indicator.code).join('; ')}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 function StatementDetail({
   statement,
   locale,
@@ -418,6 +451,7 @@ function StatementDetail({
           <ArrowUpRight className="size-3.5" aria-hidden="true" />
         </a>
       ) : null}
+      {source?.contributingSources && source.contributingSources.length > 1 ? <ContributingFiles lines={source.contributingSources} /> : null}
       {source?.url && source.urlKind === 'anaf_statement' ? (
         // ANAF's link asks it again for this CUI and year: today's answer, not the copy read here.
         <p className="col-span-2 mt-2 text-xs text-muted-foreground sm:col-span-3">

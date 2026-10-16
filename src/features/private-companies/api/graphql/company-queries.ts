@@ -118,7 +118,10 @@ const companyProfileQuery = (shape: ProfileShape, main: boolean, mainV2 = true) 
         netLoss
         employees
         summary
-        source { sourceSystem url urlKind statementProfileHash metricRuleVersion }
+        source {
+          sourceSystem url urlKind statementProfileHash metricRuleVersion selectionBasis
+          contributingSources { sourceSnapshotId rowNumber url indicators { code name } }
+        }
         qualification {
           assessment
           reason
@@ -315,12 +318,22 @@ const rawQualificationSchema = z.object({
   holdDrift: z.array(z.string()),
 })
 
+/** One MFP file line that supplied cells of a statement (CQA-14); optional so older recordings parse. */
+const rawStatementContributionSchema = z.object({
+  sourceSnapshotId: z.string(),
+  rowNumber: z.string().nullable(),
+  url: z.string().nullable(),
+  indicators: z.array(z.object({ code: z.string(), name: z.string().nullable() })),
+})
+
 const rawStatementSourceSchema = z.object({
   sourceSystem: z.string(),
   url: z.string().nullable(),
   urlKind: z.string().nullable(),
   statementProfileHash: z.string().nullable(),
   metricRuleVersion: z.string().nullable(),
+  selectionBasis: z.string().nullish(),
+  contributingSources: z.array(rawStatementContributionSchema).nullish(),
 })
 
 const rawFinancialYearSchema = z.object({
