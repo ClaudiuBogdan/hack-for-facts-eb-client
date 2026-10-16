@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { plural, t } from '@lingui/core/macro'
 import { Trans, useLingui } from '@lingui/react/macro'
 import { MonoLabel } from '@/components/landing-skin/mono-label'
+import { formatHubNumber } from '@/features/private-companies/lib/hub-format'
 import { cn } from '@/lib/utils'
 import { linkYearOf, type ContractSheet, type CtContract, type CtParty } from '../../lib/contract-model'
 import {
@@ -287,6 +288,8 @@ interface HistoryStep {
   readonly title: string
   readonly body: ReactNode
   readonly value: number | null
+  /** A value reported in another currency („159.076 EUR"), shown when there is no lei value. */
+  readonly foreignValue?: string | null
   /** The act's text states another change than its reported values. */
   readonly stated?: number | null
 }
@@ -345,6 +348,7 @@ function historyOf(sheet: ContractSheet): readonly HistoryStep[] {
       title: number ? t`Actul adițional nr. ${number}` : t`Act adițional`,
       body: item.text ? <Clamp text={item.text} /> : null,
       value: item.after,
+      foreignValue: item.foreign?.after != null ? `${formatHubNumber(item.foreign.after, { digits: Number.isInteger(item.foreign.after) ? 0 : 2 })}\u00a0${item.foreign.currency}` : null,
       stated: item.mismatch ? item.stated : null,
     })
   }
@@ -389,7 +393,7 @@ function ContractHistory({ sheet, className }: { readonly sheet: ContractSheet; 
               <MonoLabel className="block tabular-nums text-muted-foreground">{step.when ? dayLong(step.when) : step.key === 'current' ? t`azi` : t`fără dată`}</MonoLabel>
               <p className="mt-1 text-sm font-semibold text-foreground">{step.title}</p>
               {/* The value under its step's title, where the eye already is (the procedure's calendar, §22.3), not across the page. */}
-              {step.value !== null ? <p className={cn('mt-1 text-sm tabular-nums', stated ? 'text-amber-800 dark:text-amber-300' : 'text-foreground')}>{leiExact(step.value)}</p> : null}
+              {step.value !== null ? <p className={cn('mt-1 text-sm tabular-nums', stated ? 'text-amber-800 dark:text-amber-300' : 'text-foreground')}>{leiExact(step.value)}</p> : step.foreignValue ? <p className="mt-1 text-sm tabular-nums text-foreground">{step.foreignValue}</p> : null}
               {stated ? <p className="mt-0.5 text-xs text-amber-800 dark:text-amber-300">{t`valoare raportată; textul actului spune ${stated}`}</p> : null}
               {step.body ? <div className="mt-1 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">{step.body}</div> : null}
             </li>

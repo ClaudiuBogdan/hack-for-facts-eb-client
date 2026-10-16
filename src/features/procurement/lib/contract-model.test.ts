@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cniRead, contractRow, plainRead } from './contract.fixture'
+import { amendmentsLede } from './contract-text'
 import { contractAroundOf, contractContextGapOf, contractContextInputOf, contractSheetOf, kindOf, statedChange, valueOf } from './contract-model'
 
 /**
@@ -165,6 +166,21 @@ describe('what the page will not say', () => {
     const estimated = { ...plain, contract: { ...plain.contract, estimatedValueRon: '4300406164.41' } }
     expect(contractSheetOf(estimated).estimate).toBe(4300406164.41)
     expect(contractSheetOf({ ...estimated, notice: { rows: [], full: false, failed: true } }).estimate).toBeNull()
+  })
+
+  it('keeps an amendment reported in another currency apart from lei', () => {
+    const read = cniRead()
+    // SEAP modification 62724 (contract 2089288): 159,076 EUR before and after.
+    const euro = { id: '62724', date: '2025-09-03', before: null, after: null, delta: null, currency: 'EUR', sourceBefore: '159076.00', sourceAfter: '159076.00', text: 'se modifica graficul de executie', contractNo: read.contract.contractNo }
+    const sheet = contractSheetOf({ ...read, contract: { ...read.contract, modifications: [euro] } })
+    expect(sheet.amendments).toEqual([expect.objectContaining({ id: '62724', before: null, after: null, foreign: { currency: 'EUR', before: 159076, after: 159076 } })])
+    // A foreign amount equal to a lei version is never taken for that version's act, and the lede names no lei.
+    const lookalike = { ...euro, id: '9', text: 'Actul aditional nr. 9/01.02.2025', sourceBefore: '8451291.00', sourceAfter: '180260321.00' }
+    const foreignOnly = contractSheetOf({ ...read, contract: { ...read.contract, modifications: [lookalike] } })
+    expect(foreignOnly.contract.versions.some((version) => version.afterAmendment === '9')).toBe(false)
+    expect(amendmentsLede(foreignOnly)).not.toMatch(/lei/u)
+    const lei = { ...euro, id: '8', currency: 'RON', before: '1.00', after: '2.00', delta: '1.00' }
+    expect(contractSheetOf({ ...read, contract: { ...read.contract, modifications: [lei] } }).amendments[0]).toMatchObject({ before: 1, after: 2, foreign: null })
   })
 
   it('keeps an unnumbered contract’s amendments only when its notice holds nothing else', () => {

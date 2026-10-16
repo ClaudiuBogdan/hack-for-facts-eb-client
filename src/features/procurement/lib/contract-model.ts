@@ -41,6 +41,11 @@ export interface ContractModificationRow {
   readonly before: string | null
   readonly after: string | null
   readonly delta: string | null
+  /** The source amounts' currency (RON, EUR, USD); before/after/delta are lei only. */
+  readonly currency?: string | null
+  /** The amounts as the source reports them, in `currency`. */
+  readonly sourceBefore?: string | null
+  readonly sourceAfter?: string | null
   /** The act's own text („Actul adițional nr. 5/08.04.2024 … se majorează cu suma de …"). */
   readonly text: string | null
   readonly contractNo: string | null
@@ -210,6 +215,8 @@ export interface CtAmendment {
   readonly stated: number | null
   /** The reported values move by something else than the text says. */
   readonly mismatch: boolean
+  /** Values reported in another currency: shown as reported, never compared with lei. */
+  readonly foreign: { readonly currency: string; readonly before: number | null; readonly after: number | null } | null
 }
 
 export interface CtProcedure {
@@ -492,7 +499,8 @@ function amendmentsOf(read: ContractRead, alone: boolean): readonly CtAmendment[
       const stated = statedChange(item.text)
       // The text is the act itself; the values are what the institution typed beside it.
       const mismatch = both && stated !== null && Math.abs(after - before - stated) > Math.max(1, Math.abs(stated) * 0.005)
-      return { id: item.id, number: match?.[1] ?? null, date: dayOfText(match?.[2]) ?? item.date, before: both ? before : null, after: both ? after : null, text: item.text?.trim() || null, stated, mismatch }
+      const foreign = item.currency != null && item.currency !== 'RON' ? { currency: item.currency, before: num(item.sourceBefore ?? null), after: num(item.sourceAfter ?? null) } : null
+      return { id: item.id, number: match?.[1] ?? null, date: dayOfText(match?.[2]) ?? item.date, before: both ? before : null, after: both ? after : null, text: item.text?.trim() || null, stated, mismatch, foreign }
     })
     .sort((a, b) => Number(a.number ?? 999) - Number(b.number ?? 999) || (a.date ?? '').localeCompare(b.date ?? ''))
 }

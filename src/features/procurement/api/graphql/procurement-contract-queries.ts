@@ -56,7 +56,7 @@ export const CONTRACT_PAGE_QUERY = /* GraphQL */ `
         authority { cui name displayName }
         cpvCode estimatedValueRon sourceSystem sourceUrl
         elicitatiePage { url }
-        modifications { id contractNo modificationDate valueBeforeRon valueAfterRon valueDeltaRon modificationType }
+        modifications { id contractNo modificationDate valueBeforeRon valueAfterRon valueDeltaRon currency sourceValueBefore sourceValueAfter modificationType }
       }
       procedure { id procedureType awardedValueRon authority { cui } }
       ted { tedNoticeNo }
@@ -85,6 +85,9 @@ export const contractPageSchema = z.object({
               valueBeforeRon: z.string().nullable(),
               valueAfterRon: z.string().nullable(),
               valueDeltaRon: z.string().nullable(),
+              currency: z.string().nullable(),
+              sourceValueBefore: z.string().nullable(),
+              sourceValueAfter: z.string().nullable(),
               modificationType: z.string().nullable(),
             }),
           )
