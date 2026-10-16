@@ -17892,6 +17892,10 @@ msgstr "Documentul"
 msgid "Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă."
 msgstr ""
 
+#: src/features/legal/components/reader/legal-reader-page.tsx:355
+msgid "Documentul cerut nu aparține acestui act, așa că afișăm forma textului afișată în mod normal."
+msgstr ""
+
 #: src/features/landing/components/provenance-band.tsx:35
 msgid "domenii"
 msgstr "domenii"
@@ -18930,6 +18934,10 @@ msgstr ""
 
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:198
 msgid "Elimină filtrul de zi"
+msgstr ""
+
+#: src/features/legal/components/reader/legal-reader-page.tsx:360
+msgid "Elimină parametrul din adresă"
 msgstr ""
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:172

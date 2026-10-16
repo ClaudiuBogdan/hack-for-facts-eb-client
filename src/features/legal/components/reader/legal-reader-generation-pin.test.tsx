@@ -91,11 +91,32 @@ const rows100019 = JSON.parse(
 ) as { tldf: unknown }[]
 const chunk1 = rows100019[1]?.tldf as TldfChunkPayload
 
+/**
+ * The fixture act extended to OWN the given expressions: `?doc=` is honoured
+ * only for one of `act.documents` (I-17), and these fixture texts belong to
+ * other documents.
+ */
+const owning = (...documentIds: string[]): typeof legalActDetailFixture => ({
+  ...legalActDetailFixture,
+  documents: [
+    ...legalActDetailFixture.documents,
+    ...documentIds.map((documentId) => ({
+      documentId,
+      versionKind: 'republicare',
+      versionDate: null,
+      isCanonical: false,
+      title: null,
+      firstPublicationDate: null,
+      render: null,
+    })),
+  ],
+})
+
 describe('progressive stitcher generation pin', () => {
   it('fails the slot instead of rendering a chunk from another generation', async () => {
     control.mode = 'stale-chunk'
     const { container } = render(
-      <ActReadingLayout act={legalActDetailFixture} docOverride="100019" lead={null} fisa={null} />,
+      <ActReadingLayout act={owning('100019')} docOverride="100019" lead={null} fisa={null} />,
       { queryClient: createTestQueryClient() },
     )
     // The failed slot surfaces the retry card (the slot message is internal
@@ -121,7 +142,7 @@ describe('progressive stitcher generation pin', () => {
     control.mode = 'recovery'
     control.baseCalls = 0
     const { container } = render(
-      <ActReadingLayout act={legalActDetailFixture} docOverride="100019" lead={null} fisa={null} />,
+      <ActReadingLayout act={owning('100019')} docOverride="100019" lead={null} fisa={null} />,
       { queryClient: createTestQueryClient() },
     )
     // First manifest is the OLD generation; chunk 0 arrives from the NEW
