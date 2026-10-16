@@ -42,8 +42,12 @@ const controlClassName =
 const secondaryButtonClassName =
   'inline-flex h-11 items-center rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-5 text-sm font-semibold text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] disabled:opacity-50'
 
-/** The common instruments, from the server's ACT_TYPE_VALUES vocabulary ('oug'/'og' are the DB values). */
-const ACT_TYPE_OPTIONS = ['lege', 'oug', 'og', 'hotarare', 'ordin', 'decret', 'decizie'] as const
+/**
+ * The common instruments ('oug'/'og' are the DB values). The server's act_type
+ * filter is open (256 live types), so a link such as ?actType=anexa is valid;
+ * that value gets its own <option> rather than a select showing "toate".
+ */
+const ACT_TYPE_OPTIONS: readonly string[] = ['lege', 'oug', 'og', 'hotarare', 'ordin', 'decret', 'decizie']
 
 // Every schema status gets an <option> — a URL like ?status=necunoscut must
 // not render a select that displays a different value than the list obeys.
@@ -238,6 +242,9 @@ export function LegislationActsDirectory({ filter }: Props) {
             }
           >
             <option value="">{t`toate`}</option>
+            {filter.actType !== undefined && !ACT_TYPE_OPTIONS.includes(filter.actType) ? (
+              <option value={filter.actType}>{legalActTypeLabel(filter.actType)}</option>
+            ) : null}
             {ACT_TYPE_OPTIONS.map((value) => (
               <option key={value} value={value}>
                 {legalActTypeLabel(value)}

@@ -64,6 +64,15 @@ describe('LegislationActsDirectory', () => {
     )
   })
 
+  it('shows an act type from a link that the common list lacks (I-21)', async () => {
+    render(<LegislationActsDirectory filter={{ actType: 'anexa' }} />)
+    await screen.findByLabelText(/Filtre/)
+
+    const select = screen.getByLabelText(/Tip act/) as HTMLSelectElement
+    expect(select.value).toBe('anexa')
+    expect(Array.from(select.options).map((option) => option.value)).toContain('anexa')
+  })
+
   it('shows the empty state when no act matches', async () => {
     render(<LegislationActsDirectory filter={{ year: 1901 }} />)
     expect(
