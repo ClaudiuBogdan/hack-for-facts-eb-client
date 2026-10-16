@@ -284,7 +284,11 @@ export type CompanyAnalysisKeyFilterInput = z.infer<typeof keyFilterZ>
 const onrcExcludeZ = z.strictObject({
   /** No identifier carries these status codes (status coverage complete). */
   status: z.array(z.string()).optional(),
-  /** No identifier carries these CAEN codes in any revision (CAEN coverage complete). */
+  /**
+   * CAEN coverage complete (an unparsed or unknown-revision row makes it
+   * partial) and no matching observation: v3 releases test qualified classes
+   * only, so a short token or unlabeled key does not block it; v2 every code.
+   */
   caenCode: z.array(z.string()).optional(),
   /** A known county consensus outside these codes. */
   county: z.array(z.string()).optional(),
@@ -296,9 +300,10 @@ export type CompanyAnalysisOnrcExcludeInput = z.infer<typeof onrcExcludeZ>
 /**
  * OBSERVATION filters over the edition's public resolved identifiers, all on
  * the SAME identifier: OR within a field, AND across fields. A public 1048
- * matches also next to a conflicting status; `caenCode` (4 digits) matches
- * any revision, unknown included; `onrcCaen` (`rev2:6201`) is exact, and a
- * code of unknown revision never matches it.
+ * matches also next to a conflicting status; `caenCode` (4 digits) matches,
+ * in a v3 release, a qualified class observation of any known revision (a v2
+ * release matched every observation, unknown revision included); `onrcCaen`
+ * (`rev2:6201`) is exact, and a code of unknown revision never matches it.
  */
 export const CompanyAnalysisOnrcZ = z.strictObject({
   status: z.array(z.string()).optional(),

@@ -146,7 +146,7 @@ describe('company analytics address — the ONRC edition’s two questions', () 
       county: { in: ['(multiple_values)', 'CJ'] },
       uat: { in: ['(partial_observations)', '(unresolved)'], includeUnknown: true },
       observedStatus: { in: ['(missing)', '1048'] },
-      // One identifier with a public 1048, in Cluj, with 6201 in any revision (an unknown one included) and exactly rev2:6201.
+      // One identifier with a public 1048, in Cluj, with a broad 6201 and exactly rev2:6201.
       onrc: { status: ['1048'], county: ['CJ'], caenCode: ['6201'], onrcCaen: ['rev2:6201'], exclude: { status: ['1070'], caenCode: ['4711'], county: ['B'], legalForm: ['SA'] } },
     },
   }

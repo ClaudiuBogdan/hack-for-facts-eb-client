@@ -49509,3 +49509,47 @@ msgstr "Changing…"
 #: src/components/charts/components/views/SeriesConfigView.tsx:488
 msgid "Changed"
 msgstr "Changed"
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:688
+msgid "{code} (cod larg)"
+msgstr "{code} (broad code)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:43
+msgid "CAEN {codes}"
+msgstr "CAEN {codes}"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:36
+msgid "CAEN {codes} (clasă calificată, orice revizie cunoscută)"
+msgstr "CAEN {codes} (qualified class, any known revision)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:38
+msgid "CAEN {codes} (cod larg)"
+msgstr "CAEN {codes} (broad code)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:37
+msgid "CAEN {codes} (orice observație, inclusiv revizie necunoscută)"
+msgstr "CAEN {codes} (any observation, unknown revision included)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:43
+msgid "clasă CAEN calificată {codes}"
+msgstr "qualified CAEN class {codes}"
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:688
+msgid "Cu CAEN (cod larg)"
+msgstr "With CAEN (broad code)"
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:702
+msgid "Fără CAEN (cod larg)"
+msgstr "Without CAEN (broad code)"
+
+#: src/features/private-companies/lib/company-analytics-text.ts:233
+msgid "În această versiune (schema v2), codul CAEN larg se potrivește cu orice observație a codului, inclusiv cu revizie necunoscută, iar o excludere cere acoperire CAEN completă și nicio observație cu acel cod."
+msgstr "In this release (schema v2), the broad CAEN code matches every observation of the code, unknown revision included, and an exclusion needs complete CAEN coverage and no observation with that code."
+
+#: src/features/private-companies/lib/company-analytics-text.ts:229
+msgid "În această versiune, filtrele CAEN ONRC folosesc doar clasele calificate (cod din patru cifre, revizie cunoscută, denumire în nomenclator): un cod scurt sau o cheie fără denumire nu se potrivește și nici nu împiedică o excludere. O observație neinterpretată sau cu revizie necunoscută face acoperirea CAEN incompletă, așa că o excludere nu păstrează firma. „Fără CAEN” înseamnă fără clasă calificată, nu că sursa nu are acel cod."
+msgstr "In this release, ONRC CAEN filters use qualified classes only (four-digit code, known revision, nomenclature label): a short code or an unlabeled key neither matches nor prevents an exclusion. An unparsed or unknown-revision observation makes CAEN coverage incomplete, so an exclusion does not keep the company. “Without CAEN” means without a qualified class, not that the source lacks that code."
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:697
+msgid "Scrie revizia și codul, de exemplu rev2:6201. Un cod fără revizie se caută la „CAEN (cod larg)\": revizia nu e ghicită."
+msgstr "Write the revision and the code, for example rev2:6201. A code without a revision goes under “CAEN (broad code)”: the revision is never guessed."

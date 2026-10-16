@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useLingui } from '@lingui/react'
 import { localeOf } from '../lib/company-analytics-format'
 import type { ScopeNames } from '../lib/company-analytics-scope-text'
+import { caenRuleOf } from '../lib/company-analytics-text'
 import { analyticsSearchOf, stateOf, type CompanyAnalyticsState } from '../lib/company-analytics-url'
 import {
   useCompanyAnalysisOptions,
@@ -40,7 +41,8 @@ export function useCompanyAnalyticsPage(address: CompanyAnalyticsAddress) {
   // Status labels for the headline and the ONRC observations, from the year's own population.
   const statuses = useCompanyAnalysisOptions(question, 'OBSERVED_STATUS', Boolean(state.scope.observedStatus?.in?.length || state.scope.onrc?.status?.length || state.scope.onrc?.exclude?.status?.length))
   const statusNames: ReadonlyMap<string, string> = new Map((statuses.data?.groups ?? []).flatMap((group) => (group.key && group.label ? [[group.key, group.label] as const] : [])))
-  const names: ScopeNames = { uats: uats.names, statuses: statusNames }
+  const caenRule = caenRuleOf(live?.schemaVersion)
+  const names: ScopeNames = { uats: uats.names, statuses: statusNames, ...(caenRule ? { caenRule } : {}) }
   const pin = (next: CompanyAnalyticsState): CompanyAnalyticsState => ({ ...next, release: next.release ?? pinned })
   /** A new question, answered in place, pinned to the page's release. */
   const move = (next: CompanyAnalyticsState) => void address.go(pin(next))
