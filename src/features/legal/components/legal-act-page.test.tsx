@@ -77,7 +77,7 @@ describe('LegalActPage', () => {
     // rendered empty — that is the whole reason this page is not tabbed.
     expect(screen.queryByText('Cine îl citează')).not.toBeInTheDocument()
     expect(screen.queryByText('Cum e structurat')).not.toBeInTheDocument()
-    expect(screen.queryByText(/a fost modificat de/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/referințe? de modificare/)).not.toBeInTheDocument()
   })
 
   it('keeps key dates whose date is null instead of dropping them', () => {
@@ -108,7 +108,7 @@ describe('LegalActPage', () => {
     render(<LegalActPage actId="66150" />)
 
     const warning = screen.getByText(
-      /Acest act a fost modificat de 295 ori de la publicare/,
+      /295 de referințe de modificare sau completare înregistrate de la publicare/,
     )
     // The warning qualifies the summary, so it lives ON the summary card as
     // a footer row with its headline always visible (user decision
@@ -170,7 +170,7 @@ describe('LegalActPage', () => {
     expect(header).not.toHaveTextContent(/2[.,]621/)
 
     expect(
-      screen.getByText(/Acest act a fost modificat de 295 ori/),
+      screen.getByText(/295 de referințe de modificare sau completare/),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /Cine îl citează/ }),

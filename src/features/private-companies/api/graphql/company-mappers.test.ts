@@ -625,6 +625,29 @@ describe('mapCompanyProfile — statement qualification (CD-14)', () => {
     expect(unknownKind.source).toMatchObject({ url: null, urlKind: null })
   })
 
+  it('carries a split statement’s contributing files, https links only, and null when not read (CQA-14)', () => {
+    const lines = [
+      { sourceSnapshotId: 'mfp:a', rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
+      { sourceSnapshotId: 'mfp:b', rowNumber: null, url: 'http://data.gov.ro/b.txt', indicators: [{ code: 'I3', name: null }] },
+    ]
+    const split = one(
+      statement(2009, {
+        source: { metricRuleVersion: 'r', sourceSystem: 'mfp', statementProfileHash: null, url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', selectionBasis: 'cross_copy_union', contributingSources: lines },
+        sourceSystem: 'mfp',
+      }),
+    )
+    expect(split.source).toMatchObject({
+      selectionBasis: 'cross_copy_union',
+      contributingSources: [
+        { rowNumber: '76930', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'X' }] },
+        { rowNumber: null, url: null, indicators: [{ code: 'I3', name: null }] },
+      ],
+    })
+    const unread = one(statement(2014, { source: { metricRuleVersion: 'r', sourceSystem: 'mfp', statementProfileHash: null, url: null, urlKind: null } }))
+    expect(unread.source).toMatchObject({ selectionBasis: null, contributingSources: null })
+    expect(() => privateCompanyProfileSchema.parse(mapCompanyProfile(withYears([statement(2009, { source: split.source as never })])))).not.toThrow()
+  })
+
   it('round-trips through the UI schema', () => {
     const profile = mapCompanyProfile(withYears([statement(2024, { qualification: rawQualification({}, '1.00'), netProfit: '1.00' })]))
     expect(() => privateCompanyProfileSchema.parse(profile)).not.toThrow()

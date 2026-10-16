@@ -9,6 +9,7 @@ import type { ResolvedQuestion } from '../../api/company-analytics-plan'
 import type { UatIndex } from '../../hooks/use-uat-index'
 import { keyToggled, toggled } from '../../lib/company-analytics-filter-model'
 import { localeOf } from '../../lib/company-analytics-format'
+import { caenRuleOf } from '../../lib/company-analytics-text'
 import { companiesCountText } from '../../lib/company-analytics-view'
 import { filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
 import { FiscalYearSelect, MeasureSelect } from './analytics-choices'
@@ -129,6 +130,7 @@ export function AnalyticsFilterSheet({
               scope={scope}
               limits={{ statuses: limits?.maxObservedStatuses ?? 60, counties: limits?.maxCounties ?? 60, caen: limits?.maxCaenCodes ?? 200, legalForms: limits?.maxLegalForms ?? 30 }}
               statusNames={statusNames}
+              caenRule={caenRuleOf(release?.schemaVersion)}
               onChange={set}
             />
           </Group>

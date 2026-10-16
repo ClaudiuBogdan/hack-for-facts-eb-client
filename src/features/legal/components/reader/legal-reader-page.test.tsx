@@ -58,13 +58,34 @@ const envelope = rows100023[0]?.tldf as TldfEnvelope
 const chunk1 = rows100019[1]?.tldf as TldfChunkPayload
 const chunk2 = rows100019[2]?.tldf as TldfChunkPayload
 
+/**
+ * The fixture act extended to OWN the given expressions: `?doc=` is honoured
+ * only for one of `act.documents` (I-17), and these fixture texts belong to
+ * other documents.
+ */
+const owning = (...documentIds: string[]): typeof legalActDetailFixture => ({
+  ...legalActDetailFixture,
+  documents: [
+    ...legalActDetailFixture.documents,
+    ...documentIds.map((documentId) => ({
+      documentId,
+      versionKind: 'republicare',
+      versionDate: null,
+      isCanonical: false,
+      title: null,
+      firstPublicationDate: null,
+      render: null,
+    })),
+  ],
+})
+
 const readerText = (container: HTMLElement): string =>
   container.querySelector('#reader-content')?.textContent ?? ''
 
 describe('ActReadingLayout (mock lane end-to-end)', () => {
   it('renders the complete envelope text, character-identical to the fold', async () => {
     const { container } = render(
-      <ActReadingLayout act={legalActDetailFixture} docOverride="100023" lead={null} fisa={null} />,
+      <ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />,
     )
     await waitFor(() => {
       expect(container.querySelector('#reader-content')).not.toBeNull()
@@ -87,9 +108,49 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
     expect(readerText(container).length).toBeGreaterThan(1000)
   })
 
+  it("refuses another act's document and reads this act's own text (I-17)", async () => {
+    // Canonical 100023 is this act's; 100019 belongs to some other act.
+    const act = {
+      ...legalActDetailFixture,
+      canonical:
+        legalActDetailFixture.canonical === null
+          ? null
+          : { ...legalActDetailFixture.canonical, documentId: '100023' },
+    }
+    const queryClient = createTestQueryClient()
+    const { container } = renderShared(
+      <ActReadingLayout act={act} docOverride="100019" lead={null} fisa={null} />,
+      { queryClient },
+    )
+    await waitFor(() => {
+      expect(container.querySelector('#reader-content')).not.toBeNull()
+    })
+    expect(readerText(container)).toBe(foldTldfBlocks(envelope.blocks))
+    expect(screen.getByRole('status')).toHaveTextContent(/nu aparține acestui act/)
+    expect(screen.queryByText(/Afișezi o versiune anume a textului/)).toBeNull()
+    // Neither the render nor the outline is ever requested for the foreign id.
+    const keys = queryClient
+      .getQueryCache()
+      .getAll()
+      .map((query) => JSON.stringify(query.queryKey))
+    expect(keys.some((key) => key.includes('100023'))).toBe(true)
+    expect(keys.filter((key) => key.includes('100019'))).toEqual([])
+  })
+
+  it('honours an override that is one of the act\'s own expressions', async () => {
+    const { container } = render(
+      <ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />,
+    )
+    await waitFor(() => {
+      expect(container.querySelector('#reader-content')).not.toBeNull()
+    })
+    expect(screen.getByText(/Afișezi o versiune anume a textului/)).toBeInTheDocument()
+    expect(screen.queryByText(/nu aparține acestui act/)).toBeNull()
+  })
+
   it('declares the extent of a chunked document and loads groups on demand', async () => {
     const { container } = render(
-      <ActReadingLayout act={legalActDetailFixture} docOverride="100019" lead={null} fisa={null} />,
+      <ActReadingLayout act={owning('100019')} docOverride="100019" lead={null} fisa={null} />,
     )
     // Group 1 loads eagerly. Generous timeouts: the 1.5 MB fixture's dynamic
     // import is transformed on first use and can exceed the 1 s default.
@@ -119,7 +180,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
 
   it('answers the honest unavailable state for a document without servable text', async () => {
     render(
-      <ActReadingLayout act={legalActDetailFixture} docOverride="999999" lead={null} fisa={null} />,
+      <ActReadingLayout act={owning('999999')} docOverride="999999" lead={null} fisa={null} />,
     )
     expect(
       await screen.findByText(/Nu avem un text servibil pentru acest act/),
@@ -130,7 +191,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
 
   it('renders the TOC from the served outline and keeps the text intact', async () => {
     const { container } = render(
-      <ActReadingLayout act={legalActDetailFixture} docOverride="100023" lead={null} fisa={null} />,
+      <ActReadingLayout act={owning('100023')} docOverride="100023" lead={null} fisa={null} />,
     )
     await waitFor(() => {
       expect(container.querySelector('#reader-content')).not.toBeNull()
@@ -146,7 +207,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
   it('deep-links ?nod= on a chunked document by chaining groups in order', async () => {
     const { container } = render(
       <ActReadingLayout
-        act={legalActDetailFixture}
+        act={owning('100019')}
         docOverride="100019"
         nod={chunk2.blocks[0]?.id ?? ''}
         lead={null} fisa={null}
@@ -167,7 +228,7 @@ describe('ActReadingLayout (mock lane end-to-end)', () => {
   it('says so when a ?nod= cannot be found instead of guessing a scroll', async () => {
     render(
       <ActReadingLayout
-        act={legalActDetailFixture}
+        act={owning('100023')}
         docOverride="100023"
         nod="9999.9999"
         lead={null} fisa={null}

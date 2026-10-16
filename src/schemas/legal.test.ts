@@ -3,6 +3,7 @@ import {
   gazetteBrowseSearchSchema,
   legalChangesSearchSchema,
   legalFinderSearchSchema,
+  legalReaderSearchSchema,
 } from './legal'
 
 /**
@@ -162,5 +163,23 @@ describe('legalFinderSearchSchema', () => {
     expect(
       legalFinderSearchSchema.parse({ historical: 'da' }).historical,
     ).toBeUndefined()
+  })
+})
+
+/**
+ * `/legislation/acts/$actId?doc=` — the router JSON-parses the value, so a bare
+ * `?doc=54260` arrives as a NUMBER and failed the string schema, erroring the
+ * route (I-17); the quoted form arrived as a string. Both name the same id.
+ */
+describe('legalReaderSearchSchema', () => {
+  it('reads a numeric and a quoted document id as the same string', () => {
+    expect(legalReaderSearchSchema.parse({ doc: 54260 })).toEqual({ doc: '54260' })
+    expect(legalReaderSearchSchema.parse({ doc: '54260' })).toEqual({ doc: '54260' })
+  })
+
+  it('degrades a junk document id to the canonical text instead of erroring', () => {
+    expect(legalReaderSearchSchema.parse({ doc: true }).doc).toBeUndefined()
+    expect(legalReaderSearchSchema.parse({ doc: -1 }).doc).toBeUndefined()
+    expect(legalReaderSearchSchema.parse({}).doc).toBeUndefined()
   })
 })

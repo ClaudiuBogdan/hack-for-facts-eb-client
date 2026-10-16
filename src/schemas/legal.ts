@@ -427,7 +427,13 @@ export type LegalActDetail = z.infer<typeof legalActDetailSchema>
  *    target the chunk containing it on giant documents.
  */
 export const legalReaderSearchSchema = z.object({
-  doc: z.string().min(1).optional(),
+  // The router JSON-parses search values: `?doc=54260` arrives as a number and
+  // `?doc=%2254260%22` as a string. Both name the same document id.
+  doc: z
+    .union([z.string().min(1), z.number().int().nonnegative()])
+    .transform((value) => String(value))
+    .optional()
+    .catch(undefined),
   nod: z.string().min(1).optional(),
 })
 export type LegalReaderSearch = z.infer<typeof legalReaderSearchSchema>

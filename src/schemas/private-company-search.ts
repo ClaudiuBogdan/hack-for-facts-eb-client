@@ -61,7 +61,7 @@ export const privateCompanyDirectorySearchSchema = z.object({
   q: z.coerce.string().optional().catch(undefined),
   county: stringArrayParam,
   status: stringArrayParam,
-  /** Broad: the digits in ANY revision of the current edition's observations (a prefix below 4 digits). */
+  /** Broad: the digits in ANY known revision among the current edition's qualified class observations (a prefix below 4 digits); short tokens, unknown revisions and unlabeled keys never match. */
   caen: z.coerce.string().optional().catch(undefined),
   /** Exact: one code in one revision, `rev0`…`rev3`. */
   onrcCaen: caenSelectorParam,

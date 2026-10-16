@@ -14,7 +14,7 @@ import { companyAnalyticsKeys } from '@/features/private-companies/lib/company-a
 import { useRefusedReleases } from '@/features/private-companies/lib/company-release-refusals';
 import { localeOf } from '@/features/private-companies/lib/company-analytics-format';
 import { scopeChips } from '@/features/private-companies/lib/company-analytics-scope-text';
-import { civilDateText, cohortLabel, metricLabel } from '@/features/private-companies/lib/company-analytics-text';
+import { caenRuleOf, civilDateText, cohortLabel, metricLabel } from '@/features/private-companies/lib/company-analytics-text';
 import { DEFAULT_STATE, urlSearchOf } from '@/features/private-companies/lib/company-analytics-url';
 import { COMPANIES_CHART_TYPES, nonAnnualSeries } from '@/lib/companies-chart-guards';
 import { companiesPeriodYears } from '@/lib/companies-chart-series';
@@ -92,7 +92,8 @@ export function CompaniesSeriesEditor({ series }: { readonly series: CompaniesAn
   const offeredYears = (metric: CompanyAnalysisMetric) => release.data?.metrics.find((entry) => entry.metric === metric)?.offeredYears ?? [];
   const mixed = nonAnnualSeries(chart);
   const aggregated = chart.config.chartType.endsWith('-aggr');
-  const chips = scopeChips(series.scope, localeOf(i18n.locale));
+  const caenRule = caenRuleOf(release.data?.schemaVersion);
+  const chips = scopeChips(series.scope, localeOf(i18n.locale), caenRule ? { caenRule } : {});
   const pageSearch = urlSearchOf({
     ...DEFAULT_STATE,
     year: series.referenceYear ?? null,

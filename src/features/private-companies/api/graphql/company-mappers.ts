@@ -445,6 +445,14 @@ function mapStatementSource(raw: RawCompanyFinancialYear['source']): PrivateComp
     urlKind,
     statementProfileHash: raw.statementProfileHash,
     metricRuleVersion: raw.metricRuleVersion,
+    selectionBasis: raw.selectionBasis ?? null,
+    contributingSources:
+      raw.contributingSources?.map((line) => ({
+        rowNumber: line.rowNumber,
+        // A file link only as an https URL: never another scheme.
+        url: line.url?.startsWith('https://') ? line.url : null,
+        indicators: line.indicators,
+      })) ?? null,
   }
 }
 

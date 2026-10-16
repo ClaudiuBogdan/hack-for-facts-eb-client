@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CornerTicks, CruxMarks, TwoLayerLattice } from '@/features/landing/components/hero-chrome'
 import { cn } from '@/lib/utils'
 import { sourceEditionText } from '../../lib/company-analytics-source'
-import { companyAnalyticsCaveats } from '../../lib/company-analytics-text'
+import { caenRuleOf, companyAnalyticsCaveats } from '../../lib/company-analytics-text'
 import { DEFAULT_STATE, filterCount, withScope, type CompanyAnalyticsState } from '../../lib/company-analytics-url'
 import { heldOf, partialYears } from '../../lib/company-analytics-view'
 import { STATUS_ACTIVE } from '../../lib/company-status-codes'
@@ -319,7 +319,7 @@ function NotesMarker({ page }: { readonly page: CompanyAnalyticsPageData }) {
     // D5: what „cu bilanț" counts, and what its absence does not prove.
     t`„Cu bilanț” înseamnă o situație financiară în istoricul standard al platformei. Situațiile publicate doar în format lung nu sunt numărate aici, așa că „fără bilanț” nu dovedește că firma nu a depus.`,
     t`Un 0 este valoarea numerică păstrată din sursă. Unele situații au câmpul gol într-o sursă și 0 în alta, așa că valorile din surse și ani diferiți nu sunt neapărat comparabile.`,
-    ...companyAnalyticsCaveats(),
+    ...companyAnalyticsCaveats(caenRuleOf(live.schemaVersion)),
     t`Județul, localitatea, starea și forma juridică sunt cele din ${sourceEditionText(live.release, locale)}.`,
   )
   const count = warnings.length

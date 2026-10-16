@@ -69,7 +69,10 @@ type Props = {
   readonly lead: React.ReactNode
   /** The fișa — the detail accordion, rendered under its own section H2. */
   readonly fisa: React.ReactNode
-  /** `?doc=` — read this expression instead of the canonical document. */
+  /**
+   * `?doc=` — read this expression instead of the canonical document. Honoured
+   * only when it is one of `act.documents`; another act's document is refused.
+   */
   readonly docOverride?: string
   /** `?nod=` — a document_nodes PATH deep link into this text. */
   readonly nod?: string
@@ -107,7 +110,15 @@ export function ActReadingLayout({
   nod,
   onMasthead,
 }: Props) {
-  const documentId = docOverride ?? act.canonical?.documentId ?? null
+  // `?doc=` must name an expression OF THIS ACT. Any other document id is
+  // refused, never rendered under this act's header, summary and official
+  // link (I-17: `?doc=54260` put the 1886 Berne Convention under CNSU 2022).
+  const override =
+    docOverride !== undefined && act.documents.some((d) => d.documentId === docOverride)
+      ? docOverride
+      : undefined
+  const foreignDoc = docOverride !== undefined && override === undefined
+  const documentId = override ?? act.canonical?.documentId ?? null
   const render = useLegalRender(documentId)
   const outlineQuery = useLegalOutline(documentId)
   const outline = useMemo(() => outlineQuery.data ?? [], [outlineQuery.data])
@@ -218,7 +229,7 @@ export function ActReadingLayout({
   // differ. Must assemble EXACTLY what ActDetailHeader renders — a value the
   // header does not show must arrive here as null.
   const mastheadFacts = useMemo<MastheadFactsInHeader>(() => {
-    if (docOverride !== undefined) {
+    if (override !== undefined) {
       return { den: null, issuerLabel: null, issueNumber: null, issueYear: null }
     }
     const publication = uniqueGazettePublication(act)
@@ -232,7 +243,7 @@ export function ActReadingLayout({
       // nothing (MO numbering restarts every year).
       issueYear: issueDate !== null ? Number(issueDate.slice(0, 4)) : null,
     }
-  }, [act, docOverride])
+  }, [act, override])
 
   // The masthead split of whatever text is actually on screen goes up to
   // the page (header subject + provenance disclosure). Reset when the
@@ -339,7 +350,18 @@ export function ActReadingLayout({
                     </Trans>
                   </p>
                 )}
-                {docOverride !== undefined && (
+                {foreignDoc && (
+                  <p role="status" className="text-xs text-[var(--pnrr-muted)]">
+                    <Trans>
+                      Documentul cerut nu aparține acestui act, așa că afișăm forma
+                      textului afișată în mod normal.
+                    </Trans>{' '}
+                    <Link to="." search={{}} className="underline underline-offset-2">
+                      <Trans>Elimină parametrul din adresă</Trans>
+                    </Link>
+                  </p>
+                )}
+                {override !== undefined && (
                   <p className="text-xs text-[var(--pnrr-muted)]">
                     <Trans>Afișezi o versiune anume a textului.</Trans>{' '}
                     <Link to="." search={{}} className="underline underline-offset-2">

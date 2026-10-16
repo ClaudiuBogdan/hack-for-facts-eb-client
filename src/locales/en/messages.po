@@ -56,6 +56,11 @@ msgstr " on "
 msgid " și "
 msgstr " and "
 
+#. placeholder {0}: act.amendedAfterPublication
+#: src/features/legal/components/act-warnings.tsx:116
+msgid "{0, plural, one {O referință de modificare sau completare înregistrată de la publicare.} few {# referințe de modificare sau completare înregistrate de la publicare.} other {# de referințe de modificare sau completare înregistrate de la publicare.}}"
+msgstr "{0, plural, one {One amendment reference recorded since publication.} other {# amendment references recorded since publication.}}"
+
 #: src/features/statistics/components/detail/detail-accordion.tsx:224
 #~ msgid "— (nicio observație pentru selecția curentă)"
 #~ msgstr "— (no observations for the current selection)"
@@ -17892,6 +17897,10 @@ msgstr "Document"
 msgid "Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă."
 msgstr "Documentul a fost recompilat între încărcări — se reîncarcă varianta curentă."
 
+#: src/features/legal/components/reader/legal-reader-page.tsx:355
+msgid "Documentul cerut nu aparține acestui act, așa că afișăm forma textului afișată în mod normal."
+msgstr "Documentul cerut nu aparține acestui act, așa că afișăm forma textului afișată în mod normal."
+
 #: src/features/landing/components/provenance-band.tsx:35
 msgid "domenii"
 msgstr "domains"
@@ -18931,6 +18940,10 @@ msgstr "Elimină filtrul de vorbitor"
 #: src/features/parliament/components/parliament-stenogram-controls.tsx:198
 msgid "Elimină filtrul de zi"
 msgstr "Elimină filtrul de zi"
+
+#: src/features/legal/components/reader/legal-reader-page.tsx:360
+msgid "Elimină parametrul din adresă"
+msgstr "Elimină parametrul din adresă"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:172
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:87
@@ -49509,3 +49522,69 @@ msgstr "Changing…"
 #: src/components/charts/components/views/SeriesConfigView.tsx:488
 msgid "Changed"
 msgstr "Changed"
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:688
+msgid "{code} (cod larg)"
+msgstr "{code} (broad code)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:43
+msgid "CAEN {codes}"
+msgstr "CAEN {codes}"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:36
+msgid "CAEN {codes} (clasă calificată, orice revizie cunoscută)"
+msgstr "CAEN {codes} (qualified class, any known revision)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:38
+msgid "CAEN {codes} (cod larg)"
+msgstr "CAEN {codes} (broad code)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:37
+msgid "CAEN {codes} (orice observație, inclusiv revizie necunoscută)"
+msgstr "CAEN {codes} (any observation, unknown revision included)"
+
+#: src/features/private-companies/lib/company-analytics-scope-text.ts:43
+msgid "clasă CAEN calificată {codes}"
+msgstr "qualified CAEN class {codes}"
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:688
+msgid "Cu CAEN (cod larg)"
+msgstr "With CAEN (broad code)"
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:702
+msgid "Fără CAEN (cod larg)"
+msgstr "Without CAEN (broad code)"
+
+#: src/features/private-companies/lib/company-analytics-text.ts:233
+msgid "În această versiune (schema v2), codul CAEN larg se potrivește cu orice observație a codului, inclusiv cu revizie necunoscută, iar o excludere cere acoperire CAEN completă și nicio observație cu acel cod."
+msgstr "In this release (schema v2), the broad CAEN code matches every observation of the code, unknown revision included, and an exclusion needs complete CAEN coverage and no observation with that code."
+
+#: src/features/private-companies/lib/company-analytics-text.ts:229
+msgid "În această versiune, filtrele CAEN ONRC folosesc doar clasele calificate (cod din patru cifre, revizie cunoscută, denumire în nomenclator): un cod scurt sau o cheie fără denumire nu se potrivește și nici nu împiedică o excludere. O observație neinterpretată sau cu revizie necunoscută face acoperirea CAEN incompletă, așa că o excludere nu păstrează firma. „Fără CAEN” înseamnă fără clasă calificată, nu că sursa nu are acel cod."
+msgstr "In this release, ONRC CAEN filters use qualified classes only (four-digit code, known revision, nomenclature label): a short code or an unlabeled key neither matches nor prevents an exclusion. An unparsed or unknown-revision observation makes CAEN coverage incomplete, so an exclusion does not keep the company. “Without CAEN” means without a qualified class, not that the source lacks that code."
+
+#: src/features/private-companies/components/analytics/analytics-filter-fields.tsx:697
+msgid "Scrie revizia și codul, de exemplu rev2:6201. Un cod fără revizie se caută la „CAEN (cod larg)\": revizia nu e ghicită."
+msgstr "Write the revision and the code, for example rev2:6201. A code without a revision goes under “CAEN (broad code)”: the revision is never guessed."
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:360
+msgid "Fișierul {ordinal}"
+msgstr "File {ordinal}"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:357
+msgid "Fișierul {ordinal} pe data.gov.ro"
+msgstr "File {ordinal} on data.gov.ro"
+
+#: src/features/private-companies/components/profile/company-years-band.tsx:352
+msgid "rând neînregistrat"
+msgstr "row not recorded"
+
+#. placeholder {0}: line.rowNumber
+#: src/features/private-companies/components/profile/company-years-band.tsx:352
+msgid "rândul {0}"
+msgstr "row {0}"
+
+#. placeholder {0}: lines.length
+#: src/features/private-companies/components/profile/company-years-band.tsx:347
+msgid "Valorile acestui an provin din {0} fișiere MF publicate separat; fiecare indicator se verifică în fișierul lui:"
+msgstr "This year's values come from {0} MF files published separately; check each indicator in its own file:"

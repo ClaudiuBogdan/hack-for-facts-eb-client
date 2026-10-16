@@ -27,8 +27,23 @@ describe('scopeChips', () => {
   it('says the ONRC observations as one entry’s, the broad and the exact CAEN apart, and the exclusions as needing complete evidence', () => {
     const chips = scopeChips(SCOPE, 'ro', { statuses: new Map([['1048', 'funcțiune']]) }).filter((chip) => chip.field === 'onrc')
     expect(chips).toEqual([
-      { field: 'onrc', part: 'match', text: 'aceeași înscriere ONRC: starea funcțiune · județul Cluj · CAEN 6201 (orice revizie) · CAEN exact rev2:6201' },
+      { field: 'onrc', part: 'match', text: 'aceeași înscriere ONRC: starea funcțiune · județul Cluj · CAEN 6201 (cod larg) · CAEN exact rev2:6201' },
       { field: 'onrc', part: 'exclude', text: 'fără, după dovezi complete ONRC: starea 1070 · CAEN 4711' },
+    ])
+  })
+
+  it('says what the release’s CAEN filters test: a v3 class, a v2 observation (CQA-15)', () => {
+    const onrcTexts = (caenRule: 'class' | 'observation') =>
+      scopeChips(SCOPE, 'ro', { caenRule })
+        .filter((chip) => chip.field === 'onrc')
+        .map((chip) => chip.text)
+    expect(onrcTexts('class')).toEqual([
+      'aceeași înscriere ONRC: starea 1048 · județul Cluj · CAEN 6201 (clasă calificată, orice revizie cunoscută) · CAEN exact rev2:6201',
+      'fără, după dovezi complete ONRC: starea 1070 · clasă CAEN calificată 4711',
+    ])
+    expect(onrcTexts('observation')).toEqual([
+      'aceeași înscriere ONRC: starea 1048 · județul Cluj · CAEN 6201 (orice observație, inclusiv revizie necunoscută) · CAEN exact rev2:6201',
+      'fără, după dovezi complete ONRC: starea 1070 · CAEN 4711',
     ])
   })
 

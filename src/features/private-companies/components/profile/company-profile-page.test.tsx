@@ -1142,6 +1142,68 @@ describe('CompanyProfilePage — only qualified figures (CD-14)', () => {
     expect(longForm()).toBeNull()
   })
 
+  it('lists every MF file of a statement published split across files, each with the indicators it gave (CQA-14)', async () => {
+    const ANCHOR = 'https://data.gov.ro/dataset/5c57f607/resource/99a5b745/download/webblbsslan2009.txt'
+    const COMPLEMENT = 'https://data.gov.ro/dataset/5c57f607/resource/9a037f07/download/web2009.txt'
+    const MFP_2009: RawCompanyFinancialYear = {
+      ...ANAF_2024,
+      year: 2009,
+      sourceSystem: 'mfp',
+      source: {
+        sourceSystem: 'mfp',
+        url: ANCHOR,
+        urlKind: 'mfp_resource',
+        statementProfileHash: 'c3'.repeat(32),
+        metricRuleVersion: 'anaf-bilant-metric-v1',
+        selectionBasis: 'cross_copy_union',
+        contributingSources: [
+          { sourceSnapshotId: 'mfp:a', rowNumber: '76930', url: ANCHOR, indicators: [{ code: 'I1', name: 'ACTIVE IMOBILIZATE - TOTAL' }, { code: 'I2', name: null }] },
+          { sourceSnapshotId: 'mfp:b', rowNumber: '609557', url: COMPLEMENT, indicators: [{ code: 'I3', name: 'STOCURI' }] },
+        ],
+      },
+    }
+    const MFP_2010: RawCompanyFinancialYear = {
+      ...MFP_2009,
+      year: 2010,
+      source: { ...MFP_2009.source!, selectionBasis: 'sole_candidate', contributingSources: [MFP_2009.source!.contributingSources![0]!] },
+    }
+    render(page(mapped([MFP_2010, MFP_2009], [])))
+    await registryPinned()
+    const years = within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' }))
+    fireEvent.click(years.getByRole('button', { name: /^Bilanțul pe 2009/u }))
+    const detail = within(screen.getByRole('region', { name: 'Bilanțul pe 2009' }))
+    expect(detail.getByText('Valorile acestui an provin din 2 fișiere MF publicate separat; fiecare indicator se verifică în fișierul lui:')).toBeInTheDocument()
+    expect(detail.getByRole('link', { name: 'Fișierul 1 pe data.gov.ro' })).toHaveAttribute('href', ANCHOR)
+    expect(detail.getByRole('link', { name: 'Fișierul 2 pe data.gov.ro' })).toHaveAttribute('href', COMPLEMENT)
+    expect(detail.getByText(/\(rândul 76930\): ACTIVE IMOBILIZATE - TOTAL; I2$/u)).toBeInTheDocument()
+    expect(detail.getByText(/\(rândul 609557\): STOCURI$/u)).toBeInTheDocument()
+    // One file: the single anchor link, no list.
+    fireEvent.click(years.getByRole('button', { name: /^Bilanțul pe 2010/u }))
+    const single = within(screen.getByRole('region', { name: 'Bilanțul pe 2010' }))
+    expect(single.getByRole('link', { name: 'Fișierul pe data.gov.ro' })).toHaveAttribute('href', ANCHOR)
+    expect(single.queryByText(/fișiere MF publicate separat/u)).toBeNull()
+  })
+
+  it('never links a contributing file that is not https (CQA-14)', async () => {
+    const lines = [
+      { sourceSnapshotId: 'mfp:a', rowNumber: '1', url: 'https://data.gov.ro/a.txt', indicators: [{ code: 'I1', name: 'A' }] },
+      { sourceSnapshotId: 'mfp:b', rowNumber: null, url: 'javascript:alert(1)', indicators: [{ code: 'I3', name: 'B' }] },
+    ]
+    const year: RawCompanyFinancialYear = {
+      ...ANAF_2024,
+      year: 2009,
+      sourceSystem: 'mfp',
+      source: { sourceSystem: 'mfp', url: 'https://data.gov.ro/a.txt', urlKind: 'mfp_resource', statementProfileHash: null, metricRuleVersion: 'r', selectionBasis: 'cross_copy_union', contributingSources: lines },
+    }
+    render(page(mapped([year], [])))
+    await registryPinned()
+    fireEvent.click(within(screen.getByRole('region', { name: 'Bilanțurile, an cu an' })).getByRole('button', { name: /^Bilanțul pe 2009/u }))
+    const detail = within(screen.getByRole('region', { name: 'Bilanțul pe 2009' }))
+    expect(detail.queryByRole('link', { name: 'Fișierul 2 pe data.gov.ro' })).toBeNull()
+    expect(detail.getByText(/^Fișierul 2 \(rând neînregistrat\): B$/u)).toBeInTheDocument()
+    expect(document.body.innerHTML).not.toContain('javascript:')
+  })
+
   it('discloses a long-format-only CUI where its figures would be, with no years band', async () => {
     render(page(mapped([], [{ ...LONG_FORM[0]!, resourceUrl: 'javascript:alert(1)' }])))
     await registryPinned()
