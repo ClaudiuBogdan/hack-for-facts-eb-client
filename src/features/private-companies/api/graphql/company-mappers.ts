@@ -277,8 +277,7 @@ export function mapMainActivity(raw: unknown, registry: CompanyRegistryEnvelope)
   const read = parsed.data
   if ((read.availability === 'ASSIGNED') !== (read.activity !== null)) return MAIN_UNREADABLE
   if (read.activity === null) return { read, unreadable: false }
-  // Contract v2: a readable policy and basis, and coherent time provenance of
-  // the visible ANAF evidence (a withdrawn source has none to judge).
+  // A readable policy and coherent visible ANAF evidence (a withdrawn source has none to judge).
   const provenance = { ...read.activity, anaf: read.activity.anafWithdrawn ? null : read.activity.anaf }
   if (!mainActivityProvenanceReadable(provenance) || !heldAsServed(read.activity)) return MAIN_UNREADABLE
   const activity = withheld(read.activity)

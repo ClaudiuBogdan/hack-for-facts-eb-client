@@ -19,7 +19,7 @@ import { mainActivityIdentity } from '../../lib/company-main-activity-model'
 import { companyProfile } from '../../lib/company-profile.fixture'
 import { buildCompanyProfileModel } from '../../lib/company-profile-model'
 import { ACTIVITY_SELECTIONS } from '../../mocks/fixtures/activity-selection'
-import { LEGACY_RAW_RETRIEVED_AT, MAIN_ACTIVITIES, NO_ASSIGNMENT_READ, UNAVAILABLE_READ, assignedRead, legacyAnafFixture, mainActivityFixture, mainAnafFixture } from '../../mocks/fixtures/main-activity'
+import { MAIN_ACTIVITIES, NO_ASSIGNMENT_READ, UNAVAILABLE_READ, assignedRead, mainActivityFixture, mainAnafFixture } from '../../mocks/fixtures/main-activity'
 import { CompanyActivitiesBand } from './company-activities-band'
 
 /**
@@ -625,7 +625,7 @@ describe('the main activity history', () => {
       resolutionId: '510',
       refreshId: '41',
       editionId: '7',
-      anaf: { sourceSnapshotId: 's', sourceHash: null, statusDate: '2026-09-20', retrievedAt: null, timeBasis: 'NATIVE', rawRetrievedAt: null, sourceUrl: null, rawCaptureId: null, rawCustodyId: null, evidenceCustody: null, originalToken, jsonType },
+      anaf: { sourceSnapshotId: 's', sourceHash: null, statusDate: '2026-09-20', retrievedAt: null, sourceUrl: null, rawCaptureId: null, rawCustodyId: null, evidenceCustody: null, originalToken, jsonType },
       caenCoverage: null,
       evidenceAt: '2026-10-01T03:00:00Z',
       anafWithdrawn: false,
@@ -823,72 +823,5 @@ describe('the link into the analysis of the same main activity', () => {
       expect(screen.queryByTestId('company-main-activity-analysis')).toBeNull()
       view.unmount()
     }
-  })
-})
-
-describe('contract v2: the legacy time projection, said as what it is', () => {
-  const legacy = mainActivityFixture({ policy: 'anaf-assumed-main-caen-v2', basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME', anaf: legacyAnafFixture(), cacheKey: 'legacy' })
-
-  it('the current block: custody and the exact six-digit raw time, compatibility with an older import — never the row writer, the HTTP exchange or a legal date', () => {
-    renderBand(profileWith(assignedRead(legacy), [onrc('4711', 'rev3', { isMainCaen: true, matchesAssumedMainCode: true })]))
-    const text = screen.getByTestId('company-main-activity-legacy-time').textContent ?? ''
-    expect(text).toContain(`ora brută: ${LEGACY_RAW_RETRIEVED_AT}`)
-    expect(text).toContain('2026-09-21T04:00:12.642832Z')
-    expect(text).toContain('nu cine a scris rândul și nici schimbul HTTP original')
-    expect(text).toContain('nicio oră de preluare nu e o dată legală')
-    expect(block().textContent).toContain('legată prin compatibilitatea cu un import mai vechi, după răspunsul brut indicat atunci')
-    expect(rowMarks()).toMatchObject({ main: [expect.stringContaining('4711')] })
-  })
-
-  it('native evidence says nothing about a projection', () => {
-    renderBand(profileWith(assignedRead(mainActivityFixture()), []))
-    expect(screen.queryByTestId('company-main-activity-legacy-time')).toBeNull()
-  })
-
-  it('a withdrawn legacy assignment says nothing of ANAF: no time, no custody, no badge', () => {
-    const withdrawn = mainActivityFixture({ ...legacy, currentness: 'SOURCE_WITHDRAWN', anafWithdrawn: true, status: null, resolved: null, candidates: null, matchBasis: null, revisionBasis: null, anaf: null, cacheKey: 'legacy-withdrawn' })
-    renderBand(profileWith(assignedRead(withdrawn), [onrc('4711', 'rev3', { isMainCaen: null, matchesAssumedMainCode: null })]))
-    expect(screen.queryByTestId('company-main-activity-legacy-time')).toBeNull()
-    expect(block().textContent).not.toMatch(/642832|compatibilitatea cu un import/u)
-    expect(rowMarks()).toMatchObject({ main: [], sameCode: [] })
-  })
-
-  it('history: a legacy outcome is marked while ANAF is shown; a legacy evidence entry carries its raw time', async () => {
-    history.answer = ({ kind }) =>
-      Promise.resolve(
-        kind === 'EVIDENCE'
-          ? {
-              status: 'page',
-              page: {
-                state: 'AVAILABLE',
-                kind: 'EVIDENCE',
-                outcomes: [],
-                evidence: [
-                  {
-                    supportId: '601',
-                    previousSupportId: null,
-                    resolutionId: '501',
-                    refreshId: '41',
-                    editionId: '7',
-                    anaf: { ...legacyAnafFixture(), sourceHash: null, statusDate: '2026-09-20' },
-                    caenCoverage: null,
-                    evidenceAt: '2026-10-01T03:00:00Z',
-                    anafWithdrawn: false,
-                    onrcWithdrawn: false,
-                  },
-                ],
-                nextCursor: null,
-                scopeKey: 'mock',
-              },
-            }
-          : page([outcome('501', { policy: 'anaf-assumed-main-caen-v2', basis: 'ANAF_ASSUMED_MAIN_LEGACY_TIME' })], null),
-      )
-    renderBand(profileWith(assignedRead(legacy), []))
-    fireEvent.click(screen.getByRole('button', { name: 'Istoricul activității principale presupuse' }))
-    await waitFor(() => expect(screen.getAllByTestId('company-main-activity-outcome')).toHaveLength(1))
-    expect(screen.getByTestId('company-main-activity-outcome-legacy').textContent).toContain('legat prin compatibilitatea cu un import mai vechi')
-    fireEvent.click(screen.getByRole('button', { name: 'Observații din sursă' }))
-    await waitFor(() => expect(screen.getAllByTestId('company-main-activity-evidence')).toHaveLength(1))
-    expect(screen.getByTestId('company-main-activity-evidence-legacy-time').textContent).toContain('ora brută: 2026-09-21T04:00:12.642832Z')
   })
 })

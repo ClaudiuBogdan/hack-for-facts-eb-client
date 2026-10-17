@@ -240,33 +240,9 @@ export function mainCustodyText(custody: CompanyMainActivityEvidenceCustody | nu
       return t`Dovada ANAF: răspunsul brut original poate să nu mai fie păstrat (codul și amprentele lui sunt).`
     case 'UNBOUND_AT_DERIVATION':
       return t`Dovada ANAF: nicio dovadă brută legată.`
-    case 'LEGACY_MS_POINTER_BOUND':
-      return t`Dovada ANAF: legată prin compatibilitatea cu un import mai vechi, după răspunsul brut indicat atunci.`
-    case 'LEGACY_MS_RETAINED_CUSTODY':
-      return t`Dovada ANAF: legată prin compatibilitatea cu un import mai vechi, după observația brută păstrată.`
     default:
       return null
   }
-}
-
-/**
- * The legacy time projection, said where ANAF's evidence is: the served
- * retrieval time is the raw one at millisecond precision, its microsecond
- * fraction removed (truncated, never rounded: …642832Z → …642000Z), as an
- * older import stored it. The raw time is written as the API served it (six digits, never
- * re-rendered through a Date). What it proves — compatibility with that
- * documented import — and what it does not: who wrote the row, the original
- * HTTP exchange, a legal date. Null for native evidence.
- */
-export function mainLegacyTimeText(anaf: { readonly timeBasis?: CompanyMainActivityAnafEvidence['timeBasis']; readonly rawRetrievedAt?: string | null } | null): string | null {
-  if (anaf?.timeBasis !== 'LEGACY_MS_PROJECTION' || anaf.rawRetrievedAt === null || anaf.rawRetrievedAt === undefined) return null
-  const raw = anaf.rawRetrievedAt
-  return t`Ora de preluare din datele fiscale e păstrată cu precizie de milisecundă, fără fracțiunile de microsecundă (ora brută: ${raw}). Asta arată compatibilitatea cu importul mai vechi documentat, nu cine a scris rândul și nici schimbul HTTP original; nicio oră de preluare nu e o dată legală.`
-}
-
-/** An outcome derived from legacy-time evidence (v2), said beside it while ANAF's fields are shown. */
-export function mainLegacyOutcomeText(): string {
-  return t`legat prin compatibilitatea cu un import mai vechi`
 }
 
 /** The headline of a withdrawn source: no ANAF code is said. */

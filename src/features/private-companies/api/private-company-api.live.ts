@@ -12,13 +12,10 @@ import type { CompanyResolveRequest, CompanyResolveResult } from '@/schemas/priv
 import type { CompanyMainActivityHistoryKind, CompanyMainActivityHistoryResult } from '@/schemas/private-company-main-activity'
 import {
   COMPANY_MAIN_ACTIVITY_HISTORY_QUERY,
-  COMPANY_MAIN_ACTIVITY_HISTORY_QUERY_V1,
   COMPANY_PROFILE_QUERY,
   COMPANY_PROFILE_QUERY_LEGACY,
-  COMPANY_PROFILE_QUERY_MAIN_V1,
   COMPANY_PROFILE_QUERY_WITHOUT_MAIN,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION,
-  COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_MAIN_V1,
   COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_OR_MAIN,
   COMPANY_RESOLVE_RESULT_QUERY,
   companyMainActivityHistoryResponseSchema,
@@ -77,20 +74,6 @@ function onlyRejected(error: unknown, messages: readonly RegExp[]): boolean {
   return error.graphQLErrors.every((entry) => (entry.path?.length ?? 0) === 0 && typeof entry.message === 'string' && messages.some((pattern) => pattern.test(entry.message)))
 }
 
-/**
- * The validation messages of an API from before contract v2 of the main
- * activity, for exactly its two new evidence fields on exactly their two
- * types. Anchored like the others: nothing else ever reads as that API.
- */
-const PRE_MAIN_V2_MESSAGES: readonly RegExp[] = [
-  /^Cannot query field "(?:timeBasis|rawRetrievedAt)" on type "(?:CompanyMainActivityAnafEvidence|CompanyMainActivityEvidenceAnaf)"\.(?: Did you mean .+\?)?$/u,
-]
-
-/** An API from before contract v2 rejected the main evidence's `timeBasis` / `rawRetrievedAt`, and nothing else. */
-export function isPreMainV2ApiError(error: unknown): boolean {
-  return onlyRejected(error, PRE_MAIN_V2_MESSAGES)
-}
-
 /** An API from before the main activity rejected the profile's main fields, and nothing else. */
 export function isPreMainActivityApiError(error: unknown): boolean {
   return onlyRejected(error, PRE_MAIN_PROFILE_MESSAGES)
@@ -124,11 +107,7 @@ const ask = (document: string, cui: string, signal?: AbortSignal) => graphqlQuer
  *   fields): the same document without them — nothing new is shown;
  * - the derived activity alone refused at execution: the document without
  *   it, the selection said to be unavailable (the main activity, already
- *   validated, still asked);
- * - an API from before contract v2 of the main activity (it rejects only
- *   `timeBasis` / `rawRetrievedAt`): the same document without only them —
- *   the main activity, its flags and the rest of the profile as asked; that
- *   API serves v1 evidence only, read as such.
+ *   validated, still asked).
  *
  * Any other error fails the read as before: a privacy refusal, a main
  * activity that changed during the request, an unknown value, the network.
@@ -141,9 +120,7 @@ export async function fetchPrivateCompanyProfileLive(
   let selectionUnavailable = false
   let main = true
   try {
-    const asked = await askMainV2OrV1(cui, signal)
-    data = asked.data
-    selectionUnavailable = asked.selectionUnavailable
+    data = await ask(COMPANY_PROFILE_QUERY, cui, signal)
   } catch (error) {
     if (isPreActivityApiError(error) || isPreActivityAndMainApiError(error)) {
       // An older API: the profile exactly as it read before (no selection, no class states, no main activity).
@@ -173,26 +150,6 @@ export async function fetchPrivateCompanyProfileLive(
   // company(cui) returns null for an unknown CUI → surface as 404 upstream.
   const profile = mapCompanyProfile(parsed)
   return profile && selectionUnavailable ? { ...profile, activitySelectionUnavailable: true } : profile
-}
-
-/**
- * The current profile document; when the API predates contract v2 only (it
- * rejects exactly the two new evidence fields), the same document without
- * them, its own selection refusal handled as before. Every other error goes
- * on to the caller's named fallbacks unchanged.
- */
-async function askMainV2OrV1(cui: string, signal?: AbortSignal): Promise<{ readonly data: unknown; readonly selectionUnavailable: boolean }> {
-  try {
-    return { data: await ask(COMPANY_PROFILE_QUERY, cui, signal), selectionUnavailable: false }
-  } catch (error) {
-    if (!isPreMainV2ApiError(error)) throw error
-  }
-  try {
-    return { data: await ask(COMPANY_PROFILE_QUERY_MAIN_V1, cui, signal), selectionUnavailable: false }
-  } catch (error) {
-    if (!isActivitySelectionOnlyError(error)) throw error
-    return { data: await ask(COMPANY_PROFILE_QUERY_WITHOUT_SELECTION_MAIN_V1, cui, signal), selectionUnavailable: true }
-  }
 }
 
 /**
@@ -226,13 +183,7 @@ export async function fetchCompanyMainActivityHistoryLive(
   const variables = { cui: request.cui, kind: request.kind, first: MAIN_ACTIVITY_HISTORY_PAGE, ...(request.after ? { after: request.after } : {}) }
   const askHistory = (document: string) => graphqlQuery<unknown>(document, variables, { operationName: 'companyMainActivityHistory', signal })
   try {
-    try {
-      data = await askHistory(COMPANY_MAIN_ACTIVITY_HISTORY_QUERY)
-    } catch (error) {
-      // An API before contract v2: the same page without only the two new evidence fields.
-      if (!isPreMainV2ApiError(error)) throw error
-      data = await askHistory(COMPANY_MAIN_ACTIVITY_HISTORY_QUERY_V1)
-    }
+    data = await askHistory(COMPANY_MAIN_ACTIVITY_HISTORY_QUERY)
   } catch (error) {
     if (isPreMainActivityHistoryApiError(error)) return { status: 'unsupported' }
     // A moved main activity fails as it came (the read retries it); only the registry's own refusals are classified.
