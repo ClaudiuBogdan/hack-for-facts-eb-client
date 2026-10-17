@@ -5,9 +5,15 @@
  * loading the snapshot; never edit by hand.
  */
 
-/** The last calendar year the capture covers whole: the pages describe it by default. */
+/** The year the pages describe by default: the year before the newest stored modification. */
 export const JUSTICE_REFERENCE_YEAR = 2025
-/** The first year the capture holds whole; the years before hold only cases still active later. */
+/**
+ * The first year of the dense capture, two years before the reference year: from it on each year holds well over a
+ * million cases, and the years before hold only cases still active later. A rule from the capture's dates, not a census
+ * of the portal: no year is proved complete.
+ */
 export const JUSTICE_FIRST_WHOLE_YEAR = 2023
 /** The year the capture stops in: a part-year. */
 export const JUSTICE_LAST_CAPTURE_YEAR = 2026
+/** Every year the capture holds a case in, newest first; each one can be asked of. */
+export const JUSTICE_CASE_YEARS: readonly number[] = [2026, 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016, 2015, 2014, 2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005, 2004, 2003, 2002, 2001, 2000, 1999, 1998, 1997, 1996, 1995, 1994, 1993, 1992, 1991, 1990, 1989, 1988, 1987, 1986, 1985, 1984, 1983, 1982, 1981, 1980, 1979, 1978, 1977, 1976, 1975, 1974, 1973, 1972, 1970, 1969, 1968, 1967, 1966, 1965, 1964, 1960, 1958, 1956]

@@ -94,6 +94,19 @@ describe('the justice analysis page', () => {
     expect(page).toContain('Primele 100')
   })
 
+  it('asks of a partial year: the long years band reads the year above its scroller (JC26-UI-01)', () => {
+    // The year's warning opens in the caveats popover; analysis-notes.test.ts covers its text.
+    const html = render({ ...DEFAULT_QUESTION, year: 2007 })
+    const at = html.indexOf('data-testid="justice-years-readout"')
+    expect(at).toBeGreaterThan(-1)
+    const readout = text(html.slice(at, html.indexOf('</p>', at)))
+    expect(readout).toContain('2007')
+    expect(readout).toContain('2.252')
+    expect(readout).toContain('preluare parțială')
+    // The long band scrolls instead of squeezing 71 years into the frame.
+    expect(html).toContain('overflow-x-auto')
+  })
+
   it('splits a matter by stage, with the rest of its total as „Alte etape"', () => {
     const page = text(render({ ...DEFAULT_QUESTION, matters: ['contenciosadministrativsifiscal'], dupa: 'etape' }))
     inOrder(page, ['Dosarele de contencios administrativ și fiscal, pe etape', 'Fond', 'Apel', 'Recurs', 'Total'])

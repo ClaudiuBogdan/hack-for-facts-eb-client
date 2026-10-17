@@ -50,6 +50,7 @@ const match = (): Match => ({ context: { locale: 'ro', queryClient: queryClient(
 
 const courtRoute = (await import('./courts/$code')).Route as unknown as {
   readonly params: { readonly parse: (params: { readonly code: string }) => { readonly code: string } }
+  readonly validateSearch: (search: Record<string, unknown>) => { readonly an?: number }
   readonly loaderDeps: (input: { readonly search: { readonly an?: number } }) => { readonly year: number }
   readonly loader: (input: { readonly context: { readonly queryClient: QueryClientStub }; readonly params: { readonly code: string }; readonly deps: { readonly year: number } }) => Promise<Record<string, unknown>>
   readonly headers: (input: { readonly loaderData?: Record<string, unknown> }) => Record<string, string>
@@ -77,13 +78,25 @@ describe('/justice/courts/$code', () => {
     for (const code of ['', 'Tribunalul CLUJ', '../x', 'abc']) expect(() => courtRoute.params.parse({ code })).toThrow(notFoundError)
   })
 
-  it('describes the front door’s year unless the address asks for one the capture holds whole, or its last', () => {
+  it('describes the front door’s year unless the address asks for a year the capture holds a case in', () => {
     expect(courtRoute.loaderDeps({ search: {} }).year).toBe(FIXTURE_YEAR)
     expect(courtRoute.loaderDeps({ search: { an: 2023 } }).year).toBe(2023)
     expect(courtRoute.loaderDeps({ search: { an: 2026 } }).year).toBe(2026)
-    // A year before the capture went whole, or after it stopped, is no page of its own.
-    expect(courtRoute.loaderDeps({ search: { an: 2015 } }).year).toBe(FIXTURE_YEAR)
+    // A partial year before the dense capture is a page of its own too (JC26-UI-01).
+    expect(courtRoute.loaderDeps({ search: { an: 2015 } }).year).toBe(2015)
+    expect(courtRoute.loaderDeps({ search: { an: 2007 } }).year).toBe(2007)
+    // A year the capture holds no case in, or after it stopped, is no page of its own.
+    expect(courtRoute.loaderDeps({ search: { an: 1957 } }).year).toBe(FIXTURE_YEAR)
     expect(courtRoute.loaderDeps({ search: { an: 2027 } }).year).toBe(FIXTURE_YEAR)
+  })
+
+  it('carries a retained year from the address to the loader, the years before 1990 too', () => {
+    const yearOf = (an: unknown) => courtRoute.loaderDeps({ search: courtRoute.validateSearch({ an }) }).year
+    expect(yearOf('1956')).toBe(1956)
+    expect(yearOf('1989')).toBe(1989)
+    expect(yearOf(2007)).toBe(2007)
+    expect(yearOf('1957')).toBe(FIXTURE_YEAR)
+    expect(yearOf('Ion Popescu')).toBe(FIXTURE_YEAR)
   })
 
   it('reads the court while server-rendering, and answers a court the API does not know with a 404', async () => {

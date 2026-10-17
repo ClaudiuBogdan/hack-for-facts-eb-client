@@ -2130,12 +2130,12 @@
   "groupBy": "year",
   "filter": {
    "year": {
-    "gte": 2013
+    "gte": 1956
    }
   },
   "data": {
    "judicialCaseload": {
-    "denominator": 6302738,
+    "denominator": 6344711,
     "groups": [
      {
       "key": "2024",
@@ -2192,6 +2192,210 @@
      {
       "key": "2013",
       "caseCount": 14058
+     },
+     {
+      "key": "2010",
+      "caseCount": 7811
+     },
+     {
+      "key": "2011",
+      "caseCount": 6898
+     },
+     {
+      "key": "2006",
+      "caseCount": 5503
+     },
+     {
+      "key": "2012",
+      "caseCount": 5148
+     },
+     {
+      "key": "2003",
+      "caseCount": 4854
+     },
+     {
+      "key": "2009",
+      "caseCount": 3138
+     },
+     {
+      "key": "2008",
+      "caseCount": 2820
+     },
+     {
+      "key": "2007",
+      "caseCount": 2252
+     },
+     {
+      "key": "2005",
+      "caseCount": 1433
+     },
+     {
+      "key": "2004",
+      "caseCount": 727
+     },
+     {
+      "key": "2002",
+      "caseCount": 203
+     },
+     {
+      "key": "2001",
+      "caseCount": 172
+     },
+     {
+      "key": "1999",
+      "caseCount": 138
+     },
+     {
+      "key": "2000",
+      "caseCount": 112
+     },
+     {
+      "key": "1998",
+      "caseCount": 105
+     },
+     {
+      "key": "1997",
+      "caseCount": 81
+     },
+     {
+      "key": "1996",
+      "caseCount": 80
+     },
+     {
+      "key": "1994",
+      "caseCount": 65
+     },
+     {
+      "key": "1993",
+      "caseCount": 63
+     },
+     {
+      "key": "1995",
+      "caseCount": 63
+     },
+     {
+      "key": "1991",
+      "caseCount": 49
+     },
+     {
+      "key": "1992",
+      "caseCount": 37
+     },
+     {
+      "key": "1990",
+      "caseCount": 31
+     },
+     {
+      "key": "1989",
+      "caseCount": 26
+     },
+     {
+      "key": "1981",
+      "caseCount": 16
+     },
+     {
+      "key": "1988",
+      "caseCount": 16
+     },
+     {
+      "key": "1987",
+      "caseCount": 15
+     },
+     {
+      "key": "1978",
+      "caseCount": 13
+     },
+     {
+      "key": "1982",
+      "caseCount": 13
+     },
+     {
+      "key": "1983",
+      "caseCount": 11
+     },
+     {
+      "key": "1985",
+      "caseCount": 11
+     },
+     {
+      "key": "1984",
+      "caseCount": 10
+     },
+     {
+      "key": "1986",
+      "caseCount": 10
+     },
+     {
+      "key": "1976",
+      "caseCount": 7
+     },
+     {
+      "key": "1980",
+      "caseCount": 7
+     },
+     {
+      "key": "1979",
+      "caseCount": 6
+     },
+     {
+      "key": "1974",
+      "caseCount": 4
+     },
+     {
+      "key": "1977",
+      "caseCount": 4
+     },
+     {
+      "key": "1960",
+      "caseCount": 3
+     },
+     {
+      "key": "1975",
+      "caseCount": 3
+     },
+     {
+      "key": "1968",
+      "caseCount": 3
+     },
+     {
+      "key": "1973",
+      "caseCount": 2
+     },
+     {
+      "key": "1972",
+      "caseCount": 2
+     },
+     {
+      "key": "1966",
+      "caseCount": 1
+     },
+     {
+      "key": "1969",
+      "caseCount": 1
+     },
+     {
+      "key": "1967",
+      "caseCount": 1
+     },
+     {
+      "key": "1956",
+      "caseCount": 1
+     },
+     {
+      "key": "1970",
+      "caseCount": 1
+     },
+     {
+      "key": "1964",
+      "caseCount": 1
+     },
+     {
+      "key": "1965",
+      "caseCount": 1
+     },
+     {
+      "key": "1958",
+      "caseCount": 1
      }
     ]
    }
@@ -3197,12 +3401,12 @@
     ]
    },
    "year": {
-    "gte": 2013
+    "gte": 1956
    }
   },
   "data": {
    "judicialCaseload": {
-    "denominator": 553315,
+    "denominator": 555150,
     "groups": [
      {
       "key": "2025",
@@ -3259,6 +3463,62 @@
      {
       "key": "2013",
       "caseCount": 1786
+     },
+     {
+      "key": "2012",
+      "caseCount": 365
+     },
+     {
+      "key": "2011",
+      "caseCount": 344
+     },
+     {
+      "key": "2010",
+      "caseCount": 285
+     },
+     {
+      "key": "2006",
+      "caseCount": 212
+     },
+     {
+      "key": "2007",
+      "caseCount": 208
+     },
+     {
+      "key": "2009",
+      "caseCount": 196
+     },
+     {
+      "key": "2008",
+      "caseCount": 169
+     },
+     {
+      "key": "2005",
+      "caseCount": 36
+     },
+     {
+      "key": "2004",
+      "caseCount": 8
+     },
+     {
+      "key": "2002",
+      "caseCount": 7
+     },
+     {
+      "key": "2003",
+      "caseCount": 2
+     },
+     {
+      "key": "2001",
+      "caseCount": 1
+     },
+     {
+      "key": "2000",
+      "caseCount": 1
+     },
+     {
+      "key": "1999",
+      "caseCount": 1
      }
     ]
    }

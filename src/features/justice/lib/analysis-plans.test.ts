@@ -56,7 +56,7 @@ describe('the reads an answer makes', () => {
   it('reads the levels’ counts without the question’s own levels, and the years without its year', () => {
     const question: Question = { ...DEFAULT_QUESTION, levels: ['tribunal'] }
     expect(levelsPlan(question).reads).toEqual([{ groupBy: 'courtLevel', filter: { year: { eq: 2025 } } }])
-    expect(yearsPlan(question).reads).toEqual([{ groupBy: 'year', filter: { courtLevel: { in: ['tribunal'] }, year: { gte: 2013 } } }])
+    expect(yearsPlan(question).reads).toEqual([{ groupBy: 'year', filter: { courtLevel: { in: ['tribunal'] }, year: { gte: 1956 } } }])
   })
 
   it('shares reads between the parts of a page: the figures’ courts are the courts grouping’s', () => {
@@ -102,9 +102,12 @@ describe('the answers, from the API’s recorded answers', () => {
     expect(sum(stages.before!)).toBe(stages.totalBefore)
   })
 
-  it('draws the years from the crawl’s start, the capture’s whole years the largest', () => {
+  it('draws every year the capture holds a case in, the dense years the largest', () => {
     const years = answered(yearsPlan(DEFAULT_QUESTION))
     expect(years.get('2025')).toBe(answered(figuresPlan(DEFAULT_QUESTION)).total)
     expect(years.get('2024')!).toBeGreaterThan(years.get('2022')!)
+    // The years before the crawl's 2013 start are retained and drawn (JC26-UI-01): 2007 holds 2,252 cases.
+    expect(years.get('2007')).toBe(2252)
+    expect(years.get('1956')).toBe(1)
   })
 })

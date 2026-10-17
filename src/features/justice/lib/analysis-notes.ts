@@ -37,6 +37,10 @@ export function analysisNotes(question: Question): { readonly warnings: readonly
   const source = sourceOf(question)
   const warnings: string[] = []
   if (question.year === JUSTICE_LAST_CAPTURE_YEAR) warnings.push(t`${question.year} e un an parțial: datele se opresc la ${cutoffText(source)}. Nu se compară cu un an întreg.`)
+  if (question.year < JUSTICE_FIRST_WHOLE_YEAR && source !== 'iccj')
+    warnings.push(
+      t`${question.year} e dinaintea preluării dense, din ${JUSTICE_FIRST_WHOLE_YEAR}: portalul a fost preluat după data modificării dosarelor, așa că anul are doar dosarele modificate mai târziu, o parte necunoscută din volumul lui. Nu se compară cu alți ani.`,
+    )
   if (question.masura === 'locuitori' && rateAllowed(question, COUNTY_POPULATION.year))
     warnings.push(
       t`La 1.000 de locuitori: dosarele instanțelor din județ, la locuitorii lui la 1 ianuarie ${COUNTY_POPULATION.year} (INS), calculat de Transparenta.eu. O instanță judecă și pentru alte județe, iar un dosar e judecat unde e competentă instanța, nu unde locuiesc părțile.`,
@@ -46,7 +50,7 @@ export function analysisNotes(question: Question): { readonly warnings: readonly
     warnings,
     notes: [
       t`Anul unui dosar e anul datei lui din sursă — antetul de pe portal sau data din arhiva ÎCCJ —, nu neapărat data înregistrării.`,
-      t`Anii dinainte de ${JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele încă active după 2013, când a început preluarea: nu sunt volumul instanțelor.`,
+      t`Anii dinainte de ${JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele portalului modificate mai târziu (preluarea a mers după data modificării): o parte necunoscută, nu volumul instanțelor.`,
       t`Un dosar e numărat la fiecare instanță unde e înregistrat: același dosar, ajuns în apel, apare și la instanța de apel, sub același număr.`,
       ...(source === 'both' ? [t`Arhiva Înaltei Curți e parțială și mai plină în anii recenți: nu i se arată o schimbare față de anul trecut, iar în totaluri mărește puțin schimbarea.`] : []),
       t`Portalul nu publică soluțiile, iar părțile nu sunt numite: datele nu conțin persoane.`,

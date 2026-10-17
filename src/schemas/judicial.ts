@@ -169,10 +169,10 @@ export const judicialCaseDetailSchema = z.object({
 })
 export type JudicialCaseDetail = z.infer<typeof judicialCaseDetailSchema>
 
-/** The court page's search: the year it describes (unset: the court's last whole year). */
+/** The court page's search: the year it describes (unset: the default year). Any calendar year parses; the route keeps only a year the capture holds a case in. */
 export const justiceCourtSearchSchema = z
   .object({
-    an: z.coerce.number().int().min(1990).max(2100).optional().catch(undefined),
+    an: z.coerce.number().int().min(1000).max(2100).optional().catch(undefined),
   })
   .catch({})
 export type JusticeCourtSearch = z.infer<typeof justiceCourtSearchSchema>

@@ -15,6 +15,8 @@ import {
   MAIN_LEVELS,
   courtsOf,
   echrJudgmentsTotal,
+  filledYears,
+  firstCaseYear,
   firstWholeYear,
   hubYearBars,
   judecatoriiPerThousand,
@@ -345,7 +347,8 @@ export function JusticeYearsBand({ snapshot, index }: { readonly snapshot: Justi
             title={<Trans>Dosarele, an de an</Trans>}
             lede={
               <Trans>
-                Portalul a fost preluat întreg din {firstWholeYear(snapshot)}. Anii dinainte au doar dosarele încă active mai târziu, iar ultimul an se oprește în{' '}
+                Preluarea portalului e densă din {firstWholeYear(snapshot)}, dar nicio numărătoare independentă nu arată că vreun an e complet. Anii
+                dinainte au doar dosarele modificate mai târziu, o parte necunoscută din fiecare an, iar ultimul an se oprește în{' '}
                 {monthText(lastMonth, 'long')}.
               </Trans>
             }
@@ -356,6 +359,10 @@ export function JusticeYearsBand({ snapshot, index }: { readonly snapshot: Justi
             <Trans>Dosare după anul din portal</Trans>
           </MonoLabel>
           <JusticeYearsChart className="mt-4" bars={hubYearBars(snapshot)} lastMonth={lastMonth} />
+          <Link to="/justice/analytics" className={cn('mt-4 inline-flex', SHOW_MORE_CLASS)}>
+            <Trans>Toți anii preluați, din {firstCaseYear(snapshot)}, în analiză</Trans>
+            <span aria-hidden="true">&nbsp;→</span>
+          </Link>
         </div>
       </div>
     </HomeBand>
@@ -388,7 +395,7 @@ function SeriesBars({
       </div>
       <ol className="mt-3 flex h-28 items-end gap-0.5">
         {series.map((entry) => (
-          <li key={entry.key} className="min-w-0 flex-1 bg-primary/70" style={{ height: `${Math.max((entry.count / top) * 100, 2).toFixed(1)}%` }}>
+          <li key={entry.key} className="min-w-0 flex-1 bg-primary/70" style={{ height: `${entry.count > 0 ? Math.max((entry.count / top) * 100, 2).toFixed(1) : '0'}%` }}>
             <span className="sr-only">
               {label(entry.key)}: {countText(entry.count)}
             </span>
@@ -407,8 +414,8 @@ function SeriesBars({
 
 export function JusticeDecisionsBand({ snapshot, index }: { readonly snapshot: JusticeHubSnapshot; readonly index: string }) {
   const echr = sortedSeries(snapshot.decisions.echrJudgments)
-  // CCR's captured decisions are dense from 2013; one earlier row is a stray, not a year of decisions.
-  const ccr = sortedSeries(snapshot.decisions.ccrByYear).filter((entry) => Number(entry.key) >= 2013)
+  // CCR's captured decisions are dense from 2013; the one earlier captured decision keeps its year, the years between drawn empty.
+  const ccr = filledYears(sortedSeries(snapshot.decisions.ccrByYear))
   const cnsc = sortedSeries(snapshot.decisions.cnscByMonth)
   const cnscFrom = cnsc[0]
   return (

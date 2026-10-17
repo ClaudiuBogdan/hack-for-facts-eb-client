@@ -15,7 +15,7 @@ import {
   type MatterKey,
 } from './analysis-codes'
 import { JUSTICE_HUB_SNAPSHOT } from './hub-snapshot'
-import { JUSTICE_FIRST_WHOLE_YEAR, JUSTICE_LAST_CAPTURE_YEAR, JUSTICE_REFERENCE_YEAR } from './hub-years'
+import { JUSTICE_CASE_YEARS, JUSTICE_FIRST_WHOLE_YEAR, JUSTICE_LAST_CAPTURE_YEAR, JUSTICE_REFERENCE_YEAR } from './hub-years'
 import { STAGE_KEYS, type CountGroup, type StageKey } from './judicial-model'
 
 /**
@@ -69,11 +69,19 @@ export interface Question {
   readonly masura: Measure
 }
 
-/** The years a question can be asked of: the capture's whole years and its last part-year, newest first. */
-export const YEARS: readonly number[] = Array.from({ length: JUSTICE_LAST_CAPTURE_YEAR - JUSTICE_FIRST_WHOLE_YEAR + 1 }, (_, index) => JUSTICE_LAST_CAPTURE_YEAR - index)
+/**
+ * The years a question can be asked of: every year the capture holds a case in, newest first. All retained years have
+ * equal standing; the years before the dense capture are partial, and the page says so, but they are never dropped.
+ */
+export const YEARS: readonly number[] = JUSTICE_CASE_YEARS
 
-/** The years band's first year: the crawl began in May 2013. */
-export const BAND_FROM = 2013
+/** The years band's first year: the earliest year the capture holds a case in. */
+export const BAND_FROM = Math.min(...JUSTICE_CASE_YEARS)
+
+/** Whether a year is one of the partial years before the dense capture. */
+export function partialYear(year: number): boolean {
+  return year < JUSTICE_FIRST_WHOLE_YEAR
+}
 
 export const DEFAULT_QUESTION: Question = {
   year: JUSTICE_REFERENCE_YEAR,
@@ -215,8 +223,8 @@ export function sourceOf(question: Pick<Question, 'courts' | 'counties' | 'level
 }
 
 /**
- * Whether a question's year compares with the year before: two whole years
- * of the Portal's capture. The ÎCCJ's archive is a recent, partial set (a few
+ * Whether a question's year compares with the year before: two years of the
+ * Portal's dense capture (a partial year never compares). The ÎCCJ's archive is a recent, partial set (a few
  * hundred cases dated 2024, thousands dated 2025): its years do not compare.
  */
 export function comparable(question: Pick<Question, 'year' | 'courts' | 'counties' | 'levels'>): boolean {

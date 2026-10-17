@@ -40,9 +40,12 @@ describe('courtSheetOf', () => {
 describe('the court’s years', () => {
   const sheet = courtSheetFixture()
 
-  it('offers the whole years of the capture and its last one, never the partial ones', () => {
+  it('offers every year the court holds a case in, the partial ones too, up to its last', () => {
     expect(courtLastYear(sheet)).toBe(2026)
-    expect(courtYearChoices(sheet, 2023)).toEqual([2023, 2024, 2025, 2026])
+    const held = sheet.years.filter((entry) => entry.count > 0 && entry.year <= 2026).map((entry) => entry.year)
+    expect(courtYearChoices(sheet)).toEqual(held)
+    expect(courtYearChoices(sheet)).toEqual(expect.arrayContaining([2019, 2023, 2024, 2025, 2026]))
+    expect(courtYearChoices(sheet).every((year) => sheet.years.some((entry) => entry.year === year && entry.count > 0))).toBe(true)
     expect(courtYearBars(sheet, 2023).filter((bar) => bar.partial).every((bar) => bar.year < 2023)).toBe(true)
   })
 

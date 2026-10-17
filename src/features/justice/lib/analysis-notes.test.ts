@@ -39,6 +39,19 @@ describe('the caveats', () => {
     expect(analysisNotes({ ...rate, year: 2024 }).warnings).toEqual([])
   })
 
+  it('warns of a partial year before the dense capture by the portal’s modification-date capture, not by activity (JC26-UI-01)', () => {
+    const partial = analysisNotes(question({ year: 2007 })).warnings.join(' ')
+    expect(partial).toContain('2007 e dinaintea preluării dense, din 2023')
+    expect(partial).toContain('după data modificării dosarelor')
+    expect(partial).toContain('o parte necunoscută')
+    expect(partial).not.toContain('active')
+    expect(analysisNotes(question({ year: 2023 })).warnings).toEqual([])
+    // The ÎCCJ's archive alone keeps its own warning, not the portal's capture method.
+    const iccj = analysisNotes(question({ year: 2007, levels: ['inalta_curte'] })).warnings.join(' ')
+    expect(iccj).not.toContain('preluării dense')
+    expect(iccj).toContain('anii ei nu se compară')
+  })
+
   it('warns that the ÎCCJ’s years do not compare when the question reads its archive alone', () => {
     expect(analysisNotes(question({ levels: ['inalta_curte'] })).warnings.join(' ')).toContain('anii ei nu se compară')
     expect(analysisNotes(question({ levels: ['tribunal'] })).notes.join(' ')).not.toContain('Înaltei Curți')

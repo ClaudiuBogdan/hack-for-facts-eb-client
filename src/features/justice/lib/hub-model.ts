@@ -109,7 +109,7 @@ export function lastCaptureYear(snapshot: JusticeHubSnapshot): number {
   return Number(snapshot.asOf.portalModifiedAt.slice(0, 4))
 }
 
-/** The first year the capture holds whole: two years before the reference year (scrapper JR-6: no shortfall from 2024, dense from 2023). */
+/** The first year of the dense capture: two years before the reference year (scrapper JR-6: no shortfall from 2024, dense from 2023). Density, not a census: no year is proved complete. */
 export function firstWholeYear(snapshot: JusticeHubSnapshot): number {
   return snapshot.year - 2
 }
@@ -125,4 +125,19 @@ export function echrJudgmentsTotal(snapshot: JusticeHubSnapshot): number {
 /** A series in its keys' order (years, months). */
 export function sortedSeries(groups: readonly { readonly key: string; readonly count: number }[]): readonly { readonly key: string; readonly count: number }[] {
   return [...groups].sort((a, b) => a.key.localeCompare(b.key))
+}
+
+/** A year series with the years between its first and last filled in at zero, so a gap reads as a gap and not as continuity. Non-year keys are dropped. */
+export function filledYears(series: readonly { readonly key: string; readonly count: number }[]): readonly { readonly key: string; readonly count: number }[] {
+  const byYear = new Map(series.filter((entry) => /^\d{4}$/u.test(entry.key)).map((entry) => [Number(entry.key), entry.count] as const))
+  if (byYear.size === 0) return []
+  const years = [...byYear.keys()]
+  const from = Math.min(...years)
+  const to = Math.max(...years)
+  return Array.from({ length: to - from + 1 }, (_, index) => from + index).map((year) => ({ key: String(year), count: byYear.get(year) ?? 0 }))
+}
+
+/** The earliest year the snapshot holds a case in. */
+export function firstCaseYear(snapshot: JusticeHubSnapshot): number {
+  return Math.min(...snapshot.cases.byYear.map((group) => Number(group.key)).filter((year) => Number.isInteger(year)))
 }

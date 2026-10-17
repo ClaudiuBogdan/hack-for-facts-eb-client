@@ -4,6 +4,8 @@ import { JUSTICE_HUB_SNAPSHOT as snapshot } from './hub-snapshot'
 import {
   courtsOf,
   echrJudgmentsTotal,
+  filledYears,
+  firstCaseYear,
   firstWholeYear,
   hubYearBars,
   judecatoriiPerThousand,
@@ -81,5 +83,20 @@ describe('the years and decisions', () => {
 
   it('counts the ECHR judgments once each', () => {
     expect(echrJudgmentsTotal(snapshot)).toBe(snapshot.decisions.echrJudgments.reduce((sum, entry) => sum + entry.count, 0))
+  })
+})
+
+describe('every retained year (JC26-UI-01)', () => {
+  it('knows the earliest year the capture holds a case in', () => {
+    expect(firstCaseYear(snapshot)).toBe(1956)
+  })
+
+  it('keeps the CCR decision captured before 2013, the years between drawn empty', () => {
+    const ccr = filledYears(snapshot.decisions.ccrByYear)
+    expect(ccr[0]).toEqual({ key: '2002', count: 1 })
+    expect(ccr.find((entry) => entry.key === '2007')).toEqual({ key: '2007', count: 0 })
+    expect(ccr.map((entry) => entry.key)).toEqual(Array.from({ length: ccr.length }, (_, index) => String(2002 + index)))
+    expect(ccr.reduce((sum, entry) => sum + entry.count, 0)).toBe(snapshot.decisions.ccrByYear.reduce((sum, entry) => sum + entry.count, 0))
+    expect(filledYears([])).toEqual([])
   })
 })

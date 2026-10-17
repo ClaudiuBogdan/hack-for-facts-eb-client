@@ -6,11 +6,11 @@ import { MonoLabel } from '@/components/landing-skin/mono-label'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { analysisUrl, COUNTY_CODES, COURTS, LEVEL_KEYS, MATTER_KEYS, sourceOf, YEARS, type Question } from '../../lib/analysis-model'
+import { analysisUrl, COUNTY_CODES, COURTS, LEVEL_KEYS, MATTER_KEYS, partialYear, sourceOf, YEARS, type Question } from '../../lib/analysis-model'
 import { analysisNotes } from '../../lib/analysis-notes'
 import { askedQuestion, QUESTION_GROUPS, QUESTIONS } from '../../lib/analysis-questions'
 import { countyLabel, levelLabel, matterLabel, stageName, yearText } from '../../lib/analysis-text'
-import { JUSTICE_LAST_CAPTURE_YEAR } from '../../lib/hub-years'
+import { JUSTICE_FIRST_WHOLE_YEAR, JUSTICE_LAST_CAPTURE_YEAR } from '../../lib/hub-years'
 import { courtName } from '../../lib/judicial-labels'
 import { STAGE_KEYS } from '../../lib/judicial-model'
 
@@ -21,7 +21,7 @@ type Change = (question: Question) => void
 export const LINK = 'inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-0'
 const TRIGGER = 'inline-flex h-9 items-center gap-2 whitespace-nowrap border border-foreground/25 bg-background px-3 text-sm font-semibold tabular-nums transition-colors hover:border-foreground/60'
 
-/** The year: the capture's whole years and its part-year; the years before 2023 are the band's, never a question's. */
+/** The year: every year the capture holds a case in, newest first; the partial years before the dense capture are marked. */
 export function YearMenu({ question, onChange }: { readonly question: Question; readonly onChange: Change }) {
   const [open, setOpen] = useState(false)
   const captionId = useId()
@@ -36,7 +36,8 @@ export function YearMenu({ question, onChange }: { readonly question: Question; 
         <MonoLabel id={captionId} className="block px-2 text-muted-foreground">
           {t`Anul datei dosarului`}
         </MonoLabel>
-        <div className="mt-1 grid grid-cols-2 gap-1">
+        <p className="px-2 text-xs text-muted-foreground">{t`Înainte de ${JUSTICE_FIRST_WHOLE_YEAR}: preluare parțială`}</p>
+        <div className="mt-1 grid max-h-72 grid-cols-2 gap-1 overflow-y-auto">
           {YEARS.map((year) => (
             <button
               key={year}
@@ -46,7 +47,12 @@ export function YearMenu({ question, onChange }: { readonly question: Question; 
                 setOpen(false)
                 onChange({ ...question, year })
               }}
-              className={cn('min-h-11 border px-2 py-1.5 text-left text-sm tabular-nums hover:bg-muted sm:min-h-0', year === question.year && 'border-primary font-semibold', year === JUSTICE_LAST_CAPTURE_YEAR && 'col-span-2')}
+              className={cn(
+                'min-h-11 border px-2 py-1.5 text-left text-sm tabular-nums hover:bg-muted sm:min-h-0',
+                partialYear(year) && 'border-dashed text-muted-foreground',
+                year === question.year && 'border-primary font-semibold text-foreground',
+                year === JUSTICE_LAST_CAPTURE_YEAR && 'col-span-2',
+              )}
             >
               {yearText(year, source)}
             </button>

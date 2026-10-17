@@ -26,8 +26,10 @@ import { JusticeYearsChart } from '../justice-years-chart'
 import { JusticeCourtCases } from './justice-court-cases'
 import { JusticeCourtHead, JusticeCourtHeadPending } from './justice-court-head'
 
-/** The first year the capture holds whole, as on the front door: the years before are drawn, never picked. */
+/** The first year of the dense capture, as on the front door: the years before are drawn dashed and marked partial where they are offered. */
 const FIRST_WHOLE_YEAR = JUSTICE_FIRST_WHOLE_YEAR
+/** The court chart's first year; a page describing an older year draws back to it, so its year is never off the chart. */
+const COURT_CHART_FROM = 2019
 
 const BAND_GRID = 'grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8'
 
@@ -109,14 +111,14 @@ function CourtSheetView({ sheet, onYear }: { readonly sheet: CourtSheet; readonl
       <SmearFilters />
       <JusticeCourtHead
         sheet={sheet}
-        years={courtYearChoices(sheet, FIRST_WHOLE_YEAR)}
+        years={courtYearChoices(sheet)}
         onYear={onYear}
         aside={
           <div>
             <MonoLabel className="block text-muted-foreground">
               {sheet.level === 'inalta_curte' ? <Trans>Dosarele Curții, după anul din arhiva ei</Trans> : <Trans>Dosarele instanței, după anul din portal</Trans>}
             </MonoLabel>
-            <JusticeYearsChart className="mt-4" bars={courtYearBars(sheet, FIRST_WHOLE_YEAR)} lastMonth={lastMonth} compact />
+            <JusticeYearsChart className="mt-4" bars={courtYearBars(sheet, FIRST_WHOLE_YEAR, Math.min(COURT_CHART_FROM, sheet.year))} lastMonth={lastMonth} compact />
             <CourtSourceLine sheet={sheet} className="mt-4" />
           </div>
         }
@@ -158,7 +160,7 @@ function CourtSourceLine({ sheet, className }: { readonly sheet: CourtSheet; rea
     : [
         <Trans key="date">Anul unui dosar e data din antetul lui pe portal, nu o dată de înregistrare verificată.</Trans>,
         <Trans key="capture">
-          Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {FIRST_WHOLE_YEAR} sunt doar dosarele încă active după aceea.
+          Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {FIRST_WHOLE_YEAR} sunt doar dosarele modificate mai târziu, o parte necunoscută din fiecare an.
         </Trans>,
       ]
   notes.push(

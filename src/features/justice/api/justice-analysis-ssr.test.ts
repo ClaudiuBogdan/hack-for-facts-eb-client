@@ -31,7 +31,8 @@ describe('the analysis page’s server read', () => {
   })
 
   it('reads the question, not the address: an unknown value reads as the default', async () => {
-    const read = await readFor({ materie: 'Ion Popescu', an: 1999 })
+    // 1957: a year the capture holds no case in.
+    const read = await readFor({ materie: 'Ion Popescu', an: 1957 })
     expect(read.seed.map((item) => hashKey(item.key)).sort()).toEqual([...new Set(analysisReads(questionOf({})).map((item) => hashKey(caseloadKey(item))))].sort())
   })
 

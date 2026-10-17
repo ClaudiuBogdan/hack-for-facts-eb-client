@@ -124,14 +124,14 @@ export function courtLastYear(sheet: Pick<CourtSheet, 'newestAt'>): number | nul
 }
 
 /**
- * The years the court page offers: the capture's whole years and its last
- * one, from `firstWholeYear` — the years before hold only cases still active
- * later, so they are drawn, never picked.
+ * The years the court page offers: every year it holds a case in, up to its
+ * last one. All retained years have equal standing; the partial ones before
+ * the dense capture are marked where they are offered, never dropped.
  */
-export function courtYearChoices(sheet: Pick<CourtSheet, 'newestAt' | 'years'>, firstWholeYear: number): readonly number[] {
+export function courtYearChoices(sheet: Pick<CourtSheet, 'newestAt' | 'years'>): readonly number[] {
   const last = courtLastYear(sheet)
   if (last === null) return []
-  return sheet.years.filter((entry) => entry.year >= firstWholeYear && entry.year <= last && entry.count > 0).map((entry) => entry.year)
+  return sheet.years.filter((entry) => entry.year <= last && entry.count > 0).map((entry) => entry.year)
 }
 
 export function courtYearBars(sheet: Pick<CourtSheet, 'newestAt' | 'years'>, firstWholeYear: number, from = 2019): readonly YearBar[] {

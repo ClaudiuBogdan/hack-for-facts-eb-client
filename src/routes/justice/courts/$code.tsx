@@ -6,7 +6,7 @@ import { translatorFor } from '@/lib/i18n'
 import { shouldBlockLoaderForSsr } from '@/lib/ssr/loader-blocking'
 import { parseJusticeCourtSearch } from '@/schemas/judicial'
 import type { JusticeCourtServerRead } from '@/features/justice/api/justice-ssr'
-import { JUSTICE_FIRST_WHOLE_YEAR, JUSTICE_LAST_CAPTURE_YEAR, JUSTICE_REFERENCE_YEAR } from '@/features/justice/lib/hub-years'
+import { JUSTICE_CASE_YEARS, JUSTICE_REFERENCE_YEAR } from '@/features/justice/lib/hub-years'
 import { courtName } from '@/features/justice/lib/judicial-labels'
 import { justiceKeys } from '@/features/justice/lib/justice-keys'
 import { buildCourtDocumentTitle } from '@/features/justice/lib/justice-page-titles'
@@ -32,9 +32,9 @@ export const Route = createFileRoute('/justice/courts/$code')({
     },
   },
   validateSearch: parseJusticeCourtSearch,
-  // A year the capture does not hold whole is no page of its own: it describes the default year.
+  // Every year the capture holds a case in is a page of its own; a year it holds none in describes the default year.
   loaderDeps: ({ search }) => ({
-    year: search.an !== undefined && search.an >= JUSTICE_FIRST_WHOLE_YEAR && search.an <= JUSTICE_LAST_CAPTURE_YEAR ? search.an : JUSTICE_REFERENCE_YEAR,
+    year: search.an !== undefined && JUSTICE_CASE_YEARS.includes(search.an) ? search.an : JUSTICE_REFERENCE_YEAR,
   }),
   loader: async ({ context, params, deps }): Promise<JusticeCourtServerRead> => {
     if (!shouldBlockLoaderForSsr()) {

@@ -41,7 +41,7 @@ export interface JusticeHubSnapshot {
     /** The newest ÎCCJ archive date. */
     readonly iccjArchiveDate: string
   }
-  /** The last calendar year the Portal capture covers whole: the year before its newest modification. */
+  /** The year the pages describe by default: the year before the Portal capture's newest modification (not a proof that it is complete). */
   readonly year: number
   readonly cases: {
     readonly total: number

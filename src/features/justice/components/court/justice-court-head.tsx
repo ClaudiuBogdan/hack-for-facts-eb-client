@@ -14,6 +14,7 @@ import { levelKeyOf } from '../../lib/analysis-codes'
 import type { CourtSheet } from '../../lib/court-model'
 import { monthText, percentText } from '../../lib/judicial-format'
 import { casesCount, caseCategoryLabel, courtLevelLabel, courtName } from '../../lib/judicial-labels'
+import { JUSTICE_FIRST_WHOLE_YEAR } from '../../lib/hub-years'
 import { yearOf } from '../../lib/judicial-model'
 import { JusticeCaseLookup } from './justice-case-lookup'
 
@@ -55,7 +56,7 @@ function CourtKicker({ sheet }: { readonly sheet: Pick<CourtSheet, 'level' | 'co
   )
 }
 
-/** The year the page describes; the capture's last year is a part-year and says where it stops. */
+/** The year the page describes; the capture's last year is a part-year and says where it stops, a year before the dense capture says it is partial. */
 function CourtYearSelect({
   year,
   years,
@@ -69,7 +70,8 @@ function CourtYearSelect({
 }) {
   const choices = years.includes(year) ? years : [...years, year].sort((a, b) => a - b)
   const lastYear = yearOf(lastMonth ? `${lastMonth}-01` : null)
-  const label = (choice: number) => (choice === lastYear && lastMonth ? t`${choice}, până în ${monthText(lastMonth, 'long')}` : String(choice))
+  const label = (choice: number) =>
+    choice === lastYear && lastMonth ? t`${choice}, până în ${monthText(lastMonth, 'long')}` : choice < JUSTICE_FIRST_WHOLE_YEAR ? t`${choice}, preluare parțială` : String(choice)
   return (
     <Select value={String(year)} onValueChange={(value) => onYear(Number(value))}>
       <SelectTrigger className="h-9 w-auto min-w-28 gap-2 text-sm" aria-label={t`Anul descris`}>

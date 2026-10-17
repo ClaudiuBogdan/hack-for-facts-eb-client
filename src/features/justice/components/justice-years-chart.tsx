@@ -6,7 +6,7 @@ import type { YearBar } from '../lib/judicial-model'
 
 /**
  * Cases by the year of their source date, as columns. The years before the
- * capture went whole are drawn dashed — they hold only cases still active
+ * capture went dense are drawn dashed — they hold only cases still active
  * later — and the capture's last year is a part-year; the legend says both.
  * Exact counts sit above the columns.
  */
@@ -25,11 +25,17 @@ export function JusticeYearsChart({
 }) {
   const top = Math.max(...bars.map((bar) => bar.count), 1)
   const figure = (count: number) => (compact ? compactCountText(count) : millionsText(count))
+  // A long history (a court page describing an older year draws back to it): each year keeps a readable width and the
+  // chart scrolls sideways, opening at its start, the year described.
+  const long = bars.length > 8
+  const column = long ? 'min-w-10 shrink-0' : 'min-w-0'
   return (
     <figure className={className}>
+      <div className={cn(long && 'overflow-x-auto overscroll-x-contain')}>
+        <div className={cn(long && 'min-w-max')}>
       <ol className="flex h-56 items-end gap-1.5 border-b border-border/70 sm:gap-3">
         {bars.map((bar) => (
-          <li key={bar.year} className="flex h-full min-w-0 flex-1 flex-col justify-end">
+          <li key={bar.year} className={cn('flex h-full flex-1 flex-col justify-end', column)}>
             <span className="mb-1 block truncate text-center text-[0.6875rem] tabular-nums text-muted-foreground">{figure(bar.count)}</span>
             <span
               className={cn('block w-full', bar.partial ? 'border border-dashed border-primary/50 bg-primary/10' : bar.running ? 'bg-primary/45' : 'bg-primary/75')}
@@ -43,11 +49,13 @@ export function JusticeYearsChart({
       </ol>
       <ol className="mt-1.5 flex gap-1.5 sm:gap-3" aria-hidden="true">
         {bars.map((bar) => (
-          <li key={bar.year} className="min-w-0 flex-1 text-center">
+          <li key={bar.year} className={cn('flex-1 text-center', column)}>
             <MonoLabel className="tabular-nums text-muted-foreground">{bar.year}</MonoLabel>
           </li>
         ))}
       </ol>
+        </div>
+      </div>
       <figcaption>
         <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
           {bars.some((bar) => bar.partial) ? (

@@ -14,6 +14,7 @@ import {
   filterOf,
   matterKeyOf,
   NO_COUNTY,
+  partialYear,
   questionOf,
   rankedRows,
   searchOf,
@@ -38,8 +39,20 @@ describe('the address', () => {
     expect(questionOf({ an: '2023' }).year).toBe(2023)
   })
 
+  it('keeps every year the capture holds a case in, the partial years before the dense capture too', () => {
+    // All retained years have equal standing: an older year is asked of, not swapped for the default (JC26-UI-01).
+    expect(questionOf({ an: 2007 }).year).toBe(2007)
+    expect(questionOf({ an: '2019' }).year).toBe(2019)
+    expect(questionOf({ an: 1956 }).year).toBe(1956)
+    expect(searchOf(question({ year: 2007 })).an).toBe(2007)
+    expect(partialYear(2022)).toBe(true)
+    expect(partialYear(2023)).toBe(false)
+  })
+
   it('drops what it does not know, never guessing: a year outside the capture, a stray code, a name', () => {
-    expect(questionOf({ an: 2019 }).year).toBe(DEFAULT_QUESTION.year)
+    // 1957 holds no case; 2027 is after the capture stops.
+    expect(questionOf({ an: 1957 }).year).toBe(DEFAULT_QUESTION.year)
+    expect(questionOf({ an: 2027 }).year).toBe(DEFAULT_QUESTION.year)
     expect(questionOf({ an: 'Ion Popescu' }).year).toBe(DEFAULT_QUESTION.year)
     expect(questionOf({ materie: 'faliment,Ion Popescu,faliment' }).matters).toEqual(['faliment'])
     expect(questionOf({ instanta: 'TribunalulCLUJ,Popescu' }).courts).toEqual(['TribunalulCLUJ'])
@@ -71,7 +84,8 @@ describe('the filter a read sends', () => {
 
   it('bounds every read by a year, or every year of the band for the years read', () => {
     expect(filterOf(DEFAULT_QUESTION)).toEqual({ year: { eq: DEFAULT_QUESTION.year } })
-    expect(filterOf(DEFAULT_QUESTION, { year: 'all' })).toEqual({ year: { gte: 2013 } })
+    // The years read covers every year the capture holds a case in, from its earliest.
+    expect(filterOf(DEFAULT_QUESTION, { year: 'all' })).toEqual({ year: { gte: 1956 } })
   })
 
   it('names a county by its courts, and a court picked within the county picked', () => {
@@ -92,6 +106,8 @@ describe('the filter a read sends', () => {
     expect(comparable(question({ year: 2024 }))).toBe(true)
     // 2022 holds only the cases still active later; 2026 is a part-year.
     expect(comparable(question({ year: 2023 }))).toBe(false)
+    // A partial year never compares, even now that it can be asked of.
+    expect(comparable(question({ year: 2007 }))).toBe(false)
     expect(comparable(question({ year: 2026 }))).toBe(false)
   })
 
