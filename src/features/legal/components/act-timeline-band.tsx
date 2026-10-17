@@ -9,6 +9,8 @@ import { ActAccordionItem } from './act-accordion'
 
 type Props = {
   readonly timeline: readonly LegalTimelineEntry[]
+  /** False when the server cut the timeline at its bound (I-20). */
+  readonly complete?: boolean
 }
 
 const PAGE = 12
@@ -26,7 +28,7 @@ const PAGE = 12
  * `monitorul-oficial` events are gazette-grounded, `portal` events are the
  * Portal's own bookkeeping.
  */
-export function ActTimelineBand({ timeline }: Props) {
+export function ActTimelineBand({ timeline, complete = true }: Props) {
   const { i18n } = useLingui()
   const [expanded, setExpanded] = useState(false)
 
@@ -58,6 +60,17 @@ export function ActTimelineBand({ timeline }: Props) {
         </Trans>
       }
     >
+      {complete ? null : (
+        <p
+          role="status"
+          className="border-b border-[var(--pnrr-subtle)] px-5 py-3 text-sm text-[var(--pnrr-fg)] sm:px-6"
+        >
+          <Trans>
+            Lista nu este completă: actul are mai multe evenimente decât s-au putut
+            încărca.
+          </Trans>
+        </p>
+      )}
       <ol id="act-timeline-entries" className="flex flex-col">
         {visible.map((entry, index) => (
           <li

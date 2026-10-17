@@ -194,6 +194,21 @@ describe('fetchLegalActDetailLive', () => {
     expect(graphqlQueryMock.mock.calls).toHaveLength(1)
   })
 
+  it('requests and maps timelineComplete (I-20)', async () => {
+    respond({ timelineComplete: false })
+    const cut = await fetchLegalActDetailLive('1')
+    const [query] = graphqlQueryMock.mock.calls[0] as unknown as [string]
+    expect(query).toContain('timelineComplete')
+    expect(cut?.timelineComplete).toBe(false)
+
+    respond({ timelineComplete: true })
+    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBe(true)
+
+    // A mock lane without the field reads as complete.
+    respond({ timelineComplete: undefined })
+    expect((await fetchLegalActDetailLive('1'))?.timelineComplete).toBe(true)
+  })
+
   it('maps document versions with their render availability', async () => {
     respond({
       documents: [

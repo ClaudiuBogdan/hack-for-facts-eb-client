@@ -56,6 +56,10 @@ msgstr " on "
 msgid " și "
 msgstr " and "
 
+#: src/features/legal/components/act-timeline-band.tsx:68
+msgid "Lista nu este completă: actul are mai multe evenimente decât s-au putut încărca."
+msgstr "This list is incomplete: the act has more events than could be loaded."
+
 #. placeholder {0}: act.amendedAfterPublication
 #: src/features/legal/components/act-warnings.tsx:116
 msgid "{0, plural, one {O referință de modificare sau completare înregistrată de la publicare.} few {# referințe de modificare sau completare înregistrate de la publicare.} other {# de referințe de modificare sau completare înregistrate de la publicare.}}"

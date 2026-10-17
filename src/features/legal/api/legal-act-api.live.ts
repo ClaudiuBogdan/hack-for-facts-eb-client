@@ -69,6 +69,7 @@ const ACT_DETAIL_QUERY = /* GraphQL */ `
         eventSource
         relatedActId
       }
+      timelineComplete
       gazettePublications {
         moIssueId
         resolution
@@ -410,6 +411,9 @@ function mapAct(raw: RawAct): LegalActDetail {
         relatedActId: item.relatedActId ? String(item.relatedActId) : null,
       }
     }),
+    // The query requires a server with I-20 (timelineComplete, server c5af08d3);
+    // a lane that omits the value (mocks) reads as complete.
+    timelineComplete: raw.timelineComplete !== false,
     gazettePublications: (Array.isArray(raw.gazettePublications)
       ? raw.gazettePublications
       : []

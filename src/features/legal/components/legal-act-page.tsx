@@ -121,7 +121,10 @@ export function LegalActPage({ actId, initialAct, docOverride, nod }: Props) {
               <ActKeyDates keyDates={data.summary.keyDates} />
             ) : null}
             <ActPublicationBand act={data} />
-            <ActTimelineBand timeline={data.timeline} />
+            <ActTimelineBand
+              timeline={data.timeline}
+              complete={data.timelineComplete}
+            />
             <ActVersionsBand act={data} />
             <ActReferencesBand group={data.outLinks} direction="out" />
             <ActReferencesBand group={data.inLinks} direction="in" />

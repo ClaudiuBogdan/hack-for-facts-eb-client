@@ -399,6 +399,8 @@ export const legalActDetailSchema = z.object({
   canonical: legalDocumentSchema.nullable(),
   summary: legalActSummarySchema.nullable(),
   timeline: z.array(legalTimelineEntrySchema),
+  /** False when the server's timeline bound cut the list (I-20). */
+  timelineComplete: z.boolean(),
   gazettePublications: z.array(legalGazettePublicationSchema),
   outLinks: legalReferenceGroupSchema,
   inLinks: legalReferenceGroupSchema,

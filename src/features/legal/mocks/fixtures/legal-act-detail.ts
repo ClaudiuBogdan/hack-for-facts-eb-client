@@ -89,6 +89,7 @@ export const legalActDetailFixture: LegalActDetail = {
       relatedActId: null,
     },
   ],
+  timelineComplete: true,
   gazettePublications: [
     {
       moIssueId: '58211',
@@ -258,6 +259,7 @@ export const legalActDetailRichFixture: LegalActDetail = {
       relatedActId: '67165',
     },
   ],
+  timelineComplete: true,
   gazettePublications: [
     {
       moIssueId: '45480',
