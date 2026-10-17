@@ -104,7 +104,7 @@ describe('a court', () => {
     inOrder(page, [
       'Tribunalul Sălaj',
       'Tribunal din județul Sălaj.',
-      'Pe portal are 2.632 de dosare cu data din 2025',
+      'În datele preluate are 2.632 de dosare cu data din 2025',
       'În circumscripția: Curtea de Apel Cluj',
       'Compară cu instanțele de același nivel',
       'Sursa:',

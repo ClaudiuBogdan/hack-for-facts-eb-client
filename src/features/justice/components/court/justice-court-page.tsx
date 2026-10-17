@@ -204,7 +204,7 @@ function CourtFigures({ sheet }: { readonly sheet: CourtSheet }) {
       value: sheet.inYear,
       digits: 0,
       label: <Trans>Dosare cu data din {sheet.year}</Trans>,
-      note: <Trans>{casesCount(sheet.total)} pe portal, în total</Trans>,
+      note: <Trans>{casesCount(sheet.total)} în datele preluate, în total</Trans>,
       link: band('dosare'),
     },
     {

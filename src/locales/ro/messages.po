@@ -1325,6 +1325,11 @@ msgstr "{0} în asociere cu alte firme"
 msgid "{0} în datele preluate, {1} cu un document numerotat. Ce s-a hotărât nu e afișat aici."
 msgstr "{0} în datele preluate, {1} cu un document numerotat. Ce s-a hotărât nu e afișat aici."
 
+#. placeholder {0}: casesCount(sheet.total)
+#: src/features/justice/components/court/justice-court-page.tsx:207
+msgid "{0} în datele preluate, în total"
+msgstr "{0} în datele preluate, în total"
+
 #. placeholder {0}: countText(total)
 #. placeholder {0}: moneyText(total)
 #: src/features/procurement/components/analytics/analytics-view.ts:166
@@ -1496,8 +1501,8 @@ msgstr "{0} pe Facebook"
 
 #. placeholder {0}: casesCount(sheet.total)
 #: src/features/justice/components/court/justice-court-page.tsx:207
-msgid "{0} pe portal, în total"
-msgstr "{0} pe portal, în total"
+#~ msgid "{0} pe portal, în total"
+#~ msgstr "{0} pe portal, în total"
 
 #. placeholder {0}: role.count
 #: src/routes/justitie.dosare.$caseId.tsx:328
@@ -24379,6 +24384,20 @@ msgstr "În cursul anului"
 msgid "în cursul anului, la 1.000 locuitori"
 msgstr "în cursul anului, la 1.000 locuitori"
 
+#. placeholder {0}: casesCount(sheet.inYear)
+#. placeholder {1}: sheet.year
+#. placeholder {2}: caseCategoryLabel(top.key) ?? top.key
+#. placeholder {3}: percentText(top.share)
+#: src/features/justice/components/court/justice-court-head.tsx:130
+msgid "În datele preluate are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
+msgstr "În datele preluate are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
+
+#. placeholder {0}: casesCount(sheet.inYear)
+#. placeholder {1}: sheet.year
+#: src/features/justice/components/court/justice-court-head.tsx:135
+msgid "În datele preluate are {0} cu data din {1}."
+msgstr "În datele preluate are {0} cu data din {1}."
+
 #: src/features/procurement/lib/procedure-text.ts:80
 msgid "în desfășurare"
 msgstr "în desfășurare"
@@ -35649,14 +35668,14 @@ msgstr "Pe populația după domiciliu, nu pe cea rezidentă a indicatorului euro
 #. placeholder {2}: caseCategoryLabel(top.key) ?? top.key
 #. placeholder {3}: percentText(top.share)
 #: src/features/justice/components/court/justice-court-head.tsx:130
-msgid "Pe portal are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
-msgstr "Pe portal are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
+#~ msgid "Pe portal are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
+#~ msgstr "Pe portal are {0} cu data din {1}, cele mai multe la materia „{2}” ({3})."
 
 #. placeholder {0}: casesCount(sheet.inYear)
 #. placeholder {1}: sheet.year
 #: src/features/justice/components/court/justice-court-head.tsx:135
-msgid "Pe portal are {0} cu data din {1}."
-msgstr "Pe portal are {0} cu data din {1}."
+#~ msgid "Pe portal are {0} cu data din {1}."
+#~ msgstr "Pe portal are {0} cu data din {1}."
 
 #: src/features/procurement/lib/analytics-text.ts:241
 msgid "pe proceduri"

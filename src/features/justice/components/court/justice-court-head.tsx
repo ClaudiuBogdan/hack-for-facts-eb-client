@@ -128,12 +128,12 @@ function headSentence(sheet: CourtSheet): ReactNode {
         )
       ) : top ? (
         <Trans>
-          Pe portal are {casesCount(sheet.inYear)} cu data din {sheet.year}, cele mai multe la materia „{caseCategoryLabel(top.key) ?? top.key}” (
+          În datele preluate are {casesCount(sheet.inYear)} cu data din {sheet.year}, cele mai multe la materia „{caseCategoryLabel(top.key) ?? top.key}” (
           {percentText(top.share)}).
         </Trans>
       ) : (
         <Trans>
-          Pe portal are {casesCount(sheet.inYear)} cu data din {sheet.year}.
+          În datele preluate are {casesCount(sheet.inYear)} cu data din {sheet.year}.
         </Trans>
       )}
     </>
