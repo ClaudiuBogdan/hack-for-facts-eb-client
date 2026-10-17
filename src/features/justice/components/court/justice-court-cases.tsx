@@ -25,7 +25,7 @@ export function JusticeCourtCases({ sheet }: { readonly sheet: CourtSheet }) {
   if (rows.length === 0) {
     return (
       <p className="mt-4 text-sm text-muted-foreground">
-        <Trans>Portalul nu are niciun dosar al acestei instanțe.</Trans>
+        <Trans>Datele preluate nu au niciun dosar al acestei instanțe.</Trans>
       </p>
     )
   }

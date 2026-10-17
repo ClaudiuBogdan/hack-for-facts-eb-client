@@ -124,10 +124,11 @@ describe('a court', () => {
     expect(partial).toContain('Dosarele lor nu au putut fi numărate acum')
   })
 
-  it('says a court the API does not have was not found', () => {
-    expect(text(wrap(<JusticeCourtPage code="TribunalulNIMIC" year={FIXTURE_YEAR} initialData={{ code: 'TribunalulNIMIC', year: FIXTURE_YEAR, court: null }} />))).toContain(
-      'Instanța nu a fost găsită',
-    )
+  it('says a court the API does not have was not found, in the captured data, not at the source (JC26-API-03)', () => {
+    const missing = text(wrap(<JusticeCourtPage code="TribunalulNIMIC" year={FIXTURE_YEAR} initialData={{ code: 'TribunalulNIMIC', year: FIXTURE_YEAR, court: null }} />))
+    expect(missing).toContain('Instanța nu a fost găsită')
+    expect(missing).toContain('Datele preluate nu au o instanță cu codul TribunalulNIMIC.')
+    expect(missing).not.toContain('Portalul instanțelor nu are')
   })
 })
 
@@ -135,6 +136,23 @@ describe('a case', () => {
   const sheet = caseSheetFixture()
   const html = wrap(<JusticeCasePage code={FIXTURE_CASE.code} number={FIXTURE_CASE.number} initialData={{ ...FIXTURE_CASE, sheet }} />)
   const page = text(html)
+
+  it('says what the captured data holds, never that the portal has nothing, for a case with no stored children (JC26-API-03)', () => {
+    const empty = { ...sheet, hearings: [], appeals: [], parties: [], partyCount: 0, personPartyCount: 0 }
+    const none = text(wrap(<JusticeCasePage code={FIXTURE_CASE.code} number={FIXTURE_CASE.number} initialData={{ ...FIXTURE_CASE, sheet: empty }} />))
+    expect(none).toContain('Datele preluate nu au nicio ședință a acestui dosar.')
+    expect(none).toContain('Datele preluate nu au nicio cale de atac declarată la acest dosar.')
+    expect(none).toContain('Datele preluate nu au nicio parte a acestui dosar.')
+    expect(none).not.toMatch(/Portalul nu (are|listează)/u)
+  })
+
+  it('never calls a hearing scheduled or a numbered document a judgment (JC26-API-03)', () => {
+    // The source notes (outcomes withheld here, not unpublished at the source) open in the source line's popover.
+    expect(page).not.toContain('programată')
+    expect(page).not.toContain('hotărârea nr.')
+    expect(page).not.toContain('Portalul nu are nicio ședință')
+    expect(page).toContain('Ce s-a hotărât nu e afișat aici')
+  })
 
   it('reads its court, number, object and facts, then hearings, appeals, parties, laws and the same file elsewhere', () => {
     inOrder(page, [
@@ -145,8 +163,8 @@ describe('a case', () => {
       'Materia',
       'Faliment',
       'Ședințele',
-      '1 ședință pe portal',
-      'hotărârea nr. 75/2024',
+      '1 ședință în datele preluate',
+      'documentul nr. 75/2024',
       'Căile de atac',
       'Apel',
       'Părțile',

@@ -107,7 +107,7 @@ function headSentence(sheet: CourtSheet): ReactNode {
   if (sheet.inYear === 0) {
     return (
       <>
-        {what} <Trans>Portalul nu are dosare ale ei cu data din {sheet.year}.</Trans>
+        {what} <Trans>Datele preluate nu au dosare ale ei cu data din {sheet.year}.</Trans>
       </>
     )
   }

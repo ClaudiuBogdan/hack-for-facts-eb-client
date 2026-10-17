@@ -2,7 +2,8 @@ import type { JudicialCase, JudicialCaseDetail, JudicialLegalReference, Judicial
 
 /**
  * One case's sheet, from the case page's reads. Pure. The rules it keeps:
- * a hearing dated after the capture is scheduled, not held; parties are
+ * a hearing dated after the source's newest stored modification has an
+ * unknown status (the data cannot show whether it was held); parties are
  * counted by role and kind, never named; a law links only where the API
  * resolved the citation to an act; a case at another court under the same
  * file is a candidate the API derived, never a fact.
@@ -14,8 +15,12 @@ export interface HearingRow {
   readonly panel: string | null
   readonly pronouncedOn: string | null
   readonly document: { readonly number: string | null; readonly date: string | null } | null
-  /** Dated after the source's newest modification: scheduled when the portal was read, not held. */
-  readonly scheduled: boolean
+  /**
+   * Dated after the source's newest stored modification. That is a source-wide
+   * clock, not the time this case was read, so whether the hearing was held is
+   * unknown — never "scheduled" (JC26-API-03).
+   */
+  readonly afterNewest: boolean
 }
 
 export interface AppealRow {
@@ -77,7 +82,7 @@ export interface CaseSheet {
   readonly related: readonly RelatedCase[]
   /** Links the page does not list: past the ones it reads, or with no case at their other end. */
   readonly relatedUnlisted: number
-  /** The source's newest stored modification: the date the case is read as of. Null for the ÎCCJ's archive. */
+  /** The source's newest stored modification: a source-wide clock, not when this case was read. Null for the ÎCCJ's archive. */
   readonly asOf: string | null
   /** The related cases' read failed: the sheet is served once and read again. */
   readonly partial: boolean
@@ -115,7 +120,7 @@ export function hearingRows(detail: Pick<JudicialCaseDetail, 'hearings' | 'asOf'
       panel: hearing.panel,
       pronouncedOn: hearing.pronouncementDate,
       document: hearing.documentNumber || hearing.documentDate ? { number: hearing.documentNumber, date: hearing.documentDate } : null,
-      scheduled: asOf !== null && hearing.hearingAt !== null && hearing.hearingAt > asOf,
+      afterNewest: asOf !== null && hearing.hearingAt !== null && hearing.hearingAt > asOf,
     }))
 }
 

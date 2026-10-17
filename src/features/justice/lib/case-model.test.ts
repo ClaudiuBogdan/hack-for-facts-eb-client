@@ -32,7 +32,7 @@ describe('caseSheetOf', () => {
 })
 
 describe('hearingRows', () => {
-  it('lists the newest first and calls a hearing after the capture scheduled', () => {
+  it('lists the newest first and marks a hearing after the newest stored modification as of unknown status, never scheduled (JC26-API-03)', () => {
     const rows = hearingRows(
       withDetail({
         hearings: [
@@ -42,7 +42,7 @@ describe('hearingRows', () => {
         ],
       }),
     )
-    expect(rows.map((row) => [row.index, row.scheduled])).toEqual([
+    expect(rows.map((row) => [row.index, row.afterNewest])).toEqual([
       [1, true],
       [0, false],
       [2, false],

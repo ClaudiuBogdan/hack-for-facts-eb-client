@@ -53,7 +53,10 @@ export function analysisNotes(question: Question): { readonly warnings: readonly
       t`Anii dinainte de ${JUSTICE_FIRST_WHOLE_YEAR} au doar dosarele portalului modificate mai târziu (preluarea a mers după data modificării): o parte necunoscută, nu volumul instanțelor.`,
       t`Un dosar e numărat la fiecare instanță unde e înregistrat: același dosar, ajuns în apel, apare și la instanța de apel, sub același număr.`,
       ...(source === 'both' ? [t`Arhiva Înaltei Curți e parțială și mai plină în anii recenți: nu i se arată o schimbare față de anul trecut, iar în totaluri mărește puțin schimbarea.`] : []),
-      t`Portalul nu publică soluțiile, iar părțile nu sunt numite: datele nu conțin persoane.`,
+      // The portal publishes outcomes; the ÎCCJ's archive alone is a separate source, so it makes no such claim.
+      source === 'iccj'
+        ? t`Soluțiile din ședințe și numele persoanelor nu sunt afișate aici: persoanele sunt doar numărate.`
+        : t`Soluțiile din ședințe și numele persoanelor nu sunt afișate aici, deși portalul le publică: persoanele sunt doar numărate.`,
     ],
   }
 }

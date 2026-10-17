@@ -87,14 +87,14 @@ function HubSourceLine({ snapshot, className }: { readonly snapshot: JusticeHubS
       Anul unui dosar e data din antetul lui pe portal (pentru Înalta Curte, data din arhiva ei), nu o dată de înregistrare verificată.
     </Trans>,
     <Trans key="capture">
-      Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {firstWhole} sunt doar dosarele încă active după aceea, nu tot ce au
-      judecat instanțele.
+      Portalul a fost preluat după data ultimei modificări a dosarelor. Înainte de {firstWhole} sunt doar dosarele modificate mai târziu, o parte
+      necunoscută din ce au judecat instanțele.
     </Trans>,
     <Trans key="frozen">
       Preluarea s-a oprit: ultima modificare de pe portal e din {dayText(snapshot.asOf.portalModifiedAt)}, ultima dată din arhiva Înaltei Curți din{' '}
       {dayText(snapshot.asOf.iccjArchiveDate)}.
     </Trans>,
-    <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt publicate. Persoanele sunt doar numărate.</Trans>,
+    <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt afișate aici, deși portalul le publică. Persoanele sunt doar numărate.</Trans>,
   ]
   return <JusticeSourceLine asOf={snapshot.asOf.portalModifiedAt} source="both" notes={notes} className={className} />
 }

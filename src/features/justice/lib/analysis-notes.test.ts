@@ -52,6 +52,14 @@ describe('the caveats', () => {
     expect(iccj).toContain('anii ei nu se compară')
   })
 
+  it('says the portal publishes the withheld outcomes only when the question reads the portal (JC26-API-03)', () => {
+    expect(analysisNotes(DEFAULT_QUESTION).notes.join(' ')).toContain('deși portalul le publică')
+    expect(analysisNotes(question({ levels: ['tribunal'] })).notes.join(' ')).toContain('deși portalul le publică')
+    const iccj = analysisNotes(question({ levels: ['inalta_curte'] })).notes.join(' ')
+    expect(iccj).toContain('nu sunt afișate aici')
+    expect(iccj).not.toContain('portalul le publică')
+  })
+
   it('warns that the ÎCCJ’s years do not compare when the question reads its archive alone', () => {
     expect(analysisNotes(question({ levels: ['inalta_curte'] })).warnings.join(' ')).toContain('anii ei nu se compară')
     expect(analysisNotes(question({ levels: ['tribunal'] })).notes.join(' ')).not.toContain('Înaltei Curți')

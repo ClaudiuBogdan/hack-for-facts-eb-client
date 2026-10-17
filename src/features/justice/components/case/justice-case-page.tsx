@@ -64,7 +64,7 @@ function CaseMissing({ code, number }: { readonly code: string; readonly number:
           <p className="mt-3 text-lg font-semibold text-foreground">
             <Trans>Dosarul nu a fost găsit</Trans>
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{t`Portalul nu are dosarul ${number} la ${courtName(code)}.`}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t`Datele preluate nu au dosarul ${number} la ${courtName(code)}.`}</p>
         </div>
       </JusticeCaseHeadPending>
     </div>
@@ -100,12 +100,12 @@ function CaseSourceLine({ sheet }: { readonly sheet: CaseSheet }) {
   const iccj = sheet.case.sourceSlug === 'iccj'
   const notes: ReactNode[] = iccj
     ? [
-        <Trans key="state">Dosarul e așa cum îl arăta arhiva Înaltei Curți la ultima preluare, nu istoria lui completă.</Trans>,
+        <Trans key="state">Dosarul e așa cum îl arăta arhiva Înaltei Curți când a fost preluat, nu istoria lui completă.</Trans>,
         <Trans key="iccj">Arhiva Curții nu dă părțile, ședințele detaliate și nici obiectul dosarelor.</Trans>,
       ]
     : [
-        <Trans key="state">Dosarul e așa cum îl arăta portalul la ultima preluare, nu istoria lui completă.</Trans>,
-        <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt publicate. Persoanele sunt doar numărate.</Trans>,
+        <Trans key="state">Dosarul e așa cum îl arăta portalul când a fost preluat, nu istoria lui completă.</Trans>,
+        <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt afișate aici, deși portalul le publică. Persoanele sunt doar numărate.</Trans>,
         <Trans key="object">Obiectul e textul instanței, așa cum apare pe portal.</Trans>,
       ]
   if (sheet.partial) notes.push(<Trans key="partial">Dosarele legate de la alte instanțe nu au putut fi citite acum; pagina le citește din nou.</Trans>)
@@ -115,7 +115,7 @@ function CaseSourceLine({ sheet }: { readonly sheet: CaseSheet }) {
 function HearingsBand({ sheet, index }: { readonly sheet: CaseSheet; readonly index: string }) {
   const iccj = sheet.case.sourceSlug === 'iccj'
   const decisions = sheet.hearings.filter((hearing) => hearing.document?.number).length
-  const scheduled = sheet.hearings.filter((hearing) => hearing.scheduled).length
+  const afterNewest = sheet.hearings.filter((hearing) => hearing.afterNewest).length
   return (
     <HomeBand id="sedinte" labelledBy="justice-case-hearings-title">
       <div className={BAND_GRID}>
@@ -127,12 +127,12 @@ function HearingsBand({ sheet, index }: { readonly sheet: CaseSheet; readonly in
             lede={
               sheet.hearings.length > 0 ? (
                 <Trans>
-                  {hearingsCount(sheet.hearings.length)} pe portal, {countText(decisions)} cu un document de hotărâre. Ce s-a hotărât nu e publicat aici.
+                  {hearingsCount(sheet.hearings.length)} în datele preluate, {countText(decisions)} cu un document numerotat. Ce s-a hotărât nu e afișat aici.
                 </Trans>
               ) : iccj ? (
                 <Trans>Arhiva Înaltei Curți nu dă ședințele dosarelor ei.</Trans>
               ) : (
-                <Trans>Portalul nu are nicio ședință a acestui dosar.</Trans>
+                <Trans>Datele preluate nu au nicio ședință a acestui dosar.</Trans>
               )
             }
           />
@@ -144,9 +144,9 @@ function HearingsBand({ sheet, index }: { readonly sheet: CaseSheet; readonly in
                 <li key={hearing.index} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-0.5 px-1 py-2.5 text-sm">
                   <span className="tabular-nums text-foreground">{formatHearingTime(hearing.at) ?? <Trans>fără dată</Trans>}</span>
                   <span className="text-right">
-                    {hearing.scheduled ? (
+                    {hearing.afterNewest ? (
                       <MonoLabel className="text-status-partial-fg">
-                        <Trans>programată</Trans>
+                        <Trans>stare necunoscută</Trans>
                       </MonoLabel>
                     ) : null}
                   </span>
@@ -155,8 +155,8 @@ function HearingsBand({ sheet, index }: { readonly sheet: CaseSheet; readonly in
                       hearing.panel ? t`completul ${hearing.panel}` : null,
                       hearing.document?.number
                         ? hearing.document.date && formatJudicialDate(hearing.document.date)
-                          ? t`hotărârea nr. ${hearing.document.number} din ${formatJudicialDate(hearing.document.date) ?? ''}`
-                          : t`hotărârea nr. ${hearing.document.number}`
+                          ? t`documentul nr. ${hearing.document.number} din ${formatJudicialDate(hearing.document.date) ?? ''}`
+                          : t`documentul nr. ${hearing.document.number}`
                         : null,
                       hearing.pronouncedOn && formatJudicialDate(hearing.pronouncedOn) ? t`pronunțare ${formatJudicialDate(hearing.pronouncedOn) ?? ''}` : null,
                     ]
@@ -166,9 +166,11 @@ function HearingsBand({ sheet, index }: { readonly sheet: CaseSheet; readonly in
                 </li>
               ))}
             </ol>
-            {scheduled > 0 && sheet.asOf ? (
+            {afterNewest > 0 && sheet.asOf ? (
               <p className="mt-3 text-xs text-muted-foreground">
-                <Trans>Ședințele programate erau viitoare la ultima preluare a portalului ({dayText(sheet.asOf)}).</Trans>
+                <Trans>
+                  Ședințele marcate au data după cea mai nouă modificare stocată din portal ({dayText(sheet.asOf)}): datele nu arată dacă s-au ținut.
+                </Trans>
               </p>
             ) : null}
           </div>
@@ -193,7 +195,7 @@ function AppealsBand({ sheet, index }: { readonly sheet: CaseSheet; readonly ind
               ) : sheet.case.sourceSlug === 'iccj' ? (
                 <Trans>Arhiva Înaltei Curți nu dă căile de atac ale dosarelor ei.</Trans>
               ) : (
-                <Trans>Portalul nu are nicio cale de atac declarată la acest dosar.</Trans>
+                <Trans>Datele preluate nu au nicio cale de atac declarată la acest dosar.</Trans>
               )
             }
           />
@@ -233,7 +235,7 @@ function PartiesBand({ sheet, index }: { readonly sheet: CaseSheet; readonly ind
               ) : sheet.case.sourceSlug === 'iccj' ? (
                 <Trans>Arhiva Înaltei Curți nu dă părțile dosarelor ei.</Trans>
               ) : (
-                <Trans>Portalul nu listează nicio parte a acestui dosar.</Trans>
+                <Trans>Datele preluate nu au nicio parte a acestui dosar.</Trans>
               )
             }
           />

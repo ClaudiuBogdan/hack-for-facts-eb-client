@@ -62,7 +62,7 @@ export function JusticeCaseHead({ sheet, sourceLine }: { readonly sheet: CaseShe
               </p>
             ) : (
               <p className="mt-4 text-base text-muted-foreground">
-                {record.sourceSlug === 'iccj' ? <Trans>Arhiva Înaltei Curți nu dă obiectul dosarelor ei.</Trans> : <Trans>Portalul nu spune obiectul dosarului.</Trans>}
+                {record.sourceSlug === 'iccj' ? <Trans>Arhiva Înaltei Curți nu dă obiectul dosarelor ei.</Trans> : <Trans>Datele preluate nu au obiectul dosarului.</Trans>}
               </p>
             )}
             <div className="mt-5">{sourceLine}</div>

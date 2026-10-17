@@ -36,7 +36,7 @@ export interface JusticeHubSnapshot {
   /** The day the generator read the API. */
   readonly capturedAt: string
   readonly asOf: {
-    /** The newest stored modification of a Portal case: the capture's end. */
+    /** The newest stored modification of a Portal case: a source-wide clock, not a capture time. */
     readonly portalModifiedAt: string
     /** The newest ÎCCJ archive date. */
     readonly iccjArchiveDate: string

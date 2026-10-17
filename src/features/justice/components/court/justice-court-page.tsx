@@ -83,7 +83,7 @@ function CourtMissing({ code }: { readonly code: string }) {
           <p className="mt-3 text-lg font-semibold text-foreground">
             <Trans>Instanța nu a fost găsită</Trans>
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{t`Portalul instanțelor nu are o instanță cu codul ${code}.`}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t`Datele preluate nu au o instanță cu codul ${code}.`}</p>
         </div>
       </JusticeCourtHeadPending>
     </div>
@@ -165,7 +165,12 @@ function CourtSourceLine({ sheet, className }: { readonly sheet: CourtSheet; rea
       ]
   notes.push(
     <Trans key="stage">Etapa e cea de acum a dosarului, nu tot drumul lui.</Trans>,
-    <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt publicate.</Trans>,
+    // The portal publishes outcomes; the ÎCCJ's archive is a separate source, so its view makes no such claim.
+    iccj ? (
+      <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt afișate aici.</Trans>
+    ) : (
+      <Trans key="privacy">Numele părților și soluțiile din ședințe nu sunt afișate aici, deși portalul le publică.</Trans>
+    ),
   )
   if (sheet.partial) notes.push(<Trans key="partial">Dosarele instanțelor de sub ea nu au putut fi numărate acum; pagina le citește din nou.</Trans>)
   const lastYear = courtLastYear(sheet)
