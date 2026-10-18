@@ -715,8 +715,13 @@ msgstr "{0, plural, one {one option} other {# options}}"
 
 #. placeholder {0}: act.amendedAfterPublication
 #: src/features/legal/components/act-warnings.tsx:116
-msgid "{0, plural, one {O referință de modificare sau completare înregistrată de la publicare.} few {# referințe de modificare sau completare înregistrate de la publicare.} other {# de referințe de modificare sau completare înregistrate de la publicare.}}"
-msgstr "{0, plural, one {One amendment reference recorded since publication.} other {# amendment references recorded since publication.}}"
+#~ msgid "{0, plural, one {O referință de modificare sau completare înregistrată de la publicare.} few {# referințe de modificare sau completare înregistrate de la publicare.} other {# de referințe de modificare sau completare înregistrate de la publicare.}}"
+#~ msgstr "{0, plural, one {One amendment reference recorded since publication.} other {# amendment references recorded since publication.}}"
+
+#. placeholder {0}: act.amendedAfterPublication
+#: src/features/legal/components/act-warnings.tsx:129
+msgid "{0, plural, one {O referință de modificare sau completare înregistrată pentru act.} few {# referințe de modificare sau completare înregistrate pentru act.} other {# de referințe de modificare sau completare înregistrate pentru act.}}"
+msgstr "{0, plural, one {One amendment reference recorded for the act.} other {# amendment references recorded for the act.}}"
 
 #. placeholder {0}: reading.year.filers
 #. placeholder {1}: formatHubNumber(reading.year[measure].reported)
@@ -6550,7 +6555,7 @@ msgid "Am exportat {rowCount} rânduri."
 msgstr "Exported {rowCount} rows."
 
 #. placeholder {0}: number(act.statusEvidence.contradictedAbrogations)
-#: src/features/legal/components/act-warnings.tsx:146
+#: src/features/legal/components/act-warnings.tsx:176
 msgid "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 msgstr "Am găsit {0} semnale de abrogare care se contrazic între ele. Statutul afișat este cea mai bună interpretare a noastră, nu o certitudine."
 
@@ -38817,6 +38822,10 @@ msgstr "Referință scraper"
 #~ msgid "Referințele legale sunt o bandă separată și pot fi incomplete."
 #~ msgstr "Referințele legale sunt o bandă separată și pot fi incomplete."
 
+#: src/features/legal/components/act-warnings.tsx:147
+msgid "Referințele sunt numărate pentru întregul act, nu față de versiunea de mai jos, deci pot fi și anterioare ei. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
+msgstr "Referințele sunt numărate pentru întregul act, nu față de versiunea de mai jos, deci pot fi și anterioare ei. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
+
 #: src/features/statistics/components/detail/detail-dimension-panel.tsx:156
 #: src/features/statistics/components/entity/native-entity-ins-view.tsx:296
 #: src/features/statistics/components/entity/native-entity-ins-view.tsx:297
@@ -40054,14 +40063,19 @@ msgstr "Rezumatele pe înțelesul tuturor, domeniile și categoriile sunt genera
 #~ msgid "Rezumatele procedurale pot conține text incident din portal. Nu oferim căutare full-text și nu extindem identități din acest text."
 #~ msgstr "Rezumatele procedurale pot conține text incident din portal. Nu oferim căutare full-text și nu extindem identități din acest text."
 
-#: src/features/legal/components/act-warnings.tsx:132
+#: src/features/legal/components/act-warnings.tsx:162
 msgid "Rezumatul și structura de mai jos descriu actul așa cum a fost publicat inițial. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
 msgstr "Rezumatul și structura de mai jos descriu actul așa cum a fost publicat inițial. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
 
 #. placeholder {0}: formatLegalDate(publishedOn, i18n.locale)
-#: src/features/legal/components/act-warnings.tsx:125
+#: src/features/legal/components/act-warnings.tsx:155
 msgid "Rezumatul și structura de mai jos descriu actul așa cum a fost publicat la {0}. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
 msgstr "Rezumatul și structura de mai jos descriu actul așa cum a fost publicat la {0}. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
+
+#. placeholder {0}: formatLegalDate(republishedOn, i18n.locale)
+#: src/features/legal/components/act-warnings.tsx:139
+msgid "Rezumatul și structura de mai jos descriu actul așa cum a fost republicat la {0}. Referințele sunt numărate pentru întregul act, deci pot fi și anterioare republicării. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
+msgstr "Rezumatul și structura de mai jos descriu actul așa cum a fost republicat la {0}. Referințele sunt numărate pentru întregul act, deci pot fi și anterioare republicării. Nu deținem textul consolidat la zi — pentru versiunea în vigoare, consultă textul oficial."
 
 #: src/features/legal/components/legislation-guide.tsx:148
 msgid "Riscul principal de interpretare greșită din acest modul, spus pe față."
@@ -44579,7 +44593,7 @@ msgstr "Sources: the ONRC registry, ANAF tax records, financial statements filed
 msgid "Sursele acoperă diferit fiecare an, iar din 2026 rândurile vin mai ales din e-licitație: urmăriți forma, nu nivelul."
 msgstr "The sources cover each year differently, and since 2026 rows come mostly from e-licitație: watch the shape, not the level."
 
-#: src/features/legal/components/act-warnings.tsx:144
+#: src/features/legal/components/act-warnings.tsx:174
 msgid "Sursele nu sunt de acord despre ce s-a abrogat."
 msgstr "Sursele nu sunt de acord despre ce s-a abrogat."
 

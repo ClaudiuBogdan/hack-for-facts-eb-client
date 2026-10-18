@@ -108,7 +108,7 @@ describe('LegalActPage', () => {
     render(<LegalActPage actId="66150" />)
 
     const warning = screen.getByText(
-      /295 de referințe de modificare sau completare înregistrate de la publicare/,
+      /295 de referințe de modificare sau completare înregistrate pentru act/,
     )
     // The warning qualifies the summary, so it lives ON the summary card as
     // a footer row with its headline always visible (user decision

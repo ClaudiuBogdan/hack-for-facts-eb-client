@@ -392,8 +392,10 @@ export const legalActDetailSchema = z.object({
   inDegree: z.number().int(),
   aliases: z.array(z.string()),
   /**
-   * Incoming `modifica`/`completeaza` edges. Non-zero means the summary and the
-   * document we hold describe a superseded text — the staleness warning.
+   * Incoming `modifica`/`completeaza` references on the act, of any date: not
+   * dated against the canonical text, so some may predate it (I-22). Non-zero
+   * shows the staleness warning: the summary and the document we hold may
+   * describe a superseded text.
    */
   amendedAfterPublication: z.number().int(),
   canonical: legalDocumentSchema.nullable(),
