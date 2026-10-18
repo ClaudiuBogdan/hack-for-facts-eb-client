@@ -70,18 +70,22 @@ export const rawProcedureSchema = z.object({
   stateDate: z.string().nullable(),
   sourceSystem: z.string(),
   sourceUrl: z.string().nullable(),
-  isCanonical: z.boolean(),
-  dupGroupId: z.string().nullable(),
 })
 export type RawProcurementProcedure = z.infer<typeof rawProcedureSchema>
 
+/**
+ * Procedure `isCanonical` / `dupGroupId` are NOT selected: the server answers
+ * them from its active analysis generation (P36), so they are null with a
+ * field error when that is unknown or ClickHouse is down, and nothing here
+ * reads them. Selecting them would tie the procedure list to ClickHouse.
+ */
 const PROCEDURE_FIELDS = /* GraphQL */ `
   id noticeNo noticeKind procedureType contractKind title
   authority { ${PARTY_FIELDS} }
   cpvCode cpvDivisionCode
   estimatedValueRon awardedValueRon currency ${VALUE_RESOLUTION}
   status countyName publicationDate stateDate
-  sourceSystem sourceUrl isCanonical dupGroupId
+  sourceSystem sourceUrl
 `
 
 export const rawModificationTrailEntrySchema = z.object({

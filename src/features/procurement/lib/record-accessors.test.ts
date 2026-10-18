@@ -59,8 +59,6 @@ const procedure: ProcedureRecord = {
   stateDate: '2025-02-01',
   sourceSystem: 'seap_notice',
   sourceUrl: null,
-  isCanonical: true,
-  dupGroupId: null,
 }
 
 const contract: ContractRecordSummary = {

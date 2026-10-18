@@ -123,8 +123,6 @@ export function mapProcedure(raw: RawProcurementProcedure): ProcedureRecord {
     stateDate: raw.stateDate,
     sourceSystem: procurementSourceSystemSchema.parse(raw.sourceSystem),
     sourceUrl: mapSourceUrl(raw.sourceUrl),
-    isCanonical: raw.isCanonical,
-    dupGroupId: raw.dupGroupId,
   }
 }
 

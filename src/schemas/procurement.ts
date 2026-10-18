@@ -160,8 +160,9 @@ export const procedureRecordSchema = z.object({
   stateDate: z.string().nullable(),
   sourceSystem: procurementSourceSystemSchema,
   sourceUrl: z.string().nullable(),
-  isCanonical: z.boolean(),
-  dupGroupId: z.string().nullable(),
+  // No canonicality here: a procedure's group exists only in the server's
+  // active analysis generation (P36), which can be unknown. Nothing reads it,
+  // so the list does not ask for it.
 })
 
 export type ProcedureRecord = z.infer<typeof procedureRecordSchema>
